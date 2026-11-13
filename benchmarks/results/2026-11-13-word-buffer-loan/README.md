@@ -32,7 +32,8 @@ tail latency. Sources, complete image hashes, counter observations and tool are 
 Initial190internal/311public Release11 checks pass. After the retirement correction,
 47focused lifetime/admission and758public cleanup/comprehension/call/text checks pass.
 Actual.NET10 passes61internal/236public focused cases. No assertion or timeout is relaxed.
-Full new-source Windows/Ubuntu, stress and installed-consumer qualification remains.
+Full Windows/Ubuntu actual.NET11/10, original stress and installed consumers pass
+[43488900368](delivery/README.md), with corrected testsc07279a2;576source inputs match.
 
 ## Quiet-VM comparisons and decision
 
@@ -75,4 +76,5 @@ current reference images and original/adverse evidence remain. Publication is he
 First full delivery found five stale disposal expectations per platform;
 [original failure and corrected focused checks](delivery-first-failure/README.md)
 remain available. Production and measured images are unchanged. Corrected full
-qualification is pending; the original run does not qualify skipped steps.
+qualification now passes[43488900368](delivery/README.md); the original failed
+run does not qualify its skipped steps.

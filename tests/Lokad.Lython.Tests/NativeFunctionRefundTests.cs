@@ -27,7 +27,7 @@ public sealed class NativeFunctionRefundTests
             var function = new PyExecutableFunction("f", definition.ParameterLayout, code, context, [],
                 new Dictionary<string, object>(), definition.ScopeFacts);
             var retained = PyString.FromString(new string('A', 4096), governor, span);
-            var bound = function.BindPositionalOperands([retained, PyNone.Instance], span, context);
+            var bound = function.BindCallOperands([retained, PyNone.Instance], span, context, receiver: null, callSite: null);
             LythonRuntime.ReturnBoundArguments(bound, code.ValueStorageCapacity);
             LythonRuntimeException? first = null;
             long fundedAtFailure = -1;

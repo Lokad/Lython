@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Share final-slot argument binding across native and owned calls, placing flat
+  positional operands directly and removing the separate positional binder.
+  Preserve live defaults, dynamic keyword/variadic forms and awaited cleanup.
+
 - Consolidate private cased-word cursors and range-array storage into one
   execution-owned buffer loan, reusing capacity across lines. Preserve eager
   admission, active/nested ownership and retained words. Clear interpreter-owned

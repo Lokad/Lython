@@ -153,7 +153,7 @@ public sealed class FunctionWorkspaceOwnershipTests
         var previous = governor.RentFunctionWorkspace(64, Span);
         previous[63] = new object();
         governor.ReturnFunctionWorkspace(previous, previous.Length);
-        var bound = function.BindPositionalOperands([retained], Span, context);
+        var bound = function.BindCallOperands([retained], Span, context, receiver: null, callSite: null);
         Assert.Equal(1, bound.Assigned.Length);
         Assert.True(bound.Values.Length >= function.CodeObject.ValueStorageCapacity);
         Assert.Same(retained, bound.Values[0]);

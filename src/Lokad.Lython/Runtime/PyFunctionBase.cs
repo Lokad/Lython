@@ -66,9 +66,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         LythonRuntime.ExecutionContext context, object? receiver = null, ExecutableCallSite? callSite = null)
     {
         context.CheckExecution(span);
-        var bound = callSite is null
-            ? BindPositionalOperands(arguments, span, context, receiver)
-            : BindCallOperands(arguments, span, context, receiver, callSite);
+        var bound = BindCallOperands(arguments, span, context, receiver, callSite);
         return InvokeBound(bound, span);
     }
 
@@ -76,25 +74,18 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         LythonRuntime.ExecutionContext context, object? receiver = null, ExecutableCallSite? callSite = null)
     {
         context.CheckExecution(span);
-        var binding = callSite is null
-            ? new ValueTask<BoundCallArguments>(BindPositionalOperands(arguments, span, context, receiver))
-            : BindCallOperandsAsync(arguments, span, context, receiver, callSite);
+        var binding = BindCallOperandsAsync(arguments, span, context, receiver, callSite);
         return binding.IsCompletedSuccessfully ? InvokeBoundAsync(binding.Result, span) : BindAndInvokeAsync(binding, span);
     }
 
     public PyType? OwnerType { get; private set; }
 
-    internal BoundCallArguments BindPositionalOperands(ReadOnlySpan<object?> arguments, LythonSourceSpan span,
-        LythonRuntime.ExecutionContext context, object? receiver = null)
-        => LythonRuntime.BindPositionalFunctionArguments(arguments, span, _bindingPlan, receiver,
-            context.MemoryGovernor, _storageCapacity);
-
     internal BoundCallArguments BindCallOperands(ReadOnlySpan<object?> arguments, LythonSourceSpan span,
-        LythonRuntime.ExecutionContext context, object? receiver, ExecutableCallSite callSite)
+        LythonRuntime.ExecutionContext context, object? receiver, ExecutableCallSite? callSite)
         => LythonRuntime.BindFunctionArguments([], span, _bindingPlan, context, receiver, callSite, arguments, storageCapacity: _storageCapacity);
 
     internal ValueTask<BoundCallArguments> BindCallOperandsAsync(ReadOnlySpan<object?> arguments, LythonSourceSpan span,
-        LythonRuntime.ExecutionContext context, object? receiver, ExecutableCallSite callSite)
+        LythonRuntime.ExecutionContext context, object? receiver, ExecutableCallSite? callSite)
         => LythonRuntime.BindFunctionArgumentsAsync([], span, _bindingPlan, context, receiver, callSite, arguments, _storageCapacity);
 
     // No defaults, receiver insertion or dynamic binding during the borrow.

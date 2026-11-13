@@ -576,7 +576,10 @@ shared definitions retain no execution, host or caller token.
 
 Ordinary calls to executable functions with slot-local storage advance one explicit
 caller/callee chain, including keyword and variadic signatures. The shared binder
-writes final invocation storage and observes live defaults. Completed binding
+writes final invocation storage and observes live defaults. Flat positional
+operands fill those slots directly; supplied keyword and variadic forms are
+parsed separately before the same default completion. Native and owned calls
+share that binder, including keyword-only defaults. Completed binding
 enters the body directly; genuinely pending default lookup retains call admission,
 caller operands and bound storage until completion or failure. It then enters the
 same body transition, without recursively starting another instruction driver.

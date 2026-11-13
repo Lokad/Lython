@@ -190,20 +190,13 @@ internal sealed partial class LythonRuntime
                 }
                 CheckExecution(span);
                 var operands = _execution.Stack.Slice(argumentStart, argumentCount).Span;
-                var positional = !ordinaryCall || site!.IsPositionalOnly && function.SupportsDirectPositional;
-                if (positional)
-                {
-                    var bound = function.BindPositionalOperands(operands, span, this, receiver);
-                    prepared = true;
-                    return new(BeginBoundCall(function, bound, site, start, span, completion, callEntered));
-                }
                 if (!asynchronous)
                 {
-                    var bound = function.BindCallOperands(operands, span, this, receiver, site!);
+                    var bound = function.BindCallOperands(operands, span, this, receiver, site);
                     prepared = true;
                     return new(BeginBoundCall(function, bound, site, start, span, completion, callEntered));
                 }
-                var binding = function.BindCallOperandsAsync(operands, span, this, receiver, site!);
+                var binding = function.BindCallOperandsAsync(operands, span, this, receiver, site);
                 if (!binding.IsCompleted)
                 {
                     prepared = true;

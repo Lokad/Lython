@@ -89,45 +89,6 @@ internal sealed partial class LythonRuntime
         return defer ? CompleteProtocolDefaultsAsync(bound, span, plan, context) : new(bound);
     }
 
-    // Eligible signatures contain only positional parameters. Read existing
-    // operands once into owned bound storage, before a body can suspend.
-    internal static BoundCallArguments BindPositionalFunctionArguments(
-        ReadOnlySpan<object?> arguments, LythonSourceSpan span, FunctionBindingPlan plan, object? receiver,
-        MemoryGovernor governor, int? storageCapacity = null)
-    {
-        var storage = RentFunctionArgumentStorage(plan, span, governor, storageCapacity);
-        var values = storage.Values;
-        try
-        {
-            var offset = receiver is null ? 0 : 1;
-            if (arguments.Length > plan.PositionalCount - offset)
-                throw CallErrors.TooManyPositional(plan.CallableKind, plan.CallableName, span);
-            var assigned = storage.Assigned;
-            if (receiver is not null)
-            {
-                values[0] = receiver;
-                assigned[0] = true;
-            }
-            for (var i = 0; i < arguments.Length; i++)
-            {
-                values[i + offset] = arguments[i].RequireNotNull();
-                assigned[i + offset] = true;
-            }
-            for (var i = arguments.Length + offset; i < assigned.Length; i++)
-            {
-                if (!plan.TryGetPositionalDefault(i, out var value))
-                    throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, plan.NameAt(i), span);
-                values[i] = value;
-            }
-            return storage with { Assigned = assigned };
-        }
-        catch
-        {
-            ReturnBoundArguments(storage);
-            throw;
-        }
-    }
-
     private static async ValueTask<BoundCallArguments> CompleteProtocolDefaultsAsync(
         BoundCallArguments bound, LythonSourceSpan span, FunctionBindingPlan plan, ExecutionContext context)
     {
@@ -178,64 +139,24 @@ internal sealed partial class LythonRuntime
         Dictionary<string, object>? extraKeywords = null;
         var positionalIndex = 0;
 
-        // A bound receiver follows exactly the same positional/overflow rules,
-        // before supplied arguments. All values are consumed before any await.
-        var argumentCount = callSite?.ArgumentCount ?? arguments.Length;
-        for (var argumentIndex = receiver is null ? 0 : -1; argumentIndex < argumentCount; argumentIndex++)
+        // A flat operand call already supplies its argument shape. Copy its
+        // positional prefix directly into the final slots, then share the same
+        // live-default/variadic completion as every other call. No temporary
+        // CallArgumentValue or second positional binding implementation is needed.
+        var flatPositional = plan.VariadicListIndex < 0 &&
+            (callSite?.IsPositionalOnly ?? arguments.IsEmpty);
+        if (flatPositional)
         {
-            var argument = argumentIndex < 0 ? CallArgumentValue.Positional(receiver!)
-                : callSite is null ? arguments[argumentIndex]
-                : CreateExecutableCallArgument(callSite.Arguments[argumentIndex], operands[argumentIndex].RequireNotNull());
-            if (argument.IsPositional)
-            {
-                if (positionalIndex >= plan.PositionalCount)
-                {
-                    if (plan.VariadicListIndex < 0)
-                    {
-                        throw CallErrors.TooManyPositional(plan.CallableKind, plan.CallableName, span);
-                    }
-
-                    if (extraPositional is null)
-                    {
-                        extraPositional = new PyList([], context.MemoryGovernor, span);
-                    }
-
-                    extraPositional.Add(argument.Value);
-                    continue;
-                }
-
-                values[positionalIndex] = argument.Value;
-                assigned[positionalIndex] = true;
-                positionalIndex++;
-                continue;
-            }
-
-            var keywordName = argument.KeywordName;
-            if (!plan.LayoutParameterIndex.TryGetValue(keywordName, out var keywordIndex) ||
-                keywordIndex >= plan.NamedLayoutCount || keywordIndex < plan.PositionalOnlyCount)
-            {
-                if (plan.VariadicDictionaryIndex < 0)
-                {
-                    throw CallErrors.UnexpectedKeyword(plan.CallableKind, plan.CallableName, keywordName, span);
-                }
-
-                extraKeywords ??= new Dictionary<string, object>(StringComparer.Ordinal);
-                if (!extraKeywords.TryAdd(keywordName, argument.Value))
-                {
-                    throw CallErrors.MultipleValues(plan.CallableKind, plan.CallableName, keywordName, span);
-                }
-
-                continue;
-            }
-
-            if (assigned[keywordIndex])
-            {
-                throw CallErrors.MultipleValues(plan.CallableKind, plan.CallableName, keywordName, span);
-            }
-
-            values[keywordIndex] = argument.Value;
-            assigned[keywordIndex] = true;
+            var receiverCount = receiver is null ? 0 : 1;
+            if (operands.Length > plan.PositionalCount - receiverCount)
+                throw CallErrors.TooManyPositional(plan.CallableKind, plan.CallableName, span);
+            if (receiver is not null) values[positionalIndex++] = receiver;
+            for (var i = 0; i < operands.Length; i++)
+                values[positionalIndex++] = operands[i].RequireNotNull();
+            assigned.MarkRange(0, positionalIndex);
         }
+        else BindSuppliedFunctionArguments(values, ref assigned, arguments, span, plan, context,
+            receiver, callSite, operands, out extraPositional, out extraKeywords);
 
         for (var i = 0; i < plan.PositionalCount; i++)
         {
@@ -304,6 +225,80 @@ internal sealed partial class LythonRuntime
             var keywordDictIndex = plan.VariadicDictionaryIndex;
             values[keywordDictIndex] = keywordDict;
             assigned[keywordDictIndex] = true;
+        }
+
+    }
+
+    // Named and variadic calls interpret their supplied forms here. Ordinary
+    // flat calls keep their direct fill and live-default completion together;
+    // the shared binder need not inline this larger dynamic parsing branch.
+    private static void BindSuppliedFunctionArguments(Span<object> values, ref ArgumentPresence assigned,
+        ReadOnlySpan<CallArgumentValue> arguments, LythonSourceSpan span, FunctionBindingPlan plan,
+        ExecutionContext context, object? receiver, ExecutableCallSite? callSite,
+        ReadOnlySpan<object?> operands, out PyList? extraPositional,
+        out Dictionary<string, object>? extraKeywords)
+    {
+        extraPositional = null;
+        extraKeywords = null;
+        var positionalIndex = 0;
+        // A bound receiver follows exactly the same positional/overflow rules,
+        // before supplied arguments. All values are consumed before any await.
+        var argumentCount = callSite?.ArgumentCount ?? (arguments.IsEmpty ? operands.Length : arguments.Length);
+        for (var argumentIndex = receiver is null ? 0 : -1; argumentIndex < argumentCount; argumentIndex++)
+        {
+            var argument = argumentIndex < 0 ? CallArgumentValue.Positional(receiver!)
+                : callSite is null ? arguments.IsEmpty
+                    ? CallArgumentValue.Positional(operands[argumentIndex].RequireNotNull()) : arguments[argumentIndex]
+                : CreateExecutableCallArgument(callSite.Arguments[argumentIndex], operands[argumentIndex].RequireNotNull());
+            if (argument.IsPositional)
+            {
+                if (positionalIndex >= plan.PositionalCount)
+                {
+                    if (plan.VariadicListIndex < 0)
+                    {
+                        throw CallErrors.TooManyPositional(plan.CallableKind, plan.CallableName, span);
+                    }
+
+                    if (extraPositional is null)
+                    {
+                        extraPositional = new PyList([], context.MemoryGovernor, span);
+                    }
+
+                    extraPositional.Add(argument.Value);
+                    continue;
+                }
+
+                values[positionalIndex] = argument.Value;
+                assigned[positionalIndex] = true;
+                positionalIndex++;
+                continue;
+            }
+
+            var keywordName = argument.KeywordName;
+            if (!plan.LayoutParameterIndex.TryGetValue(keywordName, out var keywordIndex) ||
+                keywordIndex >= plan.NamedLayoutCount || keywordIndex < plan.PositionalOnlyCount)
+            {
+                if (plan.VariadicDictionaryIndex < 0)
+                {
+                    throw CallErrors.UnexpectedKeyword(plan.CallableKind, plan.CallableName, keywordName, span);
+                }
+
+                extraKeywords ??= new Dictionary<string, object>(StringComparer.Ordinal);
+                if (!extraKeywords.TryAdd(keywordName, argument.Value))
+                {
+                    throw CallErrors.MultipleValues(plan.CallableKind, plan.CallableName, keywordName, span);
+                }
+
+                continue;
+            }
+
+            if (assigned[keywordIndex])
+            {
+                throw CallErrors.MultipleValues(plan.CallableKind, plan.CallableName, keywordName, span);
+            }
+
+            values[keywordIndex] = argument.Value;
+            assigned[keywordIndex] = true;
         }
 
     }

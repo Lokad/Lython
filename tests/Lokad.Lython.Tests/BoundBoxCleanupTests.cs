@@ -69,7 +69,7 @@ public sealed class BoundBoxCleanupTests
             [],
             new Dictionary<string, object>(),
             ScopeDirectiveFacts.Empty);
-        var box = fun.BindPositionalOperands([1, 2], Span, closure);
+        var box = fun.BindCallOperands([1, 2], Span, closure, receiver: null, callSite: null);
         LythonRuntime.ReturnBoundArguments(box);
 
         // Zero recursion depth trips inside EnterInvocationFrame, after the
@@ -78,7 +78,7 @@ public sealed class BoundBoxCleanupTests
             fun.Invoke([CallArgumentValue.Positional(1), CallArgumentValue.Positional(2)], Span, closure));
         Assert.Equal("RecursionError", failure.ExceptionType);
 
-        var again = fun.BindPositionalOperands([1, 2], Span, closure);
+        var again = fun.BindCallOperands([1, 2], Span, closure, receiver: null, callSite: null);
         LythonRuntime.ReturnBoundArguments(again);
         Assert.Same(box.Values, again.Values);
         Assert.All(again.Values, value => Assert.Null(value));
