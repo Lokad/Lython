@@ -6,6 +6,15 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Composed executable calls](results/2026-11-13-composed-native-calls/README.md)
+remove eager caller materialization for completing helper compositions. Retained
+refinement2f34a48f versus qualified6b468bf1 improves complete invoice warm8.0–9.8%
+and fresh7.0–13.1% with supporting wider CPU; fresh controls widen the range.
+Captured warm0.1–3.3% with3.1% reference-control movement remains unresolved debt.
+Initial628ab680 establishes warm−19.51%/fresh−18.97% allocation, separately labeled.
+All original/adverse controls, failed iteration conditions and raw sources survive.
+Current final-source local diagnostics and full delivery are pending; no CPython claim.
+
 [Invoice helper-call source gate](results/2026-11-13-invoice-cpu-source-gate/README.md)
 captures1,608samples/8.09guestCPU seconds on qualifiedfc2531b8/6b468bf1 with the
 completeb649cbd8 invoice workload. Unresolved leaves8.58%; useful/inlined work is

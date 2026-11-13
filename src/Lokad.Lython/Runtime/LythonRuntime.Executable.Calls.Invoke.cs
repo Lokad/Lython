@@ -142,7 +142,20 @@ internal sealed partial class LythonRuntime
             catch { execution.Stack.RetireTo(start); throw; }
         }
 
-        private static void AbortPreparedNativeCall(ExecutionContext frame, MemoryGovernor storageOwner)
+        internal static void AbortPreparedNativeCall(ExecutionContext frame, MemoryGovernor storageOwner)
+        {
+            try
+            {
+                if (frame.TakePreparedNativeChild() is { } child)
+                {
+                    try { AbortPreparedNativeCall(child, child._boundStorageOwner!); }
+                    finally { frame.LeaveInterpreterFrame(); }
+                }
+            }
+            finally { AbortPreparedNativeFrame(frame, storageOwner); }
+        }
+
+        private static void AbortPreparedNativeFrame(ExecutionContext frame, MemoryGovernor storageOwner)
         {
             try
             {

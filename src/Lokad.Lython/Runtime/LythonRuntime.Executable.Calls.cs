@@ -29,7 +29,7 @@ internal sealed partial class LythonRuntime
             {
                 Exception? failure = null;
                 ExecutionContext? child = null;
-                try { child = current.ExecuteUntilCall(); }
+                try { child = current.TakePreparedNativeChild() ?? current.ExecuteUntilCall(); }
                 catch (Exception error) { failure = error; }
                 current = child ?? CompleteCallFrame(current, failure);
             }
@@ -42,7 +42,7 @@ internal sealed partial class LythonRuntime
             {
                 Exception? failure = null;
                 ExecutionContext? child = null;
-                try { child = await current.ExecuteUntilCallAsync().ConfigureAwait(false); }
+                try { child = current.TakePreparedNativeChild() ?? await current.ExecuteUntilCallAsync().ConfigureAwait(false); }
                 catch (Exception error) { failure = error; }
                 current = child ?? CompleteCallFrame(current, failure);
             }
@@ -353,6 +353,21 @@ internal sealed partial class LythonRuntime
             _callCompletion = completion;
             frame._caller = this;
             frame._boundStorageOwner = storageOwner;
+        }
+
+        internal void AdoptPreparedNativeChild(ExecutionContext child, ExecutableCallSite site,
+            int start, MemoryGovernor storageOwner)
+        {
+            child.EnterExecutableSlots();
+            AttachPreparedCall(child, site, start, site.CallSpan, CallCompletion.Call, storageOwner);
+            _preparedCallValue = child;
+        }
+
+        private ExecutionContext? TakePreparedNativeChild()
+        {
+            if (_preparedCallValue is not ExecutionContext child) return null;
+            _preparedCallValue = null;
+            return child;
         }
 
         private void CloseInvocation(Exception? failure)

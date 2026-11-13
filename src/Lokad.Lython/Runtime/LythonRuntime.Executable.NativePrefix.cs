@@ -20,6 +20,8 @@ internal sealed partial class LythonRuntime
         internal int Index = function.CodeObject.EntryIndex;
         internal int LiveExtent = function.CodeObject.FirstTemporarySlot;
         private bool _transferred;
+        private ExecutionContext? _preparedChild;
+        private MemoryGovernor? _preparedChildOwner;
 
         internal bool Run(LythonSourceSpan entrySpan, out object result)
         {
@@ -244,11 +246,14 @@ internal sealed partial class LythonRuntime
             var call = Code.CallSites[instruction.CallSiteIndex];
             var start = instruction.InputStart;
             var target = Values[start + call.TargetOffset];
-            if (!call.IsPositionalOnly) return false;
             object result;
             try
             {
-                if (call.HasReceiver && Values[start] is PyDict dictionary)
+                if (!call.IsPositionalOnly)
+                {
+                    if (!CallFunction(call, start, target, out result)) return false;
+                }
+                else if (call.HasReceiver && Values[start] is PyDict dictionary)
                 {
                     if (call.ArgumentCount == 0 && target is ReceiverMethod method && method.AcceptsPositional(0))
                         result = InvokeReceiverMethod(method, dictionary, call.CallSpan, _scope);
@@ -289,16 +294,54 @@ internal sealed partial class LythonRuntime
                 }
                 else
                 {
-                    if (call.ArgumentCount != 1 || call.HasReceiver) return false;
-                    var argument = Values[start + call.ArgumentOffset];
-                    var operation = SelectNativeUnaryOperation(target, argument, out var closed);
-                    if (operation is null || !closed) return false;
-                    result = InvokeSingleInput(argument, operation, call.CallSpan, _scope);
+                    var argument = call.ArgumentCount == 1 && !call.HasReceiver
+                        ? Values[start + call.ArgumentOffset] : null;
+                    var closed = false;
+                    var operation = argument is not null ? SelectNativeUnaryOperation(target, argument, out closed) : null;
+                    if (operation is not null && closed)
+                        result = InvokeSingleInput(argument!, operation, call.CallSpan, _scope);
+                    else if (!CallFunction(call, start, target, out result)) return false;
                 }
             }
             catch (Exception error) when (TryTranslateCallableException(error, call.CallSpan, out var translated))
             { throw translated; }
             Publish(instruction, result);
+            return true;
+        }
+
+        private bool CallFunction(ExecutableCallSite call, int start, object target, out object result)
+        {
+            result = PyNone.Instance;
+            var function = target as PyExecutableFunction;
+            object? receiver = call.HasReceiver && Values[start] is not PyNone ? Values[start] : null;
+            if (target is PyBoundMethod { Function: PyExecutableFunction boundFunction } bound)
+            {
+                function = boundFunction;
+                receiver = bound.Receiver;
+            }
+            if (function is null || !function.CanStartInline) return false;
+            var borrow = call.IsPositionalOnly && function.SupportsDirectPositional
+                && function.CanBorrowPositionalArguments(call.ArgumentCount, receiver);
+            if (!borrow && !function.CanBindNativeArguments) return false;
+            _scope.EnterInterpreterFrame(call.CallSpan);
+            var entered = true;
+            try
+            {
+                var arguments = Values.Slice(start + call.ArgumentOffset, call.ArgumentCount);
+                if (!function.TryStartNativeCall(call, arguments, receiver, _scope, call.CallSpan,
+                    call.ConsumedByIteration || _consumedByIteration && call.ReturnedDirectly,
+                    borrow, out result, out var child)) return false;
+                if (child is not null)
+                {
+                    // No operation is running in the child. Keep its exact
+                    // PC and ownership while this caller acquires a frame.
+                    _preparedChild = child;
+                    _preparedChildOwner = function.DefinitionContext.MemoryGovernor;
+                    entered = false;
+                    return false;
+                }
+            }
+            finally { if (entered) _scope.LeaveInterpreterFrame(); }
             return true;
         }
 
@@ -359,10 +402,34 @@ internal sealed partial class LythonRuntime
         }
 
         internal void PrepareTransfer() => Values[LiveExtent..].Clear();
-        internal void TransferOwnership() => _transferred = true;
+        internal void TransferOwnership(ExecutionContext frame)
+        {
+            if (_preparedChild is { } child)
+            {
+                var call = Code.CallSites[Code.Instructions[Index].CallSiteIndex];
+                frame.AdoptPreparedNativeChild(child, call, Code.Instructions[Index].InputStart, _preparedChildOwner!);
+                _preparedChild = null;
+                _preparedChildOwner = null;
+            }
+            _transferred = true;
+        }
         internal void Dispose()
         {
             if (_transferred) return;
+            try
+            {
+                if (_preparedChild is { } child)
+                {
+                    _preparedChild = null;
+                    try { ExecutionContext.AbortPreparedNativeCall(child, _preparedChildOwner!); }
+                    finally { _scope.LeaveInterpreterFrame(); }
+                }
+            }
+            finally { DisposeValues(); }
+        }
+
+        private void DisposeValues()
+        {
             // A directly returned fused call can produce a private cursor even
             // without a GetIter slot in this function. Cancellation before Return
             // must retire that loan too, before the caller can own the result.

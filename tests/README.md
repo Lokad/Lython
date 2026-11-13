@@ -63,6 +63,12 @@ at cleanup. Ordinary split aliases remain funded after the inventory cache ends;
 refund-reentry fixtures observe completed Python bindings without requiring an
 exact internal refund size.
 
+[Composed helpers](Lokad.Lython.PublicApi.Tests/ComposedHelperTests.cs) preserve
+live defaults, saved receivers, closure effects and aliases through real I/O and
+cancellation. The [native boundary](Lokad.Lython.Tests/ComposedNativeCallTests.cs)
+rejects parent admission after descendants acquire storage, checks that no callback
+ran, balances call entries and preserves an independently owned input's funding.
+
 [Formatted helper slots](Lokad.Lython.Tests/FormattedStringExecutableTests.cs)
 check complete record rendering, nested/dynamic fields and single-field string
 identity without an invocation frame. [Pending helper lifetimes](Lokad.Lython.PublicApi.Tests/HelperContinuationLifetimeTests.cs)

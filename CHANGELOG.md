@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Keep composed executable helper calls in their final slots when callees complete
+  directly, avoiding eager caller frames and workspace transport. Transfer prepared
+  descendants once for dynamic operations and actual I/O; preserve cancellation,
+  retained inputs, stack admission and terminal refusal cleanup.
+
 - Preserve neighboring temporary reservations through reentrant refund cleanup.
   Stop growth if its owner ends during admission, returning unused funding and
   preserving the first memory refusal.
