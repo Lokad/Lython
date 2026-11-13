@@ -18,7 +18,7 @@ public sealed class DictionaryIntegerValueTests
             var key = PyString.FromString("count", context.MemoryGovernor, span);
             var original = new PyDict(2, context.MemoryGovernor, span);
             original.SetItem(key, new BigInteger(1000));
-            Assert.True(original.TryAccumulateWithoutAdmission(key, BigInteger.Zero, BigInteger.One, context, span, span, span));
+            Assert.True(original.TryAccumulateWithoutAdmission(key, BigInteger.Zero, BigInteger.One, context, span));
             var copy = new PyDict(original);
             Assert.True(original.TryGetValue(key, out var value));
             Assert.True(copy.TryGetValue(key, out var copied));
@@ -28,7 +28,7 @@ public sealed class DictionaryIntegerValueTests
             record.SetRecordItem(key, new BigInteger(7), context, span);
             Assert.True(original.TryGetValue(key, out var shared));
             Assert.Same(value, shared);
-            Assert.True(record.TryAccumulateWithoutAdmission(key, BigInteger.Zero, BigInteger.One, context, span, span, span));
+            Assert.True(record.TryAccumulateWithoutAdmission(key, BigInteger.Zero, BigInteger.One, context, span));
             Assert.True(record.TryGetValue(key, out var updated));
             Assert.Equal(new BigInteger(8), updated);
             Assert.True(original.TryGetValue(key, out var unchanged));

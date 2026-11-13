@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Consolidate cancellation at native dictionary-update boundaries and remove
+  span transport used only by duplicate polls. Preserve long-work checks,
+  managed stack admission and terminal refusal after host reentry.
+
 - Add funded XML tree iteration, mixed-text iteration and alias-safe `clear()`.
   Native pulls share the synchronous path across host APIs, while user tag
   equality can await real host operations without relinquishing traversal storage.

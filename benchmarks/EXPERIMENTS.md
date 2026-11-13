@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[R331 dictionary-update boundaries](results/2026-11-13-dictionary-boundaries/README.md)
+removes duplicate internal polls and their span transport from guarded native
+updates, keeping long-work, managed-stack, post-binding/retirement and pre-admission
+checks.53internal/179public focused cases per11/10 pass. B702text elapsed
+−1.83..+0.64%/widerCPU−1.94..+1.18%is effectively flat; search reference spread6.06%
+remains uncertainty. Retain the source simplification, with no CPU/allocation gain
+claim and no unchanged retiming. The broader performance objective remains open.
+
 [R330 XML traversal/clear](results/2026-11-13-xml-traversal/README.md) adds one funded
 nonrecursive tree iterator and preserves old attribute/text/child aliases through
 clear. The first unconditional async pull is8–10%slower; a shared synchronous native

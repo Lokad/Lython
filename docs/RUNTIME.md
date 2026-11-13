@@ -515,6 +515,9 @@ The additional workspace can reject a tighter allowance earlier.
 Eligible dictionary counting loops run consecutive native iterations without
 repeating operand and call setup. They preserve ordinary local binding,
 optional integer totals and cancellation.
+Each update excludes admission and guest callbacks, so it completes as one finite
+native operation after its checked entry. Long hashing/comparison retain internal
+checks; checks after observable binding and retirement precede later work.
 Custom protocols, wide values and growth resume the original executable body
 after the current loop binding, preserving evaluation order and suspension.
 Refused admission stops execution; it does not select that continuation.

@@ -22,7 +22,6 @@ internal sealed partial class LythonRuntime
             ref readonly var store = ref execution.Code.Instructions[callIndex + 2];
             var fallback = execution.Code.Constants[execution.Code.Instructions[headIndex + 4].ConstantIndex]!;
             var increment = (BigInteger)execution.Code.Constants[~add.SecondInput]!;
-            var storeSpan = (LythonSourceSpan)execution.Code.Constants[store.TargetSpanIndex]!;
             var totalIndex = callIndex + 3;
             var hasTotal = execution.Code.Instructions[totalIndex].OpCode == ExecutableOpCode.Augmented;
             ref readonly var total = ref execution.Code.Instructions[totalIndex];
@@ -55,9 +54,8 @@ internal sealed partial class LythonRuntime
                     var compact = word.Value is null;
                     if (compact)
                     {
-                        // Keep the original binding check, even though its value
-                        // stays private until a continuation can observe it.
-                        execution.Stack.CheckExecution(execution.Code.Instructions[headIndex + 1].Span);
+                        // The callback-free segment keeps this binding private;
+                        // publication precedes every continuation and unwind.
                         pendingWord = word;
                         wordChanged = true;
                     }
@@ -86,9 +84,9 @@ internal sealed partial class LythonRuntime
                     {
                         updated = compact
                             ? dictionary.TryAccumulateInlineWord(PyStringOps.CompactWordBytes(ref word), fallback, increment, scope,
-                                call.CallSpan, add.Span, storeSpan)
+                                call.CallSpan)
                             : dictionary.TryAccumulateWithoutAdmission(key!, fallback, increment, scope,
-                                call.CallSpan, add.Span, storeSpan);
+                                call.CallSpan);
                     }
                     finally { scope.LeaveInterpreterFrame(); }
                     if (!updated)
@@ -102,6 +100,8 @@ internal sealed partial class LythonRuntime
                     if (hasTotal)
                     {
                         execution.InstructionIndex = totalIndex;
+                        // Retirement can refund/reenter. Observe a first refusal
+                        // before performing the following Python store.
                         scope.CheckExecution(total.Span);
                         if (deferTotal)
                         {
@@ -109,7 +109,6 @@ internal sealed partial class LythonRuntime
                             // segment before that bound changes; the ordinary
                             // arithmetic path keeps exact promotion and admission.
                             var value = (totalChanged ? pendingTotal : (long)(BigInteger)priorTotal!) + (long)totalIncrement;
-                            scope.CheckExecution(execution.Code.Instructions[totalIndex + 1].Span);
                             pendingTotal = value;
                             totalChanged = true;
                             if (value < -(1L << 55) || value >= (1L << 55))
@@ -178,12 +177,11 @@ internal sealed partial class LythonRuntime
             var increment = source < 0 ? execution.Code.Constants[~source] : execution.Locals[source];
             if (increment is not BigInteger integer || integer.GetByteCount() >= 8) return false;
             var fallback = call.ArgumentCount == 2 ? execution.Stack[start + call.ArgumentOffset + 1] : PyNone.Instance;
-            var storeSpan = (LythonSourceSpan)execution.Code.Constants[store.TargetSpanIndex]!;
             context.EnterInterpreterFrame(call.CallSpan);
             try
             {
                 if (!dictionary.TryAccumulateWithoutAdmission(key, fallback, integer, context,
-                    call.CallSpan, add.Span, storeSpan)) return false;
+                    call.CallSpan)) return false;
             }
             finally { context.LeaveInterpreterFrame(); }
             // Only the plain receiver/target/key/default inputs are retired.

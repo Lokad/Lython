@@ -9,32 +9,34 @@ internal sealed partial class PyDict
     // nor the intervening addition can invoke a protocol or an admission hook.
     // Retained old values remain ordinary immutable integers with their owner.
     internal bool TryAccumulateWithoutAdmission(PyString key, object fallback, BigInteger increment,
-        LythonRuntime.ExecutionContext context, LythonSourceSpan querySpan, LythonSourceSpan addSpan, LythonSourceSpan storeSpan)
+        LythonRuntime.ExecutionContext context, LythonSourceSpan querySpan)
     {
         if (_nativeItems is null || _nativeValues is null || HasProtocolKeys
             || !ReferenceEquals(_memoryGovernor, context.MemoryGovernor) || increment.GetByteCount() >= 8) return false;
+        context.CheckExecution(querySpan);
         var hash = MixNativeHash(LythonRuntime.ComputeStructuralHashCode(key, querySpan, context));
         var index = FindNativeIndex(key, hash, context, querySpan);
-        return TryAccumulateAt(index, key, hash, fallback, increment, context, addSpan, storeSpan);
+        return TryAccumulateAt(index, key, hash, fallback, increment);
     }
 
     internal bool TryAccumulateInlineWord(ReadOnlySpan<byte> bytes, object fallback, BigInteger increment,
-        LythonRuntime.ExecutionContext context, LythonSourceSpan querySpan, LythonSourceSpan addSpan, LythonSourceSpan storeSpan)
+        LythonRuntime.ExecutionContext context, LythonSourceSpan querySpan)
     {
         if (_nativeItems is null || _nativeValues is null || _recordKeys is not null || HasProtocolKeys ||
             !ReferenceEquals(_memoryGovernor, context.MemoryGovernor) || increment.GetByteCount() >= 8) return false;
+        context.CheckExecution(querySpan);
         var hash = MixNativeHash(PyValueComparer.NormalizeHash(PyString.HashUtf8(bytes, context, querySpan)));
         var index = FindNativeTextIndex(_nativeItems, hash, bytes, context, querySpan);
         // New keys need their real word identity. Resume the original body
         // after publishing that binding, before any insertion/growth admission.
         return index >= 0 && TryAccumulateAt(index, (PyString)_nativeItems[index].Key!, hash,
-            fallback, increment, context, addSpan, storeSpan);
+            fallback, increment);
     }
 
-    private bool TryAccumulateAt(int index, PyString key, uint hash, object fallback, BigInteger increment,
-        LythonRuntime.ExecutionContext context, LythonSourceSpan addSpan, LythonSourceSpan storeSpan)
+    private bool TryAccumulateAt(int index, PyString key, uint hash, object fallback, BigInteger increment)
     {
-        // Both query forms established native storage and exclude callbacks.
+        // Both checked query entries established native storage and exclude
+        // callbacks/admission. Complete one finite update without redundant polls.
         if (index < 0 && (_recordKeys is not null || _nativeCount == _nativeItems!.Length)) return false;
         long prior;
         if (index >= 0 && _recordKeys is null && _nativeValues![index] is null)
@@ -49,11 +51,9 @@ internal sealed partial class PyDict
             prior = (long)integer;
         }
 
-        context.CheckExecution(addSpan);
         // Both signed operands fit seven bytes. The exact result fits long;
         // wider subsequent updates retain the ordinary promotion/admission path.
         var sum = prior + (long)increment;
-        context.CheckExecution(storeSpan);
         var before = _nativeCount;
         if (_recordKeys is null)
         {
@@ -68,7 +68,6 @@ internal sealed partial class PyDict
         else
             PublishNativeValue(index, key, new BigInteger(sum), hash, protocol: false, replaceExisting: true);
         if (_nativeCount != before) _version++;
-        context.CheckExecution(storeSpan);
         return true;
     }
 }
