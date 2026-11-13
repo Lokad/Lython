@@ -1,0 +1,22 @@
+{
+  "purpose": "Preserve exact historical worker cores before retiring superseded VM inode aliases; no historical measurements or source identities changed.",
+  "archiveSHA256": "a1cd9ed760a35b70d4544191c7b3b8638c038973f43398ae8abcbac77072c14e",
+  "cores": [
+    {
+      "canonical": "benchmarks/results/2026-11-13-formatted-helper-slots/superseded-vm-cores.tgz",
+      "member": "e4cc65b251ace242546f337b0846908a4e2a4313953da74df6fb666e1ce87529/Lokad.Lython.dll",
+      "sha256": "e4cc65b251ace242546f337b0846908a4e2a4313953da74df6fb666e1ce87529",
+      "bytes": 5684736,
+      "historicalCommit": "9bca1337",
+      "formerRemotePath": "captured-slots-b638-20261112/candidate/Lokad.Lython.dll"
+    },
+    {
+      "canonical": "benchmarks/results/2026-11-13-formatted-helper-slots/superseded-vm-cores.tgz",
+      "member": "161cd935023fd95a08488cbf7cfa3ee02ea4b88c69c0ba1231299b6ef0d80447/Lokad.Lython.dll",
+      "sha256": "161cd935023fd95a08488cbf7cfa3ee02ea4b88c69c0ba1231299b6ef0d80447",
+      "bytes": 5672960,
+      "historicalCommit": "2d91eb1a",
+      "formerRemotePath": "direct-ranges-b648-20261113/reference/Lokad.Lython.dll"
+    }
+  ]
+}
