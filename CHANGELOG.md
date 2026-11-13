@@ -18,11 +18,6 @@
   overlap, and preserves cancellation and pending-hook ownership. Encoding,
   public projection and guest callback nesting protections remain active.
 
-- Prepare negated branch predicates with the existing conditional helper plan,
-  avoiding ordinary binding and body dispatch for eligible complete helpers.
-  Preserve lazy branches, Python truth protocols and guarded execution before
-  effects, without adding runtime unary dispatch.
-
 - Share final-byte encoding between guest bytes and text files, removing normalized
   UTF-8 staging, alternative length counters and flush-time encoding copies.
   Reuse governed text-output batches and await actual I/O from ordinary/exposed
@@ -30,11 +25,10 @@
   cancellation and funding through cleanup. Encoding errors now identify the
   newline-translated Python subject and character positions.
 
-- Share captured-cell assignment with active local caches and conditional namespace
-  mirroring, removing repeated owner-name lookup and duplicate stores. Preserve
-  inactive workspace safety and generator synchronization. Keep comprehension
-  loop bindings from corrupting enclosing nonlocal cells, and refresh mirrored
-  generator locals after suspended class updates or deletions.
+- Store captured locals in shared cell slots, removing sparse cell arrays,
+  backpointers and duplicate cache synchronization. Preserve live closures and
+  suspended generators, comprehension binding isolation, and class updates or
+  deletions observed after generator resumption.
 
 - Prepare executable function calls at their instructions and publish completed
   bodies after cleanup, removing pending function/receiver staging and a separate

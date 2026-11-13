@@ -1,0 +1,20 @@
+{
+  "originalExitCode": "1",
+  "normalCampaignCompleted": false,
+  "completedRows": 4,
+  "failedLane": "fresh",
+  "cause": "The persistent protocol names compile-to-result compile-run; the private collector sent fresh.",
+  "originalConditionsPreserved": true,
+  "allWorkersJoined": true,
+  "emptyRamFixtureVerified": true,
+  "recoveryQuietAfterUTC": "2026-11-12T23:31:49.988816+00:00",
+  "normalEndGateMissing": true,
+  "stderr": {
+    "scripts.csv-validated-records.large-fresh-CPython-control.stderr": "Comparison worker error: ValueError: Unsupported comparison lane\n"
+  },
+  "archiveSHA256": "eab21a1282fa9c09bb43e126e23cbe236662cc5350c8f73760e737e3df54ddf7",
+  "archivedAndVerifiedUnderLease": true,
+  "guestFixturesRemoved": true,
+  "freeBytes": 267767808,
+  "performanceQualified": false
+}

@@ -1,0 +1,24 @@
+{
+  "consumerRevision": "2d91eb1a46770e16cf6d67e8c065c018c9403582",
+  "producerVersion": "0.5.0-dev.78",
+  "packages": {
+    "Lokad.Utf8Regex.0.5.0-dev.78.nupkg": {
+      "sha256": "edb996fa51209f1972a26161924b51dbdd1db8ef356b30c58a25af7f4a31a1f5",
+      "repositoryCommit": "faa48f5730df5c6c5f56c10222bfc12fdba6c5de",
+      "assemblies": {
+        "net11.0": "ce4d0124d6be0dde0af5f94b4eec824765ebac1c4061e569b2228e7c6f68f8ae",
+        "net10.0": "f55f8abf93329dc480c6f6e35e4f47febbbb42aee2f3e480a2e752a8c124cc3d"
+      }
+    },
+    "Lokad.Utf8Regex.PythonRe.0.5.0-dev.78.nupkg": {
+      "sha256": "1a8bde10ea8924cae87473b838339b0c9e851cd8dccd82438f3c44feed6ad7f9",
+      "repositoryCommit": "faa48f5730df5c6c5f56c10222bfc12fdba6c5de",
+      "assemblies": {
+        "net11.0": "cccd07570285a02a09e253afb16aaa3b5b5d6e82c9b21d60328b34f71b08a29c",
+        "net10.0": "f5ddae31e39d0fac42209f2cda47399104e0894a57ccd0f90e2efa53b1ea0092"
+      }
+    }
+  },
+  "bridge": "Existing qualified dev73 native-cursor ownership/current-token bridge, with valid-subject AssumeValid selected through the working unfunded compile overload and conservative local compilation admission. Pattern disposal calls the current backend API. No new core/provider API, normal pin/source change or publication.",
+  "limitations": "Development semantics/ownership/cancellation qualification only. Final single-match owners, UTF8 names and native token-independent preparation remain separate; actual backend performance not established."
+}

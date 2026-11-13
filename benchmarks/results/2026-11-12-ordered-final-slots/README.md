@@ -106,3 +106,57 @@ Platform/stress/installed-package qualification and final debt decision are sepa
 
 [Refined source/checks](refined/source-checks.tar.xz),
 [controlled summary](refined/summary.json), [all raw observations](refined/observations.tgz).
+
+## Committed final source: 2d91eb1a / B645–B646
+
+Final161cd935 matches all570 committed production files (566 C#), including the
+cancelled-return fix;346 production lines are removed versus4cc057f0. [Full
+Windows/Ubuntu actual-target/stress/installed-package delivery is green](delivery/README.md)
+on43327264124. Terminal is cached; this qualification is not repeated for metadata.
+
+B645 completes three warm rows and CSV compilation, with all six process-role
+identities, goldens, zero balances and individual Closed/exit/join checks. Its next
+warmup fails because the private collector sends the unsupported lane fresh instead
+of compile-run. All workers join and fixtures are empty. The original normal end
+gate is missing; recovery separately passes quiet, archives/SHA-verifies the complete
+partial trace and unmounts RAM under lease. Keep these four rows **diagnostic**,
+not a completed campaign. Do not repair the original raw status or hide the failure.
+
+| Final-source row | Lython | CPython | L/P ratio | Observation |
+| --- | ---: | ---: | ---: | --- |
+| CSV warm | 4.098–4.169ms | 4.302–4.311ms | 0.95–0.97× | Completed row; campaign end gate missing |
+| Native search warm | 0.256–0.262ms | 0.158–0.160ms | 1.60–1.66× | Variable; maxIQR5.96%; end gate missing |
+| Guarded search warm | 0.276–0.282ms | 0.160–0.166ms | 1.66–1.76× | Variable; reference spread9.59%; end gate missing |
+| CSV compilation | 70.24–70.33µs | 66.80–67.09µs | 1.05–1.05× | Completed row; campaign end gate missing |
+| CSV compile+run, B646 | 4.170–4.249ms | 4.464–4.520ms | 0.92–0.95× | Corrected isolated lane; all gates pass |
+
+B646 reuses the exact immutable images/workers/catalog via verified hard links;
+only the failed lane is repeated with its correct existing protocol name. It
+finishes60.276s under120s owner/30s stop/30s margin; initial/final quiet, all
+goldens/balances, Closed/exit0/join, RAM unmount and archive SHA gates pass. Initial
+local/self-process and staging preflights fail before starting work; both are
+preserved. Hard-linking immutable metadata corrects the staging estimate without
+lowering OS240MiB/evidence12MiB floors. Final free267366400B, no users/mounts.
+
+**Disposition:** retain the coherent deletion and CSV whole-script benefit. Final
+warm CSV improves7.92–10.80% elapsed /9.02–10.47% widerCPU; corrected compile+run
+improves9.29–11.35% /8.03–10.03%CPU versus the qualified e4cc65b2 baseline. Warm
+allocation stays effectively flat. Accept the observed native-search debt
++1.07..+6.41%elapsed/+1.92..+6.49%CPU, with control/IQR uncertainty; do not call
+it equivalent. Guarded search crosses zero (−7.28..+4.83%elapsed), with9.59%
+reference spread: its true debt remains uncertain. B644 captured/report ranges
+also cross zero. These remain priorities for current-source whole-script CPU
+attribution; no multiplied gains, universal speedup or performance-complete claim.
+
+The final comparison uses stock CPython3.13.16 and ordinary.NET11RC3 GC/tiering,
+fixed fec79 worker/adapter0.4, quiet AzureF4as_v7/Ubuntu24.04.4 and the same
+source/fixtures. Four independent Lython roles plus two CPython roles,5s warmups,
+seven rotated500ms batches. Warm/fresh include mediated RAM I/O, full output/file
+validation and prior-result cleanup; compilation is separately timed. Startup,
+fixture reset/protocol/final caches are excluded. Separate phase medians do not
+sum. RSS, pending I/O and embedding-tail effects remain unqualified. Publication held.
+
+[Final source/checks](final/source-checks.tar.xz),
+[B645 completed rows and limits](final/b645/summary-partial.json),
+[B645 original partial raw](final/b645/observations-partial.tgz),
+[corrected B646](final/b646/summary.json), [B646 raw](final/b646/observations.tgz).

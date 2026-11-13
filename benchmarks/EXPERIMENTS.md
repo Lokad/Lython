@@ -6886,3 +6886,30 @@ cross zero. A demonstrated private-return cancellation cleanup gap is corrected
 after the measured freeze;3288focused checks pass actual targets. Prepare the
 coherent delivery candidate and targeted final-source confirmation, preserving
 all first/refined results. Full delivery is not established by these timings.
+
+The same [dev78 evidence](results/2026-11-13-regex-provider-capability/README.md)
+also qualifies the existing adapter-local development bridge with AssumeValid
+selected through the working overload, preserving conservative compilation funding.
+88internal/534public checks pass each actual target; loaded producer hashes,
+29normal files,570production sources and normal core binary are verified unchanged.
+No normal promotion, backend speed claim, core dependency or publication follows.
+
+R289 is [fully delivered on2d91eb1a](results/2026-11-12-ordered-final-slots/delivery/README.md),
+GREEN43327264124,346 production lines removed. Exact final source improves CSV
+compile+run9–11% with supporting CPU; current CPython ratio0.92–0.95×. B645's
+three warm rows/compilation complete before a private unsupported fresh-lane request;
+its missing normal end gate and all raw conditions remain explicit. B646 corrects
+only that lane in60.276s, all gates pass. Native-search1–6% debt is accepted with
+uncertainty; guarded controls remain variable. Current performance guide/source
+proof are refreshed, not extrapolated. Publication held; broader objective open.
+
+
+## R292 — current captured-text CPU source gate
+
+[Qualified2d91 CPU capture](results/2026-11-13-captured-current-cpu/README.md):
+1,518 selected samples /7.64 guest CPU seconds. Dictionary loop17.39%, cased-range
+preparation9.09%, instruction prefix7.77%; inlined useful work is included and no
+removable shares or speedup are inferred. Original collector/archive failures,
+all raw frames and the exact-byte recovery are preserved. No samples repeated.
+Next bounded gate assesses direct per-record range/storage construction with
+observable admission and retained-alias semantics; no new runtime prototype yet.

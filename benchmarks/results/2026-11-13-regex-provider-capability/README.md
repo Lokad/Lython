@@ -31,3 +31,26 @@ interruption and retained aliases separately from allocation/performance. Existi
 0.4 behavior and Lython-owned contract tests remain independent and unchanged.
 
 [Exact probe source/build/raw output](probe-source-checks.tar.xz).
+
+## Bounded development bridge on current Lython
+
+The existing dev73 adapter-local ownership/current-token bridge is rebuilt against
+the immutable dev78 packages and current2d91eb1a core. It selects AssumeValid
+through the working unfunded Compile overload while preserving the existing
+conservative local compilation admission; it closes the current backend handle
+after all users finish. Native cursor scratch still uses the existing shared
+working allowance, pre-funded capture metadata and bounded live high water.
+No new core API, producer edits or normal dependency/source changes were made.
+
+Focused development checks pass **88 internal /534 public per actual target**
+(.NET11RC3/.NET10), including Python regex/fnmatch/glob semantics, independent
+capture/windows goldens, current tokens, native refusal, bounded16,384-match
+enumeration and budget cleanup. Exact loaded Core/PythonRe hashes match the
+supplied package bytes.29 normal files,570 production-source hashes and normal
+161cd935 core binary remain unchanged. This is development qualification; it
+does not establish backend speed, final adapter scope precision or new public
+capabilities. The three precise native API gaps above remain. Normal adapter
+pins stay0.4 and the adapter remains nonpackable.
+
+[Qualification/isolation](dev78-bridge/qualification.json),
+[reusable bridge/check sources and raw logs](dev78-bridge/source-checks.tar.xz).

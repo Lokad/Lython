@@ -1,0 +1,15 @@
+{
+  "complete": true,
+  "originalServiceExit": "1",
+  "archiveRecoveredAfterRootOwnedPerfData": true,
+  "noMeasurementRepeated": true,
+  "allWorkersJoined": true,
+  "guestFixturesRemoved": true,
+  "quietBeforeAndAfter": true,
+  "archivedAndVerifiedUnderLease": true,
+  "source": "2d91eb1a/161cd935",
+  "archiveSHA256": "88128828856d27242c5a06a330def86f6ea6804a60cf669a64ce76e3aee44c3b",
+  "rawPerfSHA256": "35cbd95211ee4ca717c245a9f14eee9abe113d3946319255b0a16632d352f461",
+  "freeBytes": 265224192,
+  "performanceComparison": false
+}

@@ -1,0 +1,10 @@
+{
+  "commit": "2d91eb1a46770e16cf6d67e8c065c018c9403582",
+  "coreSHA256": "161cd935023fd95a08488cbf7cfa3ee02ea4b88c69c0ba1231299b6ef0d80447",
+  "productionFiles": 570,
+  "csharpFiles": 566,
+  "allFrozenSourcesMatchCommitWithExplicitNewlineNormalization": true,
+  "netProductionLines": -346,
+  "reference": "9bca1337/e4cc65b2",
+  "fullDelivery": "GREEN43327264124; cached terminal Windows/Ubuntu, actual.NET11/10, ordinary/stress and installed Release consumers"
+}
