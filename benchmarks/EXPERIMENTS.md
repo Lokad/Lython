@@ -6913,3 +6913,15 @@ removable shares or speedup are inferred. Original collector/archive failures,
 all raw frames and the exact-byte recovery are preserved. No samples repeated.
 Next bounded gate assesses direct per-record range/storage construction with
 observable admission and retained-alias semantics; no new runtime prototype yet.
+
+
+## R293 — direct range construction
+
+[Shared existing construction buffers](results/2026-11-13-direct-range-construction/README.md)
+remove scratch reservations/counters and the private inventory copy (12 net production
+lines). All affected/ownership/cancellation checks and seven-script boundaries pass.
+B648 six-job quiet comparison completes320.712s with all custody gates. Allocation
+is flat. Captured compile-to-result improves3.61–9.06% elapsed /4.37–7.67% wider CPU;
+warm results cross zero and adverse/moving CSV/search controls remain explicit.
+Retain the common ownership simplification; do not claim universal CPU improvement.
+Minimum/idle capacity can deny earlier. Full delivery remains pending separately.

@@ -497,7 +497,8 @@ from already-funded storage without new admission. Larger words and dynamic
 protocols keep ordinary materialization. Eager preflight still funds all eventual
 words, including capacity not physically materialized during the native segment.
 Private cased-word iteration prepares whitespace ranges once and consumes those
-facts. Its range buffer stays funded through the cursor's actual users and returns
+facts directly from an execution-owned construction buffer, without a separate
+scratch inventory and final copy. Its buffer stays funded through the cursor's actual users and returns
 through operand-stack cleanup, including early exits and cancellation. Completed
 bindings are published before a refund can reenter the host.
 
@@ -600,10 +601,12 @@ The entire compiled capacity is admitted before binding, including for mirrored
 functions; it can remain idle in this cache after the call. Idle retention and
 earlier capacity admission can reject tight shared allowances sooner. No workspace crosses
 executions or retains a prior token or guest argument.
-The same cache policy separately retains one private word-range buffer per
-execution. Active range loans survive idle-cache shutdown; all backing capacity
-remains charged, including oversized reuse. This additional capacity can reject
-a tighter shared allowance earlier.
+The same cache policy separately retains one word-range buffer per execution,
+shared by larger ordinary splits and private cased-word iteration. Growth admits
+the replacement while the previous buffer remains funded. Active loans survive
+idle-cache shutdown; all backing capacity remains charged, including oversized
+reuse. Private iteration starts with a small buffer even for empty input. Minimum
+capacity and idle retention can reject a tighter shared allowance earlier.
 Each call opcode prepares the evaluated function and receiver at the instruction.
 Native borrowed/inline binding and the ordinary deferred prefix remain shared by
 both APIs. Completed bodies publish directly after bound argument, workspace and
@@ -880,8 +883,9 @@ output and final list capacity together. It fills and adopts the final element
 array, as do fixed-count executable list displays, without an intermediate list
 copy or per-element growth. Reverse splitting fills that same array in final order.
 An unchanged whole string may retain its existing owner; a different output owner
-receives independent storage. Larger range scratch is admitted separately and
-refunded after materialization; result strings and aliases keep their batch owner.
+receives independent storage. Larger range inventories borrow admitted execution
+buffers and return them after materialization. Idle capacity stays charged until
+execution cleanup; result strings and aliases independently keep their batch owner.
 This can reject earlier than incremental fragment admission. Scans and bounded
 copies observe cancellation; an individual CLR allocation cannot be interrupted.
 

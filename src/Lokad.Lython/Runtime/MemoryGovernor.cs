@@ -22,7 +22,7 @@ internal sealed class MemoryGovernor
     internal void ReturnFunctionWorkspace(object[] values, int usedLength)
         => _functionWorkspace.Return(this, values, usedLength);
 
-    internal (int Start, int End, int Capacity)[] RentWordRanges(int capacity, LythonSourceSpan span)
+    internal (int Start, int End, int Capacity)[] RentWordRanges(int capacity, LythonSourceSpan? span)
         => _wordRanges.Rent(this, capacity, span);
 
     internal void ReturnWordRanges((int Start, int End, int Capacity)[] values, int usedLength)
@@ -41,7 +41,7 @@ internal sealed class MemoryGovernor
         private T[]? _idle;
         private bool _ended;
 
-        internal T[] Rent(MemoryGovernor governor, int capacity, LythonSourceSpan span)
+        internal T[] Rent(MemoryGovernor governor, int capacity, LythonSourceSpan? span)
         {
             governor.ThrowIfAdmissionFailed();
             if (capacity == 0) return [];

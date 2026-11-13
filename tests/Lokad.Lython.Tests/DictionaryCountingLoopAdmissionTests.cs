@@ -197,11 +197,10 @@ public sealed class DictionaryCountingLoopAdmissionTests
                 hook.AfterGrowth = null;
                 // A nested loan has returned a larger idle buffer while the
                 // native source is still active. Its return must now refund.
-                var spare = context.MemoryGovernor.RentWordRanges(4, span);
-                context.MemoryGovernor.ReturnWordRanges(spare, 4);
+                var spare = context.MemoryGovernor.RentWordRanges(16, span);
+                context.MemoryGovernor.ReturnWordRanges(spare, 0);
                 hook.AfterShrink = refunded =>
                 {
-                    if (refunded != MemoryGovernor.WorkspaceBytes(3)) return;
                     hook.AfterShrink = null;
                     Assert.True(context.CurrentExecutableFrame!.TryReadExecutableLocal("word", out var word));
                     Assert.Equal("echo", Assert.IsType<PyString>(word).AsString());

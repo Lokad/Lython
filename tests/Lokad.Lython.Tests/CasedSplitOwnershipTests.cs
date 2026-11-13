@@ -7,6 +7,49 @@ namespace Lokad.Lython.Tests;
 
 public sealed class CasedSplitOwnershipTests
 {
+    [Theory]
+    [InlineData(false, false), InlineData(true, false)]
+    [InlineData(false, true), InlineData(true, true)]
+    public void InterruptedRangeGrowthKeepsInputAndReturnsOwnedCapacity(bool upper, bool cancel)
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var owner = budget.CreateScope())
+        using (var cancellation = new CancellationTokenSource())
+        {
+            var hook = new AdmissionHookMemoryBudget(owner);
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new()
+            { MemoryBudget = hook, CancellationToken = cancellation.Token });
+            var span = new LythonSourceSpan(0, 1, 1, 1);
+            var text = string.Join(' ', Enumerable.Repeat("Αß", 65));
+            var input = PyString.FromString(text, context.MemoryGovernor, span);
+            var baseline = budget.ReservedBytes;
+            var reached = false;
+            hook.RefuseGrowth = bytes =>
+            {
+                if (bytes < MemoryGovernor.WorkspaceBytes(32)) return false;
+                reached = true;
+                return !cancel;
+            };
+            hook.AfterGrowth = bytes =>
+            {
+                if (bytes >= MemoryGovernor.WorkspaceBytes(32)) cancellation.Cancel();
+            };
+            var error = Assert.Throws<LythonRuntimeException>(() =>
+                PyStringOps.PrepareCasedWhitespaceIteration(input, upper, context, span));
+            Assert.True(reached);
+            Assert.Equal(cancel ? LythonFailureReason.Cancelled : LythonFailureReason.SharedMemoryAllowance,
+                error.Attribution?.Reason);
+            if (!cancel) Assert.Same(error, context.MemoryGovernor.AdmissionFailure);
+            Assert.Equal(text, input.AsString());
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            Assert.True(budget.ReservedBytes > baseline); // returned inventory remains owned
+            context.State.CloseResources();
+            Assert.Equal(baseline, budget.ReservedBytes);
+            Assert.Equal(text, input.AsString());
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Fact]
     public void CancelledHelperReturnRelinquishesItsPreparedRangeLoan()
     {
@@ -60,7 +103,8 @@ public sealed class CasedSplitOwnershipTests
         {
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = owner });
             var span = new LythonSourceSpan(0, 1, 1, 1);
-            var input = PyString.FromString("A ß C D E F G H I J K", context.MemoryGovernor, span);
+            var input = PyString.FromString(string.Join(' ', Enumerable.Repeat("A ß C D E F G H I J K", 7)),
+                context.MemoryGovernor, span);
             using var first = PyStringOps.PrepareCasedWhitespaceIteration(input, true, context, span);
             var beforeSecond = budget.ReservedBytes;
             using var second = PyStringOps.PrepareCasedWhitespaceIteration(input, true, context, span);

@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Construct split-range inventories in existing execution-owned buffers, removing
+  separate growing scratch and the final private-cursor copy. Retain admission for
+  replacement overlap, cancellation and active loans. Idle capacity stays charged
+  until execution cleanup; tight allowances can refuse earlier.
+
 - Execute small helpers over the ordinary final slots and instruction positions,
   removing the separate native expression graph, whole-body proof and recursive
   evaluator. Reuse local values and construct normal Python collection results.
