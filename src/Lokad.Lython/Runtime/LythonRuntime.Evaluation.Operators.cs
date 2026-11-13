@@ -262,7 +262,9 @@ internal sealed partial class LythonRuntime
 
         try
         {
-            return OwnHeapInteger(PyNumberOps.Subtract(lhs, rhs), context.MemoryGovernor, span);
+            return !lhs.IsFloat && !rhs.IsFloat
+                ? EvaluateIntegerBinary(BinaryOperatorSyntax.Subtract, lhs.Integer, rhs.Integer, context, span)
+                : PyNumberOps.ToDoubleChecked(lhs) - PyNumberOps.ToDoubleChecked(rhs);
         }
         catch (OverflowException ex)
         {
@@ -367,7 +369,9 @@ internal sealed partial class LythonRuntime
 
         try
         {
-            return OwnHeapInteger(PyNumberOps.Multiply(lhs, rhs), context.MemoryGovernor, span);
+            return !lhs.IsFloat && !rhs.IsFloat
+                ? EvaluateIntegerBinary(BinaryOperatorSyntax.Multiply, lhs.Integer, rhs.Integer, context, span)
+                : PyNumberOps.ToDoubleChecked(lhs) * PyNumberOps.ToDoubleChecked(rhs);
         }
         catch (OverflowException ex)
         {
@@ -480,7 +484,9 @@ internal sealed partial class LythonRuntime
 
         try
         {
-            return OwnHeapInteger(PyNumberOps.FloorDivide(lhs, rhs), context.MemoryGovernor, span);
+            return !lhs.IsFloat && !rhs.IsFloat
+                ? EvaluateIntegerBinary(BinaryOperatorSyntax.FloorDivide, lhs.Integer, rhs.Integer, context, span)
+                : PyNumberOps.FloatDivMod(PyNumberOps.ToDoubleChecked(lhs), PyNumberOps.ToDoubleChecked(rhs)).Quotient;
         }
         catch (DivideByZeroException)
         {
@@ -520,7 +526,9 @@ internal sealed partial class LythonRuntime
 
         try
         {
-            return OwnHeapInteger(PyNumberOps.Modulo(lhs, rhs), context.MemoryGovernor, span);
+            return !lhs.IsFloat && !rhs.IsFloat
+                ? EvaluateIntegerBinary(BinaryOperatorSyntax.Modulo, lhs.Integer, rhs.Integer, context, span)
+                : PyNumberOps.FloatDivMod(PyNumberOps.ToDoubleChecked(lhs), PyNumberOps.ToDoubleChecked(rhs)).Remainder;
         }
         catch (DivideByZeroException)
         {

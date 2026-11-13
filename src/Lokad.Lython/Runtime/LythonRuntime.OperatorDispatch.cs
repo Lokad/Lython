@@ -44,6 +44,11 @@ internal sealed partial class LythonRuntime
         if (op == BinaryOperatorSyntax.Add && left is BigInteger leftInteger && right is BigInteger rightInteger)
             return AddExactIntegers(leftInteger, rightInteger, context.MemoryGovernor, span);
 
+        if (op is BinaryOperatorSyntax.Subtract or BinaryOperatorSyntax.Multiply
+            or BinaryOperatorSyntax.FloorDivide or BinaryOperatorSyntax.Modulo
+            && left is BigInteger exactLeft && right is BigInteger exactRight)
+            return EvaluateIntegerBinary(op, exactLeft, exactRight, context, span);
+
         if (TryEvaluateScalarComparison(op, left, right, context, span, out var scalarComparison))
             return RuntimeValue(scalarComparison);
 
@@ -77,6 +82,11 @@ internal sealed partial class LythonRuntime
     {
         if (op == BinaryOperatorSyntax.Add && left is BigInteger leftInteger && right is BigInteger rightInteger)
             return AddExactIntegers(leftInteger, rightInteger, context.MemoryGovernor, span);
+
+        if (op is BinaryOperatorSyntax.Subtract or BinaryOperatorSyntax.Multiply
+            or BinaryOperatorSyntax.FloorDivide or BinaryOperatorSyntax.Modulo
+            && left is BigInteger exactLeft && right is BigInteger exactRight)
+            return EvaluateIntegerBinary(op, exactLeft, exactRight, context, span);
 
         if (TryEvaluateScalarComparison(op, left, right, context, span, out var scalarComparison))
             return RuntimeValue(scalarComparison);

@@ -1082,6 +1082,15 @@ cleanup cannot return another owner's funding. If admission ends a temporary
 owner, the pending operation stops and returns its unused growth before allocating;
 any first memory refusal remains the command's failure.
 
+Integer subtraction, multiplication, floor division and remainder admit major
+magnitudes and conservative working overlap before arithmetic. `math.prod`,
+`math.sumprod` and Counter subtraction share that ownership path. Result funding
+survives scratch cleanup; bounded scalars use existing minor-storage headroom.
+Large division can be refused even when its remainder is small because computing
+it needs working storage. Cancellation is checked after admission and arithmetic;
+an individual managed BigInteger operation cannot be interrupted internally and
+provides no hard execution deadline.
+
 `enumerate` admits a wide next-index magnitude before incrementing it. Its tuples
 fund their exposed old indices while the iterator retains the funded next index.
 Source pulling precedes index construction; exhausted pulls need no unused

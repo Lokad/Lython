@@ -2,6 +2,12 @@
 
 ## 0.11.0 - Unreleased
 
+- Consolidate integer subtraction, multiplication, floor division and remainder
+  admission before major allocation, including math accumulators and Counter
+  subtraction. Keep results funded after scratch cleanup and observe cancellation
+  after host admission. Compute Python remainder without full quotient/product
+  intermediates; preserve signed arithmetic and dynamic protocols.
+
 - Keep composed executable helper calls in their final slots when callees complete
   directly, avoiding eager caller frames and workspace transport. Transfer prepared
   descendants once for dynamic operations and actual I/O; preserve cancellation,

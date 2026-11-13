@@ -135,12 +135,6 @@ internal static class PyNumberOps
     public static object Add(PyNumber lhs, PyNumber rhs)
         => !lhs.IsFloat && !rhs.IsFloat ? lhs.Integer + rhs.Integer : ToDoubleChecked(lhs) + ToDoubleChecked(rhs);
 
-    public static object Subtract(PyNumber lhs, PyNumber rhs)
-        => !lhs.IsFloat && !rhs.IsFloat ? lhs.Integer - rhs.Integer : ToDoubleChecked(lhs) - ToDoubleChecked(rhs);
-
-    public static object Multiply(PyNumber lhs, PyNumber rhs)
-        => !lhs.IsFloat && !rhs.IsFloat ? lhs.Integer * rhs.Integer : ToDoubleChecked(lhs) * ToDoubleChecked(rhs);
-
     public static object TrueDivide(PyNumber lhs, PyNumber rhs, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         if (!lhs.IsFloat && !rhs.IsFloat)
@@ -196,28 +190,6 @@ internal static class PyNumberOps
         var result = Math.ScaleB((double)(ulong)quotient, -shift);
         if (double.IsInfinity(result)) throw new OverflowException("integer division result too large for a float");
         return negative ? -result : result;
-    }
-
-    public static object FloorDivide(PyNumber lhs, PyNumber rhs)
-    {
-        if (!lhs.IsFloat && !rhs.IsFloat)
-        {
-            if (rhs.IsZero) throw new DivideByZeroException();
-            return FloorDivideIntegers(lhs.Integer, rhs.Integer);
-        }
-
-        return FloatDivMod(ToDoubleChecked(lhs), ToDoubleChecked(rhs)).Quotient;
-    }
-
-    public static object Modulo(PyNumber lhs, PyNumber rhs)
-    {
-        if (!lhs.IsFloat && !rhs.IsFloat)
-        {
-            if (rhs.IsZero) throw new DivideByZeroException();
-            return lhs.Integer - FloorDivideIntegers(lhs.Integer, rhs.Integer) * rhs.Integer;
-        }
-
-        return FloatDivMod(ToDoubleChecked(lhs), ToDoubleChecked(rhs)).Remainder;
     }
 
     // Adapted from CPython's _float_div_mod (PSF license; see third-party notices).
@@ -454,7 +426,15 @@ internal static class PyNumberOps
         return number.Integer.GetHashCode();
     }
 
-    private static BigInteger FloorDivideIntegers(BigInteger left, BigInteger right)
+    internal static BigInteger ModuloIntegers(BigInteger left, BigInteger right)
+    {
+        // BCL remainder has the dividend's sign; Python uses the divisor's.
+        // Avoid constructing the full quotient and product to obtain it.
+        var remainder = left % right;
+        return !remainder.IsZero && remainder.Sign != right.Sign ? remainder + right : remainder;
+    }
+
+    internal static BigInteger FloorDivideIntegers(BigInteger left, BigInteger right)
     {
         var quotient = BigInteger.DivRem(left, right, out var remainder);
         if (remainder != BigInteger.Zero && ((remainder > BigInteger.Zero) != (right > BigInteger.Zero)))

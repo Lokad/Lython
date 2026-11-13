@@ -681,18 +681,9 @@ internal sealed partial class LythonRuntime
 
             try
             {
-                // Keep the granted capacity alive through computation and transfer
-                // the retained magnitude from it. Inline scalars use the existing
-                // minor-storage headroom, without per-item allowance traffic.
-                var bits = left.IsFloat || right.IsFloat ? 0 : RuntimeMemoryEstimates.SaturatingAdd(
-                    RuntimeMemoryEstimates.GetMagnitudeBitLength(left.Integer),
-                    RuntimeMemoryEstimates.GetMagnitudeBitLength(right.Integer));
-                using var admission = bits <= 64 ? null : GuardIntegerResultBytes(
-                    RuntimeMemoryEstimates.SaturatingMultiply(3,
-                        RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(bits)),
-                    context.MemoryGovernor, span);
-                if (admission is not null) context.CheckExecution(span);
-                return OwnFreshInteger(PyNumberOps.Multiply(left, right), context.MemoryGovernor, span, admission);
+                return !left.IsFloat && !right.IsFloat
+                    ? EvaluateIntegerBinary(Frontend.BinaryOperatorSyntax.Multiply, left.Integer, right.Integer, context, span)
+                    : PyNumberOps.ToDoubleChecked(left) * PyNumberOps.ToDoubleChecked(right);
             }
             catch (OverflowException ex)
             {

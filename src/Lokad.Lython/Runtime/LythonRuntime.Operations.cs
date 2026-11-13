@@ -632,7 +632,9 @@ internal sealed partial class LythonRuntime
 
         PyNumberOps.TryAsNumber(left, out var lhs);
         PyNumberOps.TryAsNumber(right, out var rhs);
-        return PyNumberOps.Subtract(lhs, rhs);
+        return !lhs.IsFloat && !rhs.IsFloat
+            ? EvaluateIntegerBinary(BinaryOperatorSyntax.Subtract, lhs.Integer, rhs.Integer, context, span, governor)
+            : PyNumberOps.ToDoubleChecked(lhs) - PyNumberOps.ToDoubleChecked(rhs);
     }
 
     private static int CompareCounterCounts(object left, object right, LythonSourceSpan span, string? operation = null)

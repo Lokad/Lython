@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Pre-admitted integer arithmetic](results/2026-11-13-integer-admission/README.md)
+consolidates four integer operations and math/Counter consumers, removes modulo
+quotient/product intermediates and fixes demonstrated allocation before refusal.
+Frozen3a2c1cf6 improves complete invoice warm7.2–8.2% and fresh7.2–9.3% against
+qualified2e74ef4f, supporting wider CPU; allocation is flat. Text/JSON controls cross
+zero.115internal/1049public focused Release checks and eight scripts/both APIs pass.
+All original failed/adverse conditions survive; full delivery is pending.
+
 [Managed continuation call handoff](results/2026-11-13-native-call-stack-handoff/README.md)
 corrects a demonstrated R303 stack overflow. A controlled owned256KiB continuation
 returns structured failure with qualified6b468bf1 but crashes2f34a48f with0xC00000FD.
@@ -25,7 +33,8 @@ Initial628ab680 establishes warm−19.51%/fresh−18.97% allocation, separately 
 All original/adverse controls, failed iteration conditions and raw sources survive.
 Retained2f34a48f also confirms warm−19.51%allocation,120internal/193public.NET11
 checks and eight warm goldens/balances/cleanup. Desktop controls move up27.88%; no
-desktop CPU claim. Full delivery and current external ratios remain pending.
+desktop CPU claim. Original2f fails full qualification; corrected2e is fully
+qualified, with its external/source-pair checkpoint linked above.
 
 [Invoice helper-call source gate](results/2026-11-13-invoice-cpu-source-gate/README.md)
 captures1,608samples/8.09guestCPU seconds on qualifiedfc2531b8/6b468bf1 with the

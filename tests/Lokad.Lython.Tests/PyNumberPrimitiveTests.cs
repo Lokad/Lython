@@ -37,11 +37,11 @@ public sealed class PyNumberPrimitiveTests
 
         Assert.Equal(new BigInteger(10), PyNumberOps.Add(seven, three));
         Assert.Equal(9.5, PyNumberOps.Add(seven, twoPointFive));
-        Assert.Equal(new BigInteger(4), PyNumberOps.Subtract(seven, three));
-        Assert.Equal(new BigInteger(21), PyNumberOps.Multiply(seven, three));
+        Assert.Equal(new BigInteger(4), Runtime.LythonRuntime.EvaluateIntegerBinary(Frontend.BinaryOperatorSyntax.Subtract, seven.Integer, three.Integer, context, new(0, 1, 1, 1)));
+        Assert.Equal(new BigInteger(21), Runtime.LythonRuntime.EvaluateIntegerBinary(Frontend.BinaryOperatorSyntax.Multiply, seven.Integer, three.Integer, context, new(0, 1, 1, 1)));
         Assert.Equal(2.8, (double)PyNumberOps.TrueDivide(seven, twoPointFive, context, new(0, 1, 1, 1)), 10);
-        Assert.Equal(new BigInteger(2), PyNumberOps.FloorDivide(seven, three));
-        Assert.Equal(new BigInteger(1), PyNumberOps.Modulo(seven, three));
+        Assert.Equal(new BigInteger(2), Runtime.LythonRuntime.EvaluateIntegerBinary(Frontend.BinaryOperatorSyntax.FloorDivide, seven.Integer, three.Integer, context, new(0, 1, 1, 1)));
+        Assert.Equal(new BigInteger(1), Runtime.LythonRuntime.EvaluateIntegerBinary(Frontend.BinaryOperatorSyntax.Modulo, seven.Integer, three.Integer, context, new(0, 1, 1, 1)));
         Assert.Equal(new BigInteger(343), PyNumberOps.Power(seven, three));
     }
 

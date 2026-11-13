@@ -614,14 +614,16 @@ internal sealed partial class LythonRuntime
                 object product;
                 try
                 {
-                    product = PyNumberOps.Multiply(left, right);
+                    product = !left.IsFloat && !right.IsFloat
+                        ? EvaluateIntegerBinary(Frontend.BinaryOperatorSyntax.Multiply, left.Integer, right.Integer, context, span)
+                        : PyNumberOps.ToDoubleChecked(left) * PyNumberOps.ToDoubleChecked(right);
                 }
                 catch (OverflowException ex)
                 {
                     throw new LythonRuntimeException("OverflowError", ex.Message, span);
                 }
 
-                total = EvaluateAdd(total, OwnHeapInteger(product, context.MemoryGovernor, span), context, span);
+                total = EvaluateAdd(total, product, context, span);
                 pairs++;
                 context.CheckExecution(span);
             }
@@ -666,14 +668,16 @@ internal sealed partial class LythonRuntime
                 object product;
                 try
                 {
-                    product = PyNumberOps.Multiply(left, right);
+                    product = !left.IsFloat && !right.IsFloat
+                        ? EvaluateIntegerBinary(Frontend.BinaryOperatorSyntax.Multiply, left.Integer, right.Integer, context, span)
+                        : PyNumberOps.ToDoubleChecked(left) * PyNumberOps.ToDoubleChecked(right);
                 }
                 catch (OverflowException ex)
                 {
                     throw new LythonRuntimeException("OverflowError", ex.Message, span);
                 }
 
-                total = EvaluateAdd(total, OwnHeapInteger(product, context.MemoryGovernor, span), context, span);
+                total = EvaluateAdd(total, product, context, span);
                 pairs++;
                 context.CheckExecution(span);
             }

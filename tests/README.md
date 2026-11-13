@@ -17,6 +17,12 @@ invariants belong in the white-box suite.
 
 ## Test responsibilities
 
+[Integer arithmetic admission](Lokad.Lython.Tests/IntegerBinaryAdmissionTests.cs)
+checks refusal before major allocation, retained input/result funding and
+cancellation during host admission. Both execution APIs preserve signed floor and
+remainder identities, reflected operators, augmented evaluation order and math
+accumulators in the [public semantic checks](Lokad.Lython.PublicApi.Tests/IntegerBinarySemanticsTests.cs).
+
 [Builtin slot owners](Lokad.Lython.PublicApi.Tests/BuiltinSlotOwnerTests.cs) preserve
 original descriptor identity through class-body and later aliases, including
 staticmethod/classmethod/property wrappers. Python goldens, ordinary calls and
