@@ -16,8 +16,10 @@ aliases/defaults, target order, both APIs, genuine delayed I/O transfer, first
 refused admission/cancellation before caller writes, funded retained results and
 cleanup, plus existing isolated managed-stack continuation scenarios. Transitional
 NET10 checks also pass110/183, but span the883c-to8f source transition and are not a
-single-source qualification receipt. Full Windows/Ubuntu/original stress/installed
-Release package qualification is pending on the eventual committed source.
+single-source qualification receipt. Committed85c73469 is fully qualified on
+Windows/Ubuntu actual.NET11/10, original stress and installed Release consumers by
+[cached GREEN43411564505](delivery/README.md); all572frozen inputs match that head.
+This qualifies the final source without repeating the measurements.
 
 | Complete script / phase | Elapsed change | Wider process CPU change | Reference/candidate spread; max IQR |
 | --- | ---: | ---: | --- |

@@ -14,8 +14,9 @@ not repeated; small text debt explicitly retained. Final Windows allocation run
 stalls; targeted B670 on quiet VM completes15.062s using the existing driver with
 only its fixture-count guard relaxed. Allocation−6.408..−6.436%(rich−5.049..−5.052%),
 all goldens/balances/cleanup/identity/quiet/join/archive gates pass. Earlier failures
-and adverse phases preserved; full source-matched delivery pending, no universal
-CPU claim or new external ratio. Performance/independent regex continue.
+and adverse phases preserved. Committed85c73469 is source-matched and fully
+qualified by[cached GREEN43411564505](results/2026-11-13-native-tuple-return/final/delivery/README.md).
+No universal CPU claim or new external ratio. Performance/independent regex continue.
 
 [Direct caller tuple operands](results/2026-11-13-native-tuple-return/operands/README.md)
 883c removes caller scratch/shared buffer/duplicate publisher;110internal/181public
