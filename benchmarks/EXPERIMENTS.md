@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Frontend identifier source gate](results/2026-11-13-frontend-name-source-gate/README.md):
+six current sources on40d92aef/91d, valid public compilation and all shared balances
+return to baseline. Parser18–62KiB/full compilation86–243KiB; modeled duplicate
+identifier strings only0.41–0.95% of full allocation, with explicit model limits.
+No name cache, visitor merger, runtime prototype or CPU-share claim. Larger shared
+representation work requires substantive evidence; this is not a permanent veto.
+
 [Same-stream native integer intermediates retained](results/2026-11-13-native-integer-chains/README.md):
 91d removes16384unpublished boxes/524288B per4096invoice records without shadow
 slots or a new engine. Allocation−8.46..−8.48%(rich−6.55%); controlled invoice

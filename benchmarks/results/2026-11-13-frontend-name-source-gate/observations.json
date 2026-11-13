@@ -1,0 +1,90 @@
+{
+  "purpose": "R312 frontend source/allocation gate; token-based model is not measured name-allocation traffic or CPU; parser reuses token storage, full compile includes tokens/analyses/lowering/executable and owner cleanup; no production changes",
+  "coreSHA256": "91d0540d439109dd35f3246c4c6234a69a2bc2b698012c83859e9d425d14cc78",
+  "rows": [
+    {
+      "id": "scripts.file-search.large",
+      "sourceSHA256": "1671be99f720346fdb1e4a11da78150dbdd9a713704657edaf01ebfa47f60e24",
+      "sourceLength": 337,
+      "identifierOccurrences": 22,
+      "uniqueNormalizedSpellings": 11,
+      "modeledAllIdentifierStringBytes": 832,
+      "modeledDistinctIdentifierStringBytes": 432,
+      "modeledDuplicateStringBytes": 400,
+      "parserBytes": 18128,
+      "wholeCompileAndCleanupBytes": 86488,
+      "modelPercentOfCompile": 0.4624919063916381,
+      "returnedSharedAllowanceBytes": 0
+    },
+    {
+      "id": "scripts.text-summary-helpers.nonlocal-counter.large",
+      "sourceSHA256": "f1fa99235a7745393b8d71bf83e0d4c32ca469d22ed4481584f8814563c313da",
+      "sourceLength": 591,
+      "identifierOccurrences": 42,
+      "uniqueNormalizedSpellings": 19,
+      "modeledAllIdentifierStringBytes": 1600,
+      "modeledDistinctIdentifierStringBytes": 728,
+      "modeledDuplicateStringBytes": 872,
+      "parserBytes": 37040,
+      "wholeCompileAndCleanupBytes": 135288,
+      "modelPercentOfCompile": 0.644550884039974,
+      "returnedSharedAllowanceBytes": 0
+    },
+    {
+      "id": "scripts.report-render.large",
+      "sourceSHA256": "a6bca31bb615ee5998a7d16e994a7069877cdc2289e210d405d72dd5a6a756f8",
+      "sourceLength": 454,
+      "identifierOccurrences": 25,
+      "uniqueNormalizedSpellings": 13,
+      "modeledAllIdentifierStringBytes": 952,
+      "modeledDistinctIdentifierStringBytes": 488,
+      "modeledDuplicateStringBytes": 464,
+      "parserBytes": 37520,
+      "wholeCompileAndCleanupBytes": 112616,
+      "modelPercentOfCompile": 0.412019606450238,
+      "returnedSharedAllowanceBytes": 0
+    },
+    {
+      "id": "scripts.json-summary-helpers.large",
+      "sourceSHA256": "beea66dfa7ab6333419678181ea8a6d5a5b030eb01ac35b993bb6d801e0c29a7",
+      "sourceLength": 607,
+      "identifierOccurrences": 45,
+      "uniqueNormalizedSpellings": 23,
+      "modeledAllIdentifierStringBytes": 1736,
+      "modeledDistinctIdentifierStringBytes": 896,
+      "modeledDuplicateStringBytes": 840,
+      "parserBytes": 38568,
+      "wholeCompileAndCleanupBytes": 135752,
+      "modelPercentOfCompile": 0.6187754139902174,
+      "returnedSharedAllowanceBytes": 0
+    },
+    {
+      "id": "scripts.csv-invoice.large",
+      "sourceSHA256": "26e03969795a72457ecf6e18d06781ff93017731764b3bad714d93801daa2992",
+      "sourceLength": 1222,
+      "identifierOccurrences": 90,
+      "uniqueNormalizedSpellings": 30,
+      "modeledAllIdentifierStringBytes": 3504,
+      "modeledDistinctIdentifierStringBytes": 1208,
+      "modeledDuplicateStringBytes": 2296,
+      "parserBytes": 61952,
+      "wholeCompileAndCleanupBytes": 242888,
+      "modelPercentOfCompile": 0.9452916570600441,
+      "returnedSharedAllowanceBytes": 0
+    },
+    {
+      "id": "scripts.config-edit.source",
+      "sourceSHA256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+      "sourceLength": 357,
+      "identifierOccurrences": 26,
+      "uniqueNormalizedSpellings": 15,
+      "modeledAllIdentifierStringBytes": 1000,
+      "modeledDistinctIdentifierStringBytes": 584,
+      "modeledDuplicateStringBytes": 416,
+      "parserBytes": 43952,
+      "wholeCompileAndCleanupBytes": 100152,
+      "modelPercentOfCompile": 0.4153686396677051,
+      "returnedSharedAllowanceBytes": 0
+    }
+  ]
+}

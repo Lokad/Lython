@@ -1,0 +1,15 @@
+{
+  "runtimeCommit": "40d92aef19e7bb0ae43533f941cbb9373973eb58",
+  "coreSHA256": "91d0540d439109dd35f3246c4c6234a69a2bc2b698012c83859e9d425d14cc78",
+  "noProductionChanges": true,
+  "cpuShareUnmeasured": true,
+  "allSharedBalancesReturnToBaseline": true,
+  "sources": {
+    "src/Lokad.Lython/Frontend/Parser.Helpers.cs": "ebb2eb46661df2037773a563ff0655c94bd8ad313e7ac135f00c2d2897420f0e",
+    "src/Lokad.Lython/Frontend/TokenizedSource.cs": "1d31c2a2e06363449f3a2898fa884ffd6952bdf100375b0fa5f52020d9428e1d",
+    "src/Lokad.Lython/Frontend/StaticNameBindingDiagnostics.cs": "c940e000e85443f5346d33e6d4ad80ecde377524e119c959c54350153c640945",
+    "src/Lokad.Lython/Frontend/StaticAbstractInterpreter.Statements.cs": "4c2d8b7546404ebf9d9e61d776b4018b2bf90c688a8f8306c0d0437dce809045",
+    "src/Lokad.Lython/Frontend/AnnotationDiagnostics.cs": "0108b12b8acdc5147133fb29cccdd68e34194bb8d38c76d0d1e607c7d1f9c212"
+  },
+  "decision": "No identifier cache or flow-visitor merger. Token duplicate storage model is0.41..0.95% of full compilation allocation and omits repeated same-token lookups; not actual removable bytes or CPU. Distinct flow/directive/deferred annotation semantics remain. Future shared-representation work needs independent substantive evidence, not a permanent design veto."
+}
