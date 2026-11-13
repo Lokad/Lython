@@ -50,7 +50,8 @@ compiled-owner disposal. Fixture reset/staging and final cache teardown are outs
 Text/JSON cross zero: no gain or regression resolved. Keep every adverse original;
 no further retiming is needed for this retain decision. No external ratio is inferred
 by multiplying source-pair gains into older CPython results. Full Windows/Ubuntu,
-actual.NET11/10, original stress and installed Release package qualification is next.
+actual.NET11/10, original stress and installed Release package qualification is
+GREEN43384587266 for exactc5d05cff/3a2c1cf6. [Cached delivery](delivery/README.md).
 Publication remains postponed; this milestone does not complete the broader roadmap.
 
 [Computed rows](summary.json), [raw observations](observations.tgz),

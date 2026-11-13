@@ -648,6 +648,6 @@
   },
   "allocation": "Effectively flat; process diagnostics are not CPU evidence",
   "allEightScriptsBothExecutionApis": true,
-  "fullPlatformStressInstalledPackageQualification": "Pending",
+  "fullPlatformStressInstalledPackageQualification": "GREEN43384587266; exact c5d05cff/frozen3a2c1cf6 source qualified; cached delivery proof",
   "publicationHeld": true
 }
