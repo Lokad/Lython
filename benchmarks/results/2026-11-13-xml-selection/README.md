@@ -71,8 +71,10 @@ then fails one older slice test's process-global allocation observation
 test measures the asserted execution thread from host gate to refusal/completed
 render, retaining the128KiB bound, terminal attribution, ownership and final-zero
 assertions. Later diagnostic/async cleanup is outside this preflight measurement.
-16focused slice/staging cases pass on both targets. Full combined platform/stress/
-installed-consumer qualification is pending; publication is held.
+16focused slice/staging cases pass on both targets. Combined delivery passes
+[43506431648](delivery/README.md): both platforms/targets, original stress and
+installed consumers;577source inputs match. New traversal/clear work is outside
+this qualification; publication is held.
 
 [Sources/checks/goldens](source-checks.tar.xz), [allocation summary](allocation-summary.json),
 [original raw](b698/observations.tgz) and [confirmation raw](b699/observations.tgz)
