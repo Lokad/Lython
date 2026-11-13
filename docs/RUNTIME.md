@@ -50,6 +50,13 @@ including a tiny cache funded by the original metadata allowance when necessary.
 Factories write into reserved final capacity and publish only completed immutable
 values. Native data views remain available to cleanup after command refusal.
 
+Strict UTF8 decoding of bytes owned by the current execution can borrow their
+immutable capacity. `bytes.decode`, `str(bytes, encoding)`, JSON and XML use the
+same validated-window path; BOM slices need no second payload. The new text shell
+is admitted separately. Source capacity stays funded even after private input
+cleanup, conservatively until its owner ends. Other owners and codecs retain
+their existing independent funding and conversion behavior.
+
 Terminal JSON serialization adopts its completed UTF-8 buffer. The full backing
 capacity remains charged, including its unused tail; avoiding a final copy can
 reduce construction overlap while retaining more spare capacity. Reused

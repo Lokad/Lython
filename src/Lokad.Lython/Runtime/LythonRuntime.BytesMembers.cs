@@ -50,7 +50,7 @@ internal sealed partial class LythonRuntime
                     var errors = arguments.Length == 2
                         ? ParseTextErrors(arguments[1], "bytes.decode()", span)
                         : TextErrorMode.Strict;
-                    return DecodeText(bytes.Memory, encoding, context, span, errors, TextNewlineMode.PreserveUniversal);
+                    return DecodeText(bytes, encoding, context, span, errors, TextNewlineMode.PreserveUniversal);
                 }, BytesDecodeSignature),
                 "hex" => new RawBoundCallable((arguments, span, context) => HexEncodeAsync(bytes, arguments, span, context, false).GetAwaiter().GetResult(),
                     (arguments, span, context) => HexEncodeAsync(bytes, arguments, span, context, true)) { BoundName = "bytes.hex", BoundReceiver = bytes },

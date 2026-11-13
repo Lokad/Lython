@@ -286,6 +286,38 @@ internal sealed partial class LythonRuntime
         => (newline != TextNewlineMode.TranslateUniversal || !utf8.Contains((byte)'\r'))
             && System.Text.Unicode.Utf8.IsValid(utf8);
 
+    // Immutable guest bytes can lend already-funded storage to decoded text.
+    // Keep unrelated-owner adoption and transforming/error codecs unchanged.
+    internal static PyString DecodeText(PyBytes bytes, TextEncodingMode encoding, ExecutionContext context,
+        LythonSourceSpan span, TextErrorMode errors, TextNewlineMode newline)
+    {
+        if (errors != TextErrorMode.Strict || encoding is not (TextEncodingMode.Utf8 or TextEncodingMode.Utf8Bom)
+            || newline == TextNewlineMode.TranslateUniversal || !ReferenceEquals(bytes.OwnerMemoryGovernor, context.MemoryGovernor))
+            return DecodeText(bytes.Memory, encoding, context, span, errors, newline);
+        var offset = encoding == TextEncodingMode.Utf8Bom && bytes.Bytes.StartsWith("\uFEFF"u8) ? 3 : 0;
+        return DecodeUtf8Bytes(bytes, offset, context, span, newline);
+    }
+
+    // Validate the entire document before a hook or parser can observe it.
+    // Sharing retires only the new shell on rollback; source capacity stays funded.
+    private static PyString DecodeUtf8Bytes(PyBytes bytes, int offset, ExecutionContext context,
+        LythonSourceSpan span, TextNewlineMode newline)
+    {
+        var content = bytes.Bytes[offset..];
+        for (var start = 0; start < content.Length;)
+        {
+            context.CheckExecution(span);
+            var end = start + Math.Min(4096, content.Length - start);
+            if (end < content.Length)
+                while (end > start && (content[end] & 0xC0) == 0x80) end--;
+            if (end == start || !System.Text.Unicode.Utf8.IsValid(content[start..end]))
+                return DecodeUtf8WithErrors(content, context.MemoryGovernor, span, TextErrorMode.Strict, newline, context.State);
+            start = end;
+        }
+        context.CheckExecution(span);
+        return bytes.CopyOrBorrowUtf8Text(offset, context, span);
+    }
+
     private static PyString DecodeText(ReadOnlyMemory<byte> payload, TextEncodingMode encoding, ExecutionContext context, LythonSourceSpan? span)
         => DecodeText(payload, encoding, context, span, TextErrorMode.Strict, TextNewlineMode.TranslateUniversal);
 

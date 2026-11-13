@@ -1,6 +1,5 @@
 using System.Buffers.Binary;
 using System.Text;
-using System.Text.Unicode;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
@@ -50,22 +49,7 @@ internal sealed partial class LythonRuntime
             if (encoding is JsonEncoding.Utf32Little or JsonEncoding.Utf32Big)
                 return DecodeJsonUtf32(bytes.Bytes, offset, encoding == JsonEncoding.Utf32Big, context, span);
 
-            // Validate the whole decoded document before any hook/constructor,
-            // with bounded chunks that never split a UTF-8 scalar. Malformed
-            // input uses the existing codec's Python error object and positions.
-            for (var start = 0; start < content.Length;)
-            {
-                context.CheckExecution(span);
-                var end = start + Math.Min(4096, content.Length - start);
-                if (end < content.Length)
-                    while ((content.Span[end] & 0xC0) == 0x80 && end > start) end--;
-                if (end == start || !Utf8.IsValid(content.Span[start..end]))
-                    return DecodeUtf8WithErrors(content.Span, context.MemoryGovernor, span,
-                        TextErrorMode.Strict, TextNewlineMode.PreserveLineFeed, context.State);
-                start = end;
-            }
-            context.CheckExecution(span);
-            return bytes.CopyOrBorrowUtf8Text(offset, context, span);
+            return DecodeUtf8Bytes(bytes, offset, context, span, TextNewlineMode.PreserveLineFeed);
         }
 
         private enum JsonEncoding { Utf8, Utf16Little, Utf16Big, Utf32Little, Utf32Big }

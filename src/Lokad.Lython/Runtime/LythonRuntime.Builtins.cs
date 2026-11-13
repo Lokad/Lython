@@ -241,7 +241,7 @@ internal sealed partial class LythonRuntime
         if (bytes.Length == 0) return PyString.Empty;
         var encoding = ParseTextEncoding(arguments[1], "str()", span);
         var errors = ParseTextErrors(arguments[2], "str()", span);
-        return DecodeText(bytes.Memory, encoding, context, span, errors, TextNewlineMode.PreserveUniversal);
+        return DecodeText(bytes, encoding, context, span, errors, TextNewlineMode.PreserveUniversal);
     }
 
     private static ValueTask<object> ReprAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)

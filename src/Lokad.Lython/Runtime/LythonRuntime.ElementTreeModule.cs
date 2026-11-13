@@ -279,6 +279,7 @@ internal sealed partial class LythonRuntime
         {
             var bytes = input.Memory;
             var data = bytes.Span;
+            var utf8Offset = 0;
             TextEncodingMode mode;
             if (data.StartsWith(new byte[] { 0xff, 0xfe, 0, 0 }) ||
                 data.StartsWith(new byte[] { 0, 0, 0xfe, 0xff }) ||
@@ -295,6 +296,7 @@ internal sealed partial class LythonRuntime
             {
                 mode = TextEncodingMode.Utf8Bom;
                 var offset = data.StartsWith(new byte[] { 0xef, 0xbb, 0xbf }) ? 3 : 0;
+                utf8Offset = offset;
                 bytes = bytes[offset..];
                 if (data[offset..].StartsWith("<?xml"u8))
                 {
@@ -310,7 +312,10 @@ internal sealed partial class LythonRuntime
                 if (offset != 0 && mode == TextEncodingMode.Utf8Bom) mode = TextEncodingMode.Utf8;
             }
             context.CheckExecution(span);
-            var decoded = graph.Decode(bytes, mode);
+            var decoded = mode is TextEncodingMode.Utf8 or TextEncodingMode.Utf8Bom
+                && ReferenceEquals(input.OwnerMemoryGovernor, context.MemoryGovernor)
+                ? graph.Create(() => DecodeUtf8Bytes(input, utf8Offset, context, span, TextNewlineMode.PreserveLineFeed))
+                : graph.Decode(bytes, mode);
             if (IsUtf16Encoding(mode) && DeclaredEncoding(decoded.AsString().TrimStart('\ufeff')) is { } declared)
             {
                 var declarationMode = DeclarationEncoding(declared, span);

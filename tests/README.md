@@ -15,6 +15,10 @@ depth-based working storage and refusal before clear mutates the tree.
 [Attribute lookup](Lokad.Lython.PublicApi.Tests/XmlAttributeLookupTests.cs) checks
 Python key protocols, defaults/errors and retained maps across real I/O,
 cancellation and terminal admission refusal.
+[UTF8 byte ownership](Lokad.Lython.Tests/Utf8ByteDecodeOwnershipTests.cs) covers
+single-payload funding, independent owners, BOM windows, publication refusal and
+scalar boundaries. [Public cases](Lokad.Lython.PublicApi.Tests/Utf8ByteDecodeTests.cs)
+retain decoded values through input withdrawal, actual I/O and cancellation.
 
 ## Assembly boundaries
 

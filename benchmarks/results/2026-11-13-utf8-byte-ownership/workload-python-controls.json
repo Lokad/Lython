@@ -1,0 +1,23 @@
+{
+  "reference": "CPython3.13.2",
+  "checks": [
+    {
+      "case": "scripts.xml-settings.bytes.large",
+      "sourceSHA256": "96fb181689e074e1daa51230a2eb50b57f740489c909d7800111f1f9aad245ce",
+      "fixtureSHA256": "19e812ecd19a5a699b41e311fcb74fc2fbaea903c63656a469c58b9efdf5ab04",
+      "inputBytes": 38496,
+      "output": "512 16128\n",
+      "exactFilesAndUnchangedInput": true
+    },
+    {
+      "case": "scripts.xml-settings.decode.large",
+      "sourceSHA256": "edb3f48ead7d61e99d27ae92708d2eebdd8d8bec6f5e8ea05af8b6201141b2ad",
+      "fixtureSHA256": "19e812ecd19a5a699b41e311fcb74fc2fbaea903c63656a469c58b9efdf5ab04",
+      "inputBytes": 38496,
+      "output": "512 16128\n",
+      "exactFilesAndUnchangedInput": true
+    }
+  ],
+  "unchangedControl": "scripts.xml-settings.large",
+  "timingNotMeasured": true
+}

@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Share already-funded immutable UTF8 bytes with strict decoded text and XML
+  input, reusing JSON's validated-window path. Avoid duplicate payload charges
+  and BOM-slice copies while retaining other codec and ownership behavior.
+
 - Make XML attribute lookup honor Python key hashing/equality through the shared
   dictionary operations, including genuinely asynchronous hooks. Retain the bound
   attribute map through replacement, cancellation and awaited cleanup.

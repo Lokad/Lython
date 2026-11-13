@@ -7397,3 +7397,18 @@ Release11/10; seven strengthened map-withdrawal/I/O/cancellation/refusal cases
 repass each. Three isolated CPython controls agree. No CPU/allocation claim;
 batch full delivery with the next runtime milestone. Regex dev83 source API
 check still finds the three gaps, without pin promotion/repeated qualification.
+
+## R334 — shared strict UTF8 byte ownership
+
+[Retained source pair](results/2026-11-13-utf8-byte-ownership/README.md) removes
+duplicate same-owner capacity funding and BOM-slice copies with the existing
+window mechanism. JSON's duplicate validation loop disappears. The initial
+whole-array physical-copy hypothesis is corrected before editing. Other owners,
+codecs and error modes retain their paths; no new ownership infrastructure.
+60distinct internal/218public focused cases pass per actual11/10. Complete binary
+XML/report allocation falls1.87–1.88%; text control flat. B705four jobs finish
+188.411s/all gates: automatic binary XML warm is1.32–2.35%slower with supporting
+wider CPU; explicit warm mixed and fresh has small cost. Retain consolidation
+with explicit CPU debt, no speedup/tail claim or unchanged retiming. All users
+join, fixtures unmount and persistent archive SHA verifies; no evidence retirement
+or floor change. Batch full R333/R334 delivery next; broader objective stays open.
