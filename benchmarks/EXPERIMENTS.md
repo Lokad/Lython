@@ -11,8 +11,8 @@ fixes reproduced unfunded/late-admitted bytes output, shares bounded copying and
 removes tuple's duplicate late admission. Final93a6d134 passes192internal/339public
 focused Release checks and CPython count semantics. Initial6f artifact/seven-script
 diagnostics pass both APIs with flat allocation; moving/adverse desktop clocks
-remain diagnostic. Incorrect initial oversized-count expectations survive; full
-delivery is pending and the broader performance objective remains open.
+remain diagnostic. Incorrect initial oversized-count expectations survive; full delivery is
+GREEN43390871843 for14dd45b7/93a6d134. The broader performance objective remains open.
 
 [Captured-text CPU source gate](results/2026-11-13-captured-cpu-source-gate/README.md)
 records1502guest samples on committedc5d05cff/3a2c1cf6. Compiler/source checks rule

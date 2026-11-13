@@ -643,6 +643,6 @@
   },
   "initialDiagnosticCore": "6f3ed1d38bb423ea6ec00ec6fbefabf58592d91cebd1e0f61775fb37e9dbe501",
   "independentCpython": "3.13.2 semantic/artifact goldens only; no external timing",
-  "fullPlatformStressInstalledPackageQualification": "Pending; do not reuse earlier3a source qualification",
+  "fullPlatformStressInstalledPackageQualification": "GREEN43390871843; exact14dd45b7/93a6d134; cached delivery source proof",
   "publicationHeld": true
 }

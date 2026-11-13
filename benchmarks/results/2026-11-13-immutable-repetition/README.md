@@ -2,8 +2,8 @@
 
 R307 retains final frozen **93a6d134** against qualified **c5d05cff/3a2c1cf6**.
 All572production inputs and measured sources/binaries are preserved. Publication
-remains postponed. Full platform/stress/installed-package qualification is next;
-the earlier3a GREEN does not qualify this source.
+remains postponed. Full platform/stress/installed-package qualification is now
+GREEN43390871843 for exact14dd45b7/93a6d134. [Cached delivery](delivery/README.md).
 
 A direct frozen3a probe repeats one byte1048576times. Unowned input returns a1MiB
 result with no reservation or owner; owned input allocates1048680bytes before
