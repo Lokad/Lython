@@ -24,8 +24,8 @@ public sealed class NativeTupleReturnTests
                 var baseline = budget.ReservedBytes;
                 var call = Assert.Single(Compile("a,b=pair(left,right)").CallSites);
                 object[] returned = new object[2];
-                Assert.True(function.TryStartNativeCall(call, [left, right], null, context, Span,
-                    false, true, returned, out var unpacked, out _, out var frame));
+                function.StartNativeCall(call, [left, right], null, context, Span,
+                    false, true, returned, out var unpacked, out _, out var frame);
                 Assert.True(unpacked);
                 Assert.Null(frame);
                 Assert.Same(left, returned[0]);
@@ -64,7 +64,7 @@ public sealed class NativeTupleReturnTests
                 var baseline = budget.ReservedBytes;
                 if (cancel) gate.AfterGrowth = _ => cancellation.Cancel();
                 else gate.RefuseGrowth = _ => true;
-                var error = Assert.Throws<LythonRuntimeException>(() => function.TryStartNativeCall(call,
+                var error = Assert.Throws<LythonRuntimeException>(() => function.StartNativeCall(call,
                     [left, right], null, context, Span, false, true, returned, out _, out _, out _));
                 Assert.Equal(cancel ? LythonFailureReason.Cancelled : LythonFailureReason.SharedMemoryAllowance,
                     error.Attribution?.Reason);

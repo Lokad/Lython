@@ -37,8 +37,8 @@ public sealed class FormattedStringExecutableTests
             Assert.True(function.CodeObject.CanInlineInstructions);
             for (var pass = 0; pass < 2; pass++)
             {
-                Assert.True(function.TryStartNativeCall(call, [record], null, context, span, false,
-                    borrow: false, default, out _, out var value, out var frame));
+                function.StartNativeCall(call, [record], null, context, span, false,
+                    borrow: false, default, out _, out var value, out var frame);
                 Assert.Null(frame);
                 var text = Assert.IsType<PyString>(value);
                 Assert.Equal(expected, text.AsString());

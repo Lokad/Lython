@@ -29,7 +29,7 @@ gates. Invoice warm is1.27–1.31×CPython; compilation1.08–1.09× and fresh1.
 Captured text warm1.65–1.75× and file search with a keyword-only helper default
 1.75–1.82× retain material gaps and
 moving Lython controls(4.47%/3.21%). JSON warm0.82–0.86× also has moving controls.
-These observations include no later integer prototype and attribute no change
+These observations include no later integer-accumulation or call-entry change and attribute no change
 against earlier collections. [Exact sources, controls and boundaries](../benchmarks/results/2026-11-13-native-return-cpython-checkpoint/README.md).
 The[previous633/2e observations](../benchmarks/results/2026-11-13-invoice-cpython-checkpoint/README.md)
 remain historical.
@@ -194,6 +194,12 @@ unqualified. The [previous guide](../benchmarks/results/2026-11-10-construction-
 preserves replaced measurements and their source-specific qualification.
 
 ## Improvements within Lython
+
+Native call entry on frozen485e008e removes redundant selection/decline branches
+and duplicate logical body admission. A controlled warm comparison against qualified
+40d92aef supports text0.6–5.9%/invoice1.1–3.4% lower elapsed with wider CPU support;
+search/JSON/report remain inconclusive. Full delivery is pending; no allocation
+claim or update to CPython ratios. [Exact sources and all controls](../benchmarks/results/2026-11-13-selected-native-call/README.md).
 
 Qualified `c5d05cff`/`3a2c1cf6` consolidates integer arithmetic and admission.
 Against qualified `63389c9d`/`2e74ef4f`, complete invoice warm execution improves

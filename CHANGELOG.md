@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Remove redundant native-call selection/decline branches and duplicate logical
+  body nesting charges. Keep managed stack validation, function recursion,
+  cooperative cancellation and ownership through genuine suspension.
+
 - Keep unpublished intermediate integer results in one machine accumulator within
   adjacent native instructions, boxing the final value once. Preserve exact
   overflow promotion, Python floor/remainder, protocols, error order, cancellation

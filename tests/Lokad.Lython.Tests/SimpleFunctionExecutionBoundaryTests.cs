@@ -662,8 +662,8 @@ public sealed class SimpleFunctionExecutionBoundaryTests
                 context.EnterInterpreterFrame(CallSpan);
                 try
                 {
-                    Assert.True(function.TryStartNativeCall(call, [line], null, context, CallSpan, false,
-                        borrow: false, default, out _, out var result, out var frame));
+                    function.StartNativeCall(call, [line], null, context, CallSpan, false,
+                        borrow: false, default, out _, out var result, out var frame);
                     Assert.Null(frame);
                     Assert.True(Assert.IsType<bool>(result));
                     Assert.Null(context.MemoryGovernor.AdmissionFailure);

@@ -383,7 +383,10 @@ At most sixteen dead private references can remain until the synchronous prefix
 ends; the dead tail clears before transfer and owned arrays clear on return.
 Private cursors retire deterministically, including cancellation before a return
 publishes its result. Call/function stack admission and exception context remain
-active. No span or private borrow survives suspension.
+active. Native bodies, like ordinary bound bodies, reuse their call admission;
+each body entry still validates the current managed stack. A selected native call
+completes or transfers once, without declining after binding. No span or private
+borrow survives suspension.
 The ordinary code is one instruction array with absolute branch and
 protected-suite ranges; temporary builder blocks are discarded. An explicit
 completion instruction distinguishes module completion from a guest return.

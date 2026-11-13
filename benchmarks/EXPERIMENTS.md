@@ -6,6 +6,20 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Selected native call entry retained](results/2026-11-13-selected-native-call/README.md):
+485e008e removes impossible post-selection decline branches/duplicate eligibility
+and the native body's duplicate logical nesting charge; managed stack validation
+remains.186internal/440public Release11 pass, including the actual256KiB continuation.
+B680229.223s supports modest captured-text/invoice direction with CPU. Search has
+roughly7%unchanged-control movement; JSON/report are inconclusive. All adverse
+controls remain; no allocation or new external-ratio claim. Full delivery pending.
+
+[Isolated dev80 bridge](results/2026-11-13-regex-dev80-bridge/README.md):
+exact15b248dc packages; remove the obsolete validation-option argument from the
+development bridge.88internal/534public pass per actual11/10; normal29files and
+573core sources remain unchanged. Core stays decoupled, normal pin0.4; precise
+producer gaps defer affected final adapter qualification only, not development.
+
 [Byte-bound window capacity, withdrawn](results/2026-11-13-text-window-capacity/rough/README.md):
 cf762db1 deletes the counted scan. Allocation remains effectively flat; search/text
 timings have moving controls, JSON has a small supported gain. Peak charged root

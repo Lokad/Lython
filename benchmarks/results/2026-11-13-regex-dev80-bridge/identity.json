@@ -1,0 +1,26 @@
+{
+  "consumerRevision": "766e20710542779eb4655390e47df5e90e0cb036",
+  "consumerRuntimePrototype": "R315 selected call/body admission;573 exact source inputs retained",
+  "producerVersion": "0.5.0-dev.80",
+  "producerObservedHead": "15b248dc3f74df42f8ff669ca05eec6570728798",
+  "packages": {
+    "Lokad.Utf8Regex.0.5.0-dev.80.nupkg": {
+      "sha256": "e6e5bd30e7437e760e9b3daa7f2e08f392096c61ed687a6956a4fa80c0a71950",
+      "repositoryCommit": "15b248dc3f74df42f8ff669ca05eec6570728798",
+      "assemblies": {
+        "net11.0": "6e677fecf837f4b91cd3c8be270f5d8f4729cd42b4e7d7a530612b2a24665603",
+        "net10.0": "b8b5ce574000a25fe6f8011761cd4438244bcba74a66a08b83bf9dd4ecf03acd"
+      }
+    },
+    "Lokad.Utf8Regex.PythonRe.0.5.0-dev.80.nupkg": {
+      "sha256": "2a57966bf529267c35392e6b79c1687289e013c0f9fff0111b163a07af8e1041",
+      "repositoryCommit": "15b248dc3f74df42f8ff669ca05eec6570728798",
+      "assemblies": {
+        "net11.0": "542755bd917d382fc030ac698650a4b670ef2de4c20a26455c988f332df3306e",
+        "net10.0": "432ac164cf9a8cc8a15a7d1c8ff615d7c542c6dc7ec64920264d9775b6a83ee0"
+      }
+    }
+  },
+  "bridge": "Existing dev79 bridge, removed obsolete inputValidation Compile argument. Producer valid-UTF8 subjects; strict pattern compilation. Current-token linked cursor bridge and conservative one-match admission remain adapter-local.",
+  "limitations": "Isolated changed-producer semantic/ownership/cancellation validation only. No normal pin/core dependency edit, backend CPU claim or final release/safety qualification. Missing one-match owner split, UTF8 name enumeration/copy and token-independent cursor preparation remain precise gaps."
+}

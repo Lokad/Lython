@@ -30,7 +30,7 @@ public sealed class NativeIntegerChainTests
                 var baseline = budget.ReservedBytes;
                 if (cancel) gate.AfterGrowth = _ => cancellation.Cancel();
                 else gate.RefuseGrowth = _ => true;
-                var error = Assert.Throws<LythonRuntimeException>(() => function.TryStartNativeCall(call,
+                var error = Assert.Throws<LythonRuntimeException>(() => function.StartNativeCall(call,
                     [left, right], null, context, span, false, true, default, out _, out _, out _));
                 Assert.Equal(cancel ? LythonFailureReason.Cancelled : LythonFailureReason.SharedMemoryAllowance,
                     error.Attribution?.Reason);

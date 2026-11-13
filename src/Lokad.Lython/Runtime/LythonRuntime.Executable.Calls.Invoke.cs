@@ -52,13 +52,9 @@ internal sealed partial class LythonRuntime
                     // so failure unwinds even a wider-than-input tuple result.
                     if (unpackedCount != 0)
                         execution.Stack.RestoreNativeExtent(Math.Max(originalExtent, start + unpackedCount));
-                    if (!function.TryStartNativeCall(call, arguments, functionReceiver, scope, call.CallSpan,
+                    function.StartNativeCall(call, arguments, functionReceiver, scope, call.CallSpan,
                         CallResultConsumedByIteration(in execution, call), borrow, unpackedReturn,
-                        out var unpacked, out var value, out var frame))
-                    {
-                        execution.Stack.RestoreNativeExtent(originalExtent);
-                        return false;
-                    }
+                        out var unpacked, out var value, out var frame);
                     if (!unpacked) execution.Stack.RestoreNativeExtent(originalExtent);
                     if (frame is not null)
                     {

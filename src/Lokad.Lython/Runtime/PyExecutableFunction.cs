@@ -81,15 +81,14 @@ internal sealed class PyExecutableFunction : PyFunctionBase
     private struct NativeValues { private object _first; }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
-    internal bool TryStartNativeCall(ExecutableCallSite call, ReadOnlySpan<object?> arguments, object? receiver,
+    internal void StartNativeCall(ExecutableCallSite call, ReadOnlySpan<object?> arguments, object? receiver,
         LythonRuntime.ExecutionContext context, LythonSourceSpan span, bool consumedByIteration,
         bool borrow, Span<object> unpackedReturn, out bool unpacked,
         out object result, out LythonRuntime.ExecutionContext? frame)
     {
-        unpacked = false;
-        result = PyNone.Instance;
-        frame = null;
-        if (!CanStartInline || !borrow && !CanBindNativeArguments) return false;
+        // Both executable callers select eligibility before entry. Starting a
+        // selected call completes or transfers its exact work; it never declines
+        // after binding and asks the caller to try another execution route.
         NativeValues buffer = default;
         Span<object> values = buffer;
         values = values[.._codeObject.ValueStorageCapacity];
@@ -104,7 +103,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         }
         else LythonRuntime.BindFunctionArgumentsInto(values[..BindingPlan.ParameterCount], ref assigned,
             [], span, BindingPlan, context, receiver: receiver, callSite: call, operands: arguments);
-        return StartInline(values, assigned, null, span, consumedByIteration, unpackedReturn,
+        StartInline(values, assigned, null, span, consumedByIteration, unpackedReturn,
             out unpacked, out result, out frame);
     }
 
@@ -117,11 +116,13 @@ internal sealed class PyExecutableFunction : PyFunctionBase
     {
         result = PyNone.Instance;
         frame = null;
-        return CanStartInline && StartInline(bound.Values.AsSpan(0, _codeObject.ValueStorageCapacity),
+        if (!CanStartInline) return false;
+        StartInline(bound.Values.AsSpan(0, _codeObject.ValueStorageCapacity),
             bound.Assigned, bound, span, consumedByIteration, default, out _, out result, out frame);
+        return true;
     }
 
-    private bool StartInline(Span<object> values, ArgumentPresence assigned, BoundCallArguments? existing,
+    private void StartInline(Span<object> values, ArgumentPresence assigned, BoundCallArguments? existing,
         LythonSourceSpan span, bool consumedByIteration, Span<object> unpackedReturn, out bool unpacked,
         out object result, out LythonRuntime.ExecutionContext? frame)
     {
@@ -140,7 +141,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
             if (state.Run(span, out result, unpackedReturn))
             {
                 unpacked = state.ReturnedUnpacked;
-                return true;
+                return;
             }
             state.PrepareTransfer();
             if (existing is null)
@@ -153,7 +154,6 @@ internal sealed class PyExecutableFunction : PyFunctionBase
             frame = LythonRuntime.CreateNativeContinuation(this, owned, span, state.Index, state.LiveExtent, consumedByIteration);
             state.TransferOwnership(frame);
             transferred = true;
-            return true;
         }
         catch (LythonRuntimeException error)
         {

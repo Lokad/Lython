@@ -32,7 +32,10 @@ internal sealed partial class LythonRuntime
 
         internal bool Run(LythonSourceSpan entrySpan, out object result, Span<object> unpackedReturn = default)
         {
-            _scope.EnterInterpreterFrame(entrySpan);
+            // The call boundary owns logical interpreter admission, and
+            // StartInline owns function admission. Like an ordinary bound body,
+            // validate this managed stack entry without charging nesting twice.
+            ExecutionState.EnsureInterpreterStack(entrySpan);
             var previous = _scope.State.CurrentException;
             try
             {
@@ -54,7 +57,6 @@ internal sealed partial class LythonRuntime
             finally
             {
                 _scope.State.SetCurrentException(previous);
-                _scope.LeaveInterpreterFrame();
             }
         }
 
@@ -348,9 +350,9 @@ internal sealed partial class LythonRuntime
             try
             {
                 var arguments = Values.Slice(start + call.ArgumentOffset, call.ArgumentCount);
-                if (!function.TryStartNativeCall(call, arguments, receiver, _scope, call.CallSpan,
+                function.StartNativeCall(call, arguments, receiver, _scope, call.CallSpan,
                     call.ConsumedByIteration || _consumedByIteration && call.ReturnedDirectly,
-                    borrow, default, out _, out result, out var child)) return false;
+                    borrow, default, out _, out result, out var child);
                 if (child is not null)
                 {
                     // No operation is running in the child. Keep its exact
