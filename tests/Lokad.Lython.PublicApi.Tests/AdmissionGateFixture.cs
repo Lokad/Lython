@@ -8,6 +8,8 @@ internal sealed class AdmissionGateBudget : ILythonMemoryBudget
     public long Ceiling { get; private set; } = long.MaxValue;
     public long AtGate { get; private set; }
     public long AllocatedAtFirstRefusal { get; private set; }
+    public long ThreadAllocatedAtFirstRefusal { get; private set; }
+    public int ThreadAtFirstRefusal { get; private set; }
     public void Gate(long headroom) { AtGate = Root.ReservedBytes; Ceiling = checked(AtGate + headroom); }
     public ILythonMemoryScope CreateScope() => new Scope(this, Root.CreateScope());
     public bool TryReserve(long bytes, [NotNullWhen(true)] out ILythonMemoryReservation? reservation) => Reserve(Root, bytes, out reservation);
@@ -20,7 +22,12 @@ internal sealed class AdmissionGateBudget : ILythonMemoryBudget
     }
     private bool Refused()
     {
-        if (AllocatedAtFirstRefusal == 0) AllocatedAtFirstRefusal = GC.GetTotalAllocatedBytes(true);
+        if (AllocatedAtFirstRefusal == 0)
+        {
+            ThreadAtFirstRefusal = Environment.CurrentManagedThreadId;
+            ThreadAllocatedAtFirstRefusal = GC.GetAllocatedBytesForCurrentThread();
+            AllocatedAtFirstRefusal = GC.GetTotalAllocatedBytes(true);
+        }
         return false;
     }
     private sealed class Reservation(AdmissionGateBudget root, ILythonMemoryReservation inner) : ILythonMemoryReservation
@@ -42,12 +49,32 @@ internal sealed class AdmissionGateHost(AdmissionGateBudget budget, long headroo
 {
     private int _calls;
     public long AllocatedAtGate { get; private set; }
+    public long ThreadAllocatedAtGate { get; private set; }
+    public int ThreadAtGate { get; private set; }
     public long AllocatedAtSecondGate { get; private set; }
     public long AtSecondGate { get; private set; }
     public bool CompletesSynchronously => files is null || files is ILythonSynchronousHostCapability { CompletesSynchronously: true };
     public string Cwd => "/";
     public DateTimeOffset LocalNow => DateTimeOffset.UnixEpoch;
-    public DateTimeOffset UtcNow { get { if (_calls++ == 0) { budget.Gate(headroom); AllocatedAtGate = GC.GetTotalAllocatedBytes(true); } else { AtSecondGate = budget.Root.ReservedBytes; AllocatedAtSecondGate = GC.GetTotalAllocatedBytes(true); } return DateTimeOffset.UnixEpoch; } }
+    public DateTimeOffset UtcNow
+    {
+        get
+        {
+            if (_calls++ == 0)
+            {
+                budget.Gate(headroom);
+                AllocatedAtGate = GC.GetTotalAllocatedBytes(true);
+                ThreadAtGate = Environment.CurrentManagedThreadId;
+                ThreadAllocatedAtGate = GC.GetAllocatedBytesForCurrentThread();
+            }
+            else
+            {
+                AtSecondGate = budget.Root.ReservedBytes;
+                AllocatedAtSecondGate = GC.GetTotalAllocatedBytes(true);
+            }
+            return DateTimeOffset.UnixEpoch;
+        }
+    }
     public ValueTask<ILythonByteFile> OpenFileAsync(LythonPathRequest p, LythonFileOpenOptions o, ILythonMemoryBudget b, CancellationToken t)
         => files!.OpenFileAsync(p,o,b,t);
     public ValueTask<bool> ExistsAsync(LythonPathRequest p, CancellationToken t) => files is null ? ValueTask.FromResult(false) : files.ExistsAsync(p,t);

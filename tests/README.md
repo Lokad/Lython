@@ -42,6 +42,13 @@ Builtin-root cases also reject dataclass mutation before builtin metadata change
 Definition-isolation cases retain actual object/type namespace views across
 concurrent executions and suspended I/O, checking their slot owners and funding.
 
+The partly filled file-staging regression measures allocations on the guest thread
+from its clock gate to admission refusal, asserting that both observations use the
+same thread. This interval performs no I/O or suspension. Process-wide allocation
+totals include unrelated test-host traffic and cannot establish the preflight order.
+The original copy-sized bound, no-publication assertion and final budget balance
+remain independent checks.
+
 [Generator namespace mutations](Lokad.Lython.PublicApi.Tests/GeneratorNamespaceMutationTests.cs)
 check class nonlocal updates and deletions during suspension through both APIs,
 including shared-budget cleanup. Generators read their shared captured cells
