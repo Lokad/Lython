@@ -1,0 +1,357 @@
+{
+  "complete": true,
+  "jobs": 7,
+  "elapsedSeconds": 267.4358201082796,
+  "identity": {
+    "sourceRevision": "R362uncommitted/frozen8056823e vs fullyqualified3bc513b8/frozenca1e2331",
+    "purpose": "One coherent range-iterator/native-pull stage: complete counter warm/fresh, materializing-range, CSV/capturedtext and short/observed controls. Same algorithms/settings, normalGC/tiering, allocation separate; no CPython/tail/heappeak claim.",
+    "coreSHA256": {
+      "reference": "ca1e2331ab19972f4da7f2ae156536d2fab20bdcde43e408d0e7d74ba4175dc4",
+      "candidate": "8056823e53a66dd202010c067484c57312f8d5ca3faf33e8265f04687f7c567c",
+      "reference-control": "ca1e2331ab19972f4da7f2ae156536d2fab20bdcde43e408d0e7d74ba4175dc4",
+      "candidate-control": "8056823e53a66dd202010c067484c57312f8d5ca3faf33e8265f04687f7c567c"
+    },
+    "auxiliaryFiles": {
+      "Azure.Core.dll": "1d6df436afdc73c30d476be938f6513c90ef8fc884a7bae280091a9bed0a5490",
+      "Azure.Identity.dll": "31574a3d35ffeb0e25a00ebb317937222fe5283b91af608613f2e3bf0f26c50a",
+      "BenchmarkDotNet.Annotations.dll": "97974c60500f53a3c7d142088b22d815aae7aac729de69f4b497132cc436594f",
+      "BenchmarkDotNet.dll": "599ded314fe77dbc17318557e787cf660c1fcb0d69be39994ea462ca95745896",
+      "CommandLine.dll": "8a55501cd1a1590a4bd93a17c6fdd2c01a0ed5bff1aea9036bdc78d98c9a3fad",
+      "deniszykov.WebSocketListener.dll": "c86cfb93e32192ae12fb1a132b4ae785a7d2f325e8583c03c99abf8e832d25d6",
+      "Dia2Lib.dll": "6c4cac68010fe032218efe5e9fcf46eef9f77bfaa5f3bd33f03c5ff77d5a8fac",
+      "Gee.External.Capstone.dll": "6dfda67784598de9677173b89d0692593935f1a4024d36040c95dea48c1b5965",
+      "Iced.dll": "f058c01321b4cdfc9b9151879e88e59571c8d0ba176fbcf95bc936a8f3d073ed",
+      "Lokad.Lython.Benchmarks.deps.json": "b47f293f779ce46eefa92c6eb775842efe363be212c35bf7d155d0b89734d450",
+      "Lokad.Lython.Benchmarks.dll": "acda3ef3d79d7447cbd6099d903475da61f9b7bd36d949e6d4d3eb6e085de6c6",
+      "Lokad.Lython.Benchmarks.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0",
+      "Lokad.Lython.Utf8Regex.dll": "9f7282ade883f103956efaf7e46182f7705fb7675f1f46963b9c42ae5aae7f94",
+      "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+      "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe",
+      "Microsoft.Bcl.AsyncInterfaces.dll": "bf58b47923b2f520c766ca905f68a1a65d217c4d828f05db538c41129cacf9d9",
+      "Microsoft.CodeAnalysis.CSharp.dll": "1af1de8a162d2312eb2f6b781f5edbe8cec7d5cd268c7e4de24396225e54260f",
+      "Microsoft.CodeAnalysis.dll": "42c9ce7891470f430267e2dc02d03571f9d046a7e7e121107754bee58d344613",
+      "Microsoft.Diagnostics.FastSerialization.dll": "e5bdad179ce97180646f37f357cb7b449f5baaf76f185eb09510eeafc5b773e1",
+      "Microsoft.Diagnostics.NETCore.Client.dll": "e2cc9e1f6c97b3c4ee45ebabaa92408eb9b2fc81cb08ceeb342fe48bf79db15f",
+      "Microsoft.Diagnostics.Runtime.dll": "52d5f113180bb0f70b1a9b10608aef93b187364ac689885d2d3c734102d850a2",
+      "Microsoft.Diagnostics.Tracing.TraceEvent.dll": "92401392ce1887c3483a3c0085e6cc3656ee39da1be539943096ebabbad6ea21",
+      "Microsoft.Identity.Client.dll": "5795027e9ae95eececb310a4fed3c502bb368039d186ab0884f64b7792b84717",
+      "Microsoft.Identity.Client.Extensions.Msal.dll": "07109a2f30df782300077a567ade47cbd0a0502c75cd7c8a62192f7d64bb004e",
+      "Microsoft.IdentityModel.Abstractions.dll": "24e97b54b6b5c234a124a336757e3116617ac6c30b655cdae74517dc2ecb5746",
+      "Perfolizer.dll": "4a5508174e2b90a651a29e1de0d2ad88236daaaae01070cd6fc8ca3c36beaa36",
+      "Pragmastat.dll": "7217e206e47de8a0335f58513019d5805a6e52ca2e8f127e2cc3944f1742bb2e",
+      "System.ClientModel.dll": "dec5e22b71a1685c5e6e97cd28b629f0aa6703fb87b6950df28e79fc1804290c",
+      "System.Memory.Data.dll": "2c1035b0106dbb2de7913d151e06071ed617bb58bbb3d6cd46a2dd0f6a03617b",
+      "System.Security.Cryptography.ProtectedData.dll": "80566f0839ece5946e66bf9f00d723e59e371ba1341a18e00c7c7a7c49298e1d",
+      "TraceReloggerLib.dll": "6830c0f1d3f3c17719181e73dd5cfa8ccbb3f3c575329d2120576545103467b5"
+    },
+    "catalogSHA256": "ec967159f80cebad4646b2b801b64377866ddb47e547e9465fa8300475564663",
+    "publicationHeld": true,
+    "fullSourceIdentitySHA256": "26a13175e2a11586ea94be35b7cdb4e05fd58c0d7b65cb7a3eb01505ea981014"
+  },
+  "timing": [
+    {
+      "case": "diagnostic.loop-range.inside.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "reference": 2.8094555168539324,
+        "candidate": 2.0017082730923694,
+        "reference-control": 2.8492870795454546,
+        "candidate-control": 2.0089337599999997
+      },
+      "processCpuMedianMilliseconds": {
+        "reference": 2.865168539325843,
+        "candidate": 2.0080321285140563,
+        "reference-control": 2.897727272727273,
+        "candidate-control": 2.04
+      },
+      "ratioRange": [
+        0.7025295160541356,
+        0.7050654089655591,
+        0.7124897550732215,
+        0.7150616010641208
+      ],
+      "iqrPercent": {
+        "reference": 1.0950474425367682,
+        "candidate": 0.4113297926895161,
+        "reference-control": 1.4105097334495564,
+        "candidate-control": 1.0319682217894552
+      },
+      "lythonControlPercent": 0.36096603110242764,
+      "referenceControlPercent": 1.4177680498079548,
+      "maxIqrPercent": 1.4105097334495564,
+      "lythonSourcePairElapsedPercent": [
+        -29.74704839458644,
+        -29.493459103444085,
+        -28.751024492677846,
+        -28.493839893587925
+      ],
+      "lythonSourcePairWiderCpuPercent": [
+        -30.703204976769825,
+        -29.915741396960392,
+        -29.600000000000005,
+        -28.800000000000004
+      ]
+    },
+    {
+      "case": "diagnostic.loop-range.inside.large",
+      "lane": "compile-run",
+      "medianMilliseconds": {
+        "reference": 2.795413370786517,
+        "candidate": 2.0240718739837398,
+        "reference-control": 2.8029715865921787,
+        "candidate-control": 2.028780516260163
+      },
+      "processCpuMedianMilliseconds": {
+        "reference": 2.808988764044944,
+        "candidate": 2.073170731707317,
+        "reference-control": 2.793296089385475,
+        "candidate-control": 2.073170731707317
+      },
+      "ratioRange": [
+        0.7221164437291294,
+        0.7237963188655548,
+        0.7240688962628262,
+        0.7257533134319042
+      ],
+      "iqrPercent": {
+        "reference": 0.5919212607457909,
+        "candidate": 0.33849429826295074,
+        "reference-control": 0.3915324987678647,
+        "candidate-control": 0.6193460881312998
+      },
+      "lythonControlPercent": 0.2326321677083243,
+      "referenceControlPercent": 0.27037918200754074,
+      "maxIqrPercent": 0.6193460881312998,
+      "lythonSourcePairElapsedPercent": [
+        -27.788355627087057,
+        -27.620368113444517,
+        -27.593110373717376,
+        -27.42466865680958
+      ],
+      "lythonSourcePairWiderCpuPercent": [
+        -26.195121951219512,
+        -26.195121951219512,
+        -25.78048780487805,
+        -25.78048780487805
+      ]
+    },
+    {
+      "case": "diagnostic.range-materialization.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "candidate-control": 0.3932863849878935,
+        "reference-control": 0.3878808904,
+        "candidate": 0.3945339864325619,
+        "reference": 0.3948623136439268
+      },
+      "processCpuMedianMilliseconds": {
+        "candidate-control": 0.4035512510088781,
+        "reference-control": 0.4,
+        "candidate": 0.40702314445331206,
+        "reference": 0.40765391014975044
+      },
+      "ratioRange": [
+        0.9960089160155849,
+        0.9991685020321767,
+        1.0139359651936426,
+        1.0171524202331828
+      ],
+      "iqrPercent": {
+        "candidate-control": 1.8918997002373343,
+        "reference-control": 1.9694017903595156,
+        "candidate": 2.0124699432995086,
+        "reference": 2.124457961768814
+      },
+      "lythonControlPercent": 0.3162215392264245,
+      "referenceControlPercent": 1.7680652224062121,
+      "maxIqrPercent": 2.124457961768814,
+      "lythonSourcePairElapsedPercent": [
+        -0.3991083984415056,
+        -0.08314979678233358,
+        1.3935965193642597,
+        1.7152420233182752
+      ],
+      "lythonSourcePairWiderCpuPercent": [
+        -1.0064074055772476,
+        -0.15473068716712612,
+        0.8878127522195189,
+        1.7557861133280062
+      ]
+    },
+    {
+      "case": "diagnostic.csv-check-digits.while.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "candidate-control": 4.599952710280373,
+        "reference-control": 4.743538075471698,
+        "candidate": 4.744313885714286,
+        "reference": 4.685125273584906
+      },
+      "processCpuMedianMilliseconds": {
+        "candidate-control": 4.672897196261682,
+        "reference-control": 4.811320754716981,
+        "candidate": 4.857142857142857,
+        "reference": 4.811320754716981
+      },
+      "ratioRange": [
+        0.9697303230401398,
+        0.9818206433486971,
+        1.0001635509677047,
+        1.0126333040576503
+      ],
+      "iqrPercent": {
+        "candidate-control": 0.45999507837279513,
+        "reference-control": 1.35577121046952,
+        "candidate": 0.9813271047564389,
+        "reference": 0.7119298771332977
+      },
+      "lythonControlPercent": 3.0428251357609737,
+      "referenceControlPercent": 1.2467713983258522,
+      "maxIqrPercent": 1.35577121046952,
+      "lythonSourcePairElapsedPercent": [
+        -3.026967695986016,
+        -1.817935665130288,
+        0.016355096770470645,
+        1.2633304057650285
+      ],
+      "lythonSourcePairWiderCpuPercent": [
+        -2.877038665933651,
+        -2.877038665933651,
+        0.952380952380949,
+        0.952380952380949
+      ]
+    },
+    {
+      "case": "scripts.text-summary-helpers.nonlocal-counter.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "candidate-control": 1.301739608108108,
+        "reference-control": 1.281499024,
+        "candidate": 1.3610950795454544,
+        "reference": 1.2610071749347258
+      },
+      "processCpuMedianMilliseconds": {
+        "candidate-control": 1.3513513513513513,
+        "reference-control": 1.36,
+        "candidate": 1.4204545454545454,
+        "reference": 1.3315926892950392
+      },
+      "ratioRange": [
+        1.015794459245806,
+        1.0323015078605644,
+        1.062111678631645,
+        1.079371399782804
+      ],
+      "iqrPercent": {
+        "candidate-control": 0.9607889467577255,
+        "reference-control": 1.4224990935303365,
+        "candidate": 1.127286236691409,
+        "reference": 1.9798874018701726
+      },
+      "lythonControlPercent": 4.360861509922465,
+      "referenceControlPercent": 1.6250382608913316,
+      "maxIqrPercent": 1.9798874018701726,
+      "lythonSourcePairElapsedPercent": [
+        1.5794459245805914,
+        3.2301507860564405,
+        6.211167863164491,
+        7.937139978280405
+      ],
+      "lythonSourcePairWiderCpuPercent": [
+        -0.635930047694766,
+        1.4838367779544281,
+        4.445187165775399,
+        6.673351158645269
+      ]
+    },
+    {
+      "case": "diagnostic.loop-helper.short-zero.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "candidate-control": 1.2372375725,
+        "reference-control": 1.2185110611246943,
+        "candidate": 1.2232359162561577,
+        "reference": 1.2450144223918576
+      },
+      "processCpuMedianMilliseconds": {
+        "candidate-control": 1.25,
+        "reference-control": 1.2469437652811737,
+        "candidate": 1.2315270935960592,
+        "reference": 1.272264631043257
+      },
+      "ratioRange": [
+        0.9825074266257413,
+        0.9937536065831936,
+        1.0038775644162823,
+        1.015368355670092
+      ],
+      "iqrPercent": {
+        "candidate-control": 0.9428979332099916,
+        "reference-control": 1.3801579884788684,
+        "candidate": 0.794969581831625,
+        "reference": 0.5903438771491012
+      },
+      "lythonControlPercent": 1.1446407073049114,
+      "referenceControlPercent": 2.1287593774412916,
+      "maxIqrPercent": 1.3801579884788684,
+      "lythonSourcePairElapsedPercent": [
+        -1.749257337425869,
+        -0.624639341680644,
+        0.38775644162822864,
+        1.5368355670092093
+      ],
+      "lythonSourcePairWiderCpuPercent": [
+        -3.2019704433497553,
+        -1.750000000000007,
+        -1.2363566116101676,
+        0.2450980392156854
+      ]
+    },
+    {
+      "case": "diagnostic.loop-helper.observed.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "candidate-control": 1.2261185771144278,
+        "reference-control": 1.201930263414634,
+        "candidate": 1.2122457383863081,
+        "reference": 1.2066426506024097
+      },
+      "processCpuMedianMilliseconds": {
+        "candidate-control": 1.243781094527363,
+        "reference-control": 1.2195121951219512,
+        "candidate": 1.2469437652811737,
+        "reference": 1.2289156626506024
+      },
+      "ratioRange": [
+        1.0046435353342609,
+        1.008582423860739,
+        1.0161405918332946,
+        1.0201245566702646
+      ],
+      "iqrPercent": {
+        "candidate-control": 1.59279555449001,
+        "reference-control": 1.0379853254259561,
+        "candidate": 0.566587999265622,
+        "reference": 0.6688565524934639
+      },
+      "lythonControlPercent": 1.1443916269474164,
+      "referenceControlPercent": 0.3905370977416611,
+      "maxIqrPercent": 1.59279555449001,
+      "lythonSourcePairElapsedPercent": [
+        0.4643535334260873,
+        0.8582423860739041,
+        1.6140591833294637,
+        2.012455667026458
+      ],
+      "lythonSourcePairWiderCpuPercent": [
+        1.2096380840893595,
+        1.4669926650366927,
+        1.990049751243772,
+        2.2493887530562473
+      ]
+    }
+  ],
+  "externalBaseline": null,
+  "performanceQualified": false,
+  "stabilityMetricsAreNotDesignVetoes": true
+}

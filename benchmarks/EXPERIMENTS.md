@@ -7814,3 +7814,16 @@ R361 measured3bc513b8/frozenca1e2331 [passes43618009133](results/2026-11-14-clos
 Windows/Ubuntu actual11/10, ordinary/originalstress and installedRelease consumers;
 582inputproof/16summaries/full logs cached. All earlier adverse/uncertain controls
 and release debt remain. Later R362prototype is excluded; publication held.
+
+## R362 — range iteration, bounded refinement active
+
+[Initial B744](results/2026-11-14-range-iteration-stage/README.md) at8056/ca1
+replaces generated range/object transport with explicit shared iterator/native
+pulls. Complete counter warm−28–30%/fresh−27–28% and allocation−99.53%; generic
+materialization alloc+1.26%/mixed elapsed, textelapsed+1.6–7.9% with variable control,
+observed small adverse CPU. Seven jobs/267.436s/allgates; 536focused+2298consumer
+checks actual11/10,90Pythoncontrols/18goldens pass. Preserve every adverse point.
+Selected completion restores general cursor routes exactly, retaining standalone
+primitive pull/state. No new router/owner/flag; native acquisition+24B tradeoff is
+explicit. Corrected source/checks/timing and retention/debt remain separate;
+publication held and broader objective active.
