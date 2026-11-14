@@ -56,3 +56,7 @@ catalogs, auxiliaries, toolchains and254/252MiBfloors remain.
 [allocation](allocation-summary.json),[focused checks](focused-checks.json),
 [independent Python](python-controls.json),[all sources/binary/checks/tools/raw](sources-checks-and-observations.tar.xz).
 Publication remains postponed.
+
+Measured47df7e19source subsequently[passes full43593185490qualification](delivery/README.md).
+Original collection-time pending metadata/adverse results remain; later R358work
+is separate.

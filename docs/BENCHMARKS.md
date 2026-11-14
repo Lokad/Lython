@@ -153,7 +153,9 @@ CPython remains the external baseline. Separate source-pair experiments establis
   Invoice/fulfillment CPU have small adverse directions and text controls are
   unstable; this does not establish representative-script or CPython improvement.
   [Exact sources, controls and qualification status](../benchmarks/results/2026-11-14-shared-machine-integer-kernel/README.md)
-  remain separate from the external baseline above.
+  remain separate from the external baseline above. Full Windows/Ubuntu actual
+  .NET11/10, original stress and installed consumers
+  [pass43593185490](../benchmarks/results/2026-11-14-shared-machine-integer-kernel/delivery/README.md).
 
 [Experimental history and source-specific evidence](../benchmarks/EXPERIMENTS.md)
 preserve controlled comparisons, rejected designs, adverse results and qualification.

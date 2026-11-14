@@ -7675,3 +7675,8 @@ text10.73%reference/6.68%candidate spread is uncertain. Initial69d9source/timing
 and every fixture/timeout/staging failure remain. Full delivery qualification
 pending; shared publication/operand redesign and representative gains remain
 active. No inferred CPython improvement; publication held.
+
+R357measured47df7e19/frozencbb2[passes full43593185490](results/2026-11-14-shared-machine-integer-kernel/delivery/README.md):
+Windows/Ubuntu actual11/10, original stress and installed Release consumers;
+581inputs/16summaries cached. Later R358prototype is excluded; adverse controls
+and broader representative objectives remain. Publication held.
