@@ -119,6 +119,11 @@ CPython remains the external baseline. Separate source-pair experiments establis
   14.6–16.1%faster compile-to-result, with wider CPU support. [Small-helper control
   uncertainty and qualification status](../benchmarks/results/2026-11-14-native-owned-slots/README.md)
   remain explicit; this is a separate source pair, not a CPython comparison.
+- Shared integer chains reduce allocation10.45%for a complete4,096-row fulfillment
+  script with arithmetic in an ordinary loop. Warm elapsed improves3–4%and compile-
+  to-result1.4–2.7%, with wider CPU support. This is a modest CPU result; [variable
+  helper controls and adverse text elapsed debt](../benchmarks/results/2026-11-14-shared-integer-chains/README.md)
+  remain explicit. The CPython rows use the earlier qualified source above.
 
 [Experimental history and source-specific evidence](../benchmarks/EXPERIMENTS.md)
 preserve controlled comparisons, rejected designs, adverse results and qualification.

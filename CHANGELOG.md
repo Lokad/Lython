@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Share checked integer-chain evaluation across ordinary and native executable
+  bodies, avoiding unpublished intermediate boxes while preserving exact promotion,
+  Python stores, protocol fallback, cancellation and per-operation cleanup.
+
 - Separate native instruction eligibility from the private call-buffer size.
   Eligible larger helpers use their already-admitted bound arrays; keep the
   sixteen-slot stack buffer, ordinary binding and exact continuation lifetimes.

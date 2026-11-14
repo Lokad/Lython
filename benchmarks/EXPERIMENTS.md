@@ -7496,3 +7496,19 @@ is GREEN at exact1778c30d/frozen38: Windows/Ubuntu actual11/10, original stress 
 installed consumers;581inputs/16summaries cached. This also qualifies B709/B710's
 measured source. Separate R341shared-arithmetic work remains unqualified. Do not
 repeat the green matrix or reattribute historical clocks. Publication held.
+
+## R341 — shared closed integer-chain execution
+
+[Shared kernel](results/2026-11-14-shared-integer-chains/README.md) removes native-
+only arithmetic scanning/evaluation. Ordinary and native callers keep their own
+publication/lifetime behavior; pending cleanup or owned temporaries decline
+combined publication. No new VM/value representation.927internal/1871public
+focused cases pass per actual11/10; six independent Python controls and frozen
+worker goldens/budget reuse pass. Original missing warm-fixture failures survive.
+B711four jobs/188.273s/all gates: complete inline CSV fulfillment allocation−10.45%,
+warm elapsed−4.01..−2.98%, fresh−2.67..−1.40%, with wider CPU support. Native-helper
+control−2.96..+3.00%/reference spread4.10%is uncertain; captured text+0.15..+2.30%
+elapsed/widerCPU−1.39..+1.23%remains explicit debt. Both allocation controls flat.
+Retain shared implementation/allocation reduction with modest CPU benefit; no
+universal/CPython gain, substantial-CPU completion or unchanged retiming. Full
+retained delivery follows; publication held, remaining roadmap active.

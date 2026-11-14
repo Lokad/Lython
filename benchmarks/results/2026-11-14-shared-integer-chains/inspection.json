@@ -1,0 +1,54 @@
+{
+  "sourceAndAllInspectedCompilerFactsIdentical": true,
+  "referenceCore": "38c0562fdd20b4df2ba0f37806cfdfa1b20a31f9fbabcd522e28c611ea3e8567",
+  "candidateCore": "53becdb661d8089c0bf76140cc6b6ee84172f4c5718944e279d3f83d6cfbe31e",
+  "facts": [
+    {
+      "id": "scripts.csv-fulfillment.inline.large",
+      "sourceSha256": "30b6fd558f2813d4c90e47acf8a5422202371a93049b6c36957afbb9436a54c3",
+      "functions": [
+        {
+          "name": "main",
+          "native": false,
+          "slots": 37,
+          "instructionCount": 170,
+          "backwardBranches": 5
+        }
+      ]
+    },
+    {
+      "id": "scripts.csv-fulfillment.large",
+      "sourceSha256": "f9f7477dfdeff1876f55286db983f6aa6a64861c900423f51a5b9183350e06f7",
+      "functions": [
+        {
+          "name": "price",
+          "native": true,
+          "slots": 23,
+          "instructionCount": 85,
+          "backwardBranches": 2
+        }
+      ]
+    },
+    {
+      "id": "scripts.text-summary-helpers.nonlocal-counter.large",
+      "sourceSha256": "f1fa99235a7745393b8d71bf83e0d4c32ca469d22ed4481584f8814563c313da",
+      "functions": [
+        {
+          "name": "main",
+          "native": false,
+          "slots": 21,
+          "instructionCount": 80,
+          "backwardBranches": 2
+        },
+        {
+          "name": "words_from_line",
+          "native": true,
+          "slots": 5,
+          "instructionCount": 8,
+          "backwardBranches": 0
+        }
+      ]
+    }
+  ],
+  "ordinaryInlineMainRemainsExcludedFromNativePrefix": true
+}

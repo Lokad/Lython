@@ -1,0 +1,9 @@
+{
+  "status": "retain",
+  "reason": "One shared checked kernel removes the native-only arithmetic distinction and reduces complete inline-fulfillment allocation by10.45%. Affected warm elapsed improves2.98–4.01% and compile-to-result1.40–2.67%, with supporting wider CPU. This is a useful allocation/simplification milestone with modest CPU improvement, not completion of the substantial performance objective.",
+  "nativeHelperControl": "Elapsed−2.96..+3.00%, widerCPU−3.68..+1.54%; reference process spread4.10%leaves uncertainty. Allocation flat.",
+  "capturedTextControl": "Elapsed+0.15..+2.30%, widerCPU−1.39..+1.23%; slight adverse elapsed debt remains, not proved neutrality or a demonstrated source CPU regression. Allocation flat.",
+  "retimingDecision": "No additional unchanged timing is needed for this bounded retention decision. Retain all adverse points and revisit this debt only with a concrete changed question or source.",
+  "qualification": "927internal/1871public focused cases each actual11/10; six independent Python controls, exact frozen-worker goldens/budget reuse and all four-job B711gates. Full platform/stress/installed consumers pending at retained delivery.",
+  "publicationHeld": true
+}

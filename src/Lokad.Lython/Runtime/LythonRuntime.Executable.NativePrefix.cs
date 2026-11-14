@@ -145,7 +145,12 @@ internal sealed partial class LythonRuntime
                         var first = Read(instruction.InputStart, 0);
                         var second = Read(instruction.SecondInput, 1);
                         var augmented = instruction.OpCode == ExecutableOpCode.Augmented;
-                        if (!augmented && TryIntegerChain(instruction, first, second)) break;
+                        if (!augmented && TryIntegerChain(Code, Values, Index, first, second, _scope, out var end, out var integerResult))
+                        {
+                            Index = end;
+                            Publish(Code.Instructions[end], (System.Numerics.BigInteger)integerResult);
+                            break;
+                        }
                         if (!augmented && TryEvaluateScalarComparison(instruction.BinaryOperator, first, second,
                             _scope, instruction.Span, out var scalarTruth))
                         {

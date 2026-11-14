@@ -1,0 +1,11 @@
+{
+  "recordedUTC": "2026-11-14T02:30:57.760506+00:00",
+  "base": "1778c30d/38c0562f",
+  "lastFullSource": "cdd92944/f4c4f027; combined43545993574 pending",
+  "hypothesis": "The proven closed machine-integer chain kernel is confined to native helper execution. Reuse it in ordinary executable input operations to remove intermediate boxes/dispatch across module bodies, protected regions and loop-containing helpers, without a tagged VM.",
+  "evidence": "R339 fulfillment allocation -9.84% and R331/native integer-chain invoice -8.46..-8.48%; current ordinary ExecuteInputInstruction still boxes each arithmetic result. This supports a bounded shared-kernel prototype, not a universal CPU forecast.",
+  "displaced": "Move native-only chain scanning/evaluation into one shared closed kernel; native and ordinary publication keep their own existing lifetime and local-store semantics. No duplicate arithmetic implementation or new execution route.",
+  "acceptance": "Exact signed division/modulo/overflow promotion, identity/aliases at published stores, class/module/closure/generator/handler namespaces, unbound/error order, custom protocols, real async continuation, first refusal, effective cancellation and joined cleanup/budget reuse. Ordinary chain publication must not bypass pending disposal or callbacks.",
+  "comparison": "Identical complete CSV fulfillment with arithmetic in ordinary loop/module execution vs exact frozen38 reference; helper version and existing captured-text control. Existing short allocation diagnostic plus one bounded VM comparison after B710 ends. Stop with usable affected/control evidence and debt decision; no generalized tagged-value/frame redesign.",
+  "evidenceLabelCorrection": "The R331 label on the prior invoice-chain evidence was imprecise; use the native integer-chain evidence linked by BENCHMARKS.md, not a claim that R331 introduced it."
+}

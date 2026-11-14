@@ -32,6 +32,17 @@ internal sealed partial class LythonRuntime
                 ? ReadOperand(ref execution, instruction.ThirdInput, scope, 2) : null;
             try
             {
+                if (instruction.OpCode == ExecutableOpCode.Binary
+                    && TryIntegerChain(execution.Code, execution.Stack.Values, execution.InstructionIndex,
+                        first, second!, scope, out var end, out var integerResult)
+                    && execution.Stack.CanRetireWithoutCleanup(execution.Code.Instructions[end].LiveExtent))
+                {
+                    // Closed integers cannot run protocols. Pending disposals or
+                    // other owned temporaries keep the original per-op retirement.
+                    execution.InstructionIndex = end;
+                    PublishInstructionResult(ref execution, invocation, execution.Code.Instructions[end], (BigInteger)integerResult);
+                    return InstructionPause.Continue;
+                }
                 if (instruction.OpCode is ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast)
                 {
                     var receiver = instruction.ValueLast ? first : second!;

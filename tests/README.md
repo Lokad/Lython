@@ -111,6 +111,12 @@ annotations and retained results through both APIs against Python goldens.
 Native-return protocol checks also suspend inside active handlers and join
 cancellation before retiring their allowance.
 
+[Shared integer arithmetic](Lokad.Lython.PublicApi.Tests/SharedIntegerChainTests.cs)
+covers module, class, closure, protected loop and generator values, exact promotion,
+error order and identity. Numeric protocols genuinely suspend; cancellation joins
+held file cleanup before funding returns, and refused promotion remains terminal
+through suppression and a finally return.
+
 [Captured native lifetimes](Lokad.Lython.PublicApi.Tests/NativeClosureLifetimeTests.cs)
 cover live cells through direct, named, bound-method and wide calls, retaining
 withdrawn inputs across actual protocol I/O and cancellation. The

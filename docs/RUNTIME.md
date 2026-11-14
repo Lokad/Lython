@@ -374,6 +374,13 @@ receiver declarations; dynamic protocols stop before their operation and transfe
 the current PC and live values into the existing frame runner. They may then
 genuinely suspend. Defaults, bindings and earlier work are never replayed.
 
+Ordinary and native executable bodies share checked machine-integer evaluation
+for closed arithmetic chains. Intermediate values remain private; final results
+use the existing boxed Python representation and publication path. Overflow and
+dynamic operands keep ordinary exact arithmetic and protocols. Cancellation stays
+active within a chain. Pending cleanup or owned temporaries retain per-operation
+retirement rather than combined publication.
+
 Native f-string helpers use the same formatting kernel as ordinary executable
 frames, including nested fields, conversions and dynamic specifications. Their
 private slots own incremental byte builders until completion or transfer. An

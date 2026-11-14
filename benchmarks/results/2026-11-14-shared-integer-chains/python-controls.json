@@ -1,0 +1,41 @@
+{
+  "reference": "CPython3.13.2 isolated",
+  "programs": [
+    {
+      "name": "module-loop-values",
+      "sourceSHA256": "db1df160e45d0d13c1d1e0f4ba0dce98b403ac5f07d16c8c324a2da953633a24",
+      "stdout": "[(-11973601, True, -6), (-83815205, True, 0), (83815205, True, 0), (11973600, True, 1)]\n",
+      "exitCode": 0
+    },
+    {
+      "name": "protected-loop-exact-promotion",
+      "sourceSHA256": "a3ed700dd61d08829168fcd75d4b2163e1fbf5b22d2a61b03b15bc2a9f018f26",
+      "stdout": "finished\n[(9223372036854775807, -5), (64563604257983430651, 0), (-64563604257983430651, 0), (-9223372036854775808, 2)]\nfinished\n[(8, -6), (58, 0), (-58, 0), (-9, 1)]\nfinished\n[(-1, -4), (-5, 0), (5, 0), (0, 3)]\nfinished\n[(-10, -2), (-68, 0), (68, 0), (9, 5)]\nfinished\n[(-9223372036854775808, -4), (-64563604257983430654, 0), (64563604257983430654, 0), (9223372036854775807, 3)]\n",
+      "exitCode": 0
+    },
+    {
+      "name": "class-namespace-stores",
+      "sourceSHA256": "5b47d87c7085cbc32ab3601539caf762d8392ffb26fb494ca3a08bf548f16248",
+      "stdout": "833333335 True True\n",
+      "exitCode": 0
+    },
+    {
+      "name": "generator-unwind",
+      "sourceSHA256": "f5dcdf72c823e4b3aacbcc1a4fa95676697c64a742914813c1aa1fc6d446645e",
+      "stdout": "8382 20369\n['finished']\n",
+      "exitCode": 0
+    },
+    {
+      "name": "closure-and-observable-final-values",
+      "sourceSHA256": "ceee04bd5a0198da27469c07eb1f3a2f5cd649138613fd43ee1962eed6db7668",
+      "stdout": "8383 8383\n",
+      "exitCode": 0
+    },
+    {
+      "name": "protocols-and-error-order",
+      "sourceSHA256": "59a90e5294930fa7ad16df224befbc17ae0f10997834a264417221b4e5c0bc67",
+      "stdout": "finally\nzero first\nfinally\nlocal later\nmultiply 3\n18\n",
+      "exitCode": 0
+    }
+  ]
+}
