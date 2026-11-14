@@ -17,8 +17,8 @@ Lython/CPython process-median differences; moving controls and IQRs remain visib
 
 First seven rows measured2026-11-14UTC: **009d236a / frozen8ae1ae5f**,
 against stock**CPython3.13.16**. Full Windows/Ubuntu .NET11/10, original stress
-and installed-package qualification is pending in
-[43563853239](https://github.com/Lokad/Lython/actions/runs/43563853239).
+and installed-package qualification
+[passes43563853239](../benchmarks/results/2026-11-14-indexed-sequence-cursors/delivery/README.md).
 [Exact sources, raw/wider CPU and controls](../benchmarks/results/2026-11-14-iteration-cpython-checkpoint/README.md).
 Invoice/search warm process spreads3.47/4.05% and captured text6.57% remain
 inconclusive stability despite smaller within-process IQRs. The prior measured

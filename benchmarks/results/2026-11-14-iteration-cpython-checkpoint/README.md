@@ -2,7 +2,8 @@
 
 2026-11-14 UTC, R347/B717: committed `009d236a` / frozen `8ae1ae5f`,
 581 production inputs, stock CPython 3.13.16. Full Windows/Ubuntu .NET 11/10,
-original stress and installed-package CI43563853239 is pending at collection.
+original stress and installed-package CI43563853239 was pending at collection
+and now [passes](../2026-11-14-indexed-sequence-cursors/delivery/README.md).
 This includes shared integer chains, native builtin-for prefixes, indexed cursors
 and the explicit-LF fixture correction; it is not the earlier qualified1778 source.
 Publication/tagging remain held.

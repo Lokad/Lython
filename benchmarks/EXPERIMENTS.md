@@ -11,8 +11,8 @@ refreshes committed009d236a/frozen8ae1ae5f against stock3.13.16 in360.55s.
 Invoice warm1.26–1.31×, compile1.08–1.10×, fresh1.21–1.24×; text1.48–1.59×,
 search1.66–1.76×, JSON0.83×, report1.19–1.21×, fulfillment1.30–1.31× and
 for-loop CSV1.28–1.29×. Invoice/search/text process spread remains uncertainty.
-All exact image/output/balance/quiet/join/archive gates pass; full delivery is
-pending. No attribution by comparing collections; prior evidence remains linked.
+All exact image/output/balance/quiet/join/archive gates pass; full measured-source
+delivery passes43563853239. No attribution by comparing collections; prior evidence remains linked.
 
 [R346 indexed sequence cursors](results/2026-11-14-indexed-sequence-cursors/README.md)
 removes the separate CLR list/tuple enumerator from the existing cursor and shares
@@ -20,7 +20,7 @@ live advancement with executable storage. Complete list-input CSV allocation fal
 1.53%, elapsed 3.30–5.20% and wider CPU 2.63–4.58%. Text input allocates 0.69% more
 and has small CPU adversity; captured-text control spread leaves neutrality
 uncertain. Retain these explicit debts for the simpler representation and list
-gain. Focused actual11/10 checks pass 2,324 cases; batched full delivery is pending.
+gain. Focused actual11/10 checks pass 2,324 cases; full delivery passes43563853239.
 Original staging failure and all adverse observations remain archived.
 
 [R345 builtin for prefixes](results/2026-11-14-native-for-prefixes/README.md)
@@ -29,7 +29,8 @@ and same-bit compile-to-result confirmation−17.84..−19.94%, with wider CPU s
 List-input CSV is7.55–11.01%faster despite4.24%more allocation. Text control remains
 modestly adverse and fulfillment uncertain; both original and reversed-order
 observations survive. Existing cursors/final storage remove the whole-function
-eligibility cliff without another engine. Full delivery qualification is pending.
+eligibility cliff without another engine. Corrected descendant009d236a passes
+combined full delivery43563853239; the original Windows fixture failure survives.
 
 [R343 bulk cased UTF8 buffer](results/2026-11-14-bulk-cased-buffer-withdrawn/README.md)
 is withdrawn. Replacing stored ranges with complete-buffer sizing/casing/scanning

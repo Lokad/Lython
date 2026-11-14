@@ -7,7 +7,7 @@ ordinary executable storage shares the same live advancement kernel. No pool,
 engine, memory policy or public API is added. Generic/acquired enumerators retain
 precedence, and sticky exhaustion prevents append from reviving an ended cursor.
 
-Retained pending full delivery. Focused Release checks pass 149 white-box and
+Retained; [full delivery passes43563853239](delivery/README.md). Focused Release checks pass 149 white-box and
 1,013 public cases per actual .NET 11/10 (2,324 total). Coverage includes live
 replacement/growth/shrink, aliases, Current/Dispose, cancellation, native/ordinary
 transfer, admission refusal, awaited cleanup and budget reuse. The final public
@@ -55,6 +55,6 @@ proof; current images, evidence and disk floors were preserved.
 The reference's original full CI failed five Windows CRLF-sensitive expected
 outputs; Ubuntu completed .NET 11/10, original stress and installed consumers.
 Test-only correction `c9edb0ee` uses explicit LF expectations without normalizing
-actual output. This candidate includes it and will batch full qualification.
-The previous fully qualified runtime remains R341 until that delivery succeeds.
+actual output. This candidate includes it; full delivery now passes. R341 remains the preceding
+qualified source; this does not qualify separate R348 work.
 Publication and optional adapter promotion remain held.
