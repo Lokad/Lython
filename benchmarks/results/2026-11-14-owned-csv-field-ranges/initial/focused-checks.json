@@ -1,0 +1,26 @@
+[
+  {
+    "project": "Lokad.Lython.Tests",
+    "target": "net11.0",
+    "filter": "(FullyQualifiedName~Csv|FullyQualifiedName~CsvReader|FullyQualifiedName~GovernedMemoryContract|FullyQualifiedName~MemoryDenialAttribution|FullyQualifiedName~CooperativeCancellation)&Category!=Stress",
+    "returncode": 0
+  },
+  {
+    "project": "Lokad.Lython.PublicApi.Tests",
+    "target": "net11.0",
+    "filter": "(FullyQualifiedName~Csv|FullyQualifiedName~CsvReader|FullyQualifiedName~GovernedMemoryContract|FullyQualifiedName~MemoryDenialAttribution|FullyQualifiedName~CooperativeCancellation)&Category!=Stress",
+    "returncode": 0
+  },
+  {
+    "project": "Lokad.Lython.Tests",
+    "target": "net10.0",
+    "filter": "(FullyQualifiedName~Csv|FullyQualifiedName~CsvReader|FullyQualifiedName~GovernedMemoryContract|FullyQualifiedName~MemoryDenialAttribution|FullyQualifiedName~CooperativeCancellation)&Category!=Stress",
+    "returncode": 0
+  },
+  {
+    "project": "Lokad.Lython.PublicApi.Tests",
+    "target": "net10.0",
+    "filter": "(FullyQualifiedName~Csv|FullyQualifiedName~CsvReader|FullyQualifiedName~GovernedMemoryContract|FullyQualifiedName~MemoryDenialAttribution|FullyQualifiedName~CooperativeCancellation)&Category!=Stress",
+    "returncode": 0
+  }
+]

@@ -1,0 +1,66 @@
+{
+  "complete": false,
+  "completedJobs": 2,
+  "finalQuietGateMissing": true,
+  "diagnosticOnly": true,
+  "timing": [
+    {
+      "case": "scripts.csv-fulfillment.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "reference": 8.404140846153846,
+        "candidate": 8.207621801652893,
+        "reference-control": 8.477077427350427,
+        "candidate-control": 8.23339231967213
+      },
+      "processCpuMedianMilliseconds": {
+        "reference": 8.547008547008547,
+        "candidate": 8.347107438016529,
+        "reference-control": 8.547008547008547,
+        "candidate-control": 8.360655737704919
+      },
+      "elapsedPercent": [
+        -3.178638251293575,
+        -2.8746358608459865,
+        -2.3383597216946828,
+        -2.031719001471255
+      ],
+      "cpuPercent": [
+        -2.338842975206612,
+        -2.338842975206612,
+        -2.1803278688524497,
+        -2.1803278688524497
+      ]
+    },
+    {
+      "case": "scripts.csv-fulfillment.large",
+      "lane": "compile-run",
+      "medianMilliseconds": {
+        "reference": 8.586633086206897,
+        "candidate": 8.46408052586207,
+        "reference-control": 8.79683068141593,
+        "candidate-control": 8.64390435652174
+      },
+      "processCpuMedianMilliseconds": {
+        "reference": 8.793103448275861,
+        "candidate": 8.620689655172415,
+        "reference-control": 9.026548672566372,
+        "candidate-control": 8.782608695652174
+      },
+      "elapsedPercent": [
+        -3.7826140755081727,
+        -1.7384252400953981,
+        -1.427248132235781,
+        0.6669816881641255
+      ],
+      "cpuPercent": [
+        -4.496281271129144,
+        -2.7024722932651457,
+        -1.9607843137254721,
+        -0.11935208866153957
+      ]
+    }
+  ],
+  "originalFailure": "Stale control_catalog routing in Worker constructor before third diagnostic job; not a runtime failure",
+  "noRuntimeFailureEstablished": true
+}

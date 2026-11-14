@@ -1,0 +1,168 @@
+{
+  "version": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "stdlib": "csv.reader/StringIO(newline=\"\")",
+  "cases": [
+    {
+      "text": "alpha,,\"a,b\",\"a\"\"b\",😀,tail\nlast,\"line\nnext\",back\\slash,é,,end\n",
+      "arguments": "delimiter=','",
+      "expected": [
+        [
+          "alpha",
+          "",
+          "a,b",
+          "a\"b",
+          "😀",
+          "tail"
+        ],
+        [
+          "last",
+          "line\nnext",
+          "back\\slash",
+          "é",
+          "",
+          "end"
+        ]
+      ]
+    },
+    {
+      "text": "alpha,,\"a,b\",a\\\"b,😀,tail\nlast,\"line\nnext\",back\\\\slash,é,,end\n",
+      "arguments": "doublequote=False, escapechar='\\\\'",
+      "expected": [
+        [
+          "alpha",
+          "",
+          "a,b",
+          "a\"b",
+          "😀",
+          "tail"
+        ],
+        [
+          "last",
+          "line\nnext",
+          "back\\slash",
+          "é",
+          "",
+          "end"
+        ]
+      ]
+    },
+    {
+      "text": "alpha🦊🦊a,b🦊a\"b🦊😀😀😀😀🦊tail\nlast🦊😀line\nnext😀🦊back\\slash🦊é🦊🦊end\n",
+      "arguments": "delimiter='🦊', quotechar='😀', escapechar='💥'",
+      "expected": [
+        [
+          "alpha",
+          "",
+          "a,b",
+          "a\"b",
+          "😀",
+          "tail"
+        ],
+        [
+          "last",
+          "line\nnext",
+          "back\\slash",
+          "é",
+          "",
+          "end"
+        ]
+      ]
+    },
+    {
+      "text": "  alpha,  ,\"a,b\",\"a\"\"b\",😀, tail \n",
+      "arguments": "skipinitialspace=True",
+      "expected": [
+        [
+          "alpha",
+          "",
+          "a,b",
+          "a\"b",
+          "😀",
+          "tail "
+        ]
+      ]
+    },
+    {
+      "text": "alpha,,a\\,b,a\"b,😀,tail\nlast,line\\\nnext,back\\\\slash,é,,end\n",
+      "arguments": "quotechar=None, quoting=3, escapechar='\\\\'",
+      "expected": [
+        [
+          "alpha",
+          "",
+          "a,b",
+          "a\"b",
+          "😀",
+          "tail"
+        ],
+        [
+          "last",
+          "line\nnext",
+          "back\\slash",
+          "é",
+          "",
+          "end"
+        ]
+      ]
+    },
+    {
+      "text": "\"alpha\",\"\",\"a,b\",\"a\"\"b\",\"😀\",\"tail\"\r\n\"last\",\"line\nnext\",\"back\\slash\",\"é\",\"\",\"end\"\r\n",
+      "arguments": "quoting=1",
+      "expected": [
+        [
+          "alpha",
+          "",
+          "a,b",
+          "a\"b",
+          "😀",
+          "tail"
+        ],
+        [
+          "last",
+          "line\nnext",
+          "back\\slash",
+          "é",
+          "",
+          "end"
+        ]
+      ]
+    },
+    {
+      "text": "alpha\t\ta,b\ta\"b\t😀\ttail\nlast\t'line\nnext'\tback\\\\slash\té\t\tend\n",
+      "arguments": "delimiter='\\t', quotechar=\"'\", escapechar='\\\\'",
+      "expected": [
+        [
+          "alpha",
+          "",
+          "a,b",
+          "a\"b",
+          "😀",
+          "tail"
+        ],
+        [
+          "last",
+          "line\nnext",
+          "back\\slash",
+          "é",
+          "",
+          "end"
+        ]
+      ]
+    },
+    {
+      "text": "\n,,\n\"\",\"\"\n",
+      "arguments": "delimiter=','",
+      "expected": [
+        [],
+        [
+          "",
+          "",
+          ""
+        ],
+        [
+          "",
+          ""
+        ]
+      ]
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "reason": "The reused for-list checksum case still fed CSV from a native file; it did not exercise borrowed CSV input. Corrected before any VM timing. Original catalog/worker verification and unchanged three-case allocation evidence survive.",
+  "newControls": [
+    {
+      "id": "diagnostic.csv-fulfillment.borrowed.large",
+      "source": "import csv\n\ndef price(row):\n    sku=row['sku']\n    quantity=int(row['quantity'])\n    unit_cents=int(row['unit_cents'])\n    discount_bps=int(row['discount_bps'])\n    tax_bps=int(row['tax_bps'])\n    available=int(row['available'])\n    pack_size=int(row['pack_size'])\n    grams_per_unit=int(row['grams_per_unit'])\n    shipping_cents=int(row['shipping_cents'])\n    if quantity<=0 or pack_size<=0 or quantity>available:\n        return sku,False,0,0,0\n    base=quantity*unit_cents\n    discount=(base*discount_bps+5000)//10000\n    net=base-discount\n    tax=(net*tax_bps+5000)//10000\n    packs=(quantity+pack_size-1)//pack_size\n    shipping=packs*shipping_cents\n    total_grams=quantity*grams_per_unit\n    gross=net+tax+shipping\n    return sku,True,gross,total_grams,packs\n\ntotals={}\ninvalid=0\ncount=0\nwith open('input.csv',newline='') as source:\n    for row in csv.DictReader(source.readlines()):\n        sku,valid,gross,grams,packs=price(row)\n        count+=1\n        if not valid:\n            invalid+=1\n            continue\n        prior=totals.get(sku,(0,0,0))\n        totals[sku]=(prior[0]+gross,prior[1]+grams,prior[2]+packs)\nwith open('report.csv','w',newline='') as target:\n    writer=csv.writer(target,lineterminator='\\n')\n    writer.writerow(['sku','gross_cents','grams','packs'])\n    for sku in sorted(totals): writer.writerow([sku,*totals[sku]])\nprint(count,invalid)\n",
+      "sourceSha256": "1f1cd7e8f69a7019377e86b1879308e4673754f8f3cdc31ed610ad1612bcdea2",
+      "fixtureSha256": "a3604c1d506a8c4a069ab64a2c7ee84813c9b2cd3dbabaeb027aeab0476196b4",
+      "expectedOutput": "4096 632\n",
+      "expectedFilesSha256": "6edb4dbf8f1e84b4c0e1f25d7d4621e8abe06997f312a8d9640e65686e892545",
+      "inputBytes": 126821,
+      "reference": "CPython3.13.2 isolated -I -S",
+      "allFilesAndInputUnchangedVerified": true
+    },
+    {
+      "id": "diagnostic.csv-fulfillment.escaped.large",
+      "source": "import csv\n\ndef price(row):\n    sku=row['sku']\n    quantity=int(row['quantity'])\n    unit_cents=int(row['unit_cents'])\n    discount_bps=int(row['discount_bps'])\n    tax_bps=int(row['tax_bps'])\n    available=int(row['available'])\n    pack_size=int(row['pack_size'])\n    grams_per_unit=int(row['grams_per_unit'])\n    shipping_cents=int(row['shipping_cents'])\n    if quantity<=0 or pack_size<=0 or quantity>available:\n        return sku,False,0,0,0\n    base=quantity*unit_cents\n    discount=(base*discount_bps+5000)//10000\n    net=base-discount\n    tax=(net*tax_bps+5000)//10000\n    packs=(quantity+pack_size-1)//pack_size\n    shipping=packs*shipping_cents\n    total_grams=quantity*grams_per_unit\n    gross=net+tax+shipping\n    return sku,True,gross,total_grams,packs\n\ntotals={}\ninvalid=0\ncount=0\nwith open('input.csv',newline='') as source:\n    for row in csv.DictReader(source):\n        sku,valid,gross,grams,packs=price(row)\n        count+=1\n        if not valid:\n            invalid+=1\n            continue\n        prior=totals.get(sku,(0,0,0))\n        totals[sku]=(prior[0]+gross,prior[1]+grams,prior[2]+packs)\nwith open('report.csv','w',newline='') as target:\n    writer=csv.writer(target,lineterminator='\\n')\n    writer.writerow(['sku','gross_cents','grams','packs'])\n    for sku in sorted(totals): writer.writerow([sku,*totals[sku]])\nprint(count,invalid)\n",
+      "sourceSha256": "f9f7477dfdeff1876f55286db983f6aa6a64861c900423f51a5b9183350e06f7",
+      "fixtureSha256": "da5c252e76c0dad38eb6cce882af2871913cb678d99e7f7a875a0ffd386f5e58",
+      "expectedOutput": "4096 632\n",
+      "expectedFilesSha256": "baedef21ad7ead247f55b49e6623d38d2f6ee381aeab7b7e5ff145d501806bf3",
+      "inputBytes": 262007,
+      "reference": "CPython3.13.2 isolated -I -S",
+      "allFilesAndInputUnchangedVerified": true
+    }
+  ],
+  "sameSourceAndFixtureAcrossRuntimeRoles": true,
+  "normalAndBorrowedAlgorithmsIntentionallyDiffer": true,
+  "noTimingClaim": true
+}
