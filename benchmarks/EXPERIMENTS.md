@@ -7427,3 +7427,26 @@ whole-document source improves3.21–4.13%elapsed with wider CPU support. No ext
 speedup, allocation percentage or general runtime claim. Original setup failures,
 all controls/raw points survive. Full delivery43536449801runs separately;
 publication held and broader text/search performance objective remains open.
+
+## R336 — short configuration phases
+
+[Three current-image phases](results/2026-11-14-config-phases/README.md), one
+101.301s quiet collection/all gates, compare identical96B file edits atcdd92944/
+f4c4f027 with stockCPython3.13.16. Compile36.6–37.3vs34.3–34.4µs(1.06–1.09×),
+warm75.3–76.4vs59.6–59.7µs(1.26–1.28×), compile-run136.5–137.3vs121.4–124.2µs
+(1.10–1.13×). Independently warmed clocks are not additive attribution. Fresh
+process/IQR uncertainty and setup-only catalog/script-data failures survive.
+No compiler cliff or dominant removable setup stage is established; reuse R297
+historical owning-source limits rather than select a blind metadata/visitor/cache
+prototype. No source-pair/allocation gain or broader objective completion claim.
+R335full qualification continues; no unchanged tests/pin promotion repeated.
+
+## R337 — independent optional-provider capability check
+
+[Read-only dev84 assessment](results/2026-11-14-regex-provider-capabilities/README.md)
+records immutable package source834162df separately from newer cleanae463cb4.
+The three Lython integration gaps remain: separate single-match work/result owners,
+native UTF8 name enumeration/copy and token-independent cancellable cursor creation.
+No sibling mutation, pin promotion, current-core dependency or repeated dev80
+semantic/performance qualification. Producer callback/profile improvements do not
+close these distinct contracts. Only affected final adapter qualification waits.

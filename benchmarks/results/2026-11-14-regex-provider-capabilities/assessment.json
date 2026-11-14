@@ -1,0 +1,53 @@
+{
+  "library": "Lokad.Lython",
+  "purpose": "Read-only capability assessment for the independent optional regex adapter; no producer mutation or package promotion",
+  "sourceHead": "ae463cb431d1be2b216aca0667ca4113640b171b",
+  "sourceVersion": "0.5.0-dev.84",
+  "packages": [
+    {
+      "package": "Lokad.Utf8Regex.0.5.0-dev.84.nupkg",
+      "sha256": "8d70db382c8076ec6cc089c5c964e939dce8bd0642f4eff55c6c966613b669a9",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/Lokad/Utf8Regex.git",
+        "branch": "refs/heads/master",
+        "commit": "834162dffe2d15be4245ef3f4e6f72fb83e8b84d"
+      },
+      "publicXmlMembers": [],
+      "metadataOnly": true
+    },
+    {
+      "package": "Lokad.Utf8Regex.PythonRe.0.5.0-dev.84.nupkg",
+      "sha256": "7acba912e773b6a896e683b9a867ae5ea07de322bdc3f23a0cdec8125f8332df",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/Lokad/Utf8Regex.git",
+        "branch": "refs/heads/master",
+        "commit": "834162dffe2d15be4245ef3f4e6f72fb83e8b84d"
+      },
+      "publicXmlMembers": [
+        "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.GetGroupNames",
+        "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.CreateMatchCursor(System.ReadOnlyMemory{System.Byte})",
+        "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.CreateMatchCursor(System.ReadOnlyMemory{System.Byte},System.Int32)",
+        "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.CreateMatchCursor(System.ReadOnlyMemory{System.Byte},System.Int32,System.Threading.CancellationToken)",
+        "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.CreateMatchCursor(System.ReadOnlyMemory{System.Byte},System.Int32,System.Threading.CancellationToken,Lokad.Utf8Regex.IUtf8MemoryAllowance)"
+      ],
+      "metadataOnly": true
+    }
+  ],
+  "sources": {
+    "Utf8PythonRegex.cs": "335c346c37b0a3dcb82951a28d8c86483ad05cd9116d25f4bb68516ff371fc32",
+    "Utf8PythonRegex.Cursor.cs": "065369aef137589d4f553ddeb3acb4ca4b7d6d9279812ca5ee093bceae20edbb",
+    "Utf8PythonRegex.Compilation.cs": "5cb8915ec561a41b673313c8b35a062a258dc34189ba87e0eb81889b420a2e45"
+  },
+  "remainingIntegrationGaps": [
+    "Separate one-match working and escaping-result ownership, instead of using the compiled program account for temporary/result staging",
+    "UTF8 named-group enumeration/copy; GetGroupNames still exposes CLR strings",
+    "Token-independent cursor construction with cancellable preparation; current-token cursor overloads retain construction tokens, while token-free overloads cannot cancel preparation"
+  ],
+  "qualification": "Public XML/source capability inspection only; no semantic/performance/safety qualification claim. Completed dev80 qualification is not repeated.",
+  "coreSourceChanged": false,
+  "coreDependencyChanged": false,
+  "normalAdapterPinChanged": false,
+  "publishedProducerRequirementBlocksOnlyAffectedFinalAdapterQualification": true
+}

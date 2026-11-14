@@ -7,15 +7,19 @@
 | JSON-lines / aggregation helpers |4,096 records /110,592 B|3.390–3.489 ms|4.089–4.134 ms|0.82–0.85×|Diagnostic; spreads2.92/1.10%; maxIQR1.05%|
 | File search / keyword-default helper |2,049 lines /42,010 B; stop after1,025|260.5–265.7 µs|157.7–158.2 µs|1.65–1.69×|Diagnostic; spreads1.98/0.34%; maxIQR5.01%|
 | JSON-to-Markdown report |3,072 records /189,441 B|2.825–2.848 ms|2.330–2.334 ms|1.21–1.22×|Diagnostic; spreads0.82/0.15%; maxIQR4.62%|
+| Configuration JSON edit |96 B|75.3–76.4 µs|59.6–59.7 µs|1.26–1.28×|Diagnostic; spreads1.56/0.15%; maxIQR1.55%|
 
 **Ratio = Lython elapsed / CPython elapsed; above one means slower.** These are
 complete embedding measurements, not isolated interpreter CPU. Spreads are the
 Lython/CPython process-median differences; moving controls and IQRs remain visible.
 
-Measured 2026-11-13 UTC: **runtime d90dd5fe / frozen798edc1d**, against stock
+First five rows measured 2026-11-13 UTC: **runtime d90dd5fe / frozen798edc1d**, against stock
 **CPython 3.13.16**. This runtime passes full Windows/Ubuntu .NET 11/10,
 original stress and installed Release package-consumer qualification.
 [Exact source proof and logs](../benchmarks/results/2026-11-13-dictionary-boundaries/delivery/README.md).
+The96 B configuration row uses **cdd92944 / frozenf4c4f027**, measured2026-11-14;
+its focused checks pass and full platform/stress/package qualification is running.
+[Configuration phases and exact evidence](../benchmarks/results/2026-11-14-config-phases/README.md).
 The quiet Azure F4as_v7 VM runs Ubuntu 24.04.4, four AMD EPYC 9V45 vCPUs,
 16 GiB/no swap and .NET 11 RC3, ordinary workstation GC/tiering and CPython GIL/GC.
 
@@ -30,12 +34,14 @@ attribute differences from older collections to individual changes.
 
 ## Compilation, compile-to-result and startup
 
-The same invoice source separates frontend cost from execution:
+The invoice and96 B configuration sources separate frontend cost from execution:
 
 | Phase | Lython | CPython | Lython / CPython | Status |
 | --- | ---: | ---: | ---: | --- |
-| Compilation alone |101.5–102.4 µs|93.2–93.6 µs|1.08–1.10×|Diagnostic; spreads0.85/0.42%; maxIQR1.48%|
-| Compile and execute once in a running host |7.691–7.876 ms|6.201–6.268 ms|1.23–1.27×|Diagnostic; spreads2.35/1.08%; maxIQR1.16%|
+| Invoice compilation alone |101.5–102.4 µs|93.2–93.6 µs|1.08–1.10×|Diagnostic; spreads0.85/0.42%; maxIQR1.48%|
+| Invoice compile and execute once |7.691–7.876 ms|6.201–6.268 ms|1.23–1.27×|Diagnostic; spreads2.35/1.08%; maxIQR1.16%|
+| Configuration compilation alone |36.6–37.3 µs|34.3–34.4 µs|1.06–1.09×|Diagnostic; spreads1.94/0.17%; maxIQR1.97%|
+| Configuration compile and execute once |136.5–137.3 µs|121.4–124.2 µs|1.10–1.13×|Diagnostic; spreads0.61/2.27%; maxIQR3.65%|
 | Process startup |—|—|—|No current comparison|
 
 Compile-to-result includes compilation and compiled-owner disposal, plus warm
@@ -79,7 +85,8 @@ Cross-collection differences cannot attribute a gain to a particular optimizatio
 
 CPython remains the external baseline. Separate source-pair experiments establish:
 
-- Native helper returns: historical whole-run allocation falls19.92%Run/19.31%Async;
+- Native helper returns: historical whole-run allocation falls19.92%for CSV helpers
+  and19.31%for JSON helpers;
   original elapsed observations are diagnostic.
 - Direct UTF8 formatting/storage: historical allocation falls8.67%; the original
   adverse clock remains preserved. Later shared formatter comparisons support

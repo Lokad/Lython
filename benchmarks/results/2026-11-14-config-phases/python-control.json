@@ -1,0 +1,11 @@
+{
+  "reference": "CPython3.13.2 isolated",
+  "case": "scripts.config-edit.empty",
+  "sourceSHA256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+  "fixtureSHA256": "d97526596af49dd15031ba2cd1f797e7cb61d4cda593e4170e0fc546665d2e09",
+  "inputBytes": {
+    "config.json": 96
+  },
+  "output": "1\n",
+  "exactFiles": true
+}

@@ -1,0 +1,91 @@
+{
+  "ready": {
+    "protocolVersion": 2,
+    "status": "Ready",
+    "engine": "Lython",
+    "catalogSha256": "0f57ef5fcaee590ddac1a403e5d6f1f6d3573b64eaf5058145ff280242abf440",
+    "catalogVersion": 1,
+    "processId": 22236,
+    "runtime": ".NET 11.0.0-rc.3.26522.148",
+    "fileFixtureDirectory": "C:\\Users\\JoannesVermorel\\AppData\\Local\\Temp\\lython-comparison-files-n937k5_h",
+    "runtimeVersion": "11.0.0",
+    "architecture": "X64",
+    "platform": "Microsoft Windows 10.0.26200",
+    "processorCount": 28,
+    "serverGc": false,
+    "gcLatencyMode": "Interactive",
+    "runtimeOverrides": {
+      "DOTNET_gcServer": null,
+      "COMPlus_gcServer": null,
+      "DOTNET_GCHeapCount": null,
+      "COMPlus_GCHeapCount": null,
+      "DOTNET_GCHeapHardLimit": null,
+      "COMPlus_GCHeapHardLimit": null,
+      "DOTNET_GCHeapHardLimitPercent": null,
+      "COMPlus_GCHeapHardLimitPercent": null,
+      "DOTNET_TieredCompilation": null,
+      "COMPlus_TieredCompilation": null,
+      "DOTNET_TieredPGO": null,
+      "COMPlus_TieredPGO": null,
+      "DOTNET_TC_QuickJit": null,
+      "COMPlus_TC_QuickJit": null,
+      "DOTNET_TC_QuickJitForLoops": null,
+      "COMPlus_TC_QuickJitForLoops": null,
+      "DOTNET_ReadyToRun": null,
+      "COMPlus_ReadyToRun": null,
+      "DOTNET_PROCESSOR_COUNT": null
+    },
+    "clockFrequency": 10000000,
+    "clockHighResolution": true,
+    "maximumFrameBytes": 4194304,
+    "maximumBatchIterations": 1000000,
+    "maximumBatchSeconds": 60,
+    "publicLimits": "ordinary defaults; cooperative cancellation; no forced GC",
+    "timingBoundary": "command-v2: per-invocation fixture reset/staging excluded; guest I/O, full output checks and prior-result cleanup included",
+    "ownershipBoundary": "shared unbounded budget; prior-result and per-invocation compilation cleanup timed; final result retained through response; cached compilations disposed on exit",
+    "benchmarkDotNetLoaded": false,
+    "libraries": [
+      {
+        "path": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\xml-iterparse-r335\\candidate\\Lokad.Lython.dll",
+        "sha256": "f4c4f02703370de9e8db2a5eee02a3dd06c509da21f93ba0a52b82b63681315a",
+        "version": "0.11.0+b3c09e774b6371290c587e9af7c8531cd743b6b1",
+        "configuration": "Release",
+        "buildSdk": "11.0.100-rc.3.26522.148",
+        "moduleId": "d47a4e0a-b88c-4190-878a-4a74ba14ef63"
+      },
+      {
+        "path": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\xml-iterparse-r335\\candidate\\Lokad.Lython.Benchmarks.dll",
+        "sha256": "acda3ef3d79d7447cbd6099d903475da61f9b7bd36d949e6d4d3eb6e085de6c6",
+        "version": "1.0.0+7fe53abc4f79661e307a454a526e0d4b89ed2f89",
+        "configuration": "Release",
+        "buildSdk": "11.0.100-rc.3.26522.148",
+        "moduleId": "7f869245-b769-4eeb-a1cd-ac58dd2b45fe"
+      },
+      {
+        "path": "C:\\Users\\JoannesVermorel\\.dotnet11\\shared\\Microsoft.NETCore.App\\11.0.0-rc.3.26522.148\\System.Private.CoreLib.dll",
+        "sha256": "df53885902e896a2b40988237cbe9cbb9f1bb0743200f05fe9257c56a29c5732",
+        "version": "11.0.0-rc.3.26522.148+5254d8bcf59917edc1e1abc33bdf2442b77b1c70",
+        "configuration": "Release",
+        "buildSdk": null,
+        "moduleId": "4d3da96b-886f-4bbc-ab65-95c08e83c881"
+      }
+    ]
+  },
+  "response": {
+    "protocolVersion": 2,
+    "requestId": 1,
+    "caseId": "scripts.config-edit.empty",
+    "status": "Equivalent",
+    "completedInvocations": 2,
+    "elapsedTicks": null,
+    "clockFrequency": 10000000,
+    "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+    "fixtureSha256": "d97526596af49dd15031ba2cd1f797e7cb61d4cda593e4170e0fc546665d2e09",
+    "expectedOutputSha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+    "actualOutputSha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+    "reason": null,
+    "actualFilesSha256": "19bf17f324c2a0c88364658a880ed93c415d01be5012821e77fd603672084ae6"
+  },
+  "workersJoined": true,
+  "fixturesRemoved": true
+}
