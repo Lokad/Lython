@@ -1,0 +1,94 @@
+[
+  {
+    "project": "Lokad.Lython.Tests",
+    "framework": "11",
+    "counters": {
+      "total": "114",
+      "executed": "114",
+      "passed": "114",
+      "failed": "0",
+      "error": "0",
+      "timeout": "0",
+      "aborted": "0",
+      "inconclusive": "0",
+      "passedButRunAborted": "0",
+      "notRunnable": "0",
+      "notExecuted": "0",
+      "disconnected": "0",
+      "warning": "0",
+      "completed": "0",
+      "inProgress": "0",
+      "pending": "0"
+    },
+    "sha256": "453097cb6a6acd5caad966a302c2f9e9d76161e470e0c9db72e9cc2db7495a28"
+  },
+  {
+    "project": "Lokad.Lython.Tests",
+    "framework": "10",
+    "counters": {
+      "total": "114",
+      "executed": "114",
+      "passed": "114",
+      "failed": "0",
+      "error": "0",
+      "timeout": "0",
+      "aborted": "0",
+      "inconclusive": "0",
+      "passedButRunAborted": "0",
+      "notRunnable": "0",
+      "notExecuted": "0",
+      "disconnected": "0",
+      "warning": "0",
+      "completed": "0",
+      "inProgress": "0",
+      "pending": "0"
+    },
+    "sha256": "0fb1a6b6d56ea65ac4406e0b00d70422c330ec6e1b9f79b6b38ec30b9558489d"
+  },
+  {
+    "project": "Lokad.Lython.PublicApi.Tests",
+    "framework": "11",
+    "counters": {
+      "total": "931",
+      "executed": "931",
+      "passed": "931",
+      "failed": "0",
+      "error": "0",
+      "timeout": "0",
+      "aborted": "0",
+      "inconclusive": "0",
+      "passedButRunAborted": "0",
+      "notRunnable": "0",
+      "notExecuted": "0",
+      "disconnected": "0",
+      "warning": "0",
+      "completed": "0",
+      "inProgress": "0",
+      "pending": "0"
+    },
+    "sha256": "18647aa7315287790028122aeb4e23b6a7a708180d20719cf169b781682cada1"
+  },
+  {
+    "project": "Lokad.Lython.PublicApi.Tests",
+    "framework": "10",
+    "counters": {
+      "total": "931",
+      "executed": "931",
+      "passed": "931",
+      "failed": "0",
+      "error": "0",
+      "timeout": "0",
+      "aborted": "0",
+      "inconclusive": "0",
+      "passedButRunAborted": "0",
+      "notRunnable": "0",
+      "notExecuted": "0",
+      "disconnected": "0",
+      "warning": "0",
+      "completed": "0",
+      "inProgress": "0",
+      "pending": "0"
+    },
+    "sha256": "95b32f8eb460c875d755b370fbca0506a570248a570b940d1fa9e86c725de14d"
+  }
+]

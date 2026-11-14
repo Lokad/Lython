@@ -1,0 +1,9 @@
+{
+  "hypothesis": "The native-only loop profile puts505/1033 nearest leaves under AddExactIntegers, including BigInteger.Add185/ctor55leaves, while existing machine arithmetic serves only instruction chains/cells. Reuse that checked kernel for individual ordinary exact operations to eliminate general limb arithmetic for int64 results before considering new storage.",
+  "eliminated": "General BigInteger add/subtract/multiply/division/modulo arithmetic and repeated major-estimation path for checked int64 operands/results; move one shared machine kernel from executable-only file to integer core. Keep boxed BigInteger publication, so allocation reduction is not assumed.",
+  "affected": "Diagnostic100kcounter and complete invoice/CSVfulfillment helpers/aggregates. Text control unchanged; unknown/adverse measurements retained.",
+  "semantics": "Exact signed long overflow promotion including min/-1, Python floor/mod signs and zero errors; bool/reflected/in-place protocols remain outside exact path; same result identities/aliases. No allocation/admission before determining fit; major fallback keeps original preflights/terminal refusal/current token and cleanup.",
+  "comparison": "One frozen source pair with four fresh processes, standard warmups/rotating batches, full output/files/budget checks on quiet VM; complete inside-helper loop, fulfillment/invoice/text. Local allocation counts separately. No prediction of CPU or allocation magnitude.",
+  "completion": "Retain only a useful coherent shared kernel with focused actual11/10 semantic/cancellation/ownership checks and explicit decision on regression debt. If retained, batch full platform/stress/installed consumers; continue remaining scalar/whole-script roadmap.",
+  "publicationHeld": true
+}

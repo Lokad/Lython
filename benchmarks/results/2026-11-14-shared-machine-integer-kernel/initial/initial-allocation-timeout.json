@@ -1,0 +1,14 @@
+{
+  "kind": "Local allocation tool30second process bound exceeded on original four-case catalog; subprocess.run killed and joined process; no final result was written, no allocation or elapsed claim.",
+  "originalCatalogSHA256": "3b312351fbc1dc08886ef20cc2f5b015e20e5a929ca70e67145016a4a31cc27a",
+  "retainedFixtureInventory": [
+    {
+      "path": "lython-comparison-files-46c1f1af08a643ba99d495c275bb2186/job/input.txt",
+      "bytes": 35840,
+      "sha256": "0a79ba23b9833a5d7c8e901f044b329be91f4e1a5deea7f39f5dfcc7de9c6783"
+    }
+  ],
+  "cleanup": "Resolved owned comparison directories verified before removal; no remaining local fixture directory.",
+  "correction": "Narrow existing tool to complete loop and fulfillment, retain same binary/counts/warmup/30second process bound/four fresh processes. Invoice/text CPU controls remain in B731.",
+  "notRuntimeFailure": true
+}

@@ -1,0 +1,16 @@
+{
+  "status": "Initial measured prototype, superseded by a justified nonthrowing-kernel refinement; not committed runtime or fully qualified.",
+  "source": "69d936e1defa317bf5f7675e47e4ae912c6b8796c288899cbbaee9398a97f60c",
+  "reference": "9cfb7d5b41c02fb0ebe503d51f9ad21619b8faddb73691c7331df4c76c464030",
+  "checks": "114internal/931public per actual11/10,2090total; all8frozen source/case golden and budget checks pass.",
+  "allocation": "Complete loop flat; complete fulfillment+3.875B/invocation effectively flat. Four fresh processes, unchanged counters and ownership checks.",
+  "timing": "B731fourjobs167.976s/allgates. Complete loop elapsed\u221214.73..\u221213.29%/CPU\u221214.16..\u221213.27%. Invoice\u22122.59..+1.98%/CPU\u22121.92..+1.54%; fulfillment\u22121.66..+0.35%/CPU\u22123.56..\u22120.26%; text\u22124.04..+1.36%/CPU\u22122.64..+1.82%. Representative CPU benefit remains limited/uncertain; no objective-completion claim.",
+  "refinement": "Shared machine kernel currently signals overflow by exception. Ordinary repeated within-int64 inputs producing wider products can now throw on each probe. Replace this with exact Int128 intermediates/explicit bounds and min/-1 rules; delete overflow catches in chains/cells. Preserve69d9all original timing/allocation/failure evidence. Recheck semantics and make one bounded source-pair confirmation of final code.",
+  "failures": [
+    "New boundary fixture initially passed a typed BigInteger[] where supported host ingress expects object[];2public failures per target retained. Correction changes fixture only;2090focused checks then pass.",
+    "Initial local allocation run exceeded unchanged30second process bound on four cases; process killed/joined and original footprint archived before resolved owned-directory cleanup. Corrected two affected workloads preserve binary/counts/warmup/bound; all4fresh processes pass.",
+    "Source-pair summarizer initially still expected CPython labels; corrected to reference labels with raw data unchanged."
+  ],
+  "publicationHeld": true,
+  "performanceObjectiveStillActive": true
+}
