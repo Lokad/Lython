@@ -7718,3 +7718,15 @@ support and 40.868% less allocation. Accept recorded short/zero 3.7–10.2%, obs
 or resolved helper-overhead claim. 6,086 focused actual 11/10 checks and 32 Python
 controls pass. Initial adverse data and untimed publication-only variant preserved.
 Full delivery and external checkpoint follow; wider roadmap remains active.
+
+## R359 external checkpoint — exact committed source
+
+[B736](results/2026-11-14-primitive-cpython-checkpoint/README.md) at `98acaa5b` /
+frozen `a4bfbfd8` completes nine jobs in 360.622 s/all gates against CPython 3.13.16.
+Invoice warm 1.22–1.24×, compile 1.09–1.10×, fresh 1.22–1.23×; captured text
+1.48–1.49×, JSON 0.83–0.87× (4.04% Lython spread), search 1.64–1.68×, report
+1.21–1.23× (max IQR4.13%), fulfillment 1.25–1.26× and maintained for-CSV
+1.29–1.32×. Boundaries/controls unchanged; no cross-collection attribution or
+extrapolation from the different diagnostic CSVwhile algorithm. Full43605198037
+is pending independently. Old guide and all raw/adverse evidence preserved;
+publication held, ordinary-frame transport source gate and wider roadmap active.
