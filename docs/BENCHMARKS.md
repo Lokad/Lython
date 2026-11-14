@@ -92,87 +92,22 @@ Cross-collection differences cannot attribute a gain to a particular optimizatio
 
 ## Improvements within Lython
 
-CPython remains the external baseline. Separate source-pair experiments establish:
+These source-pair results are separate from CPython and cannot be added together:
 
-- Native integer workspace reuse: a later fulfillment source pair allocates14.57%
-  less per complete run. Warm elapsed is mixed/modestly lower, fresh modestly lower;
-  short helpers regress0.6–2.9%. This is an allocation/ownership improvement, not
-  a substantial CPU claim, and is excluded from the fa40 CPython table above.
-  [Exact source, controls, debt and delivery status](../benchmarks/results/2026-11-14-native-integer-workspace/completion/README.md).
-- Native primitive working storage: one complete 4,096-row CSV while-validator
-  is 21–23% faster warm and 21–22% faster compile-to-result, with CPU support and
-  approximately 40.9% less allocation. Short/zero helpers regress about 4–10%,
-  observed-value helpers about 2–4%; JSON has small adverse CPU direction.
-  [Exact sources, controls and full qualification](../benchmarks/results/2026-11-14-native-primitive-storage/README.md)
-  remain separate from the historical CPython table above.
-- Native helper returns: historical whole-run allocation falls19.92%for CSV helpers
-  and19.31%for JSON helpers;
-  original elapsed observations are diagnostic.
-- Direct UTF8 formatting/storage: historical allocation falls8.67%; the original
-  adverse clock remains preserved. Later shared formatter comparisons support
-  report CPU/elapsed direction on their specific sources.
-- Native integer chains remove16,384boxes/524,288 B per invoice invocation:
-  allocation falls8.46–8.48%, with controlled invoice CPU support. Report regression
-  debt remains unresolved.
-- Shared immutable builtin definitions remove2,568 B from the builtin factory,
-  25.06% of that factory, not whole execution. Local factory clocks are adverse;
-  complete-script results are modest or inconclusive.
-- Qualified XML settings selection removes intermediate match lists and UTF16 tag
-  conversion: allocation falls44.83%, with elapsed about35.6% lower in confirmation.
-  This is a source-specific comparison; [search-control uncertainty remains](../benchmarks/results/2026-11-13-xml-selection/README.md).
-- Incremental XML permits early exit before constructing unused records. One
-  622,640 B first-record lookup takes about0.081ms instead of25–26ms after whole-tree
-  construction. [Both script algorithm and runtime differ](../benchmarks/results/2026-11-14-incremental-xml/README.md);
-  this is not an interpreter or CPython speedup. Whole-document controls and
-  conservative streaming-memory limitations remain explicit.
-- Numeric while helpers: an identical4,096-row CSV validation/report script runs
-  17–19.5%faster warm and14.8–16.8%faster compile-to-result, with wider CPU support.
-  Allocation stays flat; [invoice control uncertainty and qualification status](../benchmarks/results/2026-11-14-native-backedges/README.md)
-  remain explicit. This source-specific result does not change the CPython rows.
-- Larger closed helpers reuse admitted bound storage: an identical4,096-row CSV
-  fulfillment/pricing/report script allocates9.84%less and runs12.9–13.7%faster warm,
-  14.6–16.1%faster compile-to-result, with wider CPU support. [Small-helper control
-  uncertainty and qualification status](../benchmarks/results/2026-11-14-native-owned-slots/README.md)
-  remain explicit; this is a separate source pair, not a CPython comparison.
-- Shared integer chains reduce allocation10.45%for a complete4,096-row fulfillment
-  script with arithmetic in an ordinary loop. Warm elapsed improves3–4%and compile-
-  to-result1.4–2.7%, with wider CPU support. This is a modest CPU result; [variable
-  helper controls and adverse text elapsed debt](../benchmarks/results/2026-11-14-shared-integer-chains/README.md)
-  remain explicit. The CPython rows use the earlier qualified source above.
-- Captured-cell scalar storage removes per-update boxes in the complete3,072-line
-  text script: allocation falls18.00%. Warm elapsed is5.2–7.6%lower and wider CPU
-  4.8–6.9%lower, but unchanged direct-text controls also improve with5.58%process
-  spread. CPU attribution remains uncertain. [Evidence and delivery status](../benchmarks/results/2026-11-14-captured-scalar-storage/README.md)
-  separate this source pair from the CPython rows and frequent-read limitations.
-  Full Windows/Ubuntu .NET11/10, original stress and installed-consumer
-  [qualification passes](../benchmarks/results/2026-11-14-captured-scalar-storage/delivery/README.md).
+| Change / complete affected script | CPU/elapsed evidence | Allocation | Limits and exact evidence |
+| --- | --- | ---: | --- |
+| Protected try/except helpers /invoice and file search | Invoice17–18.5%faster warm,16–19%faster compile-to-result; search41–43%faster, with CPU support | −29.19%/−74.65% | Later b5a6426e versus1c5/ff2; full qualification pending. Short calls+.5–3.4%, text uncertain. [Source and every control](../benchmarks/results/2026-11-14-protected-helper-activation/README.md). |
+| Native primitive storage /CSV while-validator | Warm21–23%lower, compile-to-result21–22%lower, supportingCPU | −40.9% | Source-specific; short/zero helpers+4–10%, observed+2–4%, small JSONCPU debt. [Qualified evidence](../benchmarks/results/2026-11-14-native-primitive-storage/README.md). |
+| Native integer workspace reuse /fulfillment | Warm mixed/modestly lower; fresh modestly lower | −14.57% | Allocation/ownership improvement; short calls+.6–2.9%. [Qualified source and debt](../benchmarks/results/2026-11-14-native-integer-workspace/delivery/README.md). |
+| Direct UTF8 formatting /report | Controlled confirmation supports5–8%lower elapsed/CPU | −8.67% | Historical revision; original adverse15.125ms remains unexplained. [Confirmation and original conditions](../benchmarks/results/2026-11-02-formatting-confirmation/README.md). |
 
-- Compiled immutable tuples remove repeated construction: invoice/fulfillment
-  allocation falls7.51/4.68%. Warm CPU results are modest; compilation/fresh and
-  unchanged text controls remain inconclusive. The[exact source-pair evidence](../benchmarks/results/2026-11-14-compiled-literal-tuples/README.md)
-  preserves all adverse results, corrected ownership and delivery status. These
-  source-pair measurements remain distinct from the refreshed CPython rows.
-
-- Larger native helpers reuse the direct-unpack return convention: complete CSV
-  fulfillment allocation falls6.77%, warm elapsed1.3–3.1%and compile-to-result
-  1.1–4.7%lower, with modest CPU support. Invoice also improves and text controls
-  remain variable;[source-pair evidence/status](../benchmarks/results/2026-11-14-owned-native-tuple-returns/comparison/README.md)
-  keep attribution limits separate from CPython rows. Full Windows/Ubuntu actual
-  .NET11/10, original stress and installed consumers
-  [pass43583650094](../benchmarks/results/2026-11-14-owned-native-tuple-returns/delivery/README.md).
-
-- Shared machine-integer arithmetic reduces a complete100,000-add numeric script's
-  warm elapsed19.7–20.7%, with similar wider CPU direction and flat allocation.
-  Invoice/fulfillment CPU have small adverse directions and text controls are
-  unstable; this does not establish representative-script or CPython improvement.
-  [Exact sources, controls and qualification status](../benchmarks/results/2026-11-14-shared-machine-integer-kernel/README.md)
-  remain separate from the external baseline above. Full Windows/Ubuntu actual
-  .NET11/10, original stress and installed consumers
-  [pass43593185490](../benchmarks/results/2026-11-14-shared-machine-integer-kernel/delivery/README.md).
-
-[Experimental history and source-specific evidence](../benchmarks/EXPERIMENTS.md)
-preserve controlled comparisons, rejected designs, adverse results and qualification.
-Do not add these percentages together or apply them to the CPython ratios.
+Native helper returns established about19–20%less allocation; their original
+elapsed gains remain diagnostic. Other source pairs, rejected designs, range
+microbenchmarks and qualification procedures remain in the
+[experimental history](../benchmarks/EXPERIMENTS.md) and the
+[previous guide](../benchmarks/results/2026-11-14-protected-helper-activation/prior-BENCHMARKS.md).
+The external table above retains its exact older revisions until refreshed;
+these improvements do not establish current CPython ratios or embedding latency.
 
 ## Reproducing measurements
 

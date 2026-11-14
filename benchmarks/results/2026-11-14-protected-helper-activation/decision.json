@@ -1,0 +1,157 @@
+{
+  "status": "Retain pending full platform/stress/installed-package qualification",
+  "coreSHA256": {
+    "reference": "ff2b5d76803f68d123f06d457c419c01ce76c42192a844c839583041c4493318",
+    "candidate": "b5a6426eeb88a41bb61703802375ce26da843814fee7fbf13fbe80c5b3f77886"
+  },
+  "removed": "Blanket exception-region native exclusion and eager successful try/except helper context/backing allocation. Existing pending-exception routing handles faults at the exact PC without operation replay.",
+  "preserved": "Final values/primitive working storage, original PC/regions, first refusal/cancellation, active ownership and managed stack. Finally/with/generators keep their existing route. No additional exception dispatcher or public policy.",
+  "focusedChecks": [
+    {
+      "framework": "net11.0",
+      "project": "Lokad.Lython.Tests",
+      "selection": "(Category!=Stress)&(FullyQualifiedName~ExceptionArgumentAdmissionTests|FullyQualifiedName~ExceptionShellStorageTests|FullyQualifiedName~ExecutableIteratorCleanupTests|FullyQualifiedName~ExecutableAsyncIteratorCleanupTests|FullyQualifiedName~NativeIntegerWorkspaceOwnershipTests|FullyQualifiedName~NativeFunctionRefundTests|FullyQualifiedName~SimpleFunctionExecutionBoundaryTests|FullyQualifiedName~ComposedNativeCallTests|FullyQualifiedName~CompletedHelperCallOwnershipTests|FullyQualifiedName~OwnedTupleReturnTests|FullyQualifiedName~NativeTupleReturnTests|FullyQualifiedName~FunctionWorkspaceOwnershipTests|FullyQualifiedName~FunctionBodyTemporaryLifetimeTests|FullyQualifiedName~CallBindingSubsystemTests|FullyQualifiedName~FunctionDefaultConstructionTests|FullyQualifiedName~ReentrantAdmissionOwnershipTests|FullyQualifiedName~ManagedStackGuardTests|FullyQualifiedName~ExecutableCallTransferTests|FullyQualifiedName~DeferredFunctionOwnershipTests|FullyQualifiedName~NativeIntegerChainTests|FullyQualifiedName~NativeSequenceAdmissionTests)",
+      "exitCode": 0,
+      "counters": {
+        "total": "181",
+        "executed": "181",
+        "passed": "181",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      }
+    },
+    {
+      "framework": "net11.0",
+      "project": "Lokad.Lython.PublicApi.Tests",
+      "selection": "(Category!=Stress)&(FullyQualifiedName~ProtectedHelperExecutionTests|FullyQualifiedName~NativeCallbackUnwindTests|FullyQualifiedName~RecursiveExceptionPropagationTests|FullyQualifiedName~ExceptionTypeProtocolCompatibilityTests|FullyQualifiedName~IntegerPublicationTests|FullyQualifiedName~OrdinaryFunctionCallTests|FullyQualifiedName~OrdinaryMethodCallTests|FullyQualifiedName~PreparedFunctionDefaultsTests|FullyQualifiedName~PreparedFunctionHostLifetimeTests|FullyQualifiedName~ReceiverFunctionLifetimeTests|FullyQualifiedName~ReceiverFunctionEntryTests|FullyQualifiedName~OrderedFunctionContinuationTests|FullyQualifiedName~PositionalCallSemanticsTests|FullyQualifiedName~PrefixCallCompatibilityTests|FullyQualifiedName~NativeTupleReturnTests|FullyQualifiedName~FrameIntegerLifetimeTests|FullyQualifiedName~ForHelperExecutionTests|FullyQualifiedName~WhileHelperExecutionTests|FullyQualifiedName~RangeHelperExecutionTests|FullyQualifiedName~StackGuardScenarioTests)",
+      "exitCode": 0,
+      "counters": {
+        "total": "306",
+        "executed": "306",
+        "passed": "306",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      }
+    },
+    {
+      "framework": "net10.0",
+      "project": "Lokad.Lython.Tests",
+      "selection": "(Category!=Stress)&(FullyQualifiedName~ExceptionArgumentAdmissionTests|FullyQualifiedName~ExceptionShellStorageTests|FullyQualifiedName~ExecutableIteratorCleanupTests|FullyQualifiedName~ExecutableAsyncIteratorCleanupTests|FullyQualifiedName~NativeIntegerWorkspaceOwnershipTests|FullyQualifiedName~NativeFunctionRefundTests|FullyQualifiedName~SimpleFunctionExecutionBoundaryTests|FullyQualifiedName~ComposedNativeCallTests|FullyQualifiedName~CompletedHelperCallOwnershipTests|FullyQualifiedName~OwnedTupleReturnTests|FullyQualifiedName~NativeTupleReturnTests|FullyQualifiedName~FunctionWorkspaceOwnershipTests|FullyQualifiedName~FunctionBodyTemporaryLifetimeTests|FullyQualifiedName~CallBindingSubsystemTests|FullyQualifiedName~FunctionDefaultConstructionTests|FullyQualifiedName~ReentrantAdmissionOwnershipTests|FullyQualifiedName~ManagedStackGuardTests|FullyQualifiedName~ExecutableCallTransferTests|FullyQualifiedName~DeferredFunctionOwnershipTests|FullyQualifiedName~NativeIntegerChainTests|FullyQualifiedName~NativeSequenceAdmissionTests)",
+      "exitCode": 0,
+      "counters": {
+        "total": "181",
+        "executed": "181",
+        "passed": "181",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      }
+    },
+    {
+      "framework": "net10.0",
+      "project": "Lokad.Lython.PublicApi.Tests",
+      "selection": "(Category!=Stress)&(FullyQualifiedName~ProtectedHelperExecutionTests|FullyQualifiedName~NativeCallbackUnwindTests|FullyQualifiedName~RecursiveExceptionPropagationTests|FullyQualifiedName~ExceptionTypeProtocolCompatibilityTests|FullyQualifiedName~IntegerPublicationTests|FullyQualifiedName~OrdinaryFunctionCallTests|FullyQualifiedName~OrdinaryMethodCallTests|FullyQualifiedName~PreparedFunctionDefaultsTests|FullyQualifiedName~PreparedFunctionHostLifetimeTests|FullyQualifiedName~ReceiverFunctionLifetimeTests|FullyQualifiedName~ReceiverFunctionEntryTests|FullyQualifiedName~OrderedFunctionContinuationTests|FullyQualifiedName~PositionalCallSemanticsTests|FullyQualifiedName~PrefixCallCompatibilityTests|FullyQualifiedName~NativeTupleReturnTests|FullyQualifiedName~FrameIntegerLifetimeTests|FullyQualifiedName~ForHelperExecutionTests|FullyQualifiedName~WhileHelperExecutionTests|FullyQualifiedName~RangeHelperExecutionTests|FullyQualifiedName~StackGuardScenarioTests)",
+      "exitCode": 0,
+      "counters": {
+        "total": "306",
+        "executed": "306",
+        "passed": "306",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      }
+    }
+  ],
+  "finalSupplement": [
+    {
+      "framework": "net11.0",
+      "counters": {
+        "total": "16",
+        "executed": "16",
+        "passed": "16",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      }
+    },
+    {
+      "framework": "net10.0",
+      "counters": {
+        "total": "16",
+        "executed": "16",
+        "passed": "16",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      }
+    }
+  ],
+  "independentPythonControls": 124,
+  "wholeScriptGoldens": 16,
+  "acceptedDebt": "Short helper elapsed +0.48..3.38%, widerCPU +0.74..2.75%, reference process spread2.50%; text -.30..+3.72%, mixedCPU and reference spread2.75%. Preserve observed short debt and text uncertainty; no neutrality claim or attributed cause. Earlier R359/R361/R365 debt remains a separate0.11 decision.",
+  "completion": "Commit exact retained source, full Windows/Ubuntu actual11/10/originalstress/installedRelease consumers at this boundary. Then targeted external CPython update for the new protected representative forms; existing B747 remains earlier-source evidence. Publication held.",
+  "limitations": "Finally/with/generators retain the existing route. Fault promotion can require funded storage; tiny-budget thresholds need not match. No heap/RSS/embedding tail-latency result or cumulative speedup. Initial source fixture staticLA3146 and compilation corrections are retained; final fixture initializes its exception variable and still checks deletion.",
+  "next": "Broader representative performance/regex tracks remain active. No unchanged full qualification or source retiming."
+}

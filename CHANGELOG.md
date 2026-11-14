@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Run eligible `try`/`except` helpers through the existing synchronous executable
+  prefix. Transfer faults at their exact instruction into ordinary handler
+  routing without replay; preserve cancellation, refused admission and ownership.
+
 - Reuse larger native integer working buffers through the existing execution-owned
   workspace policy. Keep idle and active capacity charged until ownership ends,
   preserving admission, cancellation, materialization and deterministic cleanup.

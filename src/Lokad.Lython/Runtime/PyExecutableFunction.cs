@@ -166,7 +166,8 @@ internal sealed class PyExecutableFunction : PyFunctionBase
                 rented = true;
                 values[..state.LiveExtent].CopyTo(owned.Values);
             }
-            frame = LythonRuntime.CreateNativeContinuation(this, owned, span, state.Index, state.LiveExtent, consumedByIteration);
+            frame = LythonRuntime.CreateNativeContinuation(this, owned, span, state.Index, state.LiveExtent,
+                consumedByIteration, state.Failure);
             state.TransferOwnership(frame);
             transferred = true;
         }

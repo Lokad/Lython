@@ -1,0 +1,39 @@
+{
+  "coreSHA256": {
+    "reference": "ff2b5d76803f68d123f06d457c419c01ce76c42192a844c839583041c4493318",
+    "candidate": "b5a6426eeb88a41bb61703802375ce26da843814fee7fbf13fbe80c5b3f77886"
+  },
+  "toolSHA256": "3a3f32328ecc937b017c89e1ec8b42475c2296c2ca990d01fa59c9c74c38c1e6",
+  "elapsedSeconds": 35.59581929957494,
+  "rows": [
+    {
+      "case": "scripts.csv-invoice.large",
+      "referenceBytes": 5245534,
+      "candidateBytes": 5245707.625,
+      "changePercent": 0.0033099585285301103
+    },
+    {
+      "case": "scripts.file-search.large",
+      "referenceBytes": 147394.875,
+      "candidateBytes": 147544,
+      "changePercent": 0.10117380268479526
+    },
+    {
+      "case": "scripts.csv-invoice.large.protected",
+      "referenceBytes": 7408429,
+      "candidateBytes": 5245694,
+      "changePercent": -29.192896361698274
+    },
+    {
+      "case": "scripts.file-search.large.protected",
+      "referenceBytes": 582077.75,
+      "candidateBytes": 147554.875,
+      "changePercent": -74.65031518555725
+    }
+  ],
+  "allGoldensAndSharedBudgetChecksPassed": true,
+  "allWorkersJoinedAndFixturesRemoved": true,
+  "unchangedReferenceReused": "Exact ff2b5d76, tool, catalog/source/fixtures from R367; raw retained there, no repeated unchanged allocation run.",
+  "notElapsedOrCpuMeasurement": true,
+  "boundary": "Complete warm runs including mediated I/O/reset, all output/file checks and result cleanup; compilation/startup/final cache teardown excluded. Process-wide CLR allocation counters, no forced GC; no timing comparison."
+}

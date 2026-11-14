@@ -357,11 +357,18 @@ before binding. If disposal is pending, the existing funded result operand and
 store remain the continuation after awaited cleanup. No result is published early
 and no extra async completion stage is needed.
 Failable reads retain their source spans; evaluated call and protocol packets
-retain snapshots across callbacks. Small acyclic helpers use the final executable
+retain snapshots across callbacks. Eligible synchronous helpers use the final executable
 slots and instruction positions directly in a private managed span. Parameters
 bind once, local initializers run once, and returned tuples/lists remain ordinary
 Python values. There is no separate native expression graph or whole-body type
 proof. Each operation checks its actual operands after earlier effects and admission.
+
+Eligible `try`/`except` helpers use the same prefix through their normal body.
+Handler-only instructions do not require a lexical frame before that body runs.
+A catchable fault transfers its exact instruction and materialized live values
+to the existing pending-exception router; the failed operation is never replayed.
+Finally regions, context managers and generators keep their existing framed path.
+Cancellation and refused admission remain terminal through guest handlers.
 
 Eligible tuple returns consumed by immediate exact unpacking can place their
 elements directly in the caller's admitted operands, including helpers using larger

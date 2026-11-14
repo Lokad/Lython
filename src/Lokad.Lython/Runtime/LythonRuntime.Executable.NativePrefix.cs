@@ -31,6 +31,7 @@ internal sealed partial class LythonRuntime
         private bool _transferred;
         private ExecutionContext? _preparedChild;
         private MemoryGovernor? _preparedChildOwner;
+        internal LythonRuntimeException? Failure { get; private set; }
 
         internal bool Run(LythonSourceSpan entrySpan, out object result, Span<object> unpackedReturn = default)
         {
@@ -54,7 +55,14 @@ internal sealed partial class LythonRuntime
             {
                 if (previous is not null && !ReferenceEquals(error.OriginalPythonException, previous))
                     error.PythonContext ??= previous;
-                throw;
+                if (Code.ExceptionRegions.Count == 0) throw;
+                // First refusal and cancellation still fail the command. A
+                // catchable guest fault transfers once, without replaying its
+                // operation or building a second exception dispatcher here.
+                _scope.CheckExecution(entrySpan);
+                Failure = error;
+                result = PyNone.Instance;
+                return false;
             }
             finally
             {
@@ -193,7 +201,7 @@ internal sealed partial class LythonRuntime
                         Index = instruction.TargetIndex;
                         continue;
                     case ExecutableOpCode.AbruptJump:
-                        // Native eligibility excludes protected regions. The
+                        // Native eligibility excludes finally regions. The
                         // only additional work on break is retiring its cursor.
                         if (instruction.DiscardIterator) Trim(LiveExtent - 1);
                         Index = instruction.TargetIndex;
@@ -553,21 +561,23 @@ internal sealed partial class LythonRuntime
     }
 
     internal static ExecutionContext CreateNativeContinuation(PyExecutableFunction function,
-        in BoundCallArguments bound, LythonSourceSpan span, int index, int liveExtent, bool consumedByIteration)
+        in BoundCallArguments bound, LythonSourceSpan span, int index, int liveExtent, bool consumedByIteration,
+        LythonRuntimeException? failure)
     {
         var frame = function.EnterInvocationFrame(bound, span, enterFunctionCall: false);
         InitializeExecutableFrame(function.CodeObject, frame, bound, function.ClosureCells,
             argumentsAreLocals: true, lookupOwner: function, returnConsumedByIteration: consumedByIteration);
-        frame.RestoreNativePosition(index, liveExtent);
+        frame.RestoreNativePosition(index, liveExtent, failure);
         return frame;
     }
 
     internal sealed partial class ExecutionContext
     {
-        internal void RestoreNativePosition(int index, int liveExtent)
+        internal void RestoreNativePosition(int index, int liveExtent, LythonRuntimeException? failure)
         {
             _execution.InstructionIndex = index;
             _execution.Stack.RestoreNativeExtent(liveExtent);
+            _injectedException = failure;
         }
     }
 }

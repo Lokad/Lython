@@ -1,5 +1,11 @@
 # Testing Lython
 
+[Protected helpers](Lokad.Lython.PublicApi.Tests/ProtectedHelperExecutionTests.cs)
+cover exact fault positions, handler headers/variables, exception context, live
+defaults, aliases and wider working storage. Genuine handler I/O joins cleanup on
+cancellation; empty protected loops remain cancellable, retained results stay
+charged, and refused admission cannot be suppressed by a guest handler.
+
 [XML input](Lokad.Lython.Tests/XmlUtf8ReaderTests.cs) covers scalar boundaries,
 single-code-unit reads/peeks, borrowed source funding and terminal refusal.
 Cancellation is triggered by actual decoded text during one long XML token;

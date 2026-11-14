@@ -7930,3 +7930,18 @@ gain. Select R368 normal protected-helper prefix with exact-fault transfer into
 existing pending-exception routing, subject to semantic/source feasibility and a
 bounded affected/control completion comparison. Finally/with/generators keep
 their current route. No code retained by this diagnostic; publication held.
+
+## R368 — protected helper activation retained
+
+[B756](results/2026-11-14-protected-helper-activation/README.md), b5a6426e versus
+qualified1c5/ff2, completes eight jobs304.418s/all gates. Same protected invoice
+warm elapsed17–18.5%lower/fresh16–19%lower; protected search41–43%lower, supporting
+widerCPU. Separate allocation−29.19/−74.65%. Keep short+.48..+3.38%elapsed and
+text uncertainty; no universal/cumulative/CPython claim. Remove blanket protected
+exclusion/eager successful activation; exact faults use existing pending router,
+finally/with/generators retain existing path. Focused actual11/10 each181internal+
+306public; final16protected checks each,124isolatedPythoncontrols/16goldens.
+Initial static-scope fixture rejection and compilation corrections preserved;
+corrected fixture retains deletion assertion. Retain pending full platform,
+originalstress/installed-consumer delivery. Final0.11debt decision stays open;
+publication held, independent regex and representative performance continue.

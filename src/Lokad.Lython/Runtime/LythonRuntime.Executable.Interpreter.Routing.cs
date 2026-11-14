@@ -4,7 +4,7 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class ExecutionContext
     {
-        // Resume/child completion are the only producers of pending exceptions.
+        // Resume/child completion and native fault transfer produce pending exceptions.
         // Settle operand cleanup first, then route once before executing again.
         // Active delegation forwards its injected exception at YieldFrom instead.
         private void RoutePendingFrameException()

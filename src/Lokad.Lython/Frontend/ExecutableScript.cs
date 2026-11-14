@@ -561,7 +561,7 @@ internal sealed partial class ExecutableCodeObject
         PrepareNativeSegments(callSites);
         var integerStorageCapacity = 0;
         CanRunNativeInstructions = IsFunctionScope && !RequiresLocalVariableMirroring && capturedLocalSlots.Count == 0
-            && exceptionRegions.Count == 0
+            && !ExceptionRegions.Any(region => region.FinallyIndex is not null)
             && PrepareInlineStorage(out integerStorageCapacity);
         NativeIntegerStorageCapacity = integerStorageCapacity;
     }
@@ -622,8 +622,19 @@ internal sealed partial class ExecutableCodeObject
     {
         integerStorageCapacity = 0;
         var writesIntegers = false;
-        foreach (ref readonly var instruction in Instructions.AsSpan())
+        for (var index = 0; index < Instructions.Length; index++)
         {
+            // Faults transfer at their original PC into ordinary handler
+            // routing. Handler-only operations never run in this native prefix.
+            var handlerOnly = false;
+            for (var regionIndex = 0; regionIndex < ExceptionRegions.Count; regionIndex++)
+            {
+                var region = ExceptionRegions[regionIndex];
+                if (region.ExceptIndex is not null && index >= region.SuiteStartIndex && index <= region.SuiteEndIndex)
+                { handlerOnly = true; break; }
+            }
+            if (handlerOnly) continue;
+            ref readonly var instruction = ref Instructions[index];
             if (!IsInlineInstruction(instruction)) return false;
             writesIntegers |= instruction.OpCode == ExecutableOpCode.Binary
                 && instruction.BinaryOperator is BinaryOperatorSyntax.Add or BinaryOperatorSyntax.Subtract
