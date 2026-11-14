@@ -1,0 +1,14 @@
+{
+  "status": "Bounded call/publication attribution gate complete; no new generic call rewrite selected",
+  "source": "4beb9ecf/frozenbed6e57e",
+  "samples": 1069,
+  "nativeBodyLeafSamples": 103,
+  "nativeBodyBytes": 11172,
+  "evidence": "Mixed ordinary dispatch/native execution/CSV/arithmetic; call entry leaf counts include useful execution and are not removable shares. Native working values still materialize before ordinary observation. No measured causal attribution for R370 invoice regression.",
+  "existingRemovals": "Final argument/local/operand storage, direct binding, deferred contexts, exact single-transfer continuation, DictReader backing adoption, final UTF8 split/case paths already exist. Do not propose these again.",
+  "notSelected": "Another arena/controller, global tagged-value rewrite, blanket native body check removal or per-operation scalar tweak. Source does not establish a dominant missing call bridge; not a permanent design ban.",
+  "next": "Use coherent delivery/external checkpoint to refresh changed complete CSV workloads and text control. Ordinary instruction/input publication and per-record construction remain source areas, but no redesign is promoted without an actual displaced stage and semantic/lifetime acceptance. Keep R370 invoice debt explicit.",
+  "qualification": "Current runtime CI43649993181 still independent; original stale profile-template source/delivery labels corrected separately. Exact image/catalog/fullsource hashes and committed source proof identify actual4beb/bed. Profile is not elapsed, allocation, startup, RSS or CPython measurement.",
+  "productionChanged": false,
+  "publicationHeld": true
+}

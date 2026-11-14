@@ -7993,3 +7993,34 @@ Actual11/10 each62internal+561public,136Pythoncontrols/16goldens pass. Test-only
 reflection return mismatch is corrected with all assertions/first failure retained.
 Full platform/originalstress/installed consumers follow at this retained boundary.
 Complete-call/publication and independent regex milestones continue; publication held.
+
+## R371 — current complete invoice attribution
+
+[B760](results/2026-11-14-call-publication-attribution/README.md),4beb/bed,
+one5s199Hz capture/8guest-second warmup:1,069guest leaves,81unknown/zeroambiguous,
+103native-body leaves uniquely match11,172byte same-processTier1body. Mixed
+dispatch/call/CSV/arithmetic does not establish a dominant removable frame stage.
+Source confirms final binding/slots, DictReader adoption and final UTF8construction
+already exist. Close gate with no new generic arena/controller or scalar tweak;
+R370regression remains debt, no causal attribution or CPU forecast. Original
+inherited source/delivery labels remain with explicit metadata correction. Every
+quiet/image/golden/ownership/archival gate passes; users/RAMclosed. Continue changed
+CSV external checkpoint and substantive design selection; publication held.
+
+R370exact4beb/bed [passes43649993181](results/2026-11-14-builtin-scalar-publication/delivery/README.md):
+Windows/Ubuntu actual11/10, each4,776internal+17,847public ordinary/original13/406stress,
+installedRelease consumers.582inputproof/16summaries/full logs cached; never requery.
+R369independent low-stack native test included, body admission retained. All invoice
+regression debt/uncertain controls remain; publication held.
+
+## R372 — coherent current CPython checkpoint
+
+[B761](results/2026-11-14-current-cpython-checkpoint/README.md), qualified4beb/bed,
+five jobs200.366s/all gates: ordinary invoice1.23×CPython; fulfillment1.15–1.19×warm,
+1.19–1.20×fresh,1.11×compile; text1.46–1.53×with4.46%Lythonspread. Fulfillment warm
+Lythonspread2.53%; keep both variable rows and every adverse/IQR/CPU observation.
+Compile.128ms versus~8msexecution does not establish frontend dominance. Updated
+guide keeps other workload rows at named older revisions. No cross-collection
+attribution, R370debt erasure or embedding-latency claim. No new core/catalog upload;
+one archived rawJSON duplicate deduplicates with exact custody proof/floors unchanged.
+All users/RAMclosed; substantive performance/debt/regex objectives continue.

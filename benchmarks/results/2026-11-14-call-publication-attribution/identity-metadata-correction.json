@@ -1,0 +1,11 @@
+{
+  "originalIdentitySHA256": "0eea2d28ef944f96e3d89062f234d2562d35d482756740d3e1a0a32b41432f88",
+  "reason": "Profile template inherited sourceProofCommit/sourceProofSHA256/fullDelivery labels. Original bytes retained; actual core/catalog/fullsource hash and sourceRevision already point to4beb/bed and are checked. This corrects labels only; no rerun or discarded samples.",
+  "correctedFields": {
+    "sourceProofCommit": "4beb9ecf96769af57f937d72fba33363b57bac35",
+    "sourceProofSHA256": "8484728312a4b33719ef698fe01dacdc45397f94790635c70df194f6f502fe53",
+    "fullDelivery": "43649993181 pending; previous3994/b5fullyqualified43640155007cached"
+  },
+  "productionInputs": 582,
+  "sourceProof": "All frozen source bytes match commit with explicit newline normalization; independent rebuilt binary identity is not inferred."
+}

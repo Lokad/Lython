@@ -1,0 +1,12 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "ramTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 266371072,
+  "archiveSHA256": "51d2f0c6c5904a2eacbc6a90b524c9fcdd7ab355c7c8d7bf41a0d3a9b4f6e839",
+  "source": "Committed4beb9ecf96769af57f937d72fba33363b57bac35/frozenbed6e57e060da7983b4c995f75c6d6adbb335cbe91aecca1e7a943840c44df54; R371 complete invoice publication attribution",
+  "performanceComparison": false
+}

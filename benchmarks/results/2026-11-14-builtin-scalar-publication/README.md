@@ -68,3 +68,7 @@ no VM users/fixtures remain. SHA256:
 [Decision and completion debt](decision.json),[all timing/control/IQR](timing-summary.json),
 [allocation](allocation-summary.json),[raw](observations.tgz),
 [source/image/local checks/first failure/custody](sources-and-local-checks.tar.xz).
+
+Exact4beb/bedsubsequently [passes full43649993181](delivery/README.md).
+Original pending metadata/raw remains historical; every adverse/control/debt
+observation above remains. Publication held.

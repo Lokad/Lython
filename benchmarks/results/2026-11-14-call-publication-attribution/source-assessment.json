@@ -1,0 +1,23 @@
+{
+  "head": "4beb9ecf96769af57f937d72fba33363b57bac35",
+  "core": "bed6e57e060da7983b4c995f75c6d6adbb335cbe91aecca1e7a943840c44df54",
+  "sourceFindings": [
+    "Small native calls already copy evaluated arguments directly into final fixed private storage; wider calls share the admitted full locals array. No CallArgumentValue array or second local/operand backing on that path.",
+    "Ordinary/native entry already shares selected call binding and exact continuation. Copy avoidance by borrowing more caller slots would require lifetime/layout changes; no missing global arena justifies repeating slower R364/R268.",
+    "Normal DictReader transfers the funded field array into shared-key dictionary storage; no intermediate guest list or queued-row batch remains.",
+    "Split/case paths already write final UTF8 fragments/adopt final backing. No removed per-character/per-token conversion may be claimed again."
+  ],
+  "question": "Current complete invoice remains materially call/dispatch/collection mixed, and R370 invoice CPU is adverse despite lower allocation. One current-image whole-script sample should choose a real remaining stage; not a causal source-pair or forecast.",
+  "scope": "One5s199Hz cpu-clock/fp invoice capture after8guest-seconds warmup; same-process native-body disassembly/PerfMap diagnostics only; complete script/worker/adapter/catalog unchanged. All thread CPU and unknown/ambiguous samples retained.",
+  "stopping": "One usable attribution with source inspection: select a complete stage and displaced code, or explicitly decline a new call rewrite and move to collection/text/frontend. No another micro-optimization or unchanged timing campaign.",
+  "sourcePaths": {
+    "src/Lokad.Lython/Runtime/PyExecutableFunction.cs": "f1ad569622f900ff3c15fefd1b9803fe7c24307e51341b75e8fb13faa3396516",
+    "src/Lokad.Lython/Runtime/PyFunctionBinding.cs": "0c32f32a4b613d5060b72d3d7aa777567991aeb42b320ce6c90994fff80a7ab2",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativePrefix.cs": "87bf97cb3feed5ecea94690cff167583ff3e41f455cce1a054e8af3e4d143566",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs": "ec3ff29b12c33f6ec0c21e9c6e5cd7fa10d32227bd01ce63593fe9fe356dde58",
+    "src/Lokad.Lython/Runtime/LythonRuntime.CsvObjects.cs": "c17e21724cd95aa73791b823c6a1d0d9a16aa41b8aa1afb3b30606e4959eacfc",
+    "src/Lokad.Lython/Runtime/LythonRuntime.CsvModule.cs": "9f4f2f5b7f51802765b4058513b702506947bf69c0e50bb6d0c63864326468b3",
+    "src/Lokad.Lython/Runtime/Text/PyStringOps.Whitespace.cs": "0e2a5c06ca9c66a0a40accc531127be86fbae5dd9e059ba45066bcdc19e21b80",
+    "src/Lokad.Lython/Runtime/Text/PyStringOps.Helpers.cs": "07659af3ca8ab2dc77c053c0a8d2e7838ce1c66c21100f6968daa482c9caf599"
+  }
+}

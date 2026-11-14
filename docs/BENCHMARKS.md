@@ -2,12 +2,12 @@
 
 | Representative workload, warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| CSV invoice / defensive pricing helper |4,096 records /127,031 B|7.545–7.590 ms|5.936–6.086 ms|1.24–1.28×|Diagnostic 3994; spreads 0.59/2.46%; max IQR 1.35%|
-| Text / captured helper and counter|3,072 lines /35,840 B|1.298–1.315 ms|878.121–892.451 µs|1.45–1.50×|Earlier fa40; Diagnostic; spreads 1.34/1.61%; max IQR 2.30%|
+| CSV invoice / ordinary pricing helper |4,096 records /127,031 B|7.554–7.555 ms|6.141–6.147 ms|1.23×|Diagnostic 4beb; spreads 0.01/0.10%; max IQR 1.70%|
+| Text / captured helper and counter|3,072 lines /35,840 B|1.305–1.365 ms|0.895–0.896 ms|1.46–1.53×|Variable 4beb; spreads 4.46/0.06%; max IQR 1.22%|
 | JSON-lines / aggregation helpers|4,096 records /110,592 B|3.397–3.499 ms|4.068–4.078 ms|0.83–0.86×|Earlier fa40; Diagnostic; spreads 2.92/0.24%; max IQR 1.16%|
-| File search / defensive keyword-default helper |2,049 lines /42,010 B; stop after1,025|266.372–266.982 µs|160.576–162.048 µs|1.64–1.66×|Diagnostic 3994; spreads 0.23/0.91%; max IQR 2.60%|
+| File search / defensive keyword-default helper |2,049 lines /42,010 B; stop after1,025|266.372–266.982 µs|160.576–162.048 µs|1.64–1.66×|Earlier3994; Diagnostic; spreads 0.23/0.91%; max IQR 2.60%|
 | JSON-to-Markdown report|3,072 records /189,441 B|2.836–2.880 ms|2.332–2.340 ms|1.21–1.23×|Earlier fa40; Variable; spreads 1.56/0.32%; max IQR 4.82%|
-| CSV fulfillment / pricing and validation|4,096 records /126,821 B|8.540–8.604 ms|6.652–6.783 ms|1.26–1.29×|Earlier fa40; Diagnostic; spreads 0.75/1.92%; max IQR 1.90%|
+| CSV fulfillment / pricing and validation|4,096 records /126,821 B|7.895–8.100 ms|6.804–6.867 ms|1.15–1.19×|Variable 4beb; spreads 2.53/0.93%; max IQR 2.15%|
 | CSV validation / for-loop checksum|4,096 records /49,163 B|5.441–5.579 ms|4.210–4.219 ms|1.29–1.33×|Earlier fa40; Diagnostic; spreads 2.47/0.21%; max IQR 1.30%|
 | Configuration JSON edit |96 B|75.3–76.4 µs|59.6–59.7 µs|1.26–1.28×|Earlier cdd9; Diagnostic; spreads1.56/0.15%; maxIQR1.55%|
 
@@ -15,20 +15,19 @@
 complete embedding measurements, not isolated interpreter CPU. Spreads are the
 Lython/CPython process-median differences; moving controls and IQRs remain visible.
 
-Defensive invoice and file-search rows measured 2026-11-14 UTC at
-**3994dfda / frozen b5a6426e**, against stock **CPython3.13.16**.
-Full Windows/Ubuntu actual .NET11/10, stress and installed-consumer qualification
-[passes at this source](../benchmarks/results/2026-11-14-protected-helper-activation/delivery/README.md).
-[Exact scripts, all phases/raw CPU and controls](../benchmarks/results/2026-11-14-protected-cpython-checkpoint/README.md).
-The other five main rows retain earlier **fa40d674 / frozen73a1b233** measurements,
-also2026-11-14 and CPython3.13.16. Their full qualification
-[passes](../benchmarks/results/2026-11-14-range-iteration-stage/delivery/README.md);
-[B747](../benchmarks/results/2026-11-14-range-cpython-checkpoint/README.md)
-preserves their exact sources and all adverse/variable observations.
-The current defensive helpers add try/except behavior; do not attribute
-cross-collection differences to a runtime change. No unchanged nine-job rerun.
-Process spreads and IQRs limit magnitude precision; counter microbenchmarks do
-not predict these complete workloads.
+Invoice, fulfillment and captured-text rows measured2026-11-14UTC at
+**4beb9ecf / frozenbed6e57e**, against stock **CPython3.13.16**.
+[Full platform/stress/installed-consumer qualification passes](../benchmarks/results/2026-11-14-builtin-scalar-publication/delivery/README.md).
+[Exact scripts, phases, raw CPU and controls](../benchmarks/results/2026-11-14-current-cpython-checkpoint/README.md).
+Fulfillment varies2.53%between Lython processes; text4.46%. Those rows remain
+variable. This is current source evidence, not a causal comparison across collections.
+File search retains earlier **3994dfda / b5a6426e**, also2026-11-14 and fully
+[qualified](../benchmarks/results/2026-11-14-protected-helper-activation/delivery/README.md);
+[B757](../benchmarks/results/2026-11-14-protected-cpython-checkpoint/README.md) also
+preserves its defensive-invoice source and phases. JSON/report/for-validator
+retain earlier **fa40d674 / 73a1b233**; [qualified B747](../benchmarks/results/2026-11-14-range-cpython-checkpoint/README.md)
+keeps their exact sources and every adverse/variable observation. These older
+rows do not claim today's HEAD, and counter microbenchmarks do not predict them.
 The96 B configuration row uses **cdd92944 / frozenf4c4f027**, measured2026-11-14;
 its full platform/stress/package qualification
 [passes](../benchmarks/results/2026-11-14-incremental-xml/delivery/README.md).
@@ -47,13 +46,15 @@ attribute differences from older collections to individual changes.
 
 ## Compilation, compile-to-result and startup
 
-The current defensive invoice and earlier96 B configuration sources separate
-frontend cost from execution:
+Current fulfillment and earlier defensive invoice/configuration sources separate
+compilation from execution:
 
 | Phase | Lython | CPython | Lython / CPython | Status |
 | --- | ---: | ---: | ---: | --- |
-| Defensive invoice compilation alone |103.845–105.523 µs|98.430–98.738 µs|1.05–1.07×|Diagnostic 3994; spreads 1.62/0.31%; max IQR 2.78%|
-| Defensive invoice compile and execute once |7.729–7.743 ms|6.218–6.237 ms|1.24–1.25×|Diagnostic 3994; spreads 0.19/0.31%; max IQR 1.30%|
+| Fulfillment compilation alone |128.043–128.679 µs|115.542–115.561 µs|1.11×|Diagnostic 4beb; spreads 0.49/0.02%; max IQR 1.12%|
+| Fulfillment compile and execute once |8.268–8.355 ms|6.936–6.968 ms|1.19–1.20×|Diagnostic 4beb; spreads 1.04/0.47%; max IQR 1.80%|
+| Defensive invoice compilation alone |103.845–105.523 µs|98.430–98.738 µs|1.05–1.07×|Earlier3994; Diagnostic; spreads 1.62/0.31%; max IQR 2.78%|
+| Defensive invoice compile and execute once |7.729–7.743 ms|6.218–6.237 ms|1.24–1.25×|Earlier3994; Diagnostic; spreads 0.19/0.31%; max IQR 1.30%|
 | Configuration compilation alone |36.6–37.3 µs|34.3–34.4 µs|1.06–1.09×|Diagnostic; spreads1.94/0.17%; maxIQR1.97%|
 | Configuration compile and execute once |136.5–137.3 µs|121.4–124.2 µs|1.10–1.13×|Diagnostic; spreads0.61/2.27%; maxIQR3.65%|
 | Process startup |—|—|—|No current comparison|
@@ -101,7 +102,7 @@ These source-pair results are separate from CPython and cannot be added together
 
 | Change / complete affected script | CPU/elapsed evidence | Allocation | Limits and exact evidence |
 | --- | --- | ---: | --- |
-| Typed builtin results /CSV fulfillment | Warm3–4%lower, compile-to-result2.6–5.6%lower, supporting CPU | −18.20% | Later bed6e57e versus3994/b5; full delivery pending. Invoice−5%allocation but+.94–1.87%elapsed/+2–4%CPU debt; text adverse/uncertain, short/observed controls variable. [Exact source and every control](../benchmarks/results/2026-11-14-builtin-scalar-publication/README.md). |
+| Typed builtin results /CSV fulfillment | Warm3–4%lower, compile-to-result2.6–5.6%lower, supporting CPU | −18.20% | Later bed6e57e versus3994/b5; [full delivery passes](../benchmarks/results/2026-11-14-builtin-scalar-publication/delivery/README.md). Invoice−5%allocation but+.94–1.87%elapsed/+2–4%CPU debt; text adverse/uncertain, short/observed controls variable. [Exact source and every control](../benchmarks/results/2026-11-14-builtin-scalar-publication/README.md). |
 | Protected try/except helpers /invoice and file search | Invoice17–18.5%faster warm,16–19%faster compile-to-result; search41–43%faster, with CPU support | −29.19%/−74.65% | Later b5a6426e versus1c5/ff2; [full qualification passes](../benchmarks/results/2026-11-14-protected-helper-activation/delivery/README.md). Short calls+.5–3.4%, text uncertain. [Source and every control](../benchmarks/results/2026-11-14-protected-helper-activation/README.md). |
 | Native primitive storage /CSV while-validator | Warm21–23%lower, compile-to-result21–22%lower, supportingCPU | −40.9% | Source-specific; short/zero helpers+4–10%, observed+2–4%, small JSONCPU debt. [Qualified evidence](../benchmarks/results/2026-11-14-native-primitive-storage/README.md). |
 | Native integer workspace reuse /fulfillment | Warm mixed/modestly lower; fresh modestly lower | −14.57% | Allocation/ownership improvement; short calls+.6–2.9%. [Qualified source and debt](../benchmarks/results/2026-11-14-native-integer-workspace/delivery/README.md). |
@@ -121,4 +122,4 @@ Use the [existing comparison tools](../benchmarks/README.md) and
 [test/package checks](../tests/README.md). Use short focused comparisons during
 iteration and batch full platform, stress and installed-consumer qualification at
 delivery checkpoints. Quiet-machine checks and output equality are required;
-retain unstable controls and failed conditions. Publication remains postponed.
+retain unstable controls and failed conditions.
