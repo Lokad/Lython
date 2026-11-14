@@ -7809,3 +7809,8 @@ preserve Python/CLR interfaces, independent enumeration, exact bounds/aliases,
 large-yield funding, cancellation and actual transfer cleanup. No new frame value
 system, fact pass, pool or owner. Legacy acquisition overhead is a control/tradeoff.
 Source selection only, no prototype/CPUdelta; full43618009133 remains independent.
+
+R361 measured3bc513b8/frozenca1e2331 [passes43618009133](results/2026-11-14-closed-range-construction/delivery/README.md):
+Windows/Ubuntu actual11/10, ordinary/originalstress and installedRelease consumers;
+582inputproof/16summaries/full logs cached. All earlier adverse/uncertain controls
+and release debt remain. Later R362prototype is excluded; publication held.

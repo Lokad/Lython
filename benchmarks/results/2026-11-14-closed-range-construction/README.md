@@ -154,3 +154,7 @@ representative-script performance objective and independent regex track continue
 [timing](native-only/timing-summary.json), [allocation](native-only/allocation-summary.json),
 [checks](native-only/focused-checks.json),
 [all final sources/binary/raw/tools](native-only/sources-checks-and-observations.tar.xz).
+
+Final measured `3bc513b8` / frozen `ca1e2331` subsequently
+[passes full 43618009133 delivery](delivery/README.md). Original pending metadata,
+adverse controls and remaining debt stay above. The later R362 prototype is excluded.

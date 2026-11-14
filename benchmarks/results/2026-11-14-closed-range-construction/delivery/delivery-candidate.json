@@ -1,0 +1,10 @@
+{
+  "runId": "43618009133",
+  "head": "3bc513b83a424d37b8b6329790fe04a5ce0550ab",
+  "runtimeCommit": "3bc513b83a424d37b8b6329790fe04a5ce0550ab",
+  "frozenCore": "ca1e2331ab19972f4da7f2ae156536d2fab20bdcde43e408d0e7d74ba4175dc4",
+  "dispatchedUTC": "2026-11-14T16:52:50.513202+00:00",
+  "stress": true,
+  "publicationHeld": true,
+  "discoveryCorrection": "Accepted dispatch returned the run URL; immediate list lagged and still listed earlier runs. No redispatch or polling. Record ID from accepted URL; first status query after240s verifies source."
+}
