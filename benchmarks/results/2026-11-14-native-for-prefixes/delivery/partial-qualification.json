@@ -1,0 +1,56 @@
+{
+  "head": "3d78d429672cd3f5cda7fc76cc8a9842393dfe7f",
+  "coreSHA256": "8306699f6ad07d4688cd84bd36b6aa878f5eeb39871005d9346b475cf056067f",
+  "runId": "43560252672",
+  "overall": "failure; not fully qualified",
+  "windows": "Release net11 failed only five CRLF-dependent expected-output fixtures; later checkpoint stages skipped.",
+  "ubuntu": "Full actual11/10, original stress and installed Release consumer steps succeeded.",
+  "sourceInputs": 581,
+  "allFrozenSourcesMatchCommitWithExplicitNewlineNormalization": true,
+  "logSummaries": [
+    {
+      "path": "run-logs/test-log-ubuntu-latest/stress-net10.0.log",
+      "sha256": "47f35a07e1d0447a00d0c18cea8d33e70e160bc7abd1e11054071e6d4f5d64e4",
+      "summaries": [
+        "Passed!  - Failed:     0, Passed:    13, Skipped:     0, Total:    13, Duration: 2 s - Lokad.Lython.WhiteBox.Tests.dll (net10.0)",
+        "Passed!  - Failed:     0, Passed:   406, Skipped:     0, Total:   406, Duration: 4 m 30 s - Lokad.Lython.PublicApi.Tests.dll (net10.0)"
+      ]
+    },
+    {
+      "path": "run-logs/test-log-ubuntu-latest/stress-net11.0.log",
+      "sha256": "9a20070519a62bcf8a4814e51523fff5b8e414bb7cdb56142d07a3877d3e8f46",
+      "summaries": [
+        "Passed!  - Failed:     0, Passed:    13, Skipped:     0, Total:    13, Duration: 2 s - Lokad.Lython.WhiteBox.Tests.dll (net11.0)",
+        "Passed!  - Failed:     0, Passed:   406, Skipped:     0, Total:   406, Duration: 4 m 29 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)"
+      ]
+    },
+    {
+      "path": "run-logs/test-log-ubuntu-latest/test-net10.log",
+      "sha256": "365b55f851e4aac11a850c34821c6dbe5b2904d3a9aca97de053289241ce6810",
+      "summaries": [
+        "Passed!  - Failed:     0, Passed:  4738, Skipped:     0, Total:  4738, Duration: 25 s - Lokad.Lython.WhiteBox.Tests.dll (net10.0)",
+        "Passed!  - Failed:     0, Passed: 17705, Skipped:     0, Total: 17705, Duration: 4 m 11 s - Lokad.Lython.PublicApi.Tests.dll (net10.0)"
+      ]
+    },
+    {
+      "path": "run-logs/test-log-ubuntu-latest/test.log",
+      "sha256": "b4d8a76d06b53db9c3ed84b835b3c1af86c87bc0bc4314f9c3a7039d2f762eca",
+      "summaries": [
+        "Passed!  - Failed:     0, Passed:  4738, Skipped:     0, Total:  4738, Duration: 27 s - Lokad.Lython.WhiteBox.Tests.dll (net11.0)",
+        "Passed!  - Failed:     0, Passed: 17705, Skipped:     0, Total: 17705, Duration: 4 m 13 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)"
+      ]
+    },
+    {
+      "path": "run-logs/test-log-windows-latest/test.log",
+      "sha256": "afdf1d6711ff5789897dfca504579c58f07d5a2e8c3c7d6fe997f1d0d1aba8c5",
+      "summaries": [
+        "Passed!  - Failed:     0, Passed:  4738, Skipped:     0, Total:  4738, Duration: 38 s - Lokad.Lython.WhiteBox.Tests.dll (net11.0)",
+        "Failed!  - Failed:     5, Passed: 17700, Skipped:     0, Total: 17705, Duration: 4 m 36 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)"
+      ]
+    }
+  ],
+  "correction": "Expected goldens regenerated as escaped LF literals. No actual-output normalization or runtime change.",
+  "focusedCRLF": "12 public cases pass per actual11/10 after forced nonincremental builds of physically CRLF test source. These local checks run on the active R346 prototype; exact corrected R345/full descendant qualification remains pending.",
+  "rerun": "Batch corrected goldens with the next coherent retained cursor milestone. Original failed qualification remains immutable.",
+  "publication": "held"
+}

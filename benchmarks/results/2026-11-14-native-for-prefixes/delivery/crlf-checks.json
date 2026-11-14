@@ -1,0 +1,14 @@
+[
+  {
+    "target": "net11.0",
+    "returncode": 0,
+    "sourcePhysicallyCRLF": true,
+    "nonincrementalBuildBeforeNoBuild": true
+  },
+  {
+    "target": "net10.0",
+    "returncode": 0,
+    "sourcePhysicallyCRLF": true,
+    "nonincrementalBuildBeforeNoBuild": true
+  }
+]

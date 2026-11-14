@@ -1,0 +1,12 @@
+{
+  "failedRun": "43560252672",
+  "failedJob": "132342113958",
+  "failedCases": 5,
+  "passedWhiteBox": 4738,
+  "passedPublic": 17700,
+  "cause": "Raw multiline C# expected-output strings inherited checkout CRLF, while Python-compatible stdout was correctly LF. Local source files had LF, so focused tests did not expose this portability defect.",
+  "correction": "Regenerate only expected outputs as escaped LF literals from the original independent CPython controls; actual output comparison remains exact.",
+  "productionChanged": false,
+  "originalFailedLogPreserved": true,
+  "crlfBuildQualificationRequired": true
+}

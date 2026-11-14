@@ -61,6 +61,10 @@ invariants belong in the white-box suite.
 
 ## Test responsibilities
 
+Keep captured stdout goldens independent of checkout line endings: escaped `\n`
+literals preserve Python output bytes on Windows and Ubuntu. Compare actual
+output exactly, including any intentionally embedded carriage returns.
+
 [Unicode splitting](Lokad.Lython.PublicApi.Tests/BulkCasedSplitTests.cs) keeps
 independent CPython goldens for every Python whitespace character, split/rsplit
 limits, overlapping separators, case expansion/context and nested iteration.

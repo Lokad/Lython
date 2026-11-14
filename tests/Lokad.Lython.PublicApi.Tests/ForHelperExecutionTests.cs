@@ -204,6 +204,7 @@ public sealed class ForHelperExecutionTests
 
     public static IEnumerable<object[]> PythonControls()
     {
+        // Escaped LF output stays identical to the Python golden under CRLF checkout.
         yield return ["loop-control", """
             def count(values):
                 total=0
@@ -220,10 +221,7 @@ public sealed class ForHelperExecutionTests
                 return item
             try: missing([])
             except UnboundLocalError: print('unbound')
-            """, """
-            [(None, 100), (1, 101), (3, 104), (5, 8), (3, 104), (2, 101), (51, 250)]
-            unbound
-            """ + "\n"];
+            """, "[(None, 100), (1, 101), (3, 104), (5, 8), (3, 104), (2, 101), (51, 250)]\nunbound\n"];
         yield return ["nested-exits-and-words", """
             def compute(values):
                 total=0
@@ -247,11 +245,7 @@ public sealed class ForHelperExecutionTests
                     if item>2: return item
                 return None
             print(select((1,2,3,4)),select(()))
-            """, """
-            413
-            ('SSÉ', 'STOP')
-            3 None
-            """ + "\n"];
+            """, "413\n('SSÉ', 'STOP')\n3 None\n"];
         yield return ["mutation-and-aliases", """
             def take(values):
                 total=0
@@ -276,11 +270,7 @@ public sealed class ForHelperExecutionTests
             first,last=keep(values)
             first.append(9)
             print(first,last,first is values[0],last is values[1])
-            """, """
-            (4, 10) [1, 2, 3, 4]
-            changed
-            [1, 9] [2] True True
-            """ + "\n"];
+            """, "(4, 10) [1, 2, 3, 4]\nchanged\n[1, 9] [2] True True\n"];
         yield return ["unicode-and-promotion", """
             def collect(text):
                 total=0
@@ -299,11 +289,7 @@ public sealed class ForHelperExecutionTests
                 for value in values: total+=1
                 return total
             print(count({'a':1,'b':2}),count({1,2,3}))
-            """, """
-            ('𐐨', 4)
-            (249031044995078946807, True)
-            2 3
-            """ + "\n"];
+            """, "('𐐨', 4)\n(249031044995078946807, True)\n2 3\n"];
         yield return ["iterator-and-body-transition", """
             events=[]
             class Values:
@@ -320,10 +306,7 @@ public sealed class ForHelperExecutionTests
                     events.append(other)
                     return other+7
             print(total([1,2,Number(),4]),events)
-            """, """
-            6 ['iter']
-            14 ['iter', 3]
-            """ + "\n"];
+            """, "6 ['iter']\n14 ['iter', 3]\n"];
     }
 
     [Theory]
