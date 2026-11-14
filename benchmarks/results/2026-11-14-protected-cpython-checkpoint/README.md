@@ -48,3 +48,7 @@ unchanged. Full CI remains independent; publication/tagging held.
 [source proof](source-proof.json), [collector/analysis](collection-and-analysis.tar.xz),
 [prior guide](prior-BENCHMARKS.md). Detailed prototype debt remains in
 [R368](../2026-11-14-protected-helper-activation/README.md).
+
+Exact measured3994/b5subsequently
+[passes full43640155007](../2026-11-14-protected-helper-activation/delivery/README.md).
+Original pending metadata/raw remains historical; later R369is excluded.

@@ -71,3 +71,7 @@ Free space267,853,824B;254/252MiBfloors/current images/catalog/toolchain unchang
 [Decision](decision.json), [all timing](timing-summary.json),
 [allocation](allocation-summary.json), [raw](observations.tgz),
 [exact source/binary/local checks/failures](source-and-local-checks.tar.xz).
+
+This retained source subsequently [passes full43640155007](delivery/README.md).
+Original pending metadata remains historical. Later R369is excluded; every
+adverse/debt/control observation above remains.

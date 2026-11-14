@@ -18,7 +18,7 @@ Lython/CPython process-median differences; moving controls and IQRs remain visib
 Defensive invoice and file-search rows measured 2026-11-14 UTC at
 **3994dfda / frozen b5a6426e**, against stock **CPython3.13.16**.
 Full Windows/Ubuntu actual .NET11/10, stress and installed-consumer qualification
-is [running at this source](https://github.com/Lokad/Lython/actions/runs/43640155007).
+[passes at this source](../benchmarks/results/2026-11-14-protected-helper-activation/delivery/README.md).
 [Exact scripts, all phases/raw CPU and controls](../benchmarks/results/2026-11-14-protected-cpython-checkpoint/README.md).
 The other five main rows retain earlier **fa40d674 / frozen73a1b233** measurements,
 also2026-11-14 and CPython3.13.16. Their full qualification
@@ -101,7 +101,7 @@ These source-pair results are separate from CPython and cannot be added together
 
 | Change / complete affected script | CPU/elapsed evidence | Allocation | Limits and exact evidence |
 | --- | --- | ---: | --- |
-| Protected try/except helpers /invoice and file search | Invoice17–18.5%faster warm,16–19%faster compile-to-result; search41–43%faster, with CPU support | −29.19%/−74.65% | Later b5a6426e versus1c5/ff2; full qualification pending. Short calls+.5–3.4%, text uncertain. [Source and every control](../benchmarks/results/2026-11-14-protected-helper-activation/README.md). |
+| Protected try/except helpers /invoice and file search | Invoice17–18.5%faster warm,16–19%faster compile-to-result; search41–43%faster, with CPU support | −29.19%/−74.65% | Later b5a6426e versus1c5/ff2; [full qualification passes](../benchmarks/results/2026-11-14-protected-helper-activation/delivery/README.md). Short calls+.5–3.4%, text uncertain. [Source and every control](../benchmarks/results/2026-11-14-protected-helper-activation/README.md). |
 | Native primitive storage /CSV while-validator | Warm21–23%lower, compile-to-result21–22%lower, supportingCPU | −40.9% | Source-specific; short/zero helpers+4–10%, observed+2–4%, small JSONCPU debt. [Qualified evidence](../benchmarks/results/2026-11-14-native-primitive-storage/README.md). |
 | Native integer workspace reuse /fulfillment | Warm mixed/modestly lower; fresh modestly lower | −14.57% | Allocation/ownership improvement; short calls+.6–2.9%. [Qualified source and debt](../benchmarks/results/2026-11-14-native-integer-workspace/delivery/README.md). |
 | Direct UTF8 formatting /report | Controlled confirmation supports5–8%lower elapsed/CPU | −8.67% | Historical revision; original adverse15.125ms remains unexplained. [Confirmation and original conditions](../benchmarks/results/2026-11-02-formatting-confirmation/README.md). |

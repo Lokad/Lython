@@ -7956,3 +7956,10 @@ rows keep fa40/73a, configuration cdd9/f4c; no relabeling or unchangednine-job r
 Full43640155007 active independently. Publicationheld, general performance gaps
 and short-control/text uncertainty remain; these sourceforms are not isolated
 runtime or embedding-latency attribution.
+
+R368exact3994/b5andB757externalcheckpoint
+[pass43640155007](results/2026-11-14-protected-helper-activation/delivery/README.md):
+Windows/Ubuntu actual11/10 ordinary4,775internal+17,838public/original13/406stress
+each, installedRelease consumers.582inputproof/16summaries/full logs cached;
+never requery. Every short-debt/text/control uncertainty remains; laterR369excluded.
+Publicationheld and whole-script/independentregex goals continue.
