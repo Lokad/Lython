@@ -7635,3 +7635,8 @@ is independent. Publication remains held.
 
 R352measured source7e2f7cac/frozen72c9 subsequently passes43579225278; original
 collection-time pending status and all uncertain/adverse results remain above.
+
+R353/R354measured sourcef5817a15/frozen9cfb [passes full43583650094](results/2026-11-14-owned-native-tuple-returns/delivery/README.md)
+at production-identical24cdc5b4: Windows/Ubuntu actual11/10, original stress and
+installed consumers;581inputs/16summaries cached. Original pending metadata and
+variable controls survive. Separate R355CSV prototype is excluded. Publication held.

@@ -44,3 +44,7 @@ the whole-script objective is active.
 [same-process native groups](native-body-fulfillment-instruction-groups.json),
 [complete leaf census](leaf-census.json),[raw](observations.tgz),
 [collection/analysis](collection-and-analysis.tar.xz).
+
+Measured source subsequently [passes full43583650094qualification](../2026-11-14-owned-native-tuple-returns/delivery/README.md).
+Collection-time pending metadata/adverse evidence remain unchanged; later CSV work
+is separate.

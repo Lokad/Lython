@@ -43,3 +43,7 @@ toolchains and254/252MiBfloors remain. No measurement restart or floor relaxatio
 Exact source/core and focused checks remain in the[parent archive](../sources-checks-and-allocation.tar.xz).
 Publication/tagging/adapter promotion remain held. Full qualification is independent
 of timing uncertainty; this checkpoint does not complete the performance objective.
+
+Measured source subsequently [passes full43583650094qualification](../delivery/README.md).
+Collection-time pending metadata/adverse evidence remain unchanged; later CSV work
+is separate.

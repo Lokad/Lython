@@ -144,7 +144,9 @@ CPython remains the external baseline. Separate source-pair experiments establis
   fulfillment allocation falls6.77%, warm elapsed1.3–3.1%and compile-to-result
   1.1–4.7%lower, with modest CPU support. Invoice also improves and text controls
   remain variable;[source-pair evidence/status](../benchmarks/results/2026-11-14-owned-native-tuple-returns/comparison/README.md)
-  keep attribution limits and pending full qualification separate from CPython rows.
+  keep attribution limits separate from CPython rows. Full Windows/Ubuntu actual
+  .NET11/10, original stress and installed consumers
+  [pass43583650094](../benchmarks/results/2026-11-14-owned-native-tuple-returns/delivery/README.md).
 
 [Experimental history and source-specific evidence](../benchmarks/EXPERIMENTS.md)
 preserve controlled comparisons, rejected designs, adverse results and qualification.

@@ -49,3 +49,7 @@ Subsequent [B725comparison](comparison/README.md) completes all gates: fulfillme
 warm−1.25..−3.13%/fresh−1.12..−4.65%, with modest wider CPU support. Invoice
 also improves; variable text controls remain uncertainty. Original collection-time
 pending status above is preserved. Full delivery is still pending independently.
+
+Measured source subsequently [passes full43583650094qualification](delivery/README.md).
+Collection-time pending metadata/adverse evidence remain unchanged; later CSV work
+is separate.
