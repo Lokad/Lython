@@ -86,6 +86,7 @@ public sealed class CsvDenialOwnershipTests
         var field = (GovernedByteBuilder)typeof(LythonRuntime.CsvRecordParser)
             .GetField("_record", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(parser)!;
         var capacity = checked((int)field.CommittedCapacity);
+        var prefix = field.WrittenSpan.ToArray();
         var committed = context.MemoryGovernor.CurrentCommittedBytes;
         var pressure = Cap - context.MemoryGovernor.CurrentAccountedBytes;
         context.MemoryGovernor.Reserve(pressure, Span);
@@ -93,7 +94,7 @@ public sealed class CsvDenialOwnershipTests
         var error = Assert.Throws<LythonRuntimeException>(() => parser.Feed(Encoding.UTF8.GetBytes(new string('x', capacity + 1) + "\n")));
 
         Assert.Equal("MemoryError", error.ExceptionType);
-        Assert.True(field.WrittenSpan.SequenceEqual("prefix\n"u8));
+        Assert.True(field.WrittenSpan.SequenceEqual(prefix));
         Assert.Equal(capacity, field.CommittedCapacity);
         Assert.Equal(committed, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(pressure, context.MemoryGovernor.CurrentReservedBytes);
@@ -109,21 +110,24 @@ public sealed class CsvDenialOwnershipTests
         var context = Context();
         var source = new LythonRuntime.CsvRecordSource(new PyList([]), Options(), Span, context);
         var parser = Parser(source);
-        parser.Feed(Encoding.UTF8.GetBytes("\"" + new string('x', 15) + "\n")); // supplied newline fills the initial 16 bytes
+        parser.Feed(Encoding.UTF8.GetBytes("\"" + new string('x', 15) + "\n"));
         var field = (GovernedByteBuilder)typeof(LythonRuntime.CsvRecordParser)
             .GetField("_record", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(parser)!;
-        Assert.Equal(16, field.Length);
-        Assert.Equal(16, field.CommittedCapacity);
+        var length = field.Length;
+        var capacity = checked((int)field.CommittedCapacity);
+        var prefix = field.WrittenSpan.ToArray();
         var owned = source.OwnedBytes;
         var committed = context.MemoryGovernor.CurrentCommittedBytes;
         var pressure = Cap - context.MemoryGovernor.CurrentAccountedBytes;
         context.MemoryGovernor.Reserve(pressure, Span);
 
-        var error = Assert.Throws<LythonRuntimeException>(() => parser.Feed("x"u8));
+        var growth = Encoding.UTF8.GetBytes(new string('x', capacity - length + 1));
+        var error = Assert.Throws<LythonRuntimeException>(() => parser.Feed(growth));
 
         Assert.Equal("MemoryError", error.ExceptionType);
-        Assert.Equal(16, field.Length);
-        Assert.Equal(16, field.CommittedCapacity);
+        Assert.Equal(length, field.Length);
+        Assert.Equal(capacity, field.CommittedCapacity);
+        Assert.True(field.WrittenSpan.SequenceEqual(prefix));
         Assert.Equal(owned, source.OwnedBytes);
         Assert.Equal(committed, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(pressure, context.MemoryGovernor.CurrentReservedBytes);

@@ -1,0 +1,21 @@
+{
+  "decision": "Withdraw runtime proposal; retain independent public CPython/lifetime and strengthened refusal-prefix regression coverage",
+  "candidate": "510a3f866c8a2a94fd014abdbdfb39827f0fd71dcfcf2be15594f4e7854916d8",
+  "restoredSource": "f5817a15/frozen9cfb7d5b;581production inputs exactly match reference inventory",
+  "reason": "Allocation is flat. Borrowed CSV is effectively flat and escaped CSV has only~0.5\u20131%elapsed direction/uncertain CPU. Normal warm is mixed while fresh improves1.4\u20132.6%. Extra field-end bookkeeping, a copy-within primitive and retained raw-syntax scratch/earlier-denial tradeoff are not justified by this limited useful benefit. This is not a fixed-percentage veto or proof of inherent CPU regression.",
+  "uncertainty": "Untouched captured text is adverse and candidate processes vary. Original partial B727normal phases lack final gates; corrected B728all gates pass with the same source/data and revised collector routing/case order. Preserve every adverse point; no large/universal gain or neutral-control claim.",
+  "removedAfterWithdrawal": [
+    "raw-record field-end bookkeeping",
+    "CopyWithinWritten primitive used only by this proposal",
+    "borrowed-line pre-copy staging and raw retention contract change"
+  ],
+  "preserved": [
+    "qualified9cfb runtime and all delivered allocation/ownership/native execution fixes",
+    "16native/borrowed independent CPython-golden cases and2actual-I/O multiline lifetime cases",
+    "refusal tests asserting actual prefix/capacity/funding instead of fixed private decoded layout"
+  ],
+  "laterReconsideration": "New owning evidence or a representation that removes the extra scratch/state can justify bounded refinement; no unchanged timing replay is needed to decide this proposal.",
+  "fullQualification": "Restored production source is already qualified43583650094; newly retained tests require focused checks after a forced nonincremental rebuild, with broader test qualification batched later.",
+  "publicationHeld": true,
+  "performanceObjectiveStillActive": true
+}

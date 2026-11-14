@@ -6,6 +6,16 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[R355 owned CSV ranges](results/2026-11-14-owned-csv-field-ranges/README.md)
+are withdrawn. Corrected B728same510a/9cfb completes5jobs/375.423s/all gates:
+allocation flat, borrowed effectively flat, escaped~0.5–1%elapsed/CPUuncertain,
+normal warm mixed/fresh1.4–2.6%lower, untouched text adverse/variable. Extra field-
+end state/copy API/raw-syntax scratch cost is not justified by limited useful
+benefit; this is not proof of inherent slowness or a percentage veto. All581runtime
+inputs restore qualifiedf581/9cfb.18public cases/stronger refusal-prefix assertions
+survive forced rebuilt actual11/10 checks (70total). Original B727stale-catalog
+failure/two partial phases and all setup errors remain immutable; users/RAMclosed.
+
 [R354 fulfillment stage attribution](results/2026-11-14-fulfillment-stage-attribution/README.md)
 maps exactf5817a15/frozen9cfb:1086guest leaves/88unknown/zeroambiguous,
 171native-body leaves in one13,655byte same-process Tier1 body. Mixed dispatch/

@@ -1,0 +1,10 @@
+{
+  "reason": "Correct stale collector diagnostic routing to the one supplied catalog. Same frozen source/bits/data/protocol/timing settings; original partial normal warm/fresh lack final gate and remain diagnostic. Run borrowed/escaped first to validate the actual previously failing constructor path before normal phases.",
+  "sourceAndCatalogUnchanged": true,
+  "changedOnlyCollectorRoutingAndCaseOrder": true,
+  "fullQualificationOfCandidateStillPending": true,
+  "noAutomaticRestart": true,
+  "originalFailedCollectionClosed": true,
+  "originalFailureAndAdverseEvidencePreserved": true,
+  "publicationHeld": true
+}

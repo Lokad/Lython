@@ -1,0 +1,312 @@
+{
+  "complete": true,
+  "jobs": 5,
+  "elapsedSeconds": 375.42290060874075,
+  "identity": {
+    "sourceRevision": "R355uncommitted/frozen510a3f86 vs qualifiedf5817a15/frozen9cfb7d5b",
+    "purpose": "Same510a/9cfb CSV range confirmation after removing stale control-catalog routing. Original B727two partial phases/failure preserved; diagnostic borrowed/escaped cases run first. No external timing.",
+    "coreSHA256": {
+      "reference": "9cfb7d5b41c02fb0ebe503d51f9ad21619b8faddb73691c7331df4c76c464030",
+      "candidate": "510a3f866c8a2a94fd014abdbdfb39827f0fd71dcfcf2be15594f4e7854916d8",
+      "reference-control": "9cfb7d5b41c02fb0ebe503d51f9ad21619b8faddb73691c7331df4c76c464030",
+      "candidate-control": "510a3f866c8a2a94fd014abdbdfb39827f0fd71dcfcf2be15594f4e7854916d8"
+    },
+    "candidateAuxiliaryFiles": {
+      "Azure.Core.dll": "1d6df436afdc73c30d476be938f6513c90ef8fc884a7bae280091a9bed0a5490",
+      "Azure.Identity.dll": "31574a3d35ffeb0e25a00ebb317937222fe5283b91af608613f2e3bf0f26c50a",
+      "BenchmarkDotNet.Annotations.dll": "97974c60500f53a3c7d142088b22d815aae7aac729de69f4b497132cc436594f",
+      "BenchmarkDotNet.dll": "599ded314fe77dbc17318557e787cf660c1fcb0d69be39994ea462ca95745896",
+      "CommandLine.dll": "8a55501cd1a1590a4bd93a17c6fdd2c01a0ed5bff1aea9036bdc78d98c9a3fad",
+      "deniszykov.WebSocketListener.dll": "c86cfb93e32192ae12fb1a132b4ae785a7d2f325e8583c03c99abf8e832d25d6",
+      "Dia2Lib.dll": "6c4cac68010fe032218efe5e9fcf46eef9f77bfaa5f3bd33f03c5ff77d5a8fac",
+      "Gee.External.Capstone.dll": "6dfda67784598de9677173b89d0692593935f1a4024d36040c95dea48c1b5965",
+      "Iced.dll": "f058c01321b4cdfc9b9151879e88e59571c8d0ba176fbcf95bc936a8f3d073ed",
+      "Lokad.Lython.Benchmarks.deps.json": "b47f293f779ce46eefa92c6eb775842efe363be212c35bf7d155d0b89734d450",
+      "Lokad.Lython.Benchmarks.dll": "acda3ef3d79d7447cbd6099d903475da61f9b7bd36d949e6d4d3eb6e085de6c6",
+      "Lokad.Lython.Benchmarks.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0",
+      "Lokad.Lython.Utf8Regex.dll": "9f7282ade883f103956efaf7e46182f7705fb7675f1f46963b9c42ae5aae7f94",
+      "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+      "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe",
+      "Microsoft.Bcl.AsyncInterfaces.dll": "bf58b47923b2f520c766ca905f68a1a65d217c4d828f05db538c41129cacf9d9",
+      "Microsoft.CodeAnalysis.CSharp.dll": "1af1de8a162d2312eb2f6b781f5edbe8cec7d5cd268c7e4de24396225e54260f",
+      "Microsoft.CodeAnalysis.dll": "42c9ce7891470f430267e2dc02d03571f9d046a7e7e121107754bee58d344613",
+      "Microsoft.Diagnostics.FastSerialization.dll": "e5bdad179ce97180646f37f357cb7b449f5baaf76f185eb09510eeafc5b773e1",
+      "Microsoft.Diagnostics.NETCore.Client.dll": "e2cc9e1f6c97b3c4ee45ebabaa92408eb9b2fc81cb08ceeb342fe48bf79db15f",
+      "Microsoft.Diagnostics.Runtime.dll": "52d5f113180bb0f70b1a9b10608aef93b187364ac689885d2d3c734102d850a2",
+      "Microsoft.Diagnostics.Tracing.TraceEvent.dll": "92401392ce1887c3483a3c0085e6cc3656ee39da1be539943096ebabbad6ea21",
+      "Microsoft.Identity.Client.dll": "5795027e9ae95eececb310a4fed3c502bb368039d186ab0884f64b7792b84717",
+      "Microsoft.Identity.Client.Extensions.Msal.dll": "07109a2f30df782300077a567ade47cbd0a0502c75cd7c8a62192f7d64bb004e",
+      "Microsoft.IdentityModel.Abstractions.dll": "24e97b54b6b5c234a124a336757e3116617ac6c30b655cdae74517dc2ecb5746",
+      "Perfolizer.dll": "4a5508174e2b90a651a29e1de0d2ad88236daaaae01070cd6fc8ca3c36beaa36",
+      "Pragmastat.dll": "7217e206e47de8a0335f58513019d5805a6e52ca2e8f127e2cc3944f1742bb2e",
+      "System.ClientModel.dll": "dec5e22b71a1685c5e6e97cd28b629f0aa6703fb87b6950df28e79fc1804290c",
+      "System.Memory.Data.dll": "2c1035b0106dbb2de7913d151e06071ed617bb58bbb3d6cd46a2dd0f6a03617b",
+      "System.Security.Cryptography.ProtectedData.dll": "80566f0839ece5946e66bf9f00d723e59e371ba1341a18e00c7c7a7c49298e1d",
+      "TraceReloggerLib.dll": "6830c0f1d3f3c17719181e73dd5cfa8ccbb3f3c575329d2120576545103467b5"
+    },
+    "referenceAuxiliaryFiles": {
+      "Azure.Core.dll": "1d6df436afdc73c30d476be938f6513c90ef8fc884a7bae280091a9bed0a5490",
+      "Azure.Identity.dll": "31574a3d35ffeb0e25a00ebb317937222fe5283b91af608613f2e3bf0f26c50a",
+      "BenchmarkDotNet.Annotations.dll": "97974c60500f53a3c7d142088b22d815aae7aac729de69f4b497132cc436594f",
+      "BenchmarkDotNet.dll": "599ded314fe77dbc17318557e787cf660c1fcb0d69be39994ea462ca95745896",
+      "CommandLine.dll": "8a55501cd1a1590a4bd93a17c6fdd2c01a0ed5bff1aea9036bdc78d98c9a3fad",
+      "deniszykov.WebSocketListener.dll": "c86cfb93e32192ae12fb1a132b4ae785a7d2f325e8583c03c99abf8e832d25d6",
+      "Dia2Lib.dll": "6c4cac68010fe032218efe5e9fcf46eef9f77bfaa5f3bd33f03c5ff77d5a8fac",
+      "Gee.External.Capstone.dll": "6dfda67784598de9677173b89d0692593935f1a4024d36040c95dea48c1b5965",
+      "Iced.dll": "f058c01321b4cdfc9b9151879e88e59571c8d0ba176fbcf95bc936a8f3d073ed",
+      "Lokad.Lython.Benchmarks.deps.json": "b47f293f779ce46eefa92c6eb775842efe363be212c35bf7d155d0b89734d450",
+      "Lokad.Lython.Benchmarks.dll": "acda3ef3d79d7447cbd6099d903475da61f9b7bd36d949e6d4d3eb6e085de6c6",
+      "Lokad.Lython.Benchmarks.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0",
+      "Lokad.Lython.Utf8Regex.dll": "9f7282ade883f103956efaf7e46182f7705fb7675f1f46963b9c42ae5aae7f94",
+      "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+      "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe",
+      "Microsoft.Bcl.AsyncInterfaces.dll": "bf58b47923b2f520c766ca905f68a1a65d217c4d828f05db538c41129cacf9d9",
+      "Microsoft.CodeAnalysis.CSharp.dll": "1af1de8a162d2312eb2f6b781f5edbe8cec7d5cd268c7e4de24396225e54260f",
+      "Microsoft.CodeAnalysis.dll": "42c9ce7891470f430267e2dc02d03571f9d046a7e7e121107754bee58d344613",
+      "Microsoft.Diagnostics.FastSerialization.dll": "e5bdad179ce97180646f37f357cb7b449f5baaf76f185eb09510eeafc5b773e1",
+      "Microsoft.Diagnostics.NETCore.Client.dll": "e2cc9e1f6c97b3c4ee45ebabaa92408eb9b2fc81cb08ceeb342fe48bf79db15f",
+      "Microsoft.Diagnostics.Runtime.dll": "52d5f113180bb0f70b1a9b10608aef93b187364ac689885d2d3c734102d850a2",
+      "Microsoft.Diagnostics.Tracing.TraceEvent.dll": "92401392ce1887c3483a3c0085e6cc3656ee39da1be539943096ebabbad6ea21",
+      "Microsoft.Identity.Client.dll": "5795027e9ae95eececb310a4fed3c502bb368039d186ab0884f64b7792b84717",
+      "Microsoft.Identity.Client.Extensions.Msal.dll": "07109a2f30df782300077a567ade47cbd0a0502c75cd7c8a62192f7d64bb004e",
+      "Microsoft.IdentityModel.Abstractions.dll": "24e97b54b6b5c234a124a336757e3116617ac6c30b655cdae74517dc2ecb5746",
+      "Perfolizer.dll": "4a5508174e2b90a651a29e1de0d2ad88236daaaae01070cd6fc8ca3c36beaa36",
+      "Pragmastat.dll": "7217e206e47de8a0335f58513019d5805a6e52ca2e8f127e2cc3944f1742bb2e",
+      "System.ClientModel.dll": "dec5e22b71a1685c5e6e97cd28b629f0aa6703fb87b6950df28e79fc1804290c",
+      "System.Memory.Data.dll": "2c1035b0106dbb2de7913d151e06071ed617bb58bbb3d6cd46a2dd0f6a03617b",
+      "System.Security.Cryptography.ProtectedData.dll": "80566f0839ece5946e66bf9f00d723e59e371ba1341a18e00c7c7a7c49298e1d",
+      "TraceReloggerLib.dll": "6830c0f1d3f3c17719181e73dd5cfa8ccbb3f3c575329d2120576545103467b5"
+    },
+    "catalogSHA256": "667b386691e8f2c9bebff431b4881e30814cb1db0f581b11c9141834134fda32",
+    "referenceCase": "scripts.csv-fulfillment.large",
+    "variantCase": "scripts.csv-fulfillment.large",
+    "controlCases": [
+      "scripts.text-summary-helpers.nonlocal-counter.large",
+      "diagnostic.tuple-return.constant"
+    ],
+    "sourceAndScriptDifferIntentionally": false,
+    "sourceProofCommit": null,
+    "referenceQualification": "GREEN43583650094 Windows/Ubuntu actual11/10, original stress and installed Release consumers; sourcef581/frozen9cfb",
+    "sourceArchiveSHA256": "2d45edbb8afb7643d9c9f4ac62f1b90017e69cee1b5d99fe11e307c7358a06bf",
+    "parentHead": "b057d88f3f5a71104ac314212be7886b0c8505f2",
+    "normalBorrowedAndEscapedCasesIntentionallyDiffer": true,
+    "sameSourceAndFixtureAcrossRuntimeRoles": true,
+    "originalFailedCollection": "B727,288b1fe049564df3727d1afea42b6ba5936e159d95781dacdf57329c40d39e2f",
+    "sourceAndCatalogUnchanged": true
+  },
+  "timing": [
+    {
+      "case": "diagnostic.csv-fulfillment.borrowed.large",
+      "actualCases": {
+        "reference": "diagnostic.csv-fulfillment.borrowed.large",
+        "candidate": "diagnostic.csv-fulfillment.borrowed.large",
+        "reference-control": "diagnostic.csv-fulfillment.borrowed.large",
+        "candidate-control": "diagnostic.csv-fulfillment.borrowed.large"
+      },
+      "lane": "warm",
+      "medianMilliseconds": {
+        "reference": 8.397685144067797,
+        "candidate": 8.379487618644069,
+        "reference-control": 8.378415403361345,
+        "candidate-control": 8.367128974789916
+      },
+      "processCpuMedianMilliseconds": {
+        "reference": 8.559322033898304,
+        "candidate": 8.474576271186441,
+        "reference-control": 8.487394957983193,
+        "candidate-control": 8.487394957983193
+      },
+      "iqrPercent": {
+        "reference": 0.1909734311598571,
+        "candidate": 0.414815116840729,
+        "reference-control": 1.2328441805505583,
+        "candidate-control": 0.1485319681575687
+      },
+      "lythonSourcePairElapsedPercent": [
+        -0.3638641929730624,
+        -0.2166969243492467,
+        -0.1347083908838087,
+        0.012797351660243095
+      ],
+      "lythonSourcePairWiderCpuPercent": [
+        -0.9900990099009799,
+        -0.8403361344537785,
+        -0.15103205235776906,
+        0.0
+      ],
+      "candidateProcessSpreadPercent": 0.14748686813087497,
+      "referenceProcessSpreadPercent": 0.22946491057793672
+    },
+    {
+      "case": "diagnostic.csv-fulfillment.escaped.large",
+      "actualCases": {
+        "reference": "diagnostic.csv-fulfillment.escaped.large",
+        "candidate": "diagnostic.csv-fulfillment.escaped.large",
+        "reference-control": "diagnostic.csv-fulfillment.escaped.large",
+        "candidate-control": "diagnostic.csv-fulfillment.escaped.large"
+      },
+      "lane": "warm",
+      "medianMilliseconds": {
+        "reference": 9.304932801886793,
+        "candidate": 9.254586429906542,
+        "reference-control": 9.348270613207548,
+        "candidate-control": 9.252816000000001
+      },
+      "processCpuMedianMilliseconds": {
+        "reference": 9.528301886792454,
+        "candidate": 9.439252336448599,
+        "reference-control": 9.433962264150944,
+        "candidate-control": 9.439252336448599
+      },
+      "iqrPercent": {
+        "reference": 0.23363181101597033,
+        "candidate": 0.5005788753908219,
+        "reference-control": 0.5504484970903556,
+        "candidate-control": 1.3959445669620105
+      },
+      "lythonSourcePairElapsedPercent": [
+        -1.0210938167823813,
+        -1.0021552346660356,
+        -0.5600986379635464,
+        -0.5410718492243283
+      ],
+      "lythonSourcePairWiderCpuPercent": [
+        -0.9345794392523366,
+        -0.9345794392523366,
+        0.05607476635514086,
+        0.05607476635514086
+      ],
+      "candidateProcessSpreadPercent": 0.01913029739308847,
+      "referenceProcessSpreadPercent": 0.46575093279521695
+    },
+    {
+      "case": "scripts.csv-fulfillment.large",
+      "actualCases": {
+        "candidate-control": "scripts.csv-fulfillment.large",
+        "reference-control": "scripts.csv-fulfillment.large",
+        "candidate": "scripts.csv-fulfillment.large",
+        "reference": "scripts.csv-fulfillment.large"
+      },
+      "lane": "warm",
+      "medianMilliseconds": {
+        "candidate-control": 8.241201842975206,
+        "reference-control": 8.40341406722689,
+        "candidate": 8.46349335042735,
+        "reference": 8.442901830508475
+      },
+      "processCpuMedianMilliseconds": {
+        "candidate-control": 8.429752066115702,
+        "reference-control": 8.487394957983193,
+        "candidate": 8.632478632478632,
+        "reference": 8.64406779661017
+      },
+      "iqrPercent": {
+        "candidate-control": 0.7143845402962835,
+        "reference-control": 0.9258531911970722,
+        "candidate": 0.5596564083504646,
+        "reference": 0.45241242945774185
+      },
+      "lythonSourcePairElapsedPercent": [
+        -2.3889888995798247,
+        -1.9303133578090326,
+        0.24389150001091764,
+        0.7149389845582999
+      ],
+      "lythonSourcePairWiderCpuPercent": [
+        -2.4793388429752095,
+        -0.6791588249734137,
+        -0.13407072230602335,
+        1.7094017094017033
+      ],
+      "candidateProcessSpreadPercent": 2.626474651166588,
+      "referenceProcessSpreadPercent": 0.46770368854575084
+    },
+    {
+      "case": "scripts.csv-fulfillment.large",
+      "actualCases": {
+        "candidate-control": "scripts.csv-fulfillment.large",
+        "reference-control": "scripts.csv-fulfillment.large",
+        "candidate": "scripts.csv-fulfillment.large",
+        "reference": "scripts.csv-fulfillment.large"
+      },
+      "lane": "compile-run",
+      "medianMilliseconds": {
+        "candidate-control": 8.396162381355932,
+        "reference-control": 8.587808547826087,
+        "candidate": 8.468346786324785,
+        "reference": 8.617640417391303
+      },
+      "processCpuMedianMilliseconds": {
+        "candidate-control": 8.559322033898304,
+        "reference-control": 8.782608695652174,
+        "candidate": 8.632478632478632,
+        "reference": 8.782608695652174
+      },
+      "iqrPercent": {
+        "candidate-control": 0.9704430028641705,
+        "reference-control": 0.43053885013860344,
+        "candidate": 0.3821279361831937,
+        "reference": 0.7047502626785864
+      },
+      "lythonSourcePairElapsedPercent": [
+        -2.570054275975653,
+        -2.2316073466573605,
+        -1.7324188970014087,
+        -1.3910622347483859
+      ],
+      "lythonSourcePairWiderCpuPercent": [
+        -2.5423728813559365,
+        -2.5423728813559365,
+        -1.7094017094017144,
+        -1.7094017094017144
+      ],
+      "candidateProcessSpreadPercent": 0.852402562037502,
+      "referenceProcessSpreadPercent": 0.34617213204918285
+    },
+    {
+      "case": "scripts.text-summary-helpers.nonlocal-counter.large",
+      "actualCases": {
+        "candidate-control": "scripts.text-summary-helpers.nonlocal-counter.large",
+        "reference-control": "scripts.text-summary-helpers.nonlocal-counter.large",
+        "candidate": "scripts.text-summary-helpers.nonlocal-counter.large",
+        "reference": "scripts.text-summary-helpers.nonlocal-counter.large"
+      },
+      "lane": "warm",
+      "medianMilliseconds": {
+        "candidate-control": 1.265614625994695,
+        "reference-control": 1.2583226815203146,
+        "candidate": 1.2972015654520919,
+        "reference": 1.2593549947089946
+      },
+      "processCpuMedianMilliseconds": {
+        "candidate-control": 1.3262599469496021,
+        "reference-control": 1.3106159895150722,
+        "candidate": 1.349527665317139,
+        "reference": 1.3095238095238095
+      },
+      "iqrPercent": {
+        "candidate-control": 0.08721200607506381,
+        "reference-control": 0.4351342155633244,
+        "candidate": 1.0116838660146656,
+        "reference": 0.6666430683206759
+      },
+      "lythonSourcePairElapsedPercent": [
+        0.49705057843096867,
+        0.5794971815631822,
+        3.005234497191367,
+        3.0897387850311597
+      ],
+      "lythonSourcePairWiderCpuPercent": [
+        1.1936339522546247,
+        1.278032312515065,
+        2.9689608636977116,
+        3.0548398969451718
+      ],
+      "candidateProcessSpreadPercent": 2.435006270316087,
+      "referenceProcessSpreadPercent": 0.08197158013563133
+    }
+  ],
+  "externalBaseline": "No external timing; complete representative cases retain their existing isolated Python goldens; no diagnostic-only case is included.",
+  "candidateFullQualificationPending": true,
+  "sourceAndScriptDifferIntentionally": false
+}
