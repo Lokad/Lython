@@ -56,7 +56,7 @@ inconclusive controls survive; see the explicit[debt decision](decision.json).
 All image/source/golden/allowance/quiet/join/archive gates pass; no workers or RAM
 fixtures remain. RawSHAd0bf8d7a0c9fb4d8e6791038ba8c8b2e4bc41b717f49ea49031109e92605e87d. No VM floor relaxation, evidence
 retirement or producer change. Full retained platform/stress/installed-consumer
-delivery remains separate. Publication held; this milestone does not complete the
+delivery[passes43548640898](delivery/README.md):581inputs/16summaries cached. Publication held; this milestone does not complete the
 whole-script performance objective.
 
 [Timing/wider CPU](summary.json),[allocation](allocation-summary.json),

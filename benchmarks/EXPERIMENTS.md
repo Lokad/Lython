@@ -7512,3 +7512,20 @@ elapsed/widerCPU−1.39..+1.23%remains explicit debt. Both allocation controls f
 Retain shared implementation/allocation reduction with modest CPU benefit; no
 universal/CPython gain, substantial-CPU completion or unchanged retiming. Full
 retained delivery follows; publication held, remaining roadmap active.
+
+## R342 — owning dictionary-loop instruction gate
+
+[B712](results/2026-11-14-captured-loop-attribution/README.md) captures committed
+2f606519/frozen53 with same-process JIT/map evidence:963guest leaves,74unknown,
+zero ambiguous;168dictionary-loop leaves/unique9805-byte Tier1. Empty-block mapper
+assertion corrected without recapture; original preserved. Groups mix useful
+hash/update and small transport/protection work; no dominant removable call/frame
+packet. Stop entry micro-tweaks. Cased preparation/writer costs motivate R343bulk
+UTF8 representation, with R230/R293/R324history and scan/storage tradeoffs explicit.
+All image/golden/quiet/join/RAM-archive gates pass; no normal timing/CPU-share forecast.
+
+R341full delivery[43548640898](results/2026-11-14-shared-integer-chains/delivery/README.md)
+passes at exact2f606519/frozen53: both platforms/actual11/10, original stress and
+installed consumers;581inputs/16summaries cached. This qualifies R342's measured
+source; its diagnostic overrides still preclude a normal timing claim. R343is
+separate/uncommitted. Do not repeat unchanged qualification; publication held.

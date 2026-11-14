@@ -1,0 +1,12 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "ramTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 320778240,
+  "archiveSHA256": "e29bbaa475bdd91b5f0ddff1a28735217706a27b48ef8aa42e568c9971062443",
+  "source": "Committed2f606519/frozen53becdb6; R342 captured dictionary-loop instruction attribution",
+  "performanceComparison": false
+}

@@ -1,0 +1,6 @@
+{
+  "originalFailure": "Unique-offset assertion rejected two adjacent labels at0x1941 in the same Tier1 method.",
+  "explanation": "A zero-length instruction group shares the following label address. Preserve both blocks, allow nondecreasing offsets, and map an IP with bisect_right to the last group at its address. The empty block receives zero samples. Exact total code length and unique same-process Tier1 checks remain.",
+  "noRecapture": true,
+  "rawMeasurementUnchanged": true
+}
