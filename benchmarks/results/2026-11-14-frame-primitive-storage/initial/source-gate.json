@@ -1,0 +1,19 @@
+{
+  "status": "R360bounded source gate, no runtime prototype yet",
+  "base": "Committed98acaa5b/frozena4bfbfd8; R359full43605198037and externalB736run independently.",
+  "hypothesis": "Ordinary frames resume after range/guest protocols and still box private machine updates. Extend the same primitive publication/materialization invariant through existing ExecutableValueStorage ownership, retaining final object-array binding and direct spans; remove duplicate transport rather than another callable backend.",
+  "evidence": "R356ordinary100kloopallocates~7.52MB and exact arithmetic was a demonstrated major cost; R357kernel improves CPU butallocationflat. R358deferred ordinarycells reduceallocation57percent butheap/grantoverheadregresses shortcalls. R359nativeworkingstoragegives wholeCSV21\u201323percentCPU/40.9percentallocation gain with documented short/observed debt; inside-range counter still promotes beforeloop.",
+  "sourceFacts": [
+    "ExecutableValueStorage already preflights/releases frameStorageBytes and optional object-array capacity using its existing owner; one optional primitive array could join the same construction/overlap transaction and _ownedStorageBytes cleanup.",
+    "ReadOperand/TakeOperand, seven ReadLocalValue occurrences including definition, Slice argument memory, collection construction and namespace snapshots are materialization boundaries. Existing cells are authoritative for captured locals and must never receive a private marker.",
+    "PrepareOrdinaryCall passes Stack.Slice directly to sync/async argument binding. Preserve that borrowed memory until binding/child cleanup ends; materialize just actual operands, not an unconditional whole-frame flush on every call.",
+    "Fused local publication uses StoreLocalValue; captured/mirrored bindings require stable objects before cell/namespace writes. Compiler facts must not misclassify modules/protected/general instruction sequences as native-only.",
+    "PrepareNativeSegments is an existing instruction scan; assess folding storage-need and inline-eligibility facts into it instead of adding another pass. Current native-only eligibility short-circuit does not compute ordinary-frame needs."
+  ],
+  "contract": "No private heap cells, pool/hotness policy, new public numeric type, argument storage backend, tracing or hidden allowance. Existing frame owner admits substantial capacity/overlap before allocation; no refund while pending binder/async users retain buffers. Stable identity before aliases/calls/collections/captures/namespaces/projection, exact overflow/protocol/error/evaluation semantics, terminal first refusal, cooperative cancellation and managed stack safety.",
+  "affected": "Complete counter with range inside helper; CSV/text/JSON aggregates/helper calls; short/zero/observed controls and compile-to-result. The different CSVwhile algorithm remains diagnostic, not a runtime gain across algorithms.",
+  "eliminate": "Per-update private boxes after native promotion, duplicate integer publication/materialization across native/frame storage, redundant compiler fact pass if it can merge into existing segment preparation. Delete displaced implementations at coherent migration.",
+  "stopping": "One bounded integration design across existing owner/readers/publication/calls and captured/mirrored boundaries, then one coherent prototype or supported rejection. No broad ownership inventory or new evaluator. Focused semantics/actualI/O/cancellation/refusal/retainedfunding, short source-pair controls, explicit debt decision; full checks at retention boundary.",
+  "remaining": "Resolve exact raw operand/copy boundaries before implementation. Current source clean; no R360production edits. R359short/observed/JSONdebt not declared resolved.",
+  "publicationHeld": true
+}

@@ -1,0 +1,9 @@
+{
+  "hypothesis": "Extend proven native primitive invariant through existing frame owner to remove per-update boxes after range/protocol promotion, preserving object-array/direct-span call ABI.",
+  "eliminate": "Separate compiler fact pass, duplicated native/frame primitive dispatch/materialization, object-only chain wrapper; private boxes for closed machine updates. No new evaluator/cell pool/hotness setting.",
+  "workloads": "Complete inside-range100kcounter, CSVvalidation/fulfillment, capturedtext/JSON helpers and short-zero/observed controls. Compile-to-result separate. Identical source/data per compared runtime.",
+  "semantics": "Captured/mirrored bindings get stable objects; private markers never escape through argument spans, tuple copies, pattern scratch or snapshots. Major arrays admitted with frame capacity before allocation; ownership lasts through pending binders/async cleanup. Exact overflow/protocol/order/cancellation/terminal refusal/funded aliases unchanged.",
+  "bound": "One integrated prototype and focused actual11/10 plus independent Python controls; one short controlled source pair/allocation with explicit debt decision. Full delivery if retained; no isolated experiment completion claim.",
+  "base": "98acaa5b/frozena4bfbfd8, full43605198037and completed externalB736independent; preserve exact baseline before editing.",
+  "publicationHeld": true
+}

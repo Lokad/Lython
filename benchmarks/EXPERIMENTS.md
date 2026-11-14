@@ -7736,3 +7736,18 @@ Windows/Ubuntu actual .NET 11/10, original stress and installed Release consumer
 582 input identities and 16 test summaries cached. This also qualifies B736's
 measured source. Short/observed-helper debt and JSON/report uncertainty remain.
 The uncommitted R360 frame prototype is excluded; publication remains postponed.
+
+## R360 — shared native/frame primitive transport, bounded refinement
+
+[Initial b9ad/A4 comparison and owning profile](results/2026-11-14-frame-primitive-storage/README.md)
+remove a compiler-fact pass and duplicate primitive dispatch, retain final object
+calls and use existing frame owners. Counter allocation falls 57.23% but CPU is
+flat; CSVwarm regresses 10–11%, JSON 6.6–7.2%, observed helpers 10.9–12.0%.
+Short/text controls vary. B737 all eight jobs/305.404 s and all gates; 12,890
+focused actual 11/10 checks / 46 Python controls pass. One owning profile keeps
+977 leaves/60 unknown/zero ambiguous and same-process 1,969-byte Tier1 evidence:
+primitive results pass through an avoidable out-object checked reference write.
+One bounded refinement removes this handoff without another packet/owner/type.
+Original adverse data, conservative-retention fixture failure and independently
+verified baseline matrix-helper bug/fix are preserved. No retention, universal
+speedup or full qualification claim; wider roadmap active, publication held.

@@ -36,3 +36,8 @@ API entry files remain byte-identical; the precise ownership, UTF8 group-name
 enumeration and cursor-construction cancellation gaps remain. This is not a
 package, semantics, interruption, performance or safety qualification. Independent
 Lython development and adapter-local bridges remain available.
+
+Read-only [cd8eb5c7/dev91 source inspection](source-update-cd8eb5c7.json) finds an
+internal scalar-profile preparation change and its documentation. The three API
+entry files and precise integration gaps remain unchanged. No adapter promotion
+or repeated qualification follows; independent Lython development continues.
