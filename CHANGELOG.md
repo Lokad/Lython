@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Reuse larger native integer working buffers through the existing execution-owned
+  workspace policy. Keep idle and active capacity charged until ownership ends,
+  preserving admission, cancellation, materialization and deterministic cleanup.
+
 - Share range position and exhaustion between ordinary iteration and native
   numeric loops, avoiding unobserved per-yield boxes. Preserve exact wider bounds,
   stable observed values, cancellation, admission and independent cursors.

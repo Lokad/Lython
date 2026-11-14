@@ -1,0 +1,10 @@
+{
+  "retainedCore": "ff2b5d76803f68d123f06d457c419c01ce76c42192a844c839583041c4493318",
+  "retainedVersion": "InitialB751ff2b5d76, source restored exactly after withdrawing cleanup refinement",
+  "reason": "14.57percentwholefulfillmentallocation reduction and removal of per-call temporary storage/reservation objects. Initial warm modest/mixed and freshmodestlylower; no substantial CPU claim. Accept explicit short-helper elapsed+0.62..+2.91percent/CPU+1.22..+2.71percent and observedelapsed+0.09..+1.06percent/CPUuncertain as0.11debt.",
+  "withdrawnRefinement": "fb3185fb: smaller cleanup topology but shortelapsed+4.50..+6.91percent/CPU+3.47..+6.85percent, text+0.30..+4.23percentwith3.33percentspread, JSONmixed/slightlyadverse, no extraallocationbenefit. Entire variant removed; initialindependent cleanup restored. No crosscollection causal attribution or permanentarchitectureban.",
+  "ownership": "Existing one-idle workspace policy charges idle/fullcapacity until eviction/executioncleanup, active loans until actual return. Majorpreflight/cancellationafteradmission/firstrefusal/materialization/awaitedcleanup preserved. Earlierdenial versus oldtemporarysize is explicit.",
+  "qualification": "Initial698focused actual11/10,102Pythoncontrols,18goldens; refined204focused/102controls/18goldens; forcedrestoration56checks and582inputproof. Fullplatform/stress/installedpackage delivery next; not yet green.",
+  "publicationHeld": true,
+  "performanceObjectiveStillOpen": true
+}

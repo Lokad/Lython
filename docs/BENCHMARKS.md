@@ -94,6 +94,11 @@ Cross-collection differences cannot attribute a gain to a particular optimizatio
 
 CPython remains the external baseline. Separate source-pair experiments establish:
 
+- Native integer workspace reuse: a later fulfillment source pair allocates14.57%
+  less per complete run. Warm elapsed is mixed/modestly lower, fresh modestly lower;
+  short helpers regress0.6–2.9%. This is an allocation/ownership improvement, not
+  a substantial CPU claim, and is excluded from the fa40 CPython table above.
+  [Exact source, controls, debt and delivery status](../benchmarks/results/2026-11-14-native-integer-workspace/completion/README.md).
 - Native primitive working storage: one complete 4,096-row CSV while-validator
   is 21–23% faster warm and 21–22% faster compile-to-result, with CPU support and
   approximately 40.9% less allocation. Short/zero helpers regress about 4–10%,

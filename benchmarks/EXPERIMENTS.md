@@ -7887,3 +7887,11 @@ conservative reservation charge, not measured physical array allocation; correct
 Select source-proved mutually exclusive native/continuation storage cleanup to
 remove added EH tier; no causal CPU assertion/newhelper/controller. Changed-source
 focus/controls and retention/debt remain separate. Publication held/objectiveopen.
+
+R365 [completion](results/2026-11-14-native-integer-workspace/completion/README.md)
+retains initialff2b,14.57%allocation reduction, modest/mixedfulfillmentclock,
+explicitshort+0.62..+2.91%elapsed/CPU+1.22..+2.71%debt. Refinedfb31/B752sevenjobs
+269.786s/allgates:short+4.50..+6.91%,text+0.30..+4.23%variable,noextraallocation
+saving. Whole refinement withdrawn, all582initialinputs restored/forcedbuilds/
+56checks pass; no unchanged retime or causal EH attribution. Full delivery next,
+publication held, broader objective continues; all old/adverse/source/raw survive.

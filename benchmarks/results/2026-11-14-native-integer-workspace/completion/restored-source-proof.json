@@ -1,0 +1,7 @@
+{
+  "restoredInitialFrozenCore": "ff2b5d76803f68d123f06d457c419c01ce76c42192a844c839583041c4493318",
+  "all582InputsMatchInitial": true,
+  "withdrawnRefinementCore": "fb3185fba0bec6e39587ec38737673fd2c9e5315427eab2db2aefd4fbb6967b8",
+  "reason": "Initial14.57percentallocationbenefit/short+0.62..+2.91percent retained with debt. Refinedcleanupshort+4.50..+6.91percent/CPU+3.47..+6.85, no further allocationbenefit. Preserve both; no crosscollection causal attribution/permanentdesignban. Restore explicit independent cleanup rather than add more variants.",
+  "unchangedInitialMeasurementNotRepeated": true
+}

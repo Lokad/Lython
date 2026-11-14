@@ -7,6 +7,47 @@ public sealed class IntegerPublicationTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task DifferentWideHelpersPreserveEarlierValuesAndReleaseTheirExecution(bool asynchronous)
+    {
+        static string Parameters(int count) => string.Join(",", Enumerable.Range(0, count).Select(i => "p" + i));
+        static string Arguments(int start, int count) => string.Join(",", Enumerable.Range(start, count));
+        var source = $"""
+            def wide({Parameters(24)}):
+                total=p0+p23
+                total*=3
+                return total
+            def narrow({Parameters(18)}):
+                total=p0+p17
+                total*=2
+                return total
+            first=wide({Arguments(0, 24)})
+            second=narrow({Arguments(1, 18)})
+            for ordinal in range(4):
+                assert wide({Arguments(1, 24)})==75
+                assert narrow({Arguments(2, 18)})==42
+            print(first,second)
+            """;
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var script = new LythonEngine().Compile(source, budget))
+        {
+            Assert.True(script.IsValid, string.Join("; ", script.Diagnostics));
+            var baseline = budget.ReservedBytes;
+            for (var run = 0; run < 3; run++)
+            {
+                using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
+                {
+                    Assert.True(result.Success, result.Failure?.Message);
+                    Assert.Equal("69 38\n", result.StandardOutput);
+                }
+                Assert.Equal(baseline, budget.ReservedBytes);
+            }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task RepeatedWideHelpersReleaseWorkingStorage(bool asynchronous)
     {
         var parameters = string.Join(",", Enumerable.Range(0, 18).Select(i => "p" + i));

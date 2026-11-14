@@ -1,8 +1,11 @@
-# Native integer workspace lifetime — bounded cleanup refinement
+# Native integer workspace lifetime — retained initial version
+
+The [completion decision](completion/README.md) retains the initial source below,
+withdraws its cleanup refinement, and preserves explicit short-helper debt. Full
+delivery qualification remains separate/pending.
 
 R365/B751, 2026-11-14 UTC. Initial frozenff2b5d76 versus fully qualified
-fa40d674/frozen73a1b233, two production inputs of582. Development prototype;
-no final retention/delivery claim. Reuse the existing one-idle-workspace policy
+fa40d674/frozen73a1b233, two production inputs of582. The following capture-time notes preceded retention; full delivery is separate. Reuse the existing one-idle-workspace policy
 for long[] loans instead of allocating an array/temporary reservation per wide
 native prefix. Small prefixes keep their fixed managed words. Surviving objects
 materialize before the loan returns; no primitive span survives genuine I/O.
@@ -55,7 +58,7 @@ excludes compilation/startup/reset/protocol/final cache teardown. Fresh adds
 compilation and compiled-owner disposal. Wider CPU includes reset/protocol.
 No universal/neutrality/currentCPython/cumulative improvement claim.
 
-## Selected cleanup refinement
+## Historical selected cleanup refinement
 
 Remove the added nested finally from every helper. Wide native word capacity
 implies code capacity>16 and therefore existing bound storage; only small fixed-

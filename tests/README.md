@@ -624,6 +624,12 @@ refusal and explicit cleanup. Repeated-call controls assert stable retained
 capacity, then exact recovery when cache ownership ends. Retained inputs, kwargs,
 closures and suspended users keep their independent funding throughout.
 
+[Native integer workspace ownership](Lokad.Lython.Tests/NativeIntegerWorkspaceOwnershipTests.cs)
+checks funded idle/active loans, cleanup ending before an active return, terminal
+refusal and cancellation during admission. Public integer-publication cases
+alternate different wide helpers and repeat executions, preserving earlier values
+and returning the shared allowance to baseline.
+
 [Completed invocation lifetimes](Lokad.Lython.Tests/CompletedInvocationLifetimeTests.cs)
 keep an escaped closure usable while checking that relinquished workspace becomes
 collectible, and verify retained-context headroom against actual managed shell

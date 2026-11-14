@@ -11,6 +11,7 @@ internal sealed class MemoryGovernor
     private readonly ILythonMemoryReservation _ownership;
     internal ILythonMemoryBudget Budget { get; }
     private WorkspaceCache<object> _functionWorkspace;
+    private WorkspaceCache<long> _nativeIntegerWorkspace;
     private Text.PyStringOps.CasedWhitespaceIteration? _idleWords;
     private bool _wordReuseEnded;
     private bool _resizingOwnership;
@@ -22,6 +23,14 @@ internal sealed class MemoryGovernor
 
     internal void ReturnFunctionWorkspace(object[] values, int usedLength)
         => _functionWorkspace.Return(this, values, usedLength);
+
+    // Native words are private to a synchronous prefix. Reuse the same bounded
+    // idle-cache policy and conservative capacity charge as function storage.
+    internal long[] RentNativeIntegerWorkspace(int capacity, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        => _nativeIntegerWorkspace.Rent(this, capacity, span, context);
+
+    internal void ReturnNativeIntegerWorkspace(long[] values)
+        => _nativeIntegerWorkspace.Return(this, values, 0); // No guest references to clear.
 
     // The range array and its private iteration state share one existing loan.
     // Reusing a loan retains its full capacity but clears every guest reference.
@@ -63,10 +72,14 @@ internal sealed class MemoryGovernor
         try { _functionWorkspace.End(this); }
         finally
         {
-            _wordReuseEnded = true;
-            var cached = _idleWords;
-            _idleWords = null;
-            if (cached is not null) Release(cached.StorageBytes);
+            try { _nativeIntegerWorkspace.End(this); }
+            finally
+            {
+                _wordReuseEnded = true;
+                var cached = _idleWords;
+                _idleWords = null;
+                if (cached is not null) Release(cached.StorageBytes);
+            }
         }
     }
 
@@ -77,7 +90,8 @@ internal sealed class MemoryGovernor
         private T[]? _idle;
         private bool _ended;
 
-        internal T[] Rent(MemoryGovernor governor, int capacity, LythonSourceSpan? span)
+        internal T[] Rent(MemoryGovernor governor, int capacity, LythonSourceSpan? span,
+            LythonRuntime.ExecutionContext? context = null)
         {
             governor.ThrowIfAdmissionFailed();
             if (capacity == 0) return [];
@@ -93,6 +107,7 @@ internal sealed class MemoryGovernor
             governor.Reserve(bytes, span);
             try
             {
+                context?.CheckExecution(span);
                 var values = new T[capacity];
                 governor.Commit(bytes);
                 return values;

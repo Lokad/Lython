@@ -383,9 +383,12 @@ no numeric identity ledger or separate evaluator.
 Eligible native prefixes retain unobserved machine integers in private working
 storage beside the final object slots. The existing compiler eligibility scan
 identifies helpers that need no such storage. Small prefixes borrow a fixed managed
-buffer; larger bound helpers admit their complete temporary capacity before
-allocation, which can cause earlier refusal under pressure. Working allowance is
-returned after all users finish. Reads cache a stable immutable object before alias
+buffer; larger bound helpers borrow native integer capacity through the existing
+execution-owned workspace reuse policy. New backing is admitted before allocation,
+including cancellation after admission. Idle capacity remains conservatively
+charged until eviction or execution cleanup, which can cause earlier refusal than
+per-call temporary storage. Active loans return only after materialization and all
+native users and cleanup finish. Reads cache a stable immutable object before alias
 copies, calls, collections or returns; ordinary-frame transfer materializes every
 live value. No primitive marker or working span survives suspension. Exact wider
 promotion, ordinary call spans, cancellation and managed stack admission remain.
@@ -702,6 +705,10 @@ The entire compiled capacity is admitted before binding, including for mirrored
 functions; it can remain idle in this cache after the call. Idle retention and
 earlier capacity admission can reject tight shared allowances sooner. No workspace crosses
 executions or retains a prior token or guest argument.
+Larger native integer workspaces use the same capacity charge and one-idle-array
+policy. Their private words contain no guest references; every surviving value is
+materialized before ordinary-frame transfer. Ending reuse releases idle backing,
+while outstanding loans remain charged until their final return.
 The same lifetime policy retains one word-buffer loan per execution, shared by
 larger ordinary splits and private cased-word iteration. One admitted object owns
 the range array and private cursor state; repeated lines reuse that storage.

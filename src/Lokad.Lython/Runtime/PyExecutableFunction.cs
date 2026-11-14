@@ -136,14 +136,14 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         // Only this synchronous prefix can borrow primitive working storage.
         // Publication/transfer materializes stable guest objects before escape.
         // The common fixed buffer has a bounded managed stack cost; larger
-        // bound calls admit their complete working capacity before allocation.
+        // bound calls borrow charged capacity until materialization and cleanup
+        // finish. An idle loan stays funded until execution cleanup or eviction.
         var integerCapacity = _codeObject.NativeIntegerStorageCapacity;
         Span<long> fixedIntegers = integerCapacity == 0 ? default : stackalloc long[LythonRuntime.NativeValueCapacity];
-        using var integerStorage = integerCapacity > LythonRuntime.NativeValueCapacity
-            ? Closure.MemoryGovernor.ReserveTemporary(checked(32L + sizeof(long) * (long)integerCapacity), span) : null;
-        if (integerStorage is not null) Closure.CheckExecution(span);
+        var integerStorage = integerCapacity > LythonRuntime.NativeValueCapacity
+            ? Closure.MemoryGovernor.RentNativeIntegerWorkspace(integerCapacity, span, Closure) : null;
         Span<long> integers = integerCapacity <= LythonRuntime.NativeValueCapacity
-            ? fixedIntegers[..integerCapacity] : new long[integerCapacity];
+            ? fixedIntegers[..integerCapacity] : integerStorage;
         var state = new LythonRuntime.NativeExecution(this, values, integers, consumedByIteration, unpackedReturn.Length);
         var entered = false;
         var transferred = false;
@@ -181,7 +181,14 @@ internal sealed class PyExecutableFunction : PyFunctionBase
             finally
             {
                 try { if (entered && !transferred) Closure.LeaveFunctionCall(); }
-                finally { if (rented && !transferred) LythonRuntime.ReturnBoundArguments(owned, _codeObject.ValueStorageCapacity); }
+                finally
+                {
+                    try { if (rented && !transferred) LythonRuntime.ReturnBoundArguments(owned, _codeObject.ValueStorageCapacity); }
+                    finally
+                    {
+                        if (integerStorage is not null) Closure.MemoryGovernor.ReturnNativeIntegerWorkspace(integerStorage);
+                    }
+                }
             }
         }
     }
