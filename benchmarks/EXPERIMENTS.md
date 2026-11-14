@@ -7490,3 +7490,9 @@ Invoice fresh5.96%and captured6.58%Lython process spreads remain inconclusive
 stability, preserved alongside raw/wider CPU and previous results. No new source-
 pair attribution, startup/tail claim or broad qualification campaign. Combined
 full43545993574pending; separate R341prototype is excluded. Publication held.
+
+Combined R338/R339delivery[43545993574](results/2026-11-14-native-owned-slots/delivery/README.md)
+is GREEN at exact1778c30d/frozen38: Windows/Ubuntu actual11/10, original stress and
+installed consumers;581inputs/16summaries cached. This also qualifies B709/B710's
+measured source. Separate R341shared-arithmetic work remains unqualified. Do not
+repeat the green matrix or reattribute historical clocks. Publication held.

@@ -77,3 +77,7 @@ this useful source deletion does not complete the performance objective.
 [Timing/wider CPU](summary.json), [allocation](allocation-summary.json),
 [inspection](inspection.json), [raw](observations.tgz),
 [exact frozen sources/bits, prospective conditions and checks](source-checks.tar.xz).
+
+Later combined descendant1778c30d/frozen38c0562f qualifies both R338and R339in
+[43545993574](../2026-11-14-native-owned-slots/delivery/README.md). This does not
+retroactively qualify the standalone e248snapshot or change B708control uncertainty.

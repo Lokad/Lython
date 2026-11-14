@@ -3,7 +3,8 @@
 2026-11-14UTC, exact committed1778c30d / frozen38c0562f,581production inputs,
 stockCPython3.13.16, quiet AzureF4as_v7/Ubuntu24.04.4/.NET11RC3. The combined
 R338/R339 full platform/stress/installed-consumer[delivery43545993574](https://github.com/Lokad/Lython/actions/runs/43545993574)
-is pending at collection; focused637internal/1562public per actual11/10 pass.
+was pending at collection and now[passes](../2026-11-14-native-owned-slots/delivery/README.md);
+focused637internal/1562public per actual11/10 pass.
 The separate R341prototype is not part of these sources or observations.
 Publication/tagging remain postponed.
 

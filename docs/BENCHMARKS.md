@@ -15,9 +15,9 @@ complete embedding measurements, not isolated interpreter CPU. Spreads are the
 Lython/CPython process-median differences; moving controls and IQRs remain visible.
 
 First five rows and fulfillment measured2026-11-14UTC: **1778c30d / frozen38c0562f**,
-against stock**CPython3.13.16**. Focused Release checks pass; combined full
-Windows/Ubuntu .NET11/10, original stress and installed consumers are
-[running](https://github.com/Lokad/Lython/actions/runs/43545993574).
+against stock**CPython3.13.16**. The measured runtime passes combined full
+Windows/Ubuntu .NET11/10, original stress and installed consumers.
+[Source proof and logs](../benchmarks/results/2026-11-14-native-owned-slots/delivery/README.md).
 [Exact sources, raw/wider CPU and controls](../benchmarks/results/2026-11-14-native-cpython-checkpoint/README.md).
 Invoice compile-to-result and captured text have5.96%and6.58%Lython process spread;
 their stability remains inconclusive despite small within-process IQRs.

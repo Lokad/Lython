@@ -3,8 +3,8 @@
 2026-11-14UTC, R339frozen38c0562f over R338c48c93ae/frozene2482e0b.
 **Retain the eligibility/transport separation.** 637internal/1562public focused
 Release cases pass per actual.NET11/10. Full combined R338/R339 platform, original
-stress and installed-consumer delivery is pending; the last full source remains
-R335cdd92944/frozenf4c4f027. Publication/tagging remain postponed.
+stress and installed-consumer delivery[passes43545993574](delivery/README.md):
+581inputs/16summaries cached. Publication/tagging remain postponed.
 
 The previous compiler fact mixed native-opcode eligibility with the sixteen-slot
 private call-buffer capacity. Bound calls already admit their complete locals and
