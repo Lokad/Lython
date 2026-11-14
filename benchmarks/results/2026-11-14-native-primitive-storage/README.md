@@ -71,3 +71,7 @@ refusal remains terminal and cleanup returns working allowance independently of 
 [allocation](refined/allocation-summary.json), [exact sources/identity](refined/candidate-identity.json),
 [public checks](refined/focused-checks.json), [internal checks](refined/internal-checks.json),
 [sources/binaries/variants/tools/raw/failures](refined/sources-checks-and-observations.tar.xz).
+
+Measured `98acaa5b` source subsequently [passes full 43605198037 qualification](delivery/README.md).
+Original collection-time pending metadata, adverse results and R359 debt remain;
+the later uncommitted R360 prototype is excluded.

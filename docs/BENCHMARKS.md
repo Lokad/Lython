@@ -17,8 +17,8 @@ Lython/CPython process-median differences; moving controls and IQRs remain visib
 
 First seven rows measured 2026-11-14 UTC: **98acaa5b / frozen a4bfbfd8**,
 against stock **CPython 3.13.16**. Full Windows/Ubuntu actual .NET 11/10,
-original stress and installed-package qualification is
-[running at this exact source](https://github.com/Lokad/Lython/actions/runs/43605198037).
+original stress and installed-package qualification
+[passes at this exact source](../benchmarks/results/2026-11-14-native-primitive-storage/delivery/README.md).
 [Exact sources, raw/wider CPU and controls](../benchmarks/results/2026-11-14-primitive-cpython-checkpoint/README.md).
 JSON's Lython process spread is 4.04%; report maximum IQR is 4.13%. Keep both
 variable cases visible. The [previous qualified snapshot](../benchmarks/results/2026-11-14-literal-cpython-checkpoint/README.md)
@@ -98,7 +98,7 @@ CPython remains the external baseline. Separate source-pair experiments establis
   is 21–23% faster warm and 21–22% faster compile-to-result, with CPU support and
   approximately 40.9% less allocation. Short/zero helpers regress about 4–10%,
   observed-value helpers about 2–4%; JSON has small adverse CPU direction.
-  [Exact sources, controls and pending full qualification](../benchmarks/results/2026-11-14-native-primitive-storage/README.md)
+  [Exact sources, controls and full qualification](../benchmarks/results/2026-11-14-native-primitive-storage/README.md)
   remain separate from the historical CPython table above.
 - Native helper returns: historical whole-run allocation falls19.92%for CSV helpers
   and19.31%for JSON helpers;

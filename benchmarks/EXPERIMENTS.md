@@ -7730,3 +7730,9 @@ Invoice warm 1.22–1.24×, compile 1.09–1.10×, fresh 1.22–1.23×; captured
 extrapolation from the different diagnostic CSVwhile algorithm. Full43605198037
 is pending independently. Old guide and all raw/adverse evidence preserved;
 publication held, ordinary-frame transport source gate and wider roadmap active.
+
+R359 measured `98acaa5b` / frozen `a4bfbfd8` [passes full 43605198037](results/2026-11-14-native-primitive-storage/delivery/README.md):
+Windows/Ubuntu actual .NET 11/10, original stress and installed Release consumers;
+582 input identities and 16 test summaries cached. This also qualifies B736's
+measured source. Short/observed-helper debt and JSON/report uncertainty remain.
+The uncommitted R360 frame prototype is excluded; publication remains postponed.

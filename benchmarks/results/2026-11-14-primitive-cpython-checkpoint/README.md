@@ -42,3 +42,6 @@ toolchains and 254/252 MiB floors remain; no new core/catalog upload or rerun.
 [terminal status](terminal-status.json), [prospective plan](prospective.json),
 [all tools/receipts/raw](observations.tar.xz), [prior guide](prior-BENCHMARKS.md).
 Publication/tagging and final adapter qualification remain separate and postponed.
+
+The measured source subsequently [passes full platform/stress/package qualification](../2026-11-14-native-primitive-storage/delivery/README.md).
+Collection-time pending metadata and variable JSON/report evidence remain unchanged.
