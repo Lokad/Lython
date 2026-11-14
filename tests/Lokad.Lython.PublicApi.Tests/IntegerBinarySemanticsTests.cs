@@ -7,6 +7,63 @@ public sealed class IntegerBinarySemanticsTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task MachineBoundaryArithmeticPromotesExactlyAndPreservesPublishedAliases(bool asynchronous)
+    {
+        const string source = """
+            def calculate(left, right):
+                addition = left + right
+                aliases = [addition, addition]
+                assert aliases[0] is aliases[1]
+                difference = left - right
+                product = left * right
+                left += right
+                assert left == addition
+                if right:
+                    return addition, difference, product, (left-right)//right, (left-right)%right
+                return addition, difference, product
+            return [calculate(left, right) for left in values for right in values]
+            """;
+        System.Numerics.BigInteger[] values = [
+            (System.Numerics.BigInteger)long.MinValue - 1, long.MinValue, long.MinValue + 1,
+            -4294967297L, -7, -1, 0, 1, 7, 4294967297L,
+            long.MaxValue - 1, long.MaxValue, (System.Numerics.BigInteger)long.MaxValue + 1
+        ];
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using (var script = new LythonEngine().Compile(source, budget))
+        {
+            Assert.True(script.IsValid, string.Join("; ", script.Diagnostics));
+            var baseline = budget.ReservedBytes;
+            var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["values"] = values.Select(value => (object)value).ToArray() } };
+            using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                var rows = Assert.IsAssignableFrom<IReadOnlyList<object?>>(result.ReturnValue);
+                Assert.Equal(values.Length * values.Length, rows.Count);
+                var index = 0;
+                foreach (var left in values)
+                foreach (var right in values)
+                {
+                    var row = Assert.IsAssignableFrom<IReadOnlyList<object?>>(rows[index++]);
+                    Assert.Equal(left + right, row[0]);
+                    Assert.Equal(left - right, row[1]);
+                    Assert.Equal(left * right, row[2]);
+                    Assert.Equal(right.IsZero ? 3 : 5, row.Count);
+                    if (right.IsZero) continue;
+                    var quotient = System.Numerics.BigInteger.DivRem(left, right, out var remainder);
+                    if (!remainder.IsZero && (left.Sign < 0) != (right.Sign < 0)) { quotient--; remainder += right; }
+                    Assert.Equal(quotient, row[3]);
+                    Assert.Equal(remainder, row[4]);
+                }
+                Assert.True(budget.ReservedBytes > baseline);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task SignedArithmeticProtocolsAndAccumulatorsKeepPythonSemantics(bool asynchronous)
     {
         const string source = """

@@ -7662,3 +7662,16 @@ machine-integer arithmetic kernel, not a tagged VM or general native reentry.
 Counts are not removable CPU shares; variants are not runtime source-pair gains.
 B729/B730all gates/joins/archive pass; original staging mismatch and stale raw
 receipt label remain explicit. R357development proceeds independently; publication held.
+
+## R357 — shared nonthrowing machine-integer arithmetic
+
+[Retainedcbb254be](results/2026-11-14-shared-machine-integer-kernel/README.md)
+shares the machine kernel across ordinary exact operations/chains/cells, deleting
+expected-overflow catches and general BigInteger arithmetic for checked int64
+results.2,152focused actual11/10checks/6isolated CPython controls pass. B732four
+jobs168.213s/allgates: complete numeric loop−19.7..−20.7%elapsed/CPU support,
+allocation flat. Invoice/fulfillment small adverse CPU direction remains debt;
+text10.73%reference/6.68%candidate spread is uncertain. Initial69d9source/timing
+and every fixture/timeout/staging failure remain. Full delivery qualification
+pending; shared publication/operand redesign and representative gains remain
+active. No inferred CPython improvement; publication held.

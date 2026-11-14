@@ -25,3 +25,7 @@ UTF8 group lookup/source copy is distinct from group-name enumeration; the funde
 search cursor supplies no anchored/fullmatch operation. Filtering its first search
 result cannot implement `fullmatch("a|ab", "ab")`. No new producer qualification
 or normal dependency/pin change follows from unrelated producer improvements.
+
+Read-only[e8b20aa5/dev89freeze source inspection](source-update-e8b20aa5.json)
+again finds the entire integration project unchanged fromfbf58099. The three
+precise gaps remain; no normal pin change or unchanged qualification follows.

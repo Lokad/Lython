@@ -1,0 +1,22 @@
+{
+  "complete": true,
+  "python": "Isolated stockCPython3.13.2",
+  "cases": [
+    {
+      "asynchronous": false,
+      "comparedCases": 3,
+      "matched": true,
+      "exitCode": 0,
+      "outputSHA256": "3371afa36f6fa6efd6d8d4d079c505d9d80f0d6f02b2f073de29c7ea5b49337a"
+    },
+    {
+      "asynchronous": true,
+      "comparedCases": 3,
+      "matched": true,
+      "exitCode": 0,
+      "outputSHA256": "c767daf63e6ad9c570373abd640d2baedf93e08d84726f257f6cf7d8cfa07771"
+    }
+  ],
+  "sourceSHA256": "39f33115ea95462ea31492390a78d9cb2de4524742acc140e3e2214cbb3301e9",
+  "coreSHA256": "cbb254beeb69700bfa101c8b3f966f4d57f4d340f13e173176eaaa581cf392cf"
+}

@@ -1,0 +1,20 @@
+{
+  "dateUTC": "2026-11-14",
+  "sourceHead": "e8b20aa51f5c8106a57d5302f1b544320a7c8ec3",
+  "baseline": "fbf58099af4801d0e1e2d00754985cfd0db9ed70",
+  "integrationFiles": {
+    "Utf8PythonRegex.cs": "335c346c37b0a3dcb82951a28d8c86483ad05cd9116d25f4bb68516ff371fc32",
+    "Utf8PythonRegex.Cursor.cs": "065369aef137589d4f553ddeb3acb4ca4b7d6d9279812ca5ee093bceae20edbb",
+    "Utf8PythonRegex.Compilation.cs": "5cb8915ec561a41b673313c8b35a062a258dc34189ba87e0eb81889b420a2e45"
+  },
+  "integrationProjectSourceDiffEmpty": true,
+  "remainingIntegrationGaps": [
+    "Separate one-match working and escaping-result ownership, instead of using the compiled program account for temporary/result staging",
+    "UTF8 named-group enumeration/copy; GetGroupNames still exposes CLR strings",
+    "Token-independent cursor construction with cancellable preparation; current-token cursor overloads retain construction tokens, while token-free overloads cannot cancel preparation"
+  ],
+  "qualification": "Read-only API/source comparison. New producer dev89freeze does not change the integration contract. No producer semantic/performance/safety qualification or package/source equivalence claim; completed dev80 checks not repeated.",
+  "coreDependencyChanged": false,
+  "normalAdapterPinChanged": false,
+  "affectedFinalAdapterQualificationOnly": true
+}

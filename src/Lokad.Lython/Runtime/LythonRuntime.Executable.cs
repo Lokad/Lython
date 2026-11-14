@@ -64,12 +64,7 @@ internal sealed partial class LythonRuntime
             if (_hasInteger) prior = _integer;
             else if (!TryMachineInteger(_value, out prior)) return false;
             context.CheckExecution(arithmeticSpan);
-            long next;
-            try
-            {
-                if (!TryMachineBinary(operation, prior, operand, out next)) return false;
-            }
-            catch (OverflowException) { return false; }
+            if (!TryMachineBinary(operation, prior, operand, out var next)) return false;
             context.CheckExecution(storeSpan);
             _integer = next;
             _hasInteger = true;

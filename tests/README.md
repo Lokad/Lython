@@ -58,6 +58,11 @@ unpacking and actual I/O transfer under both execution APIs. The
 admission, refusal/cancellation before publication and cleanup to the shared-budget
 baseline.
 
+[Integer boundary cases](Lokad.Lython.PublicApi.Tests/IntegerBinarySemanticsTests.cs)
+cross signed machine limits under both execution APIs, checking exact promotion,
+Python division/modulo, published aliases and shared-budget cleanup. Existing
+integer admission/protocol cases preserve terminal refusal and cancellation.
+
 ## Assembly boundaries
 
 - `Lokad.Lython.PublicApi.Tests` references `Lokad.Lython.csproj` normally. It

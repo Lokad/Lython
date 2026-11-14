@@ -15,6 +15,8 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("ZeroDivisionError", op == BinaryOperatorSyntax.Modulo
                 ? "integer modulo by zero" : "integer division or modulo by zero", span);
 
+        if (TryMachineIntegerBinary(op, left, right, out var machineResult)) return machineResult;
+
         var governor = owner ?? context.MemoryGovernor;
         try
         {
@@ -35,6 +37,70 @@ internal sealed partial class LythonRuntime
         catch (OverflowException error)
         {
             throw new LythonRuntimeException("OverflowError", error.Message, span);
+        }
+    }
+
+    // Exact machine-sized arithmetic shares the instruction-chain/cell kernel.
+    // No value escapes and no admission occurs until the result fits. Larger
+    // results continue through the existing funded BigInteger path.
+    private static bool TryMachineIntegerBinary(BinaryOperatorSyntax op, BigInteger left,
+        BigInteger right, out BigInteger result)
+    {
+        if (TryMachineInteger(left, out var a) && TryMachineInteger(right, out var b)
+            && TryMachineBinary(op, a, b, out var value))
+        {
+            result = value;
+            return true;
+        }
+        result = default;
+        return false;
+    }
+
+    private static bool TryMachineInteger(object? value, out long result)
+    {
+        if (value is BigInteger integer) return TryMachineInteger(integer, out result);
+        result = 0;
+        return false;
+    }
+
+    private static bool TryMachineInteger(BigInteger value, out long result)
+    {
+        if (value.GetByteCount() <= sizeof(long))
+        {
+            result = (long)value;
+            return true;
+        }
+        result = 0;
+        return false;
+    }
+
+    private static bool TryMachineBinary(BinaryOperatorSyntax op, long left, long right, out long result)
+    {
+        result = 0;
+        // Two int64 operands fit these intermediate operations in Int128.
+        // Out-of-range results decline without an exception or publication.
+        // The same rule serves ordinary arithmetic, chains and captured cells.
+        switch (op)
+        {
+            case BinaryOperatorSyntax.Add:
+            case BinaryOperatorSyntax.Subtract:
+            case BinaryOperatorSyntax.Multiply:
+                var wide = op == BinaryOperatorSyntax.Add ? (Int128)left + right
+                    : op == BinaryOperatorSyntax.Subtract ? (Int128)left - right : (Int128)left * right;
+                if (wide < long.MinValue || wide > long.MaxValue) return false;
+                result = (long)wide;
+                return true;
+            case BinaryOperatorSyntax.FloorDivide when right != 0:
+                if (left == long.MinValue && right == -1) return false;
+                result = Math.DivRem(left, right, out var remainder);
+                if (remainder != 0 && (left < 0) != (right < 0)) result--;
+                return true;
+            case BinaryOperatorSyntax.Modulo when right != 0:
+                if (left == long.MinValue && right == -1) return true; // Exact remainder is zero.
+                result = left % right;
+                if (result != 0 && (left < 0) != (right < 0)) result += right;
+                return true;
+            default: return false;
         }
     }
 

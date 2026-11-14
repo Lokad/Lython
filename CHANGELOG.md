@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Share nonthrowing machine-integer arithmetic across ordinary exact operations,
+  instruction chains and captured cells. Preserve exact wider promotion, Python
+  division/modulo rules, published values and major-storage admission.
+
 - Reuse the native direct tuple-return convention for larger helpers running in
   admitted bound storage. Immediate exact unpacking shares caller publication and
   retirement, preserving eager admission, aliases and cleanup before target stores.

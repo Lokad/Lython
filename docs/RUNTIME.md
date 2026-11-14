@@ -80,6 +80,12 @@ comparison and truth protocols keep their ordinary synchronous/async behavior.
 Context-free native comparers have no token and retain their whole-span operations;
 cancellation is then observed by the enclosing execution.
 
+Exact integer addition, subtraction, multiplication, floor division and modulo
+share machine arithmetic with instruction chains and captured cells. Explicit
+fit checks select the existing wider-integer path without overflow exceptions.
+Published integers retain their BigInteger representation; larger values and
+working overlap retain their existing memory admission and exact Python behavior.
+
 Run requires host capabilities advertising synchronous completion. If such a host
 returns pending work anyway, Lython waits for that operation to settle before
 reporting the contract failure and releasing its borrowed storage. Text/binary

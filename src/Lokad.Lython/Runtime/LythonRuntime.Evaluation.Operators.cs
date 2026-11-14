@@ -179,6 +179,7 @@ internal sealed partial class LythonRuntime
     // overflow funnel while avoiding generalized collection/numeric dispatch.
     internal static object AddExactIntegers(BigInteger left, BigInteger right, MemoryGovernor? governor, LythonSourceSpan span)
     {
+        if (TryMachineIntegerBinary(BinaryOperatorSyntax.Add, left, right, out var machineResult)) return machineResult;
         try
         {
             using var integerAdmission = governor is null ? null : GuardIntegerAddition(left, right, governor, span);

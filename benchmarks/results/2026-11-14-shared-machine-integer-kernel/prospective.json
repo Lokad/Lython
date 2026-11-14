@@ -1,0 +1,6 @@
+{
+  "reason": "Refine measured69d9kernel to avoid expected overflow exceptions in ordinary repeated products; shared Int128 fit checks/explicit division edges delete catches from existing chains and cells.",
+  "semantics": "Exact signed arithmetic and zero errors/overflow promotion, identity/aliases/protocols unchanged; no admission or publication before deciding fit, original major preflights/terminal refusal/cleanup retained.",
+  "validation": "2152focused actual11/10checks pass; independent13x13boundary C#BigInteger results, both APIs. One same-source final four-job confirmation, preserving all69d9evidence. Allocation separate.",
+  "publicationHeld": true
+}

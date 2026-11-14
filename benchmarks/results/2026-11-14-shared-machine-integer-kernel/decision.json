@@ -1,0 +1,22 @@
+{
+  "status": "Retained nonthrowing shared kernel; focused-qualified, final source pair complete, full platform/stress/installed-consumer qualification pending.",
+  "source": "cbb254beeb69700bfa101c8b3f966f4d57f4d340f13e173176eaaa581cf392cf",
+  "reference": "9cfb7d5b41c02fb0ebe503d51f9ad21619b8faddb73691c7331df4c76c464030",
+  "productionInputs": 581,
+  "changedProductionInputs": [
+    "src/Lokad.Lython/Runtime/LythonRuntime.Evaluation.Operators.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.IntegerBinary.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.IntegerChains.cs"
+  ],
+  "focusedChecks": "114internal/962public per actual11/10,2152total;6isolated CPython3.13.2 controls match exactcbb2core; all8frozen Ready/golden/files/budget checks pass.",
+  "removed": "Executable-only placement of machine arithmetic and exception-based overflow probing in ordinary calls/chains/cells. Checked int64 results bypass general BigInteger limb arithmetic and repeated major-estimation routing.",
+  "unchanged": "Published BigInteger objects and identities/aliases, exact wider promotion, bool/protocol/errors, managed stack/cancellation/current admission and terminal refusal, major storage/working-overlap funding/cleanup. No new value format, owner, array, arena, cache or policy.",
+  "allocation": "Numeric loop flat; fulfillment\u22123.875..0B/invocation effectively flat; four fresh processes/reversed roles, same counts/warmup and30second bound after narrowing original timed-out batch.",
+  "timing": "B732fourjobs168.213s/allgates: numeric loop elapsed\u221220.72..\u221219.67%/widerCPU\u221221.41..\u221219.67%; invoice\u22120.62..+1.48%/CPU0..+2.45%; fulfillment\u22120.38..+2.49%/CPU0..+2.24%; text\u221212.52..+5.01%/CPU\u221213.83..+5.13%, unstable.",
+  "regressionDebt": "Retain coherent shared/no-exception kernel and measured complete numeric benefit. Invoice/fulfillment small adverse CPU direction is explicit unresolved debt, not neutrality. Text reference10.73%/candidate6.68%process spreads prevent attribution. No unchanged retiming requested: these controls do not establish a regression magnitude, and the broader representative objective remains active. Revisit with new owning evidence/coherent redesign.",
+  "failedConditions": "Initial69d9all code/timing/allocation/failures preserved separately. Final B732staging initially selected source candidate69d9where reference9cfbwas required; guard failed before payload/mutation/launch. Corrected reference selection keeps finalcbb2data/settings. Original failed config/script/log preserved.",
+  "next": "Batch full Windows/Ubuntu actual11/10, original stress and installed Release consumers once. Continue a bounded scalar-publication/operand-transport design gate using the remaining substantial allocation and representative profiles. No tagged VM or native-reentry framework automatically selected; exact identity/promotion/ownership and displaced work required.",
+  "publicationHeld": true,
+  "performanceObjectiveStillActive": true
+}
