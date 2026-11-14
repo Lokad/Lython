@@ -7836,3 +7836,12 @@ per image across both collections aggregate−1.33%elapsed/−1.55%CPU descripti
 Original +12.91% and unresolved cause remain. Materialization alloc+1.26%, no
 neutrality/universal claim.142 furtherfocused/90Pythoncontrols/18goldens/22extreme
 checks pass; full delivery separate. All adverse/source/binary/raw preserved.
+
+## R362 external representative checkpoint
+
+[B747](results/2026-11-14-range-cpython-checkpoint/README.md), exact fa40d674/73a1b233,
+completes nine jobs/360.962s/all gates versus stockCPython3.13.16.
+Current guide separates compile/warm/fresh, I/O/validation/cleanup, all controls and
+remaining uncertainty; original source/guide/raw retained. No cross-collection
+attribution or diagnostic counter extrapolation. Full43625900419 independent;
+representative source gate continues, publication held.
