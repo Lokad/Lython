@@ -1,80 +1,73 @@
-# Native primitive working storage: active prototype
+# Native primitive working storage: retained, full delivery pending
 
-2026-11-14 UTC, R359. Initial frozen `6c35b043` versus fully qualified
-`47df7e19` / frozen `cbb254be`; four changed production inputs. **Development
-prototype, not yet retained or fully qualified.** Publication/tagging remain held.
+2026-11-14 UTC, R359. Refined frozen `a4bfbfd8` versus fully qualified
+`47df7e19` / frozen `cbb254be`; five changed production inputs. **Runtime retained;
+full Windows/Ubuntu, stress and installed-consumer qualification is pending.**
+Publication/tagging remain postponed. The complete
+[initial comparison](initial-README.md), including every adverse result, remains.
 
-Private machine integers live beside existing object slots until observation.
-This removes repeated boxes without R358's private heap cells or small-call
-reservations. The first form uses a fixed 128-byte managed buffer; larger bound
-helpers admit temporary capacity before allocation and keep it reserved through
-cleanup. Stable immutable values are cached before aliases, argument spans,
-collections, returns and ordinary-frame transfer. No primitive marker or borrowed
-working span crosses suspension; ordinary frames/call ABI remain unchanged.
+The final object-array call interface and ordinary frame representation stay intact.
+Native prefixes keep private machine values beside those slots, materializing and
+caching a stable immutable identity before aliases, calls, collections, returns or
+ordinary-frame transfer. No marker or working span survives suspension. Small
+prefixes borrow at most 128 bytes of managed working storage; larger bound helpers
+preflight temporary capacity and keep it reserved until all users/cleanup finish.
+The existing eligibility scan computes storage need, so helpers that cannot write
+this representation allocate none. Primitive/object publication share the same
+retirement, store checkpoint and instruction advancement. No private heap cells,
+cell pools, adaptive thresholds, argument repackaging or second evaluator.
 
-## Initial complete-script comparison
+## Bounded completion comparison
 
-Quiet Azure F4as_v7, Ubuntu 24.04.4, EPYC 9V45, .NET 11 RC3, normal GC/tiering,
-unchanged workers/auxiliaries/catalog. Four fresh processes per job, 5-second
-full-request warmups (12 seconds for captured text), five rotating 0.5-second
-batches. B734 completes all eight jobs in 303.156 seconds with image, output,
-files, budget, quiet, joined-user and archived-evidence gates. No remaining RAM
-fixtures or workers. Raw SHA256:
-`a9f5c8e3083fb0b53a7c6abad1d3d97b52cd441a53fd586c1887178a4c3bf5cf`.
+Same quiet F4as_v7, Ubuntu 24.04.4, EPYC 9V45, .NET 11 RC3, unchanged workers/
+auxiliaries/catalog and normal GC/tiering as B734. Four fresh processes/job,
+5-second full-request warmups, five rotating 0.5-second batches. B735 finishes
+all five affected-workload jobs in 175.171 seconds, with all image/output/file/
+budget/quiet/join/archive gates. No remaining workers or RAM fixtures. Raw SHA256
+`6884b92cf22a9a2d20dd5699423d53bcbbcea1a059fa0b5a1a5cd47a76ce6d7b`.
 
 | Complete script | Elapsed change | Wider CPU change |
 | --- | ---: | ---: |
-| 100,000-add inside-range counter | −2.88..−0.51% | −4.63..+0.33% |
-| 4,096-row CSV while validator, warm | −24.13..−22.03% | −23.85..−21.50% |
-| Same CSV, compile-to-result | −24.39..−22.02% | −22.90..−20.56% |
-| 4,096-row CSV fulfillment | −1.88..−0.27% | −1.96..0.00% |
-| 3,072-line captured text | −5.61..+2.40% | −5.56..+3.39% |
-| JSON helper summary | +2.10..+2.96% | +2.71..+4.87% |
-| Repeated short/zero helpers | +6.40..+9.63% | +8.22..+11.21% |
-| Helpers exposing each intermediate | +0.80..+5.96% | +1.01..+7.85% |
+| 4,096-row CSV while validator, warm | −22.99..−21.07% | −22.43..−21.50% |
+| Same CSV, compile-to-result | −21.90..−21.21% | −21.00..−19.22% |
+| JSON helper summary | −0.03..+1.93% | +0.69..+4.13% |
+| Repeated short/zero helpers | +3.70..+10.19% | +5.69..+11.36% |
+| Helpers exposing each intermediate | +2.29..+3.97% | +1.87..+4.51% |
 
-Ranges span all candidate/reference process-median pairings, not confidence
-intervals. Warm clocks include mediated RAM-file I/O, validation and result
-cleanup; exclude compilation, startup, fixture reset, protocol and final cache
-disposal. Compile-to-result adds compilation/compiled-owner disposal. Wider CPU
-includes reset/protocol. No CPython, startup, contention or tail-latency claim.
-Text's 4.44% reference / 3.89% candidate spread remains uncertainty. Numeric
-control movement is not attributed to this storage design: `range(...)` inside
-that helper already promotes before its loop.
+Ranges span all process-median pairings, not confidence intervals. Short-helper
+process spread is 3.75% candidate / 2.37% reference; uncertainty does not erase its
+adverse direction. JSON elapsed is near flat to adverse, with adverse wider CPU.
+Text remains uncertain from B734 and was not remeasured. No universal gain,
+resolved call overhead, cross-algorithm or refreshed CPython-ratio claim.
 
-Four separate allocation processes, reversed role order, all goldens/budgets and
-ordinary GC: CSV allocation falls approximately 40.87%
-(5,131,350.625 to 3,034,111.625–3,034,115.125 B/run). Counter allocation is flat.
-No CPU inference from allocation. The CSV while algorithm is the diagnostic
-variant of the maintained text-digit validator; source/data are identical across
-each runtime, and its algorithm change is not claimed as a runtime speedup.
+Warm clocks include mediated RAM-file I/O, full validation and result cleanup;
+exclude compile/startup, fixture reset/protocol and final cache disposal.
+Compile-to-result adds compilation/compiled-owner disposal; wider CPU includes
+reset/protocol. Startup, pending I/O, contention, heap peaks and embedding tail
+latency remain unmeasured. CSV uses the identical diagnostic while algorithm in
+both runtimes, not a comparison against the different maintained for-loop source.
 
-2,416 focused checks pass across actual .NET 11/10, including stack/recursion,
-integer alias/overflow/protocol behavior, actual I/O and cancellation, terminal
-refusal, retained results and shared-budget cleanup. Thirty-two isolated CPython
-3.13.2 controls match both execution APIs. Eight new public observation/wide-call
-cases remain independent of the internal representation. The initial white-box
-constructor compile failure and local verification-script path correction are
-preserved; no semantic or containment assertion was weakened.
+Four fresh allocation processes/reversed order show CSV allocation down 40.868%
+(5,131,710.625 to 3,034,475.125–3,034,479 B/run), counter allocation flat. The
+inside-range counter promotes before its loop; ordinary frames still box values.
+6,086 focused actual .NET 11/10 checks and 32 independent CPython 3.13.2 controls
+pass, including aliases/overflow/protocols, real asynchronous I/O/cancellation,
+stack/recursion, terminal refusal, retained funding and budget cleanup. All 14
+frozen worker goldens match. No timeout/assertion weakened. The intermediate
+`ca82b162` publication-only variant is preserved with focused/allocation checks,
+but has no CPU/elapsed comparison. A local pre-SSH preparation error used the
+wrong member path for old canonical evidence; inventory correction preceded any
+remote launch or measurement.
 
-## Bounded refinement and remaining debt
+**Decision:** accept the recorded short/observed-helper and small JSON CPU debt
+for this coherent representation milestone and substantial CSV gain. Do not hide
+the costs behind pools, hotness settings or unchanged retiming. Full qualification
+and a representative external checkpoint follow; the complete-call/frame/operand
+roadmap remains active and final 0.11 regression debt needs an explicit decision.
+Earlier denial from genuinely required larger temporary storage is documented;
+refusal remains terminal and cleanup returns working allowance independently of GC.
 
-CSV's substantial CPU/allocation gain justifies completing the representation;
-the short/observed-helper and JSON regressions remain explicit debt. Do not add
-cell pools or adaptive hotness thresholds. Source inspection finds unnecessary
-storage in non-arithmetic `record_amount(record)`, and duplicated publication
-retirement/store-checkpoint/PC logic. One bounded refinement will share the
-authoritative publication path and compute storage need during the existing
-eligibility scan, eliminating storage that cannot be written. This adds no
-analysis pass and never skips allocation following refusal. Confirm affected
-whole scripts/controls before a coherent full delivery checkpoint.
-
-No unchanged general retiming or fixed percentage veto. The original results,
-adverse samples, sources and failed conditions remain immutable. A publication-only
-intermediate has focused/allocation evidence but no elapsed/CPU comparison; it
-must not be described as measured faster. The broader representative performance
-roadmap and independent regex track remain active.
-
-[Initial timing](initial/timing-summary.json), [allocation](initial/allocation-summary.json),
-[identity](initial/candidate-identity.json), [checks](initial/focused-checks.json),
-[additional checks](initial/extra-checks.json), [sources/binary/raw/failures](initial/sources-checks-and-observations.tar.xz).
+[Decision/debt](refined/decision.json), [timing](refined/timing-summary.json),
+[allocation](refined/allocation-summary.json), [exact sources/identity](refined/candidate-identity.json),
+[public checks](refined/focused-checks.json), [internal checks](refined/internal-checks.json),
+[sources/binaries/variants/tools/raw/failures](refined/sources-checks-and-observations.tar.xz).

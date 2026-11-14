@@ -1,0 +1,27 @@
+{
+  "status": "Retain coherent native primitive transport; full delivery qualification pending",
+  "frozenCore": "a4bfbfd8d1cf7726c0a76e018f13707db051a678809217d9fcac155c311f68a7",
+  "reference": "Fully qualified47df7e19/frozencbb254be",
+  "productionInputs": 582,
+  "changedInputs": [
+    "src/Lokad.Lython/Frontend/ExecutableScript.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativePrefix.cs",
+    "src/Lokad.Lython/Runtime/PyExecutableFunction.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.IntegerChains.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeIntegers.cs"
+  ],
+  "removed": [
+    "Per-update machine boxes until observation",
+    "New duplicated retirement/store-checkpoint/PC logic; publication shares existing path",
+    "Unused working storage for helpers that cannot write primitive slots, identified during existing eligibility pass",
+    "Original Native-only object-chain packaging; shared checked arithmetic/chain kernel retained"
+  ],
+  "contract": "Final object-array argument spans and ordinary frames unchanged. Stable immutable materialization before aliases/calls/collections/returns/frame transfer. Fixed128B managed working buffer, or fully admitted temporary major capacity for larger bound helpers. Working allowance held uncommitted through users/cleanup; no marker/span across suspension. Earlier admission denial acceptable and documented, always terminal. No private heap cells/pools/hotness settings/heap tracing/new guest numeric type.",
+  "validation": "6086focused actual11/10checks and32isolatedPythoncontrols; all14frozenworker goldens, budget cleanup, four allocationprocesses/reversedroles, B735all5jobs175.171s/allidentity/golden/quiet/join/archivegates.",
+  "evidence": "CSVwarm21.07\u201322.99percentfaster/compile-run21.21\u201321.90percentfaster, widerCPU supports; allocation40.868percentless. No universal gain or CPython-ratio attribution.",
+  "regressionDebt": "Retain short-zero3.70\u201310.19percentelapsed/CPU5.69\u201311.36 and observed2.29\u20133.97elapsed/CPU1.87\u20134.51 adverse. JSONelapsed\u22120.03..+1.93percent, CPU+0.69..+4.13 adverse. Text remains uncertain from initialB734; not remeasured. No claim these costs are resolved.",
+  "debtDecision": "Accept documented call-heavy/observed-value cost for this bounded representation milestone and substantial complete CSVgain; do not add cell pools/hotness policies or automatic unchanged retiming. Continue complete-call/frame/operand source gate and representative external checkpoint; decide final0.11regression debt explicitly before release. Ordinary frames still box after promotion, including inside-range counter.",
+  "untimedIntermediate": "ca82publication-only source/focused/allocation evidence retained; no elapsed/CPU claim.",
+  "remaining": "Full Windows/Ubuntu actual11/10, original stress and installed consumers at delivery, then representative CPython refresh and next substantial roadmap. Independent regex three precise final adapter gaps only.",
+  "publicationHeld": true
+}

@@ -23,15 +23,25 @@ internal sealed partial class LythonRuntime
     private static bool TryIntegerChain(ExecutableCodeObject code, ReadOnlySpan<object> values,
         int index, object left, object right, ExecutionContext scope, out int end, out long result)
     {
+        if (TryMachineInteger(left, out var a) && TryMachineInteger(right, out var b))
+            return TryIntegerChain(code, values, default, index, a, b, scope, out end, out result);
+        end = index;
+        result = 0;
+        return false;
+    }
+
+    private static bool TryIntegerChain(ExecutableCodeObject code, ReadOnlySpan<object> values,
+        ReadOnlySpan<long> integers, int index, long left, long right, ExecutionContext scope,
+        out int end, out long result)
+    {
         end = index;
         result = 0;
         ref readonly var first = ref code.Instructions[index];
         if (first.HasLocalResult || index + 1 >= code.Instructions.Length
-            || !ContinuesIntegerChain(code, code.Instructions[index + 1], first.ResultSlot)
-            || !TryMachineInteger(left, out var a) || !TryMachineInteger(right, out var b)) return false;
+            || !ContinuesIntegerChain(code, code.Instructions[index + 1], first.ResultSlot)) return false;
 
         long accumulator;
-        if (!TryMachineBinary(first.BinaryOperator, a, b, out accumulator)) return false;
+        if (!TryMachineBinary(first.BinaryOperator, left, right, out accumulator)) return false;
         while (end + 1 < code.Instructions.Length
             && ContinuesIntegerChain(code, code.Instructions[end + 1], first.ResultSlot))
         {
@@ -40,10 +50,9 @@ internal sealed partial class LythonRuntime
             // Look ahead without raising an unbound-local error ahead of
             // an earlier arithmetic error. No guest work has been published.
             var otherSlot = next.InputStart == first.ResultSlot ? next.SecondInput : next.InputStart;
-            var other = otherSlot < 0 ? code.Constants[~otherSlot] : values[otherSlot];
-            if (!TryMachineInteger(other, out var operand)) return false;
-            a = next.InputStart == first.ResultSlot ? accumulator : operand;
-            b = next.SecondInput == first.ResultSlot ? accumulator : operand;
+            if (!TryReadMachineOperand(code, values, integers, otherSlot, out var operand)) return false;
+            var a = next.InputStart == first.ResultSlot ? accumulator : operand;
+            var b = next.SecondInput == first.ResultSlot ? accumulator : operand;
             if (!TryMachineBinary(next.BinaryOperator, a, b, out accumulator)) return false;
             end++;
             if (next.HasLocalResult) break;

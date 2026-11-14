@@ -133,7 +133,18 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         unpacked = false;
         result = PyNone.Instance;
         frame = null;
-        var state = new LythonRuntime.NativeExecution(this, values, consumedByIteration, unpackedReturn.Length);
+        // Only this synchronous prefix can borrow primitive working storage.
+        // Publication/transfer materializes stable guest objects before escape.
+        // The common fixed buffer has a bounded managed stack cost; larger
+        // bound calls admit their complete working capacity before allocation.
+        var integerCapacity = _codeObject.NativeIntegerStorageCapacity;
+        Span<long> fixedIntegers = integerCapacity == 0 ? default : stackalloc long[LythonRuntime.NativeValueCapacity];
+        using var integerStorage = integerCapacity > LythonRuntime.NativeValueCapacity
+            ? Closure.MemoryGovernor.ReserveTemporary(checked(32L + sizeof(long) * (long)integerCapacity), span) : null;
+        if (integerStorage is not null) Closure.CheckExecution(span);
+        Span<long> integers = integerCapacity <= LythonRuntime.NativeValueCapacity
+            ? fixedIntegers[..integerCapacity] : new long[integerCapacity];
+        var state = new LythonRuntime.NativeExecution(this, values, integers, consumedByIteration, unpackedReturn.Length);
         var entered = false;
         var transferred = false;
         BoundCallArguments owned = existing.GetValueOrDefault();

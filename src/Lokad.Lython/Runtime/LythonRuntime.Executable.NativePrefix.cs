@@ -13,11 +13,13 @@ internal sealed partial class LythonRuntime
     // This view cannot survive a suspension. The final executable slots and PC
     // are also the ordinary frame's representation; transfer never replays work.
     internal ref partial struct NativeExecution(PyExecutableFunction function, Span<object> values,
-        bool consumedByIteration, int unpackedReturnCount)
+        Span<long> integers, bool consumedByIteration, int unpackedReturnCount)
     {
         private readonly PyExecutableFunction _function = function;
         internal readonly ExecutableCodeObject Code = function.CodeObject;
         internal readonly Span<object> Values = values;
+        private readonly Span<long> _integers = integers;
+        private bool _hasIntegers;
         private readonly IReadOnlyList<ExecutableCell> _cells = function.ClosureCells;
         private readonly ExecutionContext _scope = function.DefinitionContext;
         private readonly bool _consumedByIteration = consumedByIteration;
@@ -144,15 +146,10 @@ internal sealed partial class LythonRuntime
                     case ExecutableOpCode.Binary:
                     case ExecutableOpCode.Augmented:
                     {
+                        if (TryIntegerOperation(instruction)) break;
                         var first = Read(instruction.InputStart, 0);
                         var second = Read(instruction.SecondInput, 1);
                         var augmented = instruction.OpCode == ExecutableOpCode.Augmented;
-                        if (!augmented && TryIntegerChain(Code, Values, Index, first, second, _scope, out var end, out var integerResult))
-                        {
-                            Index = end;
-                            Publish(Code.Instructions[end], (System.Numerics.BigInteger)integerResult);
-                            break;
-                        }
                         if (!augmented && TryEvaluateScalarComparison(instruction.BinaryOperator, first, second,
                             _scope, instruction.Span, out var scalarTruth))
                         {
@@ -170,9 +167,13 @@ internal sealed partial class LythonRuntime
                     }
                     case ExecutableOpCode.CompareJumpIfFalse:
                     {
-                        var first = Read(instruction.InputStart, 0);
-                        var second = Read(instruction.SecondInput, 1);
-                        if (!TryEvaluateScalarComparison(instruction.BinaryOperator, first, second, _scope, instruction.Span, out var truth)) return false;
+                        bool truth;
+                        if (!TryIntegerComparison(instruction, out truth))
+                        {
+                            var first = Read(instruction.InputStart, 0);
+                            var second = Read(instruction.SecondInput, 1);
+                            if (!TryEvaluateScalarComparison(instruction.BinaryOperator, first, second, _scope, instruction.Span, out truth)) return false;
+                        }
                         Trim(instruction.LiveExtent);
                         _scope.CheckExecution(instruction.Span);
                         if (!truth) { Index = instruction.TargetIndex; continue; }
@@ -222,6 +223,7 @@ internal sealed partial class LythonRuntime
                     }
                     case ExecutableOpCode.MakeTuple:
                     {
+                        MaterializeRange(instruction.InputStart, instruction.ItemCount);
                         if (TryReturnUnpackedTuple(instruction)) return true;
                         var tuple = instruction.ItemCount == 0 ? PyTuple.Empty
                             : new PyTuple(Values.Slice(instruction.InputStart, instruction.ItemCount),
@@ -235,6 +237,7 @@ internal sealed partial class LythonRuntime
                         var bytes = PyList.EstimateCapacityBytes(instruction.ItemCount);
                         using var storage = _scope.MemoryGovernor.ReserveTemporary(bytes, instruction.Span);
                         _scope.CheckExecution(instruction.Span);
+                        MaterializeRange(instruction.InputStart, instruction.ItemCount);
                         var items = Values.Slice(instruction.InputStart, instruction.ItemCount).ToArray();
                         Trim(instruction.InputStart);
                         storage.Commit(bytes);
@@ -294,7 +297,7 @@ internal sealed partial class LythonRuntime
 
         private object TakeFormattedInput(int source, int liveExtent)
         {
-            var value = Values[source];
+            var value = Read(source, 0);
             Values[source] = null!;
             Trim(liveExtent);
             return value;
@@ -304,6 +307,7 @@ internal sealed partial class LythonRuntime
         {
             var call = Code.CallSites[instruction.CallSiteIndex];
             var start = instruction.InputStart;
+            MaterializeRange(start, call.ArgumentOffset + call.ArgumentCount);
             var target = Values[start + call.TargetOffset];
             object result;
             try
@@ -438,13 +442,13 @@ internal sealed partial class LythonRuntime
         private object Read(int source, int input)
         {
             if (source < 0) return RuntimeValue(Code.Constants[~source]);
-            var value = Values[source];
+            var value = Materialize(source);
             if (value is null && source < Code.FirstTemporarySlot)
                 throw RuntimeErrors.UnboundLocalVariable(Code.LocalNames[source], Code.OperandReadSpan(Index, input));
             return value.RequireNotNull();
         }
 
-        private object ReadLocal(int slot, LythonSourceSpan span) => Values[slot]
+        private object ReadLocal(int slot, LythonSourceSpan span) => Materialize(slot)
             ?? throw RuntimeErrors.UnboundLocalVariable(Code.LocalNames[slot], span);
 
         private object Take(in ExecutableInstruction instruction)
@@ -485,7 +489,12 @@ internal sealed partial class LythonRuntime
             LiveExtent = liveExtent;
         }
 
-        internal void PrepareTransfer() => Values[LiveExtent..].Clear();
+        internal void PrepareTransfer()
+        {
+            // No primitive marker or borrowed working span enters a heap frame.
+            MaterializeRange(0, LiveExtent);
+            Values[LiveExtent..].Clear();
+        }
         internal void TransferOwnership(ExecutionContext frame)
         {
             if (_preparedChild is { } child)

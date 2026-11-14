@@ -63,6 +63,11 @@ cross signed machine limits under both execution APIs, checking exact promotion,
 Python division/modulo, published aliases and shared-budget cleanup. Existing
 integer admission/protocol cases preserve terminal refusal and cancellation.
 
+[Integer publication](Lokad.Lython.PublicApi.Tests/IntegerPublicationTests.cs)
+checks stable aliases through calls and collection construction, formatting,
+overflow and repeated wide-helper cleanup under a shared allowance. These public
+assertions apply independently of private scalar storage.
+
 ## Assembly boundaries
 
 - `Lokad.Lython.PublicApi.Tests` references `Lokad.Lython.csproj` normally. It

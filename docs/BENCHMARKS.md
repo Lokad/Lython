@@ -92,6 +92,12 @@ Cross-collection differences cannot attribute a gain to a particular optimizatio
 
 CPython remains the external baseline. Separate source-pair experiments establish:
 
+- Native primitive working storage: one complete 4,096-row CSV while-validator
+  is 21–23% faster warm and 21–22% faster compile-to-result, with CPU support and
+  approximately 40.9% less allocation. Short/zero helpers regress about 4–10%,
+  observed-value helpers about 2–4%; JSON has small adverse CPU direction.
+  [Exact sources, controls and pending full qualification](../benchmarks/results/2026-11-14-native-primitive-storage/README.md)
+  remain separate from the historical CPython table above.
 - Native helper returns: historical whole-run allocation falls19.92%for CSV helpers
   and19.31%for JSON helpers;
   original elapsed observations are diagnostic.

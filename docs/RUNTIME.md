@@ -378,7 +378,17 @@ retain the general exact-integer path.
 Each operation observes cancellation. Fixed-size results use existing minor-storage
 headroom; major arithmetic retains its allocation preflights and result funding.
 Pending cleanup or owned temporaries retain per-operation retirement. This adds
-no shadow slots, numeric identity ledger or separate evaluator.
+no numeric identity ledger or separate evaluator.
+
+Eligible native prefixes retain unobserved machine integers in private working
+storage beside the final object slots. The existing compiler eligibility scan
+identifies helpers that need no such storage. Small prefixes borrow a fixed managed
+buffer; larger bound helpers admit their complete temporary capacity before
+allocation, which can cause earlier refusal under pressure. Working allowance is
+returned after all users finish. Reads cache a stable immutable object before alias
+copies, calls, collections or returns; ordinary-frame transfer materializes every
+live value. No primitive marker or working span survives suspension. Exact wider
+promotion, ordinary call spans, cancellation and managed stack admission remain.
 
 Eligible composed executable helpers keep using these private slots when their callees
 complete directly, including named/default arguments and saved methods. A callee

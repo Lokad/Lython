@@ -7708,3 +7708,13 @@ JSON 2.1–3.0%; text remains variable. All eight B734 jobs complete in 303.156 
 bounded refinement removes duplicated publication and unused storage for helpers
 without integer writes. All original evidence survives; no final retention/full
 qualification or universal speedup claim. Publication held; broader roadmap active.
+
+R359 [refined completion](results/2026-11-14-native-primitive-storage/README.md)
+retains `a4bfbfd8`: shared publication removes duplicate retirement/store/PC logic;
+existing eligibility scan removes unused primitive storage. B735 five jobs complete
+175.171 s/all gates; CSV warm 21–23% / compile-to-result 21–22% faster with CPU
+support and 40.868% less allocation. Accept recorded short/zero 3.7–10.2%, observed
+2.3–4.0% and small JSON CPU regression debt for this milestone; no universal gain
+or resolved helper-overhead claim. 6,086 focused actual 11/10 checks and 32 Python
+controls pass. Initial adverse data and untimed publication-only variant preserved.
+Full delivery and external checkpoint follow; wider roadmap remains active.
