@@ -1,0 +1,41 @@
+{
+  "reference": "CPython3.13.2 isolated",
+  "cases": [
+    {
+      "name": "loop-control-and-carried-locals",
+      "sourceSHA256": "95604e8f41452beb44fee5c3abb5e06f5ef05d79e1ef2fbe177ebd3e4c8a2ea2",
+      "returncode": 0,
+      "exactOutput": true
+    },
+    {
+      "name": "nested-loops-and-return",
+      "sourceSHA256": "c2403626ade1ae724e4d3157a455184070592ff2f5588732a8164454e99761e2",
+      "returncode": 0,
+      "exactOutput": true
+    },
+    {
+      "name": "exact-promotion-and-aliases",
+      "sourceSHA256": "5033076dbb941fc953b31ca6fd938e74c20153438001b74a3f058378bc55a685",
+      "returncode": 0,
+      "exactOutput": true
+    },
+    {
+      "name": "nonlocal-writes-and-final-values",
+      "sourceSHA256": "b8fe852efad4cbac31f384871c0b1a28fef0f02da041642dc15be14c769d802f",
+      "returncode": 0,
+      "exactOutput": true
+    },
+    {
+      "name": "late-locals-observation-and-error-order",
+      "sourceSHA256": "240c336e267c0f5cd27925a4aa9c385c917af283f04ec895d521fddd01ff1e50",
+      "returncode": 0,
+      "exactOutput": true
+    },
+    {
+      "name": "loop-storage-aliases-survive-promotion",
+      "sourceSHA256": "1d863b770d904962037cb4eff033b6befb755f967627e361b2291c8a9b6e06ea",
+      "returncode": 0,
+      "exactOutput": true
+    }
+  ]
+}

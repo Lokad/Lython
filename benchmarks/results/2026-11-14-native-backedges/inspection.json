@@ -1,0 +1,76 @@
+{
+  "sourceAndScriptIdentical": true,
+  "qualifiedReferenceCore": "f4c4f02703370de9e8db2a5eee02a3dd06c509da21f93ba0a52b82b63681315a",
+  "candidateCore": "e2482e0bcb34251ed9d9d89ebd7674879ef7a3f8193ad05a6e47ca564cf58089",
+  "reference": [
+    {
+      "id": "scripts.csv-check-digits.large",
+      "sourceSha256": "7f42775a2665d85afef574b63354918609fb32ea849e0fc12f46673c8536d892",
+      "functions": [
+        {
+          "name": "digit_sum",
+          "native": false,
+          "slots": 6,
+          "instructionCount": 11,
+          "backwardBranches": 1
+        }
+      ]
+    },
+    {
+      "id": "scripts.csv-invoice.large",
+      "sourceSha256": "26e03969795a72457ecf6e18d06781ff93017731764b3bad714d93801daa2992",
+      "functions": [
+        {
+          "name": "price_line",
+          "native": true,
+          "slots": 12,
+          "instructionCount": 32,
+          "backwardBranches": 0
+        },
+        {
+          "name": "rounded_basis_points",
+          "native": true,
+          "slots": 6,
+          "instructionCount": 4,
+          "backwardBranches": 0
+        }
+      ]
+    }
+  ],
+  "candidate": [
+    {
+      "id": "scripts.csv-check-digits.large",
+      "sourceSha256": "7f42775a2665d85afef574b63354918609fb32ea849e0fc12f46673c8536d892",
+      "functions": [
+        {
+          "name": "digit_sum",
+          "native": true,
+          "slots": 6,
+          "instructionCount": 11,
+          "backwardBranches": 1
+        }
+      ]
+    },
+    {
+      "id": "scripts.csv-invoice.large",
+      "sourceSha256": "26e03969795a72457ecf6e18d06781ff93017731764b3bad714d93801daa2992",
+      "functions": [
+        {
+          "name": "price_line",
+          "native": true,
+          "slots": 12,
+          "instructionCount": 32,
+          "backwardBranches": 0
+        },
+        {
+          "name": "rounded_basis_points",
+          "native": true,
+          "slots": 6,
+          "instructionCount": 4,
+          "backwardBranches": 0
+        }
+      ]
+    }
+  ],
+  "unchangedInvoiceFacts": true
+}

@@ -14,6 +14,7 @@ public sealed class RecursionDepthScenarioTests
             "def loop():\n loop()\nloop()\n",
             "x: int\ndef f():\n a = 1\n b = 2\n c = 3\n d = 4\n return f()\nf()\n",
             "def f(n):\n f(n - 1)\n return 0\nf(100000)\n",
+            "def f(n):\n while n>0: return 1+f(n-1)\n return 0\nf(100000)\n",
         };
         // Concurrent drains plus a deadline: a pathological snippet must surface as
         // a failure or a TimeoutException, never a wedged test host.

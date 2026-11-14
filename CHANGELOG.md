@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Let eligible `while` helpers use the existing native executable prefix, removing
+  its blanket backward-branch exclusion. Preserve instruction cancellation,
+  exact continuation through real I/O, managed stack admission and ownership.
+
 - Add incremental ElementTree `iterparse` start/end events over mediated files
   and borrowed read objects, with root/close semantics and awaited asynchronous
   reads and cleanup. Share construction with `fromstring`; preserve conservative

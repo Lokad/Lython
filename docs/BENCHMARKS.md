@@ -106,6 +106,10 @@ CPython remains the external baseline. Separate source-pair experiments establis
   construction. [Both script algorithm and runtime differ](../benchmarks/results/2026-11-14-incremental-xml/README.md);
   this is not an interpreter or CPython speedup. Whole-document controls and
   conservative streaming-memory limitations remain explicit.
+- Numeric while helpers: an identical4,096-row CSV validation/report script runs
+  17–19.5%faster warm and14.8–16.8%faster compile-to-result, with wider CPU support.
+  Allocation stays flat; [invoice control uncertainty and qualification status](../benchmarks/results/2026-11-14-native-backedges/README.md)
+  remain explicit. This source-specific result does not change the CPython rows.
 
 [Experimental history and source-specific evidence](../benchmarks/EXPERIMENTS.md)
 preserve controlled comparisons, rejected designs, adverse results and qualification.

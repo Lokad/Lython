@@ -543,10 +543,7 @@ internal sealed partial class ExecutableCodeObject
         EntryIndex = offsets[entryBlockIndex];
         CanInlineInstructions = IsFunctionScope && !RequiresLocalVariableMirroring && capturedLocalSlots.Count == 0
             && exceptionRegions.Count == 0 && ValueStorageCapacity <= LythonRuntime.NativeValueCapacity
-            && Instructions.All(IsInlineInstruction)
-            && !Instructions.Where((instruction, index) => instruction.OpCode is ExecutableOpCode.Jump
-                or ExecutableOpCode.JumpIfFalse or ExecutableOpCode.CompareJumpIfFalse
-                && instruction.TargetIndex <= index).Any();
+            && Instructions.All(IsInlineInstruction);
         ExceptionRegions = exceptionRegions
             .Where(region => operandLayout.EntryDepths[region.ProtectedStartIndex].HasValue)
             .Select(region => region with

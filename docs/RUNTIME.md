@@ -671,6 +671,12 @@ Native borrowed/inline binding and the ordinary deferred prefix remain shared by
 both APIs. Completed bodies publish directly after bound argument, workspace and
 call-admission cleanup, without staging a pending function on the caller. Only
 actual pending binding or child execution transfers to the existing frame runner.
+Eligible native prefixes support backward branches, preserving loop-carried slots
+and checking the active cancellation/refusal state before each instruction.
+An operation requiring a real context or suspension transfers at its current
+instruction without replaying completed iterations. The ordinary deferred prefix
+also avoids context materialization where possible; selecting the native loop is
+not a promise of reduced allocation or different memory thresholds.
 The caller's operands and the callee's inputs stay funded until actual completion.
 Real children retain their source/completion metadata; their result is staged until
 the parent's async driver can await disposal before publication. Constructor and

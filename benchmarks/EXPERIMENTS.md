@@ -7450,3 +7450,17 @@ native UTF8 name enumeration/copy and token-independent cancellable cursor creat
 No sibling mutation, pin promotion, current-core dependency or repeated dev80
 semantic/performance qualification. Producer callback/profile improvements do not
 close these distinct contracts. Only affected final adapter qualification waits.
+
+## R338 — native-prefix backward branches
+
+[Retained source pair](results/2026-11-14-native-backedges/README.md) deletes the
+blanket backward-edge eligibility scan. Existing native dispatch, current-token/
+refusal checks and exact continuation serve numeric while helpers. The initial
+per-call allocation explanation is corrected: the ordinary engine already defers
+context materialization. Allocation is effectively flat; originals remain.
+637internal/1551public focused cases pass each actual11/10, plus six independent
+Python controls. B708three jobs/141.481s/all gates: complete4096-row CSV validation
+warm−19.50..−17.03%, fresh−16.78..−14.80%, with wider CPU support. Invoice control
+−0.48..+1.63% and1.75%candidate spread remain uncertainty. No universal/CPython gain
+or large storage claim. Full delivery is batched at the coherent eligibility
+checkpoint; publication held. Broader performance/operand work remains active.

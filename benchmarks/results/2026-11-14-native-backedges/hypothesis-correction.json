@@ -1,0 +1,9 @@
+{
+  "initialHypothesis": "Native while exclusion forces ordinary per-call frame/work allocation",
+  "correctedEvidence": "BeginBoundCall already uses CreateExecutableWorkState and ExecuteInstructionPrefix with deferred context; no call frame materializes for the closed loop",
+  "source": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs:266-287",
+  "allocation": "Complete4096-row job5,131,631..5,131,635B reference vs5,131,559B candidate,0.0014..0.0015% difference; invoice control flat",
+  "candidateRemainingHypothesis": "Smaller native instruction dispatch/ordinary work-cache preparation, no substantial allocation saving claim",
+  "originalPreCodePlanRetained": true,
+  "decisionPending": "B708 same-source CPU/elapsed and unchanged control"
+}

@@ -26,6 +26,12 @@ real asynchronous long-token reads, cancellation and terminal refusal. Its
 [ownership cases](Lokad.Lython.Tests/XmlIterparseOwnershipTests.cs) distinguish
 private parser cleanup from funding for published aliases.
 
+[While helpers](Lokad.Lython.PublicApi.Tests/WhileHelperExecutionTests.cs) preserve
+loop-carried locals, exact integer promotion, aliases, nonlocal writes and error
+order across native execution and continuation. Empty CPU loops remain cancellable;
+real suspended reads join cleanup, and retained formatting results keep their owner.
+Deep recursion from a while body also uses the existing isolated probe checks.
+
 ## Assembly boundaries
 
 - `Lokad.Lython.PublicApi.Tests` references `Lokad.Lython.csproj` normally. It
