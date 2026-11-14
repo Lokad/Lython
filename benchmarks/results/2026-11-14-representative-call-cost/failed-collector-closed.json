@@ -1,0 +1,11 @@
+{
+  "complete": false,
+  "failedBeforeSampling": true,
+  "error": "KeyError: removed JIT option remained in diagnosticOverrides inventory",
+  "noRuntimeOrMeasurementInference": true,
+  "allWorkersJoined": true,
+  "ramEvidenceArchivedAndVerifiedBeforeUnmount": true,
+  "remainingFixtures": false,
+  "archiveSHA256": "a926da0a970a80b0e0559dfcfb29c93561e84ff83ca002264d7dd6ec4c51fae0",
+  "freeBytes": 324603904
+}

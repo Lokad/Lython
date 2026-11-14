@@ -7845,3 +7845,14 @@ Current guide separates compile/warm/fresh, I/O/validation/cleanup, all controls
 remaining uncertainty; original source/guide/raw retained. No cross-collection
 attribution or diagnostic counter extrapolation. Full43625900419 independent;
 representative source gate continues, publication held.
+
+## R363 — current representative call/record source gate
+
+[B749](results/2026-11-14-representative-call-cost/README.md),fa40/73a, two owning
+profiles of invoice/search.1,062/754guest samples,75/167unknown,0ambiguous; raw
+allthreadCPU/unknowns retained. HelperStartInline+StartNativeCall40/104samples
+includes useful binding, not removable CPU. Select one synchronous activation
+entry across stack-backed/alreadybound calls; delete separate StartInline and
+nullable descriptor handoff, preserve real frame/pending cleanup. No old scalar
+frame/call-arena replay or forecast. Initial collector-inventory failure/early
+local guard preserved; corrected sampling/all gates/awaited cleanup pass.
