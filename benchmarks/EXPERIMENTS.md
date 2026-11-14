@@ -7680,3 +7680,18 @@ R357measured47df7e19/frozencbb2[passes full43593185490](results/2026-11-14-share
 Windows/Ubuntu actual11/10, original stress and installed Release consumers;
 581inputs/16summaries cached. Later R358prototype is excluded; adverse controls
 and broader representative objectives remain. Publication held.
+
+## R358 — deferred loop-local heap cells, withdrawn
+
+[Complete eight-job comparison](results/2026-11-14-loop-local-cells/README.md)
+at97f5/cbb2shows counter allocation−57.23%/warm−11..−13.9%, CSVwhile allocation
+−13.41%/warm−10.6..−14%/fresh−9.7..−11.4%, with CPU support. But short-zero
+helpers+40–43%, observed helpers+4.5–9.6%, fulfillment+3.8–6.0%and JSON+1.2–2.2%
+do not justify per-call heap cells/grants/shared-reader overhead. Withdraw all
+runtime changes; no fixed threshold veto or unchanged retiming. All581production
+bytes restore to qualified47df/cbb2; forced actual11/10 builds/82focused restored
+checks pass. Keep12public cases; discard the cell-admission architecture test.
+Original638CSVallocation+4.47%, working-charge Commit failure and all snapshots/
+corrected2170checks/20Python controls survive. Next bounded primitive storage
+design must preserve direct object[]calls and ownership without private heap
+cells/pools; full performance objective remains active, publication held.

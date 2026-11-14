@@ -1,0 +1,12 @@
+{
+  "hypothesis": "638deferred stores remove57.23percent counter allocation but eager arithmetic reads produce+4.47percent CSVwhile allocation. Complete shared primitive reads using existing machine/chain kernel before extracting an object. Preserve declined-chain PC, alias identity and exact wider promotion.",
+  "workEliminated": [
+    "per-update integer boxes for unobserved loop-carried bindings",
+    "eager object materialization before primitive arithmetic/comparisons on deferred cells"
+  ],
+  "affected": "Complete numeric counter and while-based CSV validation; fulfillment/text/JSON and short/zero/observed controls detect overhead. Same source/data per runtime; CSVwhile variant is diagnostic, no cross-algorithm speedup.",
+  "semantics": "2170focused actual11/10cases pass; no weakened balance/timeouts. Conditional unbound, bool/float/list/protocols, wide helper, snapshots/locals aliases, overflow-chain continuation, real IO/cancellation/refusal and repeated20khelpers in512KiB. Native working cells remain reserved through cleanup; destination frame funding before source release.",
+  "comparison": "One420second owner,8jobs/four fresh processes,5sfull-request warmups/12s captured text, five0.5srotating batches. Separate CSVwhile warm/compile-run. All bytes/auxiliaries/outputs/files/budgets/quiet endpoints/joins/archive required. Allocation separate. Preserve638adversity; one bounded correction is justified, not an open-ended campaign.",
+  "decision": "Retain or withdraw complete migration with explicit short/observed/metadata/earlier-denial debt. No fixed percentage veto, no automatic unchanged retiming. Full delivery only after retention. Broader whole-script objective continues.",
+  "publicationHeld": true
+}

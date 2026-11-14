@@ -1,0 +1,11 @@
+{
+  "status": "Withdraw complete heap-cell local prototype; retain independent public behavior/bounded-working-set tests. No fixed percentage veto or claim that deferral cannot work.",
+  "candidate": "97f5ecc11a3bd3d149b23e27cdda6c0b4f87a3413a35e47cc814b5a102d96443",
+  "baseline": "cbb254beeb69700bfa101c8b3f966f4d57f4d340f13e173176eaaa581cf392cf",
+  "evidence": "B733all8jobs304.959s/gates. Numeric elapsed\u221213.87..\u221211.01%/CPU\u221214.79..\u221210.95%, allocation\u221257.23%; CSVwhile warm\u221214.04..\u221210.64%/fresh\u221211.37..\u22129.69%, allocation\u221213.41%. But fulfillment+3.78..+6.00%/CPU+3.51..+7.33%, JSON+1.25..+2.19%/CPU+1.40..+4.15%, short-zero+39.94..+43.14%/CPU+39.35..+43.23%, observed+4.47..+9.65%/CPU+4.85..+12.17%. Text\u22122.03..+1.13%/CPU\u22124.00..+0.80%uncertain.",
+  "decision": "Per-invocation heap cells/reservation and shared reader dispatch add material ordinary-helper overhead despite useful loop gains. Retire this mechanism rather than add cell pools, promotion thresholds, adaptive modes or another unchanged retiming. Data supports a cheaper coherent private value-transport design, not automatic promotion.",
+  "retire": "DeferredLocalSlots heap-cell preparation/charges, per-call temporary cell reservation/initialization, cell-aware global reader changes and typed dispatch additions specific to prototype. Restore all581production inputs to qualified47df/cbb2. Delete white-box test that assumes this discarded native per-call cell reservation; its runtime refusal/cancellation guarantees remain covered by established arithmetic/native/async tests. Preserve public alias/type/error/locals/wide-helper/20kbounded execution cases.",
+  "next": "R359bounded design/prototype: managed primitive working values alongside existing final object slots/direct calls, with stable materialization on observation/alias copies and exact promotion. Eliminate heap cells and per-call grants for small native working values; admit substantial frame storage/overlap through existing owner. Inspect local-read/promotion boundaries first; no universal guest-type rewrite or argument-copy backend.",
+  "publicationHeld": true,
+  "performanceObjectiveStillActive": true
+}
