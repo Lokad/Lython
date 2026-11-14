@@ -1,0 +1,18 @@
+{
+  "terminal": "failed",
+  "service": "MainPID=0\nResult=exit-code\nExecMainStatus=1\nActiveState=failed\n",
+  "completedJobs": 4,
+  "complete": false,
+  "allWorkersJoined": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "ramTraceWasEmptyAndVerifiedBeforeUnmount": true,
+  "archiveSHA256": "9c001d21fd995d649d6db79892b6a9e8118dbea89ebb0265808fbe957888c29c",
+  "failedStartupStderr": {
+    "diagnostic.tuple-return.constant-warm-candidate-control.stderr": "Comparison worker error: KeyNotFoundException: The given key 'size' was not present in the dictionary.\n",
+    "startup-diagnostic.tuple-return.constant-warm-candidate-control.stderr": "Comparison worker error: KeyNotFoundException: The given key 'size' was not present in the dictionary.\n"
+  },
+  "quietAfterNotMeasured": true,
+  "freeBytes": 265949184,
+  "noAutomaticRestart": true
+}

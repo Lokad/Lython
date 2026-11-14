@@ -1,0 +1,13 @@
+{
+  "candidate": "01fd9be0",
+  "finding": "Prototype admits compiled literal storage, but source-owner allocation in tuple slicing/concatenation can derive ungoverned storage from its unowned immutable handle. This makes01fd unsuitable for promotion. Running B722 remains exact old-bit diagnostic evidence only.",
+  "reproduction": "Add focused borrowed-literal slice/concat refusal and cancellation tests before correction. Preserve source aliases and root cleanup, verify runtime owner pays results while literal owner remains charged.",
+  "replacement": [
+    "Route contextual tuple slices to existing CreateTuple with known normalized count/indexes and current execution owner. No new ledger, allowance or per-node charge.",
+    "Route tuple-like concat to the same existing known-count tuple factory/current execution. Delete TupleLikeOwnership, source-governor selection, ungoverned concat branch and LINQ concat/growth materialization.",
+    "Check cancellation after shared tuple admission before allocating and during bounded copy/factory loops. Preserve current native helper return operations.",
+    "ZIP date_time is a fixed six-item consumer. Read the existing tuple/list through its readonly view and reject wrong count before copying; remove its ToArray snapshot instead of funding arbitrary invalid input."
+  ],
+  "contract": "Compiled immutable input stays funded by coarse compilation owner; new derived storage belongs to current execution, not a borrowed input owner. Earlier admission refusal/retention remains conservative; no tiny-budget identity promise.",
+  "scope": "Three actual consumers exposed by unowned literal migration, not a general tuple/ownership audit. No heap tracing or root inventory. New frozen correction must receive focused qualification and a bounded final comparison; do not apply01fd timing to it."
+}

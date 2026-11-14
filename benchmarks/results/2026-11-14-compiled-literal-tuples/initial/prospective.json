@@ -1,0 +1,24 @@
+{
+  "recordedUTC": "2026-11-14T07:59:28.137535+00:00",
+  "state": "Source gate passed; bounded prototype selected, not implemented or timed.",
+  "reference": "e235b18b/frozen71ba421c",
+  "qualification": "43571864663 Windows full green; Ubuntu ordinary actual11/10 and installed consumer green, original stress pending. Production source matches frozen reference.",
+  "hypothesis": "Invoice constructs the immutable(0,0,0,0)fallback inside4096row iterations. CompileExpression emits four LoadConst and MakeTuple each time. Hoist immutable literal tuples into the existing compiled constant table, deleting repeated tuple construction/operand transport/admission without an object/value VM redesign.",
+  "evidence": [
+    "R350 invoice has21CopyGovernedItems leaves, with broader retained-value construction/admission work. This does not attribute a removable CPU percentage.",
+    "ExecutableScript.Expressions.cs unconditionally compiles every nonstarred tuple to child instructions plus MakeTuple. Private DictReader already bypasses guest lists; this is a different actual repeated construction stage.",
+    "Existing32,768+96*sourceLength compilation preflight covers AST/lowered/instructions/immutable literals; tuple construction replaces emitted instruction storage and uses that same owner/headroom. Public projection separately admits/copies tuple results and scalar magnitudes. No new per-literal ledger or budget."
+  ],
+  "design": "Compile tuple elements once through the existing expression builder. If they append exactly one LoadConst each in the same block, all denoting immutable literals, build the tuple once and replace that complete emitted sequence with one LoadConst. No second syntax-analysis pass, expression evaluator, arbitrary constant arithmetic, cache or execution engine. Dynamic/list/starred/protocol/control-flow cases retain actual MakeTuple/display consumers.",
+  "acceptance": [
+    "Exact values/types/Unicode/bytes/complex/bool/None and nested literal tuples",
+    "Dynamic/mutable/side-effecting/starred tuples preserve evaluation order, identity, aliases, callbacks and errors",
+    "Repeated/sequential/shared-budget executions preserve immutable constants without cross-run mutable state",
+    "Compilation preflight refuses before retained construction; execution refusal remains terminal and cancellation/stack/cleanup stay effective",
+    "Projected retained results remain funded/readable after compiled owner disposal; no source refund for live native/async users"
+  ],
+  "compatibility": "Immutable literal tuple identity can be reused as in Python implementations. Construction admission moves to the existing compilation owner; exact tiny-budget thresholds are not promised. Dynamic tuples and observable mutable members must never be folded.",
+  "comparison": "Use existing complete invoice, text/direct and fulfillment controls, allocation versus CPU separate. Include compilation and compile-to-result because new scripts matter; compare identical source with fixed71ba reference. One bounded comparison after focused checks, preserve adverse/uncertain controls; no new framework or automatic large qualification. Batch full qualification only after retention.",
+  "stopping": "Select/implement this single construction-stage removal and decide its semantic/funding/value/regression tradeoff. If emitted instructions do not prove purity or coarse ownership is insufficient, record the obstacle before widening scope. Broader performance objective stays active.",
+  "publicationHeld": true
+}

@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[R351 compiled literal tuples](results/2026-11-14-compiled-literal-tuples/README.md)
+is under qualification. Initial01fd removes repeated constant tuple construction
+and lowers invoice/fulfillment allocation7.51/4.68%, but exposes derived-storage
+admission gaps. Six focused failures drive a current-owner correction; ZIP copy
+guards detect the original snapshot. B722partial timings and malformed diagnostic
+fixture failure remain preserved; corrected source has separate qualification.
+No final CPU claim or unchanged full qualification replay.
+
 [R350 invoice/search stage attribution](results/2026-11-14-invoice-search-stage-attribution/README.md)
 maps exacte235b18b/frozen71ba complete scripts:1,053/742guest leaves with96/142
 unknown and zero ambiguous. All native-body leaves map to same-process Tier1
