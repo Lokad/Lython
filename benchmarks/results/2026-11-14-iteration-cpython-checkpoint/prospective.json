@@ -1,0 +1,50 @@
+{
+  "purpose": "Coherent R341/R345/R346 iteration checkpoint: refresh six representative external baselines and separate invoice compilation/compile-to-result; include the identical for-loop CSV validation script. Measurements do not attribute gains between collections.",
+  "reason": "Coherent committed runtime boundary after shared integer chains and builtin iteration; previous external guide describes1778c30d, not HEAD.",
+  "jobs": [
+    [
+      "scripts.csv-invoice.large",
+      "warm"
+    ],
+    [
+      "scripts.csv-invoice.large",
+      "compile"
+    ],
+    [
+      "scripts.csv-invoice.large",
+      "compile-run"
+    ],
+    [
+      "scripts.text-summary-helpers.nonlocal-counter.large",
+      "warm"
+    ],
+    [
+      "scripts.json-summary-helpers.large",
+      "warm"
+    ],
+    [
+      "scripts.file-search.large",
+      "warm"
+    ],
+    [
+      "scripts.report-render.large",
+      "warm"
+    ],
+    [
+      "scripts.csv-fulfillment.large",
+      "warm"
+    ],
+    [
+      "scripts.csv-check-digits.for-text.large",
+      "warm"
+    ]
+  ],
+  "workBudgetSeconds": 420,
+  "ownedServiceSeconds": 480,
+  "warmups": "Existing5s complete-request warmup,12s for captured text/report",
+  "batches": "Existing five rotating0.5s complete-request-sized batches",
+  "controls": "Two fresh Lython and two stock CPython processes per job; ordinary GC/tiering; exact goldens and balances; retain all original/adverse points",
+  "noRuntimeOrWorkerChanges": true,
+  "stopping": "Archive one complete checkpoint or its explicit failed conditions, update current external guide, then select the next concrete representation removal. Bounded confirmation only for material uncertainty; no blanket replay.",
+  "source": "009d236a/frozen8ae1ae5f; full CI43563853239 pending"
+}

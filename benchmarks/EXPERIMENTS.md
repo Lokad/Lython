@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[R347 iteration CPython checkpoint](results/2026-11-14-iteration-cpython-checkpoint/README.md)
+refreshes committed009d236a/frozen8ae1ae5f against stock3.13.16 in360.55s.
+Invoice warm1.26–1.31×, compile1.08–1.10×, fresh1.21–1.24×; text1.48–1.59×,
+search1.66–1.76×, JSON0.83×, report1.19–1.21×, fulfillment1.30–1.31× and
+for-loop CSV1.28–1.29×. Invoice/search/text process spread remains uncertainty.
+All exact image/output/balance/quiet/join/archive gates pass; full delivery is
+pending. No attribution by comparing collections; prior evidence remains linked.
+
 [R346 indexed sequence cursors](results/2026-11-14-indexed-sequence-cursors/README.md)
 removes the separate CLR list/tuple enumerator from the existing cursor and shares
 live advancement with executable storage. Complete list-input CSV allocation falls
