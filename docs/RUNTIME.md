@@ -1017,6 +1017,22 @@ command owner ends. `clear()` replaces the attribute map, preserving old map, te
 and child aliases and their funding. It can discard private child-reference backing;
 other graph charges remain conservative until their owner ends. These operations
 do not turn `fromstring` into an incremental or constant-memory parser.
+`iterparse(source, events=None, parser=None)` reads incrementally, yielding
+`start`/`end` events through the same tree builder. Filenames use mediated,
+bounded byte reads; borrowed objects supply `read(size)` results as bytes or text.
+Guest read hooks and host I/O can suspend under `RunAsync`, including within long
+tokens. Its `root` becomes available after exhaustion. `close()`, parse failures
+and command cleanup dispose private parser storage and await owned-file cleanup;
+borrowed sources remain open. Attributes are available at start; text, tails and
+children can still change as parsing advances. Only `parser=None` is supported.
+
+Incremental input allows early exit without reading or constructing the rest of
+the document. It does not promise constant memory for arbitrary uninterrupted
+scans: XmlReader names/token capacity and published guest graphs remain
+conservatively funded. Reader estimates grow with supplied input until parser
+disposal; `clear()` does not refund retained aliases or all discarded graph
+storage. Use bounded host-driven executions for long streams. Traversal of
+unfinished nodes admits the remaining permitted depth before exposing storage.
 `Element.get()` uses the same contextual key hashing/equality as dictionaries,
 including hooks that suspend through host I/O. The already-bound attribute map
 stays funded if a hook clears the element or replaces its current map.

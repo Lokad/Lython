@@ -6,7 +6,7 @@ public sealed class ElementTreeCompatibilityTests
 {
     [Theory]
     [InlineData("ET.parse('ambient.xml')")]
-    [InlineData("ET.iterparse('ambient.xml')")]
+    [InlineData("ET.iterparse('ambient.xml', events=['comment'])")]
     [InlineData("ET.Element('r')")]
     [InlineData("ET.XMLParser()")]
     [InlineData("ET.tostring(root)")]

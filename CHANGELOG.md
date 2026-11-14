@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Add incremental ElementTree `iterparse` start/end events over mediated files
+  and borrowed read objects, with root/close semantics and awaited asynchronous
+  reads and cleanup. Share construction with `fromstring`; preserve conservative
+  parser/alias funding, cancellation, encoding rules and managed depth protection.
+
 - Share already-funded immutable UTF8 bytes with strict decoded text and XML
   input, reusing JSON's validated-window path. Avoid duplicate payload charges
   and BOM-slice copies while retaining other codec and ownership behavior.

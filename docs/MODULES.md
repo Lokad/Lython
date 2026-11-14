@@ -19,7 +19,7 @@ capabilities and local-import authorization remain separate.
 | `textwrap` | dedent/indent, including guest predicates; wrapping APIs are unsupported. |
 | `html` | escape/unescape, including HTML5 entities; no HTML parser or DOM. |
 | `urllib.parse` | URL split/parse, structured components/reassembly, quoting/unquoting and query helpers; no network client. |
-| `xml.etree.ElementTree` | fromstring, parsed elements/attributes, namespace-aware relative child/descendant (`.//`) selection, iter/itertext and clear. Element construction, field assignment, other tree mutation and serialization are unsupported; attribute dictionaries remain mutable. Parent axes, predicates and namespace-wildcard selectors are unsupported. No external entity fetching. |
+| `xml.etree.ElementTree` | fromstring; iterparse with start/end events, root and close; parsed elements/attributes, namespace-aware relative child/descendant (`.//`) selection, iter/itertext and clear. Iterparse accepts mediated filenames or borrowed read objects; custom parsers and other event kinds are unsupported. Element construction, field assignment, other tree mutation and serialization are unsupported; attribute dictionaries remain mutable. Parent axes, predicates and namespace-wildcard selectors are unsupported. No external entity fetching. |
 | `struct` | Standard binary layouts with explicit byte orders, pack/unpack/calcsize and lazy iter_unpack; native platform-layout assumptions are excluded. |
 
 ## Files and streams

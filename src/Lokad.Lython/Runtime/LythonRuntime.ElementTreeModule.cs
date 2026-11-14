@@ -45,9 +45,12 @@ internal sealed partial class LythonRuntime
             value = name switch
             {
                 "fromstring" => BuiltinCallable.Create(LythonKnownCallableSignatures.ElementTreeFromString, FromString),
+                "iterparse" => BuiltinCallable.Create(IterparseSignature,
+                    static (args, span, context) => IterparseAsync(args, span, context, false).GetAwaiter().GetResult(),
+                    static (args, span, context) => IterparseAsync(args, span, context, true)),
                 "ParseError" => ParseErrorType,
                 "Element" => ElementType,
-                "parse" or "iterparse" or "XMLParser" or "TreeBuilder" or "ElementTree" or
+                "parse" or "XMLParser" or "TreeBuilder" or "ElementTree" or
                 "SubElement" or "tostring" or "tostringlist" or "fromstringlist" or
                 "XML" or "XMLID" or "Comment" or "ProcessingInstruction" or
                 "register_namespace" or "canonicalize" or "indent" =>
@@ -68,7 +71,7 @@ internal sealed partial class LythonRuntime
             private readonly ExecutionContext _context;
             private readonly LythonSourceSpan _span;
             private readonly MemoryGovernor.TemporaryMemoryReservation _scratch;
-            private readonly List<object> _values = new();
+            private List<object>? _values = new();
             private long _wrapperBytes;
             private bool _published;
             internal GraphConstruction(ExecutionContext context, LythonSourceSpan span)
@@ -79,18 +82,18 @@ internal sealed partial class LythonRuntime
             }
             private void FundSlot()
             {
-                if (_values.Count == _values.Capacity)
+                if (_values!.Count == _values.Capacity)
                     _scratch.Grow(8L * (_values.Capacity == 0 ? 4 : _values.Capacity), _span);
             }
             internal T Create<T>(Func<T> create) where T : class
             {
-                FundSlot();
+                if (!_published) FundSlot();
                 var shellBytes = typeof(T) == typeof(PyDict) || typeof(T) == typeof(PyList) ? 256L : 0;
                 using var shell = _context.MemoryGovernor.ReserveTemporary(shellBytes, _span);
                 var value = create();
-                _values.Add(value);
+                _values?.Add(value);
                 shell.Commit(shellBytes);
-                _wrapperBytes += shellBytes;
+                if (!_published) _wrapperBytes += shellBytes;
                 if (value is PyString text) _context.CheckExecution(_span);
                 return value;
             }
@@ -104,16 +107,23 @@ internal sealed partial class LythonRuntime
             internal PyString Decode(ReadOnlyMemory<byte> bytes, TextEncodingMode mode)
                 => Create(() => DecodeText(bytes, mode, _context, _span,
                     TextErrorMode.Strict, TextNewlineMode.PreserveLineFeed));
-            internal void Publish() => _published = true;
+            internal void Publish()
+            {
+                _published = true;
+                // Published prefixes can have guest aliases. Their existing
+                // command owner keeps storage funded; no rollback walk survives.
+                _values = null;
+                _scratch.Dispose();
+            }
             public void Dispose()
             {
                 if (!_published)
                 {
-                    for (var index = _values.Count - 1; index >= 0; index--)
+                    for (var index = _values!.Count - 1; index >= 0; index--)
                         _context.State.MemoryGovernor.RefundUnpublishedValue(_values[index]);
                     _context.MemoryGovernor.Release(_wrapperBytes);
                 }
-                _values.Clear();
+                _values = null;
                 _scratch.Dispose();
             }
         }
@@ -122,6 +132,7 @@ internal sealed partial class LythonRuntime
         {
             internal readonly Element Element;
             internal Element? LastChild;
+            internal int ChildDepth;
             internal readonly GovernedByteBuilder Content;
             private readonly MemoryGovernor.TemporaryMemoryReservation _scratch;
             internal ParseFrame(Element element, ExecutionContext context, LythonSourceSpan span)
@@ -164,8 +175,27 @@ internal sealed partial class LythonRuntime
             }
             context.CheckExecution(span);
             using var characters = new Utf8XmlTextReader(source, context.State, span);
+            using var reader = CreateXmlReader(characters, context, span, false);
+            using var construction = new TreeConstruction(context, span, graph);
+            try
+            {
+                while (reader.Read()) construction.Process(reader, false).GetAwaiter().GetResult();
+                var root = construction.Complete();
+                graph.Publish();
+                return root;
+            }
+            catch (XmlException error)
+            {
+                throw ParseError(error.Message, span, error);
+            }
+        }
+
+        private static BoundedXmlReader CreateXmlReader(TextReader characters, ExecutionContext context,
+            LythonSourceSpan span, bool asynchronous)
+        {
             var settings = new XmlReaderSettings
             {
+                Async = asynchronous,
                 DtdProcessing = DtdProcessing.Prohibit,
                 XmlResolver = null,
                 IgnoreComments = true,
@@ -174,85 +204,8 @@ internal sealed partial class LythonRuntime
                 CheckCharacters = true,
                 CloseInput = false,
             };
-            using var inner = XmlReader.Create(characters, settings);
-            using var reader = new BoundedXmlReader(inner, context, span, MaximumDepth,
+            return new BoundedXmlReader(XmlReader.Create(characters, settings), context, span, MaximumDepth,
                 maximum => ParseError($"XML element depth exceeds the contained limit ({maximum}).", span));
-            using var stackScratch = context.MemoryGovernor.ReserveTemporary(64, span);
-            var stack = new List<ParseFrame>();
-            Element? root = null;
-            try
-            {
-                while (reader.Read())
-                {
-                    context.CheckExecution(span);
-                    switch (reader.NodeType)
-                    {
-                        case XmlNodeType.Element:
-                            context.CheckExecution(span);
-                            var attributes = graph.Create(() => new PyDict(context.MemoryGovernor, span));
-                            var tag = graph.Text(ClarkName(reader.NamespaceURI, reader.LocalName));
-                            if (reader.MoveToFirstAttribute())
-                            {
-                                do
-                                {
-                                    context.CheckExecution(span);
-                                    if (reader.NamespaceURI == "http://www.w3.org/2000/xmlns/") continue;
-                                    context.CheckExecution(span);
-                                    attributes.SetItem(graph.Text(ClarkName(reader.NamespaceURI, reader.LocalName)),
-                                        graph.Text(reader.Value));
-                                }
-                                while (reader.MoveToNextAttribute());
-                                reader.MoveToElement();
-                            }
-                            var children = graph.Create(() => new PyList([], context.MemoryGovernor, span));
-                            var element = graph.Create(() => new Element(tag, attributes, children, context.MemoryGovernor, span));
-                            if (stack.Count == 0) root = element;
-                            else
-                            {
-                                var parent = stack[^1];
-                                parent.FinishContent(graph);
-                                parent.Element.Children.Add(element);
-                                parent.Element.SubtreeDepth = Math.Max(parent.Element.SubtreeDepth, 1);
-                                parent.LastChild = element;
-                            }
-                            if (!reader.IsEmptyElement)
-                            {
-                                // Frame, empty builder and reference slot; capacity
-                                // grows before the CLR list allocates its backing.
-                                if (stack.Count == stack.Capacity)
-                                    stackScratch.Grow(8L * (stack.Capacity == 0 ? 4 : stack.Capacity), span);
-                                stack.Add(new ParseFrame(element, context, span));
-                            }
-                            break;
-                        case XmlNodeType.Text:
-                        case XmlNodeType.CDATA:
-                        case XmlNodeType.Whitespace:
-                        case XmlNodeType.SignificantWhitespace:
-                            if (stack.Count > 0) stack[^1].Content.AppendString(reader.Value);
-                            break;
-                        case XmlNodeType.EndElement:
-                            var completed = stack[^1];
-                            completed.FinishContent(graph);
-                            if (stack.Count > 1)
-                                stack[^2].Element.SubtreeDepth = Math.Max(stack[^2].Element.SubtreeDepth,
-                                    completed.Element.SubtreeDepth + 1);
-                            completed.Dispose();
-                            stack.RemoveAt(stack.Count - 1);
-                            break;
-                    }
-                }
-                if (root is null) throw ParseError("no element found", span);
-                graph.Publish();
-                return root;
-            }
-            catch (XmlException error)
-            {
-                throw ParseError(error.Message, span, error);
-            }
-            finally
-            {
-                foreach (var frame in stack) frame.Dispose();
-            }
         }
 
         private static string ClarkName(string uri, string local) => uri.Length == 0 ? local : "{" + uri + "}" + local;
@@ -369,9 +322,10 @@ internal sealed partial class LythonRuntime
             internal readonly PyList Children;
             internal object Text = PyNone.Instance;
             internal object Tail = PyNone.Instance;
-            // Parsing establishes this upper bound. Supported mutation only
-            // removes descendants, so ancestor bounds can remain conservative.
+            // Negative bounds mark unfinished parser nodes, using remaining
+            // permitted depth. Completed nodes keep their conservative height.
             internal int SubtreeDepth;
+            internal int TraversalDepthBound => Math.Abs(SubtreeDepth);
             internal Element(PyString tag, PyDict attributes, PyList children, MemoryGovernor governor, LythonSourceSpan span)
             {
                 governor.Reserve(ShellBytes, span);
@@ -440,7 +394,8 @@ internal sealed partial class LythonRuntime
                 // private backing. Old attribute/text/child aliases keep owners.
                 Attributes = replacement;
                 Text = Tail = PyNone.Instance;
-                SubtreeDepth = 0;
+                // An unfinished parser can still append descendants after clear.
+                if (SubtreeDepth > 0) SubtreeDepth = 0;
                 Children.Clear();
                 return PyNone.Instance;
             }

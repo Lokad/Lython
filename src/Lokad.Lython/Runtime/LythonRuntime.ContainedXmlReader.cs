@@ -6,7 +6,7 @@ internal sealed partial class LythonRuntime
 {
     /// <summary>
     /// Contained XML reader: consumers pull through this
-    /// wrapper, so depth validation and execution-budget checks share the
+    /// wrapper, so depth validation and cooperative cancellation share the
     /// one parse instead of scanning the bytes twice. Snapshot loads pass
     /// no context and keep depth-only enforcement.
     /// </summary>
@@ -29,8 +29,19 @@ internal sealed partial class LythonRuntime
             _depthFailure = depthFailure;
         }
         public override bool Read()
+            => CompleteRead(_inner.Read());
+
+        public override Task<bool> ReadAsync()
         {
-            var moved = _inner.Read();
+            var pending = _inner.ReadAsync();
+            return pending.IsCompletedSuccessfully ? Task.FromResult(CompleteRead(pending.Result)) : AwaitReadAsync(pending);
+        }
+
+        private async Task<bool> AwaitReadAsync(Task<bool> pending)
+            => CompleteRead(await pending.ConfigureAwait(false));
+
+        private bool CompleteRead(bool moved)
+        {
             if (moved)
             {
                 if (_inner.NodeType == XmlNodeType.Element && _inner.Depth > _maximumElementDepth)
@@ -44,6 +55,7 @@ internal sealed partial class LythonRuntime
             }
             return moved;
         }
+        public override Task<string> GetValueAsync() => _inner.GetValueAsync();
         public override void Close() => _inner.Close();
         protected override void Dispose(bool disposing)
         {

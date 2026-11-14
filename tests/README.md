@@ -20,6 +20,12 @@ single-payload funding, independent owners, BOM windows, publication refusal and
 scalar boundaries. [Public cases](Lokad.Lython.PublicApi.Tests/Utf8ByteDecodeTests.cs)
 retain decoded values through input withdrawal, actual I/O and cancellation.
 
+[Incremental XML](Lokad.Lython.PublicApi.Tests/XmlIterparseTests.cs) checks
+Python event/root/close semantics, fragmented encodings, partial-tree traversal,
+real asynchronous long-token reads, cancellation and terminal refusal. Its
+[ownership cases](Lokad.Lython.Tests/XmlIterparseOwnershipTests.cs) distinguish
+private parser cleanup from funding for published aliases.
+
 ## Assembly boundaries
 
 - `Lokad.Lython.PublicApi.Tests` references `Lokad.Lython.csproj` normally. It

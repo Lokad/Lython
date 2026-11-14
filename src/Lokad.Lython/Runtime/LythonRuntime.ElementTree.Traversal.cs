@@ -6,8 +6,8 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class ElementTreeModule
     {
-        // The tree can only lose children after parsing. Fund one stack from
-        // its conservative depth before publication; callbacks never resize it.
+        // Fund one stack from the completed height or unfinished parser's
+        // remaining depth bound. Callbacks never resize its private backing.
         private sealed class TreeIterator : PyIteratorBase
         {
             private readonly record struct Frame(Element Node, int NextChild);
@@ -26,7 +26,7 @@ internal sealed partial class LythonRuntime
                 _context = GetGlobalContext(context);
                 _span = span;
                 _text = text;
-                var capacity = checked(root.SubtreeDepth + 1);
+                var capacity = checked(root.TraversalDepthBound + 1);
                 var bytes = checked(32L + 16L * capacity);
                 using var storage = context.MemoryGovernor.ReserveTemporary(256L + bytes, span);
                 context.CheckExecution(span);
