@@ -1,0 +1,6 @@
+{
+  "reason": "Sourcegate finds BuiltinCallable._hierarchy retains OwnedTypeHierarchy.Owner and mutable descriptor dictionaries/NewSlot. Range is a type constructor, not a stateless shared function. Initial SharedRange is not retainable even if CPU benchmark useful.",
+  "change": "Restore per-execution range callable/metadata. Recognize only private actual BuiltinCallable range constructor, independently of guest spelling or rebinding, as existing int/float closed native classification does. No new owner/globalcache/configuration.",
+  "measurement": "B740frozen98df initial remains unchanged/isolated; source is now different and unqualified. Initialcomplete timings preserved. Finalcorrection needs bounded affected/control comparison, not an inferred speedup.",
+  "publicationHeld": true
+}

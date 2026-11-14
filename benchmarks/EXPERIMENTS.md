@@ -7778,3 +7778,12 @@ per-execution constructors, preserving the common span factory and native bounda
 Initial source/timing cannot qualify that correction. All preflight/archive/newline
 failures survive; no timed owner restarted or floor lowered. Final confirmation,
 retention/debt and delivery remain separate; broader objective active, publication held.
+
+R361 [owned-constructor B741](results/2026-11-14-closed-range-construction/README.md)
+at738a/A4 preserves metadata ownership and counter−30–31%/allocation−57.23%, but
+shorthelpers+5.2–8.5% and observed+0.5–1.9% remain adverse. Three jobs/105.678 s/all
+gates; 536 focused checks/70 Python controls and corrected seven-case net10 input
+pass. Preserve every original result. Remove ordinary range routing entirely:
+only native-prefix construction needs this capability, so restore the exact
+ordinary-router baseline. No new abstraction/owner/flag. Source/checks/final
+comparison remain independent; no causal attribution from mere routing placement.

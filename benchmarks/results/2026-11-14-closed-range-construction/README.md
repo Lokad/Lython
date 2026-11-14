@@ -75,3 +75,38 @@ before any build/measurement. None is a runtime failure or missing adverse sampl
 [allocation](initial/allocation-summary.json), [source gate](initial/source-gate.json),
 [all sources/binaries/checks/raw/failures](initial/sources-checks-and-observations.tar.xz).
 Publication remains held; substantial whole-script and independent regex work continue.
+
+## Execution-owned constructor comparison
+
+Frozen `738a12da` restores per-execution constructor state. 536 additional focused
+actual .NET 11/10 checks and 70 isolated Python controls pass, including builtin
+metadata/isolation, aliasing, real I/O, cancellation and terminal refusal. One new
+named-range test appeared in net11's seven-case list but incremental net10 listed
+six: force rebuilding actual net10 runs all seven successfully. Original logs/TRX
+remain; the stale-input cause is not independently established. All 16 frozen-worker
+goldens pass. One separate allocation process per role still shows counter
+−57.23% (7,518,842 to 3,215,498 B/run), CSV exactly flat in this diagnostic.
+
+B741's three-job confirmation finishes in 105.678 seconds with all gates; no users
+or fixtures remain. Same normal settings and boundaries as B740. Raw SHA256
+`30035a844759e3bfa28ad0c69e486a9fd4b38162e210fd8477c183f2ee71d742`.
+
+| Complete script / warm | Elapsed change | Wider CPU change |
+| --- | ---: | ---: |
+| Inside-range counter | −31.14..−29.70% | −31.03..−29.72% |
+| Short/zero helpers | +5.16..+8.53% | +6.17..+8.51% |
+| Helpers exposing every intermediate | +0.51..+1.95% | +2.75..+4.01% |
+
+The short-helper adverse direction remains despite the counter win. Source places
+range classification before every ordinary function call; the short control makes
+8,192 such helper calls. This identifies unnecessary work, not a proven causal
+CPU share. The selected completion removes that ordinary-router addition entirely,
+restoring its baseline bytes. Only native-prefix range construction causes the
+whole-body promotion cliff; ordinary execution already uses the same range factory
+through existing binding. No extra general-call probe or new selection mechanism.
+Final source/checks/comparison and retention remain separate from these timings.
+
+[Identity](owned-constructor/candidate-identity.json), [timing](owned-constructor/timing-summary.json),
+[allocation](owned-constructor/allocation-summary.json), [checks](owned-constructor/focused-checks.json),
+[test-input correction](owned-constructor/test-input-correction.json),
+[sources/binary/raw/conditions](owned-constructor/sources-checks-and-observations.tar.xz).
