@@ -1,0 +1,12 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "ramTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 269938688,
+  "archiveSHA256": "a49bf200e65b0eb2dddd7ab4e8300476107db956539a0f85a534e6fd1f053e97",
+  "source": "Committedf5817a15/frozen9cfb7d5b; R354 complete fulfillment stage attribution",
+  "performanceComparison": false
+}

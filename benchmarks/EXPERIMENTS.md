@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[R354 fulfillment stage attribution](results/2026-11-14-fulfillment-stage-attribution/README.md)
+maps exactf5817a15/frozen9cfb:1086guest leaves/88unknown/zeroambiguous,
+171native-body leaves in one13,655byte same-process Tier1 body. Mixed dispatch/
+arithmetic/CSV costs justify no broad frame/value rewrite. Source inspection selects
+owned raw CSV field ranges to remove actual truncate/reappend compaction; semantic,
+scratch-retention and cancellation/admission tradeoffs are recorded before code.
+All collection/quiet/ownership/RAM archival gates pass. No normal timing claim.
+
 [R353 owned native tuple returns](results/2026-11-14-owned-native-tuple-returns/README.md)
 reuse the existing direct-unpack convention over admitted larger helper storage
 and share caller completion instead of constructing a temporary tuple.382focused

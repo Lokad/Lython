@@ -1,0 +1,27 @@
+{
+  "source": "f5817a15/frozen9cfb7d5b",
+  "state": "Source gate complete; select R355owned CSV field ranges, not a broad value/frame rewrite",
+  "findings": [
+    "1086guest leaves/5.47guestCPU seconds;88unknown,zeroambiguous. NativeRunCore171leaves map one unique same-process13,655byte Tier1 body. Hottest26/19leaf groups mix loop metadata/cancellation/bounds; these are not removable CPU shares.",
+    "CSV Feed29/FinishField20/FinishRecord28leaves are owning useful parsing/construction work. Source inspection identifies one actual repeated storage stage: native ReadLineInto already fills the admitted _record, then FeedOwnedLine truncates and rewrites ordinary bytes into compacted fields before final retained strings copy them again.",
+    "Record descriptors can point into the existing owned raw record. Keep ordinary field bytes in place, compact only escapes within each field, then make the same independently funded retained values. Borrowed iterator strings first copy into the same owned raw buffer in cancellable chunks. One parser/state machine, no alternate native fast path.",
+    "Exact integer operators already bypass generic numeric dispatch; module mirroring is demand-driven, imports executable and ordinary function bindings retain declaration inputs. Do not duplicate those removals. This profile does not justify a tagged VM or new call arena."
+  ],
+  "expectedDeletion": [
+    "decoded compacted whole-record representation",
+    "per-chunk/per-marker builder Append calls during parsing",
+    "truncate-then-reappend native input stage"
+  ],
+  "compatibility": "Raw CSV syntax remains in admitted scratch until record completion. Heavily escaped/multiline records and borrowed malformed lines can need more scratch or be denied earlier. Exact tiny-budget thresholds are not promised. Preserve Python values, error order without admission refusal, source-item consumption and terminal refusal.",
+  "acceptance": [
+    "QUOTING/escape/doublequote/strict/skipspace/Unicode/empty/trailing/multiline behavior and numeric error order",
+    "Borrowed input unchanged; retained fields independent across buffer reuse and actual I/O suspension",
+    "Admission before capacity/replacement/result allocation; original prefix/capacity/funding intact on refusal, first origin terminal",
+    "Cancellable bounded input copies/parsing, no row publication on failure, scope cleanup/shared-budget reuse",
+    "Reasonable bounded CSV working storage for raw record size, not cumulative total row count"
+  ],
+  "comparison": "Existing complete CSV fulfillment/invoice warm/fresh and borrowed-row control, unchanged text. First focused actual11/10 and allocation diagnostics, then bounded quiet source pair if justified. No speedup forecast/fixed percentage veto; preserve adverse results and explicitly decide complexity/regression debt.",
+  "noNormalTimingClaim": true,
+  "fullDelivery": "43583650094pending independently",
+  "publicationHeld": true
+}

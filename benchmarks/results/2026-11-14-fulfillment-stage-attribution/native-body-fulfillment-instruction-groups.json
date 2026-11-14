@@ -1,0 +1,4047 @@
+{
+  "source": "Committedf5817a15/frozen9cfb7d5b",
+  "sameProcessJitAndSamples": true,
+  "tier1MapStart": "0x7828f0a9f700",
+  "tier1MapBytes": 13655,
+  "disassemblyBytes": 13655,
+  "uniqueTier1RangeAndDisassembly": true,
+  "guestLeafSamples": 1086,
+  "nativeBodyLeafSamples": 171,
+  "nativeBodyGuestSamplePercent": 15.74585635359116,
+  "sampledOffsets": [
+    [
+      0,
+      1
+    ],
+    [
+      111,
+      1
+    ],
+    [
+      280,
+      1
+    ],
+    [
+      297,
+      1
+    ],
+    [
+      347,
+      3
+    ],
+    [
+      773,
+      1
+    ],
+    [
+      1181,
+      2
+    ],
+    [
+      1252,
+      1
+    ],
+    [
+      1273,
+      1
+    ],
+    [
+      1293,
+      1
+    ],
+    [
+      1318,
+      1
+    ],
+    [
+      1436,
+      1
+    ],
+    [
+      1555,
+      4
+    ],
+    [
+      1608,
+      1
+    ],
+    [
+      1694,
+      3
+    ],
+    [
+      1744,
+      1
+    ],
+    [
+      1785,
+      1
+    ],
+    [
+      1942,
+      2
+    ],
+    [
+      2253,
+      1
+    ],
+    [
+      2299,
+      1
+    ],
+    [
+      2362,
+      11
+    ],
+    [
+      2365,
+      6
+    ],
+    [
+      2373,
+      1
+    ],
+    [
+      2376,
+      1
+    ],
+    [
+      2393,
+      2
+    ],
+    [
+      2396,
+      1
+    ],
+    [
+      2402,
+      3
+    ],
+    [
+      2406,
+      1
+    ],
+    [
+      2411,
+      5
+    ],
+    [
+      2415,
+      8
+    ],
+    [
+      2422,
+      1
+    ],
+    [
+      2425,
+      2
+    ],
+    [
+      2436,
+      2
+    ],
+    [
+      2452,
+      1
+    ],
+    [
+      2469,
+      2
+    ],
+    [
+      2473,
+      1
+    ],
+    [
+      2482,
+      3
+    ],
+    [
+      2498,
+      1
+    ],
+    [
+      2501,
+      3
+    ],
+    [
+      2511,
+      1
+    ],
+    [
+      2513,
+      2
+    ],
+    [
+      2541,
+      2
+    ],
+    [
+      2548,
+      1
+    ],
+    [
+      2561,
+      1
+    ],
+    [
+      2576,
+      1
+    ],
+    [
+      2595,
+      1
+    ],
+    [
+      2615,
+      1
+    ],
+    [
+      2721,
+      1
+    ],
+    [
+      2723,
+      1
+    ],
+    [
+      2842,
+      2
+    ],
+    [
+      3003,
+      1
+    ],
+    [
+      3051,
+      1
+    ],
+    [
+      3065,
+      1
+    ],
+    [
+      3095,
+      1
+    ],
+    [
+      3117,
+      2
+    ],
+    [
+      3567,
+      1
+    ],
+    [
+      3702,
+      1
+    ],
+    [
+      3772,
+      2
+    ],
+    [
+      3834,
+      1
+    ],
+    [
+      3841,
+      3
+    ],
+    [
+      3844,
+      1
+    ],
+    [
+      3873,
+      1
+    ],
+    [
+      3924,
+      1
+    ],
+    [
+      4029,
+      2
+    ],
+    [
+      4036,
+      1
+    ],
+    [
+      4159,
+      1
+    ],
+    [
+      4234,
+      1
+    ],
+    [
+      4287,
+      2
+    ],
+    [
+      4309,
+      1
+    ],
+    [
+      4360,
+      5
+    ],
+    [
+      4459,
+      1
+    ],
+    [
+      4518,
+      2
+    ],
+    [
+      4591,
+      2
+    ],
+    [
+      4624,
+      1
+    ],
+    [
+      4629,
+      1
+    ],
+    [
+      4669,
+      1
+    ],
+    [
+      4738,
+      1
+    ],
+    [
+      4756,
+      1
+    ],
+    [
+      4760,
+      4
+    ],
+    [
+      4777,
+      1
+    ],
+    [
+      4813,
+      1
+    ],
+    [
+      4874,
+      1
+    ],
+    [
+      4915,
+      1
+    ],
+    [
+      4922,
+      1
+    ],
+    [
+      4935,
+      1
+    ],
+    [
+      5020,
+      1
+    ],
+    [
+      5029,
+      1
+    ],
+    [
+      5063,
+      1
+    ],
+    [
+      5089,
+      1
+    ],
+    [
+      5091,
+      1
+    ],
+    [
+      5093,
+      1
+    ],
+    [
+      5109,
+      2
+    ],
+    [
+      5113,
+      5
+    ],
+    [
+      5167,
+      1
+    ],
+    [
+      5188,
+      1
+    ],
+    [
+      5289,
+      1
+    ],
+    [
+      5492,
+      1
+    ],
+    [
+      5498,
+      1
+    ],
+    [
+      5513,
+      1
+    ],
+    [
+      5530,
+      1
+    ],
+    [
+      5545,
+      1
+    ],
+    [
+      6030,
+      1
+    ],
+    [
+      6605,
+      1
+    ]
+  ],
+  "blocks": [
+    {
+      "label": "G_M000_IG01",
+      "start": 0,
+      "end": 56,
+      "leafSamples": 1,
+      "instructions": "push     rbp\n       push     r15\n       push     r14\n       push     r13\n       push     r12\n       push     rbx\n       sub      rsp, 680\n       lea      rbp, [rsp+0x2D0]\n       xor      eax, eax\n       mov      qword ptr [rbp-0x2B8], rax\n       vxorps   xmm8, xmm8, xmm8\n       vmovdqa32 xmmword ptr [rbp-0x2B0], xmm8\n       mov      rax, -624"
+    },
+    {
+      "label": "G_M000_IG517",
+      "start": 56,
+      "end": 90,
+      "leafSamples": 0,
+      "instructions": "vmovdqa  xmmword ptr [rbp+rax-0x30], xmm8\n       vmovdqa  xmmword ptr [rbp+rax-0x20], xmm8\n       vmovdqa  xmmword ptr [rbp+rax-0x10], xmm8\n       add      rax, 48\n       jne      SHORT G_M000_IG517\n       mov      qword ptr [rbp-0x30], rax\n       mov      rbx, rdi\n       mov      r15, rsi"
+    },
+    {
+      "label": "G_M000_IG02",
+      "start": 90,
+      "end": 136,
+      "leafSamples": 1,
+      "instructions": "mov      rdi, 0x782111801A70\n       mov      rsi, gword ptr [rdi]\n       mov      rdi, r15\n       call     CORINFO_HELP_CHECKED_ASSIGN_REF\n       mov      edi, dword ptr [rbx+0x38]\n       mov      rax, gword ptr [rbx+0x08]\n       mov      rax, gword ptr [rax+0x50]\n       cmp      edi, dword ptr [rax+0x08]\n       jge      G_M000_IG142\n       jmp      G_M000_IG106"
+    },
+    {
+      "label": "G_M000_IG03",
+      "start": 136,
+      "end": 192,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, gword ptr [rbx+0x08]\n       mov      rdi, gword ptr [rdi+0x10]\n       mov      r11, 0x7828EF0827A0\n       cmp      qword ptr [rdi], r11\n       jne      G_M000_IG459\n       not      esi\n       mov      r12d, dword ptr [rdi+0x08]\n       cmp      r12d, esi\n       jbe      G_M000_IG494\n       cmp      esi, r12d\n       jae      G_M000_IG509\n       mov      rdi, gword ptr [rdi+8*rsi+0x10]"
+    },
+    {
+      "label": "G_M000_IG04",
+      "start": 192,
+      "end": 206,
+      "leafSamples": 0,
+      "instructions": "call     [Lokad.Lython.Runtime.LythonRuntime:RuntimeValue(System.Object):System.Object]\n       mov      r13, rax\n       jmp      G_M000_IG131"
+    },
+    {
+      "label": "G_M000_IG05",
+      "start": 206,
+      "end": 262,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, gword ptr [rbx+0x08]\n       mov      rdi, gword ptr [rdi+0x10]\n       mov      r11, 0x7828EF0827A0\n       cmp      qword ptr [rdi], r11\n       jne      G_M000_IG418\n       not      esi\n       mov      r12d, dword ptr [rdi+0x08]\n       cmp      r12d, esi\n       jbe      G_M000_IG494\n       cmp      esi, r12d\n       jae      G_M000_IG509\n       mov      rdi, gword ptr [rdi+8*rsi+0x10]"
+    },
+    {
+      "label": "G_M000_IG06",
+      "start": 262,
+      "end": 276,
+      "leafSamples": 0,
+      "instructions": "call     [Lokad.Lython.Runtime.LythonRuntime:RuntimeValue(System.Object):System.Object]\n       mov      r13, rax\n       jmp      G_M000_IG111"
+    },
+    {
+      "label": "G_M000_IG07",
+      "start": 276,
+      "end": 328,
+      "leafSamples": 2,
+      "instructions": "mov      rdi, gword ptr [rbx+0x08]\n       mov      rdi, gword ptr [rdi+0x10]\n       mov      r11, 0x7828EF0827A0\n       cmp      qword ptr [rdi], r11\n       jne      G_M000_IG421\n       not      esi\n       cmp      dword ptr [rdi+0x08], esi\n       jbe      G_M000_IG494\n       cmp      esi, dword ptr [rdi+0x08]\n       jae      G_M000_IG509\n       mov      rdi, gword ptr [rdi+8*rsi+0x10]"
+    },
+    {
+      "label": "G_M000_IG08",
+      "start": 328,
+      "end": 342,
+      "leafSamples": 0,
+      "instructions": "call     [Lokad.Lython.Runtime.LythonRuntime:RuntimeValue(System.Object):System.Object]\n       mov      r12, rax\n       jmp      G_M000_IG113"
+    },
+    {
+      "label": "G_M000_IG09",
+      "start": 342,
+      "end": 351,
+      "leafSamples": 3,
+      "instructions": "movzx    rdi, byte  ptr [rbp-0x58]\n       test     edi, edi\n       jne      SHORT G_M000_IG19"
+    },
+    {
+      "label": "G_M000_IG10",
+      "start": 351,
+      "end": 364,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, 0x782111803118\n       mov      r13, gword ptr [rdi]"
+    },
+    {
+      "label": "G_M000_IG11",
+      "start": 364,
+      "end": 371,
+      "leafSamples": 0,
+      "instructions": "cmp      dword ptr [r14+0x18], 0\n       jl       SHORT G_M000_IG21"
+    },
+    {
+      "label": "G_M000_IG12",
+      "start": 371,
+      "end": 380,
+      "leafSamples": 0,
+      "instructions": "mov      edi, dword ptr [r14+0x1C]\n       cmp      edi, 52\n       ja       SHORT G_M000_IG14"
+    },
+    {
+      "label": "G_M000_IG13",
+      "start": 380,
+      "end": 400,
+      "leafSamples": 0,
+      "instructions": "mov      rax, 0xFFFFFFFFFE7FF\n       bt       rax, rdi\n       jae      G_M000_IG434"
+    },
+    {
+      "label": "G_M000_IG14",
+      "start": 400,
+      "end": 404,
+      "leafSamples": 0,
+      "instructions": "mov      r12d, dword ptr [r14+0x14]"
+    },
+    {
+      "label": "G_M000_IG15",
+      "start": 404,
+      "end": 411,
+      "leafSamples": 0,
+      "instructions": "cmp      dword ptr [r14+0x18], 0\n       jl       SHORT G_M000_IG20"
+    },
+    {
+      "label": "G_M000_IG16",
+      "start": 411,
+      "end": 415,
+      "leafSamples": 0,
+      "instructions": "mov      r14d, dword ptr [r14+0x18]"
+    },
+    {
+      "label": "G_M000_IG17",
+      "start": 415,
+      "end": 425,
+      "leafSamples": 0,
+      "instructions": "cmp      r14d, dword ptr [rbx+0x3C]\n       jl       G_M000_IG435"
+    },
+    {
+      "label": "G_M000_IG18",
+      "start": 425,
+      "end": 466,
+      "leafSamples": 0,
+      "instructions": "lea      rdi, bword ptr [rbx+0x48]\n       cmp      r12d, dword ptr [rdi+0x08]\n       jae      G_M000_IG509\n       mov      rdi, bword ptr [rdi]\n       mov      esi, r12d\n       lea      rdi, bword ptr [rdi+8*rsi]\n       mov      rsi, r13\n       call     CORINFO_HELP_CHECKED_ASSIGN_REF\n       mov      dword ptr [rbx+0x3C], r14d\n       jmp      G_M000_IG104"
+    },
+    {
+      "label": "G_M000_IG19",
+      "start": 466,
+      "end": 481,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, 0x782111803110\n       mov      r13, gword ptr [rdi]\n       jmp      SHORT G_M000_IG11"
+    },
+    {
+      "label": "G_M000_IG20",
+      "start": 481,
+      "end": 493,
+      "leafSamples": 0,
+      "instructions": "mov      edi, dword ptr [r14+0x18]\n       mov      r14d, edi\n       not      r14d\n       jmp      SHORT G_M000_IG17"
+    },
+    {
+      "label": "G_M000_IG21",
+      "start": 493,
+      "end": 504,
+      "leafSamples": 0,
+      "instructions": "mov      edi, dword ptr [r14+0x18]\n       not      edi\n       cmp      edi, dword ptr [rbx+0x3C]\n       jge      SHORT G_M000_IG23"
+    },
+    {
+      "label": "G_M000_IG22",
+      "start": 504,
+      "end": 521,
+      "leafSamples": 0,
+      "instructions": "mov      edi, dword ptr [r14+0x18]\n       mov      esi, edi\n       not      esi\n       mov      rdi, rbx\n       call     [Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Trim(int):this]"
+    },
+    {
+      "label": "G_M000_IG23",
+      "start": 521,
+      "end": 534,
+      "leafSamples": 0,
+      "instructions": "lea      r12, bword ptr [rbx+0x48]\n       mov      edi, dword ptr [r14+0x1C]\n       cmp      edi, 52\n       ja       SHORT G_M000_IG25"
+    },
+    {
+      "label": "G_M000_IG24",
+      "start": 534,
+      "end": 554,
+      "leafSamples": 0,
+      "instructions": "mov      rax, 0xFFFFFFFFFE7FF\n       bt       rax, rdi\n       jae      G_M000_IG436"
+    },
+    {
+      "label": "G_M000_IG25",
+      "start": 554,
+      "end": 558,
+      "leafSamples": 0,
+      "instructions": "mov      eax, dword ptr [r14+0x14]"
+    },
+    {
+      "label": "G_M000_IG26",
+      "start": 558,
+      "end": 590,
+      "leafSamples": 0,
+      "instructions": "cmp      eax, dword ptr [r12+0x08]\n       jae      G_M000_IG509\n       mov      rdi, bword ptr [r12]\n       mov      eax, eax\n       xor      rcx, rcx\n       mov      gword ptr [rdi+8*rax], rcx\n       mov      edi, dword ptr [r14+0x1C]\n       cmp      edi, 52\n       ja       SHORT G_M000_IG28"
+    },
+    {
+      "label": "G_M000_IG27",
+      "start": 590,
+      "end": 610,
+      "leafSamples": 0,
+      "instructions": "mov      rax, 0xFFFFFFFFFE7FF\n       bt       rax, rdi\n       jae      G_M000_IG437"
+    },
+    {
+      "label": "G_M000_IG28",
+      "start": 610,
+      "end": 614,
+      "leafSamples": 0,
+      "instructions": "mov      eax, dword ptr [r14+0x14]"
+    },
+    {
+      "label": "G_M000_IG29",
+      "start": 614,
+      "end": 699,
+      "leafSamples": 0,
+      "instructions": "mov      dword ptr [rbx+0x3C], eax\n       mov      rdi, gword ptr [rbx+0x08]\n       mov      rdi, gword ptr [rdi+0x50]\n       mov      eax, dword ptr [rbx+0x38]\n       inc      eax\n       cmp      eax, dword ptr [rdi+0x08]\n       jae      G_M000_IG509\n       shl      rax, 5\n       lea      r12, bword ptr [rdi+rax+0x10]\n       mov      rdi, gword ptr [rbx+0x18]\n       mov      rax, gword ptr [r12]\n       mov      rdi, gword ptr [rdi+0xA0]\n       mov      rcx, gword ptr [rdi+0x88]\n       mov      rcx, gword ptr [rcx+0x20]\n       test     rcx, rcx\n       jne      G_M000_IG438\n       mov      rdi, gword ptr [rdi+0x178]\n       test     rdi, rdi\n       jne      G_M000_IG439"
+    },
+    {
+      "label": "G_M000_IG30",
+      "start": 699,
+      "end": 713,
+      "leafSamples": 0,
+      "instructions": "lea      rdi, bword ptr [rbx+0x48]\n       mov      esi, dword ptr [r12+0x1C]\n       cmp      esi, 4\n       je       SHORT G_M000_IG32"
+    },
+    {
+      "label": "G_M000_IG31",
+      "start": 713,
+      "end": 722,
+      "leafSamples": 0,
+      "instructions": "cmp      esi, 27\n       jne      G_M000_IG440"
+    },
+    {
+      "label": "G_M000_IG32",
+      "start": 722,
+      "end": 756,
+      "leafSamples": 0,
+      "instructions": "mov      esi, dword ptr [r12+0x08]\n       cmp      esi, dword ptr [rdi+0x08]\n       jae      G_M000_IG509\n       mov      rdi, bword ptr [rdi]\n       lea      rdi, bword ptr [rdi+8*rsi]\n       mov      rsi, r13\n       call     CORINFO_HELP_CHECKED_ASSIGN_REF\n       jmp      G_M000_IG254"
+    },
+    {
+      "label": "G_M000_IG33",
+      "start": 756,
+      "end": 875,
+      "leafSamples": 1,
+      "instructions": "mov      edi, dword ptr [rbp-0x48]\n       mov      dword ptr [rbx+0x38], edi\n       mov      rdi, gword ptr [rbx+0x08]\n       mov      rdi, gword ptr [rdi+0x50]\n       mov      esi, dword ptr [rdi+0x08]\n       cmp      dword ptr [rbp-0x48], esi\n       jae      G_M000_IG509\n       mov      esi, dword ptr [rbp-0x48]\n       shl      rsi, 5\n       lea      r14, bword ptr [rdi+rsi+0x10]\n       mov      rsi, qword ptr [rbp-0x50]\n       vxorps   xmm0, xmm0, xmm0\n       vmovdqu32 xmmword ptr [rbp-0x110], xmm0\n       lea      rdi, [rbp-0x110]\n       call     [System.Numerics.BigInteger:.ctor(long):this]\n       mov      rdi, 0x7828F0641F78\n       call     CORINFO_HELP_NEWSFAST\n       mov      r12, rax\n       lea      rdi, bword ptr [r12+0x08]\n       mov      rsi, gword ptr [rbp-0x110]\n       call     CORINFO_HELP_ASSIGN_REF\n       mov      edi, dword ptr [rbp-0x108]\n       mov      dword ptr [r12+0x10], edi\n       cmp      dword ptr [r14+0x18], 0\n       jl       SHORT G_M000_IG42"
+    },
+    {
+      "label": "G_M000_IG34",
+      "start": 875,
+      "end": 884,
+      "leafSamples": 0,
+      "instructions": "mov      edi, dword ptr [r14+0x1C]\n       cmp      edi, 52\n       ja       SHORT G_M000_IG36"
+    },
+    {
+      "label": "G_M000_IG35",
+      "start": 884,
+      "end": 904,
+      "leafSamples": 0,
+      "instructions": "mov      rax, 0xFFFFFFFFFE7FF\n       bt       rax, rdi\n       jae      G_M000_IG424"
+    },
+    {
+      "label": "G_M000_IG36",
+      "start": 904,
+      "end": 908,
+      "leafSamples": 0,
+      "instructions": "mov      r13d, dword ptr [r14+0x14]"
+    },
+    {
+      "label": "G_M000_IG37",
+      "start": 908,
+      "end": 915,
+      "leafSamples": 0,
+      "instructions": "cmp      dword ptr [r14+0x18], 0\n       jl       SHORT G_M000_IG41"
+    },
+    {
+      "label": "G_M000_IG38",
+      "start": 915,
+      "end": 919,
+      "leafSamples": 0,
+      "instructions": "mov      r14d, dword ptr [r14+0x18]"
+    },
+    {
+      "label": "G_M000_IG39",
+      "start": 919,
+      "end": 929,
+      "leafSamples": 0,
+      "instructions": "cmp      r14d, dword ptr [rbx+0x3C]\n       jl       G_M000_IG425"
+    },
+    {
+      "label": "G_M000_IG40",
+      "start": 929,
+      "end": 970,
+      "leafSamples": 0,
+      "instructions": "lea      rdi, bword ptr [rbx+0x48]\n       cmp      r13d, dword ptr [rdi+0x08]\n       jae      G_M000_IG509\n       mov      rdi, bword ptr [rdi]\n       mov      esi, r13d\n       lea      rdi, bword ptr [rdi+8*rsi]\n       mov      rsi, r12\n       call     CORINFO_HELP_CHECKED_ASSIGN_REF\n       mov      dword ptr [rbx+0x3C], r14d\n       jmp      G_M000_IG104"
+    },
+    {
+      "label": "G_M000_IG41",
+      "start": 970,
+      "end": 982,
+      "leafSamples": 0,
+      "instructions": "mov      edi, dword ptr [r14+0x18]\n       mov      r14d, edi\n       not      r14d\n       jmp      SHORT G_M000_IG39"
+    },
+    {
+      "label": "G_M000_IG42",
+      "start": 982,
+      "end": 997,
+      "leafSamples": 0,
+      "instructions": "mov      esi, dword ptr [r14+0x18]\n       not      esi\n       cmp      esi, dword ptr [rbx+0x3C]\n       jge      G_M000_IG51"
+    },
+    {
+      "label": "G_M000_IG43",
+      "start": 997,
+      "end": 1030,
+      "leafSamples": 0,
+      "instructions": "mov      esi, dword ptr [r14+0x18]\n       mov      r13d, esi\n       not      r13d\n       mov      esi, dword ptr [rbx+0x3C]\n       dec      esi\n       mov      rdi, gword ptr [rbx+0x08]\n       mov      edi, dword ptr [rdi+0xA0]\n       cmp      esi, edi\n       jle      G_M000_IG144"
+    },
+    {
+      "label": "G_M000_IG44",
+      "start": 1030,
+      "end": 1037,
+      "leafSamples": 0,
+      "instructions": "mov      eax, edi\n       cmp      eax, r13d\n       jl       SHORT G_M000_IG50"
+    },
+    {
+      "label": "G_M000_IG45",
+      "start": 1037,
+      "end": 1072,
+      "leafSamples": 0,
+      "instructions": "lea      rsi, bword ptr [rbx+0x48]\n       cmp      eax, dword ptr [rsi+0x08]\n       jae      G_M000_IG509\n       mov      rsi, bword ptr [rsi]\n       mov      qword ptr [rbp-0x138], rax\n       mov      rsi, gword ptr [rsi+8*rax]\n       mov      rdi, rsi\n       test     rdi, rdi\n       je       SHORT G_M000_IG48"
+    },
+    {
+      "label": "G_M000_IG46",
+      "start": 1072,
+      "end": 1091,
+      "leafSamples": 0,
+      "instructions": "mov      rcx, 0x7828F04A75E0\n       cmp      qword ptr [rdi], rcx\n       jne      G_M000_IG426"
+    },
+    {
+      "label": "G_M000_IG47",
+      "start": 1091,
+      "end": 1093,
+      "leafSamples": 0,
+      "instructions": "xor      rdi, rdi"
+    },
+    {
+      "label": "G_M000_IG48",
+      "start": 1093,
+      "end": 1102,
+      "leafSamples": 0,
+      "instructions": "test     rdi, rdi\n       jne      G_M000_IG427"
+    },
+    {
+      "label": "G_M000_IG49",
+      "start": 1102,
+      "end": 1122,
+      "leafSamples": 0,
+      "instructions": "mov      rax, qword ptr [rbp-0x138]\n       dec      eax\n       mov      rdi, rax\n       cmp      edi, r13d\n       mov      rax, rdi\n       jge      SHORT G_M000_IG45"
+    },
+    {
+      "label": "G_M000_IG50",
+      "start": 1122,
+      "end": 1126,
+      "leafSamples": 0,
+      "instructions": "mov      dword ptr [rbx+0x3C], r13d"
+    },
+    {
+      "label": "G_M000_IG51",
+      "start": 1126,
+      "end": 1139,
+      "leafSamples": 0,
+      "instructions": "lea      r13, bword ptr [rbx+0x48]\n       mov      edi, dword ptr [r14+0x1C]\n       cmp      edi, 52\n       ja       SHORT G_M000_IG53"
+    },
+    {
+      "label": "G_M000_IG52",
+      "start": 1139,
+      "end": 1159,
+      "leafSamples": 0,
+      "instructions": "mov      rax, 0xFFFFFFFFFE7FF\n       bt       rax, rdi\n       jae      G_M000_IG428"
+    },
+    {
+      "label": "G_M000_IG53",
+      "start": 1159,
+      "end": 1163,
+      "leafSamples": 0,
+      "instructions": "mov      eax, dword ptr [r14+0x14]"
+    },
+    {
+      "label": "G_M000_IG54",
+      "start": 1163,
+      "end": 1194,
+      "leafSamples": 2,
+      "instructions": "cmp      eax, dword ptr [r13+0x08]\n       jae      G_M000_IG509\n       mov      rdi, bword ptr [r13]\n       mov      eax, eax\n       xor      rcx, rcx\n       mov      gword ptr [rdi+8*rax], rcx\n       mov      edi, dword ptr [r14+0x1C]\n       cmp      edi, 52\n       ja       SHORT G_M000_IG56"
+    },
+    {
+      "label": "G_M000_IG55",
+      "start": 1194,
+      "end": 1214,
+      "leafSamples": 0,
+      "instructions": "mov      rax, 0xFFFFFFFFFE7FF\n       bt       rax, rdi\n       jae      G_M000_IG429"
+    },
+    {
+      "label": "G_M000_IG56",
+      "start": 1214,
+      "end": 1218,
+      "leafSamples": 0,
+      "instructions": "mov      eax, dword ptr [r14+0x14]"
+    },
+    {
+      "label": "G_M000_IG57",
+      "start": 1218,
+      "end": 1302,
+      "leafSamples": 3,
+      "instructions": "mov      dword ptr [rbx+0x3C], eax\n       mov      rdi, gword ptr [rbx+0x08]\n       mov      rdi, gword ptr [rdi+0x50]\n       mov      eax, dword ptr [rbx+0x38]\n       inc      eax\n       cmp      eax, dword ptr [rdi+0x08]\n       jae      G_M000_IG509\n       shl      rax, 5\n       lea      r14, bword ptr [rdi+rax+0x10]\n       mov      rdi, gword ptr [rbx+0x18]\n       mov      rax, gword ptr [r14]\n       mov      rdi, gword ptr [rdi+0xA0]\n       mov      rcx, gword ptr [rdi+0x88]\n       mov      rcx, gword ptr [rcx+0x20]\n       test     rcx, rcx\n       jne      G_M000_IG430\n       mov      rdi, gword ptr [rdi+0x178]\n       test     rdi, rdi\n       jne      G_M000_IG431"
+    },
+    {
+      "label": "G_M000_IG58",
+      "start": 1302,
+      "end": 1315,
+      "leafSamples": 0,
+      "instructions": "lea      rdi, bword ptr [rbx+0x48]\n       mov      esi, dword ptr [r14+0x1C]\n       cmp      esi, 4\n       je       SHORT G_M000_IG60"
+    },
+    {
+      "label": "G_M000_IG59",
+      "start": 1315,
+      "end": 1324,
+      "leafSamples": 1,
+      "instructions": "cmp      esi, 27\n       jne      G_M000_IG432"
+    },
+    {
+      "label": "G_M000_IG60",
+      "start": 1324,
+      "end": 1357,
+      "leafSamples": 0,
+      "instructions": "mov      esi, dword ptr [r14+0x08]\n       cmp      esi, dword ptr [rdi+0x08]\n       jae      G_M000_IG509\n       mov      rdi, bword ptr [rdi]\n       lea      rdi, bword ptr [rdi+8*rsi]\n       mov      rsi, r12\n       call     CORINFO_HELP_CHECKED_ASSIGN_REF\n       jmp      G_M000_IG254"
+    },
+    {
+      "label": "G_M000_IG61",
+      "start": 1357,
+      "end": 1404,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, gword ptr [rbx+0x08]\n       mov      rdi, gword ptr [rdi+0x10]\n       mov      r11, 0x7828EF0827A0\n       cmp      qword ptr [rdi], r11\n       jne      G_M000_IG376\n       not      esi\n       mov      r12d, dword ptr [rdi+0x08]\n       cmp      r12d, esi\n       jbe      G_M000_IG494\n       mov      rdi, gword ptr [rdi+8*rsi+0x10]"
+    },
+    {
+      "label": "G_M000_IG62",
+      "start": 1404,
+      "end": 1418,
+      "leafSamples": 0,
+      "instructions": "call     [Lokad.Lython.Runtime.LythonRuntime:RuntimeValue(System.Object):System.Object]\n       mov      r13, rax\n       jmp      G_M000_IG136"
+    },
+    {
+      "label": "G_M000_IG63",
+      "start": 1418,
+      "end": 1465,
+      "leafSamples": 1,
+      "instructions": "mov      rdi, gword ptr [rbx+0x08]\n       mov      rdi, gword ptr [rdi+0x10]\n       mov      r11, 0x7828EF0827A0\n       cmp      qword ptr [rdi], r11\n       jne      G_M000_IG378\n       not      esi\n       mov      r11d, dword ptr [rdi+0x08]\n       cmp      r11d, esi\n       jbe      G_M000_IG494\n       mov      rdi, gword ptr [rdi+8*rsi+0x10]"
+    },
+    {
+      "label": "G_M000_IG64",
+      "start": 1465,
+      "end": 1479,
+      "leafSamples": 0,
+      "instructions": "call     [Lokad.Lython.Runtime.LythonRuntime:RuntimeValue(System.Object):System.Object]\n       mov      r12, rax\n       jmp      G_M000_IG138"
+    },
+    {
+      "label": "G_M000_IG65",
+      "start": 1479,
+      "end": 1499,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, 0x7828F082EFC8\n       cmp      qword ptr [r13], rdi\n       jne      G_M000_IG139"
+    },
+    {
+      "label": "G_M000_IG66",
+      "start": 1499,
+      "end": 1521,
+      "leafSamples": 0,
+      "instructions": "cmp      gword ptr [r13+0x28], 0\n       je       G_M000_IG380\n       cmp      dword ptr [r13+0x50], 0\n       jne      G_M000_IG139"
+    },
+    {
+      "label": "G_M000_IG67",
+      "start": 1521,
+      "end": 1530,
+      "leafSamples": 0,
+      "instructions": "test     r12, r12\n       je       G_M000_IG139"
+    },
+    {
+      "label": "G_M000_IG68",
+      "start": 1530,
+      "end": 1550,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, 0x7828F04A75E0\n       cmp      qword ptr [r12], rdi\n       jne      G_M000_IG139"
+    },
+    {
+      "label": "G_M000_IG69",
+      "start": 1550,
+      "end": 1565,
+      "leafSamples": 4,
+      "instructions": "cmp      dword ptr [r14+0x1C], 44\n       jne      G_M000_IG381\n       mov      edi, dword ptr [r14+0x08]"
+    },
+    {
+      "label": "G_M000_IG70",
+      "start": 1565,
+      "end": 1617,
+      "leafSamples": 1,
+      "instructions": "test     edi, edi\n       jl       G_M000_IG396\n       cmp      gword ptr [r13+0x20], 0\n       je       G_M000_IG396\n       mov      rax, gword ptr [rbx]\n       mov      gword ptr [rbp-0x180], rax\n       mov      rcx, gword ptr [r14]\n       mov      gword ptr [rbp-0x240], rcx\n       mov      rdx, gword ptr [rax+0x78]\n       test     rdx, rdx\n       je       G_M000_IG383"
+    },
+    {
+      "label": "G_M000_IG71",
+      "start": 1617,
+      "end": 1632,
+      "leafSamples": 0,
+      "instructions": "cmp      dword ptr [r14+0x1C], 44\n       jne      G_M000_IG392\n       mov      edi, dword ptr [r14+0x08]"
+    },
+    {
+      "label": "G_M000_IG72",
+      "start": 1632,
+      "end": 1730,
+      "leafSamples": 3,
+      "instructions": "cmp      edi, dword ptr [rdx+0x08]\n       jae      G_M000_IG509\n       mov      edi, edi\n       lea      rdi, [rdi+2*rdi]\n       lea      rax, bword ptr [rdx+8*rdi+0x10]\n       mov      bword ptr [rbp-0x188], rax\n       mov      rcx, gword ptr [rbx+0x18]\n       mov      gword ptr [rbp-0x190], rcx\n       mov      rdx, gword ptr [r14]\n       mov      gword ptr [rbp-0x270], rdx\n       mov      rdi, gword ptr [rcx+0xA0]\n       mov      rsi, gword ptr [rdi+0x88]\n       mov      rsi, gword ptr [rsi+0x20]\n       test     rsi, rsi\n       jne      G_M000_IG394\n       mov      rcx, gword ptr [rbp-0x190]\n       mov      rdi, gword ptr [rdi+0x178]\n       test     rdi, rdi\n       jne      G_M000_IG395"
+    },
+    {
+      "label": "G_M000_IG73",
+      "start": 1730,
+      "end": 1766,
+      "leafSamples": 1,
+      "instructions": "mov      r8, gword ptr [r13+0x20]\n       mov      gword ptr [rbp-0x278], r8\n       test     r8, r8\n       je       G_M000_IG396\n       mov      rax, bword ptr [rbp-0x188]\n       cmp      gword ptr [rax], r8\n       jne      G_M000_IG398"
+    },
+    {
+      "label": "G_M000_IG74",
+      "start": 1766,
+      "end": 1780,
+      "leafSamples": 0,
+      "instructions": "cmp      gword ptr [rax+0x08], r12\n       jne      G_M000_IG397\n       mov      r9d, dword ptr [rax+0x10]"
+    },
+    {
+      "label": "G_M000_IG75",
+      "start": 1780,
+      "end": 1787,
+      "leafSamples": 1,
+      "instructions": "cmp      gword ptr [r13+0x20], 0\n       je       SHORT G_M000_IG77"
+    },
+    {
+      "label": "G_M000_IG76",
+      "start": 1787,
+      "end": 1826,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, gword ptr [r13+0x30]\n       cmp      dword ptr [rdi+0x08], r9d\n       jbe      G_M000_IG399\n       cmp      r9d, dword ptr [rdi+0x08]\n       jae      G_M000_IG509\n       mov      eax, r9d\n       cmp      gword ptr [rdi+8*rax+0x10], 0\n       je       G_M000_IG399"
+    },
+    {
+      "label": "G_M000_IG77",
+      "start": 1826,
+      "end": 1851,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, gword ptr [r13+0x30]\n       mov      rax, rdi\n       cmp      r9d, dword ptr [rax+0x08]\n       jae      G_M000_IG509\n       mov      edi, r9d\n       mov      rax, gword ptr [rax+8*rdi+0x10]"
+    },
+    {
+      "label": "G_M000_IG78",
+      "start": 1851,
+      "end": 1879,
+      "leafSamples": 0,
+      "instructions": "mov      gword ptr [rbp-0x160], rax\n       test     rax, rax\n       je       G_M000_IG396\n       mov      r13, rax\n       mov      r12d, dword ptr [r14+0x18]\n       test     r12d, r12d\n       jl       SHORT G_M000_IG86"
+    },
+    {
+      "label": "G_M000_IG79",
+      "start": 1879,
+      "end": 1895,
+      "leafSamples": 0,
+      "instructions": "mov      rax, gword ptr [rbp-0x160]\n       mov      edi, dword ptr [r14+0x1C]\n       cmp      edi, 52\n       ja       SHORT G_M000_IG81"
+    },
+    {
+      "label": "G_M000_IG80",
+      "start": 1895,
+      "end": 1915,
+      "leafSamples": 0,
+      "instructions": "mov      rcx, 0xFFFFFFFFFE7FF\n       bt       rcx, rdi\n       jae      G_M000_IG400"
+    },
+    {
+      "label": "G_M000_IG81",
+      "start": 1915,
+      "end": 1919,
+      "leafSamples": 0,
+      "instructions": "mov      r12d, dword ptr [r14+0x14]"
+    },
+    {
+      "label": "G_M000_IG82",
+      "start": 1919,
+      "end": 1928,
+      "leafSamples": 0,
+      "instructions": "mov      r14d, dword ptr [r14+0x18]\n       test     r14d, r14d\n       jl       SHORT G_M000_IG85"
+    },
+    {
+      "label": "G_M000_IG83",
+      "start": 1928,
+      "end": 1938,
+      "leafSamples": 0,
+      "instructions": "cmp      r14d, dword ptr [rbx+0x3C]\n       jl       G_M000_IG401"
+    },
+    {
+      "label": "G_M000_IG84",
+      "start": 1938,
+      "end": 1979,
+      "leafSamples": 2,
+      "instructions": "lea      rdi, bword ptr [rbx+0x48]\n       cmp      r12d, dword ptr [rdi+0x08]\n       jae      G_M000_IG509\n       mov      rdi, bword ptr [rdi]\n       mov      esi, r12d\n       lea      rdi, bword ptr [rdi+8*rsi]\n       mov      rsi, rax\n       call     CORINFO_HELP_CHECKED_ASSIGN_REF\n       mov      dword ptr [rbx+0x3C], r14d\n       jmp      G_M000_IG104"
+    },
+    {
+      "label": "G_M000_IG85",
+      "start": 1979,
+      "end": 1984,
+      "leafSamples": 0,
+      "instructions": "not      r14d\n       jmp      SHORT G_M000_IG83"
+    },
+    {
+      "label": "G_M000_IG86",
+      "start": 1984,
+      "end": 1994,
+      "leafSamples": 0,
+      "instructions": "mov      esi, r12d\n       not      esi\n       cmp      esi, dword ptr [rbx+0x3C]\n       jge      SHORT G_M000_IG93"
+    },
+    {
+      "label": "G_M000_IG87",
+      "start": 1994,
+      "end": 2025,
+      "leafSamples": 0,
+      "instructions": "not      r12d\n       mov      esi, dword ptr [rbx+0x3C]\n       dec      esi\n       mov      rdi, gword ptr [rbx+0x08]\n       mov      edi, dword ptr [rdi+0xA0]\n       cmp      esi, edi\n       jle      G_M000_IG403\n       jmp      G_M000_IG402"
+    },
+    {
+      "label": "G_M000_IG88",
+      "start": 2025,
+      "end": 2032,
+      "leafSamples": 0,
+      "instructions": "mov      eax, edi\n       cmp      eax, r12d\n       jl       SHORT G_M000_IG92"
+    },
+    {
+      "label": "G_M000_IG89",
+      "start": 2032,
+      "end": 2071,
+      "leafSamples": 0,
+      "instructions": "lea      rsi, bword ptr [rbx+0x48]\n       cmp      eax, dword ptr [rsi+0x08]\n       jae      G_M000_IG509\n       mov      rsi, bword ptr [rsi]\n       mov      qword ptr [rbp-0x140], rax\n       mov      rsi, gword ptr [rsi+8*rax]\n       mov      rdi, rsi\n       test     rdi, rdi\n       jne      G_M000_IG404"
+    },
+    {
+      "label": "G_M000_IG90",
+      "start": 2071,
+      "end": 2080,
+      "leafSamples": 0,
+      "instructions": "test     rdi, rdi\n       jne      G_M000_IG407"
+    },
+    {
+      "label": "G_M000_IG91",
+      "start": 2080,
+      "end": 2100,
+      "leafSamples": 0,
+      "instructions": "mov      rax, qword ptr [rbp-0x140]\n       dec      eax\n       mov      rdi, rax\n       cmp      edi, r12d\n       mov      rax, rdi\n       jge      SHORT G_M000_IG89"
+    },
+    {
+      "label": "G_M000_IG92",
+      "start": 2100,
+      "end": 2104,
+      "leafSamples": 0,
+      "instructions": "mov      dword ptr [rbx+0x3C], r12d"
+    },
+    {
+      "label": "G_M000_IG93",
+      "start": 2104,
+      "end": 2117,
+      "leafSamples": 0,
+      "instructions": "lea      r12, bword ptr [rbx+0x48]\n       mov      edi, dword ptr [r14+0x1C]\n       cmp      edi, 52\n       ja       SHORT G_M000_IG95"
+    },
+    {
+      "label": "G_M000_IG94",
+      "start": 2117,
+      "end": 2137,
+      "leafSamples": 0,
+      "instructions": "mov      rax, 0xFFFFFFFFFE7FF\n       bt       rax, rdi\n       jae      G_M000_IG408"
+    },
+    {
+      "label": "G_M000_IG95",
+      "start": 2137,
+      "end": 2141,
+      "leafSamples": 0,
+      "instructions": "mov      eax, dword ptr [r14+0x14]"
+    },
+    {
+      "label": "G_M000_IG96",
+      "start": 2141,
+      "end": 2173,
+      "leafSamples": 0,
+      "instructions": "cmp      eax, dword ptr [r12+0x08]\n       jae      G_M000_IG509\n       mov      rdi, bword ptr [r12]\n       mov      eax, eax\n       xor      rcx, rcx\n       mov      gword ptr [rdi+8*rax], rcx\n       mov      edi, dword ptr [r14+0x1C]\n       cmp      edi, 52\n       ja       SHORT G_M000_IG98"
+    },
+    {
+      "label": "G_M000_IG97",
+      "start": 2173,
+      "end": 2193,
+      "leafSamples": 0,
+      "instructions": "mov      rax, 0xFFFFFFFFFE7FF\n       bt       rax, rdi\n       jae      G_M000_IG409"
+    },
+    {
+      "label": "G_M000_IG98",
+      "start": 2193,
+      "end": 2197,
+      "leafSamples": 0,
+      "instructions": "mov      eax, dword ptr [r14+0x14]"
+    },
+    {
+      "label": "G_M000_IG99",
+      "start": 2197,
+      "end": 2282,
+      "leafSamples": 1,
+      "instructions": "mov      dword ptr [rbx+0x3C], eax\n       mov      rdi, gword ptr [rbx+0x08]\n       mov      rdi, gword ptr [rdi+0x50]\n       mov      eax, dword ptr [rbx+0x38]\n       inc      eax\n       cmp      eax, dword ptr [rdi+0x08]\n       jae      G_M000_IG509\n       shl      rax, 5\n       lea      r12, bword ptr [rdi+rax+0x10]\n       mov      rdi, gword ptr [rbx+0x18]\n       mov      rax, gword ptr [r12]\n       mov      rdi, gword ptr [rdi+0xA0]\n       mov      rcx, gword ptr [rdi+0x88]\n       mov      rcx, gword ptr [rcx+0x20]\n       test     rcx, rcx\n       jne      G_M000_IG410\n       mov      rdi, gword ptr [rdi+0x178]\n       test     rdi, rdi\n       jne      G_M000_IG411"
+    },
+    {
+      "label": "G_M000_IG100",
+      "start": 2282,
+      "end": 2296,
+      "leafSamples": 0,
+      "instructions": "lea      rdi, bword ptr [rbx+0x48]\n       mov      esi, dword ptr [r12+0x1C]\n       cmp      esi, 4\n       je       SHORT G_M000_IG102"
+    },
+    {
+      "label": "G_M000_IG101",
+      "start": 2296,
+      "end": 2305,
+      "leafSamples": 1,
+      "instructions": "cmp      esi, 27\n       jne      G_M000_IG412"
+    },
+    {
+      "label": "G_M000_IG102",
+      "start": 2305,
+      "end": 2339,
+      "leafSamples": 0,
+      "instructions": "mov      esi, dword ptr [r12+0x08]\n       cmp      esi, dword ptr [rdi+0x08]\n       jae      G_M000_IG509\n       mov      rdi, bword ptr [rdi]\n       lea      rdi, bword ptr [rdi+8*rsi]\n       mov      rsi, r13\n       call     CORINFO_HELP_CHECKED_ASSIGN_REF\n       jmp      G_M000_IG254"
+    },
+    {
+      "label": "G_M000_IG103",
+      "start": 2339,
+      "end": 2359,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, rbx\n       mov      rsi, r14\n       call     [Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Call(byref):bool:this]\n       test     eax, eax\n       je       G_M000_IG139"
+    },
+    {
+      "label": "G_M000_IG104",
+      "start": 2359,
+      "end": 2362,
+      "leafSamples": 0,
+      "instructions": "inc      dword ptr [rbx+0x38]"
+    },
+    {
+      "label": "G_M000_IG105",
+      "start": 2362,
+      "end": 2382,
+      "leafSamples": 19,
+      "instructions": "mov      esi, dword ptr [rbx+0x38]\n       mov      rdi, gword ptr [rbx+0x08]\n       mov      rdi, gword ptr [rdi+0x50]\n       cmp      esi, dword ptr [rdi+0x08]\n       jge      G_M000_IG142"
+    },
+    {
+      "label": "G_M000_IG106",
+      "start": 2382,
+      "end": 2461,
+      "leafSamples": 26,
+      "instructions": "mov      rdi, gword ptr [rbx+0x08]\n       mov      rdi, gword ptr [rdi+0x50]\n       mov      eax, dword ptr [rbx+0x38]\n       cmp      eax, dword ptr [rdi+0x08]\n       jae      G_M000_IG509\n       shl      rax, 5\n       lea      r14, bword ptr [rdi+rax+0x10]\n       mov      rdi, gword ptr [rbx+0x18]\n       mov      rdi, gword ptr [rdi+0xA0]\n       mov      rax, gword ptr [r14]\n       mov      rcx, gword ptr [rdi+0x88]\n       mov      rcx, gword ptr [rcx+0x20]\n       test     rcx, rcx\n       jne      G_M000_IG489\n       mov      rdi, gword ptr [rdi+0x178]\n       test     rdi, rdi\n       jne      G_M000_IG316"
+    },
+    {
+      "label": "G_M000_IG107",
+      "start": 2461,
+      "end": 2479,
+      "leafSamples": 3,
+      "instructions": "mov      edi, dword ptr [r14+0x1C]\n       lea      r13d, [rdi-0x03]\n       cmp      r13d, 3\n       jbe      G_M000_IG177"
+    },
+    {
+      "label": "G_M000_IG108",
+      "start": 2479,
+      "end": 2513,
+      "leafSamples": 8,
+      "instructions": "add      edi, -25\n       cmp      edi, 43\n       ja       G_M000_IG490\n       lea      rsi, [reloc @RWD00]\n       mov      esi, dword ptr [rsi+4*rdi]\n       lea      rax, G_M000_IG02\n       add      rsi, rax\n       jmp      rsi"
+    },
+    {
+      "label": "G_M000_IG109",
+      "start": 2513,
+      "end": 2525,
+      "leafSamples": 2,
+      "instructions": "mov      esi, dword ptr [r14+0x10]\n       test     esi, esi\n       jl       G_M000_IG05"
+    },
+    {
+      "label": "G_M000_IG110",
+      "start": 2525,
+      "end": 2557,
+      "leafSamples": 3,
+      "instructions": "lea      rdi, bword ptr [rbx+0x48]\n       cmp      esi, dword ptr [rdi+0x08]\n       jae      G_M000_IG509\n       mov      rdi, bword ptr [rdi]\n       mov      r11d, esi\n       mov      r13, gword ptr [rdi+8*r11]\n       test     r13, r13\n       je       G_M000_IG419"
+    },
+    {
+      "label": "G_M000_IG111",
+      "start": 2557,
+      "end": 2569,
+      "leafSamples": 1,
+      "instructions": "mov      esi, dword ptr [r14+0x0C]\n       test     esi, esi\n       jl       G_M000_IG07"
+    },
+    {
+      "label": "G_M000_IG112",
+      "start": 2569,
+      "end": 2601,
+      "leafSamples": 2,
+      "instructions": "lea      rdi, bword ptr [rbx+0x48]\n       cmp      esi, dword ptr [rdi+0x08]\n       jae      G_M000_IG509\n       mov      rdi, bword ptr [rdi]\n       mov      r11d, esi\n       mov      r12, gword ptr [rdi+8*r11]\n       test     r12, r12\n       je       G_M000_IG422"
+    },
+    {
+      "label": "G_M000_IG113",
+      "start": 2601,
+      "end": 2623,
+      "leafSamples": 1,
+      "instructions": "cmp      dword ptr [r14+0x1C], 48\n       sete     al\n       movzx    rax, al\n       mov      dword ptr [rbp-0x3C], eax\n       test     eax, eax\n       jne      G_M000_IG442"
+    },
+    {
+      "label": "G_M000_IG114",
+      "start": 2623,
+      "end": 2683,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, gword ptr [rbx+0x08]\n       mov      rsi, bword ptr [rbx+0x48]\n       mov      edx, dword ptr [rbx+0x50]\n       mov      rcx, gword ptr [rbx+0x18]\n       mov      gword ptr [rsp], rcx\n       lea      rcx, [rbp-0x48]\n       mov      qword ptr [rsp+0x08], rcx\n       lea      rcx, [rbp-0x50]\n       mov      qword ptr [rsp+0x10], rcx\n       mov      ecx, dword ptr [rbx+0x38]\n       mov      r8, r13\n       mov      r9, r12\n       call     [Lokad.Lython.Runtime.LythonRuntime:TryIntegerChain(Lokad.Lython.Frontend.ExecutableCodeObject,System.ReadOnlySpan`1[System.Object],int,System.Object,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,byref,byref):bool]\n       test     eax, eax\n       jne      G_M000_IG33"
+    },
+    {
+      "label": "G_M000_IG115",
+      "start": 2683,
+      "end": 2698,
+      "leafSamples": 0,
+      "instructions": "cmp      dword ptr [r14+0x1C], 52\n       je       G_M000_IG433\n       mov      edi, dword ptr [r14+0x08]"
+    },
+    {
+      "label": "G_M000_IG116",
+      "start": 2698,
+      "end": 2729,
+      "leafSamples": 2,
+      "instructions": "mov      rcx, gword ptr [rbx+0x18]\n       mov      r8, gword ptr [r14]\n       lea      r9, [rbp-0x58]\n       mov      rsi, r13\n       mov      rdx, r12\n       call     [Lokad.Lython.Runtime.LythonRuntime:TryEvaluateScalarComparison(int,System.Object,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,byref):bool]\n       test     eax, eax\n       jne      G_M000_IG09"
+    },
+    {
+      "label": "G_M000_IG117",
+      "start": 2729,
+      "end": 2744,
+      "leafSamples": 0,
+      "instructions": "cmp      dword ptr [r14+0x1C], 52\n       je       G_M000_IG441\n       mov      edi, dword ptr [r14+0x08]"
+    },
+    {
+      "label": "G_M000_IG118",
+      "start": 2744,
+      "end": 2789,
+      "leafSamples": 0,
+      "instructions": "mov      rsi, r13\n       mov      rdx, r12\n       call     [Lokad.Lython.Runtime.LythonRuntime:CanUseNativeBinary(int,System.Object,System.Object):bool]\n       test     eax, eax\n       je       G_M000_IG139\n       cmp      dword ptr [rbp-0x3C], 0\n       jne      G_M000_IG443\n       cmp      dword ptr [r14+0x1C], 52\n       je       G_M000_IG445\n       mov      edi, dword ptr [r14+0x08]"
+    },
+    {
+      "label": "G_M000_IG119",
+      "start": 2789,
+      "end": 2828,
+      "leafSamples": 0,
+      "instructions": "mov      rcx, gword ptr [rbx+0x18]\n       mov      bword ptr [rbp-0x170], rbx\n       mov      r9, r14\n       mov      bword ptr [rbp-0x178], r9\n       mov      r8, gword ptr [r9]\n       mov      rsi, r13\n       mov      rdx, r12\n       call     [Lokad.Lython.Runtime.LythonRuntime:EvaluateBinaryOperator(int,System.Object,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):System.Object]\n       mov      r12, rax"
+    },
+    {
+      "label": "G_M000_IG120",
+      "start": 2828,
+      "end": 2848,
+      "leafSamples": 2,
+      "instructions": "mov      r13, r12\n       mov      rax, bword ptr [rbp-0x178]\n       cmp      dword ptr [rax+0x18], 0\n       jl       G_M000_IG146"
+    },
+    {
+      "label": "G_M000_IG121",
+      "start": 2848,
+      "end": 2857,
+      "leafSamples": 0,
+      "instructions": "mov      edi, dword ptr [r14+0x1C]\n       cmp      edi, 52\n       ja       SHORT G_M000_IG123"
+    },
+    {
+      "label": "G_M000_IG122",
+      "start": 2857,
+      "end": 2877,
+      "leafSamples": 0,
+      "instructions": "mov      rax, 0xFFFFFFFFFE7FF\n       bt       rax, rdi\n       jae      G_M000_IG447"
+    },
+    {
+      "label": "G_M000_IG123",
+      "start": 2877,
+      "end": 2881,
+      "leafSamples": 0,
+      "instructions": "mov      r13d, dword ptr [r14+0x14]"
+    },
+    {
+      "label": "G_M000_IG124",
+      "start": 2881,
+      "end": 2892,
+      "leafSamples": 0,
+      "instructions": "cmp      dword ptr [r14+0x18], 0\n       jl       G_M000_IG145"
+    },
+    {
+      "label": "G_M000_IG125",
+      "start": 2892,
+      "end": 2896,
+      "leafSamples": 0,
+      "instructions": "mov      r14d, dword ptr [r14+0x18]"
+    },
+    {
+      "label": "G_M000_IG126",
+      "start": 2896,
+      "end": 2906,
+      "leafSamples": 0,
+      "instructions": "cmp      r14d, dword ptr [rbx+0x3C]\n       jl       G_M000_IG448"
+    },
+    {
+      "label": "G_M000_IG127",
+      "start": 2906,
+      "end": 2947,
+      "leafSamples": 0,
+      "instructions": "lea      rdi, bword ptr [rbx+0x48]\n       cmp      r13d, dword ptr [rdi+0x08]\n       jae      G_M000_IG509\n       mov      rdi, bword ptr [rdi]\n       mov      esi, r13d\n       lea      rdi, bword ptr [rdi+8*rsi]\n       mov      rsi, r12\n       call     CORINFO_HELP_CHECKED_ASSIGN_REF\n       mov      dword ptr [rbx+0x3C], r14d\n       jmp      G_M000_IG104"
+    },
+    {
+      "label": "G_M000_IG128",
+      "start": 2947,
+      "end": 2959,
+      "leafSamples": 0,
+      "instructions": "mov      esi, dword ptr [r14+0x10]\n       test     esi, esi\n       jl       G_M000_IG03"
+    },
+    {
+      "label": "G_M000_IG129",
+      "start": 2959,
+      "end": 2990,
+      "leafSamples": 0,
+      "instructions": "lea      rdi, bword ptr [rbx+0x48]\n       cmp      esi, dword ptr [rdi+0x08]\n       jae      G_M000_IG509\n       mov      rdi, bword ptr [rdi]\n       mov      eax, esi\n       mov      rdi, gword ptr [rdi+8*rax]\n       test     rdi, rdi\n       je       G_M000_IG460"
+    },
+    {
+      "label": "G_M000_IG130",
+      "start": 2990,
+      "end": 3012,
+      "leafSamples": 1,
+      "instructions": "mov      rsi, rdi\n       mov      rdi, 0x7828F0839E00\n       call     [Lokad.Lython.Internal.NullabilityExtensions:RequireNotNull[System.__Canon](System.__Canon):System.__Canon]\n       mov      r13, rax"
+    },
+    {
+      "label": "G_M000_IG131",
+      "start": 3012,
+      "end": 3065,
+      "leafSamples": 1,
+      "instructions": "mov      rdi, r13\n       call     [Lokad.Lython.Runtime.LythonRuntime:CanUseNativeTruth(System.Object):bool]\n       test     eax, eax\n       je       G_M000_IG139\n       mov      rdi, rbx\n       mov      rsi, r14\n       call     [Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Take(byref):System.Object:this]\n       mov      rdx, gword ptr [r14]\n       mov      rsi, gword ptr [rbx+0x18]\n       mov      rdi, r13\n       call     [Lokad.Lython.Runtime.LythonRuntime:IsTruthy(System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):bool]\n       test     eax, eax\n       jne      G_M000_IG104"
+    },
+    {
+      "label": "G_M000_IG132",
+      "start": 3065,
+      "end": 3082,
+      "leafSamples": 1,
+      "instructions": "mov      rdi, r14\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:get_TargetIndex():int:this]\n       mov      dword ptr [rbx+0x38], eax\n       jmp      G_M000_IG105"
+    },
+    {
+      "label": "G_M000_IG133",
+      "start": 3082,
+      "end": 3089,
+      "leafSamples": 0,
+      "instructions": "mov      edi, esi\n       jmp      G_M000_IG148"
+    },
+    {
+      "label": "G_M000_IG134",
+      "start": 3089,
+      "end": 3101,
+      "leafSamples": 1,
+      "instructions": "mov      esi, dword ptr [r14+0x10]\n       test     esi, esi\n       jl       G_M000_IG61"
+    },
+    {
+      "label": "G_M000_IG135",
+      "start": 3101,
+      "end": 3133,
+      "leafSamples": 2,
+      "instructions": "lea      rdi, bword ptr [rbx+0x48]\n       cmp      esi, dword ptr [rdi+0x08]\n       jae      G_M000_IG509\n       mov      rdi, bword ptr [rdi]\n       mov      r11d, esi\n       mov      r13, gword ptr [rdi+8*r11]\n       test     r13, r13\n       je       G_M000_IG377"
+    },
+    {
+      "label": "G_M000_IG136",
+      "start": 3133,
+      "end": 3145,
+      "leafSamples": 0,
+      "instructions": "mov      esi, dword ptr [r14+0x0C]\n       test     esi, esi\n       jl       G_M000_IG63"
+    },
+    {
+      "label": "G_M000_IG137",
+      "start": 3145,
+      "end": 3177,
+      "leafSamples": 0,
+      "instructions": "lea      rdi, bword ptr [rbx+0x48]\n       cmp      esi, dword ptr [rdi+0x08]\n       jae      G_M000_IG509\n       mov      rdi, bword ptr [rdi]\n       mov      r11d, esi\n       mov      r12, gword ptr [rdi+8*r11]\n       test     r12, r12\n       je       G_M000_IG379"
+    },
+    {
+      "label": "G_M000_IG138",
+      "start": 3177,
+      "end": 3186,
+      "leafSamples": 0,
+      "instructions": "test     r13, r13\n       jne      G_M000_IG65"
+    },
+    {
+      "label": "G_M000_IG139",
+      "start": 3186,
+      "end": 3188,
+      "leafSamples": 0,
+      "instructions": "xor      eax, eax"
+    },
+    {
+      "label": "G_M000_IG140",
+      "start": 3188,
+      "end": 3209,
+      "leafSamples": 0,
+      "instructions": "vzeroupper \n       add      rsp, 680\n       pop      rbx\n       pop      r12\n       pop      r13\n       pop      r14\n       pop      r15\n       pop      rbp\n       ret"
+    },
+    {
+      "label": "G_M000_IG141",
+      "start": 3209,
+      "end": 3229,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, rbx\n       mov      rsi, r14\n       call     [Lokad.Lython.Runtime.LythonRuntime+NativeExecution:TryReturnUnpackedTuple(byref):bool:this]\n       test     eax, eax\n       je       G_M000_IG470"
+    },
+    {
+      "label": "G_M000_IG142",
+      "start": 3229,
+      "end": 3234,
+      "leafSamples": 0,
+      "instructions": "mov      eax, 1"
+    },
+    {
+      "label": "G_M000_IG143",
+      "start": 3234,
+      "end": 3255,
+      "leafSamples": 0,
+      "instructions": "vzeroupper \n       add      rsp, 680\n       pop      rbx\n       pop      r12\n       pop      r13\n       pop      r14\n       pop      r15\n       pop      rbp\n       ret"
+    },
+    {
+      "label": "G_M000_IG144",
+      "start": 3255,
+      "end": 3262,
+      "leafSamples": 0,
+      "instructions": "mov      edi, esi\n       jmp      G_M000_IG44"
+    },
+    {
+      "label": "G_M000_IG145",
+      "start": 3262,
+      "end": 3277,
+      "leafSamples": 0,
+      "instructions": "mov      edi, dword ptr [r14+0x18]\n       mov      r14d, edi\n       not      r14d\n       jmp      G_M000_IG126"
+    },
+    {
+      "label": "G_M000_IG146",
+      "start": 3277,
+      "end": 3299,
+      "leafSamples": 0,
+      "instructions": "mov      esi, dword ptr [rax+0x18]\n       not      esi\n       mov      r14, bword ptr [rbp-0x170]\n       cmp      esi, dword ptr [r14+0x3C]\n       jge      G_M000_IG155"
+    },
+    {
+      "label": "G_M000_IG147",
+      "start": 3299,
+      "end": 3339,
+      "leafSamples": 0,
+      "instructions": "mov      bword ptr [rbp-0x178], rax\n       mov      esi, dword ptr [rax+0x18]\n       mov      r12d, esi\n       not      r12d\n       mov      esi, dword ptr [r14+0x3C]\n       dec      esi\n       mov      rdi, gword ptr [r14+0x08]\n       mov      edi, dword ptr [rdi+0xA0]\n       cmp      esi, edi\n       jle      G_M000_IG133"
+    },
+    {
+      "label": "G_M000_IG148",
+      "start": 3339,
+      "end": 3347,
+      "leafSamples": 0,
+      "instructions": "mov      r14d, edi\n       cmp      r14d, r12d\n       jl       SHORT G_M000_IG154"
+    },
+    {
+      "label": "G_M000_IG149",
+      "start": 3347,
+      "end": 3376,
+      "leafSamples": 0,
+      "instructions": "lea      rsi, bword ptr [rbx+0x48]\n       cmp      r14d, dword ptr [rsi+0x08]\n       jae      G_M000_IG509\n       mov      rsi, bword ptr [rsi]\n       mov      rsi, gword ptr [rsi+8*r14]\n       mov      rdi, rsi\n       test     rdi, rdi\n       je       SHORT G_M000_IG152"
+    },
+    {
+      "label": "G_M000_IG150",
+      "start": 3376,
+      "end": 3395,
+      "leafSamples": 0,
+      "instructions": "mov      rcx, 0x7828F04A75E0\n       cmp      qword ptr [rdi], rcx\n       jne      G_M000_IG449"
+    },
+    {
+      "label": "G_M000_IG151",
+      "start": 3395,
+      "end": 3397,
+      "leafSamples": 0,
+      "instructions": "xor      rdi, rdi"
+    },
+    {
+      "label": "G_M000_IG152",
+      "start": 3397,
+      "end": 3406,
+      "leafSamples": 0,
+      "instructions": "test     rdi, rdi\n       jne      G_M000_IG450"
+    },
+    {
+      "label": "G_M000_IG153",
+      "start": 3406,
+      "end": 3414,
+      "leafSamples": 0,
+      "instructions": "dec      r14d\n       cmp      r14d, r12d\n       jge      SHORT G_M000_IG149"
+    },
+    {
+      "label": "G_M000_IG154",
+      "start": 3414,
+      "end": 3425,
+      "leafSamples": 0,
+      "instructions": "mov      dword ptr [rbx+0x3C], r12d\n       mov      rax, bword ptr [rbp-0x178]"
+    },
+    {
+      "label": "G_M000_IG155",
+      "start": 3425,
+      "end": 3437,
+      "leafSamples": 0,
+      "instructions": "lea      r14, bword ptr [rbx+0x48]\n       mov      edi, dword ptr [rax+0x1C]\n       cmp      edi, 52\n       ja       SHORT G_M000_IG157"
+    },
+    {
+      "label": "G_M000_IG156",
+      "start": 3437,
+      "end": 3457,
+      "leafSamples": 0,
+      "instructions": "mov      rcx, 0xFFFFFFFFFE7FF\n       bt       rcx, rdi\n       jae      G_M000_IG451"
+    },
+    {
+      "label": "G_M000_IG157",
+      "start": 3457,
+      "end": 3460,
+      "leafSamples": 0,
+      "instructions": "mov      edi, dword ptr [rax+0x14]"
+    },
+    {
+      "label": "G_M000_IG158",
+      "start": 3460,
+      "end": 3489,
+      "leafSamples": 0,
+      "instructions": "cmp      edi, dword ptr [r14+0x08]\n       jae      G_M000_IG509\n       mov      rcx, bword ptr [r14]\n       mov      edi, edi\n       xor      rdx, rdx\n       mov      gword ptr [rcx+8*rdi], rdx\n       mov      edi, dword ptr [rax+0x1C]\n       cmp      edi, 52\n       ja       SHORT G_M000_IG160"
+    },
+    {
+      "label": "G_M000_IG159",
+      "start": 3489,
+      "end": 3509,
+      "leafSamples": 0,
+      "instructions": "mov      rcx, 0xFFFFFFFFFE7FF\n       bt       rcx, rdi\n       jae      G_M000_IG452"
+    },
+    {
+      "label": "G_M000_IG160",
+      "start": 3509,
+      "end": 3512,
+      "leafSamples": 0,
+      "instructions": "mov      eax, dword ptr [rax+0x14]"
+    },
+    {
+      "label": "G_M000_IG161",
+      "start": 3512,
+      "end": 3596,
+      "leafSamples": 1,
+      "instructions": "mov      dword ptr [rbx+0x3C], eax\n       mov      rdi, gword ptr [rbx+0x08]\n       mov      rdi, gword ptr [rdi+0x50]\n       mov      eax, dword ptr [rbx+0x38]\n       inc      eax\n       cmp      eax, dword ptr [rdi+0x08]\n       jae      G_M000_IG509\n       shl      rax, 5\n       lea      r14, bword ptr [rdi+rax+0x10]\n       mov      rdi, gword ptr [rbx+0x18]\n       mov      rax, gword ptr [r14]\n       mov      rdi, gword ptr [rdi+0xA0]\n       mov      rcx, gword ptr [rdi+0x88]\n       mov      rcx, gword ptr [rcx+0x20]\n       test     rcx, rcx\n       jne      G_M000_IG453\n       mov      rdi, gword ptr [rdi+0x178]\n       test     rdi, rdi\n       jne      G_M000_IG454"
+    },
+    {
+      "label": "G_M000_IG162",
+      "start": 3596,
+      "end": 3609,
+      "leafSamples": 0,
+      "instructions": "lea      rdi, bword ptr [rbx+0x48]\n       mov      esi, dword ptr [r14+0x1C]\n       cmp      esi, 4\n       je       SHORT G_M000_IG164"
+    },
+    {
+      "label": "G_M000_IG163",
+      "start": 3609,
+      "end": 3618,
+      "leafSamples": 0,
+      "instructions": "cmp      esi, 27\n       jne      G_M000_IG455"
+    },
+    {
+      "label": "G_M000_IG164",
+      "start": 3618,
+      "end": 3654,
+      "leafSamples": 0,
+      "instructions": "mov      esi, dword ptr [r14+0x08]\n       cmp      esi, dword ptr [rdi+0x08]\n       jae      G_M000_IG509\n       mov      rdi, bword ptr [rdi]\n       lea      rdi, bword ptr [rdi+8*rsi]\n       mov      rsi, r13\n       call     CORINFO_HELP_CHECKED_ASSIGN_REF\n       inc      dword ptr [rbx+0x38]\n       jmp      G_M000_IG104"
+    },
+    {
+      "label": "G_M000_IG165",
+      "start": 3654,
+      "end": 3676,
+      "leafSamples": 0,
+      "instructions": "mov      esi, dword ptr [r14+0x10]\n       mov      rdi, rbx\n       xor      edx, edx\n       call     [Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Read(int,int):System.Object:this]\n       cmp      dword ptr [r14+0x18], 0\n       jl       SHORT G_M000_IG168"
+    },
+    {
+      "label": "G_M000_IG166",
+      "start": 3676,
+      "end": 3680,
+      "leafSamples": 0,
+      "instructions": "mov      esi, dword ptr [r14+0x18]"
+    },
+    {
+      "label": "G_M000_IG167",
+      "start": 3680,
+      "end": 3694,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, rbx\n       call     [Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Trim(int):this]\n       jmp      G_M000_IG104"
+    },
+    {
+      "label": "G_M000_IG168",
+      "start": 3694,
+      "end": 3702,
+      "leafSamples": 0,
+      "instructions": "mov      esi, dword ptr [r14+0x18]\n       not      esi\n       jmp      SHORT G_M000_IG167"
+    },
+    {
+      "label": "G_M000_IG169",
+      "start": 3702,
+      "end": 3711,
+      "leafSamples": 1,
+      "instructions": "mov      edi, dword ptr [r14+0x1C]\n       cmp      edi, 52\n       ja       SHORT G_M000_IG171"
+    },
+    {
+      "label": "G_M000_IG170",
+      "start": 3711,
+      "end": 3731,
+      "leafSamples": 0,
+      "instructions": "mov      rax, 0xFFFFFFFFFE7FF\n       bt       rax, rdi\n       jae      G_M000_IG484"
+    },
+    {
+      "label": "G_M000_IG171",
+      "start": 3731,
+      "end": 3735,
+      "leafSamples": 0,
+      "instructions": "mov      eax, dword ptr [r14+0x14]"
+    },
+    {
+      "label": "G_M000_IG172",
+      "start": 3735,
+      "end": 3746,
+      "leafSamples": 0,
+      "instructions": "lea      r13d, [rax+0x01]\n       cmp      dword ptr [r14+0x18], 0\n       jl       SHORT G_M000_IG176"
+    },
+    {
+      "label": "G_M000_IG173",
+      "start": 3746,
+      "end": 3750,
+      "leafSamples": 0,
+      "instructions": "mov      r12d, dword ptr [r14+0x18]"
+    },
+    {
+      "label": "G_M000_IG174",
+      "start": 3750,
+      "end": 3778,
+      "leafSamples": 2,
+      "instructions": "mov      esi, dword ptr [r14+0x10]\n       mov      rdi, rbx\n       xor      edx, edx\n       call     [Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Read(int,int):System.Object:this]\n       mov      r14, rax\n       cmp      r12d, dword ptr [rbx+0x3C]\n       jl       G_M000_IG485"
+    },
+    {
+      "label": "G_M000_IG175",
+      "start": 3778,
+      "end": 3819,
+      "leafSamples": 0,
+      "instructions": "lea      rdi, bword ptr [rbx+0x48]\n       cmp      r13d, dword ptr [rdi+0x08]\n       jae      G_M000_IG509\n       mov      rdi, bword ptr [rdi]\n       mov      esi, r13d\n       lea      rdi, bword ptr [rdi+8*rsi]\n       mov      rsi, r14\n       call     CORINFO_HELP_CHECKED_ASSIGN_REF\n       mov      dword ptr [rbx+0x3C], r12d\n       jmp      G_M000_IG104"
+    },
+    {
+      "label": "G_M000_IG176",
+      "start": 3819,
+      "end": 3831,
+      "leafSamples": 0,
+      "instructions": "mov      esi, dword ptr [r14+0x18]\n       mov      r12d, esi\n       not      r12d\n       jmp      SHORT G_M000_IG174"
+    },
+    {
+      "label": "G_M000_IG177",
+      "start": 3831,
+      "end": 3856,
+      "leafSamples": 5,
+      "instructions": "mov      edi, r13d\n       lea      rax, [reloc @RWD176]\n       mov      eax, dword ptr [rax+4*rdi]\n       lea      rcx, G_M000_IG02\n       add      rax, rcx\n       jmp      rax"
+    },
+    {
+      "label": "G_M000_IG178",
+      "start": 3856,
+      "end": 3910,
+      "leafSamples": 1,
+      "instructions": "mov      rdi, gword ptr [rbx+0x08]\n       mov      r13, gword ptr [rdi+0x18]\n       mov      rdi, r14\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:get_NameIndex():int:this]\n       mov      rdi, 0x7828EF15BEC0\n       cmp      qword ptr [r13], rdi\n       jne      G_M000_IG339\n       cmp      dword ptr [r13+0x08], eax\n       jbe      G_M000_IG494\n       mov      edi, eax\n       mov      r12, gword ptr [r13+8*rdi+0x10]"
+    },
+    {
+      "label": "G_M000_IG179",
+      "start": 3910,
+      "end": 3927,
+      "leafSamples": 1,
+      "instructions": "mov      r13, gword ptr [r14]\n       mov      rax, gword ptr [rbx+0x18]\n       mov      gword ptr [rbp-0x1B0], rax\n       mov      rcx, rax"
+    },
+    {
+      "label": "G_M000_IG180",
+      "start": 3927,
+      "end": 3939,
+      "leafSamples": 0,
+      "instructions": "mov      rsi, gword ptr [rcx+0x10]\n       mov      rdi, rsi\n       test     rdi, rdi\n       je       SHORT G_M000_IG182"
+    },
+    {
+      "label": "G_M000_IG181",
+      "start": 3939,
+      "end": 3958,
+      "leafSamples": 0,
+      "instructions": "mov      rdx, 0x7828F04A52F0\n       cmp      qword ptr [rdi], rdx\n       jne      G_M000_IG341"
+    },
+    {
+      "label": "G_M000_IG182",
+      "start": 3958,
+      "end": 4002,
+      "leafSamples": 0,
+      "instructions": "test     rdi, rdi\n       jne      G_M000_IG340\n       mov      gword ptr [rbp-0x1C0], rcx\n       movzx    rdi, byte  ptr [rcx+0x102]\n       test     edi, edi\n       je       G_M000_IG196\n       mov      rsi, rcx\n       test     rsi, rsi\n       je       G_M000_IG196"
+    },
+    {
+      "label": "G_M000_IG183",
+      "start": 4002,
+      "end": 4013,
+      "leafSamples": 0,
+      "instructions": "test     edi, edi\n       je       G_M000_IG342\n       mov      rdx, rcx"
+    },
+    {
+      "label": "G_M000_IG184",
+      "start": 4013,
+      "end": 4023,
+      "leafSamples": 0,
+      "instructions": "cmp      byte  ptr [rdx], dl\n       xor      edi, edi\n       mov      dword ptr [rbp-0xB0], edi"
+    },
+    {
+      "label": "G_M000_IG185",
+      "start": 4023,
+      "end": 4093,
+      "leafSamples": 3,
+      "instructions": "mov      dword ptr [rbp-0xB8], edi\n       mov      gword ptr [rbp-0x1C8], rdx\n       mov      rdi, gword ptr [rdx+0x108]\n       mov      r8, gword ptr [rdi+0x28]\n       mov      rdi, 0x7828F039ECA8\n       cmp      qword ptr [r8], rdi\n       jne      G_M000_IG348\n       mov      gword ptr [rbp-0x1D0], r8\n       test     r12, r12\n       je       G_M000_IG501\n       cmp      gword ptr [r8+0x08], 0\n       je       G_M000_IG194"
+    },
+    {
+      "label": "G_M000_IG186",
+      "start": 4093,
+      "end": 4170,
+      "leafSamples": 1,
+      "instructions": "mov      r9, gword ptr [r8+0x18]\n       mov      gword ptr [rbp-0x1E0], r9\n       mov      rdi, 0x7828EF1584D8\n       cmp      qword ptr [r9], rdi\n       jne      G_M000_IG344\n       mov      r9, gword ptr [rbp-0x1E0]\n       lea      rdi, bword ptr [r12+0x0C]\n       mov      bword ptr [rbp-0xC8], rdi\n       mov      edi, 0x15051505\n       mov      esi, 0x15051505\n       mov      r11, bword ptr [rbp-0xC8]\n       mov      r10d, dword ptr [r12+0x08]\n       cmp      r10d, 2\n       jle      SHORT G_M000_IG189"
+    },
+    {
+      "label": "G_M000_IG187",
+      "start": 4170,
+      "end": 4211,
+      "leafSamples": 0,
+      "instructions": "add      r10d, -4\n       mov      r9d, edi\n       rol      r9d, 5\n       add      edi, r9d\n       xor      edi, dword ptr [r11]\n       mov      r9d, esi\n       rol      r9d, 5\n       add      esi, r9d\n       xor      esi, dword ptr [r11+0x04]\n       add      r11, 8\n       cmp      r10d, 2\n       jg       SHORT G_M000_IG187"
+    },
+    {
+      "label": "G_M000_IG188",
+      "start": 4211,
+      "end": 4218,
+      "leafSamples": 0,
+      "instructions": "mov      r9, gword ptr [rbp-0x1E0]"
+    },
+    {
+      "label": "G_M000_IG189",
+      "start": 4218,
+      "end": 4227,
+      "leafSamples": 0,
+      "instructions": "test     r10d, r10d\n       jg       G_M000_IG343"
+    },
+    {
+      "label": "G_M000_IG190",
+      "start": 4227,
+      "end": 4246,
+      "leafSamples": 1,
+      "instructions": "imul     r10d, esi, 0x5D588B65\n       add      r10d, edi\n       xor      rdi, rdi\n       mov      bword ptr [rbp-0xC8], rdi"
+    },
+    {
+      "label": "G_M000_IG191",
+      "start": 4246,
+      "end": 4338,
+      "leafSamples": 3,
+      "instructions": "mov      dword ptr [rbp-0xBC], r10d\n       mov      r8, gword ptr [rbp-0x1D0]\n       mov      rdi, gword ptr [r8+0x08]\n       mov      esi, r10d\n       imul     rsi, qword ptr [r8+0x30]\n       shr      rsi, 32\n       inc      rsi\n       mov      r11d, dword ptr [rdi+0x08]\n       imul     rsi, r11\n       shr      rsi, 32\n       cmp      esi, dword ptr [rdi+0x08]\n       jae      G_M000_IG509\n       mov      esi, esi\n       lea      rdi, bword ptr [rdi+4*rsi+0x10]\n       mov      edi, dword ptr [rdi]\n       mov      r8, gword ptr [r8+0x10]\n       mov      gword ptr [rbp-0x1E8], r8\n       xor      r11d, r11d\n       mov      dword ptr [rbp-0xC0], r11d\n       dec      edi\n       cmp      dword ptr [r8+0x08], edi\n       jbe      SHORT G_M000_IG194"
+    },
+    {
+      "label": "G_M000_IG192",
+      "start": 4338,
+      "end": 4366,
+      "leafSamples": 5,
+      "instructions": "mov      edi, edi\n       lea      rdi, [rdi+2*rdi]\n       lea      rsi, bword ptr [r8+8*rdi+0x10]\n       mov      bword ptr [rbp-0x1D8], rsi\n       cmp      dword ptr [rsi+0x08], r10d\n       je       G_M000_IG345"
+    },
+    {
+      "label": "G_M000_IG193",
+      "start": 4366,
+      "end": 4416,
+      "leafSamples": 0,
+      "instructions": "mov      edi, dword ptr [rsi+0x0C]\n       mov      r11d, dword ptr [rbp-0xC0]\n       inc      r11d\n       mov      r8, gword ptr [rbp-0x1E8]\n       cmp      dword ptr [r8+0x08], r11d\n       jb       G_M000_IG502\n       cmp      dword ptr [r8+0x08], edi\n       mov      dword ptr [rbp-0xC0], r11d\n       mov      r10d, dword ptr [rbp-0xBC]\n       ja       SHORT G_M000_IG192"
+    },
+    {
+      "label": "G_M000_IG194",
+      "start": 4416,
+      "end": 4424,
+      "leafSamples": 0,
+      "instructions": "xor      edi, edi\n       mov      dword ptr [rbp-0xB0], edi"
+    },
+    {
+      "label": "G_M000_IG195",
+      "start": 4424,
+      "end": 4452,
+      "leafSamples": 0,
+      "instructions": "mov      rdx, gword ptr [rbp-0x1C8]\n       cmp      gword ptr [rdx+0x118], 0\n       jne      G_M000_IG351\n       mov      rcx, gword ptr [rbp-0x1C0]"
+    },
+    {
+      "label": "G_M000_IG196",
+      "start": 4452,
+      "end": 4465,
+      "leafSamples": 1,
+      "instructions": "mov      rdx, gword ptr [rcx+0x08]\n       test     rdx, rdx\n       je       G_M000_IG353"
+    },
+    {
+      "label": "G_M000_IG197",
+      "start": 4465,
+      "end": 4497,
+      "leafSamples": 0,
+      "instructions": "mov      rcx, rdx\n       mov      gword ptr [rbp-0x1F8], rcx\n       cmp      byte  ptr [rcx], cl\n       test     r12, r12\n       je       G_M000_IG501\n       cmp      gword ptr [rcx+0x08], 0\n       je       G_M000_IG206"
+    },
+    {
+      "label": "G_M000_IG198",
+      "start": 4497,
+      "end": 4567,
+      "leafSamples": 2,
+      "instructions": "mov      rdx, gword ptr [rcx+0x18]\n       mov      gword ptr [rbp-0x208], rdx\n       mov      rdi, 0x7828EF1584D8\n       cmp      qword ptr [rdx], rdi\n       jne      G_M000_IG355\n       lea      rdi, bword ptr [r12+0x0C]\n       mov      bword ptr [rbp-0xD8], rdi\n       mov      edi, 0x15051505\n       mov      esi, 0x15051505\n       mov      r11, bword ptr [rbp-0xD8]\n       mov      r8d, dword ptr [r12+0x08]\n       cmp      r8d, 2\n       jle      SHORT G_M000_IG200"
+    },
+    {
+      "label": "G_M000_IG199",
+      "start": 4567,
+      "end": 4608,
+      "leafSamples": 2,
+      "instructions": "add      r8d, -4\n       mov      r9d, edi\n       rol      r9d, 5\n       add      edi, r9d\n       xor      edi, dword ptr [r11]\n       mov      r9d, esi\n       rol      r9d, 5\n       add      esi, r9d\n       xor      esi, dword ptr [r11+0x04]\n       add      r11, 8\n       cmp      r8d, 2\n       jg       SHORT G_M000_IG199"
+    },
+    {
+      "label": "G_M000_IG200",
+      "start": 4608,
+      "end": 4617,
+      "leafSamples": 0,
+      "instructions": "test     r8d, r8d\n       jg       G_M000_IG354"
+    },
+    {
+      "label": "G_M000_IG201",
+      "start": 4617,
+      "end": 4636,
+      "leafSamples": 2,
+      "instructions": "imul     r8d, esi, 0x5D588B65\n       add      r8d, edi\n       xor      rdi, rdi\n       mov      bword ptr [rbp-0xD8], rdi"
+    },
+    {
+      "label": "G_M000_IG202",
+      "start": 4636,
+      "end": 4738,
+      "leafSamples": 1,
+      "instructions": "mov      dword ptr [rbp-0xCC], r8d\n       mov      rcx, gword ptr [rbp-0x1F8]\n       mov      rsi, gword ptr [rcx+0x08]\n       mov      edi, r8d\n       imul     rdi, qword ptr [rcx+0x30]\n       shr      rdi, 32\n       inc      rdi\n       mov      r9d, dword ptr [rsi+0x08]\n       imul     rdi, r9\n       shr      rdi, 32\n       cmp      edi, dword ptr [rsi+0x08]\n       jae      G_M000_IG509\n       mov      edi, edi\n       lea      rsi, bword ptr [rsi+4*rdi+0x10]\n       mov      esi, dword ptr [rsi]\n       mov      rcx, gword ptr [rcx+0x10]\n       mov      gword ptr [rbp-0x210], rcx\n       xor      r9d, r9d\n       mov      dword ptr [rbp-0xD0], r9d\n       dec      esi\n       mov      r10d, dword ptr [rcx+0x08]\n       mov      dword ptr [rbp-0x12C], r10d\n       cmp      r10d, esi\n       jbe      SHORT G_M000_IG206"
+    },
+    {
+      "label": "G_M000_IG203",
+      "start": 4738,
+      "end": 4766,
+      "leafSamples": 6,
+      "instructions": "mov      esi, esi\n       lea      rsi, [rsi+2*rsi]\n       lea      r11, bword ptr [rcx+8*rsi+0x10]\n       mov      bword ptr [rbp-0x200], r11\n       cmp      dword ptr [r11+0x10], r8d\n       je       G_M000_IG224"
+    },
+    {
+      "label": "G_M000_IG204",
+      "start": 4766,
+      "end": 4796,
+      "leafSamples": 1,
+      "instructions": "mov      esi, dword ptr [r11+0x14]\n       mov      r9d, dword ptr [rbp-0xD0]\n       inc      r9d\n       mov      r10d, dword ptr [rbp-0x12C]\n       cmp      r10d, r9d\n       jb       G_M000_IG502"
+    },
+    {
+      "label": "G_M000_IG205",
+      "start": 4796,
+      "end": 4822,
+      "leafSamples": 1,
+      "instructions": "cmp      r10d, esi\n       mov      dword ptr [rbp-0xD0], r9d\n       mov      rcx, gword ptr [rbp-0x210]\n       mov      r8d, dword ptr [rbp-0xCC]\n       ja       SHORT G_M000_IG203"
+    },
+    {
+      "label": "G_M000_IG206",
+      "start": 4822,
+      "end": 4863,
+      "leafSamples": 0,
+      "instructions": "mov      rax, gword ptr [rbp-0x1B0]\n       mov      rdi, gword ptr [rax+0xA0]\n       mov      rax, gword ptr [rdi+0xF0]\n       mov      gword ptr [rbp-0x220], rax\n       cmp      byte  ptr [rax], al\n       cmp      gword ptr [rax+0x08], 0\n       je       G_M000_IG215"
+    },
+    {
+      "label": "G_M000_IG207",
+      "start": 4863,
+      "end": 4932,
+      "leafSamples": 3,
+      "instructions": "mov      rcx, gword ptr [rax+0x18]\n       mov      gword ptr [rbp-0x230], rcx\n       mov      rdi, 0x7828EF1584D8\n       cmp      qword ptr [rcx], rdi\n       jne      G_M000_IG359\n       lea      rdi, bword ptr [r12+0x0C]\n       mov      bword ptr [rbp-0xE8], rdi\n       mov      edi, 0x15051505\n       mov      esi, 0x15051505\n       mov      r11, bword ptr [rbp-0xE8]\n       mov      edx, dword ptr [r12+0x08]\n       cmp      edx, 2\n       jle      SHORT G_M000_IG209"
+    },
+    {
+      "label": "G_M000_IG208",
+      "start": 4932,
+      "end": 4971,
+      "leafSamples": 1,
+      "instructions": "add      edx, -4\n       mov      r8d, edi\n       rol      r8d, 5\n       add      edi, r8d\n       xor      edi, dword ptr [r11]\n       mov      r8d, esi\n       rol      r8d, 5\n       add      esi, r8d\n       xor      esi, dword ptr [r11+0x04]\n       add      r11, 8\n       cmp      edx, 2\n       jg       SHORT G_M000_IG208"
+    },
+    {
+      "label": "G_M000_IG209",
+      "start": 4971,
+      "end": 4979,
+      "leafSamples": 0,
+      "instructions": "test     edx, edx\n       jg       G_M000_IG358"
+    },
+    {
+      "label": "G_M000_IG210",
+      "start": 4979,
+      "end": 4996,
+      "leafSamples": 0,
+      "instructions": "imul     edx, esi, 0x5D588B65\n       add      edx, edi\n       xor      rdi, rdi\n       mov      bword ptr [rbp-0xE8], rdi"
+    },
+    {
+      "label": "G_M000_IG211",
+      "start": 4996,
+      "end": 5091,
+      "leafSamples": 4,
+      "instructions": "mov      r8d, edx\n       mov      dword ptr [rbp-0xDC], r8d\n       mov      rax, gword ptr [rbp-0x220]\n       mov      rdx, gword ptr [rax+0x08]\n       mov      esi, r8d\n       imul     rsi, qword ptr [rax+0x30]\n       shr      rsi, 32\n       inc      rsi\n       mov      edi, dword ptr [rdx+0x08]\n       mov      r9d, edi\n       imul     rsi, r9\n       shr      rsi, 32\n       cmp      esi, edi\n       jae      G_M000_IG509\n       mov      esi, esi\n       lea      rdx, bword ptr [rdx+4*rsi+0x10]\n       mov      edx, dword ptr [rdx]\n       mov      rax, gword ptr [rax+0x10]\n       mov      gword ptr [rbp-0x238], rax\n       xor      r9d, r9d\n       mov      dword ptr [rbp-0xE0], r9d\n       dec      edx\n       cmp      dword ptr [rax+0x08], edx\n       jbe      SHORT G_M000_IG215"
+    },
+    {
+      "label": "G_M000_IG212",
+      "start": 5091,
+      "end": 5119,
+      "leafSamples": 9,
+      "instructions": "mov      edx, edx\n       lea      rdx, [rdx+2*rdx]\n       lea      r10, bword ptr [rax+8*rdx+0x10]\n       mov      bword ptr [rbp-0x228], r10\n       cmp      dword ptr [r10+0x10], r8d\n       je       G_M000_IG229"
+    },
+    {
+      "label": "G_M000_IG213",
+      "start": 5119,
+      "end": 5150,
+      "leafSamples": 0,
+      "instructions": "mov      edx, dword ptr [r10+0x14]\n       mov      r9d, dword ptr [rbp-0xE0]\n       inc      r9d\n       mov      rax, gword ptr [rbp-0x238]\n       cmp      dword ptr [rax+0x08], r9d\n       jb       G_M000_IG502"
+    },
+    {
+      "label": "G_M000_IG214",
+      "start": 5150,
+      "end": 5169,
+      "leafSamples": 1,
+      "instructions": "cmp      dword ptr [rax+0x08], edx\n       mov      dword ptr [rbp-0xE0], r9d\n       mov      r8d, dword ptr [rbp-0xDC]\n       ja       SHORT G_M000_IG212"
+    },
+    {
+      "label": "G_M000_IG215",
+      "start": 5169,
+      "end": 5173,
+      "leafSamples": 0,
+      "instructions": "xor      rax, rax\n       xor      edi, edi"
+    },
+    {
+      "label": "G_M000_IG216",
+      "start": 5173,
+      "end": 5181,
+      "leafSamples": 0,
+      "instructions": "test     edi, edi\n       je       G_M000_IG503"
+    },
+    {
+      "label": "G_M000_IG217",
+      "start": 5181,
+      "end": 5202,
+      "leafSamples": 1,
+      "instructions": "mov      gword ptr [rbp-0x1B8], rax\n       mov      r12, rax\n       cmp      dword ptr [r14+0x18], 0\n       jl       G_M000_IG235"
+    },
+    {
+      "label": "G_M000_IG218",
+      "start": 5202,
+      "end": 5218,
+      "leafSamples": 0,
+      "instructions": "mov      rax, gword ptr [rbp-0x1B8]\n       mov      edi, dword ptr [r14+0x1C]\n       cmp      edi, 52\n       ja       SHORT G_M000_IG220"
+    },
+    {
+      "label": "G_M000_IG219",
+      "start": 5218,
+      "end": 5238,
+      "leafSamples": 0,
+      "instructions": "mov      rcx, 0xFFFFFFFFFE7FF\n       bt       rcx, rdi\n       jae      G_M000_IG362"
+    },
+    {
+      "label": "G_M000_IG220",
+      "start": 5238,
+      "end": 5242,
+      "leafSamples": 0,
+      "instructions": "mov      r12d, dword ptr [r14+0x14]"
+    },
+    {
+      "label": "G_M000_IG221",
+      "start": 5242,
+      "end": 5255,
+      "leafSamples": 0,
+      "instructions": "mov      r14d, dword ptr [r14+0x18]\n       test     r14d, r14d\n       jl       G_M000_IG234"
+    },
+    {
+      "label": "G_M000_IG222",
+      "start": 5255,
+      "end": 5265,
+      "leafSamples": 0,
+      "instructions": "cmp      r14d, dword ptr [rbx+0x3C]\n       jl       G_M000_IG363"
+    },
+    {
+      "label": "G_M000_IG223",
+      "start": 5265,
+      "end": 5306,
+      "leafSamples": 1,
+      "instructions": "lea      rdi, bword ptr [rbx+0x48]\n       cmp      r12d, dword ptr [rdi+0x08]\n       jae      G_M000_IG509\n       mov      rdi, bword ptr [rdi]\n       mov      esi, r12d\n       lea      rdi, bword ptr [rdi+8*rsi]\n       mov      rsi, rax\n       call     CORINFO_HELP_CHECKED_ASSIGN_REF\n       mov      dword ptr [rbx+0x3C], r14d\n       jmp      G_M000_IG104"
+    },
+    {
+      "label": "G_M000_IG224",
+      "start": 5306,
+      "end": 5340,
+      "leafSamples": 0,
+      "instructions": "mov      rsi, gword ptr [r11]\n       mov      rdi, 0x7828EF1584D8\n       cmp      qword ptr [rdx], rdi\n       jne      G_M000_IG357\n       mov      rdx, gword ptr [rbp-0x208]\n       cmp      rsi, r12\n       jne      SHORT G_M000_IG227"
+    },
+    {
+      "label": "G_M000_IG225",
+      "start": 5340,
+      "end": 5345,
+      "leafSamples": 0,
+      "instructions": "mov      edi, 1"
+    },
+    {
+      "label": "G_M000_IG226",
+      "start": 5345,
+      "end": 5375,
+      "leafSamples": 0,
+      "instructions": "test     edi, edi\n       mov      r11, bword ptr [rbp-0x200]\n       je       G_M000_IG204\n       add      r11, 8\n       mov      r13, gword ptr [r11]\n       mov      rax, r13\n       jmp      G_M000_IG217"
+    },
+    {
+      "label": "G_M000_IG227",
+      "start": 5375,
+      "end": 5398,
+      "leafSamples": 0,
+      "instructions": "test     rsi, rsi\n       je       G_M000_IG356\n       mov      edi, dword ptr [rsi+0x08]\n       cmp      edi, dword ptr [r12+0x08]\n       jne      G_M000_IG356"
+    },
+    {
+      "label": "G_M000_IG228",
+      "start": 5398,
+      "end": 5442,
+      "leafSamples": 0,
+      "instructions": "add      rsi, 12\n       mov      bword ptr [rbp-0x218], rsi\n       add      edi, edi\n       mov      edx, edi\n       lea      rsi, bword ptr [r12+0x0C]\n       mov      rdi, bword ptr [rbp-0x218]\n       call     [System.SpanHelpers:SequenceEqual(byref,byref,nuint):bool]\n       mov      edi, eax\n       mov      rdx, gword ptr [rbp-0x208]\n       jmp      SHORT G_M000_IG226"
+    },
+    {
+      "label": "G_M000_IG229",
+      "start": 5442,
+      "end": 5476,
+      "leafSamples": 0,
+      "instructions": "mov      rsi, gword ptr [r10]\n       mov      rdx, 0x7828EF1584D8\n       cmp      qword ptr [rcx], rdx\n       jne      G_M000_IG361\n       mov      rcx, gword ptr [rbp-0x230]\n       cmp      rsi, r12\n       jne      SHORT G_M000_IG232"
+    },
+    {
+      "label": "G_M000_IG230",
+      "start": 5476,
+      "end": 5482,
+      "leafSamples": 0,
+      "instructions": "mov      r11d, 1"
+    },
+    {
+      "label": "G_M000_IG231",
+      "start": 5482,
+      "end": 5518,
+      "leafSamples": 3,
+      "instructions": "test     r11d, r11d\n       mov      r10, bword ptr [rbp-0x228]\n       je       G_M000_IG213\n       add      r10, 8\n       mov      rdi, gword ptr [r10]\n       mov      rax, rdi\n       mov      edi, 1\n       jmp      G_M000_IG216"
+    },
+    {
+      "label": "G_M000_IG232",
+      "start": 5518,
+      "end": 5541,
+      "leafSamples": 1,
+      "instructions": "test     rsi, rsi\n       je       G_M000_IG360\n       mov      edx, dword ptr [rsi+0x08]\n       cmp      edx, dword ptr [r12+0x08]\n       jne      G_M000_IG360"
+    },
+    {
+      "label": "G_M000_IG233",
+      "start": 5541,
+      "end": 5570,
+      "leafSamples": 1,
+      "instructions": "lea      rdi, bword ptr [rsi+0x0C]\n       add      edx, edx\n       lea      rsi, bword ptr [r12+0x0C]\n       call     [System.SpanHelpers:SequenceEqual(byref,byref,nuint):bool]\n       mov      r11d, eax\n       mov      rcx, gword ptr [rbp-0x230]\n       jmp      SHORT G_M000_IG231"
+    },
+    {
+      "label": "G_M000_IG234",
+      "start": 5570,
+      "end": 5578,
+      "leafSamples": 0,
+      "instructions": "not      r14d\n       jmp      G_M000_IG222"
+    },
+    {
+      "label": "G_M000_IG235",
+      "start": 5578,
+      "end": 5593,
+      "leafSamples": 0,
+      "instructions": "mov      esi, dword ptr [r14+0x18]\n       not      esi\n       cmp      esi, dword ptr [rbx+0x3C]\n       jge      G_M000_IG244"
+    },
+    {
+      "label": "G_M000_IG236",
+      "start": 5593,
+      "end": 5626,
+      "leafSamples": 0,
+      "instructions": "mov      esi, dword ptr [r14+0x18]\n       mov      r13d, esi\n       not      r13d\n       mov      esi, dword ptr [rbx+0x3C]\n       dec      esi\n       mov      rdi, gword ptr [rbx+0x08]\n       mov      edi, dword ptr [rdi+0xA0]\n       cmp      esi, edi\n       jle      G_M000_IG255"
+    },
+    {
+      "label": "G_M000_IG237",
+      "start": 5626,
+      "end": 5633,
+      "leafSamples": 0,
+      "instructions": "mov      eax, edi\n       cmp      eax, r13d\n       jl       SHORT G_M000_IG243"
+    },
+    {
+      "label": "G_M000_IG238",
+      "start": 5633,
+      "end": 5668,
+      "leafSamples": 0,
+      "instructions": "lea      rsi, bword ptr [rbx+0x48]\n       cmp      eax, dword ptr [rsi+0x08]\n       jae      G_M000_IG509\n       mov      rsi, bword ptr [rsi]\n       mov      qword ptr [rbp-0x148], rax\n       mov      rsi, gword ptr [rsi+8*rax]\n       mov      rdi, rsi\n       test     rdi, rdi\n       je       SHORT G_M000_IG241"
+    },
+    {
+      "label": "G_M000_IG239",
+      "start": 5668,
+      "end": 5687,
+      "leafSamples": 0,
+      "instructions": "mov      rcx, 0x7828F04A75E0\n       cmp      qword ptr [rdi], rcx\n       jne      G_M000_IG256"
+    },
+    {
+      "label": "G_M000_IG240",
+      "start": 5687,
+      "end": 5689,
+      "leafSamples": 0,
+      "instructions": "xor      rdi, rdi"
+    },
+    {
+      "label": "G_M000_IG241",
+      "start": 5689,
+      "end": 5698,
+      "leafSamples": 0,
+      "instructions": "test     rdi, rdi\n       jne      G_M000_IG364"
+    },
+    {
+      "label": "G_M000_IG242",
+      "start": 5698,
+      "end": 5718,
+      "leafSamples": 0,
+      "instructions": "mov      rax, qword ptr [rbp-0x148]\n       dec      eax\n       mov      rdi, rax\n       cmp      edi, r13d\n       mov      rax, rdi\n       jge      SHORT G_M000_IG238"
+    },
+    {
+      "label": "G_M000_IG243",
+      "start": 5718,
+      "end": 5722,
+      "leafSamples": 0,
+      "instructions": "mov      dword ptr [rbx+0x3C], r13d"
+    },
+    {
+      "label": "G_M000_IG244",
+      "start": 5722,
+      "end": 5735,
+      "leafSamples": 0,
+      "instructions": "lea      r13, bword ptr [rbx+0x48]\n       mov      edi, dword ptr [r14+0x1C]\n       cmp      edi, 52\n       ja       SHORT G_M000_IG246"
+    },
+    {
+      "label": "G_M000_IG245",
+      "start": 5735,
+      "end": 5755,
+      "leafSamples": 0,
+      "instructions": "mov      rax, 0xFFFFFFFFFE7FF\n       bt       rax, rdi\n       jae      G_M000_IG365"
+    },
+    {
+      "label": "G_M000_IG246",
+      "start": 5755,
+      "end": 5759,
+      "leafSamples": 0,
+      "instructions": "mov      eax, dword ptr [r14+0x14]"
+    },
+    {
+      "label": "G_M000_IG247",
+      "start": 5759,
+      "end": 5790,
+      "leafSamples": 0,
+      "instructions": "cmp      eax, dword ptr [r13+0x08]\n       jae      G_M000_IG509\n       mov      rdi, bword ptr [r13]\n       mov      eax, eax\n       xor      rcx, rcx\n       mov      gword ptr [rdi+8*rax], rcx\n       mov      edi, dword ptr [r14+0x1C]\n       cmp      edi, 52\n       ja       SHORT G_M000_IG249"
+    },
+    {
+      "label": "G_M000_IG248",
+      "start": 5790,
+      "end": 5810,
+      "leafSamples": 0,
+      "instructions": "mov      rax, 0xFFFFFFFFFE7FF\n       bt       rax, rdi\n       jae      G_M000_IG366"
+    },
+    {
+      "label": "G_M000_IG249",
+      "start": 5810,
+      "end": 5814,
+      "leafSamples": 0,
+      "instructions": "mov      eax, dword ptr [r14+0x14]"
+    },
+    {
+      "label": "G_M000_IG250",
+      "start": 5814,
+      "end": 5899,
+      "leafSamples": 0,
+      "instructions": "mov      dword ptr [rbx+0x3C], eax\n       mov      rdi, gword ptr [rbx+0x08]\n       mov      rdi, gword ptr [rdi+0x50]\n       mov      eax, dword ptr [rbx+0x38]\n       inc      eax\n       cmp      eax, dword ptr [rdi+0x08]\n       jae      G_M000_IG509\n       shl      rax, 5\n       lea      r13, bword ptr [rdi+rax+0x10]\n       mov      rdi, gword ptr [rbx+0x18]\n       mov      rax, gword ptr [r13]\n       mov      rdi, gword ptr [rdi+0xA0]\n       mov      rcx, gword ptr [rdi+0x88]\n       mov      rcx, gword ptr [rcx+0x20]\n       test     rcx, rcx\n       jne      G_M000_IG504\n       mov      rdi, gword ptr [rdi+0x178]\n       test     rdi, rdi\n       jne      G_M000_IG367"
+    },
+    {
+      "label": "G_M000_IG251",
+      "start": 5899,
+      "end": 5912,
+      "leafSamples": 0,
+      "instructions": "lea      rdi, bword ptr [rbx+0x48]\n       mov      esi, dword ptr [r13+0x1C]\n       cmp      esi, 4\n       je       SHORT G_M000_IG253"
+    },
+    {
+      "label": "G_M000_IG252",
+      "start": 5912,
+      "end": 5921,
+      "leafSamples": 0,
+      "instructions": "cmp      esi, 27\n       jne      G_M000_IG505"
+    },
+    {
+      "label": "G_M000_IG253",
+      "start": 5921,
+      "end": 5949,
+      "leafSamples": 0,
+      "instructions": "mov      esi, dword ptr [r13+0x08]\n       cmp      esi, dword ptr [rdi+0x08]\n       jae      G_M000_IG509\n       mov      rdi, bword ptr [rdi]\n       lea      rdi, bword ptr [rdi+8*rsi]\n       mov      rsi, r12\n       call     CORINFO_HELP_CHECKED_ASSIGN_REF"
+    },
+    {
+      "label": "G_M000_IG254",
+      "start": 5949,
+      "end": 5957,
+      "leafSamples": 0,
+      "instructions": "inc      dword ptr [rbx+0x38]\n       jmp      G_M000_IG104"
+    },
+    {
+      "label": "G_M000_IG255",
+      "start": 5957,
+      "end": 5964,
+      "leafSamples": 0,
+      "instructions": "mov      edi, esi\n       jmp      G_M000_IG237"
+    },
+    {
+      "label": "G_M000_IG256",
+      "start": 5964,
+      "end": 5987,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, 0x7828F082A6A8\n       call     CORINFO_HELP_ISINSTANCEOFCLASS\n       mov      rdi, rax\n       jmp      G_M000_IG241"
+    },
+    {
+      "label": "G_M000_IG257",
+      "start": 5987,
+      "end": 5996,
+      "leafSamples": 0,
+      "instructions": "mov      edi, dword ptr [r14+0x1C]\n       cmp      edi, 4\n       je       SHORT G_M000_IG259"
+    },
+    {
+      "label": "G_M000_IG258",
+      "start": 5996,
+      "end": 6005,
+      "leafSamples": 0,
+      "instructions": "cmp      edi, 27\n       jne      G_M000_IG497"
+    },
+    {
+      "label": "G_M000_IG259",
+      "start": 6005,
+      "end": 6053,
+      "leafSamples": 1,
+      "instructions": "mov      esi, dword ptr [r14+0x08]\n       mov      r12, gword ptr [r14]\n       lea      rdi, bword ptr [rbx+0x48]\n       cmp      esi, dword ptr [rdi+0x08]\n       jae      G_M000_IG509\n       mov      rdi, bword ptr [rdi]\n       mov      eax, esi\n       mov      r13, gword ptr [rdi+8*rax]\n       test     r13, r13\n       je       G_M000_IG498\n       mov      r12, r13\n       cmp      dword ptr [r14+0x18], 0\n       jl       SHORT G_M000_IG267"
+    },
+    {
+      "label": "G_M000_IG260",
+      "start": 6053,
+      "end": 6062,
+      "leafSamples": 0,
+      "instructions": "mov      edi, dword ptr [r14+0x1C]\n       cmp      edi, 52\n       ja       SHORT G_M000_IG262"
+    },
+    {
+      "label": "G_M000_IG261",
+      "start": 6062,
+      "end": 6082,
+      "leafSamples": 0,
+      "instructions": "mov      rax, 0xFFFFFFFFFE7FF\n       bt       rax, rdi\n       jae      G_M000_IG332"
+    },
+    {
+      "label": "G_M000_IG262",
+      "start": 6082,
+      "end": 6086,
+      "leafSamples": 0,
+      "instructions": "mov      r12d, dword ptr [r14+0x14]"
+    },
+    {
+      "label": "G_M000_IG263",
+      "start": 6086,
+      "end": 6095,
+      "leafSamples": 0,
+      "instructions": "mov      r14d, dword ptr [r14+0x18]\n       test     r14d, r14d\n       jl       SHORT G_M000_IG266"
+    },
+    {
+      "label": "G_M000_IG264",
+      "start": 6095,
+      "end": 6105,
+      "leafSamples": 0,
+      "instructions": "cmp      r14d, dword ptr [rbx+0x3C]\n       jl       G_M000_IG333"
+    },
+    {
+      "label": "G_M000_IG265",
+      "start": 6105,
+      "end": 6146,
+      "leafSamples": 0,
+      "instructions": "lea      rdi, bword ptr [rbx+0x48]\n       cmp      r12d, dword ptr [rdi+0x08]\n       jae      G_M000_IG509\n       mov      rdi, bword ptr [rdi]\n       mov      esi, r12d\n       lea      rdi, bword ptr [rdi+8*rsi]\n       mov      rsi, r13\n       call     CORINFO_HELP_CHECKED_ASSIGN_REF\n       mov      dword ptr [rbx+0x3C], r14d\n       jmp      G_M000_IG104"
+    },
+    {
+      "label": "G_M000_IG266",
+      "start": 6146,
+      "end": 6151,
+      "leafSamples": 0,
+      "instructions": "not      r14d\n       jmp      SHORT G_M000_IG264"
+    },
+    {
+      "label": "G_M000_IG267",
+      "start": 6151,
+      "end": 6166,
+      "leafSamples": 0,
+      "instructions": "mov      esi, dword ptr [r14+0x18]\n       not      esi\n       cmp      esi, dword ptr [rbx+0x3C]\n       jge      G_M000_IG276"
+    },
+    {
+      "label": "G_M000_IG268",
+      "start": 6166,
+      "end": 6199,
+      "leafSamples": 0,
+      "instructions": "mov      esi, dword ptr [r14+0x18]\n       mov      r13d, esi\n       not      r13d\n       mov      esi, dword ptr [rbx+0x3C]\n       dec      esi\n       mov      rdi, gword ptr [rbx+0x08]\n       mov      edi, dword ptr [rdi+0xA0]\n       cmp      esi, edi\n       jle      G_M000_IG286"
+    },
+    {
+      "label": "G_M000_IG269",
+      "start": 6199,
+      "end": 6206,
+      "leafSamples": 0,
+      "instructions": "mov      eax, edi\n       cmp      eax, r13d\n       jl       SHORT G_M000_IG275"
+    },
+    {
+      "label": "G_M000_IG270",
+      "start": 6206,
+      "end": 6241,
+      "leafSamples": 0,
+      "instructions": "lea      rsi, bword ptr [rbx+0x48]\n       cmp      eax, dword ptr [rsi+0x08]\n       jae      G_M000_IG509\n       mov      rsi, bword ptr [rsi]\n       mov      qword ptr [rbp-0x150], rax\n       mov      rsi, gword ptr [rsi+8*rax]\n       mov      rdi, rsi\n       test     rdi, rdi\n       je       SHORT G_M000_IG273"
+    },
+    {
+      "label": "G_M000_IG271",
+      "start": 6241,
+      "end": 6260,
+      "leafSamples": 0,
+      "instructions": "mov      rcx, 0x7828F04A75E0\n       cmp      qword ptr [rdi], rcx\n       jne      G_M000_IG334"
+    },
+    {
+      "label": "G_M000_IG272",
+      "start": 6260,
+      "end": 6262,
+      "leafSamples": 0,
+      "instructions": "xor      rdi, rdi"
+    },
+    {
+      "label": "G_M000_IG273",
+      "start": 6262,
+      "end": 6271,
+      "leafSamples": 0,
+      "instructions": "test     rdi, rdi\n       jne      G_M000_IG335"
+    },
+    {
+      "label": "G_M000_IG274",
+      "start": 6271,
+      "end": 6291,
+      "leafSamples": 0,
+      "instructions": "mov      rax, qword ptr [rbp-0x150]\n       dec      eax\n       mov      rdi, rax\n       cmp      edi, r13d\n       mov      rax, rdi\n       jge      SHORT G_M000_IG270"
+    },
+    {
+      "label": "G_M000_IG275",
+      "start": 6291,
+      "end": 6295,
+      "leafSamples": 0,
+      "instructions": "mov      dword ptr [rbx+0x3C], r13d"
+    },
+    {
+      "label": "G_M000_IG276",
+      "start": 6295,
+      "end": 6308,
+      "leafSamples": 0,
+      "instructions": "lea      r13, bword ptr [rbx+0x48]\n       mov      edi, dword ptr [r14+0x1C]\n       cmp      edi, 52\n       ja       SHORT G_M000_IG278"
+    },
+    {
+      "label": "G_M000_IG277",
+      "start": 6308,
+      "end": 6328,
+      "leafSamples": 0,
+      "instructions": "mov      rax, 0xFFFFFFFFFE7FF\n       bt       rax, rdi\n       jae      G_M000_IG336"
+    },
+    {
+      "label": "G_M000_IG278",
+      "start": 6328,
+      "end": 6332,
+      "leafSamples": 0,
+      "instructions": "mov      eax, dword ptr [r14+0x14]"
+    },
+    {
+      "label": "G_M000_IG279",
+      "start": 6332,
+      "end": 6363,
+      "leafSamples": 0,
+      "instructions": "cmp      eax, dword ptr [r13+0x08]\n       jae      G_M000_IG509\n       mov      rdi, bword ptr [r13]\n       mov      eax, eax\n       xor      rcx, rcx\n       mov      gword ptr [rdi+8*rax], rcx\n       mov      edi, dword ptr [r14+0x1C]\n       cmp      edi, 52\n       ja       SHORT G_M000_IG281"
+    },
+    {
+      "label": "G_M000_IG280",
+      "start": 6363,
+      "end": 6383,
+      "leafSamples": 0,
+      "instructions": "mov      rax, 0xFFFFFFFFFE7FF\n       bt       rax, rdi\n       jae      G_M000_IG337"
+    },
+    {
+      "label": "G_M000_IG281",
+      "start": 6383,
+      "end": 6387,
+      "leafSamples": 0,
+      "instructions": "mov      eax, dword ptr [r14+0x14]"
+    },
+    {
+      "label": "G_M000_IG282",
+      "start": 6387,
+      "end": 6472,
+      "leafSamples": 0,
+      "instructions": "mov      dword ptr [rbx+0x3C], eax\n       mov      rdi, gword ptr [rbx+0x08]\n       mov      rdi, gword ptr [rdi+0x50]\n       mov      eax, dword ptr [rbx+0x38]\n       inc      eax\n       cmp      eax, dword ptr [rdi+0x08]\n       jae      G_M000_IG509\n       shl      rax, 5\n       lea      r13, bword ptr [rdi+rax+0x10]\n       mov      rdi, gword ptr [rbx+0x18]\n       mov      rax, gword ptr [r13]\n       mov      rdi, gword ptr [rdi+0xA0]\n       mov      rcx, gword ptr [rdi+0x88]\n       mov      rcx, gword ptr [rcx+0x20]\n       test     rcx, rcx\n       jne      G_M000_IG499\n       mov      rdi, gword ptr [rdi+0x178]\n       test     rdi, rdi\n       jne      G_M000_IG338"
+    },
+    {
+      "label": "G_M000_IG283",
+      "start": 6472,
+      "end": 6485,
+      "leafSamples": 0,
+      "instructions": "lea      rdi, bword ptr [rbx+0x48]\n       mov      esi, dword ptr [r13+0x1C]\n       cmp      esi, 4\n       je       SHORT G_M000_IG285"
+    },
+    {
+      "label": "G_M000_IG284",
+      "start": 6485,
+      "end": 6494,
+      "leafSamples": 0,
+      "instructions": "cmp      esi, 27\n       jne      G_M000_IG500"
+    },
+    {
+      "label": "G_M000_IG285",
+      "start": 6494,
+      "end": 6527,
+      "leafSamples": 0,
+      "instructions": "mov      esi, dword ptr [r13+0x08]\n       cmp      esi, dword ptr [rdi+0x08]\n       jae      G_M000_IG509\n       mov      rdi, bword ptr [rdi]\n       lea      rdi, bword ptr [rdi+8*rsi]\n       mov      rsi, r12\n       call     CORINFO_HELP_CHECKED_ASSIGN_REF\n       jmp      G_M000_IG254"
+    },
+    {
+      "label": "G_M000_IG286",
+      "start": 6527,
+      "end": 6534,
+      "leafSamples": 0,
+      "instructions": "mov      edi, esi\n       jmp      G_M000_IG269"
+    },
+    {
+      "label": "G_M000_IG287",
+      "start": 6534,
+      "end": 6564,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, gword ptr [rbx+0x08]\n       mov      rdi, gword ptr [rdi+0x10]\n       mov      esi, dword ptr [r14+0x1C]\n       cmp      esi, 8\n       jg       G_M000_IG318\n       cmp      esi, 3\n       jne      G_M000_IG317"
+    },
+    {
+      "label": "G_M000_IG288",
+      "start": 6564,
+      "end": 6605,
+      "leafSamples": 0,
+      "instructions": "mov      esi, dword ptr [r14+0x08]\n       mov      r11, 0x7828EF0827A0\n       cmp      qword ptr [rdi], r11\n       jne      G_M000_IG319\n       mov      r12d, dword ptr [rdi+0x08]\n       cmp      r12d, esi\n       jbe      G_M000_IG494\n       mov      r13, gword ptr [rdi+8*rsi+0x10]"
+    },
+    {
+      "label": "G_M000_IG289",
+      "start": 6605,
+      "end": 6634,
+      "leafSamples": 1,
+      "instructions": "test     r13, r13\n       je       G_M000_IG320\n       mov      rdi, 0x7828EF0BF460\n       cmp      qword ptr [r13], rdi\n       je       G_M000_IG315"
+    },
+    {
+      "label": "G_M000_IG290",
+      "start": 6634,
+      "end": 6645,
+      "leafSamples": 0,
+      "instructions": "mov      r12, r13\n       mov      eax, dword ptr [r14+0x18]\n       test     eax, eax\n       jl       SHORT G_M000_IG298"
+    },
+    {
+      "label": "G_M000_IG291",
+      "start": 6645,
+      "end": 6654,
+      "leafSamples": 0,
+      "instructions": "mov      edi, dword ptr [r14+0x1C]\n       cmp      edi, 52\n       ja       SHORT G_M000_IG293"
+    },
+    {
+      "label": "G_M000_IG292",
+      "start": 6654,
+      "end": 6674,
+      "leafSamples": 0,
+      "instructions": "mov      rax, 0xFFFFFFFFFE7FF\n       bt       rax, rdi\n       jae      G_M000_IG321"
+    },
+    {
+      "label": "G_M000_IG293",
+      "start": 6674,
+      "end": 6678,
+      "leafSamples": 0,
+      "instructions": "mov      r12d, dword ptr [r14+0x14]"
+    },
+    {
+      "label": "G_M000_IG294",
+      "start": 6678,
+      "end": 6687,
+      "leafSamples": 0,
+      "instructions": "mov      r14d, dword ptr [r14+0x18]\n       test     r14d, r14d\n       jl       SHORT G_M000_IG297"
+    },
+    {
+      "label": "G_M000_IG295",
+      "start": 6687,
+      "end": 6697,
+      "leafSamples": 0,
+      "instructions": "cmp      r14d, dword ptr [rbx+0x3C]\n       jl       G_M000_IG322"
+    },
+    {
+      "label": "G_M000_IG296",
+      "start": 6697,
+      "end": 6738,
+      "leafSamples": 0,
+      "instructions": "lea      rdi, bword ptr [rbx+0x48]\n       cmp      r12d, dword ptr [rdi+0x08]\n       jae      G_M000_IG509\n       mov      rdi, bword ptr [rdi]\n       mov      esi, r12d\n       lea      rdi, bword ptr [rdi+8*rsi]\n       mov      rsi, r13\n       call     CORINFO_HELP_CHECKED_ASSIGN_REF\n       mov      dword ptr [rbx+0x3C], r14d\n       jmp      G_M000_IG104"
+    },
+    {
+      "label": "G_M000_IG297",
+      "start": 6738,
+      "end": 6743,
+      "leafSamples": 0,
+      "instructions": "not      r14d\n       jmp      SHORT G_M000_IG295"
+    },
+    {
+      "label": "G_M000_IG298",
+      "start": 6743,
+      "end": 6759,
+      "leafSamples": 0,
+      "instructions": "mov      r13d, eax\n       not      r13d\n       mov      esi, r13d\n       mov      edi, dword ptr [rbx+0x3C]\n       cmp      esi, edi\n       jge      SHORT G_M000_IG305"
+    },
+    {
+      "label": "G_M000_IG299",
+      "start": 6759,
+      "end": 6784,
+      "leafSamples": 0,
+      "instructions": "dec      edi\n       mov      rsi, gword ptr [rbx+0x08]\n       mov      esi, dword ptr [rsi+0xA0]\n       cmp      edi, esi\n       jle      G_M000_IG324\n       jmp      G_M000_IG323"
+    },
+    {
+      "label": "G_M000_IG300",
+      "start": 6784,
+      "end": 6791,
+      "leafSamples": 0,
+      "instructions": "mov      eax, esi\n       cmp      eax, r13d\n       jl       SHORT G_M000_IG304"
+    },
+    {
+      "label": "G_M000_IG301",
+      "start": 6791,
+      "end": 6830,
+      "leafSamples": 0,
+      "instructions": "lea      rsi, bword ptr [rbx+0x48]\n       cmp      eax, dword ptr [rsi+0x08]\n       jae      G_M000_IG509\n       mov      rsi, bword ptr [rsi]\n       mov      qword ptr [rbp-0x158], rax\n       mov      rsi, gword ptr [rsi+8*rax]\n       mov      rdi, rsi\n       test     rdi, rdi\n       jne      G_M000_IG325"
+    },
+    {
+      "label": "G_M000_IG302",
+      "start": 6830,
+      "end": 6839,
+      "leafSamples": 0,
+      "instructions": "test     rdi, rdi\n       jne      G_M000_IG328"
+    },
+    {
+      "label": "G_M000_IG303",
+      "start": 6839,
+      "end": 6859,
+      "leafSamples": 0,
+      "instructions": "mov      rax, qword ptr [rbp-0x158]\n       dec      eax\n       mov      rdi, rax\n       cmp      edi, r13d\n       mov      rax, rdi\n       jge      SHORT G_M000_IG301"
+    },
+    {
+      "label": "G_M000_IG304",
+      "start": 6859,
+      "end": 6863,
+      "leafSamples": 0,
+      "instructions": "mov      dword ptr [rbx+0x3C], r13d"
+    },
+    {
+      "label": "G_M000_IG305",
+      "start": 6863,
+      "end": 6876,
+      "leafSamples": 0,
+      "instructions": "lea      r13, bword ptr [rbx+0x48]\n       mov      edi, dword ptr [r14+0x1C]\n       cmp      edi, 52\n       ja       SHORT G_M000_IG307"
+    },
+    {
+      "label": "G_M000_IG306",
+      "start": 6876,
+      "end": 6896,
+      "leafSamples": 0,
+      "instructions": "mov      rax, 0xFFFFFFFFFE7FF\n       bt       rax, rdi\n       jae      G_M000_IG329"
+    },
+    {
+      "label": "G_M000_IG307",
+      "start": 6896,
+      "end": 6900,
+      "leafSamples": 0,
+      "instructions": "mov      eax, dword ptr [r14+0x14]"
+    },
+    {
+      "label": "G_M000_IG308",
+      "start": 6900,
+      "end": 6931,
+      "leafSamples": 0,
+      "instructions": "cmp      eax, dword ptr [r13+0x08]\n       jae      G_M000_IG509\n       mov      rdi, bword ptr [r13]\n       mov      eax, eax\n       xor      rcx, rcx\n       mov      gword ptr [rdi+8*rax], rcx\n       mov      edi, dword ptr [r14+0x1C]\n       cmp      edi, 52\n       ja       SHORT G_M000_IG310"
+    },
+    {
+      "label": "G_M000_IG309",
+      "start": 6931,
+      "end": 6951,
+      "leafSamples": 0,
+      "instructions": "mov      rax, 0xFFFFFFFFFE7FF\n       bt       rax, rdi\n       jae      G_M000_IG330"
+    },
+    {
+      "label": "G_M000_IG310",
+      "start": 6951,
+      "end": 6955,
+      "leafSamples": 0,
+      "instructions": "mov      eax, dword ptr [r14+0x14]"
+    },
+    {
+      "label": "G_M000_IG311",
+      "start": 6955,
+      "end": 7040,
+      "leafSamples": 0,
+      "instructions": "mov      dword ptr [rbx+0x3C], eax\n       mov      rdi, gword ptr [rbx+0x08]\n       mov      rdi, gword ptr [rdi+0x50]\n       mov      eax, dword ptr [rbx+0x38]\n       inc      eax\n       cmp      eax, dword ptr [rdi+0x08]\n       jae      G_M000_IG509\n       shl      rax, 5\n       lea      r13, bword ptr [rdi+rax+0x10]\n       mov      rdi, gword ptr [rbx+0x18]\n       mov      rax, gword ptr [r13]\n       mov      rdi, gword ptr [rdi+0xA0]\n       mov      rcx, gword ptr [rdi+0x88]\n       mov      rcx, gword ptr [rcx+0x20]\n       test     rcx, rcx\n       jne      G_M000_IG495\n       mov      rdi, gword ptr [rdi+0x178]\n       test     rdi, rdi\n       jne      G_M000_IG331"
+    },
+    {
+      "label": "G_M000_IG312",
+      "start": 7040,
+      "end": 7053,
+      "leafSamples": 0,
+      "instructions": "lea      rdi, bword ptr [rbx+0x48]\n       mov      esi, dword ptr [r13+0x1C]\n       cmp      esi, 4\n       je       SHORT G_M000_IG314"
+    },
+    {
+      "label": "G_M000_IG313",
+      "start": 7053,
+      "end": 7062,
+      "leafSamples": 0,
+      "instructions": "cmp      esi, 27\n       jne      G_M000_IG496"
+    },
+    {
+      "label": "G_M000_IG314",
+      "start": 7062,
+      "end": 7095,
+      "leafSamples": 0,
+      "instructions": "mov      esi, dword ptr [r13+0x08]\n       cmp      esi, dword ptr [rdi+0x08]\n       jae      G_M000_IG509\n       mov      rdi, bword ptr [rdi]\n       lea      rdi, bword ptr [rdi+8*rsi]\n       mov      rsi, r12\n       call     CORINFO_HELP_CHECKED_ASSIGN_REF\n       jmp      G_M000_IG254"
+    },
+    {
+      "label": "G_M000_IG315",
+      "start": 7095,
+      "end": 7141,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, 0x7828EF797A68\n       call     CORINFO_HELP_NEWSFAST\n       mov      rbx, rax\n       mov      rdi, rbx\n       mov      rsi, 0x7828EC2593B0\n       call     [System.InvalidOperationException:.ctor(System.String):this]\n       mov      rdi, rbx\n       call     CORINFO_HELP_THROW\n       int3"
+    },
+    {
+      "label": "G_M000_IG316",
+      "start": 7141,
+      "end": 7165,
+      "leafSamples": 0,
+      "instructions": "cmp      dword ptr [rdi+0x20], 0\n       je       G_M000_IG107\n       mov      rdi, rax\n       call     [Lokad.Lython.Runtime.ExecutionState:ThrowExecutionCanceled(Lokad.Lython.LythonSourceSpan)]\n       jmp      G_M000_IG107"
+    },
+    {
+      "label": "G_M000_IG317",
+      "start": 7165,
+      "end": 7179,
+      "leafSamples": 0,
+      "instructions": "cmp      esi, 8\n       je       G_M000_IG288\n       jmp      G_M000_IG493"
+    },
+    {
+      "label": "G_M000_IG318",
+      "start": 7179,
+      "end": 7202,
+      "leafSamples": 0,
+      "instructions": "cmp      esi, 65\n       je       G_M000_IG288\n       cmp      esi, 68\n       jne      G_M000_IG493\n       jmp      G_M000_IG288"
+    },
+    {
+      "label": "G_M000_IG319",
+      "start": 7202,
+      "end": 7223,
+      "leafSamples": 0,
+      "instructions": "mov      r11, 0x7828EDE630E8\n       call     [r11]System.Collections.Generic.IReadOnlyList`1[System.__Canon]:get_Item(int):System.__Canon:this\n       mov      r13, rax\n       jmp      G_M000_IG289"
+    },
+    {
+      "label": "G_M000_IG320",
+      "start": 7223,
+      "end": 7241,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, 0x782111801A70\n       mov      r13, gword ptr [rdi]\n       jmp      G_M000_IG290"
+    },
+    {
+      "label": "G_M000_IG321",
+      "start": 7241,
+      "end": 7258,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, r14\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:get_LiveExtent():int:this]\n       mov      r12d, eax\n       jmp      G_M000_IG294"
+    },
+    {
+      "label": "G_M000_IG322",
+      "start": 7258,
+      "end": 7275,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, rbx\n       mov      esi, r14d\n       call     [Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Trim(int):this]\n       jmp      G_M000_IG296"
+    },
+    {
+      "label": "G_M000_IG323",
+      "start": 7275,
+      "end": 7280,
+      "leafSamples": 0,
+      "instructions": "jmp      G_M000_IG300"
+    },
+    {
+      "label": "G_M000_IG324",
+      "start": 7280,
+      "end": 7287,
+      "leafSamples": 0,
+      "instructions": "mov      esi, edi\n       jmp      G_M000_IG300"
+    },
+    {
+      "label": "G_M000_IG325",
+      "start": 7287,
+      "end": 7302,
+      "leafSamples": 0,
+      "instructions": "mov      rcx, 0x7828F04A75E0\n       cmp      qword ptr [rdi], rcx\n       je       SHORT G_M000_IG327"
+    },
+    {
+      "label": "G_M000_IG326",
+      "start": 7302,
+      "end": 7325,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, 0x7828F082A6A8\n       call     CORINFO_HELP_ISINSTANCEOFCLASS\n       mov      rdi, rax\n       jmp      G_M000_IG302"
+    },
+    {
+      "label": "G_M000_IG327",
+      "start": 7325,
+      "end": 7332,
+      "leafSamples": 0,
+      "instructions": "xor      rdi, rdi\n       jmp      G_M000_IG302"
+    },
+    {
+      "label": "G_M000_IG328",
+      "start": 7332,
+      "end": 7383,
+      "leafSamples": 0,
+      "instructions": "lea      rcx, bword ptr [rbx+0x48]\n       mov      rax, qword ptr [rbp-0x158]\n       cmp      eax, dword ptr [rcx+0x08]\n       jae      G_M000_IG509\n       mov      rcx, bword ptr [rcx]\n       xor      rdx, rdx\n       mov      qword ptr [rbp-0x158], rax\n       mov      gword ptr [rcx+8*rax], rdx\n       mov      rcx, qword ptr [rdi]\n       mov      rcx, qword ptr [rcx+0x40]\n       call     [rcx+0x20]Lokad.Lython.Runtime.ExecutableTemporaryValue:Dispose():this\n       jmp      G_M000_IG303"
+    },
+    {
+      "label": "G_M000_IG329",
+      "start": 7383,
+      "end": 7397,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, r14\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:get_LiveExtent():int:this]\n       jmp      G_M000_IG308"
+    },
+    {
+      "label": "G_M000_IG330",
+      "start": 7397,
+      "end": 7411,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, r14\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:get_LiveExtent():int:this]\n       jmp      G_M000_IG311"
+    },
+    {
+      "label": "G_M000_IG331",
+      "start": 7411,
+      "end": 7435,
+      "leafSamples": 0,
+      "instructions": "cmp      dword ptr [rdi+0x20], 0\n       je       G_M000_IG312\n       mov      rdi, rax\n       call     [Lokad.Lython.Runtime.ExecutionState:ThrowExecutionCanceled(Lokad.Lython.LythonSourceSpan)]\n       jmp      G_M000_IG312"
+    },
+    {
+      "label": "G_M000_IG332",
+      "start": 7435,
+      "end": 7452,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, r14\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:get_LiveExtent():int:this]\n       mov      r12d, eax\n       jmp      G_M000_IG263"
+    },
+    {
+      "label": "G_M000_IG333",
+      "start": 7452,
+      "end": 7469,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, rbx\n       mov      esi, r14d\n       call     [Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Trim(int):this]\n       jmp      G_M000_IG265"
+    },
+    {
+      "label": "G_M000_IG334",
+      "start": 7469,
+      "end": 7492,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, 0x7828F082A6A8\n       call     CORINFO_HELP_ISINSTANCEOFCLASS\n       mov      rdi, rax\n       jmp      G_M000_IG273"
+    },
+    {
+      "label": "G_M000_IG335",
+      "start": 7492,
+      "end": 7543,
+      "leafSamples": 0,
+      "instructions": "lea      rcx, bword ptr [rbx+0x48]\n       mov      rax, qword ptr [rbp-0x150]\n       cmp      eax, dword ptr [rcx+0x08]\n       jae      G_M000_IG509\n       mov      rcx, bword ptr [rcx]\n       xor      rdx, rdx\n       mov      qword ptr [rbp-0x150], rax\n       mov      gword ptr [rcx+8*rax], rdx\n       mov      rcx, qword ptr [rdi]\n       mov      rcx, qword ptr [rcx+0x40]\n       call     [rcx+0x20]Lokad.Lython.Runtime.ExecutableTemporaryValue:Dispose():this\n       jmp      G_M000_IG274"
+    },
+    {
+      "label": "G_M000_IG336",
+      "start": 7543,
+      "end": 7557,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, r14\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:get_LiveExtent():int:this]\n       jmp      G_M000_IG279"
+    },
+    {
+      "label": "G_M000_IG337",
+      "start": 7557,
+      "end": 7571,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, r14\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:get_LiveExtent():int:this]\n       jmp      G_M000_IG282"
+    },
+    {
+      "label": "G_M000_IG338",
+      "start": 7571,
+      "end": 7595,
+      "leafSamples": 0,
+      "instructions": "cmp      dword ptr [rdi+0x20], 0\n       je       G_M000_IG283\n       mov      rdi, rax\n       call     [Lokad.Lython.Runtime.ExecutionState:ThrowExecutionCanceled(Lokad.Lython.LythonSourceSpan)]\n       jmp      G_M000_IG283"
+    },
+    {
+      "label": "G_M000_IG339",
+      "start": 7595,
+      "end": 7621,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, r13\n       mov      esi, eax\n       mov      r11, 0x7828EDE630E0\n       call     [r11]System.Collections.Generic.IReadOnlyList`1[System.__Canon]:get_Item(int):System.__Canon:this\n       mov      r12, rax\n       jmp      G_M000_IG179"
+    },
+    {
+      "label": "G_M000_IG340",
+      "start": 7621,
+      "end": 7648,
+      "leafSamples": 0,
+      "instructions": "mov      rsi, gword ptr [rcx+0x10]\n       mov      rdi, 0x7828F04A52F0\n       call     CORINFO_HELP_CHKCASTCLASS\n       mov      rcx, rax\n       jmp      G_M000_IG180"
+    },
+    {
+      "label": "G_M000_IG341",
+      "start": 7648,
+      "end": 7657,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, rdx\n       call     CORINFO_HELP_CHKCASTCLASS\n       int3"
+    },
+    {
+      "label": "G_M000_IG342",
+      "start": 7657,
+      "end": 7664,
+      "leafSamples": 0,
+      "instructions": "xor      rdx, rdx\n       jmp      G_M000_IG184"
+    },
+    {
+      "label": "G_M000_IG343",
+      "start": 7664,
+      "end": 7685,
+      "leafSamples": 0,
+      "instructions": "mov      r10d, esi\n       rol      r10d, 5\n       add      r10d, esi\n       mov      esi, r10d\n       xor      esi, dword ptr [r11]\n       jmp      G_M000_IG190"
+    },
+    {
+      "label": "G_M000_IG344",
+      "start": 7685,
+      "end": 7726,
+      "leafSamples": 0,
+      "instructions": "mov      r9, gword ptr [rbp-0x1E0]\n       mov      rdi, r9\n       mov      rsi, r12\n       mov      r11, 0x7828EDE63110\n       call     [r11]System.Collections.Generic.IEqualityComparer`1[System.__Canon]:GetHashCode(System.__Canon):int:this\n       mov      r10d, eax\n       mov      r9, gword ptr [rbp-0x1E0]\n       jmp      G_M000_IG191"
+    },
+    {
+      "label": "G_M000_IG345",
+      "start": 7726,
+      "end": 7769,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, gword ptr [rsi]\n       mov      gword ptr [rbp-0x1F0], rdi\n       mov      rdi, 0x7828EF1584D8\n       cmp      qword ptr [r9], rdi\n       jne      SHORT G_M000_IG346\n       mov      rdi, gword ptr [rbp-0x1F0]\n       mov      rsi, r12\n       call     [System.String:Equals(System.String,System.String):bool]\n       jmp      SHORT G_M000_IG347"
+    },
+    {
+      "label": "G_M000_IG346",
+      "start": 7769,
+      "end": 7802,
+      "leafSamples": 0,
+      "instructions": "mov      r9, gword ptr [rbp-0x1E0]\n       mov      rdi, r9\n       mov      rdx, r12\n       mov      rsi, gword ptr [rbp-0x1F0]\n       mov      r11, 0x7828EDE63118\n       call     [r11]System.Collections.Generic.IEqualityComparer`1[System.__Canon]:Equals(System.__Canon,System.__Canon):bool:this"
+    },
+    {
+      "label": "G_M000_IG347",
+      "start": 7802,
+      "end": 7838,
+      "leafSamples": 0,
+      "instructions": "test     eax, eax\n       mov      rsi, bword ptr [rbp-0x1D8]\n       mov      r9, gword ptr [rbp-0x1E0]\n       je       G_M000_IG193\n       add      rsi, 16\n       mov      edi, dword ptr [rsi]\n       mov      dword ptr [rbp-0xB0], edi\n       jmp      SHORT G_M000_IG349"
+    },
+    {
+      "label": "G_M000_IG348",
+      "start": 7838,
+      "end": 7872,
+      "leafSamples": 0,
+      "instructions": "lea      rdx, [rbp-0xB0]\n       mov      rdi, r8\n       mov      rsi, r12\n       mov      r11, 0x7828EDE630F8\n       call     [r11]System.Collections.Generic.IReadOnlyDictionary`2[System.__Canon,int]:TryGetValue(System.__Canon,byref):bool:this\n       test     eax, eax\n       je       G_M000_IG195"
+    },
+    {
+      "label": "G_M000_IG349",
+      "start": 7872,
+      "end": 7907,
+      "leafSamples": 0,
+      "instructions": "mov      rdx, gword ptr [rbp-0x1C8]\n       mov      rdi, gword ptr [rdx+0x110]\n       mov      esi, dword ptr [rbp-0xB0]\n       call     [Lokad.Lython.Runtime.LythonRuntime:ReadLocalValue(System.Object[],int):System.Object]\n       test     rax, rax\n       je       G_M000_IG195"
+    },
+    {
+      "label": "G_M000_IG350",
+      "start": 7907,
+      "end": 7918,
+      "leafSamples": 0,
+      "instructions": "mov      r13, rax\n       mov      rax, r13\n       jmp      G_M000_IG217"
+    },
+    {
+      "label": "G_M000_IG351",
+      "start": 7918,
+      "end": 8034,
+      "leafSamples": 0,
+      "instructions": "mov      gword ptr [rbp-0x1C8], rdx\n       mov      rdi, gword ptr [rdx+0x108]\n       mov      rdi, gword ptr [rdi+0x40]\n       lea      rdx, [rbp-0xB8]\n       mov      rsi, r12\n       mov      r11, 0x7828EDE63100\n       call     [r11]System.Collections.Generic.IReadOnlyDictionary`2[System.__Canon,int]:TryGetValue(System.__Canon,byref):bool:this\n       test     eax, eax\n       je       SHORT G_M000_IG352\n       mov      rdi, gword ptr [rbp-0x1C8]\n       mov      rdi, gword ptr [rdi+0x118]\n       mov      esi, dword ptr [rbp-0xB8]\n       mov      r11, 0x7828EDE63108\n       call     [r11]System.Collections.Generic.IReadOnlyList`1[System.__Canon]:get_Item(int):System.__Canon:this\n       mov      rdi, rax\n       cmp      dword ptr [rdi], edi\n       call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableCell:get_Value():System.Object:this]\n       test     rax, rax\n       mov      rcx, gword ptr [rbp-0x1C0]\n       je       G_M000_IG196\n       mov      r13, rax\n       mov      rax, r13\n       jmp      G_M000_IG217"
+    },
+    {
+      "label": "G_M000_IG352",
+      "start": 8034,
+      "end": 8046,
+      "leafSamples": 0,
+      "instructions": "mov      rcx, gword ptr [rbp-0x1C0]\n       jmp      G_M000_IG196"
+    },
+    {
+      "label": "G_M000_IG353",
+      "start": 8046,
+      "end": 8063,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, rcx\n       call     [Lokad.Lython.Runtime.ExecutionFrame:InitializeVariables():System.Collections.Generic.Dictionary`2[System.String,System.Object]:this]\n       mov      rdx, rax\n       jmp      G_M000_IG197"
+    },
+    {
+      "label": "G_M000_IG354",
+      "start": 8063,
+      "end": 8084,
+      "leafSamples": 0,
+      "instructions": "mov      r8d, esi\n       rol      r8d, 5\n       add      r8d, esi\n       mov      esi, r8d\n       xor      esi, dword ptr [r11]\n       jmp      G_M000_IG201"
+    },
+    {
+      "label": "G_M000_IG355",
+      "start": 8084,
+      "end": 8118,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, rdx\n       mov      rsi, r12\n       mov      r11, 0x7828EDE63120\n       call     [r11]System.Collections.Generic.IEqualityComparer`1[System.__Canon]:GetHashCode(System.__Canon):int:this\n       mov      r8d, eax\n       mov      rdx, gword ptr [rbp-0x208]\n       jmp      G_M000_IG202"
+    },
+    {
+      "label": "G_M000_IG356",
+      "start": 8118,
+      "end": 8125,
+      "leafSamples": 0,
+      "instructions": "xor      edi, edi\n       jmp      G_M000_IG226"
+    },
+    {
+      "label": "G_M000_IG357",
+      "start": 8125,
+      "end": 8165,
+      "leafSamples": 0,
+      "instructions": "mov      rdx, gword ptr [rbp-0x208]\n       mov      rdi, rdx\n       mov      rdx, r12\n       mov      r11, 0x7828EDE63128\n       call     [r11]System.Collections.Generic.IEqualityComparer`1[System.__Canon]:Equals(System.__Canon,System.__Canon):bool:this\n       mov      edi, eax\n       mov      rdx, gword ptr [rbp-0x208]\n       jmp      G_M000_IG226"
+    },
+    {
+      "label": "G_M000_IG358",
+      "start": 8165,
+      "end": 8182,
+      "leafSamples": 0,
+      "instructions": "mov      edx, esi\n       rol      edx, 5\n       add      edx, esi\n       mov      esi, edx\n       xor      esi, dword ptr [r11]\n       jmp      G_M000_IG210"
+    },
+    {
+      "label": "G_M000_IG359",
+      "start": 8182,
+      "end": 8215,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, rcx\n       mov      rsi, r12\n       mov      r11, 0x7828EDE63130\n       call     [r11]System.Collections.Generic.IEqualityComparer`1[System.__Canon]:GetHashCode(System.__Canon):int:this\n       mov      edx, eax\n       mov      rcx, gword ptr [rbp-0x230]\n       jmp      G_M000_IG211"
+    },
+    {
+      "label": "G_M000_IG360",
+      "start": 8215,
+      "end": 8223,
+      "leafSamples": 0,
+      "instructions": "xor      r11d, r11d\n       jmp      G_M000_IG231"
+    },
+    {
+      "label": "G_M000_IG361",
+      "start": 8223,
+      "end": 8264,
+      "leafSamples": 0,
+      "instructions": "mov      rcx, gword ptr [rbp-0x230]\n       mov      rdi, rcx\n       mov      rdx, r12\n       mov      r11, 0x7828EDE63138\n       call     [r11]System.Collections.Generic.IEqualityComparer`1[System.__Canon]:Equals(System.__Canon,System.__Canon):bool:this\n       mov      r11d, eax\n       mov      rcx, gword ptr [rbp-0x230]\n       jmp      G_M000_IG231"
+    },
+    {
+      "label": "G_M000_IG362",
+      "start": 8264,
+      "end": 8295,
+      "leafSamples": 0,
+      "instructions": "mov      gword ptr [rbp-0x1B8], rax\n       mov      rdi, r14\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:get_LiveExtent():int:this]\n       mov      r12d, eax\n       mov      rax, gword ptr [rbp-0x1B8]\n       jmp      G_M000_IG221"
+    },
+    {
+      "label": "G_M000_IG363",
+      "start": 8295,
+      "end": 8326,
+      "leafSamples": 0,
+      "instructions": "mov      gword ptr [rbp-0x1B8], rax\n       mov      rdi, rbx\n       mov      esi, r14d\n       call     [Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Trim(int):this]\n       mov      rax, gword ptr [rbp-0x1B8]\n       jmp      G_M000_IG223"
+    },
+    {
+      "label": "G_M000_IG364",
+      "start": 8326,
+      "end": 8377,
+      "leafSamples": 0,
+      "instructions": "lea      rcx, bword ptr [rbx+0x48]\n       mov      rax, qword ptr [rbp-0x148]\n       cmp      eax, dword ptr [rcx+0x08]\n       jae      G_M000_IG509\n       mov      rcx, bword ptr [rcx]\n       xor      rdx, rdx\n       mov      qword ptr [rbp-0x148], rax\n       mov      gword ptr [rcx+8*rax], rdx\n       mov      rcx, qword ptr [rdi]\n       mov      rcx, qword ptr [rcx+0x40]\n       call     [rcx+0x20]Lokad.Lython.Runtime.ExecutableTemporaryValue:Dispose():this\n       jmp      G_M000_IG242"
+    },
+    {
+      "label": "G_M000_IG365",
+      "start": 8377,
+      "end": 8391,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, r14\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:get_LiveExtent():int:this]\n       jmp      G_M000_IG247"
+    },
+    {
+      "label": "G_M000_IG366",
+      "start": 8391,
+      "end": 8405,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, r14\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:get_LiveExtent():int:this]\n       jmp      G_M000_IG250"
+    },
+    {
+      "label": "G_M000_IG367",
+      "start": 8405,
+      "end": 8429,
+      "leafSamples": 0,
+      "instructions": "cmp      dword ptr [rdi+0x20], 0\n       je       G_M000_IG251\n       mov      rdi, rax\n       call     [Lokad.Lython.Runtime.ExecutionState:ThrowExecutionCanceled(Lokad.Lython.LythonSourceSpan)]\n       jmp      G_M000_IG251"
+    },
+    {
+      "label": "G_M000_IG368",
+      "start": 8429,
+      "end": 8466,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, gword ptr [rbx+0x08]\n       mov      rsi, gword ptr [rbx+0x10]\n       mov      edx, dword ptr [rbx+0x38]\n       mov      ecx, dword ptr [rbx+0x3C]\n       mov      r8, gword ptr [rbx+0x18]\n       call     [Lokad.Lython.Runtime.LythonRuntime:TryExecuteClosureArithmetic(Lokad.Lython.Frontend.ExecutableCodeObject,System.Collections.Generic.IReadOnlyList`1[Lokad.Lython.Runtime.LythonRuntime+ExecutableCell],int,int,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):bool]\n       test     eax, eax\n       je       SHORT G_M000_IG369\n       add      dword ptr [rbx+0x38], 2\n       jmp      G_M000_IG104"
+    },
+    {
+      "label": "G_M000_IG369",
+      "start": 8466,
+      "end": 8539,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, r14\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:get_ClosureSlot():int:this]\n       mov      esi, eax\n       lea      rdx, [rbp-0x30]\n       mov      rdi, rbx\n       call     [Lokad.Lython.Runtime.LythonRuntime+NativeExecution:TryCell(int,byref):bool:this]\n       test     eax, eax\n       je       G_M000_IG139\n       mov      rdi, gword ptr [rbp-0x30]\n       cmp      dword ptr [rdi], edi\n       call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableCell:get_Value():System.Object:this]\n       test     rax, rax\n       je       G_M000_IG139\n       mov      rdi, rbx\n       mov      rsi, r14\n       mov      rdx, rax\n       call     [Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Publish(byref,System.Object):this]\n       jmp      G_M000_IG104"
+    },
+    {
+      "label": "G_M000_IG370",
+      "start": 8539,
+      "end": 8623,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, r14\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:get_ClosureSlot():int:this]\n       mov      esi, eax\n       lea      rdx, [rbp-0x38]\n       mov      rdi, rbx\n       call     [Lokad.Lython.Runtime.LythonRuntime+NativeExecution:TryCell(int,byref):bool:this]\n       test     eax, eax\n       je       G_M000_IG139\n       mov      rdi, gword ptr [rbp-0x38]\n       cmp      dword ptr [rdi], edi\n       call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableCell:get_CanStoreThroughOwner():bool:this]\n       test     eax, eax\n       je       G_M000_IG139\n       mov      rdi, rbx\n       mov      rsi, r14\n       call     [Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Take(byref):System.Object:this]\n       mov      rsi, rax\n       mov      rdi, gword ptr [rbp-0x38]\n       cmp      dword ptr [rdi], edi\n       call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableCell:set_Value(System.Object):this]\n       jmp      G_M000_IG104"
+    },
+    {
+      "label": "G_M000_IG371",
+      "start": 8623,
+      "end": 8695,
+      "leafSamples": 0,
+      "instructions": "lea      r13, bword ptr [rbx+0x48]\n       mov      rdi, r14\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:get_LocalSlot():int:this]\n       cmp      eax, dword ptr [r13+0x08]\n       jae      G_M000_IG509\n       mov      rdi, bword ptr [r13]\n       mov      esi, eax\n       lea      rdi, bword ptr [rdi+8*rsi]\n       mov      bword ptr [rbp-0x2B8], rdi\n       mov      rdi, rbx\n       mov      rsi, r14\n       call     [Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Take(byref):System.Object:this]\n       mov      rsi, rax\n       mov      rdi, bword ptr [rbp-0x2B8]\n       call     CORINFO_HELP_CHECKED_ASSIGN_REF\n       jmp      G_M000_IG104"
+    },
+    {
+      "label": "G_M000_IG372",
+      "start": 8695,
+      "end": 8802,
+      "leafSamples": 0,
+      "instructions": "mov      esi, dword ptr [r14+0x10]\n       mov      rdi, rbx\n       xor      edx, edx\n       call     [Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Read(int,int):System.Object:this]\n       mov      r13, rax\n       mov      rdi, gword ptr [rbx+0x08]\n       mov      r12, gword ptr [rdi+0x18]\n       mov      rdi, r14\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:get_NameIndex():int:this]\n       mov      esi, eax\n       mov      rdi, r12\n       mov      r11, 0x7828EDE630D8\n       call     [r11]System.Collections.Generic.IReadOnlyList`1[System.__Canon]:get_Item(int):System.__Canon:this\n       mov      r12, rax\n       mov      rsi, r13\n       mov      rdi, 0x7828F04A75E0\n       call     CORINFO_HELP_ISINSTANCEOFCLASS\n       test     rax, rax\n       jne      SHORT G_M000_IG374\n       mov      rsi, r13\n       mov      rdi, 0x7828F082EFC8\n       call     CORINFO_HELP_ISINSTANCEOFCLASS\n       test     rax, rax\n       jne      SHORT G_M000_IG373\n       xor      r12, r12\n       jmp      SHORT G_M000_IG375"
+    },
+    {
+      "label": "G_M000_IG373",
+      "start": 8802,
+      "end": 8816,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, r12\n       call     [Lokad.Lython.Runtime.LythonRuntime+DictMembers:GetMethod(System.String):Lokad.Lython.Runtime.LythonRuntime+ReceiverMethod]\n       mov      r12, rax\n       jmp      SHORT G_M000_IG375"
+    },
+    {
+      "label": "G_M000_IG374",
+      "start": 8816,
+      "end": 8828,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, r12\n       call     [Lokad.Lython.Runtime.LythonRuntime+StringMembers:GetMethod(System.String):Lokad.Lython.Runtime.LythonRuntime+ReceiverMethod]\n       mov      r12, rax"
+    },
+    {
+      "label": "G_M000_IG375",
+      "start": 8828,
+      "end": 8926,
+      "leafSamples": 0,
+      "instructions": "test     r12, r12\n       je       G_M000_IG139\n       mov      rdi, r14\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:get_ResultSlot():int:this]\n       mov      dword ptr [rbp-0x128], eax\n       mov      rdi, r14\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:get_ResultSlot():int:this]\n       lea      edx, [rax+0x01]\n       mov      esi, dword ptr [rbp-0x128]\n       mov      rdi, rbx\n       mov      rcx, r13\n       call     [Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Put(int,int,System.Object):this]\n       mov      rdi, r14\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:get_ResultSlot():int:this]\n       lea      r13d, [rax+0x01]\n       mov      rdi, r14\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:get_LiveExtent():int:this]\n       mov      edx, eax\n       mov      esi, r13d\n       mov      rdi, rbx\n       mov      rcx, r12\n       call     [Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Put(int,int,System.Object):this]\n       jmp      G_M000_IG104"
+    },
+    {
+      "label": "G_M000_IG376",
+      "start": 8926,
+      "end": 8949,
+      "leafSamples": 0,
+      "instructions": "not      esi\n       mov      r11, 0x7828EDE63148\n       call     [r11]System.Collections.Generic.IReadOnlyList`1[System.__Canon]:get_Item(int):System.__Canon:this\n       mov      rdi, rax\n       jmp      G_M000_IG62"
+    },
+    {
+      "label": "G_M000_IG377",
+      "start": 8949,
+      "end": 9011,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, gword ptr [rbx+0x08]\n       cmp      esi, dword ptr [rdi+0x9C]\n       jl       G_M000_IG506\n       mov      rdi, 0x7828EF797A68\n       call     CORINFO_HELP_NEWSFAST\n       mov      rbx, rax\n       mov      rdi, rbx\n       mov      rsi, 0x7828EC20F098\n       call     [System.InvalidOperationException:.ctor(System.String):this]\n       mov      rdi, rbx\n       call     CORINFO_HELP_THROW\n       int3"
+    },
+    {
+      "label": "G_M000_IG378",
+      "start": 9011,
+      "end": 9034,
+      "leafSamples": 0,
+      "instructions": "not      esi\n       mov      r11, 0x7828EDE63158\n       call     [r11]System.Collections.Generic.IReadOnlyList`1[System.__Canon]:get_Item(int):System.__Canon:this\n       mov      rdi, rax\n       jmp      G_M000_IG64"
+    },
+    {
+      "label": "G_M000_IG379",
+      "start": 9034,
+      "end": 9096,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, gword ptr [rbx+0x08]\n       cmp      esi, dword ptr [rdi+0x9C]\n       jl       G_M000_IG507\n       mov      rdi, 0x7828EF797A68\n       call     CORINFO_HELP_NEWSFAST\n       mov      rbx, rax\n       mov      rdi, rbx\n       mov      rsi, 0x7828EC20F098\n       call     [System.InvalidOperationException:.ctor(System.String):this]\n       mov      rdi, rbx\n       call     CORINFO_HELP_THROW\n       int3"
+    },
+    {
+      "label": "G_M000_IG380",
+      "start": 9096,
+      "end": 9126,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, gword ptr [r13+0x08]\n       mov      r11, 0x7828EDE63160\n       call     [r11]Lokad.Lython.Runtime.IPyDictStorage:get_HasProtocolKeys():bool:this\n       test     eax, eax\n       jne      G_M000_IG139\n       jmp      G_M000_IG67"
+    },
+    {
+      "label": "G_M000_IG381",
+      "start": 9126,
+      "end": 9144,
+      "leafSamples": 0,
+      "instructions": "mov      edi, dword ptr [r14+0x1C]\n       cmp      edi, 24\n       je       SHORT G_M000_IG382\n       cmp      edi, 25\n       jne      G_M000_IG508"
+    },
+    {
+      "label": "G_M000_IG382",
+      "start": 9144,
+      "end": 9153,
+      "leafSamples": 0,
+      "instructions": "mov      edi, dword ptr [r14+0x0C]\n       jmp      G_M000_IG70"
+    },
+    {
+      "label": "G_M000_IG383",
+      "start": 9153,
+      "end": 9285,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, gword ptr [rax+0x68]\n       movsxd   rdi, dword ptr [rdi+0x94]\n       imul     rdx, rdi, 64\n       jo       G_M000_IG510\n       add      rdx, 32\n       jo       G_M000_IG510\n       mov      qword ptr [rbp-0xF0], rdx\n       mov      rdi, gword ptr [rax+0x10]\n       mov      rdi, gword ptr [rdi+0xA0]\n       mov      rsi, gword ptr [rdi+0x88]\n       mov      gword ptr [rbp-0x260], rsi\n       cmp      byte  ptr [rsi], sil\n       mov      rdi, 0x7828F0158E58\n       call     CORINFO_HELP_NEWSFAST\n       mov      gword ptr [rbp-0x268], rax\n       mov      rdi, rax\n       mov      rsi, gword ptr [rbp-0x260]\n       mov      rdx, qword ptr [rbp-0xF0]\n       mov      rcx, gword ptr [rbp-0x240]\n       call     [Lokad.Lython.Runtime.MemoryGovernor+TemporaryMemoryReservation:.ctor(Lokad.Lython.Runtime.MemoryGovernor,long,Lokad.Lython.LythonSourceSpan):this]\n       mov      rax, gword ptr [rbp-0x268]\n       mov      gword ptr [rbp-0x248], rax"
+    },
+    {
+      "label": "G_M000_IG384",
+      "start": 9285,
+      "end": 9331,
+      "leafSamples": 0,
+      "instructions": "mov      rcx, gword ptr [rbp-0x180]\n       mov      rdi, gword ptr [rcx+0x10]\n       mov      rdi, gword ptr [rdi+0xA0]\n       cmp      byte  ptr [rdi], dil\n       xor      edx, edx\n       mov      gword ptr [rbp-0xF8], rdx\n       mov      rdx, gword ptr [rdi+0x88]\n       mov      rdx, gword ptr [rdx+0x20]\n       test     rdx, rdx\n       je       SHORT G_M000_IG386"
+    },
+    {
+      "label": "G_M000_IG385",
+      "start": 9331,
+      "end": 9340,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, rdx\n       call     CORINFO_HELP_THROW\n       int3"
+    },
+    {
+      "label": "G_M000_IG386",
+      "start": 9340,
+      "end": 9371,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, gword ptr [rdi+0x178]\n       mov      gword ptr [rbp-0xF8], rdi\n       lea      rdi, [rbp-0xF8]\n       call     [System.Threading.CancellationToken:get_IsCancellationRequested():bool:this]\n       test     eax, eax\n       je       SHORT G_M000_IG388"
+    },
+    {
+      "label": "G_M000_IG387",
+      "start": 9371,
+      "end": 9384,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, gword ptr [rbp-0x240]\n       call     [Lokad.Lython.Runtime.ExecutionState:ThrowExecutionCanceled(Lokad.Lython.LythonSourceSpan)]"
+    },
+    {
+      "label": "G_M000_IG388",
+      "start": 9384,
+      "end": 9400,
+      "leafSamples": 0,
+      "instructions": "mov      rax, gword ptr [rbp-0x180]\n       mov      rcx, gword ptr [rax+0x78]\n       test     rcx, rcx\n       je       SHORT G_M000_IG390"
+    },
+    {
+      "label": "G_M000_IG389",
+      "start": 9400,
+      "end": 9409,
+      "leafSamples": 0,
+      "instructions": "mov      gword ptr [rbp-0x258], rcx\n       jmp      SHORT G_M000_IG391"
+    },
+    {
+      "label": "G_M000_IG390",
+      "start": 9409,
+      "end": 9502,
+      "leafSamples": 0,
+      "instructions": "mov      rsi, gword ptr [rax+0x68]\n       movsxd   rsi, dword ptr [rsi+0x94]\n       mov      rdi, 0x7828F0921AA8\n       call     CORINFO_HELP_NEWARR_1_VC\n       mov      gword ptr [rbp-0x250], rax\n       mov      rdi, gword ptr [rbp-0x268]\n       mov      rsi, qword ptr [rbp-0xF0]\n       call     [Lokad.Lython.Runtime.MemoryGovernor+TemporaryMemoryReservation:Commit(long):this]\n       mov      rdi, gword ptr [rbp-0x180]\n       lea      rdi, bword ptr [rdi+0x78]\n       mov      rsi, gword ptr [rbp-0x250]\n       call     CORINFO_HELP_ASSIGN_REF\n       mov      rax, gword ptr [rbp-0x250]\n       mov      rdx, rax\n       mov      gword ptr [rbp-0x258], rdx"
+    },
+    {
+      "label": "G_M000_IG391",
+      "start": 9502,
+      "end": 9527,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, gword ptr [rbp-0x268]\n       call     [Lokad.Lython.Runtime.MemoryGovernor+TemporaryMemoryReservation:Dispose():this]\n       mov      rdx, gword ptr [rbp-0x258]\n       jmp      G_M000_IG71"
+    },
+    {
+      "label": "G_M000_IG392",
+      "start": 9527,
+      "end": 9545,
+      "leafSamples": 0,
+      "instructions": "mov      edi, dword ptr [r14+0x1C]\n       cmp      edi, 24\n       je       SHORT G_M000_IG393\n       cmp      edi, 25\n       jne      G_M000_IG508"
+    },
+    {
+      "label": "G_M000_IG393",
+      "start": 9545,
+      "end": 9554,
+      "leafSamples": 0,
+      "instructions": "mov      edi, dword ptr [r14+0x0C]\n       jmp      G_M000_IG72"
+    },
+    {
+      "label": "G_M000_IG394",
+      "start": 9554,
+      "end": 9563,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, rsi\n       call     CORINFO_HELP_THROW\n       int3"
+    },
+    {
+      "label": "G_M000_IG395",
+      "start": 9563,
+      "end": 9601,
+      "leafSamples": 0,
+      "instructions": "cmp      dword ptr [rdi+0x20], 0\n       je       G_M000_IG73\n       mov      rdi, rdx\n       call     [Lokad.Lython.Runtime.ExecutionState:ThrowExecutionCanceled(Lokad.Lython.LythonSourceSpan)]\n       mov      rcx, gword ptr [rbp-0x190]\n       mov      rdx, gword ptr [rbp-0x270]\n       jmp      G_M000_IG73"
+    },
+    {
+      "label": "G_M000_IG396",
+      "start": 9601,
+      "end": 9623,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, r13\n       call     [Lokad.Lython.Runtime.PyDict:get_HasProtocolKeys():bool:this]\n       test     eax, eax\n       jne      G_M000_IG139\n       jmp      G_M000_IG413"
+    },
+    {
+      "label": "G_M000_IG397",
+      "start": 9623,
+      "end": 9623,
+      "leafSamples": 0,
+      "instructions": ""
+    },
+    {
+      "label": "G_M000_IG398",
+      "start": 9623,
+      "end": 9746,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, r12\n       mov      rsi, rdx\n       mov      rdx, rcx\n       call     [Lokad.Lython.Runtime.LythonRuntime:ComputeStructuralHashCode(System.Object,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):int]\n       mov      edi, eax\n       call     [Lokad.Lython.Runtime.PyDict:MixNativeHash(int):uint]\n       mov      edx, eax\n       mov      rsi, r12\n       mov      rdi, r13\n       mov      rcx, gword ptr [rbp-0x190]\n       mov      r8, gword ptr [rbp-0x270]\n       call     [Lokad.Lython.Runtime.PyDict:FindNativeIndex(System.Object,uint,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):int:this]\n       mov      dword ptr [rbp-0xFC], eax\n       test     eax, eax\n       jl       SHORT G_M000_IG396\n       mov      rdi, bword ptr [rbp-0x188]\n       mov      rsi, gword ptr [rbp-0x278]\n       call     CORINFO_HELP_ASSIGN_REF\n       mov      rax, bword ptr [rbp-0x188]\n       lea      rdi, bword ptr [rax+0x08]\n       mov      rsi, r12\n       call     CORINFO_HELP_ASSIGN_REF\n       mov      rdi, bword ptr [rbp-0x188]\n       mov      eax, dword ptr [rbp-0xFC]\n       mov      dword ptr [rdi+0x10], eax\n       mov      r9d, eax\n       jmp      G_M000_IG75"
+    },
+    {
+      "label": "G_M000_IG399",
+      "start": 9746,
+      "end": 9753,
+      "leafSamples": 0,
+      "instructions": "xor      rax, rax\n       jmp      G_M000_IG78"
+    },
+    {
+      "label": "G_M000_IG400",
+      "start": 9753,
+      "end": 9777,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, r14\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:get_LiveExtent():int:this]\n       mov      r12d, eax\n       mov      rax, gword ptr [rbp-0x160]\n       jmp      G_M000_IG82"
+    },
+    {
+      "label": "G_M000_IG401",
+      "start": 9777,
+      "end": 9801,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, rbx\n       mov      esi, r14d\n       call     [Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Trim(int):this]\n       mov      rax, gword ptr [rbp-0x160]\n       jmp      G_M000_IG84"
+    },
+    {
+      "label": "G_M000_IG402",
+      "start": 9801,
+      "end": 9806,
+      "leafSamples": 0,
+      "instructions": "jmp      G_M000_IG88"
+    },
+    {
+      "label": "G_M000_IG403",
+      "start": 9806,
+      "end": 9813,
+      "leafSamples": 0,
+      "instructions": "mov      edi, esi\n       jmp      G_M000_IG88"
+    },
+    {
+      "label": "G_M000_IG404",
+      "start": 9813,
+      "end": 9828,
+      "leafSamples": 0,
+      "instructions": "mov      rcx, 0x7828F04A75E0\n       cmp      qword ptr [rdi], rcx\n       je       SHORT G_M000_IG406"
+    },
+    {
+      "label": "G_M000_IG405",
+      "start": 9828,
+      "end": 9851,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, 0x7828F082A6A8\n       call     CORINFO_HELP_ISINSTANCEOFCLASS\n       mov      rdi, rax\n       jmp      G_M000_IG90"
+    },
+    {
+      "label": "G_M000_IG406",
+      "start": 9851,
+      "end": 9858,
+      "leafSamples": 0,
+      "instructions": "xor      rdi, rdi\n       jmp      G_M000_IG90"
+    },
+    {
+      "label": "G_M000_IG407",
+      "start": 9858,
+      "end": 9909,
+      "leafSamples": 0,
+      "instructions": "lea      rcx, bword ptr [rbx+0x48]\n       mov      rax, qword ptr [rbp-0x140]\n       cmp      eax, dword ptr [rcx+0x08]\n       jae      G_M000_IG509\n       mov      rcx, bword ptr [rcx]\n       xor      rdx, rdx\n       mov      qword ptr [rbp-0x140], rax\n       mov      gword ptr [rcx+8*rax], rdx\n       mov      rcx, qword ptr [rdi]\n       mov      rcx, qword ptr [rcx+0x40]\n       call     [rcx+0x20]Lokad.Lython.Runtime.ExecutableTemporaryValue:Dispose():this\n       jmp      G_M000_IG91"
+    },
+    {
+      "label": "G_M000_IG408",
+      "start": 9909,
+      "end": 9923,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, r14\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:get_LiveExtent():int:this]\n       jmp      G_M000_IG96"
+    },
+    {
+      "label": "G_M000_IG409",
+      "start": 9923,
+      "end": 9937,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, r14\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:get_LiveExtent():int:this]\n       jmp      G_M000_IG99"
+    },
+    {
+      "label": "G_M000_IG410",
+      "start": 9937,
+      "end": 9946,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, rcx\n       call     CORINFO_HELP_THROW\n       int3"
+    },
+    {
+      "label": "G_M000_IG411",
+      "start": 9946,
+      "end": 9970,
+      "leafSamples": 0,
+      "instructions": "cmp      dword ptr [rdi+0x20], 0\n       je       G_M000_IG100\n       mov      rdi, rax\n       call     [Lokad.Lython.Runtime.ExecutionState:ThrowExecutionCanceled(Lokad.Lython.LythonSourceSpan)]\n       jmp      G_M000_IG100"
+    },
+    {
+      "label": "G_M000_IG412",
+      "start": 9970,
+      "end": 9998,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, r12\n       mov      rsi, 0x7828EC257CC8\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:InvalidOperand(System.String):System.InvalidOperationException:this]\n       mov      rdi, rax\n       call     CORINFO_HELP_THROW\n       int3"
+    },
+    {
+      "label": "G_M000_IG413",
+      "start": 9998,
+      "end": 10037,
+      "leafSamples": 0,
+      "instructions": "mov      rdx, gword ptr [r14]\n       mov      rcx, gword ptr [rbx+0x18]\n       mov      rdi, r13\n       mov      rsi, r12\n       call     [Lokad.Lython.Runtime.LythonRuntime:ReadSubscriptValue(System.Object,System.Object,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object]\n       mov      rdx, rax\n       mov      rsi, r14\n       mov      rdi, rbx\n       call     [Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Publish(byref,System.Object):this]\n       jmp      G_M000_IG104"
+    },
+    {
+      "label": "G_M000_IG414",
+      "start": 10037,
+      "end": 10143,
+      "leafSamples": 0,
+      "instructions": "mov      esi, dword ptr [r14+0x10]\n       mov      rdi, rbx\n       xor      edx, edx\n       call     [Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Read(int,int):System.Object:this]\n       mov      r12, rax\n       cmp      dword ptr [r14+0x08], 0\n       je       G_M000_IG416\n       mov      rsi, r12\n       mov      rdi, 0x7828F0641F78\n       call     CORINFO_HELP_ISINSTANCEOFCLASS\n       test     rax, rax\n       jne      SHORT G_M000_IG415\n       mov      rsi, r12\n       mov      rdi, 0x7828EF0B6558\n       call     CORINFO_HELP_ISINSTANCEOFCLASS\n       test     rax, rax\n       jne      SHORT G_M000_IG415\n       mov      rsi, r12\n       mov      rdi, 0x7828EF0835C8\n       call     CORINFO_HELP_ISINSTANCEOFCLASS\n       test     rax, rax\n       sete     r13b\n       movzx    r13, r13b\n       jmp      SHORT G_M000_IG417"
+    },
+    {
+      "label": "G_M000_IG415",
+      "start": 10143,
+      "end": 10208,
+      "leafSamples": 0,
+      "instructions": "mov      edi, dword ptr [r14+0x08]\n       mov      r13, gword ptr [rbx+0x18]\n       mov      rax, gword ptr [r14]\n       mov      gword ptr [rbp-0x280], rax\n       call     [Lokad.Lython.Runtime.LythonRuntime:MapExecutableUnary(int):int]\n       mov      edi, eax\n       mov      rsi, r12\n       mov      rdx, r13\n       mov      rcx, gword ptr [rbp-0x280]\n       call     [Lokad.Lython.Runtime.LythonRuntime:EvaluateUnaryOperator(int,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):System.Object]\n       mov      rdx, rax\n       mov      rsi, r14\n       mov      rdi, rbx\n       call     [Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Publish(byref,System.Object):this]\n       jmp      G_M000_IG104"
+    },
+    {
+      "label": "G_M000_IG416",
+      "start": 10208,
+      "end": 10227,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, r12\n       call     [Lokad.Lython.Runtime.LythonRuntime:CanUseNativeTruth(System.Object):bool]\n       test     eax, eax\n       sete     r13b\n       movzx    r13, r13b"
+    },
+    {
+      "label": "G_M000_IG417",
+      "start": 10227,
+      "end": 10238,
+      "leafSamples": 0,
+      "instructions": "test     r13d, r13d\n       jne      G_M000_IG139\n       jmp      SHORT G_M000_IG415"
+    },
+    {
+      "label": "G_M000_IG418",
+      "start": 10238,
+      "end": 10261,
+      "leafSamples": 0,
+      "instructions": "not      esi\n       mov      r11, 0x7828EDE63178\n       call     [r11]System.Collections.Generic.IReadOnlyList`1[System.__Canon]:get_Item(int):System.__Canon:this\n       mov      rdi, rax\n       jmp      G_M000_IG06"
+    },
+    {
+      "label": "G_M000_IG419",
+      "start": 10261,
+      "end": 10335,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, gword ptr [rbx+0x08]\n       cmp      esi, dword ptr [rdi+0x9C]\n       jge      SHORT G_M000_IG420\n       mov      rdi, gword ptr [rbx+0x08]\n       mov      rdi, gword ptr [rdi+0x20]\n       mov      r11, 0x7828EDE63170\n       call     [r11]System.Collections.Generic.IReadOnlyList`1[System.__Canon]:get_Item(int):System.__Canon:this\n       mov      r13, rax\n       mov      rdi, gword ptr [rbx+0x08]\n       mov      esi, dword ptr [rbx+0x38]\n       xor      edx, edx\n       cmp      dword ptr [rdi], edi\n       call     [Lokad.Lython.Frontend.ExecutableCodeObject:OperandReadSpan(int,int):Lokad.Lython.LythonSourceSpan:this]\n       mov      rsi, rax\n       mov      rdi, r13\n       call     [Lokad.Lython.Runtime.RuntimeErrors:UnboundLocalVariable(System.String,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntimeException]\n       mov      rdi, rax\n       call     CORINFO_HELP_THROW\n       int3"
+    },
+    {
+      "label": "G_M000_IG420",
+      "start": 10335,
+      "end": 10381,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, 0x7828EF797A68\n       call     CORINFO_HELP_NEWSFAST\n       mov      rbx, rax\n       mov      rdi, rbx\n       mov      rsi, 0x7828EC20F098\n       call     [System.InvalidOperationException:.ctor(System.String):this]\n       mov      rdi, rbx\n       call     CORINFO_HELP_THROW\n       int3"
+    },
+    {
+      "label": "G_M000_IG421",
+      "start": 10381,
+      "end": 10404,
+      "leafSamples": 0,
+      "instructions": "not      esi\n       mov      r11, 0x7828EDE63188\n       call     [r11]System.Collections.Generic.IReadOnlyList`1[System.__Canon]:get_Item(int):System.__Canon:this\n       mov      rdi, rax\n       jmp      G_M000_IG08"
+    },
+    {
+      "label": "G_M000_IG422",
+      "start": 10404,
+      "end": 10481,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, gword ptr [rbx+0x08]\n       cmp      esi, dword ptr [rdi+0x9C]\n       jge      SHORT G_M000_IG423\n       mov      rdi, gword ptr [rbx+0x08]\n       mov      rdi, gword ptr [rdi+0x20]\n       mov      r11, 0x7828EDE63180\n       call     [r11]System.Collections.Generic.IReadOnlyList`1[System.__Canon]:get_Item(int):System.__Canon:this\n       mov      r15, rax\n       mov      rdi, gword ptr [rbx+0x08]\n       mov      esi, dword ptr [rbx+0x38]\n       mov      edx, 1\n       cmp      dword ptr [rdi], edi\n       call     [Lokad.Lython.Frontend.ExecutableCodeObject:OperandReadSpan(int,int):Lokad.Lython.LythonSourceSpan:this]\n       mov      rsi, rax\n       mov      rdi, r15\n       call     [Lokad.Lython.Runtime.RuntimeErrors:UnboundLocalVariable(System.String,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntimeException]\n       mov      rdi, rax\n       call     CORINFO_HELP_THROW\n       int3"
+    },
+    {
+      "label": "G_M000_IG423",
+      "start": 10481,
+      "end": 10527,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, 0x7828EF797A68\n       call     CORINFO_HELP_NEWSFAST\n       mov      rbx, rax\n       mov      rdi, rbx\n       mov      rsi, 0x7828EC20F098\n       call     [System.InvalidOperationException:.ctor(System.String):this]\n       mov      rdi, rbx\n       call     CORINFO_HELP_THROW\n       int3"
+    },
+    {
+      "label": "G_M000_IG424",
+      "start": 10527,
+      "end": 10544,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, r14\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:get_LiveExtent():int:this]\n       mov      r13d, eax\n       jmp      G_M000_IG37"
+    },
+    {
+      "label": "G_M000_IG425",
+      "start": 10544,
+      "end": 10561,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, rbx\n       mov      esi, r14d\n       call     [Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Trim(int):this]\n       jmp      G_M000_IG40"
+    },
+    {
+      "label": "G_M000_IG426",
+      "start": 10561,
+      "end": 10584,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, 0x7828F082A6A8\n       call     CORINFO_HELP_ISINSTANCEOFCLASS\n       mov      rdi, rax\n       jmp      G_M000_IG48"
+    },
+    {
+      "label": "G_M000_IG427",
+      "start": 10584,
+      "end": 10635,
+      "leafSamples": 0,
+      "instructions": "lea      rcx, bword ptr [rbx+0x48]\n       mov      rax, qword ptr [rbp-0x138]\n       cmp      eax, dword ptr [rcx+0x08]\n       jae      G_M000_IG509\n       mov      rcx, bword ptr [rcx]\n       xor      rdx, rdx\n       mov      qword ptr [rbp-0x138], rax\n       mov      gword ptr [rcx+8*rax], rdx\n       mov      rcx, qword ptr [rdi]\n       mov      rcx, qword ptr [rcx+0x40]\n       call     [rcx+0x20]Lokad.Lython.Runtime.ExecutableTemporaryValue:Dispose():this\n       jmp      G_M000_IG49"
+    },
+    {
+      "label": "G_M000_IG428",
+      "start": 10635,
+      "end": 10649,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, r14\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:get_LiveExtent():int:this]\n       jmp      G_M000_IG54"
+    },
+    {
+      "label": "G_M000_IG429",
+      "start": 10649,
+      "end": 10663,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, r14\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:get_LiveExtent():int:this]\n       jmp      G_M000_IG57"
+    },
+    {
+      "label": "G_M000_IG430",
+      "start": 10663,
+      "end": 10672,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, rcx\n       call     CORINFO_HELP_THROW\n       int3"
+    },
+    {
+      "label": "G_M000_IG431",
+      "start": 10672,
+      "end": 10696,
+      "leafSamples": 0,
+      "instructions": "cmp      dword ptr [rdi+0x20], 0\n       je       G_M000_IG58\n       mov      rdi, rax\n       call     [Lokad.Lython.Runtime.ExecutionState:ThrowExecutionCanceled(Lokad.Lython.LythonSourceSpan)]\n       jmp      G_M000_IG58"
+    },
+    {
+      "label": "G_M000_IG432",
+      "start": 10696,
+      "end": 10724,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, r14\n       mov      rsi, 0x7828EC257CC8\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:InvalidOperand(System.String):System.InvalidOperationException:this]\n       mov      rdi, rax\n       call     CORINFO_HELP_THROW\n       int3"
+    },
+    {
+      "label": "G_M000_IG433",
+      "start": 10724,
+      "end": 10733,
+      "leafSamples": 0,
+      "instructions": "mov      edi, dword ptr [r14+0x14]\n       jmp      G_M000_IG116"
+    },
+    {
+      "label": "G_M000_IG434",
+      "start": 10733,
+      "end": 10750,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, r14\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:get_LiveExtent():int:this]\n       mov      r12d, eax\n       jmp      G_M000_IG15"
+    },
+    {
+      "label": "G_M000_IG435",
+      "start": 10750,
+      "end": 10767,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, rbx\n       mov      esi, r14d\n       call     [Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Trim(int):this]\n       jmp      G_M000_IG18"
+    },
+    {
+      "label": "G_M000_IG436",
+      "start": 10767,
+      "end": 10781,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, r14\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:get_LiveExtent():int:this]\n       jmp      G_M000_IG26"
+    },
+    {
+      "label": "G_M000_IG437",
+      "start": 10781,
+      "end": 10795,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, r14\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:get_LiveExtent():int:this]\n       jmp      G_M000_IG29"
+    },
+    {
+      "label": "G_M000_IG438",
+      "start": 10795,
+      "end": 10804,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, rcx\n       call     CORINFO_HELP_THROW\n       int3"
+    },
+    {
+      "label": "G_M000_IG439",
+      "start": 10804,
+      "end": 10828,
+      "leafSamples": 0,
+      "instructions": "cmp      dword ptr [rdi+0x20], 0\n       je       G_M000_IG30\n       mov      rdi, rax\n       call     [Lokad.Lython.Runtime.ExecutionState:ThrowExecutionCanceled(Lokad.Lython.LythonSourceSpan)]\n       jmp      G_M000_IG30"
+    },
+    {
+      "label": "G_M000_IG440",
+      "start": 10828,
+      "end": 10856,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, r12\n       mov      rsi, 0x7828EC257CC8\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:InvalidOperand(System.String):System.InvalidOperationException:this]\n       mov      rdi, rax\n       call     CORINFO_HELP_THROW\n       int3"
+    },
+    {
+      "label": "G_M000_IG441",
+      "start": 10856,
+      "end": 10865,
+      "leafSamples": 0,
+      "instructions": "mov      edi, dword ptr [r14+0x14]\n       jmp      G_M000_IG118"
+    },
+    {
+      "label": "G_M000_IG442",
+      "start": 10865,
+      "end": 10882,
+      "leafSamples": 0,
+      "instructions": "mov      edi, dword ptr [r14+0x08]\n       call     [Lokad.Lython.Runtime.LythonRuntime:AugmentedBinaryOperator(int):int]\n       mov      edi, eax\n       jmp      G_M000_IG118"
+    },
+    {
+      "label": "G_M000_IG443",
+      "start": 10882,
+      "end": 10955,
+      "leafSamples": 0,
+      "instructions": "mov      rsi, r13\n       mov      rdi, 0x7828F0641F78\n       call     CORINFO_HELP_ISINSTANCEOFCLASS\n       test     rax, rax\n       jne      SHORT G_M000_IG444\n       mov      rsi, r13\n       mov      rdi, 0x7828EF0B6558\n       call     CORINFO_HELP_ISINSTANCEOFCLASS\n       test     rax, rax\n       jne      SHORT G_M000_IG444\n       mov      rsi, r13\n       mov      rdi, 0x7828EF0835C8\n       call     CORINFO_HELP_ISINSTANCEOFCLASS\n       test     rax, rax\n       je       G_M000_IG139"
+    },
+    {
+      "label": "G_M000_IG444",
+      "start": 10955,
+      "end": 11030,
+      "leafSamples": 0,
+      "instructions": "mov      rsi, r12\n       mov      rdi, 0x7828F0641F78\n       call     CORINFO_HELP_ISINSTANCEOFCLASS\n       test     rax, rax\n       jne      SHORT G_M000_IG446\n       mov      rsi, r12\n       mov      rdi, 0x7828EF0B6558\n       call     CORINFO_HELP_ISINSTANCEOFCLASS\n       test     rax, rax\n       jne      SHORT G_M000_IG446\n       mov      rsi, r12\n       mov      rdi, 0x7828EF0835C8\n       call     CORINFO_HELP_ISINSTANCEOFCLASS\n       test     rax, rax\n       je       G_M000_IG139\n       jmp      SHORT G_M000_IG446"
+    },
+    {
+      "label": "G_M000_IG445",
+      "start": 11030,
+      "end": 11039,
+      "leafSamples": 0,
+      "instructions": "mov      edi, dword ptr [r14+0x14]\n       jmp      G_M000_IG119"
+    },
+    {
+      "label": "G_M000_IG446",
+      "start": 11039,
+      "end": 11087,
+      "leafSamples": 0,
+      "instructions": "mov      edx, dword ptr [r14+0x08]\n       mov      rcx, gword ptr [rbx+0x18]\n       mov      bword ptr [rbp-0x170], rbx\n       mov      r9, r14\n       mov      bword ptr [rbp-0x178], r9\n       mov      r8, gword ptr [r9]\n       mov      rdi, r13\n       mov      rsi, r12\n       call     [Lokad.Lython.Runtime.LythonRuntime:EvaluateAugmentedBuiltin(System.Object,System.Object,int,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):System.Object]\n       mov      r12, rax\n       jmp      G_M000_IG120"
+    },
+    {
+      "label": "G_M000_IG447",
+      "start": 11087,
+      "end": 11104,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, r14\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:get_LiveExtent():int:this]\n       mov      r13d, eax\n       jmp      G_M000_IG124"
+    },
+    {
+      "label": "G_M000_IG448",
+      "start": 11104,
+      "end": 11121,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, rbx\n       mov      esi, r14d\n       call     [Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Trim(int):this]\n       jmp      G_M000_IG127"
+    },
+    {
+      "label": "G_M000_IG449",
+      "start": 11121,
+      "end": 11144,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, 0x7828F082A6A8\n       call     CORINFO_HELP_ISINSTANCEOFCLASS\n       mov      rdi, rax\n       jmp      G_M000_IG152"
+    },
+    {
+      "label": "G_M000_IG450",
+      "start": 11144,
+      "end": 11182,
+      "leafSamples": 0,
+      "instructions": "lea      rcx, bword ptr [rbx+0x48]\n       cmp      r14d, dword ptr [rcx+0x08]\n       jae      G_M000_IG509\n       mov      rcx, bword ptr [rcx]\n       xor      rdx, rdx\n       mov      gword ptr [rcx+8*r14], rdx\n       mov      rcx, qword ptr [rdi]\n       mov      rcx, qword ptr [rcx+0x40]\n       call     [rcx+0x20]Lokad.Lython.Runtime.ExecutableTemporaryValue:Dispose():this\n       jmp      G_M000_IG153"
+    },
+    {
+      "label": "G_M000_IG451",
+      "start": 11182,
+      "end": 11212,
+      "leafSamples": 0,
+      "instructions": "mov      bword ptr [rbp-0x178], rax\n       mov      rdi, rax\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:get_LiveExtent():int:this]\n       mov      edi, eax\n       mov      rax, bword ptr [rbp-0x178]\n       jmp      G_M000_IG158"
+    },
+    {
+      "label": "G_M000_IG452",
+      "start": 11212,
+      "end": 11226,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, rax\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:get_LiveExtent():int:this]\n       jmp      G_M000_IG161"
+    },
+    {
+      "label": "G_M000_IG453",
+      "start": 11226,
+      "end": 11235,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, rcx\n       call     CORINFO_HELP_THROW\n       int3"
+    },
+    {
+      "label": "G_M000_IG454",
+      "start": 11235,
+      "end": 11259,
+      "leafSamples": 0,
+      "instructions": "cmp      dword ptr [rdi+0x20], 0\n       je       G_M000_IG162\n       mov      rdi, rax\n       call     [Lokad.Lython.Runtime.ExecutionState:ThrowExecutionCanceled(Lokad.Lython.LythonSourceSpan)]\n       jmp      G_M000_IG162"
+    },
+    {
+      "label": "G_M000_IG455",
+      "start": 11259,
+      "end": 11287,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, r14\n       mov      rsi, 0x7828EC257CC8\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:InvalidOperand(System.String):System.InvalidOperationException:this]\n       mov      rdi, rax\n       call     CORINFO_HELP_THROW\n       int3"
+    },
+    {
+      "label": "G_M000_IG456",
+      "start": 11287,
+      "end": 11439,
+      "leafSamples": 0,
+      "instructions": "mov      esi, dword ptr [r14+0x10]\n       mov      rdi, rbx\n       xor      edx, edx\n       call     [Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Read(int,int):System.Object:this]\n       mov      r13, rax\n       mov      esi, dword ptr [r14+0x0C]\n       mov      rdi, rbx\n       mov      edx, 1\n       call     [Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Read(int,int):System.Object:this]\n       mov      r12, rax\n       mov      rdi, r14\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:get_BinaryOperator():int:this]\n       mov      edi, eax\n       mov      r8, gword ptr [r14]\n       mov      rcx, gword ptr [rbx+0x18]\n       lea      r9, [rbp-0x60]\n       mov      rsi, r13\n       mov      rdx, r12\n       call     [Lokad.Lython.Runtime.LythonRuntime:TryEvaluateScalarComparison(int,System.Object,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,byref):bool]\n       test     eax, eax\n       je       G_M000_IG139\n       mov      rdi, r14\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:get_LiveExtent():int:this]\n       mov      esi, eax\n       mov      rdi, rbx\n       call     [Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Trim(int):this]\n       mov      rdi, gword ptr [rbx+0x18]\n       mov      r13, gword ptr [r14]\n       mov      rdi, gword ptr [rdi+0xA0]\n       cmp      byte  ptr [rdi], dil\n       xor      eax, eax\n       mov      gword ptr [rbp-0x118], rax\n       mov      rax, gword ptr [rdi+0x88]\n       mov      rax, gword ptr [rax+0x20]\n       test     rax, rax\n       je       SHORT G_M000_IG457\n       mov      rdi, rax\n       call     CORINFO_HELP_THROW\n       int3"
+    },
+    {
+      "label": "G_M000_IG457",
+      "start": 11439,
+      "end": 11479,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, gword ptr [rdi+0x178]\n       mov      gword ptr [rbp-0x118], rdi\n       lea      rdi, [rbp-0x118]\n       call     [System.Threading.CancellationToken:get_IsCancellationRequested():bool:this]\n       test     eax, eax\n       je       SHORT G_M000_IG458\n       mov      rdi, r13\n       call     [Lokad.Lython.Runtime.ExecutionState:ThrowExecutionCanceled(Lokad.Lython.LythonSourceSpan)]"
+    },
+    {
+      "label": "G_M000_IG458",
+      "start": 11479,
+      "end": 11494,
+      "leafSamples": 0,
+      "instructions": "cmp      byte  ptr [rbp-0x60], 0\n       jne      G_M000_IG104\n       jmp      G_M000_IG132"
+    },
+    {
+      "label": "G_M000_IG459",
+      "start": 11494,
+      "end": 11517,
+      "leafSamples": 0,
+      "instructions": "not      esi\n       mov      r11, 0x7828EDE63198\n       call     [r11]System.Collections.Generic.IReadOnlyList`1[System.__Canon]:get_Item(int):System.__Canon:this\n       mov      rdi, rax\n       jmp      G_M000_IG04"
+    },
+    {
+      "label": "G_M000_IG460",
+      "start": 11517,
+      "end": 11595,
+      "leafSamples": 0,
+      "instructions": "mov      rax, gword ptr [rbx+0x08]\n       cmp      esi, dword ptr [rax+0x9C]\n       jge      G_M000_IG130\n       mov      rdi, gword ptr [rbx+0x08]\n       mov      rdi, gword ptr [rdi+0x20]\n       mov      r11, 0x7828EDE63190\n       call     [r11]System.Collections.Generic.IReadOnlyList`1[System.__Canon]:get_Item(int):System.__Canon:this\n       mov      r14, rax\n       mov      rdi, gword ptr [rbx+0x08]\n       mov      esi, dword ptr [rbx+0x38]\n       xor      edx, edx\n       cmp      dword ptr [rdi], edi\n       call     [Lokad.Lython.Frontend.ExecutableCodeObject:OperandReadSpan(int,int):Lokad.Lython.LythonSourceSpan:this]\n       mov      rsi, rax\n       mov      rdi, r14\n       call     [Lokad.Lython.Runtime.RuntimeErrors:UnboundLocalVariable(System.String,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntimeException]\n       mov      rdi, rax\n       call     CORINFO_HELP_THROW\n       int3"
+    },
+    {
+      "label": "G_M000_IG461",
+      "start": 11595,
+      "end": 11631,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, r14\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:get_DiscardIterator():bool:this]\n       test     eax, eax\n       je       G_M000_IG132\n       mov      esi, dword ptr [rbx+0x3C]\n       dec      esi\n       mov      rdi, rbx\n       call     [Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Trim(int):this]\n       jmp      G_M000_IG132"
+    },
+    {
+      "label": "G_M000_IG462",
+      "start": 11631,
+      "end": 11692,
+      "leafSamples": 0,
+      "instructions": "mov      esi, dword ptr [r14+0x10]\n       mov      rdi, rbx\n       xor      edx, edx\n       call     [Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Read(int,int):System.Object:this]\n       mov      r13, rax\n       mov      rsi, r13\n       mov      rdi, 0x7828F093C228\n       call     CORINFO_HELP_ISINSTANCEOFCLASS\n       test     rax, rax\n       je       SHORT G_M000_IG463\n       mov      rdi, rbx\n       mov      rsi, r14\n       mov      rdx, r13\n       call     [Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Publish(byref,System.Object):this]\n       jmp      G_M000_IG104"
+    },
+    {
+      "label": "G_M000_IG463",
+      "start": 11692,
+      "end": 11861,
+      "leafSamples": 0,
+      "instructions": "mov      rsi, r13\n       mov      rdi, 0x7828F0833E58\n       call     CORINFO_HELP_ISINSTANCEOFCLASS\n       test     rax, rax\n       jne      G_M000_IG464\n       mov      rsi, r13\n       mov      rdi, 0x7828F04A8090\n       call     CORINFO_HELP_ISINSTANCEOFCLASS\n       test     rax, rax\n       jne      SHORT G_M000_IG464\n       mov      rsi, r13\n       mov      rdi, 0x7828F0927C00\n       call     CORINFO_HELP_ISINSTANCEOFCLASS\n       test     rax, rax\n       jne      SHORT G_M000_IG464\n       mov      rsi, r13\n       mov      rdi, 0x7828F04AB920\n       call     CORINFO_HELP_ISINSTANCEOFCLASS\n       test     rax, rax\n       jne      SHORT G_M000_IG464\n       mov      rsi, r13\n       mov      rdi, 0x7828F04A75E0\n       call     CORINFO_HELP_ISINSTANCEOFCLASS\n       test     rax, rax\n       jne      SHORT G_M000_IG464\n       mov      rsi, r13\n       mov      rdi, 0x7828F082EFC8\n       call     CORINFO_HELP_ISINSTANCEOFCLASS\n       test     rax, rax\n       jne      SHORT G_M000_IG464\n       mov      rsi, r13\n       mov      rdi, 0x7828F08E26A8\n       call     CORINFO_HELP_ISINSTANCEOFCLASS\n       test     rax, rax\n       je       G_M000_IG139"
+    },
+    {
+      "label": "G_M000_IG464",
+      "start": 11861,
+      "end": 11897,
+      "leafSamples": 0,
+      "instructions": "mov      rdx, gword ptr [rbx+0x18]\n       mov      rsi, gword ptr [r14]\n       mov      rdi, r13\n       call     [Lokad.Lython.Runtime.PyIteration+Cursor:Create(System.Object,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):Lokad.Lython.Runtime.PyIteration+Cursor]\n       mov      rdx, rax\n       mov      rsi, r14\n       mov      rdi, rbx\n       call     [Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Publish(byref,System.Object):this]\n       jmp      G_M000_IG104"
+    },
+    {
+      "label": "G_M000_IG465",
+      "start": 11897,
+      "end": 12003,
+      "leafSamples": 0,
+      "instructions": "lea      rsi, bword ptr [rbx+0x48]\n       mov      edi, dword ptr [r14+0x10]\n       cmp      edi, dword ptr [rsi+0x08]\n       jae      G_M000_IG509\n       mov      rsi, bword ptr [rsi]\n       mov      r13, gword ptr [rsi+8*rdi]\n       mov      rsi, r13\n       mov      rdi, 0x7828F093C228\n       call     CORINFO_HELP_ISINSTANCEOFCLASS\n       test     rax, rax\n       jne      SHORT G_M000_IG467\n       mov      rsi, r13\n       mov      rdi, 0x7828F0831118\n       call     CORINFO_HELP_CHKCASTCLASS\n       mov      r13, rax\n       cmp      byte  ptr [r13], r13b\n       mov      rdi, r13\n       call     [Lokad.Lython.Runtime.PyIteration+Cursor:CheckExecution():this]\n       lea      rsi, [rbp-0x78]\n       mov      rdi, r13\n       call     [Lokad.Lython.Runtime.PyIteration+Cursor:TryMoveNextCore(byref):bool:this]\n       test     eax, eax\n       jne      SHORT G_M000_IG466\n       xor      r13, r13\n       xor      r12d, r12d\n       jmp      SHORT G_M000_IG468"
+    },
+    {
+      "label": "G_M000_IG466",
+      "start": 12003,
+      "end": 12021,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, gword ptr [rbp-0x78]\n       call     [Lokad.Lython.Runtime.PyIterationResult:Yield(System.Object):Lokad.Lython.Runtime.PyIterationResult]\n       mov      r13, rax\n       mov      r12d, edx\n       jmp      SHORT G_M000_IG468"
+    },
+    {
+      "label": "G_M000_IG467",
+      "start": 12021,
+      "end": 12036,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, rax\n       call     [Lokad.Lython.Runtime.Text.PyStringOps+CasedWhitespaceIteration:MoveNext():Lokad.Lython.Runtime.PyIterationResult:this]\n       mov      r13, rax\n       mov      r12d, edx"
+    },
+    {
+      "label": "G_M000_IG468",
+      "start": 12036,
+      "end": 12068,
+      "leafSamples": 0,
+      "instructions": "mov      gword ptr [rbp-0x70], r13\n       mov      byte  ptr [rbp-0x68], r12b\n       cmp      byte  ptr [rbp-0x68], 0\n       jne      SHORT G_M000_IG469\n       mov      esi, dword ptr [r14+0x10]\n       mov      rdi, rbx\n       call     [Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Trim(int):this]\n       jmp      G_M000_IG132"
+    },
+    {
+      "label": "G_M000_IG469",
+      "start": 12068,
+      "end": 12098,
+      "leafSamples": 0,
+      "instructions": "lea      rdi, [rbp-0x70]\n       call     [Lokad.Lython.Runtime.PyIterationResult:get_Value():System.Object:this]\n       mov      rdx, rax\n       mov      rsi, r14\n       mov      rdi, rbx\n       call     [Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Publish(byref,System.Object):this]\n       jmp      G_M000_IG104"
+    },
+    {
+      "label": "G_M000_IG470",
+      "start": 12098,
+      "end": 12149,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, r14\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:get_ItemCount():int:this]\n       test     eax, eax\n       je       G_M000_IG473\n       lea      r13, bword ptr [rbx+0x48]\n       mov      r12d, dword ptr [r14+0x10]\n       mov      rdi, r14\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:get_ItemCount():int:this]\n       mov      esi, r12d\n       mov      edx, eax\n       add      rsi, rdx\n       mov      edx, dword ptr [r13+0x08]\n       cmp      rsi, rdx\n       jbe      SHORT G_M000_IG472"
+    },
+    {
+      "label": "G_M000_IG471",
+      "start": 12149,
+      "end": 12156,
+      "leafSamples": 0,
+      "instructions": "call     [System.ThrowHelper:ThrowArgumentOutOfRangeException()]\n       int3"
+    },
+    {
+      "label": "G_M000_IG472",
+      "start": 12156,
+      "end": 12276,
+      "leafSamples": 0,
+      "instructions": "mov      rsi, bword ptr [r13]\n       mov      edx, r12d\n       lea      rsi, bword ptr [rsi+8*rdx]\n       mov      edx, eax\n       mov      rdi, 0x7828EFFFB4D0\n       call     [System.Span`1[System.__Canon]:op_Implicit(System.Span`1[System.__Canon]):System.ReadOnlySpan`1[System.__Canon]]\n       mov      r13, rax\n       mov      r12d, edx\n       mov      rdi, gword ptr [rbx+0x18]\n       mov      rdi, gword ptr [rdi+0xA0]\n       mov      rax, gword ptr [rdi+0x88]\n       mov      gword ptr [rbp-0x198], rax\n       mov      rdi, 0x7828F04A8090\n       call     CORINFO_HELP_NEWSFAST\n       mov      gword ptr [rbp-0x1A0], rax\n       mov      r8, gword ptr [r14]\n       mov      rsi, r13\n       mov      edx, r12d\n       mov      r9, gword ptr [rbx+0x18]\n       mov      rdi, rax\n       mov      rcx, gword ptr [rbp-0x198]\n       call     [Lokad.Lython.Runtime.PyTuple:.ctor(System.ReadOnlySpan`1[System.Object],Lokad.Lython.Runtime.MemoryGovernor,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):this]\n       mov      r13, gword ptr [rbp-0x1A0]\n       jmp      SHORT G_M000_IG474"
+    },
+    {
+      "label": "G_M000_IG473",
+      "start": 12276,
+      "end": 12289,
+      "leafSamples": 0,
+      "instructions": "mov      rsi, 0x782111801968\n       mov      r13, gword ptr [rsi]"
+    },
+    {
+      "label": "G_M000_IG474",
+      "start": 12289,
+      "end": 12322,
+      "leafSamples": 0,
+      "instructions": "mov      esi, dword ptr [r14+0x10]\n       mov      rdi, rbx\n       call     [Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Trim(int):this]\n       mov      rdi, rbx\n       mov      rsi, r14\n       mov      rdx, r13\n       call     [Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Publish(byref,System.Object):this]\n       jmp      G_M000_IG104"
+    },
+    {
+      "label": "G_M000_IG475",
+      "start": 12322,
+      "end": 12444,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, r14\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:get_ItemCount():int:this]\n       movsxd   rdi, eax\n       imul     r13, rdi, 80\n       jo       G_M000_IG510\n       add      r13, 64\n       jo       G_M000_IG510\n       mov      rdi, gword ptr [rbx+0x18]\n       mov      rdi, gword ptr [rdi+0xA0]\n       mov      r12, gword ptr [rdi+0x88]\n       mov      rax, gword ptr [r14]\n       mov      gword ptr [rbp-0x288], rax\n       cmp      byte  ptr [r12], r12b\n       mov      rdi, 0x7828F0158E58\n       call     CORINFO_HELP_NEWSFAST\n       mov      gword ptr [rbp-0x290], rax\n       mov      rdi, rax\n       mov      rsi, r12\n       mov      rdx, r13\n       mov      rcx, gword ptr [rbp-0x288]\n       call     [Lokad.Lython.Runtime.MemoryGovernor+TemporaryMemoryReservation:.ctor(Lokad.Lython.Runtime.MemoryGovernor,long,Lokad.Lython.LythonSourceSpan):this]\n       mov      r12, gword ptr [rbp-0x290]\n       mov      gword ptr [rbp-0x168], r12"
+    },
+    {
+      "label": "G_M000_IG476",
+      "start": 12444,
+      "end": 12502,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, gword ptr [rbx+0x18]\n       mov      rax, gword ptr [r14]\n       mov      gword ptr [rbp-0x298], rax\n       mov      rdi, gword ptr [rdi+0xA0]\n       cmp      byte  ptr [rdi], dil\n       xor      ecx, ecx\n       mov      gword ptr [rbp-0x120], rcx\n       mov      rcx, gword ptr [rdi+0x88]\n       mov      rcx, gword ptr [rcx+0x20]\n       test     rcx, rcx\n       je       SHORT G_M000_IG477\n       mov      rdi, rcx\n       call     CORINFO_HELP_THROW\n       int3"
+    },
+    {
+      "label": "G_M000_IG477",
+      "start": 12502,
+      "end": 12546,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, gword ptr [rdi+0x178]\n       mov      gword ptr [rbp-0x120], rdi\n       lea      rdi, [rbp-0x120]\n       call     [System.Threading.CancellationToken:get_IsCancellationRequested():bool:this]\n       test     eax, eax\n       je       SHORT G_M000_IG478\n       mov      rdi, gword ptr [rbp-0x298]\n       call     [Lokad.Lython.Runtime.ExecutionState:ThrowExecutionCanceled(Lokad.Lython.LythonSourceSpan)]"
+    },
+    {
+      "label": "G_M000_IG478",
+      "start": 12546,
+      "end": 12617,
+      "leafSamples": 0,
+      "instructions": "lea      rax, bword ptr [rbx+0x48]\n       mov      bword ptr [rbp-0x1A8], rax\n       mov      ecx, dword ptr [r14+0x10]\n       mov      dword ptr [rbp-0xA4], ecx\n       mov      rdi, r14\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:get_ItemCount():int:this]\n       mov      dword ptr [rbp-0x124], eax\n       mov      esi, dword ptr [rbp-0xA4]\n       mov      edi, esi\n       mov      ecx, eax\n       add      rdi, rcx\n       mov      rcx, bword ptr [rbp-0x1A8]\n       mov      edx, dword ptr [rcx+0x08]\n       cmp      rdi, rdx\n       jbe      SHORT G_M000_IG479\n       call     [System.ThrowHelper:ThrowArgumentOutOfRangeException()]\n       int3"
+    },
+    {
+      "label": "G_M000_IG479",
+      "start": 12617,
+      "end": 12659,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, bword ptr [rcx]\n       mov      esi, esi\n       lea      rcx, bword ptr [rdi+8*rsi]\n       mov      bword ptr [rbp-0x2B0], rcx\n       test     eax, eax\n       jne      SHORT G_M000_IG480\n       mov      rax, 0x782111800F80\n       mov      rax, gword ptr [rax]\n       mov      gword ptr [rbp-0x2A0], rax\n       jmp      SHORT G_M000_IG481"
+    },
+    {
+      "label": "G_M000_IG480",
+      "start": 12659,
+      "end": 12725,
+      "leafSamples": 0,
+      "instructions": "movsxd   rsi, eax\n       mov      rdi, 0x7828EF0827A0\n       call     CORINFO_HELP_NEWARR_1_PTR\n       mov      gword ptr [rbp-0x2A8], rax\n       lea      rdi, bword ptr [rax+0x10]\n       mov      edx, dword ptr [rbp-0x124]\n       shl      rdx, 3\n       mov      rsi, bword ptr [rbp-0x2B0]\n       call     [System.Buffer:BulkMoveWithWriteBarrier(byref,byref,nuint)]\n       mov      rax, gword ptr [rbp-0x2A8]\n       mov      gword ptr [rbp-0x2A0], rax"
+    },
+    {
+      "label": "G_M000_IG481",
+      "start": 12725,
+      "end": 12800,
+      "leafSamples": 0,
+      "instructions": "mov      esi, dword ptr [r14+0x10]\n       mov      rdi, rbx\n       call     [Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Trim(int):this]\n       mov      rdi, r12\n       mov      rsi, r13\n       call     [Lokad.Lython.Runtime.MemoryGovernor+TemporaryMemoryReservation:Commit(long):this]\n       mov      rsi, gword ptr [rbx+0x18]\n       mov      rsi, gword ptr [rsi+0xA0]\n       mov      rsi, gword ptr [rsi+0x88]\n       mov      rdx, gword ptr [r14]\n       mov      rdi, gword ptr [rbp-0x2A0]\n       call     [Lokad.Lython.Runtime.PyList:FromTransferredArray(System.Object[],Lokad.Lython.Runtime.MemoryGovernor,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.PyList]\n       mov      rdx, rax\n       mov      rsi, r14\n       mov      rdi, rbx\n       call     [Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Publish(byref,System.Object):this]\n       nop"
+    },
+    {
+      "label": "G_M000_IG482",
+      "start": 12800,
+      "end": 12814,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, r12\n       call     [Lokad.Lython.Runtime.MemoryGovernor+TemporaryMemoryReservation:Dispose():this]\n       jmp      G_M000_IG104"
+    },
+    {
+      "label": "G_M000_IG483",
+      "start": 12814,
+      "end": 12839,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, rbx\n       mov      rsi, r14\n       call     [Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Format(byref):bool:this]\n       test     eax, eax\n       jne      G_M000_IG104\n       jmp      G_M000_IG139"
+    },
+    {
+      "label": "G_M000_IG484",
+      "start": 12839,
+      "end": 12853,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, r14\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:get_LiveExtent():int:this]\n       jmp      G_M000_IG172"
+    },
+    {
+      "label": "G_M000_IG485",
+      "start": 12853,
+      "end": 12870,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, rbx\n       mov      esi, r12d\n       call     [Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Trim(int):this]\n       jmp      G_M000_IG175"
+    },
+    {
+      "label": "G_M000_IG486",
+      "start": 12870,
+      "end": 12942,
+      "leafSamples": 0,
+      "instructions": "mov      rsi, bword ptr [rbp-0x88]\n       mov      eax, edi\n       lea      rsi, bword ptr [rsi+2*rax]\n       mov      eax, dword ptr [rbp-0x80]\n       sub      eax, edi\n       cmp      eax, 26\n       jb       SHORT G_M000_IG487\n       vmovups  ymm0, ymmword ptr [reloc @RWD192]\n       vmovups  ymmword ptr [rsi], ymm0\n       vmovups  xmm0, xmmword ptr [reloc @RWD224]\n       vmovups  xmmword ptr [rsi+0x20], xmm0\n       mov      dword ptr [rsi+0x30], 0x20003A\n       mov      edi, dword ptr [rbp-0x90]\n       add      edi, 26\n       mov      dword ptr [rbp-0x90], edi\n       jmp      SHORT G_M000_IG488"
+    },
+    {
+      "label": "G_M000_IG487",
+      "start": 12942,
+      "end": 12965,
+      "leafSamples": 0,
+      "instructions": "lea      rdi, [rbp-0xA0]\n       mov      rsi, 0x7828EC25C048\n       call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:GrowThenCopyString(System.String):this]"
+    },
+    {
+      "label": "G_M000_IG488",
+      "start": 12965,
+      "end": 13034,
+      "leafSamples": 0,
+      "instructions": "mov      esi, dword ptr [r14+0x1C]\n       lea      rdi, [rbp-0xA0]\n       call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:AppendFormatted[int](int):this]\n       mov      rdi, 0x7828EF797A68\n       call     CORINFO_HELP_NEWSFAST\n       mov      r14, rax\n       lea      rdi, [rbp-0xA0]\n       call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:ToStringAndClear():System.String:this]\n       mov      rsi, rax\n       mov      rdi, r14\n       call     [System.InvalidOperationException:.ctor(System.String):this]\n       mov      rdi, r14\n       call     CORINFO_HELP_THROW\n       int3"
+    },
+    {
+      "label": "G_M000_IG489",
+      "start": 13034,
+      "end": 13043,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, rcx\n       call     CORINFO_HELP_THROW\n       int3"
+    },
+    {
+      "label": "G_M000_IG490",
+      "start": 13043,
+      "end": 13086,
+      "leafSamples": 0,
+      "instructions": "lea      rdi, [rbp-0xA0]\n       mov      esi, 26\n       mov      edx, 1\n       call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:.ctor(int,int):this]\n       mov      edi, dword ptr [rbp-0x90]\n       cmp      edi, dword ptr [rbp-0x80]\n       jbe      G_M000_IG486\n       jmp      G_M000_IG471"
+    },
+    {
+      "label": "G_M000_IG491",
+      "start": 13086,
+      "end": 13110,
+      "leafSamples": 0,
+      "instructions": "mov      rsi, gword ptr [rbx+0x08]\n       mov      esi, dword ptr [rsi+0x9C]\n       mov      rdi, rbx\n       call     [Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Trim(int):this]\n       jmp      G_M000_IG142"
+    },
+    {
+      "label": "G_M000_IG492",
+      "start": 13110,
+      "end": 13180,
+      "leafSamples": 0,
+      "instructions": "mov      esi, dword ptr [r14+0x10]\n       mov      rdi, rbx\n       xor      edx, edx\n       call     [Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Read(int,int):System.Object:this]\n       mov      rsi, rax\n       mov      rdi, r15\n       call     CORINFO_HELP_CHECKED_ASSIGN_REF\n       mov      esi, dword ptr [r14+0x10]\n       mov      rdi, gword ptr [rbx+0x08]\n       cmp      esi, dword ptr [rdi+0x9C]\n       jl       SHORT G_M000_IG491\n       lea      rsi, bword ptr [rbx+0x48]\n       mov      edi, dword ptr [r14+0x10]\n       cmp      edi, dword ptr [rsi+0x08]\n       jae      G_M000_IG509\n       mov      rsi, bword ptr [rsi]\n       xor      rax, rax\n       mov      gword ptr [rsi+8*rdi], rax\n       jmp      SHORT G_M000_IG491"
+    },
+    {
+      "label": "G_M000_IG493",
+      "start": 13180,
+      "end": 13208,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, r14\n       mov      rsi, 0x7828EC257C98\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:InvalidOperand(System.String):System.InvalidOperationException:this]\n       mov      rdi, rax\n       call     CORINFO_HELP_THROW\n       int3"
+    },
+    {
+      "label": "G_M000_IG494",
+      "start": 13208,
+      "end": 13215,
+      "leafSamples": 0,
+      "instructions": "call     [System.ThrowHelper:ThrowArgumentOutOfRange_IndexMustBeLessException()]\n       int3"
+    },
+    {
+      "label": "G_M000_IG495",
+      "start": 13215,
+      "end": 13224,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, rcx\n       call     CORINFO_HELP_THROW\n       int3"
+    },
+    {
+      "label": "G_M000_IG496",
+      "start": 13224,
+      "end": 13252,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, r13\n       mov      rsi, 0x7828EC257CC8\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:InvalidOperand(System.String):System.InvalidOperationException:this]\n       mov      rdi, rax\n       call     CORINFO_HELP_THROW\n       int3"
+    },
+    {
+      "label": "G_M000_IG497",
+      "start": 13252,
+      "end": 13280,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, r14\n       mov      rsi, 0x7828EC257CC8\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:InvalidOperand(System.String):System.InvalidOperationException:this]\n       mov      rdi, rax\n       call     CORINFO_HELP_THROW\n       int3"
+    },
+    {
+      "label": "G_M000_IG498",
+      "start": 13280,
+      "end": 13322,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, gword ptr [rbx+0x08]\n       mov      rdi, gword ptr [rdi+0x20]\n       mov      r11, 0x7828EDE630F0\n       call     [r11]System.Collections.Generic.IReadOnlyList`1[System.__Canon]:get_Item(int):System.__Canon:this\n       mov      rdi, rax\n       mov      rsi, r12\n       call     [Lokad.Lython.Runtime.RuntimeErrors:UnboundLocalVariable(System.String,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntimeException]\n       mov      rdi, rax\n       call     CORINFO_HELP_THROW\n       int3"
+    },
+    {
+      "label": "G_M000_IG499",
+      "start": 13322,
+      "end": 13331,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, rcx\n       call     CORINFO_HELP_THROW\n       int3"
+    },
+    {
+      "label": "G_M000_IG500",
+      "start": 13331,
+      "end": 13359,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, r13\n       mov      rsi, 0x7828EC257CC8\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:InvalidOperand(System.String):System.InvalidOperationException:this]\n       mov      rdi, rax\n       call     CORINFO_HELP_THROW\n       int3"
+    },
+    {
+      "label": "G_M000_IG501",
+      "start": 13359,
+      "end": 13371,
+      "leafSamples": 0,
+      "instructions": "mov      edi, 4\n       call     [System.ThrowHelper:ThrowArgumentNullException(int)]\n       int3"
+    },
+    {
+      "label": "G_M000_IG502",
+      "start": 13371,
+      "end": 13378,
+      "leafSamples": 0,
+      "instructions": "call     [System.ThrowHelper:ThrowInvalidOperationException_ConcurrentOperationsNotSupported()]\n       int3"
+    },
+    {
+      "label": "G_M000_IG503",
+      "start": 13378,
+      "end": 13399,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, r12\n       mov      rsi, r13\n       call     [Lokad.Lython.Runtime.RuntimeErrors:NameNotDefined(System.String,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntimeException]\n       mov      rdi, rax\n       call     CORINFO_HELP_THROW\n       int3"
+    },
+    {
+      "label": "G_M000_IG504",
+      "start": 13399,
+      "end": 13408,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, rcx\n       call     CORINFO_HELP_THROW\n       int3"
+    },
+    {
+      "label": "G_M000_IG505",
+      "start": 13408,
+      "end": 13436,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, r13\n       mov      rsi, 0x7828EC257CC8\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:InvalidOperand(System.String):System.InvalidOperationException:this]\n       mov      rdi, rax\n       call     CORINFO_HELP_THROW\n       int3"
+    },
+    {
+      "label": "G_M000_IG506",
+      "start": 13436,
+      "end": 13498,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, gword ptr [rbx+0x08]\n       mov      rdi, gword ptr [rdi+0x20]\n       mov      r11, 0x7828EDE63140\n       call     [r11]System.Collections.Generic.IReadOnlyList`1[System.__Canon]:get_Item(int):System.__Canon:this\n       mov      r15, rax\n       mov      rdi, gword ptr [rbx+0x08]\n       mov      esi, dword ptr [rbx+0x38]\n       xor      edx, edx\n       cmp      dword ptr [rdi], edi\n       call     [Lokad.Lython.Frontend.ExecutableCodeObject:OperandReadSpan(int,int):Lokad.Lython.LythonSourceSpan:this]\n       mov      rsi, rax\n       mov      rdi, r15\n       call     [Lokad.Lython.Runtime.RuntimeErrors:UnboundLocalVariable(System.String,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntimeException]\n       mov      rdi, rax\n       call     CORINFO_HELP_THROW\n       int3"
+    },
+    {
+      "label": "G_M000_IG507",
+      "start": 13498,
+      "end": 13563,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, gword ptr [rbx+0x08]\n       mov      rdi, gword ptr [rdi+0x20]\n       mov      r11, 0x7828EDE63150\n       call     [r11]System.Collections.Generic.IReadOnlyList`1[System.__Canon]:get_Item(int):System.__Canon:this\n       mov      r15, rax\n       mov      rdi, gword ptr [rbx+0x08]\n       mov      esi, dword ptr [rbx+0x38]\n       mov      edx, 1\n       cmp      dword ptr [rdi], edi\n       call     [Lokad.Lython.Frontend.ExecutableCodeObject:OperandReadSpan(int,int):Lokad.Lython.LythonSourceSpan:this]\n       mov      rsi, rax\n       mov      rdi, r15\n       call     [Lokad.Lython.Runtime.RuntimeErrors:UnboundLocalVariable(System.String,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntimeException]\n       mov      rdi, rax\n       call     CORINFO_HELP_THROW\n       int3"
+    },
+    {
+      "label": "G_M000_IG508",
+      "start": 13563,
+      "end": 13591,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, r14\n       mov      rsi, 0x7828EC25A5F0\n       call     [Lokad.Lython.Frontend.ExecutableInstruction:InvalidOperand(System.String):System.InvalidOperationException:this]\n       mov      rdi, rax\n       call     CORINFO_HELP_THROW\n       int3"
+    },
+    {
+      "label": "G_M000_IG509",
+      "start": 13591,
+      "end": 13597,
+      "leafSamples": 0,
+      "instructions": "call     CORINFO_HELP_RNGCHKFAIL\n       int3"
+    },
+    {
+      "label": "G_M000_IG510",
+      "start": 13597,
+      "end": 13603,
+      "leafSamples": 0,
+      "instructions": "call     CORINFO_HELP_OVERFLOW\n       int3"
+    },
+    {
+      "label": "G_M000_IG511",
+      "start": 13603,
+      "end": 13607,
+      "leafSamples": 0,
+      "instructions": "sub      rsp, 24"
+    },
+    {
+      "label": "G_M000_IG512",
+      "start": 13607,
+      "end": 13621,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, gword ptr [rbp-0x168]\n       call     [Lokad.Lython.Runtime.MemoryGovernor+TemporaryMemoryReservation:Dispose():this]\n       nop"
+    },
+    {
+      "label": "G_M000_IG513",
+      "start": 13621,
+      "end": 13629,
+      "leafSamples": 0,
+      "instructions": "vzeroupper \n       add      rsp, 24\n       ret"
+    },
+    {
+      "label": "G_M000_IG514",
+      "start": 13629,
+      "end": 13633,
+      "leafSamples": 0,
+      "instructions": "sub      rsp, 24"
+    },
+    {
+      "label": "G_M000_IG515",
+      "start": 13633,
+      "end": 13647,
+      "leafSamples": 0,
+      "instructions": "mov      rdi, gword ptr [rbp-0x248]\n       call     [Lokad.Lython.Runtime.MemoryGovernor+TemporaryMemoryReservation:Dispose():this]\n       nop"
+    },
+    {
+      "label": "G_M000_IG516",
+      "start": 13647,
+      "end": 13655,
+      "leafSamples": 0,
+      "instructions": "vzeroupper \n       add      rsp, 24\n       ret      \n \nRWD00  \tdd\t0000219Dh ; case G_M000_IG372\n       \tdd\t00003299h ; case G_M000_IG490\n       \tdd\t00002155h ; case G_M000_IG371\n       \tdd\t00002101h ; case G_M000_IG370\n       \tdd\t00003299h ; case G_M000_IG490\n       \tdd\t00003299h ; case G_M000_IG490\n       \tdd\t00000E1Ch ; case G_M000_IG169\n       \tdd\t00000DECh ; case G_M000_IG165\n       \tdd\t00002FC8h ; case G_M000_IG475\n       \tdd\t00000C2Fh ; case G_M000_IG141\n       \tdd\t00003299h ; case G_M000_IG490\n       \tdd\t00003299h ; case G_M000_IG490\n       \tdd\t00003299h ; case G_M000_IG490\n       \tdd\t00003299h ; case G_M000_IG490\n       \tdd\t00003299h ; case G_M000_IG490\n       \tdd\t00003299h ; case G_M000_IG490\n       \tdd\t00002D15h ; case G_M000_IG462\n       \tdd\t00002E1Fh ; case G_M000_IG465\n       \tdd\t000008C9h ; case G_M000_IG103\n       \tdd\t00000BB7h ; case G_M000_IG134\n       \tdd\t00003299h ; case G_M000_IG490\n       \tdd\t00003299h ; case G_M000_IG490\n       \tdd\t00000977h ; case G_M000_IG109\n       \tdd\t00000977h ; case G_M000_IG109\n       \tdd\t000026DBh ; case G_M000_IG414\n       \tdd\t00000B9Fh ; case G_M000_IG132\n       \tdd\t00000B29h ; case G_M000_IG128\n       \tdd\t00002BBDh ; case G_M000_IG456\n       \tdd\t00003299h ; case G_M000_IG490\n       \tdd\t00003299h ; case G_M000_IG490\n       \tdd\t00003299h ; case G_M000_IG490\n       \tdd\t00003299h ; case G_M000_IG490\n       \tdd\t00003299h ; case G_M000_IG490\n       \tdd\t000032DCh ; case G_M000_IG492\n       \tdd\t000032C4h ; case G_M000_IG491\n       \tdd\t000032C4h ; case G_M000_IG491\n       \tdd\t00003299h ; case G_M000_IG490\n       \tdd\t00003299h ; case G_M000_IG490\n       \tdd\t00002CF1h ; case G_M000_IG461\n       \tdd\t000031B4h ; case G_M000_IG483\n       \tdd\t000031B4h ; case G_M000_IG483\n       \tdd\t000031B4h ; case G_M000_IG483\n       \tdd\t000031B4h ; case G_M000_IG483\n       \tdd\t000031B4h ; case G_M000_IG483\nRWD176 \tdd\t0000192Ch ; case G_M000_IG287\n       \tdd\t00001709h ; case G_M000_IG257\n       \tdd\t00002093h ; case G_M000_IG368\n       \tdd\t00000EB6h ; case G_M000_IG178\nRWD192 \tdq\t00780065006E0055h, 0074006300650070h, 0069002000640065h, 006E0069006C006Eh\nRWD224 \tdq\t0070006F00200065h, 00650064006F0063h"
+    }
+  ],
+  "interpretation": "Exact same-process map/disassembly lengths and instruction-group offsets; sampled instruction groups may contain several source operations. This is attribution, not a speedup forecast or proof that a zero-sample operation is free."
+}
