@@ -389,6 +389,20 @@ internal static partial class PyIteration
             return TryMoveNextCore(out value);
         }
 
+        internal bool TryMoveNextInteger(out bool hasValue, out long value)
+        {
+            hasValue = false;
+            value = 0;
+            if (_disposed) return true;
+            if (_value is not PyRange range || _iterator is not null) return false;
+            _syncEnumerator ??= range.GetEnumerator();
+            if (_syncEnumerator is not PyRange.Enumerator { HasMachineBounds: true } integers) return false;
+            CheckExecution();
+            hasValue = integers.MoveNext();
+            if (hasValue) value = integers.MachineValue;
+            return true;
+        }
+
         private bool TryMoveNextCore([MaybeNullWhen(false)] out object value)
         {
             if (_disposed || _value is null)

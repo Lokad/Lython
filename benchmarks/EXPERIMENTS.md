@@ -7827,3 +7827,12 @@ Selected completion restores general cursor routes exactly, retaining standalone
 primitive pull/state. No new router/owner/flag; native acquisition+24B tradeoff is
 explicit. Corrected source/checks/timing and retention/debt remain separate;
 publication held and broader objective active.
+
+R362 [refined73a retained pending full delivery](results/2026-11-14-range-iteration-stage/refined/README.md):
+B745 counter warm−27.9–30.6%/fresh−27.6–27.9%, allocation−99.52%; general
+cursor routes restored exactly. B745 text11.88% process spread prompts bounded
+B746: two jobs/eight fresh processes, −3.43..−0.07% elapsed; all six processes
+per image across both collections aggregate−1.33%elapsed/−1.55%CPU descriptively.
+Original +12.91% and unresolved cause remain. Materialization alloc+1.26%, no
+neutrality/universal claim.142 furtherfocused/90Pythoncontrols/18goldens/22extreme
+checks pass; full delivery separate. All adverse/source/binary/raw preserved.

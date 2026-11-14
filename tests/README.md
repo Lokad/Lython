@@ -78,6 +78,10 @@ exact and protocol bounds, errors, named guest functions/rebinding, actual I/O
 transfer and cancellation. Native sequence admission also refuses construction
 before loop effects and verifies first failure, unwind and budget reuse.
 
+[Range iteration](Lokad.Lython.Tests/RangeIterationStateTests.cs) covers independent
+enumerators, stable observed values, disposal/exhaustion and signed/wider bounds,
+including a full signed span and strides whose final successor would overflow.
+
 ## Assembly boundaries
 
 - `Lokad.Lython.PublicApi.Tests` references `Lokad.Lython.csproj` normally. It

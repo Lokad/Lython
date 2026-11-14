@@ -725,6 +725,12 @@ Exact integer/bool `range` construction inside an eligible native prefix shares
 the ordinary range factory over evaluated argument storage, keeping the remaining
 body in that prefix. Constructor metadata remains per execution. Index protocols,
 keywords and starred calls retain their ordinary binding and execution behavior.
+Range iteration shares one explicit enumerator for object and native pulls.
+Machine-sized bounds retain exact cardinality and advance without boxing until a
+value is observed; eligible native loops reuse their existing integer working
+storage. Ordinary observations cache stable Python values, while wider bounds
+retain exact integer progression and major-yield admission. Enumerations remain
+independent, and cursor transfer preserves the current position and cleanup.
 An operation requiring a real context or suspension transfers at its current
 instruction without replaying completed iterations. The ordinary deferred prefix
 also avoids context materialization where possible; selecting the native loop is

@@ -1,0 +1,61 @@
+{
+  "medianMilliseconds": {
+    "processMedians": {
+      "reference": [
+        1.3140804093406593,
+        1.2933301972972973,
+        1.3178083525377229,
+        1.2982085679347826,
+        1.3100519864130435,
+        1.3109021725543477
+      ],
+      "candidate": [
+        1.2867358605898123,
+        1.4602478187311179,
+        1.2888649743243243,
+        1.2973180956873314,
+        1.265911090909091,
+        1.2972982560646902
+      ]
+    },
+    "aggregateMedians": {
+      "reference": 1.3104770794836957,
+      "candidate": 1.2930816151945073
+    },
+    "aggregateChangePercent": -1.3274146157551958,
+    "allPairChangePercent": [
+      -3.938149392412993,
+      12.90603295141739
+    ]
+  },
+  "processCpuMedianMilliseconds": {
+    "processMedians": {
+      "reference": [
+        1.3736263736263736,
+        1.3513513513513513,
+        1.3717421124828533,
+        1.358695652173913,
+        1.372282608695652,
+        1.358695652173913
+      ],
+      "candidate": [
+        1.3404825737265416,
+        1.5105740181268883,
+        1.337837837837838,
+        1.3477088948787062,
+        1.3175230566534915,
+        1.3611859838274933
+      ]
+    },
+    "aggregateMedians": {
+      "reference": 1.3652188823283833,
+      "candidate": 1.3440957343026239
+    },
+    "aggregateChangePercent": -1.547235267485747,
+    "allPairChangePercent": [
+      -4.084321475625819,
+      11.782477341389729
+    ]
+  },
+  "interpretation": "Descriptive process-median aggregation, not confidence interval. B745 half-second batches; B746 one-second batches. Every original/adverse process retained. One high candidate remains unexplained; no neutrality claim."
+}

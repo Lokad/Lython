@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Share range position and exhaustion between ordinary iteration and native
+  numeric loops, avoiding unobserved per-yield boxes. Preserve exact wider bounds,
+  stable observed values, cancellation, admission and independent cursors.
+
 - Keep exact `range` construction inside eligible native helpers, sharing the
   ordinary factory over evaluated argument storage. Preserve per-execution type
   metadata, index protocols, cancellation, admission and cursor transfer.

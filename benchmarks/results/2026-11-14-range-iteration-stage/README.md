@@ -1,4 +1,7 @@
-# Range-iteration stage — bounded refinement
+# Range-iteration stage — initial source and refinement history
+
+The [refined stage is retained pending full delivery](refined/README.md).
+The following describes the preserved initial development source.
 
 R362, 2026-11-14 UTC. Initial frozen `8056823e` against fully qualified
 `3bc513b8` / frozen `ca1e2331`; three production inputs, 582 total.

@@ -71,11 +71,79 @@ internal sealed class PyRange : IPyIterableValue, IPySliceableValue, IPySubscrip
         return hash.ToHashCode();
     }
 
-    public IEnumerable<object> Iterate()
+    public IEnumerable<object> Iterate() => new RangeValues(this);
+
+    internal Enumerator GetEnumerator() => new(this);
+
+    private sealed class RangeValues(PyRange range) : IEnumerable<object>
     {
-        for (var value = Start; Step > 0 ? value < Stop : value > Stop; value += Step)
+        public IEnumerator<object> GetEnumerator() => range.GetEnumerator();
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+
+    // One position serves ordinary object pulls and native machine pulls. Only
+    // observing Current boxes a machine value; wider yields retain their eager
+    // admission and publication. Each enumeration owns independent state.
+    internal sealed class Enumerator : IEnumerator<object>
+    {
+        private readonly PyRange _range;
+        private readonly long _machineStep;
+        private long _machineValue;
+        private ulong _remaining;
+        private BigInteger _value;
+        private object? _current;
+        private bool _started;
+        private bool _finished;
+
+        internal Enumerator(PyRange range)
         {
-            yield return OwnYield(value);
+            _range = range;
+            HasMachineBounds = !range.Step.IsZero && range.Start.GetByteCount() <= sizeof(long)
+                && range.Stop.GetByteCount() <= sizeof(long) && range.Step.GetByteCount() <= sizeof(long);
+            if (HasMachineBounds)
+            {
+                _machineValue = (long)range.Start;
+                _machineStep = (long)range.Step;
+                // The distance between signed machine bounds fits UInt64.
+                _remaining = (ulong)range.Length;
+            }
+        }
+
+        internal bool HasMachineBounds { get; }
+        internal long MachineValue => _machineValue;
+
+        public object Current => !_started ? null! : _current ??= _range.OwnYield((BigInteger)_machineValue);
+        object System.Collections.IEnumerator.Current => Current;
+        public void Reset() => throw new NotSupportedException();
+        public void Dispose() => _finished = true;
+
+        public bool MoveNext()
+        {
+            if (_finished) return false;
+            // Like the generated iterator's executing state, this also makes
+            // reentrant pulls during major-yield admission terminal and prevents
+            // retrying a failed pull. Publish only after admission succeeds.
+            _finished = true;
+            if (HasMachineBounds)
+            {
+                if (_remaining == 0) return false;
+                if (_started) _machineValue = unchecked(_machineValue + _machineStep);
+                // A successor exists only while it remains within the original
+                // signed bounds. Do not compute a final out-of-range successor.
+                _remaining--;
+                _current = null;
+            }
+            else
+            {
+                var next = _started ? _value + _range.Step : _range.Start;
+                if (_range.Step > 0 ? next >= _range.Stop : next <= _range.Stop) return false;
+                var current = _range.OwnYield(next);
+                _value = next;
+                _current = current;
+            }
+            _started = true;
+            _finished = false;
+            return true;
         }
     }
 

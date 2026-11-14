@@ -211,6 +211,18 @@ internal sealed partial class LythonRuntime
                     case ExecutableOpCode.ForNext:
                     {
                         var iterator = Values[instruction.InputStart];
+                        if (!_integers.IsEmpty && iterator is PyIteration.Cursor cursor
+                            && cursor.TryMoveNextInteger(out var hasInteger, out var integer))
+                        {
+                            if (!hasInteger)
+                            {
+                                Trim(instruction.InputStart);
+                                Index = instruction.TargetIndex;
+                                continue;
+                            }
+                            PublishInteger(instruction, integer);
+                            break;
+                        }
                         var next = iterator is PyStringOps.CasedWhitespaceIteration words ? words.MoveNext()
                             : ((PyIteration.Cursor)iterator).TryMoveNext(out var value)
                                 ? PyIterationResult.Yield(value) : PyIterationResult.End;
