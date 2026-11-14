@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[R350 invoice/search stage attribution](results/2026-11-14-invoice-search-stage-attribution/README.md)
+maps exacte235b18b/frozen71ba complete scripts:1,053/742guest leaves with96/142
+unknown and zero ambiguous. All native-body leaves map to same-process Tier1
+groups; mixed metadata/lookup/arithmetic does not establish a redundant complete
+frame/packet. DictReader already bypasses lists/combines record admission. Close
+this gate without a speculative patch; further transport work needs a concrete
+displaced representation and semantic contract. No normal timing claim.
+
 [R349 captured scalar storage](results/2026-11-14-captured-scalar-storage/README.md)
 retains authoritative machine integers in existing captured cells and materializes
 stable Python identities on read. Whole captured-text allocation falls18.00%;

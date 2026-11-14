@@ -1,0 +1,21 @@
+{
+  "source": "e235b18b/frozen71ba421c",
+  "state": "Bounded source gate complete; no new runtime prototype selected.",
+  "findings": [
+    "Native entry/body plus ordinary dispatch are material owning costs, not removable shares. Invoice1053/5.30guestCPU seconds; search742/3.79. Unknown96/142 and zero ambiguous leaves remain explicit.",
+    "Exact same-process Tier1 native body maps117invoice and42search leaves, with11568/5405byte maps/disassembly. Invoice samples spread across387groups; hottest13leaves mixes metadata/cancellation. Search19leaves in the prologue are2.56%of guest samples, not evidence for a large new call engine.",
+    "Native calls already use final slots and one16slot private buffer. Eligibility reads live mutable defaults/keyword storage; replacing it with a once-cached fact would be a semantic change. No redundant complete packet/frame is established.",
+    "Private DictReader rows already use raw funded arrays and shared-key adoption without a guest list. CSV FinishRecord already combines field/row admission; short strings use inline UTF8 and native input is decoded into its admitted record buffer. The proposed list/copy/per-field allowance removal would duplicate delivered work.",
+    "Tuple CopyGovernedItems has21invoice leaves; native CSV FinishRecord36/Feed31/adoption17. These include required retained values/decoding/construction and do not identify a whole redundant record stage.",
+    "Current exact integer operators already avoid allowance transactions for fixed-size scalars. Do not remove substantial-storage preflights based on a generic memory-admission frame share."
+  ],
+  "next": "Continue remaining dispatch/operand construction source analysis on this evidence, with an explicit eliminated representation and alias/identity/promotion/cleanup contract before selecting a prototype. Do not repeat this unchanged capture or revive slower arenas/default caches. The whole-script performance objective remains active; this negative source gate is not its completion.",
+  "semanticRequirements": [
+    "Python values/identity/aliases and exact promotion",
+    "live defaults, receivers and closures; supported errors/evaluation order",
+    "actual asynchronous protocols and joined pending storage",
+    "current cancellation, managed stack admission, terminal memory refusal and result/cache funding"
+  ],
+  "noNormalTimingComparison": true,
+  "publicationHeld": true
+}

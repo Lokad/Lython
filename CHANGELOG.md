@@ -2,6 +2,14 @@
 
 ## 0.11.0 - Unreleased
 
+- Keep unobserved exact-integer updates in captured cells and publish a stable
+  Python identity on read. Share existing compiler preparation and arithmetic;
+  preserve aliases, namespace exposure, cancellation and conservative cell funding.
+
+- Run eligible builtin `for` loops through the existing native prefix. Exact list
+  and tuple cursors share live indexed advancement without separate CLR enumerators;
+  custom iteration and genuine suspension keep ordinary ownership and cleanup.
+
 - Share checked integer-chain evaluation across ordinary and native executable
   bodies, avoiding unpublished intermediate boxes while preserving exact promotion,
   Python stores, protocol fallback, cancellation and per-operation cleanup.

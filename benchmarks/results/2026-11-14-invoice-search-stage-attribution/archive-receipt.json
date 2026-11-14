@@ -1,0 +1,12 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "ramTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 265777152,
+  "archiveSHA256": "4bb297596bb7906fe188561c84ecfcf7fa2d3db745ebc36d7d389aa0a7eed7f4",
+  "source": "Committede235b18b/frozen71ba421c; R350 complete invoice/search stage attribution",
+  "performanceComparison": false
+}
