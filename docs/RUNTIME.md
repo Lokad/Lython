@@ -683,6 +683,9 @@ call-admission cleanup, without staging a pending function on the caller. Only
 actual pending binding or child execution transfers to the existing frame runner.
 Eligible native prefixes support backward branches, preserving loop-carried slots
 and checking the active cancellation/refusal state before each instruction.
+Exact builtin `for` sources use existing private cursors, including unprotected
+break, continue and return cleanup. Custom iteration promotes before acquisition;
+an active builtin cursor transfers with its current position if a body suspends.
 An operation requiring a real context or suspension transfers at its current
 instruction without replaying completed iterations. The ordinary deferred prefix
 also avoids context materialization where possible; selecting the native loop is

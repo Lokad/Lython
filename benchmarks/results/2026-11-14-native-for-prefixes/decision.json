@@ -1,0 +1,363 @@
+{
+  "date": "2026-11-14",
+  "state": "retain implementation; full platform/stress/installed qualification pending",
+  "reference": "2f606519/frozen53becdb6",
+  "candidateCore": "8306699f6ad07d4688cd84bd36b6aa878f5eeb39871005d9346b475cf056067f",
+  "removed": "Whole-function exclusion and forced ordinary routing for GetIter/ForNext/unprotected loop exits. Reuse existing native storage, builtin cursors, shared operators and exact-PC ordinary continuation; no new engine, pool, policy or public API.",
+  "sourceFacts": "Ordinary list/tuple helpers already defer context and use direct positions. Text-input helpers previously promote at generic GetIter. Do not claim that every former for helper built a frame.",
+  "allocation": {
+    "textInputCsvPercent": -25.312252049162076,
+    "listInputCsvPercent": 4.240555077314734,
+    "unchangedTextAndFulfillmentControlsPercent": 0
+  },
+  "timing": {
+    "B714": [
+      {
+        "case": "scripts.csv-check-digits.for-text.large",
+        "actualCases": {
+          "reference": "scripts.csv-check-digits.for-text.large",
+          "candidate": "scripts.csv-check-digits.for-text.large",
+          "reference-control": "scripts.csv-check-digits.for-text.large",
+          "candidate-control": "scripts.csv-check-digits.for-text.large"
+        },
+        "lane": "warm",
+        "medianMilliseconds": {
+          "reference": 6.7735130272108846,
+          "candidate": 5.402071309782609,
+          "reference-control": 6.741111898648649,
+          "candidate-control": 5.749622982758621
+        },
+        "processCpuMedianMilliseconds": {
+          "reference": 6.870748299319728,
+          "candidate": 5.434782608695652,
+          "reference-control": 6.824324324324325,
+          "candidate-control": 5.804597701149425
+        },
+        "iqrPercent": {
+          "reference": 0.2312755010220625,
+          "candidate": 0.4463422298742015,
+          "reference-control": 0.8381757949244213,
+          "candidate-control": 0.6520412039530344
+        },
+        "lythonSourcePairElapsedPercent": [
+          -20.24712600269393,
+          -19.863794118808052,
+          -15.11608585292511,
+          -14.708091644180932
+        ],
+        "lythonSourcePairWiderCpuPercent": [
+          -20.899698665518727,
+          -20.36160137752906,
+          -15.517241379310354,
+          -14.942528735632187
+        ],
+        "candidateProcessSpreadPercent": 6.433674289834546,
+        "referenceProcessSpreadPercent": 0.47835042808764827
+      },
+      {
+        "case": "scripts.csv-check-digits.for-text.large",
+        "actualCases": {
+          "reference": "scripts.csv-check-digits.for-text.large",
+          "candidate": "scripts.csv-check-digits.for-text.large",
+          "reference-control": "scripts.csv-check-digits.for-text.large",
+          "candidate-control": "scripts.csv-check-digits.for-text.large"
+        },
+        "lane": "compile-run",
+        "medianMilliseconds": {
+          "reference": 7.013373631205673,
+          "candidate": 5.578594056497176,
+          "reference-control": 6.921544118881119,
+          "candidate-control": 6.721078851351351
+        },
+        "processCpuMedianMilliseconds": {
+          "reference": 7.163120567375887,
+          "candidate": 5.706214689265536,
+          "reference-control": 7.062937062937063,
+          "candidate-control": 6.824324324324325
+        },
+        "iqrPercent": {
+          "reference": 0.9428676306792905,
+          "candidate": 0.15862490545832347,
+          "reference-control": 0.5327668461593698,
+          "candidate-control": 16.015251965410528
+        },
+        "lythonSourcePairElapsedPercent": [
+          -20.457766121635302,
+          -19.40246337115068,
+          -4.167677286630944,
+          -2.896250664399058
+        ],
+        "lythonSourcePairWiderCpuPercent": [
+          -20.33898305084747,
+          -19.20903954802261,
+          -4.729729729729726,
+          -3.378378378378377
+        ],
+        "candidateProcessSpreadPercent": 20.47979801512114,
+        "referenceProcessSpreadPercent": 1.309348640944541
+      },
+      {
+        "case": "scripts.csv-check-digits.for-list.large",
+        "actualCases": {
+          "candidate-control": "scripts.csv-check-digits.for-list.large",
+          "reference-control": "scripts.csv-check-digits.for-list.large",
+          "candidate": "scripts.csv-check-digits.for-list.large",
+          "reference": "scripts.csv-check-digits.for-list.large"
+        },
+        "lane": "warm",
+        "medianMilliseconds": {
+          "candidate-control": 6.55210001986755,
+          "reference-control": 7.353367904411765,
+          "candidate": 6.798186020408163,
+          "reference": 7.362495291044777
+        },
+        "processCpuMedianMilliseconds": {
+          "candidate-control": 6.688741721854305,
+          "reference-control": 7.426470588235294,
+          "candidate": 6.870748299319728,
+          "reference": 7.462686567164179
+        },
+        "iqrPercent": {
+          "candidate-control": 0.8908052909052561,
+          "reference-control": 0.4472348447258042,
+          "candidate": 0.43673074873729745,
+          "reference": 0.9321845660070989
+        },
+        "lythonSourcePairElapsedPercent": [
+          -11.00707354153333,
+          -10.896610844990938,
+          -7.664646948202458,
+          -7.55003545614128
+        ],
+        "lythonSourcePairWiderCpuPercent": [
+          -10.370860927152325,
+          -9.933774834437092,
+          -7.931972789115649,
+          -7.482993197278908
+        ],
+        "candidateProcessSpreadPercent": 3.619877417326667,
+        "referenceProcessSpreadPercent": 0.1239713748151905
+      },
+      {
+        "case": "scripts.text-summary-helpers.nonlocal-counter.large",
+        "actualCases": {
+          "candidate-control": "scripts.text-summary-helpers.nonlocal-counter.large",
+          "reference-control": "scripts.text-summary-helpers.nonlocal-counter.large",
+          "candidate": "scripts.text-summary-helpers.nonlocal-counter.large",
+          "reference": "scripts.text-summary-helpers.nonlocal-counter.large"
+        },
+        "lane": "warm",
+        "medianMilliseconds": {
+          "candidate-control": 1.4055497390029326,
+          "reference-control": 1.3803509028571428,
+          "candidate": 1.4289781144130758,
+          "reference": 1.3637076370056498
+        },
+        "processCpuMedianMilliseconds": {
+          "candidate-control": 1.466275659824047,
+          "reference-control": 1.4428571428571428,
+          "candidate": 1.485884101040119,
+          "reference": 1.4124293785310735
+        },
+        "iqrPercent": {
+          "candidate-control": 0.6527548427264084,
+          "reference-control": 0.44998226703496563,
+          "candidate": 0.8675464591889301,
+          "reference": 0.45839881387586046
+        },
+        "lythonSourcePairElapsedPercent": [
+          1.8255384260358332,
+          3.068260443943638,
+          3.5228152099064935,
+          4.7862515128787475
+        ],
+        "lythonSourcePairWiderCpuPercent": [
+          1.623065532359691,
+          2.982066408721118,
+          3.8123167155425186,
+          5.20059435364042
+        ],
+        "candidateProcessSpreadPercent": 1.6395195401411655,
+        "referenceProcessSpreadPercent": 1.2204423734134995
+      },
+      {
+        "case": "scripts.csv-fulfillment.large",
+        "actualCases": {
+          "candidate-control": "scripts.csv-fulfillment.large",
+          "reference-control": "scripts.csv-fulfillment.large",
+          "candidate": "scripts.csv-fulfillment.large",
+          "reference": "scripts.csv-fulfillment.large"
+        },
+        "lane": "warm",
+        "medianMilliseconds": {
+          "candidate-control": 8.770382561403508,
+          "reference-control": 8.74086304385965,
+          "candidate": 8.968519125,
+          "reference": 8.714127052173913
+        },
+        "processCpuMedianMilliseconds": {
+          "candidate-control": 8.859649122807017,
+          "reference-control": 8.859649122807017,
+          "candidate": 9.107142857142858,
+          "reference": 8.782608695652174
+        },
+        "iqrPercent": {
+          "candidate-control": 0.5333641790408227,
+          "reference-control": 0.3605365810423808,
+          "candidate": 0.5943148011867607,
+          "reference": 0.37362060156008997
+        },
+        "lythonSourcePairElapsedPercent": [
+          0.33771856847244486,
+          0.6455667778628715,
+          2.604503468342023,
+          2.919306446910519
+        ],
+        "lythonSourcePairWiderCpuPercent": [
+          0.0,
+          0.8771929824561431,
+          2.793493635077815,
+          3.6951909476661937
+        ],
+        "candidateProcessSpreadPercent": 2.20924503627562,
+        "referenceProcessSpreadPercent": 0.30681204813356455
+      }
+    ],
+    "B715": [
+      {
+        "case": "scripts.text-summary-helpers.nonlocal-counter.large",
+        "actualCases": {
+          "candidate-control": "scripts.text-summary-helpers.nonlocal-counter.large",
+          "reference-control": "scripts.text-summary-helpers.nonlocal-counter.large",
+          "candidate": "scripts.text-summary-helpers.nonlocal-counter.large",
+          "reference": "scripts.text-summary-helpers.nonlocal-counter.large"
+        },
+        "lane": "warm",
+        "medianMilliseconds": {
+          "candidate-control": 1.4126568774002954,
+          "reference-control": 1.389326698275862,
+          "candidate": 1.4252799112426036,
+          "reference": 1.4057237165697674
+        },
+        "processCpuMedianMilliseconds": {
+          "candidate-control": 1.4623338257016247,
+          "reference-control": 1.4367816091954022,
+          "candidate": 1.4940828402366864,
+          "reference": 1.4534883720930232
+        },
+        "iqrPercent": {
+          "candidate-control": 0.7179134947562876,
+          "reference-control": 0.31485709470563183,
+          "candidate": 0.8101494378940728,
+          "reference": 0.47899926355591066
+        },
+        "lythonSourcePairElapsedPercent": [
+          0.4932093517953984,
+          1.391183377097538,
+          1.6792435611714618,
+          2.5878155952346438
+        ],
+        "lythonSourcePairWiderCpuPercent": [
+          0.6085672082717819,
+          1.7784342688330845,
+          2.792899408284022,
+          3.9881656804733767
+        ],
+        "candidateProcessSpreadPercent": 0.8856529684265979,
+        "referenceProcessSpreadPercent": 1.1664467278048818
+      },
+      {
+        "case": "scripts.csv-check-digits.for-text.large",
+        "actualCases": {
+          "candidate-control": "scripts.csv-check-digits.for-text.large",
+          "reference-control": "scripts.csv-check-digits.for-text.large",
+          "candidate": "scripts.csv-check-digits.for-text.large",
+          "reference": "scripts.csv-check-digits.for-text.large"
+        },
+        "lane": "compile-run",
+        "medianMilliseconds": {
+          "candidate-control": 5.747505887573964,
+          "reference-control": 6.995106183098591,
+          "candidate": 5.613892348314606,
+          "reference": 7.011757425531915
+        },
+        "processCpuMedianMilliseconds": {
+          "candidate-control": 5.8579881656804735,
+          "reference-control": 7.112676056338028,
+          "candidate": 5.730337078651686,
+          "reference": 7.092198581560283
+        },
+        "iqrPercent": {
+          "candidate-control": 1.8538671615929547,
+          "reference-control": 0.653886217221164,
+          "candidate": 1.1523517964369858,
+          "reference": 0.36944577902318415
+        },
+        "lythonSourcePairElapsedPercent": [
+          -19.9360159284356,
+          -19.74543057146496,
+          -18.030451728897965,
+          -17.835330341933187
+        ],
+        "lythonSourcePairWiderCpuPercent": [
+          -19.434864834798084,
+          -19.202247191011224,
+          -17.640166383502255,
+          -17.402366863905318
+        ],
+        "candidateProcessSpreadPercent": 2.3800516819577178,
+        "referenceProcessSpreadPercent": 0.23747601953101327
+      },
+      {
+        "case": "scripts.csv-fulfillment.large",
+        "actualCases": {
+          "reference": "scripts.csv-fulfillment.large",
+          "candidate": "scripts.csv-fulfillment.large",
+          "reference-control": "scripts.csv-fulfillment.large",
+          "candidate-control": "scripts.csv-fulfillment.large"
+        },
+        "lane": "warm",
+        "medianMilliseconds": {
+          "reference": 9.135348645454545,
+          "candidate": 8.83335254054054,
+          "reference-control": 8.841378491071428,
+          "candidate-control": 9.222693611111112
+        },
+        "processCpuMedianMilliseconds": {
+          "reference": 9.272727272727273,
+          "candidate": 9.00900900900901,
+          "reference-control": 8.928571428571429,
+          "candidate-control": 9.351851851851851
+        },
+        "iqrPercent": {
+          "reference": 2.409205308819455,
+          "candidate": 0.7658102675089494,
+          "reference-control": 0.5939247872476892,
+          "candidate-control": 0.5183210464613618
+        },
+        "lythonSourcePairElapsedPercent": [
+          -3.305797256728338,
+          -0.09077714000133019,
+          0.956120768308355,
+          4.312846921153302
+        ],
+        "lythonSourcePairWiderCpuPercent": [
+          -2.844020491079313,
+          0.8533042846768257,
+          0.9009009009008917,
+          4.740740740740734
+        ],
+        "candidateProcessSpreadPercent": 4.407625177232499,
+        "referenceProcessSpreadPercent": 3.2179412717804445
+      }
+    ]
+  },
+  "retention": "Text-input CSV warm is14.71..20.25%faster with CPU support. Same-binary reversed-order confirmation supports17.84..19.94%compile-to-result improvement. List-input CSV is7.55..11.01%faster with CPU support despite4.24%more allocation. The syntax-wide stage removal and complete-script benefits justify retention.",
+  "debt": "Text control remains modestly adverse: B714+1.83..4.79%, confirmation+0.49..2.59%elapsed with CPU adversity. Accept explicit small debt at this milestone; do not claim release-wide neutrality. Fulfillment confirmation spans-3.31..+4.31%with moving processes and remains uncertain. Original compile-run candidate spread20.48%is preserved; confirmation2.38%. No unchanged further retiming selected.",
+  "next": "Qualify retained iteration milestone, then assess the list cursor/enumerator representation as a coherent follow-up before choosing another design. Do not automatically create a new position pool, calling convention, engine or universal tagged values.",
+  "validation": "123 internal/252 public per actual11/10 plus two post-promotion output cases per target, all passing. The latter each cover four call drivers. Active cursor/child I/O, cancellation, refusal, retained results, wide owned calls and allowance reuse included. Source-only eligibility tests establish the native path independently of semantics.",
+  "fixtureHistory": "Promotion fixture initially installed the callback in caller scope, then assumed already-funded promotion must reserve, then used an atomic conversion without in-operation cancellation. All failed sources/logs/TRX retained. Correct test uses real cancellable bulk casing after promotion; no assertions/timeouts weakened, no production bug claim.",
+  "environment": "First B714 staging failed on a missing immutable reference link before service/guest work. Same hash-verified partial root completed under a fresh idle lease. B714373.44s/420sowner; B715226.09s/300sowner. All users joined/RAMfixtures removed/archives verified, unchanged254/252MiBfloors and no VM retirement.",
+  "compatibility": "No new public APIs or Python behavior. Native execution still promotes before user iteration/protocols or actual suspension, with active cursor state and owned inputs preserved. Minor storage/retention may differ; identical tiny-budget thresholds are not promised.",
+  "publication": "held; no package pin change"
+}

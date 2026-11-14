@@ -14,6 +14,146 @@ public sealed class SimpleFunctionExecutionBoundaryTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public void RefusedOrCancelledOutputAfterForPromotionPreservesInputAndCleanup(bool cancel)
+    {
+        foreach (var driver in Enum.GetValues<Driver>())
+        {
+            var budget = new LythonMemoryBudget(1024 * 1024);
+            using (var owner = budget.CreateScope())
+            using (var cancellation = new CancellationTokenSource())
+            {
+                var hook = new AdmissionHookMemoryBudget(owner);
+                var (function, context, code) = Function(
+                    "def f(values):\n    total=0\n    for value in values:\n        total+=value\n        if value==2: touch(value)\n    return total\n",
+                    new() { MemoryBudget = hook, CancellationToken = cancellation.Token });
+                Assert.True(code.CanRunNativeInstructions);
+                var callback = new ForPromotionCallback(PyString.FromString(new string('A', 4096), context.MemoryGovernor, CallSpan));
+                function.DefinitionContext.Variables["touch"] = callback;
+                var values = new PyTuple([BigInteger.One, new BigInteger(2), new BigInteger(3)], context.MemoryGovernor, CallSpan, context);
+                Assert.Equal(BigInteger.Zero, Invoke(function, [CallArgumentValue.Positional(PyTuple.Empty)], context, driver));
+                var committed = context.MemoryGovernor.CurrentCommittedBytes;
+                hook.RefuseGrowth = _ => !cancel;
+                hook.AfterGrowth = _ => { if (cancel) cancellation.Cancel(); };
+                try
+                {
+                    var failure = Assert.Throws<LythonRuntimeException>(() => Invoke(function, [CallArgumentValue.Positional(values)], context, driver));
+                    Assert.Equal(cancel ? LythonFailureReason.Cancelled : LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
+                    if (!cancel) Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
+                    Assert.Equal(0, callback.Calls);
+                    Assert.Equal(committed, context.MemoryGovernor.CurrentCommittedBytes);
+                    Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+                    Assert.Equal(0, context.State.CurrentInterpreterDepth);
+                    Assert.Equal(0, context.State.CurrentRecursionDepth);
+                    Assert.Equal(3, values.Count);
+                    Assert.Equal(BigInteger.One, values[0]);
+                }
+                finally
+                {
+                    hook.RefuseGrowth = null;
+                    hook.AfterGrowth = null;
+                    context.State.CloseResources();
+                }
+            }
+            Assert.Equal(0, budget.ReservedBytes);
+        }
+    }
+
+    private sealed class ForPromotionCallback(PyString payload) : LythonRuntime.ICallable
+    {
+        internal int Calls;
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        {
+            var result = PyStringOps.Lower(payload, context, span);
+            Calls++;
+            return result;
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void NativeForOutputRefusalOrCancellationRetiresItsCursorAndKeepsInput(bool cancel)
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var owner = budget.CreateScope())
+        using (var cancellation = new CancellationTokenSource())
+        {
+            var hook = new AdmissionHookMemoryBudget(owner);
+            var (function, context, code) = Function(
+                "def f(values):\n    result=None\n    for value in values: result=value.lower()\n    return result\n",
+                new() { MemoryBudget = hook, CancellationToken = cancellation.Token });
+            Assert.True(code.CanRunNativeInstructions);
+            var input = PyString.FromString(new string('A', 4096), context.MemoryGovernor, CallSpan);
+            var values = new PyTuple([input], context.MemoryGovernor, CallSpan, context);
+            var bound = function.BindCallOperands([values], CallSpan, context, receiver: null, callSite: null);
+            var committed = context.MemoryGovernor.CurrentCommittedBytes;
+            hook.RefuseGrowth = _ => !cancel;
+            hook.AfterGrowth = _ => { if (cancel) cancellation.Cancel(); };
+            try
+            {
+                var failure = Assert.Throws<LythonRuntimeException>(() => function.TryStartBoundInvocation(bound, CallSpan, out _, out _));
+                Assert.Equal(cancel ? LythonFailureReason.Cancelled : LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
+                Assert.Same(Assert.Single(code.CallSites).CallSpan, failure.Span);
+                if (!cancel) Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
+                Assert.Equal(committed, context.MemoryGovernor.CurrentCommittedBytes);
+                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+                Assert.Equal(0, context.State.CurrentInterpreterDepth);
+                Assert.Equal(0, context.State.CurrentRecursionDepth);
+                Assert.Same(input, Assert.Single(values));
+                Assert.Equal(new string('A', 4096), input.AsString());
+            }
+            finally
+            {
+                hook.RefuseGrowth = null;
+                hook.AfterGrowth = null;
+                LythonRuntime.ReturnBoundArguments(bound, code.ValueStorageCapacity);
+                context.State.CloseResources();
+            }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData("total=0\n    for item in values: total+=item\n    return total", 6)]
+    [InlineData("total=0\n    for item in values:\n        if item==2: continue\n        total+=item\n    return total", 4)]
+    [InlineData("total=0\n    for item in values:\n        if item==2: break\n        total+=item\n    return total", 1)]
+    [InlineData("for item in values:\n        if item==2: return item\n    return 0", 2)]
+    public void BuiltinForLoopsFinishWithoutMaterializingAnInvocation(string body, int expected)
+    {
+        foreach (var wide in new[] { false, true })
+        {
+            var budget = new LythonMemoryBudget(1024 * 1024);
+            using (var owner = budget.CreateScope())
+            {
+                var locals = wide ? string.Concat(Enumerable.Range(0, 20).Select(i => $"    local{i}=0\n")) : "";
+                var (function, context, code) = Function("def f(values):\n" + locals + "    " + body + "\n", new() { MemoryBudget = owner });
+                Assert.True(code.CanRunNativeInstructions);
+                Assert.Equal(!wide, function.CanStartInline);
+                var values = new PyTuple([new BigInteger(1), new BigInteger(2), new BigInteger(3)], context.MemoryGovernor, CallSpan, context);
+                var bound = function.BindCallOperands([values], CallSpan, context, receiver: null, callSite: null);
+                try
+                {
+                    Assert.True(function.TryStartBoundInvocation(bound, CallSpan, out var result, out var frame));
+                    Assert.Null(frame);
+                    Assert.Equal(new BigInteger(expected), result);
+                    Assert.Equal(0, context.State.CurrentInterpreterDepth);
+                    Assert.Equal(0, context.State.CurrentRecursionDepth);
+                    Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+                    Assert.Equal(3, values.Count);
+                }
+                finally
+                {
+                    LythonRuntime.ReturnBoundArguments(bound, code.ValueStorageCapacity);
+                    context.State.CloseResources();
+                }
+            }
+            Assert.Equal(0, budget.ReservedBytes);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public void HelperReadsAnUpdatedMethodReceiverAfterAdmission(bool formatted)
     {
         foreach (var driver in Enum.GetValues<Driver>())

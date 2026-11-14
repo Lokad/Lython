@@ -1,0 +1,13 @@
+{
+  "case": "scripts.csv-check-digits.for-list.large",
+  "sameRuntimeSourcesAndGoldens": true,
+  "constructorIncludedInCompleteScript": true,
+  "sourceSha256": "e147fb4589e4c08d952b3433a49befc5e2a3df14ec4ef3b88d1e0a254d3418f8",
+  "reference": "CPython3.13.2 isolated",
+  "reason": "Native generic list cursor replaces the ordinary direct-position iteration; explicitly check this likely tradeoff before promotion.",
+  "priorThreeCaseAllocationRetainedWithoutReplay": true,
+  "vmJobsBeforeLaunch": 5,
+  "vmOwnerSeconds": 420,
+  "measurementPhaseSeconds": 360,
+  "unchangedWarmupAndBatchSizing": true
+}

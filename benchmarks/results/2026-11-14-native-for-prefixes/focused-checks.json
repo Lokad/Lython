@@ -1,0 +1,30 @@
+[
+  {
+    "assembly": "Lokad.Lython.Tests",
+    "target": "net11.0",
+    "returncode": 0,
+    "log": "Lokad.Lython.Tests-related-net11.0.log",
+    "filter": "(FullyQualifiedName~SimpleFunctionExecutionBoundary|FullyQualifiedName~NativeClosure|FullyQualifiedName~NativeFunction|FullyQualifiedName~FunctionBinding|FullyQualifiedName~ExecutableStack|FullyQualifiedName~DictionaryCounting|FullyQualifiedName~WordBuffer|FullyQualifiedName~StringWindowOwnership|FullyQualifiedName~WhitespaceStorageOwnership|FullyQualifiedName~CasedSplit|FullyQualifiedName~NativeTextConstructionRollback)&Category!=Stress"
+  },
+  {
+    "assembly": "Lokad.Lython.PublicApi.Tests",
+    "target": "net11.0",
+    "returncode": 0,
+    "log": "Lokad.Lython.PublicApi.Tests-related-net11.0.log",
+    "filter": "(FullyQualifiedName~ForHelper|FullyQualifiedName~WhileHelper|FullyQualifiedName~LargeHelper|FullyQualifiedName~NativeSequenceIteration|FullyQualifiedName~NativeClosure|FullyQualifiedName~BulkCasedSplit|FullyQualifiedName~ReturnedIteration|FullyQualifiedName~BuiltinIterationCancellation|FullyQualifiedName~ListReplaceDuringIteration|FullyQualifiedName~SetMutationDuringIteration|FullyQualifiedName~NativeReceiverOperation|FullyQualifiedName~DictionaryCounting|FullyQualifiedName~ComposedHelper|FullyQualifiedName~FunctionDefault|FullyQualifiedName~FramedFunction|FullyQualifiedName~OrderedFunction|FullyQualifiedName~NativeInteger|FullyQualifiedName~SharedInteger)&Category!=Stress"
+  },
+  {
+    "assembly": "Lokad.Lython.Tests",
+    "target": "net10.0",
+    "returncode": 0,
+    "log": "Lokad.Lython.Tests-related-net10.0.log",
+    "filter": "(FullyQualifiedName~SimpleFunctionExecutionBoundary|FullyQualifiedName~NativeClosure|FullyQualifiedName~NativeFunction|FullyQualifiedName~FunctionBinding|FullyQualifiedName~ExecutableStack|FullyQualifiedName~DictionaryCounting|FullyQualifiedName~WordBuffer|FullyQualifiedName~StringWindowOwnership|FullyQualifiedName~WhitespaceStorageOwnership|FullyQualifiedName~CasedSplit|FullyQualifiedName~NativeTextConstructionRollback)&Category!=Stress"
+  },
+  {
+    "assembly": "Lokad.Lython.PublicApi.Tests",
+    "target": "net10.0",
+    "returncode": 0,
+    "log": "Lokad.Lython.PublicApi.Tests-related-net10.0.log",
+    "filter": "(FullyQualifiedName~ForHelper|FullyQualifiedName~WhileHelper|FullyQualifiedName~LargeHelper|FullyQualifiedName~NativeSequenceIteration|FullyQualifiedName~NativeClosure|FullyQualifiedName~BulkCasedSplit|FullyQualifiedName~ReturnedIteration|FullyQualifiedName~BuiltinIterationCancellation|FullyQualifiedName~ListReplaceDuringIteration|FullyQualifiedName~SetMutationDuringIteration|FullyQualifiedName~NativeReceiverOperation|FullyQualifiedName~DictionaryCounting|FullyQualifiedName~ComposedHelper|FullyQualifiedName~FunctionDefault|FullyQualifiedName~FramedFunction|FullyQualifiedName~OrderedFunction|FullyQualifiedName~NativeInteger|FullyQualifiedName~SharedInteger)&Category!=Stress"
+  }
+]

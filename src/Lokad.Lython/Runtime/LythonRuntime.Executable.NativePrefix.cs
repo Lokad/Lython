@@ -187,6 +187,37 @@ internal sealed partial class LythonRuntime
                     case ExecutableOpCode.Jump:
                         Index = instruction.TargetIndex;
                         continue;
+                    case ExecutableOpCode.AbruptJump:
+                        // Native eligibility excludes protected regions. The
+                        // only additional work on break is retiring its cursor.
+                        if (instruction.DiscardIterator) Trim(LiveExtent - 1);
+                        Index = instruction.TargetIndex;
+                        continue;
+                    case ExecutableOpCode.GetIter:
+                    {
+                        var source = Read(instruction.InputStart, 0);
+                        if (source is PyStringOps.CasedWhitespaceIteration)
+                            Publish(instruction, source);
+                        else if (source is PyList or PyTuple or PyRange or PyBytes or PyString or PyDict or PySet)
+                            Publish(instruction, PyIteration.Cursor.Create(source, instruction.Span, _scope));
+                        else return false; // Promote before any user iteration protocol.
+                        break;
+                    }
+                    case ExecutableOpCode.ForNext:
+                    {
+                        var iterator = Values[instruction.InputStart];
+                        var next = iterator is PyStringOps.CasedWhitespaceIteration words ? words.MoveNext()
+                            : ((PyIteration.Cursor)iterator).TryMoveNext(out var value)
+                                ? PyIterationResult.Yield(value) : PyIterationResult.End;
+                        if (!next.HasValue)
+                        {
+                            Trim(instruction.InputStart);
+                            Index = instruction.TargetIndex;
+                            continue;
+                        }
+                        Publish(instruction, next.Value);
+                        break;
+                    }
                     case ExecutableOpCode.MakeTuple:
                     {
                         if (TryReturnUnpackedTuple(instruction)) return true;

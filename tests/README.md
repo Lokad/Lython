@@ -32,6 +32,13 @@ order across native execution and continuation. Empty CPU loops remain cancellab
 real suspended reads join cleanup, and retained formatting results keep their owner.
 Deep recursion from a while body also uses the existing isolated probe checks.
 
+[For helpers](Lokad.Lython.PublicApi.Tests/ForHelperExecutionTests.cs) cover builtin
+and custom sources, nested exits, mutation, Unicode and exact integers. Active
+cursors survive real I/O and nested child transfer without replay; cancellation
+joins cleanup, and returned aliases retain shared-budget funding. The native
+boundary checks small and owned wide helpers, plus refusal/cancellation during
+output construction and promotion before a callback can run.
+
 [Larger helpers](Lokad.Lython.PublicApi.Tests/LargeHelperExecutionTests.cs) cover
 owned locals beyond the private call buffer, large parameter/default binding,
 retained aliases and refusal before body effects. Real I/O and custom formatting

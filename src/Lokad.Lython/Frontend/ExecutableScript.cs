@@ -541,9 +541,6 @@ internal sealed partial class ExecutableCodeObject
         _operandReadSpans = reads.Select(read => new ExecutableOperandSpan(
             ((long)(offsets[read.Block] + read.Instruction) << 2) | (uint)read.Input, read.Span)).ToArray();
         EntryIndex = offsets[entryBlockIndex];
-        CanRunNativeInstructions = IsFunctionScope && !RequiresLocalVariableMirroring && capturedLocalSlots.Count == 0
-            && exceptionRegions.Count == 0
-            && Instructions.All(IsInlineInstruction);
         ExceptionRegions = exceptionRegions
             .Where(region => operandLayout.EntryDepths[region.ProtectedStartIndex].HasValue)
             .Select(region => region with
@@ -557,6 +554,9 @@ internal sealed partial class ExecutableCodeObject
             SuiteEndIndex = region.SuiteEndIndex is int end ? offsets[end + 1] - 1 : null
         }).ToArray();
         PrepareDictionaryAccumulation(callSites);
+        CanRunNativeInstructions = IsFunctionScope && !RequiresLocalVariableMirroring && capturedLocalSlots.Count == 0
+            && exceptionRegions.Count == 0
+            && Instructions.All(IsInlineInstruction);
     }
 
     public string Name { get; }
@@ -615,6 +615,7 @@ internal sealed partial class ExecutableCodeObject
         or ExecutableOpCode.LoadCallMember or ExecutableOpCode.Call or ExecutableOpCode.Unary
         or ExecutableOpCode.Binary or ExecutableOpCode.Augmented or ExecutableOpCode.Subscript
         or ExecutableOpCode.CompareJumpIfFalse or ExecutableOpCode.Jump or ExecutableOpCode.JumpIfFalse
+        or ExecutableOpCode.GetIter or ExecutableOpCode.ForNext or ExecutableOpCode.AbruptJump
         or ExecutableOpCode.StartFormattedString or ExecutableOpCode.AppendFormattedText
         or ExecutableOpCode.FinishFormattedString or ExecutableOpCode.ConvertFormattedValue or ExecutableOpCode.FormatField
         or ExecutableOpCode.MakeList or ExecutableOpCode.MakeTuple or ExecutableOpCode.Return

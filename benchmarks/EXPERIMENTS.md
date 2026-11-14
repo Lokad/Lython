@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[R345 builtin for prefixes](results/2026-11-14-native-for-prefixes/README.md)
+retains complete text-input CSV gains: allocation−25.31%, warm−14.71..−20.25%
+and same-bit compile-to-result confirmation−17.84..−19.94%, with wider CPU support.
+List-input CSV is7.55–11.01%faster despite4.24%more allocation. Text control remains
+modestly adverse and fulfillment uncertain; both original and reversed-order
+observations survive. Existing cursors/final storage remove the whole-function
+eligibility cliff without another engine. Full delivery qualification is pending.
+
 [R343 bulk cased UTF8 buffer](results/2026-11-14-bulk-cased-buffer-withdrawn/README.md)
 is withdrawn. Replacing stored ranges with complete-buffer sizing/casing/scanning
 makes captured text 8–13% slower warm and direct text 12–23% slower; wider CPU

@@ -1,0 +1,12 @@
+[
+  {
+    "target": "net11.0",
+    "returncode": 0,
+    "log": "promotion-net11.0.log"
+  },
+  {
+    "target": "net10.0",
+    "returncode": 0,
+    "log": "promotion-net10.0.log"
+  }
+]

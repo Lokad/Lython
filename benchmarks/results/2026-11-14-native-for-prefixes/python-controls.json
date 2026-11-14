@@ -1,0 +1,32 @@
+[
+  {
+    "name": "loop-control",
+    "source": "def count(values):\n    total=0\n    item=None\n    for item in values:\n        if item==2: continue\n        if item==5: break\n        total+=item\n    else: total+=100\n    return item,total\nprint([count(values) for values in [[],[1],[1,2,3],[1,2,3,4,5,6],(1,2,3),range(3),b'123']])\ndef missing(values):\n    for item in values: pass\n    return item\ntry: missing([])\nexcept UnboundLocalError: print('unbound')\n",
+    "stdout": "[(None, 100), (1, 101), (3, 104), (5, 8), (3, 104), (2, 101), (51, 250)]\nunbound\n",
+    "reference": "CPython3.13.2 isolated"
+  },
+  {
+    "name": "nested-exits-and-words",
+    "source": "def compute(values):\n    total=0\n    for i in values:\n        for j in (1,2,3):\n            if j==2: continue\n            total+=i*10+j\n            if i==2: break\n        else: total+=100\n    return total\nprint(compute([0,1,2,3]))\ndef words(value):\n    first=None\n    for word in value.upper().split():\n        if first is None: first=word\n        if word=='STOP': break\n    return first,word\nprint(words('ßé café stop later'))\ndef select(values):\n    for item in values:\n        if item>2: return item\n    return None\nprint(select((1,2,3,4)),select(()))\n",
+    "stdout": "413\n('SSÉ', 'STOP')\n3 None\n",
+    "reference": "CPython3.13.2 isolated"
+  },
+  {
+    "name": "mutation-and-aliases",
+    "source": "def take(values):\n    total=0\n    for item in values:\n        if item==1: values.append(4)\n        total+=item\n    return item,total\nvalues=[1,2,3]\nprint(take(values),values)\ndef change(values):\n    for item in values:\n        values['new']=9\n    return item\ntry: change({'a':1,'b':2})\nexcept RuntimeError: print('changed')\ndef keep(values):\n    first=None\n    for item in values:\n        if first is None: first=item\n    return first,item\nvalues=[[1],[2]]\nfirst,last=keep(values)\nfirst.append(9)\nprint(first,last,first is values[0],last is values[1])\n",
+    "stdout": "(4, 10) [1, 2, 3, 4]\nchanged\n[1, 9] [2] True True\n",
+    "reference": "CPython3.13.2 isolated"
+  },
+  {
+    "name": "unicode-and-promotion",
+    "source": "def collect(text):\n    total=0\n    for character in text:\n        total+=len(character)\n    return character,total\nprint(collect('α😀é𐐨'))\ndef grow(values):\n    total=9223372036854775807\n    for value in values: total=total*3+value\n    alias=total\n    return total,alias is total\nprint(grow((1,2,3)))\ndef count(values):\n    total=0\n    for value in values: total+=1\n    return total\nprint(count({'a':1,'b':2}),count({1,2,3}))\n",
+    "stdout": "('𐐨', 4)\n(249031044995078946807, True)\n2 3\n",
+    "reference": "CPython3.13.2 isolated"
+  },
+  {
+    "name": "iterator-and-body-transition",
+    "source": "events=[]\nclass Values:\n    def __iter__(self):\n        events.append('iter')\n        return iter((1,2,3))\ndef total(values):\n    result=0\n    for item in values: result+=item\n    return result\nprint(total(Values()),events)\nclass Number:\n    def __radd__(self,other):\n        events.append(other)\n        return other+7\nprint(total([1,2,Number(),4]),events)\n",
+    "stdout": "6 ['iter']\n14 ['iter', 3]\n",
+    "reference": "CPython3.13.2 isolated"
+  }
+]

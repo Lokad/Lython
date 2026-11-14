@@ -1,0 +1,19 @@
+{
+  "frozenCore": {
+    "reference": "53becdb661d8089c0bf76140cc6b6ee84172f4c5718944e279d3f83d6cfbe31e",
+    "candidate": "8306699f6ad07d4688cd84bd36b6aa878f5eeb39871005d9346b475cf056067f"
+  },
+  "all581SourceInputsUnchanged": true,
+  "allCopiedImagesAndAuxiliaryHashesUnchanged": true,
+  "originalThreeAllocationCatalogsUnchanged": true,
+  "sourceHypothesisCorrection": "The ordinary list/tuple prefix already defers its invocation context and uses a direct-position array. The text-input CSV route promotes at generic GetIter; its 25.31% allocation reduction must not be generalized to lists. The list variant allocates more, and CPU qualification is pending.",
+  "scope": "Native opcode eligibility and exact builtin iteration, no new Python syntax support or whole-runtime speedup claim.",
+  "vm": {
+    "startedUTC": "2026-11-14T04:46:10.969712+00:00",
+    "doNotObserveBeforeUTC": "2026-11-14T04:52:10.969712+00:00",
+    "ownerSeconds": 420,
+    "stopSeconds": 30,
+    "firstStagingFailurePreserved": true
+  },
+  "firstStagingFailure": "Missing immutable reference link after checked partial staging; service absent, no guest/measurement started. Same verified root completed under fresh idle lease. Original failure retained."
+}

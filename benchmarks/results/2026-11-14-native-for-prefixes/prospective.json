@@ -1,0 +1,17 @@
+{
+  "date": "2026-11-14",
+  "headBeforeChanges": "e1bb0b844349009dc44dac2bdeabca52358c1970",
+  "hypothesis": "The opcode eligibility cliff moves ordinary for helpers to resumable execution. Exact builtin loops can remain in the existing native prefix, removing repeated ordinary routing and avoidable activation/storage without inventing a dispatcher or a value representation.",
+  "eliminated": "Whole-function exclusion for GetIter/ForNext and unprotected break/continue. Existing shared operators, final slots, cursor and exact-PC continuation remain the implementation.",
+  "implementation": "Add builtin-only GetIter/ForNext and unprotected AbruptJump to NativeExecution; reuse PyIteration.Cursor for exact builtin values and the existing cased-word cursor. Dynamic iterators promote before acquisition. Evaluate eligibility after final instruction preparation so dictionary accumulation retains its established route.",
+  "acceptance": [
+    "Python for/else, break/continue, nested loops, empty/unbound targets, mutation and retained aliases",
+    "Exact integers/Unicode and native/ordinary equivalence",
+    "Promotion during a body or later custom iterator without replay; real async protocol/I/O and joined cancellation",
+    "Native temporary cursor disposal at EOF, break, return, exception and transfer; first refusal remains terminal and funded retained results; shared allowance reuse",
+    "Managed stack/recursion safety and effective nonallocating-loop cancellation"
+  ],
+  "comparison": "Complete CSV check-digit helper using ordinary for over its digit text, captured text control and unchanged fulfillment control. Same input/goldens on frozen qualified53 versus candidate. Warm and affected compile-to-result, separate short allocation diagnostics; one bounded quiet-VM comparison with justification for any confirmation.",
+  "tradeoffs": "Existing generic cursor adds minor wrapper work for builtin values versus the ordinary list/tuple position optimization. Stop if the complete-workload cost outweighs removed routing; do not add a new position pool or a per-syntax backend.",
+  "completion": "Retain only with semantic/ownership/cancellation acceptance and an explicit elapsed/allocation/debt decision, then batch original stress/platform/installed consumers. Preserve all adverse sources/results. No broad engine rewrite or arbitrary fixed percentage veto."
+}

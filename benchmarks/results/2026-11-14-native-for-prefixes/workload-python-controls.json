@@ -1,0 +1,16 @@
+{
+  "reference": "CPython3.13.2 isolated",
+  "id": "scripts.csv-check-digits.for-text.large",
+  "sourceSha256": "78e459e2cfdf3583045d78cbb30b2f1d6701ce3e321934190e2a1a4828edde4c",
+  "fixtureSha256": "b1c790fd150562972cc6aed5e47f8e658a1ff90f7c4efdd2f288a684f5a8b5e3",
+  "inputBytes": 49163,
+  "rows": 4096,
+  "sameStdoutAndFilesAsHistoricalDigitSum": true,
+  "sourcesIdenticalAcrossRuntimeRevisions": true,
+  "differentPythonAlgorithmThanHistoricalWhileCase": true,
+  "noTimingComparisonAgainstHistoricalScript": true,
+  "controls": [
+    "scripts.text-summary-helpers.nonlocal-counter.large",
+    "scripts.csv-fulfillment.large"
+  ]
+}
