@@ -1,0 +1,22 @@
+{
+  "date": "2026-11-14",
+  "decision": "Retain coherent captured-cell representation for established whole-script allocation reduction. Batch full delivery next; CPU magnitude/attribution remains uncertain.",
+  "reference": "009d236a/frozen8ae1ae5f",
+  "candidate": "frozen71ba421c",
+  "removed": [
+    "per-update boxed integer operands/results for prepared captured arithmetic",
+    "three-instruction scalar temporary transport on the admitted native segment",
+    "separate proposed compiler pass; facts now share existing preparation walk",
+    "three separate48Bcell estimate literals"
+  ],
+  "allocation": "Captured complete text545,989.75 to447,725.75B,\u221217.9974%; direct/CSV controls effectively flat. Observing every update546,677.75 to546,685.75B,+8B; no per-update saving when identity is exposed.",
+  "timing": "Captured warm\u22125.20..\u22127.60%, widerCPU\u22124.81..\u22126.89%. Unchanged direct-text elapsed\u22122.60..\u22128.43%,CPU\u22123.47..\u22127.91%,candidate process spread5.58%; do not attribute the observed CPU gain to cell changes. CSV elapsed\u22122.11..+0.57%,CPU\u22121.68..+0.89%. All raw adverse points retained.",
+  "debt": [
+    "96Bcell/current scalar preflight replaces48B; conservative earlier denial and larger cell metadata accepted",
+    "Frequent observation still boxes each update; CPU cost for that variant remains unmeasured",
+    "No release-wide speedup, exact heap peak, embedding latency or CPython ratio change established",
+    "Full platform/stress/installed-consumer qualification pending"
+  ],
+  "stopping": "Representation selected and one bounded allocation/CPU/control comparison complete; no unchanged retiming needed to retain its allocation value. Continue substantial roadmap after coherent delivery.",
+  "publicationHeld": true
+}

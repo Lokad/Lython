@@ -95,6 +95,14 @@ and actual I/O transfer in their[public cases](Lokad.Lython.PublicApi.Tests/Nati
 the[ownership boundary](Lokad.Lython.Tests/NativeIntegerChainTests.cs) preserves
 first refusal, cancellation and retained inputs through promoted arithmetic.
 
+[Captured scalar controls](Lokad.Lython.PublicApi.Tests/CapturedScalarExecutionTests.cs)
+preserve independent Python values, repeated-read identity, old aliases, exact
+promotion, namespace exposure and actual I/O through both execution APIs. Shared
+retained results keep their funding after later executions and compilation cleanup.
+The [admission observer](Lokad.Lython.Tests/CapturedScalarObservationTests.cs) sees
+the completed current counter and a stable old identity during subsequent storage
+admission; cooperative loop cancellation retains its ordinary unwind coverage.
+
 [Builtin slot owners](Lokad.Lython.PublicApi.Tests/BuiltinSlotOwnerTests.cs) preserve
 original descriptor identity through class-body and later aliases, including
 staticmethod/classmethod/property wrappers. Python goldens, ordinary calls and

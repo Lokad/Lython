@@ -1,5 +1,6 @@
 using Lokad.Lython.Frontend;
 using System.Collections;
+using System.Numerics;
 using Lokad.Lython.Runtime.Text;
 using System.Text.RegularExpressions;
 
@@ -12,7 +13,12 @@ internal sealed partial class LythonRuntime
 
     internal sealed class ExecutableCell
     {
+        // Cell metadata and one observed current scalar. Older aliases retain
+        // their existing container/execution funding; updates refund nothing.
+        internal const long StorageBytes = 96;
         private object? _value;
+        private long _integer;
+        private bool _hasInteger;
         private readonly ExecutionContext? _owner;
         private readonly string? _name;
 
@@ -27,12 +33,18 @@ internal sealed partial class LythonRuntime
         // mirrored namespace even after its executable slots have been released.
         public object? Value
         {
-            get => _owner is { MirrorsExecutableLocals: true } || _owner?.MirrorLocalStores == true
-                ? _owner!.Variables.GetValueOrDefault(_name!) : _value;
+            get
+            {
+                if (UsesNamespace) return _owner!.Variables.GetValueOrDefault(_name!);
+                // Publish one stable immutable identity only if it is observed.
+                if (_hasInteger && _value is null) _value = (BigInteger)_integer;
+                return _value;
+            }
             set
             {
+                _hasInteger = false;
                 _value = value;
-                if (_owner is { MirrorsExecutableLocals: true } || _owner?.MirrorLocalStores == true)
+                if (UsesNamespace)
                 {
                     if (value is null) _owner!.Variables.Remove(_name!);
                     else _owner!.Variables[_name!] = value;
@@ -41,6 +53,29 @@ internal sealed partial class LythonRuntime
         }
 
         internal bool CanStoreThroughOwner => _owner is not null && _name is not null && _owner.GlobalNamespace is null;
+
+        private bool UsesNamespace => _owner is { MirrorsExecutableLocals: true } || _owner?.MirrorLocalStores == true;
+
+        internal bool TryApplyIntegerArithmetic(BinaryOperatorSyntax operation, long operand,
+            ExecutionContext context, LythonSourceSpan arithmeticSpan, LythonSourceSpan storeSpan)
+        {
+            if (!CanStoreThroughOwner || UsesNamespace) return false;
+            long prior;
+            if (_hasInteger) prior = _integer;
+            else if (!TryMachineInteger(_value, out prior)) return false;
+            context.CheckExecution(arithmeticSpan);
+            long next;
+            try
+            {
+                if (!TryMachineBinary(operation, prior, operand, out next)) return false;
+            }
+            catch (OverflowException) { return false; }
+            context.CheckExecution(storeSpan);
+            _integer = next;
+            _hasInteger = true;
+            _value = null;
+            return true;
+        }
 
         // MG11: set once a closure owns this cell (first-wins sharing).
         internal bool RetentionCharged;
@@ -630,7 +665,7 @@ internal sealed partial class LythonRuntime
         var span = entry.Length == 0 ? null : entry[0].Span;
         long bytes = checked((long)codeObject.PatternStorageCount * RuntimeMemoryEstimates.ScalarStorageBytes);
         if (codeObject.CapturedLocalSlots.Count != 0)
-            bytes = checked(bytes + 48L * codeObject.CapturedLocalSlots.Count);
+            bytes = checked(bytes + ExecutableCell.StorageBytes * codeObject.CapturedLocalSlots.Count);
         // The compiler-sized operand lifetime funds private frame arrays before any
         // are allocated. Escaping cells acquire their separate retained charge.
         var stack = new ExecutableValueStorage(codeObject.ValueStorageCapacity, codeObject.FirstTemporarySlot, codeObject.LastOwnedTemporarySlot,

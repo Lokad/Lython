@@ -127,6 +127,11 @@ CPython remains the external baseline. Separate source-pair experiments establis
   to-result1.4–2.7%, with wider CPU support. This is a modest CPU result; [variable
   helper controls and adverse text elapsed debt](../benchmarks/results/2026-11-14-shared-integer-chains/README.md)
   remain explicit. The CPython rows use the earlier qualified source above.
+- Captured-cell scalar storage removes per-update boxes in the complete3,072-line
+  text script: allocation falls18.00%. Warm elapsed is5.2–7.6%lower and wider CPU
+  4.8–6.9%lower, but unchanged direct-text controls also improve with5.58%process
+  spread. CPU attribution remains uncertain. [Evidence and delivery status](../benchmarks/results/2026-11-14-captured-scalar-storage/README.md)
+  separate this source pair from the CPython rows and frequent-read limitations.
 
 [Experimental history and source-specific evidence](../benchmarks/EXPERIMENTS.md)
 preserve controlled comparisons, rejected designs, adverse results and qualification.

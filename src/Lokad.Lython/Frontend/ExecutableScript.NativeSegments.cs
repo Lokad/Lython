@@ -6,13 +6,19 @@ internal sealed partial class ExecutableCodeObject
 {
     // A native get/add/store can reuse one table probe. Original instructions
     // remain the pre-effect path for dynamic values, growth and other methods.
-    private void PrepareDictionaryAccumulation(ExecutableCallSite[] sites)
+    private void PrepareNativeSegments(ExecutableCallSite[] sites)
     {
         for (var index = 0; index + 2 < Instructions.Length; index++)
         {
             ref readonly var call = ref Instructions[index];
             ref readonly var add = ref Instructions[index + 1];
             ref readonly var store = ref Instructions[index + 2];
+            if (call.OpCode == ExecutableOpCode.LoadClosure)
+            {
+                if (CanPrepareClosureArithmetic(index, call, add, store))
+                    Instructions[index] = call.WithClosureArithmetic(~add.SecondInput);
+                continue;
+            }
             if (call.OpCode != ExecutableOpCode.Call || call.HasLocalResult
                 || add.OpCode != ExecutableOpCode.Binary || add.BinaryOperator != BinaryOperatorSyntax.Add || add.HasLocalResult
                 || store.OpCode != ExecutableOpCode.StoreSubscript
@@ -22,10 +28,7 @@ internal sealed partial class ExecutableCodeObject
                 || !(add.SecondInput < 0 || IsUncapturedLocal(add.SecondInput))) continue;
             var site = sites[call.CallSiteIndex];
             if (!site.HasReceiver || !site.IsPositionalOnly || site.ArgumentCount is not (1 or 2)) continue;
-            var crossesBoundary = false;
-            foreach (var region in ExceptionRegions)
-                if (InteriorBoundary(region, index)) { crossesBoundary = true; break; }
-            if (crossesBoundary) continue;
+            if (CrossesExceptionBoundary(index, index + 2)) continue;
             sites[call.CallSiteIndex] = site with { AccumulatesDictionary = true };
             PrepareDictionaryLoop(index, site, add, store);
         }
@@ -73,19 +76,24 @@ internal sealed partial class ExecutableCodeObject
             }
             if (tailIndex >= Instructions.Length || Instructions[tailIndex].OpCode != ExecutableOpCode.Jump
                 || Instructions[tailIndex].TargetIndex != headIndex) return;
-            foreach (var region in ExceptionRegions)
-                if (InteriorBoundary(region, headIndex, tailIndex)) return;
+            if (CrossesExceptionBoundary(headIndex, tailIndex)) return;
             Instructions[headIndex] = head.WithDictionaryLoop(callIndex);
         }
 
-        // Do not skip across protection/handler boundaries. Routing an error
-        // with the call current must select the same handler as add or store.
-        static bool InteriorBoundary(ExecutableExceptionRegion region, int index, int? endIndex = null)
-        {
-            return Inside(region.ProtectedStartIndex) || Inside(region.ProtectedEndIndex + 1)
-                || Inside(region.ExceptIndex) || Inside(region.FinallyIndex)
-                || Inside(region.SuiteStartIndex) || Inside(region.SuiteEndIndex is int end ? end + 1 : null);
-            bool Inside(int? position) => position > index && position <= (endIndex ?? index + 2);
-        }
     }
+
+    private bool CanPrepareClosureArithmetic(int index, in ExecutableInstruction load,
+        in ExecutableInstruction arithmetic, in ExecutableInstruction store)
+        => !RequiresLocalVariableMirroring && !load.HasLocalResult
+            && load.LiveExtent == load.ResultSlot + 1
+            && arithmetic.OpCode == ExecutableOpCode.Augmented && !arithmetic.HasLocalResult
+            && arithmetic.AugmentedOperator is AugmentedAssignmentOperatorSyntax.Add
+                or AugmentedAssignmentOperatorSyntax.Subtract or AugmentedAssignmentOperatorSyntax.Multiply
+                or AugmentedAssignmentOperatorSyntax.FloorDivide or AugmentedAssignmentOperatorSyntax.Modulo
+            && arithmetic.InputStart == load.ResultSlot && arithmetic.ResultSlot == load.ResultSlot
+            && arithmetic.LiveExtent == load.LiveExtent && arithmetic.SecondInput < 0
+            && Constants[~arithmetic.SecondInput] is BigInteger operand && operand.GetByteCount() <= sizeof(long)
+            && store.OpCode == ExecutableOpCode.StoreClosure && store.ClosureSlot == load.ClosureSlot
+            && store.InputStart == load.ResultSlot && store.LiveExtent == load.ResultSlot
+            && !CrossesExceptionBoundary(index, index + 2);
 }

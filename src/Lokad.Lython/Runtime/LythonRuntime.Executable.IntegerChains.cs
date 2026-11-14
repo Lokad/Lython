@@ -5,6 +5,19 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
+    private static bool TryExecuteClosureArithmetic(ExecutableCodeObject code, IReadOnlyList<ExecutableCell>? cells,
+        int index, int liveExtent, ExecutionContext context)
+    {
+        ref readonly var load = ref code.Instructions[index];
+        // A clean statement extent has no input retirement or pending user.
+        if (!load.HasClosureArithmetic || liveExtent != load.ResultSlot
+            || cells is null || (uint)load.ClosureSlot >= (uint)cells.Count) return false;
+        ref readonly var arithmetic = ref code.Instructions[index + 1];
+        return cells[load.ClosureSlot].TryApplyIntegerArithmetic(AugmentedBinaryOperator(arithmetic.AugmentedOperator),
+            (long)(BigInteger)code.Constants[load.ClosureArithmeticConstant]!, context,
+            arithmetic.Span, code.Instructions[index + 2].Span);
+    }
+
     // Both executable forms follow the same closed arithmetic sequence. Only the
     // final result is published through the caller's ordinary lifetime machinery.
     private static bool TryIntegerChain(ExecutableCodeObject code, ReadOnlySpan<object> values,

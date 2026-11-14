@@ -88,6 +88,8 @@ internal sealed partial class LythonRuntime
                         Publish(instruction, ResolveExecutableGlobal(Code.Names[instruction.NameIndex], instruction.Span, _scope));
                         break;
                     case ExecutableOpCode.LoadClosure:
+                        if (TryExecuteClosureArithmetic(Code, _cells, Index, LiveExtent, _scope))
+                        { Index += 2; break; }
                         if (!TryCell(instruction.ClosureSlot, out var readCell) || readCell.Value is not { } captured) return false;
                         Publish(instruction, captured);
                         break;

@@ -442,7 +442,7 @@ internal sealed partial class LythonRuntime
         var retainedBytes = checked(
             ExecutableCellsArrayBaseBytes +
             ExecutableCellsArraySlotBytes * (long)codeObject.ClosureNames.Count +
-            48L * uncharged);
+            ExecutableCell.StorageBytes * uncharged);
         context.MemoryGovernor.Reserve(retainedBytes, span);
         context.MemoryGovernor.Commit(retainedBytes);
         try

@@ -1,0 +1,26 @@
+[
+  {
+    "project": "Lokad.Lython.Tests",
+    "target": "net11.0",
+    "returncode": 0,
+    "filter": "(FullyQualifiedName~CapturedScalar|FullyQualifiedName~NativeClosure|FullyQualifiedName~ClosureRetention|FullyQualifiedName~ExecutableFrameStorage|FullyQualifiedName~SharedInteger|FullyQualifiedName~DictionaryCounting|FullyQualifiedName~ClassCell|FullyQualifiedName~Super|FullyQualifiedName~Lexical|FullyQualifiedName~Nonlocal|FullyQualifiedName~Comprehension|FullyQualifiedName~SimpleFunctionExecutionBoundary)&Category!=Stress"
+  },
+  {
+    "project": "Lokad.Lython.PublicApi.Tests",
+    "target": "net11.0",
+    "returncode": 0,
+    "filter": "(FullyQualifiedName~CapturedScalar|FullyQualifiedName~CooperativeCancellation|FullyQualifiedName~Closure|FullyQualifiedName~Nonlocal|FullyQualifiedName~Locals|FullyQualifiedName~ClassCell|FullyQualifiedName~Super|FullyQualifiedName~ClassMethod|FullyQualifiedName~Comprehension|FullyQualifiedName~NativeInteger|FullyQualifiedName~SharedInteger|FullyQualifiedName~DictionaryCounting|FullyQualifiedName~ForHelper|FullyQualifiedName~WhileHelper|FullyQualifiedName~MemoryDenialAttribution|FullyQualifiedName~GovernedMemoryContract|FullyQualifiedName~IntegerAliasOwnership|FullyQualifiedName~ReturnedIteration)&Category!=Stress"
+  },
+  {
+    "project": "Lokad.Lython.Tests",
+    "target": "net10.0",
+    "returncode": 0,
+    "filter": "(FullyQualifiedName~CapturedScalar|FullyQualifiedName~NativeClosure|FullyQualifiedName~ClosureRetention|FullyQualifiedName~ExecutableFrameStorage|FullyQualifiedName~SharedInteger|FullyQualifiedName~DictionaryCounting|FullyQualifiedName~ClassCell|FullyQualifiedName~Super|FullyQualifiedName~Lexical|FullyQualifiedName~Nonlocal|FullyQualifiedName~Comprehension|FullyQualifiedName~SimpleFunctionExecutionBoundary)&Category!=Stress"
+  },
+  {
+    "project": "Lokad.Lython.PublicApi.Tests",
+    "target": "net10.0",
+    "returncode": 0,
+    "filter": "(FullyQualifiedName~CapturedScalar|FullyQualifiedName~CooperativeCancellation|FullyQualifiedName~Closure|FullyQualifiedName~Nonlocal|FullyQualifiedName~Locals|FullyQualifiedName~ClassCell|FullyQualifiedName~Super|FullyQualifiedName~ClassMethod|FullyQualifiedName~Comprehension|FullyQualifiedName~NativeInteger|FullyQualifiedName~SharedInteger|FullyQualifiedName~DictionaryCounting|FullyQualifiedName~ForHelper|FullyQualifiedName~WhileHelper|FullyQualifiedName~MemoryDenialAttribution|FullyQualifiedName~GovernedMemoryContract|FullyQualifiedName~IntegerAliasOwnership|FullyQualifiedName~ReturnedIteration)&Category!=Stress"
+  }
+]

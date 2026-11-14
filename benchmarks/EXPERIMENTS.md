@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[R349 captured scalar storage](results/2026-11-14-captured-scalar-storage/README.md)
+retains authoritative machine integers in existing captured cells and materializes
+stable Python identities on read. Whole captured-text allocation falls18.00%;
+frequent-read allocation is flat (+8B). CPU/elapsed improve in B720, but unchanged
+direct-text controls also improve with process variation, so attribution stays
+uncertain. Existing compiler preparation/arithmetic are shared; no new owner or
+execution engine.1,826focused actual11/10 cases pass; full delivery follows.
+
 [R348 private cased-word inventory](results/2026-11-14-streamed-cased-inventory-withdrawn/README.md)
 is withdrawn. Coarse admission rejects reasonable sparse text; exact-preflight
 refinement passes578focused cases but adds a second source scan. Allocation is

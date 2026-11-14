@@ -12,6 +12,8 @@ public sealed class CooperativeCancellationTests
         { true, "while True:\n    pass" },
         { false, "def loop():\n    while True:\n        pass\nloop()" },
         { true, "def loop():\n    while True:\n        pass\nloop()" },
+        { false, "def loop():\n value=0\n def step():\n  nonlocal value\n  value+=1\n while True:step()\nloop()" },
+        { true, "def loop():\n value=0\n def step():\n  nonlocal value\n  value+=1\n while True:step()\nloop()" },
         { false, "while True:\n    try:\n        while True:\n            pass\n    except BaseException:\n        pass" },
         { true, "while True:\n    try:\n        while True:\n            pass\n    except BaseException:\n        pass" },
         { false, "try:\n    while True:\n        pass\nfinally:\n    pass" },

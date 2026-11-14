@@ -177,6 +177,11 @@ internal readonly record struct ExecutableInstruction
             ? _primaryOperand : throw InvalidOperand(nameof(LocalSlot));
     public int ClosureSlot => OpCode is ExecutableOpCode.LoadClosure or ExecutableOpCode.StoreClosure
         ? _primaryOperand : throw InvalidOperand(nameof(ClosureSlot));
+    internal bool HasClosureArithmetic => OpCode == ExecutableOpCode.LoadClosure && _secondaryOperand != int.MaxValue;
+    internal int ClosureArithmeticConstant => OpCode == ExecutableOpCode.LoadClosure
+        ? _secondaryOperand : throw InvalidOperand(nameof(ClosureArithmeticConstant));
+    internal ExecutableInstruction WithClosureArithmetic(int constantIndex)
+        => new(OpCode, Span, _primaryOperand, constantIndex, _inputStart, _resultSlot, _liveExtent);
     public int NameIndex => OpCode is ExecutableOpCode.LoadGlobal or ExecutableOpCode.LoadName
         or ExecutableOpCode.LoadMember or ExecutableOpCode.LoadCallMember
         or ExecutableOpCode.StoreGlobal or ExecutableOpCode.StoreName or ExecutableOpCode.BindException
@@ -553,7 +558,7 @@ internal sealed partial class ExecutableCodeObject
             SuiteStartIndex = region.SuiteStartIndex is int start ? offsets[start] : null,
             SuiteEndIndex = region.SuiteEndIndex is int end ? offsets[end + 1] - 1 : null
         }).ToArray();
-        PrepareDictionaryAccumulation(callSites);
+        PrepareNativeSegments(callSites);
         CanRunNativeInstructions = IsFunctionScope && !RequiresLocalVariableMirroring && capturedLocalSlots.Count == 0
             && exceptionRegions.Count == 0
             && Instructions.All(IsInlineInstruction);
@@ -608,6 +613,17 @@ internal sealed partial class ExecutableCodeObject
     public int ValueStorageCapacity => checked(PatternStorageStart + PatternStorageCount);
 
     public bool CanRunNativeInstructions { get; }
+
+    private bool CrossesExceptionBoundary(int start, int end)
+    {
+        // A fused segment must select the same handler at every original PC.
+        foreach (var region in ExceptionRegions)
+            if (Inside(region.ProtectedStartIndex) || Inside(region.ProtectedEndIndex + 1)
+                || Inside(region.ExceptIndex) || Inside(region.FinallyIndex)
+                || Inside(region.SuiteStartIndex) || Inside(region.SuiteEndIndex is int last ? last + 1 : null)) return true;
+        return false;
+        bool Inside(int? position) => position > start && position <= end;
+    }
 
     private static bool IsInlineInstruction(ExecutableInstruction instruction) => instruction.OpCode is
         ExecutableOpCode.LoadConst or ExecutableOpCode.LoadLocal or ExecutableOpCode.LoadGlobal

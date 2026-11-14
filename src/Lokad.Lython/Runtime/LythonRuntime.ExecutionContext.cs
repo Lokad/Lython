@@ -131,7 +131,7 @@ internal sealed partial class LythonRuntime
             if (!scopeFacts.CreatesClassCell) return context;
             var closureParent = parent.FunctionClosureContext;
             ChargeClosureRetention(closureParent, parent.MemoryGovernor, definition.Span);
-            const long bytes = ClosureContextBaseBytes + ClosureCellSlotBytes + 48L;
+            const long bytes = ClosureContextBaseBytes + ClosureCellSlotBytes + ExecutableCell.StorageBytes;
             parent.MemoryGovernor.Reserve(bytes, definition.Span);
             parent.MemoryGovernor.Commit(bytes);
             var cellScope = new ExecutionContext(closureParent, ClassCellSyntaxFacts.Scope)

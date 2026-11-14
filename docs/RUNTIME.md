@@ -350,11 +350,12 @@ proof. Each operation checks its actual operands after earlier effects and admis
 
 Adjacent exact integer operations can retain one unpublished temporary in a signed
 64-bit accumulator, following the existing executable instructions. Only the final
-value is boxed. Stores, calls and control flow keep ordinary Python values;
-overflow, other operands and protocols retain the general exact-integer path.
+value is boxed at ordinary publication. Overflow, other operands and protocols
+retain the general exact-integer path.
 Each operation observes cancellation. Fixed-size results use existing minor-storage
 headroom; major arithmetic retains its allocation preflights and result funding.
-This adds no shadow slots, numeric identity ledger or separate evaluator.
+Pending cleanup or owned temporaries retain per-operation retirement. This adds
+no shadow slots, numeric identity ledger or separate evaluator.
 
 Eligible composed executable helpers keep using these private slots when their callees
 complete directly, including named/default arguments and saved methods. A callee
@@ -374,12 +375,13 @@ receiver declarations; dynamic protocols stop before their operation and transfe
 the current PC and live values into the existing frame runner. They may then
 genuinely suspend. Defaults, bindings and earlier work are never replayed.
 
-Ordinary and native executable bodies share checked machine-integer evaluation
-for closed arithmetic chains. Intermediate values remain private; final results
-use the existing boxed Python representation and publication path. Overflow and
-dynamic operands keep ordinary exact arithmetic and protocols. Cancellation stays
-active within a chain. Pending cleanup or owned temporaries retain per-operation
-retirement rather than combined publication.
+Unexposed captured cells can keep exact machine-integer updates directly, using
+the same arithmetic kernel and compiler preparation as ordinary instructions.
+Reading materializes one stable immutable identity; later updates preserve older
+aliases. Exposed namespaces, general values and overflow retain ordinary storage
+and Python behavior. Cell and closure-retention preflights conservatively fund
+metadata and an observed current scalar. Frequent reads can still box every
+update; this representation changes no reclamation or ownership contract.
 
 Native f-string helpers use the same formatting kernel as ordinary executable
 frames, including nested fields, conversions and dynamic specifications. Their

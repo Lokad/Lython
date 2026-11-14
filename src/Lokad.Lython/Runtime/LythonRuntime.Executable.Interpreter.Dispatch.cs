@@ -37,6 +37,9 @@ internal sealed partial class LythonRuntime
                                 LoadLocal(execution.Code, execution.Locals, instruction.LocalSlot, instruction.Span, scope));
                             break;
                         case ExecutableOpCode.LoadClosure:
+                            if (!execution.Stack.HasPendingDisposals && TryExecuteClosureArithmetic(execution.Code,
+                                execution.ClosureCells, execution.InstructionIndex, execution.Stack.LiveExtent, scope))
+                            { execution.InstructionIndex += 2; break; }
                             if (!TryLoadClosure(in execution, invocation, instruction.ClosureSlot, instruction.Span, out var captured))
                                 return InstructionPause.ContextRequired;
                             PublishInstructionResult(ref execution, invocation, instruction, captured);
