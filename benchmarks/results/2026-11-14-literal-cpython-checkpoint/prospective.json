@@ -1,0 +1,11 @@
+{
+  "purpose": "Changed coherent source checkpoint against CPython; same nine-job catalog/workers/toolchain and phase boundaries asB717, with full revision/qualification status.",
+  "source": "7e2f7cac/frozen72c9a1e5",
+  "sourceProofCommit": "7e2f7cac0d69b833e94e7bc8cbf1450f9d044464",
+  "sourceProofSHA256": "247c2bf794712d381dbe16449dc7f11a5522eafc0a238b4a70a6cc12f0feb6bb",
+  "qualification": "43579225278pending independently",
+  "bound": "One480sowner;5sfull-request warmups,12s captured/report, five0.5srotating batches/four fresh processes per job. No cross-collection attribution.",
+  "staging": "Original final254MiBguard stopped before mount/service. Failure preserved, one canonical-proven duplicate failed-collection tool retired, same staged hashes and unchanged floor verified. No measurement restart.",
+  "stopping": "One usable current external snapshot, raw controls/adverse data and all ownership/quiet/cleanup gates. Qualification status stays distinct; no broad new benchmark campaign.",
+  "publicationHeld": true
+}

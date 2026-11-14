@@ -12,7 +12,9 @@ slice/concat construction removes source-governor selection/LINQ growth; ZIP dro
 invalid-input snapshots. Invoice/fulfillment allocation falls7.51/4.68%, warm CPU
 improvement is modest. Constant-return diagnostic improves8–14%CPU without another
 unpacking mechanism. Compile/fresh/text controls remain inconclusive.1,382focused
-actual11/10 cases pass; full delivery follows. Initial01fd ownership gaps and B722
+actual11/10 cases pass; [full43579225278delivery](results/2026-11-14-compiled-literal-tuples/delivery/README.md)
+also passes Windows/Ubuntu actual11/10, original stress and installed consumers.
+Initial01fd ownership gaps and B722
 fixture failure/partial data remain immutable, separately labeled.
 
 [R350 invoice/search stage attribution](results/2026-11-14-invoice-search-stage-attribution/README.md)
@@ -7600,3 +7602,18 @@ passes at exact2f606519/frozen53: both platforms/actual11/10, original stress an
 installed consumers;581inputs/16summaries cached. This qualifies R342's measured
 source; its diagnostic overrides still preclude a normal timing claim. R343is
 separate/uncommitted. Do not repeat unchanged qualification; publication held.
+
+## R352 — literal-storage external checkpoint
+
+[B724](results/2026-11-14-literal-cpython-checkpoint/README.md) refreshes the
+unchanged nine-job catalog at7e2f7cac/frozen72c9 against stockCPython3.13.16.
+360.499s/all image/output/budget/quiet/join/archive gates pass. Invoice warm
+1.19–1.24×/compile1.09–1.10×/fresh1.21–1.24×; captured text1.42–1.49×,
+JSON0.83–0.84×, search1.63–1.69×, report1.19–1.25×, fulfillment1.27–1.29×,
+for-loopCSV1.27–1.29×. Report4.16%spread/6.20%maximumIQR remains uncertainty.
+Staging refusal/remedy and all adverse data survive; no measurement restart,
+source-pair attribution or objective-completion claim. Full43579225278qualification
+is independent. Publication remains held.
+
+R352measured source7e2f7cac/frozen72c9 subsequently passes43579225278; original
+collection-time pending status and all uncertain/adverse results remain above.

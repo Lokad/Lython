@@ -18,3 +18,10 @@ No sibling files, normal adapter0.4 pin, core dependency or Lython contract chan
 Completed dev80/15b248dc qualification is not repeated. Adapter-local bridges/dev
 producers remain available for independent Lython development; only the affected
 final released-adapter qualification waits for the precise capabilities above.
+
+Subsequent read-only [fbf58099 source inspection](source-update-fbf58099.json)
+finds the three integration files byte-identical and the precise gaps unchanged.
+UTF8 group lookup/source copy is distinct from group-name enumeration; the funded
+search cursor supplies no anchored/fullmatch operation. Filtering its first search
+result cannot implement `fullmatch("a|ab", "ab")`. No new producer qualification
+or normal dependency/pin change follows from unrelated producer improvements.

@@ -1,0 +1,29 @@
+{
+  "dateUTC": "2026-11-14",
+  "sourceHead": "fbf58099af4801d0e1e2d00754985cfd0db9ed70",
+  "baseline": "ae463cb431d1be2b216aca0667ca4113640b171b",
+  "integrationFiles": {
+    "Utf8PythonRegex.cs": "335c346c37b0a3dcb82951a28d8c86483ad05cd9116d25f4bb68516ff371fc32",
+    "Utf8PythonRegex.Cursor.cs": "065369aef137589d4f553ddeb3acb4ca4b7d6d9279812ca5ee093bceae20edbb",
+    "Utf8PythonRegex.Compilation.cs": "5cb8915ec561a41b673313c8b35a062a258dc34189ba87e0eb81889b420a2e45"
+  },
+  "integrationFilesByteIdentical": true,
+  "additionalInspection": [
+    "Utf8PythonRegex.Metadata.cs",
+    "Utf8PythonMatchCursor.cs"
+  ],
+  "remainingIntegrationGaps": [
+    "Separate one-match working and escaping-result ownership, instead of using the compiled program account for temporary/result staging",
+    "UTF8 named-group enumeration/copy; GetGroupNames still exposes CLR strings",
+    "Token-independent cursor construction with cancellable preparation; current-token cursor overloads retain construction tokens, while token-free overloads cannot cancel preparation"
+  ],
+  "details": [
+    "UTF8 group lookup and source copying do not provide UTF8 group-name enumeration/copy.",
+    "The work-allowance overload is for searching cursors; cursors expose MoveNext, not anchored/fullmatch. Filtering a search cursor cannot implement fullmatch: a|ab on ab can choose a during search.",
+    "Token-free cursor creation cannot cancel preparation. Token-taking creation keeps its construction token across later MoveNext tokens."
+  ],
+  "qualification": "Read-only source capability inspection, not producer semantic/performance/safety qualification. Completed unchanged dev80 qualification is not repeated.",
+  "coreDependencyChanged": false,
+  "normalAdapterPinChanged": false,
+  "affectedFinalAdapterQualificationOnly": true
+}

@@ -62,3 +62,6 @@ survive. Publication/tagging remain postponed; broader performance work continue
 
 [Decision](decision.json),[timing](timing-summary.json),[allocation](allocation-summary.json),
 [exact sources/core/tools/checks/raw observations](sources-checks-and-observations.tar.xz).
+
+Full source qualification subsequently [passes43579225278](delivery/README.md).
+Original collection-time pending status remains above.
