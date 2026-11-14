@@ -7764,3 +7764,17 @@ No dormant prototype remains; all original/refined sources, binaries, adverse da
 profile, fixture mistakes and withdrawal newline failure survive. Full correction
 delivery batches at the next coherent checkpoint. Whole-script objective stays
 active; publication held.
+
+## R361 — closed range construction, ownership correction active
+
+[Initial complete B740 comparison](results/2026-11-14-closed-range-construction/README.md)
+at 98df/A4 eliminates binder packaging and whole-helper promotion for closed range
+bounds. Complete counter warm −30–32%/fresh −29–31%, with CPU support and 57.24%
+less allocation. CSV flat, outside-range small adverse, JSON/observed uncertain;
+all values retained. Seven jobs/239.162 s/all gates; 548 focused actual 11/10 and
+68 Python controls pass. Source review rejects the prototype's shared constructor:
+mutable hierarchy/descriptor/NewSlot metadata can retain an execution. Restore
+per-execution constructors, preserving the common span factory and native boundary.
+Initial source/timing cannot qualify that correction. All preflight/archive/newline
+failures survive; no timed owner restarted or floor lowered. Final confirmation,
+retention/debt and delivery remain separate; broader objective active, publication held.
