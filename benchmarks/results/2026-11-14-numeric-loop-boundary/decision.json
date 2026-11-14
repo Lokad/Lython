@@ -1,0 +1,27 @@
+{
+  "status": "Source gate complete; general native reentry unselected as main redesign, not permanently banned.",
+  "source": "Fully qualifiedf5817a15/frozen9cfb7d5b, all581production inputs identical at b5d97f45 before R357 prototype.",
+  "diagnosticVariantChangePercent": [
+    -8.725647144146809,
+    -8.589880804462313,
+    -8.164385842188382,
+    -8.027784652513837
+  ],
+  "diagnosticOnly": true,
+  "localAllocation": "~7.52MB/invocation both variants, five counters after warmup; shared-budget baseline restored; no CPU inference.",
+  "owningProfile": {
+    "samples": 1033,
+    "unknown": 65,
+    "ambiguous": 0,
+    "nearestExactAddition": 505,
+    "nativeBodyLeaves": 191,
+    "sameProcessTier1Bytes": 6619
+  },
+  "selected": "R357 share existing checked machine-integer kernel with individual exact arithmetic. Eliminate general BigInteger limb arithmetic for int64 operands/results before inventing a new value representation. Existing published BigInteger identity/aliases and major preflight remain.",
+  "remaining": "Boxed integer publication/range iteration/native dispatch still need evidence and coherent ownership/identity contract; R357 is not completion of whole-script performance. No data/source variant establishes runtime source-pair speedup.",
+  "failedConditions": [
+    "First staging identity accidentally included local-only Allocation helper dependencies; remote failed before mutation/launch. Same core/data/collector used after restricting to comparison auxiliaries.",
+    "B730 archive receipt source label inherits R354 fulfillment text from template; actual catalog/Ready/request/record/identity identify the range-outside case unambiguously. Raw receipt retained unchanged."
+  ],
+  "publicationHeld": true
+}

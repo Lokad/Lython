@@ -7650,3 +7650,15 @@ R353/R354measured sourcef5817a15/frozen9cfb [passes full43583650094](results/202
 at production-identical24cdc5b4: Windows/Ubuntu actual11/10, original stress and
 installed consumers;581inputs/16summaries cached. Original pending metadata and
 variable controls survive. Separate R355CSV prototype is excluded. Publication held.
+
+## R356 — numeric-loop boundary and owning scalar evidence
+
+[Two-case diagnostic/one owning profile](results/2026-11-14-numeric-loop-boundary/README.md)
+at fully qualifiedf5817a15/frozen9cfb:100kadds take5.16–5.19msinside-range/
+4.74–4.75msoutside, CPython1.67–1.71ms; both allocate~7.52MB. The8–9%boundary
+is secondary to the2.82–3.06×gap.1,033guest leaves/65unknown/zeroambiguous,
+505nearest exact-addition leaves and191native-body leaves select the shared
+machine-integer arithmetic kernel, not a tagged VM or general native reentry.
+Counts are not removable CPU shares; variants are not runtime source-pair gains.
+B729/B730all gates/joins/archive pass; original staging mismatch and stale raw
+receipt label remain explicit. R357development proceeds independently; publication held.

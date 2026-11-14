@@ -1,0 +1,28 @@
+{
+  "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+  "rows": [
+    {
+      "id": "diagnostic.loop-range.inside.large",
+      "allocatedBytesPerInvocation": [
+        7517762,
+        7517762,
+        7517762,
+        7517762,
+        7517766.375
+      ],
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "id": "diagnostic.loop-range.outside.large",
+      "allocatedBytesPerInvocation": [
+        7517290,
+        7517290,
+        7517290,
+        7517290,
+        7517290
+      ],
+      "sharedBudgetBaselineRestored": true
+    }
+  ],
+  "boundary": "Complete warm runs including mediated I/O/reset, all output/file checks and result cleanup; compilation/startup/final cache teardown excluded. Process-wide CLR allocation counters, no forced GC; no timing comparison."
+}

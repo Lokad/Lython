@@ -1,0 +1,156 @@
+{
+  "source": "Committedf5817a15/frozen9cfb7d5b range-outside complete-script CPU attribution; not a timing comparison",
+  "event": "cpu-clock/fp199Hz;5s capture",
+  "selectedGuestTids": [
+    "3698934"
+  ],
+  "guestCpuSeconds": 5.1899999999999995,
+  "timedExecutionSeconds": 5.214180123,
+  "samples": 1033,
+  "malformedMapLines": [],
+  "unmappedLeafSamples": 65,
+  "ambiguousLeafSamples": 0,
+  "topLeafCpuSamples": [
+    [
+      "object [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::AddExactIntegers(valuetype [System.Runtime.Numerics]System.Numerics.BigInteger,valuetype [System.Runtime.Numerics]System.Numerics.BigInteger,class Lokad.Lython.Runtime.MemoryGovernor,class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+      240
+    ],
+    [
+      "instance bool [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+NativeExecution::RunCore(object&)[OptimizedTier1]",
+      191
+    ],
+    [
+      "valuetype System.Numerics.BigInteger [System.Runtime.Numerics] System.Numerics.BigInteger::Add(valuetype [System.Runtime]System.ReadOnlySpan`1<native uint>,int32,valuetype [System.Runtime]System.ReadOnlySpan`1<native uint>,int32)[OptimizedTier1]",
+      185
+    ],
+    [
+      "instance bool [Lokad.Lython] Lokad.Lython.Runtime.PyRange+<Iterate>d__21::MoveNext()[OptimizedTier1]",
+      84
+    ],
+    [
+      "[unknown] (/home/lokad/lython-bench-toolchains/dotnet/11.0.100-rc.3.26522.148/shared/Microsoft.NETCore.App/11.0.0-rc.3.26522.148/libcoreclr.so)",
+      56
+    ],
+    [
+      "instance void [System.Runtime.Numerics] System.Numerics.BigInteger::.ctor(valuetype [System.Runtime]System.ReadOnlySpan`1<native uint>,bool)[OptimizedTier1]",
+      55
+    ],
+    [
+      "object [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::EvaluateAdd(object,object,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan,string)[OptimizedTier1]",
+      48
+    ],
+    [
+      "instance bool [Lokad.Lython] Lokad.Lython.Runtime.PyIteration+Cursor::TryMoveNextCore(object&)[OptimizedTier1]",
+      32
+    ],
+    [
+      "object [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::EvaluateAugmentedBuiltin(object,object,valuetype Lokad.Lython.Frontend.AugmentedAssignmentOperatorSyntax,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+      23
+    ],
+    [
+      "instance void [System.Runtime.Numerics] System.Numerics.BigInteger::.ctor(int64)[OptimizedTier1]",
+      19
+    ],
+    [
+      "stub InitThreadManagerPerfMapData<JIT_CopiedWriteBarriers>",
+      19
+    ],
+    [
+      "valuetype Lokad.Lython.Frontend.BinaryOperatorSyntax [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::AugmentedBinaryOperator(valuetype Lokad.Lython.Frontend.AugmentedAssignmentOperatorSyntax)[OptimizedTier1]",
+      18
+    ],
+    [
+      "bool [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::CanUseNativeBinary(valuetype Lokad.Lython.Frontend.BinaryOperatorSyntax,object,object)[OptimizedTier1]",
+      17
+    ],
+    [
+      "void [System.Private.CoreLib] System.SpanHelpers::Memmove(uint8&,uint8&,native uint)[OptimizedTier1]",
+      15
+    ],
+    [
+      "__tls_get_addr@plt+0x0 (/home/lokad/lython-bench-toolchains/dotnet/11.0.100-rc.3.26522.148/shared/Microsoft.NETCore.App/11.0.0-rc.3.26522.148/libcoreclr.so)",
+      10
+    ],
+    [
+      "__tls_get_addr+0x20 (/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)",
+      10
+    ],
+    [
+      "[unknown] (/usr/lib/x86_64-linux-gnu/libc.so.6)",
+      5
+    ],
+    [
+      "[unknown] ([kernel.kallsyms])",
+      4
+    ],
+    [
+      "__tls_get_addr+0x4 (/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)",
+      1
+    ],
+    [
+      "__tls_get_addr+0x24 (/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)",
+      1
+    ]
+  ],
+  "nearestLythonFrame": [
+    [
+      "object [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::AddExactIntegers(valuetype [System.Runtime.Numerics]System.Numerics.BigInteger,valuetype [System.Runtime.Numerics]System.Numerics.BigInteger,class Lokad.Lython.Runtime.MemoryGovernor,class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+      505
+    ],
+    [
+      "instance bool [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+NativeExecution::RunCore(object&)[OptimizedTier1]",
+      197
+    ],
+    [
+      "object [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::EvaluateAdd(object,object,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan,string)[OptimizedTier1]",
+      93
+    ],
+    [
+      "instance bool [Lokad.Lython] Lokad.Lython.Runtime.PyRange+<Iterate>d__21::MoveNext()[OptimizedTier1]",
+      90
+    ],
+    [
+      "instance bool [Lokad.Lython] Lokad.Lython.Runtime.PyIteration+Cursor::TryMoveNextCore(object&)[OptimizedTier1]",
+      82
+    ],
+    [
+      "object [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::EvaluateAugmentedBuiltin(object,object,valuetype Lokad.Lython.Frontend.AugmentedAssignmentOperatorSyntax,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+      23
+    ],
+    [
+      "valuetype Lokad.Lython.Frontend.BinaryOperatorSyntax [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::AugmentedBinaryOperator(valuetype Lokad.Lython.Frontend.AugmentedAssignmentOperatorSyntax)[OptimizedTier1]",
+      18
+    ],
+    [
+      "bool [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::CanUseNativeBinary(valuetype Lokad.Lython.Frontend.BinaryOperatorSyntax,object,object)[OptimizedTier1]",
+      17
+    ],
+    [
+      "instance bool [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+NativeExecution::Run(class Lokad.Lython.LythonSourceSpan,object&,valuetype [System.Runtime]System.Span`1<object>)[OptimizedTier1]",
+      7
+    ],
+    [
+      "instance class Lokad.Lython.Runtime.ExecutionThreads/WorkItem [Lokad.Lython] Lokad.Lython.Runtime.ExecutionThreads::Take(class Lokad.Lython.Runtime.ExecutionThreads/Worker)[OptimizedTier1]",
+      1
+    ]
+  ],
+  "nearestFrameFamilies": [
+    [
+      "memory admission",
+      505
+    ],
+    [
+      "other",
+      242
+    ],
+    [
+      "native helper/slot dispatch",
+      204
+    ],
+    [
+      "file/iteration",
+      82
+    ]
+  ],
+  "interpretation": "CPU samples, not wall-time. Nearest owning frames include useful/inlined/native work and are not removable shares. Wider worker CPU/reset/validation and other threads remain in raw evidence. No timing or allocation comparison."
+}

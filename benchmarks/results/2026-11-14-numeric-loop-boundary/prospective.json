@@ -1,0 +1,12 @@
+{
+  "hypothesis": "A general call constructing range inside an eligible helper may terminate its native prefix, leaving an ordinary continuation for the entire loop. Establish material same-work cliff before selecting any runtime redesign.",
+  "workEliminatedIfConfirmed": "Potential one-way promotion/duplicate operand transport after ordinary calls, not individual range exception or new tagged VM.",
+  "cases": [
+    "diagnostic.loop-range.inside.large",
+    "diagnostic.loop-range.outside.large"
+  ],
+  "bounds": "One180second owner; two jobs/four fresh processes each;5seconds full-request warmup/five0.5second rotating batches; existing stock CPython3.13.16 and exact frozen9cfb image.",
+  "stopping": "Select or reject a coherent execution boundary from current source and this diagnostic. Source variants cannot establish runtime source-pair speedup; no additional unchanged measurement unless uncertainty prevents the decision.",
+  "criteria": "Future prototype must preserve Python effects/evaluation order, actual suspension, managed stack bounds, current cancellation, terminal admission, admitted aliases/caches/results and awaited cleanup.",
+  "publicationHeld": true
+}

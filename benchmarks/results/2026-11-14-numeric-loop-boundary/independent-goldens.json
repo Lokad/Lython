@@ -1,0 +1,12 @@
+[
+  {
+    "case": "diagnostic.loop-range.inside.large",
+    "isolatedCPython": "3.13.2",
+    "stdout": "4999950000\n"
+  },
+  {
+    "case": "diagnostic.loop-range.outside.large",
+    "isolatedCPython": "3.13.2",
+    "stdout": "4999950000\n"
+  }
+]
