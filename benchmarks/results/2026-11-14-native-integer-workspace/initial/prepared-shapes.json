@@ -1,0 +1,1491 @@
+{
+  "coreSHA256": "73a1b2339a649ab87ef249f17bf97939d6e8ce757dc9297ac7875dc2b7bbe3e8",
+  "interpretation": "Read-only prepared storage/call shapes. Static occurrence and source ownership evidence only, no CPU or dynamic allocation attribution.",
+  "rows": [
+    {
+      "caseId": "scripts.file-search.large",
+      "code": [
+        {
+          "name": "\u003Cmodule\u003E",
+          "valueCapacity": 14,
+          "integerCapacity": 0,
+          "nativeEligible": false,
+          "calls": [
+            {
+              "instruction": 5,
+              "arguments": 1,
+              "span": {
+                "Start": 103,
+                "Length": 17,
+                "Line": 6,
+                "Column": 6
+              },
+              "inputStart": 10,
+              "preceding": [
+                {
+                  "op": "StoreLocal",
+                  "result": 10,
+                  "localResult": false
+                },
+                {
+                  "op": "StoreLocal",
+                  "result": 10,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadName",
+                  "result": 10,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadConst",
+                  "result": 11,
+                  "localResult": false
+                }
+              ]
+            },
+            {
+              "instruction": 21,
+              "arguments": 1,
+              "span": {
+                "Start": 188,
+                "Length": 12,
+                "Line": 9,
+                "Column": 12
+              },
+              "inputStart": 11,
+              "preceding": [
+                {
+                  "op": "Augmented",
+                  "result": 11,
+                  "localResult": true
+                },
+                {
+                  "op": "StoreLocal",
+                  "result": 11,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadLocal",
+                  "result": 11,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadLocal",
+                  "result": 12,
+                  "localResult": false
+                }
+              ]
+            },
+            {
+              "instruction": 33,
+              "arguments": 3,
+              "span": {
+                "Start": 250,
+                "Length": 36,
+                "Line": 12,
+                "Column": 6
+              },
+              "inputStart": 10,
+              "preceding": [
+                {
+                  "op": "LoadName",
+                  "result": 10,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadConst",
+                  "result": 11,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadConst",
+                  "result": 12,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadConst",
+                  "result": 13,
+                  "localResult": false
+                }
+              ]
+            },
+            {
+              "instruction": 43,
+              "arguments": 1,
+              "span": {
+                "Start": 302,
+                "Length": 19,
+                "Line": 13,
+                "Column": 5
+              },
+              "inputStart": 10,
+              "preceding": [
+                {
+                  "op": "Jump",
+                  "result": 10,
+                  "localResult": false
+                },
+                {
+                  "op": "StoreLocal",
+                  "result": 10,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadCallMember",
+                  "result": 10,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadLocal",
+                  "result": 12,
+                  "localResult": false
+                }
+              ]
+            },
+            {
+              "instruction": 51,
+              "arguments": 1,
+              "span": {
+                "Start": 322,
+                "Length": 14,
+                "Line": 14,
+                "Column": 1
+              },
+              "inputStart": 10,
+              "preceding": [
+                {
+                  "op": "ExitContextManager",
+                  "result": 10,
+                  "localResult": false
+                },
+                {
+                  "op": "EndFinally",
+                  "result": 10,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadName",
+                  "result": 10,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadLocal",
+                  "result": 11,
+                  "localResult": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "wanted",
+          "valueCapacity": 6,
+          "integerCapacity": 0,
+          "nativeEligible": true,
+          "calls": [
+            {
+              "instruction": 2,
+              "arguments": 1,
+              "span": {
+                "Start": 50,
+                "Length": 23,
+                "Line": 2,
+                "Column": 12
+              },
+              "inputStart": 2,
+              "preceding": [
+                {
+                  "op": "LoadCallMember",
+                  "result": 2,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadLocal",
+                  "result": 4,
+                  "localResult": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "caseId": "scripts.csv-invoice.large",
+      "code": [
+        {
+          "name": "\u003Cmodule\u003E",
+          "valueCapacity": 28,
+          "integerCapacity": 0,
+          "nativeEligible": false,
+          "calls": [
+            {
+              "instruction": 10,
+              "arguments": 2,
+              "span": {
+                "Start": 474,
+                "Length": 29,
+                "Line": 21,
+                "Column": 6
+              },
+              "inputStart": 20,
+              "preceding": [
+                {
+                  "op": "StoreLocal",
+                  "result": 20,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadName",
+                  "result": 20,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadConst",
+                  "result": 21,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadConst",
+                  "result": 22,
+                  "localResult": false
+                }
+              ]
+            },
+            {
+              "instruction": 20,
+              "arguments": 1,
+              "span": {
+                "Start": 530,
+                "Length": 22,
+                "Line": 22,
+                "Column": 16
+              },
+              "inputStart": 20,
+              "preceding": [
+                {
+                  "op": "Jump",
+                  "result": 20,
+                  "localResult": false
+                },
+                {
+                  "op": "StoreLocal",
+                  "result": 20,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadCallMember",
+                  "result": 20,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadLocal",
+                  "result": 22,
+                  "localResult": false
+                }
+              ]
+            },
+            {
+              "instruction": 27,
+              "arguments": 1,
+              "span": {
+                "Start": 590,
+                "Length": 15,
+                "Line": 23,
+                "Column": 37
+              },
+              "inputStart": 21,
+              "preceding": [
+                {
+                  "op": "ForNext",
+                  "result": 21,
+                  "localResult": true
+                },
+                {
+                  "op": "StoreLocal",
+                  "result": 21,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadLocal",
+                  "result": 21,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadLocal",
+                  "result": 22,
+                  "localResult": false
+                }
+              ]
+            },
+            {
+              "instruction": 38,
+              "arguments": 2,
+              "span": {
+                "Start": 660,
+                "Length": 34,
+                "Line": 25,
+                "Column": 20
+              },
+              "inputStart": 21,
+              "preceding": [
+                {
+                  "op": "StoreLocal",
+                  "result": 21,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadCallMember",
+                  "result": 21,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadLocal",
+                  "result": 23,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadConst",
+                  "result": 24,
+                  "localResult": false
+                }
+              ]
+            },
+            {
+              "instruction": 62,
+              "arguments": 3,
+              "span": {
+                "Start": 918,
+                "Length": 35,
+                "Line": 34,
+                "Column": 6
+              },
+              "inputStart": 20,
+              "preceding": [
+                {
+                  "op": "LoadName",
+                  "result": 20,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadConst",
+                  "result": 21,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadConst",
+                  "result": 22,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadConst",
+                  "result": 23,
+                  "localResult": false
+                }
+              ]
+            },
+            {
+              "instruction": 73,
+              "arguments": 2,
+              "span": {
+                "Start": 978,
+                "Length": 39,
+                "Line": 35,
+                "Column": 14
+              },
+              "inputStart": 20,
+              "preceding": [
+                {
+                  "op": "StoreLocal",
+                  "result": 20,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadCallMember",
+                  "result": 20,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadLocal",
+                  "result": 22,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadConst",
+                  "result": 23,
+                  "localResult": false
+                }
+              ]
+            },
+            {
+              "instruction": 82,
+              "arguments": 1,
+              "span": {
+                "Start": 1022,
+                "Length": 82,
+                "Line": 36,
+                "Column": 5
+              },
+              "inputStart": 20,
+              "preceding": [
+                {
+                  "op": "LoadConst",
+                  "result": 24,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadConst",
+                  "result": 25,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadConst",
+                  "result": 26,
+                  "localResult": false
+                },
+                {
+                  "op": "MakeList",
+                  "result": 22,
+                  "localResult": false
+                }
+              ]
+            },
+            {
+              "instruction": 86,
+              "arguments": 1,
+              "span": {
+                "Start": 1125,
+                "Length": 14,
+                "Line": 37,
+                "Column": 21
+              },
+              "inputStart": 20,
+              "preceding": [
+                {
+                  "op": "Call",
+                  "result": 20,
+                  "localResult": false
+                },
+                {
+                  "op": "PopTop",
+                  "result": 20,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadName",
+                  "result": 20,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadLocal",
+                  "result": 21,
+                  "localResult": false
+                }
+              ]
+            },
+            {
+              "instruction": 97,
+              "arguments": 1,
+              "span": {
+                "Start": 1149,
+                "Length": 46,
+                "Line": 38,
+                "Column": 9
+              },
+              "inputStart": 21,
+              "preceding": [
+                {
+                  "op": "LoadLocal",
+                  "result": 24,
+                  "localResult": false
+                },
+                {
+                  "op": "ApplyOperation",
+                  "result": 24,
+                  "localResult": false
+                },
+                {
+                  "op": "Subscript",
+                  "result": 24,
+                  "localResult": false
+                },
+                {
+                  "op": "ApplyOperation",
+                  "result": 24,
+                  "localResult": false
+                }
+              ]
+            },
+            {
+              "instruction": 106,
+              "arguments": 2,
+              "span": {
+                "Start": 1196,
+                "Length": 25,
+                "Line": 39,
+                "Column": 1
+              },
+              "inputStart": 20,
+              "preceding": [
+                {
+                  "op": "EndFinally",
+                  "result": 20,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadName",
+                  "result": 20,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadLocal",
+                  "result": 21,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadLocal",
+                  "result": 22,
+                  "localResult": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "rounded_basis_points",
+          "valueCapacity": 6,
+          "integerCapacity": 6,
+          "nativeEligible": true,
+          "calls": []
+        },
+        {
+          "name": "price_line",
+          "valueCapacity": 12,
+          "integerCapacity": 12,
+          "nativeEligible": true,
+          "calls": [
+            {
+              "instruction": 2,
+              "arguments": 1,
+              "span": {
+                "Start": 134,
+                "Length": 20,
+                "Line": 9,
+                "Column": 16
+              },
+              "inputStart": 7,
+              "preceding": [
+                {
+                  "op": "LoadGlobal",
+                  "result": 7,
+                  "localResult": false
+                },
+                {
+                  "op": "Subscript",
+                  "result": 8,
+                  "localResult": false
+                }
+              ]
+            },
+            {
+              "instruction": 6,
+              "arguments": 1,
+              "span": {
+                "Start": 172,
+                "Length": 22,
+                "Line": 10,
+                "Column": 18
+              },
+              "inputStart": 7,
+              "preceding": [
+                {
+                  "op": "Call",
+                  "result": 7,
+                  "localResult": true
+                },
+                {
+                  "op": "StoreLocal",
+                  "result": 7,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadGlobal",
+                  "result": 7,
+                  "localResult": false
+                },
+                {
+                  "op": "Subscript",
+                  "result": 8,
+                  "localResult": false
+                }
+              ]
+            },
+            {
+              "instruction": 10,
+              "arguments": 1,
+              "span": {
+                "Start": 210,
+                "Length": 24,
+                "Line": 11,
+                "Column": 16
+              },
+              "inputStart": 7,
+              "preceding": [
+                {
+                  "op": "Call",
+                  "result": 7,
+                  "localResult": true
+                },
+                {
+                  "op": "StoreLocal",
+                  "result": 7,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadGlobal",
+                  "result": 7,
+                  "localResult": false
+                },
+                {
+                  "op": "Subscript",
+                  "result": 8,
+                  "localResult": false
+                }
+              ]
+            },
+            {
+              "instruction": 14,
+              "arguments": 1,
+              "span": {
+                "Start": 250,
+                "Length": 19,
+                "Line": 12,
+                "Column": 16
+              },
+              "inputStart": 7,
+              "preceding": [
+                {
+                  "op": "Call",
+                  "result": 7,
+                  "localResult": true
+                },
+                {
+                  "op": "StoreLocal",
+                  "result": 7,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadGlobal",
+                  "result": 7,
+                  "localResult": false
+                },
+                {
+                  "op": "Subscript",
+                  "result": 8,
+                  "localResult": false
+                }
+              ]
+            },
+            {
+              "instruction": 19,
+              "arguments": 2,
+              "span": {
+                "Start": 280,
+                "Length": 61,
+                "Line": 13,
+                "Column": 11
+              },
+              "inputStart": 7,
+              "preceding": [
+                {
+                  "op": "StoreLocal",
+                  "result": 7,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadGlobal",
+                  "result": 7,
+                  "localResult": false
+                },
+                {
+                  "op": "Binary",
+                  "result": 8,
+                  "localResult": false
+                },
+                {
+                  "op": "Binary",
+                  "result": 9,
+                  "localResult": false
+                }
+              ]
+            },
+            {
+              "instruction": 24,
+              "arguments": 2,
+              "span": {
+                "Start": 352,
+                "Length": 35,
+                "Line": 14,
+                "Column": 11
+              },
+              "inputStart": 7,
+              "preceding": [
+                {
+                  "op": "StoreLocal",
+                  "result": 7,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadGlobal",
+                  "result": 7,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadLocal",
+                  "result": 8,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadLocal",
+                  "result": 9,
+                  "localResult": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "caseId": "scripts.csv-fulfillment.large",
+      "code": [
+        {
+          "name": "\u003Cmodule\u003E",
+          "valueCapacity": 27,
+          "integerCapacity": 0,
+          "nativeEligible": false,
+          "calls": [
+            {
+              "instruction": 9,
+              "arguments": 2,
+              "span": {
+                "Start": 799,
+                "Length": 28,
+                "Line": 28,
+                "Column": 6
+              },
+              "inputStart": 19,
+              "preceding": [
+                {
+                  "op": "StoreLocal",
+                  "result": 19,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadName",
+                  "result": 19,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadConst",
+                  "result": 20,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadConst",
+                  "result": 21,
+                  "localResult": false
+                }
+              ]
+            },
+            {
+              "instruction": 19,
+              "arguments": 1,
+              "span": {
+                "Start": 854,
+                "Length": 22,
+                "Line": 29,
+                "Column": 16
+              },
+              "inputStart": 19,
+              "preceding": [
+                {
+                  "op": "Jump",
+                  "result": 19,
+                  "localResult": false
+                },
+                {
+                  "op": "StoreLocal",
+                  "result": 19,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadCallMember",
+                  "result": 19,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadLocal",
+                  "result": 21,
+                  "localResult": false
+                }
+              ]
+            },
+            {
+              "instruction": 26,
+              "arguments": 1,
+              "span": {
+                "Start": 914,
+                "Length": 10,
+                "Line": 30,
+                "Column": 37
+              },
+              "inputStart": 20,
+              "preceding": [
+                {
+                  "op": "ForNext",
+                  "result": 20,
+                  "localResult": true
+                },
+                {
+                  "op": "StoreLocal",
+                  "result": 20,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadLocal",
+                  "result": 20,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadLocal",
+                  "result": 21,
+                  "localResult": false
+                }
+              ]
+            },
+            {
+              "instruction": 43,
+              "arguments": 2,
+              "span": {
+                "Start": 1022,
+                "Length": 23,
+                "Line": 35,
+                "Column": 15
+              },
+              "inputStart": 20,
+              "preceding": [
+                {
+                  "op": "Jump",
+                  "result": 20,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadCallMember",
+                  "result": 20,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadLocal",
+                  "result": 22,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadConst",
+                  "result": 23,
+                  "localResult": false
+                }
+              ]
+            },
+            {
+              "instruction": 61,
+              "arguments": 3,
+              "span": {
+                "Start": 1118,
+                "Length": 33,
+                "Line": 37,
+                "Column": 6
+              },
+              "inputStart": 19,
+              "preceding": [
+                {
+                  "op": "LoadName",
+                  "result": 19,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadConst",
+                  "result": 20,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadConst",
+                  "result": 21,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadConst",
+                  "result": 22,
+                  "localResult": false
+                }
+              ]
+            },
+            {
+              "instruction": 72,
+              "arguments": 2,
+              "span": {
+                "Start": 1174,
+                "Length": 38,
+                "Line": 38,
+                "Column": 12
+              },
+              "inputStart": 19,
+              "preceding": [
+                {
+                  "op": "StoreLocal",
+                  "result": 19,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadCallMember",
+                  "result": 19,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadLocal",
+                  "result": 21,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadConst",
+                  "result": 22,
+                  "localResult": false
+                }
+              ]
+            },
+            {
+              "instruction": 80,
+              "arguments": 1,
+              "span": {
+                "Start": 1217,
+                "Length": 54,
+                "Line": 39,
+                "Column": 5
+              },
+              "inputStart": 19,
+              "preceding": [
+                {
+                  "op": "LoadConst",
+                  "result": 22,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadConst",
+                  "result": 23,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadConst",
+                  "result": 24,
+                  "localResult": false
+                },
+                {
+                  "op": "MakeList",
+                  "result": 21,
+                  "localResult": false
+                }
+              ]
+            },
+            {
+              "instruction": 84,
+              "arguments": 1,
+              "span": {
+                "Start": 1287,
+                "Length": 14,
+                "Line": 40,
+                "Column": 16
+              },
+              "inputStart": 19,
+              "preceding": [
+                {
+                  "op": "Call",
+                  "result": 19,
+                  "localResult": false
+                },
+                {
+                  "op": "PopTop",
+                  "result": 19,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadName",
+                  "result": 19,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadLocal",
+                  "result": 20,
+                  "localResult": false
+                }
+              ]
+            },
+            {
+              "instruction": 95,
+              "arguments": 1,
+              "span": {
+                "Start": 1303,
+                "Length": 35,
+                "Line": 40,
+                "Column": 32
+              },
+              "inputStart": 20,
+              "preceding": [
+                {
+                  "op": "LoadLocal",
+                  "result": 23,
+                  "localResult": false
+                },
+                {
+                  "op": "ApplyOperation",
+                  "result": 23,
+                  "localResult": false
+                },
+                {
+                  "op": "Subscript",
+                  "result": 23,
+                  "localResult": false
+                },
+                {
+                  "op": "ApplyOperation",
+                  "result": 23,
+                  "localResult": false
+                }
+              ]
+            },
+            {
+              "instruction": 104,
+              "arguments": 2,
+              "span": {
+                "Start": 1339,
+                "Length": 20,
+                "Line": 41,
+                "Column": 1
+              },
+              "inputStart": 19,
+              "preceding": [
+                {
+                  "op": "EndFinally",
+                  "result": 19,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadName",
+                  "result": 19,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadLocal",
+                  "result": 20,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadLocal",
+                  "result": 21,
+                  "localResult": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "price",
+          "valueCapacity": 23,
+          "integerCapacity": 23,
+          "nativeEligible": true,
+          "calls": [
+            {
+              "instruction": 4,
+              "arguments": 1,
+              "span": {
+                "Start": 60,
+                "Length": 20,
+                "Line": 5,
+                "Column": 14
+              },
+              "inputStart": 18,
+              "preceding": [
+                {
+                  "op": "Subscript",
+                  "result": 18,
+                  "localResult": true
+                },
+                {
+                  "op": "StoreLocal",
+                  "result": 18,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadGlobal",
+                  "result": 18,
+                  "localResult": false
+                },
+                {
+                  "op": "Subscript",
+                  "result": 19,
+                  "localResult": false
+                }
+              ]
+            },
+            {
+              "instruction": 8,
+              "arguments": 1,
+              "span": {
+                "Start": 96,
+                "Length": 22,
+                "Line": 6,
+                "Column": 16
+              },
+              "inputStart": 18,
+              "preceding": [
+                {
+                  "op": "Call",
+                  "result": 18,
+                  "localResult": true
+                },
+                {
+                  "op": "StoreLocal",
+                  "result": 18,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadGlobal",
+                  "result": 18,
+                  "localResult": false
+                },
+                {
+                  "op": "Subscript",
+                  "result": 19,
+                  "localResult": false
+                }
+              ]
+            },
+            {
+              "instruction": 12,
+              "arguments": 1,
+              "span": {
+                "Start": 136,
+                "Length": 24,
+                "Line": 7,
+                "Column": 18
+              },
+              "inputStart": 18,
+              "preceding": [
+                {
+                  "op": "Call",
+                  "result": 18,
+                  "localResult": true
+                },
+                {
+                  "op": "StoreLocal",
+                  "result": 18,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadGlobal",
+                  "result": 18,
+                  "localResult": false
+                },
+                {
+                  "op": "Subscript",
+                  "result": 19,
+                  "localResult": false
+                }
+              ]
+            },
+            {
+              "instruction": 16,
+              "arguments": 1,
+              "span": {
+                "Start": 173,
+                "Length": 19,
+                "Line": 8,
+                "Column": 13
+              },
+              "inputStart": 18,
+              "preceding": [
+                {
+                  "op": "Call",
+                  "result": 18,
+                  "localResult": true
+                },
+                {
+                  "op": "StoreLocal",
+                  "result": 18,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadGlobal",
+                  "result": 18,
+                  "localResult": false
+                },
+                {
+                  "op": "Subscript",
+                  "result": 19,
+                  "localResult": false
+                }
+              ]
+            },
+            {
+              "instruction": 20,
+              "arguments": 1,
+              "span": {
+                "Start": 207,
+                "Length": 21,
+                "Line": 9,
+                "Column": 15
+              },
+              "inputStart": 18,
+              "preceding": [
+                {
+                  "op": "Call",
+                  "result": 18,
+                  "localResult": true
+                },
+                {
+                  "op": "StoreLocal",
+                  "result": 18,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadGlobal",
+                  "result": 18,
+                  "localResult": false
+                },
+                {
+                  "op": "Subscript",
+                  "result": 19,
+                  "localResult": false
+                }
+              ]
+            },
+            {
+              "instruction": 24,
+              "arguments": 1,
+              "span": {
+                "Start": 243,
+                "Length": 21,
+                "Line": 10,
+                "Column": 15
+              },
+              "inputStart": 18,
+              "preceding": [
+                {
+                  "op": "Call",
+                  "result": 18,
+                  "localResult": true
+                },
+                {
+                  "op": "StoreLocal",
+                  "result": 18,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadGlobal",
+                  "result": 18,
+                  "localResult": false
+                },
+                {
+                  "op": "Subscript",
+                  "result": 19,
+                  "localResult": false
+                }
+              ]
+            },
+            {
+              "instruction": 28,
+              "arguments": 1,
+              "span": {
+                "Start": 284,
+                "Length": 26,
+                "Line": 11,
+                "Column": 20
+              },
+              "inputStart": 18,
+              "preceding": [
+                {
+                  "op": "Call",
+                  "result": 18,
+                  "localResult": true
+                },
+                {
+                  "op": "StoreLocal",
+                  "result": 18,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadGlobal",
+                  "result": 18,
+                  "localResult": false
+                },
+                {
+                  "op": "Subscript",
+                  "result": 19,
+                  "localResult": false
+                }
+              ]
+            },
+            {
+              "instruction": 32,
+              "arguments": 1,
+              "span": {
+                "Start": 330,
+                "Length": 26,
+                "Line": 12,
+                "Column": 20
+              },
+              "inputStart": 18,
+              "preceding": [
+                {
+                  "op": "Call",
+                  "result": 18,
+                  "localResult": true
+                },
+                {
+                  "op": "StoreLocal",
+                  "result": 18,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadGlobal",
+                  "result": 18,
+                  "localResult": false
+                },
+                {
+                  "op": "Subscript",
+                  "result": 19,
+                  "localResult": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "caseId": "diagnostic.loop-range.inside.large",
+      "code": [
+        {
+          "name": "\u003Cmodule\u003E",
+          "valueCapacity": 5,
+          "integerCapacity": 0,
+          "nativeEligible": false,
+          "calls": [
+            {
+              "instruction": 4,
+              "arguments": 1,
+              "span": {
+                "Start": 108,
+                "Length": 12,
+                "Line": 6,
+                "Column": 7
+              },
+              "inputStart": 2,
+              "preceding": [
+                {
+                  "op": "DefineFunction",
+                  "result": 1,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadName",
+                  "result": 1,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadLocal",
+                  "result": 2,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadConst",
+                  "result": 3,
+                  "localResult": false
+                }
+              ]
+            },
+            {
+              "instruction": 5,
+              "arguments": 1,
+              "span": {
+                "Start": 102,
+                "Length": 19,
+                "Line": 6,
+                "Column": 1
+              },
+              "inputStart": 1,
+              "preceding": [
+                {
+                  "op": "LoadName",
+                  "result": 1,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadLocal",
+                  "result": 2,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadConst",
+                  "result": 3,
+                  "localResult": false
+                },
+                {
+                  "op": "Call",
+                  "result": 2,
+                  "localResult": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "fold",
+          "valueCapacity": 7,
+          "integerCapacity": 7,
+          "nativeEligible": true,
+          "calls": [
+            {
+              "instruction": 3,
+              "arguments": 1,
+              "span": {
+                "Start": 48,
+                "Length": 12,
+                "Line": 3,
+                "Column": 18
+              },
+              "inputStart": 3,
+              "preceding": [
+                {
+                  "op": "StoreLocal",
+                  "result": 3,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadGlobal",
+                  "result": 3,
+                  "localResult": false
+                },
+                {
+                  "op": "LoadLocal",
+                  "result": 4,
+                  "localResult": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

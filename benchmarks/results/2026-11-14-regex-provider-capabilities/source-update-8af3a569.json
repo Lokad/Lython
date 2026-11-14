@@ -1,0 +1,25 @@
+{
+  "dateUTC": "2026-11-14",
+  "sourceHead": "8af3a56925866bd0f294fd431c522b64b5e025b2",
+  "baseline": "cd8eb5c7f1a76625758fd75fdb231dc1a7132176",
+  "integrationFiles": {
+    "Utf8PythonRegex.cs": "70177e8c5f8d66ff4b46489f655a69c9e3bcb698bac70f2bc979b0c67f608749",
+    "Utf8PythonRegex.Cursor.cs": "065369aef137589d4f553ddeb3acb4ca4b7d6d9279812ca5ee093bceae20edbb",
+    "Utf8PythonRegex.Compilation.cs": "cf61c2d29b822c4a651d1e1dd88d0035971b9995ed65f9080039e12966818655"
+  },
+  "hashBoundary": "Gitblobbytes, compared like-for-like; not Windows CRLFworktree bytes.",
+  "changedIntegrationFiles": [
+    "src/Lokad.Utf8Regex.PythonRe/PythonReScalarMatchState.cs",
+    "src/Lokad.Utf8Regex.PythonRe/README.md"
+  ],
+  "implementationChange": "Internal capture-root deadline-check cadence and captured-text decoder completion reuse. Three Lython-facing API entry blobs remain byte-identical; precise integration gaps unchanged. This is source contract inspection only, not qualification of those runtime changes.",
+  "remainingIntegrationGaps": [
+    "Separate one-match working and escaping-result ownership, instead of using the compiled program account for temporary/result staging",
+    "UTF8 named-group enumeration/copy; GetGroupNames still exposes CLR strings",
+    "Token-independent cursor construction with cancellable preparation; current-token cursor overloads retain construction tokens, while token-free overloads cannot cancel preparation"
+  ],
+  "qualification": "Read-only source/API comparison only; no released-package/source equivalence, semantics, interruption latency, performance or managed-safety qualification. Do not repeat cached dev80 qualification.",
+  "coreDependencyChanged": false,
+  "normalAdapterPinChanged": false,
+  "affectedFinalAdapterQualificationOnly": true
+}

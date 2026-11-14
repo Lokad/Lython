@@ -7874,3 +7874,16 @@ buffer/wider ABI are structuraltradeoffs, causal CPU share unproved. All582input
 restore;forcedbuilds+74boundarychecks pass. No dormant route. Currentqualified
 fa40/73a remains; next native operand/ownership stage needs alias proof, no broader
 frame scalar/call-arena replay. Publication held, performance objective open.
+
+## R365 — native integer workspace, cleanup refinement active
+
+[ff2b/73a,B751](results/2026-11-14-native-integer-workspace/README.md) reuses the
+existing one-idle policy for wide native long[] loans, removes per-call arrays/
+temporary reservation objects.698focused actual11/10/102Pythoncontrols/18goldens
+pass;fulfillment allocation−14.57%,invoice/observedflat. Sevenjobs270.865s/allgates:
+fulfillmentwarm−2.76..+0.48%/fresh−2.65..−0.24%;shorthelpers+0.62..+2.91%withCPU
+adversity. All raw/uncertainty retained. Earlier884,736Bsource estimate is the old
+conservative reservation charge, not measured physical array allocation; corrected.
+Select source-proved mutually exclusive native/continuation storage cleanup to
+remove added EH tier; no causal CPU assertion/newhelper/controller. Changed-source
+focus/controls and retention/debt remain separate. Publication held/objectiveopen.

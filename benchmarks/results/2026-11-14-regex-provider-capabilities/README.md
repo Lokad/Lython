@@ -41,3 +41,10 @@ Read-only [cd8eb5c7/dev91 source inspection](source-update-cd8eb5c7.json) finds 
 internal scalar-profile preparation change and its documentation. The three API
 entry files and precise integration gaps remain unchanged. No adapter promotion
 or repeated qualification follows; independent Lython development continues.
+
+Read-only [8af3a569/dev92 source inspection](source-update-8af3a569.json) finds
+internal capture-root deadline-check cadence and captured-text decoder completion
+reuse. The same three API entry blobs and precise integration gaps are unchanged.
+No package/source equivalence, semantics/interruption/performance/safety
+qualification, normal adapter pin change or repeated dev80 checks follow.
+Independent Lython implementation and adapter-local bridges remain available.
