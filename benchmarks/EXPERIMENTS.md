@@ -7945,3 +7945,14 @@ Initial static-scope fixture rejection and compilation corrections preserved;
 corrected fixture retains deletion assertion. Retain pending full platform,
 originalstress/installed-consumer delivery. Final0.11debt decision stays open;
 publication held, independent regex and representative performance continue.
+
+## B757 — targeted protected-script external checkpoint
+
+[Four jobs137.673s](results/2026-11-14-protected-cpython-checkpoint/README.md)
+at committed3994/b5 versus stockCPython3.13.16: protected invoicewarm1.24–1.28×,
+compile1.05–1.07×,fresh1.24–1.25×; protectedsearch1.64–1.66×. Every gate passes,
+rawSHAverified underlease beforeRAMteardown; no users/fixtures. Older B747 plain
+rows keep fa40/73a, configuration cdd9/f4c; no relabeling or unchangednine-job run.
+Full43640155007 active independently. Publicationheld, general performance gaps
+and short-control/text uncertainty remain; these sourceforms are not isolated
+runtime or embedding-latency attribution.

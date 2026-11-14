@@ -2,29 +2,33 @@
 
 | Representative workload, warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| CSV invoice / pricing helpers|4,096 records /127,031 B|7.693–7.899 ms|6.036–6.098 ms|1.26–1.31×|Diagnostic; spreads 2.68/1.02%; max IQR 1.78%|
-| Text / captured helper and counter|3,072 lines /35,840 B|1.298–1.315 ms|878.121–892.451 µs|1.45–1.50×|Diagnostic; spreads 1.34/1.61%; max IQR 2.30%|
-| JSON-lines / aggregation helpers|4,096 records /110,592 B|3.397–3.499 ms|4.068–4.078 ms|0.83–0.86×|Diagnostic; spreads 2.92/0.24%; max IQR 1.16%|
-| File search / keyword-default helper|2,049 lines /42,010 B; stop after1,025|257.239–266.542 µs|157.790–159.979 µs|1.61–1.69×|Variable; spreads 3.62/1.37%; max IQR 2.73%|
-| JSON-to-Markdown report|3,072 records /189,441 B|2.836–2.880 ms|2.332–2.340 ms|1.21–1.23×|Variable; spreads 1.56/0.32%; max IQR 4.82%|
-| CSV fulfillment / pricing and validation|4,096 records /126,821 B|8.540–8.604 ms|6.652–6.783 ms|1.26–1.29×|Diagnostic; spreads 0.75/1.92%; max IQR 1.90%|
-| CSV validation / for-loop checksum|4,096 records /49,163 B|5.441–5.579 ms|4.210–4.219 ms|1.29–1.33×|Diagnostic; spreads 2.47/0.21%; max IQR 1.30%|
-| Configuration JSON edit |96 B|75.3–76.4 µs|59.6–59.7 µs|1.26–1.28×|Diagnostic; spreads1.56/0.15%; maxIQR1.55%|
+| CSV invoice / defensive pricing helper |4,096 records /127,031 B|7.545–7.590 ms|5.936–6.086 ms|1.24–1.28×|Diagnostic 3994; spreads 0.59/2.46%; max IQR 1.35%|
+| Text / captured helper and counter|3,072 lines /35,840 B|1.298–1.315 ms|878.121–892.451 µs|1.45–1.50×|Earlier fa40; Diagnostic; spreads 1.34/1.61%; max IQR 2.30%|
+| JSON-lines / aggregation helpers|4,096 records /110,592 B|3.397–3.499 ms|4.068–4.078 ms|0.83–0.86×|Earlier fa40; Diagnostic; spreads 2.92/0.24%; max IQR 1.16%|
+| File search / defensive keyword-default helper |2,049 lines /42,010 B; stop after1,025|266.372–266.982 µs|160.576–162.048 µs|1.64–1.66×|Diagnostic 3994; spreads 0.23/0.91%; max IQR 2.60%|
+| JSON-to-Markdown report|3,072 records /189,441 B|2.836–2.880 ms|2.332–2.340 ms|1.21–1.23×|Earlier fa40; Variable; spreads 1.56/0.32%; max IQR 4.82%|
+| CSV fulfillment / pricing and validation|4,096 records /126,821 B|8.540–8.604 ms|6.652–6.783 ms|1.26–1.29×|Earlier fa40; Diagnostic; spreads 0.75/1.92%; max IQR 1.90%|
+| CSV validation / for-loop checksum|4,096 records /49,163 B|5.441–5.579 ms|4.210–4.219 ms|1.29–1.33×|Earlier fa40; Diagnostic; spreads 2.47/0.21%; max IQR 1.30%|
+| Configuration JSON edit |96 B|75.3–76.4 µs|59.6–59.7 µs|1.26–1.28×|Earlier cdd9; Diagnostic; spreads1.56/0.15%; maxIQR1.55%|
 
 **Ratio = Lython elapsed / CPython elapsed; above one means slower.** These are
 complete embedding measurements, not isolated interpreter CPU. Spreads are the
 Lython/CPython process-median differences; moving controls and IQRs remain visible.
 
-First seven rows measured 2026-11-14 UTC: **fa40d674 / frozen 73a1b233**,
-against stock **CPython 3.13.16**. Full Windows/Ubuntu actual .NET 11/10,
-original stress and installed-package qualification
-[passes at this exact source](../benchmarks/results/2026-11-14-range-iteration-stage/delivery/README.md).
-[Exact sources, raw/wider CPU and controls](../benchmarks/results/2026-11-14-range-cpython-checkpoint/README.md).
-Variable cases stay visible; process spreads and within-process IQRs limit
-magnitude precision. The [previous qualified checkpoint and guide](../benchmarks/results/2026-11-14-range-cpython-checkpoint/prior-BENCHMARKS.md)
-preserve earlier source identities and all adverse conditions. Cross-collection
-differences do not attribute individual changes. The separate native numeric
-counter is a diagnostic and does not predict these maintained scripts.
+Defensive invoice and file-search rows measured 2026-11-14 UTC at
+**3994dfda / frozen b5a6426e**, against stock **CPython3.13.16**.
+Full Windows/Ubuntu actual .NET11/10, stress and installed-consumer qualification
+is [running at this source](https://github.com/Lokad/Lython/actions/runs/43640155007).
+[Exact scripts, all phases/raw CPU and controls](../benchmarks/results/2026-11-14-protected-cpython-checkpoint/README.md).
+The other five main rows retain earlier **fa40d674 / frozen73a1b233** measurements,
+also2026-11-14 and CPython3.13.16. Their full qualification
+[passes](../benchmarks/results/2026-11-14-range-iteration-stage/delivery/README.md);
+[B747](../benchmarks/results/2026-11-14-range-cpython-checkpoint/README.md)
+preserves their exact sources and all adverse/variable observations.
+The current defensive helpers add try/except behavior; do not attribute
+cross-collection differences to a runtime change. No unchanged nine-job rerun.
+Process spreads and IQRs limit magnitude precision; counter microbenchmarks do
+not predict these complete workloads.
 The96 B configuration row uses **cdd92944 / frozenf4c4f027**, measured2026-11-14;
 its full platform/stress/package qualification
 [passes](../benchmarks/results/2026-11-14-incremental-xml/delivery/README.md).
@@ -43,12 +47,13 @@ attribute differences from older collections to individual changes.
 
 ## Compilation, compile-to-result and startup
 
-The invoice and96 B configuration sources separate frontend cost from execution:
+The current defensive invoice and earlier96 B configuration sources separate
+frontend cost from execution:
 
 | Phase | Lython | CPython | Lython / CPython | Status |
 | --- | ---: | ---: | ---: | --- |
-| Invoice compilation alone|100.618–102.258 µs|93.686–93.839 µs|1.07–1.09×|Diagnostic; spreads 1.63/0.16%; max IQR 0.97%|
-| Invoice compile and execute once|7.769–7.841 ms|6.242–6.283 ms|1.24–1.26×|Diagnostic; spreads 0.92/0.66%; max IQR 1.30%|
+| Defensive invoice compilation alone |103.845–105.523 µs|98.430–98.738 µs|1.05–1.07×|Diagnostic 3994; spreads 1.62/0.31%; max IQR 2.78%|
+| Defensive invoice compile and execute once |7.729–7.743 ms|6.218–6.237 ms|1.24–1.25×|Diagnostic 3994; spreads 0.19/0.31%; max IQR 1.30%|
 | Configuration compilation alone |36.6–37.3 µs|34.3–34.4 µs|1.06–1.09×|Diagnostic; spreads1.94/0.17%; maxIQR1.97%|
 | Configuration compile and execute once |136.5–137.3 µs|121.4–124.2 µs|1.10–1.13×|Diagnostic; spreads0.61/2.27%; maxIQR3.65%|
 | Process startup |—|—|—|No current comparison|
@@ -80,7 +85,7 @@ These compile-to-result observations describe their named revisions, **not HEAD*
 | Workload / input | Lython | CPython | Ratio | Historical source and status |
 | --- | ---: | ---: | ---: | --- |
 | Config edit /181 B JSON |138.7–139.3 µs|124.8–125.1 µs|1.11–1.12×|41bd869b; diagnostic|
-| CSV validation /5,120 records |4.170–4.249 ms|4.464–4.520 ms|0.92–0.95×|2d91eb1a; diagnostic; other lanes partial|
+| CSV validation /5,120 records |4.170–4.249 ms|4.464–4.520 ms|0.92–0.95×|Earlier fa40; 2d91eb1a; diagnostic; other lanes partial|
 | Ordinary text summary /3,072 lines |1.295–1.323 ms|1.290–1.308 ms|0.99–1.03×|983bab96; variable|
 | Copy/checksum/manifest /4,107 B |0.384 ms|0.260 ms|1.47–1.48×|459813a3; diagnostic|
 | Patch generation /two1,024-line files |0.556–0.558 ms|0.647–0.651 ms|0.85–0.86×|4aa2d46d; diagnostic|
@@ -106,8 +111,8 @@ elapsed gains remain diagnostic. Other source pairs, rejected designs, range
 microbenchmarks and qualification procedures remain in the
 [experimental history](../benchmarks/EXPERIMENTS.md) and the
 [previous guide](../benchmarks/results/2026-11-14-protected-helper-activation/prior-BENCHMARKS.md).
-The external table above retains its exact older revisions until refreshed;
-these improvements do not establish current CPython ratios or embedding latency.
+The external table above identifies current and earlier revisions separately;
+source-pair improvements do not establish embedding latency.
 
 ## Reproducing measurements
 

@@ -1,0 +1,24 @@
+{
+  "purpose": "One targeted external checkpoint for newly qualified source forms: protected invoice warm/compile/fresh and protected early-exit search warm. Same actual current script/input/output under stockCPython3.13.16, fixed existing workers. Earlier B747 plain scripts remain their own revision; no unchanged nine-job rerun or crosscollection attribution.",
+  "jobs": [
+    [
+      "scripts.csv-invoice.large.protected",
+      "warm"
+    ],
+    [
+      "scripts.csv-invoice.large.protected",
+      "compile"
+    ],
+    [
+      "scripts.csv-invoice.large.protected",
+      "compile-run"
+    ],
+    [
+      "scripts.file-search.large.protected",
+      "warm"
+    ]
+  ],
+  "bound": "One240sowner/180sstartguard,4phasejobs,2freshprocesses/engine/job,5sfullrequestwarmup,5rotating0.5sbatches;normalGC/tiering/GIL. Existing image/catalog/worker/toolchain hardlinks, no new core/catalog upload or retirement.254/252MiB floors unchanged.",
+  "acceptance": "Exact current source proof/all libraries, independent output/files/budget, stockPythonidentity/GIL/GC, quiet/join/archive. Separate compile,warm,fresh plus includedRAMI/O/cleanup and widerCPU. Keep every spread/IQR/adverse result and historicaltable revision explicit.",
+  "stopping": "One usable targeted external observation or bounded measurement correction justified by evidence. No new benchmark framework or unchangedB747rerun. FullCI runs independently; sourcequal status explicit; publicationheld."
+}
