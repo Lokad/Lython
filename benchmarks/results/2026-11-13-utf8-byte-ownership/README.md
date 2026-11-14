@@ -2,7 +2,9 @@
 
 2026-11-13UTC, R334 frozen0b2929ca against committedR333/7db788d7/frozena1f31dcd.
 Retain this as an ownership/construction simplification, **not a CPU improvement**.
-The last full qualification is R331; combined R333/R334 delivery is pending.
+Combined R333/R334 delivery at d888ee47 is fully qualified:
+[Windows/Ubuntu, actual .NET11/10, original stress and installed consumers](delivery/README.md).
+All578 production inputs and16 step summaries are archived; measured CPU debt remains explicit.
 
 One strict scalar-UTF8 boundary serves owned bytes.decode/str(bytes,encoding),
 JSON and XML. It reuses existing immutable PyBytes windows and private-input
