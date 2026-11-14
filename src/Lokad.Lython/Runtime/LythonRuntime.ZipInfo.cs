@@ -415,14 +415,14 @@ internal sealed partial class LythonRuntime
 
         internal static PyTuple RequireZipDateTime(object value, LythonSourceSpan? span, MemoryGovernor? governor = null)
         {
-            var items = value switch
+            IReadOnlyList<object> items = value switch
             {
-                PyTuple tuple => tuple.ToArray(),
-                PyList list => list.ToArray(),
+                PyTuple tuple => tuple,
+                PyList list => list,
                 _ => throw new LythonRuntimeException("TypeError", "ZipInfo date_time must be a 6-tuple of ints.", span),
             };
 
-            if (items.Length != 6)
+            if (items.Count != 6)
             {
                 throw new LythonRuntimeException("TypeError", "ZipInfo date_time must be a 6-tuple of ints.", span);
             }

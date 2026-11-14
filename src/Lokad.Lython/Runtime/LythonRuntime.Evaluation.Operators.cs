@@ -91,16 +91,7 @@ internal sealed partial class LythonRuntime
         }
 
         if (PyTupleLike.TryGetItems(left, out var leftItems) && PyTupleLike.TryGetItems(right, out var rightItems))
-        {
-            var (leftGovernor, leftSpan) = TupleLikeOwnership(left);
-            var (rightGovernor, rightSpan) = TupleLikeOwnership(right);
-            var governor = leftGovernor ?? rightGovernor;
-            var allocationSpan = leftSpan ?? rightSpan;
-            var joined = governor is null
-                ? new PyTuple(leftItems.Concat(rightItems))
-                : new PyTuple(leftItems.Concat(rightItems), governor, allocationSpan);
-            return joined;
-        }
+            return ConcatenateTuples(leftItems, rightItems, context, span);
 
         if (left is PyDeque leftDeque && right is PyDeque rightDeque)
         {
@@ -398,12 +389,14 @@ internal sealed partial class LythonRuntime
     private static bool IsSequenceOperand(object value)
         => value is PyList or PyString or PyBytes or PyDeque || PyTupleLike.TryGetItems(value, out _);
 
-    private static (MemoryGovernor? Governor, LythonSourceSpan? Span) TupleLikeOwnership(object value) => value switch
+    // Keep the factory's capture out of the scalar operator's entry path.
+    private static PyTuple ConcatenateTuples(IReadOnlyList<object> left, IReadOnlyList<object> right,
+        ExecutionContext context, LythonSourceSpan span)
     {
-        PyTuple tuple => (tuple.OwnerMemoryGovernor, tuple.AllocationSpan),
-        PyNamedTupleObject named => (named.OwnerMemoryGovernor, named.AllocationSpan),
-        _ => (null, null),
-    };
+        var leftCount = left.Count;
+        return CreateTuple(checked(leftCount + right.Count),
+            index => index < leftCount ? left[index] : right[index - leftCount], context, span);
+    }
 
     private static bool IsIntLikeOperand(object value)
         => PyNumberOps.IsInteger(value);

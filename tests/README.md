@@ -103,6 +103,15 @@ The [admission observer](Lokad.Lython.Tests/CapturedScalarObservationTests.cs) s
 the completed current counter and a stable old identity during subsequent storage
 admission; cooperative loop cancellation retains its ordinary unwind coverage.
 
+[Literal tuple controls](Lokad.Lython.PublicApi.Tests/LiteralTupleExecutionTests.cs)
+preserve Python values, dynamic/mutable members, side effects, starred expansion
+and retained constants or derived results. Slice bounds exercise actual delayed
+host I/O. [Borrowed tuple ownership](Lokad.Lython.Tests/LiteralTupleOwnershipTests.cs)
+checks current-owner admission/refusal/cancellation before derived slice or concat
+storage, unchanged input aliases and allowance reuse. ZIP timestamp guards reject
+invalid lengths without copying the input; their before/after allocation controls
+remain with benchmark evidence.
+
 [Builtin slot owners](Lokad.Lython.PublicApi.Tests/BuiltinSlotOwnerTests.cs) preserve
 original descriptor identity through class-body and later aliases, including
 staticmethod/classmethod/property wrappers. Python goldens, ordinary calls and

@@ -1,5 +1,6 @@
 using System.Reflection;
 using Lokad.Lython.Runtime;
+using Lokad.Lython.Runtime.Text;
 using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
@@ -33,6 +34,28 @@ public sealed class ZipInfoAccountingTests
         // date_time backing (32 + 16 x 6), plus six 64B storage charges for the adopted
         // date_time fields (N06).
         Assert.Equal(390L + 6L * 64L, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void WrongTimestampLengthFailsWithoutCopyingItsInput(bool list)
+    {
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        var items = Enumerable.Repeat<object>(PyNone.Instance, 4096).ToArray();
+        object value = list ? new PyList(items) : PyTuple.FromOwnedArray(items);
+        CallArgumentValue[] arguments = [CallArgumentValue.Positional(PyString.FromString("entry")), CallArgumentValue.Positional(value)];
+        // Prime reflection and exception construction outside the measured window.
+        _ = Record.Exception(() => InvokeZipInfo(context, span, arguments));
+        var before = GC.GetAllocatedBytesForCurrentThread();
+        var failure = Record.Exception(() => InvokeZipInfo(context, span, arguments));
+        var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+        var wrapped = Assert.IsType<TargetInvocationException>(failure);
+        var error = Assert.IsType<LythonRuntimeException>(wrapped.InnerException);
+        Assert.Equal("TypeError", error.ExceptionType);
+        Assert.True(allocated < 16 * 1024, $"Invalid fixed-size metadata allocated {allocated} bytes.");
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 }

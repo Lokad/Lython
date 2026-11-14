@@ -1,0 +1,68 @@
+{
+  "reference": "71ba421cf40fe86c7a484278ec069d69e380e10b4a773fe59aa7ec1a51b62c33",
+  "candidate": "72c9a1e5787eeaaaceae43abc521be95b2b0a1a6ead5e30f9986e42bf6ac69ee",
+  "summary": [
+    {
+      "case": "scripts.csv-invoice.large",
+      "processMedians": {
+        "reference": [
+          5671836.375,
+          5671836.375
+        ],
+        "candidate": [
+          5245841.5,
+          5245838
+        ]
+      },
+      "allocatedByteChangePercent": [
+        -7.510766299212923,
+        -7.510766299212923,
+        -7.510704590803718,
+        -7.510704590803718
+      ]
+    },
+    {
+      "case": "scripts.csv-fulfillment.large",
+      "processMedians": {
+        "reference": [
+          7107798.25,
+          7107799.125
+        ],
+        "candidate": [
+          6775239.875,
+          6775244.25
+        ]
+      },
+      "allocatedByteChangePercent": [
+        -4.678793592102249,
+        -4.678781857658942,
+        -4.67873203999698,
+        -4.678720305546092
+      ]
+    },
+    {
+      "case": "scripts.text-summary-helpers.nonlocal-counter.large",
+      "processMedians": {
+        "reference": [
+          448101.75,
+          448101.75
+        ],
+        "candidate": [
+          448098.25,
+          448101.75
+        ]
+      },
+      "allocatedByteChangePercent": [
+        -0.0007810726023738113,
+        -0.0007810726023738113,
+        0.0,
+        0.0
+      ]
+    }
+  ],
+  "complete": true,
+  "allGoldensAndBudgetBaselineChecksPassed": true,
+  "allWorkersJoinedAndFixturesRemoved": true,
+  "cpuOrElapsedImprovementNotMeasured": true,
+  "raw": "sources-checks-and-observations.tar.xz"
+}

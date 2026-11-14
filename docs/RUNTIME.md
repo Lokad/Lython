@@ -218,6 +218,15 @@ runtime failure; preceding guest effects can already have occurred.
 
 ## Execution internals
 
+Immutable literal tuples belong to the compiled program and can be reused across
+executions, including nested literals. Dynamic, mutable and starred members keep
+their normal evaluation and construction. The existing coarse compilation estimate
+funds constant storage. Derived tuple slices and concatenation allocate through
+the active execution, with preflight and cooperative cancellation; they borrow
+their input independently of its storage owner. Public projection funds its own
+tuple arrays and retained scalars, so results remain funded after compilation
+cleanup. Literal identity and per-run admission thresholds can change.
+
 Annotation diagnostics retain conservative branch facts, including unreachable
 checks, independently of the main analyzer's refined flow. Shared lexical
 preparation identifies annotation demand and regex imports; ordinary scripts

@@ -199,6 +199,7 @@ internal static class PyIndexing
         {
             PyDeque => throw new LythonRuntimeException("TypeError", "sequence index must be integer, not 'slice'", span),
             PyBytes bytes when context is not null => bytes.Slice(NormalizeSliceBounds(bytes.Length, start, end, step, span), context, span),
+            PyTuple tuple when context is not null => tuple.Slice(NormalizeSliceBounds(tuple.Length, start, end, step, span), context, span),
             IPySliceableValue value => value.GetSlice(start, end, step, span),
             IPyIndexableValue value => value.GetSlice(SliceIndices(value.Length, start, end, step, span)),
             _ when PyStringOps.TryAsString(target, out var text) => text.Slice(NormalizeSliceBounds(text.Length, start, end, step, span)),

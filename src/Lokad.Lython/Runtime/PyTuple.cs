@@ -264,6 +264,10 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
 
     public object GetIndex(int index) => _items[index];
 
+    internal PyTuple Slice(PyIndexing.SliceBounds bounds, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        => LythonRuntime.CreateTuple(bounds.Count,
+            index => _items[(int)(bounds.Start + (long)index * bounds.Step)], context, span);
+
     public object GetSlice(IEnumerable<int> indices)
     {
         var items = PySequenceMaterialization.MaterializeSlice(_items, indices, _memoryGovernor, _allocationSpan);

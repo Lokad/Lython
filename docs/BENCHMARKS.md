@@ -135,6 +135,12 @@ CPython remains the external baseline. Separate source-pair experiments establis
   Full Windows/Ubuntu .NET11/10, original stress and installed-consumer
   [qualification passes](../benchmarks/results/2026-11-14-captured-scalar-storage/delivery/README.md).
 
+- Compiled immutable tuples remove repeated construction: invoice/fulfillment
+  allocation falls7.51/4.68%. Warm CPU results are modest; compilation/fresh and
+  unchanged text controls remain inconclusive. The[exact source-pair evidence](../benchmarks/results/2026-11-14-compiled-literal-tuples/README.md)
+  preserves all adverse results, corrected ownership and delivery status. These
+  measurements do not update the CPython rows.
+
 [Experimental history and source-specific evidence](../benchmarks/EXPERIMENTS.md)
 preserve controlled comparisons, rejected designs, adverse results and qualification.
 Do not add these percentages together or apply them to the CPython ratios.

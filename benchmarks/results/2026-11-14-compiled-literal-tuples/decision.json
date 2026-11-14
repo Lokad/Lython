@@ -1,0 +1,26 @@
+{
+  "date": "2026-11-14",
+  "decision": "Retain immutable literal construction removal with current-execution ownership correction; batch full delivery next.",
+  "reference": "e235b18b/frozen71ba421c",
+  "candidate": "72c9a1e5",
+  "removed": [
+    "repeated immutable literal tuple construction and child instruction transport",
+    "TupleLikeOwnership and source-governor allocation selection",
+    "unowned tuple concatenation branch and LINQ concat/growth materialization",
+    "contextual tuple slice temporary index/list/backing pipeline",
+    "arbitrary date_time ToArray snapshot before fixed-size validation"
+  ],
+  "allocation": "Invoice\u22127.51%, fulfillment\u22124.68%, unchanged captured text effectively flat across four fresh allocation processes. Same new parent path per role; do not compare absolute byte totals to another collection with a different fixture path.",
+  "cpu": "Invoice warm\u22120.22..\u22120.87%, fulfillment\u22120.88..\u22121.77%, modest source-pair results. Constant-return diagnostic\u22128.02..\u221214.21%CPU with reference/candidate process spread5.02/2.83%; no added unpacking mechanism is justified. Whole-script CPU improvement is modest, separate from useful allocation reduction.",
+  "debt": [
+    "Compilation elapsed\u22121.05..+1.83%, CPU\u22121.18..+1.82%, candidate process spread2.71%: inconclusive",
+    "Compile-to-result elapsed\u22122.15..+2.75%, CPU\u22121.35..+2.62%, candidate spread4.02%: uncertainty remains, no fresh-script speedup claim",
+    "Unchanged captured text elapsed\u22122.65..+3.52%,CPU\u22121.93..+2.92%,candidate spread5.84% limits attribution/neutrality claims",
+    "Initial01fd is not suitable for promotion: derived-storage admission gaps are corrected. Original B722 malformed-control failure and four diagnostic phases stay immutable.",
+    "Immutable literal identity can be reused across runs; construction moves into pre-admitted compiled storage and per-run admission thresholds change. No public API change."
+  ],
+  "acceptance": "Code removes repeated immutable tuple construction, source-owner allocation selection/TupleLikeOwnership, ungoverned concat/LINQ growth and invalid ZIP timestamp snapshots. Dynamic tuples and genuine suspension retain existing paths. Six original ownership failures now pass; exact old01fd fails both copy guards.144internal/547public per actual11/10 (1382total) pass, with14isolated Python controls, actual I/O, first refusal, cancellation and retained outputs.",
+  "comparison": "B723fixed72c9/71ba, six targeted phases/445.93s under480s owner. All image/auxiliary/golden/balance/quiet/join/archive gates pass. Original failed data preserved, no unchanged retiming needed to retain allocation/simplification value.",
+  "stopping": "This bounded representation migration is selected; finish coherent full Windows/Ubuntu actual11/10, original stress and installed-consumer delivery. Broader complete-script performance roadmap remains active. Current CPython table still measures009d/8ae.",
+  "publicationHeld": true
+}

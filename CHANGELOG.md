@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Store immutable literal tuples with compiled programs rather than rebuilding
+  them on each evaluation. Preserve dynamic/mutable/starred construction, fund
+  derived slices and concatenation through the active execution, and validate
+  ZIP timestamp length before copying its input.
+
 - Keep unobserved exact-integer updates in captured cells and publish a stable
   Python identity on read. Share existing compiler preparation and arithmetic;
   preserve aliases, namespace exposure, cancellation and conservative cell funding.

@@ -113,10 +113,14 @@ internal sealed partial class ExecutableScript
                         return CompileDisplay(tuple.Items, ExecutableDisplayKind.Tuple, tuple.Span, currentBlock);
                     }
 
+                    var tupleBlock = currentBlock;
+                    var tupleStart = _blocks[currentBlock].Instructions.Count;
                     foreach (var item in tuple.Items)
                     {
                         currentBlock = CompileExpression(item.Expression, currentBlock);
                     }
+                    if (currentBlock == tupleBlock && TryCompleteLiteralTuple(currentBlock, tupleStart, tuple.Items.Count, tuple.Span))
+                        return currentBlock;
                     AddInstruction(currentBlock, ExecutableInstruction.MakeTuple(tuple.Items.Count, tuple.Span));
                     return currentBlock;
 
@@ -369,6 +373,30 @@ internal sealed partial class ExecutableScript
             }
 
             return joinBlock;
+        }
+
+        private bool TryCompleteLiteralTuple(int block, int start, int count, LythonSourceSpan span)
+        {
+            var instructions = _blocks[block].Instructions;
+            if (instructions.Count - start != count) return false;
+            for (var index = start; index < instructions.Count; index++)
+            {
+                var instruction = instructions[index];
+                if (instruction.OpCode != ExecutableOpCode.LoadConst
+                    || _constants[instruction.ConstantIndex] is not (PyNone or PyEllipsis or bool or BigInteger
+                        or double or PyComplex or PyString or PyBytes or PyTuple)) return false;
+            }
+
+            // The existing coarse compilation preflight owns immutable literals
+            // and instruction storage. Reuse emitted facts, without another syntax
+            // walk or executing an operator. Dynamic displays keep MakeTuple.
+            var items = new object[count];
+            for (var index = 0; index < items.Length; index++)
+                items[index] = _constants[instructions[start + index].ConstantIndex]!;
+            var value = count == 0 ? PyTuple.Empty : PyTuple.FromOwnedArray(items);
+            instructions.RemoveRange(start, count);
+            AddInstruction(block, ExecutableInstruction.LoadConst(InternConstant(value), span));
+            return true;
         }
 
         private static ExecutableUnaryOperator MapUnaryOperator(UnaryOperatorSyntax op)

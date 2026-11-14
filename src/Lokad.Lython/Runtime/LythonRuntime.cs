@@ -136,9 +136,11 @@ internal sealed partial class LythonRuntime
         }
 
         using var storage = context.MemoryGovernor.ReserveTemporary(PyTuple.EstimateApproximateBytes(count), span);
+        context.CheckExecution(span);
         var items = new object[count];
         for (var i = 0; i < count; i++)
         {
+            if ((i & 1023) == 0) context.CheckExecution(span);
             items[i] = itemFactory(i);
         }
 
