@@ -73,6 +73,11 @@ numeric snapshots across real I/O and overlapping results, join cancelled reads
 before refund, and repeat protected helpers with shared input in a bounded budget.
 These assert public ownership behavior independently of numeric representation.
 
+[Range helpers](Lokad.Lython.PublicApi.Tests/RangeHelperExecutionTests.cs) cover
+exact and protocol bounds, errors, named guest functions/rebinding, actual I/O
+transfer and cancellation. Native sequence admission also refuses construction
+before loop effects and verifies first failure, unwind and budget reuse.
+
 ## Assembly boundaries
 
 - `Lokad.Lython.PublicApi.Tests` references `Lokad.Lython.csproj` normally. It

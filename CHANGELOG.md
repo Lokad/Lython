@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Keep exact `range` construction inside eligible native helpers, sharing the
+  ordinary factory over evaluated argument storage. Preserve per-execution type
+  metadata, index protocols, cancellation, admission and cursor transfer.
+
 - Preserve Python `TypeError` for matrix assignment in native helpers instead of
   routing it through the arithmetic-only operator mapper.
 

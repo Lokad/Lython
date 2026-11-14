@@ -1,0 +1,17 @@
+{
+  "complete": true,
+  "coreSHA256": "ca1e2331ab19972f4da7f2ae156536d2fab20bdcde43e408d0e7d74ba4175dc4",
+  "controls": [
+    {
+      "asynchronous": false,
+      "cases": 35,
+      "matched": true
+    },
+    {
+      "asynchronous": true,
+      "cases": 35,
+      "matched": true
+    }
+  ],
+  "python": "Isolated CPython3.13.2"
+}

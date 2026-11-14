@@ -77,6 +77,7 @@ internal sealed partial class LythonRuntime
         internal static bool IsLengthBuiltin(object value) => ReferenceEquals(value, SharedLen);
         internal static bool IsAbsoluteBuiltin(object value) => ReferenceEquals(value, SharedAbs);
         internal static bool IsSumBuiltin(object value) => ReferenceEquals(value, SharedSum);
+        internal static bool IsRangeBuiltin(object value) => value is BuiltinCallable { Name: "range" };
 
         // Retain each run's connected object/metatype graph. Fixed functions
         // and immutable constructor signatures are shared above.

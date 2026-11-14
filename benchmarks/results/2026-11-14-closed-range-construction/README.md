@@ -110,3 +110,47 @@ Final source/checks/comparison and retention remain separate from these timings.
 [allocation](owned-constructor/allocation-summary.json), [checks](owned-constructor/focused-checks.json),
 [test-input correction](owned-constructor/test-input-correction.json),
 [sources/binary/raw/conditions](owned-constructor/sources-checks-and-observations.tar.xz).
+
+## Retained completion: native-prefix construction only
+
+Retain frozen `ca1e2331`, four production inputs. Remove the entire ordinary-call
+specialization and restore that router's exact baseline bytes. Per-execution range
+metadata and the single span-based factory remain. This removes a whole-helper
+promotion without scalar state in ordinary frames or another routing framework.
+176 final-source focused checks on actual .NET 11/10, 70 isolated Python controls
+and all 16 worker goldens pass. Previous metadata/refusal coverage applies to the
+unchanged constructor ownership; the ordinary router is restored to qualified code.
+No public API or supported Python behavior changes.
+
+B742 completes three jobs in 105.342 seconds with all gates and no remaining
+users/fixtures. Same normal settings/boundaries. Raw SHA256
+`f67d6b4e241bf644b715e364abc7f4502bd2eca8f1b513c61858267c30468c25`.
+
+| Final source / warm | Elapsed change | Wider CPU change |
+| --- | ---: | ---: |
+| Inside-range 100,000-add counter | −33.19..−31.85% | −32.78..−31.84% |
+| Short/zero helpers | +0.59..+7.86% | −1.47..+6.44% |
+| Helpers exposing every intermediate | −1.14..+1.91% | −2.20..+1.20% |
+
+Counter is 2.770–2.805 ms versus 4.115–4.147 ms. Final allocation diagnostic
+(one fresh process per role) is 7,518,746 to 3,215,402 B/run (−57.23%); CSV allocation
+is identical at 3,034,384 B/run. Initial four-process allocation evidence agrees.
+Short-helper candidate spread 4.75% / reference 2.08% makes magnitude uncertain;
+preserve its adverse direction. Accept that uncertainty/debt for this bounded
+whole-loop improvement, alongside earlier R359 debt; final 0.11 debt remains an
+explicit release decision. No final-source fresh/CSV/JSON elapsed, universal gain,
+new CPython ratio or causal B741/B742 attribution. Initial seven-job results stay
+visible but do not qualify the corrected source. The inherited retrieval console
+says B741; actual unit/root/source/core/archive identities are B742 and verified.
+
+The original source-pair metadata also inherited an older 959c precommit label.
+Final identity corrects it: actual base eb882d01, qualified comparison 98acaa5b,
+precommit e9cf1c39. Source/core/auxiliary hashes were correct throughout; original
+metadata is preserved. Full source/platform/stress/installed-consumer delivery
+follows at the committed final source. Publication stays held; the wider
+representative-script performance objective and independent regex track continue.
+
+[Decision/debt](native-only/decision.json), [identity](native-only/candidate-identity.json),
+[timing](native-only/timing-summary.json), [allocation](native-only/allocation-summary.json),
+[checks](native-only/focused-checks.json),
+[all final sources/binary/raw/tools](native-only/sources-checks-and-observations.tar.xz).

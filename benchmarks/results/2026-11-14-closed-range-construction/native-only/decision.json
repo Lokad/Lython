@@ -1,0 +1,17 @@
+{
+  "retain": true,
+  "coreSHA256": "ca1e2331ab19972f4da7f2ae156536d2fab20bdcde43e408d0e7d74ba4175dc4",
+  "changedProductionInputs": [
+    "src/Lokad.Lython/Runtime/LythonRuntime.BuiltinIterables.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeCalls.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativePrefix.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.Builtins.cs"
+  ],
+  "removed": "Whole-helper native-to-ordinary promotion and argument packaging for exact range construction; discard global range singleton and entire ordinary-call specialization.",
+  "bounds": "Native prefix only; existing per-execution mutable constructor metadata and generic index/keyword/star protocols retained. No new owner/array/value representation/controller/configuration. All582source/aux identities and current cancellation/admission preserved.",
+  "result": "Complete100kcounter\u221231.85..\u221233.19percentwarm with CPU support, allocation\u221257.2349percent. No final-source fresh/CSV/JSON external/neutrality claim.",
+  "debt": "Shorthelperelapsed+0.59..+7.86percent/candidate4.75percentprocessspread, CPU\u22121.47..+6.44percent. Observedelapsed\u22121.14..+1.91percent/CPU\u22122.20..+1.20. Accept uncertainty/adversecontrol debt for bounded whole-loop milestone; earlier R359debt still release decision. No automatic unchanged retiming or causal B741/B742 attribution.",
+  "focused": "176finalsourcechecks actual11/10,70isolatedPythoncontrols,16workergoldens. Prior536metadata/refusal checks reused because constructors unchanged and ordinaryrouter restoredexactbaseline. Originalnet10sixcase mismatch/forcedsevenfix retained.",
+  "fullQualification": "Pending coherent platform/stress/installedRelease consumer delivery at committed frozen source.",
+  "publicationHeld": true
+}

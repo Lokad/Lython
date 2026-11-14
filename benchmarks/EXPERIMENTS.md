@@ -7787,3 +7787,13 @@ pass. Preserve every original result. Remove ordinary range routing entirely:
 only native-prefix construction needs this capability, so restore the exact
 ordinary-router baseline. No new abstraction/owner/flag. Source/checks/final
 comparison remain independent; no causal attribution from mere routing placement.
+
+R361 [retained native-only completion](results/2026-11-14-closed-range-construction/README.md)
+ca1e restores ordinary-call routing exactly and retains per-execution constructors.
+Four changed inputs, 176 final focused checks/70 Python controls/16 goldens pass.
+B742 three jobs/105.342 s/all gates: whole counter warm−31.8–33.2%/CPU support,
+allocation−57.23%; shorthelperelapsed+0.6–7.9% with variable controls and mixed CPU,
+observed mixed. Accept explicit remaining debt/uncertainty for this bounded loop
+milestone; no universal/finalfresh/CSV/JSON/CPython improvement claim or causal
+cross-collection attribution. Initial/adverse/metadata failures preserved, no dormant
+router/singleton. Full delivery follows; broader objective and regex work active.

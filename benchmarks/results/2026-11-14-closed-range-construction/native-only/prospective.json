@@ -1,0 +1,6 @@
+{
+  "reason": "B741correctlyownedcounter\u221230\u201331percent but stable shorthelper+5\u20139percent/observed+0.5\u20131.9percent. SourceaddsrangeTypeprobe beforeeveryordinaryfunctioncall; 8192knownhelpercalls dominate short control. No causal claim from source alone.",
+  "change": "Remove range specialization from ordinary call router entirely; restore its exact baseline bytes. Only native-prefix range construction causes the whole-body promotion cliff. Keep factory sharing/per-execution metadata; remove unnecessary general routing, no new flag/controller/cache.",
+  "acceptance": "Focused numeric/helper/call/tuple/actualIO/cancel/refusal checks actual11/10,70Pythoncontrols,all8frozenworker goldens. Separate allocation; bounded3jobcounter/short/observed sourcepair. Earliercomplete7job controls/adversity retained, no final-source inference.",
+  "publicationHeld": true
+}

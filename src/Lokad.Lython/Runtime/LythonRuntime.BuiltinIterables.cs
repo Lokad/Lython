@@ -202,6 +202,9 @@ internal sealed partial class LythonRuntime
             : 0;
 
     private static object Range(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => Range(arguments.AsSpan(), span, context);
+
+    private static object Range(ReadOnlySpan<object?> arguments, LythonSourceSpan span, ExecutionContext context)
     {
         if (arguments.Length < 1)
         {
@@ -219,18 +222,18 @@ internal sealed partial class LythonRuntime
 
         if (arguments.Length == 1)
         {
-            stop = RangeBound(arguments[0], context, span);
+            stop = RangeBound(arguments[0]!, context, span);
         }
         else if (arguments.Length == 2)
         {
-            start = RangeBound(arguments[0], context, span);
-            stop = RangeBound(arguments[1], context, span);
+            start = RangeBound(arguments[0]!, context, span);
+            stop = RangeBound(arguments[1]!, context, span);
         }
         else
         {
-            start = RangeBound(arguments[0], context, span);
-            stop = RangeBound(arguments[1], context, span);
-            step = RangeBound(arguments[2], context, span);
+            start = RangeBound(arguments[0]!, context, span);
+            stop = RangeBound(arguments[1]!, context, span);
+            step = RangeBound(arguments[2]!, context, span);
         }
 
         // Bounds coerce through __index__ like CPython; failures name the type.

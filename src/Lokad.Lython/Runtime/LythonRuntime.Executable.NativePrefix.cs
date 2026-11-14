@@ -318,6 +318,11 @@ internal sealed partial class LythonRuntime
                 {
                     if (!CallFunction(call, start, target, out result)) return false;
                 }
+                else if (!call.HasReceiver && ExecutionContext.IsRangeBuiltin(target))
+                {
+                    if (!TryInvokeNativeRange(Values.Slice(start + call.ArgumentOffset, call.ArgumentCount),
+                        call.CallSpan, _scope, out result)) return false;
+                }
                 else if (call.HasReceiver && Values[start] is PyDict dictionary)
                 {
                     if (call.ArgumentCount == 0 && target is ReceiverMethod method && method.AcceptsPositional(0))

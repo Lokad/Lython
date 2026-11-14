@@ -8,6 +8,22 @@ internal sealed partial class LythonRuntime
 {
     internal enum NativeStringOperation { Split, Replace, StartsWith, EndsWith }
 
+    // Exact bounds cannot run Python protocols. Share the ordinary range factory
+    // without packaging arguments or promoting the rest of a native helper.
+    // Declining this path performs no operation or admission.
+    private static bool TryInvokeNativeRange(ReadOnlySpan<object?> arguments,
+        LythonSourceSpan span, ExecutionContext context, out object result)
+    {
+        result = PyNone.Instance;
+        foreach (var argument in arguments)
+            if (argument is not (BigInteger or bool)) return false;
+        context.EnterInterpreterFrame(span);
+        try { result = Range(arguments, span, context); }
+        catch (Exception error) when (TryTranslateCallableException(error, span, out var translated)) { throw translated; }
+        finally { context.LeaveInterpreterFrame(); }
+        return true;
+    }
+
     // Conditional branches and unary not need the same closed truth contract.
     // Other values may run Python protocols and require their invocation frame.
     private static bool CanUseNativeTruth(object value)
