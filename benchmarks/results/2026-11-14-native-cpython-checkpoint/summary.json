@@ -1,0 +1,304 @@
+{
+  "complete": true,
+  "jobs": 8,
+  "elapsedSeconds": 327.28733025398105,
+  "identity": {
+    "sourceRevision": "1778c30d/frozen38c0562f; combined full CI43545993574 pending",
+    "purpose": "Representative CPython checkpoint after coherent R338/R339 native eligibility delivery; identical complete scripts, explicit phase boundaries and unchanged workers.",
+    "coreSHA256": {
+      "reference": "38c0562fdd20b4df2ba0f37806cfdfa1b20a31f9fbabcd522e28c611ea3e8567",
+      "reference-control": "38c0562fdd20b4df2ba0f37806cfdfa1b20a31f9fbabcd522e28c611ea3e8567",
+      "candidate": "38c0562fdd20b4df2ba0f37806cfdfa1b20a31f9fbabcd522e28c611ea3e8567",
+      "candidate-control": "38c0562fdd20b4df2ba0f37806cfdfa1b20a31f9fbabcd522e28c611ea3e8567"
+    },
+    "auxiliaryFiles": {
+      "Azure.Core.dll": "1d6df436afdc73c30d476be938f6513c90ef8fc884a7bae280091a9bed0a5490",
+      "Azure.Identity.dll": "31574a3d35ffeb0e25a00ebb317937222fe5283b91af608613f2e3bf0f26c50a",
+      "BenchmarkDotNet.Annotations.dll": "97974c60500f53a3c7d142088b22d815aae7aac729de69f4b497132cc436594f",
+      "BenchmarkDotNet.dll": "599ded314fe77dbc17318557e787cf660c1fcb0d69be39994ea462ca95745896",
+      "CommandLine.dll": "8a55501cd1a1590a4bd93a17c6fdd2c01a0ed5bff1aea9036bdc78d98c9a3fad",
+      "deniszykov.WebSocketListener.dll": "c86cfb93e32192ae12fb1a132b4ae785a7d2f325e8583c03c99abf8e832d25d6",
+      "Dia2Lib.dll": "6c4cac68010fe032218efe5e9fcf46eef9f77bfaa5f3bd33f03c5ff77d5a8fac",
+      "Gee.External.Capstone.dll": "6dfda67784598de9677173b89d0692593935f1a4024d36040c95dea48c1b5965",
+      "Iced.dll": "f058c01321b4cdfc9b9151879e88e59571c8d0ba176fbcf95bc936a8f3d073ed",
+      "Lokad.Lython.Benchmarks.deps.json": "b47f293f779ce46eefa92c6eb775842efe363be212c35bf7d155d0b89734d450",
+      "Lokad.Lython.Benchmarks.dll": "acda3ef3d79d7447cbd6099d903475da61f9b7bd36d949e6d4d3eb6e085de6c6",
+      "Lokad.Lython.Benchmarks.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0",
+      "Lokad.Lython.Utf8Regex.dll": "9f7282ade883f103956efaf7e46182f7705fb7675f1f46963b9c42ae5aae7f94",
+      "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+      "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe",
+      "Microsoft.Bcl.AsyncInterfaces.dll": "bf58b47923b2f520c766ca905f68a1a65d217c4d828f05db538c41129cacf9d9",
+      "Microsoft.CodeAnalysis.CSharp.dll": "1af1de8a162d2312eb2f6b781f5edbe8cec7d5cd268c7e4de24396225e54260f",
+      "Microsoft.CodeAnalysis.dll": "42c9ce7891470f430267e2dc02d03571f9d046a7e7e121107754bee58d344613",
+      "Microsoft.Diagnostics.FastSerialization.dll": "e5bdad179ce97180646f37f357cb7b449f5baaf76f185eb09510eeafc5b773e1",
+      "Microsoft.Diagnostics.NETCore.Client.dll": "e2cc9e1f6c97b3c4ee45ebabaa92408eb9b2fc81cb08ceeb342fe48bf79db15f",
+      "Microsoft.Diagnostics.Runtime.dll": "52d5f113180bb0f70b1a9b10608aef93b187364ac689885d2d3c734102d850a2",
+      "Microsoft.Diagnostics.Tracing.TraceEvent.dll": "92401392ce1887c3483a3c0085e6cc3656ee39da1be539943096ebabbad6ea21",
+      "Microsoft.Identity.Client.dll": "5795027e9ae95eececb310a4fed3c502bb368039d186ab0884f64b7792b84717",
+      "Microsoft.Identity.Client.Extensions.Msal.dll": "07109a2f30df782300077a567ade47cbd0a0502c75cd7c8a62192f7d64bb004e",
+      "Microsoft.IdentityModel.Abstractions.dll": "24e97b54b6b5c234a124a336757e3116617ac6c30b655cdae74517dc2ecb5746",
+      "Perfolizer.dll": "4a5508174e2b90a651a29e1de0d2ad88236daaaae01070cd6fc8ca3c36beaa36",
+      "Pragmastat.dll": "7217e206e47de8a0335f58513019d5805a6e52ca2e8f127e2cc3944f1742bb2e",
+      "System.ClientModel.dll": "dec5e22b71a1685c5e6e97cd28b629f0aa6703fb87b6950df28e79fc1804290c",
+      "System.Memory.Data.dll": "2c1035b0106dbb2de7913d151e06071ed617bb58bbb3d6cd46a2dd0f6a03617b",
+      "System.Security.Cryptography.ProtectedData.dll": "80566f0839ece5946e66bf9f00d723e59e371ba1341a18e00c7c7a7c49298e1d",
+      "TraceReloggerLib.dll": "6830c0f1d3f3c17719181e73dd5cfa8ccbb3f3c575329d2120576545103467b5"
+    },
+    "catalogSHA256": "1a853d963ac108ad0476489553a24ec89ddb57ee53be4f0dda2a95d99341e430",
+    "sourceIdentitySHA256": "f30ac6952ce2640feedaf004b047448379d0321acdded1ac296ffa328e7d62c9",
+    "publicationHeld": true
+  },
+  "timing": [
+    {
+      "case": "scripts.csv-invoice.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "candidate": 7.399542179104477,
+        "CPython": 6.0307620987654325,
+        "candidate-control": 7.489580757575757,
+        "CPython-control": 6.138507898734177
+      },
+      "processCpuMedianMilliseconds": {
+        "candidate": 7.611940298507463,
+        "CPython": 6.172839506172839,
+        "candidate-control": 7.7272727272727275,
+        "CPython-control": 6.2025316455696204
+      },
+      "ratioRange": [
+        1.2054300981889001,
+        1.220097926259928,
+        1.2269663531611121,
+        1.2418962371453786
+      ],
+      "iqrPercent": {
+        "candidate": 0.7655324363492421,
+        "CPython": 0.4956446243214792,
+        "candidate-control": 0.602063780201479,
+        "CPython-control": 1.0927363777538155
+      },
+      "lythonControlPercent": 1.2168128283063018,
+      "cpythonControlPercent": 1.7866033878338738,
+      "maxIqrPercent": 1.0927363777538155
+    },
+    {
+      "case": "scripts.csv-invoice.large",
+      "lane": "compile",
+      "medianMilliseconds": {
+        "candidate": 0.10121208202020202,
+        "CPython": 0.09285049636261891,
+        "candidate-control": 0.10183628635529268,
+        "CPython-control": 0.09263495580621302
+      },
+      "processCpuMedianMilliseconds": {
+        "candidate": 0.10303030303030303,
+        "CPython": 0.09326618168252192,
+        "candidate-control": 0.10197838058331633,
+        "CPython-control": 0.09245562130177515
+      },
+      "ratioRange": [
+        1.0900542914162539,
+        1.0925906008087471,
+        1.096776973141647,
+        1.099328924691542
+      ],
+      "iqrPercent": {
+        "candidate": 0.829396129546606,
+        "CPython": 0.4123966427640632,
+        "candidate-control": 1.2480326787818263,
+        "CPython-control": 0.5598391900002619
+      },
+      "lythonControlPercent": 0.6167290728848807,
+      "cpythonControlPercent": 0.2321372150388079,
+      "maxIqrPercent": 1.2480326787818263
+    },
+    {
+      "case": "scripts.csv-invoice.large",
+      "lane": "compile-run",
+      "medianMilliseconds": {
+        "CPython-control": 6.291825115384616,
+        "candidate-control": 8.037213262295083,
+        "CPython": 6.303116844155844,
+        "candidate": 7.5853614375
+      },
+      "processCpuMedianMilliseconds": {
+        "CPython-control": 6.410256410256411,
+        "candidate-control": 8.19672131147541,
+        "CPython": 6.4935064935064934,
+        "candidate": 7.8125
+      },
+      "ratioRange": [
+        1.2034302433300175,
+        1.2055899994665238,
+        1.2751172889563467,
+        1.2774056994436618
+      ],
+      "iqrPercent": {
+        "CPython-control": 0.4810204891854861,
+        "candidate-control": 0.4834959219380078,
+        "CPython": 0.852639083030279,
+        "candidate": 0.45785783790477635
+      },
+      "lythonControlPercent": 5.956892476622788,
+      "cpythonControlPercent": 0.1791451602503269,
+      "maxIqrPercent": 0.852639083030279
+    },
+    {
+      "case": "scripts.text-summary-helpers.nonlocal-counter.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "CPython-control": 0.8947008152380952,
+        "candidate-control": 1.352805539106145,
+        "CPython": 0.8906694970986461,
+        "candidate": 1.4480323843843845
+      },
+      "processCpuMedianMilliseconds": {
+        "CPython-control": 0.9523809523809523,
+        "candidate-control": 1.4245810055865922,
+        "CPython": 0.9671179883945842,
+        "candidate": 1.5015015015015014
+      },
+      "ratioRange": [
+        1.512020013915088,
+        1.5188636677386014,
+        1.618454303072294,
+        1.625779696173886
+      ],
+      "iqrPercent": {
+        "CPython-control": 0.5014612727321768,
+        "candidate-control": 0.7009304724793383,
+        "CPython": 1.9005285898315885,
+        "candidate": 1.4021323382875948
+      },
+      "lythonControlPercent": 6.576292512872506,
+      "cpythonControlPercent": 0.4526166162174716,
+      "maxIqrPercent": 1.9005285898315885
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "CPython-control": 4.08499468907563,
+        "candidate-control": 3.406941361111111,
+        "CPython": 4.090377491666667,
+        "candidate": 3.370526324137931
+      },
+      "processCpuMedianMilliseconds": {
+        "CPython-control": 4.201680672268908,
+        "candidate-control": 3.5416666666666665,
+        "CPython": 4.166666666666667,
+        "candidate": 3.4482758620689653
+      },
+      "ratioRange": [
+        0.8240135124459076,
+        0.8250993160778448,
+        0.8329161227911308,
+        0.8340136574038112
+      ],
+      "iqrPercent": {
+        "CPython-control": 0.8349930113565632,
+        "candidate-control": 0.14080118735370992,
+        "CPython": 0.4647319643576685,
+        "candidate": 0.40276621731423673
+      },
+      "lythonControlPercent": 1.0803961598636613,
+      "cpythonControlPercent": 0.13159671942266638,
+      "maxIqrPercent": 0.8349930113565632
+    },
+    {
+      "case": "scripts.file-search.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "CPython-control": 0.15906570789593794,
+        "candidate-control": 0.2687126100064144,
+        "CPython": 0.16073973774954628,
+        "candidate": 0.26397953304508953
+      },
+      "processCpuMedianMilliseconds": {
+        "CPython-control": 0.22820629849383842,
+        "candidate-control": 0.3207184092366902,
+        "CPython": 0.22686025408348456,
+        "candidate": 0.3150092649783817
+      },
+      "ratioRange": [
+        1.6422792318872914,
+        1.6595628092120713,
+        1.6717248252893389,
+        1.6893182921752583
+      ],
+      "iqrPercent": {
+        "CPython-control": 1.144408354666503,
+        "candidate-control": 1.7062390223401398,
+        "CPython": 1.2152211188797721,
+        "candidate": 2.5426979917472616
+      },
+      "lythonControlPercent": 1.7929711848215124,
+      "cpythonControlPercent": 1.0414536424195875,
+      "maxIqrPercent": 2.5426979917472616
+    },
+    {
+      "case": "scripts.report-render.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "CPython-control": 2.311577980392157,
+        "candidate-control": 2.771066168604651,
+        "CPython": 2.377912487437186,
+        "candidate": 2.7995242222222223
+      },
+      "processCpuMedianMilliseconds": {
+        "CPython-control": 2.450980392156863,
+        "candidate-control": 2.9651162790697674,
+        "CPython": 2.562814070351759,
+        "candidate": 2.982456140350877
+      },
+      "ratioRange": [
+        1.165335639240109,
+        1.1773033015354706,
+        1.1987768494552549,
+        1.2110879433741992
+      ],
+      "iqrPercent": {
+        "CPython-control": 4.228881544859631,
+        "candidate-control": 1.7000888590482208,
+        "CPython": 4.113347612639913,
+        "candidate": 1.2146660877267497
+      },
+      "lythonControlPercent": 1.0165317874971547,
+      "cpythonControlPercent": 2.7896109463860674,
+      "maxIqrPercent": 4.228881544859631
+    },
+    {
+      "case": "scripts.csv-fulfillment.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "CPython-control": 6.727629438356164,
+        "candidate-control": 8.647808631578947,
+        "CPython": 6.69552295945946,
+        "candidate": 8.869225464285714
+      },
+      "processCpuMedianMilliseconds": {
+        "CPython-control": 6.8493150684931505,
+        "candidate-control": 8.771929824561404,
+        "CPython": 6.756756756756757,
+        "candidate": 9.107142857142858
+      },
+      "ratioRange": [
+        1.285416908112579,
+        1.291580759851072,
+        1.3183284759591083,
+        1.3246501457746835
+      ],
+      "iqrPercent": {
+        "CPython-control": 1.621726763089173,
+        "candidate-control": 0.7279311924335767,
+        "CPython": 0.4055393416487127,
+        "candidate": 0.4946406517628158
+      },
+      "lythonControlPercent": 2.496461879319234,
+      "cpythonControlPercent": 0.47952160109232533,
+      "maxIqrPercent": 1.621726763089173
+    }
+  ],
+  "externalBaseline": "CPython3.13.16",
+  "performanceQualified": false,
+  "stabilityMetricsAreNotDesignVetoes": true
+}

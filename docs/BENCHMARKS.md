@@ -2,21 +2,25 @@
 
 | Representative workload, warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| CSV invoice / pricing helpers |4,096 records /127,031 B|7.646–7.662 ms|6.082–6.108 ms|1.25–1.26×|Diagnostic; spreads0.21/0.43%; maxIQR2.78%|
-| Text / captured helper and counter |3,072 lines /35,840 B|1.377–1.388 ms|900.3–912.7 µs|1.51–1.54×|Diagnostic; spreads0.84/1.38%; maxIQR1.83%|
-| JSON-lines / aggregation helpers |4,096 records /110,592 B|3.390–3.489 ms|4.089–4.134 ms|0.82–0.85×|Diagnostic; spreads2.92/1.10%; maxIQR1.05%|
-| File search / keyword-default helper |2,049 lines /42,010 B; stop after1,025|260.5–265.7 µs|157.7–158.2 µs|1.65–1.69×|Diagnostic; spreads1.98/0.34%; maxIQR5.01%|
-| JSON-to-Markdown report |3,072 records /189,441 B|2.825–2.848 ms|2.330–2.334 ms|1.21–1.22×|Diagnostic; spreads0.82/0.15%; maxIQR4.62%|
+| CSV invoice / pricing helpers|4,096 records /127,031 B|7.400–7.490 ms|6.031–6.139 ms|1.21–1.24×|Diagnostic; spreads1.22/1.79%; maxIQR1.09%|
+| Text / captured helper and counter|3,072 lines /35,840 B|1.353–1.448 ms|0.891–0.895 ms|1.51–1.63×|Variable; spreads6.58/0.45%; maxIQR1.90%|
+| JSON-lines / aggregation helpers|4,096 records /110,592 B|3.371–3.407 ms|4.085–4.090 ms|0.82–0.83×|Diagnostic; spreads1.08/0.13%; maxIQR0.83%|
+| File search / keyword-default helper|2,049 lines /42,010 B; stop after1,025|264.0–268.7 µs|159.1–160.7 µs|1.64–1.69×|Diagnostic; spreads1.79/1.04%; maxIQR2.54%|
+| JSON-to-Markdown report|3,072 records /189,441 B|2.771–2.800 ms|2.312–2.378 ms|1.17–1.21×|Diagnostic; spreads1.02/2.79%; maxIQR4.23%|
+| CSV fulfillment / pricing and validation|4,096 records /126,821 B|8.648–8.869 ms|6.696–6.728 ms|1.29–1.32×|Diagnostic; spreads2.50/0.48%; maxIQR1.62%|
 | Configuration JSON edit |96 B|75.3–76.4 µs|59.6–59.7 µs|1.26–1.28×|Diagnostic; spreads1.56/0.15%; maxIQR1.55%|
 
 **Ratio = Lython elapsed / CPython elapsed; above one means slower.** These are
 complete embedding measurements, not isolated interpreter CPU. Spreads are the
 Lython/CPython process-median differences; moving controls and IQRs remain visible.
 
-First five rows measured 2026-11-13 UTC: **runtime d90dd5fe / frozen798edc1d**, against stock
-**CPython 3.13.16**. This runtime passes full Windows/Ubuntu .NET 11/10,
-original stress and installed Release package-consumer qualification.
-[Exact source proof and logs](../benchmarks/results/2026-11-13-dictionary-boundaries/delivery/README.md).
+First five rows and fulfillment measured2026-11-14UTC: **1778c30d / frozen38c0562f**,
+against stock**CPython3.13.16**. Focused Release checks pass; combined full
+Windows/Ubuntu .NET11/10, original stress and installed consumers are
+[running](https://github.com/Lokad/Lython/actions/runs/43545993574).
+[Exact sources, raw/wider CPU and controls](../benchmarks/results/2026-11-14-native-cpython-checkpoint/README.md).
+Invoice compile-to-result and captured text have5.96%and6.58%Lython process spread;
+their stability remains inconclusive despite small within-process IQRs.
 The96 B configuration row uses **cdd92944 / frozenf4c4f027**, measured2026-11-14;
 its full platform/stress/package qualification
 [passes](../benchmarks/results/2026-11-14-incremental-xml/delivery/README.md).
@@ -31,7 +35,7 @@ rotating rounds. Ranges span process medians and ratios all four pairings;
 they are not confidence intervals. Warmup and batch sizing use full-request
 wall time; guest-execution clocks remain unchanged. This refresh does not
 attribute differences from older collections to individual changes.
-[Exact sources, raw/wider CPU and controls](../benchmarks/results/2026-11-13-current-cpython-checkpoint/README.md).
+[Previous checkpoint and all adverse observations](../benchmarks/results/2026-11-13-current-cpython-checkpoint/README.md).
 
 ## Compilation, compile-to-result and startup
 
@@ -39,8 +43,8 @@ The invoice and96 B configuration sources separate frontend cost from execution:
 
 | Phase | Lython | CPython | Lython / CPython | Status |
 | --- | ---: | ---: | ---: | --- |
-| Invoice compilation alone |101.5–102.4 µs|93.2–93.6 µs|1.08–1.10×|Diagnostic; spreads0.85/0.42%; maxIQR1.48%|
-| Invoice compile and execute once |7.691–7.876 ms|6.201–6.268 ms|1.23–1.27×|Diagnostic; spreads2.35/1.08%; maxIQR1.16%|
+| Invoice compilation alone|101.2–101.8 µs|92.6–92.9 µs|1.09–1.10×|Diagnostic; spreads0.62/0.23%; maxIQR1.25%|
+| Invoice compile and execute once|7.585–8.037 ms|6.292–6.303 ms|1.20–1.28×|Variable; spreads5.96/0.18%; maxIQR0.85%|
 | Configuration compilation alone |36.6–37.3 µs|34.3–34.4 µs|1.06–1.09×|Diagnostic; spreads1.94/0.17%; maxIQR1.97%|
 | Configuration compile and execute once |136.5–137.3 µs|121.4–124.2 µs|1.10–1.13×|Diagnostic; spreads0.61/2.27%; maxIQR3.65%|
 | Process startup |—|—|—|No current comparison|

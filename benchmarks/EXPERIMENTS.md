@@ -7478,3 +7478,15 @@ B709three jobs/142.262s/all gates: complete4096-row fulfillment/pricing/report w
 −9.84%. Small-helper control−2.57..+1.50% and3.79%reference spread remain uncertainty.
 Full combined eligibility delivery is pending. No universal/CPython speedup or
 materialized-frame removal claim; publication held, broader roadmap active.
+
+## R340 — coherent native-eligibility CPython checkpoint
+
+[Eight-job B710](results/2026-11-14-native-cpython-checkpoint/README.md) refreshes
+five warm representative scripts, invoice compile/compile-run and fulfillment at
+exact committed1778c30d/frozen38c0562f vs stockCPython3.13.16.327.287s/all gates.
+Invoice warm1.21–1.24×/compile1.09–1.10×/fresh1.20–1.28×; captured text1.51–1.63×,
+JSON0.82–0.83×, search1.64–1.69×, report1.17–1.21×, fulfillment1.29–1.32×.
+Invoice fresh5.96%and captured6.58%Lython process spreads remain inconclusive
+stability, preserved alongside raw/wider CPU and previous results. No new source-
+pair attribution, startup/tail claim or broad qualification campaign. Combined
+full43545993574pending; separate R341prototype is excluded. Publication held.
