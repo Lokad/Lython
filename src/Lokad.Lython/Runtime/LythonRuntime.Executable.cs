@@ -409,15 +409,8 @@ internal sealed partial class LythonRuntime
                 case PyStringOps.CasedWhitespaceIteration words:
                     next = words.MoveNext();
                     return true;
-                case PyList list:
-                    var listIndex = _nativeIterationPositions![slot - _firstTemporarySlot];
-                    next = listIndex < list.Count ? PyIterationResult.Yield(list[listIndex]) : PyIterationResult.End;
-                    if (next.HasValue) _nativeIterationPositions[slot - _firstTemporarySlot] = listIndex + 1;
-                    return true;
-                case PyTuple tuple:
-                    var tupleIndex = _nativeIterationPositions![slot - _firstTemporarySlot];
-                    next = tupleIndex < tuple.Count ? PyIterationResult.Yield(tuple[tupleIndex]) : PyIterationResult.End;
-                    if (next.HasValue) _nativeIterationPositions[slot - _firstTemporarySlot] = tupleIndex + 1;
+                case PyList or PyTuple:
+                    next = PyIteration.AdvanceBuiltinSequence(_items[slot], ref _nativeIterationPositions![slot - _firstTemporarySlot]);
                     return true;
                 default:
                     next = PyIterationResult.End;

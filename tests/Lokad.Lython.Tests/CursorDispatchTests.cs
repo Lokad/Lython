@@ -10,6 +10,138 @@ public sealed class CursorDispatchTests
     private static readonly LythonSourceSpan Span = new(10, 4, 2, 3);
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ExactSequencesKeepAliasesAcrossPullModesAndExhaustion(bool asynchronous)
+    {
+        foreach (var tuple in new[] { false, true })
+        {
+            var budget = new LythonMemoryBudget(1024 * 1024);
+            using (var owner = budget.CreateScope())
+            {
+                var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = owner });
+                var first = new PyList([BigInteger.One], context.MemoryGovernor, Span);
+                var last = new PyList([new BigInteger(2)], context.MemoryGovernor, Span);
+                object source = tuple
+                    ? new PyTuple([first, last], context.MemoryGovernor, Span, context)
+                    : new PyList([first, last], context.MemoryGovernor, Span);
+                var baseline = budget.ReservedBytes;
+                try
+                {
+                    await using (var cursor = PyIteration.Cursor.Create(source, Span, context))
+                    {
+                        Assert.Same(first, (await Pull(cursor, asynchronous)).Value);
+                        Assert.Same(last, (await Pull(cursor, asynchronous)).Value);
+                        Assert.False((await Pull(cursor, asynchronous)).HasValue);
+                        Assert.False((await Pull(cursor, asynchronous)).HasValue);
+                        await cursor.DisposeAsync();
+                        Assert.False((await Pull(cursor, asynchronous)).HasValue);
+                    }
+                    Assert.Equal(baseline, budget.ReservedBytes);
+                    Assert.Equal(BigInteger.One, Assert.Single(first));
+                    Assert.Equal(new BigInteger(2), Assert.Single(last));
+                }
+                finally { context.State.CloseResources(); }
+            }
+            Assert.Equal(0, budget.ReservedBytes);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task IndexedCursorSeesLiveMutationButCannotReviveAfterEof(bool asynchronous)
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var owner = budget.CreateScope())
+        {
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = owner });
+            var source = new PyList([BigInteger.One, new BigInteger(2), new BigInteger(3)], context.MemoryGovernor, Span);
+            try
+            {
+                await using var cursor = PyIteration.Cursor.Create(source, Span, context);
+                Assert.Equal(BigInteger.One, (await Pull(cursor, asynchronous)).Value);
+                source.SetItem(1, new BigInteger(9));
+                for (var i = 4; i < 20; i++) source.Add(new BigInteger(i));
+                Assert.Equal(new BigInteger(9), (await Pull(cursor, asynchronous)).Value);
+                source.RemoveAt(0);
+                Assert.Equal(new BigInteger(4), (await Pull(cursor, asynchronous)).Value);
+                source.Clear();
+                Assert.False((await Pull(cursor, asynchronous)).HasValue);
+                source.Add(new BigInteger(99));
+                Assert.False((await Pull(cursor, asynchronous)).HasValue);
+                await cursor.DisposeAsync();
+                Assert.Equal(new BigInteger(99), Assert.Single(source));
+            }
+            finally { context.State.CloseResources(); }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Fact]
+    public void CheckedSequenceEnumeratorPreservesCurrentAndDisposeBehavior()
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var owner = budget.CreateScope())
+        {
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = owner });
+            var source = new PyList([BigInteger.One, new BigInteger(2)], context.MemoryGovernor, Span);
+            try
+            {
+                using var cursor = PyIteration.ToSequence(source, Span, context).GetEnumerator();
+                Assert.True(cursor.MoveNext());
+                Assert.Equal(BigInteger.One, cursor.Current);
+                source.SetItem(1, new BigInteger(9));
+                Assert.True(cursor.MoveNext());
+                Assert.Equal(new BigInteger(9), cursor.Current);
+                Assert.False(cursor.MoveNext());
+                Assert.Same(PyNone.Instance, cursor.Current);
+                source.Add(new BigInteger(10));
+                Assert.False(cursor.MoveNext());
+                cursor.Dispose();
+                Assert.False(cursor.MoveNext());
+                Assert.Equal(3, source.Count);
+            }
+            finally { context.State.CloseResources(); }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task IndexedSequencePullsKeepCooperativeCancellation(bool asynchronous)
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var owner = budget.CreateScope())
+        using (var cancellation = new CancellationTokenSource())
+        {
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new()
+                { MemoryBudget = owner, CancellationToken = cancellation.Token });
+            var source = new PyList(Enumerable.Range(0, 256).Select(i => (object)new BigInteger(i)), context.MemoryGovernor, Span);
+            var baseline = budget.ReservedBytes;
+            try
+            {
+                await using (var cursor = PyIteration.Cursor.Create(source, Span, context))
+                {
+                    Assert.True((await Pull(cursor, asynchronous)).HasValue);
+                    cancellation.Cancel();
+                    var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
+                    {
+                        while ((await Pull(cursor, asynchronous)).HasValue) { }
+                    });
+                    Assert.Equal(LythonFailureReason.Cancelled, failure.Attribution?.Reason);
+                    Assert.Same(Span, failure.Span);
+                }
+                Assert.Equal(baseline, budget.ReservedBytes);
+                Assert.Equal(256, source.Count);
+            }
+            finally { context.State.CloseResources(); }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
     [InlineData(0, false)]
     [InlineData(63, false)]
     [InlineData(64, false)]

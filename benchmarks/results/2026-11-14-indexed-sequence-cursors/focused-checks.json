@@ -1,0 +1,30 @@
+[
+  {
+    "assembly": "Lokad.Lython.Tests",
+    "target": "net11.0",
+    "returncode": 0,
+    "log": "Lokad.Lython.Tests-related-net11.0.log",
+    "filter": "(FullyQualifiedName~CursorDispatch|FullyQualifiedName~IterationCancellation|FullyQualifiedName~SimpleFunctionExecutionBoundary|FullyQualifiedName~NativeClosure|FullyQualifiedName~NativeFunction|FullyQualifiedName~FunctionBinding|FullyQualifiedName~ExecutableStack|FullyQualifiedName~DictionaryCounting|FullyQualifiedName~WordBuffer|FullyQualifiedName~StringWindowOwnership|FullyQualifiedName~WhitespaceStorageOwnership|FullyQualifiedName~CasedSplit)&Category!=Stress"
+  },
+  {
+    "assembly": "Lokad.Lython.PublicApi.Tests",
+    "target": "net11.0",
+    "returncode": 0,
+    "log": "Lokad.Lython.PublicApi.Tests-related-net11.0.log",
+    "filter": "(FullyQualifiedName~ForHelper|FullyQualifiedName~WhileHelper|FullyQualifiedName~LargeHelper|FullyQualifiedName~Iterator|FullyQualifiedName~Iteration|FullyQualifiedName~ListMutation|FullyQualifiedName~NativeClosure|FullyQualifiedName~BulkCasedSplit|FullyQualifiedName~NativeReceiverOperation|FullyQualifiedName~DictionaryCounting|FullyQualifiedName~ComposedHelper|FullyQualifiedName~FunctionDefault|FullyQualifiedName~FramedFunction|FullyQualifiedName~OrderedFunction|FullyQualifiedName~NativeInteger|FullyQualifiedName~SharedInteger|FullyQualifiedName~CsvDict|FullyQualifiedName~Sum|FullyQualifiedName~MinMax)&Category!=Stress"
+  },
+  {
+    "assembly": "Lokad.Lython.Tests",
+    "target": "net10.0",
+    "returncode": 0,
+    "log": "Lokad.Lython.Tests-related-net10.0.log",
+    "filter": "(FullyQualifiedName~CursorDispatch|FullyQualifiedName~IterationCancellation|FullyQualifiedName~SimpleFunctionExecutionBoundary|FullyQualifiedName~NativeClosure|FullyQualifiedName~NativeFunction|FullyQualifiedName~FunctionBinding|FullyQualifiedName~ExecutableStack|FullyQualifiedName~DictionaryCounting|FullyQualifiedName~WordBuffer|FullyQualifiedName~StringWindowOwnership|FullyQualifiedName~WhitespaceStorageOwnership|FullyQualifiedName~CasedSplit)&Category!=Stress"
+  },
+  {
+    "assembly": "Lokad.Lython.PublicApi.Tests",
+    "target": "net10.0",
+    "returncode": 0,
+    "log": "Lokad.Lython.PublicApi.Tests-related-net10.0.log",
+    "filter": "(FullyQualifiedName~ForHelper|FullyQualifiedName~WhileHelper|FullyQualifiedName~LargeHelper|FullyQualifiedName~Iterator|FullyQualifiedName~Iteration|FullyQualifiedName~ListMutation|FullyQualifiedName~NativeClosure|FullyQualifiedName~BulkCasedSplit|FullyQualifiedName~NativeReceiverOperation|FullyQualifiedName~DictionaryCounting|FullyQualifiedName~ComposedHelper|FullyQualifiedName~FunctionDefault|FullyQualifiedName~FramedFunction|FullyQualifiedName~OrderedFunction|FullyQualifiedName~NativeInteger|FullyQualifiedName~SharedInteger|FullyQualifiedName~CsvDict|FullyQualifiedName~Sum|FullyQualifiedName~MinMax)&Category!=Stress"
+  }
+]

@@ -6,6 +6,15 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[R346 indexed sequence cursors](results/2026-11-14-indexed-sequence-cursors/README.md)
+removes the separate CLR list/tuple enumerator from the existing cursor and shares
+live advancement with executable storage. Complete list-input CSV allocation falls
+1.53%, elapsed 3.30–5.20% and wider CPU 2.63–4.58%. Text input allocates 0.69% more
+and has small CPU adversity; captured-text control spread leaves neutrality
+uncertain. Retain these explicit debts for the simpler representation and list
+gain. Focused actual11/10 checks pass 2,324 cases; batched full delivery is pending.
+Original staging failure and all adverse observations remain archived.
+
 [R345 builtin for prefixes](results/2026-11-14-native-for-prefixes/README.md)
 retains complete text-input CSV gains: allocation−25.31%, warm−14.71..−20.25%
 and same-bit compile-to-result confirmation−17.84..−19.94%, with wider CPU support.

@@ -4,6 +4,43 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class SequenceMutationExhaustionTests
 {
+    [Fact]
+    public async Task LiveListCursorSeesReplacementAfterAnAsynchronousKeyCallback()
+    {
+        const string source = """
+            items=[1,2,3]
+            def key(value):
+                with open('offset.txt') as source: offset=int(source.read())
+                if value==1: items[:]=[1,9,3,7]
+                return value+offset
+            print(max(items,key=key),items)
+            """;
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var script = new LythonEngine().Compile(source, budget))
+        {
+            Assert.True(script.IsValid);
+            var baseline = budget.ReservedBytes;
+            var immediate = new MockLythonHost(); immediate.SeedFile("/offset.txt", "2");
+            var delayed = new DelayedLythonHost(); delayed.SeedFile("/offset.txt", "2");
+            using (var result = script.Run(immediate))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal("9 [1, 9, 3, 7]\n", result.StandardOutput);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+            using (var result = await script.RunAsync(delayed))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal("9 [1, 9, 3, 7]\n", result.StandardOutput);
+            }
+            Assert.True(delayed.CompletedAsynchronously > 0);
+            Assert.Equal(4, immediate.ClosedFileCount);
+            Assert.Equal(4, delayed.ClosedFileCount);
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     private const string Source = """
         items = list(range(8))
         cursor = iter(items)

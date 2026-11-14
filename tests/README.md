@@ -39,6 +39,13 @@ joins cleanup, and returned aliases retain shared-budget funding. The native
 boundary checks small and owned wide helpers, plus refusal/cancellation during
 output construction and promotion before a callback can run.
 
+[Private cursor checks](Lokad.Lython.Tests/CursorDispatchTests.cs) preserve live
+list mutation, tuple aliases, sticky exhaustion, Current/Dispose behavior and
+cooperative cancellation across synchronous and asynchronous pulls.
+[Sequence mutation](Lokad.Lython.PublicApi.Tests/SequenceMutationExhaustionTests.cs)
+also replaces list storage during a genuinely asynchronous key callback, checking
+Python output, awaited file cleanup and shared-budget reuse.
+
 [Larger helpers](Lokad.Lython.PublicApi.Tests/LargeHelperExecutionTests.cs) cover
 owned locals beyond the private call buffer, large parameter/default binding,
 retained aliases and refusal before body effects. Real I/O and custom formatting

@@ -1,0 +1,34 @@
+{
+  "date": "2026-11-14",
+  "milestone": "R346",
+  "decision": "retain; full delivery pending",
+  "source": {
+    "reference": "8306699f6ad07d4688cd84bd36b6aa878f5eeb39871005d9346b475cf056067f",
+    "candidate": "8ae1ae5fdf7b4a30526a2472044c1c5996ea41cf8733d94dc717f452417b7238"
+  },
+  "referenceProductionCommit": "3d78d429",
+  "referenceQualification": "Original Windows run failed five CRLF-sensitive test expectations; Ubuntu full delivery passed. Test-only correction c9edb0ee is included in the pending batched qualification.",
+  "removed": [
+    "Separate exact-list/tuple CLR enumerator inside existing private cursors",
+    "Interface MoveNext/Current transport for these sources",
+    "Duplicate executable list/tuple advancement bodies"
+  ],
+  "focusedChecks": {
+    "actualRuntimes": [
+      "11",
+      "10"
+    ],
+    "whiteBoxPerRuntime": 149,
+    "publicPerRuntime": 1013,
+    "total": 2324
+  },
+  "allocationPercent": {
+    "listCSV": -1.52999,
+    "textCSV": 0.68626,
+    "capturedText": "effectively flat, about16B/job"
+  },
+  "timing": "B716: list elapsed -5.20..-3.30%, wider CPU -4.58..-2.63%. Text elapsed -0.11..+0.77%, wider CPU +0.45..+1.74%. Captured-text reference process spread4.85% leaves control neutrality uncertain.",
+  "debt": "Retain the small text allocation/CPU adversity for a simpler representation and supported list improvement. No general neutrality, whole-release or CPython gain claim. No unchanged retiming required.",
+  "compatibility": "No public API change. Exact sealed builtin sequences retain live index semantics, aliases and sticky EOF. Already acquired/generic/async enumerators retain precedence. Position storage and ownership lifetimes stay in existing mechanisms.",
+  "next": "Batch Windows/Ubuntu actual11/10, original stress and installed Release consumers, then continue the complete-script roadmap. Publication stays held."
+}

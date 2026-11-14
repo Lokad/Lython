@@ -762,7 +762,11 @@ checks the managed stack. Retained file owners use the same state without keepin
 the lexical frame that opened them. Executable loops and checked enumerable
 consumers share one cursor, with synchronous iterator dispatch resolved at
 construction. Native acquisition stays lazy where required; dictionary iteration
-captures its version at acquisition. Private cursor disposal is terminal, keeps
+captures its version at acquisition. Exact list/tuple cursors keep their position
+directly, sharing live indexed advancement with executable operand storage without
+a separate CLR enumerator. List replacement and growth remain visible until
+exhaustion; appending after exhaustion cannot revive the cursor.
+Private cursor disposal is terminal, keeps
 the original subject through actual asynchronous cleanup, then clears its roots.
 Breaking a loop does not close a retained Python iterator. The core has no runtime NuGet dependencies;
 the optional regex adapter owns its backend dependency. Python tokenization reads

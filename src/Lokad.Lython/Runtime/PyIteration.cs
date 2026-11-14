@@ -230,6 +230,31 @@ internal static partial class PyIteration
         };
     }
 
+    // Exact sequences use the same live index semantics in private cursors and
+    // executable operand storage. No CLR enumerator is needed around that state.
+    internal static PyIterationResult AdvanceBuiltinSequence(object source, ref int position)
+    {
+        switch (source)
+        {
+            case PyList list:
+            {
+                if (position >= list.Count) return PyIterationResult.End;
+                var value = list[position];
+                position++;
+                return PyIterationResult.Yield(value);
+            }
+            case PyTuple tuple:
+            {
+                if (position >= tuple.Count) return PyIterationResult.End;
+                var value = tuple[position];
+                position++;
+                return PyIterationResult.Yield(value);
+            }
+            default:
+                throw new InvalidOperationException("Expected an exact builtin sequence.");
+        }
+    }
+
     internal sealed class Cursor : ExecutableTemporaryValue, IAsyncDisposable, IEnumerator<object>
     {
         private object? _value;
@@ -237,6 +262,7 @@ internal static partial class PyIteration
         private IPyIteratorValue? _iterator;
         private LythonRuntime.ExecutionContext? _context;
         private int _movesUntilCheckpoint;
+        private int _sequencePosition;
         private IEnumerable<object>? _syncSource;
         private IEnumerator<object>? _syncEnumerator;
         private IAsyncEnumerator<object>? _asyncEnumerator;
@@ -278,7 +304,7 @@ internal static partial class PyIteration
             {
                 // Checked sequence acquisition remains lazy and precedes its
                 // first checkpoint. Python iterator values themselves stay open.
-                if (_syncEnumerator is null && _iterator is null)
+                if (_syncEnumerator is null && _iterator is null && _value is not (PyList or PyTuple))
                     _syncEnumerator = (_syncSource ??= GetSyncEnumerable(_value!, _span)).GetEnumerator();
                 if (TryMoveNext(out var value)) { _current = value; return true; }
                 Dispose();
@@ -373,6 +399,15 @@ internal static partial class PyIteration
             if (_iterator is { } iterator)
             {
                 return iterator.TryMoveNext(out value);
+            }
+
+            if (_syncEnumerator is null && _value is (PyList or PyTuple))
+            {
+                var next = AdvanceBuiltinSequence(_value, ref _sequencePosition);
+                value = next.HasValue ? next.Value : PyNone.Instance;
+                // A retained list cursor cannot revive after append at EOF.
+                if (!next.HasValue) _disposed = true;
+                return next.HasValue;
             }
 
             _syncEnumerator ??= (_syncSource ??= GetSyncEnumerable(_value, _span)).GetEnumerator();
