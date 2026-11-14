@@ -1,0 +1,13 @@
+{
+  "all581ProductionInputsRestoredExactlyToQualified53": true,
+  "restoredProductionInputs": [
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.CasedSplits.cs",
+    "src/Lokad.Lython/Runtime/MemoryGovernor.cs",
+    "src/Lokad.Lython/Runtime/Text/PyStringOps.Whitespace.cs"
+  ],
+  "candidateCorePreserved": "a9d54f99cbb9fad6358541d60a5e3817a6c68870c6d632d2aa1f058e16e54c4a",
+  "newPublicSemanticRegressionsRetained": true,
+  "prototypeSpecificInternalFixtureChangesRemoved": true,
+  "publicRollbackGuaranteePreservedByOriginalTemporaryConstruction": true,
+  "forcedNonincrementalBuildRequiredBeforeChecks": true
+}

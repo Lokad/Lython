@@ -1,0 +1,341 @@
+{
+  "date": "2026-11-14",
+  "state": "withdrawn; qualified production restored exactly",
+  "qualifiedProductionCommit": "2f6065195031f1eb8c09da8febb5e06f611c963b",
+  "referenceCore": "38c0562fdd20b4df2ba0f37806cfdfa1b20a31f9fbabcd522e28c611ea3e8567",
+  "candidateCore": "a9d54f99cbb9fad6358541d60a5e3817a6c68870c6d632d2aa1f058e16e54c4a",
+  "reason": "Extra sizing, casing, counting and consumption scans outweigh removed range storage; allocation is effectively flat and elapsed/CPU adversity is clear with a nearly flat CSV control.",
+  "timing": [
+    {
+      "case": "scripts.text-summary-helpers.nonlocal-counter.large",
+      "actualCases": {
+        "reference": "scripts.text-summary-helpers.nonlocal-counter.large",
+        "candidate": "scripts.text-summary-helpers.nonlocal-counter.large",
+        "reference-control": "scripts.text-summary-helpers.nonlocal-counter.large",
+        "candidate-control": "scripts.text-summary-helpers.nonlocal-counter.large"
+      },
+      "lane": "warm",
+      "medianMilliseconds": {
+        "reference": 1.4129700424597365,
+        "candidate": 1.5804473436482085,
+        "reference-control": 1.3935807829232996,
+        "candidate-control": 1.530939842607313
+      },
+      "processCpuMedianMilliseconds": {
+        "reference": 1.4641288433382138,
+        "candidate": 1.6286644951140066,
+        "reference-control": 1.447178002894356,
+        "candidate-control": 1.589825119236884
+      },
+      "iqrPercent": {
+        "reference": 0.5226433730358372,
+        "candidate": 0.3629213053724999,
+        "reference-control": 0.9747052196339943,
+        "candidate-control": 0.8992841404950583
+      },
+      "lythonSourcePairElapsedPercent": [
+        8.349065910994934,
+        9.856555240082798,
+        11.852855768755234,
+        13.40909425666168
+      ],
+      "lythonSourcePairWiderCpuPercent": [
+        8.58505564387917,
+        9.856915739268679,
+        11.23778501628665,
+        12.540716612377857
+      ],
+      "candidateProcessSpreadPercent": 3.132499240791875,
+      "referenceProcessSpreadPercent": 1.3722342975285962
+    },
+    {
+      "case": "scripts.text-summary-helpers.nonlocal-counter.large",
+      "actualCases": {
+        "reference": "scripts.text-summary-helpers.nonlocal-counter.large",
+        "candidate": "scripts.text-summary-helpers.nonlocal-counter.large",
+        "reference-control": "scripts.text-summary-helpers.nonlocal-counter.large",
+        "candidate-control": "scripts.text-summary-helpers.nonlocal-counter.large"
+      },
+      "lane": "compile-run",
+      "medianMilliseconds": {
+        "reference": 1.5181111516587678,
+        "candidate": 1.665899163478261,
+        "reference-control": 1.5464994596774193,
+        "candidate-control": 1.707165180851064
+      },
+      "processCpuMedianMilliseconds": {
+        "reference": 1.5955766192733016,
+        "candidate": 1.7391304347826086,
+        "reference-control": 1.6129032258064515,
+        "candidate-control": 1.7907801418439717
+      },
+      "iqrPercent": {
+        "reference": 0.7131645867835965,
+        "candidate": 0.9115975315376387,
+        "reference-control": 0.40430517969008095,
+        "candidate-control": 1.0321672350771536
+      },
+      "lythonSourcePairElapsedPercent": [
+        7.720643098429991,
+        9.734992833562428,
+        10.388993036386672,
+        12.453240264108857
+      ],
+      "lythonSourcePairWiderCpuPercent": [
+        7.826086956521738,
+        8.996986655187268,
+        11.028368794326248,
+        12.234042553191493
+      ],
+      "candidateProcessSpreadPercent": 2.477101752463984,
+      "referenceProcessSpreadPercent": 1.8699755935283724
+    },
+    {
+      "case": "scripts.text-summary.inline.large",
+      "actualCases": {
+        "candidate-control": "scripts.text-summary.inline.large",
+        "reference-control": "scripts.text-summary.inline.large",
+        "candidate": "scripts.text-summary.inline.large",
+        "reference": "scripts.text-summary.inline.large"
+      },
+      "lane": "warm",
+      "medianMilliseconds": {
+        "candidate-control": 1.1223271296728972,
+        "reference-control": 0.9788966971252566,
+        "candidate": 1.1011104655172415,
+        "reference": 0.9155592529069768
+      },
+      "processCpuMedianMilliseconds": {
+        "candidate-control": 1.1799065420560748,
+        "reference-control": 1.0369609856262834,
+        "candidate": 1.1494252873563218,
+        "reference": 0.9689922480620154
+      },
+      "iqrPercent": {
+        "candidate-control": 0.45960567727795015,
+        "reference-control": 0.34253383132696613,
+        "candidate": 0.6830944190869856,
+        "reference": 0.695101265514165
+      },
+      "lythonSourcePairElapsedPercent": [
+        12.484848375818625,
+        14.652254213223447,
+        20.26643409709683,
+        22.5837788334742
+      ],
+      "lythonSourcePairWiderCpuPercent": [
+        10.845567315352223,
+        13.785046728971961,
+        18.620689655172406,
+        21.76635514018692
+      ],
+      "candidateProcessSpreadPercent": 1.9268424758536185,
+      "referenceProcessSpreadPercent": 6.917896795557277
+    },
+    {
+      "case": "scripts.csv-fulfillment.large",
+      "actualCases": {
+        "candidate-control": "scripts.csv-fulfillment.large",
+        "reference-control": "scripts.csv-fulfillment.large",
+        "candidate": "scripts.csv-fulfillment.large",
+        "reference": "scripts.csv-fulfillment.large"
+      },
+      "lane": "warm",
+      "medianMilliseconds": {
+        "candidate-control": 8.794812412280702,
+        "reference-control": 8.753169168141593,
+        "candidate": 8.75057751754386,
+        "reference": 8.759270637168141
+      },
+      "processCpuMedianMilliseconds": {
+        "candidate-control": 8.947368421052632,
+        "reference-control": 8.938053097345133,
+        "candidate": 8.859649122807017,
+        "reference": 8.849557522123893
+      },
+      "iqrPercent": {
+        "candidate-control": 0.6824349898489568,
+        "reference-control": 0.9321076584917952,
+        "candidate": 1.1142640503235275,
+        "reference": 1.0466873922914752
+      },
+      "lythonSourcePairElapsedPercent": [
+        -0.09924478857170627,
+        -0.02960814018270197,
+        0.40576181036977577,
+        0.47575047778896096
+      ],
+      "lythonSourcePairWiderCpuPercent": [
+        -0.8771929824561431,
+        0.10422094841062712,
+        0.11403508771929971,
+        1.1052631578947425
+      ],
+      "candidateProcessSpreadPercent": 0.5055082895746743,
+      "referenceProcessSpreadPercent": 0.06965727261192267
+    }
+  ],
+  "allocation": "88B/job saved on captured and direct text (0.0161% and 0.0197%); fulfillment effectively flat. Not a material reduction.",
+  "semanticChecks": "Corrected candidate and restored baseline each pass 103 internal, 484 public and all 3 original 64MiB rollback cases per actual net11/net10.",
+  "restoredChecks": [
+    {
+      "assembly": "Lokad.Lython.Tests",
+      "target": "net11.0",
+      "kind": "regular",
+      "returncode": 0,
+      "log": "Lokad.Lython.Tests-restored-regular-net11.0.log",
+      "counters": {
+        "total": "103",
+        "executed": "103",
+        "passed": "103",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      }
+    },
+    {
+      "assembly": "Lokad.Lython.PublicApi.Tests",
+      "target": "net11.0",
+      "kind": "regular",
+      "returncode": 0,
+      "log": "Lokad.Lython.PublicApi.Tests-restored-regular-net11.0.log",
+      "counters": {
+        "total": "484",
+        "executed": "484",
+        "passed": "484",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      }
+    },
+    {
+      "assembly": "Lokad.Lython.Tests",
+      "target": "net11.0",
+      "kind": "original-rollback",
+      "returncode": 0,
+      "log": "Lokad.Lython.Tests-restored-original-rollback-net11.0.log",
+      "counters": {
+        "total": "3",
+        "executed": "3",
+        "passed": "3",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      }
+    },
+    {
+      "assembly": "Lokad.Lython.Tests",
+      "target": "net10.0",
+      "kind": "regular",
+      "returncode": 0,
+      "log": "Lokad.Lython.Tests-restored-regular-net10.0.log",
+      "counters": {
+        "total": "103",
+        "executed": "103",
+        "passed": "103",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      }
+    },
+    {
+      "assembly": "Lokad.Lython.PublicApi.Tests",
+      "target": "net10.0",
+      "kind": "regular",
+      "returncode": 0,
+      "log": "Lokad.Lython.PublicApi.Tests-restored-regular-net10.0.log",
+      "counters": {
+        "total": "484",
+        "executed": "484",
+        "passed": "484",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      }
+    },
+    {
+      "assembly": "Lokad.Lython.Tests",
+      "target": "net10.0",
+      "kind": "original-rollback",
+      "returncode": 0,
+      "log": "Lokad.Lython.Tests-restored-original-rollback-net10.0.log",
+      "counters": {
+        "total": "3",
+        "executed": "3",
+        "passed": "3",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      }
+    }
+  ],
+  "initialFailures": "Six changed range-capacity fixture assumptions, two obsolete range-presence assertions, and one genuine prototype-only 64MiB scratch-retention regression. Original adverse evidence and correction are retained.",
+  "rollback": "A cancellation initially retained 64MiB scratch after unpublished construction. Corrected prototype discarded failed scratch and held output admission until publication. Withdrawal restores the original temporary-construction guarantee; no baseline bug is claimed.",
+  "retained": "Four independent CPython semantic matrices and a shared-budget retained-result test. No slower runtime mechanism, altered architecture-only fixture or new policy remains.",
+  "future": "A changed pipeline would need eliminate extra scans with an explicit ownership/Unicode acceptance milestone. This result does not permanently ban a materially different design. No unchanged retiming or automatic larger redesign is selected.",
+  "measurementBoundary": "Warm includes mediated RAM-fixture I/O, output/file golden checks and prior-result cleanup. Compile-run also includes compilation and script disposal. Excludes process startup and protocol/reset/final cache cleanup; wider CPU includes protocol/reset. Separate desktop allocation diagnostic. No external CPython timing, tail-latency, RSS or universal claim.",
+  "machine": "Quiet Azure F4as_v7 / Ubuntu 24.04.4 / .NET 11; fixed B685 worker, optional adapter 0.4, ordinary GC/tiering. Local semantics reference isolated CPython 3.13.2.",
+  "environment": "First disk-floor refusal started no service/guest. Later exact Git-committed archive replicas were retired under an idle lease; current images, canonical evidence and 254/252MiB staging/archive floors preserved.",
+  "completedQualification": "R341 full green 43548640898 remains valid for exact restored production. No unchanged full-platform/package replay or R343 release qualification.",
+  "publication": "postponed"
+}

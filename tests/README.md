@@ -54,6 +54,12 @@ invariants belong in the white-box suite.
 
 ## Test responsibilities
 
+[Unicode splitting](Lokad.Lython.PublicApi.Tests/BulkCasedSplitTests.cs) keeps
+independent CPython goldens for every Python whitespace character, split/rsplit
+limits, overlapping separators, case expansion/context and nested iteration.
+Escaping words remain valid and funded across two shared-budget executions;
+both execution APIs return allowance to baseline after result cleanup.
+
 [Immutable repetition](Lokad.Lython.Tests/ImmutableRepetitionTests.cs) checks
 admission before allocation for owned/unowned inputs, cancellation during admission,
 chunk boundaries and retained aliases. The [public cases](Lokad.Lython.PublicApi.Tests/ImmutableRepetitionTests.cs)

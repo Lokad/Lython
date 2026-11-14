@@ -6,6 +6,16 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[R343 bulk cased UTF8 buffer](results/2026-11-14-bulk-cased-buffer-withdrawn/README.md)
+is withdrawn. Replacing stored ranges with complete-buffer sizing/casing/scanning
+makes captured text 8–13% slower warm and direct text 12–23% slower; wider CPU
+supports the adversity while the unchanged CSV control is nearly flat. Allocation
+saves only 88B/job. Exact qualified R341 production is restored; public Unicode,
+split-direction and retained-result/shared-budget regressions remain. Original
+fixture failures, a real prototype-only 64MiB rollback regression and its correction,
+all source/binary identities and failed disk preflight survive. A materially
+different pipeline must remove the extra scans; this is no permanent design ban.
+
 [R331 dictionary-update boundaries](results/2026-11-13-dictionary-boundaries/README.md)
 removes duplicate internal polls and their span transport from guarded native
 updates, keeping long-work, managed-stack, post-binding/retirement and pre-admission

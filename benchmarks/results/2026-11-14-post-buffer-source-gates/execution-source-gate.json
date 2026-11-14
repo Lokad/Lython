@@ -1,0 +1,25 @@
+{
+  "date": "2026-11-14",
+  "lythonHead": "8e4d81249c5c1f7eeac2054d54fa8212fd1dad92",
+  "qualifiedProductionCommit": "2f606519",
+  "sources": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativePrefix.cs": "cd978d9878146ab4ced81038659e75d26bd91b49bc7a1818963c9c2b91451a42",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs": "466802642c8245c45ac28370026a50c5ba742a475833dfee15a631485127befb",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs": "aeebeb4e3c7ecef37549b38c5a91257cf5d422f5b11e7f848539ccbd57eded0b",
+    "src/Lokad.Lython/Runtime/PyExecutableFunction.cs": "251e8648c5d7fc9792351d34df8377d028ca77b13cf8fd4bfeff2f8697d14608",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs": "b8864b6971b85914f13fa04d87a867b70c6dd92a6b0ba774c11b0ad112325914",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Results.cs": "d9315d03ab12c825b8743015ad4cc035872a373cdd9198dc1f01b47561a7ac27",
+    "src/Lokad.Lython/Frontend/ExecutableStackLayout.cs": "6e391cd9e16e469b74192581867cf712b38105030f6a91eb8b98c5f238b71e05",
+    "src/Lokad.Lython/Frontend/ExecutableScript.cs": "9a6c1899fc386871c75e9948512bd90b10cb19f30e1ffbaa8f3e294358691fe8"
+  },
+  "question": "Can consolidating ordinary/native execution remove a complete duplicated activation or operand stage?",
+  "findings": [
+    "Both forms already use the same immutable instructions/final positions and shared integer/operator kernels. Compiler forwards adjacent leaves and local-result stores; there is no still-separate operand stack to remove.",
+    "Ordinary bound invocation already defers its lexical context. Inline native storage is a stack-backed span for small calls, or already-admitted owned final storage for larger bound calls. The 16-slot buffer is not a general native eligibility cap.",
+    "Native prefix cannot survive suspension; it copies live references once only when stack-backed values must escape, preserves its PC and adopts any prepared child. Resumable storage retains owned temporaries and an awaited-disposal queue. These lifetime differences are observable requirements.",
+    "There are two opcode routers. Their existence does not establish removable runtime work. Simply merging them would require changing span/resumable storage access or adding a view/dispatch abstraction, with no demonstrated dominant allocation to remove.",
+    "Current code still has several context-dependent routing and protocol branches. They need owning whole-script attribution and semantic accounting before any complete-stage migration; no extra entry/default/argument special case is selected here."
+  ],
+  "decision": "Keep the two storage lifetimes and measured native optimizations. Do not blindly merge routers or begin an execution-framework rewrite. Keep the whole-script design objective active; select an actual displaced stage from current owning evidence before prototyping.",
+  "measurement": "Source gate only: no new elapsed/allocation/CPython measurement or speedup claim. Do not add the failed text experiment to external ratios."
+}

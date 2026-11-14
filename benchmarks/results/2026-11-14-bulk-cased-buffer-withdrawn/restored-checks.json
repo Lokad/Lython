@@ -1,0 +1,44 @@
+[
+  {
+    "assembly": "Lokad.Lython.Tests",
+    "target": "net11.0",
+    "kind": "regular",
+    "returncode": 0,
+    "log": "Lokad.Lython.Tests-restored-regular-net11.0.log"
+  },
+  {
+    "assembly": "Lokad.Lython.PublicApi.Tests",
+    "target": "net11.0",
+    "kind": "regular",
+    "returncode": 0,
+    "log": "Lokad.Lython.PublicApi.Tests-restored-regular-net11.0.log"
+  },
+  {
+    "assembly": "Lokad.Lython.Tests",
+    "target": "net11.0",
+    "kind": "original-rollback",
+    "returncode": 0,
+    "log": "Lokad.Lython.Tests-restored-original-rollback-net11.0.log"
+  },
+  {
+    "assembly": "Lokad.Lython.Tests",
+    "target": "net10.0",
+    "kind": "regular",
+    "returncode": 0,
+    "log": "Lokad.Lython.Tests-restored-regular-net10.0.log"
+  },
+  {
+    "assembly": "Lokad.Lython.PublicApi.Tests",
+    "target": "net10.0",
+    "kind": "regular",
+    "returncode": 0,
+    "log": "Lokad.Lython.PublicApi.Tests-restored-regular-net10.0.log"
+  },
+  {
+    "assembly": "Lokad.Lython.Tests",
+    "target": "net10.0",
+    "kind": "original-rollback",
+    "returncode": 0,
+    "log": "Lokad.Lython.Tests-restored-original-rollback-net10.0.log"
+  }
+]

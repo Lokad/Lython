@@ -1,0 +1,8 @@
+{
+  "reference": "CPython3.13.2 isolated",
+  "case": "scripts.text-summary.inline.large",
+  "sourceSHA256": "b762cc8d94f9d15cb329fa118312fb0218d5efd9ad1fbc31bfeb742469351d83",
+  "fixtureSHA256": "3726c0fb2eb795b8bca37d52fbcb607b16d8fedd50a3500ca898c928a527aebe",
+  "exactCapturedFixtureAndGoldensReused": true,
+  "sameSourceAcrossRevisions": true
+}
