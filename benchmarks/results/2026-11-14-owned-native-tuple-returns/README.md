@@ -44,3 +44,8 @@ the broader whole-script performance objective.
 [sources/core/tools/checks/observations](sources-checks-and-allocation.tar.xz).
 Reference sources/bits and full qualification remain in
 [R351](../2026-11-14-compiled-literal-tuples/README.md).
+
+Subsequent [B725comparison](comparison/README.md) completes all gates: fulfillment
+warm−1.25..−3.13%/fresh−1.12..−4.65%, with modest wider CPU support. Invoice
+also improves; variable text controls remain uncertainty. Original collection-time
+pending status above is preserved. Full delivery is still pending independently.

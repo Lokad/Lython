@@ -1,0 +1,9 @@
+{
+  "purpose": "Owned large-helper direct tuple returns: same-source fulfillment warm/fresh, unchanged invoice and captured-text controls. Allocation is established separately; no external timing or cross-collection attribution.",
+  "source": "f5817a15/frozen9cfb7d5b vs qualified7e2f7cac/frozen72c9a1e5",
+  "jobs": 4,
+  "bound": "One360sowner/300sjob-startguard,12sfull-request warmups,five1srotating batches/four processes. No automatic restart.",
+  "preflightCorrection": "Initial guard rejected legacy unmounted fixture directories before staging/deletion/mount/service. Fresh read-only inspection proves no mounted fixture/new root/unit. Correct guard to absence of mounted fixtures; original source/log/condition preserved. This is the first measurement owner.",
+  "retirement": "Only superseded71ba/8ae core hardlinks with canonical Git byte/all-alias proof; current72reference/new9cfb candidate and all auxiliaries/catalogs/toolchains/floors remain.",
+  "publicationHeld": true
+}

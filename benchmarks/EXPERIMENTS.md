@@ -10,8 +10,11 @@ original conditions retained. Current comparisons belong in
 reuse the existing direct-unpack convention over admitted larger helper storage
 and share caller completion instead of constructing a temporary tuple.382focused
 actual11/10 checks/9Python controls pass; complete fulfillment allocation−6.77%,
-invoice/text effectively flat. CPU comparison/full delivery remain pending;
-no CPU improvement or broader objective completion is claimed.
+invoice/text effectively flat. Subsequent[B725](results/2026-11-14-owned-native-tuple-returns/comparison/README.md)
+completes4jobs/300.216s/all gates: fulfillment warm−1.25..−3.13%, fresh−1.12..−4.65%,
+with modest wider CPU support. Invoice also improves; text process spreads~3%/
+adverse medians leave uncertainty. Retain for removed construction/shared convention,
+not a large CPU claim. Full delivery remains pending; broader objective active.
 
 [R351 compiled literal tuples](results/2026-11-14-compiled-literal-tuples/README.md)
 retains corrected72c9: existing emitted facts hoist immutable tuples; current-owner

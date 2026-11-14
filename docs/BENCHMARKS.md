@@ -140,6 +140,12 @@ CPython remains the external baseline. Separate source-pair experiments establis
   preserves all adverse results, corrected ownership and delivery status. These
   source-pair measurements remain distinct from the refreshed CPython rows.
 
+- Larger native helpers reuse the direct-unpack return convention: complete CSV
+  fulfillment allocation falls6.77%, warm elapsed1.3–3.1%and compile-to-result
+  1.1–4.7%lower, with modest CPU support. Invoice also improves and text controls
+  remain variable;[source-pair evidence/status](../benchmarks/results/2026-11-14-owned-native-tuple-returns/comparison/README.md)
+  keep attribution limits and pending full qualification separate from CPython rows.
+
 [Experimental history and source-specific evidence](../benchmarks/EXPERIMENTS.md)
 preserve controlled comparisons, rejected designs, adverse results and qualification.
 Do not add these percentages together or apply them to the CPython ratios.
