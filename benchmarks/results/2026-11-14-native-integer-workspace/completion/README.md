@@ -54,3 +54,8 @@ images/catalog/toolchain and254/252MiBfloors preserved; no retirement.
 [restored source](restored-source-proof.json), [restored checks](restored-checks.json),
 [all refined source/binary/raw/restoration](refinement-and-restoration.tar.xz),
 [initial retained observations](../README.md).
+
+Retained initial `ff2b5d76` subsequently
+[passes full 43633423371](../delivery/README.md) at `1c5af539`.
+Original pending metadata remains historical. The withdrawn cleanup refinement
+is excluded; all adverse observations and the accepted short-call debt remain.

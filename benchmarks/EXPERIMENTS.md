@@ -7895,3 +7895,38 @@ explicitshort+0.62..+2.91%elapsed/CPU+1.22..+2.71%debt. Refinedfb31/B752sevenjob
 saving. Whole refinement withdrawn, all582initialinputs restored/forcedbuilds/
 56checks pass; no unchanged retime or causal EH attribution. Full delivery next,
 publication held, broader objective continues; all old/adverse/source/raw survive.
+
+R365 retained `1c5af539` / frozen `ff2b5d76`
+[passes 43633423371](results/2026-11-14-native-integer-workspace/delivery/README.md):
+Windows/Ubuntu actual 11/10, ordinary/original stress and installed Release
+consumers. 582-input proof, 16 summaries and full logs are cached. The cleanup
+refinement remains withdrawn; allocation gains and short-call CPU debt remain
+separate. The external B747 checkpoint is still at earlier fa40/73a. Publication held.
+
+## R366 — short-script invocation source gate
+
+[B754](results/2026-11-14-invocation-stage/README.md) captures current1c5/ff2
+config/search across all active threads. Config is predominantly host filesystem
+work; builtin initialization and worker scheduling are not established dominant
+removable stages. Core opens once, modules do not copy builtin globals, iterator
+slots and shared decoded windows already avoid proposed adapters/conversions.
+No runtime prototype or timing claim. Original classifier/unknowns/raw retained;
+strict method ownership corrects signature-assembly matches offline. B753 staging
+floor refusal and exact committed-byte retirement of withdrawn DLL aliases are
+preserved. Floors/current images/catalog/toolchain unchanged; all users joined,
+RAM evidence SHA-verified under lease before teardown. Next bounded source-form
+question is defensive protected helpers, not another initializer census.
+
+## R367 — defensive helper source-form cost
+
+[B755](results/2026-11-14-protected-helper-cost/README.md), same qualified1c5/ff2
+image in every role, completes two whole jobs in73.478s/all gates. Valid-data
+try/except helper variants add invoice21.1–21.4%elapsed/supportingCPU, search
+63–78%elapsed with7.87%protected-process spread retained. Separate local allocation
+rises41.23%/294.91%;16independent source/phase goldens and shared-budget cleanup
+pass. Existing compiled-fact inspection confirms the whole helper loses native
+eligibility. This is syntax-form cost, not isolated frame attribution or a runtime
+gain. Select R368 normal protected-helper prefix with exact-fault transfer into
+existing pending-exception routing, subject to semantic/source feasibility and a
+bounded affected/control completion comparison. Finally/with/generators keep
+their current route. No code retained by this diagnostic; publication held.

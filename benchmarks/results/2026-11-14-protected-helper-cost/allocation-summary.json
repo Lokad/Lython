@@ -1,0 +1,24 @@
+{
+  "coreSHA256": "ff2b5d76803f68d123f06d457c419c01ce76c42192a844c839583041c4493318",
+  "toolSHA256": "3a3f32328ecc937b017c89e1ec8b42475c2296c2ca990d01fa59c9c74c38c1e6",
+  "elapsedSeconds": 39.8325143000111,
+  "rows": [
+    {
+      "case": "scripts.csv-invoice.large",
+      "originalBytes": 5245534,
+      "protectedBytes": 7408429,
+      "changePercent": 41.233075602979596
+    },
+    {
+      "case": "scripts.file-search.large",
+      "originalBytes": 147394.875,
+      "protectedBytes": 582077.75,
+      "changePercent": 294.91044040710375
+    }
+  ],
+  "allGoldensAndSharedBudgetChecksPassed": true,
+  "allWorkersJoinedAndFixturesRemoved": true,
+  "sourceFormsDifferIntentionally": true,
+  "notElapsedOrCpuMeasurement": true,
+  "boundary": "Complete warm runs including mediated I/O/reset, all output/file checks and result cleanup; compilation/startup/final cache teardown excluded. Process-wide CLR allocation counters, no forced GC; no timing comparison."
+}

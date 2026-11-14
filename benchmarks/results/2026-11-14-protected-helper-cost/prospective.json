@@ -1,0 +1,7 @@
+{
+  "purpose": "R367 source-form diagnostic: whole existing invoice/search valid-data jobs, original versus helper try/except region, SAME runtime/data/output. Candidate labels denote protected source, not another core build. Whole syntax-form cost, not isolated frame overhead or runtime speedup.",
+  "bound": "One180sowner/120sstartguard;2wholewarmjobs,4freshprocesses/job,5sfullrequestwarmups,5rotating0.5sbatches;normalGC/tiering and existing image/worker. Same form duplicated independently for controls. Compilation/fresh/allocation not in this quiet timing collection; no inference for those phases.",
+  "acceptance": "Identical current image/aux/data and exact stdout/files, independent CPython goldens, shared-budget reset, quiet/image/catalog/join/archive gates. No production edit. If protected-form whole cost is material, inspect exact activation/handler semantics before any redesign.",
+  "stopping": "One usable source-form comparison or bounded correction/confirmation justified by failed/unstable evidence. Preserve every adverse sample and initial condition. No automatic prototype, retiming or general tracing/census.",
+  "semantics": "Only valid supplied data has identical output; protected variants intentionally catch additional conversion/type failures. This is a source-shape diagnostic, not equivalence for all inputs or an isolated frame-cost measurement."
+}
