@@ -7856,3 +7856,21 @@ entry across stack-backed/alreadybound calls; delete separate StartInline and
 nullable descriptor handoff, preserve real frame/pending cleanup. No old scalar
 frame/call-arena replay or forecast. Initial collector-inventory failure/early
 local guard preserved; corrected sampling/all gates/awaited cleanup pass.
+
+R362 measuredfa40d674/frozen73a1b233 [passes43625900419](results/2026-11-14-range-iteration-stage/delivery/README.md):
+Windows/Ubuntu actual11/10, ordinary/originalstress, installedRelease consumers.
+582inputproof/16summaries/full logs cached. B747external checkpoint qualifies the
+same source; all adverse/debt evidence remains. LaterR364 excluded; publicationheld.
+
+## R364 — synchronous activation entry, withdrawn version
+
+[3b7487cc/73a,B750](results/2026-11-14-helper-activation-entry/README.md) removes
+StartInline/nullable descriptor handoff, passes666focused actual11/10,100Python
+controls/18goldens, allocationflat. Eightjobs301.846s/allgates:invoicewarm+1.9–4.2%,
+JSON+1.3–3.0%withCPUadversity;search−3.8..+11.9%inconclusive (6.54/9.15%spreads).
+Preserve all adverse points. Withdraw this version for no compensating measured
+gain, not percentage veto/permanent architecture ban. Added owned-entry fixed
+buffer/wider ABI are structuraltradeoffs, causal CPU share unproved. All582inputs
+restore;forcedbuilds+74boundarychecks pass. No dormant route. Currentqualified
+fa40/73a remains; next native operand/ownership stage needs alias proof, no broader
+frame scalar/call-arena replay. Publication held, performance objective open.

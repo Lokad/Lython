@@ -17,8 +17,8 @@ Lython/CPython process-median differences; moving controls and IQRs remain visib
 
 First seven rows measured 2026-11-14 UTC: **fa40d674 / frozen 73a1b233**,
 against stock **CPython 3.13.16**. Full Windows/Ubuntu actual .NET 11/10,
-original stress and installed-package qualification is
-[running at this exact source](https://github.com/Lokad/Lython/actions/runs/43625900419).
+original stress and installed-package qualification
+[passes at this exact source](../benchmarks/results/2026-11-14-range-iteration-stage/delivery/README.md).
 [Exact sources, raw/wider CPU and controls](../benchmarks/results/2026-11-14-range-cpython-checkpoint/README.md).
 Variable cases stay visible; process spreads and within-process IQRs limit
 magnitude precision. The [previous qualified checkpoint and guide](../benchmarks/results/2026-11-14-range-cpython-checkpoint/prior-BENCHMARKS.md)

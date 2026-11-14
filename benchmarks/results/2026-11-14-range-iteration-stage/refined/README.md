@@ -73,3 +73,7 @@ broader representative-script and independent regex work continue.
 [Identity](candidate-identity.json), [B745](b745-timing.json), [B746](b746-timing.json),
 [allocation](allocation-summary.json), [checks](focused-checks.json),
 [source/binary/raw/check evidence](sources-checks-and-observations.tar.xz).
+
+This retained source subsequently [passes full43625900419](../delivery/README.md)
+at exactfa40d674/frozen73a1b233. Initial pending metadata remains historical;
+all adverse/debt observations above remain. The later R364 prototype is excluded.

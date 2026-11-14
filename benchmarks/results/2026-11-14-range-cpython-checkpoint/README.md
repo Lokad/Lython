@@ -41,3 +41,7 @@ Exact [sources/binary](../2026-11-14-range-iteration-stage/refined/sources-check
 [identity](identity.json), [terminal](terminal-status.json),
 [all collection tools/receipts/raw](observations.tar.xz), [previous guide](prior-BENCHMARKS.md).
 Publication/tagging and affected final released-adapter checks remain postponed.
+
+Exact measuredfa40d674/frozen73a1b233 subsequently
+[passes full43625900419](../2026-11-14-range-iteration-stage/delivery/README.md).
+Original pending metadata/raw remain historical. Later prototypes are excluded.
