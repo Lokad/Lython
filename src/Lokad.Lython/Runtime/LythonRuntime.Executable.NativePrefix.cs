@@ -441,9 +441,9 @@ internal sealed partial class LythonRuntime
             for (var i = Math.Min(LiveExtent - 1, Code.LastOwnedTemporarySlot); i >= liveExtent; i--)
                 if (Values[i] is ExecutableTemporaryValue owned)
                 { Values[i] = null!; owned.Dispose(); }
-            // At most sixteen private references survive until this synchronous
-            // prefix ends. Their execution owners remain funded. Clear the dead
-            // tail once before transfer, rather than after every operation.
+            // Dead references stay in the private span or already-admitted owned
+            // backing until this synchronous prefix ends. Their owners remain
+            // funded. Clear the dead tail once before transfer.
             LiveExtent = liveExtent;
         }
 

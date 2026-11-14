@@ -1,0 +1,217 @@
+{
+  "complete": true,
+  "jobs": 3,
+  "elapsedSeconds": 142.26241970714182,
+  "identity": {
+    "sourceRevision": "R339 frozen38c0562f vs focusedR338/c48c93ae frozene2482e0b; last full delivery R335/f4",
+    "purpose": "Same-source complete CSV fulfillment/pricing validation/report: warm and compile-to-result, unchanged small-while control. Separate native instruction eligibility from private-buffer transport; no external timing claim.",
+    "coreSHA256": {
+      "reference": "e2482e0bcb34251ed9d9d89ebd7674879ef7a3f8193ad05a6e47ca564cf58089",
+      "candidate": "38c0562fdd20b4df2ba0f37806cfdfa1b20a31f9fbabcd522e28c611ea3e8567",
+      "reference-control": "e2482e0bcb34251ed9d9d89ebd7674879ef7a3f8193ad05a6e47ca564cf58089",
+      "candidate-control": "38c0562fdd20b4df2ba0f37806cfdfa1b20a31f9fbabcd522e28c611ea3e8567"
+    },
+    "candidateAuxiliaryFiles": {
+      "Azure.Core.dll": "1d6df436afdc73c30d476be938f6513c90ef8fc884a7bae280091a9bed0a5490",
+      "Azure.Identity.dll": "31574a3d35ffeb0e25a00ebb317937222fe5283b91af608613f2e3bf0f26c50a",
+      "BenchmarkDotNet.Annotations.dll": "97974c60500f53a3c7d142088b22d815aae7aac729de69f4b497132cc436594f",
+      "BenchmarkDotNet.dll": "599ded314fe77dbc17318557e787cf660c1fcb0d69be39994ea462ca95745896",
+      "CommandLine.dll": "8a55501cd1a1590a4bd93a17c6fdd2c01a0ed5bff1aea9036bdc78d98c9a3fad",
+      "deniszykov.WebSocketListener.dll": "c86cfb93e32192ae12fb1a132b4ae785a7d2f325e8583c03c99abf8e832d25d6",
+      "Dia2Lib.dll": "6c4cac68010fe032218efe5e9fcf46eef9f77bfaa5f3bd33f03c5ff77d5a8fac",
+      "Gee.External.Capstone.dll": "6dfda67784598de9677173b89d0692593935f1a4024d36040c95dea48c1b5965",
+      "Iced.dll": "f058c01321b4cdfc9b9151879e88e59571c8d0ba176fbcf95bc936a8f3d073ed",
+      "Lokad.Lython.Benchmarks.deps.json": "b47f293f779ce46eefa92c6eb775842efe363be212c35bf7d155d0b89734d450",
+      "Lokad.Lython.Benchmarks.dll": "acda3ef3d79d7447cbd6099d903475da61f9b7bd36d949e6d4d3eb6e085de6c6",
+      "Lokad.Lython.Benchmarks.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0",
+      "Lokad.Lython.Utf8Regex.dll": "9f7282ade883f103956efaf7e46182f7705fb7675f1f46963b9c42ae5aae7f94",
+      "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+      "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe",
+      "Microsoft.Bcl.AsyncInterfaces.dll": "bf58b47923b2f520c766ca905f68a1a65d217c4d828f05db538c41129cacf9d9",
+      "Microsoft.CodeAnalysis.CSharp.dll": "1af1de8a162d2312eb2f6b781f5edbe8cec7d5cd268c7e4de24396225e54260f",
+      "Microsoft.CodeAnalysis.dll": "42c9ce7891470f430267e2dc02d03571f9d046a7e7e121107754bee58d344613",
+      "Microsoft.Diagnostics.FastSerialization.dll": "e5bdad179ce97180646f37f357cb7b449f5baaf76f185eb09510eeafc5b773e1",
+      "Microsoft.Diagnostics.NETCore.Client.dll": "e2cc9e1f6c97b3c4ee45ebabaa92408eb9b2fc81cb08ceeb342fe48bf79db15f",
+      "Microsoft.Diagnostics.Runtime.dll": "52d5f113180bb0f70b1a9b10608aef93b187364ac689885d2d3c734102d850a2",
+      "Microsoft.Diagnostics.Tracing.TraceEvent.dll": "92401392ce1887c3483a3c0085e6cc3656ee39da1be539943096ebabbad6ea21",
+      "Microsoft.Identity.Client.dll": "5795027e9ae95eececb310a4fed3c502bb368039d186ab0884f64b7792b84717",
+      "Microsoft.Identity.Client.Extensions.Msal.dll": "07109a2f30df782300077a567ade47cbd0a0502c75cd7c8a62192f7d64bb004e",
+      "Microsoft.IdentityModel.Abstractions.dll": "24e97b54b6b5c234a124a336757e3116617ac6c30b655cdae74517dc2ecb5746",
+      "Perfolizer.dll": "4a5508174e2b90a651a29e1de0d2ad88236daaaae01070cd6fc8ca3c36beaa36",
+      "Pragmastat.dll": "7217e206e47de8a0335f58513019d5805a6e52ca2e8f127e2cc3944f1742bb2e",
+      "System.ClientModel.dll": "dec5e22b71a1685c5e6e97cd28b629f0aa6703fb87b6950df28e79fc1804290c",
+      "System.Memory.Data.dll": "2c1035b0106dbb2de7913d151e06071ed617bb58bbb3d6cd46a2dd0f6a03617b",
+      "System.Security.Cryptography.ProtectedData.dll": "80566f0839ece5946e66bf9f00d723e59e371ba1341a18e00c7c7a7c49298e1d",
+      "TraceReloggerLib.dll": "6830c0f1d3f3c17719181e73dd5cfa8ccbb3f3c575329d2120576545103467b5"
+    },
+    "referenceAuxiliaryFiles": {
+      "Azure.Core.dll": "1d6df436afdc73c30d476be938f6513c90ef8fc884a7bae280091a9bed0a5490",
+      "Azure.Identity.dll": "31574a3d35ffeb0e25a00ebb317937222fe5283b91af608613f2e3bf0f26c50a",
+      "BenchmarkDotNet.Annotations.dll": "97974c60500f53a3c7d142088b22d815aae7aac729de69f4b497132cc436594f",
+      "BenchmarkDotNet.dll": "599ded314fe77dbc17318557e787cf660c1fcb0d69be39994ea462ca95745896",
+      "CommandLine.dll": "8a55501cd1a1590a4bd93a17c6fdd2c01a0ed5bff1aea9036bdc78d98c9a3fad",
+      "deniszykov.WebSocketListener.dll": "c86cfb93e32192ae12fb1a132b4ae785a7d2f325e8583c03c99abf8e832d25d6",
+      "Dia2Lib.dll": "6c4cac68010fe032218efe5e9fcf46eef9f77bfaa5f3bd33f03c5ff77d5a8fac",
+      "Gee.External.Capstone.dll": "6dfda67784598de9677173b89d0692593935f1a4024d36040c95dea48c1b5965",
+      "Iced.dll": "f058c01321b4cdfc9b9151879e88e59571c8d0ba176fbcf95bc936a8f3d073ed",
+      "Lokad.Lython.Benchmarks.deps.json": "b47f293f779ce46eefa92c6eb775842efe363be212c35bf7d155d0b89734d450",
+      "Lokad.Lython.Benchmarks.dll": "acda3ef3d79d7447cbd6099d903475da61f9b7bd36d949e6d4d3eb6e085de6c6",
+      "Lokad.Lython.Benchmarks.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0",
+      "Lokad.Lython.Utf8Regex.dll": "9f7282ade883f103956efaf7e46182f7705fb7675f1f46963b9c42ae5aae7f94",
+      "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+      "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe",
+      "Microsoft.Bcl.AsyncInterfaces.dll": "bf58b47923b2f520c766ca905f68a1a65d217c4d828f05db538c41129cacf9d9",
+      "Microsoft.CodeAnalysis.CSharp.dll": "1af1de8a162d2312eb2f6b781f5edbe8cec7d5cd268c7e4de24396225e54260f",
+      "Microsoft.CodeAnalysis.dll": "42c9ce7891470f430267e2dc02d03571f9d046a7e7e121107754bee58d344613",
+      "Microsoft.Diagnostics.FastSerialization.dll": "e5bdad179ce97180646f37f357cb7b449f5baaf76f185eb09510eeafc5b773e1",
+      "Microsoft.Diagnostics.NETCore.Client.dll": "e2cc9e1f6c97b3c4ee45ebabaa92408eb9b2fc81cb08ceeb342fe48bf79db15f",
+      "Microsoft.Diagnostics.Runtime.dll": "52d5f113180bb0f70b1a9b10608aef93b187364ac689885d2d3c734102d850a2",
+      "Microsoft.Diagnostics.Tracing.TraceEvent.dll": "92401392ce1887c3483a3c0085e6cc3656ee39da1be539943096ebabbad6ea21",
+      "Microsoft.Identity.Client.dll": "5795027e9ae95eececb310a4fed3c502bb368039d186ab0884f64b7792b84717",
+      "Microsoft.Identity.Client.Extensions.Msal.dll": "07109a2f30df782300077a567ade47cbd0a0502c75cd7c8a62192f7d64bb004e",
+      "Microsoft.IdentityModel.Abstractions.dll": "24e97b54b6b5c234a124a336757e3116617ac6c30b655cdae74517dc2ecb5746",
+      "Perfolizer.dll": "4a5508174e2b90a651a29e1de0d2ad88236daaaae01070cd6fc8ca3c36beaa36",
+      "Pragmastat.dll": "7217e206e47de8a0335f58513019d5805a6e52ca2e8f127e2cc3944f1742bb2e",
+      "System.ClientModel.dll": "dec5e22b71a1685c5e6e97cd28b629f0aa6703fb87b6950df28e79fc1804290c",
+      "System.Memory.Data.dll": "2c1035b0106dbb2de7913d151e06071ed617bb58bbb3d6cd46a2dd0f6a03617b",
+      "System.Security.Cryptography.ProtectedData.dll": "80566f0839ece5946e66bf9f00d723e59e371ba1341a18e00c7c7a7c49298e1d",
+      "TraceReloggerLib.dll": "6830c0f1d3f3c17719181e73dd5cfa8ccbb3f3c575329d2120576545103467b5"
+    },
+    "catalogSHA256": "e05020780df940a054361e787797be89764c5ee89b9972ddf5ebcda04e23de5a",
+    "referenceCase": "scripts.csv-fulfillment.large",
+    "variantCase": "scripts.csv-fulfillment.large",
+    "controlCase": "scripts.csv-check-digits.large",
+    "sourceAndScriptDifferIntentionally": false
+  },
+  "timing": [
+    {
+      "case": "scripts.csv-fulfillment.large",
+      "actualCases": {
+        "reference": "scripts.csv-fulfillment.large",
+        "candidate": "scripts.csv-fulfillment.large",
+        "reference-control": "scripts.csv-fulfillment.large",
+        "candidate-control": "scripts.csv-fulfillment.large"
+      },
+      "lane": "warm",
+      "medianMilliseconds": {
+        "reference": 10.10377834,
+        "candidate": 8.757826350877194,
+        "reference-control": 10.052888359999999,
+        "candidate-control": 8.716952526315788
+      },
+      "processCpuMedianMilliseconds": {
+        "reference": 10.4,
+        "candidate": 8.947368421052632,
+        "reference-control": 10.2,
+        "candidate-control": 8.947368421052632
+      },
+      "iqrPercent": {
+        "reference": 0.570175216254808,
+        "candidate": 0.38895465974609855,
+        "reference-control": 1.0719650526388462,
+        "candidate-control": 1.2106924081270063
+      },
+      "lythonSourcePairElapsedPercent": [
+        -13.725813918481233,
+        -13.321273921799104,
+        -13.28907460068731,
+        -12.88248673163228
+      ],
+      "lythonSourcePairWiderCpuPercent": [
+        -13.967611336032393,
+        -13.967611336032393,
+        -12.280701754385959,
+        -12.280701754385959
+      ],
+      "candidateProcessSpreadPercent": 0.4667119776508355,
+      "referenceProcessSpreadPercent": 0.5036727676272501
+    },
+    {
+      "case": "scripts.csv-fulfillment.large",
+      "actualCases": {
+        "reference": "scripts.csv-fulfillment.large",
+        "candidate": "scripts.csv-fulfillment.large",
+        "reference-control": "scripts.csv-fulfillment.large",
+        "candidate-control": "scripts.csv-fulfillment.large"
+      },
+      "lane": "compile-run",
+      "medianMilliseconds": {
+        "reference": 10.4529073125,
+        "candidate": 8.929644464285714,
+        "reference-control": 10.59893444680851,
+        "candidate-control": 8.894033964285715
+      },
+      "processCpuMedianMilliseconds": {
+        "reference": 10.625,
+        "candidate": 9.107142857142858,
+        "reference-control": 10.851063829787234,
+        "candidate-control": 9.107142857142858
+      },
+      "iqrPercent": {
+        "reference": 0.5594696480286124,
+        "candidate": 0.36184341365854267,
+        "reference-control": 0.5510193609004779,
+        "candidate-control": 0.8863343148513654
+      },
+      "lythonSourcePairElapsedPercent": [
+        -16.085583801644944,
+        -15.749601914232459,
+        -14.913299253597357,
+        -14.572623698602104
+      ],
+      "lythonSourcePairWiderCpuPercent": [
+        -16.07142857142857,
+        -16.07142857142857,
+        -14.28571428571428,
+        -14.28571428571428
+      ],
+      "candidateProcessSpreadPercent": 0.398789673457034,
+      "referenceProcessSpreadPercent": 1.3970001832302126
+    },
+    {
+      "case": "scripts.csv-check-digits.large",
+      "actualCases": {
+        "candidate-control": "scripts.csv-check-digits.large",
+        "reference-control": "scripts.csv-check-digits.large",
+        "candidate": "scripts.csv-check-digits.large",
+        "reference": "scripts.csv-check-digits.large"
+      },
+      "lane": "warm",
+      "medianMilliseconds": {
+        "candidate-control": 6.821999904109589,
+        "reference-control": 7.001669901408451,
+        "candidate": 6.847194589041096,
+        "reference": 6.746222378378379
+      },
+      "processCpuMedianMilliseconds": {
+        "candidate-control": 6.8493150684931505,
+        "reference-control": 7.183098591549296,
+        "candidate": 6.986301369863014,
+        "reference": 6.891891891891892
+      },
+      "iqrPercent": {
+        "candidate-control": 0.7539686374818424,
+        "reference-control": 0.7243497362620067,
+        "candidate": 0.8700427565369878,
+        "reference": 0.6502951673919457
+      },
+      "lythonSourcePairElapsedPercent": [
+        -2.5661020846286853,
+        -2.2062638562306502,
+        1.1232586398882471,
+        1.4967222394911328
+      ],
+      "lythonSourcePairWiderCpuPercent": [
+        -4.64679022293849,
+        -2.73972602739726,
+        -0.6177813591189962,
+        1.3698630136986356
+      ],
+      "candidateProcessSpreadPercent": 0.36795631559575215,
+      "referenceProcessSpreadPercent": 3.786526869448892
+    }
+  ],
+  "externalBaseline": "No external timing; the identical complete CSV script has isolated CPython3.13.2 stdout/files goldens.",
+  "candidateFullQualificationPending": true,
+  "sourceAndScriptDifferIntentionally": false
+}

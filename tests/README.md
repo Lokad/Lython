@@ -32,6 +32,11 @@ order across native execution and continuation. Empty CPU loops remain cancellab
 real suspended reads join cleanup, and retained formatting results keep their owner.
 Deep recursion from a while body also uses the existing isolated probe checks.
 
+[Larger helpers](Lokad.Lython.PublicApi.Tests/LargeHelperExecutionTests.cs) cover
+owned locals beyond the private call buffer, large parameter/default binding,
+retained aliases and refusal before body effects. Real I/O and custom formatting
+exercise partial-state transfer and joined cancellation with storage still funded.
+
 ## Assembly boundaries
 
 - `Lokad.Lython.PublicApi.Tests` references `Lokad.Lython.csproj` normally. It

@@ -1,0 +1,12 @@
+{
+  "reference": "CPython3.13.2 isolated",
+  "case": "scripts.csv-fulfillment.large",
+  "sourceSHA256": "f9f7477dfdeff1876f55286db983f6aa6a64861c900423f51a5b9183350e06f7",
+  "fixtureSHA256": "a3604c1d506a8c4a069ab64a2c7ee84813c9b2cd3dbabaeb027aeab0476196b4",
+  "inputBytes": 126821,
+  "stdout": "4096 632\n",
+  "outputBytes": 228,
+  "unchangedInput": true,
+  "control": "scripts.csv-check-digits.large",
+  "sameSourcesAcrossRevisions": true
+}

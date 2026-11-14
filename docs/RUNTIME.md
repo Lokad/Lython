@@ -386,8 +386,11 @@ Direct positional, named and method calls can fill the private span without an
 owned workspace. Wider or dynamic binding keeps admitted invocation storage.
 The sixteen-slot inline capacity is an optimization threshold, not a Python
 argument or expression limit. Caller and definition owners keep all inputs funded.
-At most sixteen dead private references can remain until the synchronous prefix
-ends; the dead tail clears before transfer and owned arrays clear on return.
+Native instruction eligibility is independent of that private-buffer capacity.
+Already-bound calls can run eligible bodies over their admitted full locals array;
+the private stack buffer stays at sixteen slots. Dead operand references stay in
+their funded backing until the synchronous prefix ends; the dead tail clears
+before transfer and owned arrays clear on return.
 Private cursors retire deterministically, including cancellation before a return
 publishes its result. Call/function stack admission and exception context remain
 active. Native bodies, like ordinary bound bodies, reuse their call admission;

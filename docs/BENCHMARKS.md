@@ -110,6 +110,11 @@ CPython remains the external baseline. Separate source-pair experiments establis
   17–19.5%faster warm and14.8–16.8%faster compile-to-result, with wider CPU support.
   Allocation stays flat; [invoice control uncertainty and qualification status](../benchmarks/results/2026-11-14-native-backedges/README.md)
   remain explicit. This source-specific result does not change the CPython rows.
+- Larger closed helpers reuse admitted bound storage: an identical4,096-row CSV
+  fulfillment/pricing/report script allocates9.84%less and runs12.9–13.7%faster warm,
+  14.6–16.1%faster compile-to-result, with wider CPU support. [Small-helper control
+  uncertainty and qualification status](../benchmarks/results/2026-11-14-native-owned-slots/README.md)
+  remain explicit; this is a separate source pair, not a CPython comparison.
 
 [Experimental history and source-specific evidence](../benchmarks/EXPERIMENTS.md)
 preserve controlled comparisons, rejected designs, adverse results and qualification.

@@ -83,7 +83,7 @@ public sealed class NativeClosureSequenceTests
             try
             {
                 var function = Assert.IsType<PyExecutableFunction>(LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null));
-                Assert.True(function.CodeObject.CanInlineInstructions);
+                Assert.True(function.CodeObject.CanRunNativeInstructions);
                 Assert.Single(function.ClosureCells);
                 var span = new LythonSourceSpan(0, 1, 1, 1);
                 var failure = Assert.Throws<LythonRuntimeException>(() => function.Invoke([], span, context));
@@ -275,7 +275,7 @@ public sealed class NativeClosureSequenceTests
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
             Function = Assert.IsType<PyExecutableFunction>(Assert.Single(arguments).Value);
-            Assert.True(Function.CodeObject.CanInlineInstructions);
+            Assert.True(Function.CodeObject.CanRunNativeInstructions);
             hook.RefuseGrowth = _ =>
             {
                 // The native counter store precedes output admission, including

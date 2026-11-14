@@ -67,9 +67,12 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         !Closure.IsClassBody && !Closure.IsAnnotationScope && !Closure.IsTypeParameterScope && Closure.ClassCell is null &&
         Closure.InlinedComprehensionLookup is null && Closure.ActiveHandlerVariables is not { Count: > 0 };
 
-    internal bool CanStartInline => _codeObject.CanInlineInstructions
+    private bool CanRunNativePrefix => _codeObject.CanRunNativeInstructions
         && !Closure.IsClassBody && !Closure.IsAnnotationScope && !Closure.IsTypeParameterScope
         && Closure.ClassCell is null && Closure.InlinedComprehensionLookup is null;
+
+    internal bool CanStartInline => CanRunNativePrefix
+        && _codeObject.ValueStorageCapacity <= LythonRuntime.NativeValueCapacity;
 
     internal bool CanBindNativeArguments => CanStartInline
         && BindingPlan.ParameterCount <= LythonRuntime.NativeValueCapacity
@@ -116,7 +119,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
     {
         result = PyNone.Instance;
         frame = null;
-        if (!CanStartInline) return false;
+        if (!CanRunNativePrefix) return false;
         StartInline(bound.Values.AsSpan(0, _codeObject.ValueStorageCapacity),
             bound.Assigned, bound, span, consumedByIteration, default, out _, out result, out frame);
         return true;

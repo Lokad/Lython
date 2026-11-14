@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Separate native instruction eligibility from the private call-buffer size.
+  Eligible larger helpers use their already-admitted bound arrays; keep the
+  sixteen-slot stack buffer, ordinary binding and exact continuation lifetimes.
+
 - Let eligible `while` helpers use the existing native executable prefix, removing
   its blanket backward-branch exclusion. Preserve instruction cancellation,
   exact continuation through real I/O, managed stack admission and ownership.

@@ -34,7 +34,7 @@ public sealed class FormattedStringExecutableTests
             record.SetItem(PyString.FromString("state"), PyString.FromString("ready", context.MemoryGovernor, span));
             var call = Assert.Single(ExecutableScript.Compile(LoweredScript.Lower(
                 LythonFrontend.Compile("render(record)").Script!)).EntryPoint.CallSites);
-            Assert.True(function.CodeObject.CanInlineInstructions);
+            Assert.True(function.CodeObject.CanRunNativeInstructions);
             for (var pass = 0; pass < 2; pass++)
             {
                 function.StartNativeCall(call, [record], null, context, span, false,

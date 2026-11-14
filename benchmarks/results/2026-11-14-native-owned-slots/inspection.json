@@ -1,0 +1,62 @@
+{
+  "sourceAndScriptIdentical": true,
+  "focusedReferenceCore": "e2482e0bcb34251ed9d9d89ebd7674879ef7a3f8193ad05a6e47ca564cf58089",
+  "candidateCore": "38c0562fdd20b4df2ba0f37806cfdfa1b20a31f9fbabcd522e28c611ea3e8567",
+  "reference": [
+    {
+      "id": "scripts.csv-fulfillment.large",
+      "sourceSha256": "f9f7477dfdeff1876f55286db983f6aa6a64861c900423f51a5b9183350e06f7",
+      "functions": [
+        {
+          "name": "price",
+          "native": false,
+          "slots": 23,
+          "instructionCount": 85,
+          "backwardBranches": 2
+        }
+      ]
+    },
+    {
+      "id": "scripts.csv-check-digits.large",
+      "sourceSha256": "7f42775a2665d85afef574b63354918609fb32ea849e0fc12f46673c8536d892",
+      "functions": [
+        {
+          "name": "digit_sum",
+          "native": true,
+          "slots": 6,
+          "instructionCount": 11,
+          "backwardBranches": 1
+        }
+      ]
+    }
+  ],
+  "candidate": [
+    {
+      "id": "scripts.csv-fulfillment.large",
+      "sourceSha256": "f9f7477dfdeff1876f55286db983f6aa6a64861c900423f51a5b9183350e06f7",
+      "functions": [
+        {
+          "name": "price",
+          "native": true,
+          "slots": 23,
+          "instructionCount": 85,
+          "backwardBranches": 2
+        }
+      ]
+    },
+    {
+      "id": "scripts.csv-check-digits.large",
+      "sourceSha256": "7f42775a2665d85afef574b63354918609fb32ea849e0fc12f46673c8536d892",
+      "functions": [
+        {
+          "name": "digit_sum",
+          "native": true,
+          "slots": 6,
+          "instructionCount": 11,
+          "backwardBranches": 1
+        }
+      ]
+    }
+  ],
+  "unchangedSmallWhileFacts": true
+}

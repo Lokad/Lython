@@ -7464,3 +7464,17 @@ warm−19.50..−17.03%, fresh−16.78..−14.80%, with wider CPU support. Invoi
 −0.48..+1.63% and1.75%candidate spread remain uncertainty. No universal/CPython gain
 or large storage claim. Full delivery is batched at the coherent eligibility
 checkpoint; publication held. Broader performance/operand work remains active.
+
+## R339 — native instructions over admitted bound storage
+
+[Retained source pair](results/2026-11-14-native-owned-slots/README.md) separates
+native semantic eligibility from the16-slot private call-buffer constraint.
+Existing funded bound arrays serve larger closed helpers; no new storage or
+execution subsystem.637internal/1562public focused cases pass each actual11/10,
+including real suspension, partial formatting, cancellation, refusal and retained
+owners. Initial excessive-expression fixture and its correction remain archived.
+B709three jobs/142.262s/all gates: complete4096-row fulfillment/pricing/report warm
+−13.73..−12.88%, compile-to-result−16.09..−14.57%, with wider CPU support; allocation
+−9.84%. Small-helper control−2.57..+1.50% and3.79%reference spread remain uncertainty.
+Full combined eligibility delivery is pending. No universal/CPython speedup or
+materialized-frame removal claim; publication held, broader roadmap active.

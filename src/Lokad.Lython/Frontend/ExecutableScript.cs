@@ -541,8 +541,8 @@ internal sealed partial class ExecutableCodeObject
         _operandReadSpans = reads.Select(read => new ExecutableOperandSpan(
             ((long)(offsets[read.Block] + read.Instruction) << 2) | (uint)read.Input, read.Span)).ToArray();
         EntryIndex = offsets[entryBlockIndex];
-        CanInlineInstructions = IsFunctionScope && !RequiresLocalVariableMirroring && capturedLocalSlots.Count == 0
-            && exceptionRegions.Count == 0 && ValueStorageCapacity <= LythonRuntime.NativeValueCapacity
+        CanRunNativeInstructions = IsFunctionScope && !RequiresLocalVariableMirroring && capturedLocalSlots.Count == 0
+            && exceptionRegions.Count == 0
             && Instructions.All(IsInlineInstruction);
         ExceptionRegions = exceptionRegions
             .Where(region => operandLayout.EntryDepths[region.ProtectedStartIndex].HasValue)
@@ -607,7 +607,7 @@ internal sealed partial class ExecutableCodeObject
     public int PatternStorageStart => checked(FirstTemporarySlot + Math.Max(4, OperandCapacity));
     public int ValueStorageCapacity => checked(PatternStorageStart + PatternStorageCount);
 
-    public bool CanInlineInstructions { get; }
+    public bool CanRunNativeInstructions { get; }
 
     private static bool IsInlineInstruction(ExecutableInstruction instruction) => instruction.OpCode is
         ExecutableOpCode.LoadConst or ExecutableOpCode.LoadLocal or ExecutableOpCode.LoadGlobal
