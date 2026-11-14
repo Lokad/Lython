@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Preserve Python `TypeError` for matrix assignment in native helpers instead of
+  routing it through the arithmetic-only operator mapper.
+
 - Share nonthrowing machine-integer arithmetic across ordinary exact operations,
   instruction chains and captured cells. Preserve exact wider promotion, Python
   division/modulo rules, published values and major-storage admission.

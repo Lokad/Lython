@@ -1,0 +1,7 @@
+{
+  "reason": "B737allocation\u221257percentcounter/\u22124.31percentCSVbutcounterCPUflat/CSV+10percent/JSON+7percent/observed+11\u201312percent; unstable short/text controls retained. Oneowning977guestleafprofile/60unknown/0ambiguous and same-process1969B Tier1disassembly show shared primitive helper unconditionally writes outobject via CORINFO_HELP_CHECKED_ASSIGN_REF before numeric publication.",
+  "change": "Remove outobject handoff entirely; only int64/result-end leave the primitive kernel. Existing opcode distinguishes bool from integer at authoritative publication. No new tag/packet/owner/cache/configuration; cell-reader order and frame wrapper unchanged.",
+  "limits": "Profileleaves include useful/inlinedwork and do not quantify removableCPUshare. This fixes an avoidable reference handoff; no speedup forecast. Preserve B737/profile/firstfixtures and baseline@=bug evidence.",
+  "bound": "One coherent refinement; focused actual11/10 semantics/aliases/realIO/cancel/refusal/cleanup,46Pythoncontrols, separate allocation and short complete-script source pair with controls. Retain/refine/withdraw with debt explicit; no automatic unchanged rerun.",
+  "publicationHeld": true
+}

@@ -68,6 +68,11 @@ checks stable aliases through calls and collection construction, formatting,
 overflow and repeated wide-helper cleanup under a shared allowance. These public
 assertions apply independently of private scalar storage.
 
+[Frame lifetimes](Lokad.Lython.PublicApi.Tests/FrameIntegerLifetimeTests.cs) retain
+numeric snapshots across real I/O and overlapping results, join cancelled reads
+before refund, and repeat protected helpers with shared input in a bounded budget.
+These assert public ownership behavior independently of numeric representation.
+
 ## Assembly boundaries
 
 - `Lokad.Lython.PublicApi.Tests` references `Lokad.Lython.csproj` normally. It

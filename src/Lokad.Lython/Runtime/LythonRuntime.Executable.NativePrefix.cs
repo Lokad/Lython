@@ -146,6 +146,8 @@ internal sealed partial class LythonRuntime
                     case ExecutableOpCode.Binary:
                     case ExecutableOpCode.Augmented:
                     {
+                        if (instruction.OpCode == ExecutableOpCode.Augmented
+                            && instruction.AugmentedOperator == AugmentedAssignmentOperatorSyntax.MatrixMultiply) return false;
                         if (TryIntegerOperation(instruction)) break;
                         var first = Read(instruction.InputStart, 0);
                         var second = Read(instruction.SecondInput, 1);

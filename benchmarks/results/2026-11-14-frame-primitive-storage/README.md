@@ -1,8 +1,10 @@
-# Ordinary-frame primitive transport: bounded refinement
+# Ordinary-frame primitive transport: withdrawn
 
 2026-11-14 UTC, R360. Initial frozen `b9ad2490` versus fully qualified
 `98acaa5b` / frozen `a4bfbfd8`; 17 changed production inputs / 583 total.
-**Development prototype, not retained or fully qualified.** Publication remains held.
+**Withdrawn after a profile-backed refinement.** No frame primitive storage remains
+in production. The baseline matrix-helper correction and public lifetime cases
+are retained. Publication remains held. Initial observations below are preserved.
 
 The prototype extends private machine values through the existing frame owner,
 keeping final object-array binding and direct call spans. One primitive array is
@@ -101,3 +103,49 @@ prototype is withdrawn. The qualified A4 delivery is separate and cached.
 [lifetimes](initial/lifetime-checks.json), [profile](initial/profile-attribution.json),
 [all sources/binary/raw/maps/fixtures/failures](initial/sources-checks-and-observations.tar.xz).
 The wider representative performance objective and independent regex track remain active.
+
+## Refined comparison and decision
+
+Frozen `b8687b28` removes only the out-object primitive handoff, compared with the
+same qualified A4 reference, settings and measurement boundaries. B739 completes
+all six jobs in 207.688 seconds, with all image/golden/budget/quiet/join/archive
+gates. No VM users or RAM fixtures remain. Raw SHA256
+`7d50a17337083dc9050d7ba6993966cbea033a431174d3bdab690947909ac9f7`.
+
+| Complete script | Elapsed change | Wider CPU change |
+| --- | ---: | ---: |
+| 100,000-add inside-range counter | −0.77..+0.49% | −1.15..+2.00% |
+| 4,096-row CSV while validator, warm | +9.28..+9.84% | +9.18..+11.46% |
+| Same CSV, compile-to-result | +6.38..+12.08% | +6.75..+12.22% |
+| JSON helper summary | +1.79..+8.17% | +2.96..+8.27% |
+| Short/zero helpers | +4.86..+10.72% | +5.05..+12.47% |
+| Helpers exposing every intermediate | +8.86..+12.33% | +7.96..+10.26% |
+
+All process-median pairings. JSON reference spread 4.30% and short-helper candidate
+spread 5.40% limit magnitude precision; the stable CSV and observed-helper adverse
+directions remain. Counter allocation is still 57.23% lower and CSV allocation
+4.31% lower. Neither establishes a CPU benefit. A fresh controlled collection of a
+changed design is valid; comparing B737/B739 medians does not isolate a causal
+effect of the handoff removal.
+
+Withdraw the integrated representation migration: its added array, branch and
+publication state do not earn their CPU/regression cost. This is an evidence-based
+scope decision, not a universal ban on unboxed values or a fixed percentage veto.
+Remove the shared prototype kernel and all frame scalar fields/array accounting;
+restore the qualified native/ordinary representations and facts. Keep the
+independent two-line matrix-routing correction, its Python-shaped error cases,
+four public lifetime cases, and callback-entry refusal targeting. Restore the two
+internal constructors. No dormant backend or configuration survives.
+
+All 582 production source bytes restore before applying only that matrix guard.
+Forced nonincremental Release builds and 330 focused checks pass across actual
+.NET 11/10 (95 internal +70 public per target), including real suspended I/O,
+cancellation, terminal refusal, aliases and budget reuse. Existing full A4
+qualification stays cached; the small correction's full delivery is deferred to
+the next coherent checkpoint. A withdrawal script's CRLF assumption failed after
+restoration; it was corrected before any build or measurement, and is preserved.
+
+[Refined timing](handoff/timing-summary.json), [allocation](handoff/allocation-summary.json),
+[identity](handoff/candidate-identity.json), [checks](handoff/focused-checks.json),
+[sources/binary/raw](handoff/sources-checks-and-observations.tar.xz),
+[restoration proof and checks](withdrawn/checks-and-source-proof.tar.xz).

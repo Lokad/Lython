@@ -47,6 +47,16 @@ public sealed class ExactIntegerOperatorTests
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task MatrixOperatorsInHelpersKeepPythonErrors(bool augmented)
+    {
+        var operation = augmented ? "left @= right\n    return left" : "return left @ right";
+        var source = $"def multiply(left,right):\n    {operation}\noriginal=13\ntry:\n multiply(original,2)\nexcept TypeError:\n print('caught',original)\n";
+        await ResultsAndCleanupMatchBothExecutionApis(source, "caught 13\n");
+    }
+
+    [Theory]
     [MemberData(nameof(AugmentedProtocolFallbackTests.Operators), MemberType = typeof(AugmentedProtocolFallbackTests))]
     public async Task DynamicOperatorsStillAwaitEachFallbackOnce(string token, string method)
     {

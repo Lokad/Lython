@@ -7751,3 +7751,16 @@ One bounded refinement removes this handoff without another packet/owner/type.
 Original adverse data, conservative-retention fixture failure and independently
 verified baseline matrix-helper bug/fix are preserved. No retention, universal
 speedup or full qualification claim; wider roadmap active, publication held.
+
+R360 [refined B739 completion/withdrawal](results/2026-11-14-frame-primitive-storage/README.md)
+at b868/A4 finishes six jobs/207.688 s/all gates. Counter remains flat despite
+57.23% less allocation; CSVwarm +9.3–9.8%, observed +8.9–12.3%, JSON/short controls
+remain adverse with magnitude uncertainty. Remove the whole frame representation
+migration, including its shared kernel/array/branch/accounting state. All 582
+production inputs restore before only the independently verified matrix-routing
+guard. Forced actual 11/10 builds/330 focused restored checks pass; preserve four
+public lifetime cases, two matrix cases and callback-entry refusal semantics.
+No dormant prototype remains; all original/refined sources, binaries, adverse data,
+profile, fixture mistakes and withdrawal newline failure survive. Full correction
+delivery batches at the next coherent checkpoint. Whole-script objective stays
+active; publication held.

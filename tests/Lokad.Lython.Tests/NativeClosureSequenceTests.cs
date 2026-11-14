@@ -192,7 +192,7 @@ public sealed class NativeClosureSequenceTests
             context.Variables["payload"] = payload;
             var callback = new RefusingCallback();
             context.Variables["callback"] = callback;
-            var arm = new ArmLateFrame(hook);
+            var arm = new ArmLateFrame(hook, callback);
             context.Variables["arm"] = arm;
             var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!));
             try
@@ -229,7 +229,7 @@ public sealed class NativeClosureSequenceTests
         }
     }
 
-    private sealed class ArmLateFrame(AdmissionHookMemoryBudget hook) : LythonRuntime.ICallable
+    private sealed class ArmLateFrame(AdmissionHookMemoryBudget hook, RefusingCallback callback) : LythonRuntime.ICallable
     {
         internal bool Refused;
         internal PyExecutableFunction? Function;
@@ -238,8 +238,11 @@ public sealed class NativeClosureSequenceTests
             Function = Assert.IsType<PyExecutableFunction>(Assert.Single(arguments).Value);
             hook.RefuseGrowth = _ =>
             {
-                // Allow argument/iterator setup. The local write is an observable
-                // effect; the late callback's explicit admission must refuse.
+                // Frame/argument/iterator capacity may be admitted after the
+                // native prefix writes its cell. Target the callback's actual
+                // request, independently of that internal setup sequence.
+                if (callback.Calls == 0) return false;
+                Assert.Equal(1, callback.Calls);
                 if (Assert.Single(Function.ClosureCells).Value is not BigInteger count || count == BigInteger.Zero) return false;
                 Assert.Equal(BigInteger.One, count);
                 return Refused = true;
