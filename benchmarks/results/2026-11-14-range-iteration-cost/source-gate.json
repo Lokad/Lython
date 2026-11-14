@@ -1,0 +1,23 @@
+{
+  "source": "Committed3bc513b8/frozenca1e2331; full43618009133 still in progress when captured",
+  "demonstrated": "995 guest leaves/5.0 guest CPU s;38unknown/0ambiguous. Range generated MoveNext326 leaves, Cursor.TryMoveNextCore66; owning/inlined useful work, not removable shares. Final R361counterallocation~3.2MB/100kpulls supports boxed-yield volume; no allocation stack or CPU speedup inferred.",
+  "hypothesis": "Replace range iteration/boxed native transport as one stage, retaining existing cursor and integer working storage; not another ordinary-frame representation.",
+  "expectedProductionInputs": [
+    "Runtime/PyCoreIterators.cs:replace compiler-generated PyRange.Iterate state machine with one shared explicit range enumerator, preserving existing Python/CLR interfaces",
+    "Runtime/PyIteration.cs:acquire that enumerator once for exact ranges and expose a primitive pull beside existing object pulls; share position/EOF/disposal across sync/async",
+    "Runtime/LythonRuntime.Executable.NativePrefix.cs:publish primitive range pulls through existing private integer storage only when already prepared; materialize before existing observation/transfer boundaries"
+  ],
+  "displaced": "Generated range MoveNext/object-current pipeline and per-yield boxes in eligible native numeric loops. Generic object iteration uses the same range state; no dormant alternate range engine. No new compiler fact pass or unconditional storage for unrelated for loops.",
+  "ownership": "Reuse range owner/current cursor lifetime, current BigInteger major-value funding and stable publication. No root tracing/ledger/pool/new memory scope or allowance. Small primitive fields remain private iterator metadata; no borrowed native span escapes. Keep per-execution constructor metadata.",
+  "tradeoffs": "Preserve PyRange CLR interfaces to avoid changing generic projection/serialization/type routing. A simple enumerable adapter plus independent enumerator may add small legacy acquisition overhead; measure materializing/short controls. Checked int64 bounds/progression can avoid per-pull BigInteger transport; exact wider path and large-yield preflight must remain shared. Do not add all-for-loop working arrays: reuse only already prepared native integer storage.",
+  "acceptance": [
+    "Exact signed/int64-boundary/wider starts/stops/strides,empty/negative/huge lengths and sticky exhaustion",
+    "Independent/repeated enumerators,stable Current/aliases,iter(range) identity and Python-shaped errors",
+    "Range aliases through native-to-owned-frame transfer,real I/O,early exit/generators/closures and cancellation",
+    "First refusal before body effects,large yield allocation origin,retained results/shared-budget reuse and awaited cleanup",
+    "Existing unsupported JSON/projection behavior and generic object iteration preserved"
+  ],
+  "bound": "One coherent three-file prototype or concrete source rejection; focused actual11/10 controls and Python goldens before bounded same-work counter warm/fresh+CSV/materializing/short/observed controls. Allocation separate; explicit retention/debt. One current profile is enough for selection; no further attribution inventory without a specific new question.",
+  "notMeasured": "No CPU delta, predicted speedup,current CPython ratio,contention,heap peak or embedding tail-latency claim.",
+  "publicationHeld": true
+}

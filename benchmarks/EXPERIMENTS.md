@@ -7797,3 +7797,15 @@ observed mixed. Accept explicit remaining debt/uncertainty for this bounded loop
 milestone; no universal/finalfresh/CSV/JSON/CPython improvement claim or causal
 cross-collection attribution. Initial/adverse/metadata failures preserved, no dormant
 router/singleton. Full delivery follows; broader objective and regex work active.
+
+## R362 — current range iteration source selection
+
+[B743 at committed3bc/frozenca1](results/2026-11-14-range-iteration-cost/README.md)
+keeps995guest leaves/38unknown/0ambiguous after R361: generatedrangeMoveNext326,
+cursorpull66, nativeRunCore221. Counts include useful/inlined work and predict no
+speedup. All gates/joins/persistent archive pass. Select one shared range-iterator/
+native-pull stage using existing cursor and already prepared primitive storage;
+preserve Python/CLR interfaces, independent enumeration, exact bounds/aliases,
+large-yield funding, cancellation and actual transfer cleanup. No new frame value
+system, fact pass, pool or owner. Legacy acquisition overhead is a control/tradeoff.
+Source selection only, no prototype/CPUdelta; full43618009133 remains independent.

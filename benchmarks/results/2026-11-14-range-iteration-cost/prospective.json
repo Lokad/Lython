@@ -1,0 +1,8 @@
+{
+  "question": "One current inside-range counter CPU profile: assess remaining range enumerator/boxed-yield transport versus useful arithmetic/native dispatch. 3.2MB/100kpulls is source/allocation evidence, not CPU attribution.",
+  "bound": "One5s199Hzcpu-clock/fp after8guestsecondwarmup,64invocationrequests,120sowner. Currentfrozenimage/catalog/normalGC/tiering, PerfMap/JITdisasm diagnostic overrides only.",
+  "hypothesis": "PyRange generated object enumerator boxes each yielded value before native publication; assess one shared range-iteration state/observation boundary, preserving existing cursor ownership. No universal value/frame/controller/pool rewrite.",
+  "acceptance": "Exact signed/hugebounds/overflow,Pythonaliases/identity,Current/stickyEOF,earlyexit,activecursortransfer/realIO,cancel/refusalbeforeeffects,retainedfunding/cleanup. Delete displaced iterator/storage if a coherent prototype is selected.",
+  "stopping": "One owning capture/sourcegate selects a concrete coherent design or supported rejection. No speedup forecast from samples or allocation; retain unknowns/raw and all adverseR361controls. Not another open-ended inventory.",
+  "publicationHeld": true
+}
