@@ -1,0 +1,25 @@
+{
+  "proof": {
+    "commit": "66c247901caab8af08e1466ffb2b3977211d664b",
+    "canonicalArchive": "benchmarks/results/2026-11-14-range-iteration-stage/initial/sources-checks-and-observations.tar.xz",
+    "canonicalArchiveSHA256": "5b726b7b949588de42ea6d41ccca96450345f347170e868d7a0bbcdec5f1cb56",
+    "member": "candidate-core.dll",
+    "bytes": 5746176,
+    "sha256": "8056823e53a66dd202010c067484c57312f8d5ca3faf33e8265f04687f7c567c",
+    "paths": [
+      "range-iteration-b744-20261114/candidate-core.dll",
+      "range-iteration-b744-20261114/candidate/Lokad.Lython.dll"
+    ],
+    "expectedLinks": 2
+  },
+  "allMetadataHashesVerifiedBeforeMutation": true,
+  "freshIdleLease": true,
+  "retiredOnly": [
+    "/home/lokad/lython-bench-checks/range-iteration-b744-20261114/candidate-core.dll",
+    "/home/lokad/lython-bench-checks/range-iteration-b744-20261114/candidate/Lokad.Lython.dll"
+  ],
+  "beforeFreeBytes": 267223040,
+  "afterFreeBytes": 272973824,
+  "currentb5ff2AllCatalogsAuxiliariesAndToolchainsPreserved": true,
+  "floorsUnchanged": true
+}

@@ -1,0 +1,56 @@
+{
+  "restoredRuntime": "3994dfda/frozenb5a6426e source",
+  "all582ProductionInputsExactlyRestored": true,
+  "withdrawnCore": "c3bbdafd3d7c1aec2b56a26e6847988f49b3415d5187f6b6830e1802238d7ad5",
+  "retained": "Real low-stack native function invocation case in ManagedStackGuardTests; no guard-count or exact-checkpoint assertion.",
+  "decision": "Withdraw optional one-check deletion: whole-script CPU effect uncertain, no complete packaging/activation bridge removed, existing body-level physical guard remains self-contained. Search6.06%reference spread/short CPU -.25..+4.20% and all controls retained. No inherent-regression claim or permanent design ban.",
+  "forceBuildAndFocusedChecksPending": false,
+  "checks": [
+    {
+      "framework": "net11.0",
+      "exitCode": 0,
+      "counters": {
+        "total": "30",
+        "executed": "30",
+        "passed": "30",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      }
+    },
+    {
+      "framework": "net10.0",
+      "exitCode": 0,
+      "counters": {
+        "total": "30",
+        "executed": "30",
+        "passed": "30",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      }
+    }
+  ],
+  "priorRuntimeQualificationReused": true,
+  "noUnchangedTimingRepeat": true
+}

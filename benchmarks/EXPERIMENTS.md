@@ -7963,3 +7963,18 @@ Windows/Ubuntu actual11/10 ordinary4,775internal+17,838public/original13/406stre
 each, installedRelease consumers.582inputproof/16summaries/full logs cached;
 never requery. Every short-debt/text/control uncertainty remains; laterR369excluded.
 Publicationheld and whole-script/independentregex goals continue.
+
+## R369 — native body check prototype withdrawn
+
+[B758](results/2026-11-14-native-entry-admission/README.md), one140.414s/four-job
+comparison c3bbdafd versus qualifiedb5. Removing one repeated body stack check
+shows mixed CPU/elapsed; unchanged search controls spread6.06%, shortCPU−.25..+4.20%.
+No dependable improvement or inherent-regression claim. Existing self-contained
+body admission remains; limited bridge removal does not justify more iteration
+here. All582production inputs restore exactly, actual11/10forcedbuilds/30focused
+checks each pass. Retain the new real low-stack native-call case. Prior candidate
+428focused/124Pythoncontrols/16goldens and every raw/adverse observation survive.
+No dormant mode, permanent design ban, allocation or new external-ratio claim.
+R368fullqualification cached; publicationheld. Move to the shared scalar producer
+result boundary. Missing-alias preflight and corrected committed805retirement
+proofs remain; no users/fixtures/floor change/current-image loss.

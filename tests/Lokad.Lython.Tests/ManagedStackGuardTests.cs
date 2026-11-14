@@ -9,6 +9,7 @@ public sealed class ManagedStackGuardTests
 {
     [Theory]
     [InlineData("function")]
+    [InlineData("native-function")]
     [InlineData("interpreter")]
     [InlineData("pair")]
     [InlineData("single")]
@@ -23,9 +24,15 @@ public sealed class ManagedStackGuardTests
         object left = new(), right = new();
         var expression = new LoweredCapturedExpression(new BooleanLiteralExpressionSyntax(true, span), true);
         var projected = new PyList([true]);
+        var definition = Assert.IsType<LoweredFunctionDefinitionStatement>(Assert.Single(
+            LoweredScript.Lower(LythonFrontend.Compile("def value():return 1").Script!).Statements));
+        var function = new PyExecutableFunction("value", definition.ParameterLayout,
+            ExecutableScript.CompileClassFunction(definition), context, [],
+            new Dictionary<string, object>(), definition.ScopeFacts);
         Action enter = entry switch
         {
             "function" => () => context.EnterFunctionCall(span),
+            "native-function" => () => function.Invoke([], span, context),
             "interpreter" => () => context.EnterInterpreterFrame(span),
             "pair" => () => PyStructuralGuard.EnterPair(state, left, right, span, context).Dispose(),
             "single" => () => PyStructuralGuard.EnterSingle(state, left, span, context).Dispose(),
