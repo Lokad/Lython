@@ -79,3 +79,11 @@ representative-script objective and independent regex development continue.
 [allocation](initial/allocation-summary.json), [focused checks](initial/focused-checks.json),
 [consumer checks](initial/consumer-checks.json),
 [sources/binary/raw/conditions](initial/sources-checks-and-observations.tar.xz).
+
+An obsolete 2026-10-17 VM transport upload was the largest remaining working
+bundle. [Exact compressed custody](retired-working-upload.tar.xz) preserves all
+61,388,800 original bytes and historical source/build files before its duplicate
+VM tar is retired, freeing working space without lowering floors or deleting
+measurement evidence/current images. [Proof](retired-working-upload-custody.json)
+records original/compressed SHA256, ownership and member/content gates. This is
+historical transport custody, not current documentation or a release artifact.
