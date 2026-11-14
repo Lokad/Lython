@@ -1,5 +1,10 @@
 # Testing Lython
 
+[Builtin scalar publication](Lokad.Lython.PublicApi.Tests/BuiltinScalarPublicationTests.cs)
+covers exact integer boundaries, Unicode/bytes conversion, aliases, builtin rebinding
+and protocol/error order. Retained results and suspended users keep shared funding;
+cancellation joins I/O cleanup and guest handlers cannot suppress refused parsing.
+
 [Protected helpers](Lokad.Lython.PublicApi.Tests/ProtectedHelperExecutionTests.cs)
 cover exact fault positions, handler headers/variables, exception context, live
 defaults, aliases and wider working storage. Genuine handler I/O joins cleanup on

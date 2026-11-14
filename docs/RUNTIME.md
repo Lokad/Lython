@@ -400,6 +400,12 @@ copies, calls, collections or returns; ordinary-frame transfer materializes ever
 live value. No primitive marker or working span survives suspension. Exact wider
 promotion, ordinary call spans, cancellation and managed stack admission remain.
 
+Shared text-to-integer and length kernels keep their result typed through the
+same managed invocation wrapper. Ordinary observation publishes a Python integer;
+eligible native arithmetic uses only its existing private integer capacity.
+Major parse admission conservatively includes publication headroom either way.
+Custom conversion/length protocols retain their ordinary execution and I/O paths.
+
 Eligible composed executable helpers keep using these private slots when their callees
 complete directly, including named/default arguments and saved methods. A callee
 requiring a frame stops before its dynamic operation. Its prepared frame and every

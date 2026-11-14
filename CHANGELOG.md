@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Keep shared `int(text)` and `len` results typed until ordinary observation or
+  publication into existing native integer storage. Preserve exact promotion,
+  aliases, protocols, cancellation and conservative allocation admission.
+
 - Run eligible `try`/`except` helpers through the existing synchronous executable
   prefix. Transfer faults at their exact instruction into ordinary handler
   routing without replay; preserve cancellation, refused admission and ownership.

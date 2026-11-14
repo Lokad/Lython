@@ -1,3 +1,4 @@
+using System.Numerics;
 using System.Reflection;
 using System.Text;
 using Lokad.Lython.Runtime;
@@ -10,9 +11,9 @@ namespace Lokad.Lython.Tests;
 public sealed class IntegerTextCancellationTests
 {
     private static readonly LythonSourceSpan Span = new(10, 3, 2, 4);
-    private static readonly Func<object, int, Context, LythonSourceSpan, object> Parse = typeof(LythonRuntime)
+    private static readonly Func<object, int, Context, LythonSourceSpan, BigInteger> Parse = typeof(LythonRuntime)
         .GetMethod("ParseOwnedIntegerText", BindingFlags.Static | BindingFlags.NonPublic)!
-        .CreateDelegate<Func<object, int, Context, LythonSourceSpan, object>>();
+        .CreateDelegate<Func<object, int, Context, LythonSourceSpan, BigInteger>>();
 
     [Theory]
     [InlineData(false)]

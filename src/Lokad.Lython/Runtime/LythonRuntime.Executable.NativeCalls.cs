@@ -77,7 +77,7 @@ internal sealed partial class LythonRuntime
 
     // A closed operation cannot invoke guest protocols. Ordinary framed calls
     // retain len's broader selection and its original error/protocol behavior.
-    private static Func<object, LythonSourceSpan, ExecutionContext, object>? SelectNativeUnaryOperation(
+    private static Delegate? SelectNativeUnaryOperation(
         object? target, object? value, out bool closed)
     {
         closed = true;

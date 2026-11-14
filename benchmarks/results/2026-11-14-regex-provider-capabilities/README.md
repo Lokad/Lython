@@ -48,3 +48,8 @@ reuse. The same three API entry blobs and precise integration gaps are unchanged
 No package/source equivalence, semantics/interruption/performance/safety
 qualification, normal adapter pin change or repeated dev80 checks follow.
 Independent Lython implementation and adapter-local bridges remain available.
+
+Read-only [e63770d1 source inspection](source-update-e63770d1.json) finds internal
+capture-root window discovery and split checkpoint changes. Three entry blobs
+and the precise ownership/group-name/cursor preparation gaps remain unchanged.
+No unchanged qualification, dependency promotion or core-development stop follows.

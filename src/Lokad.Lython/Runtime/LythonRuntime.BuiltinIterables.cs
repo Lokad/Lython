@@ -9,7 +9,7 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private static readonly Func<object, LythonSourceSpan, ExecutionContext, object> LengthOperation = GetLength;
+    private static readonly Func<object, LythonSourceSpan, ExecutionContext, BigInteger> LengthOperation = GetLength;
 
     private static object Len(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
@@ -21,7 +21,7 @@ internal sealed partial class LythonRuntime
         return GetLength(arguments[0], span, context);
     }
 
-    private static object GetLength(object value, LythonSourceSpan span, ExecutionContext context)
+    private static BigInteger GetLength(object value, LythonSourceSpan span, ExecutionContext context)
         => value switch
         {
             PyChainMap chainMap => LenChainMap(chainMap, span, context),

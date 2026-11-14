@@ -338,8 +338,8 @@ internal sealed partial class LythonRuntime
         return RuntimeValue(arguments.Length == 1 && await IsTruthyAsync(arguments[0], context, span).ConfigureAwait(false));
     }
 
-    private static readonly Func<object, LythonSourceSpan, ExecutionContext, object> IntegerTextOperation
-        = static (value, span, context) => ConvertIntegerValue(value, 10, context, span);
+    private static readonly Func<object, LythonSourceSpan, ExecutionContext, BigInteger> IntegerTextOperation
+        = static (value, span, context) => ParseOwnedIntegerText(value, 10, context, span);
 
     private static object Int(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
@@ -395,10 +395,6 @@ internal sealed partial class LythonRuntime
                 PyString or PyBytes => ParseOwnedIntegerText(value, numberBase, context, span),
                 _ => throw new LythonRuntimeException("TypeError", "int() argument must be a string, a bytes-like object or a real number, not '" + UnboundTypeMethod.PythonTypeName(value, context) + "'", span)
             };
-        }
-        catch (FormatException ex)
-        {
-            throw new LythonRuntimeException("ValueError", ex.Message, span);
         }
         catch (OverflowException ex)
         {
@@ -773,13 +769,13 @@ internal sealed partial class LythonRuntime
     private static string IntFailureDisplay(object source, ExecutionContext context)
         => PyRendering.ToReprPyString(source, new PyRenderingContext(context)).AsString();
 
-    private static object ParseOwnedIntegerText(object source, int numberBase, ExecutionContext context, LythonSourceSpan span)
+    private static BigInteger ParseOwnedIntegerText(object source, int numberBase, ExecutionContext context, LythonSourceSpan span)
     {
         context.MemoryGovernor.ThrowIfAdmissionFailed();
         ReadOnlySpan<byte> utf8 = source is PyString text ? text.Utf8Span : ((PyBytes)source).Bytes;
         // A bounded native decimal needs neither decoded text nor major scratch.
         // Complete consumption rejects suffixes/NULs; all other Python forms and
-        // overflow keep the admitted general path. Small boxes use control headroom.
+        // overflow keep the admitted general path. Small publication uses control headroom.
         if (numberBase == 10 && utf8.Length <= 20 &&
             System.Buffers.Text.Utf8Parser.TryParse(utf8, out long integer, out var consumed) && consumed == utf8.Length)
             return new BigInteger(integer);
@@ -789,11 +785,14 @@ internal sealed partial class LythonRuntime
         {
             var result = ParseIntegerUtf8(utf8, source is PyString, numberBase, span, source, context, ref admission);
             context.CheckExecution(span);
-            object box = result;
+            // Keep the conservative box estimate even when native arithmetic
+            // retains this result in its existing private integer storage.
             if (admission is not null)
                 admission.Commit(RuntimeMemoryEstimates.EstimateBigIntegerBytes(result));
-            return box;
+            return result;
         }
+        catch (FormatException ex) { throw new LythonRuntimeException("ValueError", ex.Message, span); }
+        catch (OverflowException ex) { throw new LythonRuntimeException("OverflowError", ex.Message, span); }
         finally { admission?.Dispose(); }
     }
 

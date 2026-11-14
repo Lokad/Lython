@@ -56,3 +56,9 @@ numeric semantics and existing private storage rather than another call arena.
 
 [All timing](timing-summary.json), [exact restoration](restoration.json),
 [raw](observations.tgz), [source/binary/checks/failures/custody](prototype-checks-and-restoration.tar.xz).
+
+Metadata correction: the archived prototype identity's `runtimeBaseCommit`
+contains an inherited `1c5af…` template value. The measured reference is
+`3994dfda` / `b5a6426e`, as its full DLL hash, 582-source baseline/restoration
+proof and original raw worker identities establish. Original bytes remain
+unchanged; this correction does not alter the timings or delivery qualification.

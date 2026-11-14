@@ -1,3 +1,4 @@
+using System.Numerics;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Text;
 
@@ -332,6 +333,7 @@ internal sealed partial class LythonRuntime
             MaterializeRange(start, call.ArgumentOffset + call.ArgumentCount);
             var target = Values[start + call.TargetOffset];
             object result;
+            long integerResult = 0;
             try
             {
                 if (!call.IsPositionalOnly)
@@ -389,13 +391,24 @@ internal sealed partial class LythonRuntime
                     var closed = false;
                     var operation = argument is not null ? SelectNativeUnaryOperation(target, argument, out closed) : null;
                     if (operation is not null && closed)
-                        result = InvokeSingleInput(argument!, operation, call.CallSpan, _scope);
+                    {
+                        if (operation is Func<object, LythonSourceSpan, ExecutionContext, BigInteger> integerOperation)
+                        {
+                            var integer = InvokeSingleInput(argument!, integerOperation, call.CallSpan, _scope);
+                            if (!_integers.IsEmpty && TryMachineInteger(integer, out integerResult)) result = NativeInteger;
+                            else result = integer;
+                        }
+                        else result = InvokeSingleInput(argument!, operation, call.CallSpan, _scope);
+                    }
                     else if (!CallFunction(call, start, target, out result)) return false;
                 }
             }
             catch (Exception error) when (TryTranslateCallableException(error, call.CallSpan, out var translated))
             { throw translated; }
-            Publish(instruction, result);
+            // Publication and its store checkpoint remain outside callable
+            // exception translation. The marker never leaves this activation.
+            if (ReferenceEquals(result, NativeInteger)) PublishInteger(instruction, integerResult);
+            else Publish(instruction, result);
             return true;
         }
 

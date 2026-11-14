@@ -7978,3 +7978,18 @@ No dormant mode, permanent design ban, allocation or new external-ratio claim.
 R368fullqualification cached; publicationheld. Move to the shared scalar producer
 result boundary. Missing-alias preflight and corrected committed805retirement
 proofs remain; no users/fixtures/floor change/current-image loss.
+
+## R370 — typed builtin scalar publication retained with debt
+
+[B759](results/2026-11-14-builtin-scalar-publication/README.md), bed6e57e versus
+qualified3994/b5, removes shared int-text/len object-result erasure before private
+numeric publication. Existing parser, managed wrapper and private bank remain;
+no new bank/arena/framework. Complete fulfillment allocation−18.20%,invoice−5.00%,
+text/short flat. Seven jobs269.972s/all gates: fulfillment warm3–4%/fresh2.6–5.6%
+lower elapsed with CPU support. Invoice+.94..1.87%elapsed/+2..4%CPU is accepted
+explicit0.11debt; text adverse/uncertain, short/observed controls variable, JSON
+CPU mixed. No universal/substantial CPU completion or embedding-latency claim.
+Actual11/10 each62internal+561public,136Pythoncontrols/16goldens pass. Test-only
+reflection return mismatch is corrected with all assertions/first failure retained.
+Full platform/originalstress/installed consumers follow at this retained boundary.
+Complete-call/publication and independent regex milestones continue; publication held.
