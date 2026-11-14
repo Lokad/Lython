@@ -3,8 +3,8 @@
 2026-11-14UTC, R335committedcdd92944/frozenf4c4f027 against fully qualified
 R334d888ee47/frozen0b2929ca. Same581candidate production inputs and fixed worker/
 adapter bytes are recorded. Full R335platform/stress/installed qualification is
-[running43536449801](https://github.com/Lokad/Lython/actions/runs/43536449801);
-focused correctness and the bounded measurement below are complete.
+[GREEN43536449801](delivery/README.md): both platforms/actual11/10,
+original stress and installed consumers;581inputs/16summaries cached.
 
 `iterparse` supports start/end events, root and close over mediated filenames
 or borrowed read objects. It replaces eager acquisition for early-exit jobs.

@@ -1,8 +1,9 @@
 # Small configuration edit: compilation and complete execution
 
 2026-11-14UTC, R336/B707: committedcdd92944/frozenf4c4f027 versus stock
-CPython3.13.16. Focused R335Release11/10 checks pass; full platform/stress/package
-qualification is[still running43536449801](https://github.com/Lokad/Lython/actions/runs/43536449801).
+CPython3.13.16. R335full platform/stress/package qualification
+[passes43536449801](../2026-11-14-incremental-xml/delivery/README.md):
+Windows/Ubuntu actual11/10, original stress and installed consumers.
 This is a new phase-selection observation, not a runtime prototype or speedup
 against an older Lython. No unchanged source qualification is repeated.
 

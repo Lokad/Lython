@@ -18,7 +18,8 @@ First five rows measured 2026-11-13 UTC: **runtime d90dd5fe / frozen798edc1d**, 
 original stress and installed Release package-consumer qualification.
 [Exact source proof and logs](../benchmarks/results/2026-11-13-dictionary-boundaries/delivery/README.md).
 The96 B configuration row uses **cdd92944 / frozenf4c4f027**, measured2026-11-14;
-its focused checks pass and full platform/stress/package qualification is running.
+its full platform/stress/package qualification
+[passes](../benchmarks/results/2026-11-14-incremental-xml/delivery/README.md).
 [Configuration phases and exact evidence](../benchmarks/results/2026-11-14-config-phases/README.md).
 The quiet Azure F4as_v7 VM runs Ubuntu 24.04.4, four AMD EPYC 9V45 vCPUs,
 16 GiB/no swap and .NET 11 RC3, ordinary workstation GC/tiering and CPython GIL/GC.
