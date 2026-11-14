@@ -253,11 +253,18 @@ internal sealed partial class LythonRuntime
             var ownsWork = false;
             var functionEntered = false;
             var transferred = false;
+            var unpacked = false;
             try
             {
                 CheckExecution(span);
                 var arguments = bound.Values.AsSpan(0, bound.Assigned.Length);
-                if (function.TryStartBoundInvocation(bound, span, consumedByIteration, out var nativeValue, out frame))
+                var originalExtent = _execution.Stack.LiveExtent;
+                var returned = completion == CallCompletion.Call && site is not null
+                    ? PrepareUnpackedCallReturn(ref _execution, site, start, out originalExtent) : default;
+                var native = function.TryStartBoundInvocation(bound, span, consumedByIteration,
+                    returned, out unpacked, out var nativeValue, out frame);
+                if (!unpacked) _execution.Stack.RestoreNativeExtent(originalExtent);
+                if (native)
                 {
                     if (frame is null) { completedValue = nativeValue; goto Completed; }
                     functionEntered = true;
@@ -333,7 +340,16 @@ internal sealed partial class LythonRuntime
                 }
             }
         Completed:
-            ApplyCallResult(start, span, completion, completedValue, completedError);
+            if (unpacked && completedError is null)
+            {
+                try
+                {
+                    CompleteUnpackedCallReturn(ref _execution, this, start, site!.UnpackedReturnCount);
+                    _execution.InstructionIndex++;
+                }
+                catch { _execution.Stack.RetireTo(start); throw; }
+            }
+            else ApplyCallResult(start, span, completion, completedValue, completedError);
             return this;
         }
 

@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[R353 owned native tuple returns](results/2026-11-14-owned-native-tuple-returns/README.md)
+reuse the existing direct-unpack convention over admitted larger helper storage
+and share caller completion instead of constructing a temporary tuple.382focused
+actual11/10 checks/9Python controls pass; complete fulfillment allocation−6.77%,
+invoice/text effectively flat. CPU comparison/full delivery remain pending;
+no CPU improvement or broader objective completion is claimed.
+
 [R351 compiled literal tuples](results/2026-11-14-compiled-literal-tuples/README.md)
 retains corrected72c9: existing emitted facts hoist immutable tuples; current-owner
 slice/concat construction removes source-governor selection/LINQ growth; ZIP drops

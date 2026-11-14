@@ -1,0 +1,26 @@
+{
+  "reference": "93a1dca7 runtime identical to qualified7e2f7cac/frozen72c9a1e5",
+  "hypothesis": "Large native-eligible helper bodies already reuse admitted bound storage, but their return call passes an empty unpack span. This preserves a temporary dynamic tuple shell/backing and immediate consumer unpack that small native helpers already eliminate.",
+  "affectedWorkloads": [
+    "4096-row CSV invoice pricing helper",
+    "4096-row CSV fulfillment helper",
+    "unchanged captured-text control"
+  ],
+  "eliminate": "Reuse the existing native direct-unpack return convention for bound-storage prefixes; share caller publication/retirement with the existing small-helper entry instead of duplicating a new result route. No new frame, arena, value representation or admission policy.",
+  "acceptance": [
+    "Exact values and left-to-right target mutation, mutable aliases/defaults and mismatched/starred unpack behavior",
+    "Keep eager tuple admission before target mutation, terminal refusal/cancellation, rollback and conservative element funding",
+    "Child cleanup/refunds complete before target publication; failures retire every written output reference",
+    "An actual suspension transfers exactly once using the existing frame and never retains a borrowed caller span",
+    "Retained results and sequential shared-budget executions remain funded and return to baseline"
+  ],
+  "comparison": "Focused actual11/10 checks and existing complete-script allocation diagnostics first. One bounded source-pair warm/fresh comparison with unchanged text control if source/benefit gates pass; percentages inform retention rather than automatic veto. Full qualification only at a coherent retained checkpoint.",
+  "stopping": "Decide this existing-convention consolidation with semantic/ownership and bounded whole-script evidence; preserve any failure/regression and remove displaced duplication. If no meaningful stage is eliminated or cleanup requires new scaffolding, withdraw rather than grow an independent protocol.",
+  "sourceSHA256": {
+    "src/Lokad.Lython/Runtime/PyExecutableFunction.cs": "251e8648c5d7fc9792351d34df8377d028ca77b13cf8fd4bfeff2f8697d14608",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs": "aeebeb4e3c7ecef37549b38c5a91257cf5d422f5b11e7f848539ccbd57eded0b",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs": "1a46e9c46e829172f42372e5b31a6993bab6831183262010e04bc5faa7ce9ed6"
+  },
+  "qualified": false,
+  "publicationHeld": true
+}

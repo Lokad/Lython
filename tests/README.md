@@ -51,6 +51,13 @@ owned locals beyond the private call buffer, large parameter/default binding,
 retained aliases and refusal before body effects. Real I/O and custom formatting
 exercise partial-state transfer and joined cancellation with storage still funded.
 
+[Tuple-return cases](Lokad.Lython.PublicApi.Tests/NativeTupleReturnTests.cs) cover
+small and larger helpers, mutable aliases/defaults, target order, mismatched
+unpacking and actual I/O transfer under both execution APIs. The
+[owned-storage checks](Lokad.Lython.Tests/OwnedTupleReturnTests.cs) preserve eager
+admission, refusal/cancellation before publication and cleanup to the shared-budget
+baseline.
+
 ## Assembly boundaries
 
 - `Lokad.Lython.PublicApi.Tests` references `Lokad.Lython.csproj` normally. It

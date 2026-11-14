@@ -12,6 +12,9 @@ public sealed class NativeTupleReturnTests
         { "def many(value): return value,2,3,4,5,6,7,8\nfor unused in range(2):\n a,b,c,d,e,f,g,h=many([])\nprint(a,b,c,d,e,f,g,h)", "[] 2 3 4 5 6 7 8\n" },
         { "def first(a,b,c,d,e,f,g,h): return (a,)\npayload=[]\nkept,=first(payload,2,3,4,5,6,7,8)\nprint(kept is payload)", "True\n" },
         { "def pair(): return 1,2\na,b=kept=pair()\nfirst,*rest=pair()\nprint(type(kept).__name__,kept,a,b,first,rest)", "tuple (1, 2) 1 2 1 [2]\n" },
+        { "def wide(value,shared=[]):\n a0=a1=a2=a3=a4=a5=a6=a7=value\n b0=b1=b2=b3=b4=b5=b6=b7=shared\n return a7,b7\npayload=[]\na,b=wide(payload)\nc,d=wide(payload)\nb.append('kept')\nprint(a is payload,a is c,b is d,d)", "True True True ['kept']\n" },
+        { "def wide(value):\n a0=a1=a2=a3=a4=a5=a6=a7=value\n b0=b1=b2=b3=b4=b5=b6=b7=value\n return len(a7),b7\nbox=[None,None]\npayload=[]\nindex,box[index]=wide(payload)\nprint(index,box[0] is payload,box[1])", "0 True None\n" },
+        { "def wide(value):\n a0=a1=a2=a3=a4=a5=a6=a7=value\n b0=b1=b2=b3=b4=b5=b6=b7=value\n return a7,b7,value\na,b='old-a','old-b'\ntry: a,b=wide([])\nexcept ValueError: print(a,b)", "old-a old-b\n" },
     };
 
     [Theory]
@@ -39,8 +42,10 @@ public sealed class NativeTupleReturnTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
-    [Fact]
-    public async Task PartiallyExecutedTupleProducerTransfersOnceThroughActualIo()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task PartiallyExecutedTupleProducerTransfersOnceThroughActualIo(bool wide)
     {
         const string source = """
             def read_tail():
@@ -52,7 +57,8 @@ public sealed class NativeTupleReturnTests
             return first,second
             """;
         var budget = new LythonMemoryBudget(1024 * 1024);
-        using (var script = new LythonEngine().Compile(source, budget))
+        var program = wide ? source.Replace("def pair(value):", "def pair(value):\n    a0=a1=a2=a3=a4=a5=a6=a7=value\n    b0=b1=b2=b3=b4=b5=b6=b7=value") : source;
+        using (var script = new LythonEngine().Compile(program, budget))
         {
             Assert.True(script.IsValid, string.Join("; ", script.Diagnostics));
             var baseline = budget.ReservedBytes;

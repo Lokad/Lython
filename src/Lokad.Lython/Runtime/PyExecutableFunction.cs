@@ -112,16 +112,17 @@ internal sealed class PyExecutableFunction : PyFunctionBase
 
     internal override bool TryStartBoundInvocation(in BoundCallArguments bound, LythonSourceSpan span,
         out object result, out LythonRuntime.ExecutionContext? frame)
-        => TryStartBoundInvocation(bound, span, false, out result, out frame);
+        => TryStartBoundInvocation(bound, span, false, default, out _, out result, out frame);
 
     internal bool TryStartBoundInvocation(in BoundCallArguments bound, LythonSourceSpan span, bool consumedByIteration,
-        out object result, out LythonRuntime.ExecutionContext? frame)
+        Span<object> unpackedReturn, out bool unpacked, out object result, out LythonRuntime.ExecutionContext? frame)
     {
+        unpacked = false;
         result = PyNone.Instance;
         frame = null;
         if (!CanRunNativePrefix) return false;
         StartInline(bound.Values.AsSpan(0, _codeObject.ValueStorageCapacity),
-            bound.Assigned, bound, span, consumedByIteration, default, out _, out result, out frame);
+            bound.Assigned, bound, span, consumedByIteration, unpackedReturn, out unpacked, out result, out frame);
         return true;
     }
 

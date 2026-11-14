@@ -357,6 +357,14 @@ bind once, local initializers run once, and returned tuples/lists remain ordinar
 Python values. There is no separate native expression graph or whole-body type
 proof. Each operation checks its actual operands after earlier effects and admission.
 
+Eligible tuple returns consumed by immediate exact unpacking can place their
+elements directly in the caller's admitted operands, including helpers using larger
+bound storage. Eager tuple admission and conservative element funding remain;
+target stores follow completed child cleanup and observe cancellation/refusal.
+An incomplete prefix transfers through the existing frame without retaining a
+borrowed return span. Escaping tuples, starred/mismatched unpacking and dynamic
+protocols keep ordinary Python values and behavior.
+
 Adjacent exact integer operations can retain one unpublished temporary in a signed
 64-bit accumulator, following the existing executable instructions. Only the final
 value is boxed at ordinary publication. Overflow, other operands and protocols

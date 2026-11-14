@@ -39,19 +39,7 @@ internal sealed partial class LythonRuntime
                     callEntered = true;
                     scope.CheckExecution(call.CallSpan);
                     var arguments = execution.Stack.Slice(start + call.ArgumentOffset, call.ArgumentCount).Span;
-                    // Unrelated owned slots can share these physical positions
-                    // at other program points. Inspect only this bounded call's
-                    // actual inputs; cleanup must finish before unpack publishes.
-                    var unpackedCount = call.UnpackedReturnCount != 0
-                        && call.ArgumentCount <= NativeValueCapacity
-                        && execution.Stack.CanRetireWithoutCleanup(start) ? call.UnpackedReturnCount : 0;
-                    var originalExtent = execution.Stack.LiveExtent;
-                    Span<object> unpackedReturn = unpackedCount == 0 ? default
-                        : execution.Stack.Values.AsSpan(start, unpackedCount);
-                    // Track every output reference before the callee can write,
-                    // so failure unwinds even a wider-than-input tuple result.
-                    if (unpackedCount != 0)
-                        execution.Stack.RestoreNativeExtent(Math.Max(originalExtent, start + unpackedCount));
+                    var unpackedReturn = PrepareUnpackedCallReturn(ref execution, call, start, out var originalExtent);
                     function.StartNativeCall(call, arguments, functionReceiver, scope, call.CallSpan,
                         CallResultConsumedByIteration(in execution, call), borrow, unpackedReturn,
                         out var unpacked, out var value, out var frame);
@@ -76,14 +64,7 @@ internal sealed partial class LythonRuntime
                     callEntered = false;
                     if (unpacked)
                     {
-                        ref readonly var unpack = ref execution.Code.Instructions[execution.InstructionIndex + 1];
-                        scope.CheckExecution(unpack.Span);
-                        // All call inputs were proved free of private cleanup.
-                        // The final operands already occupy the caller's admitted
-                        // array; reverse them for the existing target stores.
-                        execution.Stack.RetireTo(start + unpackedCount);
-                        unpackedReturn.Reverse();
-                        execution.InstructionIndex++;
+                        CompleteUnpackedCallReturn(ref execution, scope, start, unpackedReturn.Length);
                     }
                     else PublishInstructionResult(ref execution, invocation, execution.Code.Instructions[execution.InstructionIndex], value);
                     return true;
@@ -166,6 +147,31 @@ internal sealed partial class LythonRuntime
                 return true;
             }
             catch { execution.Stack.RetireTo(start); throw; }
+        }
+
+        private static Span<object> PrepareUnpackedCallReturn(ref ExecutableWorkState execution,
+            ExecutableCallSite call, int start, out int originalExtent)
+        {
+            originalExtent = execution.Stack.LiveExtent;
+            // Eligibility depends on these actual input values, not ownership
+            // metadata for unrelated users of the same physical slots.
+            if (call.UnpackedReturnCount == 0 || call.ArgumentCount > NativeValueCapacity
+                || !execution.Stack.CanRetireWithoutCleanup(start)) return default;
+            var returned = execution.Stack.Values.AsSpan(start, call.UnpackedReturnCount);
+            // Track every reference before the callee writes, including results
+            // wider than the inputs. Nothing reaches guest targets before cleanup.
+            execution.Stack.RestoreNativeExtent(Math.Max(originalExtent, start + returned.Length));
+            return returned;
+        }
+
+        private static void CompleteUnpackedCallReturn(ref ExecutableWorkState execution,
+            ExecutionContext scope, int start, int count)
+        {
+            ref readonly var unpack = ref execution.Code.Instructions[execution.InstructionIndex + 1];
+            scope.CheckExecution(unpack.Span);
+            execution.Stack.RetireTo(start + count);
+            execution.Stack.Values.AsSpan(start, count).Reverse();
+            execution.InstructionIndex++;
         }
 
         internal static void AbortPreparedNativeCall(ExecutionContext frame, MemoryGovernor storageOwner)

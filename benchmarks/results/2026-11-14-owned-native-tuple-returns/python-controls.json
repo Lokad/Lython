@@ -1,0 +1,79 @@
+{
+  "version": "Python 3.13.2",
+  "isolated": true,
+  "allNineMatch": true,
+  "cases": [
+    {
+      "source": "def pair(value,shared=[]): return value,shared\npayload=[]\na,b=pair(payload)\nc,d=pair(payload)\nb.append('kept')\nprint(a is payload,a is c,b is d,d)",
+      "sourceSHA256": "e51e075d9c8874db782442a11c019b251eed72418ff822791b92a7751c3d02d4",
+      "expected": "True True True ['kept']\n",
+      "stdout": "True True True ['kept']\n",
+      "stderr": "",
+      "exitCode": 0
+    },
+    {
+      "source": "def pair(): return 1,9\nbox=[0,0]\nindex,box[index]=pair()\nprint(index,box)",
+      "sourceSHA256": "5901b6b13714d5bb001d262690a32c1fc8c0d99b5fecfb2bca866da4140a697b",
+      "expected": "1 [0, 9]\n",
+      "stdout": "1 [0, 9]\n",
+      "stderr": "",
+      "exitCode": 0
+    },
+    {
+      "source": "def pair(value): return value,value\nfor unused in range(2):\n a,b=pair([])\nprint(a is b)",
+      "sourceSHA256": "f923a85ef7ac07f2a293853a6e4c4c946c2658bbae1828fd7c4aa8800124bd4f",
+      "expected": "True\n",
+      "stdout": "True\n",
+      "stderr": "",
+      "exitCode": 0
+    },
+    {
+      "source": "def many(value): return value,2,3,4,5,6,7,8\nfor unused in range(2):\n a,b,c,d,e,f,g,h=many([])\nprint(a,b,c,d,e,f,g,h)",
+      "sourceSHA256": "e026df8abd20bd5b694d92ad2637c09f72c37cc0f787a1a6f651c11e0047e6f3",
+      "expected": "[] 2 3 4 5 6 7 8\n",
+      "stdout": "[] 2 3 4 5 6 7 8\n",
+      "stderr": "",
+      "exitCode": 0
+    },
+    {
+      "source": "def first(a,b,c,d,e,f,g,h): return (a,)\npayload=[]\nkept,=first(payload,2,3,4,5,6,7,8)\nprint(kept is payload)",
+      "sourceSHA256": "3cbe29086b410ba026db20bb3b79e8a47893801ceb90fd4b5f0b2806c4fa9a63",
+      "expected": "True\n",
+      "stdout": "True\n",
+      "stderr": "",
+      "exitCode": 0
+    },
+    {
+      "source": "def pair(): return 1,2\na,b=kept=pair()\nfirst,*rest=pair()\nprint(type(kept).__name__,kept,a,b,first,rest)",
+      "sourceSHA256": "ced1b0347a40dac2660c12861c814f02da1514548efef0d1def89c00e9ef89cb",
+      "expected": "tuple (1, 2) 1 2 1 [2]\n",
+      "stdout": "tuple (1, 2) 1 2 1 [2]\n",
+      "stderr": "",
+      "exitCode": 0
+    },
+    {
+      "source": "def wide(value,shared=[]):\n a0=a1=a2=a3=a4=a5=a6=a7=value\n b0=b1=b2=b3=b4=b5=b6=b7=shared\n return a7,b7\npayload=[]\na,b=wide(payload)\nc,d=wide(payload)\nb.append('kept')\nprint(a is payload,a is c,b is d,d)",
+      "sourceSHA256": "a3f697d40c6a6d03922b8f78e19f679663822d00a3672c9d3218ec23e022a512",
+      "expected": "True True True ['kept']\n",
+      "stdout": "True True True ['kept']\n",
+      "stderr": "",
+      "exitCode": 0
+    },
+    {
+      "source": "def wide(value):\n a0=a1=a2=a3=a4=a5=a6=a7=value\n b0=b1=b2=b3=b4=b5=b6=b7=value\n return len(a7),b7\nbox=[None,None]\npayload=[]\nindex,box[index]=wide(payload)\nprint(index,box[0] is payload,box[1])",
+      "sourceSHA256": "408eac10f9722a9d853c0e4cdfe7ac01671223e4c33980add2db14fb4b9c46f6",
+      "expected": "0 True None\n",
+      "stdout": "0 True None\n",
+      "stderr": "",
+      "exitCode": 0
+    },
+    {
+      "source": "def wide(value):\n a0=a1=a2=a3=a4=a5=a6=a7=value\n b0=b1=b2=b3=b4=b5=b6=b7=value\n return a7,b7,value\na,b='old-a','old-b'\ntry: a,b=wide([])\nexcept ValueError: print(a,b)",
+      "sourceSHA256": "90c60ab85dd173d7037f29a7c9972b14f6c18ac051f2893aadcb0d620ccfac7f",
+      "expected": "old-a old-b\n",
+      "stdout": "old-a old-b\n",
+      "stderr": "",
+      "exitCode": 0
+    }
+  ]
+}

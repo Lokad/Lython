@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Reuse the native direct tuple-return convention for larger helpers running in
+  admitted bound storage. Immediate exact unpacking shares caller publication and
+  retirement, preserving eager admission, aliases and cleanup before target stores.
+
 - Store immutable literal tuples with compiled programs rather than rebuilding
   them on each evaluation. Preserve dynamic/mutable/starred construction, fund
   derived slices and concatenation through the active execution, and validate

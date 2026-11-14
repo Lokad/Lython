@@ -1,0 +1,80 @@
+{
+  "status": "Retained implementation after focused correctness/ownership and allocation checks; CPU comparison and full delivery pending, not fully qualified",
+  "source": "9cfb7d5b41c02fb0ebe503d51f9ad21619b8faddb73691c7331df4c76c464030",
+  "reference": "72c9a1e5787eeaaaceae43abc521be95b2b0a1a6ead5e30f9986e42bf6ac69ee",
+  "sourceFiles": 581,
+  "changedProductionInputs": [
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs",
+    "src/Lokad.Lython/Runtime/PyExecutableFunction.cs"
+  ],
+  "focusedChecks": "10internal/181public per actual11/10,382total;9isolated CPython3.13.2 controls",
+  "allocation": [
+    {
+      "case": "scripts.csv-invoice.large",
+      "processMedians": {
+        "reference": [
+          5245606,
+          5245606
+        ],
+        "candidate": [
+          5245602.125,
+          5245609.5
+        ]
+      },
+      "allocatedByteChangePercent": [
+        -7.387135061431849e-05,
+        -7.387135061431849e-05,
+        6.672251022799003e-05,
+        6.672251022799003e-05
+      ]
+    },
+    {
+      "case": "scripts.csv-fulfillment.large",
+      "processMedians": {
+        "reference": [
+          6775007.875,
+          6775007.875
+        ],
+        "candidate": [
+          6316237.625,
+          6316237.625
+        ]
+      },
+      "allocatedByteChangePercent": [
+        -6.771508734224163,
+        -6.771508734224163,
+        -6.771508734224163,
+        -6.771508734224163
+      ]
+    },
+    {
+      "case": "scripts.text-summary-helpers.nonlocal-counter.large",
+      "processMedians": {
+        "reference": [
+          447869.75,
+          447869.75
+        ],
+        "candidate": [
+          447869.75,
+          447869.75
+        ]
+      },
+      "allocatedByteChangePercent": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    }
+  ],
+  "cpuAndElapsedImprovementMeasured": false,
+  "uncertainty": "Complete invoice is effectively flat: the source already used the small direct-return entry. Fulfillment eliminates its owned wide-return tuple. No percentage of CPU is inferred from allocation.",
+  "removed": "Owned large native helpers no longer construct the unobservable dynamic tuple before immediate exact unpack. Small and owned callers share return-span preparation/publication/retirement; old empty-span-only owned entry is replaced.",
+  "retained": "Existing eager tuple admission, compiler eligibility, bound arrays, caller slots and native continuation. No new frame, owner, arena, policy, result protocol or public API.",
+  "contract": "Targets publish after child cleanup. Failure tracks/retires written output references; suspension keeps ordinary values and no borrowed return span. Exact mismatched/starred and escaping tuples retain general semantics.",
+  "next": "One bounded quiet-VM source-pair warm/fresh comparison with unchanged controls, preserve adverse results; batch full platform/stress/installed consumers at a coherent delivery boundary. Current CPython guide remains exact previously qualified7e2/frozen72.",
+  "toolingCorrection": "Initial private Python-control extractor also selected an unrelated two-string expected-value array; bound extraction to the MemberData section. Original script retained. No runtime/assertion/measurement condition changed.",
+  "publicationHeld": true,
+  "performanceObjectiveStillActive": true
+}
