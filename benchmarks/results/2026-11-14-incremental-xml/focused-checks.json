@@ -1,0 +1,26 @@
+[
+  {
+    "assembly": "Lokad.Lython.Tests",
+    "target": "net11.0",
+    "returncode": 0,
+    "log": "Lokad.Lython.Tests-net11.0.log"
+  },
+  {
+    "assembly": "Lokad.Lython.PublicApi.Tests",
+    "target": "net11.0",
+    "returncode": 0,
+    "log": "Lokad.Lython.PublicApi.Tests-net11.0.log"
+  },
+  {
+    "assembly": "Lokad.Lython.Tests",
+    "target": "net10.0",
+    "returncode": 0,
+    "log": "Lokad.Lython.Tests-net10.0.log"
+  },
+  {
+    "assembly": "Lokad.Lython.PublicApi.Tests",
+    "target": "net10.0",
+    "returncode": 0,
+    "log": "Lokad.Lython.PublicApi.Tests-net10.0.log"
+  }
+]

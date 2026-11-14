@@ -7412,3 +7412,18 @@ wider CPU; explicit warm mixed and fresh has small cost. Retain consolidation
 with explicit CPU debt, no speedup/tail claim or unchanged retiming. All users
 join, fixtures unmount and persistent archive SHA verifies; no evidence retirement
 or floor change. Batch full R333/R334 delivery next; broader objective stays open.
+
+## R335 — incremental XML and one construction loop
+
+[Retained capability/source pair](results/2026-11-14-incremental-xml/README.md)
+adds mediated/borrowed iterparse start/end/root/close and replaces the separate
+fromstring build loop. Existing transport/cleanup/ownership serve actual async
+reads. Published aliases stay funded; conservative reader/graph accounting does
+not promise constant-memory arbitrary scans.35internal/106public XML cases pass
+per actual11/10. Fragmented encoding controls uncover/fix a prototype mismatch.
+B706three jobs finish140.181s/all gates: early-exit whole scripts drop from25–26ms
+to0.081ms warm with a deliberately different script algorithm; unchanged
+whole-document source improves3.21–4.13%elapsed with wider CPU support. No external
+speedup, allocation percentage or general runtime claim. Original setup failures,
+all controls/raw points survive. Full delivery43536449801runs separately;
+publication held and broader text/search performance objective remains open.

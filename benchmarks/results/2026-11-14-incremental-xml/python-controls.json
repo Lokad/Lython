@@ -1,0 +1,29 @@
+{
+  "reference": "CPython3.13.2 isolated local",
+  "cases": [
+    {
+      "name": "events-root-and-borrowed-reader",
+      "sourceSHA256": "7134ade91cc39abf74c5761e4513e192ea88e9768a5118eb54955a90ee4c1b7e",
+      "returncode": 0,
+      "matches": true
+    },
+    {
+      "name": "default-empty-events-and-writable-root",
+      "sourceSHA256": "dcbdeffa00b66964a47dea5403ee68a37b735a8a7a6c971e44280711193838aa",
+      "returncode": 0,
+      "matches": true
+    },
+    {
+      "name": "fragmented-input-final-text-and-namespaces",
+      "sourceSHA256": "9f6df1bd6ea8e654aa2b949f6b1176a3bfe2c4f0cacf6d36b4824099f7728ff4",
+      "returncode": 0,
+      "matches": true
+    },
+    {
+      "name": "errors-stay-lazy-and-close-is-idempotent",
+      "sourceSHA256": "d9feb80c184bb3bfd1b01311d67a6078f0ef47e1edcfe0b39ad81a9d6398d5e5",
+      "returncode": 0,
+      "matches": true
+    }
+  ]
+}

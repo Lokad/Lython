@@ -1,0 +1,24 @@
+{
+  "reference": "CPython3.13.2 isolated",
+  "checks": [
+    {
+      "case": "scripts.xml-early-exit.whole",
+      "sourceSHA256": "f2ef64761f4ec860acbb48d21248bf1fdd8da691779362c783d47d7f7ba40933",
+      "fixtureSHA256": "3c0f0ca23e5e0df0bdc64238969e74b6cdf469e026b719ff08cf37514bac1e1b",
+      "inputBytes": 622640,
+      "stdout": "kept\n",
+      "exactFilesAndUnchangedInput": true
+    },
+    {
+      "case": "scripts.xml-early-exit.incremental",
+      "sourceSHA256": "72a93e61117022e5f1cfa82ad9bb4f0da522ddad20d21da185f017d2c8fd1bd0",
+      "fixtureSHA256": "3c0f0ca23e5e0df0bdc64238969e74b6cdf469e026b719ff08cf37514bac1e1b",
+      "inputBytes": 622640,
+      "stdout": "kept\n",
+      "exactFilesAndUnchangedInput": true
+    }
+  ],
+  "unchangedControl": "scripts.xml-settings.large",
+  "sourceAndScriptDifferIntentionally": true,
+  "timingNotMeasured": true
+}

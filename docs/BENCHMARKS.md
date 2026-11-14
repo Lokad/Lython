@@ -93,6 +93,11 @@ CPython remains the external baseline. Separate source-pair experiments establis
 - Qualified XML settings selection removes intermediate match lists and UTF16 tag
   conversion: allocation falls44.83%, with elapsed about35.6% lower in confirmation.
   This is a source-specific comparison; [search-control uncertainty remains](../benchmarks/results/2026-11-13-xml-selection/README.md).
+- Incremental XML permits early exit before constructing unused records. One
+  622,640 B first-record lookup takes about0.081ms instead of25–26ms after whole-tree
+  construction. [Both script algorithm and runtime differ](../benchmarks/results/2026-11-14-incremental-xml/README.md);
+  this is not an interpreter or CPython speedup. Whole-document controls and
+  conservative streaming-memory limitations remain explicit.
 
 [Experimental history and source-specific evidence](../benchmarks/EXPERIMENTS.md)
 preserve controlled comparisons, rejected designs, adverse results and qualification.
