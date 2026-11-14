@@ -1,0 +1,12 @@
+{
+  "date": "2026-11-14",
+  "state": "withdraw both prototype forms; retain independent retirement fixture",
+  "reference": "qualified009d236a/frozen8ae1ae5f",
+  "candidate": "4311a05351160129dc52edcec033c1c511a3f3a7f7cf63a64f618a6f6725acae",
+  "coarseForm": "Too much transient headroom:20,002B/two words estimates1,360,136B and fails existing1MiB working-set case before effects.7failed/43passed; original source/core/checks retained.",
+  "refinedForm": "Exact aggregate preflight plus second consuming scan removes private inventory.127internal/162public per11/10 pass,578total. Allocation effectively flat (about+8B/text job). B719captured elapsed+3.39..11.19%/CPU+2.86..10.67%; direct elapsed+7.97..17.52%/CPU+7.59..17.78%; fulfillment control elapsed-0.86..+1.43%/CPU-0.99..+0.89%. Process spreads remain, but every affected source pairing is adverse with CPU support.",
+  "measurementFailure": "B718 unexplained stop/restart after60s, no complete jobs. Original service configuration/journal/partial archive preserved; users joined and RAM mount removed. This is measurement uncertainty, not a failed runtime design. B719 same-bit fresh correction completed224.83s/300s with all gates.",
+  "reason": "Repeated original-byte scanning costs more than stored ranges on these complete scripts; no useful allocation reduction offsets it. Keep the measured fast baseline. This does not forbid a materially different design.",
+  "retained": "Retirement regression ends idle reuse before arming a refund callback, exercising actual cleanup independently of current buffer size. It passes exact baseline8ae and refined4311; semantic/alias/refusal/cleanup assertions remain.",
+  "next": "Restore exact baseline, force nonincremental actual11/10 builds and check the retained fixture. Select a different complete representation instead of another range/casing rewrite. Publication held; performance objective active."
+}

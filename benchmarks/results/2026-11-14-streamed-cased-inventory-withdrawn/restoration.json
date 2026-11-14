@@ -1,0 +1,10 @@
+{
+  "restoredAll581InputsExactly": true,
+  "productionSource": "009d236a",
+  "referenceCoreSHA256": "8ae1ae5fdf7b4a30526a2472044c1c5996ea41cf8733d94dc717f452417b7238",
+  "restoredSourceSHA256": "0e2a5c06ca9c66a0a40accc531127be86fbae5dd9e059ba45066bcdc19e21b80",
+  "withdrawnSourceSHA256": "cce09b3d7d75a4dcec04f3f52e28a50e93ba728d8ef0f243c6e9a4acb50a2f5c",
+  "productionDiffEmpty": true,
+  "retirementTestRetained": true,
+  "nonincrementalRebuildAndFocusedValidationPending": true
+}

@@ -1,0 +1,8 @@
+{
+  "baselineCoreSHA256": "8ae1ae5fdf7b4a30526a2472044c1c5996ea41cf8733d94dc717f452417b7238",
+  "candidateTestOutputCoreSHA256": "4311a05351160129dc52edcec033c1c511a3f3a7f7cf63a64f618a6f6725acae",
+  "independentReentrantRetirementCasePassed": true,
+  "originalTestOutputRestoredExactly": true,
+  "productionSourceUnchanged": true,
+  "onlyTestFixtureEndsReuseBeforeArmingActualRefund": true
+}

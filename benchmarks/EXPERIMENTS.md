@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[R348 private cased-word inventory](results/2026-11-14-streamed-cased-inventory-withdrawn/README.md)
+is withdrawn. Coarse admission rejects reasonable sparse text; exact-preflight
+refinement passes578focused cases but adds a second source scan. Allocation is
+flat while captured text elapsed worsens3–11% and direct text8–18%, with CPU
+support and nearly neutral CSV control. B718interruption remains unresolved;
+B719same-bit correction completes all gates. Exact qualified009d source is restored;
+the independent retirement regression remains. No broader goal completion claimed.
+
 [R347 iteration CPython checkpoint](results/2026-11-14-iteration-cpython-checkpoint/README.md)
 refreshes committed009d236a/frozen8ae1ae5f against stock3.13.16 in360.55s.
 Invoice warm1.26–1.31×, compile1.08–1.10×, fresh1.21–1.24×; text1.48–1.59×,

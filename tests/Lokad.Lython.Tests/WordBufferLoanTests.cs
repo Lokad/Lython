@@ -121,6 +121,9 @@ public sealed class WordBufferLoanTests
             try
             {
                 values.PublishValue(0, 1, PyStringOps.PrepareCasedWhitespaceIteration(large, false, context, Span));
+                // End idle reuse so actual retirement must refund this active
+                // loan, independently of its current range-buffer capacity.
+                governor.EndWorkspaceReuse();
                 admission.AfterShrink = _ =>
                 {
                     admission.AfterShrink = null;
