@@ -20,7 +20,9 @@ stable Python identities on read. Whole captured-text allocation falls18.00%;
 frequent-read allocation is flat (+8B). CPU/elapsed improve in B720, but unchanged
 direct-text controls also improve with process variation, so attribution stays
 uncertain. Existing compiler preparation/arithmetic are shared; no new owner or
-execution engine.1,826focused actual11/10 cases pass; full delivery follows.
+execution engine.1,826focused actual11/10 cases pass;
+[full43571864663 delivery](results/2026-11-14-captured-scalar-storage/delivery/README.md)
+also passes Windows/Ubuntu actual11/10, original stress and installed consumers.
 
 [R348 private cased-word inventory](results/2026-11-14-streamed-cased-inventory-withdrawn/README.md)
 is withdrawn. Coarse admission rejects reasonable sparse text; exact-preflight

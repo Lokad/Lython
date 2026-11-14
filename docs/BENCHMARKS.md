@@ -132,6 +132,8 @@ CPython remains the external baseline. Separate source-pair experiments establis
   4.8–6.9%lower, but unchanged direct-text controls also improve with5.58%process
   spread. CPU attribution remains uncertain. [Evidence and delivery status](../benchmarks/results/2026-11-14-captured-scalar-storage/README.md)
   separate this source pair from the CPython rows and frequent-read limitations.
+  Full Windows/Ubuntu .NET11/10, original stress and installed-consumer
+  [qualification passes](../benchmarks/results/2026-11-14-captured-scalar-storage/delivery/README.md).
 
 [Experimental history and source-specific evidence](../benchmarks/EXPERIMENTS.md)
 preserve controlled comparisons, rejected designs, adverse results and qualification.

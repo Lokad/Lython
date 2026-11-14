@@ -61,3 +61,6 @@ still measures009d, not this candidate. Publication/tagging stay held.
 
 [Decision](decision.json),[timing](timing-summary.json),
 [all sources/cores/tools/checks/raw observations](sources-checks-and-observations.tar.xz).
+
+Full source qualification subsequently [passes43571864663](delivery/README.md).
+Original collection-time pending status above is retained.

@@ -1,0 +1,17 @@
+{
+  "head": "e235b18b7e065e3e343d9f25dd0663863e902c84",
+  "coreSHA256": "71ba421cf40fe86c7a484278ec069d69e380e10b4a773fe59aa7ec1a51b62c33",
+  "productionFiles": 581,
+  "allFrozenSourcesMatchCommitWithExplicitNewlineNormalization": true,
+  "runId": "43571864663",
+  "url": "https://github.com/Lokad/Lython/actions/runs/43571864663",
+  "dispatchedUTC": "2026-11-14T07:36:04.214494+00:00",
+  "fullQualificationPending": true,
+  "publicationHeld": true,
+  "focusedActual11And10Passed": true,
+  "expectedQualification": [
+    "Windows and Ubuntu actual11/10",
+    "original stress actual11/10",
+    "installed Release package consumers"
+  ]
+}
