@@ -1,0 +1,19 @@
+{
+  "complete": true,
+  "python": "Isolated stock CPython3.13.2",
+  "cases": [
+    {
+      "asynchronous": false,
+      "cases": 16,
+      "matched": true,
+      "exitCode": 0
+    },
+    {
+      "asynchronous": true,
+      "cases": 16,
+      "matched": true,
+      "exitCode": 0
+    }
+  ],
+  "coreSHA256": "6c35b043f63d43368e9a296cc3f58dfc7b003c4a29ba708fa059473e3f0cb171"
+}

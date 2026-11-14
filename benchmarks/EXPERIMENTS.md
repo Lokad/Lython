@@ -7695,3 +7695,16 @@ Original638CSVallocation+4.47%, working-charge Commit failure and all snapshots/
 corrected2170checks/20Python controls survive. Next bounded primitive storage
 design must preserve direct object[]calls and ownership without private heap
 cells/pools; full performance objective remains active, publication held.
+
+## R359 — native primitive working storage, active refinement
+
+[Initial complete comparison](results/2026-11-14-native-primitive-storage/README.md)
+at `6c35b043` / `cbb254be` removes private heap cells/grants and defers machine
+boxes without changing object-array calls or ordinary frames. CSV while validation
+is approximately 22–24% faster warm/compile-to-result, with CPU support and 40.87%
+less allocation. Short/zero helpers regress 6.4–9.6%, observed helpers 0.8–6.0%,
+JSON 2.1–3.0%; text remains variable. All eight B734 jobs complete in 303.156 s,
+2,416 focused actual .NET 11/10 checks and 32 Python controls pass. Source-backed
+bounded refinement removes duplicated publication and unused storage for helpers
+without integer writes. All original evidence survives; no final retention/full
+qualification or universal speedup claim. Publication held; broader roadmap active.

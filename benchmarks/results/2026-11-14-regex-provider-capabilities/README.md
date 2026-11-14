@@ -29,3 +29,10 @@ or normal dependency/pin change follows from unrelated producer improvements.
 Read-only[e8b20aa5/dev89freeze source inspection](source-update-e8b20aa5.json)
 again finds the entire integration project unchanged fromfbf58099. The three
 precise gaps remain; no normal pin change or unchanged qualification follows.
+
+Read-only [70ea16b2/dev90 source inspection](source-update-70ea16b2.json) finds
+coordinate preparation/publication changes in nine integration files. The three
+API entry files remain byte-identical; the precise ownership, UTF8 group-name
+enumeration and cursor-construction cancellation gaps remain. This is not a
+package, semantics, interruption, performance or safety qualification. Independent
+Lython development and adapter-local bridges remain available.

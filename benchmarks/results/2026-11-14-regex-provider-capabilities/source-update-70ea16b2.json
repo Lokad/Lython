@@ -1,0 +1,38 @@
+{
+  "dateUTC": "2026-11-14",
+  "sourceHead": "70ea16b20f7da5d99865c50fdae4cceaff0a68e2",
+  "baseline": "e8b20aa51f5c8106a57d5302f1b544320a7c8ec3",
+  "integrationFiles": {
+    "Utf8PythonRegex.cs": "70177e8c5f8d66ff4b46489f655a69c9e3bcb698bac70f2bc979b0c67f608749",
+    "Utf8PythonRegex.Cursor.cs": "065369aef137589d4f553ddeb3acb4ca4b7d6d9279812ca5ee093bceae20edbb",
+    "Utf8PythonRegex.Compilation.cs": "cf61c2d29b822c4a651d1e1dd88d0035971b9995ed65f9080039e12966818655"
+  },
+  "hashBoundary": "Git blob bytes, not earlier Windows CRLF worktree hashes; compared like-for-like with baseline Git blobs.",
+  "baselineIntegrationFiles": {
+    "Utf8PythonRegex.cs": "70177e8c5f8d66ff4b46489f655a69c9e3bcb698bac70f2bc979b0c67f608749",
+    "Utf8PythonRegex.Cursor.cs": "065369aef137589d4f553ddeb3acb4ca4b7d6d9279812ca5ee093bceae20edbb",
+    "Utf8PythonRegex.Compilation.cs": "cf61c2d29b822c4a651d1e1dd88d0035971b9995ed65f9080039e12966818655"
+  },
+  "changedIntegrationFiles": [
+    "src/Lokad.Utf8Regex.PythonRe/PythonReScalarMatchCursor.cs",
+    "src/Lokad.Utf8Regex.PythonRe/PythonReScalarMatchState.Coordinates.cs",
+    "src/Lokad.Utf8Regex.PythonRe/PythonReScalarMatchState.cs",
+    "src/Lokad.Utf8Regex.PythonRe/README.md",
+    "src/Lokad.Utf8Regex.PythonRe/Utf8PythonMatchCursor.Coordinates.cs",
+    "src/Lokad.Utf8Regex.PythonRe/Utf8PythonMatchCursor.cs",
+    "src/Lokad.Utf8Regex.PythonRe/Utf8PythonRegex.OneShotText.cs",
+    "src/Lokad.Utf8Regex.PythonRe/Utf8PythonRegex.ScalarOperations.cs",
+    "src/Lokad.Utf8Regex.PythonRe/Utf8PythonRegex.Substitution.cs"
+  ],
+  "integrationProjectSourceDiffEmpty": false,
+  "changedPublicDeclarationLines": [],
+  "remainingIntegrationGaps": [
+    "Separate one-match working and escaping-result ownership, instead of using the compiled program account for temporary/result staging",
+    "UTF8 named-group enumeration/copy; GetGroupNames still exposes CLR strings",
+    "Token-independent cursor construction with cancellable preparation; current-token cursor overloads retain construction tokens, while token-free overloads cannot cancel preparation"
+  ],
+  "qualification": "Read-only source/API comparison. Coordinate preparation/publication implementations changed. No producer build/package/source equivalence, semantics, interruption latency, performance or managed-safety qualification. Completed dev80 qualification not repeated.",
+  "coreDependencyChanged": false,
+  "normalAdapterPinChanged": false,
+  "affectedFinalAdapterQualificationOnly": true
+}
