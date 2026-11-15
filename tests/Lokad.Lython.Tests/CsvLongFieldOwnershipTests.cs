@@ -1,4 +1,5 @@
 using System.Text;
+using System.Runtime.InteropServices;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
 using Lokad.Lython.Tests.Harness;
@@ -48,6 +49,46 @@ public sealed class CsvLongFieldOwnershipTests
             }
             context.State.CloseResources();
             Assert.Equal(b, saved.AsString());
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Fact]
+    public void DiscardingPrivateFieldsKeepsRetainedBackingFunded()
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var owner = budget.CreateScope())
+        {
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = owner });
+            var left = new string('a', 8192);
+            var middle = new string('b', 12288) + "é😀";
+            var right = new string('c', 16384);
+            var source = new LythonRuntime.CsvRecordSource(
+                new PyList([PyString.FromString(left + "," + middle + "," + right + "\n")]),
+                Options, Span, context);
+            try
+            {
+                Assert.True(source.TryMoveNext(out var row));
+                var kept = Assert.IsType<PyString>(row[1]);
+                Assert.True(MemoryMarshal.TryGetArray(kept.Utf8Bytes, out var backing));
+                Assert.NotNull(backing.Array);
+                Assert.False(source.TryMoveNext(out _)); // Ends parser working storage.
+                for (var i = 0; i < row.Length; i++)
+                {
+                    if (i == 1) continue;
+                    var relinquished = row[i];
+                    row[i] = PyNone.Instance;
+                    context.MemoryGovernor.RefundUnpublishedValue(relinquished);
+                }
+                row[1] = PyNone.Instance;
+                source.ReleaseRecord(row);
+                // This applies to either independent fields or an immutable
+                // shared payload: the actual retained array must stay funded.
+                Assert.True(budget.ReservedBytes >= backing.Array.Length);
+                Assert.Equal(middle, kept.AsString());
+                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            }
+            finally { context.State.CloseResources(); }
         }
         Assert.Equal(0, budget.ReservedBytes);
     }

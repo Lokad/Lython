@@ -8127,3 +8127,17 @@ permanent ban. Preserve initial compile failure, all source/binary/control data.
 All585productionbytesrestore; forced actual11/10 builds plus285public/26internal
 each pass; tests unchanged. No VM/new full qualification, policy, dormant stub or
 publication. Qualified6164/43669461343cached; broader per-record roadmap continues.
+
+
+R379 [one final CSV payload initial checkpoint](results/2026-11-15-csv-final-payload/initial/README.md)
+is an active, uncommitted prototype716176a8 versus qualified6164. Replace long-field
+byte arrays with one admitted immutable row payload/existing windows; short fields
+stay inline and parser reset is consolidated.118internal/390public per actual11/10,
+24reference/candidate/CPythongoldenspass; new actual-backing funding test passes
+reference first. Existing complete metadata-heavy CSV fixture5120rows/400411B
+allocates−5.557%; ordinary invoice/fulfillment effectivelyflat. Allocation only,
+one process/image/five64runbatches/no forcedGC; includes I/O/reset/goldens/cleanup.
+CPU unmeasured, no retention/full-qualification claim. Preserve initial Windows
+console newline validation refusal/corrected StringIO capture, all source/core/
+raw/tool checks. All local users/fixtures close; no VM collection yet. Next bounded
+quiet warm/fresh pair with controls, then explicit decision. Publication held.

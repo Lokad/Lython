@@ -1,0 +1,11 @@
+{
+  "source": "Unchanged maintained csv-validated-records.py",
+  "purpose": "Complete metadata-heavy CSV aggregation with three long string columns, multiline quoted Unicode notes and ordinary numeric/filter paths. Source/fixture identical between core roles; data-specific diagnostic, not a gain claim for short-field CSV.",
+  "rows": 5120,
+  "inputBytes": 400411,
+  "expectedStdout": "3072\n",
+  "expectedReport": "kind,total\neurope / priority,7168\nnorth-america / standard,3072\n",
+  "independentExpectedTotals": "Manual3naccepted,Europe7n,North3n; separately verified isolatedCPython3.13.2",
+  "independentCPythonVersion": "Python 3.13.2",
+  "publicationHeld": true
+}
