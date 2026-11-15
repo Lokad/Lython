@@ -1,0 +1,11 @@
+{
+  "runId": "43765117358",
+  "head": "b06b859387db36f570da6f975192ad8610f40b41",
+  "runtimeCommit": "b06b859387db36f570da6f975192ad8610f40b41",
+  "frozenCore": "8afb146e835dcd2692150026e4beb6566b2a483349b2a8b5c24b5e6eba58e6ed",
+  "dispatchedUTC": "2026-11-15T21:41:56.816890+00:00",
+  "stress": true,
+  "publicationHeld": true,
+  "fullQualificationPending": true,
+  "doNotQueryBeforeUTC": "2026-11-15T21:45:56.816890+00:00"
+}

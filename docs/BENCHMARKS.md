@@ -23,7 +23,7 @@ complete embedding measurements, not isolated interpreter CPU. Spreads compare
 the two Lython/CPython process medians; IQRs and moving controls stay visible.
 
 **Report rows:b06b8593/frozen8afb146e**; [affected checkpoint](../benchmarks/results/2026-11-15-format-cpython-checkpoint/README.md)
-passes measurement/cleanup gates. Full runtime qualification is active at capture.
+passes measurement/cleanup gates. [Full runtime qualification passes](../benchmarks/results/2026-11-15-formatting-final-sink/delivery/README.md).
 Compilation is near parity; ordinary method formatting still costs about2×CPython.
 Fresh CPython samples are noisy (8.86%IQR); retain that uncertainty.
 
@@ -69,7 +69,7 @@ These source-pair results are separate from CPython and cannot be added together
 
 | Change / complete affected script | CPU/elapsed evidence | Allocation | Limits and exact evidence |
 | --- | --- | ---: | --- |
-| Final-output field sink / method-format report | Warm elapsed5.8–9.4%lower; compile-to-result7.8–9.0%lower, supporting CPU | −17.31% | Retained8afb/55ba; moving f-string/CSV controls and earlier conservative metadata denial remain. str.format now awaits hosted callbacks. [Source pair and limits](../benchmarks/results/2026-11-15-formatting-final-sink/README.md); full delivery qualification pending. |
+| Final-output field sink / method-format report | Warm elapsed5.8–9.4%lower; compile-to-result7.8–9.0%lower, supporting CPU | −17.31% | Retained8afb/55ba; moving f-string/CSV controls and earlier conservative metadata denial remain. str.format now awaits hosted callbacks. [Source pair and limits](../benchmarks/results/2026-11-15-formatting-final-sink/README.md); [Full delivery passes](../benchmarks/results/2026-11-15-formatting-final-sink/delivery/README.md). |
 | Fused cased preparation / direct and captured text | Direct elapsed4.0–7.7%lower/CPU2.6–7.9%; captured compile-to-result2.1–5.4%lower/CPU2.7–4.7% | Flat(+128Btext) | Retained0ed/9e; captured warm uncertain/earlier adverse, JSON widerCPU0–3.3%higher. Scratch4×/6×input can deny earlier. [Decision/all controls](../benchmarks/results/2026-11-15-fused-cased-preparation/confirmation/README.md). [Full qualification passes](../benchmarks/results/2026-11-15-fused-cased-preparation/delivery/README.md). |
 | Shared completed arithmetic / invoice | Elapsed2.3–3.8% lower / CPU2.1–3.3% | Flat | Retained43bce13a/9e89; fresh widerCPU+0.4–3.1% and original adverse/moving controls remain. [Source pair and confirmation](../benchmarks/results/2026-11-15-completed-arithmetic/confirmation/README.md). [Full delivery passes](../benchmarks/results/2026-11-15-completed-arithmetic/delivery/README.md); no isolated causal or universal gain. |
 | Final-slot integer tuples / invoice and fulfillment | Invoice elapsed 8.5–10.1% lower / CPU 6.4–10.8%; fulfillment elapsed 3.8–5.0% lower / CPU 2.7–4.6% | −8.56% / −5.32% | Retained 22e5b72c versus f304. Original text regressions and refined moving controls remain explicit; no universal gain. [Source pairs and limits](../benchmarks/results/2026-11-15-tuple-operand-prototype/refined/README.md). |

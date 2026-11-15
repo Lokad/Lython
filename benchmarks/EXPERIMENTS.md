@@ -8613,3 +8613,6 @@ verified before unmount, all users joined. No CPU speedup or production change.
 
 
 [R413 full delivery43758540157](results/2026-11-15-prepared-store-targets/delivery/README.md) passes2865f619/55ba4c8a on Windows/Ubuntu actual11/10,4,781internal/17,874public ordinary and original13/406stress each; installed Release consumers pass.16summaries/591frozen inputs verified. Terminal cached forever; publication held and broader performance objective remains active.
+
+
+[R416 full delivery43765117358](results/2026-11-15-formatting-final-sink/delivery/README.md) qualifies b06b8593/8afb146e: Windows/Ubuntu actual11/10 each4,781internal/17,882public ordinary, original13/406stress and installed Release consumers.16summaries/594frozen inputs verified. Terminal cached forever; publication held. Broader performance work continues.

@@ -41,3 +41,5 @@ current images/toolchains, canonical evidence and254/252MiB floors.
 [Raw](observations.tgz),[identity](identity.json),
 [procedure/inputs](procedure-and-inputs.tar.xz),[previous guide](prior-BENCHMARKS.md),
 [separate source-pair/semantic/ownership evidence](../2026-11-15-formatting-final-sink/README.md).
+
+[Subsequent full runtime qualification passes](../2026-11-15-formatting-final-sink/delivery/README.md).

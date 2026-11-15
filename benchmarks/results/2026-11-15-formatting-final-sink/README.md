@@ -74,3 +74,5 @@ migration conditions remain in the procedure; no runtime defect is inferred from
 [raw](observations.tgz),[source/binaries/procedures](source-checks-and-procedure.tar.xz).
 [R415 source gate](r415-source-decision.json) preserves the native-span/durable-frame
 tradeoff without another arena/controller prototype; it is not a permanent ban.
+
+[Full platform/stress/package qualification passes](delivery/README.md).

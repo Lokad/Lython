@@ -126,9 +126,11 @@
     }
   ],
   "retentionDecisionPending": false,
-  "CPythonRefreshed": false,
+  "CPythonRefreshed": true,
   "retained": true,
   "reason": "Whole output contract and ownership simplification; real hosted str.format callbacks;17.31%allocation and warm/fresh CPU/elapsed support. Control adversity remains explicit.",
-  "fullQualificationPending": true,
-  "compatibility": "str.format now awaits supported hosted callbacks in RunAsync; conservative operation metadata/argument admission can reject earlier. No public API/dependency/policy switch."
+  "fullQualificationPending": false,
+  "compatibility": "str.format now awaits supported hosted callbacks in RunAsync; conservative operation metadata/argument admission can reject earlier. No public API/dependency/policy switch.",
+  "fullQualificationRun": "43765117358",
+  "runtimeCommit": "b06b859387db36f570da6f975192ad8610f40b41"
 }
