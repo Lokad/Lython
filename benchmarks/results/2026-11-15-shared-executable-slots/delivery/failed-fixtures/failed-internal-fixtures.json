@@ -1,0 +1,389 @@
+[
+  {
+    "test": "Failed Lokad.Lython.Tests.ExecutableCallTransferTests.CallInputsStayPublishedUntilCompletion(asynchronous: False, fail: True) [24 ms]",
+    "message": [
+      "   Assert.Throws() Failure: Exception type was not an exact match",
+      "Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)",
+      "Actual:   typeof(System.InvalidCastException)",
+      "---- System.InvalidCastException : Unable to cast object of type 'ExecutableSlot[]' to type 'System.Object[]'."
+    ]
+  },
+  {
+    "test": "Failed Lokad.Lython.Tests.ExecutableCallTransferTests.CallInputsStayPublishedUntilCompletion(asynchronous: False, fail: False) [1 ms]",
+    "message": [
+      "   System.InvalidCastException : Unable to cast object of type 'ExecutableSlot[]' to type 'System.Object[]'.",
+      "  Stack Trace:",
+      "     at Lokad.Lython.Tests.ExecutableCallTransferTests.Operands(Object frame) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/ExecutableCallTransferTests.cs:line 84",
+      "   at Lokad.Lython.Tests.ExecutableCallTransferTests.Probe.Check(ExecutionContext context) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/ExecutableCallTransferTests.cs:line 139"
+    ]
+  },
+  {
+    "test": "Failed Lokad.Lython.Tests.ExecutableCallTransferTests.CallInputsStayPublishedUntilCompletion(asynchronous: True, fail: False) [14 ms]",
+    "message": [
+      "   Assert.False() Failure",
+      "Expected: False",
+      "Actual:   True",
+      "  Stack Trace:"
+    ]
+  },
+  {
+    "test": "Failed Lokad.Lython.Tests.ExecutableCallTransferTests.CallInputsStayPublishedUntilCompletion(asynchronous: True, fail: True) [< 1 ms]",
+    "message": [
+      "   Assert.False() Failure",
+      "Expected: False",
+      "Actual:   True",
+      "  Stack Trace:"
+    ]
+  },
+  {
+    "test": "Failed Lokad.Lython.Tests.ExecutableCallTransferTests.CancelledSuspensionReleasesFrameInputs [4 ms]",
+    "message": [
+      "   Assert.ThrowsAny() Failure: Exception type was not compatible",
+      "Expected: typeof(System.OperationCanceledException)",
+      "Actual:   typeof(System.InvalidCastException)",
+      "---- System.InvalidCastException : Unable to cast object of type 'ExecutableSlot[]' to type 'System.Object[]'."
+    ]
+  },
+  {
+    "test": "Failed Lokad.Lython.Tests.DirectAppendExecutionTests.SuspendedArgumentKeepsTheEvaluatedReceiver(cancel: True) [3 ms]",
+    "message": [
+      "   System.InvalidCastException : Unable to cast object of type 'ExecutableSlot[]' to type 'System.Object[]'.",
+      "  Stack Trace:",
+      "     at Lokad.Lython.Tests.DirectAppendExecutionTests.Operands(Object frame) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/DirectAppendExecutionTests.cs:line 191",
+      "   at Lokad.Lython.Tests.DirectAppendExecutionTests.SuspendedArgumentKeepsTheEvaluatedReceiver(Boolean cancel) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/DirectAppendExecutionTests.cs:line 55"
+    ]
+  },
+  {
+    "test": "Failed Lokad.Lython.Tests.DirectAppendExecutionTests.SuspendedArgumentKeepsTheEvaluatedReceiver(cancel: False) [1 ms]",
+    "message": [
+      "   System.InvalidCastException : Unable to cast object of type 'ExecutableSlot[]' to type 'System.Object[]'.",
+      "  Stack Trace:",
+      "     at Lokad.Lython.Tests.DirectAppendExecutionTests.Operands(Object frame) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/DirectAppendExecutionTests.cs:line 191",
+      "   at Lokad.Lython.Tests.DirectAppendExecutionTests.SuspendedArgumentKeepsTheEvaluatedReceiver(Boolean cancel) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/DirectAppendExecutionTests.cs:line 55"
+    ]
+  },
+  {
+    "test": "Failed Lokad.Lython.Tests.DirectStringStartsWithTests.SuspendedArgumentKeepsTheEvaluatedReceiver(cancel: True, method: \"endswith\") [7 ms]",
+    "message": [
+      "   System.InvalidCastException : Unable to cast object of type 'ExecutableSlot[]' to type 'System.Object[]'.",
+      "  Stack Trace:",
+      "     at Lokad.Lython.Tests.DirectStringStartsWithTests.Operands(Object frame) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/DirectStringStartsWithTests.cs:line 203",
+      "   at Lokad.Lython.Tests.DirectStringStartsWithTests.SuspendedArgumentKeepsTheEvaluatedReceiver(Boolean cancel, String method) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/DirectStringStartsWithTests.cs:line 102"
+    ]
+  },
+  {
+    "test": "Failed Lokad.Lython.Tests.DirectStringStartsWithTests.SuspendedArgumentKeepsTheEvaluatedReceiver(cancel: True, method: \"startswith\") [1 ms]",
+    "message": [
+      "   System.InvalidCastException : Unable to cast object of type 'ExecutableSlot[]' to type 'System.Object[]'.",
+      "  Stack Trace:",
+      "     at Lokad.Lython.Tests.DirectStringStartsWithTests.Operands(Object frame) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/DirectStringStartsWithTests.cs:line 203",
+      "   at Lokad.Lython.Tests.DirectStringStartsWithTests.SuspendedArgumentKeepsTheEvaluatedReceiver(Boolean cancel, String method) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/DirectStringStartsWithTests.cs:line 102"
+    ]
+  },
+  {
+    "test": "Failed Lokad.Lython.Tests.DirectStringStartsWithTests.SuspendedArgumentKeepsTheEvaluatedReceiver(cancel: False, method: \"endswith\") [< 1 ms]",
+    "message": [
+      "   System.InvalidCastException : Unable to cast object of type 'ExecutableSlot[]' to type 'System.Object[]'.",
+      "  Stack Trace:",
+      "     at Lokad.Lython.Tests.DirectStringStartsWithTests.Operands(Object frame) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/DirectStringStartsWithTests.cs:line 203",
+      "   at Lokad.Lython.Tests.DirectStringStartsWithTests.SuspendedArgumentKeepsTheEvaluatedReceiver(Boolean cancel, String method) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/DirectStringStartsWithTests.cs:line 102"
+    ]
+  },
+  {
+    "test": "Failed Lokad.Lython.Tests.DirectStringStartsWithTests.SuspendedArgumentKeepsTheEvaluatedReceiver(cancel: False, method: \"startswith\") [< 1 ms]",
+    "message": [
+      "   System.InvalidCastException : Unable to cast object of type 'ExecutableSlot[]' to type 'System.Object[]'.",
+      "  Stack Trace:",
+      "     at Lokad.Lython.Tests.DirectStringStartsWithTests.Operands(Object frame) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/DirectStringStartsWithTests.cs:line 203",
+      "   at Lokad.Lython.Tests.DirectStringStartsWithTests.SuspendedArgumentKeepsTheEvaluatedReceiver(Boolean cancel, String method) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/DirectStringStartsWithTests.cs:line 102"
+    ]
+  },
+  {
+    "test": "Failed Lokad.Lython.Tests.ExecutableValueTransferTests.InputsRemainInActualSlotsAcrossCallbacks(source: \"return (23, left()[right()])\\n\", method: \"__getitem__\", count: 3, asynchronous: True) [16 ms]",
+    "message": [
+      "   System.InvalidCastException : Unable to cast object of type 'ExecutableSlot[]' to type 'System.Object[]'.",
+      "  Stack Trace:",
+      "     at Lokad.Lython.Tests.ExecutableValueTransferTests.Operands(Object frame) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/ExecutableValueTransferTests.cs:line 114",
+      "   at Lokad.Lython.Tests.ExecutableValueTransferTests.Probe.Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext caller) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/ExecutableValueTransferTests.cs:line 158"
+    ]
+  },
+  {
+    "test": "Failed Lokad.Lython.Tests.ExecutableValueTransferTests.InputsRemainInActualSlotsAcrossCallbacks(source: \"return (23, left() + right())\\n\", method: \"__add__\", count: 3, asynchronous: True) [2 ms]",
+    "message": [
+      "   System.InvalidCastException : Unable to cast object of type 'ExecutableSlot[]' to type 'System.Object[]'.",
+      "  Stack Trace:",
+      "     at Lokad.Lython.Tests.ExecutableValueTransferTests.Operands(Object frame) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/ExecutableValueTransferTests.cs:line 114",
+      "   at Lokad.Lython.Tests.ExecutableValueTransferTests.Probe.Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext caller) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/ExecutableValueTransferTests.cs:line 158"
+    ]
+  },
+  {
+    "test": "Failed Lokad.Lython.Tests.ExecutableValueTransferTests.InputsRemainInActualSlotsAcrossCallbacks(source: \"v = left()\\nv += right()\\nreturn v\\n\", method: \"__iadd__\", count: 2, asynchronous: False) [< 1 ms]",
+    "message": [
+      "   System.InvalidCastException : Unable to cast object of type 'ExecutableSlot[]' to type 'System.Object[]'.",
+      "  Stack Trace:",
+      "     at Lokad.Lython.Tests.ExecutableValueTransferTests.Operands(Object frame) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/ExecutableValueTransferTests.cs:line 114",
+      "   at Lokad.Lython.Tests.ExecutableValueTransferTests.Probe.Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext caller) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/ExecutableValueTransferTests.cs:line 158"
+    ]
+  },
+  {
+    "test": "Failed Lokad.Lython.Tests.ExecutableValueTransferTests.InputsRemainInActualSlotsAcrossCallbacks(source: \"return (23, left()[right()])\\n\", method: \"__getitem__\", count: 3, asynchronous: False) [< 1 ms]",
+    "message": [
+      "   System.InvalidCastException : Unable to cast object of type 'ExecutableSlot[]' to type 'System.Object[]'.",
+      "  Stack Trace:",
+      "     at Lokad.Lython.Tests.ExecutableValueTransferTests.Operands(Object frame) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/ExecutableValueTransferTests.cs:line 114",
+      "   at Lokad.Lython.Tests.ExecutableValueTransferTests.Probe.Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext caller) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/ExecutableValueTransferTests.cs:line 158"
+    ]
+  },
+  {
+    "test": "Failed Lokad.Lython.Tests.ExecutableValueTransferTests.InputsRemainInActualSlotsAcrossCallbacks(source: \"for v in left():\\n    return v\\n\", method: \"__iter__\", count: 1, asynchronous: True) [2 ms]",
+    "message": [
+      "   System.InvalidCastException : Unable to cast object of type 'ExecutableSlot[]' to type 'System.Object[]'.",
+      "  Stack Trace:",
+      "     at Lokad.Lython.Tests.ExecutableValueTransferTests.Operands(Object frame) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/ExecutableValueTransferTests.cs:line 114",
+      "   at Lokad.Lython.Tests.ExecutableValueTransferTests.Probe.Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext caller) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/ExecutableValueTransferTests.cs:line 158"
+    ]
+  },
+  {
+    "test": "Failed Lokad.Lython.Tests.ExecutableValueTransferTests.InputsRemainInActualSlotsAcrossCallbacks(source: \"return (23, left()[1:2:3])\\n\", method: \"__getitem__\", count: 5, asynchronous: True) [2 ms]",
+    "message": [
+      "   System.InvalidCastException : Unable to cast object of type 'ExecutableSlot[]' to type 'System.Object[]'.",
+      "  Stack Trace:",
+      "     at Lokad.Lython.Tests.ExecutableValueTransferTests.Operands(Object frame) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/ExecutableValueTransferTests.cs:line 114",
+      "   at Lokad.Lython.Tests.ExecutableValueTransferTests.Probe.Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext caller) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/ExecutableValueTransferTests.cs:line 158"
+    ]
+  },
+  {
+    "test": "Failed Lokad.Lython.Tests.ExecutableValueTransferTests.InputsRemainInActualSlotsAcrossCallbacks(source: \"return (23, left() + right())\\n\", method: \"__add__\", count: 3, asynchronous: False) [< 1 ms]",
+    "message": [
+      "   System.InvalidCastException : Unable to cast object of type 'ExecutableSlot[]' to type 'System.Object[]'.",
+      "  Stack Trace:",
+      "     at Lokad.Lython.Tests.ExecutableValueTransferTests.Operands(Object frame) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/ExecutableValueTransferTests.cs:line 114",
+      "   at Lokad.Lython.Tests.ExecutableValueTransferTests.Probe.Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext caller) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/ExecutableValueTransferTests.cs:line 158"
+    ]
+  },
+  {
+    "test": "Failed Lokad.Lython.Tests.ExecutableValueTransferTests.InputsRemainInActualSlotsAcrossCallbacks(source: \"return (23, -left())\\n\", method: \"__neg__\", count: 2, asynchronous: True) [3 ms]",
+    "message": [
+      "   System.InvalidCastException : Unable to cast object of type 'ExecutableSlot[]' to type 'System.Object[]'.",
+      "  Stack Trace:",
+      "     at Lokad.Lython.Tests.ExecutableValueTransferTests.Operands(Object frame) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/ExecutableValueTransferTests.cs:line 114",
+      "   at Lokad.Lython.Tests.ExecutableValueTransferTests.Probe.Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext caller) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/ExecutableValueTransferTests.cs:line 158"
+    ]
+  },
+  {
+    "test": "Failed Lokad.Lython.Tests.ExecutableValueTransferTests.InputsRemainInActualSlotsAcrossCallbacks(source: \"v = left()\\nv += right()\\nreturn v\\n\", method: \"__iadd__\", count: 2, asynchronous: True) [4 ms]",
+    "message": [
+      "   System.InvalidCastException : Unable to cast object of type 'ExecutableSlot[]' to type 'System.Object[]'.",
+      "  Stack Trace:",
+      "     at Lokad.Lython.Tests.ExecutableValueTransferTests.Operands(Object frame) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/ExecutableValueTransferTests.cs:line 114",
+      "   at Lokad.Lython.Tests.ExecutableValueTransferTests.Probe.Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext caller) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/ExecutableValueTransferTests.cs:line 158"
+    ]
+  },
+  {
+    "test": "Failed Lokad.Lython.Tests.ExecutableValueTransferTests.InputsRemainInActualSlotsAcrossCallbacks(source: \"return (23, -left())\\n\", method: \"__neg__\", count: 2, asynchronous: False) [< 1 ms]",
+    "message": [
+      "   System.InvalidCastException : Unable to cast object of type 'ExecutableSlot[]' to type 'System.Object[]'.",
+      "  Stack Trace:",
+      "     at Lokad.Lython.Tests.ExecutableValueTransferTests.Operands(Object frame) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/ExecutableValueTransferTests.cs:line 114",
+      "   at Lokad.Lython.Tests.ExecutableValueTransferTests.Probe.Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext caller) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/ExecutableValueTransferTests.cs:line 158"
+    ]
+  },
+  {
+    "test": "Failed Lokad.Lython.Tests.ExecutableValueTransferTests.InputsRemainInActualSlotsAcrossCallbacks(source: \"for v in left():\\n    return v\\n\", method: \"__iter__\", count: 1, asynchronous: False) [< 1 ms]",
+    "message": [
+      "   System.InvalidCastException : Unable to cast object of type 'ExecutableSlot[]' to type 'System.Object[]'.",
+      "  Stack Trace:",
+      "     at Lokad.Lython.Tests.ExecutableValueTransferTests.Operands(Object frame) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/ExecutableValueTransferTests.cs:line 114",
+      "   at Lokad.Lython.Tests.ExecutableValueTransferTests.Probe.Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext caller) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/ExecutableValueTransferTests.cs:line 158"
+    ]
+  },
+  {
+    "test": "Failed Lokad.Lython.Tests.ExecutableValueTransferTests.InputsRemainInActualSlotsAcrossCallbacks(source: \"return (23, left()[1:2:3])\\n\", method: \"__getitem__\", count: 5, asynchronous: False) [< 1 ms]",
+    "message": [
+      "   System.InvalidCastException : Unable to cast object of type 'ExecutableSlot[]' to type 'System.Object[]'.",
+      "  Stack Trace:",
+      "     at Lokad.Lython.Tests.ExecutableValueTransferTests.Operands(Object frame) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/ExecutableValueTransferTests.cs:line 114",
+      "   at Lokad.Lython.Tests.ExecutableValueTransferTests.Probe.Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext caller) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/ExecutableValueTransferTests.cs:line 158"
+    ]
+  },
+  {
+    "test": "Failed Lokad.Lython.Tests.ExecutableValueTransferTests.FailedOrCancelledOperationReleasesFrameInputs(asynchronous: False, cancellation: False) [4 ms]",
+    "message": [
+      "   Assert.Throws() Failure: Exception type was not an exact match",
+      "Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)",
+      "Actual:   typeof(System.InvalidCastException)",
+      "---- System.InvalidCastException : Unable to cast object of type 'ExecutableSlot[]' to type 'System.Object[]'."
+    ]
+  },
+  {
+    "test": "Failed Lokad.Lython.Tests.ExecutableValueTransferTests.FailedOrCancelledOperationReleasesFrameInputs(asynchronous: True, cancellation: False) [7 ms]",
+    "message": [
+      "   Assert.Throws() Failure: Exception type was not an exact match",
+      "Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)",
+      "Actual:   typeof(System.InvalidCastException)",
+      "---- System.InvalidCastException : Unable to cast object of type 'ExecutableSlot[]' to type 'System.Object[]'."
+    ]
+  },
+  {
+    "test": "Failed Lokad.Lython.Tests.ExecutableValueTransferTests.FailedOrCancelledOperationReleasesFrameInputs(asynchronous: True, cancellation: True) [8 ms]",
+    "message": [
+      "   Assert.ThrowsAny() Failure: Exception type was not compatible",
+      "Expected: typeof(System.OperationCanceledException)",
+      "Actual:   typeof(System.InvalidCastException)",
+      "---- System.InvalidCastException : Unable to cast object of type 'ExecutableSlot[]' to type 'System.Object[]'."
+    ]
+  },
+  {
+    "test": "Failed Lokad.Lython.Tests.ExecutableValueTransferTests.FailedOrCancelledOperationReleasesFrameInputs(asynchronous: False, cancellation: True) [< 1 ms]",
+    "message": [
+      "   Assert.ThrowsAny() Failure: Exception type was not compatible",
+      "Expected: typeof(System.OperationCanceledException)",
+      "Actual:   typeof(System.InvalidCastException)",
+      "---- System.InvalidCastException : Unable to cast object of type 'ExecutableSlot[]' to type 'System.Object[]'."
+    ]
+  },
+  {
+    "test": "Failed Lokad.Lython.Tests.PositionalCallTransportTests.BorrowedLocalsRemainOwnedUntilSuspendedInvocationFinishes(cancel: False) [3 ms]",
+    "message": [
+      "   Assert.IsType() Failure: Value is not the exact type",
+      "Expected: typeof(object[])",
+      "Actual:   typeof(Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot[])",
+      "  Stack Trace:"
+    ]
+  },
+  {
+    "test": "Failed Lokad.Lython.Tests.PositionalCallTransportTests.BorrowedLocalsRemainOwnedUntilSuspendedInvocationFinishes(cancel: True) [1 ms]",
+    "message": [
+      "   Assert.IsType() Failure: Value is not the exact type",
+      "Expected: typeof(object[])",
+      "Actual:   typeof(Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot[])",
+      "  Stack Trace:"
+    ]
+  },
+  {
+    "test": "Failed Lokad.Lython.Tests.PositionalCallTransportTests.MatchingFrameUsesInvocationOwnedBoundStorage(width: 2, asynchronous: True, keywords: True) [2 ms]",
+    "message": [
+      "   Assert.IsType() Failure: Value is not the exact type",
+      "Expected: typeof(object[])",
+      "Actual:   typeof(Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot[])",
+      "  Stack Trace:"
+    ]
+  },
+  {
+    "test": "Failed Lokad.Lython.Tests.PositionalCallTransportTests.MatchingFrameUsesInvocationOwnedBoundStorage(width: 1, asynchronous: False, keywords: True) [1 ms]",
+    "message": [
+      "   Assert.IsType() Failure: Value is not the exact type",
+      "Expected: typeof(object[])",
+      "Actual:   typeof(Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot[])",
+      "  Stack Trace:"
+    ]
+  },
+  {
+    "test": "Failed Lokad.Lython.Tests.PositionalCallTransportTests.MatchingFrameUsesInvocationOwnedBoundStorage(width: 2, asynchronous: True, keywords: False) [< 1 ms]",
+    "message": [
+      "   Assert.IsType() Failure: Value is not the exact type",
+      "Expected: typeof(object[])",
+      "Actual:   typeof(Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot[])",
+      "  Stack Trace:"
+    ]
+  },
+  {
+    "test": "Failed Lokad.Lython.Tests.PositionalCallTransportTests.MatchingFrameUsesInvocationOwnedBoundStorage(width: 3, asynchronous: False, keywords: False) [< 1 ms]",
+    "message": [
+      "   Assert.IsType() Failure: Value is not the exact type",
+      "Expected: typeof(object[])",
+      "Actual:   typeof(Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot[])",
+      "  Stack Trace:"
+    ]
+  },
+  {
+    "test": "Failed Lokad.Lython.Tests.PositionalCallTransportTests.MatchingFrameUsesInvocationOwnedBoundStorage(width: 1, asynchronous: True, keywords: False) [< 1 ms]",
+    "message": [
+      "   Assert.IsType() Failure: Value is not the exact type",
+      "Expected: typeof(object[])",
+      "Actual:   typeof(Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot[])",
+      "  Stack Trace:"
+    ]
+  },
+  {
+    "test": "Failed Lokad.Lython.Tests.PositionalCallTransportTests.MatchingFrameUsesInvocationOwnedBoundStorage(width: 1, asynchronous: True, keywords: True) [< 1 ms]",
+    "message": [
+      "   Assert.IsType() Failure: Value is not the exact type",
+      "Expected: typeof(object[])",
+      "Actual:   typeof(Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot[])",
+      "  Stack Trace:"
+    ]
+  },
+  {
+    "test": "Failed Lokad.Lython.Tests.PositionalCallTransportTests.MatchingFrameUsesInvocationOwnedBoundStorage(width: 3, asynchronous: True, keywords: False) [< 1 ms]",
+    "message": [
+      "   Assert.IsType() Failure: Value is not the exact type",
+      "Expected: typeof(object[])",
+      "Actual:   typeof(Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot[])",
+      "  Stack Trace:"
+    ]
+  },
+  {
+    "test": "Failed Lokad.Lython.Tests.PositionalCallTransportTests.MatchingFrameUsesInvocationOwnedBoundStorage(width: 3, asynchronous: True, keywords: True) [< 1 ms]",
+    "message": [
+      "   Assert.IsType() Failure: Value is not the exact type",
+      "Expected: typeof(object[])",
+      "Actual:   typeof(Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot[])",
+      "  Stack Trace:"
+    ]
+  },
+  {
+    "test": "Failed Lokad.Lython.Tests.PositionalCallTransportTests.MatchingFrameUsesInvocationOwnedBoundStorage(width: 2, asynchronous: False, keywords: False) [< 1 ms]",
+    "message": [
+      "   Assert.IsType() Failure: Value is not the exact type",
+      "Expected: typeof(object[])",
+      "Actual:   typeof(Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot[])",
+      "  Stack Trace:"
+    ]
+  },
+  {
+    "test": "Failed Lokad.Lython.Tests.PositionalCallTransportTests.MatchingFrameUsesInvocationOwnedBoundStorage(width: 1, asynchronous: False, keywords: False) [< 1 ms]",
+    "message": [
+      "   Assert.IsType() Failure: Value is not the exact type",
+      "Expected: typeof(object[])",
+      "Actual:   typeof(Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot[])",
+      "  Stack Trace:"
+    ]
+  },
+  {
+    "test": "Failed Lokad.Lython.Tests.PositionalCallTransportTests.MatchingFrameUsesInvocationOwnedBoundStorage(width: 3, asynchronous: False, keywords: True) [< 1 ms]",
+    "message": [
+      "   Assert.IsType() Failure: Value is not the exact type",
+      "Expected: typeof(object[])",
+      "Actual:   typeof(Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot[])",
+      "  Stack Trace:"
+    ]
+  },
+  {
+    "test": "Failed Lokad.Lython.Tests.PositionalCallTransportTests.MatchingFrameUsesInvocationOwnedBoundStorage(width: 2, asynchronous: False, keywords: True) [< 1 ms]",
+    "message": [
+      "   Assert.IsType() Failure: Value is not the exact type",
+      "Expected: typeof(object[])",
+      "Actual:   typeof(Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot[])",
+      "  Stack Trace:"
+    ]
+  },
+  {
+    "test": "Failed Lokad.Lython.Tests.PositionalCallTransportTests.ClassDefinedMethodInputsRemainOwnedUntilItsNativeHookFinishes(cancel: True) [5 s]",
+    "message": [
+      "   Assert.IsType() Failure: Value is not the exact type",
+      "Expected: typeof(object[])",
+      "Actual:   typeof(Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot[])",
+      "  Stack Trace:"
+    ]
+  },
+  {
+    "test": "Failed Lokad.Lython.Tests.PositionalCallTransportTests.ClassDefinedMethodInputsRemainOwnedUntilItsNativeHookFinishes(cancel: False) [5 s]",
+    "message": [
+      "   Assert.IsType() Failure: Value is not the exact type",
+      "Expected: typeof(object[])",
+      "Actual:   typeof(Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot[])",
+      "  Stack Trace:"
+    ]
+  }
+]

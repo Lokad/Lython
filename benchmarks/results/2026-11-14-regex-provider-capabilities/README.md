@@ -53,3 +53,10 @@ Read-only [e63770d1 source inspection](source-update-e63770d1.json) finds intern
 capture-root window discovery and split checkpoint changes. Three entry blobs
 and the precise ownership/group-name/cursor preparation gaps remain unchanged.
 No unchanged qualification, dependency promotion or core-development stop follows.
+
+Read-only source follow-up on 2026-11-15 at `d1822732` finds the compilation,
+main pattern and cursor integration entry files unchanged from `e63770d1`.
+Scalar snapshot/window validation and counter cleanup do not close the three
+integration gaps. [Committed source delta](source-update-d1822732.json) preserves
+exact hashes; no pin change or repeated qualification follows. These gaps defer
+only affected final-adapter qualification, never independent Lython work.

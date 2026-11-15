@@ -1,5 +1,4 @@
 using System.Numerics;
-using System.Reflection;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
@@ -11,7 +10,6 @@ namespace Lokad.Lython.Tests;
 // inputs when the actual call finishes, independently of CLR collection.
 public sealed class ExecutableCallTransferTests
 {
-    private const BindingFlags Fields = BindingFlags.Instance | BindingFlags.NonPublic;
 
     [Theory]
     [InlineData(false, false)]
@@ -80,23 +78,23 @@ public sealed class ExecutableCallTransferTests
 
     private static object[] Operands(object frame)
     {
-        var stack = ((LythonRuntime.ExecutionContext)frame)._execution.Stack;
-        var items = (object?[])stack.GetType().GetField("_items", Fields)!.GetValue(stack)!;
-        var count = (int)stack.GetType().GetProperty("LiveExtent")!.GetValue(stack)!;
+        var context = (LythonRuntime.ExecutionContext)frame;
+        var stack = context._execution.Stack;
+        var items = stack.Values;
+        var count = stack.LiveExtent;
         if (items is null)
         {
-            // A completed invocation detaches its entire working state. The
-            // surviving lexical context must retain neither slots nor code.
             Assert.Equal(0, count);
-
-            Assert.Empty(((LythonRuntime.ExecutionContext)frame)._execution.Locals);
-            Assert.Null(((LythonRuntime.ExecutionContext)frame!)._execution.Code);
+            Assert.Empty(context._execution.Locals);
+            Assert.Null(context._execution.Code);
             return [];
         }
-        var first = (int)stack.GetType().GetField("_firstTemporarySlot", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(stack)!;
-        // The physical tail must not retain withdrawn values either.
-        Assert.All(items.Skip(count), Assert.Null);
-        return items.Skip(first).Take(count - first).Select(item => item!).ToArray();
+        var first = context._execution.Code.FirstTemporarySlot;
+        // Inspect the actual backing before projecting live values.
+        Assert.All(items.Skip(count), item => Assert.Null(item.Reference));
+        var values = new object[count - first];
+        for (var i = 0; i < values.Length; i++) values[i] = items[first + i].Object.RequireNotNull();
+        return values;
     }
 
     private sealed class Probe(bool fail) : LythonRuntime.ICallable

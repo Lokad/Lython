@@ -1,0 +1,29 @@
+{
+  "purpose": "Coherent retained shared-slot checkpoint: complete fulfillment warm/compile/fresh, ordinary invoice and captured text versus stockCPython3.13.16. No cross-collection causal attribution or erasure of R373 regressions.",
+  "jobs": [
+    [
+      "scripts.csv-fulfillment.large",
+      "warm"
+    ],
+    [
+      "scripts.csv-fulfillment.large",
+      "compile"
+    ],
+    [
+      "scripts.csv-fulfillment.large",
+      "compile-run"
+    ],
+    [
+      "scripts.csv-invoice.large",
+      "warm"
+    ],
+    [
+      "scripts.text-summary-helpers.nonlocal-counter.large",
+      "warm"
+    ]
+  ],
+  "bound": "One300sowner/240sstartguard,5phasejobs,2freshprocesses/engine/job,5sfullrequestwarmup/12stext,5rotating0.5sbatches. NormalGC/tiering/GIL; fixed images/workers/catalog/toolchains.",
+  "acceptance": "All library/source/catalog/golden/files/budget, stockPython/GIL/GC, quiet/join/archive gates. Separate compilation/warm/fresh, includedI/O/validation/result and cache cleanup, widerCPU. Keep all controls/IQR/uncertainty.",
+  "stopping": "One usable material changed-source external update or justified bounded correction; no broad framework/unchanged nine-job campaign. No source-pair attribution or performance forecast. FullCI independent; publicationheld.",
+  "storage": "Reuse immutable957 image/aux/catalog/worker by verified hardlinks. No new core/catalog upload, retirement or raw deduplication. Existing254/252MiB floors unchanged."
+}

@@ -1,4 +1,4 @@
-using System.Reflection;
+using Slot = Lokad.Lython.Runtime.LythonRuntime.ExecutableSlot;
 using System.Numerics;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
@@ -6,10 +6,8 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
 
-// These fixtures inspect a buffer after its invocation returns it to a
-// thread-local pool. Exclude parallel executions that could reborrow the same
-// buffer before the resumed assertion; they can legitimately overwrite it.
-[Collection("AllocationSensitive")]
+// Inspect the actual execution-owned backing through suspension and return.
+// Separate executions cannot borrow one another's idle buffers.
 public sealed class PositionalCallTransportTests
 {
     private static readonly LythonSourceSpan Span = new(0, 0, 0, 0);
@@ -42,7 +40,7 @@ public sealed class PositionalCallTransportTests
             : LythonRuntime.ExecuteExecutableCodeObject(script.EntryPoint, context, default, null);
         Assert.Same(marker, result);
         Assert.True(tap.Invoked);
-        Assert.All(Assert.IsType<object[]>(tap.Storage), Assert.Null);
+        Assert.All(tap.Storage!, item => Assert.Null(item.Reference));
         Assert.Null(tap.Frame!.CurrentExecutableFrame);
         Assert.Null(context.CurrentExecutableFrame);
         Assert.Equal(0, context.State.CurrentInterpreterDepth);
@@ -50,12 +48,12 @@ public sealed class PositionalCallTransportTests
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
-    private static object[] FrameStorage(LythonRuntime.ExecutionContext context)
+    private static Slot[] FrameStorage(LythonRuntime.ExecutionContext context)
     {
         var frame = Assert.IsAssignableFrom<LythonRuntime.ExecutionContext>(context.CurrentExecutableFrame);
-        var values = Assert.IsType<object[]>(frame._execution.Locals);
+        var values = frame._execution.Locals;
         var stack = frame._execution.Stack;
-        Assert.Same(values, stack.GetType().GetField("_items", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(stack));
+        Assert.Same(values, stack.Values);
         return values;
     }
 
@@ -63,13 +61,13 @@ public sealed class PositionalCallTransportTests
     {
         internal bool Invoked;
         internal LythonRuntime.ExecutionContext? Frame;
-        internal object[]? Storage;
+        internal Slot[]? Storage;
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
             Invoked = true;
             Frame = context;
             Storage = FrameStorage(context);
-            for (var i = 0; i < width; i++) Assert.Same(marker, Storage[i]);
+            for (var i = 0; i < width; i++) Assert.Same(marker, Storage[i].Object);
             return PyNone.Instance;
         }
     }
@@ -91,7 +89,7 @@ public sealed class PositionalCallTransportTests
         {
             Assert.NotNull(tap.Frame);
             Assert.False(pending.IsCompleted);
-            Assert.Same(marker, Assert.IsType<object[]>(tap.Storage)[0]);
+            Assert.Same(marker, tap.Storage![0].Object);
             Assert.NotNull(tap.Frame.CurrentExecutableFrame);
             if (cancel)
             {
@@ -110,7 +108,7 @@ public sealed class PositionalCallTransportTests
             try { await pending.WaitAsync(TimeSpan.FromSeconds(5)); }
             catch (OperationCanceledException) { }
         }
-        Assert.All(Assert.IsType<object[]>(tap.Storage), Assert.Null);
+        Assert.All(tap.Storage!, item => Assert.Null(item.Reference));
         Assert.Null(tap.Frame!.CurrentExecutableFrame);
         Assert.Null(context.CurrentExecutableFrame);
         Assert.Equal(0, context.State.CurrentInterpreterDepth);
@@ -121,7 +119,7 @@ public sealed class PositionalCallTransportTests
     private sealed class SuspendedStorageTap(object marker) : LythonRuntime.ICallable
     {
         internal LythonRuntime.ExecutionContext? Frame;
-        internal object[]? Storage;
+        internal Slot[]? Storage;
         internal TaskCompletionSource Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
             => throw new InvalidOperationException("Expected async call.");
@@ -129,7 +127,7 @@ public sealed class PositionalCallTransportTests
         {
             Frame = context;
             Storage = FrameStorage(context);
-            Assert.Same(marker, Storage[0]);
+            Assert.Same(marker, Storage[0].Object);
             await Release.Task.ConfigureAwait(false);
             return PyNone.Instance;
         }
@@ -228,10 +226,10 @@ public sealed class PositionalCallTransportTests
             Assert.False(pending.IsCompleted);
             Assert.NotNull(tap.Frame);
             Assert.NotNull(tap.Frame.CurrentExecutableFrame);
-            var storage = Assert.IsType<object[]>(tap.Storage);
-            Assert.Same(context.Variables["box"], storage[0]);
-            Assert.Same(marker, storage[1]);
-            Assert.Same(storage[0], LythonRuntime.ResolveName("self", Span, tap.Frame));
+            var storage = tap.Storage!;
+            Assert.Same(context.Variables["box"], storage[0].Object);
+            Assert.Same(marker, storage[1].Object);
+            Assert.Same(storage[0].Object, LythonRuntime.ResolveName("self", Span, tap.Frame));
             Assert.Same(marker, LythonRuntime.ResolveName("value", Span, tap.Frame));
             Assert.True(budget.ReservedBytes >= baseline);
             if (cancel)
@@ -251,7 +249,7 @@ public sealed class PositionalCallTransportTests
             try { await pending.WaitAsync(TimeSpan.FromSeconds(5)); }
             catch (OperationCanceledException) { }
         }
-        Assert.All(Assert.IsType<object[]>(tap.Storage), Assert.Null);
+        Assert.All(tap.Storage!, item => Assert.Null(item.Reference));
         Assert.Null(context.CurrentExecutableFrame);
         Assert.Equal(0, context.State.CurrentInterpreterDepth);
         Assert.Equal(0, context.State.CurrentRecursionDepth);
@@ -264,7 +262,7 @@ public sealed class PositionalCallTransportTests
     private sealed class SuspendedMethodTap(object receiver, object value) : LythonRuntime.ICallable
     {
         internal LythonRuntime.ExecutionContext? Frame;
-        internal object[]? Storage;
+        internal Slot[]? Storage;
         internal TaskCompletionSource Started { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         internal TaskCompletionSource Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -272,9 +270,9 @@ public sealed class PositionalCallTransportTests
         public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
             Frame = context;
-            Storage = Assert.IsType<object[]>(context.CurrentExecutableFrame!._execution.Locals);
-            Assert.Same(receiver, Storage[0]);
-            Assert.Same(value, Storage[1]);
+            Storage = context.CurrentExecutableFrame!._execution.Locals;
+            Assert.Same(receiver, Storage[0].Object);
+            Assert.Same(value, Storage[1].Object);
             Assert.Same(receiver, LythonRuntime.ResolveName("self", span, context));
             Assert.Same(value, LythonRuntime.ResolveName("value", span, context));
             Started.TrySetResult();

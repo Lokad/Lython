@@ -8034,3 +8034,12 @@ guide keeps other workload rows at named older revisions. No cross-collection
 attribution, R370debt erasure or embedding-latency claim. No new core/catalog upload;
 one archived rawJSON duplicate deduplicates with exact custody proof/floors unchanged.
 All users/RAMclosed; substantive performance/debt/regex objectives continue.
+
+## B764 — shared-slot CPython checkpoint
+
+[Current cf754/957 checkpoint](results/2026-11-15-shared-slots-cpython-checkpoint/README.md)
+completes five jobs/199.457s/all gates: invoice 1.21–1.22x CPython warm,
+fulfillment 1.18–1.21x warm/fresh and 1.12–1.13x compile; text 1.42–1.44x.
+Exact phases, controls and prior guide survive; no cross-collection attribution
+or erasure of R373 regressions. Full delivery runs independently. No new image
+or catalog upload, retirement or deduplication; all VM users/RAM closed.
