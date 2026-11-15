@@ -1,0 +1,280 @@
+{
+  "status": "Active uncommitted prototype; not retained or qualified",
+  "firstCompleteSeconds": 124.77313129976392,
+  "refinementCompleteSeconds": 187.50955069996417,
+  "allGoldensAndBudgetsPassed": true,
+  "allUsersJoined": true,
+  "portableCPUClaim": false,
+  "measurements": [
+    {
+      "case": "scripts.file-search.large.protected",
+      "phase": "warm",
+      "refinedVsReference": [
+        -0.48364079135942983,
+        8.258420952517387,
+        9.688399615758868,
+        19.324029070586658
+      ],
+      "refinedVsInitial": [
+        -1.36153819515058,
+        7.3034042351806105,
+        11.27248916849073,
+        21.04727372091184
+      ],
+      "initialVsReference": [
+        -10.565172081347828,
+        -1.423612938444474,
+        0.890015302071534,
+        11.202463632057768
+      ],
+      "processMedianMilliseconds": {
+        "reference": 9.275121428571428,
+        "initial": 9.357671428571429,
+        "candidate": 9.230263157894736,
+        "candidate-control": 10.0411,
+        "initial-control": 8.29518888888889,
+        "reference-control": 8.414985714285715
+      },
+      "allUsersJoined": true
+    },
+    {
+      "case": "scripts.report-render.large",
+      "phase": "warm",
+      "refinedVsReference": [
+        -3.989344143921114,
+        2.152369214019223,
+        4.2350408835523545,
+        10.902860588061092
+      ],
+      "refinedVsInitial": [
+        -6.3632485812331385,
+        -6.129137342942825,
+        1.6577850167891262,
+        1.9119504974527413
+      ],
+      "initialVsReference": [
+        2.279507334282349,
+        2.5352272492830563,
+        8.82223335607053,
+        9.094311438858416
+      ],
+      "processMedianMilliseconds": {
+        "reference": 48.471000000000004,
+        "initial": 49.5759,
+        "candidate": 50.52376666666667,
+        "candidate-control": 46.537325,
+        "initial-control": 49.69985,
+        "reference-control": 45.556775
+      },
+      "allUsersJoined": true
+    },
+    {
+      "case": "scripts.csv-fulfillment.large",
+      "phase": "warm",
+      "refinedVsReference": [
+        7.946146694828116,
+        10.106405982351529,
+        13.56486377839996,
+        15.837566966288485
+      ],
+      "refinedVsInitial": [
+        1.3157997573142843,
+        2.750662704396434,
+        3.343370023600478,
+        4.806947992966104
+      ],
+      "initialVsReference": [
+        5.05639949532839,
+        6.544237871482794,
+        10.524702020769361,
+        12.089984040422452
+      ],
+      "processMedianMilliseconds": {
+        "reference": 24.81878,
+        "initial": 26.44298,
+        "candidate": 27.327066666666667,
+        "candidate-control": 26.790916666666664,
+        "initial-control": 26.073716666666666,
+        "reference-control": 23.59085
+      },
+      "allUsersJoined": true
+    },
+    {
+      "case": "scripts.csv-fulfillment.large",
+      "phase": "compile-run",
+      "refinedVsReference": [
+        5.852348902895033,
+        7.6123333641416435,
+        10.912640712221734,
+        12.75676156766361
+      ],
+      "refinedVsInitial": [
+        -4.672134378762028,
+        -0.11496750808379641,
+        0.33154819656504575,
+        5.127917070928878
+      ],
+      "initialVsReference": [
+        5.5025570775743216,
+        7.256725624638416,
+        11.040300979226302,
+        12.88654441473913
+      ],
+      "processMedianMilliseconds": {
+        "reference": 29.698616666666666,
+        "initial": 32.97743333333333,
+        "candidate": 31.436683333333335,
+        "candidate-control": 32.93952,
+        "initial-control": 31.3328,
+        "reference-control": 29.2129
+      },
+      "allUsersJoined": true
+    },
+    {
+      "case": "scripts.text-summary-helpers.nonlocal-counter.large",
+      "phase": "warm",
+      "refinedVsReference": [
+        -0.598069645581123,
+        0.3368089540231267,
+        6.205949259936161,
+        7.204819893129599
+      ],
+      "refinedVsInitial": [
+        -2.9526757262436365,
+        -2.839994762052256,
+        3.6901714170075373,
+        3.810565344195882
+      ],
+      "initialVsReference": [
+        2.3074567678136537,
+        2.4262452347686647,
+        3.2696619440224284,
+        3.3895676206255887
+      ],
+      "processMedianMilliseconds": {
+        "reference": 9.96075,
+        "initial": 10.202422222222221,
+        "candidate": 10.578909090909091,
+        "candidate-control": 9.901177777777779,
+        "initial-control": 10.19059,
+        "reference-control": 9.867941666666667
+      },
+      "allUsersJoined": true
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "phase": "warm",
+      "refinedVsReference": [
+        -3.706720425118204,
+        -3.6718566449122525,
+        -1.492039742039386,
+        -1.4563741183309387
+      ],
+      "refinedVsInitial": [
+        -2.72566787769003,
+        -2.0619207904114534,
+        -0.48842364567543983,
+        0.1905891783101632
+      ],
+      "initialVsReference": [
+        -1.6794281121103594,
+        -1.6438303339148752,
+        -1.0085420542334078,
+        -0.9727013761785641
+      ],
+      "processMedianMilliseconds": {
+        "reference": 20.00467142857143,
+        "initial": 19.810085714285716,
+        "candidate": 19.713328571428573,
+        "candidate-control": 19.270128571428568,
+        "initial-control": 19.67582857142857,
+        "reference-control": 20.011914285714287
+      },
+      "allUsersJoined": true
+    },
+    {
+      "case": "diagnostic.loop-helper.short-zero.large",
+      "phase": "warm",
+      "refinedVsReference": [
+        23.64654757744016,
+        27.568225454504038,
+        28.970069756464923,
+        33.060592939496324
+      ],
+      "refinedVsInitial": [
+        3.002128554544159,
+        6.101876900093317,
+        7.436818617390051,
+        10.67002462423452
+      ],
+      "initialVsReference": [
+        16.535683618365283,
+        20.04271107073663,
+        20.23182735459399,
+        23.850086638696055
+      ],
+      "processMedianMilliseconds": {
+        "reference": 2.289404347826087,
+        "initial": 2.7525926829268292,
+        "candidate": 2.9205525000000003,
+        "candidate-control": 3.0462949999999998,
+        "initial-control": 2.835429268292683,
+        "reference-control": 2.3620170212765954
+      },
+      "allUsersJoined": true
+    },
+    {
+      "case": "diagnostic.loop-helper.observed.large",
+      "phase": "warm",
+      "refinedVsReference": [
+        12.051896801682439,
+        16.9409943202532,
+        17.353097974717603,
+        22.473499828514388
+      ],
+      "refinedVsInitial": [
+        -1.3342257446924188,
+        1.9300433459661814,
+        3.3336748723438614,
+        6.752377289223865
+      ],
+      "initialVsReference": [
+        9.930196361597886,
+        13.567138805131073,
+        14.726718915773972,
+        18.52235002753502
+      ],
+      "processMedianMilliseconds": {
+        "reference": 2.0329264150943396,
+        "initial": 2.2348,
+        "candidate": 2.277932608695652,
+        "candidate-control": 2.3857021276595747,
+        "initial-control": 2.308736363636364,
+        "reference-control": 1.9479333333333333
+      },
+      "allUsersJoined": true
+    }
+  ],
+  "correctness": {
+    "initial": {
+      "net11": {
+        "internal": 437,
+        "public": 1759
+      },
+      "net10": {
+        "internal": 437,
+        "public": 1759
+      }
+    },
+    "refinement": {
+      "net11": {
+        "internal": 437,
+        "public": 1669
+      },
+      "net10": "pending"
+    }
+  },
+  "interpretation": "The first full unification removes duplicate dispatch but shows material local helper/fulfillment adversity. A controlled routing-boundary refinement does not establish recovery; file/report/text controls move and all evidence remains. Next source-backed hypothesis is full owned metadata initialization/transport in borrowed calls, not proven CPU attribution. No automatic promotion or permanent failure ban.",
+  "next": "Bounded coherent owned-storage metadata separation, keeping borrowed stack slots and a single prefix. Charge actual owned metadata before construction, preserve default/cleared null storage, pending disposal and retained cache owners. Focused checks plus same bounded source/control comparison; decide retain/debt/refine or withdraw. No unchanged retiming, no fullCI until coherent boundary.",
+  "publicationHeld": true
+}

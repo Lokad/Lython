@@ -8185,3 +8185,14 @@ stress, installed Release consumers. All585frozen source inputs/16summaries/full
 logs terminal-cached. Qualification does not change B770's mixed timing, accepted
 fresh uncertainty or possible small text CPU debt. Allocation−5.557% remains a
 separate complete metadata-heavy-script result. No publication or tag.
+
+
+[R382shared-prefix active prototype and routing refinement](results/2026-11-15-shared-prefix-prototype/README.md)
+remove the separate native opcode driver but are not retained/fully qualified.
+Initial99d16dc4 passes437internal/1,759public peractual11/10; fc905405routing variant
+passes437/1,669/net11. Original21default-state guard failures and correction stay
+preserved. Two bounded complete local source screens retain material fulfillment/
+short/observed adversity and moving controls; no CPU/portable/HEAD/CPython claim.
+Both cores/sources/raw survive; all workers joined. Next is a bounded owned-metadata
+construction refinement, not an unchanged retiming or permanent architecture ban.
+Publication held; runtime prototype remains uncommitted pending a coherent decision.
