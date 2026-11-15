@@ -2,6 +2,13 @@
 
 ## 0.11.0 - Unreleased
 
+- Prepare private cased-word iteration in one UTF-8 scan, sharing Unicode kernels
+  and removing deferred per-word casing. Keep independent words and eager admission;
+  reusable conservative scratch remains charged and can cause earlier refusal.
+
+- Share completed builtin arithmetic and operand reads across executable paths,
+  preserving Python protocols, exact promotion, cancellation and owned cleanup.
+
 - Resolve asynchronous keyword defaults from their live dictionary after argument
   storage admission. Host reentry can replace native defaults with a suspending
   Python key protocol; preserve argument ownership, cancellation and cleanup.

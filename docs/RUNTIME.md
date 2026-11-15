@@ -634,11 +634,16 @@ callback and error handler sees the completed binding; native unwind publishes i
 from already-funded storage without new admission. Larger words and dynamic
 protocols keep ordinary materialization. Eager preflight still funds all eventual
 words, including capacity not physically materialized during the native segment.
-Private cased-word iteration prepares whitespace ranges once and consumes those
-facts directly from an execution-owned construction buffer, without a separate
-scratch inventory and final copy. Its buffer stays funded through the cursor's actual users and returns
-through operand-stack cleanup, including early exits and cancellation. Completed
-bindings are published before a refund can reenter the host.
+Private cased-word preparation discovers whitespace boundaries and applies Unicode
+casing in one source scan. Ranges index completed UTF-8 bytes; iteration copies
+those bytes into independent words without repeating casing. The existing cursor
+loan owns reusable scratch, with conservative capacity of four times input UTF-8
+bytes for lowercasing or six times for uppercasing. Metadata, replacement overlap
+and every eventual word are admitted before loop effects. Wider scratch can reject
+a tighter allowance earlier. Active and idle cached capacity stay funded; eviction
+or execution cleanup returns allowance after actual users finish. Early exits and
+cancellation use operand-stack cleanup, publishing completed bindings before any
+refund can reenter the host. Escaped words survive scratch reuse independently.
 
 Private dictionary entries can retain exact counting results as managed integers
 without boxing each update. A Python value read materializes and caches an ordinary

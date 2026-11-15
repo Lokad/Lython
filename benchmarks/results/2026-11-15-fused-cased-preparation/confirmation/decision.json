@@ -1,0 +1,13 @@
+{
+  "retained": true,
+  "fullyQualified": false,
+  "core": "0edc0c1c",
+  "source": "Final cursor-only refinement; general byte builder unchanged",
+  "usefulBenefit": "B795direct elapsed3.96..7.65%/CPU2.55..7.94% lower; B796captured fresh elapsed2.11..5.43%/CPU2.72..4.68% lower",
+  "acceptedDebt": "Captured warm remains uncertain, including B795all-pair adversity0.75..5.34%; B796crosseszero with moving controls. JSON widerCPU0..3.33%higher remains accepted modest control debt; do not claim neutrality or causal recovery.",
+  "storageTradeoff": "Lower/upper scratch reserve4/6times sourceUTF8bytes and retain capacity while active/idle; can deny earlier. Independent eventual words are eagerly funded. Replacement overlap and users/cleanup remain funded.",
+  "allocation": "Effectively flat;128Bmore per complete captured-text script",
+  "qualification": "196internal/439public each actual11/10 including3original64MiB cases pass; full platform/stress/installed consumers pending",
+  "broaderPerformanceObjectiveComplete": false,
+  "publicationPostponed": true
+}

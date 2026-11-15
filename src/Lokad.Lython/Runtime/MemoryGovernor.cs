@@ -33,7 +33,7 @@ internal sealed class MemoryGovernor
         if (cached is not null)
         {
             if (cached.Ranges.Length >= capacity) { cached.BeginLoan(); return cached; }
-            Release(cached.StorageBytes);
+            cached.ReleaseStorage();
         }
         var bytes = Text.PyStringOps.CasedWhitespaceIteration.EstimateStorageBytes(capacity);
         Reserve(bytes, span);
@@ -53,9 +53,9 @@ internal sealed class MemoryGovernor
         if (!_wordReuseEnded && (cached is null || cached.Ranges.Length < words.Ranges.Length))
         {
             _idleWords = words;
-            if (cached is not null) Release(cached.StorageBytes);
+            if (cached is not null) cached.ReleaseStorage();
         }
-        else Release(words.StorageBytes);
+        else words.ReleaseStorage();
     }
 
     internal void EndWorkspaceReuse()
@@ -66,7 +66,7 @@ internal sealed class MemoryGovernor
             _wordReuseEnded = true;
             var cached = _idleWords;
             _idleWords = null;
-            if (cached is not null) Release(cached.StorageBytes);
+            if (cached is not null) cached.ReleaseStorage();
         }
     }
 

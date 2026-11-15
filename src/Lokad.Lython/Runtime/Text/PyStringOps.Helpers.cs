@@ -182,16 +182,22 @@ internal static partial class PyStringOps
                 },
                 _ => mapping,
             };
-            var mapped = MapCaseRune(rune, selected, source, offset, context, span, out var expansion);
-            var count = expansion.IsEmpty ? mapped.Utf8SequenceLength : expansion.Length;
-            if (expansion.IsEmpty) mapped.EncodeToUtf8(output[written..]);
-            else expansion.CopyTo(output[written..]);
-            written = checked(written + count);
+            written = checked(written + WriteCaseRune(rune, selected, source, offset,
+                output[written..], context, span));
             if (mapping == CaseMapping.Title)
                 previousWasCased = SigmaPropertyContains(rune.Value, SigmaCasedRanges);
             offset += consumed;
         }
         return written;
+    }
+
+    private static int WriteCaseRune(Rune rune, CaseMapping mapping, ReadOnlySpan<byte> source,
+        int offset, Span<byte> output, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
+    {
+        var mapped = MapCaseRune(rune, mapping, source, offset, context, span, out var expansion);
+        if (expansion.IsEmpty) return mapped.EncodeToUtf8(output);
+        expansion.CopyTo(output);
+        return expansion.Length;
     }
 
     private static void WriteAsciiCase(ReadOnlySpan<byte> input, Span<byte> output,

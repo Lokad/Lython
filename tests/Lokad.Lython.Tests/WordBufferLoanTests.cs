@@ -29,10 +29,11 @@ public sealed class WordBufferLoanTests
             Assert.True(budget.ReservedBytes >= active.StorageBytes + first.CommittedOwnedBytes);
             Assert.Equal("echo", Assert.IsType<PyString>(active.MoveNext().Value).AsString());
             var beforeReturn = budget.ReservedBytes;
+            var activeStorage = active.StorageBytes;
             active.Dispose();
-            Assert.Equal(beforeReturn - active.StorageBytes, budget.ReservedBytes);
+            Assert.Equal(beforeReturn - activeStorage, budget.ReservedBytes);
             active.Dispose();
-            Assert.Equal(beforeReturn - active.StorageBytes, budget.ReservedBytes);
+            Assert.Equal(beforeReturn - activeStorage, budget.ReservedBytes);
             Assert.Equal("café", first.AsString());
             using var afterEnd = PyStringOps.PrepareCasedWhitespaceIteration(source, true, context, Span);
             Assert.Equal("CAFÉ", Assert.IsType<PyString>(afterEnd.MoveNext().Value).AsString());

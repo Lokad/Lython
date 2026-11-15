@@ -8501,3 +8501,13 @@ records exact locally qualified0.5candidate hashes atc5e02a27, not publication o
 Lython adapter qualification. New effective-flags/range/cursor funding APIs support
 independent development; remaining three precise gaps defer affected final checks
 only. Core dependency/pin unchanged; no producer-policy gate added to core.
+
+
+[R408B796retention](results/2026-11-15-fused-cased-preparation/confirmation/README.md)
+retains0ed/9e after3same-bits jobs163.204s/allgates. Capturedfresh−2.11..−5.43%
+elapsed/CPU−2.72..−4.68%; prior direct−3.96..−7.65%/CPU−2.55..−7.94%. Warm captured
+crosseszero with moving controls; originalB795adversity remains. Accept JSONwiderCPU
+0..+3.33%debt and4×/6×retained scratch/earlier denial for the removed deferredstage
+and complete-script benefits. Allocationflat(+128Btext). No general speedup,
+causal recovery or broader-objective completion. Full retained-runtime delivery
+next; no further unchanged timing campaign, materially new evidence eligible.
