@@ -41,8 +41,8 @@ No timing is rerun or dropped. Persistent observations are subsequently verified
 byte-for-byte under a fresh lease and independently SHA-verified locally; all
 workers are joined and RAM fixtures are gone. Preserve both failures, the original
 floor condition and archive-recovery qualification separately from timing validity.
-Disk headroom must be restored before another collection. No claim that the
-original archive-owner gate passed; final recovery disposition follows separately.
+[Disk headroom is restored](recovery-headroom.json) by retiring only three exact committed archived working duplicates, with full hash/path/UID/link proof and a fresh idle lease. Original failed owners remain failed; floors are unchanged. No claim that the
+original archive-owner gate passed; the recovery disposition is recorded above.
 
 [All medians/controls](summary.json),[exact identity](identity.json),
 [original observations](observations.tgz),[recovered custody](recovered-archive-receipt.json),
