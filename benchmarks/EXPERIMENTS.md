@@ -8085,3 +8085,13 @@ all users/fixtures closed and archive verified under lease. Per actual11/10 focu
 53internal/197public,144isolatedCPython controls/16goldenspass; full delivery pending.
 The original B766 form/adverse controls remain separate; no extra retiming or
 universal CPU, allocation, heap, tail or causality claim. Publication held.
+
+
+B768 [affected external checkpoint](results/2026-11-15-word-segment-cpython-checkpoint/README.md)
+completes2jobs100.252s/allgates on ec6c/6164: capturedtext1.370–1.392xCPython,
+JSON-lines .829–.833x. Both include mediated RAM I/O, validation/prior-result
+cleanup; compile/fresh remain earlier named B764 phases. All source/image proofs,
+CPython3.13.16 identities, quiet controls/CPU/raw receipts persist; all users/RAM
+closed. No cross-collection causal gain or erasure of R376JSONdebt. Full delivery
+running/publicationheld. Only exact committed archived B767rawduplicate deduplicated;
+all compressed evidence/images remain and254/252MiB floors unchanged.

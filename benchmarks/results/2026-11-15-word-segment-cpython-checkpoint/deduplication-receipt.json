@@ -1,0 +1,32 @@
+{
+  "committedProof": [
+    {
+      "commit": "ec6c041672a5e6edf85676bfe2442cd62abe1b76",
+      "canonicalArchive": "benchmarks/results/2026-11-15-closed-word-segment/completed-layout/observations.tgz",
+      "remoteRoot": "word-segment-b767-20261115",
+      "archiveSHA256": "1b59f26e7b894e1bff24ffd1a04525ea6b172dd11f4f60be83900751f6ff1e01",
+      "member": "confirmation/confirmation.json",
+      "bytes": 566657,
+      "sha256": "435d7ed53f1f3edfa716bc0ac6be871f81e0dc7f91fe1fd34162a37b13f0233d"
+    }
+  ],
+  "metadata": [
+    {
+      "path": "/home/lokad/lython-bench-checks/word-segment-b767-20261115/confirmation/confirmation.json",
+      "uid": 1000,
+      "inode": 847279,
+      "links": 1,
+      "bytes": 566657,
+      "archiveStillPresent": "/home/lokad/lython-bench-checks/word-segment-b767-20261115/observations.tgz"
+    }
+  ],
+  "allPathsMetadataAndRawArchiveHashesVerifiedBeforeMutation": true,
+  "idleLease": true,
+  "retiredOnlyDuplicateJson": [
+    "/home/lokad/lython-bench-checks/word-segment-b767-20261115/confirmation/confirmation.json"
+  ],
+  "beforeFreeBytes": 265883648,
+  "afterFreeBytes": 266452992,
+  "compressedRawArchivesAndLocalGitEvidenceRetained": true,
+  "currentImagesCatalogsToolchainsAndFloorsUnchanged": true
+}

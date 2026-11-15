@@ -3,8 +3,8 @@
 | Representative workload, warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
 | CSV invoice / ordinary pricing helper | 4,096 records / 127,031 B | 7.358–7.414 ms | 6.087–6.100 ms | 1.21–1.22× | Diagnostic cf754; spreads 0.76/0.23%; max IQR 1.96% |
-| Text / captured helper and counter | 3,072 lines / 35,840 B | 1.259–1.272 ms | 0.885–0.888 ms | 1.42–1.44× | Diagnostic cf754; spreads 1.04/0.33%; max IQR 0.60% |
-| JSON-lines / aggregation helpers|4,096 records /110,592 B|3.397–3.499 ms|4.068–4.078 ms|0.83–0.86×|Earlier fa40; Diagnostic; spreads 2.92/0.24%; max IQR 1.16%|
+| Text / captured helper and counter | 3,072 lines / 35,840 B | 1.244–1.249 ms | 0.897–0.908 ms | 1.37–1.39× | Diagnostic ec6c; spreads 0.43/1.17%; max IQR 2.45% |
+| JSON-lines / aggregation helpers | 4,096 records / 110,592 B | 3.447–3.458 ms | 4.149–4.159 ms | 0.829–0.833× | Diagnostic ec6c; spreads 0.32/0.22%; max IQR 1.24% |
 | File search / defensive keyword-default helper |2,049 lines /42,010 B; stop after1,025|266.372–266.982 µs|160.576–162.048 µs|1.64–1.66×|Earlier3994; Diagnostic; spreads 0.23/0.91%; max IQR 2.60%|
 | JSON-to-Markdown report|3,072 records /189,441 B|2.836–2.880 ms|2.332–2.340 ms|1.21–1.23×|Earlier fa40; Variable; spreads 1.56/0.32%; max IQR 4.82%|
 | CSV fulfillment / pricing and validation | 4,096 records / 126,821 B | 8.017–8.121 ms | 6.721–6.777 ms | 1.18–1.21× | Diagnostic cf754; spreads 1.27/0.82%; max IQR 1.02% |
@@ -15,7 +15,12 @@
 complete embedding measurements, not isolated interpreter CPU. Spreads are the
 Lython/CPython process-median differences; moving controls and IQRs remain visible.
 
-Invoice, fulfillment and captured-text rows measured **2026-11-15 UTC** at
+Text and JSON-lines measured **2026-11-15 UTC** at **ec6c0416 / frozen 6164a933**,
+against stock **CPython 3.13.16**. [Exact observations and controls](../benchmarks/results/2026-11-15-word-segment-cpython-checkpoint/README.md).
+Full platform qualification is running. The source pair retains a small JSON
+regression against earlier Lython; the CPython comparison does not erase it.
+
+Invoice and fulfillment rows measured **2026-11-15 UTC** at
 **cf754dc7 / frozen 95798eb9**, against stock **CPython 3.13.16**.
 [Exact scripts, phases, raw CPU and controls](../benchmarks/results/2026-11-15-shared-slots-cpython-checkpoint/README.md).
 [Validation status and exact source proof](../benchmarks/results/2026-11-15-shared-executable-slots/delivery/README.md).
@@ -28,7 +33,7 @@ fulfillment regression; the external baseline does not erase those tradeoffs.
 File search retains earlier **3994dfda / b5a6426e**, also2026-11-14 and fully
 [qualified](../benchmarks/results/2026-11-14-protected-helper-activation/delivery/README.md);
 [B757](../benchmarks/results/2026-11-14-protected-cpython-checkpoint/README.md) also
-preserves its defensive-invoice source and phases. JSON/report/for-validator
+preserves its defensive-invoice source and phases. Report and for-validator
 retain earlier **fa40d674 / 73a1b233**; [qualified B747](../benchmarks/results/2026-11-14-range-cpython-checkpoint/README.md)
 keeps their exact sources and every adverse/variable observation. These older
 rows do not claim today's HEAD, and counter microbenchmarks do not predict them.
@@ -106,7 +111,7 @@ These source-pair results are separate from CPython and cannot be added together
 
 | Change / complete affected script | CPU/elapsed evidence | Allocation | Limits and exact evidence |
 | --- | --- | ---: | --- |
-| Closed word segment /captured text | Warm2.9–5.7%lower elapsed/3.5–5.3%lower CPU | Flat | Retained6164a933 versus957; full qualification pending. Fresh magnitude inconclusive (8.77%reference spread), JSON+.8–2.7%elapsed unresolved/accepted; no universal gain. [All controls](../benchmarks/results/2026-11-15-closed-word-segment/README.md). |
+| Closed word segment / captured text | Warm 2.9–5.7% lower elapsed / 3.5–5.3% lower CPU | Flat | Retained 6164a933 versus 957; full qualification pending. Fresh magnitude inconclusive (8.77% reference spread), JSON +0.8–2.7% elapsed unresolved/accepted; no universal gain. [All controls](../benchmarks/results/2026-11-15-closed-word-segment/README.md). |
 | Typed builtin results /CSV fulfillment | Warm3–4%lower, compile-to-result2.6–5.6%lower, supporting CPU | −18.20% | Later bed6e57e versus3994/b5; [full delivery passes](../benchmarks/results/2026-11-14-builtin-scalar-publication/delivery/README.md). Invoice−5%allocation but+.94–1.87%elapsed/+2–4%CPU debt; text adverse/uncertain, short/observed controls variable. [Exact source and every control](../benchmarks/results/2026-11-14-builtin-scalar-publication/README.md). |
 | Protected try/except helpers /invoice and file search | Invoice17–18.5%faster warm,16–19%faster compile-to-result; search41–43%faster, with CPU support | −29.19%/−74.65% | Later b5a6426e versus1c5/ff2; [full qualification passes](../benchmarks/results/2026-11-14-protected-helper-activation/delivery/README.md). Short calls+.5–3.4%, text uncertain. [Source and every control](../benchmarks/results/2026-11-14-protected-helper-activation/README.md). |
 | Native primitive storage /CSV while-validator | Warm21–23%lower, compile-to-result21–22%lower, supportingCPU | −40.9% | Source-specific; short/zero helpers+4–10%, observed+2–4%, small JSONCPU debt. [Qualified evidence](../benchmarks/results/2026-11-14-native-primitive-storage/README.md). |
