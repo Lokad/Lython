@@ -75,6 +75,11 @@ embedding tail latency remain unmeasured. The
 [previous fully qualified checkpoint](../benchmarks/results/2026-11-13-fixed-definitions-cpython-checkpoint/README.md)
 retains its own exact revision, boundaries and adverse/variable observations.
 
+At 810379be, `RunAsync` with completed host I/O measured about 3–7.5% slower than
+`Run` on CSV, 9.5–12.5% on captured text and 3–6.8% on file search. This is an API
+comparison, separate from CPython; it does not measure pending-I/O latency.
+[Controls, included cleanup and remaining attribution](../benchmarks/results/2026-11-15-whole-script-hosting/README.md).
+
 ## Additional qualified ZIP comparison
 
 Source 976f9439 / frozen 97bbeff3 adds opened positional input. Its complete warm

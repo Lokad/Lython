@@ -8263,3 +8263,15 @@ IQRs. Both independent process pairs pass complete frozen-image identity and
 result checks; 15.026 s initial / 71.919 s confirmation. No runtime, allocation,
 portable CPU or pending-I/O claim. Next use existing warm/warm-async lanes on
 complete scripts before attributing a redesign; publication remains postponed.
+
+[R388/B775 complete hosting comparison](results/2026-11-15-whole-script-hosting/README.md)
+uses unchanged 810379be / frozen 8fbfa3f0 and existing warm/warm-async lanes.
+CSV async elapsed +2.99–7.50%, captured text +9.53–12.55%, protected search
++3.22–6.77%; captured-text wider CPU +15.15–17.57% with closer controls. Other
+moving controls remain explicit. Three jobs finish in 134.756 s with identity,
+goldens, quiet, balance, Closed/join and archive gates; no VM users/RAM remain.
+Original incorrect-catalog preparation failure occurred before collection;
+verified correction preserved all conditions. No new image/catalog upload,
+retirement or runtime patch. Next attribute captured-text completed-operation
+work versus shared dispatch/scheduling. No pending-I/O, heap, portable speedup
+or objective-completion claim. Publication held.

@@ -1,0 +1,17 @@
+{
+  "cases": [
+    "scripts.csv-fulfillment.large",
+    "scripts.text-summary-helpers.nonlocal-counter.large",
+    "scripts.file-search.large.protected"
+  ],
+  "question": "Does the plausible local identity-call API gap matter to complete scripts on the quiet VM?",
+  "acceptance": "Existing command-v2 identity/full goldens/quiet/shared-balance/Closed/join/archive gates; no runtime change.",
+  "warmupSeconds": 5,
+  "capturedWarmupSeconds": 12,
+  "requestBatchSeconds": 0.5,
+  "rounds": 5,
+  "ownerSeconds": 240,
+  "stoppingCriterion": "Finish three matched API jobs. If a material consistent gap survives controls and wider CPU, attribute before redesign; otherwise record uncertainty and continue common operand/iteration assessment.",
+  "storage": "Reuse immutable B773 8fbf image/catalog and B772 protocol module. No image/catalog upload, retirement or floor changes.",
+  "publicationHeld": true
+}

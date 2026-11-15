@@ -1,0 +1,29 @@
+{
+  "source": "810379be / frozen 8fbfa3f0",
+  "runtimeChanged": false,
+  "observation": "Completed-I/O RunAsync is modestly slower on all three scripts. Captured text has the clearest controls and supporting wider CPU.",
+  "next": "Attribute async captured-text work to actual file/iteration/builtin completion versus common dispatch and scheduling before choosing a redesign.",
+  "hypotheses": [
+    "Per-line completed async file/iteration machinery",
+    "Completed builtin/protocol setup and disposal",
+    "Invocation/result scheduling"
+  ],
+  "existingArchitecture": [
+    "Both APIs use ExecuteInstructionPrefix and prepared executable functions",
+    "Native helper prefixes are shared",
+    "ExecutionThreads reuses startup workers and releases them at actual suspension"
+  ],
+  "notJustified": [
+    "Duplicate dispatch framework",
+    "Removing effective cancellation or ownership admission",
+    "Calling wider process CPU guest interpreter time",
+    "Claiming pending-I/O latency or portable speedup"
+  ],
+  "limits": [
+    "Two independent processes per API, five rotating rounds; diagnostic rather than confidence intervals",
+    "Wider CPU includes fixture reset and protocol",
+    "CSV async control spread 3.06%; file sync spread 3.09%",
+    "No heap/RSS, startup or actual I/O suspension measurement"
+  ],
+  "publicationHeld": true
+}
