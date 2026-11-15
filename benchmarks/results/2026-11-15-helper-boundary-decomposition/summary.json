@@ -1,0 +1,57 @@
+{
+  "complete": true,
+  "sourceUnchanged": true,
+  "allWorkersJoinedAndFixturesRemoved": true,
+  "actualWarmupSecondsPerProcess": 12,
+  "rows": [
+    {
+      "case": "scripts.helper-boundary.inline",
+      "elapsedMilliseconds": {
+        "candidate": 0.8485897088607595,
+        "candidate-control": 0.8934667690839695
+      },
+      "cpuMilliseconds": {
+        "candidate": 0.9222423146473779,
+        "candidate-control": 0.9541984732824427
+      },
+      "spreadPercent": 5.288428524953237
+    },
+    {
+      "case": "scripts.helper-boundary.inline-counter",
+      "elapsedMilliseconds": {
+        "candidate": 0.9825434103092783,
+        "candidate-control": 1.0399848043478261
+      },
+      "cpuMilliseconds": {
+        "candidate": 1.0515463917525774,
+        "candidate-control": 1.108695652173913
+      },
+      "spreadPercent": 5.846194014009698
+    },
+    {
+      "case": "scripts.helper-boundary.helper",
+      "elapsedMilliseconds": {
+        "candidate-control": 1.1374030973871734,
+        "candidate": 1.143985619617225
+      },
+      "cpuMilliseconds": {
+        "candidate-control": 1.187648456057007,
+        "candidate": 1.2200956937799041
+      },
+      "spreadPercent": 0.5787325746846372
+    },
+    {
+      "case": "scripts.helper-boundary.helper-counter",
+      "elapsedMilliseconds": {
+        "candidate-control": 1.1827381179361178,
+        "candidate": 1.2390368078947367
+      },
+      "cpuMilliseconds": {
+        "candidate-control": 1.253071253071253,
+        "candidate": 1.3157894736842104
+      },
+      "spreadPercent": 4.76003006116521
+    }
+  ],
+  "interpretation": "Matched workload decomposition, not a source-pair speedup or additive/causal cost attribution."
+}

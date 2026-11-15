@@ -8534,3 +8534,12 @@ Complete extraction/replacement allocation−19.49/−32.74%; quiet B799elapsed
 B798missing-metadata failure and test-image missing-fixture failure preserved.
 Normal adapter stays0.4, core unchanged; final producer qualification remains
 separate from contract correctness and this source-pair backend performance.
+
+
+[R410 matched helper/counter decomposition](results/2026-11-15-helper-boundary-decomposition/README.md)
+at unchanged1b82/0ed closes the enclosing-mirroring hypothesis: all main scopes
+unmirrored/fused, helpers native eligible. Helper without counter1.137–1.144ms
+versus inline0.849–0.893ms; controls up to5.85%, no removable-share claim.
+Existing caller tail6slots can fund5-slot helper work. Select whole-workspace
+borrowing prototype, no new arena/owner/capacity/controller. B802all gates pass,
+130.803s/users cleaned; original staging/directory/path failures preserved.

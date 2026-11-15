@@ -1,0 +1,1 @@
+{"originalOwnerFailedBeforeAnyWorker": true, "originalStageArchived": true, "noTimingObservations": true, "correction": "Only absolute collector paths, image-directory creation and accurate warmup metadata; same source/core/backend/fixtures/timing boundary", "allImagesVerified": true, "emptyOwnedRamArchivedBeforeUnmount": true}
