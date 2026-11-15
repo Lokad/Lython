@@ -577,23 +577,18 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    internal static void AssignLoopTarget(LoopTargetSyntax target, object value, LythonSourceSpan span, ExecutionContext context)
-        => AssignLoopTargetCoreAsync(target, value, span, context, false).GetAwaiter().GetResult();
-
-    internal static ValueTask AssignLoopTargetAsync(LoopTargetSyntax target, object value, LythonSourceSpan span, ExecutionContext context)
-        => AssignLoopTargetCoreAsync(target, value, span, context, true);
-
-    private static async ValueTask AssignLoopTargetCoreAsync(
+    // Only retained raw-expression comprehensions use syntax targets. Prepared
+    // statements/generators use the shared lowered store tree in HeaderTargets.
+    private static void AssignLoopTarget(
         LoopTargetSyntax target,
         object value,
         LythonSourceSpan span,
-        ExecutionContext context, bool asynchronous)
+        ExecutionContext context)
     {
         switch (target)
         {
             case LoopStoreTargetSyntax store:
-                if (asynchronous) await AssignTargetAsync(store.LoweredTarget, value, context).ConfigureAwait(false);
-                else AssignTarget(store.Target, value, context);
+                AssignTarget(store.Target, value, context);
                 return;
             case LoopNameTargetSyntax name:
                 StoreName(name.Name, value, context, span);
@@ -615,9 +610,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     var layout = new UnpackingLayout(tuple.Items.Count, starIndex);
-                    using var materialized = asynchronous
-                        ? await MaterializeHeaderSequenceAsync(value, span, context, layout.MaximumReadCount).ConfigureAwait(false)
-                        : MaterializeUnpackingSequence(value, span, context, layout.MaximumReadCount);
+                    using var materialized = MaterializeUnpackingSequence(value, span, context, layout.MaximumReadCount);
                     var values = materialized.Items;
                     if (starIndex < 0)
                     {
@@ -628,7 +621,7 @@ internal sealed partial class LythonRuntime
 
                         for (var i = 0; i < tuple.Items.Count; i++)
                         {
-                            await AssignLoopTargetCoreAsync(tuple.Items[i], values[i], span, context, asynchronous).ConfigureAwait(false);
+                            AssignLoopTarget(tuple.Items[i], values[i], span, context);
                         }
 
                         return;
@@ -642,7 +635,7 @@ internal sealed partial class LythonRuntime
 
                     for (var i = 0; i < starIndex; i++)
                     {
-                        await AssignLoopTargetCoreAsync(tuple.Items[i], values[i], span, context, asynchronous).ConfigureAwait(false);
+                        AssignLoopTarget(tuple.Items[i], values[i], span, context);
                     }
 
                     var starredCount = values.Count - required;
@@ -650,12 +643,12 @@ internal sealed partial class LythonRuntime
                     {
                         var remainder = new PyList(values.Skip(starIndex).Take(starredCount), context.MemoryGovernor, span);
                         if (tuple.Items[starIndex] is LoopStarredTargetSyntax starred) StoreName(starred.Name, remainder, context, span);
-                        else await AssignLoopTargetCoreAsync(tuple.Items[starIndex], remainder, span, context, asynchronous).ConfigureAwait(false);
+                        else AssignLoopTarget(tuple.Items[starIndex], remainder, span, context);
                     }
 
                     for (var i = starIndex + 1; i < tuple.Items.Count; i++)
                     {
-                        await AssignLoopTargetCoreAsync(tuple.Items[i], values[values.Count - (tuple.Items.Count - i)], span, context, asynchronous).ConfigureAwait(false);
+                        AssignLoopTarget(tuple.Items[i], values[values.Count - (tuple.Items.Count - i)], span, context);
                     }
 
                     return;

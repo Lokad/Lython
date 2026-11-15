@@ -221,7 +221,7 @@ internal sealed partial class LythonRuntime
 
         foreach (var item in sequence)
         {
-            AssignLoopTarget(clause.Target, item, clause.Iterable.Span, context);
+            AssignTarget(clause.StoreTarget, item, context);
 
             if (clause.Condition is not null && !IsTruthy(EvaluateLoweredExpression(clause.Condition, context), context, clause.Condition.Span))
             {

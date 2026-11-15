@@ -180,7 +180,7 @@ internal sealed partial class LythonRuntime
                 // A pass-only body and a builtin range iterator may otherwise
                 // perform no expression, call or allocation checkpoints.
                 context.CheckExecution(statement.Span);
-                AssignLoopTarget(syntax.Target, item, statement.Iterable.Span, context);
+                AssignTarget(statement.Target, item, context);
                 var bodyFlow = ExecuteStatements(statement.Body, context);
                 if (bodyFlow.Control is ContinueSignal)
                 {
@@ -295,7 +295,7 @@ internal sealed partial class LythonRuntime
         context.EnterInterpreterFrame(statement.Span);
         try
         {
-            ExecuteWithStatement(statement.Syntax, statement.ContextExpression, statement.Body, context);
+            ExecuteWithStatement(statement, context);
         }
         finally
         {
@@ -337,7 +337,7 @@ internal sealed partial class LythonRuntime
                     return;
                 case LoweredChainedAssignmentStatement chained:
                     var chainedValue = EvaluateLoweredExpression(chained.Expression, context);
-                    foreach (var assignmentTarget in chained.Assignment.Targets)
+                    foreach (var assignmentTarget in chained.Targets)
                     {
                         AssignTarget(assignmentTarget, chainedValue, context);
                     }
@@ -345,7 +345,7 @@ internal sealed partial class LythonRuntime
                 case LoweredAnnotatedAssignmentStatement annotated:
                     if (annotated.Expression is not null)
                     {
-                        AssignTarget(annotated.Assignment.Target, EvaluateLoweredExpression(annotated.Expression, context), context);
+                        AssignTarget(annotated.Target, EvaluateLoweredExpression(annotated.Expression, context), context);
                     }
                     else EvaluateAnnotationTargetReadsAsync(annotated, context, false).GetAwaiter().GetResult();
                     StoreVariableAnnotationAsync(annotated, context, false).GetAwaiter().GetResult();
@@ -360,10 +360,9 @@ internal sealed partial class LythonRuntime
                         augmented.Span));
                     return;
                 case LoweredUnpackingAssignmentStatement unpacking:
-                    AssignTargets(
-                        unpacking.Assignment.Targets,
+                    AssignTarget(
+                        unpacking.Target,
                         EvaluateLoweredExpression(unpacking.Expression, context),
-                        unpacking.Expression.Span,
                         context);
                     return;
                 case LoweredSubscriptAssignmentStatement subscript:
@@ -417,15 +416,16 @@ internal sealed partial class LythonRuntime
     }
 
     private static AugmentedAssignmentTargetReference ResolveLoweredAugmentedAssignmentTarget(
-        LoweredAugmentedAssignmentTarget target,
+        LoweredStoreTarget target,
         ExecutionContext context)
     {
         switch (target)
         {
-            case LoweredNameAugmentedAssignmentTarget name:
-                return ResolveAugmentedAssignmentTarget(name.Target, context);
+            case LoweredNameStoreTarget name:
+                return new AugmentedAssignmentTargetReference(ResolveName(name.Name, name.Span, context),
+                    value => StoreName(name.Name, value, context, name.Span));
 
-            case LoweredSubscriptAugmentedAssignmentTarget subscript:
+            case LoweredSubscriptStoreTarget subscript:
                 var subscriptTarget = EvaluateLoweredExpression(subscript.Receiver, context);
                 var index = EvaluateLoweredExpression(subscript.Index, context);
                 var subscriptValue = ReadSubscriptValue(subscriptTarget, index, subscript.Span, context);
@@ -433,7 +433,7 @@ internal sealed partial class LythonRuntime
                     subscriptValue,
                     value => SetSubscriptValue(subscriptTarget, index, value, subscript.Span, context));
 
-            case LoweredSliceAugmentedAssignmentTarget slice:
+            case LoweredSliceStoreTarget slice:
                 var sliceTarget = EvaluateLoweredExpression(slice.Receiver, context);
                 var start = slice.Start is null ? null : EvaluateLoweredExpression(slice.Start, context);
                 var end = slice.End is null ? null : EvaluateLoweredExpression(slice.End, context);
@@ -450,16 +450,16 @@ internal sealed partial class LythonRuntime
                     sliceValue,
                     value => ExecuteSliceAssignment(sliceTarget, start, end, step, value, slice.Span, context));
 
-            case LoweredMemberAugmentedAssignmentTarget member:
+            case LoweredMemberStoreTarget member:
                 var memberTarget = EvaluateLoweredExpression(member.Receiver, context);
-                if (!TryResolveRuntimeMember(memberTarget, member.Target.MemberName, context, member.Span, out var memberValue))
+                if (!TryResolveRuntimeMember(memberTarget, member.MemberName, context, member.Span, out var memberValue))
                 {
-                    throw PyMemberAccess.CreateMissingMemberError(memberTarget, member.Target.MemberName, member.Span, context);
+                    throw PyMemberAccess.CreateMissingMemberError(memberTarget, member.MemberName, member.Span, context);
                 }
 
                 return new AugmentedAssignmentTargetReference(
                     memberValue,
-                    value => SetMemberValue(memberTarget, member.Target.MemberName, value, member.Span, context));
+                    value => SetMemberValue(memberTarget, member.MemberName, value, member.Span, context));
 
             default:
                 throw new InvalidOperationException($"Unsupported lowered augmented target: {target.GetType().Name}");

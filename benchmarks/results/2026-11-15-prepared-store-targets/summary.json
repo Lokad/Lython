@@ -1,0 +1,195 @@
+{
+  "complete": true,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "rows": [
+    {
+      "case": "scripts.config-manifest.small",
+      "lane": "compile",
+      "elapsedMilliseconds": {
+        "candidate": 0.2021186148208469,
+        "reference": 0.19880611053054661,
+        "candidate-control": 0.20449059122591226,
+        "reference-control": 0.20136157648953304
+      },
+      "cpuMilliseconds": {
+        "candidate": 0.20358306188925082,
+        "reference": 0.20096463022508038,
+        "candidate-control": 0.2050020500205002,
+        "reference-control": 0.20531400966183577
+      },
+      "elapsedChangePercent": [
+        0.37595967637509276,
+        1.5539284062676462,
+        1.6661984289418008,
+        2.8593088412603107
+      ],
+      "cpuChangePercent": [
+        -0.8430733857060835,
+        -0.1519426958975556,
+        1.3029315960912058,
+        2.009020090200897
+      ],
+      "referenceSpreadPercent": 1.2854061437884035,
+      "candidateSpreadPercent": 1.1735566301836364
+    },
+    {
+      "case": "scripts.config-manifest.small",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "candidate": 0.49094429213483143,
+        "reference": 0.49963573756432245,
+        "candidate-control": 0.49458979222972965,
+        "reference-control": 0.4960710478547855
+      },
+      "cpuMilliseconds": {
+        "candidate": 0.593900481540931,
+        "reference": 0.6003430531732418,
+        "candidate-control": 0.5912162162162161,
+        "reference-control": 0.594059405940594
+      },
+      "elapsedChangePercent": [
+        -1.73955639599781,
+        -1.0334720685926446,
+        -1.009924822269781,
+        -0.29859747539418
+      ],
+      "cpuChangePercent": [
+        -1.5202702702702742,
+        -1.0731483604677683,
+        -0.4786036036036112,
+        -0.02675227394327573
+      ],
+      "referenceSpreadPercent": 0.7185845102132271,
+      "candidateSpreadPercent": 0.7425486258422653
+    },
+    {
+      "case": "scripts.config-generated-guards.medium",
+      "lane": "compile",
+      "elapsedMilliseconds": {
+        "reference-control": 2.8185891485714287,
+        "candidate-control": 2.8390756741573036,
+        "reference": 2.8754184915254237,
+        "candidate": 2.8633801477272733
+      },
+      "cpuMilliseconds": {
+        "reference-control": 2.8,
+        "candidate-control": 2.865168539325843,
+        "reference": 2.88135593220339,
+        "candidate": 2.840909090909091
+      },
+      "elapsedChangePercent": [
+        -1.2639140172198027,
+        -0.41866405998397527,
+        0.7268361760442543,
+        1.589128347370039
+      ],
+      "cpuChangePercent": [
+        -1.4037433155080326,
+        -0.5617977528090012,
+        1.461038961038974,
+        2.327447833065821
+      ],
+      "referenceSpreadPercent": 2.016233653024546,
+      "candidateSpreadPercent": 0.8560699452713205
+    },
+    {
+      "case": "scripts.config-generated-guards.medium",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "reference-control": 2.9448905487804877,
+        "candidate-control": 2.9542752750000005,
+        "reference": 2.97471938125,
+        "candidate": 2.960341785276073
+      },
+      "cpuMilliseconds": {
+        "reference-control": 2.9878048780487805,
+        "candidate-control": 3.0,
+        "reference": 3.0625,
+        "candidate": 3.067484662576687
+      },
+      "elapsedChangePercent": [
+        -0.6872616751301242,
+        -0.4833261269802547,
+        0.31867826882052697,
+        0.5246794826376133
+      ],
+      "cpuChangePercent": [
+        -2.0408163265306145,
+        0.1627644922999938,
+        0.40816326530612734,
+        2.666833604607488
+      ],
+      "referenceSpreadPercent": 1.0129012258830672,
+      "candidateSpreadPercent": 0.20534681813200173
+    },
+    {
+      "case": "scripts.csv-invoice.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 6.755533527027027,
+        "candidate-control": 6.838869541666666,
+        "reference": 6.815733767123287,
+        "candidate": 6.66589616
+      },
+      "cpuMilliseconds": {
+        "reference-control": 6.891891891891892,
+        "candidate-control": 6.944444444444444,
+        "reference": 6.986301369863014,
+        "candidate": 6.800000000000001
+      },
+      "elapsedChangePercent": [
+        -2.198407570525296,
+        -1.3268732464787991,
+        0.33944657074163054,
+        1.2335963444816578
+      ],
+      "cpuChangePercent": [
+        -2.6666666666666616,
+        -1.3333333333333308,
+        -0.5991285403050273,
+        0.7625272331154509
+      ],
+      "referenceSpreadPercent": 0.8911248808908478,
+      "candidateSpreadPercent": 2.594900633235575
+    }
+  ],
+  "originalFailedB805Partial": [
+    {
+      "case": "scripts.config-manifest.small",
+      "lane": "compile",
+      "elapsedMilliseconds": {
+        "candidate": 0.20157548525252522,
+        "reference": 0.20444416815597077,
+        "candidate-control": 0.19914986886564762,
+        "reference-control": 0.2032788683886839
+      },
+      "cpuMilliseconds": {
+        "candidate": 0.20606060606060606,
+        "reference": 0.2071486596263201,
+        "candidate-control": 0.20112630732099757,
+        "reference-control": 0.2050020500205002
+      },
+      "elapsedChangePercent": [
+        -2.589606413367651,
+        -2.0311995810313843,
+        -1.4031620120643518,
+        -0.8379538658694563
+      ],
+      "cpuChangePercent": [
+        -2.9072610540596178,
+        -1.8905872888173914,
+        -0.5252525252525397,
+        0.5163636363636259
+      ],
+      "referenceSpreadPercent": 0.5732517976530405,
+      "candidateSpreadPercent": 1.2179854301154425
+    }
+  ],
+  "originalFailure": "Collector unsupported fresh lane after first compile job; failed process/partial/archive retained. B806 fixes protocol label only, same full binaries/catalog.",
+  "retentionDecisionPending": false,
+  "CPythonRefreshed": false,
+  "retained": true,
+  "reason": "Removes duplicate target families, syntax-keyed dictionaries and repeated lowering. Modest allocation reduction; no CPU improvement claimed. Possible manifest compile regression/contrary original partial retained as uncertainty.",
+  "fullQualificationPending": true
+}

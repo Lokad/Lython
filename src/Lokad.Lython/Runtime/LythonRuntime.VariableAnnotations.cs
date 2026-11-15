@@ -54,7 +54,7 @@ internal sealed partial class LythonRuntime
     private static async ValueTask EvaluateAnnotationTargetReadsAsync(LoweredAnnotatedAssignmentStatement statement,
         ExecutionContext context, bool asynchronous)
     {
-        foreach (var read in statement.Target.Reads.Values)
+        foreach (var read in statement.Target.EnumerateReads())
             await EvaluateTypeExpressionAsync(read, context, asynchronous).ConfigureAwait(false);
     }
 }

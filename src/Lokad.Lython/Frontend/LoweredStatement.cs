@@ -87,7 +87,7 @@ internal sealed record LoweredChainedAssignmentStatement(
     ChainedAssignmentStatementSyntax Assignment,
     LoweredExpression Expression) : LoweredAssignmentStatement(Assignment)
 {
-    public IReadOnlyList<LoweredStoreTarget> Targets { get; } = Assignment.Targets.Select(target => new LoweredStoreTarget(target)).ToArray();
+    public IReadOnlyList<LoweredStoreTarget> Targets { get; } = Assignment.Targets.Select(LoweredStoreTarget.FromSyntax).ToArray();
 }
 
 internal sealed record LoweredAnnotatedAssignmentStatement(
@@ -95,44 +95,19 @@ internal sealed record LoweredAnnotatedAssignmentStatement(
     LoweredExpression Annotation,
     LoweredExpression? Expression) : LoweredAssignmentStatement(Assignment)
 {
-    public LoweredStoreTarget Target { get; } = new(Assignment.Target);
+    public LoweredStoreTarget Target { get; } = LoweredStoreTarget.FromSyntax(Assignment.Target);
 }
-
-internal abstract record LoweredAugmentedAssignmentTarget(
-    AssignmentTargetSyntax Syntax)
-{
-    public LythonSourceSpan Span => Syntax.Span;
-}
-
-internal sealed record LoweredNameAugmentedAssignmentTarget(
-    NameAssignmentTargetSyntax Target) : LoweredAugmentedAssignmentTarget(Target);
-
-internal sealed record LoweredSubscriptAugmentedAssignmentTarget(
-    SubscriptAssignmentTargetSyntax Target,
-    LoweredExpression Receiver,
-    LoweredExpression Index) : LoweredAugmentedAssignmentTarget(Target);
-
-internal sealed record LoweredSliceAugmentedAssignmentTarget(
-    SliceAssignmentTargetSyntax Target,
-    LoweredExpression Receiver,
-    LoweredExpression? Start,
-    LoweredExpression? End,
-    LoweredExpression? Step) : LoweredAugmentedAssignmentTarget(Target);
-
-internal sealed record LoweredMemberAugmentedAssignmentTarget(
-    MemberAssignmentTargetSyntax Target,
-    LoweredExpression Receiver) : LoweredAugmentedAssignmentTarget(Target);
 
 internal sealed record LoweredAugmentedAssignmentStatement(
     AugmentedAssignmentStatementSyntax Assignment,
-    LoweredAugmentedAssignmentTarget Target,
+    LoweredStoreTarget Target,
     LoweredExpression Expression) : LoweredAssignmentStatement(Assignment);
 
 internal sealed record LoweredUnpackingAssignmentStatement(
     UnpackingAssignmentStatementSyntax Assignment,
     LoweredExpression Expression) : LoweredAssignmentStatement(Assignment)
 {
-    public LoweredStoreTarget Target { get; } = new(new UnpackingAssignmentTargetGroupSyntax(Assignment.Targets, Expression.Span));
+    public LoweredStoreTarget Target { get; } = LoweredStoreTarget.FromUnpacking(Assignment.Targets, Expression.Span);
 }
 
 internal sealed record LoweredSubscriptAssignmentStatement(
@@ -176,6 +151,7 @@ internal sealed record LoweredForStatement(
     IReadOnlyList<LoweredStatement>? ElseStatements,
     IReadOnlyList<LoweredStatement> Body) : LoweredStatement(Syntax.Span)
 {
+    public LoweredStoreTarget Target { get; } = LoweredStoreTarget.FromLoop(Syntax.Target, Iterable.Span);
     public override LoweredStatementKind Kind => LoweredStatementKind.ControlFlow;
 }
 
@@ -207,6 +183,7 @@ internal sealed record LoweredWithStatement(
     LoweredExpression ContextExpression,
     IReadOnlyList<LoweredStatement> Body) : LoweredStatement(Syntax.Span)
 {
+    public LoweredStoreTarget? Target { get; } = Syntax.Target is null ? null : LoweredStoreTarget.FromSyntax(Syntax.Target);
     public override LoweredStatementKind Kind => LoweredStatementKind.ControlFlow;
 }
 

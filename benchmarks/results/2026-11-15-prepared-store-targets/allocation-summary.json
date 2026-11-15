@@ -1,0 +1,46 @@
+{
+  "rows": [
+    {
+      "case": "scripts.config-manifest.small",
+      "lane": "compile",
+      "referenceBytes": 424336,
+      "candidateBytes": 422560,
+      "changePercent": -0.41853625428905916
+    },
+    {
+      "case": "scripts.config-generated-guards.medium",
+      "lane": "compile",
+      "referenceBytes": 4679670,
+      "candidateBytes": 4664468,
+      "changePercent": -0.3248519660574378
+    },
+    {
+      "case": "scripts.config-manifest.small",
+      "lane": "fresh",
+      "referenceBytes": 547566.5,
+      "candidateBytes": 543823.625,
+      "changePercent": -0.683547112542493
+    },
+    {
+      "case": "scripts.config-generated-guards.medium",
+      "lane": "fresh",
+      "referenceBytes": 4755095.5,
+      "candidateBytes": 4739872,
+      "changePercent": -0.32015129874889414
+    },
+    {
+      "case": "scripts.csv-invoice.large",
+      "lane": "warm",
+      "referenceBytes": 4197002.5,
+      "candidateBytes": 4197002.5,
+      "changePercent": 0.0
+    }
+  ],
+  "complete": true,
+  "elapsedSeconds": 65.07361829979345,
+  "allGoldensAndBalancesPassed": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "performanceQualified": false,
+  "CPUorElapsedClaim": false,
+  "boundary": "Local process-wide natural-GC allocations. Compile/dispose or complete fresh/warm with reset/I/O/goldens/result cleanup. One additional compiled control remains held outside counted operations. Not identical to quiet command-v2 timing boundary."
+}

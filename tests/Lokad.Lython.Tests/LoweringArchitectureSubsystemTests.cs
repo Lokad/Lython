@@ -254,10 +254,10 @@ owner.member = 12
         Assert.IsType<LoweredNameAssignmentStatement>(statements[0]);
         Assert.IsType<LoweredChainedAssignmentStatement>(statements[1]);
         Assert.IsType<LoweredAnnotatedAssignmentStatement>(statements[2]);
-        Assert.IsType<LoweredNameAugmentedAssignmentTarget>(Assert.IsType<LoweredAugmentedAssignmentStatement>(statements[3]).Target);
-        Assert.IsType<LoweredSubscriptAugmentedAssignmentTarget>(Assert.IsType<LoweredAugmentedAssignmentStatement>(statements[4]).Target);
-        Assert.IsType<LoweredSliceAugmentedAssignmentTarget>(Assert.IsType<LoweredAugmentedAssignmentStatement>(statements[5]).Target);
-        Assert.IsType<LoweredMemberAugmentedAssignmentTarget>(Assert.IsType<LoweredAugmentedAssignmentStatement>(statements[6]).Target);
+        Assert.IsType<LoweredNameStoreTarget>(Assert.IsType<LoweredAugmentedAssignmentStatement>(statements[3]).Target);
+        Assert.IsType<LoweredSubscriptStoreTarget>(Assert.IsType<LoweredAugmentedAssignmentStatement>(statements[4]).Target);
+        Assert.IsType<LoweredSliceStoreTarget>(Assert.IsType<LoweredAugmentedAssignmentStatement>(statements[5]).Target);
+        Assert.IsType<LoweredMemberStoreTarget>(Assert.IsType<LoweredAugmentedAssignmentStatement>(statements[6]).Target);
         Assert.IsType<LoweredUnpackingAssignmentStatement>(statements[7]);
         Assert.IsType<LoweredSubscriptAssignmentStatement>(statements[8]);
         Assert.IsType<LoweredSliceAssignmentStatement>(statements[9]);
@@ -1213,15 +1213,15 @@ return helper(payload["items"]) + "|" + text
         }
     }
 
-    private static IEnumerable<LoweredExpression> GetAugmentedTargetExpressions(LoweredAugmentedAssignmentTarget target)
+    private static IEnumerable<LoweredExpression> GetAugmentedTargetExpressions(LoweredStoreTarget target)
     {
         switch (target)
         {
-            case LoweredSubscriptAugmentedAssignmentTarget subscript:
+            case LoweredSubscriptStoreTarget subscript:
                 yield return subscript.Receiver;
                 yield return subscript.Index;
                 break;
-            case LoweredSliceAugmentedAssignmentTarget slice:
+            case LoweredSliceStoreTarget slice:
                 yield return slice.Receiver;
                 if (slice.Start is not null)
                 {
@@ -1236,7 +1236,7 @@ return helper(payload["items"]) + "|" + text
                     yield return slice.Step;
                 }
                 break;
-            case LoweredMemberAugmentedAssignmentTarget member:
+            case LoweredMemberStoreTarget member:
                 yield return member.Receiver;
                 break;
         }

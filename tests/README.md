@@ -669,6 +669,11 @@ returns. Exposed method values keep their Python identity and metadata behavior.
 
 ## Focused development
 
+[Prepared stores](Lokad.Lython.PublicApi.Tests/PreparedStoreTargetTests.cs) cover
+nested class-body loop/with targets, receiver/index order, starred aliases,
+target lambdas and class cells. Actual asynchronous setters keep storage funded
+until cancellation and file cleanup finish; result disposal restores the allowance.
+
 Put the SDK pinned in `global.json` on PATH (currently .NET 11 RC3,
 `11.0.100-rc.3.26522.148`). Install a .NET 10 runtime for compatibility checks.
 Both suites, the probe and the worker fixture build for `net11.0` and `net10.0`;

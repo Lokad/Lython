@@ -1,0 +1,10 @@
+{
+  "terminal": true,
+  "success": false,
+  "reason": "Collector used unsupported fresh protocol lane; actual worker accepts compile-run. First compilation partial retained, no runtime conclusion.",
+  "workersJoined": true,
+  "emptyRAMArchivedAndVerifiedBeforeUnmount": true,
+  "fullImagesVerified": true,
+  "archiveSHA256": "e0d5a3ec1bacd8c82692658870bf4f5b7ad3a97f02b1657569c140bf920c5126",
+  "freeBytes": 266514432
+}

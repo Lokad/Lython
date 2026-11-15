@@ -155,7 +155,10 @@ internal sealed record LoweredComprehensionClause(
     LoopTargetSyntax Target,
     LoweredExpression Iterable,
     LoweredExpression? Condition,
-    LythonSourceSpan Span);
+    LythonSourceSpan Span)
+{
+    public LoweredStoreTarget StoreTarget { get; } = LoweredStoreTarget.FromLoop(Target, Iterable.Span);
+}
 
 internal sealed record LoweredListComprehensionExpression(
     ListComprehensionExpressionSyntax ListComprehension,

@@ -300,58 +300,6 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static AugmentedAssignmentTargetReference ResolveAugmentedAssignmentTarget(AssignmentTargetSyntax target, ExecutionContext context)
-    {
-        switch (target)
-        {
-            case NameAssignmentTargetSyntax name:
-                var currentValue = ResolveName(name.Name, name.Span, context);
-
-                return new AugmentedAssignmentTargetReference(
-                    currentValue,
-                    value => StoreName(name.Name, value, context, name.Span));
-
-            case SubscriptAssignmentTargetSyntax subscript:
-                var subscriptTarget = EvaluateExpression(subscript.Target, context);
-                var index = EvaluateExpression(subscript.Index, context);
-                var subscriptValue = ReadSubscriptValue(subscriptTarget, index, subscript.Span, context);
-                return new AugmentedAssignmentTargetReference(
-                    subscriptValue,
-                    value => SetSubscriptValue(subscriptTarget, index, value, subscript.Span, context));
-
-            case SliceAssignmentTargetSyntax slice:
-                var sliceTarget = EvaluateExpression(slice.Target, context);
-                var start = slice.Start is null ? null : EvaluateExpression(slice.Start, context);
-                var end = slice.End is null ? null : EvaluateExpression(slice.End, context);
-                var step = slice.Step is null ? null : EvaluateExpression(slice.Step, context);
-                if (sliceTarget is PyInstance instance)
-                {
-                    var sliceIndex = CreateSliceValue(start, end, step, slice.Span, context);
-                    var current = GetUserItem(instance, sliceIndex, context, slice.Span);
-                    return new AugmentedAssignmentTargetReference(current,
-                        value => SetSubscriptValue(instance, sliceIndex, value, slice.Span, context));
-                }
-                var sliceValue = PyIndexing.ReadSlice(sliceTarget, start, end, step, slice.Span, context);
-                return new AugmentedAssignmentTargetReference(
-                    sliceValue,
-                    value => ExecuteSliceAssignment(sliceTarget, start, end, step, value, slice.Span, context));
-
-            case MemberAssignmentTargetSyntax member:
-                var memberTarget = EvaluateExpression(member.Target, context);
-                if (!TryResolveRuntimeMember(memberTarget, member.MemberName, context, member.Span, out var memberValue))
-                {
-                    throw PyMemberAccess.CreateMissingMemberError(memberTarget, member.MemberName, member.Span, context);
-                }
-
-                return new AugmentedAssignmentTargetReference(
-                    memberValue,
-                    value => SetMemberValue(memberTarget, member.MemberName, value, member.Span, context));
-
-            default:
-                throw new LythonRuntimeException("TypeError", "Unsupported augmented assignment target.", target.Span);
-        }
-    }
-
     internal static object ReadSubscriptValue(object target, object index, LythonSourceSpan span, ExecutionContext context)
     {
         if (target is ElementTreeModule.Element element)
@@ -538,30 +486,26 @@ internal sealed partial class LythonRuntime
     }
 
     private static void ExecuteWithStatement(
-        WithStatementSyntax statement,
-        LoweredExpression loweredContextExpression,
-        IReadOnlyList<LoweredStatement> loweredBody,
+        LoweredWithStatement statement,
         ExecutionContext context)
     {
         _ = PyContextManagers.ExecuteWith(
-            EvaluateLoweredExpression(loweredContextExpression, context),
-            statement.LoweredTarget,
-            loweredBody,
+            EvaluateLoweredExpression(statement.ContextExpression, context),
+            statement.Target,
+            statement.Body,
             statement.Span,
             statement.ContextExpression.Span,
             context);
     }
 
     private static async ValueTask ExecuteWithStatementAsync(
-        WithStatementSyntax statement,
-        LoweredExpression loweredContextExpression,
-        IReadOnlyList<LoweredStatement> loweredBody,
+        LoweredWithStatement statement,
         ExecutionContext context)
     {
         _ = await PyContextManagers.ExecuteWithAsync(
-                await EvaluateLoweredExpressionAsync(loweredContextExpression, context).ConfigureAwait(false),
-                statement.LoweredTarget,
-                loweredBody,
+                await EvaluateLoweredExpressionAsync(statement.ContextExpression, context).ConfigureAwait(false),
+                statement.Target,
+                statement.Body,
                 statement.Span,
                 statement.ContextExpression.Span,
                 context)

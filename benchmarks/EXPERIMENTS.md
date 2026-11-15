@@ -6,6 +6,15 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[R413 prepared stores](results/2026-11-15-prepared-store-targets/README.md) retains
+one lowered target tree and deletes syntax-keyed reads, duplicate lowering and
+augmented target shapes, premature syntax lowering and obsolete dispatchers.
+Compilation allocations fall about 0.3–0.4%; complete fresh allocations 0.3–0.7%.
+B806 mixed timing establishes no CPU improvement; possible manifest compilation
+regression remains explicit. Original staging refusal, unsupported-lane B805 partial
+and diagnostic/environment failures are preserved. Focused 103 internal / 324 public
+each actual 11/10 pass; full qualification pending. Broader performance work continues.
+
 [R402 live async keyword defaults](results/2026-11-15-live-keyword-defaults/README.md)
 at6e276759 removes a pre-admission protocol-eligibility snapshot. Admission can
 replace __kwdefaults__ with a suspending key protocol; the binder now inspects

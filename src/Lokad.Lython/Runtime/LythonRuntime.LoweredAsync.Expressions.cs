@@ -254,7 +254,7 @@ internal sealed partial class LythonRuntime
 
         await foreach (var item in sequence.ConfigureAwait(false))
         {
-            await AssignLoopTargetAsync(clause.Target, item, clause.Iterable.Span, context).ConfigureAwait(false);
+            await AssignTargetAsync(clause.StoreTarget, item, context).ConfigureAwait(false);
 
             if (clause.Condition is not null &&
                 !await IsTruthyAsync(

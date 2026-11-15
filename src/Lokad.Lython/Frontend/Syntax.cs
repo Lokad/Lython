@@ -279,7 +279,6 @@ internal sealed record WithStatementSyntax(
     LythonSourceSpan Span) : StatementSyntax(Span)
 {
     public string? VariableName => (Target as NameAssignmentTargetSyntax)?.Name;
-    public LoweredStoreTarget? LoweredTarget { get; } = Target is null ? null : new(Target);
     public IEnumerable<string> BoundNames => Target is null ? [] : AssignmentTargetFacts.Names(Target);
 }
 
@@ -576,10 +575,7 @@ internal abstract record LoopTargetSyntax;
 
 internal sealed record LoopStoreTargetSyntax(
     AssignmentTargetSyntax Target,
-    bool IsStarred = false) : LoopTargetSyntax
-{
-    public LoweredStoreTarget LoweredTarget { get; } = new(Target);
-}
+    bool IsStarred = false) : LoopTargetSyntax;
 
 internal sealed record LoopNameTargetSyntax(
     string Name) : LoopTargetSyntax

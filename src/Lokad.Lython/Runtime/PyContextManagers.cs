@@ -18,7 +18,7 @@ internal static class PyContextManagers
         LythonRuntime.LoweredBlockFlow flow;
         try
         {
-            if (target is not null) LythonRuntime.AssignTarget(target.Syntax, entered, context);
+            if (target is not null) LythonRuntime.AssignTarget(target, entered, context);
             flow = LythonRuntime.ExecuteStatements(body, context);
         }
         catch (LythonRuntime.ReturnSignal)

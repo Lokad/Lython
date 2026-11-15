@@ -124,16 +124,16 @@ internal sealed partial class ExecutableScript
                     {
                         // Bare targets still evaluate receiver/index reads.
                         // Only module scope evaluates the annotation below.
-                        foreach (var read in AssignmentTargetFacts.Reads(annotated.Assignment.Target))
+                        foreach (var read in annotated.Target.EnumerateReads())
                         {
-                            currentBlock = CompileExpression(LoweredScript.LowerExpression(read), currentBlock);
+                            currentBlock = CompileExpression(read, currentBlock);
                             AddInstruction(currentBlock, ExecutableInstruction.PopTop(read.Span));
                         }
                     }
                     else if (annotated.Assignment.Target is not NameAssignmentTargetSyntax targetName)
                     {
                         currentBlock = CompileExpression(annotated.Expression, currentBlock);
-                        currentBlock = CompileStoreTarget(annotated.Assignment.Target, annotated.Span, currentBlock);
+                        currentBlock = CompileStoreTarget(annotated.Target, annotated.Span, currentBlock);
                     }
                     else
                     {
@@ -143,7 +143,7 @@ internal sealed partial class ExecutableScript
                     return _parameterLayout is null ? CompileModuleAnnotation(annotated, currentBlock) : currentBlock;
 
                 case LoweredAugmentedAssignmentStatement augmented:
-                    if (augmented.Target is LoweredSliceAugmentedAssignmentTarget augmentedSlice)
+                    if (augmented.Target is LoweredSliceStoreTarget augmentedSlice)
                     {
                         currentBlock = CompileExpression(augmentedSlice.Receiver, currentBlock);
                         foreach (var bound in new[] { augmentedSlice.Start, augmentedSlice.End, augmentedSlice.Step })
@@ -157,7 +157,7 @@ internal sealed partial class ExecutableScript
                         AddInstruction(currentBlock, ExecutableInstruction.StoreSlice(InternConstant(augmentedSlice.Span), augmented.Span, valueLast: true));
                         return currentBlock;
                     }
-                    if (augmented.Target is LoweredSubscriptAugmentedAssignmentTarget augmentedItem)
+                    if (augmented.Target is LoweredSubscriptStoreTarget augmentedItem)
                     {
                         currentBlock = CompileExpression(augmentedItem.Receiver, currentBlock);
                         currentBlock = CompileExpression(augmentedItem.Index, currentBlock);
@@ -167,54 +167,63 @@ internal sealed partial class ExecutableScript
                         AddInstruction(currentBlock, ExecutableInstruction.StoreSubscript(InternConstant(augmentedItem.Span), augmented.Span, valueLast: true));
                         return currentBlock;
                     }
-                    if (augmented.Target is LoweredMemberAugmentedAssignmentTarget augmentedMember)
+                    if (augmented.Target is LoweredMemberStoreTarget augmentedMember)
                     {
                         currentBlock = CompileExpression(augmentedMember.Receiver, currentBlock);
                         AddInstruction(currentBlock, ExecutableInstruction.Dup(augmentedMember.Span));
-                        AddInstruction(currentBlock, ExecutableInstruction.LoadMember(InternName(augmentedMember.Target.MemberName),
+                        AddInstruction(currentBlock, ExecutableInstruction.LoadMember(InternName(augmentedMember.MemberName),
                             AllocateLookupCache(), augmentedMember.Span));
                         currentBlock = CompileExpression(augmented.Expression, currentBlock);
                         AddInstruction(currentBlock, ExecutableInstruction.Augmented(augmented.Assignment.Operator, augmented.Span));
-                        AddInstruction(currentBlock, ExecutableInstruction.StoreMember(InternName(augmentedMember.Target.MemberName), InternConstant(augmentedMember.Span), augmented.Span, valueLast: true));
+                        AddInstruction(currentBlock, ExecutableInstruction.StoreMember(InternName(augmentedMember.MemberName), InternConstant(augmentedMember.Span), augmented.Span, valueLast: true));
                         return currentBlock;
                     }
-                    if (augmented.Target is not LoweredNameAugmentedAssignmentTarget augmentedName)
+                    if (augmented.Target is not LoweredNameStoreTarget augmentedName)
                         throw new InvalidOperationException("Unknown augmented assignment target.");
 
-                    CompileLoadIdentifier(augmentedName.Target.Name, augmented.Span, currentBlock);
+                    CompileLoadIdentifier(augmentedName.Name, augmented.Span, currentBlock);
                     currentBlock = CompileExpression(augmented.Expression, currentBlock);
                     AddInstruction(currentBlock, ExecutableInstruction.Augmented(augmented.Assignment.Operator, augmented.Span));
-                    CompileStoreBoundName(augmentedName.Target.Name, augmented.Span, currentBlock);
+                    CompileStoreBoundName(augmentedName.Name, augmented.Span, currentBlock);
                     return currentBlock;
 
                 case LoweredChainedAssignmentStatement chained:
                     currentBlock = CompileExpression(chained.Expression, currentBlock);
-                    for (var i = 0; i < chained.Assignment.Targets.Count; i++)
+                    for (var i = 0; i < chained.Targets.Count; i++)
                     {
-                        if (i < chained.Assignment.Targets.Count - 1)
+                        if (i < chained.Targets.Count - 1)
                         {
                             AddInstruction(currentBlock, ExecutableInstruction.Dup(chained.Span));
                         }
 
-                        currentBlock = CompileStoreTarget(chained.Assignment.Targets[i], chained.Span, currentBlock);
+                        currentBlock = CompileStoreTarget(chained.Targets[i], chained.Span, currentBlock);
                     }
                     return currentBlock;
 
                 case LoweredUnpackingAssignmentStatement unpacking:
                     currentBlock = CompileExpression(unpacking.Expression, currentBlock);
-                    return CompileStoreTarget(new UnpackingAssignmentTargetGroupSyntax(unpacking.Assignment.Targets, unpacking.Span), unpacking.Span, currentBlock);
+                    return CompileStoreTarget(unpacking.Target, unpacking.Span, currentBlock);
 
                 case LoweredMemberAssignmentStatement member:
                     currentBlock = CompileExpression(member.Expression, currentBlock);
-                    currentBlock = CompileStoreTarget(new MemberAssignmentTargetSyntax(member.Assignment.Target, member.Assignment.MemberName, member.Span), member.Span, currentBlock);
+                    currentBlock = CompileExpression(member.Receiver, currentBlock);
+                    AddInstruction(currentBlock, ExecutableInstruction.StoreMember(InternName(member.Assignment.MemberName), InternConstant(member.Span), member.Span));
                     return currentBlock;
                 case LoweredSubscriptAssignmentStatement subscript:
                     currentBlock = CompileExpression(subscript.Expression, currentBlock);
-                    currentBlock = CompileStoreTarget(new SubscriptAssignmentTargetSyntax(subscript.Assignment.Target, subscript.Assignment.Index, subscript.Span), subscript.Span, currentBlock);
+                    currentBlock = CompileExpression(subscript.Receiver, currentBlock);
+                    currentBlock = CompileExpression(subscript.Index, currentBlock);
+                    AddInstruction(currentBlock, ExecutableInstruction.StoreSubscript(InternConstant(subscript.Span), subscript.Span));
                     return currentBlock;
                 case LoweredSliceAssignmentStatement slice:
                     currentBlock = CompileExpression(slice.Expression, currentBlock);
-                    currentBlock = CompileStoreTarget(new SliceAssignmentTargetSyntax(slice.Assignment.Target, slice.Assignment.Start, slice.Assignment.End, slice.Assignment.Step, slice.Span), slice.Span, currentBlock);
+                    currentBlock = CompileExpression(slice.Receiver, currentBlock);
+                    foreach (var bound in new[] { slice.Start, slice.End, slice.Step })
+                    {
+                        if (bound is null) AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(PyNone.Instance), slice.Span));
+                        else currentBlock = CompileExpression(bound, currentBlock);
+                    }
+                    AddInstruction(currentBlock, ExecutableInstruction.StoreSlice(InternConstant(slice.Span), slice.Span));
                     return currentBlock;
                 default:
                     AddInstruction(currentBlock, ExecutableInstruction.ExecuteFallbackStatement(InternStatementFallback(assignment), assignment.Span));
@@ -222,40 +231,49 @@ internal sealed partial class ExecutableScript
             }
         }
 
-        private int CompileStoreTarget(AssignmentTargetSyntax target, LythonSourceSpan span, int block)
+        private int CompileStoreTarget(LoweredStoreTarget target, LythonSourceSpan span, int block,
+            LythonSourceSpan? loopSpan = null)
         {
-            if (target is NameAssignmentTargetSyntax name)
+            if (target is LoweredNameStoreTarget name)
             {
+                foreach (var names in _comprehensionNames)
+                {
+                    if (!names.Contains(name.Name)) continue;
+                    AddInstruction(block, ExecutableInstruction.StoreGlobal(InternName(name.Name), span));
+                    return block;
+                }
                 CompileStoreBoundName(name.Name, span, block);
                 return block;
             }
-            if (target is UnpackingAssignmentTargetGroupSyntax group)
+            if (target is LoweredUnpackingStoreTarget group)
             {
-                AddInstruction(block, ExecutableInstruction.UnpackValues(UnpackingLayout.FromTargets(group.Targets), span));
-                foreach (var child in group.Targets)
-                    block = CompileStoreTarget(AssignmentTargetFacts.FromUnpacking(child), child.Span, block);
+                AddInstruction(block, ExecutableInstruction.UnpackValues(group.Layout, span));
+                // Loop destructuring shares the header's diagnostic origin;
+                // ordinary assignment retains each nested target's own span.
+                foreach (var child in group.Items)
+                    block = CompileStoreTarget(child, loopSpan ?? child.Span, block, loopSpan);
                 return block;
             }
-            if (target is SubscriptAssignmentTargetSyntax item)
+            if (target is LoweredSubscriptStoreTarget item)
             {
-                block = CompileExpression(LoweredScript.LowerExpression(item.Target), block);
-                block = CompileExpression(LoweredScript.LowerExpression(item.Index), block);
+                block = CompileExpression(item.Receiver, block);
+                block = CompileExpression(item.Index, block);
                 AddInstruction(block, ExecutableInstruction.StoreSubscript(InternConstant(item.Span), span));
                 return block;
             }
-            if (target is MemberAssignmentTargetSyntax member)
+            if (target is LoweredMemberStoreTarget member)
             {
-                block = CompileExpression(LoweredScript.LowerExpression(member.Target), block);
+                block = CompileExpression(member.Receiver, block);
                 AddInstruction(block, ExecutableInstruction.StoreMember(InternName(member.MemberName), InternConstant(member.Span), span));
                 return block;
             }
-            if (target is SliceAssignmentTargetSyntax slice)
+            if (target is LoweredSliceStoreTarget slice)
             {
-                block = CompileExpression(LoweredScript.LowerExpression(slice.Target), block);
+                block = CompileExpression(slice.Receiver, block);
                 foreach (var bound in new[] { slice.Start, slice.End, slice.Step })
                 {
                     if (bound is null) AddInstruction(block, ExecutableInstruction.LoadConst(InternConstant(PyNone.Instance), span));
-                    else block = CompileExpression(LoweredScript.LowerExpression(bound), block);
+                    else block = CompileExpression(bound, block);
                 }
                 AddInstruction(block, ExecutableInstruction.StoreSlice(InternConstant(slice.Span), span));
                 return block;
@@ -275,7 +293,7 @@ internal sealed partial class ExecutableScript
             AddInstruction(currentBlock, ExecutableInstruction.Jump(headBlock, statement.Span));
 
             AddInstruction(headBlock, ExecutableInstruction.ForNext(statement.ElseStatements is null ? exitBlock : elseBlock, statement.Iterable.Span));
-            var targetExit = CompileLoopTarget(statement.Syntax.Target, statement.Span, headBlock);
+            var targetExit = CompileStoreTarget(statement.Target, statement.Span, headBlock, statement.Span);
 
             _loops.Push(new LoopContext(headBlock, exitBlock, HasIterator: true, _protectedDepth));
             try
@@ -467,7 +485,7 @@ internal sealed partial class ExecutableScript
             if (statement.Syntax.Target is not null)
             {
                 AddInstruction(bodyBlock, ExecutableInstruction.LoadLocal(enteredSlot, statement.Span));
-                bodyBlock = CompileStoreTarget(statement.Syntax.Target!, statement.Span, bodyBlock);
+                bodyBlock = CompileStoreTarget(statement.Target!, statement.Span, bodyBlock);
             }
             _protectedDepth++;
             int? bodyExit;

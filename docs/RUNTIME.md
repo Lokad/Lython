@@ -265,6 +265,12 @@ no per-call keyword-shape map or repeated generator-body scan is needed.
 Ordinary call syntax also owns its positional/keyword expression partition, shared
 by static contract checks and return analysis. Inferred values belong to the
 current analysis state; `*` and `**` expansion is resolved again from that state.
+Assignment targets prepare their lowered receiver/index/bound reads and unpacking
+layouts once. Executable construction, retained lowered execution and asynchronous
+stores share that tree, including augmented assignment. Syntax construction does
+not lower header expressions, and stores need no syntax-keyed read dictionary.
+Evaluation order, partial stores, nested diagnostic spans and suspended setter
+ownership remain unchanged.
 Executable local slots use that same prepared parameter order,
 then append body locals. Mutable defaults, keyword-name values, attributes and closures
 remain function-owned. Native generated definitions admit their layout before

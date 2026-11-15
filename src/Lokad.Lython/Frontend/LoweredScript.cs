@@ -86,7 +86,7 @@ internal sealed class LoweredScript
             AugmentedAssignmentStatementSyntax augmentedAssignment
                 => new LoweredAugmentedAssignmentStatement(
                     augmentedAssignment,
-                    LowerAugmentedAssignmentTarget(augmentedAssignment.Target),
+                    LoweredStoreTarget.FromSyntax(augmentedAssignment.Target),
                     LowerExpression(augmentedAssignment.Expression)),
             UnpackingAssignmentStatementSyntax unpackingAssignment
                 => new LoweredUnpackingAssignmentStatement(
@@ -166,26 +166,6 @@ internal sealed class LoweredScript
             _ => new LoweredOtherStatement(statement)
         };
     }
-
-    private static LoweredAugmentedAssignmentTarget LowerAugmentedAssignmentTarget(AssignmentTargetSyntax target)
-        => target switch
-        {
-            NameAssignmentTargetSyntax name => new LoweredNameAugmentedAssignmentTarget(name),
-            SubscriptAssignmentTargetSyntax subscript => new LoweredSubscriptAugmentedAssignmentTarget(
-                subscript,
-                LowerExpression(subscript.Target),
-                LowerExpression(subscript.Index)),
-            SliceAssignmentTargetSyntax slice => new LoweredSliceAugmentedAssignmentTarget(
-                slice,
-                LowerExpression(slice.Target),
-                slice.Start is null ? null : LowerExpression(slice.Start),
-                slice.End is null ? null : LowerExpression(slice.End),
-                slice.Step is null ? null : LowerExpression(slice.Step)),
-            MemberAssignmentTargetSyntax member => new LoweredMemberAugmentedAssignmentTarget(
-                member,
-                LowerExpression(member.Target)),
-            _ => throw new InvalidOperationException($"Unsupported augmented assignment target: {target.GetType().Name}"),
-        };
 
     internal static LoweredExpression LowerExpression(ExpressionSyntax expression)
     {
