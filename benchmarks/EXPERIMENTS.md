@@ -8448,3 +8448,13 @@ loan-return handle is restored. Allocation is flat. Stable invoice elapsed is
 2–4%lower/CPU2–3%lower; text/search controls move and one fresh-config process is
 adverse. One same-bits text/fresh confirmation with longer full-request warmup is
 selected; no attribution of uncertainty to code size or retained-runtime claim.
+
+
+[R405 retained confirmation](results/2026-11-15-completed-arithmetic/confirmation/README.md)
+at43bce13a/frozen9e89 retains shared completed arithmetic/readers, modest stable
+invoice gain and flat allocation. Fresh widerCPU+0.35..+3.08% and all original
+moving/adverse controls remain. Full43737584665 qualification active.
+[Eight-phase CPython checkpoint](results/2026-11-15-arithmetic-cpython-checkpoint/README.md)
+completes321.442s sampling/cleanup, then refuses archive disk floor; recovered
+persistent evidence keeps original failed owners and exact conditions. No retiming
+or cross-collection attribution. Publication and broader objective remain open.

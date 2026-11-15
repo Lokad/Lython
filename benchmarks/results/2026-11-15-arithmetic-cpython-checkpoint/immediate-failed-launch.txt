@@ -1,0 +1,9 @@
+MainPID=0
+Result=exit-code
+ExecMainStatus=2
+ActiveState=failed
+SubState=failed
+Nov 15 16:51:05 lython-bench systemd[1]: Started lython-b792-arithmetic-cpython-20261115.service - /bin/sh /home/lokad/lython-bench-checks/arithmetic-cpython-b792-20261115/run.sh.
+Nov 15 16:51:05 lython-bench sh[3755818]: /home/lokad/lython-bench-checks/arithmetic-cpython-b792-20261115/run.sh: 1: set: Illegal option -
+Nov 15 16:51:05 lython-bench systemd[1]: lython-b792-arithmetic-cpython-20261115.service: Main process exited, code=exited, status=2/INVALIDARGUMENT
+Nov 15 16:51:05 lython-bench systemd[1]: lython-b792-arithmetic-cpython-20261115.service: Failed with result 'exit-code'.
