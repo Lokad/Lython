@@ -40,3 +40,5 @@ committed archived observation duplicates retire; canonical images/evidence and
 
 [All controls](summary.json),[decision/debt](decision.json),[raw](observations.tgz),
 [cleanup](archive-receipt.json),[exact procedures](procedure.tar.xz).
+
+[Full Windows/Ubuntu11/10, original stress and installed consumers pass](../delivery/README.md).

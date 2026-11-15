@@ -8511,3 +8511,17 @@ crosseszero with moving controls; originalB795adversity remains. Accept JSONwide
 and complete-script benefits. Allocationflat(+128Btext). No general speedup,
 causal recovery or broader-objective completion. Full retained-runtime delivery
 next; no further unchanged timing campaign, materially new evidence eligible.
+
+
+[R408 affected CPython checkpoint B797](results/2026-11-15-cased-cpython-checkpoint/README.md)
+at1b82/0ed completes189.024s with all measurement/cleanup/archive gates passing.
+Captured warm1.36–1.39×, fresh1.22–1.26×, inline warm1.02–1.06× againstCP3.13.16;
+unchanged spread up to3.91%. Helper and inline differ in counter/assert work too.
+No isolated call-cost or cross-revision attribution; other guide rows retain43b/9e.
+
+
+[R408 full delivery43744260423](results/2026-11-15-fused-cased-preparation/delivery/README.md)
+passes1b82/0ed, Windows/Ubuntu actual11/10 each4781internal/17865public ordinary,
+13/406originalstress, installed consumers.16summaries/full logs and591frozen
+source/build/test inputs verified. Terminal cached forever. Source-pair adversity,
+coarser scratch admission and broader remaining objective stay explicit.

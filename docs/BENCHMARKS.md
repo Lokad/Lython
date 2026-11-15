@@ -6,7 +6,9 @@
 | CSV invoice / compilation only | 4,096 records / 127,031 B | 0.101–0.106 ms | 0.094–0.094 ms | 1.08–1.13× | Diagnostic; spreads 4.52/0.49%; IQR ≤1.74% |
 | CSV invoice / compile and execute once | 4,096 records / 127,031 B | 6.826–7.004 ms | 6.215–6.263 ms | 1.09–1.13× | Diagnostic; spreads 2.54/0.76%; IQR ≤2.10% |
 | CSV fulfillment / warm Run | 4,096 records / 126,821 B | 7.568–7.594 ms | 6.783–6.794 ms | 1.11–1.12× | Diagnostic; spreads 0.34/0.17%; IQR ≤1.70% |
-| Text / captured helper and counter / warm Run | 3,072 lines / 35,840 B | 1.211–1.248 ms | 0.888–0.891 ms | 1.36–1.41× | Diagnostic; spreads 3.05/0.31%; IQR ≤1.24% |
+| Text / captured helper and counter / warm Run | 3,072 lines / 35,840 B | 1.213–1.236 ms | 0.891–0.893 ms | 1.36–1.39× | Diagnostic; spreads 1.84/0.19%; IQR ≤1.21% |
+| Text / captured helper and counter / compile and execute once | 3,072 lines / 35,840 B | 1.267–1.301 ms | 1.034–1.042 ms | 1.22–1.26× | Diagnostic; spreads 2.67/0.74%; IQR ≤1.04% |
+| Text / inline / warm Run | 3,072 lines / 35,840 B | 0.818–0.851 ms | 0.802–0.804 ms | 1.02–1.06× | Diagnostic; spreads 3.91/0.21%; IQR ≤1.71% |
 | JSON-lines / aggregation helpers / warm Run | 4,096 records / 110,592 B | 3.416–3.484 ms | 4.053–4.070 ms | 0.84–0.86× | Diagnostic; spreads 1.98/0.42%; IQR ≤1.31% |
 | File search / defensive helper / warm Run | 2,049 lines / 42,010 B; stop after 1,025 | 0.286–0.303 ms | 0.157–0.158 ms | 1.81–1.93× | Diagnostic; spreads 5.90/1.10%; IQR ≤3.18% |
 | Configuration / six-helper manifest / compile and execute once | 833 B inputs / 1,877 B source | 0.498–0.498 ms | 0.470–0.475 ms | 1.05–1.06× | Diagnostic; spreads 0.08/1.02%; IQR ≤1.40% |
@@ -15,15 +17,18 @@
 complete embedding measurements, not isolated interpreter CPU. Spreads compare
 the two Lython/CPython process medians; IQRs and moving controls stay visible.
 
-Measured **2026-11-15 UTC**, committed **43bce13a / frozen9e890d18**, stock
-**CPython3.13.16**, quiet Azure F4as_v7 / Ubuntu24.04.4, four AMD EPYC9V45 vCPUs,
-16GiB/no swap,.NET11RC3 workstation GC/normal tiering and CPython GIL/GC.
-[Full runtime qualification passes](../benchmarks/results/2026-11-15-completed-arithmetic/delivery/README.md). [All source identities,
-controls, boundaries and original failures](../benchmarks/results/2026-11-15-arithmetic-cpython-checkpoint/README.md).
-The measurement owner completes sampling and cleanup, then fails its archive disk
-floor; persistent evidence is recovered and independently verified. That failure
-remains explicit. Compilation/text/search controls vary; no exact portable gap or
-cross-collection speedup is claimed.
+Measured **2026-11-15 UTC**, stock **CPython3.13.16**, quiet Azure F4as_v7 /
+Ubuntu24.04.4, four AMD EPYC9V45 vCPUs,16GiB/no swap,.NET11RC3 workstation
+GC/normal tiering and CPython GIL/GC. **Text rows:1b82cd46/frozen0edc0c1c**;
+[affected checkpoint](../benchmarks/results/2026-11-15-cased-cpython-checkpoint/README.md)
+passes all measurement/cleanup gates; [full runtime qualification passes](../benchmarks/results/2026-11-15-fused-cased-preparation/delivery/README.md).
+**Other rows:43bce13a/frozen9e890d18**, with
+[full runtime qualification](../benchmarks/results/2026-11-15-completed-arithmetic/delivery/README.md)
+and [source/controls](../benchmarks/results/2026-11-15-arithmetic-cpython-checkpoint/README.md).
+That earlier collection's archive-floor failure and verified recovery remain
+explicit. Moving compilation/text/search controls preclude exact portable gaps
+or cross-collection speedups. The captured text script also updates a nonlocal
+counter; its difference from inline text does not isolate call overhead.
 
 Warm includes synchronous Run, mediated RAM I/O, stdout/file goldens and prior-result
 cleanup; excludes compilation/startup, fixture reset/protocol and final cache teardown.
@@ -50,7 +55,7 @@ These source-pair results are separate from CPython and cannot be added together
 
 | Change / complete affected script | CPU/elapsed evidence | Allocation | Limits and exact evidence |
 | --- | --- | ---: | --- |
-| Fused cased preparation / direct and captured text | Direct elapsed4.0–7.7%lower/CPU2.6–7.9%; captured compile-to-result2.1–5.4%lower/CPU2.7–4.7% | Flat(+128Btext) | Retained0ed/9e; captured warm uncertain/earlier adverse, JSON widerCPU0–3.3%higher. Scratch4×/6×input can deny earlier. [Decision/all controls](../benchmarks/results/2026-11-15-fused-cased-preparation/confirmation/README.md). Full qualification pending. |
+| Fused cased preparation / direct and captured text | Direct elapsed4.0–7.7%lower/CPU2.6–7.9%; captured compile-to-result2.1–5.4%lower/CPU2.7–4.7% | Flat(+128Btext) | Retained0ed/9e; captured warm uncertain/earlier adverse, JSON widerCPU0–3.3%higher. Scratch4×/6×input can deny earlier. [Decision/all controls](../benchmarks/results/2026-11-15-fused-cased-preparation/confirmation/README.md). [Full qualification passes](../benchmarks/results/2026-11-15-fused-cased-preparation/delivery/README.md). |
 | Shared completed arithmetic / invoice | Elapsed2.3–3.8% lower / CPU2.1–3.3% | Flat | Retained43bce13a/9e89; fresh widerCPU+0.4–3.1% and original adverse/moving controls remain. [Source pair and confirmation](../benchmarks/results/2026-11-15-completed-arithmetic/confirmation/README.md). [Full delivery passes](../benchmarks/results/2026-11-15-completed-arithmetic/delivery/README.md); no isolated causal or universal gain. |
 | Final-slot integer tuples / invoice and fulfillment | Invoice elapsed 8.5–10.1% lower / CPU 6.4–10.8%; fulfillment elapsed 3.8–5.0% lower / CPU 2.7–4.6% | −8.56% / −5.32% | Retained 22e5b72c versus f304. Original text regressions and refined moving controls remain explicit; no universal gain. [Source pairs and limits](../benchmarks/results/2026-11-15-tuple-operand-prototype/refined/README.md). |
 | Scheduled async invocation lifetime / file search | Wider process CPU 10.8–12.9% lower; elapsed 0.4–4.0% lower | No reduction claimed | Retained f304b3db versus 8fbf; [full qualification passes](../benchmarks/results/2026-11-15-invocation-lifetime/delivery/README.md). Text remains uncertain despite a bounded shared-hash control; all original adversity and sync-control debt retained. [Source pair and limits](../benchmarks/results/2026-11-15-invocation-lifetime/README.md). |
