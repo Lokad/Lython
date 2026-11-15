@@ -8196,3 +8196,22 @@ short/observed adversity and moving controls; no CPU/portable/HEAD/CPython claim
 Both cores/sources/raw survive; all workers joined. Next is a bounded owned-metadata
 construction refinement, not an unchanged retiming or permanent architecture ban.
 Publication held; runtime prototype remains uncommitted pending a coherent decision.
+
+
+R382 is now [withdrawn after its owned-metadata refinement](results/2026-11-15-shared-prefix-prototype/README.md).
+Final244b3a97 passes448internal/1,669public/net11. The controlled184.512s eight-job
+comparison retains short-helper+27.4–30.2%/observed+9.7–17.3%elapsed and mixed
+whole-script controls; no portableCPU/allocation claim. All users joined, goldens
+and ownership pass. Sources/cores/raw/procedures preserved; qualifieda7ab41f5/7161
+restored, prototype-only changes removed. No permanent architecture ban or full
+qualification of discarded code. Next is a coherent current CPython checkpoint
+and evidence-led redesign selection; independent regex core work remains open.
+
+
+[R383/B772 retained CPython checkpoint](results/2026-11-15-retained-cpython-checkpoint/README.md)
+completes seven jobs in292.683s at qualifieda7ab41f5/7161 versus stock3.13.16.
+Fulfillment1.19–1.22xwarm/1.15–1.18xfresh/1.12–1.14xcompile; JSON.842–.855xwarm.
+Captured text1.324–1.403x/file1.756–1.881x/report1.196–1.231xretain moving controls
+or IQRs. Exact phases/CPU/goldens/quiet/ownership/join/archive gates preserved;
+no source-pair causal improvement, heap or tail claim. VM users closed and original
+254/252MiB floors unchanged; no deletion or new frozen-image upload. Publication held.

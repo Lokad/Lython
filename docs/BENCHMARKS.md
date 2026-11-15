@@ -2,12 +2,12 @@
 
 | Representative workload, warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| CSV invoice / ordinary pricing helper | 4,096 records / 127,031 B | 7.358–7.414 ms | 6.087–6.100 ms | 1.21–1.22× | Diagnostic cf754; spreads 0.76/0.23%; max IQR 1.96% |
-| Text / captured helper and counter | 3,072 lines / 35,840 B | 1.244–1.249 ms | 0.897–0.908 ms | 1.37–1.39× | Diagnostic ec6c; spreads 0.43/1.17%; max IQR 2.45% |
-| JSON-lines / aggregation helpers | 4,096 records / 110,592 B | 3.447–3.458 ms | 4.149–4.159 ms | 0.829–0.833× | Diagnostic ec6c; spreads 0.32/0.22%; max IQR 1.24% |
-| File search / defensive keyword-default helper |2,049 lines /42,010 B; stop after1,025|266.372–266.982 µs|160.576–162.048 µs|1.64–1.66×|Earlier3994; Diagnostic; spreads 0.23/0.91%; max IQR 2.60%|
-| JSON-to-Markdown report|3,072 records /189,441 B|2.836–2.880 ms|2.332–2.340 ms|1.21–1.23×|Earlier fa40; Variable; spreads 1.56/0.32%; max IQR 4.82%|
-| CSV fulfillment / pricing and validation | 4,096 records / 126,821 B | 8.017–8.121 ms | 6.721–6.777 ms | 1.18–1.21× | Diagnostic cf754; spreads 1.27/0.82%; max IQR 1.02% |
+| CSV invoice / ordinary pricing helper | 4,096 records / 127,031 B | 7.358–7.414 ms | 6.087–6.100 ms | 1.21–1.22× | Earlier cf754; diagnostic; spreads 0.76/0.23%; max IQR 1.96% |
+| Text / captured helper and counter | 3,072 lines / 35,840 B | 1.220–1.267 ms | 0.903–0.921 ms | 1.32–1.40× | Variable a7ab; spreads 3.90/2.02%; max IQR 3.22% |
+| JSON-lines / aggregation helpers | 4,096 records / 110,592 B | 3.454–3.481 ms | 4.071–4.100 ms | 0.84–0.85× | Diagnostic a7ab; spreads 0.79/0.70%; max IQR 1.15% |
+| File search / defensive keyword-default helper | 2,049 lines / 42,010 B; stop after 1,025 | 0.267–0.284 ms | 0.151–0.152 ms | 1.76–1.88× | Variable a7ab; spreads 5.86/0.84%; max IQR 2.31% |
+| JSON-to-Markdown report | 3,072 records / 189,441 B | 2.772–2.840 ms | 2.308–2.319 ms | 1.20–1.23× | Variable a7ab; spreads 2.44/0.45%; max IQR 6.24% |
+| CSV fulfillment / pricing and validation | 4,096 records / 126,821 B | 8.067–8.184 ms | 6.736–6.793 ms | 1.19–1.22× | Diagnostic a7ab; spreads 1.43/0.84%; max IQR 0.94% |
 | CSV validation / for-loop checksum|4,096 records /49,163 B|5.441–5.579 ms|4.210–4.219 ms|1.29–1.33×|Earlier fa40; Diagnostic; spreads 2.47/0.21%; max IQR 1.30%|
 | Configuration JSON edit |96 B|75.3–76.4 µs|59.6–59.7 µs|1.26–1.28×|Earlier cdd9; Diagnostic; spreads1.56/0.15%; maxIQR1.55%|
 
@@ -15,32 +15,22 @@
 complete embedding measurements, not isolated interpreter CPU. Spreads are the
 Lython/CPython process-median differences; moving controls and IQRs remain visible.
 
-Text and JSON-lines measured **2026-11-15 UTC** at **ec6c0416 / frozen 6164a933**,
-against stock **CPython 3.13.16**. [Exact observations and controls](../benchmarks/results/2026-11-15-word-segment-cpython-checkpoint/README.md).
-[Full platform/stress/installed-consumer qualification passes](../benchmarks/results/2026-11-15-closed-word-segment/delivery/README.md). The source pair retains a small JSON
-regression against earlier Lython; the CPython comparison does not erase it.
+Fulfillment, captured text, JSON-lines, file search and report rows measured
+**2026-11-15 UTC** at **a7ab41f5 / frozen 716176a8**, against stock **CPython
+3.13.16**. [Exact current checkpoint, controls and raw evidence](../benchmarks/results/2026-11-15-retained-cpython-checkpoint/README.md).
+This runtime passes [full Windows/Ubuntu .NET 11/10, original stress and installed
+Release-consumer qualification](../benchmarks/results/2026-11-15-csv-final-payload/delivery/README.md).
+File search and captured text have moving Lython controls; report has a 6.24%
+maximum IQR. Keep their ranges visible rather than treating every row as stable.
+The checkpoint is diagnostic and does not attribute changes from older collections.
 
-Invoice and fulfillment rows measured **2026-11-15 UTC** at
-**cf754dc7 / frozen 95798eb9**, against stock **CPython 3.13.16**.
-[Exact scripts, phases, raw CPU and controls](../benchmarks/results/2026-11-15-shared-slots-cpython-checkpoint/README.md).
-[Validation status and exact source proof](../benchmarks/results/2026-11-15-shared-executable-slots/delivery/README.md).
-These are diagnostic complete-script observations, not cross-collection causal gains. The
-[earlier checkpoint](../benchmarks/results/2026-11-14-current-cpython-checkpoint/README.md)
-keeps its adverse/variable observations. The
-[shared-slot source pair](../benchmarks/results/2026-11-15-shared-executable-slots/README.md)
-records modest invoice improvement and accepted observed-helper/possible
-fulfillment regression; the external baseline does not erase those tradeoffs.
-File search retains earlier **3994dfda / b5a6426e**, also2026-11-14 and fully
-[qualified](../benchmarks/results/2026-11-14-protected-helper-activation/delivery/README.md);
-[B757](../benchmarks/results/2026-11-14-protected-cpython-checkpoint/README.md) also
-preserves its defensive-invoice source and phases. Report and for-validator
-retain earlier **fa40d674 / 73a1b233**; [qualified B747](../benchmarks/results/2026-11-14-range-cpython-checkpoint/README.md)
-keeps their exact sources and every adverse/variable observation. These older
-rows do not claim today's HEAD, and counter microbenchmarks do not predict them.
-The96 B configuration row uses **cdd92944 / frozenf4c4f027**, measured2026-11-14;
-its full platform/stress/package qualification
-[passes](../benchmarks/results/2026-11-14-incremental-xml/delivery/README.md).
-[Configuration phases and exact evidence](../benchmarks/results/2026-11-14-config-phases/README.md).
+Invoice retains **cf754dc7 /95798eb9**; for-validator **fa40d674 /73a1b233**;
+configuration **cdd92944 /f4c4f027**, with their named dates, phases and qualification
+in the [preceding guide](../benchmarks/results/2026-11-15-retained-cpython-checkpoint/prior-BENCHMARKS.md).
+These older rows do not claim today's HEAD. The
+[preceding text/JSON checkpoint](../benchmarks/results/2026-11-15-word-segment-cpython-checkpoint/README.md)
+and all earlier adverse results remain preserved. Retained Lython source-pair
+regressions remain separate from CPython comparisons.
 The quiet Azure F4as_v7 VM runs Ubuntu 24.04.4, four AMD EPYC 9V45 vCPUs,
 16 GiB/no swap and .NET 11 RC3, ordinary workstation GC/tiering and CPython GIL/GC.
 
@@ -60,8 +50,8 @@ compilation from execution:
 
 | Phase | Lython | CPython | Lython / CPython | Status |
 | --- | ---: | ---: | ---: | --- |
-| Fulfillment compilation alone | 129.351–130.314 µs | 115.500–115.824 µs | 1.12–1.13× | Diagnostic cf754; spreads 0.74/0.28%; max IQR 1.52% |
-| Fulfillment compile and execute once | 8.338–8.439 ms | 6.953–7.055 ms | 1.18–1.21× | Diagnostic cf754; spreads 1.19/1.46%; max IQR 1.58% |
+| Fulfillment compilation alone | 129.617–130.770 µs | 114.740–115.506 µs | 1.12–1.14× | Diagnostic a7ab; spreads 0.88/0.67%; max IQR 1.07% |
+| Fulfillment compile and execute once | 8.223–8.254 ms | 6.990–7.120 ms | 1.15–1.18× | Diagnostic a7ab; spreads 0.38/1.82%; max IQR 1.12% |
 | Defensive invoice compilation alone |103.845–105.523 µs|98.430–98.738 µs|1.05–1.07×|Earlier3994; Diagnostic; spreads 1.62/0.31%; max IQR 2.78%|
 | Defensive invoice compile and execute once |7.729–7.743 ms|6.218–6.237 ms|1.24–1.25×|Earlier3994; Diagnostic; spreads 0.19/0.31%; max IQR 1.30%|
 | Configuration compilation alone |36.6–37.3 µs|34.3–34.4 µs|1.06–1.09×|Diagnostic; spreads1.94/0.17%; maxIQR1.97%|

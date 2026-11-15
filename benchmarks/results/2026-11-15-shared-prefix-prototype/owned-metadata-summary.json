@@ -1,0 +1,218 @@
+{
+  "decision": "Withdraw this implementation after bounded construction refinements; no permanent architectural ban.",
+  "reason": "Repeated short/observed-helper adversity remains after two changed refinements. Mixed whole-script controls do not establish CPU recovery. Do not carry this debt into retained 0.11 runtime.",
+  "retainedRuntime": "a7ab41f5 / 716176a8",
+  "prototype": {
+    "reference": "716176a82b2a350fee8a9f4224fa00e167929050ca2ce255e9a3704c5ec7e85c",
+    "initial": "fc9054056831d77d9221558ef44ba31f3c697c488150da425f9f27fa0f2f410b",
+    "candidate": "244b3a97b8b6d49bf12615e31e72ec2068957f6bdf4fde92f02495e1b8562bcd"
+  },
+  "focusedNet11": {
+    "internal": 448,
+    "public": 1669
+  },
+  "net10AndFullQualification": "Not run for withdrawn final variant; initial variant has focused actual11/10 results.",
+  "complete": true,
+  "allUsersJoined": true,
+  "allGoldensAndBudgetsPassed": true,
+  "elapsedSeconds": 184.51221970003098,
+  "boundary": "Unchanged command-v2 warm: mediated filesystem I/O/full stdout-file validation/prior-result cleanup; excludes compile/startup/reset/protocol/final cache. Fresh adds compile/compiled-owner disposal. No CPU/heap/tail claim.",
+  "limits": "Local Windows elapsed diagnostics; no quiet-VM, portable CPU, allocation, CPython, heap, RSS or tail claim.",
+  "outcomes": [
+    {
+      "case": "scripts.file-search.large.protected",
+      "phase": "warm",
+      "newVsReferencePercent": [
+        -1.7234022671010707,
+        2.2062269426311287,
+        4.584893630538156,
+        8.76676258396163
+      ],
+      "newVsRoutingPercent": [
+        -0.7670807816599123,
+        2.8901493958809477,
+        5.6026006242549276,
+        9.494585470332527
+      ],
+      "processMedianMilliseconds": {
+        "reference": 9.340057142857143,
+        "initial": 9.6199125,
+        "candidate": 10.158877777777779,
+        "candidate-control": 9.54612,
+        "initial-control": 9.277972727272727,
+        "reference-control": 9.713523076923078
+      }
+    },
+    {
+      "case": "scripts.report-render.large",
+      "phase": "warm",
+      "newVsReferencePercent": [
+        -9.107973620019882,
+        -5.20512422079682,
+        -4.829981105311997,
+        -0.7434372591623384
+      ],
+      "newVsRoutingPercent": [
+        -10.560683377493362,
+        -6.7202124687717575,
+        1.2063108847068404,
+        5.552049508496193
+      ],
+      "processMedianMilliseconds": {
+        "reference": 34.590625,
+        "initial": 31.065375,
+        "candidate": 32.79014,
+        "candidate-control": 31.44012,
+        "initial-control": 35.152460000000005,
+        "reference-control": 33.03574
+      }
+    },
+    {
+      "case": "scripts.csv-fulfillment.large",
+      "phase": "warm",
+      "newVsReferencePercent": [
+        -0.30403310189329735,
+        8.30488270626224,
+        12.046386933189268,
+        21.72178245547458
+      ],
+      "newVsRoutingPercent": [
+        -5.901383798454796,
+        -3.2500312159968625,
+        2.2241912849483736,
+        5.104492659120674
+      ],
+      "processMedianMilliseconds": {
+        "reference": 26.140120000000003,
+        "initial": 31.12592,
+        "candidate": 29.28906,
+        "candidate-control": 31.818220000000004,
+        "initial-control": 30.27294,
+        "reference-control": 29.37838
+      }
+    },
+    {
+      "case": "scripts.csv-fulfillment.large",
+      "phase": "compile-run",
+      "newVsReferencePercent": [
+        3.415833127716539,
+        8.912710915406086,
+        12.190345980649141,
+        18.153616808362983
+      ],
+      "newVsRoutingPercent": [
+        -0.8799281067629061,
+        -0.5541126805292063,
+        4.388616419018221,
+        4.73174996304091
+      ],
+      "processMedianMilliseconds": {
+        "reference": 26.3435,
+        "initial": 27.485200000000003,
+        "candidate": 27.243350000000003,
+        "candidate-control": 28.69142,
+        "initial-control": 27.39515,
+        "reference-control": 24.283150000000003
+      }
+    },
+    {
+      "case": "scripts.text-summary-helpers.nonlocal-counter.large",
+      "phase": "warm",
+      "newVsReferencePercent": [
+        -2.846870719459471,
+        0.017568617429675193,
+        4.64322567308566,
+        7.728501198194171
+      ],
+      "newVsRoutingPercent": [
+        -4.366754149278584,
+        -1.9739861914203294,
+        -1.547126687375877,
+        0.9161890615138502
+      ],
+      "processMedianMilliseconds": {
+        "reference": 9.042453846153846,
+        "initial": 9.894378571428572,
+        "candidate": 9.462315384615383,
+        "candidate-control": 9.7413,
+        "initial-control": 9.652861538461538,
+        "reference-control": 9.739588888888889
+      }
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "phase": "warm",
+      "newVsReferencePercent": [
+        -3.948566309910717,
+        0.6241280192579968,
+        2.3492063492063453,
+        7.221717018625151
+      ],
+      "newVsRoutingPercent": [
+        -3.9404378794162587,
+        -2.195187801111853,
+        0.6326434177195139,
+        2.460979139095021
+      ],
+      "processMedianMilliseconds": {
+        "reference": 18.556875,
+        "initial": 19.771914285714285,
+        "candidate": 18.992814285714285,
+        "candidate-control": 19.897,
+        "initial-control": 19.419099999999997,
+        "reference-control": 19.7735875
+      }
+    },
+    {
+      "case": "diagnostic.loop-helper.short-zero.large",
+      "phase": "warm",
+      "newVsReferencePercent": [
+        27.437879223167272,
+        27.98591329642346,
+        29.69167938608981,
+        30.249405705412258
+      ],
+      "newVsRoutingPercent": [
+        1.1338096363683992,
+        2.9224096823270207,
+        3.360132589676579,
+        5.188106227423384
+      ],
+      "processMedianMilliseconds": {
+        "reference": 2.271687755102041,
+        "initial": 2.8008775,
+        "candidate": 2.8949906976744186,
+        "candidate-control": 2.94619,
+        "initial-control": 2.8625350000000003,
+        "reference-control": 2.2619604166666667
+      }
+    },
+    {
+      "case": "diagnostic.loop-helper.observed.large",
+      "phase": "warm",
+      "newVsReferencePercent": [
+        9.738737915876516,
+        12.98111772135293,
+        13.946337406318431,
+        17.313036443785656
+      ],
+      "newVsRoutingPercent": [
+        0.3889433385789065,
+        1.5206497278756448,
+        4.238053277871323,
+        5.4131515205588565
+      ],
+      "processMedianMilliseconds": {
+        "reference": 1.9704509433962263,
+        "initial": 2.217612244897959,
+        "candidate": 2.311595833333333,
+        "candidate-control": 2.2262375,
+        "initial-control": 2.192891304347826,
+        "reference-control": 2.0286705882352942
+      }
+    }
+  ],
+  "sourceInputsVerified": 589,
+  "allFrozenImagesVerified": true,
+  "publicationHeld": true
+}

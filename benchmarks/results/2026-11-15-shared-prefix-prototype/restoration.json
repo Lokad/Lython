@@ -1,0 +1,35 @@
+{
+  "retainedRuntime": "a7ab41f5 /716176a8",
+  "prototypeRemoved": true,
+  "all589RetainedInputsMatchHEADWithExplicitNewlineNormalization": true,
+  "sourceArchiveInputsVerified": 589,
+  "reconstructibleFrozenImageFilesVerified": 108,
+  "checks": [
+    {
+      "project": "Lokad.Lython.Tests",
+      "framework": "net11.0",
+      "passed": 103,
+      "log": "restored-Lokad.Lython.Tests-net11.0.log"
+    },
+    {
+      "project": "Lokad.Lython.PublicApi.Tests",
+      "framework": "net11.0",
+      "passed": 127,
+      "log": "restored-Lokad.Lython.PublicApi.Tests-net11.0.log"
+    },
+    {
+      "project": "Lokad.Lython.Tests",
+      "framework": "net10.0",
+      "passed": 103,
+      "log": "restored-Lokad.Lython.Tests-net10.0.log"
+    },
+    {
+      "project": "Lokad.Lython.PublicApi.Tests",
+      "framework": "net10.0",
+      "passed": 127,
+      "log": "restored-Lokad.Lython.PublicApi.Tests-net10.0.log"
+    }
+  ],
+  "qualifiedRuntimeRun": "43675539106GREEN terminal cached; unchanged qualification not repeated",
+  "publicationHeld": true
+}
