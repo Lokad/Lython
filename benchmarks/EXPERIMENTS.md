@@ -8622,3 +8622,6 @@ verified before unmount, all users joined. No CPU speedup or production change.
 
 
 [R418 reusable method-format layout](results/2026-11-15-method-format-layout/README.md), retained9d071eba/8afb. One execution-owned layout replaces repeated scans/metadata/native specs for format/map; deferred errors/current tokens and existing ownership.12internal/682public each actual11/10 pass;3CPython programs.18.47%less report allocation,warm17.4–19.3%/fresh18.2–19.8%lower elapsed with CPU support. Moving f-string/adverse CSV controls and conservative retained charge accepted; full delivery pending, publication held. B812all gates/cleanup pass; original0edalias custody retained. Broader roadmap active.
+
+
+[B813CPython checkpoint](results/2026-11-15-layout-cpython-checkpoint/README.md), committed58eeea6f/9d071eba: method-report warm1.657–1.685×,compile1.019–1.030×,fresh1.601–1.643×;f-string1.170–1.185×. Four phases139.049s/all gates/cleanup. Compilation/disposal and mediated I/O/prior-result cleanup stated; no causal cross-collection speedup. Original B810noise retained; full43771040409 active at capture. Broader performance objective stays open.

@@ -2,10 +2,10 @@
 
 | Representative workload / phase | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| Report / format method / warm Run | 1,024 records / 189,441 B JSON | 5.310–5.372 ms | 2.597–2.606 ms | 2.04–2.07× | Diagnostic; spreads 1.15/0.34%; IQR ≤4.68% |
-| Report / format method / compilation only | 1,024 records / 189,441 B JSON | 0.037–0.038 ms | 0.036–0.036 ms | 1.03–1.05× | Diagnostic; spreads 1.61/0.20%; IQR ≤1.73% |
-| Report / format method / compile and execute once | 1,024 records / 189,441 B JSON | 5.488–5.513 ms | 2.742–2.782 ms | 1.97–2.01× | Diagnostic; spreads 0.44/1.46%; IQR ≤8.86%; noisy fresh CPython |
-| Report / f-string / warm Run | 1,024 records / 189,441 B JSON | 2.723–2.833 ms | 2.334–2.353 ms | 1.16–1.21× | Diagnostic; spreads 3.88/0.81%; IQR ≤4.12% |
+| Report / format method / warm Run | 1,024 records / 189,441 B JSON | 4.364–4.403 ms | 2.614–2.633 ms | 1.66–1.68× | Diagnostic; spreads 0.89/0.75%; IQR ≤4.49% |
+| Report / format method / compilation only | 1,024 records / 189,441 B JSON | 0.037–0.037 ms | 0.036–0.036 ms | 1.02–1.03× | Diagnostic; spreads 0.05/0.95%; IQR ≤0.94% |
+| Report / format method / compile and execute once | 1,024 records / 189,441 B JSON | 4.438–4.479 ms | 2.727–2.771 ms | 1.60–1.64× | Diagnostic; spreads 0.92/1.62%; IQR ≤4.15% |
+| Report / f-string / warm Run | 1,024 records / 189,441 B JSON | 2.789–2.803 ms | 2.366–2.384 ms | 1.17–1.18× | Diagnostic; spreads 0.51/0.72%; IQR ≤4.63% |
 | CSV invoice / warm Run | 4,096 records / 127,031 B | 6.637–6.728 ms | 6.087–6.144 ms | 1.08–1.11× | Diagnostic; spreads 1.35/0.94%; IQR ≤1.52% |
 | CSV invoice / compilation only | 4,096 records / 127,031 B | 0.100–0.101 ms | 0.094–0.094 ms | 1.07–1.08× | Diagnostic; spreads 0.67/0.14%; IQR ≤1.06% |
 | CSV invoice / compile and execute once | 4,096 records / 127,031 B | 6.883–6.972 ms | 6.249–6.276 ms | 1.10–1.12× | Diagnostic; spreads 1.29/0.44%; IQR ≤1.50% |
@@ -22,10 +22,11 @@
 complete embedding measurements, not isolated interpreter CPU. Spreads compare
 the two Lython/CPython process medians; IQRs and moving controls stay visible.
 
-**Report rows:b06b8593/frozen8afb146e**; [affected checkpoint](../benchmarks/results/2026-11-15-format-cpython-checkpoint/README.md)
-passes measurement/cleanup gates. [Full runtime qualification passes](../benchmarks/results/2026-11-15-formatting-final-sink/delivery/README.md).
-Compilation is near parity; ordinary method formatting still costs about2×CPython.
-Fresh CPython samples are noisy (8.86%IQR); retain that uncertainty.
+**Report rows:58eeea6f/frozen9d071eba**; [affected checkpoint](../benchmarks/results/2026-11-15-layout-cpython-checkpoint/README.md)
+passes all measurement/cleanup gates. Full runtime qualification is active at capture.
+Method formatting remains1.66–1.68×CPython warm; compilation is1.02–1.03×.
+The [preceding report checkpoint](../benchmarks/results/2026-11-15-format-cpython-checkpoint/README.md)
+retains the2.04–2.07×warm result and noisy8.86%fresh CPython IQR atb06b8593.
 
 Measured **2026-11-15 UTC**, stock **CPython3.13.16**, quiet Azure F4as_v7 /
 Ubuntu24.04.4, four AMD EPYC9V45 vCPUs,16GiB/no swap,.NET11RC3 workstation
