@@ -1,0 +1,38 @@
+[
+  {
+    "framework": "net11.0",
+    "stage": "build",
+    "exitCode": 0,
+    "elapsedSeconds": 25.406954100355506
+  },
+  {
+    "framework": "net11.0",
+    "stage": "public",
+    "exitCode": 0,
+    "elapsedSeconds": 12.318557200022042
+  },
+  {
+    "framework": "net11.0",
+    "stage": "internal",
+    "exitCode": 0,
+    "elapsedSeconds": 7.9082614001818
+  },
+  {
+    "framework": "net10.0",
+    "stage": "build",
+    "exitCode": 0,
+    "elapsedSeconds": 28.822802499867976
+  },
+  {
+    "framework": "net10.0",
+    "stage": "public",
+    "exitCode": 0,
+    "elapsedSeconds": 13.585438900161535
+  },
+  {
+    "framework": "net10.0",
+    "stage": "internal",
+    "exitCode": 0,
+    "elapsedSeconds": 13.700859199743718
+  }
+]

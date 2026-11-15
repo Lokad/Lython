@@ -8116,3 +8116,14 @@ stress, installed Release consumers. All585frozen input sources proved; full log
 16summaries terminal-cached. No unchanged R373requalification or altered assertion.
 Warm-text benefit, fresh uncertainty and accepted unresolved JSONdebt remain;
 qualification is not a timing claim. Publication held; wider roadmap remains open.
+
+
+R378 [unified funded helper entry](results/2026-11-15-unified-helper-entry-withdrawn/README.md)
+withdraws its first form: about240lines removed without a new arena/controller,
+but synchronous nested callers promote earlier.285public/net11 semantics pass;
+local full-script screen invoice+11.7..+20.2%, short+17.7..+19.0%, fulfillment
+−5.7..−1.1%, file control inconclusive. No quiet/portable CPU claim, fixed veto or
+permanent ban. Preserve initial compile failure, all source/binary/control data.
+All585productionbytesrestore; forced actual11/10 builds plus285public/26internal
+each pass; tests unchanged. No VM/new full qualification, policy, dormant stub or
+publication. Qualified6164/43669461343cached; broader per-record roadmap continues.
