@@ -6,6 +6,13 @@ public sealed class ProtectedHelperExecutionTests
 {
     public static IEnumerable<object[]> PythonControls()
     {
+        yield return ["binding-fault-after-context-materialization", """
+            def required(*, value): return value
+            def guarded():
+                try: return required()
+                except TypeError: return 'caught'
+            print(guarded())
+            """, "caught\n"];
         yield return ["normal-else-and-live-defaults", """
             def compute(n, *, divisor=2):
                 try: value=n//divisor

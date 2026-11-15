@@ -8416,3 +8416,13 @@ Fresh configuration is roughly flat. Exact sources/images, original failures,
 controls and cleanup/custody proofs stay linked. One changed retirement-lifetime
 refinement is selected before the coherent decision; no CPU gain, current-runtime
 replacement or completed performance objective is claimed.
+
+R403 [B788 changed retirement refinement and withdrawal](results/2026-11-15-canonical-activation-prototype/refinement/README.md)
+finishes172.276s. Invoice+25–30%, fulfillment+16%, text+32–38%, JSON+12–14%,
+search+34–41%elapsed and adverse CPU remain; configuration controls move.
+Withdraw the whole activation implementation rather than retain this broad debt.
+All585production inputs are restored to qualified6e/02340; forced actual11/10
+builds precede108internal/72public passing checks each. Keep the independent
+TypeError-handler public case. Both sources, adverse runs, ownership/cancellation
+checks and exact restoration proof remain. No full qualification of an unretained
+runtime, unchanged retry, permanent design ban or finished performance goal.

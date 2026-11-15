@@ -1,4 +1,4 @@
-# Canonical executable activation — active prototype
+# Canonical executable activation — withdrawn prototype
 
 2026-11-15. Uncommitted **77a63bea** replaces the native helper instruction loop,
 fixed-buffer eligibility, recursive child transfer and ordinary call-state
@@ -6,7 +6,10 @@ duplication with one activation and linear runner. The activation owns final
 argument/local/operand slots independently of its optional lexical context.
 The old array-only single-idle cache becomes exclusive activation/slot loans;
 idle capacity stays charged and returned loans clear execution/guest references.
-This prototype is **not retained or fully qualified**. Publication stays postponed.
+The prototype and its [retirement refinement](refinement/README.md) are now
+**withdrawn**, with every measured source/result preserved. Production sources
+are restored to qualified6e276759; an independent public semantic case remains.
+No full qualification of the withdrawn runtime is claimed. Publication stays postponed.
 
 | Complete workload | Final allocation change | Quiet-VM elapsed change | Wider process CPU change |
 | --- | ---: | ---: | ---: |
@@ -51,14 +54,15 @@ matching probe build pass. Logical/managed stack admission, live-default lookup,
 exception provenance, direct tuple returns, cancellation, first refused admission,
 funded retained aliases, suspended users and joined cleanup remain required.
 
-One source-backed refinement is selected before deciding the coherent redesign:
+One source-backed refinement was selected before deciding the coherent redesign:
 ordinary dead operands can remain in funded private storage until its owner
 relinquishes it, removing repeated Array.Clear calls. Private cursors/builders
 still retire immediately; returned loans clear used capacity before reuse.
 Conservative reference retention is the explicit tradeoff. This is a hypothesis,
 not an explanation of the measured percentages. The first 190 internal checks
-pass for that subsequent, unmeasured refinement; its source and comparison will
-be recorded separately. Do not retain the measured regression as a speedup,
+passed before that subsequent refinement's separate measurement; its exact source,
+adverse comparison and restoration are [recorded separately](refinement/README.md).
+Do not retain the measured regression as a speedup,
 add another execution controller or discard the adverse samples.
 
 All VM goldens, balances, quiet/Closed/exit/join gates pass; observations are
