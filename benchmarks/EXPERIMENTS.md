@@ -8616,3 +8616,6 @@ verified before unmount, all users joined. No CPU speedup or production change.
 
 
 [R416 full delivery43765117358](results/2026-11-15-formatting-final-sink/delivery/README.md) qualifies b06b8593/8afb146e: Windows/Ubuntu actual11/10 each4,781internal/17,882public ordinary, original13/406stress and installed Release consumers.16summaries/594frozen inputs verified. Terminal cached forever; publication held. Broader performance work continues.
+
+
+[R417 complete method-format attribution](results/2026-11-15-method-format-attribution/README.md): qualifiedb06/8afb,1,052active samples/all unknowns retained. Repeated template/field construction selected for a reusable-layout design; no improvement/removable-share claim. B811quiet/goldens/cleanup pass, failed staging preserved. Native promotion/call transport remain debt.

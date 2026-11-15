@@ -1,0 +1,12 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "ramTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 266637312,
+  "archiveSHA256": "cdd7e180b45141b13b21fab892b26037f90e6241f5b80202a60650f2c6d8ec61",
+  "source": "Qualifiedb06b8593/frozen8afb146e; R417 method-format report attribution",
+  "performanceComparison": false
+}
