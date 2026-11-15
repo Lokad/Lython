@@ -81,6 +81,7 @@ internal sealed partial class LythonRuntime
     internal struct ExecutableWorkState
     {
         internal ExecutableCodeObject Code;
+        // Retain the binding loan's return handle after operand storage retires.
         internal ExecutableSlot[] Locals;
         internal IReadOnlyList<ExecutableCell>? ClosureCells;
         internal ExecutableValueStorage Stack;
@@ -321,7 +322,7 @@ internal sealed partial class LythonRuntime
             LiveExtent = firstTemporarySlot;
         }
 
-        internal ExecutableSlot[] Values => _items;
+        internal readonly ExecutableSlot[] Values => _items;
 
         internal readonly void CheckExecution(LythonSourceSpan span) => _state.CheckExecution(span);
 

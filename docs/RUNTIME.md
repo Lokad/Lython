@@ -345,6 +345,12 @@ physical positions, live temporary extents, maximum workspace and exception-entr
 depths. Calls can still determine the workspace capacity.
 Handlers read those positions directly into references; synchronous type
 subscription borrows immutable instruction metadata.
+Ordinary instructions and synchronous helpers share completed numeric, boolean,
+string-addition, unary and scalar-comparison selection over their final slots.
+Eligible ordinary operations bypass generic asynchronous input handling; operand
+retirement and publication retain their existing cleanup and admission order.
+Other values and guest protocols keep the general path, including actual suspension.
+Both forms share operand reads and Python-shaped missing-local diagnostics.
 Comparisons consumed immediately as conditions use one comparison/branch
 instruction. Exact numeric truth needs no boxed temporary; escaping comparisons
 retain their Python result objects. Ordered comparison helpers share the operator

@@ -90,7 +90,7 @@ internal sealed partial class LythonRuntime
                         Publish(instruction, RuntimeValue(Code.Constants[instruction.ConstantIndex]));
                         break;
                     case ExecutableOpCode.LoadLocal:
-                        Publish(instruction, ReadLocal(instruction.LocalSlot, instruction.Span));
+                        Publish(instruction, Read(instruction.LocalSlot, 0));
                         break;
                     case ExecutableOpCode.LoadGlobal:
                         Publish(instruction, ResolveExecutableGlobal(Code.Names[instruction.NameIndex], instruction.Span, _scope));
@@ -148,38 +148,14 @@ internal sealed partial class LythonRuntime
                         Publish(instruction, ReadSubscriptValue(dictionary, field, instruction.Span, _scope));
                         break;
                     }
-                    case ExecutableOpCode.Unary:
-                    {
-                        var value = Read(instruction.InputStart, 0);
-                        if (instruction.UnaryOperator == ExecutableUnaryOperator.Not ? !CanUseNativeTruth(value)
-                            : value is not (System.Numerics.BigInteger or double or bool)) return false;
-                        Publish(instruction, EvaluateExecutableUnary(instruction.UnaryOperator, value, _scope, instruction.Span));
-                        break;
-                    }
                     case ExecutableOpCode.Binary:
                     case ExecutableOpCode.Augmented:
-                    {
-                        if (instruction.OpCode == ExecutableOpCode.Augmented
-                            && instruction.AugmentedOperator == AugmentedAssignmentOperatorSyntax.MatrixMultiply) return false;
                         if (TryIntegerOperation()) break;
-                        var first = Read(instruction.InputStart, 0);
-                        var second = Read(instruction.SecondInput, 1);
-                        var augmented = instruction.OpCode == ExecutableOpCode.Augmented;
-                        if (!augmented && TryEvaluateScalarComparison(instruction.BinaryOperator, first, second,
-                            _scope, instruction.Span, out var scalarTruth))
-                        {
-                            Publish(instruction, RuntimeValue(scalarTruth));
-                            break;
-                        }
-                        if (!CanUseNativeBinary(augmented ? AugmentedBinaryOperator(instruction.AugmentedOperator)
-                            : instruction.BinaryOperator, first, second)) return false;
-                        if (augmented && (first is not (System.Numerics.BigInteger or double or bool)
-                            || second is not (System.Numerics.BigInteger or double or bool))) return false;
-                        Publish(instruction, augmented
-                            ? EvaluateAugmentedBuiltin(first, second, instruction.AugmentedOperator, _scope, instruction.Span)
-                            : EvaluateBinaryOperator(instruction.BinaryOperator, first, second, _scope, instruction.Span));
+                        goto case ExecutableOpCode.Unary;
+                    case ExecutableOpCode.Unary:
+                        if (!TryEvaluateBuiltinArithmetic(Code, Values, Index, _scope, out var arithmetic)) return false;
+                        Publish(instruction, arithmetic);
                         break;
-                    }
                     case ExecutableOpCode.CompareJumpIfFalse:
                     {
                         bool truth;
@@ -484,16 +460,7 @@ internal sealed partial class LythonRuntime
         }
 
         private object Read(int source, int input)
-        {
-            if (source < 0) return RuntimeValue(Code.Constants[~source]);
-            var value = Materialize(source);
-            if (value is null && source < Code.FirstTemporarySlot)
-                throw RuntimeErrors.UnboundLocalVariable(Code.LocalNames[source], Code.OperandReadSpan(Index, input));
-            return value.RequireNotNull();
-        }
-
-        private object ReadLocal(int slot, LythonSourceSpan span) => Materialize(slot)
-            ?? throw RuntimeErrors.UnboundLocalVariable(Code.LocalNames[slot], span);
+            => ReadExecutableOperand(Code, Values, source, Index, input, _scope);
 
         private object Take(in ExecutableInstruction instruction)
         {

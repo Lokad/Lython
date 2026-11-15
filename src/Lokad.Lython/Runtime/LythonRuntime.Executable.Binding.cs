@@ -24,19 +24,20 @@ internal sealed partial class LythonRuntime
     private static object LoadLocal(ExecutableCodeObject codeObject, ExecutableSlot[] locals, int slot, LythonSourceSpan span, ExecutionContext context)
     {
         var value = ReadLocalValue(locals, slot);
-        if (value is null)
-        {
-            if (!codeObject.IsFunctionScope && !codeObject.LocalNames[slot].StartsWith('<'))
-            {
-                if (context.Variables.TryGetValue(codeObject.LocalNames[slot], out var globalValue)) return globalValue;
-                if (context.TryGetBuiltin(codeObject.LocalNames[slot], out var builtin)) return builtin;
-            }
-            throw codeObject.IsFunctionScope
-                ? RuntimeErrors.UnboundLocalVariable(codeObject.LocalNames[slot], span)
-                : RuntimeErrors.NameNotDefined(codeObject.LocalNames[slot], span);
-        }
+        return value ?? LoadMissingLocal(codeObject, slot, span, context);
+    }
 
-        return value;
+    private static object LoadMissingLocal(ExecutableCodeObject codeObject, int slot,
+        LythonSourceSpan span, ExecutionContext context)
+    {
+        if (!codeObject.IsFunctionScope && !codeObject.LocalNames[slot].StartsWith('<'))
+        {
+            if (context.Variables.TryGetValue(codeObject.LocalNames[slot], out var globalValue)) return globalValue;
+            if (context.TryGetBuiltin(codeObject.LocalNames[slot], out var builtin)) return builtin;
+        }
+        throw codeObject.IsFunctionScope
+            ? RuntimeErrors.UnboundLocalVariable(codeObject.LocalNames[slot], span)
+            : RuntimeErrors.NameNotDefined(codeObject.LocalNames[slot], span);
     }
 
     private static bool TryLoadClosure(in ExecutableWorkState execution, ExecutionContext? context,

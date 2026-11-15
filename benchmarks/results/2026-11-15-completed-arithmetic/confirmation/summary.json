@@ -1,0 +1,69 @@
+{
+  "complete": true,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "rows": [
+    {
+      "case": "scripts.text-summary-helpers.nonlocal-counter.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 1.199984769620253,
+        "reference": 1.190401713580247,
+        "candidate-control": 1.199965633416459,
+        "reference-control": 1.2158012182741118
+      },
+      "cpuMilliseconds": {
+        "candidate": 1.2658227848101267,
+        "reference": 1.2592592592592593,
+        "candidate-control": 1.2718204488778055,
+        "reference-control": 1.2690355329949237
+      },
+      "elapsedChangePercent": [
+        -1.3024814105822458,
+        -1.300907452314537,
+        0.803419528643623,
+        0.8050270703310769
+      ],
+      "cpuChangePercent": [
+        -0.25316455696200446,
+        0.21945137157108885,
+        0.5212211466865346,
+        0.9975062344139696
+      ],
+      "referenceSpreadPercent": 2.1336918793130266,
+      "candidateSpreadPercent": 0.0015947293206641788
+    },
+    {
+      "case": "scripts.config-manifest.small",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "candidate": 0.5016176596244132,
+        "reference": 0.5009304777517565,
+        "candidate-control": 0.4995130376028202,
+        "reference-control": 0.49996803368176546
+      },
+      "cpuMilliseconds": {
+        "candidate": 0.5985915492957746,
+        "reference": 0.585480093676815,
+        "candidate-control": 0.5875440658049353,
+        "reference-control": 0.5807200929152149
+      },
+      "elapsedChangePercent": [
+        -0.2829614511175249,
+        -0.09100503398080662,
+        0.13718108663318684,
+        0.32994628286531213
+      ],
+      "cpuChangePercent": [
+        0.3525264394829586,
+        1.1750881316098694,
+        2.2394366197183047,
+        3.077464788732387
+      ],
+      "referenceSpreadPercent": 0.19250112110240636,
+      "candidateSpreadPercent": 0.42133475268095744
+    }
+  ],
+  "retentionDecisionPending": true,
+  "CPythonRefreshed": false
+}

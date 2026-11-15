@@ -78,6 +78,5 @@ internal sealed partial class LythonRuntime
             Publish(instruction, slot);
         }
 
-        private object? Materialize(int slot) => Values[slot].Object;
     }
 }

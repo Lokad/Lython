@@ -49,22 +49,6 @@ internal sealed partial class LythonRuntime
             _ => throw new InvalidOperationException("Unknown native string operation."),
         };
 
-    private static bool CanUseNativeBinary(BinaryOperatorSyntax operation, object first, object second)
-    {
-        if (first is PyString && second is PyString) return operation == BinaryOperatorSyntax.Add;
-        if (first is not (BigInteger or double or bool) || second is not (BigInteger or double or bool)) return false;
-        return operation switch
-        {
-            BinaryOperatorSyntax.Add or BinaryOperatorSyntax.Subtract or BinaryOperatorSyntax.Multiply
-                or BinaryOperatorSyntax.FloorDivide or BinaryOperatorSyntax.Modulo or BinaryOperatorSyntax.Divide
-                or BinaryOperatorSyntax.Equal or BinaryOperatorSyntax.NotEqual or BinaryOperatorSyntax.Less
-                or BinaryOperatorSyntax.LessEqual or BinaryOperatorSyntax.Greater or BinaryOperatorSyntax.GreaterEqual => true,
-            BinaryOperatorSyntax.BitwiseOr or BinaryOperatorSyntax.BitwiseXor or BinaryOperatorSyntax.BitwiseAnd
-                or BinaryOperatorSyntax.LeftShift or BinaryOperatorSyntax.RightShift => first is not double && second is not double,
-            _ => false,
-        };
-    }
-
     private static object InvokeNativeStringOperation(NativeStringOperation operation, PyString receiver,
         object? first, object? second, object? third, LythonSourceSpan span, ExecutionContext context)
         => operation switch
