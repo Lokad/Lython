@@ -6,6 +6,8 @@ public sealed class NativeWordBindingTests
 {
     public static TheoryData<string, string> Cases => new()
     {
+        { "def f(text):\n counts={'a':0}\n original=counts\n try:\n  for counts in text.lower().split():\n   counts[counts]=counts.get(counts,0)+1\n except AttributeError:print(original,counts)\n else:print('wrong',original,counts)\nf('a a')\n", "{'a': 0} a\n" },
+        { "def f(text):\n counts={'a':0}\n word=0\n try:\n  for word in text.lower().split():\n   counts[word]=counts.get(word,0)+1\n   word+=1\n except TypeError:print(counts,word)\n else:print('wrong',counts,word)\nf('a a')\n", "{'a': 1} a\n" },
         { "def run(text):\n counts={};total=0;word='before'\n for word in text.lower().split():counts[word]=counts.get(word,0)+1;total+=1\n return counts,total,word\nfor text in ('ALPHA','ALPHA ALPHA ALPHA',''):\n counts,total,word=run(text)\n print(counts,total,word,next(iter(counts)) is word if counts else False)\n", "{'alpha': 1} 1 alpha True\n{'alpha': 3} 3 alpha False\n{} 0 before False\n" },
         { "def run():\n counts={};total=0;word='before'\n for word in 'ALPHA ALPHA LONGER-THAN-INLINE ALPHA ALPHA'.lower().split():counts[word]=counts.get(word,0)+1;total+=1\n keys=list(counts)\n return counts,total,word,word is keys[0]\nprint(run())\n", "({'alpha': 4, 'longer-than-inline': 1}, 5, 'alpha', False)\n" },
         { "def run():\n counts={'a':0,'é':None};total=0;word='before'\n try:\n  for word in 'A A É'.lower().split():counts[word]=counts.get(word,0)+1;total+=1\n finally:print(counts,total,word)\ntry:run()\nexcept TypeError:print('type')\n", "{'a': 2, 'é': None} 2 é\ntype\n" },

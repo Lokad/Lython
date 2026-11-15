@@ -1,0 +1,1 @@
+["def f():\n counts={'a':0}\n for counts in 'a a'.lower().split():\n  counts[counts]=counts.get(counts,0)+1\n return counts\nf()\n", "def f():\n counts={'a':0}\n word=0\n for word in 'a a'.lower().split():\n  counts[word]=counts.get(word,0)+1\n  word+=1\n return word,counts\nf()\n"]

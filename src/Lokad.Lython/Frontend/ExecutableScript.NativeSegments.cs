@@ -42,7 +42,10 @@ internal sealed partial class ExecutableCodeObject
             // Only native iteration executes the segment; all other sources
             // keep their existing ForNext/body, including actual suspension.
             var headIndex = callIndex - 5;
-            if (headIndex < 0 || site.ArgumentCount != 2) return;
+            // Deferred word/total publication requires independent bindings.
+            // Otherwise an assignment in the original body changes a receiver
+            // or operand before a later operation observes it.
+            if (headIndex < 0 || site.ArgumentCount != 2 || store.SecondInput == store.ThirdInput) return;
             ref readonly var head = ref Instructions[headIndex];
             ref readonly var binding = ref Instructions[headIndex + 1];
             ref readonly var member = ref Instructions[headIndex + 2];
@@ -69,6 +72,7 @@ internal sealed partial class ExecutableCodeObject
                 ref readonly var totalStore = ref Instructions[tailIndex + 1];
                 if (total.AugmentedOperator != AugmentedAssignmentOperatorSyntax.Add || !total.HasLocalResult
                     || !IsUncapturedLocal(total.InputStart) || total.SecondInput >= 0
+                    || total.InputStart == store.ThirdInput || total.InputStart == store.SecondInput
                     || Constants[~total.SecondInput] is not BigInteger totalIncrement || totalIncrement.GetByteCount() >= 8
                     || totalStore.OpCode != ExecutableOpCode.StoreLocal || totalStore.LocalSlot != total.InputStart
                     || total.ResultSlot != head.ResultSlot || totalStore.LiveExtent != head.ResultSlot) return;

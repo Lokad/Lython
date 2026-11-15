@@ -584,6 +584,8 @@ Exposed iterators, generator-expression outer acquisition, user protocols and
 resource-bearing/asynchronous iteration retain their ordinary cursors and cleanup.
 The additional workspace can reject a tighter allowance earlier.
 
+Dictionary, word and optional total bindings must be distinct for whole-loop
+fusion; overlapping names use ordinary executable operations and Python errors.
 Eligible dictionary counting loops run consecutive native iterations without
 repeating operand and call setup. They preserve ordinary local binding,
 optional integer totals and cancellation.

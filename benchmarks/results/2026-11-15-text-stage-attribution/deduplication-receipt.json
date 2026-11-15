@@ -1,0 +1,50 @@
+{
+  "committedProof": [
+    {
+      "commit": "b4e98b91062034f89b6a4c8823a1e8c1c6f47bb0",
+      "canonicalArchive": "benchmarks/results/2026-11-15-shared-executable-slots/phase-one/observations.tgz",
+      "remoteRoot": "shared-slots-b762-20261115",
+      "archiveSHA256": "1f4f76d84ad575339c931a7bc43ce92a429d51e0ded9ed663a802f8dd211e482",
+      "member": "confirmation/confirmation.json",
+      "bytes": 662478,
+      "sha256": "92f42b9d5857dd725a7ec8136c401f942c3eb6d4f84fbe159588b4c24bbd0cd3"
+    },
+    {
+      "commit": "b4e98b91062034f89b6a4c8823a1e8c1c6f47bb0",
+      "canonicalArchive": "benchmarks/results/2026-11-15-shared-executable-slots/completed-layout/observations.tgz",
+      "remoteRoot": "shared-slots-b763-20261115",
+      "archiveSHA256": "dd06cc672077305c6ddb99fa85b7d570329274dada28a3895feaf3b40737dd04",
+      "member": "confirmation/confirmation.json",
+      "bytes": 663381,
+      "sha256": "e0a577d268b5d1b9c572ab9572d9545ffb68af3b86483de55c0cf57a3d78f2b3"
+    }
+  ],
+  "metadata": [
+    {
+      "path": "/home/lokad/lython-bench-checks/shared-slots-b762-20261115/confirmation/confirmation.json",
+      "uid": 1000,
+      "inode": 847193,
+      "links": 1,
+      "bytes": 662478,
+      "archiveStillPresent": "/home/lokad/lython-bench-checks/shared-slots-b762-20261115/observations.tgz"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/shared-slots-b763-20261115/confirmation/confirmation.json",
+      "uid": 1000,
+      "inode": 847213,
+      "links": 1,
+      "bytes": 663381,
+      "archiveStillPresent": "/home/lokad/lython-bench-checks/shared-slots-b763-20261115/observations.tgz"
+    }
+  ],
+  "allPathsMetadataAndRawArchiveHashesVerifiedBeforeMutation": true,
+  "idleLease": true,
+  "retiredOnlyDuplicateJson": [
+    "/home/lokad/lython-bench-checks/shared-slots-b762-20261115/confirmation/confirmation.json",
+    "/home/lokad/lython-bench-checks/shared-slots-b763-20261115/confirmation/confirmation.json"
+  ],
+  "beforeFreeBytes": 266252288,
+  "afterFreeBytes": 267579392,
+  "compressedRawArchivesAndLocalGitEvidenceRetained": true,
+  "currentImagesCatalogsToolchainsAndFloorsUnchanged": true
+}

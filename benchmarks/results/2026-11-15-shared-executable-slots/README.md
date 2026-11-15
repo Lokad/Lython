@@ -1,8 +1,7 @@
 # Shared executable storage and compiled returns
 
 2026-11-15, R373. Retain the completed managed-slot migration, with explicit
-regression tradeoffs. Full platform/stress/installed-consumer qualification is
-pending. Publication remains held; this is not completion of the performance goal.
+regression tradeoffs. [Full platform/stress/installed-consumer qualification passes](delivery/README.md). Publication remains held; this is not completion of the performance goal.
 
 Compare qualified `4beb9ecf` / frozen `bed6e57e` with first layout `5db7e4f2`
 (B762) and completed return/completion transport `95798eb9` (B763). Exact 585-input

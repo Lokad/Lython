@@ -43,3 +43,7 @@ Archive SHA256:
 [raw archive](observations.tgz), [collection/custody](collection-and-custody.tar.xz),
 [previous guide](prior-BENCHMARKS.md). Publication remains held; the whole-script
 performance objective and independent regex work continue.
+
+The exact measured runtime subsequently [passes full 43662618745 qualification](../2026-11-15-shared-executable-slots/delivery/README.md)
+at fixture-corrected `b4e98b91`, with all 585 runtime inputs unchanged. Initial
+pending metadata remains historical; no performance observation or tradeoff changes.

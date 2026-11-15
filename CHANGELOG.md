@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Preserve assignment order and Python errors when histogram loop bindings
+  overlap. Use the ordinary executable loop when its dictionary, word or total
+  refer to the same local.
+
 - Share one managed slot layout between ordinary execution, native prefixes and
   final function arguments, locals, operands and compiled returns. Remove the separate native
   integer bank, capacity facts and loan cache. Preserve Python identities, exact

@@ -1,0 +1,12 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "ramTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 267141120,
+  "archiveSHA256": "3052e91ad338fb4cac77a664893eaaf76f974aaae3a3c45c136e405a229dc328",
+  "source": "Committedcf754dc7fe8cad4edd27ac7f3700f7fdeb10b0b6/frozen95798eb99ca4945d06d10c05d4f0a64925719377190abb82c5a5775d91bb52b0; R374 complete captured-text attribution",
+  "performanceComparison": false
+}

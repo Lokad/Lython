@@ -1,0 +1,15 @@
+{
+  "runtimeCommit": "cf754dc7fe8cad4edd27ac7f3700f7fdeb10b0b6",
+  "core": "95798eb99ca4945d06d10c05d4f0a64925719377190abb82c5a5775d91bb52b0",
+  "question": "Current complete captured text remains1.42\u20131.44x CPython after shared slots; locate an entire remaining dispatch/collection/text stage, not another presumed missing arena or removed conversion.",
+  "scope": "One5s199Hz cpu-clock/fp complete captured-text capture after8guest-seconds warmup, same-process native-body disassembly; preserve all threadCPU and unknown/ambiguous samples. Diagnostic only, no elapsed comparison.",
+  "knownPresent": [
+    "Direct function binding/final slots/deferred contexts and compiled returns",
+    "Receiver-independent append/get/write/CSV operations",
+    "Bulk UTF8 CSV delimiter runs, combined row/field admission and direct record adoption",
+    "Inline strings, current-owner UTF8 windows, final split/case backing and bulk ASCII mapping"
+  ],
+  "acceptance": "Select a coherent whole-script redesign only after source/leaf evidence names eliminated work/storage and displaced implementation. Preserve Unicode/context/expansion, protocols/order/aliases, actual I/O, cancellation, terminal refusal and funded cleanup.",
+  "stopping": "One usable current-image source attribution and decision; no repeated sampling or narrow optimization campaign. No causal percentage or speedup forecast; missing stage not presumed.",
+  "publicationHeld": true
+}

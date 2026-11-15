@@ -8043,3 +8043,23 @@ fulfillment 1.18–1.21x warm/fresh and 1.12–1.13x compile; text 1.42–1.44x.
 Exact phases, controls and prior guide survive; no cross-collection attribution
 or erasure of R373 regressions. Full delivery runs independently. No new image
 or catalog upload, retirement or deduplication; all VM users/RAM closed.
+
+R373 exact cf754/957 runtime [passes 43662618745](results/2026-11-15-shared-executable-slots/delivery/README.md)
+at fixture-corrected b4e98b91: Windows/Ubuntu actual 11/10, each 4,774/17,849
+ordinary and original 13/406 stress, installed Release consumers. The initial
+43 internal fixture-cast failures per platform remain archived; no runtime or
+measured-image change, weakened assertion or repeated timing. All 585 input bytes
+match the frozen source; logs/16 summaries terminal-cached. Tradeoffs remain.
+
+## R374 / R375 — text attribution and binding correctness
+
+[One current text capture](results/2026-11-15-text-stage-attribution/README.md)
+finds 935 guest leaves, 76 unknown/zero ambiguous; 192 are the existing fused
+histogram loop, including useful work. Native body is only44 leaves, uniquely
+mapped5937bytes/150groups. No missing arena/conversion or removable share inferred.
+Source selects a callback-free segment prototype, not a performance claim.
+[Two independently reproduced alias bugs](results/2026-11-15-histogram-binding-aliases/README.md)
+require distinct dictionary/word/total bindings for fusion. Ordinary executable
+errors/effects remain; 165public+34internal per actual11/10 and both-API CPython
+controls pass. Preserve this correction independently of R376. All raw/failed
+conditions and verified archival custody remain; no VM users remain from B765.
