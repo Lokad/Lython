@@ -1,0 +1,58 @@
+[
+  {
+    "tfm": "net11.0",
+    "role": "baseline",
+    "returncode": 0,
+    "elapsedSeconds": 9.240952500142157,
+    "identity": {
+      "Lokad.Lython.dll": "0edc0c1c5a43852a61d3588a2f61973a0dd9b0b173d78b82e63ece5082383133",
+      "Lokad.Lython.Utf8Regex.dll": "eb9f01a23a428b56c765b6489758f29791caf467251f1141c9126638a630a04c",
+      "Lokad.Utf8Regex.dll": "1b96ff921bcf17f863e3f27c06d5bb5d7aa729ceb75175edabcfc41d8a1cb8a8",
+      "Lokad.Utf8Regex.PythonRe.dll": "b16a537080ef71907a3d546921ef8e0d93a6dfb73c708d2b89ce90831a175bcb",
+      "Lokad.Lython.PublicApi.Tests.dll": "246c6c9b7b2a1c5cf378e4882834602a9cc6d97f3eb439ff31f9e06fc2692c46"
+    },
+    "log": "baseline-public-net11.0.log"
+  },
+  {
+    "tfm": "net11.0",
+    "role": "native",
+    "returncode": 0,
+    "elapsedSeconds": 7.368786199949682,
+    "identity": {
+      "Lokad.Lython.dll": "0edc0c1c5a43852a61d3588a2f61973a0dd9b0b173d78b82e63ece5082383133",
+      "Lokad.Lython.Utf8Regex.dll": "457819e7544e56a40deb98706f5b5b0f0c5265d05e3abf336dc9db28a6465406",
+      "Lokad.Utf8Regex.dll": "1b96ff921bcf17f863e3f27c06d5bb5d7aa729ceb75175edabcfc41d8a1cb8a8",
+      "Lokad.Utf8Regex.PythonRe.dll": "b16a537080ef71907a3d546921ef8e0d93a6dfb73c708d2b89ce90831a175bcb",
+      "Lokad.Lython.PublicApi.Tests.dll": "246c6c9b7b2a1c5cf378e4882834602a9cc6d97f3eb439ff31f9e06fc2692c46"
+    },
+    "log": "native-public-net11.0.log"
+  },
+  {
+    "tfm": "net10.0",
+    "role": "baseline",
+    "returncode": 0,
+    "elapsedSeconds": 7.417050499934703,
+    "identity": {
+      "Lokad.Lython.dll": "8eb889c217f8152a19a9cee9b594900196f650aff50700a8b071f1598018a829",
+      "Lokad.Lython.Utf8Regex.dll": "1588ab9c0bbcb0289f05b6813b1e101f8cfc5ab6ae2400286bf7e7df7dcde5f7",
+      "Lokad.Utf8Regex.dll": "f213bea23b5ade5f3aff86ba665442eb077afd333dcb38506ae4542cb85a7f69",
+      "Lokad.Utf8Regex.PythonRe.dll": "358f1472ac8a1a1f271c4fe3608cf03b8c646129fbc44ce463b17f4123049dfe",
+      "Lokad.Lython.PublicApi.Tests.dll": "622e4641e49434ffd4d2aabaf777382e45d3d676f8658b86761dd9615060acfe"
+    },
+    "log": "baseline-public-net10.0.log"
+  },
+  {
+    "tfm": "net10.0",
+    "role": "native",
+    "returncode": 0,
+    "elapsedSeconds": 9.06725800037384,
+    "identity": {
+      "Lokad.Lython.dll": "8eb889c217f8152a19a9cee9b594900196f650aff50700a8b071f1598018a829",
+      "Lokad.Lython.Utf8Regex.dll": "52dc858a61bce9e8e4260f9d956780936d4305f5c690e4e36f91f9a65eb4e445",
+      "Lokad.Utf8Regex.dll": "f213bea23b5ade5f3aff86ba665442eb077afd333dcb38506ae4542cb85a7f69",
+      "Lokad.Utf8Regex.PythonRe.dll": "358f1472ac8a1a1f271c4fe3608cf03b8c646129fbc44ce463b17f4123049dfe",
+      "Lokad.Lython.PublicApi.Tests.dll": "622e4641e49434ffd4d2aabaf777382e45d3d676f8658b86761dd9615060acfe"
+    },
+    "log": "native-public-net10.0.log"
+  }
+]

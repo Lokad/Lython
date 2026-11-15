@@ -1,0 +1,11 @@
+{
+  "observedUTC": "2026-11-15T18:04:44.155249+00:00",
+  "source": "https://api.nuget.org/v3-flatcontainer/lokad.utf8regex.pythonre/index.json",
+  "httpStatus": 200,
+  "versions": [
+    "0.1.0",
+    "0.2.0",
+    "0.3.0",
+    "0.4.0"
+  ]
+}

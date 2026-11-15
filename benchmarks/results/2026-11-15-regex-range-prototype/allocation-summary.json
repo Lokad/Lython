@@ -1,0 +1,22 @@
+{
+  "rows": [
+    {
+      "case": "scripts.regex-range.extract",
+      "baselineBytes": 423411.5,
+      "nativeBytes": 340875.5,
+      "changePercent": -19.49309359807185
+    },
+    {
+      "case": "scripts.regex-range.rewrite",
+      "baselineBytes": 252131.5,
+      "nativeBytes": 169595.5,
+      "changePercent": -32.73529884207249
+    }
+  ],
+  "complete": true,
+  "elapsedSeconds": 17.957335100043565,
+  "allGoldensAndBalancesPassed": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "performanceQualified": false,
+  "CPUorElapsedClaim": false
+}

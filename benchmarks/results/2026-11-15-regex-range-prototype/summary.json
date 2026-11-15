@@ -1,0 +1,69 @@
+{
+  "complete": true,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "rows": [
+    {
+      "case": "scripts.regex-range.extract",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 0.4466668423913044,
+        "reference": 0.5705815944055944,
+        "candidate-control": 0.43909096336014297,
+        "reference-control": 0.5835960343601896
+      },
+      "cpuMilliseconds": {
+        "candidate": 0.46195652173913043,
+        "reference": 0.5827505827505828,
+        "candidate-control": 0.44682752457551383,
+        "reference-control": 0.6042654028436019
+      },
+      "elapsedChangePercent": [
+        -24.76114683652212,
+        -23.463009326134987,
+        -23.04501798422578,
+        -21.71727115442248
+      ],
+      "cpuChangePercent": [
+        -26.0544253447581,
+        -23.550724637681153,
+        -23.324396782841827,
+        -20.72826086956522
+      ],
+      "referenceSpreadPercent": 2.2809077758901397,
+      "candidateSpreadPercent": 1.7253552596908417
+    },
+    {
+      "case": "scripts.regex-range.rewrite",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 0.2102464702249669,
+        "reference": 0.3163912284231019,
+        "candidate-control": 0.2063287079295154,
+        "reference-control": 0.32941536784741143
+      },
+      "cpuMilliseconds": {
+        "candidate": 0.2161446846052051,
+        "reference": 0.3244646333549643,
+        "candidate-control": 0.21585903083700442,
+        "reference-control": 0.3405994550408719
+      },
+      "elapsedChangePercent": [
+        -37.36518448492999,
+        -36.175876796872686,
+        -34.786843188459926,
+        -33.548578045972356
+      ],
+      "cpuChangePercent": [
+        -36.6237885462555,
+        -36.53992059991178,
+        -33.472246696035235,
+        -33.38420820467578
+      ],
+      "referenceSpreadPercent": 4.116466657189588,
+      "candidateSpreadPercent": 1.8987965052298161
+    }
+  ],
+  "retentionDecisionPending": true,
+  "CPythonRefreshed": false
+}

@@ -8525,3 +8525,12 @@ passes1b82/0ed, Windows/Ubuntu actual11/10 each4781internal/17865public ordinary
 13/406originalstress, installed consumers.16summaries/full logs and591frozen
 source/build/test inputs verified. Terminal cached forever. Source-pair adversity,
 coarser scratch admission and broader remaining objective stay explicit.
+
+
+[R409 development native-range adapter](results/2026-11-15-regex-range-prototype/README.md)
+qualifies private0.5baseline/candidate361public regex tests each actual11/10.
+Complete extraction/replacement allocation−19.49/−32.74%; quiet B799elapsed
+−24.76..−21.72%/−37.37..−33.55%, supportingCPU, all controls retained. Original
+B798missing-metadata failure and test-image missing-fixture failure preserved.
+Normal adapter stays0.4, core unchanged; final producer qualification remains
+separate from contract correctness and this source-pair backend performance.

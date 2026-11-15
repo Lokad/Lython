@@ -1,0 +1,34 @@
+{
+  "producerVersion": "Exact unpublished0.5candidate; no normal pin/source changed",
+  "assets": [
+    {
+      "id": "Lokad.Utf8Regex",
+      "tfm": "net11.0",
+      "packageSHA256": "42F1C4F98171C456012ED99F8F5BC2DD304CFE024FB47606D4AE4D57575D9244",
+      "assemblySHA256": "1B96FF921BCF17F863E3F27C06D5BB5D7AA729CEB75175EDABCFC41D8A1CB8A8"
+    },
+    {
+      "id": "Lokad.Utf8Regex.PythonRe",
+      "tfm": "net11.0",
+      "packageSHA256": "9370A9227FAF74C469DC4D26317E1788E0BD48C721490201566C78B5198EDCC2",
+      "assemblySHA256": "B16A537080EF71907A3D546921EF8E0D93A6DFB73C708D2B89CE90831A175BCB"
+    },
+    {
+      "id": "Lokad.Utf8Regex",
+      "tfm": "net10.0",
+      "packageSHA256": "42F1C4F98171C456012ED99F8F5BC2DD304CFE024FB47606D4AE4D57575D9244",
+      "assemblySHA256": "F213BEA23B5ADE5F3AFF86BA665442EB077AFD333DCB38506AE4542CB85A7F69"
+    },
+    {
+      "id": "Lokad.Utf8Regex.PythonRe",
+      "tfm": "net10.0",
+      "packageSHA256": "9370A9227FAF74C469DC4D26317E1788E0BD48C721490201566C78B5198EDCC2",
+      "assemblySHA256": "358F1472AC8A1A1F271C4FE3608CF03B8C646129FBC44CE463B17F4123049DFE"
+    }
+  ],
+  "core11SHA256": "0edc0c1c5a43852a61d3588a2f61973a0dd9b0b173d78b82e63ece5082383133",
+  "baselineSourceSHA256": "eb7467ae536547f24c14d0492930bc991ed4f032bfae3542784f87173c77b86d",
+  "nativeSourceSHA256": "46e24753f262c852c48deae6d7f66044cd400f71fd99789528c0245d6d4e1b14",
+  "scope": "Range-only cursor advances/current per-advance token, direct typed transport without Func closure, explicit program Dispose. Flag bridge and coarse preflight remain until actual producer contracts permit removal.",
+  "noProducerWorktreeOrCoreContractChanges": true
+}

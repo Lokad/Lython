@@ -39,6 +39,29 @@ public sealed class RegexAdapterCapabilityTests
         Assert.Null(result.ReturnValue);
     }
 
+    [Theory]
+    [InlineData(32, true, "a # ignored", "a", 32)]
+    [InlineData(96, false, "a # literal", "a # literal", 96)]
+    [InlineData(32, true, "(?x)a # ignored", "a", 96)]
+    [InlineData(96, false, "(?i)a # literal", "A # literal", 98)]
+    public void ParsingVerboseAndReportedFlagsRemainIndependent(
+        int flags, bool verbose, string source, string text, int expectedFlags)
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var owner = budget.CreateScope())
+        {
+            using var pattern = Utf8RegexProvider.Instance.Compile(System.Text.Encoding.UTF8.GetBytes(source),
+                new(flags, verbose), owner, default);
+            Assert.Equal(expectedFlags, pattern.Flags);
+            var input = System.Text.Encoding.UTF8.GetBytes(text);
+            using var subject = pattern.Prepare(input, new(0, text.Length, 0, input.Length), owner, default);
+            var captures = new LythonRegexCapture?[pattern.CaptureSlotCount];
+            Assert.True(subject.TryMatch(LythonRegexMatchMode.FullMatch, captures, out _, default));
+            Assert.Equal(new LythonRegexCapture(0, input.Length), captures[0]);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Fact]
     public void CancellableCompilationDoesNotSaveItsTokenOnThePattern()
     {
