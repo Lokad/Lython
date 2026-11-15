@@ -8426,3 +8426,15 @@ builds precede108internal/72public passing checks each. Keep the independent
 TypeError-handler public case. Both sources, adverse runs, ownership/cancellation
 checks and exact restoration proof remain. No full qualification of an unretained
 runtime, unchanged retry, permanent design ban or finished performance goal.
+
+[R404/B789 invoice attribution](results/2026-11-15-invoice-call-attribution/README.md)
+closes one finite CPU/source-pair and Windows code-generation gate. Qualified22e
+has979guest samples and withdrawn17b1009, each67unknown leaves/no ambiguous leaves.
+Qualified binding/workspace/namespace-frame counts are0/0/0; samples do not support
+another frame cache as the primary redesign. Dispatch/value operations and added
+generic input/completion work guide R405's completed-arithmetic/operand boundary.
+Inclusive samples overlap useful work and predict no speedup. Actual core hashes
+were verified; inherited descriptive role labels are corrected explicitly while
+the raw originals stay archived. All users join and RAM data is archived/verified
+before teardown. No new timing campaign, full qualification or publication follows
+from this attribution alone.

@@ -1,0 +1,12 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "ramTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 266309632,
+  "archiveSHA256": "49e473ee3833c0a251dba84335bd8903989677c564c8f2d0fa6b69c72b5d36f3",
+  "source": "Qualified22e5 versus withdrawn17b; R404 complete invoice CPU/source-pair attribution",
+  "performanceComparison": false
+}
