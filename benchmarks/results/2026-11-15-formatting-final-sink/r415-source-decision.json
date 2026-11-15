@@ -1,0 +1,20 @@
+{
+  "sourceCommit": "3638e2187284109632e1e6f29d4361c15202ba14",
+  "productionChanged": false,
+  "examined": [
+    "LythonRuntime.Executable.cs:ExecutableWorkState/ExecutableValueStorage",
+    "LythonRuntime.Executable.NativePrefix.cs:NativeExecution/RunCore/Trim/TransferOwnership",
+    "LythonRuntime.Executable.Interpreter.Dispatch.cs:ExecuteInstructionPrefix",
+    "LythonRuntime.Executable.Arithmetic.cs",
+    "LythonRuntime.Executable.Results.cs"
+  ],
+  "invariants": [
+    "Native span cannot survive suspension or enter a retained class field.",
+    "Durable state is observed by existing callbacks/generators and owns pending-disposal chains.",
+    "One shared computation family already serves both forms for arithmetic/formatting/operand reads.",
+    "Native trim conservatively retains private references; framed trim also queues async cleanup.",
+    "Replacing both with a view still needs durable authoritative metadata and different retirement, or new routing/promotion."
+  ],
+  "decision": "R415 bounded gate closes without prototype; no complete path displacement justifies added control/state or loss of zero-allocation entry. Different coherent designs remain eligible.",
+  "next": "R416 replaces whole per-field temporary output callback with existing final sink; scalar payload copies disappear while protocol-return strings remain observable and funded."
+}

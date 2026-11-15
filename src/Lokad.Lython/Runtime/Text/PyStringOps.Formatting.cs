@@ -7,46 +7,20 @@ namespace Lokad.Lython.Runtime.Text;
 
 internal static partial class PyStringOps
 {
-    public static PyString Format(
+    public static async ValueTask<PyString> FormatAsync(
         PyString template,
         IReadOnlyList<object> positional,
         IReadOnlyDictionary<string, object>? keywords,
-        Func<object, string, object>? resolveFieldSuffix,
-        Func<object, char?, string?, PyString>? formatValue,
+        Func<object, string, ValueTask<object>>? resolveFieldSuffix,
+        Func<GovernedByteBuilder, object, char?, string?, ValueTask>? appendValue,
         MemoryGovernor? governor,
         LythonSourceSpan? span,
         bool forbidPositionalFields = false,
-        CancellationToken cancellationToken = default)
-        => FormatCoreAsync(template, positional, keywords, null,
-            resolveFieldSuffix is null ? null : (value, suffix) => new(resolveFieldSuffix(value, suffix)),
-            formatValue is null ? null : (value, conversion, spec) => new(formatValue(value, conversion, spec)),
-            forbidPositionalFields, governor, span, cancellationToken).GetAwaiter().GetResult();
-
-    public static ValueTask<PyString> FormatMapAsync(
-        PyString template,
-        Func<string, ValueTask<object>> resolveKeyword,
-        Func<object, string, ValueTask<object>> resolveFieldSuffix,
-        Func<object, char?, string?, ValueTask<PyString>> formatValue,
-        MemoryGovernor governor,
-        LythonSourceSpan span,
-        CancellationToken cancellationToken)
-        => FormatCoreAsync(template, Array.Empty<object>(), null, resolveKeyword, resolveFieldSuffix,
-            formatValue, true, governor, span, cancellationToken);
-
-    private static async ValueTask<PyString> FormatCoreAsync(
-        PyString template,
-        IReadOnlyList<object> positional,
-        IReadOnlyDictionary<string, object>? keywords,
-        Func<string, ValueTask<object>>? resolveKeyword,
-        Func<object, string, ValueTask<object>>? resolveFieldSuffix,
-        Func<object, char?, string?, ValueTask<PyString>>? formatValue,
-        bool forbidPositionalFields,
-        MemoryGovernor? governor,
-        LythonSourceSpan? span,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken = default,
+        Func<string, ValueTask<object>>? resolveKeyword = null)
     {
-        var state = new FormatState(positional, keywords, resolveKeyword, resolveFieldSuffix, formatValue,
-            forbidPositionalFields, governor, span, cancellationToken);
+        var state = new FormatState(positional, keywords, resolveKeyword, resolveFieldSuffix, appendValue,
+            forbidPositionalFields, governor, span, cancellationToken, template.ByteLength);
         var builder = CreateBuilder(governor, span, checked(template.ByteLength + positional.Count * 8));
         try
         {
@@ -54,31 +28,40 @@ internal static partial class PyStringOps
             cancellationToken.ThrowIfCancellationRequested();
             return builder.ToPyString();
         }
-        finally { builder.Release(); }
+        finally
+        {
+            try { builder.Release(); }
+            finally { state.Dispose(); }
+        }
     }
 
-    private sealed class FormatState
+    private sealed class FormatState : IDisposable
     {
         public FormatState(
             IReadOnlyList<object> positional,
             IReadOnlyDictionary<string, object>? keywords,
             Func<string, ValueTask<object>>? resolveKeyword,
             Func<object, string, ValueTask<object>>? resolveFieldSuffix,
-            Func<object, char?, string?, ValueTask<PyString>>? formatValue,
+            Func<GovernedByteBuilder, object, char?, string?, ValueTask>? appendValue,
             bool forbidPositionalFields,
             MemoryGovernor? governor,
             LythonSourceSpan? span,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            int templateBytes)
         {
             Positional = positional;
             Keywords = keywords;
             ResolveKeyword = resolveKeyword;
             ResolveFieldSuffix = resolveFieldSuffix;
-            FormatValue = formatValue;
+            AppendValue = appendValue;
             ForbidPositionalFields = forbidPositionalFields;
             Governor = governor;
             Span = span;
             CancellationToken = cancellationToken;
+            // One operation owns metadata across all callbacks and nested specs.
+            // Cover both supported nesting levels and replacement overlap;
+            // expanded specifications admit their additional capacity below.
+            _metadataBaseBytes = checked(512L + 8L * templateBytes);
         }
 
         public IReadOnlyList<object> Positional { get; }
@@ -89,7 +72,29 @@ internal static partial class PyStringOps
 
         public Func<object, string, ValueTask<object>>? ResolveFieldSuffix { get; }
 
-        public Func<object, char?, string?, ValueTask<PyString>>? FormatValue { get; }
+        public Func<GovernedByteBuilder, object, char?, string?, ValueTask>? AppendValue { get; }
+
+        private readonly long _metadataBaseBytes;
+        private MemoryGovernor.TemporaryMemoryReservation? _metadata;
+        private long _metadataBytes;
+
+        public void AdmitMetadata(long additionalBytes = 0)
+        {
+            if (Governor is null) return;
+            var target = checked(_metadataBaseBytes + additionalBytes);
+            if (_metadata is null)
+            {
+                _metadata = Governor.ReserveTemporary(target, Span);
+                _metadataBytes = target;
+            }
+            else if (target > _metadataBytes)
+            {
+                _metadata.Grow(target - _metadataBytes, Span);
+                _metadataBytes = target;
+            }
+        }
+
+        public void Dispose() => _metadata?.Dispose();
 
         public MemoryGovernor? Governor { get; }
 
@@ -265,10 +270,9 @@ internal static partial class PyStringOps
             scan++;
         }
 
-        // Metadata remains private until callback completion. Include room for
-        // resolver error strings; expanded specs grow this same temporary lease.
-        using var metadata = fieldBytes.IsEmpty ? null : state.Governor?.ReserveTemporary(
-            checked(128L + 4L * fieldBytes.Length), state.Span);
+        // Keep operation-owned metadata funded until all callbacks settle.
+        // Empty automatic fields require no metadata allocation.
+        if (!fieldBytes.IsEmpty) state.AdmitMetadata();
         var root = Encoding.UTF8.GetString(fieldBytes.Span[..rootEnd]);
         object selected;
         if (root.Length == 0)
@@ -367,7 +371,7 @@ internal static partial class PyStringOps
                 try
                 {
                     await AppendFormatTemplateAsync(state, rawSpec, nested).ConfigureAwait(false);
-                    metadata?.Grow(checked(32L + 2L * nested.Length), state.Span);
+                    state.AdmitMetadata(checked(32L + 2L * nested.Length));
                     spec = Encoding.UTF8.GetString(nested.WrittenSpan);
                 }
                 finally { nested.Release(); state.Depth--; }
@@ -378,7 +382,7 @@ internal static partial class PyStringOps
             }
         }
 
-        if (conversion is null && spec is null && state.FormatValue is null)
+        if (conversion is null && spec is null && state.AppendValue is null)
         {
             var formatted = selected switch
             {
@@ -391,14 +395,13 @@ internal static partial class PyStringOps
             return;
         }
 
-        if (state.FormatValue is null)
+        if (state.AppendValue is null)
         {
             throw new InvalidOperationException("Format specifiers are not supported.");
         }
 
-        var result = await state.FormatValue(selected, conversion is { } rune ? (char)rune.Value : null, spec).ConfigureAwait(false);
+        await state.AppendValue(builder, selected, conversion is { } rune ? (char)rune.Value : null, spec).ConfigureAwait(false);
         state.CancellationToken.ThrowIfCancellationRequested();
-        builder.Append(result);
     }
 
     private static bool IsFormatFieldDelimiter(byte value)

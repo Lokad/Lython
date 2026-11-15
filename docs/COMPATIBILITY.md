@@ -185,7 +185,7 @@ literals retain their Python escape behavior. Unicode identifier normalization, 
 `str.format_map` resolves fields lazily through the mapping's item protocol,
 including custom mappings and defaultdict; unused keys are not inspected.
 RunAsync awaits supported field lookup, attribute and formatting callbacks in
-`format_map`. `str.format` retains its synchronous callback boundary.
+both `format_map` and `str.format`.
 RunAsync also awaits custom index/width conversions for right splitting, tab
 expansion, padding and search bounds, and truth conversion for `splitlines`.
 Padding, search and stripping parameters are positional-only, following Python.

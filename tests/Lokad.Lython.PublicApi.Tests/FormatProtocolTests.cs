@@ -111,7 +111,7 @@ print(CONVERT(Value()))
     [Theory]
     [InlineData("(lambda value:'{}'.format(value))")]
     [InlineData("(lambda value:'{0:>4}'.format(value))")]
-    public async Task StringMethodCallbacksKeepTheirExplicitSynchronousBoundary(string conversion)
+    public async Task StringMethodCallbacksAwaitHostedWork(string conversion)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
         using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(IoSource("__format__", conversion, false), budget);
@@ -130,12 +130,10 @@ print(CONVERT(Value()))
         delayed.SeedFile("/call.txt", "before");
         using (var result = await script.RunAsync(delayed))
         {
-            Assert.False(result.Success);
-            Assert.Equal(LythonFailureReason.HostCapabilityUnavailable, result.FailureAttribution?.Reason);
-            Assert.Contains("cannot run synchronously", result.Failure?.Message);
-            Assert.Empty(result.StandardOutput);
-            Assert.Equal("before", delayed.ReadText("/call.txt"));
-            Assert.Equal(0, delayed.CompletedAsynchronously);
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("rendered\n", result.StandardOutput);
+            Assert.Equal("beforecall", delayed.ReadText("/call.txt"));
+            Assert.True(delayed.CompletedAsynchronously > 0);
         }
         Assert.Equal(baseline, budget.ReservedBytes);
     }
@@ -150,6 +148,8 @@ print(CONVERT(Value()))
     [InlineData("__str__", "(lambda value:value.__format__(''))", false, "call")]
     [InlineData("__format__", "(lambda value:'{v}'.format_map({'v':value}))", false, "call")]
     [InlineData("__format__", "(lambda value:'{v}'.format_map({'v':value}))", true, "bind")]
+    [InlineData("__format__", "(lambda value:'{}'.format(value))", false, "call")]
+    [InlineData("__format__", "(lambda value:'{}'.format(value))", true, "bind")]
     public async Task CancellationDuringFormattingDrainsBeforeRefund(string slot, string conversion, bool descriptor, string paused)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);

@@ -6,6 +6,16 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[R416 final-output method formatting](results/2026-11-15-formatting-final-sink/README.md)
+retains8afb/55ba: one append contract, existing numeric/string sink, one operation
+metadata reservation. Old field-result callbacks/facades/per-field leases disappear;
+str.format RunAsync now awaits hosted protocols. Method report allocation−17.31%,
+warm elapsed−9.41..−5.79% / CPU−7.37..−5.56%, fresh elapsed−8.98..−7.83%.
+F-string/CSV controls retain all mixed/adverse pairings; conservative metadata can
+deny earlier. B809all gates/cleanup141.884s,10internal/484public each11/10 and full
+local ordinary11 pass; platform/stress/package qualification pending. R415 closes
+its source gate with the span/durable-state tradeoff, without another wrapper design.
+
 [R413 prepared stores](results/2026-11-15-prepared-store-targets/README.md) retains
 one lowered target tree and deletes syntax-keyed reads, duplicate lowering and
 augmented target shapes, premature syntax lowering and obsolete dispatchers.

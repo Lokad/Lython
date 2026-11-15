@@ -451,13 +451,6 @@ internal sealed partial class LythonRuntime
             };
         }
 
-        private static object ResolveFormatFieldSuffix(
-            object current,
-            string suffix,
-            LythonSourceSpan span,
-            ExecutionContext context)
-            => ResolveFormatFieldSuffixAsync(current, suffix, span, context, false).GetAwaiter().GetResult();
-
         private static async ValueTask<object> ResolveFormatFieldSuffixAsync(
             object current, string suffix, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {

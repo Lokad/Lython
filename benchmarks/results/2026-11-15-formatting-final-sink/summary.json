@@ -1,0 +1,134 @@
+{
+  "complete": true,
+  "elapsedSeconds": 141.88410070398822,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "rows": [
+    {
+      "case": "scripts.report-render.format-method.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 5.3092052,
+        "reference": 5.774655811764706,
+        "candidate-control": 5.440156888888889,
+        "reference-control": 5.861012870588236
+      },
+      "cpuMilliseconds": {
+        "candidate": 5.666666666666667,
+        "reference": 6.0,
+        "candidate-control": 5.666666666666667,
+        "reference-control": 6.11764705882353
+      },
+      "elapsedChangePercent": [
+        -9.414885835813802,
+        -8.060231240387417,
+        -7.180601561400568,
+        -5.792534373985426
+      ],
+      "cpuChangePercent": [
+        -7.371794871794879,
+        -7.371794871794879,
+        -5.5555555555555465,
+        -5.5555555555555465
+      ],
+      "referenceSpreadPercent": 1.495449454279063,
+      "candidateSpreadPercent": 2.4665026864828743
+    },
+    {
+      "case": "scripts.report-render.format-method.large",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "candidate": 5.472902837209303,
+        "reference": 5.959049428571428,
+        "candidate-control": 5.42418840229885,
+        "reference-control": 5.938114987179487
+      },
+      "cpuMilliseconds": {
+        "candidate": 5.813953488372093,
+        "reference": 6.233766233766234,
+        "candidate-control": 5.747126436781609,
+        "reference-control": 6.153846153846154
+      },
+      "elapsedChangePercent": [
+        -8.97560982978457,
+        -8.654709213112499,
+        -8.15812315687856,
+        -7.834340543667251
+      ],
+      "cpuChangePercent": [
+        -7.80651340996169,
+        -6.73449612403102,
+        -6.609195402298862,
+        -5.523255813953498
+      ],
+      "referenceSpreadPercent": 0.3525435502198748,
+      "candidateSpreadPercent": 0.8980962919688862
+    },
+    {
+      "case": "scripts.report-render.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 2.788865947368421,
+        "candidate-control": 2.774248813953488,
+        "reference": 2.827380964497041,
+        "candidate": 2.836323886227545
+      },
+      "cpuMilliseconds": {
+        "reference-control": 2.982456140350877,
+        "candidate-control": 2.9651162790697674,
+        "reference": 3.017751479289941,
+        "candidate": 3.053892215568862
+      },
+      "elapsedChangePercent": [
+        -1.8792002638033045,
+        -0.5241246331228466,
+        0.316297019849765,
+        1.7016930807988606
+      ],
+      "cpuChangePercent": [
+        -1.744186046511642,
+        -0.5813953488372103,
+        1.197604790419149,
+        2.39520958083832
+      ],
+      "referenceSpreadPercent": 1.3810279108238621,
+      "candidateSpreadPercent": 2.237545239700234
+    },
+    {
+      "case": "scripts.csv-invoice.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 6.6880862702702695,
+        "candidate-control": 6.8199249452054795,
+        "reference": 6.630277540540541,
+        "candidate": 6.67391981081081
+      },
+      "cpuMilliseconds": {
+        "reference-control": 6.891891891891892,
+        "candidate-control": 6.986301369863014,
+        "reference": 6.891891891891892,
+        "candidate": 6.756756756756757
+      },
+      "elapsedChangePercent": [
+        -0.21181633859048699,
+        0.658226899302794,
+        1.9712466258286154,
+        2.8603237723511254
+      ],
+      "cpuChangePercent": [
+        -1.9607843137254943,
+        -1.9607843137254943,
+        1.3698630136986356,
+        1.3698630136986356
+      ],
+      "referenceSpreadPercent": 0.8718900434598664,
+      "candidateSpreadPercent": 2.1876968638155025
+    }
+  ],
+  "retentionDecisionPending": false,
+  "CPythonRefreshed": false,
+  "retained": true,
+  "reason": "Whole output contract and ownership simplification; real hosted str.format callbacks;17.31%allocation and warm/fresh CPU/elapsed support. Control adversity remains explicit.",
+  "fullQualificationPending": true,
+  "compatibility": "str.format now awaits supported hosted callbacks in RunAsync; conservative operation metadata/argument admission can reject earlier. No public API/dependency/policy switch."
+}

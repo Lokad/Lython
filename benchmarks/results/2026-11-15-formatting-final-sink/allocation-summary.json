@@ -1,0 +1,22 @@
+{
+  "rows": [
+    {
+      "case": "scripts.report-render.large",
+      "referenceBytes": 2564735.75,
+      "candidateBytes": 2564694.75,
+      "changePercent": -0.001598605236430295
+    },
+    {
+      "case": "scripts.report-render.format-method.large",
+      "referenceBytes": 8520542.875,
+      "candidateBytes": 7045970.875,
+      "changePercent": -17.30608039455467
+    }
+  ],
+  "complete": true,
+  "elapsedSeconds": 55.52580490009859,
+  "allOutputAndFileGoldensPassed": true,
+  "budgetBaselineAndCleanupPassed": true,
+  "CPUorElapsedClaim": false,
+  "boundary": "Local whole warm jobs with reset/mediated I/O/full stdout and file hashing/result cleanup; compilation/startup excluded. Natural-GC whole-process counters. Earlier baseline screen did not compare file hashes and remains separate."
+}

@@ -35,9 +35,9 @@ public sealed class PyStringOpsPrimitiveTests
     }
 
     [Fact]
-    public void FormatAndEscapeRegex_HandleRuntimeValues()
+    public async Task FormatAndEscapeRegex_HandleRuntimeValues()
     {
-        var formatted = PyStringOps.Format(
+        var formatted = await PyStringOps.FormatAsync(
             PyString.FromString("value={0}, none={1}, braces={{ok}}"),
             [new BigInteger(12), PyNone.Instance], null, null, null, governor: null, span: null);
         var escaped = PyStringOps.EscapeRegex(PyString.FromString("a+b?(é)"));

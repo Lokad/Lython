@@ -98,6 +98,22 @@ internal sealed partial class LythonRuntime
         else AppendInterpolatedStringValue(output, value, specifier ?? "", context, span, prepared);
     }
 
+    private static async ValueTask AppendInterpolatedStringPartAsync(GovernedByteBuilder output, object value,
+        char? conversion, string? specifier, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
+    {
+        if (value is PyInstance instance)
+        {
+            // A user hook's string is observable and remains independently owned.
+            // Await its actual operation before copying into the private output.
+            var rendered = await FormatInstanceFieldAsync(instance, conversion, specifier, context, span,
+                asynchronous).ConfigureAwait(false);
+            context.CheckExecution(span);
+            output.Append(rendered);
+        }
+        else AppendInterpolatedStringPart(output, value, conversion, specifier, context, span);
+        context.CheckExecution(span);
+    }
+
     private static PyString FormatValue(object value, string specifier, ExecutionContext context, LythonSourceSpan span,
         InterpolatedFormatSpecifier? prepared = null)
         => value is PyDate or PyTime or PyDateTime

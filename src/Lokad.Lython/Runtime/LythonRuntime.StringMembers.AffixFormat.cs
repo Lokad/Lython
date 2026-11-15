@@ -60,67 +60,9 @@ internal sealed partial class LythonRuntime
                     }, StrRemoveSuffixSignature),
                     "partition" => CreatePartitionMethod("partition", PyStringOps.Partition, StrPartitionSignature),
                     "rpartition" => CreatePartitionMethod("rpartition", PyStringOps.RPartition, StrRpartitionSignature),
-                    "format" => new CustomMethodCallable((arguments, span, context) =>
-                    {
-                        try
-                        {
-                            var positionalCount = 0;
-                            foreach (var argument in arguments)
-                            {
-                                if (argument.IsPositional)
-                                {
-                                    positionalCount++;
-                                }
-                            }
-
-                            var positional = new object[positionalCount];
-                            var positionalIndex = 0;
-                            foreach (var argument in arguments)
-                            {
-                                if (argument.IsPositional)
-                                {
-                                    positional[positionalIndex++] = argument.Value;
-                                }
-                            }
-
-                            var keywords = new Dictionary<string, object>(StringComparer.Ordinal);
-                            foreach (var argument in arguments)
-                            {
-                                if (argument.IsPositional)
-                                {
-                                    continue;
-                                }
-
-                                if (!keywords.TryAdd(argument.KeywordName, argument.Value))
-                                {
-                                    throw CallErrors.MultipleValues(PythonCallableKind.Method, "str.format", argument.KeywordName, span);
-                                }
-                            }
-
-                            // Working and result storage borrow this execution,
-                            // even when the template belongs to compiled code.
-                            return PyStringOps.Format(
-                                text,
-                                positional,
-                                keywords,
-                                (current, suffix) => ResolveFormatFieldSuffix(current, suffix, span, context),
-                                (value, conversion, spec) => FormatInterpolatedStringPart(value, conversion, spec, context, span),
-                                context.MemoryGovernor, span,
-                                cancellationToken: context.State.CancellationToken);
-                        }
-                        catch (InvalidOperationException ex)
-                        {
-                            throw new LythonRuntimeException("ValueError", ex.Message, span);
-                        }
-                        catch (IndexOutOfRangeException ex)
-                        {
-                            throw new LythonRuntimeException("IndexError", ex.Message, span);
-                        }
-                        catch (KeyNotFoundException ex)
-                        {
-                            throw new LythonRuntimeException("KeyError", ex.Message, span, null, PyString.FromString(ex.Message, context.MemoryGovernor, span));
-                        }
-                    }),
+                    "format" => new CustomMethodCallable(
+                        (arguments, span, context) => FormatStringAsync(text, arguments, span, context, false).GetAwaiter().GetResult(),
+                        (arguments, span, context) => FormatStringAsync(text, arguments, span, context, true)),
                     "format_map" => BoundCallable.Create(
                         (arguments, span, context) => FormatMappingAsync(text, arguments[0], span, context, false).GetAwaiter().GetResult(),
                         StrFormatMapSignature,
@@ -158,15 +100,53 @@ internal sealed partial class LythonRuntime
             }
         }
 
+        private static async ValueTask<object> FormatStringAsync(PyString text, CallArgumentValue[] arguments,
+            LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+        {
+            try
+            {
+                var positionalCount = 0;
+                foreach (var argument in arguments)
+                    if (argument.IsPositional) positionalCount++;
+                var keywordCount = arguments.Length - positionalCount;
+                // Copies remain private through actual callback suspension.
+                // Admit their capacity/metadata before constructing either one.
+                using var argumentStorage = context.MemoryGovernor.ReserveTemporary(
+                    checked(EstimateObjectArrayBytes(positionalCount) + 64L + 64L * keywordCount), span);
+                context.CheckExecution(span);
+                var positional = new object[positionalCount];
+                var keywords = new Dictionary<string, object>(keywordCount, StringComparer.Ordinal);
+                var index = 0;
+                foreach (var argument in arguments)
+                {
+                    if (argument.IsPositional) positional[index++] = argument.Value;
+                    else if (!keywords.TryAdd(argument.KeywordName, argument.Value))
+                        throw CallErrors.MultipleValues(PythonCallableKind.Method, "str.format", argument.KeywordName, span);
+                }
+                return await PyStringOps.FormatAsync(text, positional, keywords,
+                    (current, suffix) => ResolveFormatFieldSuffixAsync(current, suffix, span, context, asynchronous),
+                    (output, value, conversion, spec) => AppendInterpolatedStringPartAsync(output, value, conversion,
+                        spec, context, span, asynchronous), context.MemoryGovernor, span,
+                    cancellationToken: context.State.CancellationToken).ConfigureAwait(false);
+            }
+            catch (InvalidOperationException ex) { throw new LythonRuntimeException("ValueError", ex.Message, span); }
+            catch (IndexOutOfRangeException ex) { throw new LythonRuntimeException("IndexError", ex.Message, span); }
+            catch (KeyNotFoundException ex)
+            {
+                throw new LythonRuntimeException("KeyError", ex.Message, span, null, PyString.FromString(ex.Message, context.MemoryGovernor, span));
+            }
+        }
+
         private static async ValueTask<object> FormatMappingAsync(PyString text, object mapping,
             LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             try
             {
-                return await PyStringOps.FormatMapAsync(text, ResolveKeyword,
+                return await PyStringOps.FormatAsync(text, [], null,
                     (current, suffix) => ResolveFormatFieldSuffixAsync(current, suffix, span, context, asynchronous),
-                    (value, conversion, spec) => FormatSuspendedFieldAsync(value, conversion, spec, context, span, asynchronous),
-                    context.MemoryGovernor, span, context.State.CancellationToken).ConfigureAwait(false);
+                    (output, value, conversion, spec) => AppendInterpolatedStringPartAsync(output, value, conversion, spec, context, span, asynchronous),
+                    context.MemoryGovernor, span, forbidPositionalFields: true,
+                    cancellationToken: context.State.CancellationToken, resolveKeyword: ResolveKeyword).ConfigureAwait(false);
             }
             catch (InvalidOperationException ex) { throw new LythonRuntimeException("ValueError", ex.Message, span); }
             catch (IndexOutOfRangeException ex) { throw new LythonRuntimeException("IndexError", ex.Message, span); }

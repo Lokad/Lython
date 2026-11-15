@@ -6,12 +6,20 @@ namespace Lokad.Lython.Tests;
 
 public sealed class StringFormatPrimitiveTests
 {
+    // Keep primitive error/golden assertions on the production async API.
+    private static Task<PyString> Format(PyString template, IReadOnlyList<object> positional,
+        IReadOnlyDictionary<string, object>? keywords, Func<object, string, ValueTask<object>>? suffix,
+        Func<GovernedByteBuilder, object, char?, string?, ValueTask>? append,
+        MemoryGovernor? governor, LythonSourceSpan? span, bool forbidPositionalFields = false)
+        => PyStringOps.FormatAsync(template, positional, keywords, suffix, append, governor, span,
+            forbidPositionalFields).AsTask();
+
     [Fact]
-    public void FormatWithDelegates_ServesConversionsNestedSpecsAndSharedNumbering()
+    public async Task FormatWithDelegates_ServesConversionsNestedSpecsAndSharedNumbering()
     {
         var captured = new List<(object Value, char? Conversion, string? Spec)>();
 
-        PyString FormatStub(object value, char? conversion, string? spec)
+        ValueTask FormatStub(GovernedByteBuilder output, object value, char? conversion, string? spec)
         {
             captured.Add((value, conversion, spec));
             var rendered = value switch
@@ -21,14 +29,14 @@ public sealed class StringFormatPrimitiveTests
                 _ => value.ToString() ?? "None",
             };
 
-            return conversion is null && spec is null
-                ? PyString.FromString(rendered)
-                : PyString.FromString($"<{rendered}|{conversion?.ToString() ?? "-"}|{spec ?? "-"}>");
+            output.AppendString(conversion is null && spec is null
+                ? rendered : $"<{rendered}|{conversion?.ToString() ?? "-"}|{spec ?? "-"}>");
+            return default;
         }
 
-        static object PassThrough(object current, string suffix) => current;
+        static ValueTask<object> PassThrough(object current, string suffix) => new(current);
 
-        var manual = PyStringOps.Format(
+        var manual = await Format(
             PyString.FromString("{1:{0}}|{0!r:>3}"),
             [PyString.FromString("a"), PyString.FromString("b")],
             null,
@@ -49,7 +57,7 @@ public sealed class StringFormatPrimitiveTests
 
         captured.Clear();
 
-        var automatic = PyStringOps.Format(
+        var automatic = await Format(
             PyString.FromString("{:{}}"),
             [PyString.FromString("a"), PyString.FromString("b")],
             null,
@@ -64,47 +72,47 @@ public sealed class StringFormatPrimitiveTests
     }
 
     [Fact]
-    public void FormatFieldSuffix_CarriesTrailingContentPastResolvedItems()
+    public async Task FormatFieldSuffix_CarriesTrailingContentPastResolvedItems()
     {
         string? seenSuffix = null;
 
-        var formatted = PyStringOps.Format(
+        var formatted = await Format(
             PyString.FromString("{0[a]b}"),
             [new Dictionary<string, object>(StringComparer.Ordinal) { ["a"] = new BigInteger(1) }],
             null,
             (current, suffix) =>
             {
                 seenSuffix = suffix;
-                return current;
+                return new ValueTask<object>(current);
             },
-            (value, conversion, spec) => PyString.FromString("!"), governor: null, span: null);
+            (output, value, conversion, spec) => { output.AppendString("!"); return default; }, governor: null, span: null);
 
         Assert.Equal("!", formatted.AsString());
         Assert.Equal("[a]b", seenSuffix);
     }
 
     [Fact]
-    public void FormatWithDelegates_RejectsPositionalFieldsForMappings()
+    public async Task FormatWithDelegates_RejectsPositionalFieldsForMappings()
     {
         var keywords = new Dictionary<string, object>(StringComparer.Ordinal) { ["name"] = "x" };
 
-        var named = PyStringOps.Format(
+        var named = await Format(
             PyString.FromString("{name:>3}"),
             [],
             keywords,
-            (current, suffix) => current,
-            (value, conversion, spec) => PyString.FromString("!"), governor: null, span: null);
+            (current, suffix) => new(current),
+            (output, value, conversion, spec) => { output.AppendString("!"); return default; }, governor: null, span: null);
 
         Assert.Equal("!", named.AsString());
 
         foreach (var template in new[] { "{}", "{0}" })
         {
-            var failure = Assert.Throws<InvalidOperationException>(() => PyStringOps.Format(
+            var failure = await Assert.ThrowsAsync<InvalidOperationException>(() => Format(
                 PyString.FromString(template),
                 [],
                 keywords,
-                (current, suffix) => current,
-                (value, conversion, spec) => PyString.FromString("!"), governor: null, span: null,
+                (current, suffix) => new(current),
+                (output, value, conversion, spec) => { output.AppendString("!"); return default; }, governor: null, span: null,
                 forbidPositionalFields: true));
 
             Assert.Equal("Format string contains positional fields", failure.Message);
@@ -112,29 +120,29 @@ public sealed class StringFormatPrimitiveTests
     }
 
     [Fact]
-    public void FormatFieldSplitting_ReportsPythonShapedStructuralFailures()
+    public async Task FormatFieldSplitting_ReportsPythonShapedStructuralFailures()
     {
-        var digits = Assert.Throws<InvalidOperationException>(() => PyStringOps.Format(
+        var digits = await Assert.ThrowsAsync<InvalidOperationException>(() => Format(
             PyString.FromString("{" + new string('9', 19) + "}"),
             [new BigInteger(1)], null, null, null, governor: null, span: null));
 
         Assert.Equal("Too many decimal digits in format string", digits.Message);
 
-        var conversion = Assert.Throws<InvalidOperationException>(() => PyStringOps.Format(
+        var conversion = await Assert.ThrowsAsync<InvalidOperationException>(() => Format(
             PyString.FromString("{0!{}}"),
             [new BigInteger(1)],
             null,
-            (current, suffix) => current,
-            (value, conversion, spec) => PyString.FromString("!"), governor: null, span: null));
+            (current, suffix) => new(current),
+            (output, value, conversion, spec) => { output.AppendString("!"); return default; }, governor: null, span: null));
 
         Assert.Equal("Unknown conversion specifier {", conversion.Message);
 
-        var recursion = Assert.Throws<InvalidOperationException>(() => PyStringOps.Format(
+        var recursion = await Assert.ThrowsAsync<InvalidOperationException>(() => Format(
             PyString.FromString("{0:{1:{2}}}"),
             [PyString.FromString("ab"), new BigInteger(5), new BigInteger(6)],
             null,
-            (current, suffix) => current,
-            (value, conversion, spec) => PyString.FromString("!"), governor: null, span: null));
+            (current, suffix) => new(current),
+            (output, value, conversion, spec) => { output.AppendString("!"); return default; }, governor: null, span: null));
 
         Assert.Equal("Max string recursion exceeded", recursion.Message);
     }

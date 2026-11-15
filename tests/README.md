@@ -669,6 +669,12 @@ returns. Exposed method values keep their Python identity and metadata behavior.
 
 ## Focused development
 
+[Formatting sinks](Lokad.Lython.PublicApi.Tests/FormatSinkTests.cs) hold actual
+formatting callbacks through host I/O, cancellation and refused admission. Working
+storage remains funded until the user settles; file cleanup precedes budget reuse
+and returned output retains its owner. Primitive formatting checks keep nested
+specification order and scratch refunds; method protocol checks await real host work.
+
 [Prepared stores](Lokad.Lython.PublicApi.Tests/PreparedStoreTargetTests.cs) cover
 nested class-body loop/with targets, receiver/index order, starred aliases,
 target lambdas and class cells. Actual asynchronous setters keep storage funded

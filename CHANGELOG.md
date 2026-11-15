@@ -2,6 +2,15 @@
 
 ## 0.11.0 - Unreleased
 
+- Append builtin `str.format` and `format_map` fields directly to final output,
+  with operation-owned metadata storage. `str.format` now awaits supported hosted
+  callbacks in RunAsync. Argument and conservative metadata admission can reject
+  tight allowances earlier; pending users remain funded through cleanup.
+
+- Prepare assignment targets once for executable and lowered execution, sharing
+  augmented target shapes and preserving nested error spans, evaluation order,
+  suspended setters and retained aliases.
+
 - Prepare private cased-word iteration in one UTF-8 scan, sharing Unicode kernels
   and removing deferred per-word casing. Keep independent words and eager admission;
   reusable conservative scratch remains charged and can cause earlier refusal.

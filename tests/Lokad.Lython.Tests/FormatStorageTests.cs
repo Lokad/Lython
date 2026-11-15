@@ -7,7 +7,7 @@ namespace Lokad.Lython.Tests;
 public sealed class FormatStorageTests
 {
     [Fact]
-    public void NestedSpecStorageRefundsAfterEachOperationWithoutRetainingPrivateCopies()
+    public async Task NestedSpecStorageRefundsAfterEachOperationWithoutRetainingPrivateCopies()
     {
         var root = new LythonMemoryBudget(64 * 1024);
         using (var owner = root.CreateScope())
@@ -18,12 +18,12 @@ public sealed class FormatStorageTests
             var baseline = root.ReservedBytes;
             for (var i = 0; i < 3; i++)
             {
-                var result = PyStringOps.Format(template, [new BigInteger(7), width], null, null,
-                    (value, _, spec) =>
+                var result = await PyStringOps.FormatAsync(template, [new BigInteger(7), width], null, null,
+                    (output, value, _, spec) =>
                     {
-                        if (value is PyString text) return text;
+                        if (value is PyString text) { output.Append(text); return default; }
                         Assert.Equal(new string('x', 4096), spec);
-                        return PyString.Empty;
+                        return default;
                     }, governor, null);
                 Assert.Same(PyString.Empty, result);
                 Assert.Equal(baseline, root.ReservedBytes);
@@ -45,10 +45,11 @@ public sealed class FormatStorageTests
             var baseline = root.ReservedBytes;
             var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var release = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var pending = PyStringOps.FormatMapAsync(template, _ => { entered.TrySetResult(); return new(release.Task); },
+            var pending = PyStringOps.FormatAsync(template, [], null,
                 (_, _) => throw new InvalidOperationException("suffix after cancellation"),
-                (_, _, _) => throw new InvalidOperationException("format after cancellation"),
-                governor, new(0, 0, 0, 0), cancellation.Token).AsTask();
+                (_, _, _, _) => throw new InvalidOperationException("format after cancellation"),
+                governor, new(0, 0, 0, 0), forbidPositionalFields: true, cancellationToken: cancellation.Token,
+                resolveKeyword: _ => { entered.TrySetResult(); return new(release.Task); }).AsTask();
             try
             {
                 await entered.Task.WaitAsync(TimeSpan.FromSeconds(5));

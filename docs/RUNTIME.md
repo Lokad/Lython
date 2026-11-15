@@ -1018,11 +1018,15 @@ use that rollback. Conservative storage estimates can change admission threshold
 
 `str.format` and `format_map` scan field structure and nested specifications as
 borrowed UTF-8. Names, suffixes and the final specification decode only at the
-existing resolver/formatter boundary. Temporary metadata and nested working
-capacity borrow the active execution allowance through suspended callbacks;
-compiled templates retain their separate owner. Private expanded specifications
-refund after use, and final strings remain funded. Structural scans and resumed
-callbacks observe the current cancellation token.
+existing resolver/formatter boundary. Builtin numeric and padded string fields
+append directly into the final builder using the same formatter as f-strings.
+Method argument copies preflight before allocation. One operation-owned scratch
+reservation conservatively covers template metadata, nesting and replacement
+overlap; expanded specifications admit additional capacity. It stays funded until
+all callbacks settle and can reject a tight allowance earlier. Compiled templates
+retain their separate owner, and final strings remain funded. RunAsync awaits
+lookup and formatting hooks in both methods; structural scans and resumed callbacks
+observe the current token. User hook return strings keep their own ownership.
 
 Constant f-string specifications keep an immutable native layout with the compiled
 program, funded by its compilation owner. The existing formatter reuses it without
