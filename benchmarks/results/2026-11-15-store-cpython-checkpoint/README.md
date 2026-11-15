@@ -50,3 +50,5 @@ proof. Current images, toolchains, canonical evidence and disk floors stay.
 [original conditions/procedure/inputs](procedure-and-original-condition.tar.xz),
 [previous guide](prior-BENCHMARKS.md). Source/binary proof and focused correctness
 are in [prepared stores](../2026-11-15-prepared-store-targets/README.md).
+
+[Subsequent full runtime qualification passes](../2026-11-15-prepared-store-targets/delivery/README.md).

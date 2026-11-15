@@ -13,7 +13,7 @@ Compilation allocations fall about 0.3–0.4%; complete fresh allocations 0.3–
 B806 mixed timing establishes no CPU improvement; possible manifest compilation
 regression remains explicit. Original staging refusal, unsupported-lane B805 partial
 and diagnostic/environment failures are preserved. Focused 103 internal / 324 public
-each actual 11/10 pass; full qualification pending. Broader performance work continues.
+each actual 11/10 pass; [full qualification passes](results/2026-11-15-prepared-store-targets/delivery/README.md). Broader performance work continues.
 
 The A2 source gate at2865f619 finds shared record keys, adopted CSV final arrays and
 immutable field payloads already delivered. Universal executable-slot row values
@@ -8594,3 +8594,6 @@ as a dominant stage, no index selected. Source finds duplicate target lowering,
 syntax-keyed read tables and runtime target reconstruction. Select prepared-store
 migration R413, not a traversal framework. B804all gates pass; RAM traces archived/
 verified before unmount, all users joined. No CPU speedup or production change.
+
+
+[R413 full delivery43758540157](results/2026-11-15-prepared-store-targets/delivery/README.md) passes2865f619/55ba4c8a on Windows/Ubuntu actual11/10,4,781internal/17,874public ordinary and original13/406stress each; installed Release consumers pass.16summaries/591frozen inputs verified. Terminal cached forever; publication held and broader performance objective remains active.

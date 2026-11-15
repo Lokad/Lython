@@ -191,5 +191,7 @@
   "CPythonRefreshed": false,
   "retained": true,
   "reason": "Removes duplicate target families, syntax-keyed dictionaries and repeated lowering. Modest allocation reduction; no CPU improvement claimed. Possible manifest compile regression/contrary original partial retained as uncertainty.",
-  "fullQualificationPending": true
+  "fullQualificationPending": false,
+  "fullQualificationRun": "43758540157",
+  "runtimeCommit": "2865f619568a4f1fd846a6a73400d5ad4139ff88"
 }

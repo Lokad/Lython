@@ -1,7 +1,7 @@
 # Prepared store targets
 
 R413, 2026-11-15. Retained **55ba4c8a** versus qualified **1b82cd46 / 0edc0c1c**.
-Full delivery qualification is pending. No public API or ownership contract changes.
+[Full delivery qualification passes](delivery/README.md). No public API or ownership contract changes.
 
 One prepared target tree carries actual lowered reads and unpacking layouts.
 Executable construction and sync/async lowered stores share it, including augmented

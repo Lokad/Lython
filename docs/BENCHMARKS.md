@@ -23,7 +23,7 @@ Ubuntu24.04.4, four AMD EPYC9V45 vCPUs,16GiB/no swap,.NET11RC3 workstation
 GC/normal tiering and CPython GIL/GC. **CSV invoice, captured warm text, JSON,
 file search and configuration:2865f619/frozen55ba4c8a**;
 [eight-phase checkpoint](../benchmarks/results/2026-11-15-store-cpython-checkpoint/README.md)
-passes all measurement/cleanup gates; full runtime qualification is pending.
+passes all measurement/cleanup gates; [full runtime qualification passes](../benchmarks/results/2026-11-15-prepared-store-targets/delivery/README.md).
 **Captured fresh and inline text:1b82cd46/frozen0edc0c1c**, with
 [measurement](../benchmarks/results/2026-11-15-cased-cpython-checkpoint/README.md)
 and [full runtime qualification](../benchmarks/results/2026-11-15-fused-cased-preparation/delivery/README.md).
