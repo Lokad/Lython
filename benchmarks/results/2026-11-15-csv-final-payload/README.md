@@ -1,8 +1,8 @@
 # One final CSV payload: retained
 
 R379,2026-11-15. Frozen716176a8 versus qualified ec6c0416/6164a933;
-one of585production inputs changes. Full platform/stress/installed-consumer
-qualification is pending. Publication remains held.
+one of585production inputs changes. [Full platform/stress/installed-consumer
+qualification passes](delivery/README.md). Publication remains held.
 
 Long fields have independent immutable Python string identities over one exact
 admitted payload, using existing UTF8 windows. Short fields stay inline. Remove

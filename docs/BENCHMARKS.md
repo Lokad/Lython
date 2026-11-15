@@ -111,7 +111,7 @@ These source-pair results are separate from CPython and cannot be added together
 
 | Change / complete affected script | CPU/elapsed evidence | Allocation | Limits and exact evidence |
 | --- | --- | ---: | --- |
-| Shared CSV payload / metadata-heavy validated records | Warm slightly lower; fresh and ordinary controls mixed | −5.56% | Retained 716176a8 versus 6164; allocation improvement, full qualification pending. [Exact fixture, controls and limits](../benchmarks/results/2026-11-15-csv-final-payload/README.md). |
+| Shared CSV payload / metadata-heavy validated records | Warm slightly lower; fresh and ordinary controls mixed | −5.56% | Retained 716176a8 versus 6164; allocation improvement; [full qualification passes](../benchmarks/results/2026-11-15-csv-final-payload/delivery/README.md). [Exact fixture, controls and limits](../benchmarks/results/2026-11-15-csv-final-payload/README.md). |
 | Closed word segment / captured text | Warm 2.9–5.7% lower elapsed / 3.5–5.3% lower CPU | Flat | Retained 6164a933 versus 957; [full qualification passes](../benchmarks/results/2026-11-15-closed-word-segment/delivery/README.md). Fresh magnitude inconclusive (8.77% reference spread), JSON +0.8–2.7% elapsed unresolved/accepted; no universal gain. [All controls](../benchmarks/results/2026-11-15-closed-word-segment/README.md). |
 | Typed builtin results /CSV fulfillment | Warm3–4%lower, compile-to-result2.6–5.6%lower, supporting CPU | −18.20% | Later bed6e57e versus3994/b5; [full delivery passes](../benchmarks/results/2026-11-14-builtin-scalar-publication/delivery/README.md). Invoice−5%allocation but+.94–1.87%elapsed/+2–4%CPU debt; text adverse/uncertain, short/observed controls variable. [Exact source and every control](../benchmarks/results/2026-11-14-builtin-scalar-publication/README.md). |
 | Protected try/except helpers /invoice and file search | Invoice17–18.5%faster warm,16–19%faster compile-to-result; search41–43%faster, with CPU support | −29.19%/−74.65% | Later b5a6426e versus1c5/ff2; [full qualification passes](../benchmarks/results/2026-11-14-protected-helper-activation/delivery/README.md). Short calls+.5–3.4%, text uncertain. [Source and every control](../benchmarks/results/2026-11-14-protected-helper-activation/README.md). |
@@ -126,6 +126,9 @@ microbenchmarks and qualification procedures remain in the
 [previous guide](../benchmarks/results/2026-11-14-protected-helper-activation/prior-BENCHMARKS.md).
 The external table above identifies current and earlier revisions separately;
 source-pair improvements do not establish embedding latency.
+
+[Explicit 0.11 retention tradeoffs](../benchmarks/results/2026-11-15-runtime-roadmap-review/README.md)
+keep historical regressions visible; later source pairs do not prove their recovery.
 
 ## Reproducing measurements
 

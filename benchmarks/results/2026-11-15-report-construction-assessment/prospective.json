@@ -1,0 +1,10 @@
+{
+  "runtimeCommit": "a7ab41f5ad9b579759ad63c7cff8721364221374",
+  "core": "716176a82b2a350fee8a9f4224fa00e167929050ca2ce255e9a3704c5ec7e85c",
+  "question": "Current complete JSON-to-Markdown report: identify a whole removable container/frame/operand/text transport stage after shared slots, not replay existing direct binding/shared keys/UTF8 paths.",
+  "workload": "scripts.report-render.large",
+  "sourceGate": "Earlier R275profiles use43541e78 before native storage/shared slots; source/maps are historical. Current code already shares keys, formats nativeUTF8, passes final slots and borrows decoded storage. Need current attribution only if a whole displaced stage can be named.",
+  "scope": "One5s199Hzcpu-clock/fp current complete report after8guestseconds warmup; perf maps only; all wider/unknown/inlined work retained. No elapsed/sourcepair/CPython/performance comparison.",
+  "acceptance": "Oneusablemap and complete-stage redesign or decline. Preserve protocols/errors/order/aliases/realI/O/currenttokens/stack/terminalrefusal/fundedjoinedcleanup. Any implementation needs focused checks plus bounded whole-script warm/fresh sourcepair and unchangedCSV/text/JSON/short/observed controls.",
+  "publicationHeld": true
+}

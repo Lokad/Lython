@@ -1,0 +1,415 @@
+{
+  "dateUTC": "2026-11-15",
+  "sourceCommit": "a7ab41f5ad9b579759ad63c7cff8721364221374",
+  "kind": "Bounded source/test-map assessment; no new timing or qualification",
+  "sourceFiles": [
+    {
+      "path": "src/Lokad.Lython/Public/LythonEngine.cs",
+      "sha256": "b3e6ff939d1e4e8cbccddddffcd6e599d8b6a93f050511650aa3cad22a8ef251",
+      "committedBytes": true
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/LythonFrontend.cs",
+      "sha256": "1618edb5178764f462ee334711bd1c94607913af229505b6da0b57e44f6d42fb",
+      "committedBytes": true
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/LexicalScopePreparation.cs",
+      "sha256": "1ad18a78c293bade9096cd015b568b12085fee6fc8b89ee031275daf9229d95b",
+      "committedBytes": true
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/ScopeDirectiveFacts.cs",
+      "sha256": "565c9cdf71213bf245e09cc2c7abd9a3d44d9a7761cc4c1922fbab48d593e9f9",
+      "committedBytes": true
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticAnalysisContext.cs",
+      "sha256": "bbe52374d6a0cab849ec3c88759fee169ed93a02e56ad5446f934dda4cbbb8cc",
+      "committedBytes": true
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticAnalyzer.cs",
+      "sha256": "447a490123f33954c24f67eff959b100343de96c8b885aa6277d7a9feedc52d5",
+      "committedBytes": true
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticScopeDirectiveDiagnostics.cs",
+      "sha256": "4b3f3fa4b8ab1e4300a895615614662d6c0c37fe499d1bd061dc72894b965390",
+      "committedBytes": true
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticNameBindingDiagnostics.cs",
+      "sha256": "3fa139e638076381d722c0e57f834f18975876dd7307d02d489f3df6babad32c",
+      "committedBytes": true
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/AnnotationDiagnostics.cs",
+      "sha256": "0108b12b8acdc5147133fb29cccdd68e34194bb8d38c76d0d1e607c7d1f9c212",
+      "committedBytes": true
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/AbstractState.cs",
+      "sha256": "de148ce0778cc651ecc6f4425bf790080c9fb5c43f47cd150137f354655e8ff0",
+      "committedBytes": true
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/LoweredScript.cs",
+      "sha256": "496def48252d3ae87492d98dc35ba816619bdbfe9967235445c1f11111cdce30",
+      "committedBytes": true
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/ExecutableScript.Builder.cs",
+      "sha256": "028622ef6f2dc5624b1e42952ed4db7713b96bbedc9a116d6a67d66afd0e63d3",
+      "committedBytes": true
+    },
+    {
+      "path": "src/Lokad.Lython/Host/ILythonRegexProvider.cs",
+      "sha256": "b6fd1b7052f703335d6f4ca8dccb217d33a68fedafdcdde173f85f38d6c9fd55",
+      "committedBytes": true
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Imports.cs",
+      "sha256": "e23e449ebcd9a6a62afc23547b4f83f5c676897009d68cff7f0f4b5c7b70c400",
+      "committedBytes": true
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.RegexCompiler.cs",
+      "sha256": "6042856b80a0bf8aca749d4ee48aa62d47d375b692636f627d1a6770ff93f01b",
+      "committedBytes": true
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.RegexMatcher.cs",
+      "sha256": "ab750af50fd2b5b4132d7ab7e0264ee5e5509fb671b16f5d02e7269a87c463c9",
+      "committedBytes": true
+    },
+    {
+      "path": "src/Lokad.Lython/Lokad.Lython.csproj",
+      "sha256": "0f84b6f0013ca6ff925bdd3a647273c048f040a552cf9a2b46182edf8611ae36",
+      "committedBytes": true
+    },
+    {
+      "path": "src/Lokad.Lython.Utf8Regex/Lokad.Lython.Utf8Regex.csproj",
+      "sha256": "68d6c7ffd9479e162ec7ae76c3e7b1866b6fe05ceb8338de3edc63545a327fa9",
+      "committedBytes": true
+    },
+    {
+      "path": "Directory.Packages.props",
+      "sha256": "94a21c74f6a8a6692f54f7dc96f7a8b61cadb1d231b72ceb02baf01b64af8087",
+      "committedBytes": true
+    },
+    {
+      "path": "tests/Lokad.Lython.PublicApi.Tests/SharedCompilerFactTests.cs",
+      "sha256": "358139fdc0cba3287080002cbbdb1f7a8feb59ab0bdf9172e32812c291a16205",
+      "committedBytes": true,
+      "testMethods": [
+        {
+          "name": "NestedDeclarationsKeepAllDiagnosticFamiliesAndTheirOrder",
+          "line": 8
+        },
+        {
+          "name": "SharedImmutableTuplesRemainUsableAcrossADeferredDefinition",
+          "line": 35
+        },
+        {
+          "name": "MutableSiblingIsStillInvalidatedAfterSharedImmutableFacts",
+          "line": 53
+        },
+        {
+          "name": "SharedContainerArgumentsKeepNativeCallSemantics",
+          "line": 72
+        }
+      ]
+    },
+    {
+      "path": "tests/Lokad.Lython.Tests/StaticFactCancellationTests.cs",
+      "sha256": "5b643533f4316402d6e120dda034d5271666943bfa7523890aac440551019836",
+      "committedBytes": true,
+      "testMethods": [
+        {
+          "name": "ActiveFactInspectionStopsAndPreservesFirstRefusal",
+          "line": 14
+        }
+      ]
+    },
+    {
+      "path": "tests/Lokad.Lython.PublicApi.Tests/RegexProviderContractTests.cs",
+      "sha256": "ee9b0f0b9d260cb7b794726ab3e98dca46988d81b3f06f6bb7a5af287dc23470",
+      "committedBytes": true,
+      "testMethods": [
+        {
+          "name": "ConstructedSubjectsStayValidAndStableAfterGuestRebinding",
+          "line": 13
+        },
+        {
+          "name": "DecodedSubjectsAreValidUtf8AndIndependentOfMutableHostInput",
+          "line": 59
+        },
+        {
+          "name": "ValidatedProgramsStayFundedAcrossRunsPurgeAndIndependentTokens",
+          "line": 98
+        },
+        {
+          "name": "RefusedPatternWrapperDoesNotCloseTheCompiledProgramsOwner",
+          "line": 140
+        },
+        {
+          "name": "CachedProgramCancellationAwaitsWorkingCleanupAndLeavesTheProgramReusable",
+          "line": 173
+        },
+        {
+          "name": "ActualAdapterSharesValidatedProgramsAcrossConcurrentRunsAndRetainedResults",
+          "line": 224
+        },
+        {
+          "name": "FrontendAdmissionDiagnosticsPreserveProviderOperationAndExplanation",
+          "line": 270
+        },
+        {
+          "name": "MatchingOnlyProviderSupportsNativeSplitSubstituteAndExpand",
+          "line": 316
+        },
+        {
+          "name": "NativeGroupNamesSurviveBorrowedMetadataDisposalAndUsePythonOrder",
+          "line": 353
+        },
+        {
+          "name": "InvalidNativeGroupMetadataFailsFrontendAndRuntimeWithoutLeaking",
+          "line": 398
+        },
+        {
+          "name": "InvalidCaptureRangesFailBeforeProjectionAndReturnAllowance",
+          "line": 442
+        },
+        {
+          "name": "FrontendAndRuntimePassOriginalSubjectAndAbsoluteWindowCaptures",
+          "line": 471
+        },
+        {
+          "name": "CancellationAsAWorkingResourceReturnsStillDisposesIt",
+          "line": 513
+        },
+        {
+          "name": "FrontendProgramsCloseOnDiagnosticOrScriptDisposal",
+          "line": 548
+        },
+        {
+          "name": "FrontendClosesAnUnpublishedPatternWhenCompilationReturnsCancelled",
+          "line": 564
+        },
+        {
+          "name": "PurgeAndEvictionKeepRetainedPatternsAndPendingCursorsAlive",
+          "line": 585
+        },
+        {
+          "name": "RefusedPatternPublicationClosesItsProgramBeforeReturning",
+          "line": 627
+        },
+        {
+          "name": "ImportedFrontendAndRuntimeKeepTheEngineProvider",
+          "line": 658
+        },
+        {
+          "name": "EngineMergesBothTokensBeforeFrontendProviderWork",
+          "line": 680
+        },
+        {
+          "name": "ReplacementCallbacksAwaitHostIoAndKeepProviderStorageUntilCleanup",
+          "line": 714
+        },
+        {
+          "name": "FrontendProviderCompilationUsesItsCurrentTokenAndFinishesCleanup",
+          "line": 758
+        },
+        {
+          "name": "CancelledHostIoStillClosesAnAbandonedRegexCursorBeforeRefund",
+          "line": 792
+        },
+        {
+          "name": "CancellationInterruptsProviderWorkAndWaitsForFundedCleanup",
+          "line": 833
+        },
+        {
+          "name": "ProviderRefusalIsTerminalAndAllowanceIsReusableAfterCleanup",
+          "line": 896
+        },
+        {
+          "name": "CaptureProcessingObservesCancellationAndUnwindsItsSubject",
+          "line": 926
+        },
+        {
+          "name": "CachedPatternsUseCurrentTokensAndRetainedOwnersStayFunded",
+          "line": 948
+        },
+        {
+          "name": "CompiledPatternConstantAnalysisKeepsEffectiveFlags",
+          "line": 976
+        },
+        {
+          "name": "CoreReportsMissingProviderWithoutInstallingAnotherDialect",
+          "line": 987
+        }
+      ]
+    },
+    {
+      "path": "tests/Lokad.Lython.PublicApi.Tests/RegexAnalysisBindingTests.cs",
+      "sha256": "965efd60243cebd5c06fde5f1fcf071a411becd6249ebfe274c191caa273e655",
+      "committedBytes": true,
+      "testMethods": [
+        {
+          "name": "ConstantPatternAnalysisPreservesMissingProviderFailureAcrossScopes",
+          "line": 14
+        },
+        {
+          "name": "OrdinaryNamesAndBitMasksNeedNoRegexProvider",
+          "line": 35
+        },
+        {
+          "name": "PatternsAndResolvedFlagsFollowActualRegexSemantics",
+          "line": 48
+        },
+        {
+          "name": "KnownRegexAliasesRetainUnsupportedFlagDiagnostics",
+          "line": 54
+        },
+        {
+          "name": "ProviderOwnsNamedEscapeSemanticsAndReceivesCurrentOperationTokens",
+          "line": 66
+        },
+        {
+          "name": "ProviderPatternRejectionRemainsCatchableWithoutCoreTextualRejection",
+          "line": 94
+        }
+      ]
+    },
+    {
+      "path": "tests/Lokad.Lython.PublicApi.Tests/RegexScalarCursorTests.cs",
+      "sha256": "6bd6b34bd9433c97c7f8b2a34711e9369904bd334f2da460ea4680841d95a523",
+      "committedBytes": true,
+      "testMethods": [
+        {
+          "name": "OverlappingLookbehindAndLookaheadKeepOriginalScalarPositions",
+          "line": 21
+        }
+      ]
+    },
+    {
+      "path": "tests/Lokad.Lython.PublicApi.Tests/RegexPatternErrorLifetimeTests.cs",
+      "sha256": "1e2080b5b340ac19a2f2a0274401485dad2c49648656bcbf4b6ca62ac34efefd",
+      "committedBytes": true,
+      "testMethods": [
+        {
+          "name": "ProviderFailuresRetainOriginalPatternAndCloseActualUsers",
+          "line": 14
+        },
+        {
+          "name": "FailureTranslationPreservesCancellationAndAdmission",
+          "line": 50
+        },
+        {
+          "name": "SuspendedMessageKeepsStorageUntilCompletionAndAllowsSharedBudgetReuse",
+          "line": 84
+        }
+      ]
+    },
+    {
+      "path": "tests/Lokad.Lython.PublicApi.Tests/NativeRegexCacheTests.cs",
+      "sha256": "2d52ea37581f833cf64a4d77a0dd251f7ffa5b9469a009339908940b33457381",
+      "committedBytes": true,
+      "testMethods": [
+        {
+          "name": "EqualNativeContentReusesPatternsAndPurgePreservesRetainedUsers",
+          "line": 13
+        },
+        {
+          "name": "ParsingVerboseIsPartOfTheCompileOptionsEvenWhenReportedFlagBitsAgree",
+          "line": 39
+        }
+      ]
+    },
+    {
+      "path": "tests/Lokad.Lython.PublicApi.Tests/RegexAdapterCapabilityTests.cs",
+      "sha256": "b7eae89b427a14670952551921a6307b1c74e4e8de7c9f488a804e2133c96542",
+      "committedBytes": true,
+      "testMethods": [
+        {
+          "name": "ReversedMatchWindowReportsBackendCapabilityWithoutInventingNoMatch",
+          "line": 10
+        },
+        {
+          "name": "ScopedInlineFlagsDoNotLeakIntoPatternFlagsOrConstantAnalysis",
+          "line": 31
+        },
+        {
+          "name": "CancellableCompilationDoesNotSaveItsTokenOnThePattern",
+          "line": 43
+        },
+        {
+          "name": "AlreadyCancelledAdapterCompilationDoesNotAcquireStorage",
+          "line": 55
+        },
+        {
+          "name": "SupplementaryUnicodeUsesScalarMatching",
+          "line": 64
+        }
+      ]
+    },
+    {
+      "path": "tests/Lokad.Lython.PublicApi.Tests/RegexAdapterLifetimeTests.cs",
+      "sha256": "0894d642c84f097a014d8b0a57481006ee37b2bb7f7217129c2f15b108121636",
+      "committedBytes": true,
+      "testMethods": [
+        {
+          "name": "PatternDisposalReturnsProgramFundingWhileParentRemainsUsable",
+          "line": 10
+        },
+        {
+          "name": "ActualBackendWorkObservesInFlightCancellationAndUnwinds",
+          "line": 33
+        },
+        {
+          "name": "CursorUsesCurrentAdvanceTokenAndReturnsItsWorkingAllowance",
+          "line": 54
+        },
+        {
+          "name": "RefusedCursorAdmissionLeavesPatternAndWorkingOwnerReusable",
+          "line": 85
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.FnMatchModule.cs",
+      "sha256": "efbfffbee92b1643591c18876bd84d285c1efe020bdaaa4957156fb463054818",
+      "committedBytes": true
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.GlobIterator.cs",
+      "sha256": "95bf6dd6522a1cf0b8361e168e2e51e723d18ac639c69e167ff2e1a4214669ac",
+      "committedBytes": true
+    }
+  ],
+  "productionChanged": false,
+  "externalProducerChanged": false,
+  "normalAdapterPin": "0.4.0",
+  "conclusions": [
+    "Lexical module/function/lambda facts are prepared once and reused; scope validation records resolved nonlocal demand.",
+    "Annotation flow skips scripts without annotations/regex; when needed, dead/deferred-scope diagnostics require a different flow from ordinary refinement.",
+    "Tokenization/parsing, scope diagnostics, abstract interpretation, name binding, lowering and instruction construction have distinct outputs; pass count alone does not prove removable cost.",
+    "Entry syntax/lowered wrappers do not survive merely for whole-program fallback; retained lowered expressions serve actual class/annotation/protocol consumers. Imports compile executable code.",
+    "Existing named compile-only/fresh observations do not demonstrate a dominant removable frontend stage. Do not launch a compiler/JIT rewrite from this source map.",
+    "Core regex contract provides native UTF8 names/subjects, absolute byte captures, independently clamped scalar/byte windows, current tokens and explicit borrowed ownership.",
+    "Contract tests exercise cancellation while provider work is blocked and hold funded cleanup before completion, not only entry/exit token checks.",
+    "Core contract coverage is distinct from real adapter capabilities, producer safety, backend interruption and backend performance.",
+    "Final producer gaps remain separate match/result owners, native UTF8 name enumeration/copy and token-independent cursor construction with cancellable preparation. No core development stop.",
+    "Current fnmatch/glob use their own native cancellable wildcard matcher; they are not regex-backed provider clients or a silent fallback for re."
+  ],
+  "publicationHeld": true,
+  "localRestoreInspection": {
+    "frameworkRegexTargetEdges": {
+      "net10.0": [],
+      "net11.0": []
+    },
+    "centralVersionMetadataIsNotADependencyEdge": true,
+    "packageConsumersQualifySeparately": true
+  }
+}

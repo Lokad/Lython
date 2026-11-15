@@ -8155,3 +8155,33 @@ AllVMusers/RAMclosed; rawarchivedunderlease, two exact superseded archived957/be
 inodegroups retired with fullGit/local/member/remoteproof. Currentimages/data/
 aux/toolchain and254/252MiBfloors survive. Full deliverypending/publicationheld;
 broader performance objective continues. Original preparation failure/data retained.
+
+
+[Current roadmap/source review and explicit 0.11 retention decisions](results/2026-11-15-runtime-roadmap-review/README.md)
+record R359/R361/R362/R365/R368/R370/R373/R376/R379 benefits, regression debt and
+superseded machinery without summing gains or inferring recovery. The bounded
+frontend/regex test-map review is not new timing or producer qualification.
+Shared compiler-fact/callback correction, native helper-return qualification and
+controlled UTF8 formatting confirmation remain complete; original adverse results
+stay preserved. Independent core development continues; only precise affected
+final-adapter qualifications await producer capabilities. Publication held.
+
+
+[R381/B771current complete JSON-report construction gate](results/2026-11-15-report-construction-assessment/README.md)
+at a7ab41f5/716176a8 completes one5s199Hzcapture:972guest samples,108unmapped,
+zero ambiguous, all identity/golden/ownership/quiet/join/archive gates. Native
+formatting, JSON construction, dispatch, admission and output remain distributed.
+Current code already supplies the proposed direct/prepared/UTF8 stages; decline
+unsupported duplicate engines/arenas or delayed/hidden-credit admission. No
+removable-share sums, elapsed comparison or performance-objective completion.
+Original catalog-filename setup failure before mutation and corrected inspection
+are preserved. All users/RAM closed,254/252MiBfloors/current images kept.
+
+
+R379 shared final CSV payload at a7ab41f5/716176a8
+[passes43675539106](results/2026-11-15-csv-final-payload/delivery/README.md):
+Windows/Ubuntu actual11/10 each4,775internal/17,851public ordinary,13/406original
+stress, installed Release consumers. All585frozen source inputs/16summaries/full
+logs terminal-cached. Qualification does not change B770's mixed timing, accepted
+fresh uncertainty or possible small text CPU debt. Allocation−5.557% remains a
+separate complete metadata-heavy-script result. No publication or tag.
