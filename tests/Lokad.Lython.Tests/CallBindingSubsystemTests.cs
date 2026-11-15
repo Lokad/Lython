@@ -143,7 +143,7 @@ public sealed class CallBindingSubsystemTests
         for (var i = 0; i < 64; i++)
             CallBinder.BindNamedArgumentsWithPresence(arguments, Span, OptionalDemoSignature, PythonCallableKind.Builtin);
         const int iterations = 256;
-        BoundCallArguments last = default;
+        BoundBuiltinArguments last = default;
         var before = GC.GetAllocatedBytesForCurrentThread();
         for (var i = 0; i < iterations; i++)
             last = CallBinder.BindNamedArgumentsWithPresence(arguments, Span, OptionalDemoSignature, PythonCallableKind.Builtin);

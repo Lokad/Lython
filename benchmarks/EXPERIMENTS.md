@@ -6,6 +6,16 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[R373 shared executable slots](results/2026-11-15-shared-executable-slots/README.md)
+retains one managed layout through final function storage and compiled returns,
+removing the native integer side bank, loans, flags and capacity facts. Completed
+B763 (305.254s/eight jobs/all gates) reduces invoice allocation7.89% and warm
+elapsed1.81–2.80%/CPU1.49–2.94%. Short diagnostic allocation falls18.83%; observed
+control elapsed+2.83–4.65%/CPU+4.28–5.04% and possible fulfillment fresh regression
+are explicitly accepted 0.11 tradeoffs. Text/JSON controls vary; no broad speedup.
+Initial B762 adverse results, CRLF launcher failure and all refined checks survive.
+Full delivery remains pending; the broader whole-script goal stays active.
+
 [R355 owned CSV ranges](results/2026-11-14-owned-csv-field-ranges/README.md)
 are withdrawn. Corrected B728same510a/9cfb completes5jobs/375.423s/all gates:
 allocation flat, borrowed effectively flat, escaped~0.5–1%elapsed/CPUuncertain,

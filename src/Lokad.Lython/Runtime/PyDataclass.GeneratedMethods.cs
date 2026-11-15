@@ -104,7 +104,7 @@ internal static partial class PyDataclass
             var bound = LythonRuntime.BindFunctionArguments(arguments, span, _bindingPlan, context);
             try
             {
-                if (bound.Values[_bindingPlan.LayoutParameterIndex["self"]] is not PyInstance instance)
+                if (bound.Values[_bindingPlan.LayoutParameterIndex["self"]].Object! is not PyInstance instance)
                 {
                     throw new LythonRuntimeException("TypeError", $"{_typeName}.__init__ expected a bound instance.", span);
                 }
@@ -117,7 +117,7 @@ internal static partial class PyDataclass
                     {
                         if (field.Kind == DataclassFieldKind.InitVar && field.Init)
                         {
-                            var initVarValue = bound.Values[_bindingPlan.LayoutParameterIndex[field.Name]];
+                            var initVarValue = bound.Values[_bindingPlan.LayoutParameterIndex[field.Name]].Object!;
                             if (ReferenceEquals(initVarValue, DefaultFactorySentinel))
                             {
                                 initVarValue = await InvokeDefaultFactoryCore(field, span, context, asynchronous).ConfigureAwait(false);
@@ -131,7 +131,7 @@ internal static partial class PyDataclass
                     object value;
                     if (field.Init)
                     {
-                        value = bound.Values[_bindingPlan.LayoutParameterIndex[field.Name]];
+                        value = bound.Values[_bindingPlan.LayoutParameterIndex[field.Name]].Object!;
                         if (ReferenceEquals(value, DefaultFactorySentinel))
                         {
                             value = await InvokeDefaultFactoryCore(field, span, context, asynchronous).ConfigureAwait(false);
@@ -297,12 +297,12 @@ internal static partial class PyDataclass
             var bound = LythonRuntime.BindFunctionArguments(arguments, span, _bindingPlan, context);
             try
             {
-                if (bound.Values[_bindingPlan.LayoutParameterIndex["self"]] is not PyInstance self)
+                if (bound.Values[_bindingPlan.LayoutParameterIndex["self"]].Object! is not PyInstance self)
                 {
                     throw new LythonRuntimeException("TypeError", $"{typeName}.__eq__ expected a bound instance.", span);
                 }
 
-                if (bound.Values[_bindingPlan.LayoutParameterIndex["other"]] is not PyInstance other || !ReferenceEquals(self.Type, other.Type))
+                if (bound.Values[_bindingPlan.LayoutParameterIndex["other"]].Object! is not PyInstance other || !ReferenceEquals(self.Type, other.Type))
                 {
                     return PyNotImplemented.Instance;
                 }
@@ -416,7 +416,7 @@ internal static partial class PyDataclass
             var bound = LythonRuntime.BindFunctionArguments(arguments, span, _bindingPlan, context);
             try
             {
-                if (bound.Values[_bindingPlan.LayoutParameterIndex["self"]] is not PyInstance self || bound.Values[_bindingPlan.LayoutParameterIndex["other"]] is not PyInstance other || !ReferenceEquals(self.Type, other.Type))
+                if (bound.Values[_bindingPlan.LayoutParameterIndex["self"]].Object! is not PyInstance self || bound.Values[_bindingPlan.LayoutParameterIndex["other"]].Object! is not PyInstance other || !ReferenceEquals(self.Type, other.Type))
                 {
                     return PyNotImplemented.Instance;
                 }

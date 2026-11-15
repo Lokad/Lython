@@ -211,7 +211,7 @@ internal sealed partial class LythonRuntime
         // json.load/loads already bind these named slots. Validate in the same
         // order as constructor forwarding, without rebuilding keyword arguments.
         internal static JsonLoadOptions BindModuleLoadOptions(
-            BoundCallArguments bound,
+            BoundBuiltinArguments bound,
             IReadOnlyList<KeyValuePair<string, object>> extras,
             LythonSourceSpan span)
         {

@@ -161,7 +161,7 @@ internal sealed partial class LythonRuntime
 
         // Module binding has already checked names and evaluated arguments.
         // Consume that storage directly rather than forwarding eight keywords.
-        internal static ValueTask<object> ConstructBoundAsync(BoundCallArguments bound, int offset,
+        internal static ValueTask<object> ConstructBoundAsync(BoundBuiltinArguments bound, int offset,
             LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             context.CheckExecution(span);

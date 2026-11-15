@@ -18,6 +18,23 @@ internal sealed partial class LythonRuntime
             pending = default;
             pendingSpan = null;
             nextCall = default;
+            // Closed machine values can stay in the final slots. Otherwise
+            // ordinary leaf reads still precede operation cleanup and protocols.
+            if (instruction.OpCode is ExecutableOpCode.Binary or ExecutableOpCode.Augmented)
+            {
+                try
+                {
+                    if (TryEvaluateIntegerInstruction(execution.Code, execution.Stack.Values, execution.InstructionIndex,
+                        scope, out var end, out var integer)
+                        && execution.Stack.CanRetireWithoutCleanup(execution.Code.Instructions[end].LiveExtent))
+                    {
+                        execution.InstructionIndex = end;
+                        PublishInstructionResult(ref execution, invocation, execution.Code.Instructions[end], integer);
+                        return InstructionPause.Continue;
+                    }
+                }
+                catch { execution.Stack.RetireTo(instruction.ResultSlot); throw; }
+            }
             // A failed leaf read precedes operation cleanup/routing, just as the
             // separate load did. No protocol or admission has run at this point.
             // Descriptor resumption uses the original receiver/key retained in
@@ -32,17 +49,6 @@ internal sealed partial class LythonRuntime
                 ? ReadOperand(ref execution, instruction.ThirdInput, scope, 2) : null;
             try
             {
-                if (instruction.OpCode == ExecutableOpCode.Binary
-                    && TryIntegerChain(execution.Code, execution.Stack.Values, execution.InstructionIndex,
-                        first, second!, scope, out var end, out var integerResult)
-                    && execution.Stack.CanRetireWithoutCleanup(execution.Code.Instructions[end].LiveExtent))
-                {
-                    // Closed integers cannot run protocols. Pending disposals or
-                    // other owned temporaries keep the original per-op retirement.
-                    execution.InstructionIndex = end;
-                    PublishInstructionResult(ref execution, invocation, execution.Code.Instructions[end], (BigInteger)integerResult);
-                    return InstructionPause.Continue;
-                }
                 if (instruction.OpCode is ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast)
                 {
                     var receiver = instruction.ValueLast ? first : second!;

@@ -12,7 +12,7 @@ namespace Lokad.Lython.Tests;
 /// </summary>
 public sealed class KwargsKeyAccountingTests
 {
-    private static BoundCallArguments BindKwargs(
+    private static BoundFunctionArguments BindKwargs(
         LythonRuntime.ExecutionContext context,
         LythonSourceSpan span,
         string name,
@@ -33,7 +33,7 @@ public sealed class KwargsKeyAccountingTests
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var bound = BindKwargs(context, span, "alpha", new BigInteger(1));
-        var kwargs = (PyDict)bound.Values[0];
+        var kwargs = (PyDict)bound.Values[0].Object!;
         var key = kwargs.Keys.OfType<PyString>().Single();
         LythonRuntime.ReturnBoundArguments(bound);
         context.State.CloseResources();

@@ -10,27 +10,18 @@ internal sealed class MemoryGovernor
     // through an uncharged window; estimates intentionally need only be safe.
     private readonly ILythonMemoryReservation _ownership;
     internal ILythonMemoryBudget Budget { get; }
-    private WorkspaceCache<object> _functionWorkspace;
-    private WorkspaceCache<long> _nativeIntegerWorkspace;
+    private WorkspaceCache _functionWorkspace;
     private Text.PyStringOps.CasedWhitespaceIteration? _idleWords;
     private bool _wordReuseEnded;
     private bool _resizingOwnership;
 
-    internal static long WorkspaceBytes(int capacity) => capacity == 0 ? 0 : 64L + 16L * capacity;
+    internal static long WorkspaceBytes(int capacity) => capacity == 0 ? 0 : 64L + 24L * capacity;
 
-    internal object[] RentFunctionWorkspace(int capacity, LythonSourceSpan span)
-        => _functionWorkspace.Rent(this, capacity, span);
+    internal LythonRuntime.ExecutableSlot[] RentFunctionWorkspace(int capacity, LythonSourceSpan span, LythonRuntime.ExecutionContext? context = null)
+        => _functionWorkspace.Rent(this, capacity, span, context);
 
-    internal void ReturnFunctionWorkspace(object[] values, int usedLength)
+    internal void ReturnFunctionWorkspace(LythonRuntime.ExecutableSlot[] values, int usedLength)
         => _functionWorkspace.Return(this, values, usedLength);
-
-    // Native words are private to a synchronous prefix. Reuse the same bounded
-    // idle-cache policy and conservative capacity charge as function storage.
-    internal long[] RentNativeIntegerWorkspace(int capacity, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-        => _nativeIntegerWorkspace.Rent(this, capacity, span, context);
-
-    internal void ReturnNativeIntegerWorkspace(long[] values)
-        => _nativeIntegerWorkspace.Return(this, values, 0); // No guest references to clear.
 
     // The range array and its private iteration state share one existing loan.
     // Reusing a loan retains its full capacity but clears every guest reference.
@@ -72,25 +63,21 @@ internal sealed class MemoryGovernor
         try { _functionWorkspace.End(this); }
         finally
         {
-            try { _nativeIntegerWorkspace.End(this); }
-            finally
-            {
-                _wordReuseEnded = true;
-                var cached = _idleWords;
-                _idleWords = null;
-                if (cached is not null) Release(cached.StorageBytes);
-            }
+            _wordReuseEnded = true;
+            var cached = _idleWords;
+            _idleWords = null;
+            if (cached is not null) Release(cached.StorageBytes);
         }
     }
 
     // Invocation workspaces use the same one-idle-buffer lifetime policy as the
     // word loan above. Active loans stay charged after idle reuse has ended.
-    private struct WorkspaceCache<T>
+    private struct WorkspaceCache
     {
-        private T[]? _idle;
+        private LythonRuntime.ExecutableSlot[]? _idle;
         private bool _ended;
 
-        internal T[] Rent(MemoryGovernor governor, int capacity, LythonSourceSpan? span,
+        internal LythonRuntime.ExecutableSlot[] Rent(MemoryGovernor governor, int capacity, LythonSourceSpan? span,
             LythonRuntime.ExecutionContext? context = null)
         {
             governor.ThrowIfAdmissionFailed();
@@ -108,14 +95,14 @@ internal sealed class MemoryGovernor
             try
             {
                 context?.CheckExecution(span);
-                var values = new T[capacity];
+                var values = new LythonRuntime.ExecutableSlot[capacity];
                 governor.Commit(bytes);
                 return values;
             }
             catch { governor.ReleaseReserved(bytes); throw; }
         }
 
-        internal void Return(MemoryGovernor governor, T[] values, int usedLength)
+        internal void Return(MemoryGovernor governor, LythonRuntime.ExecutableSlot[] values, int usedLength)
         {
             // Every prior loan cleared its logical extent. Unused capacity is
             // already empty; do not scan a larger retained backing array.

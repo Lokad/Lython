@@ -1,9 +1,8 @@
 namespace Lokad.Lython.Runtime;
 
-internal readonly record struct BoundCallArguments(
+internal readonly record struct BoundBuiltinArguments(
     object[] Values,
-    ArgumentPresence Assigned,
-    MemoryGovernor? StorageOwner = null);
+    ArgumentPresence Assigned);
 
 internal struct ArgumentPresence
 {
@@ -97,7 +96,7 @@ internal static class CallBinder
             signature.Parameters).Values;
     }
 
-    public static BoundCallArguments BindNamedArgumentsWithPresence(
+    public static BoundBuiltinArguments BindNamedArgumentsWithPresence(
         ReadOnlySpan<CallArgumentValue> arguments,
         LythonSourceSpan span,
         LythonCallableSignature signature,
@@ -112,7 +111,7 @@ internal static class CallBinder
             preservePresence: true);
     }
 
-    private static BoundCallArguments BindNamedArgumentsCore(
+    private static BoundBuiltinArguments BindNamedArgumentsCore(
         ReadOnlySpan<CallArgumentValue> arguments,
         LythonSourceSpan span,
         string callableName,
@@ -136,7 +135,7 @@ internal static class CallBinder
                 positionalOnly[i] = arguments[i].Value;
             }
 
-            return new BoundCallArguments(positionalOnly, ArgumentPresence.Empty);
+            return new BoundBuiltinArguments(positionalOnly, ArgumentPresence.Empty);
         }
 
         var named = (NamedCallableParameterLayout)parameters;
@@ -243,7 +242,7 @@ internal static class CallBinder
 
         var resultAssigned = assigned.WithLength(length);
         resultAssigned.MarkRange(count, extraPositionalCount);
-        return new BoundCallArguments(result, resultAssigned);
+        return new BoundBuiltinArguments(result, resultAssigned);
     }
 
 }

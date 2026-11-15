@@ -79,7 +79,7 @@ public sealed class CompletedInvocationLifetimeTests
     private sealed class Observer : LythonRuntime.ICallable
     {
         internal Context? Context;
-        internal WeakReference<object[]>? Workspace;
+        internal WeakReference<LythonRuntime.ExecutableSlot[]>? Workspace;
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)
         {
             Context = context; // keep the lexical context itself alive after return

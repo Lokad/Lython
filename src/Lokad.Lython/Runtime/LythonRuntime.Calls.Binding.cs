@@ -12,31 +12,32 @@ internal sealed partial class LythonRuntime
 {
     // The function invocation owns this buffer through default lookup and body
     // completion. Values/cells/snapshots have their own retained ownership.
-    internal static void ReturnBoundArguments(BoundCallArguments bound)
+    internal static void ReturnBoundArguments(BoundFunctionArguments bound)
         => ReturnBoundArguments(bound, bound.Assigned.Length);
 
-    internal static void ReturnBoundArguments(BoundCallArguments bound, int usedLength)
+    internal static void ReturnBoundArguments(BoundFunctionArguments bound, int usedLength)
         => ReturnBoundArguments(bound.Values, bound.StorageOwner, usedLength);
 
-    private static void ReturnBoundArguments(object[] values, MemoryGovernor? storageOwner, int usedLength)
+    private static void ReturnBoundArguments(ExecutableSlot[] values, MemoryGovernor? storageOwner, int usedLength)
     {
         if (storageOwner is not null) storageOwner.ReturnFunctionWorkspace(values, usedLength);
         else Array.Clear(values);
     }
 
-    internal static BoundCallArguments RentFunctionArgumentStorage(
-        FunctionBindingPlan plan, LythonSourceSpan span, MemoryGovernor governor, int? storageCapacity)
+    internal static BoundFunctionArguments RentFunctionArgumentStorage(
+        FunctionBindingPlan plan, LythonSourceSpan span, ExecutionContext context, int? storageCapacity)
     {
+        var governor = context.MemoryGovernor;
         var parameterCount = plan.ParameterCount;
         var capacity = storageCapacity ?? parameterCount;
         ArgumentOutOfRangeException.ThrowIfLessThan(capacity, parameterCount);
         // One execution-owned cleared workspace covers final capacity, metadata
         // and presence overflow. Active callers retain it through real cleanup;
         // only returned idle storage can be reused, including after suspension.
-        var values = governor.RentFunctionWorkspace(capacity, span);
+        var values = governor.RentFunctionWorkspace(capacity, span, context);
         try
         {
-            return new BoundCallArguments(values, new ArgumentPresence(parameterCount), governor);
+            return new BoundFunctionArguments(values, new ArgumentPresence(parameterCount), governor);
         }
         catch
         {
@@ -45,14 +46,14 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    internal static BoundCallArguments BindFunctionArguments(
+    internal static BoundFunctionArguments BindFunctionArguments(
         ReadOnlySpan<CallArgumentValue> arguments,
         LythonSourceSpan span,
         FunctionBindingPlan plan,
         ExecutionContext context,
         object? receiver = null,
         ExecutableCallSite? callSite = null,
-        ReadOnlySpan<object?> operands = default,
+        ReadOnlySpan<ExecutableSlot> operands = default,
         bool deferKeywordDefaults = false,
         int? storageCapacity = null)
     {
@@ -60,7 +61,7 @@ internal sealed partial class LythonRuntime
         // variadic names) with presence bits, instead of a per-call name
         // dictionary. The layout arrays live on the shared plan; only the value
         // slots are per-call.
-        var storage = RentFunctionArgumentStorage(plan, span, context.MemoryGovernor, storageCapacity);
+        var storage = RentFunctionArgumentStorage(plan, span, context, storageCapacity);
         try
         {
             var assigned = storage.Assigned;
@@ -78,9 +79,9 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    internal static ValueTask<BoundCallArguments> BindFunctionArgumentsAsync(
+    internal static ValueTask<BoundFunctionArguments> BindFunctionArgumentsAsync(
         ReadOnlySpan<CallArgumentValue> arguments, LythonSourceSpan span, FunctionBindingPlan plan, ExecutionContext context,
-        object? receiver = null, ExecutableCallSite? callSite = null, ReadOnlySpan<object?> operands = default,
+        object? receiver = null, ExecutableCallSite? callSite = null, ReadOnlySpan<ExecutableSlot> operands = default,
         int? storageCapacity = null)
     {
         var defer = plan.KeywordDefaultStorage is { HasProtocolKeys: true };
@@ -89,8 +90,8 @@ internal sealed partial class LythonRuntime
         return defer ? CompleteProtocolDefaultsAsync(bound, span, plan, context) : new(bound);
     }
 
-    private static async ValueTask<BoundCallArguments> CompleteProtocolDefaultsAsync(
-        BoundCallArguments bound, LythonSourceSpan span, FunctionBindingPlan plan, ExecutionContext context)
+    private static async ValueTask<BoundFunctionArguments> CompleteProtocolDefaultsAsync(
+        BoundFunctionArguments bound, LythonSourceSpan span, FunctionBindingPlan plan, ExecutionContext context)
     {
         var values = bound.Values;
         try
@@ -105,7 +106,7 @@ internal sealed partial class LythonRuntime
                 var value = await defaults.TryGetKeyAsync(plan.KeywordDefaultNames[k], context, span).ConfigureAwait(false);
                 if (!value.Found)
                     throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, plan.NameAt(plan.PositionalCount + k), span);
-                values[index] = value.Value;
+                values[index].Object = value.Value;
             }
             return bound;
         }
@@ -120,7 +121,7 @@ internal sealed partial class LythonRuntime
     // borrowed destination. The caller owns storage/rollback; this routine
     // retains ordinary live-default and Python argument/error semantics.
     internal static void BindFunctionArgumentsInto(
-        Span<object> values,
+        Span<ExecutableSlot> values,
         ref ArgumentPresence assigned,
         ReadOnlySpan<CallArgumentValue> arguments,
         LythonSourceSpan span,
@@ -129,7 +130,7 @@ internal sealed partial class LythonRuntime
         bool deferKeywordDefaults = false,
         object? receiver = null,
         ExecutableCallSite? callSite = null,
-        ReadOnlySpan<object?> operands = default)
+        ReadOnlySpan<ExecutableSlot> operands = default)
     {
         // The overflow list is scratch: most calls never spill positionals,
         // so materialize it only on the first spill under existing ownership.
@@ -150,9 +151,12 @@ internal sealed partial class LythonRuntime
             var receiverCount = receiver is null ? 0 : 1;
             if (operands.Length > plan.PositionalCount - receiverCount)
                 throw CallErrors.TooManyPositional(plan.CallableKind, plan.CallableName, span);
-            if (receiver is not null) values[positionalIndex++] = receiver;
+            if (receiver is not null) values[positionalIndex++].Object = receiver;
             for (var i = 0; i < operands.Length; i++)
-                values[positionalIndex++] = operands[i].RequireNotNull();
+            {
+                if (operands[i].IsUnassigned) _ = operands[i].Object.RequireNotNull();
+                values[positionalIndex++] = operands[i];
+            }
             assigned.MarkRange(0, positionalIndex);
         }
         else BindSuppliedFunctionArguments(values, ref assigned, arguments, span, plan, context,
@@ -168,7 +172,7 @@ internal sealed partial class LythonRuntime
             var parameterName = plan.NameAt(i);
             if (plan.TryGetPositionalDefault(i, out var defaultValue))
             {
-                values[i] = defaultValue;
+                values[i].Object = defaultValue;
                 continue;
             }
 
@@ -187,7 +191,7 @@ internal sealed partial class LythonRuntime
             var keywordDefaults = plan.KeywordDefaultStorage;
             if (keywordDefaults is not null && keywordDefaults.TryGetValue(plan.KeywordDefaultNames[k], out var defaultValue, context, span))
             {
-                values[i] = defaultValue;
+                values[i].Object = defaultValue;
                 continue;
             }
 
@@ -200,12 +204,12 @@ internal sealed partial class LythonRuntime
             var overflow = extraPositional;
             if (overflow is null || overflow.Count == 0)
             {
-                values[variadicIndex] = CreateTuple(0, _ => PyNone.Instance, context, span);
+                values[variadicIndex].Object = CreateTuple(0, _ => PyNone.Instance, context, span);
             }
             else
             {
                 var overflowTuple = CreateTuple(overflow.Count, i => overflow[i], context, span);
-                values[variadicIndex] = overflowTuple;
+                values[variadicIndex].Object = overflowTuple;
             }
 
             assigned[variadicIndex] = true;
@@ -223,7 +227,7 @@ internal sealed partial class LythonRuntime
                 }
             }
             var keywordDictIndex = plan.VariadicDictionaryIndex;
-            values[keywordDictIndex] = keywordDict;
+            values[keywordDictIndex].Object = keywordDict;
             assigned[keywordDictIndex] = true;
         }
 
@@ -232,10 +236,10 @@ internal sealed partial class LythonRuntime
     // Named and variadic calls interpret their supplied forms here. Ordinary
     // flat calls keep their direct fill and live-default completion together;
     // the shared binder need not inline this larger dynamic parsing branch.
-    private static void BindSuppliedFunctionArguments(Span<object> values, ref ArgumentPresence assigned,
+    private static void BindSuppliedFunctionArguments(Span<ExecutableSlot> values, ref ArgumentPresence assigned,
         ReadOnlySpan<CallArgumentValue> arguments, LythonSourceSpan span, FunctionBindingPlan plan,
         ExecutionContext context, object? receiver, ExecutableCallSite? callSite,
-        ReadOnlySpan<object?> operands, out PyList? extraPositional,
+        ReadOnlySpan<ExecutableSlot> operands, out PyList? extraPositional,
         out Dictionary<string, object>? extraKeywords)
     {
         extraPositional = null;
@@ -248,8 +252,8 @@ internal sealed partial class LythonRuntime
         {
             var argument = argumentIndex < 0 ? CallArgumentValue.Positional(receiver!)
                 : callSite is null ? arguments.IsEmpty
-                    ? CallArgumentValue.Positional(operands[argumentIndex].RequireNotNull()) : arguments[argumentIndex]
-                : CreateExecutableCallArgument(callSite.Arguments[argumentIndex], operands[argumentIndex].RequireNotNull());
+                    ? CallArgumentValue.Positional(operands[argumentIndex].Object.RequireNotNull()) : arguments[argumentIndex]
+                : CreateExecutableCallArgument(callSite.Arguments[argumentIndex], operands[argumentIndex].Object.RequireNotNull());
             if (argument.IsPositional)
             {
                 if (positionalIndex >= plan.PositionalCount)
@@ -268,7 +272,7 @@ internal sealed partial class LythonRuntime
                     continue;
                 }
 
-                values[positionalIndex] = argument.Value;
+                values[positionalIndex].Object = argument.Value;
                 assigned[positionalIndex] = true;
                 positionalIndex++;
                 continue;
@@ -297,7 +301,7 @@ internal sealed partial class LythonRuntime
                 throw CallErrors.MultipleValues(plan.CallableKind, plan.CallableName, keywordName, span);
             }
 
-            values[keywordIndex] = argument.Value;
+            values[keywordIndex].Object = argument.Value;
             assigned[keywordIndex] = true;
         }
 

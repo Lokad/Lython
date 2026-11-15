@@ -387,22 +387,26 @@ headroom; major arithmetic retains its allocation preflights and result funding.
 Pending cleanup or owned temporaries retain per-operation retirement. This adds
 no numeric identity ledger or separate evaluator.
 
-Eligible native prefixes retain unobserved machine integers in private working
-storage beside the final object slots. The existing compiler eligibility scan
-identifies helpers that need no such storage. Small prefixes borrow a fixed managed
-buffer; larger bound helpers borrow native integer capacity through the existing
-execution-owned workspace reuse policy. New backing is admitted before allocation,
-including cancellation after admission. Idle capacity remains conservatively
-charged until eviction or execution cleanup, which can cause earlier refusal than
-per-call temporary storage. Active loans return only after materialization and all
-native users and cleanup finish. Reads cache a stable immutable object before alias
-copies, calls, collections or returns; ordinary-frame transfer materializes every
-live value. No primitive marker or working span survives suspension. Exact wider
-promotion, ordinary call spans, cancellation and managed stack admission remain.
+Ordinary and native executable work use the same managed reference-plus-integer
+slots for final function arguments, locals and operands. Exact machine integers
+can stay private until observation; object reads cache one immutable Python value
+before exposing aliases, protocols, collections or public results. Wider integers retain
+the exact-integer path. Compiled return and completion storage carries the same
+slots; cleanup that can observe a returning alias publishes its original identity
+before routing through finally. Public/callback results retain their object ABI.
+Builtins retain their object-array binding ABI; receiver
+methods borrow their caller's existing array window without conversion arrays.
+
+There is no separate native integer bank, loan or capacity fact. Small native
+prefixes use a fixed managed buffer; larger helpers use admitted final slots.
+Continuation transfers the live slots once into owned storage, without retaining a
+borrowed span. Private values may remain in this funded managed storage through
+suspension; observed values keep their stable identities. Wider reference-heavy
+storage can require earlier admission refusal. Cancellation, exact continuation,
+cleanup and managed stack admission remain unchanged.
 
 Shared text-to-integer and length kernels keep their result typed through the
-same managed invocation wrapper. Ordinary observation publishes a Python integer;
-eligible native arithmetic uses only its existing private integer capacity.
+same managed invocation wrapper and final slots until ordinary observation.
 Major parse admission conservatively includes publication headroom either way.
 Custom conversion/length protocols retain their ordinary execution and I/O paths.
 
@@ -718,10 +722,6 @@ The entire compiled capacity is admitted before binding, including for mirrored
 functions; it can remain idle in this cache after the call. Idle retention and
 earlier capacity admission can reject tight shared allowances sooner. No workspace crosses
 executions or retains a prior token or guest argument.
-Larger native integer workspaces use the same capacity charge and one-idle-array
-policy. Their private words contain no guest references; every surviving value is
-materialized before ordinary-frame transfer. Ending reuse releases idle backing,
-while outstanding loans remain charged until their final return.
 The same lifetime policy retains one word-buffer loan per execution, shared by
 larger ordinary splits and private cased-word iteration. One admitted object owns
 the range array and private cursor state; repeated lines reuse that storage.

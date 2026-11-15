@@ -78,6 +78,39 @@ public sealed class IntegerPublicationTests
     public static IEnumerable<object[]> Cases()
     {
         yield return ["""
+            saved=[]
+            def make(left,right):
+                value=left+right
+                try:return value
+                finally:saved.append(value)
+            result=make(5000,1)
+            assert result is saved[0] and result==5001
+            def outer(left,right):
+                def inner(value):return value+1
+                result=inner(left+right)
+                alias=result
+                assert result is alias
+                return result
+            assert outer(5000,1)==5002
+            print('ok')
+            """];
+        yield return ["""
+            def inspect(value):
+                assert value is value
+                alias=value
+                assert value is alias
+                return value
+            def outer(left,right):
+                value=left+right
+                assert inspect(value) is value
+                pair=(value,value)
+                assert pair[0] is pair[1]
+                return inspect(left+right),value
+            first,second=outer(5000,1)
+            assert first==second==5001
+            print('ok')
+            """];
+        yield return ["""
             def identity(value):return value
             def fold(a,b):
                 total=a+b

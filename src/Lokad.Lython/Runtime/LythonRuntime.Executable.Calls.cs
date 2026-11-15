@@ -13,7 +13,7 @@ internal sealed partial class LythonRuntime
         private MemoryGovernor? _boundStorageOwner;
         private ExecutableCallSite? _pendingCallSite;
         private int _pendingCallStart;
-        private object? _completedCallValue;
+        private ExecutableSlot _completedCallValue;
         private Exception? _completedCallError;
         private enum CallCompletion { Call, TypeGetter, TypeSubscription, Constructor }
         private CallCompletion _callCompletion;
@@ -160,7 +160,7 @@ internal sealed partial class LythonRuntime
                 return null;
             }
 
-            var result = current.HasFrameReturn ? current.FrameReturnValue : PyNone.Instance;
+            var result = current.HasFrameReturn ? current.FrameReturnSlot : ExecutableSlot.FromObject(PyNone.Instance);
             try { current.CloseInvocation(failure); }
             catch (Exception error) { failure = error; }
             current._caller = null;
@@ -210,13 +210,13 @@ internal sealed partial class LythonRuntime
             {
                 if (prepared) throw; // Bound execution already owns postprocessing.
                 if (TryTranslateCallableException(error, span, out var translated)) error = translated;
-                ApplyCallResult(start, span, completion, null, error);
+                ApplyCallResult(start, span, completion, default, error);
                 return new(this);
             }
             finally { if (!prepared && callEntered) LeaveInterpreterFrame(); }
         }
 
-        private async ValueTask<ExecutionContext?> AwaitPendingBinding(ValueTask<BoundCallArguments> binding,
+        private async ValueTask<ExecutionContext?> AwaitPendingBinding(ValueTask<BoundFunctionArguments> binding,
             PyExecutableFunction function, ExecutableCallSite? site, int start, LythonSourceSpan span,
             CallCompletion completion, bool callEntered)
         {
@@ -231,7 +231,7 @@ internal sealed partial class LythonRuntime
             {
                 if (prepared) throw; // Bound execution already owns postprocessing.
                 if (TryTranslateCallableException(error, span, out var translated)) error = translated;
-                ApplyCallResult(start, span, completion, null, error);
+                ApplyCallResult(start, span, completion, default, error);
                 return this;
             }
             finally { if (!prepared && callEntered) LeaveInterpreterFrame(); }
@@ -240,13 +240,13 @@ internal sealed partial class LythonRuntime
         // Binding locals own this descriptor through the synchronous transition.
         // Borrow it rather than copying its references onto the outgoing stack;
         // surviving values and ownership transfer into the work/frame below.
-        private ExecutionContext BeginBoundCall(PyExecutableFunction function, in BoundCallArguments bound,
+        private ExecutionContext BeginBoundCall(PyExecutableFunction function, in BoundFunctionArguments bound,
             ExecutableCallSite? site, int start, LythonSourceSpan span, CallCompletion completion,
             bool callEntered)
         {
             var consumedByIteration = completion == CallCompletion.Call && site is not null
                 && CallResultConsumedByIteration(in _execution, site);
-            object? completedValue = null;
+            ExecutableSlot completedValue = default;
             Exception? completedError = null;
             ExecutionContext? frame = null;
             ExecutableWorkState work = default;
@@ -284,7 +284,7 @@ internal sealed partial class LythonRuntime
                         var pause = ExecuteInstructionPrefix(ref work, scope, null, false, out _, out _, out _);
                         if (pause == InstructionPause.Boundary)
                         {
-                            completedValue = work.ReturnValue ?? PyNone.Instance;
+                            completedValue = work.ReturnValue.IsUnassigned ? ExecutableSlot.FromObject(PyNone.Instance) : work.ReturnValue;
                             goto Completed;
                         }
                         if (pause != InstructionPause.ContextRequired)
@@ -404,7 +404,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private void CompletePendingCall(object? value, Exception? failure)
+        private void CompletePendingCall(ExecutableSlot value, Exception? failure)
         {
             _completedCallValue = value;
             _completedCallError = failure;
@@ -421,14 +421,14 @@ internal sealed partial class LythonRuntime
             _pendingCallSite = null;
             _protocolCallSpan = null;
             _callCompletion = CallCompletion.Call;
-            _completedCallValue = null;
+            _completedCallValue = default;
             _completedCallError = null;
             try { ApplyCallResult(start, span, completion, value, failure); }
             catch (LythonRuntimeException error) { _injectedException = error; }
         }
 
         private void ApplyCallResult(int start, LythonSourceSpan span, CallCompletion completion,
-            object? value, Exception? failure)
+            ExecutableSlot value, Exception? failure)
         {
             if (completion == CallCompletion.Constructor)
             {
@@ -437,9 +437,9 @@ internal sealed partial class LythonRuntime
                 CheckExecution(span);
                 if (failure is null)
                 {
-                    if (!ReferenceEquals(value, PyNone.Instance))
+                    if (!ReferenceEquals(value.Reference, PyNone.Instance))
                         failure = new LythonRuntimeException("TypeError", $"__init__ for class '{instance.Type.Name}' must return None.", span);
-                    else value = instance;
+                    else value.Object = instance;
                 }
             }
             if (completion == CallCompletion.TypeGetter)
@@ -449,13 +449,13 @@ internal sealed partial class LythonRuntime
                 if (failure is LythonRuntimeException { ExceptionType: "AttributeError" })
                 {
                     failure = null;
-                    value = PyNone.Instance;
+                    value.Object = PyNone.Instance;
                 }
                 if (failure is null)
                 {
-                    if (value is not PyNone)
+                    if (value.Reference is not PyNone)
                     {
-                        _preparedCallValue = value;
+                        _preparedCallValue = value.Object.RequireNotNull();
                         return; // Resume this subscript without rebinding.
                     }
                     failure = new LythonRuntimeException("TypeError",
@@ -470,7 +470,7 @@ internal sealed partial class LythonRuntime
             }
             else
             {
-                PublishInstructionResult(_execution.Code.Instructions[_execution.InstructionIndex], RuntimeValue(value));
+                PublishInstructionResult(_execution.Code.Instructions[_execution.InstructionIndex], value.IsUnassigned ? ExecutableSlot.FromObject(PyNone.Instance) : value);
                 _execution.InstructionIndex++;
             }
         }

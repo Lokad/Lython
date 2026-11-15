@@ -24,7 +24,7 @@ internal sealed partial class LythonRuntime
                 new PendingReturn(signal.Value), span, ref _pendingAbrupt, ref _execution.InstructionIndex, out _))
                 return true;
 
-            _execution.ReturnValue = signal.Value;
+            _execution.ReturnValue = ExecutableSlot.FromObject(signal.Value);
             return false;
         }
 

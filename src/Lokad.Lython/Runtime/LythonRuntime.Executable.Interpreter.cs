@@ -75,14 +75,14 @@ internal sealed partial class LythonRuntime
             _delegation = null;
             HasYield = false;
             YieldValue = PyNone.Instance;
-            _execution.ReturnValue = null;
+            _execution.ReturnValue = default;
             _savedActiveExceptions = null;
             _entryActiveException = null;
             _caller = null;
             _boundStorageOwner = null;
             _pendingCallSite = null;
             _pendingCallStart = 0;
-            _completedCallValue = null;
+            _completedCallValue = default;
             _completedCallError = null;
             _callCompletion = CallCompletion.Call;
             _protocolCallSpan = null;
@@ -227,29 +227,33 @@ internal sealed partial class LythonRuntime
         // like compiler-issued stores.
         private static void StoreLocalValue(
             ExecutableCodeObject codeObject,
-            object[] locals,
+            ExecutableSlot[] locals,
             ExecutionContext? context,
             int slot,
             object value,
             LythonSourceSpan span)
+            => StoreLocalValue(codeObject, locals, context, slot, ExecutableSlot.FromObject(value), span);
+
+        private static void StoreLocalValue(ExecutableCodeObject codeObject, ExecutableSlot[] locals,
+            ExecutionContext? context, int slot, ExecutableSlot value, LythonSourceSpan span)
         {
             var name = codeObject.LocalNames[slot];
             var guestName = !name.StartsWith('<');
             if (context?.GlobalNamespace is not null && guestName)
             {
-                StoreGlobalNamespaceName(context, name, value);
+                StoreGlobalNamespaceName(context, name, value.Object.RequireNotNull());
                 return;
             }
-            if (locals[slot] is ExecutableCell localCell)
+            if (locals[slot].Reference is ExecutableCell localCell)
             {
                 // The cell owns this binding and its namespace policy.
-                localCell.Value = value;
+                localCell.Value = value.Object.RequireNotNull();
             }
             else
             {
                 locals[slot] = value;
                 if (guestName && (codeObject.RequiresLocalVariableMirroring || context?.MirrorLocalStores == true))
-                    context!.Variables[name] = value;
+                    context!.Variables[name] = locals[slot].Object.RequireNotNull();
             }
         }
 
@@ -263,7 +267,7 @@ internal sealed partial class LythonRuntime
             // Unbound locals raise Python errors before the temporary-value
             // invariant rejects an empty operand slot.
             var value = source < execution.Code.FirstTemporarySlot
-                ? ReadLocalValue(execution.Locals, source) : execution.Stack.Values[source];
+                ? ReadLocalValue(execution.Locals, source) : execution.Stack.Values[source].Object;
             if (value is null && source < execution.Code.FirstTemporarySlot)
                 return LoadLocal(execution.Code, execution.Locals, source,
                     execution.Code.OperandReadSpan(execution.InstructionIndex, input), scope);
@@ -275,6 +279,23 @@ internal sealed partial class LythonRuntime
             if (instruction.InputStart >= execution.Code.FirstTemporarySlot)
                 return execution.Stack.TakeValue(instruction.InputStart, instruction.LiveExtent);
             var value = ReadOperand(ref execution, instruction.InputStart, scope, 0);
+            execution.Stack.RetireTo(instruction.LiveExtent);
+            return value;
+        }
+
+        private static ExecutableSlot TakeReturnOperand(ref ExecutableWorkState execution,
+            in ExecutableInstruction instruction, ExecutionContext scope)
+        {
+            var source = instruction.InputStart;
+            // Cleanup can observe an alias in the returning frame. Publish its
+            // original identity before copying a pending return through finally.
+            if (execution.Code.ExceptionRegions.Count != 0 || source < 0
+                || execution.Stack.Values[source].Reference is ExecutableCell)
+                return ExecutableSlot.FromObject(TakeOperand(ref execution, instruction, scope));
+            if (source >= execution.Code.FirstTemporarySlot)
+                return execution.Stack.TakeSlotValue(source, instruction.LiveExtent);
+            var value = execution.Stack.Values[source];
+            if (value.IsUnassigned) _ = ReadOperand(ref execution, source, scope, 0);
             execution.Stack.RetireTo(instruction.LiveExtent);
             return value;
         }
@@ -528,10 +549,10 @@ internal sealed partial class LythonRuntime
         // (and its per-return signal box) entirely. Propagated signals from
         // nested calls still arrive through the per-instruction catch below,
         // which stays as the routing backstop.
-        private static bool DeliverReturn(ref ExecutableWorkState execution, ExecutionContext? invocation, object value, LythonSourceSpan span)
+        private static bool DeliverReturn(ref ExecutableWorkState execution, ExecutionContext? invocation, ExecutableSlot value, LythonSourceSpan span)
         {
             if (execution.Code.ExceptionRegions.Count != 0 &&
-                TryHandleAbrupt(execution.Code, invocation!, ref execution.Stack, execution.InstructionIndex, new PendingReturn(value), span, ref invocation!._pendingAbrupt, ref execution.InstructionIndex, out _))
+                TryHandleAbrupt(execution.Code, invocation!, ref execution.Stack, execution.InstructionIndex, new PendingReturn(value.Object.RequireNotNull()), span, ref invocation!._pendingAbrupt, ref execution.InstructionIndex, out _))
             {
                 return true;
             }
@@ -637,19 +658,21 @@ internal sealed partial class LythonRuntime
                     return true;
 
                 case ExecutableOpCode.Return:
-                    return DeliverReturn(ref execution, invocation, TakeOperand(ref execution, instruction, scope), instruction.Span);
+                    return DeliverReturn(ref execution, invocation, TakeReturnOperand(ref execution, instruction, scope), instruction.Span);
 
                 case ExecutableOpCode.ReturnNone:
-                    return DeliverReturn(ref execution, invocation, PyNone.Instance, instruction.Span);
+                    return DeliverReturn(ref execution, invocation, ExecutableSlot.FromObject(PyNone.Instance), instruction.Span);
 
                 default:
                     throw new InvalidOperationException($"Unknown executable opcode: {instruction.OpCode}");
             }
         }
 
-        internal bool HasFrameReturn => _execution.ReturnValue is not null;
+        internal bool HasFrameReturn => !_execution.ReturnValue.IsUnassigned;
 
-        internal object FrameReturnValue => _execution.ReturnValue.RequireNotNull();
+        internal object FrameReturnValue => _execution.ReturnValue.Object.RequireNotNull();
+
+        internal ExecutableSlot FrameReturnSlot => _execution.ReturnValue;
 
         private async ValueTask DrainPendingDisposalsAsync()
         {
@@ -715,7 +738,7 @@ internal sealed partial class LythonRuntime
                     // A relinquished cursor must finish before another guest
                     // instruction or handler observes its cleanup effects.
                     if (_execution.Stack.HasPendingDisposals) await DrainPendingDisposalsAsync().ConfigureAwait(false);
-                    if (_execution.ReturnValue is not null || HasYield) return null;
+                    if (!_execution.ReturnValue.IsUnassigned || HasYield) return null;
                     if (!jumped) _execution.InstructionIndex++;
                 }
             }

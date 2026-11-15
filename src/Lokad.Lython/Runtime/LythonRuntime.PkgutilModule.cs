@@ -54,7 +54,7 @@ internal sealed partial class LythonRuntime
             return ((PyNamedTupleType)type!).CreateFromValues([PyNone.Instance, name, isPackage], context.MemoryGovernor, span);
         }
 
-        private static object Discover(BoundCallArguments arguments, LythonSourceSpan span, ExecutionContext context, bool recursive)
+        private static object Discover(BoundBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context, bool recursive)
         {
             using var shell = context.MemoryGovernor.ReserveTemporary(512, span);
             var result = new ModuleDiscoveryIterator(

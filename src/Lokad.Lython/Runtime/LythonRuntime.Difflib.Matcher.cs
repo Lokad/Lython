@@ -315,7 +315,7 @@ internal sealed partial class LythonRuntime
             if (group.Count != 0 && !(group.Count == 1 && ReadOpcode(group[0], span).Tag == DiffTag.Equal)) yield return group;
         }
 
-        private async ValueTask<object> FindMatchAsync(BoundCallArguments bound, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+        private async ValueTask<object> FindMatchAsync(BoundBuiltinArguments bound, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             var args = bound.Values;
             var alo = bound.Assigned[0] ? DifflibModule.RequireInt32(args[0], "alo must be an integer", span) : 0;

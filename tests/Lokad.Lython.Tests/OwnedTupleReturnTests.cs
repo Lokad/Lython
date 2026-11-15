@@ -1,3 +1,4 @@
+using Slot = Lokad.Lython.Runtime.LythonRuntime.ExecutableSlot;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
@@ -36,12 +37,12 @@ public sealed class OwnedTupleReturnTests
                 var left = PyString.FromString(new string('x', 8192), context.MemoryGovernor, Span);
                 var right = new PyList(0, context.MemoryGovernor, Span);
                 var call = Assert.Single(Compile("a,b=pair(left,right)").CallSites);
-                var bound = function.BindCallOperands([left, right], Span, context, null, call);
+                var bound = function.BindCallOperands([Slot.FromObject(left), Slot.FromObject(right)], Span, context, null, call);
                 try
                 {
                     var first = new object();
                     var second = new object();
-                    object[] returned = [first, second];
+                    Slot[] returned = [Slot.FromObject(first), Slot.FromObject(second)];
                     var baseline = budget.ReservedBytes;
                     if (failure == 1) gate.AfterGrowth = _ => cancellation.Cancel();
                     if (failure == 2) gate.RefuseGrowth = _ => true;
@@ -52,8 +53,8 @@ public sealed class OwnedTupleReturnTests
                         Assert.Equal(failure == 1 ? LythonFailureReason.Cancelled : LythonFailureReason.SharedMemoryAllowance,
                             error.Attribution?.Reason);
                         if (failure == 2) Assert.Same(context.MemoryGovernor.AdmissionFailure, error);
-                        Assert.Same(first, returned[0]);
-                        Assert.Same(second, returned[1]);
+                        Assert.Same(first, returned[0].Object);
+                        Assert.Same(second, returned[1].Object);
                         Assert.Equal(baseline, budget.ReservedBytes);
                     }
                     else
@@ -62,8 +63,8 @@ public sealed class OwnedTupleReturnTests
                             out var unpacked, out _, out var frame));
                         Assert.True(unpacked);
                         Assert.Null(frame);
-                        Assert.Same(left, returned[0]);
-                        Assert.Same(right, returned[1]);
+                        Assert.Same(left, returned[0].Object);
+                        Assert.Same(right, returned[1].Object);
                         Assert.True(budget.ReservedBytes > baseline);
                     }
                     Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);

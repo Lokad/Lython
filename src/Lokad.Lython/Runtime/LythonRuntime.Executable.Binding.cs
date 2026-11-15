@@ -9,19 +9,19 @@ internal sealed partial class LythonRuntime
 {
     // Captured local slots hold their authoritative cell. Cells are internal
     // storage and never guest values; temporary operands always hold the value.
-    private static object? ReadLocalValue(object[] locals, int slot)
+    private static object? ReadLocalValue(ExecutableSlot[] locals, int slot)
     {
-        var value = locals[slot];
+        var value = locals[slot].Object;
         return value is ExecutableCell cell ? cell.Value : value;
     }
 
-    private static void WriteLocalValue(object[] locals, int slot, object? value)
+    private static void WriteLocalValue(ExecutableSlot[] locals, int slot, object? value)
     {
-        if (locals[slot] is ExecutableCell cell) cell.Value = value;
-        else locals[slot] = value!;
+        if (locals[slot].Reference is ExecutableCell cell) cell.Value = value;
+        else locals[slot].Object = value!;
     }
 
-    private static object LoadLocal(ExecutableCodeObject codeObject, object[] locals, int slot, LythonSourceSpan span, ExecutionContext context)
+    private static object LoadLocal(ExecutableCodeObject codeObject, ExecutableSlot[] locals, int slot, LythonSourceSpan span, ExecutionContext context)
     {
         var value = ReadLocalValue(locals, slot);
         if (value is null)
@@ -246,7 +246,7 @@ internal sealed partial class LythonRuntime
 
     private static bool TryExecuteExecutableMatchCase(
         ExecutableMatchCaseBinding matchCase, object subject, ExecutionContext context,
-        object[] locals, Span<object> storage)
+        ExecutableSlot[] locals, Span<ExecutableSlot> storage)
     {
         var pattern = matchCase.Pattern;
         storage = storage[..pattern.StorageCount];
@@ -255,7 +255,7 @@ internal sealed partial class LythonRuntime
             if (!TryMatchRootPattern(pattern, subject, context, storage)) return false;
             for (var i = 0; i < pattern.Bindings.Length; i++)
             {
-                var value = storage[i];
+                var value = storage[i].Object.RequireNotNull();
                 StoreName(pattern.Bindings[i].Name, value, context, matchCase.Span);
                 var slot = matchCase.LocalBindingSlots[i];
                 if (slot < 0) continue;
@@ -269,7 +269,7 @@ internal sealed partial class LythonRuntime
     private static void ExecuteExecutableImport(
         ExecutableCodeObject codeObject,
         ImportStatementSyntax importBinding,
-        object[] locals,
+        ExecutableSlot[] locals,
         ExecutionContext context)
     {
         if (importBinding.ModuleName == "__future__" && importBinding.ImportedMembers is not null &&
@@ -322,7 +322,7 @@ internal sealed partial class LythonRuntime
     private static async ValueTask ExecuteExecutableFunctionDefinitionAsync(
         ExecutableCodeObject codeObject,
         ExecutableFunctionBinding functionBinding,
-        object[] locals,
+        ExecutableSlot[] locals,
         ExecutionContext context,
         bool asynchronous)
     {
@@ -491,7 +491,7 @@ internal sealed partial class LythonRuntime
 
     private static void SyncExecutableLocalsFromContext(
         ExecutableCodeObject codeObject,
-        object[] locals,
+        ExecutableSlot[] locals,
         ExecutionContext context)
     {
         for (var i = 0; i < codeObject.LocalNames.Count; i++)
@@ -507,7 +507,7 @@ internal sealed partial class LythonRuntime
 
     private static void SyncExecutableLocalFromValue(
         ExecutableCodeObject codeObject,
-        object[] locals,
+        ExecutableSlot[] locals,
         string name,
         object value)
     {
@@ -521,7 +521,7 @@ internal sealed partial class LythonRuntime
 
     private static void AssignExecutableBoundName(
         ExecutableCodeObject codeObject,
-        object[] locals,
+        ExecutableSlot[] locals,
         string name,
         object value,
         ExecutionContext context,

@@ -20,9 +20,9 @@ internal sealed class PyGeneratorFunction : PyFunctionBase
 
     protected override bool RequiresArgumentMirroring => _code.RequiresLocalVariableMirroring;
 
-    protected override object ExecuteBody(LythonRuntime.ExecutionContext frame, BoundCallArguments arguments, LythonSourceSpan span)
+    protected override object ExecuteBody(LythonRuntime.ExecutionContext frame, BoundFunctionArguments arguments, LythonSourceSpan span)
         => LythonRuntime.PyGenerator.Create(_code, frame, span, _closureCells, arguments);
 
-    protected override ValueTask<object> ExecuteBodyAsync(LythonRuntime.ExecutionContext frame, BoundCallArguments arguments, LythonSourceSpan span)
+    protected override ValueTask<object> ExecuteBodyAsync(LythonRuntime.ExecutionContext frame, BoundFunctionArguments arguments, LythonSourceSpan span)
         => new(ExecuteBody(frame, arguments, span));
 }

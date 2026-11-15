@@ -1,3 +1,4 @@
+using Slot = Lokad.Lython.Runtime.LythonRuntime.ExecutableSlot;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
@@ -38,7 +39,7 @@ public sealed class OwnedFunctionLocalsTests
             steady ??= budget.ReservedBytes;
             Assert.True(steady > baseline);
             Assert.Equal(steady, budget.ReservedBytes);
-            Assert.All(tap.Storage!, Assert.Null);
+            Assert.All(tap.Storage!, item => Assert.Null(item.Object));
             Check(context);
         }
         Assert.Equal(16, tap.Calls);
@@ -160,7 +161,7 @@ public sealed class OwnedFunctionLocalsTests
             await tap.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
             Assert.False(pending.IsCompleted);
             Assert.True(budget.ReservedBytes > baseline);
-            Assert.All(tap.Storage!.Take(4), item => Assert.Same(value, item));
+            Assert.All(tap.Storage!.Take(4), item => Assert.Same(value, item.Object));
             if (route == "cancel") cancellation.Cancel();
             if (route == "admission")
                 Assert.Throws<LythonRuntimeException>(() => context.MemoryGovernor.Reserve(
@@ -181,7 +182,7 @@ public sealed class OwnedFunctionLocalsTests
             if (route == "admission") Assert.Same(context.MemoryGovernor.AdmissionFailure, error);
         }
         Assert.True(tap.Finished);
-        Assert.All(tap.Storage!, Assert.Null);
+        Assert.All(tap.Storage!, item => Assert.Null(item.Object));
         context.State.CloseResources();
         Assert.Equal(baseline, budget.ReservedBytes);
         Check(context);
@@ -201,7 +202,7 @@ public sealed class OwnedFunctionLocalsTests
     {
         var bound = entry >= 2;
         CallArgumentValue[] arguments = bound ? [] : [CallArgumentValue.Positional(value)];
-        object?[] operands = bound ? [] : [value];
+        Slot[] operands = bound ? [] : [Slot.FromObject(value)];
         if (asynchronous) return entry switch
         {
             0 => await f.InvokeAsync(arguments, Span, context),
@@ -231,7 +232,7 @@ public sealed class OwnedFunctionLocalsTests
         internal int Calls;
         internal bool Suspend;
         internal bool Finished;
-        internal object[]? Storage;
+        internal LythonRuntime.ExecutableSlot[]? Storage;
         internal TaskCompletionSource Entered = new(TaskCreationOptions.RunContinuationsAsynchronously);
         internal TaskCompletionSource Release = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)

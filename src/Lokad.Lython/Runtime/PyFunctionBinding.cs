@@ -8,7 +8,7 @@ internal static class PyFunctionBinding
         LythonRuntime.ExecutionContext closure,
         ScopeDirectiveFacts scopeFacts,
         FunctionBindingPlan bindingPlan,
-        BoundCallArguments boundArguments,
+        BoundFunctionArguments boundArguments,
         bool mirrorBoundArguments,
         PyType? ownerType,
         LythonSourceSpan span,
@@ -23,7 +23,7 @@ internal static class PyFunctionBinding
             var layoutNames = bindingPlan.LayoutParameterNames;
             for (var i = 0; i < layoutNames.Count; i++)
             {
-                frame.Variables[layoutNames[i]] = boundArguments.Values[i];
+                frame.Variables[layoutNames[i]] = boundArguments.Values[i].Object!;
             }
         }
 

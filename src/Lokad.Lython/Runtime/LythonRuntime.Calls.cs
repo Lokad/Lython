@@ -115,7 +115,7 @@ internal sealed partial class LythonRuntime
     }
 
     private static object InvokeCallableFromOperands(
-        PyFunctionBase function, ReadOnlyMemory<object?> arguments, LythonSourceSpan span, ExecutionContext context,
+        PyFunctionBase function, ReadOnlyMemory<ExecutableSlot> arguments, LythonSourceSpan span, ExecutionContext context,
         object? receiver = null, ExecutableCallSite? callSite = null)
     {
         context.EnterInterpreterFrame(span);
@@ -128,7 +128,7 @@ internal sealed partial class LythonRuntime
     }
 
     private static async ValueTask<object> InvokeCallableFromOperandsAsync(
-        PyFunctionBase function, ReadOnlyMemory<object?> arguments, LythonSourceSpan span, ExecutionContext context,
+        PyFunctionBase function, ReadOnlyMemory<ExecutableSlot> arguments, LythonSourceSpan span, ExecutionContext context,
         object? receiver = null, ExecutableCallSite? callSite = null)
     {
         context.EnterInterpreterFrame(span);
@@ -551,11 +551,11 @@ internal sealed partial class LythonRuntime
         protected abstract object InvokeBound(object[] arguments, LythonSourceSpan span, ExecutionContext context);
 
         /// <summary>Invokes the callable with assignment tracking; by default degrades to the positional body.</summary>
-        protected virtual object InvokeBoundWithPresence(BoundCallArguments bound, LythonSourceSpan span, ExecutionContext context)
+        protected virtual object InvokeBoundWithPresence(BoundBuiltinArguments bound, LythonSourceSpan span, ExecutionContext context)
             => InvokeBound(bound.Values, span, context);
 
         /// <summary>Asynchronous <see cref="InvokeBoundWithPresence"/>; by default runs the synchronous body inline.</summary>
-        protected virtual ValueTask<object> InvokeBoundWithPresenceAsync(BoundCallArguments bound, LythonSourceSpan span, ExecutionContext context)
+        protected virtual ValueTask<object> InvokeBoundWithPresenceAsync(BoundBuiltinArguments bound, LythonSourceSpan span, ExecutionContext context)
             => ValueTask.FromResult(InvokeBoundWithPresence(bound, span, context));
 
         /// <summary>
@@ -2745,21 +2745,21 @@ internal sealed partial class LythonRuntime
             : base(signature, PythonCallableKind.Builtin, implementation, asyncImplementation)
         { }
 
-        private readonly Func<BoundCallArguments, LythonSourceSpan, ExecutionContext, ValueTask<object>>? _presence;
-        private readonly Func<BoundCallArguments, LythonSourceSpan, ExecutionContext, object>? _syncPresence;
+        private readonly Func<BoundBuiltinArguments, LythonSourceSpan, ExecutionContext, ValueTask<object>>? _presence;
+        private readonly Func<BoundBuiltinArguments, LythonSourceSpan, ExecutionContext, object>? _syncPresence;
         private BuiltinCallable(LythonCallableSignature signature,
-            Func<BoundCallArguments, LythonSourceSpan, ExecutionContext, object> sync,
-            Func<BoundCallArguments, LythonSourceSpan, ExecutionContext, ValueTask<object>> async)
+            Func<BoundBuiltinArguments, LythonSourceSpan, ExecutionContext, object> sync,
+            Func<BoundBuiltinArguments, LythonSourceSpan, ExecutionContext, ValueTask<object>> async)
             : this(signature, static (object[] _, LythonSourceSpan __, ExecutionContext ___) => throw new InvalidOperationException("Missing argument presence"), null)
         { _presence = async; _syncPresence = sync; }
         protected override bool PreservePresence => _presence is not null;
-        protected override object InvokeBoundWithPresence(BoundCallArguments arguments, LythonSourceSpan span, ExecutionContext context)
+        protected override object InvokeBoundWithPresence(BoundBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context)
             => _syncPresence!(arguments, span, context);
-        protected override ValueTask<object> InvokeBoundWithPresenceAsync(BoundCallArguments arguments, LythonSourceSpan span, ExecutionContext context)
+        protected override ValueTask<object> InvokeBoundWithPresenceAsync(BoundBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context)
             => _presence!(arguments, span, context);
         public static BuiltinCallable CreateWithPresence(LythonCallableSignature signature,
-            Func<BoundCallArguments, LythonSourceSpan, ExecutionContext, object> sync,
-            Func<BoundCallArguments, LythonSourceSpan, ExecutionContext, ValueTask<object>> async)
+            Func<BoundBuiltinArguments, LythonSourceSpan, ExecutionContext, object> sync,
+            Func<BoundBuiltinArguments, LythonSourceSpan, ExecutionContext, ValueTask<object>> async)
             => new(signature, sync, async);
 
         public static BuiltinCallable Create(LythonCallableSignature signature, Func<object[], LythonSourceSpan, ExecutionContext, object> implementation)
@@ -3039,13 +3039,13 @@ internal sealed partial class LythonRuntime
                 : _asyncImplementation is null ? new(InvokeBound(arguments, span, context))
                 : _asyncImplementation(arguments, span, context);
 
-        private readonly Func<BoundCallArguments, LythonSourceSpan, ExecutionContext, object>? _presenceImplementation;
-        private readonly Func<BoundCallArguments, LythonSourceSpan, ExecutionContext, ValueTask<object>>? _asyncPresenceImplementation;
+        private readonly Func<BoundBuiltinArguments, LythonSourceSpan, ExecutionContext, object>? _presenceImplementation;
+        private readonly Func<BoundBuiltinArguments, LythonSourceSpan, ExecutionContext, ValueTask<object>>? _asyncPresenceImplementation;
 
         private BoundCallable(
-            Func<BoundCallArguments, LythonSourceSpan, ExecutionContext, object> implementation,
+            Func<BoundBuiltinArguments, LythonSourceSpan, ExecutionContext, object> implementation,
             LythonCallableSignature signature,
-            Func<BoundCallArguments, LythonSourceSpan, ExecutionContext, ValueTask<object>>? asyncImplementation = null)
+            Func<BoundBuiltinArguments, LythonSourceSpan, ExecutionContext, ValueTask<object>>? asyncImplementation = null)
             : base(signature, PythonCallableKind.Method)
         {
             _presenceImplementation = implementation;
@@ -3054,17 +3054,17 @@ internal sealed partial class LythonRuntime
 
         protected override bool PreservePresence => _presenceImplementation is not null;
 
-        protected override object InvokeBoundWithPresence(BoundCallArguments bound, LythonSourceSpan span, ExecutionContext context)
+        protected override object InvokeBoundWithPresence(BoundBuiltinArguments bound, LythonSourceSpan span, ExecutionContext context)
             => _presenceImplementation!(bound, span, context);
 
-        protected override ValueTask<object> InvokeBoundWithPresenceAsync(BoundCallArguments bound, LythonSourceSpan span, ExecutionContext context)
+        protected override ValueTask<object> InvokeBoundWithPresenceAsync(BoundBuiltinArguments bound, LythonSourceSpan span, ExecutionContext context)
             => _asyncPresenceImplementation is null ? new(InvokeBoundWithPresence(bound, span, context))
                 : _asyncPresenceImplementation(bound, span, context);
 
         public static BoundCallable CreateWithPresence(
-            Func<BoundCallArguments, LythonSourceSpan, ExecutionContext, object> implementation,
+            Func<BoundBuiltinArguments, LythonSourceSpan, ExecutionContext, object> implementation,
             LythonCallableSignature signature,
-            Func<BoundCallArguments, LythonSourceSpan, ExecutionContext, ValueTask<object>> asyncImplementation)
+            Func<BoundBuiltinArguments, LythonSourceSpan, ExecutionContext, ValueTask<object>> asyncImplementation)
             => new(implementation, signature, asyncImplementation);
 
         public static BoundCallable Create(Func<object[], LythonSourceSpan, ExecutionContext, object> implementation, LythonCallableSignature signature)
@@ -3093,14 +3093,14 @@ internal sealed partial class LythonRuntime
             => Create(implementation, LythonCallableSignature.Create(name, parameterNames, requiredCount));
 
         public static BoundCallable CreateWithPresence(
-            Func<BoundCallArguments, LythonSourceSpan, ExecutionContext, object> implementation,
+            Func<BoundBuiltinArguments, LythonSourceSpan, ExecutionContext, object> implementation,
             string name,
             string[] parameterNames,
             int requiredCount)
             => new(implementation, LythonCallableSignature.Create(name, parameterNames, requiredCount));
 
         public static BoundCallable CreateWithPresence(
-            Func<BoundCallArguments, LythonSourceSpan, ExecutionContext, object> implementation,
+            Func<BoundBuiltinArguments, LythonSourceSpan, ExecutionContext, object> implementation,
             LythonCallableSignature signature)
             => new(implementation, signature);
 

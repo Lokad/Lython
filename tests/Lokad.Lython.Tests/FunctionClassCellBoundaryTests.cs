@@ -148,7 +148,7 @@ public sealed class FunctionClassCellBoundaryTests
         object[] values, bool mirror, PyType? owner = null, ScopeDirectiveFacts? facts = null)
         => PyFunctionBinding.EnterInvocationFrame(closure, facts ?? ScopeDirectiveFacts.Empty with { RequiresClassCell = true },
             FunctionBindingPlan.CreateDynamic("f", PythonCallableKind.Function, parameters, new Dictionary<string, object>()),
-            new BoundCallArguments(values, default), mirror, owner, Span);
+            new BoundFunctionArguments(values.Select(LythonRuntime.ExecutableSlot.FromObject).ToArray(), default), mirror, owner, Span);
 
     private static LoweredFunctionParameter Parameter(string name, FunctionParameterKind kind) => new(name, kind, null, null);
     private static Context Root() => new(new MockLythonHost(), new LythonRunOptions { SourcePath = "/root.py"},regexProvider:Utf8RegexProvider.Instance);

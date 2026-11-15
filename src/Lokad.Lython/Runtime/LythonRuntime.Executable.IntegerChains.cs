@@ -20,18 +20,8 @@ internal sealed partial class LythonRuntime
 
     // Both executable forms follow the same closed arithmetic sequence. Only the
     // final result is published through the caller's ordinary lifetime machinery.
-    private static bool TryIntegerChain(ExecutableCodeObject code, ReadOnlySpan<object> values,
-        int index, object left, object right, ExecutionContext scope, out int end, out long result)
-    {
-        if (TryMachineInteger(left, out var a) && TryMachineInteger(right, out var b))
-            return TryIntegerChain(code, values, default, index, a, b, scope, out end, out result);
-        end = index;
-        result = 0;
-        return false;
-    }
-
-    private static bool TryIntegerChain(ExecutableCodeObject code, ReadOnlySpan<object> values,
-        ReadOnlySpan<long> integers, int index, long left, long right, ExecutionContext scope,
+    private static bool TryIntegerChain(ExecutableCodeObject code, ReadOnlySpan<ExecutableSlot> values,
+        int index, long left, long right, ExecutionContext scope,
         out int end, out long result)
     {
         end = index;
@@ -50,7 +40,7 @@ internal sealed partial class LythonRuntime
             // Look ahead without raising an unbound-local error ahead of
             // an earlier arithmetic error. No guest work has been published.
             var otherSlot = next.InputStart == first.ResultSlot ? next.SecondInput : next.InputStart;
-            if (!TryReadMachineOperand(code, values, integers, otherSlot, out var operand)) return false;
+            if (!TryReadMachineOperand(code, values, otherSlot, out var operand)) return false;
             var a = next.InputStart == first.ResultSlot ? accumulator : operand;
             var b = next.SecondInput == first.ResultSlot ? accumulator : operand;
             if (!TryMachineBinary(next.BinaryOperator, a, b, out accumulator)) return false;

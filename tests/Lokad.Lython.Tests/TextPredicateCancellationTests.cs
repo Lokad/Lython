@@ -66,7 +66,7 @@ public sealed class TextPredicateCancellationTests
             var operation = LythonRuntime.StringMembers.GetMethod(method)!;
             Assert.Null(PyStructuralGuard.AmbientContext);
             cancellation.Cancel();
-            var failure = Assert.Throws<LythonRuntimeException>(() => operation.Invoke(value, ReadOnlyMemory<object?>.Empty, Span, context));
+            var failure = Assert.Throws<LythonRuntimeException>(() => operation.Invoke(value, Array.Empty<object?>(), Span, context));
             Assert.Equal(LythonFailureReason.Cancelled, failure.Attribution?.Reason);
             Assert.Equal(Span, failure.Span);
             Assert.Equal(baseline, budget.ReservedBytes);

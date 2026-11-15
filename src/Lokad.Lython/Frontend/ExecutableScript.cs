@@ -559,11 +559,9 @@ internal sealed partial class ExecutableCodeObject
             SuiteEndIndex = region.SuiteEndIndex is int end ? offsets[end + 1] - 1 : null
         }).ToArray();
         PrepareNativeSegments(callSites);
-        var integerStorageCapacity = 0;
         CanRunNativeInstructions = IsFunctionScope && !RequiresLocalVariableMirroring && capturedLocalSlots.Count == 0
             && !ExceptionRegions.Any(region => region.FinallyIndex is not null)
-            && PrepareInlineStorage(out integerStorageCapacity);
-        NativeIntegerStorageCapacity = integerStorageCapacity;
+            && SupportsNativeInstructions();
     }
 
     public string Name { get; }
@@ -616,12 +614,9 @@ internal sealed partial class ExecutableCodeObject
 
     public bool CanRunNativeInstructions { get; }
 
-    public int NativeIntegerStorageCapacity { get; }
 
-    private bool PrepareInlineStorage(out int integerStorageCapacity)
+    private bool SupportsNativeInstructions()
     {
-        integerStorageCapacity = 0;
-        var writesIntegers = false;
         for (var index = 0; index < Instructions.Length; index++)
         {
             // Faults transfer at their original PC into ordinary handler
@@ -636,17 +631,7 @@ internal sealed partial class ExecutableCodeObject
             if (handlerOnly) continue;
             ref readonly var instruction = ref Instructions[index];
             if (!IsInlineInstruction(instruction)) return false;
-            writesIntegers |= instruction.OpCode == ExecutableOpCode.Binary
-                && instruction.BinaryOperator is BinaryOperatorSyntax.Add or BinaryOperatorSyntax.Subtract
-                    or BinaryOperatorSyntax.Multiply or BinaryOperatorSyntax.FloorDivide or BinaryOperatorSyntax.Modulo
-                || instruction.OpCode == ExecutableOpCode.Augmented
-                && instruction.AugmentedOperator is AugmentedAssignmentOperatorSyntax.Add or AugmentedAssignmentOperatorSyntax.Subtract
-                    or AugmentedAssignmentOperatorSyntax.Multiply or AugmentedAssignmentOperatorSyntax.FloorDivide
-                    or AugmentedAssignmentOperatorSyntax.Modulo;
         }
-        // Reuse the eligibility pass: helpers which never write this private
-        // representation need neither its working buffer nor an admission.
-        integerStorageCapacity = writesIntegers ? ValueStorageCapacity : 0;
         return true;
     }
 

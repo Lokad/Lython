@@ -57,9 +57,9 @@ internal sealed partial class LythonRuntime
         protected override bool PreservePresence => true;
         protected override object InvokeBound(object[] arguments, LythonSourceSpan span, ExecutionContext context)
             => throw new InvalidOperationException("GzipFile requires argument presence");
-        protected override object InvokeBoundWithPresence(BoundCallArguments arguments, LythonSourceSpan span, ExecutionContext context)
+        protected override object InvokeBoundWithPresence(BoundBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context)
             => CreateAsync(arguments, span, context, false).GetAwaiter().GetResult();
-        protected override ValueTask<object> InvokeBoundWithPresenceAsync(BoundCallArguments arguments,
+        protected override ValueTask<object> InvokeBoundWithPresenceAsync(BoundBuiltinArguments arguments,
             LythonSourceSpan span, ExecutionContext context) => CreateAsync(arguments, span, context, true);
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
@@ -75,7 +75,7 @@ internal sealed partial class LythonRuntime
         public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<class 'gzip.GzipFile'>");
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 
-        internal static async ValueTask<object> CreateAsync(BoundCallArguments bound, LythonSourceSpan span,
+        internal static async ValueTask<object> CreateAsync(BoundBuiltinArguments bound, LythonSourceSpan span,
             ExecutionContext context, bool asynchronous)
         {
             var values = bound.Values;

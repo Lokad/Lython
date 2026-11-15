@@ -67,9 +67,9 @@ internal sealed partial class LythonRuntime
                     // Binding may admit namespace storage and reenter. Read the
                     // actual locals afterwards, and stop a refused command first.
                     scope.CheckExecution(member.Span);
-                    var dictionary = execution.Locals[store.SecondInput] as PyDict;
-                    var key = compact ? null : execution.Locals[store.ThirdInput] as PyString;
-                    var priorTotal = hasTotal ? execution.Locals[total.InputStart] : null;
+                    var dictionary = execution.Locals[store.SecondInput].Object as PyDict;
+                    var key = compact ? null : execution.Locals[store.ThirdInput].Object as PyString;
+                    var priorTotal = hasTotal ? execution.Locals[total.InputStart].Object : null;
                     if (dictionary is null || !compact && key is null ||
                         hasTotal && (priorTotal is not BigInteger integer || integer.GetByteCount() >= 8))
                     {
@@ -140,11 +140,11 @@ internal sealed partial class LythonRuntime
                 // it must not replace a cancellation or first refusal.
                 try
                 {
-                    if (wordChanged) execution.Locals[store.ThirdInput] = cursor!.Materialize(ref pendingWord);
+                    if (wordChanged) execution.Locals[store.ThirdInput].Object = cursor!.Materialize(ref pendingWord);
                 }
                 finally
                 {
-                    if (totalChanged) execution.Locals[total.InputStart] = new BigInteger(pendingTotal);
+                    if (totalChanged) execution.Locals[total.InputStart].Object = new BigInteger(pendingTotal);
                     // Returning the prepared ranges can refund storage and
                     // reenter. Publish both Python bindings before that point.
                     if (exhausted) execution.Stack.RetireTo(head.InputStart);
@@ -171,10 +171,10 @@ internal sealed partial class LythonRuntime
             // Future inputs are pure locals/constants. A missing or different
             // value leaves the original instructions to preserve read errors,
             // source spans and all dynamic evaluation/assignment behavior.
-            if (!ReferenceEquals(execution.Locals[store.SecondInput], dictionary)
-                || !ReferenceEquals(execution.Locals[store.ThirdInput], key)) return false;
+            if (!ReferenceEquals(execution.Locals[store.SecondInput].Object, dictionary)
+                || !ReferenceEquals(execution.Locals[store.ThirdInput].Object, key)) return false;
             var source = add.SecondInput;
-            var increment = source < 0 ? execution.Code.Constants[~source] : execution.Locals[source];
+            var increment = source < 0 ? execution.Code.Constants[~source] : execution.Locals[source].Object;
             if (increment is not BigInteger integer || integer.GetByteCount() >= 8) return false;
             var fallback = call.ArgumentCount == 2 ? execution.Stack[start + call.ArgumentOffset + 1] : PyNone.Instance;
             context.EnterInterpreterFrame(call.CallSpan);

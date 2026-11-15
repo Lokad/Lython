@@ -1,3 +1,4 @@
+using Slot = Lokad.Lython.Runtime.LythonRuntime.ExecutableSlot;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
@@ -23,13 +24,13 @@ public sealed class NativeTupleReturnTests
                 var right = new PyList(0, context.MemoryGovernor, Span);
                 var baseline = budget.ReservedBytes;
                 var call = Assert.Single(Compile("a,b=pair(left,right)").CallSites);
-                object[] returned = new object[2];
-                function.StartNativeCall(call, [left, right], null, context, Span,
+                LythonRuntime.ExecutableSlot[] returned = new LythonRuntime.ExecutableSlot[2];
+                function.StartNativeCall(call, [Slot.FromObject(left), Slot.FromObject(right)], null, context, Span,
                     false, true, returned, out var unpacked, out _, out var frame);
                 Assert.True(unpacked);
                 Assert.Null(frame);
-                Assert.Same(left, returned[0]);
-                Assert.Same(right, returned[1]);
+                Assert.Same(left, returned[0].Object);
+                Assert.Same(right, returned[1].Object);
                 Assert.True(budget.ReservedBytes > baseline);
                 Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
                 Assert.Equal(0, context.State.CurrentInterpreterDepth);
@@ -60,17 +61,17 @@ public sealed class NativeTupleReturnTests
                 var call = Assert.Single(Compile("a,b=pair(left,right)").CallSites);
                 var first = new object();
                 var second = new object();
-                object[] returned = [first, second];
+                Slot[] returned = [Slot.FromObject(first), Slot.FromObject(second)];
                 var baseline = budget.ReservedBytes;
                 if (cancel) gate.AfterGrowth = _ => cancellation.Cancel();
                 else gate.RefuseGrowth = _ => true;
                 var error = Assert.Throws<LythonRuntimeException>(() => function.StartNativeCall(call,
-                    [left, right], null, context, Span, false, true, returned, out _, out _, out _));
+                    [Slot.FromObject(left), Slot.FromObject(right)], null, context, Span, false, true, returned, out _, out _, out _));
                 Assert.Equal(cancel ? LythonFailureReason.Cancelled : LythonFailureReason.SharedMemoryAllowance,
                     error.Attribution?.Reason);
                 if (!cancel) Assert.Same(context.MemoryGovernor.AdmissionFailure, error);
-                Assert.Same(first, returned[0]);
-                Assert.Same(second, returned[1]);
+                Assert.Same(first, returned[0].Object);
+                Assert.Same(second, returned[1].Object);
                 Assert.Equal(baseline, budget.ReservedBytes);
                 Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
                 Assert.Equal(0, context.State.CurrentInterpreterDepth);

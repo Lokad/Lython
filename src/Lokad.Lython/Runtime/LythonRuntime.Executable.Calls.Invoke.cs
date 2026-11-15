@@ -109,9 +109,9 @@ internal sealed partial class LythonRuntime
                 && SelectNativeStringOperation(target, call.ArgumentCount) is { } operation)
             {
                 var inputs = execution.Stack.Slice(start + call.ArgumentOffset, call.ArgumentCount).Span;
-                var first = inputs[0];
-                var second = inputs.Length > 1 ? inputs[1] : null;
-                var third = inputs.Length > 2 ? inputs[2] : null;
+                var first = inputs[0].Object;
+                var second = inputs.Length > 1 ? inputs[1].Object : null;
+                var third = inputs.Length > 2 ? inputs[2].Object : null;
                 if (CanUseNativeStringCall(operation, first, second, third))
                 {
                     try
@@ -149,7 +149,7 @@ internal sealed partial class LythonRuntime
             catch { execution.Stack.RetireTo(start); throw; }
         }
 
-        private static Span<object> PrepareUnpackedCallReturn(ref ExecutableWorkState execution,
+        private static Span<ExecutableSlot> PrepareUnpackedCallReturn(ref ExecutableWorkState execution,
             ExecutableCallSite call, int start, out int originalExtent)
         {
             originalExtent = execution.Stack.LiveExtent;
@@ -217,8 +217,8 @@ internal sealed partial class LythonRuntime
                 {
                     var receiver = _execution.Stack[start];
                     var arguments = _execution.Stack.Slice(start + call.ArgumentOffset, call.ArgumentCount);
-                    if (asynchronous) return CompleteCallValue(InvokeReceiverMethodAsync(receiverMethod, receiver, arguments, call.CallSpan, this), start);
-                    result = InvokeReceiverMethod(receiverMethod, receiver, arguments, call.CallSpan, this);
+                    if (asynchronous) return CompleteCallValue(InvokeReceiverMethodAsync(receiverMethod, receiver, new ReceiverArguments(_execution.Stack.Values, start + call.ArgumentOffset, call.ArgumentCount), call.CallSpan, this), start);
+                    result = InvokeReceiverMethod(receiverMethod, receiver, new ReceiverArguments(_execution.Stack.Values, start + call.ArgumentOffset, call.ArgumentCount), call.CallSpan, this);
                 }
                 else if (target is PyFunctionBase function)
                 {

@@ -202,38 +202,39 @@ internal sealed partial class LythonRuntime
             : 0;
 
     private static object Range(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-        => Range(arguments.AsSpan(), span, context);
+        => Range(arguments.Length, arguments.Length > 0 ? arguments[0] : null,
+            arguments.Length > 1 ? arguments[1] : null, arguments.Length > 2 ? arguments[2] : null, span, context);
 
-    private static object Range(ReadOnlySpan<object?> arguments, LythonSourceSpan span, ExecutionContext context)
+    private static object Range(int count, object? first, object? second, object? third, LythonSourceSpan span, ExecutionContext context)
     {
-        if (arguments.Length < 1)
+        if (count < 1)
         {
             throw new LythonRuntimeException("TypeError", "range expected at least 1 argument, got 0", span);
         }
 
-        if (arguments.Length > 3)
+        if (count > 3)
         {
-            throw new LythonRuntimeException("TypeError", $"range expected at most 3 arguments, got {arguments.Length}", span);
+            throw new LythonRuntimeException("TypeError", $"range expected at most 3 arguments, got {count}", span);
         }
 
         BigInteger start = BigInteger.Zero;
         BigInteger stop;
         BigInteger step = BigInteger.One;
 
-        if (arguments.Length == 1)
+        if (count == 1)
         {
-            stop = RangeBound(arguments[0]!, context, span);
+            stop = RangeBound(first!, context, span);
         }
-        else if (arguments.Length == 2)
+        else if (count == 2)
         {
-            start = RangeBound(arguments[0]!, context, span);
-            stop = RangeBound(arguments[1]!, context, span);
+            start = RangeBound(first!, context, span);
+            stop = RangeBound(second!, context, span);
         }
         else
         {
-            start = RangeBound(arguments[0]!, context, span);
-            stop = RangeBound(arguments[1]!, context, span);
-            step = RangeBound(arguments[2]!, context, span);
+            start = RangeBound(first!, context, span);
+            stop = RangeBound(second!, context, span);
+            step = RangeBound(third!, context, span);
         }
 
         // Bounds coerce through __index__ like CPython; failures name the type.

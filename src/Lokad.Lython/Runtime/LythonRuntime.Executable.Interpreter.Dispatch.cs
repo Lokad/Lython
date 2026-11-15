@@ -286,7 +286,7 @@ internal sealed partial class LythonRuntime
                             if (invocation is null && instruction.OpCode is not (ExecutableOpCode.Jump or ExecutableOpCode.Return or ExecutableOpCode.ReturnNone))
                                 return InstructionPause.ContextRequired;
                             jumped = ExecuteControlFlow(ref execution, scope, invocation, instruction);
-                            if (execution.ReturnValue is not null)
+                            if (!execution.ReturnValue.IsUnassigned)
                             {
                                 // Keep the returning instruction/span current and
                                 // finish queued native disposal before leaving.

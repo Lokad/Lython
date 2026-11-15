@@ -74,12 +74,12 @@ internal sealed partial class LythonRuntime
             protected override bool PreservePresence => true;
             protected override object InvokeBound(object[] arguments, LythonSourceSpan span, ExecutionContext context)
                 => throw new InvalidOperationException("zlib calls require argument presence.");
-            protected override object InvokeBoundWithPresence(BoundCallArguments bound, LythonSourceSpan span, ExecutionContext context)
+            protected override object InvokeBoundWithPresence(BoundBuiltinArguments bound, LythonSourceSpan span, ExecutionContext context)
                 => RunAsync(bound, span, context, false).GetAwaiter().GetResult();
-            protected override ValueTask<object> InvokeBoundWithPresenceAsync(BoundCallArguments bound,
+            protected override ValueTask<object> InvokeBoundWithPresenceAsync(BoundBuiltinArguments bound,
                 LythonSourceSpan span, ExecutionContext context) => RunAsync(bound, span, context, true);
 
-            private async ValueTask<object> RunAsync(BoundCallArguments bound, LythonSourceSpan span,
+            private async ValueTask<object> RunAsync(BoundBuiltinArguments bound, LythonSourceSpan span,
                 ExecutionContext context, bool asynchronous)
             {
                 if (bound.Values[0] is not PyBytes bytes)

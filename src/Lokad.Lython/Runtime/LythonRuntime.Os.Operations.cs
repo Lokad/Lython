@@ -37,11 +37,11 @@ internal sealed partial class LythonRuntime
         return result;
     }
 
-    private static object OsWalk(BoundCallArguments arguments, LythonSourceSpan span, ExecutionContext context)
+    private static object OsWalk(BoundBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context)
         => OsWalkCore(arguments, span, context, false).GetAwaiter().GetResult();
-    private static ValueTask<object> OsWalkAsync(BoundCallArguments arguments, LythonSourceSpan span, ExecutionContext context)
+    private static ValueTask<object> OsWalkAsync(BoundBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context)
         => OsWalkCore(arguments, span, context, true);
-    private static async ValueTask<object> OsWalkCore(BoundCallArguments arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+    private static async ValueTask<object> OsWalkCore(BoundBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
     {
         bool Supplied(int index) => index < arguments.Assigned.Length && arguments.Assigned[index];
         var path = Supplied(0) ? (asynchronous ? await CoercePathLikeAsync(arguments.Values[0], context, span, "os.walk").ConfigureAwait(false)

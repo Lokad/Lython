@@ -73,16 +73,16 @@ internal sealed partial class LythonRuntime
             static (receiver, arguments, span, context) => GroupCoreAsync((ReMatchObject)receiver, arguments, context, span, false).GetAwaiter().GetResult(),
             static (receiver, arguments, span, context) => GroupCoreAsync((ReMatchObject)receiver, arguments, context, span, true));
         private static readonly ReceiverMethod GetItemMethod = new(MatchGetItemSignature,
-            static (receiver, arguments, span, context) => GetSubscript((ReMatchObject)receiver, arguments.Span[0]!, span, context),
-            static (receiver, arguments, span, context) => GetSubscriptAsync((ReMatchObject)receiver, arguments.Span[0]!, span, context));
+            static (receiver, arguments, span, context) => GetSubscript((ReMatchObject)receiver, arguments[0]!, span, context),
+            static (receiver, arguments, span, context) => GetSubscriptAsync((ReMatchObject)receiver, arguments[0]!, span, context));
         private static readonly ReceiverMethod GroupsMethod = new(MatchGroupsSignature,
-            static (receiver, arguments, span, context) => Groups((ReMatchObject)receiver, arguments.Length == 1 ? arguments.Span[0]! : PyNone.Instance, context, span));
+            static (receiver, arguments, span, context) => Groups((ReMatchObject)receiver, arguments.Length == 1 ? arguments[0]! : PyNone.Instance, context, span));
         private static readonly ReceiverMethod GroupDictMethod = new(MatchGroupDictSignature,
-            static (receiver, arguments, span, context) => GroupDictionary((ReMatchObject)receiver, arguments.Length == 1 ? arguments.Span[0]! : PyNone.Instance, context, span));
+            static (receiver, arguments, span, context) => GroupDictionary((ReMatchObject)receiver, arguments.Length == 1 ? arguments[0]! : PyNone.Instance, context, span));
         private static readonly ReceiverMethod ExpandMethod = new(MatchExpandSignature,
             static (receiver, arguments, span, context) =>
             {
-                if (!PyStringOps.TryAsString(arguments.Span[0]!, out var template))
+                if (!PyStringOps.TryAsString(arguments[0]!, out var template))
                     throw new LythonRuntimeException("TypeError", "match.expand(template) expects one string argument.", span);
                 return ExpandReplacementTemplate((ReMatchObject)receiver, template, context, span);
             });
@@ -160,7 +160,7 @@ internal sealed partial class LythonRuntime
                 : throw new LythonRuntimeException("IndexError", "no such group", span);
         }
 
-        private static async ValueTask<object> GroupCoreAsync(ReMatchObject match, ReadOnlyMemory<object?> arguments, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
+        private static async ValueTask<object> GroupCoreAsync(ReMatchObject match, ReceiverArguments arguments, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
         {
             if (arguments.Length == 0)
             {
@@ -168,18 +168,18 @@ internal sealed partial class LythonRuntime
             }
             if (arguments.Length == 1)
             {
-                return await GetSubscriptCoreAsync(match, arguments.Span[0]!, span, context, asynchronous).ConfigureAwait(false);
+                return await GetSubscriptCoreAsync(match, arguments[0]!, span, context, asynchronous).ConfigureAwait(false);
             }
 
             if (!asynchronous)
-                return CreateTuple(arguments.Length, i => GetSubscript(match, arguments.Span[i]!, span, context), context, span);
+                return CreateTuple(arguments.Length, i => GetSubscript(match, arguments[i]!, span, context), context, span);
             return await CreateTupleAsync(arguments.Length,
-                i => GetSubscriptAsync(match, arguments.Span[i]!, span, context), context, span).ConfigureAwait(false);
+                i => GetSubscriptAsync(match, arguments[i]!, span, context), context, span).ConfigureAwait(false);
         }
 
-        private static async ValueTask<RegexGroupBounds> GetBoundsCoreAsync(ReMatchObject match, ReadOnlyMemory<object?> arguments, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
+        private static async ValueTask<RegexGroupBounds> GetBoundsCoreAsync(ReMatchObject match, ReceiverArguments arguments, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
         {
-            var key = await CoerceGroupKeyAsync(arguments.Length == 0 ? BigInteger.Zero : arguments.Span[0]!, context, span, asynchronous).ConfigureAwait(false);
+            var key = await CoerceGroupKeyAsync(arguments.Length == 0 ? BigInteger.Zero : arguments[0]!, context, span, asynchronous).ConfigureAwait(false);
             return ResolveGroupBounds(match, key, span);
         }
 
@@ -339,7 +339,7 @@ internal sealed partial class LythonRuntime
 
         private static object ExecuteMatch(
             RePatternObject pattern,
-            BoundCallArguments bound,
+            BoundBuiltinArguments bound,
             LythonSourceSpan span,
             ExecutionContext context,
             LythonRegexMatchMode operation)
@@ -358,7 +358,7 @@ internal sealed partial class LythonRuntime
             return RegexMatcher.Match(pattern, range, operation, span, context);
         }
 
-        private static object ExecuteFindAll(RePatternObject pattern, BoundCallArguments bound, LythonSourceSpan span, ExecutionContext context)
+        private static object ExecuteFindAll(RePatternObject pattern, BoundBuiltinArguments bound, LythonSourceSpan span, ExecutionContext context)
         {
             var arguments = bound.Values;
             context.CheckExecution(span);
@@ -374,7 +374,7 @@ internal sealed partial class LythonRuntime
             return RegexMatcher.CreateFindAllResult(pattern, range, span, context);
         }
 
-        private static object ExecuteFindIter(RePatternObject pattern, BoundCallArguments bound, LythonSourceSpan span, ExecutionContext context)
+        private static object ExecuteFindIter(RePatternObject pattern, BoundBuiltinArguments bound, LythonSourceSpan span, ExecutionContext context)
         {
             var arguments = bound.Values;
             context.CheckExecution(span);
@@ -393,10 +393,10 @@ internal sealed partial class LythonRuntime
             return findIter;
         }
 
-        private static object ExecuteSub(RePatternObject pattern, BoundCallArguments bound, LythonSourceSpan span, ExecutionContext context, RegexSubstitutionMode mode)
+        private static object ExecuteSub(RePatternObject pattern, BoundBuiltinArguments bound, LythonSourceSpan span, ExecutionContext context, RegexSubstitutionMode mode)
             => ExecuteSubCoreAsync(pattern, bound, span, context, mode, false).GetAwaiter().GetResult();
 
-        private static ValueTask<object> ExecuteSubCoreAsync(RePatternObject pattern, BoundCallArguments bound, LythonSourceSpan span,
+        private static ValueTask<object> ExecuteSubCoreAsync(RePatternObject pattern, BoundBuiltinArguments bound, LythonSourceSpan span,
             ExecutionContext context, RegexSubstitutionMode mode, bool asynchronous)
         {
             var arguments = bound.Values;
@@ -426,7 +426,7 @@ internal sealed partial class LythonRuntime
                 : new ValueTask<object>(RegexMatcher.ExecuteSubstitute(pattern, replacement, range, count, span, context, mode));
         }
 
-        private static object ExecuteSplit(RePatternObject pattern, BoundCallArguments bound, LythonSourceSpan span, ExecutionContext context)
+        private static object ExecuteSplit(RePatternObject pattern, BoundBuiltinArguments bound, LythonSourceSpan span, ExecutionContext context)
         {
             var arguments = bound.Values;
             context.CheckExecution(span);

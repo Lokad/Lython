@@ -71,19 +71,19 @@ internal sealed partial class LythonRuntime
         private static readonly ReceiverMethod SplitLinesMethod = new(
             LythonCallableSignature.Create("str.splitlines", ["keepends"], 0, 1, LythonVariadicParameters.None, 0),
             static (receiver, arguments, span, context) => PyStringOps.SplitLines((PyString)receiver,
-                arguments.Length == 1 && IsTruthy(arguments.Span[0]!, context, span), context.MemoryGovernor, span),
-            static (receiver, arguments, span, context) => arguments.Length == 1 && arguments.Span[0] is PyInstance
-                ? SplitLinesWithGuestTruthAsync((PyString)receiver, arguments.Span[0]!, span, context)
-                : new(PyStringOps.SplitLines((PyString)receiver, arguments.Length == 1 && IsTruthy(arguments.Span[0]!), context.MemoryGovernor, span)));
+                arguments.Length == 1 && IsTruthy(arguments[0]!, context, span), context.MemoryGovernor, span),
+            static (receiver, arguments, span, context) => arguments.Length == 1 && arguments[0] is PyInstance
+                ? SplitLinesWithGuestTruthAsync((PyString)receiver, arguments[0]!, span, context)
+                : new(PyStringOps.SplitLines((PyString)receiver, arguments.Length == 1 && IsTruthy(arguments[0]!), context.MemoryGovernor, span)));
 
         private static readonly ReceiverMethod ExpandTabsMethod = new(
             LythonCallableSignature.Create("str.expandtabs", ["tabsize"], 0),
             static (receiver, arguments, span, context) => PyStringOps.ExpandTabs((PyString)receiver,
-                arguments.Length == 1 ? RuntimeArgumentValidation.CoerceIndexInt32Async(arguments.Span[0]!, context, span, false).GetAwaiter().GetResult() : 8, context, span),
-            static (receiver, arguments, span, context) => arguments.Length == 1 && arguments.Span[0] is PyInstance
-                ? ExpandTabsWithGuestWidthAsync((PyString)receiver, arguments.Span[0]!, span, context)
+                arguments.Length == 1 ? RuntimeArgumentValidation.CoerceIndexInt32Async(arguments[0]!, context, span, false).GetAwaiter().GetResult() : 8, context, span),
+            static (receiver, arguments, span, context) => arguments.Length == 1 && arguments[0] is PyInstance
+                ? ExpandTabsWithGuestWidthAsync((PyString)receiver, arguments[0]!, span, context)
                 : new(PyStringOps.ExpandTabs((PyString)receiver,
-                    arguments.Length == 1 ? RuntimeArgumentValidation.CoerceIndexInt32Async(arguments.Span[0]!, context, span, false).GetAwaiter().GetResult() : 8, context, span)));
+                    arguments.Length == 1 ? RuntimeArgumentValidation.CoerceIndexInt32Async(arguments[0]!, context, span, false).GetAwaiter().GetResult() : 8, context, span)));
 
         private static readonly ReceiverMethod StripMethod = CreateStripMethod("strip", PyStringOps.Strip,
             LythonCallableSignature.Create("str.strip", ["chars"], 0, 1, LythonVariadicParameters.None, 1));
@@ -92,16 +92,16 @@ internal sealed partial class LythonRuntime
         private static readonly ReceiverMethod RStripMethod = CreateStripMethod("rstrip", PyStringOps.RStrip,
             LythonCallableSignature.Create("str.rstrip", ["chars"], 0, 1, LythonVariadicParameters.None, 1));
 
-        private static ValueTask<object> RSplit(PyString text, ReadOnlyMemory<object?> arguments,
+        private static ValueTask<object> RSplit(PyString text, ReceiverArguments arguments,
             LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             PyString? separator = null;
-            if (arguments.Length != 0 && arguments.Span[0] is not PyNone &&
-                !PyStringOps.TryAsString(arguments.Span[0]!, out separator))
-                throw RuntimeErrors.Type("must be str or None, not " + RuntimeErrors.OperandTypeName(arguments.Span[0]!), span);
-            if (arguments.Length == 2 && arguments.Span[1] is PyInstance)
-                return RSplitWithGuestCountAsync(text, separator, arguments.Span[1]!, span, context, asynchronous);
-            var count = arguments.Length == 2 ? NormalizeSplitCount(arguments.Span[1]!, context, span) : -1;
+            if (arguments.Length != 0 && arguments[0] is not PyNone &&
+                !PyStringOps.TryAsString(arguments[0]!, out separator))
+                throw RuntimeErrors.Type("must be str or None, not " + RuntimeErrors.OperandTypeName(arguments[0]!), span);
+            if (arguments.Length == 2 && arguments[1] is PyInstance)
+                return RSplitWithGuestCountAsync(text, separator, arguments[1]!, span, context, asynchronous);
+            var count = arguments.Length == 2 ? NormalizeSplitCount(arguments[1]!, context, span) : -1;
             return new(RSplitWithCount(text, separator, count, span, context));
         }
 
@@ -137,9 +137,9 @@ internal sealed partial class LythonRuntime
                 var text = (PyString)receiver;
                 using var ambient = PyStructuralGuard.PushAmbient(context, span);
                 PyString result;
-                if (arguments.Length == 0 || arguments.Span[0] is PyNone)
+                if (arguments.Length == 0 || arguments[0] is PyNone)
                     result = whitespaceOperation(text);
-                else if (!PyStringOps.TryAsString(arguments.Span[0]!, out var chars))
+                else if (!PyStringOps.TryAsString(arguments[0]!, out var chars))
                     throw RuntimeErrors.Type($"{methodName} arg must be None or str", span);
                 else
                 {

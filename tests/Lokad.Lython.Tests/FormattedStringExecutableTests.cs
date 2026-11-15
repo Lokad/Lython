@@ -1,3 +1,4 @@
+using Slot = Lokad.Lython.Runtime.LythonRuntime.ExecutableSlot;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
@@ -37,15 +38,15 @@ public sealed class FormattedStringExecutableTests
             Assert.True(function.CodeObject.CanRunNativeInstructions);
             for (var pass = 0; pass < 2; pass++)
             {
-                function.StartNativeCall(call, [record], null, context, span, false,
+                function.StartNativeCall(call, [Slot.FromObject(record)], null, context, span, false,
                     borrow: false, default, out _, out var value, out var frame);
                 Assert.Null(frame);
-                var text = Assert.IsType<PyString>(value);
+                var text = Assert.IsType<PyString>(value.Object);
                 Assert.Equal(expected, text.AsString());
                 if (expression == "f\"{record['name']}\"")
                 {
                     Assert.True(record.TryGetValue(PyString.FromString("name"), out var original));
-                    Assert.Same(original, value);
+                    Assert.Same(original, value.Object);
                 }
                 Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
                 Assert.Equal(0, context.State.CurrentInterpreterDepth);

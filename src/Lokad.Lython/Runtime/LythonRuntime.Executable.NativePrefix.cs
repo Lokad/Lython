@@ -13,14 +13,11 @@ internal sealed partial class LythonRuntime
 
     // This view cannot survive a suspension. The final executable slots and PC
     // are also the ordinary frame's representation; transfer never replays work.
-    internal ref partial struct NativeExecution(PyExecutableFunction function, Span<object> values,
-        Span<long> integers, bool consumedByIteration, int unpackedReturnCount)
+    internal ref partial struct NativeExecution(PyExecutableFunction function, Span<ExecutableSlot> values, bool consumedByIteration, int unpackedReturnCount)
     {
         private readonly PyExecutableFunction _function = function;
         internal readonly ExecutableCodeObject Code = function.CodeObject;
-        internal readonly Span<object> Values = values;
-        private readonly Span<long> _integers = integers;
-        private bool _hasIntegers;
+        internal readonly Span<ExecutableSlot> Values = values;
         private readonly IReadOnlyList<ExecutableCell> _cells = function.ClosureCells;
         private readonly ExecutionContext _scope = function.DefinitionContext;
         private readonly bool _consumedByIteration = consumedByIteration;
@@ -34,7 +31,7 @@ internal sealed partial class LythonRuntime
         private MemoryGovernor? _preparedChildOwner;
         internal LythonRuntimeException? Failure { get; private set; }
 
-        internal bool Run(LythonSourceSpan entrySpan, out object result, Span<object> unpackedReturn = default)
+        internal bool Run(LythonSourceSpan entrySpan, out ExecutableSlot result, Span<ExecutableSlot> unpackedReturn = default)
         {
             // The call boundary owns logical interpreter admission, and
             // StartInline owns function admission. Like an ordinary bound body,
@@ -62,7 +59,7 @@ internal sealed partial class LythonRuntime
                 // operation or building a second exception dispatcher here.
                 _scope.CheckExecution(entrySpan);
                 Failure = error;
-                result = PyNone.Instance;
+                result = ExecutableSlot.FromObject(PyNone.Instance);
                 return false;
             }
             finally
@@ -71,9 +68,9 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private bool RunCore(out object result)
+        private bool RunCore(out ExecutableSlot result)
         {
-            result = PyNone.Instance;
+            result = ExecutableSlot.FromObject(PyNone.Instance);
             while (Index < Code.Instructions.Length)
             {
                 ref readonly var instruction = ref Code.Instructions[Index];
@@ -85,8 +82,8 @@ internal sealed partial class LythonRuntime
                         Trim(Code.FirstTemporarySlot);
                         return true;
                     case ExecutableOpCode.Return:
-                        result = Read(instruction.InputStart, 0);
-                        if (instruction.InputStart >= Code.FirstTemporarySlot) Values[instruction.InputStart] = null!;
+                        result = ReadReturnSlot(instruction.InputStart);
+                        if (instruction.InputStart >= Code.FirstTemporarySlot) Values[instruction.InputStart].Object = null!;
                         Trim(Code.FirstTemporarySlot);
                         return true;
                     case ExecutableOpCode.LoadConst:
@@ -110,7 +107,7 @@ internal sealed partial class LythonRuntime
                         writeCell.Value = stored;
                         break;
                     case ExecutableOpCode.StoreLocal:
-                        Values[instruction.LocalSlot] = Take(instruction);
+                        Values[instruction.LocalSlot].Object = Take(instruction);
                         break;
                     case ExecutableOpCode.LoadCallMember:
                     {
@@ -157,7 +154,7 @@ internal sealed partial class LythonRuntime
                     {
                         if (instruction.OpCode == ExecutableOpCode.Augmented
                             && instruction.AugmentedOperator == AugmentedAssignmentOperatorSyntax.MatrixMultiply) return false;
-                        if (TryIntegerOperation(instruction)) break;
+                        if (TryIntegerOperation()) break;
                         var first = Read(instruction.InputStart, 0);
                         var second = Read(instruction.SecondInput, 1);
                         var augmented = instruction.OpCode == ExecutableOpCode.Augmented;
@@ -219,8 +216,8 @@ internal sealed partial class LythonRuntime
                     }
                     case ExecutableOpCode.ForNext:
                     {
-                        var iterator = Values[instruction.InputStart];
-                        if (!_integers.IsEmpty && iterator is PyIteration.Cursor cursor
+                        var iterator = Values[instruction.InputStart].Object.RequireNotNull();
+                        if (iterator is PyIteration.Cursor cursor
                             && cursor.TryMoveNextInteger(out var hasInteger, out var integer))
                         {
                             if (!hasInteger)
@@ -246,25 +243,18 @@ internal sealed partial class LythonRuntime
                     }
                     case ExecutableOpCode.MakeTuple:
                     {
-                        MaterializeRange(instruction.InputStart, instruction.ItemCount);
                         if (TryReturnUnpackedTuple(instruction)) return true;
                         var tuple = instruction.ItemCount == 0 ? PyTuple.Empty
-                            : new PyTuple(Values.Slice(instruction.InputStart, instruction.ItemCount),
-                                _scope.MemoryGovernor, instruction.Span, _scope);
+                            : CreateSlotTuple(Values.Slice(instruction.InputStart, instruction.ItemCount), _scope, instruction.Span);
                         Trim(instruction.InputStart);
                         Publish(instruction, tuple);
                         break;
                     }
                     case ExecutableOpCode.MakeList:
                     {
-                        var bytes = PyList.EstimateCapacityBytes(instruction.ItemCount);
-                        using var storage = _scope.MemoryGovernor.ReserveTemporary(bytes, instruction.Span);
-                        _scope.CheckExecution(instruction.Span);
-                        MaterializeRange(instruction.InputStart, instruction.ItemCount);
-                        var items = Values.Slice(instruction.InputStart, instruction.ItemCount).ToArray();
+                        var list = CreateSlotList(Values.Slice(instruction.InputStart, instruction.ItemCount), _scope, instruction.Span);
                         Trim(instruction.InputStart);
-                        storage.Commit(bytes);
-                        Publish(instruction, PyList.FromTransferredArray(items, _scope.MemoryGovernor, instruction.Span));
+                        Publish(instruction, list);
                         break;
                     }
                     case ExecutableOpCode.StartFormattedString or ExecutableOpCode.AppendFormattedText
@@ -307,7 +297,7 @@ internal sealed partial class LythonRuntime
             else if (instruction.OpCode == ExecutableOpCode.AppendFormattedText)
                 value = Code.Constants[instruction.ConstantIndex];
             var output = instruction.OpCode is ExecutableOpCode.AppendFormattedText or ExecutableOpCode.FinishFormattedString
-                || field?.Append == true ? (GovernedByteBuilder)Values[instruction.InputStart] : null;
+                || field?.Append == true ? (GovernedByteBuilder)Values[instruction.InputStart].Object! : null;
             var result = ExecuteBuiltinFormattedInstruction(instruction, output, value, specifier, field, _scope);
             if (instruction.OpCode == ExecutableOpCode.FinishFormattedString) Trim(instruction.ResultSlot);
             if (result is not null)
@@ -321,7 +311,7 @@ internal sealed partial class LythonRuntime
         private object TakeFormattedInput(int source, int liveExtent)
         {
             var value = Read(source, 0);
-            Values[source] = null!;
+            Values[source].Object = null!;
             Trim(liveExtent);
             return value;
         }
@@ -330,10 +320,8 @@ internal sealed partial class LythonRuntime
         {
             var call = Code.CallSites[instruction.CallSiteIndex];
             var start = instruction.InputStart;
-            MaterializeRange(start, call.ArgumentOffset + call.ArgumentCount);
-            var target = Values[start + call.TargetOffset];
-            object result;
-            long integerResult = 0;
+            var target = Values[start + call.TargetOffset].Object.RequireNotNull();
+            var result = default(ExecutableSlot);
             try
             {
                 if (!call.IsPositionalOnly)
@@ -343,19 +331,20 @@ internal sealed partial class LythonRuntime
                 else if (!call.HasReceiver && ExecutionContext.IsRangeBuiltin(target))
                 {
                     if (!TryInvokeNativeRange(Values.Slice(start + call.ArgumentOffset, call.ArgumentCount),
-                        call.CallSpan, _scope, out result)) return false;
+                        call.CallSpan, _scope, out var rangeResult)) return false;
+                    result.Object = rangeResult;
                 }
-                else if (call.HasReceiver && Values[start] is PyDict dictionary)
+                else if (call.HasReceiver && Values[start].Object is PyDict dictionary)
                 {
                     if (call.ArgumentCount == 0 && target is ReceiverMethod method && method.AcceptsPositional(0))
-                        result = InvokeReceiverMethod(method, dictionary, call.CallSpan, _scope);
+                        result.Object = InvokeReceiverMethod(method, dictionary, call.CallSpan, _scope);
                     else if (call.ArgumentCount is 1 or 2 && ReferenceEquals(target, ReceiverMethods.DictionaryGet)
-                        && dictionary.CanReadKeySynchronously(Values[start + call.ArgumentOffset]))
-                        result = InvokeDictionaryGet(dictionary, Values[start + call.ArgumentOffset],
-                            call.ArgumentCount == 2 ? Values[start + call.ArgumentOffset + 1] : PyNone.Instance, call.CallSpan, _scope);
+                        && dictionary.CanReadKeySynchronously(Values[start + call.ArgumentOffset].Object!))
+                        result.Object = InvokeDictionaryGet(dictionary, Values[start + call.ArgumentOffset].Object!,
+                            call.ArgumentCount == 2 ? Values[start + call.ArgumentOffset + 1].Object! : PyNone.Instance, call.CallSpan, _scope);
                     else return false;
                 }
-                else if (call.HasReceiver && Values[start] is PyString text)
+                else if (call.HasReceiver && Values[start].Object is PyString text)
                 {
                     if (call.ArgumentCount == 0 && target is ReceiverMethod method && method.AcceptsPositional(0))
                     {
@@ -364,30 +353,30 @@ internal sealed partial class LythonRuntime
                             var final = Code.Instructions[Index + 2];
                             var consumer = Code.CallSites[final.CallSiteIndex];
                             _scope.EnterInterpreterFrame(recipe.CasingCallSpan);
-                            try { result = ExecuteCasedSplit(recipe, text, _scope,
+                            try { result.Object = ExecuteCasedSplit(recipe, text, _scope,
                                 consumer.ConsumedByIteration || _consumedByIteration && consumer.ReturnedDirectly); }
                             finally { _scope.LeaveInterpreterFrame(); }
                             Index += 2;
                             Publish(final, result);
                             return true;
                         }
-                        result = InvokeReceiverMethod(method, text, call.CallSpan, _scope);
+                        result.Object = InvokeReceiverMethod(method, text, call.CallSpan, _scope);
                     }
                     else
                     {
                         var args = Values.Slice(start + call.ArgumentOffset, call.ArgumentCount);
-                        var first = args.Length > 0 ? args[0] : null;
-                        var second = args.Length > 1 ? args[1] : null;
-                        var third = args.Length > 2 ? args[2] : null;
+                        var first = args.Length > 0 ? args[0].Object : null;
+                        var second = args.Length > 1 ? args[1].Object : null;
+                        var third = args.Length > 2 ? args[2].Object : null;
                         if (SelectNativeStringOperation(target, args.Length) is not { } operation
                             || !CanUseNativeStringCall(operation, first, second, third)) return false;
-                        result = InvokeNativeStringOperation(operation, text, first, second, third, call.CallSpan, _scope);
+                        result.Object = InvokeNativeStringOperation(operation, text, first, second, third, call.CallSpan, _scope);
                     }
                 }
                 else
                 {
                     var argument = call.ArgumentCount == 1 && !call.HasReceiver
-                        ? Values[start + call.ArgumentOffset] : null;
+                        ? Values[start + call.ArgumentOffset].Object : null;
                     var closed = false;
                     var operation = argument is not null ? SelectNativeUnaryOperation(target, argument, out closed) : null;
                     if (operation is not null && closed)
@@ -395,10 +384,10 @@ internal sealed partial class LythonRuntime
                         if (operation is Func<object, LythonSourceSpan, ExecutionContext, BigInteger> integerOperation)
                         {
                             var integer = InvokeSingleInput(argument!, integerOperation, call.CallSpan, _scope);
-                            if (!_integers.IsEmpty && TryMachineInteger(integer, out integerResult)) result = NativeInteger;
-                            else result = integer;
+                            if (TryMachineInteger(integer, out var integerResult)) result.SetInteger(integerResult);
+                            else result.Object = integer;
                         }
-                        else result = InvokeSingleInput(argument!, operation, call.CallSpan, _scope);
+                        else result.Object = InvokeSingleInput(argument!, operation, call.CallSpan, _scope);
                     }
                     else if (!CallFunction(call, start, target, out result)) return false;
                 }
@@ -407,17 +396,16 @@ internal sealed partial class LythonRuntime
             { throw translated; }
             // Publication and its store checkpoint remain outside callable
             // exception translation. The marker never leaves this activation.
-            if (ReferenceEquals(result, NativeInteger)) PublishInteger(instruction, integerResult);
-            else Publish(instruction, result);
+            Publish(instruction, result);
             return true;
         }
 
-        private bool CallFunction(ExecutableCallSite call, int start, object target, out object result)
+        private bool CallFunction(ExecutableCallSite call, int start, object target, out ExecutableSlot result)
         {
-            result = PyNone.Instance;
+            result = ExecutableSlot.FromObject(PyNone.Instance);
             if (_scope.State.CurrentRecursionDepth >= NativeCallDepth) return false;
             var function = target as PyExecutableFunction;
-            object? receiver = call.HasReceiver && Values[start] is not PyNone ? Values[start] : null;
+            object? receiver = call.HasReceiver && Values[start].Object is not PyNone ? Values[start].Object : null;
             if (target is PyBoundMethod { Function: PyExecutableFunction boundFunction } bound)
             {
                 function = boundFunction;
@@ -434,7 +422,8 @@ internal sealed partial class LythonRuntime
                 var arguments = Values.Slice(start + call.ArgumentOffset, call.ArgumentCount);
                 function.StartNativeCall(call, arguments, receiver, _scope, call.CallSpan,
                     call.ConsumedByIteration || _consumedByIteration && call.ReturnedDirectly,
-                    borrow, default, out _, out result, out var child);
+                    borrow, default, out _, out var childValue, out var child);
+                result = childValue;
                 if (child is not null)
                 {
                     // No operation is running in the child. Keep its exact
@@ -459,7 +448,7 @@ internal sealed partial class LythonRuntime
             // Keep eager tuple admission before any caller target can change.
             // Its conservative funding survives until the execution owner ends;
             // only the unobservable tuple shell/backing allocation disappears.
-            var bytes = PyTuple.EstimateStorageBytes(items, _scope, instruction.Span);
+            var bytes = SlotTupleBytes(items, _scope, instruction.Span);
             _scope.MemoryGovernor.Reserve(bytes, instruction.Span);
             try
             {
@@ -479,6 +468,14 @@ internal sealed partial class LythonRuntime
             return cell is not null;
         }
 
+        private ExecutableSlot ReadReturnSlot(int source)
+        {
+            if (source < 0) return ExecutableSlot.FromObject(RuntimeValue(Code.Constants[~source]));
+            var value = Values[source];
+            if (value.IsUnassigned) _ = Read(source, 0);
+            return value;
+        }
+
         private object Read(int source, int input)
         {
             if (source < 0) return RuntimeValue(Code.Constants[~source]);
@@ -494,16 +491,19 @@ internal sealed partial class LythonRuntime
         private object Take(in ExecutableInstruction instruction)
         {
             var value = Read(instruction.InputStart, 0);
-            if (instruction.InputStart >= Code.FirstTemporarySlot) Values[instruction.InputStart] = null!;
+            if (instruction.InputStart >= Code.FirstTemporarySlot) Values[instruction.InputStart].Object = null!;
             Trim(instruction.LiveExtent);
             return value;
         }
 
         private void Publish(in ExecutableInstruction instruction, object value)
+            => Publish(instruction, ExecutableSlot.FromObject(value));
+
+        private void Publish(in ExecutableInstruction instruction, ExecutableSlot value)
         {
             if (!instruction.HasLocalResult) { Put(instruction.ResultSlot, instruction.LiveExtent, value); return; }
             if (instruction.LiveExtent < LiveExtent) Trim(instruction.LiveExtent);
-            Values[instruction.ResultSlot] = null!;
+            Values[instruction.ResultSlot] = default;
             LiveExtent = instruction.ResultSlot;
             ref readonly var store = ref Code.Instructions[Index + 1];
             _scope.CheckExecution(store.Span);
@@ -512,6 +512,9 @@ internal sealed partial class LythonRuntime
         }
 
         private void Put(int slot, int liveExtent, object value)
+            => Put(slot, liveExtent, ExecutableSlot.FromObject(value));
+
+        private void Put(int slot, int liveExtent, ExecutableSlot value)
         {
             if (liveExtent < LiveExtent) Trim(liveExtent);
             Values[slot] = value;
@@ -521,8 +524,8 @@ internal sealed partial class LythonRuntime
         private void Trim(int liveExtent)
         {
             for (var i = Math.Min(LiveExtent - 1, Code.LastOwnedTemporarySlot); i >= liveExtent; i--)
-                if (Values[i] is ExecutableTemporaryValue owned)
-                { Values[i] = null!; owned.Dispose(); }
+                if (Values[i].Reference is ExecutableTemporaryValue owned)
+                { Values[i].Object = null!; owned.Dispose(); }
             // Dead references stay in the private span or already-admitted owned
             // backing until this synchronous prefix ends. Their owners remain
             // funded. Clear the dead tail once before transfer.
@@ -531,8 +534,7 @@ internal sealed partial class LythonRuntime
 
         internal void PrepareTransfer()
         {
-            // No primitive marker or borrowed working span enters a heap frame.
-            MaterializeRange(0, LiveExtent);
+            // Final managed slots transfer directly; no borrowed side span remains.
             Values[LiveExtent..].Clear();
         }
         internal void TransferOwnership(ExecutionContext frame)
@@ -567,14 +569,14 @@ internal sealed partial class LythonRuntime
             // without a GetIter slot in this function. Cancellation before Return
             // must retire that loan too, before the caller can own the result.
             for (var i = LiveExtent - 1; i >= Code.FirstTemporarySlot; i--)
-                if (Values[i] is ExecutableTemporaryValue owned)
-                { Values[i] = null!; owned.Dispose(); }
+                if (Values[i].Reference is ExecutableTemporaryValue owned)
+                { Values[i].Object = null!; owned.Dispose(); }
             LiveExtent = Code.FirstTemporarySlot;
         }
     }
 
     internal static ExecutionContext CreateNativeContinuation(PyExecutableFunction function,
-        in BoundCallArguments bound, LythonSourceSpan span, int index, int liveExtent, bool consumedByIteration,
+        in BoundFunctionArguments bound, LythonSourceSpan span, int index, int liveExtent, bool consumedByIteration,
         LythonRuntimeException? failure)
     {
         var frame = function.EnterInvocationFrame(bound, span, enterFunctionCall: false);

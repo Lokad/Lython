@@ -23,7 +23,7 @@ internal sealed partial class LythonRuntime
 
     private readonly record struct BoundOpenArguments(object[] Values, ArgumentPresence Assigned, int Count)
     {
-        public static BoundOpenArguments From(BoundCallArguments bound)
+        public static BoundOpenArguments From(BoundBuiltinArguments bound)
         {
             var count = bound.Assigned.Length;
             while (count > 0 && !bound.Assigned[count - 1])
@@ -204,7 +204,7 @@ internal sealed partial class LythonRuntime
     {
         protected override bool PreservePresence => true;
 
-        protected override object InvokeBoundWithPresence(BoundCallArguments bound, LythonSourceSpan span, ExecutionContext context)
+        protected override object InvokeBoundWithPresence(BoundBuiltinArguments bound, LythonSourceSpan span, ExecutionContext context)
         {
             // Codec-name types precede object validation, even without an object.
             // Omitted slots retain the binder's internal None defaults; an explicit
@@ -219,7 +219,7 @@ internal sealed partial class LythonRuntime
             return base.InvokeBound(bound.Values, span, context);
         }
 
-        protected override ValueTask<object> InvokeBoundWithPresenceAsync(BoundCallArguments bound, LythonSourceSpan span, ExecutionContext context)
+        protected override ValueTask<object> InvokeBoundWithPresenceAsync(BoundBuiltinArguments bound, LythonSourceSpan span, ExecutionContext context)
             => bound.Assigned[0] && !bound.Assigned[1] && !bound.Assigned[2] && bound.Values[0] is PyInstance or PyException
                 ? RenderValueStringAsync(bound.Values[0], 's', context, span)
                 : new(InvokeBoundWithPresence(bound, span, context));

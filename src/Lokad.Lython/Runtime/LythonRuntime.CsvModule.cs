@@ -70,7 +70,7 @@ internal sealed partial class LythonRuntime
             public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
         }
 
-        private static async ValueTask<object> CreateAsync(BoundCallArguments bound, FactoryKind kind,
+        private static async ValueTask<object> CreateAsync(BoundBuiltinArguments bound, FactoryKind kind,
             LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             context.CheckExecution(span);
@@ -153,7 +153,7 @@ internal sealed partial class LythonRuntime
         private static LythonRuntimeException MissingWriteMethod(LythonSourceSpan span)
             => new("TypeError", "argument 1 must have a 'write' method", span);
 
-        private static async ValueTask<CsvOptions> GetOptionsAsync(BoundCallArguments bound, CsvOptionArgumentLayout layout,
+        private static async ValueTask<CsvOptions> GetOptionsAsync(BoundBuiltinArguments bound, CsvOptionArgumentLayout layout,
             LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             var args = bound.Values;
@@ -210,7 +210,7 @@ internal sealed partial class LythonRuntime
                     ? await IsTruthyAsync(args[index], context, span).ConfigureAwait(false) : IsTruthy(args[index], context, span);
         }
 
-        private static object GetExtrasAction(BoundCallArguments bound, LythonSourceSpan span)
+        private static object GetExtrasAction(BoundBuiltinArguments bound, LythonSourceSpan span)
         {
             if (!bound.Assigned[3]) return PyString.FromString("raise");
             if (bound.Values[3] is not PyString text) throw RuntimeErrors.Type("csv extrasaction must be a string.", span);

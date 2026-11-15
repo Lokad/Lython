@@ -2,12 +2,12 @@
 
 | Representative workload, warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| CSV invoice / ordinary pricing helper |4,096 records /127,031 B|7.554–7.555 ms|6.141–6.147 ms|1.23×|Diagnostic 4beb; spreads 0.01/0.10%; max IQR 1.70%|
-| Text / captured helper and counter|3,072 lines /35,840 B|1.305–1.365 ms|0.895–0.896 ms|1.46–1.53×|Variable 4beb; spreads 4.46/0.06%; max IQR 1.22%|
+| CSV invoice / ordinary pricing helper |4,096 records /127,031 B|7.554–7.555 ms|6.141–6.147 ms|1.23×|Earlier 4beb; diagnostic; spreads 0.01/0.10%; max IQR 1.70%|
+| Text / captured helper and counter|3,072 lines /35,840 B|1.305–1.365 ms|0.895–0.896 ms|1.46–1.53×|Earlier 4beb; variable; spreads 4.46/0.06%; max IQR 1.22%|
 | JSON-lines / aggregation helpers|4,096 records /110,592 B|3.397–3.499 ms|4.068–4.078 ms|0.83–0.86×|Earlier fa40; Diagnostic; spreads 2.92/0.24%; max IQR 1.16%|
 | File search / defensive keyword-default helper |2,049 lines /42,010 B; stop after1,025|266.372–266.982 µs|160.576–162.048 µs|1.64–1.66×|Earlier3994; Diagnostic; spreads 0.23/0.91%; max IQR 2.60%|
 | JSON-to-Markdown report|3,072 records /189,441 B|2.836–2.880 ms|2.332–2.340 ms|1.21–1.23×|Earlier fa40; Variable; spreads 1.56/0.32%; max IQR 4.82%|
-| CSV fulfillment / pricing and validation|4,096 records /126,821 B|7.895–8.100 ms|6.804–6.867 ms|1.15–1.19×|Variable 4beb; spreads 2.53/0.93%; max IQR 2.15%|
+| CSV fulfillment / pricing and validation|4,096 records /126,821 B|7.895–8.100 ms|6.804–6.867 ms|1.15–1.19×|Earlier 4beb; variable; spreads 2.53/0.93%; max IQR 2.15%|
 | CSV validation / for-loop checksum|4,096 records /49,163 B|5.441–5.579 ms|4.210–4.219 ms|1.29–1.33×|Earlier fa40; Diagnostic; spreads 2.47/0.21%; max IQR 1.30%|
 | Configuration JSON edit |96 B|75.3–76.4 µs|59.6–59.7 µs|1.26–1.28×|Earlier cdd9; Diagnostic; spreads1.56/0.15%; maxIQR1.55%|
 
@@ -15,12 +15,13 @@
 complete embedding measurements, not isolated interpreter CPU. Spreads are the
 Lython/CPython process-median differences; moving controls and IQRs remain visible.
 
-Invoice, fulfillment and captured-text rows measured2026-11-14UTC at
+Invoice, fulfillment and captured-text rows measured2026-11-14UTC at earlier
 **4beb9ecf / frozenbed6e57e**, against stock **CPython3.13.16**.
 [Full platform/stress/installed-consumer qualification passes](../benchmarks/results/2026-11-14-builtin-scalar-publication/delivery/README.md).
 [Exact scripts, phases, raw CPU and controls](../benchmarks/results/2026-11-14-current-cpython-checkpoint/README.md).
 Fulfillment varies2.53%between Lython processes; text4.46%. Those rows remain
-variable. This is current source evidence, not a causal comparison across collections.
+variable. These historical rows do not describe the newer shared-slot runtime or establish
+a causal comparison across collections. A new checkpoint is being qualified.
 File search retains earlier **3994dfda / b5a6426e**, also2026-11-14 and fully
 [qualified](../benchmarks/results/2026-11-14-protected-helper-activation/delivery/README.md);
 [B757](../benchmarks/results/2026-11-14-protected-cpython-checkpoint/README.md) also
@@ -51,8 +52,8 @@ compilation from execution:
 
 | Phase | Lython | CPython | Lython / CPython | Status |
 | --- | ---: | ---: | ---: | --- |
-| Fulfillment compilation alone |128.043–128.679 µs|115.542–115.561 µs|1.11×|Diagnostic 4beb; spreads 0.49/0.02%; max IQR 1.12%|
-| Fulfillment compile and execute once |8.268–8.355 ms|6.936–6.968 ms|1.19–1.20×|Diagnostic 4beb; spreads 1.04/0.47%; max IQR 1.80%|
+| Fulfillment compilation alone |128.043–128.679 µs|115.542–115.561 µs|1.11×|Earlier 4beb; diagnostic; spreads 0.49/0.02%; max IQR 1.12%|
+| Fulfillment compile and execute once |8.268–8.355 ms|6.936–6.968 ms|1.19–1.20×|Earlier 4beb; diagnostic; spreads 1.04/0.47%; max IQR 1.80%|
 | Defensive invoice compilation alone |103.845–105.523 µs|98.430–98.738 µs|1.05–1.07×|Earlier3994; Diagnostic; spreads 1.62/0.31%; max IQR 2.78%|
 | Defensive invoice compile and execute once |7.729–7.743 ms|6.218–6.237 ms|1.24–1.25×|Earlier3994; Diagnostic; spreads 0.19/0.31%; max IQR 1.30%|
 | Configuration compilation alone |36.6–37.3 µs|34.3–34.4 µs|1.06–1.09×|Diagnostic; spreads1.94/0.17%; maxIQR1.97%|

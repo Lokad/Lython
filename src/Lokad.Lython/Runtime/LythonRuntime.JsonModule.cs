@@ -42,20 +42,20 @@ internal sealed partial class LythonRuntime
         private sealed class JsonModuleCallable : ICallable, IPyRenderableValue, IPyDynamicAttributes, IPyContextualDynamicAttributes, IPyBoundEngineMethod, IPyHashableValue
         {
             private readonly LythonCallableSignature _signature;
-            private readonly Func<BoundCallArguments, IReadOnlyList<KeyValuePair<string, object>>, LythonSourceSpan, ExecutionContext, object> _implementation;
-            private readonly Func<BoundCallArguments, IReadOnlyList<KeyValuePair<string, object>>, LythonSourceSpan, ExecutionContext, ValueTask<object>>? _asyncImplementation;
+            private readonly Func<BoundBuiltinArguments, IReadOnlyList<KeyValuePair<string, object>>, LythonSourceSpan, ExecutionContext, object> _implementation;
+            private readonly Func<BoundBuiltinArguments, IReadOnlyList<KeyValuePair<string, object>>, LythonSourceSpan, ExecutionContext, ValueTask<object>>? _asyncImplementation;
 
             public JsonModuleCallable(
                 LythonCallableSignature signature,
-                Func<BoundCallArguments, IReadOnlyList<KeyValuePair<string, object>>, LythonSourceSpan, ExecutionContext, object> implementation)
+                Func<BoundBuiltinArguments, IReadOnlyList<KeyValuePair<string, object>>, LythonSourceSpan, ExecutionContext, object> implementation)
                 : this(signature, implementation, null)
             {
             }
 
             public JsonModuleCallable(
                 LythonCallableSignature signature,
-                Func<BoundCallArguments, IReadOnlyList<KeyValuePair<string, object>>, LythonSourceSpan, ExecutionContext, object> implementation,
-                Func<BoundCallArguments, IReadOnlyList<KeyValuePair<string, object>>, LythonSourceSpan, ExecutionContext, ValueTask<object>>? asyncImplementation)
+                Func<BoundBuiltinArguments, IReadOnlyList<KeyValuePair<string, object>>, LythonSourceSpan, ExecutionContext, object> implementation,
+                Func<BoundBuiltinArguments, IReadOnlyList<KeyValuePair<string, object>>, LythonSourceSpan, ExecutionContext, ValueTask<object>>? asyncImplementation)
             {
                 _signature = signature;
                 _implementation = implementation;
@@ -188,7 +188,7 @@ internal sealed partial class LythonRuntime
         }
 
         private object Load(
-            BoundCallArguments bound,
+            BoundBuiltinArguments bound,
             IReadOnlyList<KeyValuePair<string, object>> extras,
             LythonSourceSpan span,
             ExecutionContext context)
@@ -199,7 +199,7 @@ internal sealed partial class LythonRuntime
         }
 
         private async ValueTask<object> LoadAsync(
-            BoundCallArguments bound,
+            BoundBuiltinArguments bound,
             IReadOnlyList<KeyValuePair<string, object>> extras,
             LythonSourceSpan span,
             ExecutionContext context)
@@ -210,7 +210,7 @@ internal sealed partial class LythonRuntime
         }
 
         private object Loads(
-            BoundCallArguments bound,
+            BoundBuiltinArguments bound,
             IReadOnlyList<KeyValuePair<string, object>> extras,
             LythonSourceSpan span,
             ExecutionContext context)
@@ -222,7 +222,7 @@ internal sealed partial class LythonRuntime
         }
 
         private async ValueTask<object> LoadsAsync(
-            BoundCallArguments bound,
+            BoundBuiltinArguments bound,
             IReadOnlyList<KeyValuePair<string, object>> extras,
             LythonSourceSpan span,
             ExecutionContext context)
@@ -241,7 +241,7 @@ internal sealed partial class LythonRuntime
         }
 
         private object Dump(
-            BoundCallArguments bound,
+            BoundBuiltinArguments bound,
             IReadOnlyList<KeyValuePair<string, object>> extras,
             LythonSourceSpan span,
             ExecutionContext context)
@@ -264,7 +264,7 @@ internal sealed partial class LythonRuntime
         }
 
         private async ValueTask<object> DumpAsync(
-            BoundCallArguments bound,
+            BoundBuiltinArguments bound,
             IReadOnlyList<KeyValuePair<string, object>> extras,
             LythonSourceSpan span,
             ExecutionContext context)
@@ -294,7 +294,7 @@ internal sealed partial class LythonRuntime
             return PyNone.Instance;
         }
 
-        private static object IterateWithClass(BoundCallArguments bound, IReadOnlyList<KeyValuePair<string, object>> extras,
+        private static object IterateWithClass(BoundBuiltinArguments bound, IReadOnlyList<KeyValuePair<string, object>> extras,
             LythonSourceSpan span, ExecutionContext context)
         {
             var cls = ResolveEncoderClass(GetOptional(bound.Values, 6), span);
@@ -304,7 +304,7 @@ internal sealed partial class LythonRuntime
         }
 
         private object Dumps(
-            BoundCallArguments bound,
+            BoundBuiltinArguments bound,
             IReadOnlyList<KeyValuePair<string, object>> extras,
             LythonSourceSpan span,
             ExecutionContext context)
@@ -327,7 +327,7 @@ internal sealed partial class LythonRuntime
         }
 
         private async ValueTask<object> DumpsAsync(
-            BoundCallArguments bound,
+            BoundBuiltinArguments bound,
             IReadOnlyList<KeyValuePair<string, object>> extras,
             LythonSourceSpan span,
             ExecutionContext context)
@@ -345,7 +345,7 @@ internal sealed partial class LythonRuntime
 
         // Preserve Python's short-circuit option effects before selecting the
         // immutable default options. No instance or caller token is cached.
-        private static async ValueTask<bool> CanUseDefaultEncoderAsync(BoundCallArguments bound,
+        private static async ValueTask<bool> CanUseDefaultEncoderAsync(BoundBuiltinArguments bound,
             IReadOnlyList<KeyValuePair<string, object>> extras, int offset, LythonSourceSpan span,
             ExecutionContext context, bool asynchronous)
         {
@@ -409,7 +409,7 @@ internal sealed partial class LythonRuntime
         private object DecodeWithClass(
             PyString text,
             object clsValue,
-            BoundCallArguments bound,
+            BoundBuiltinArguments bound,
             IReadOnlyList<KeyValuePair<string, object>> extras,
             LythonSourceSpan span,
             ExecutionContext context)
@@ -437,7 +437,7 @@ internal sealed partial class LythonRuntime
         private async ValueTask<object> DecodeWithClassAsync(
             PyString text,
             object clsValue,
-            BoundCallArguments bound,
+            BoundBuiltinArguments bound,
             IReadOnlyList<KeyValuePair<string, object>> extras,
             LythonSourceSpan span,
             ExecutionContext context)
@@ -464,7 +464,7 @@ internal sealed partial class LythonRuntime
 
         private static object ConstructDecoderClass(
             object clsValue,
-            BoundCallArguments bound,
+            BoundBuiltinArguments bound,
             IReadOnlyList<KeyValuePair<string, object>> extras,
             LythonSourceSpan span,
             ExecutionContext context)
@@ -475,7 +475,7 @@ internal sealed partial class LythonRuntime
 
         private static async ValueTask<object> ConstructDecoderClassAsync(
             object clsValue,
-            BoundCallArguments bound,
+            BoundBuiltinArguments bound,
             IReadOnlyList<KeyValuePair<string, object>> extras,
             LythonSourceSpan span,
             ExecutionContext context)
@@ -485,7 +485,7 @@ internal sealed partial class LythonRuntime
         }
 
         private static List<CallArgumentValue> BuildDecoderForwardArgs(
-            BoundCallArguments bound,
+            BoundBuiltinArguments bound,
             IReadOnlyList<KeyValuePair<string, object>> extras)
         {
             var forwarded = new List<CallArgumentValue>();
@@ -518,7 +518,7 @@ internal sealed partial class LythonRuntime
         private object EncodeWithClass(
             object value,
             object clsValue,
-            BoundCallArguments bound,
+            BoundBuiltinArguments bound,
             IReadOnlyList<KeyValuePair<string, object>> extras,
             JsonDumpCallForm callForm,
             LythonSourceSpan span,
@@ -534,7 +534,7 @@ internal sealed partial class LythonRuntime
         private async ValueTask<object> EncodeWithClassAsync(
             object value,
             object clsValue,
-            BoundCallArguments bound,
+            BoundBuiltinArguments bound,
             IReadOnlyList<KeyValuePair<string, object>> extras,
             JsonDumpCallForm callForm,
             LythonSourceSpan span,
@@ -561,7 +561,7 @@ internal sealed partial class LythonRuntime
 
         private static ValueTask<object> ConstructEncoderClassAsync(
             object clsValue,
-            BoundCallArguments bound,
+            BoundBuiltinArguments bound,
             IReadOnlyList<KeyValuePair<string, object>> extras,
             JsonDumpCallForm callForm,
             LythonSourceSpan span,
@@ -578,7 +578,7 @@ internal sealed partial class LythonRuntime
         }
 
         private static List<CallArgumentValue> BuildEncoderForwardArgs(
-            BoundCallArguments bound,
+            BoundBuiltinArguments bound,
             IReadOnlyList<KeyValuePair<string, object>> extras,
             JsonDumpCallForm callForm)
         {

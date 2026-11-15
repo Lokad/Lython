@@ -11,7 +11,7 @@ internal sealed partial class LythonRuntime
             : EvaluateExpression(conditional.Alternative, context);
 
     private static bool TryMatchPattern(LoweredPattern pattern, object subject, ExecutionContext context,
-        Span<object> captures, Span<object> workspace)
+        Span<ExecutableSlot> captures, Span<ExecutableSlot> workspace)
     {
         context.EnterInterpreterFrame(pattern.Span);
         try
@@ -29,12 +29,12 @@ internal sealed partial class LythonRuntime
                         _ => false
                     };
                 case LoweredCapturePattern capture:
-                    captures[capture.Slot] = RuntimeValue(subject);
+                    captures[capture.Slot].Object = RuntimeValue(subject);
                     return true;
                 case LoweredWildcardPattern: return true;
                 case LoweredAsPattern alias:
                     if (!TryMatchPattern(alias.Pattern, subject, context, captures, workspace)) return false;
-                    captures[alias.Slot] = RuntimeValue(subject);
+                    captures[alias.Slot].Object = RuntimeValue(subject);
                     return true;
                 case LoweredOrPattern alternatives:
                     foreach (var candidate in alternatives.Patterns)
@@ -57,7 +57,7 @@ internal sealed partial class LythonRuntime
     }
 
     private static bool TryMatchSequencePattern(LoweredSequencePattern pattern, object subject,
-        ExecutionContext context, Span<object> captures, Span<object> workspace)
+        ExecutionContext context, Span<ExecutableSlot> captures, Span<ExecutableSlot> workspace)
     {
         IReadOnlyList<object>? items = subject switch
         {
@@ -88,28 +88,28 @@ internal sealed partial class LythonRuntime
                         context.CheckExecution(pattern.Span);
                         rest.Add(items[star + j]);
                     }
-                    values[i] = rest;
+                    values[i].Object = rest;
                 }
                 catch { rest.DiscardUnpublishedStorage(); throw; }
             }
-            else values[i] = items[star < 0 || i < star ? i : items.Count - count + i];
+            else values[i].Object = items[star < 0 || i < star ? i : items.Count - count + i];
         }
         for (var i = 0; i < count; i++)
         {
             if (i == star && pattern.Items[i] is LoweredWildcardPattern) continue;
-            if (!TryMatchPattern(pattern.Items[i], values[i], context, captures, workspace[count..])) return false;
+            if (!TryMatchPattern(pattern.Items[i], values[i].Object!, context, captures, workspace[count..])) return false;
         }
         return true;
     }
 
     private static bool TryMatchMappingPattern(LoweredMappingPattern pattern, object subject,
-        ExecutionContext context, Span<object> captures, Span<object> workspace)
+        ExecutionContext context, Span<ExecutableSlot> captures, Span<ExecutableSlot> workspace)
     {
         var count = pattern.Items.Length;
         if (subject is not PyDict dict || dict.Count < count) return false;
         using var ambient = PyStructuralGuard.PushAmbient(context, pattern.Span);
         var dynamic = pattern.ConstantKeys is null;
-        ReadOnlySpan<object> keys = dynamic ? workspace[..count] : pattern.ConstantKeys;
+        ReadOnlySpan<ExecutableSlot> keys = dynamic ? workspace[..count] : default;
         var offset = dynamic ? count : 0;
         var values = workspace.Slice(offset, count);
         PySet? seen = null;
@@ -121,14 +121,14 @@ internal sealed partial class LythonRuntime
                 seen.EnsureCapacity(count);
                 for (var i = 0; i < count; i++)
                 {
-                    workspace[i] = EvaluateLoweredExpression(pattern.Items[i].Key, context);
+                    workspace[i].Object = EvaluateLoweredExpression(pattern.Items[i].Key, context);
                     context.CheckExecution(pattern.Items[i].Key.Span);
                 }
             }
             for (var i = 0; i < count; i++)
             {
                 var span = pattern.Items[i].Key.Span;
-                var key = ValidateDictionaryKey(keys[i], span);
+                var key = ValidateDictionaryKey(dynamic ? keys[i].Object! : pattern.ConstantKeys![i], span);
                 if (seen is not null)
                 {
                     var duplicate = seen.Contains(key);
@@ -145,23 +145,24 @@ internal sealed partial class LythonRuntime
                 var found = dict.TryGetValue(key, out var value, context, span);
                 context.CheckExecution(span);
                 if (!found) return false;
-                values[i] = value!;
+                values[i].Object = value!;
             }
             for (var i = 0; i < count; i++)
-                if (!TryMatchPattern(pattern.Items[i].Pattern, values[i], context, captures, workspace[(offset + count)..])) return false;
+                if (!TryMatchPattern(pattern.Items[i].Pattern, values[i].Object!, context, captures, workspace[(offset + count)..])) return false;
             if (pattern.RestSlot < 0) return true;
             var rest = new PyDict(dict, context.MemoryGovernor, pattern.Span);
             var published = false;
             try
             {
-                foreach (var key in keys)
+                for (var i = 0; i < count; i++)
                 {
+                    var key = dynamic ? keys[i].Object! : pattern.ConstantKeys![i];
                     context.CheckExecution(pattern.Span);
                     var removed = rest.TryRemove(key, out _);
                     context.CheckExecution(pattern.Span);
                     if (!removed) throw RuntimeErrors.MissingKey(key, pattern.Span);
                 }
-                captures[pattern.RestSlot] = rest;
+                captures[pattern.RestSlot].Object = rest;
                 context.CheckExecution(pattern.Span);
                 published = true;
                 return true;
@@ -172,20 +173,20 @@ internal sealed partial class LythonRuntime
     }
 
     private static bool TryMatchRootPattern(LoweredRootPattern pattern, object subject,
-        ExecutionContext context, Span<object> storage)
+        ExecutionContext context, Span<ExecutableSlot> storage)
         => TryMatchPattern(pattern.Root, subject, context, storage[..pattern.Bindings.Length],
             storage[pattern.Bindings.Length..]);
 
     private static bool TryExecuteLoweredPattern(LoweredRootPattern pattern, object subject,
         ExecutionContext context)
     {
-        using var admission = context.MemoryGovernor.ReserveTemporary(PyList.EstimateCapacityBytes(pattern.StorageCount), pattern.Root.Span);
-        var storage = new object[pattern.StorageCount];
+        using var admission = context.MemoryGovernor.ReserveTemporary(ExecutableSlotsBytes(pattern.StorageCount), pattern.Root.Span);
+        var storage = new ExecutableSlot[pattern.StorageCount];
         try
         {
             if (!TryMatchRootPattern(pattern, subject, context, storage)) return false;
             for (var i = 0; i < pattern.Bindings.Length; i++)
-                StoreName(pattern.Bindings[i].Name, storage[i], context, pattern.Root.Span);
+                StoreName(pattern.Bindings[i].Name, storage[i].Object!, context, pattern.Root.Span);
             return true;
         }
         finally { Array.Clear(storage); }
@@ -195,7 +196,7 @@ internal sealed partial class LythonRuntime
         LoweredClassPattern pattern,
         object subject,
         ExecutionContext context,
-        Span<object> captures, Span<object> workspace)
+        Span<ExecutableSlot> captures, Span<ExecutableSlot> workspace)
     {
         var classValue = EvaluateLoweredExpression(pattern.Expression, context);
         if (classValue is PyTypedDictType)
@@ -251,19 +252,19 @@ internal sealed partial class LythonRuntime
             for (var i = 0; i < positionalCount; i++)
             {
                 context.CheckExecution(pattern.Span);
-                if (matchSelf) { values[i] = subject; continue; }
+                if (matchSelf) { values[i].Object = subject; continue; }
                 if (matchArgs![i] is not PyString text)
                     throw RuntimeErrors.Type($"__match_args__ elements must be strings (got {RuntimeErrors.OperandTypeName(matchArgs[i])})", pattern.Span);
                 var name = text.AsString();
-                names[i] = name;
+                names[i].Object = name;
                 for (var previous = 0; previous < i; previous++)
                 {
                     context.CheckExecution(pattern.Span);
-                    if (name == (string)names[previous])
+                    if (name == (string)names[previous].Object!)
                         throw RuntimeErrors.Type($"{className}() got multiple sub-patterns for attribute '{name}'", pattern.Span);
                 }
                 if (!TryReadPatternAttribute(subject, name, context, pattern.Span, out var value)) return false;
-                values[i] = value;
+                values[i].Object = value;
             }
             for (var i = 0; i < pattern.KeywordPatterns.Length; i++)
             {
@@ -271,19 +272,19 @@ internal sealed partial class LythonRuntime
                 for (var previous = 0; previous < positionalCount; previous++)
                 {
                     context.CheckExecution(pattern.Span);
-                    if (keyword.Name == names[previous] as string)
+                    if (keyword.Name == names[previous].Object as string)
                         throw RuntimeErrors.Type($"{className}() got multiple sub-patterns for attribute '{keyword.Name}'", pattern.Span);
                 }
                 if (!TryReadPatternAttribute(subject, keyword.Name, context, keyword.Pattern.Span, out var value)) return false;
-                values[positionalCount + i] = value;
+                values[positionalCount + i].Object = value;
             }
             // Attribute extraction is complete before any subpattern invokes guest
             // equality/descriptors or mutates the subject. Failed extraction never
             // publishes captures; the enclosing owner retains and clears scratch.
             for (var i = 0; i < positionalCount; i++)
-                if (!TryMatchPattern(pattern.PositionalPatterns[i], values[i], context, captures, children)) return false;
+                if (!TryMatchPattern(pattern.PositionalPatterns[i], values[i].Object!, context, captures, children)) return false;
             for (var i = 0; i < pattern.KeywordPatterns.Length; i++)
-                if (!TryMatchPattern(pattern.KeywordPatterns[i].Pattern, values[positionalCount + i], context, captures, children)) return false;
+                if (!TryMatchPattern(pattern.KeywordPatterns[i].Pattern, values[positionalCount + i].Object!, context, captures, children)) return false;
             return true;
         }
         finally

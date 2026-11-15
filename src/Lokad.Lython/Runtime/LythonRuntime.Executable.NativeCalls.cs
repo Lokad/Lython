@@ -11,14 +11,15 @@ internal sealed partial class LythonRuntime
     // Exact bounds cannot run Python protocols. Share the ordinary range factory
     // without packaging arguments or promoting the rest of a native helper.
     // Declining this path performs no operation or admission.
-    private static bool TryInvokeNativeRange(ReadOnlySpan<object?> arguments,
+    private static bool TryInvokeNativeRange(Span<ExecutableSlot> arguments,
         LythonSourceSpan span, ExecutionContext context, out object result)
     {
         result = PyNone.Instance;
         foreach (var argument in arguments)
-            if (argument is not (BigInteger or bool)) return false;
+            if (argument.Reference is not (BigInteger or bool) && !argument.TryGetInteger(out _)) return false;
         context.EnterInterpreterFrame(span);
-        try { result = Range(arguments, span, context); }
+        try { result = Range(arguments.Length, arguments.Length > 0 ? arguments[0].Object : null,
+            arguments.Length > 1 ? arguments[1].Object : null, arguments.Length > 2 ? arguments[2].Object : null, span, context); }
         catch (Exception error) when (TryTranslateCallableException(error, span, out var translated)) { throw translated; }
         finally { context.LeaveInterpreterFrame(); }
         return true;

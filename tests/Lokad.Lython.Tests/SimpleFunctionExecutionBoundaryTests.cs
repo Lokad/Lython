@@ -1,3 +1,4 @@
+using Slot = Lokad.Lython.Runtime.LythonRuntime.ExecutableSlot;
 using System.Globalization;
 using System.Numerics;
 using Lokad.Lython.Frontend;
@@ -85,7 +86,7 @@ public sealed class SimpleFunctionExecutionBoundaryTests
             Assert.True(code.CanRunNativeInstructions);
             var input = PyString.FromString(new string('A', 4096), context.MemoryGovernor, CallSpan);
             var values = new PyTuple([input], context.MemoryGovernor, CallSpan, context);
-            var bound = function.BindCallOperands([values], CallSpan, context, receiver: null, callSite: null);
+            var bound = function.BindCallOperands([Slot.FromObject(values)], CallSpan, context, receiver: null, callSite: null);
             var committed = context.MemoryGovernor.CurrentCommittedBytes;
             hook.RefuseGrowth = _ => !cancel;
             hook.AfterGrowth = _ => { if (cancel) cancellation.Cancel(); };
@@ -130,12 +131,12 @@ public sealed class SimpleFunctionExecutionBoundaryTests
                 Assert.True(code.CanRunNativeInstructions);
                 Assert.Equal(!wide, function.CanStartInline);
                 var values = new PyTuple([new BigInteger(1), new BigInteger(2), new BigInteger(3)], context.MemoryGovernor, CallSpan, context);
-                var bound = function.BindCallOperands([values], CallSpan, context, receiver: null, callSite: null);
+                var bound = function.BindCallOperands([Slot.FromObject(values)], CallSpan, context, receiver: null, callSite: null);
                 try
                 {
                     Assert.True(function.TryStartBoundInvocation(bound, CallSpan, out var result, out var frame));
                     Assert.Null(frame);
-                    Assert.Equal(new BigInteger(expected), result);
+                    Assert.Equal(new BigInteger(expected), result.Object);
                     Assert.Equal(0, context.State.CurrentInterpreterDepth);
                     Assert.Equal(0, context.State.CurrentRecursionDepth);
                     Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
@@ -659,7 +660,7 @@ public sealed class SimpleFunctionExecutionBoundaryTests
         LythonRuntime.ExecutionContext context, Driver driver)
     {
         Assert.True(function.SupportsDirectPositional);
-        var values = arguments.Select(argument => (object?)argument.Value).ToArray();
+        var values = arguments.Select(argument => LythonRuntime.ExecutableSlot.FromObject(argument.Value)).ToArray();
         return driver switch
         {
             Driver.General => function.Invoke(arguments, CallSpan, context),
@@ -802,10 +803,10 @@ public sealed class SimpleFunctionExecutionBoundaryTests
                 context.EnterInterpreterFrame(CallSpan);
                 try
                 {
-                    function.StartNativeCall(call, [line], null, context, CallSpan, false,
+                    function.StartNativeCall(call, [Slot.FromObject(line)], null, context, CallSpan, false,
                         borrow: false, default, out _, out var result, out var frame);
                     Assert.Null(frame);
-                    Assert.True(Assert.IsType<bool>(result));
+                    Assert.True(Assert.IsType<bool>(result.Object));
                     Assert.Null(context.MemoryGovernor.AdmissionFailure);
                     Assert.Equal(baseline, budget.ReservedBytes);
                 }

@@ -96,13 +96,13 @@ internal sealed partial class LythonRuntime
             return text is " " or "\t";
         }
 
-        private static object UnifiedDiff(BoundCallArguments arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object UnifiedDiff(BoundBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context)
             => OutputIterator(DiffLines(arguments, span, GetGlobalContext(context), true), span, context);
 
-        private static object ContextDiff(BoundCallArguments arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object ContextDiff(BoundBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context)
             => OutputIterator(DiffLines(arguments, span, GetGlobalContext(context), false), span, context);
 
-        private static IEnumerable<object> DiffLines(BoundCallArguments arguments, LythonSourceSpan span, ExecutionContext context, bool unified)
+        private static IEnumerable<object> DiffLines(BoundBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context, bool unified)
         {
             var owner = unified ? "difflib.unified_diff" : "difflib.context_diff";
             var options = ParseDiffArguments(arguments, owner, span);
@@ -148,7 +148,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private static object GetCloseMatches(BoundCallArguments bound, LythonSourceSpan span, ExecutionContext context)
+        private static object GetCloseMatches(BoundBuiltinArguments bound, LythonSourceSpan span, ExecutionContext context)
         {
             var arguments = bound.Values;
             if (arguments.Length is < 2 or > 4 || !PyStringOps.TryAsString(arguments[0], out var word))
@@ -198,7 +198,7 @@ internal sealed partial class LythonRuntime
             return new PyList(scored.Take((int)BigInteger.Min(limit, scored.Count)).Select(item => (object)item.Value), context.MemoryGovernor, span);
         }
 
-        private static object DiffBytes(BoundCallArguments bound, LythonSourceSpan span, ExecutionContext context)
+        private static object DiffBytes(BoundBuiltinArguments bound, LythonSourceSpan span, ExecutionContext context)
         {
             var arguments = bound.Values;
             if (arguments.Length is < 3 or > 9 || arguments[0] is not ICallable callable)
@@ -280,13 +280,13 @@ internal sealed partial class LythonRuntime
             return shell;
         }
 
-        private static object SequenceMatcher(BoundCallArguments arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object SequenceMatcher(BoundBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context)
             => SequenceMatcherCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
 
-        private static ValueTask<object> SequenceMatcherAsync(BoundCallArguments arguments, LythonSourceSpan span, ExecutionContext context)
+        private static ValueTask<object> SequenceMatcherAsync(BoundBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context)
             => SequenceMatcherCoreAsync(arguments, span, context, true);
 
-        private static async ValueTask<object> SequenceMatcherCoreAsync(BoundCallArguments bound, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+        private static async ValueTask<object> SequenceMatcherCoreAsync(BoundBuiltinArguments bound, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             var arguments = bound.Values;
             if (arguments.Length > 4)
@@ -303,7 +303,7 @@ internal sealed partial class LythonRuntime
                 : new DifflibSequenceMatcherObject(isjunk, aOriginal, bOriginal, autojunk, span, context);
         }
 
-        private static DiffOptions ParseDiffArguments(BoundCallArguments bound, string owner, LythonSourceSpan span)
+        private static DiffOptions ParseDiffArguments(BoundBuiltinArguments bound, string owner, LythonSourceSpan span)
         {
             var arguments = bound.Values;
             if (arguments.Length is < 2 or > 8)

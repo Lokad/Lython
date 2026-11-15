@@ -168,12 +168,12 @@ internal sealed partial class LythonRuntime
         protected override bool PreservePresence => true;
         protected override object InvokeBound(object[] args, LythonSourceSpan span, ExecutionContext context)
             => throw new InvalidOperationException("gzip.open requires presence");
-        protected override object InvokeBoundWithPresence(BoundCallArguments args, LythonSourceSpan span, ExecutionContext context)
+        protected override object InvokeBoundWithPresence(BoundBuiltinArguments args, LythonSourceSpan span, ExecutionContext context)
             => OpenAsync(args, span, context, false).GetAwaiter().GetResult();
-        protected override ValueTask<object> InvokeBoundWithPresenceAsync(BoundCallArguments args, LythonSourceSpan span, ExecutionContext context)
+        protected override ValueTask<object> InvokeBoundWithPresenceAsync(BoundBuiltinArguments args, LythonSourceSpan span, ExecutionContext context)
             => OpenAsync(args, span, context, true);
 
-        private static async ValueTask<object> OpenAsync(BoundCallArguments bound, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+        private static async ValueTask<object> OpenAsync(BoundBuiltinArguments bound, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             var args = bound.Values;
             var requestedMode = !bound.Assigned[1] ? PyString.FromString("rb") : PyStringOps.TryAsString(args[1], out var text)
@@ -206,7 +206,7 @@ internal sealed partial class LythonRuntime
         public int GetPyHashCode() => System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(this);
     }
 
-    private static async ValueTask<object> CompressAsync(BoundCallArguments bound, LythonSourceSpan span,
+    private static async ValueTask<object> CompressAsync(BoundBuiltinArguments bound, LythonSourceSpan span,
         ExecutionContext context, bool asynchronous)
     {
         if (bound.Values[0] is not PyBytes bytes) throw RuntimeErrors.Type("gzip.compress requires bytes", span);

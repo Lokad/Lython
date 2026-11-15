@@ -648,7 +648,7 @@ internal sealed partial class LythonRuntime
         return new PredicateIteratorBinding(positional[0], positional[1]);
     }
 
-    private static BoundCallArguments BindArguments(
+    private static BoundBuiltinArguments BindArguments(
         CallArgumentValue[] arguments,
         LythonCallableSignature signature,
         LythonSourceSpan span)

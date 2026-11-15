@@ -1,0 +1,41 @@
+{
+  "purpose": "One managed final-slot layout replaces native integer side bank; shared exact arithmetic and direct binding without conversion arrays. Observe wider nonnumeric/copy/view costs, separate architecture/allocation/CPU. Same complete scripts, workers, control shapes and settings.",
+  "jobs": [
+    [
+      "scripts.csv-fulfillment.large",
+      "warm"
+    ],
+    [
+      "scripts.csv-fulfillment.large",
+      "compile"
+    ],
+    [
+      "scripts.csv-fulfillment.large",
+      "compile-run"
+    ],
+    [
+      "scripts.csv-invoice.large",
+      "warm"
+    ],
+    [
+      "scripts.text-summary-helpers.nonlocal-counter.large",
+      "warm"
+    ],
+    [
+      "diagnostic.loop-helper.short-zero.large",
+      "warm"
+    ],
+    [
+      "diagnostic.loop-helper.observed.large",
+      "warm"
+    ],
+    [
+      "scripts.json-summary-helpers.large",
+      "warm"
+    ]
+  ],
+  "bound": "420sowner/350sstartguard;8completejobs,4freshprocesses/job,5sfullrequestwarmup/12stext,5rotating0.5sbatches. StocknormalGC/tiering; no disabled safety.",
+  "acceptance": "Exact Python binding/protocol/identity/promotion; actual suspension, cooperative cancellation, first refused admission, retained funding through joined cleanup, existing managed stack. Full source/image/golden/file/budget/quiet/join/archive gates.",
+  "decision": "Usable affected and unchanged-control source pair, then retain with justified debt, refine on evidence or withdraw. No fixed percentage veto, universal speedup or one-experiment completion claim.",
+  "storage": "Copy locally frozen mutable outputs; on VM hardlink already immutable reference/aux/catalog/worker, upload only new core/scripts. No retirement planned; fresh lease/free-space checks enforce existing254/252MiB floors."
+}

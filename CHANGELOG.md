@@ -2,17 +2,18 @@
 
 ## 0.11.0 - Unreleased
 
-- Keep shared `int(text)` and `len` results typed until ordinary observation or
-  publication into existing native integer storage. Preserve exact promotion,
-  aliases, protocols, cancellation and conservative allocation admission.
+- Share one managed slot layout between ordinary execution, native prefixes and
+  final function arguments, locals, operands and compiled returns. Remove the separate native
+  integer bank, capacity facts and loan cache. Preserve Python identities, exact
+  promotion, cancellation and funded continuation/cleanup; wider reference-heavy
+  storage can cause earlier shared-budget refusal.
+
+- Keep shared `int(text)` and `len` results typed until ordinary observation in
+  the final slots. Preserve protocols and conservative allocation admission.
 
 - Run eligible `try`/`except` helpers through the existing synchronous executable
   prefix. Transfer faults at their exact instruction into ordinary handler
   routing without replay; preserve cancellation, refused admission and ownership.
-
-- Reuse larger native integer working buffers through the existing execution-owned
-  workspace policy. Keep idle and active capacity charged until ownership ends,
-  preserving admission, cancellation, materialization and deterministic cleanup.
 
 - Share range position and exhaustion between ordinary iteration and native
   numeric loops, avoiding unobserved per-yield boxes. Preserve exact wider bounds,

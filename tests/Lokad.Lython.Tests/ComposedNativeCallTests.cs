@@ -1,3 +1,4 @@
+using Slot = Lokad.Lython.Runtime.LythonRuntime.ExecutableSlot;
 using System.Numerics;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
@@ -33,10 +34,10 @@ public sealed class ComposedNativeCallTests
             hook.RefuseGrowth = _ => true;
             try
             {
-                function.StartNativeCall(call, [new BigInteger(1250)], null, context, Span,
+                function.StartNativeCall(call, [Slot.FromObject(new BigInteger(1250))], null, context, Span,
                     false, !named, default, out _, out var result, out var frame);
                 Assert.Null(frame);
-                Assert.Equal(new BigInteger(1350), result);
+                Assert.Equal(new BigInteger(1350), result.Object);
                 Assert.Null(context.MemoryGovernor.AdmissionFailure);
                 Assert.Equal(baseline, budget.ReservedBytes);
                 AssertBalanced(context);
@@ -91,7 +92,7 @@ public sealed class ComposedNativeCallTests
             try
             {
                 var failure = Assert.Throws<LythonRuntimeException>(() => function.StartNativeCall(call,
-                    [retained], null, context, Span, false, true, default, out _, out _, out _));
+                    [Slot.FromObject(retained)], null, context, Span, false, true, default, out _, out _, out _));
                 Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
                 Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
                 Assert.Equal(admittedWorkspaces, growths);

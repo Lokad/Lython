@@ -82,10 +82,10 @@ internal sealed partial class LythonRuntime
             return OwnPathResult(text, text, context.MemoryGovernor, span, pure);
         }
 
-        private static bool Supplied(BoundCallArguments arguments, int index)
+        private static bool Supplied(BoundBuiltinArguments arguments, int index)
             => index < arguments.Assigned.Length && arguments.Assigned[index];
 
-        private static async ValueTask ValidatePathMode(BoundCallArguments arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+        private static async ValueTask ValidatePathMode(BoundBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             if (!Supplied(arguments, 0)) return;
             var value = arguments.Values[0];
@@ -95,7 +95,7 @@ internal sealed partial class LythonRuntime
             if (!PyNumberOps.TryAsInteger(value, out _)) throw RuntimeErrors.Type("mode must be an integer", span);
         }
 
-        private static async ValueTask<object> PathMkDirCoreAsync(PyString path, BoundCallArguments arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+        private static async ValueTask<object> PathMkDirCoreAsync(PyString path, BoundBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             await ValidatePathMode(arguments, span, context, asynchronous).ConfigureAwait(false);
             var parents = Supplied(arguments, 1) && (asynchronous ? await IsTruthyAsync(arguments.Values[1], context, span).ConfigureAwait(false) : IsTruthy(arguments.Values[1], context, span));
@@ -107,7 +107,7 @@ internal sealed partial class LythonRuntime
             return PyNone.Instance;
         }
 
-        private static async ValueTask<object> PathTouchCoreAsync(PyString path, BoundCallArguments arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+        private static async ValueTask<object> PathTouchCoreAsync(PyString path, BoundBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             await ValidatePathMode(arguments, span, context, asynchronous).ConfigureAwait(false);
             var existOk = !Supplied(arguments, 1) || (asynchronous ? await IsTruthyAsync(arguments.Values[1], context, span).ConfigureAwait(false) : IsTruthy(arguments.Values[1], context, span));

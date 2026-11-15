@@ -1,3 +1,4 @@
+using Slot = Lokad.Lython.Runtime.LythonRuntime.ExecutableSlot;
 using System.Numerics;
 using System.Reflection;
 using Lokad.Lython.Frontend;
@@ -69,9 +70,9 @@ public sealed class ComprehensionLambdaExecutableTests
         var lambda = Assert.Single(outer.Constants.OfType<ExecutableCreateLambda>()).CodeObject.RequireNotNull();
         var facts = Assert.Single(outer.Constants.OfType<ExecutableStartComprehension>()).ScopeFacts;
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) },regexProvider:Utf8RegexProvider.Instance);
-        var values = new object[outer.LocalNames.Count];
+        var values = new Slot[outer.LocalNames.Count];
         var parentCell = new LythonRuntime.ExecutableCell(new BigInteger(7));
-        values[outer.LocalNameToSlot["offset"]] = parentCell;
+        values[outer.LocalNameToSlot["offset"]].Object = parentCell;
         context._execution = new() { Code = outer, Locals = values };
         context.EnterExecutableSlots();
         var previousClosure = context.FunctionClosureContext;

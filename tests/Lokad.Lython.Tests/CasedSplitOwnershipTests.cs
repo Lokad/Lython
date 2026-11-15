@@ -114,12 +114,11 @@ public sealed class CasedSplitOwnershipTests
             using var cursor = PyStringOps.PrepareCasedWhitespaceIteration(input, true, context, span);
             var index = Array.FindIndex(code.Instructions, instruction => instruction.OpCode == ExecutableOpCode.Return);
             var source = code.Instructions[index].InputStart;
-            var values = new object[code.ValueStorageCapacity];
-            values[source] = cursor;
+            var values = new LythonRuntime.ExecutableSlot[code.ValueStorageCapacity];
+            values[source].Object = cursor;
             // Model interruption after the real fused kernel has completed but
             // before Return publishes its private value, without a timer race.
-            var execution = new LythonRuntime.NativeExecution(function, values,
-                new long[code.ValueStorageCapacity], true, default)
+            var execution = new LythonRuntime.NativeExecution(function, values, true, default)
             { Index = index, LiveExtent = source + 1 };
             context.State.CloseResources();
             var active = budget.ReservedBytes;

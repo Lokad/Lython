@@ -81,7 +81,7 @@ internal sealed partial class LythonRuntime
     internal struct ExecutableWorkState
     {
         internal ExecutableCodeObject Code;
-        internal object[] Locals;
+        internal ExecutableSlot[] Locals;
         internal IReadOnlyList<ExecutableCell>? ClosureCells;
         internal ExecutableValueStorage Stack;
         internal int InstructionIndex;
@@ -89,7 +89,7 @@ internal sealed partial class LythonRuntime
         // entry and protocol results retain observable Python return values.
         internal bool ReturnConsumedByIteration;
         // Python None is PyNone; null means no explicit return has completed.
-        internal object? ReturnValue;
+        internal ExecutableSlot ReturnValue;
 
         public ExecutableWorkState()
         {
@@ -98,7 +98,7 @@ internal sealed partial class LythonRuntime
             ClosureCells = null;
             Stack = default;
             InstructionIndex = 0;
-            ReturnValue = null;
+            ReturnValue = default;
         }
     }
 
@@ -191,7 +191,7 @@ internal sealed partial class LythonRuntime
         {
             if (_execution.Code.LocalNameToSlot.TryGetValue(name, out var localSlot))
             {
-                if (_execution.Locals[localSlot] is ExecutableCell localCell)
+                if (_execution.Locals[localSlot].Reference is ExecutableCell localCell)
                 {
                     cell = localCell;
                     return true;
@@ -289,7 +289,7 @@ internal sealed partial class LythonRuntime
 
     internal struct ExecutableValueStorage
     {
-        private object[] _items;
+        private ExecutableSlot[] _items;
         private int[]? _nativeIterationPositions;
         // One reference holds private invocation storage or the existing
         // function definition that owns shared facts. Do not widen every frame
@@ -304,7 +304,7 @@ internal sealed partial class LythonRuntime
         internal readonly bool HasPendingDisposals => _pendingDisposalHead is not null;
 
         public ExecutableValueStorage(int capacity, int firstTemporarySlot, int lastOwnedTemporarySlot, ExecutionContext context,
-            LythonSourceSpan? allocationSpan, long frameStorageBytes, object[]? borrowedValues,
+            LythonSourceSpan? allocationSpan, long frameStorageBytes, ExecutableSlot[]? borrowedValues,
             PyExecutableFunction? lookupOwner)
         {
             _state = context.State;
@@ -312,16 +312,16 @@ internal sealed partial class LythonRuntime
             _lastOwnedTemporarySlot = lastOwnedTemporarySlot;
             _nativeIterationPositions = null;
             _lookupStorage = lookupOwner;
-            var bytes = checked(frameStorageBytes + (borrowedValues is null ? EstimateObjectArrayBytes(capacity) : 0));
+            var bytes = checked(frameStorageBytes + (borrowedValues is null ? ExecutableSlotsBytes(capacity) : 0));
             var governor = context.MemoryGovernor;
             governor.Reserve(bytes, allocationSpan);
-            try { _items = borrowedValues ?? new object[capacity]; governor.Commit(bytes); }
+            try { _items = borrowedValues ?? new ExecutableSlot[capacity]; governor.Commit(bytes); }
             catch { governor.ReleaseReserved(bytes); throw; }
             _ownedStorageBytes = bytes;
             LiveExtent = firstTemporarySlot;
         }
 
-        internal object[] Values => _items;
+        internal ExecutableSlot[] Values => _items;
 
         internal readonly void CheckExecution(LythonSourceSpan span) => _state.CheckExecution(span);
 
@@ -377,11 +377,14 @@ internal sealed partial class LythonRuntime
 
         public object this[int index]
         {
-            get => _items[index].RequireNotNull();
-            set => _items[index] = value;
+            get => _items[index].Object.RequireNotNull();
+            set => _items[index].Object = value;
         }
 
         internal void PublishValue(int resultSlot, int liveExtent, object result)
+            => PublishSlot(resultSlot, liveExtent, ExecutableSlot.FromObject(result));
+
+        internal void PublishSlot(int resultSlot, int liveExtent, ExecutableSlot result)
         {
             // Inputs and their owner stay live through callbacks/suspension.
             // Retire only after success, preserving failed-disposal behavior.
@@ -392,8 +395,17 @@ internal sealed partial class LythonRuntime
 
         internal object TakeValue(int inputSlot, int liveExtent)
         {
-            var value = _items[inputSlot].RequireNotNull();
-            _items[inputSlot] = null!;
+            var value = _items[inputSlot].Object.RequireNotNull();
+            _items[inputSlot].Object = null!;
+            LiveExtent = liveExtent;
+            return value;
+        }
+
+        internal ExecutableSlot TakeSlotValue(int inputSlot, int liveExtent)
+        {
+            var value = _items[inputSlot];
+            if (value.IsUnassigned) _ = value.Object.RequireNotNull();
+            _items[inputSlot] = default;
             LiveExtent = liveExtent;
             return value;
         }
@@ -402,7 +414,7 @@ internal sealed partial class LythonRuntime
         // overwrite it. Its result goes directly to a binding instead.
         internal void ForgetResultInput(int resultSlot)
         {
-            _items[resultSlot] = null!;
+            _items[resultSlot].Object = null!;
             LiveExtent = resultSlot;
         }
 
@@ -434,13 +446,13 @@ internal sealed partial class LythonRuntime
 
         internal bool TryAdvanceNativeIteration(int slot, out PyIterationResult next)
         {
-            switch (_items[slot])
+            switch (_items[slot].Object)
             {
                 case PyStringOps.CasedWhitespaceIteration words:
                     next = words.MoveNext();
                     return true;
                 case PyList or PyTuple:
-                    next = PyIteration.AdvanceBuiltinSequence(_items[slot], ref _nativeIterationPositions![slot - _firstTemporarySlot]);
+                    next = PyIteration.AdvanceBuiltinSequence(_items[slot].Object!, ref _nativeIterationPositions![slot - _firstTemporarySlot]);
                     return true;
                 default:
                     next = PyIterationResult.End;
@@ -448,13 +460,13 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        public ReadOnlyMemory<object?> Slice(int start, int count) => _items.AsMemory(start, count);
+        public Memory<ExecutableSlot> Slice(int start, int count) => _items.AsMemory(start, count);
 
         internal readonly bool CanRetireWithoutCleanup(int liveExtent)
         {
             if (HasPendingDisposals) return false;
             for (var i = Math.Min(LiveExtent - 1, _lastOwnedTemporarySlot); i >= liveExtent; i--)
-                if (_items[i] is PyIteration.Cursor or ExecutableTemporaryValue) return false;
+                if (_items[i].Reference is PyIteration.Cursor or ExecutableTemporaryValue) return false;
             return true;
         }
 
@@ -470,21 +482,21 @@ internal sealed partial class LythonRuntime
             // Still clear every retired guest reference after private cleanup.
             for (var i = Math.Min(LiveExtent - 1, _lastOwnedTemporarySlot); i >= newCount; i--)
             {
-                if (DeferAsyncDisposal && _items[i] is PyIteration.Cursor cursor)
+                if (DeferAsyncDisposal && _items[i].Reference is PyIteration.Cursor cursor)
                 {
                     if (_pendingDisposalTail is null) _pendingDisposalHead = cursor;
                     else _pendingDisposalTail.NextPendingDisposal = cursor;
                     _pendingDisposalTail = cursor;
                     // Ownership moved to the pending chain. A later synchronous
                     // disposal can fail; retrying the trim must not enqueue twice.
-                    _items[i] = null!;
+                    _items[i].Object = null!;
                 }
-                else if (_items[i] is ExecutableTemporaryValue temporary)
+                else if (_items[i].Reference is ExecutableTemporaryValue temporary)
                 {
                     // Ownership leaves this slot before cleanup can reenter or
                     // fail, just as on the native and asynchronous paths. A retry
                     // must not dispose a returned loan that now has another user.
-                    _items[i] = null!;
+                    _items[i].Object = null!;
                     temporary.Dispose();
                 }
             }
@@ -558,7 +570,7 @@ internal sealed partial class LythonRuntime
     internal static object? ExecuteExecutableCodeObject(
         ExecutableCodeObject codeObject,
         ExecutionContext context,
-        BoundCallArguments boundArguments,
+        BoundFunctionArguments boundArguments,
         IReadOnlyList<ExecutableCell>? closureCells,
         bool argumentsAreLocals = false,
         LythonSourceSpan? entrySpan = null,
@@ -588,7 +600,7 @@ internal sealed partial class LythonRuntime
     internal static async ValueTask<object?> ExecuteExecutableCodeObjectAsync(
         ExecutableCodeObject codeObject,
         ExecutionContext context,
-        BoundCallArguments boundArguments,
+        BoundFunctionArguments boundArguments,
         IReadOnlyList<ExecutableCell>? closureCells,
         bool argumentsAreLocals = false,
         LythonSourceSpan? entrySpan = null,
@@ -634,7 +646,7 @@ internal sealed partial class LythonRuntime
     private static void InitializeExecutableFrame(
         ExecutableCodeObject codeObject,
         ExecutionContext context,
-        BoundCallArguments boundArguments,
+        BoundFunctionArguments boundArguments,
         IReadOnlyList<ExecutableCell>? closureCells,
         bool argumentsAreLocals,
         PyExecutableFunction? lookupOwner = null,
@@ -647,7 +659,7 @@ internal sealed partial class LythonRuntime
     private static ExecutableWorkState CreateExecutableWorkState(
         ExecutableCodeObject codeObject,
         ExecutionContext context,
-        BoundCallArguments boundArguments,
+        BoundFunctionArguments boundArguments,
         IReadOnlyList<ExecutableCell>? closureCells,
         bool argumentsAreLocals,
         PyExecutableFunction? lookupOwner = null,
@@ -668,7 +680,7 @@ internal sealed partial class LythonRuntime
         try
         {
             var locals = stack.Values;
-            var argumentValues = boundArguments.Values ?? Array.Empty<object>();
+            var argumentValues = boundArguments.Values ?? Array.Empty<ExecutableSlot>();
             for (var i = 0; !argumentsAreLocals && i < boundArguments.Assigned.Length; i++)
                 locals[i] = argumentValues[i];
             // A captured slot holds its cell, never a second cached value. The
@@ -676,7 +688,7 @@ internal sealed partial class LythonRuntime
             for (var i = 0; i < codeObject.CapturedLocalSlots.Count; i++)
             {
                 var slot = codeObject.CapturedLocalSlots[i];
-                locals[slot] = new ExecutableCell(locals[slot], context, codeObject.LocalNames[slot]);
+                locals[slot].Object = new ExecutableCell(locals[slot].Object, context, codeObject.LocalNames[slot]);
             }
 
             return new ExecutableWorkState

@@ -1,3 +1,4 @@
+using Slot = Lokad.Lython.Runtime.LythonRuntime.ExecutableSlot;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Tests.Harness;
@@ -17,9 +18,9 @@ public sealed class LambdaExecutableTests
         var outer = Assert.Single(module.Functions).CodeObject!;
         var lambda = Assert.Single(outer.Constants.OfType<ExecutableCreateLambda>()).CodeObject!;
         var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024 * 1024) },regexProvider:Utf8RegexProvider.Instance);
-        var values = new object[outer.LocalNames.Count];
+        var values = new Slot[outer.LocalNames.Count];
         var cell = new LythonRuntime.ExecutableCell(BigInteger.One);
-        values[outer.LocalNameToSlot["value"]] = cell;
+        values[outer.LocalNameToSlot["value"]].Object = cell;
         context._execution = new() { Code = outer, Locals = values };
         context.EnterExecutableSlots();
         var capture = typeof(LythonRuntime).GetMethod("CaptureExecutableClosures", BindingFlags.Static | BindingFlags.NonPublic)!

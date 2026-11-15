@@ -82,7 +82,7 @@ internal sealed partial class LythonRuntime
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-        private static async ValueTask<object> ReplaceAsync(PyDate date, BoundCallArguments bound,
+        private static async ValueTask<object> ReplaceAsync(PyDate date, BoundBuiltinArguments bound,
             LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             var arguments = bound.Values;
@@ -192,7 +192,7 @@ internal sealed partial class LythonRuntime
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-        private static async ValueTask<object> ReplaceAsync(PyTime time, BoundCallArguments bound,
+        private static async ValueTask<object> ReplaceAsync(PyTime time, BoundBuiltinArguments bound,
             LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             var arguments = bound.Values;
@@ -371,7 +371,7 @@ internal sealed partial class LythonRuntime
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
-        private static async ValueTask<object> ReplaceAsync(PyDateTime dateTime, BoundCallArguments bound,
+        private static async ValueTask<object> ReplaceAsync(PyDateTime dateTime, BoundBuiltinArguments bound,
             LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             var arguments = bound.Values;
@@ -566,7 +566,7 @@ internal sealed partial class LythonRuntime
         return text.AsString();
     }
 
-    private static bool IsAssigned(BoundCallArguments bound, int index)
+    private static bool IsAssigned(BoundBuiltinArguments bound, int index)
         => index < bound.Assigned.Length && bound.Assigned[index];
 
     private static string IsoformatTypeName(object? value, LythonRuntime.ExecutionContext context)

@@ -96,12 +96,12 @@ internal sealed partial class LythonRuntime
             LythonCallableSignature.Create("str.encode", ["encoding", "errors"], 0),
             static (receiver, arguments, span, context) => Encode((PyString)receiver, arguments, span, context));
 
-        private static object Encode(PyString text, ReadOnlyMemory<object?> arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object Encode(PyString text, ReceiverArguments arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            if (arguments.Length >= 1) RequireCodecNameType(arguments.Span[0]!, "str.encode()", "encoding", span);
-            if (arguments.Length == 2) RequireCodecNameType(arguments.Span[1]!, "str.encode()", "errors", span);
-            var encoding = arguments.Length >= 1 ? ParseTextEncoding(arguments.Span[0]!, "str.encode()", span) : TextEncodingMode.Utf8;
-            var errors = arguments.Length == 2 ? ParseTextErrors(arguments.Span[1]!, "str.encode()", span) : TextErrorMode.Strict;
+            if (arguments.Length >= 1) RequireCodecNameType(arguments[0]!, "str.encode()", "encoding", span);
+            if (arguments.Length == 2) RequireCodecNameType(arguments[1]!, "str.encode()", "errors", span);
+            var encoding = arguments.Length >= 1 ? ParseTextEncoding(arguments[0]!, "str.encode()", span) : TextEncodingMode.Utf8;
+            var errors = arguments.Length == 2 ? ParseTextErrors(arguments[1]!, "str.encode()", span) : TextErrorMode.Strict;
             return EncodeGuestBytes(text, encoding, errors, context, span);
         }
     }

@@ -1,3 +1,4 @@
+using Slot = Lokad.Lython.Runtime.LythonRuntime.ExecutableSlot;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Text;
@@ -39,7 +40,7 @@ public sealed class FunctionWorkspaceOwnershipTests
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
             var values = context.MemoryGovernor.RentFunctionWorkspace(1, span);
-            try { Assert.All(values, value => Assert.Null(value)); Checked = true; }
+            try { Assert.All(values, value => Assert.Null(value.Object)); Checked = true; }
             finally { context.MemoryGovernor.ReturnFunctionWorkspace(values, values.Length); }
             return PyNone.Instance;
         }
@@ -58,10 +59,10 @@ public sealed class FunctionWorkspaceOwnershipTests
             var first = governor.RentFunctionWorkspace(12, Span);
             var charge = budget.ReservedBytes;
             Assert.True(charge > 0);
-            first[11] = new object();
+            first[11].Object = new object();
             governor.ReturnFunctionWorkspace(first, first.Length);
             Assert.Equal(charge, budget.ReservedBytes);
-            Assert.All(first, value => Assert.Null(value));
+            Assert.All(first, value => Assert.Null(value.Object));
             var second = governor.RentFunctionWorkspace(12, Span);
             Assert.Same(first, second);
             Assert.Equal(charge, budget.ReservedBytes);
@@ -101,15 +102,15 @@ public sealed class FunctionWorkspaceOwnershipTests
         var governor = new MemoryGovernor(owner);
         var active = governor.RentFunctionWorkspace(12, Span);
         var charge = budget.ReservedBytes;
-        active[0] = new object();
+        active[0] = Slot.FromObject(new object());
         var idle = governor.RentFunctionWorkspace(12, Span);
         Assert.NotSame(active, idle);
         governor.ReturnFunctionWorkspace(idle, idle.Length);
         governor.EndWorkspaceReuse();
         Assert.Equal(charge, budget.ReservedBytes);
-        Assert.NotNull(active[0]);
+        Assert.NotNull(active[0].Object);
         governor.ReturnFunctionWorkspace(active, active.Length);
-        Assert.All(active, value => Assert.Null(value));
+        Assert.All(active, value => Assert.Null(value.Object));
         Assert.Equal(0, budget.ReservedBytes);
         governor.EndWorkspaceReuse();
         Assert.Equal(0, budget.ReservedBytes);
@@ -118,7 +119,7 @@ public sealed class FunctionWorkspaceOwnershipTests
     [Fact]
     public void ReturnedCapacityRemainsFundedThroughSmallerBorrow()
     {
-        var budget = new LythonMemoryBudget(256);
+        var budget = new LythonMemoryBudget(MemoryGovernor.WorkspaceBytes(12));
         using var owner = budget.CreateScope();
         var governor = new MemoryGovernor(owner);
         var first = governor.RentFunctionWorkspace(12, Span);
@@ -151,19 +152,19 @@ public sealed class FunctionWorkspaceOwnershipTests
         var baseline = budget.ReservedBytes;
         var governor = context.MemoryGovernor;
         var previous = governor.RentFunctionWorkspace(64, Span);
-        previous[63] = new object();
+        previous[63] = Slot.FromObject(new object());
         governor.ReturnFunctionWorkspace(previous, previous.Length);
-        var bound = function.BindCallOperands([retained], Span, context, receiver: null, callSite: null);
+        var bound = function.BindCallOperands([Slot.FromObject(retained)], Span, context, receiver: null, callSite: null);
         Assert.Equal(1, bound.Assigned.Length);
         Assert.True(bound.Values.Length >= function.CodeObject.ValueStorageCapacity);
-        Assert.Same(retained, bound.Values[0]);
-        Assert.All(bound.Values.Skip(1), value => Assert.Null(value));
+        Assert.Same(retained, bound.Values[0].Object);
+        Assert.All(bound.Values.Skip(1), value => Assert.Null(value.Object));
         var charge = MemoryGovernor.WorkspaceBytes(bound.Values.Length);
         Assert.Equal(baseline + charge, budget.ReservedBytes);
         governor.EndWorkspaceReuse();
         Assert.Equal(baseline + charge, budget.ReservedBytes);
         LythonRuntime.ReturnBoundArguments(bound);
-        Assert.All(bound.Values, value => Assert.Null(value));
+        Assert.All(bound.Values, value => Assert.Null(value.Object));
         Assert.Equal(baseline, budget.ReservedBytes);
         Assert.Same(retained, context.Variables["retained"]);
         Assert.Equal(16000, retained.ByteLength);
@@ -174,7 +175,7 @@ public sealed class FunctionWorkspaceOwnershipTests
     [Fact]
     public void FirstRefusalCannotRecoverThroughCachedCapacityAndCleanupStillRefundsIt()
     {
-        var budget = new LythonMemoryBudget(256);
+        var budget = new LythonMemoryBudget(MemoryGovernor.WorkspaceBytes(12));
         using var owner = budget.CreateScope();
         var governor = new MemoryGovernor(owner);
         var cached = governor.RentFunctionWorkspace(12, Span);
@@ -186,8 +187,52 @@ public sealed class FunctionWorkspaceOwnershipTests
         Assert.Equal(LythonFailureReason.SharedMemoryAllowance, first.Attribution?.Reason);
         Assert.Equal(1, first.Attribution?.Requested);
         Assert.Equal(Span, first.Span);
-        Assert.Equal(256, budget.ReservedBytes);
+        Assert.Equal(MemoryGovernor.WorkspaceBytes(12), budget.ReservedBytes);
         governor.EndWorkspaceReuse();
         Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Fact]
+    public void RefusedLoanPreservesActiveArgumentsAndTheFirstOrigin()
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var owner = budget.CreateScope();
+        var hook = new AdmissionHookMemoryBudget(owner);
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = hook });
+        var governor = context.MemoryGovernor;
+        var baseline = budget.ReservedBytes;
+        var active = governor.RentFunctionWorkspace(32, Span, context);
+        active[0].Object = new System.Numerics.BigInteger(37);
+        var charge = budget.ReservedBytes;
+        hook.RefuseGrowth = _ => true;
+        var first = Assert.Throws<LythonRuntimeException>(() => governor.RentFunctionWorkspace(64, Span, context));
+        Assert.Equal(LythonFailureReason.SharedMemoryAllowance, first.Attribution?.Reason);
+        Assert.Same(Span, first.Span);
+        Assert.Same(first, Assert.Throws<LythonRuntimeException>(() => governor.RentFunctionWorkspace(32, Span, context)));
+        Assert.Equal(charge, budget.ReservedBytes);
+        Assert.Equal(new System.Numerics.BigInteger(37), Assert.IsType<System.Numerics.BigInteger>(active[0].Object));
+        governor.ReturnFunctionWorkspace(active, active.Length);
+        governor.EndWorkspaceReuse();
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
+    [Fact]
+    public void CancellationDuringAdmissionUnwindsUnallocatedFunctionSlots()
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var owner = budget.CreateScope();
+        using var cancellation = new CancellationTokenSource();
+        var hook = new AdmissionHookMemoryBudget(owner);
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
+            new() { MemoryBudget = hook, CancellationToken = cancellation.Token });
+        var baseline = budget.ReservedBytes;
+        hook.AfterGrowth = _ => cancellation.Cancel();
+        var failure = Assert.Throws<LythonRuntimeException>(() =>
+            context.MemoryGovernor.RentFunctionWorkspace(32, Span, context));
+        Assert.Equal(LythonFailureReason.Cancelled, failure.Attribution?.Reason);
+        Assert.Same(Span, failure.Span);
+        Assert.Equal(baseline, budget.ReservedBytes);
+        context.MemoryGovernor.EndWorkspaceReuse();
+        Assert.Equal(baseline, budget.ReservedBytes);
     }
 }

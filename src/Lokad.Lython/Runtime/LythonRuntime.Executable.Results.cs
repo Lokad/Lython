@@ -9,18 +9,25 @@ internal sealed partial class LythonRuntime
         private void PublishInstructionResult(in ExecutableInstruction instruction, object value)
             => PublishInstructionResult(ref _execution, this, instruction, value);
 
+        private void PublishInstructionResult(in ExecutableInstruction instruction, ExecutableSlot value)
+            => PublishInstructionResult(ref _execution, this, instruction, value);
+
         private static void PublishInstructionResult(ref ExecutableWorkState execution,
             ExecutionContext? invocation, in ExecutableInstruction instruction, object value)
+            => PublishInstructionResult(ref execution, invocation, instruction, ExecutableSlot.FromObject(value));
+
+        private static void PublishInstructionResult(ref ExecutableWorkState execution,
+            ExecutionContext? invocation, in ExecutableInstruction instruction, ExecutableSlot value)
         {
             if (!instruction.HasLocalResult)
             {
-                execution.Stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, value);
+                execution.Stack.PublishSlot(instruction.ResultSlot, instruction.LiveExtent, value);
             }
             else CompleteLocalResult(ref execution, invocation, instruction, value);
         }
 
         private static void CompleteLocalResult(ref ExecutableWorkState execution,
-            ExecutionContext? invocation, in ExecutableInstruction instruction, object value)
+            ExecutionContext? invocation, in ExecutableInstruction instruction, ExecutableSlot value)
         {
             // Preserve the original input retirement and its disposal order.
             // Pending cleanup must finish before the binding becomes visible;
@@ -28,7 +35,7 @@ internal sealed partial class LythonRuntime
             if (instruction.LiveExtent < execution.Stack.LiveExtent) execution.Stack.RetireTo(instruction.LiveExtent);
             if (execution.Stack.HasPendingDisposals)
             {
-                execution.Stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, value);
+                execution.Stack.PublishSlot(instruction.ResultSlot, instruction.LiveExtent, value);
                 return;
             }
 

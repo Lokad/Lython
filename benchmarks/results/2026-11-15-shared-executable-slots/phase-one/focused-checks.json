@@ -1,0 +1,44 @@
+[
+  {
+    "name": "probe",
+    "framework": "net11.0",
+    "exitCode": 0,
+    "elapsedSeconds": 13.512070700060576,
+    "log": ".git\\agent-notes\\review-20261031\\shared-slots-r373\\net11.0-probe.log"
+  },
+  {
+    "name": "Lokad.Lython.Tests",
+    "framework": "net11.0",
+    "exitCode": 0,
+    "elapsedSeconds": 6.540954600088298,
+    "log": ".git\\agent-notes\\review-20261031\\shared-slots-r373\\net11.0-Lokad.Lython.Tests.log"
+  },
+  {
+    "name": "Lokad.Lython.PublicApi.Tests",
+    "framework": "net11.0",
+    "exitCode": 0,
+    "elapsedSeconds": 81.49131780024618,
+    "log": ".git\\agent-notes\\review-20261031\\shared-slots-r373\\net11.0-Lokad.Lython.PublicApi.Tests.log"
+  },
+  {
+    "name": "probe",
+    "framework": "net10.0",
+    "exitCode": 0,
+    "elapsedSeconds": 16.956318899989128,
+    "log": ".git\\agent-notes\\review-20261031\\shared-slots-r373\\net10.0-probe.log"
+  },
+  {
+    "name": "Lokad.Lython.Tests",
+    "framework": "net10.0",
+    "exitCode": 0,
+    "elapsedSeconds": 8.3711163001135,
+    "log": ".git\\agent-notes\\review-20261031\\shared-slots-r373\\net10.0-Lokad.Lython.Tests.log"
+  },
+  {
+    "name": "Lokad.Lython.PublicApi.Tests",
+    "framework": "net10.0",
+    "exitCode": 0,
+    "elapsedSeconds": 86.08559050038457,
+    "log": ".git\\agent-notes\\review-20261031\\shared-slots-r373\\net10.0-Lokad.Lython.PublicApi.Tests.log"
+  }
+]

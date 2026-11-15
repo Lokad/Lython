@@ -1,3 +1,4 @@
+using Slot = Lokad.Lython.Runtime.LythonRuntime.ExecutableSlot;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Calls;
@@ -43,7 +44,7 @@ public sealed class BoundBoxCleanupTests
             [CallArgumentValue.Positional(1), CallArgumentValue.Positional(2)], Span, plan, context);
         LythonRuntime.ReturnBoundArguments(second);
         Assert.Same(first.Values, second.Values);
-        Assert.All(second.Values, value => Assert.Null(value));
+        Assert.All(second.Values, value => Assert.Null(value.Object));
         context.State.CloseResources();
     }
 
@@ -69,7 +70,7 @@ public sealed class BoundBoxCleanupTests
             [],
             new Dictionary<string, object>(),
             ScopeDirectiveFacts.Empty);
-        var box = fun.BindCallOperands([1, 2], Span, closure, receiver: null, callSite: null);
+        var box = fun.BindCallOperands([Slot.FromObject(1), Slot.FromObject(2)], Span, closure, receiver: null, callSite: null);
         LythonRuntime.ReturnBoundArguments(box);
 
         // Zero recursion depth trips inside EnterInvocationFrame, after the
@@ -78,10 +79,10 @@ public sealed class BoundBoxCleanupTests
             fun.Invoke([CallArgumentValue.Positional(1), CallArgumentValue.Positional(2)], Span, closure));
         Assert.Equal("RecursionError", failure.ExceptionType);
 
-        var again = fun.BindCallOperands([1, 2], Span, closure, receiver: null, callSite: null);
+        var again = fun.BindCallOperands([Slot.FromObject(1), Slot.FromObject(2)], Span, closure, receiver: null, callSite: null);
         LythonRuntime.ReturnBoundArguments(again);
         Assert.Same(box.Values, again.Values);
-        Assert.All(again.Values, value => Assert.Null(value));
+        Assert.All(again.Values, value => Assert.Null(value.Object));
         closure.State.CloseResources();
     }
 
@@ -121,7 +122,7 @@ public sealed class BoundBoxCleanupTests
             Span, plan, context);
         LythonRuntime.ReturnBoundArguments(again);
         Assert.Same(box.Values, again.Values);
-        Assert.All(again.Values, value => Assert.Null(value));
+        Assert.All(again.Values, value => Assert.Null(value.Object));
         context.State.CloseResources();
         GC.KeepAlive(instance);
     }

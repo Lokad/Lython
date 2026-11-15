@@ -68,7 +68,7 @@ internal sealed partial class LythonRuntime
         }
 
         internal static PyGenerator Create(ExecutableCodeObject code, ExecutionContext frame, LythonSourceSpan span,
-            IReadOnlyList<ExecutableCell>? closureCells = null, BoundCallArguments arguments = default)
+            IReadOnlyList<ExecutableCell>? closureCells = null, BoundFunctionArguments arguments = default)
         {
             // Fund locals, cells, caches and handler/delegation state. The fixed
             // operand workspace is admitted separately before construction.
@@ -82,7 +82,7 @@ internal sealed partial class LythonRuntime
         }
 
         private PyGenerator(ExecutableCodeObject code, ExecutionContext frame, LythonSourceSpan span,
-            IReadOnlyList<ExecutableCell>? closureCells, BoundCallArguments arguments)
+            IReadOnlyList<ExecutableCell>? closureCells, BoundFunctionArguments arguments)
         {
             _frame = frame;
             // Mirrored namespaces remain authoritative for retained cells while
