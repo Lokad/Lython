@@ -99,7 +99,8 @@ internal sealed partial class LythonRuntime
     }
 
     private static async ValueTask AppendInterpolatedStringPartAsync(GovernedByteBuilder output, object value,
-        char? conversion, string? specifier, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
+        char? conversion, string? specifier, ExecutionContext context, LythonSourceSpan span, bool asynchronous,
+        InterpolatedFormatSpecifier? prepared = null)
     {
         if (value is PyInstance instance)
         {
@@ -110,7 +111,7 @@ internal sealed partial class LythonRuntime
             context.CheckExecution(span);
             output.Append(rendered);
         }
-        else AppendInterpolatedStringPart(output, value, conversion, specifier, context, span);
+        else AppendInterpolatedStringPart(output, value, conversion, specifier, context, span, prepared);
         context.CheckExecution(span);
     }
 
@@ -185,7 +186,7 @@ internal sealed partial class LythonRuntime
         // Standalone string formatting preserves an unchanged input's identity.
         if (value is PyString text)
         {
-            var stringSpec = prepared ?? ParseInterpolatedFormatSpecifier(formatSpecifier, value, span);
+            var stringSpec = prepared ?? ParseInterpolatedFormatSpecifier(formatSpecifier, value, span, context.State.CancellationToken);
             ValidateStringFormatSpecifier(value, formatSpecifier, stringSpec, span);
             return PyStringOps.FormatStringValue(text, stringSpec.Width, stringSpec.Precision,
                 new Rune(stringSpec.Fill >= 0 ? stringSpec.Fill : stringSpec.ZeroPad ? '0' : ' '), stringSpec.Align ?? '<', context, span);
@@ -208,7 +209,7 @@ internal sealed partial class LythonRuntime
             AppendComplexValue(output, complex, formatSpecifier, context, span, prepared);
             return;
         }
-        var spec = prepared ?? ParseInterpolatedFormatSpecifier(formatSpecifier, value, span);
+        var spec = prepared ?? ParseInterpolatedFormatSpecifier(formatSpecifier, value, span, context.State.CancellationToken);
         if (TryAppendNumericValue(output, value, spec, context, span)) return;
 
         ValidateStringFormatSpecifier(value, formatSpecifier, spec, span);
@@ -920,16 +921,18 @@ internal sealed partial class LythonRuntime
 
     // Native grammar does not constrain custom __format__. Invalid or oversized
     // literal specs must still reach the original runtime call and error order.
-    internal static InterpolatedFormatSpecifier? PrepareConstantFormatSpecifier(string? text, LythonSourceSpan span)
+    internal static InterpolatedFormatSpecifier? PrepareConstantFormatSpecifier(string? text, LythonSourceSpan span,
+        CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(text)) return null;
-        try { return ParseInterpolatedFormatSpecifier(text, PyNone.Instance, span); }
+        try { return ParseInterpolatedFormatSpecifier(text, PyNone.Instance, span, cancellationToken); }
         catch (LythonRuntimeException error) when (error.Attribution is null && error.ExceptionType == "ValueError") { return null; }
         catch (ArgumentException) { return null; }
         catch (OverflowException) { return null; }
     }
 
-    private static InterpolatedFormatSpecifier ParseInterpolatedFormatSpecifier(string text, object value, LythonSourceSpan span)
+    private static InterpolatedFormatSpecifier ParseInterpolatedFormatSpecifier(string text, object value, LythonSourceSpan span,
+        CancellationToken cancellationToken = default)
     {
         var index = 0;
         var fill = -1;
@@ -976,6 +979,7 @@ internal sealed partial class LythonRuntime
         var widthStart = index;
         while (index < text.Length && char.IsAsciiDigit(text[index]))
         {
+            if ((index & 2047) == 0) cancellationToken.ThrowIfCancellationRequested();
             index++;
         }
 
@@ -997,6 +1001,7 @@ internal sealed partial class LythonRuntime
             var precisionStart = index;
             while (index < text.Length && char.IsAsciiDigit(text[index]))
             {
+                if ((index & 2047) == 0) cancellationToken.ThrowIfCancellationRequested();
                 index++;
             }
 

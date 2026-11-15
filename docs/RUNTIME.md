@@ -1016,25 +1016,31 @@ inventory is maintained. Raw scans remain separate from mutation-checked iterati
 Private construction failure refunds only unpublished backing; live views cannot
 use that rollback. Conservative storage estimates can change admission thresholds.
 
-`str.format` and `format_map` scan field structure and nested specifications as
-borrowed UTF-8. Names, suffixes and the final specification decode only at the
-existing resolver/formatter boundary. Builtin numeric and padded string fields
-append directly into the final builder using the same formatter as f-strings.
-Method argument copies preflight before allocation. One operation-owned scratch
-reservation conservatively covers template metadata, nesting and replacement
-overlap; expanded specifications admit additional capacity. It stays funded until
-all callbacks settle and can reject a tight allowance earlier. Compiled templates
-retain their separate owner, and final strings remain funded. RunAsync awaits
-lookup and formatting hooks in both methods; structural scans and resumed callbacks
-observe the current token. User hook return strings keep their own ownership.
+`str.format` and `format_map` prepare field structure, names, suffixes and constant
+specifications once on the bound method. Literal segments borrow UTF-8; builtin
+numeric and padded string fields append directly into final output through the
+same formatter as f-strings. Immediate calls reuse the existing execution member
+cache. Layouts live in the execution owner, separately from shared compiled literals;
+they hold no guest arguments, callbacks or cancellation token. Reusing an internal
+method with another execution owner prepares a layout funded by that owner.
+
+Preparation admits conservative capacity, metadata and replacement overlap before
+allocation. Its charge remains until execution/result cleanup, including when a
+method is no longer referenced; many distinct one-use methods can reject earlier.
+Method argument copies and expanded nested specifications have operation-owned
+storage, funded until all callbacks settle. Final strings and user hook return
+strings keep their own ownership. RunAsync awaits actual lookup and formatting
+hooks. Preparation, execution, long numeric-spec scans and resumed callbacks observe
+the current token. Cached grammar errors are raised at their original field position,
+after earlier lookups/hooks; native-invalid specs still reach custom formatters.
 
 Constant f-string specifications keep an immutable native layout with the compiled
 program, funded by its compilation owner. The existing formatter reuses it without
 per-field grammar parsing or descriptor allocation. Value-dependent checks remain
 at execution; custom and date formatters receive the original raw specification.
-Invalid native grammar can still reach a custom formatter. Dynamic specifications
-and other formatting APIs use the same parser at their actual operation. Layouts
-retain no execution token, callback state or separate cache owner.
+Invalid native grammar can still reach a custom formatter. Method layouts share
+this native spec parser; dynamic specifications use it at their actual operation.
+Layouts retain no execution token, callback state or separate cache owner.
 
 Multi-part f-strings use their literal bytes and static widths to plan modest
 initial builder storage, shared by ordinary execution and native helpers. Larger

@@ -1,0 +1,20 @@
+[
+  {
+    "label": "errors",
+    "source": "def check():\n    events=[]\n    class Field:\n     def __getitem__(self,key):\n      events.append('get:'+key)\n      return self\n     def __format__(self,spec):\n      with open('value') as stream:\n       events.append('format:'+spec)\n       return stream.read()\n    cases=[('{0:>4}|{',['format:>4']),\n           ('{0[a]!z}',['get:a']),\n           ('{0[a]:{width:{width}}}',['get:a']),\n           ('{0[missing}',[]),\n           ('{0[é]🐍}',['get:é'])]\n    for template,expected in cases:\n     method=template.format\n     for repeat in range(2):\n      events.clear()\n      try:method(Field(),width=4)\n      except ValueError:pass\n      else:raise AssertionError('deferred error missing')\n      assert events==expected,(events,expected)\n    events.clear()\n    method='{0:9999999999999999999999999999d}'.format\n    assert method(Field())=='ok'\n    assert method(Field())=='ok'\n    assert len(events)==2\n    return 'ok'\nassert check()=='ok'\n",
+    "exitCode": 0,
+    "stderr": ""
+  },
+  {
+    "label": "mapping-errors",
+    "source": "def check():\n    events=[]\n    class Field:\n     def __getitem__(self,key):\n      events.append('get:'+key)\n      return self\n     def __format__(self,spec):\n      with open('value') as stream:\n       events.append('format:'+spec)\n       return stream.read()\n    cases=[('{v:>4}|{',['format:>4']),\n           ('{v[a]!z}',['get:a']),\n           ('{v[a]:{width:{width}}}',['get:a']),\n           ('{v[missing}',[]),\n           ('{v[é]🐍}',['get:é'])]\n    for template,expected in cases:\n     method=template.format_map\n     for repeat in range(2):\n      events.clear()\n      try:method({'v':Field(),'width':4})\n      except ValueError:pass\n      else:raise AssertionError('deferred error missing')\n      assert events==expected,(events,expected)\n    events.clear()\n    method='{v:9999999999999999999999999999d}'.format_map\n    assert method({'v':Field()})=='ok'\n    assert method({'v':Field()})=='ok'\n    assert len(events)==2\n    return 'ok'\nassert check()=='ok'\n",
+    "exitCode": 0,
+    "stderr": ""
+  },
+  {
+    "label": "types-nested",
+    "source": "def check():\n    from datetime import date\n    class Field:\n     def __format__(self,spec):\n      with open('value') as stream:return spec+':'+stream.read()\n    method='[{0:>8}]'.format\n    values=[7,'é',Field(),3.5,complex(1,2),date(2024,1,2)]\n    expected=['[       7]','[       é]','[>8:ok]','[     3.5]','[  (1+2j)]','[>8]']\n    for repeat in range(2):\n     for value,text in zip(values,expected):assert method(value)==text\n    nested='[{0:>{width}}]'.format\n    assert nested('é',width=2)=='[ é]'\n    assert nested('é',width=4)=='[   é]'\n    assert nested(Field(),width=3)=='[>3:ok]'\n    return 'ok'\nassert check()=='ok'\n",
+    "exitCode": 0,
+    "stderr": ""
+  }
+]

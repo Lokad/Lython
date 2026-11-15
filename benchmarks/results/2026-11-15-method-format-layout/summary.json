@@ -1,0 +1,133 @@
+{
+  "complete": true,
+  "elapsedSeconds": 142.30813435697928,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "rows": [
+    {
+      "case": "scripts.report-render.format-method.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 4.451425018018018,
+        "reference": 5.41641934065934,
+        "candidate-control": 4.372341584070796,
+        "reference-control": 5.3905998777777775
+      },
+      "cpuMilliseconds": {
+        "candidate": 4.684684684684685,
+        "reference": 5.604395604395605,
+        "candidate-control": 4.690265486725664,
+        "reference-control": 5.555555555555555
+      },
+      "elapsedChangePercent": [
+        -19.276161813229344,
+        -18.889517248435606,
+        -17.81609328874182,
+        -17.422455404850513
+      ],
+      "cpuChangePercent": [
+        -16.410528175234063,
+        -16.310949158424425,
+        -15.67567567567567,
+        -15.575221238938042
+      ],
+      "referenceSpreadPercent": 0.4789719783877988,
+      "candidateSpreadPercent": 1.8087203944755048
+    },
+    {
+      "case": "scripts.report-render.format-method.large",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "candidate": 4.391744261682243,
+        "reference": 5.477767623529412,
+        "candidate-control": 4.475910819047619,
+        "reference-control": 5.474157597701149
+      },
+      "cpuMilliseconds": {
+        "candidate": 4.672897196261682,
+        "reference": 5.88235294117647,
+        "candidate-control": 4.761904761904763,
+        "reference-control": 5.747126436781609
+      },
+      "elapsedChangePercent": [
+        -19.82602104518313,
+        -19.773148958544073,
+        -18.28950903609674,
+        -18.23562367062176
+      ],
+      "cpuChangePercent": [
+        -20.560747663551393,
+        -19.047619047619023,
+        -18.69158878504672,
+        -17.142857142857125
+      ],
+      "referenceSpreadPercent": 0.06594669159285527,
+      "candidateSpreadPercent": 1.9164721885043479
+    },
+    {
+      "case": "scripts.report-render.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 2.825577795321638,
+        "candidate-control": 2.808198647058824,
+        "reference": 2.9160681172839507,
+        "candidate": 2.712045656976744
+      },
+      "cpuMilliseconds": {
+        "reference-control": 2.982456140350877,
+        "candidate-control": 3.0,
+        "reference": 3.1481481481481484,
+        "candidate": 2.9069767441860463
+      },
+      "elapsedChangePercent": [
+        -6.996491580492803,
+        -4.01801495371571,
+        -3.699140962646552,
+        -0.615065290065242
+      ],
+      "cpuChangePercent": [
+        -7.660738714090298,
+        -4.705882352941182,
+        -2.530779753761969,
+        0.588235294117645
+      ],
+      "referenceSpreadPercent": 3.20254222382903,
+      "candidateSpreadPercent": 3.5454045485822094
+    },
+    {
+      "case": "scripts.csv-invoice.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 6.58844712,
+        "candidate-control": 6.6968321756756755,
+        "reference": 6.698543146666666,
+        "candidate": 6.772571876712329
+      },
+      "cpuMilliseconds": {
+        "reference-control": 6.800000000000001,
+        "candidate-control": 6.756756756756757,
+        "reference": 6.800000000000001,
+        "candidate": 6.986301369863014
+      },
+      "elapsedChangePercent": [
+        -0.025542434429826066,
+        1.1051467225750455,
+        1.645077416598828,
+        2.7946609171893844
+      ],
+      "cpuChangePercent": [
+        -0.6359300476947549,
+        -0.6359300476947549,
+        2.739726027397249,
+        2.739726027397249
+      ],
+      "referenceSpreadPercent": 1.6710466770304189,
+      "candidateSpreadPercent": 1.130978036328223
+    }
+  ],
+  "retentionDecisionPending": false,
+  "CPythonRefreshed": false,
+  "retained": true,
+  "fullQualificationPending": true,
+  "reason": "Complete method template/field/native-spec construction reused through one executor;18.47%less allocation and17\u201320%whole-script elapsed/CPU support. Moving/adverse controls and conservative retained cache charge accepted explicitly. No external CPython speedup inferred."
+}

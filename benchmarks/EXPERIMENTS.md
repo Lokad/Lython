@@ -8619,3 +8619,6 @@ verified before unmount, all users joined. No CPU speedup or production change.
 
 
 [R417 complete method-format attribution](results/2026-11-15-method-format-attribution/README.md): qualifiedb06/8afb,1,052active samples/all unknowns retained. Repeated template/field construction selected for a reusable-layout design; no improvement/removable-share claim. B811quiet/goldens/cleanup pass, failed staging preserved. Native promotion/call transport remain debt.
+
+
+[R418 reusable method-format layout](results/2026-11-15-method-format-layout/README.md), retained9d071eba/8afb. One execution-owned layout replaces repeated scans/metadata/native specs for format/map; deferred errors/current tokens and existing ownership.12internal/682public each actual11/10 pass;3CPython programs.18.47%less report allocation,warm17.4–19.3%/fresh18.2–19.8%lower elapsed with CPU support. Moving f-string/adverse CSV controls and conservative retained charge accepted; full delivery pending, publication held. B812all gates/cleanup pass; original0edalias custody retained. Broader roadmap active.

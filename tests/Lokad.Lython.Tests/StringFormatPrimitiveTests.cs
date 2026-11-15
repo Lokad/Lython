@@ -9,7 +9,7 @@ public sealed class StringFormatPrimitiveTests
     // Keep primitive error/golden assertions on the production async API.
     private static Task<PyString> Format(PyString template, IReadOnlyList<object> positional,
         IReadOnlyDictionary<string, object>? keywords, Func<object, string, ValueTask<object>>? suffix,
-        Func<GovernedByteBuilder, object, char?, string?, ValueTask>? append,
+        Func<GovernedByteBuilder, object, char?, string?, LythonRuntime.InterpolatedFormatSpecifier?, ValueTask>? append,
         MemoryGovernor? governor, LythonSourceSpan? span, bool forbidPositionalFields = false)
         => PyStringOps.FormatAsync(template, positional, keywords, suffix, append, governor, span,
             forbidPositionalFields).AsTask();
@@ -19,7 +19,7 @@ public sealed class StringFormatPrimitiveTests
     {
         var captured = new List<(object Value, char? Conversion, string? Spec)>();
 
-        ValueTask FormatStub(GovernedByteBuilder output, object value, char? conversion, string? spec)
+        ValueTask FormatStub(GovernedByteBuilder output, object value, char? conversion, string? spec, LythonRuntime.InterpolatedFormatSpecifier? _)
         {
             captured.Add((value, conversion, spec));
             var rendered = value switch
@@ -85,7 +85,7 @@ public sealed class StringFormatPrimitiveTests
                 seenSuffix = suffix;
                 return new ValueTask<object>(current);
             },
-            (output, value, conversion, spec) => { output.AppendString("!"); return default; }, governor: null, span: null);
+            (output, value, conversion, spec, _) => { output.AppendString("!"); return default; }, governor: null, span: null);
 
         Assert.Equal("!", formatted.AsString());
         Assert.Equal("[a]b", seenSuffix);
@@ -101,7 +101,7 @@ public sealed class StringFormatPrimitiveTests
             [],
             keywords,
             (current, suffix) => new(current),
-            (output, value, conversion, spec) => { output.AppendString("!"); return default; }, governor: null, span: null);
+            (output, value, conversion, spec, _) => { output.AppendString("!"); return default; }, governor: null, span: null);
 
         Assert.Equal("!", named.AsString());
 
@@ -112,7 +112,7 @@ public sealed class StringFormatPrimitiveTests
                 [],
                 keywords,
                 (current, suffix) => new(current),
-                (output, value, conversion, spec) => { output.AppendString("!"); return default; }, governor: null, span: null,
+                (output, value, conversion, spec, _) => { output.AppendString("!"); return default; }, governor: null, span: null,
                 forbidPositionalFields: true));
 
             Assert.Equal("Format string contains positional fields", failure.Message);
@@ -133,7 +133,7 @@ public sealed class StringFormatPrimitiveTests
             [new BigInteger(1)],
             null,
             (current, suffix) => new(current),
-            (output, value, conversion, spec) => { output.AppendString("!"); return default; }, governor: null, span: null));
+            (output, value, conversion, spec, _) => { output.AppendString("!"); return default; }, governor: null, span: null));
 
         Assert.Equal("Unknown conversion specifier {", conversion.Message);
 
@@ -142,7 +142,7 @@ public sealed class StringFormatPrimitiveTests
             [PyString.FromString("ab"), new BigInteger(5), new BigInteger(6)],
             null,
             (current, suffix) => new(current),
-            (output, value, conversion, spec) => { output.AppendString("!"); return default; }, governor: null, span: null));
+            (output, value, conversion, spec, _) => { output.AppendString("!"); return default; }, governor: null, span: null));
 
         Assert.Equal("Max string recursion exceeded", recursion.Message);
     }

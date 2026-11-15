@@ -675,6 +675,11 @@ storage remains funded until the user settles; file cleanup precedes budget reus
 and returned output retains its owner. Primitive formatting checks keep nested
 specification order and scratch refunds; method protocol checks await real host work.
 
+[Reusable method templates](Lokad.Lython.PublicApi.Tests/FormatTemplateTests.cs)
+check repeated malformed templates after earlier hooks, Unicode suffixes, custom
+invalid native specs, mixed value types and nested widths. Repeated sync/delayed
+async executions return shared admission to baseline after result cleanup.
+
 [Prepared stores](Lokad.Lython.PublicApi.Tests/PreparedStoreTargetTests.cs) cover
 nested class-body loop/with targets, receiver/index order, starred aliases,
 target lambdas and class cells. Actual asynchronous setters keep storage funded

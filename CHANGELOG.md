@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Reuse execution-owned field and native-spec layouts in `str.format` and
+  `format_map`, replacing repeated template parsing and metadata construction.
+  Preserve deferred errors, custom hooks and current-token cancellation. Cached
+  layout capacity stays charged until execution cleanup and can reject earlier.
+
 - Append builtin `str.format` and `format_map` fields directly to final output,
   with operation-owned metadata storage. `str.format` now awaits supported hosted
   callbacks in RunAsync. Argument and conservative metadata admission can reject

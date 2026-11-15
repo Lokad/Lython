@@ -60,17 +60,32 @@ internal sealed partial class LythonRuntime
                     }, StrRemoveSuffixSignature),
                     "partition" => CreatePartitionMethod("partition", PyStringOps.Partition, StrPartitionSignature),
                     "rpartition" => CreatePartitionMethod("rpartition", PyStringOps.RPartition, StrRpartitionSignature),
-                    "format" => new CustomMethodCallable(
-                        (arguments, span, context) => FormatStringAsync(text, arguments, span, context, false).GetAwaiter().GetResult(),
-                        (arguments, span, context) => FormatStringAsync(text, arguments, span, context, true)),
-                    "format_map" => BoundCallable.Create(
-                        (arguments, span, context) => FormatMappingAsync(text, arguments[0], span, context, false).GetAwaiter().GetResult(),
-                        StrFormatMapSignature,
-                        (arguments, span, context) => FormatMappingAsync(text, arguments[0], span, context, true)),
+                    "format" => CreateFormattingMethod(false),
+                    "format_map" => CreateFormattingMethod(true),
                     _ => MissingMemberValue.Instance,
                 };
 
                 return !ReferenceEquals(value, MissingMemberValue.Instance);
+
+                ICallable CreateFormattingMethod(bool mapping)
+                {
+                    PyStringOps.FormatTemplate? prepared = null;
+                    PyStringOps.FormatTemplate Prepare(ExecutionContext context, LythonSourceSpan span)
+                    {
+                        context.CheckExecution(span);
+                        if (!ReferenceEquals(prepared?.Owner, context.MemoryGovernor))
+                            prepared = PyStringOps.PrepareFormatTemplate(text, context.MemoryGovernor, span, context.State.CancellationToken);
+                        return prepared!;
+                    }
+                    return mapping
+                        ? BoundCallable.Create(
+                            (arguments, span, context) => FormatMappingAsync(text, arguments[0], span, context, false, Prepare(context, span)).GetAwaiter().GetResult(),
+                            StrFormatMapSignature,
+                            (arguments, span, context) => FormatMappingAsync(text, arguments[0], span, context, true, Prepare(context, span)))
+                        : new CustomMethodCallable(
+                            (arguments, span, context) => FormatStringAsync(text, arguments, span, context, false, Prepare(context, span)).GetAwaiter().GetResult(),
+                            (arguments, span, context) => FormatStringAsync(text, arguments, span, context, true, Prepare(context, span)));
+                }
 
                 BoundCallable CreatePartitionMethod(
                     string methodName,
@@ -101,7 +116,7 @@ internal sealed partial class LythonRuntime
         }
 
         private static async ValueTask<object> FormatStringAsync(PyString text, CallArgumentValue[] arguments,
-            LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+            LythonSourceSpan span, ExecutionContext context, bool asynchronous, PyStringOps.FormatTemplate prepared)
         {
             try
             {
@@ -125,9 +140,9 @@ internal sealed partial class LythonRuntime
                 }
                 return await PyStringOps.FormatAsync(text, positional, keywords,
                     (current, suffix) => ResolveFormatFieldSuffixAsync(current, suffix, span, context, asynchronous),
-                    (output, value, conversion, spec) => AppendInterpolatedStringPartAsync(output, value, conversion,
-                        spec, context, span, asynchronous), context.MemoryGovernor, span,
-                    cancellationToken: context.State.CancellationToken).ConfigureAwait(false);
+                    (output, value, conversion, spec, nativeSpec) => AppendInterpolatedStringPartAsync(output, value, conversion,
+                        spec, context, span, asynchronous, nativeSpec), context.MemoryGovernor, span,
+                    cancellationToken: context.State.CancellationToken, prepared: prepared).ConfigureAwait(false);
             }
             catch (InvalidOperationException ex) { throw new LythonRuntimeException("ValueError", ex.Message, span); }
             catch (IndexOutOfRangeException ex) { throw new LythonRuntimeException("IndexError", ex.Message, span); }
@@ -138,15 +153,15 @@ internal sealed partial class LythonRuntime
         }
 
         private static async ValueTask<object> FormatMappingAsync(PyString text, object mapping,
-            LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+            LythonSourceSpan span, ExecutionContext context, bool asynchronous, PyStringOps.FormatTemplate prepared)
         {
             try
             {
                 return await PyStringOps.FormatAsync(text, [], null,
                     (current, suffix) => ResolveFormatFieldSuffixAsync(current, suffix, span, context, asynchronous),
-                    (output, value, conversion, spec) => AppendInterpolatedStringPartAsync(output, value, conversion, spec, context, span, asynchronous),
+                    (output, value, conversion, spec, nativeSpec) => AppendInterpolatedStringPartAsync(output, value, conversion, spec, context, span, asynchronous, nativeSpec),
                     context.MemoryGovernor, span, forbidPositionalFields: true,
-                    cancellationToken: context.State.CancellationToken, resolveKeyword: ResolveKeyword).ConfigureAwait(false);
+                    cancellationToken: context.State.CancellationToken, resolveKeyword: ResolveKeyword, prepared: prepared).ConfigureAwait(false);
             }
             catch (InvalidOperationException ex) { throw new LythonRuntimeException("ValueError", ex.Message, span); }
             catch (IndexOutOfRangeException ex) { throw new LythonRuntimeException("IndexError", ex.Message, span); }
