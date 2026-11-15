@@ -396,7 +396,7 @@ no numeric identity ledger or separate evaluator.
 Ordinary and native executable work use the same managed reference-plus-integer
 slots for final function arguments, locals and operands. Exact machine integers
 can stay private until observation; object reads cache one immutable Python value
-before exposing aliases, protocols, collections or public results. Wider integers retain
+when identity or an object representation is observed. Wider integers retain
 the exact-integer path. Compiled return and completion storage carries the same
 slots; cleanup that can observe a returning alias publishes its original identity
 before routing through finally. Public/callback results retain their object ABI.
@@ -405,6 +405,14 @@ Python `None`; only the logical parameter count travels with completed arguments
 Live defaults and genuinely suspending default protocols use the same slots.
 Builtins retain their object-array binding ABI; receiver
 methods borrow their caller's existing array window without conversion arrays.
+
+Computed tuples of unpublished machine integers can keep the same slots in their
+immutable backing. Closed arithmetic can read an item without boxing; observation
+publishes one canonical object, preserving aliases through indexing, iteration and
+derived containers. Already observed values and reference tuples keep object-array
+backing. A private item borrow can retain its whole source tuple until observation
+or slot retirement. Its owner stays funded; wider capacity, metadata and eventual
+boxes are admitted before allocation and can cause earlier shared-budget refusal.
 
 There is no separate native integer bank, loan or capacity fact. Small native
 prefixes use a fixed managed buffer; larger helpers use admitted final slots.

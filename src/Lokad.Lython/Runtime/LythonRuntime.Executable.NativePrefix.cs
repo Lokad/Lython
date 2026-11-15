@@ -127,6 +127,13 @@ internal sealed partial class LythonRuntime
                     {
                         var target = Read(instruction.InputStart, 0);
                         var key = Read(instruction.SecondInput, 1);
+                        if (target is PyTuple tuple && TryMachineInteger(key, out var tupleIndex)
+                            && tuple.TryBorrowInteger(tupleIndex, out var tupleItem))
+                        {
+                            _scope.CheckExecution(instruction.Span);
+                            Publish(instruction, tupleItem);
+                            break;
+                        }
                         if (target is not PyDict { HasProtocolKeys: false } dictionary || key is not PyString field) return false;
                         if (instruction.LookupCacheIndex >= 0 && dictionary.HasSharedRecordKeys)
                         {

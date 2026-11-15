@@ -1,0 +1,27 @@
+{
+  "reason": "Preparation inherited descriptive source/role/qualification fields from R390. Exact core/auxiliary/catalog hashes and actual worker Ready records are correct. Preserve raw identity; correct only descriptive provenance. No observation changed or repeated.",
+  "originalFields": {
+    "fullSourceIdentitySHA256": "165282b4629b436bbcaf1829b7b962596110e95bd98ce5cc51446e8d9295ae73",
+    "committedSourceProofSHA256": "8bbb96a8d174921f1cd440942727751ca474b596291d67e30231111d4d675899",
+    "qualification": "Prototype focused Release actual.NET11/10:193public/92internal each; full platform/stress/package pending if retained.",
+    "roleMeaning": {
+      "candidate": "R390",
+      "candidate-control": "R390",
+      "reference": "810379be",
+      "reference-control": "810379be"
+    }
+  },
+  "candidateSourceIdentity": {
+    "artifact": "sources-checks-and-observations.tar.xz!candidate-identity.json",
+    "sha256": "b70ea04e5505727b4a42cdc4e7d584bf9051a4e137c3d54671d7a60cffb4f0a5",
+    "coreSHA256": "1b88e3c7580caa0c8e9227628b61c3a68e12cc391c0c4c339749190b24d75876"
+  },
+  "referenceDelivery": "b58e2dc44d5b75669ec78e9027ae3d6ffb100d86; 2026-11-15-invocation-lifetime/delivery; cached43700041511GREEN",
+  "qualification": "R395 focused416public/171internal each actual.NET11/10 plus overlapping lifetime/admission supplements; full qualification pending",
+  "roleMeaning": {
+    "reference": "qualifiedb58f304",
+    "reference-control": "qualifiedb58f304",
+    "candidate": "R3951b88",
+    "candidate-control": "R3951b88"
+  }
+}

@@ -8344,3 +8344,19 @@ text +1.34..+4.55% remains adverse. Both targets pass 416public/171internal focu
 checks plus overlapping lifetime/admission supplements. Original reference-only
 allocation timeout and the bounded size correction survive. Quiet-VM CPU/control
 decision and full delivery are pending; no retained speedup or publication claim.
+
+[R396/B781](results/2026-11-15-tuple-operand-prototype/vm/summary.json) confirms
+original1b88 invoice elapsed−7.52..−6.06%/CPU−7.37..−6.42%, but text elapsed
++1.05..+5.71%/CPU+2.81..+7.48%; fulfillment/JSON remain inconclusive. All raw
+observations survive. Inherited descriptive R390 metadata is explicitly corrected
+without changing hashes, worker identities or timing, and without retiming.
+
+[R397 refinement/B782/B783](results/2026-11-15-tuple-operand-prototype/refined/README.md)
+retains22e5 for full qualification. The common accessor returns89→42IL bytes by
+factoring publication; no JIT-causality proof or inlining hint. Invoice elapsed
+−10.10..−8.55%, CPU−10.81..−6.42%; fulfillment−5.01..−3.85%/−4.62..−2.67%.
+Allocation remains−8.56%/−5.32%. Moving text/JSON controls get one same-bits
+confirmation; remaining small uncertainty is accepted explicitly, not neutrality
+or recovered original debt. Both targets418public/173internal plus alias controls
+pass. Full delivery and representative CPython refresh remain pending. No release,
+tag, repeated unchanged full qualification or completion of the broader objective.

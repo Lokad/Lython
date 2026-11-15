@@ -1,0 +1,294 @@
+{
+  "status": "retain",
+  "runtimeQualification": "Focused Release passed; full delivery pending",
+  "coreSHA256": "22e5b72c3d02a987758a2c84d08c61b4345fb11e7acac0394b5fef9d98e18141",
+  "referenceRevision": "b58e2dc44d5b75669ec78e9027ae3d6ffb100d86",
+  "sourcePair": [
+    {
+      "case": "scripts.csv-invoice.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "candidate": 6.7432418513513515,
+        "reference": 7.451305970149254,
+        "candidate-control": 6.81428402739726,
+        "reference-control": 7.500837939393939
+      },
+      "widerCpuMedianMilliseconds": {
+        "candidate": 6.891891891891892,
+        "reference": 7.611940298507463,
+        "candidate-control": 7.123287671232877,
+        "reference-control": 7.7272727272727275
+      },
+      "candidateOverReferenceElapsedPercent": [
+        -10.100152731786672,
+        -9.502550581528723,
+        -9.15302953541951,
+        -8.5491314583507
+      ],
+      "candidateOverReferenceWiderCpuPercent": [
+        -10.81081081081081,
+        -9.459459459459463,
+        -7.816277195809828,
+        -6.419554123019077
+      ],
+      "iqrPercent": {
+        "candidate": 1.2377811172173487,
+        "reference": 0.7319598387540984,
+        "candidate-control": 1.2831229735079364,
+        "reference-control": 1.5336609745726406
+      },
+      "referenceControlPercent": 0.6647421196111836,
+      "candidateControlPercent": 1.0535314854778877
+    },
+    {
+      "case": "scripts.csv-fulfillment.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "candidate": 7.60862143076923,
+        "reference": 7.982134634920635,
+        "candidate-control": 7.6752175,
+        "reference-control": 8.009532612903225
+      },
+      "widerCpuMedianMilliseconds": {
+        "candidate": 7.846153846153846,
+        "reference": 8.095238095238095,
+        "candidate-control": 7.878787878787879,
+        "reference-control": 8.225806451612904
+      },
+      "candidateOverReferenceElapsedPercent": [
+        -5.00542542879635,
+        -4.679364872115044,
+        -4.173965311841665,
+        -3.845050841136144
+      ],
+      "candidateOverReferenceWiderCpuPercent": [
+        -4.615384615384633,
+        -4.218657159833638,
+        -3.076923076923077,
+        -2.67379679144385
+      ],
+      "iqrPercent": {
+        "candidate": 0.39363736513367636,
+        "reference": 0.6451744155115036,
+        "candidate-control": 1.4497534079356948,
+        "reference-control": 0.8644910620232619
+      },
+      "referenceControlPercent": 0.3432412410425689,
+      "candidateControlPercent": 0.8752711622824982
+    },
+    {
+      "case": "scripts.text-summary-helpers.nonlocal-counter.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "reference-control": 1.3198761311475409,
+        "candidate-control": 1.1999964763092268,
+        "reference": 1.2120173894472361,
+        "candidate": 1.1951798148148147
+      },
+      "widerCpuMedianMilliseconds": {
+        "reference-control": 1.3934426229508197,
+        "candidate-control": 1.2718204488778055,
+        "reference": 1.2814070351758795,
+        "candidate": 1.2592592592592593
+      },
+      "candidateOverReferenceElapsedPercent": [
+        -9.447577192286316,
+        -9.082644348912272,
+        -1.3892188989219512,
+        -0.99181028611246
+      ],
+      "candidateOverReferenceWiderCpuPercent": [
+        -9.62962962962962,
+        -8.728179551122196,
+        -1.728395061728405,
+        -0.7481296758104827
+      ],
+      "iqrPercent": {
+        "reference-control": 1.58178332863262,
+        "candidate-control": 0.30150015797946955,
+        "reference": 1.4923328929384079,
+        "candidate": 0.5001448978724481
+      },
+      "referenceControlPercent": 8.8991084318927,
+      "candidateControlPercent": 0.4030072659115591
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "reference-control": 3.3944023958333336,
+        "candidate-control": 3.419324979020979,
+        "reference": 3.4032071805555555,
+        "candidate": 3.433651147887324
+      },
+      "widerCpuMedianMilliseconds": {
+        "reference-control": 3.5416666666666665,
+        "candidate-control": 3.5664335664335662,
+        "reference": 3.5416666666666665,
+        "candidate": 3.5211267605633805
+      },
+      "candidateOverReferenceElapsedPercent": [
+        0.4736061488560983,
+        0.7342259485274338,
+        0.8945669692316027,
+        1.1562787046747403
+      ],
+      "candidateOverReferenceWiderCpuPercent": [
+        -0.5799502899751396,
+        -0.5799502899751396,
+        0.6993006993007089,
+        0.6993006993007089
+      ],
+      "iqrPercent": {
+        "reference-control": 1.1586223720508582,
+        "candidate-control": 1.415398367426496,
+        "reference": 0.6091017077652998,
+        "candidate": 0.3211747685418119
+      },
+      "referenceControlPercent": 0.25872020876450685,
+      "candidateControlPercent": 0.4172284326309561
+    }
+  ],
+  "controlConfirmation": [
+    {
+      "case": "scripts.text-summary-helpers.nonlocal-counter.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "candidate": 1.228653,
+        "reference": 1.2663010105540897,
+        "candidate-control": 1.2774463962765956,
+        "reference-control": 1.3346615138121547
+      },
+      "widerCpuMedianMilliseconds": {
+        "candidate": 1.278772378516624,
+        "reference": 1.345646437994723,
+        "candidate-control": 1.3297872340425532,
+        "reference-control": 1.408839779005525
+      },
+      "candidateOverReferenceElapsedPercent": [
+        -7.942726505191988,
+        -4.286863518836115,
+        -2.9730696130153333,
+        0.8801529517558526
+      ],
+      "candidateOverReferenceWiderCpuPercent": [
+        -9.232235093525908,
+        -5.61118064246976,
+        -4.969660498470496,
+        -1.1785565289945898
+      ],
+      "iqrPercent": {
+        "candidate": 0.6728209080269001,
+        "reference": 0.3063781954180674,
+        "candidate-control": 0.6326688417381632,
+        "reference-control": 2.4315581221259777
+      },
+      "referenceControlPercent": 5.398440235639779,
+      "candidateControlPercent": 3.9712918355789384
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "candidate": 3.421015,
+        "reference": 3.50466015,
+        "candidate-control": 3.471989432624113,
+        "reference-control": 3.4610820851063826
+      },
+      "widerCpuMedianMilliseconds": {
+        "candidate": 3.5211267605633805,
+        "reference": 3.642857142857143,
+        "candidate-control": 3.617021276595745,
+        "reference-control": 3.5460992907801416
+      },
+      "candidateOverReferenceElapsedPercent": [
+        -2.3866836275123537,
+        -1.1576461962227946,
+        -0.9322078597517325,
+        0.31514269958135
+      ],
+      "candidateOverReferenceWiderCpuPercent": [
+        -3.341618337475827,
+        -0.7092198581560183,
+        -0.704225352112664,
+        2.0000000000000018
+      ],
+      "iqrPercent": {
+        "candidate": 0.8869862628077197,
+        "reference": 2.4703981843799037,
+        "candidate-control": 0.7938536311605577,
+        "reference-control": 0.31907599987371915
+      },
+      "referenceControlPercent": 1.243431974241993,
+      "candidateControlPercent": 1.4900382671257706
+    }
+  ],
+  "allocation": [
+    {
+      "case": "scripts.csv-invoice.large",
+      "processMedians": {
+        "reference": [
+          4590600.25
+        ],
+        "candidate": [
+          4197750
+        ]
+      },
+      "allocatedByteChangePercent": [
+        -8.557709855045648
+      ]
+    },
+    {
+      "case": "scripts.csv-fulfillment.large",
+      "processMedians": {
+        "reference": [
+          4673348.375
+        ],
+        "candidate": [
+          4424697.5
+        ]
+      },
+      "allocatedByteChangePercent": [
+        -5.320615007649632
+      ]
+    },
+    {
+      "case": "scripts.text-summary-helpers.nonlocal-counter.large",
+      "processMedians": {
+        "reference": [
+          448229.75
+        ],
+        "candidate": [
+          448229.75
+        ]
+      },
+      "allocatedByteChangePercent": [
+        0.0
+      ]
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "processMedians": {
+        "reference": [
+          2021867.5
+        ],
+        "candidate": [
+          2021864.5
+        ]
+      },
+      "allocatedByteChangePercent": [
+        -0.00014837767559061632
+      ]
+    }
+  ],
+  "benefit": "Final managed slot storage/operand transport removes eager integer boxes and object-array transfer for computed integer tuples; canonical observation preserves identities. Targeted complete CSV elapsed and wider CPU improve.",
+  "debt": [
+    "Original1b88 desktop and VM text regressions remain immutable; do not add gains across sources.",
+    "Refined text controls move8.90% then5.40%; no portable text gain or causal JIT explanation is established.",
+    "JSON original refined elapsed+0.47..+1.16%; confirmation crosseszero. Accept remaining small control uncertainty for0.11, not proven neutrality.",
+    "Wider typed backing and future scalar boxes require conservative admission; source tuple may remain retained by a private scalar borrow.",
+    "No startup, pending-I/O, host contention, tail latency or retained-heap claim."
+  ],
+  "stoppingDecision": "Bounded refinement/control confirmation complete. Retain coherent construction/transport change, preserve all adverse conditions and qualify the complete source. No more unchanged tuple timing campaign; materially new defects/evidence remain eligible.",
+  "publicationHeld": true
+}

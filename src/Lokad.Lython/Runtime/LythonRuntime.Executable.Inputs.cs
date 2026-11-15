@@ -49,6 +49,14 @@ internal sealed partial class LythonRuntime
                 ? ReadOperand(ref execution, instruction.ThirdInput, scope, 2) : null;
             try
             {
+                if (instruction.OpCode == ExecutableOpCode.Subscript && first is PyTuple tuple
+                    && second is BigInteger integerIndex && TryMachineInteger(integerIndex, out var tupleIndex)
+                    && tuple.TryBorrowInteger(tupleIndex, out var tupleItem))
+                {
+                    scope.CheckExecution(instruction.Span);
+                    PublishInstructionResult(ref execution, invocation, instruction, tupleItem);
+                    return InstructionPause.Continue;
+                }
                 if (instruction.OpCode is ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast)
                 {
                     var receiver = instruction.ValueLast ? first : second!;

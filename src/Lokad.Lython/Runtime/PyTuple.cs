@@ -4,7 +4,7 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyHashableValue, IPyOwnershipSnapshot
 {
-    private readonly object[] _items;
+    private readonly Array _items;
     private readonly MemoryGovernor? _memoryGovernor;
     private readonly LythonSourceSpan? _allocationSpan;
     private readonly long _committedBytes;
@@ -52,6 +52,54 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
         _memoryGovernor = governor;
         _allocationSpan = allocationSpan;
         _committedBytes = committedBytes;
+    }
+
+    private PyTuple(LythonRuntime.ExecutableSlot[] items, MemoryGovernor governor,
+        LythonSourceSpan span, long committedBytes)
+    {
+        _items = items;
+        _memoryGovernor = governor;
+        _allocationSpan = span;
+        _committedBytes = committedBytes;
+    }
+
+    internal static PyTuple FromIntegerSlots(ReadOnlySpan<LythonRuntime.ExecutableSlot> values,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        // Admit the wider backing, metadata and every eventual scalar box.
+        var bytes = checked(64L + 24L * values.Length
+            + RuntimeMemoryEstimates.ScalarStorageBytes * values.Length);
+        using var storage = context.MemoryGovernor.ReserveTemporary(bytes, span);
+        context.CheckExecution(span);
+        var items = new LythonRuntime.ExecutableSlot[values.Length];
+        for (var offset = 0; offset < values.Length;)
+        {
+            context.CheckExecution(span);
+            var count = Math.Min(1024, values.Length - offset);
+            values.Slice(offset, count).CopyTo(items.AsSpan(offset));
+            offset += count;
+        }
+        var tuple = new PyTuple(items, context.MemoryGovernor, span, bytes);
+        storage.Commit(bytes);
+        return tuple;
+    }
+
+    internal bool TryReadInteger(int index, out long value)
+    {
+        if (_items is LythonRuntime.ExecutableSlot[] items) return items[index].TryGetInteger(out value);
+        value = 0;
+        return false;
+    }
+
+    internal bool TryBorrowInteger(long index, out LythonRuntime.ExecutableSlot value)
+    {
+        value = default;
+        if (_items is not LythonRuntime.ExecutableSlot[] items) return false;
+        if (index < 0) index += items.Length;
+        if ((ulong)index >= (uint)items.Length) return false;
+        if (items[(int)index].IsUnpublishedInteger) value.BorrowTupleInteger(this, (int)index);
+        else value.Object = items[(int)index].Reference;
+        return true;
     }
 
     public MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;
@@ -254,36 +302,55 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
 
     public int Length => _items.Length;
 
-    public object this[int index] => _items[index];
+    public object this[int index] => _items is object[] objects ? objects[index]
+        : ((LythonRuntime.ExecutableSlot[])_items)[index].PublishSharedInteger();
 
-    public IEnumerator<object> GetEnumerator() => ((IEnumerable<object>)_items).GetEnumerator();
+    public IEnumerator<object> GetEnumerator() => _items is object[] objects
+        ? ((IEnumerable<object>)objects).GetEnumerator() : EnumerateIntegers().GetEnumerator();
 
-    public object GetItem(int index) => _items[index];
+    private IEnumerable<object> EnumerateIntegers()
+    {
+        for (var i = 0; i < Count; i++) yield return this[i];
+    }
+
+    public object GetItem(int index) => this[index];
 
     public object CreateSlice(IEnumerable<object> items) => _memoryGovernor is null ? new PyTuple(items) : new PyTuple(items, _memoryGovernor, _allocationSpan);
 
-    public object GetIndex(int index) => _items[index];
+    public object GetIndex(int index) => this[index];
 
     internal PyTuple Slice(PyIndexing.SliceBounds bounds, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
         => LythonRuntime.CreateTuple(bounds.Count,
-            index => _items[(int)(bounds.Start + (long)index * bounds.Step)], context, span);
+            index => this[(int)(bounds.Start + (long)index * bounds.Step)], context, span);
 
     public object GetSlice(IEnumerable<int> indices)
     {
-        var items = PySequenceMaterialization.MaterializeSlice(_items, indices, _memoryGovernor, _allocationSpan);
+        var items = PySequenceMaterialization.MaterializeSlice(this, indices, _memoryGovernor, _allocationSpan);
         return _memoryGovernor is null
             ? PyTuple.FromOwnedArray(items)
             : PyTuple.FromOwnedArray(items, _memoryGovernor, _allocationSpan);
     }
 
-    System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => _items.GetEnumerator();
+    System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
 
     public object[] ToArray()
     {
         var bytes = EstimateApproximateBytes(_items.Length);
         using var storage = _memoryGovernor?.ReserveTemporary(bytes, _allocationSpan);
-        var result = _items.ToArray();
+        var result = this.ToArrayCore();
         storage?.Commit(bytes);
+        return result;
+    }
+
+    private object[] ToArrayCore()
+    {
+        if (_items is object[] objects) return objects.ToArray();
+        var result = new object[Count];
+        for (var i = 0; i < result.Length; i++)
+        {
+            if ((i & 1023) == 0) PyStructuralGuard.AmbientContext?.CheckExecution(_allocationSpan);
+            result[i] = this[i];
+        }
         return result;
     }
 

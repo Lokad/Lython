@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Keep computed integer tuples and their arithmetic consumers in shared managed
+  slots until observation, avoiding eager boxing and object-array transport.
+  Preserve canonical item identities, cancellation and retained ownership; admit
+  wider backing and eventual boxes conservatively before allocation.
+
 - Keep asynchronous invocation setup, execution and ownership cleanup in one
   scheduled lifetime, avoiding a separate completion hop for scope disposal.
   Preserve caller context, cancellation outcomes and funded cleanup through I/O.

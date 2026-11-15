@@ -1,4 +1,10 @@
-# Integer tuple storage and transport — active prototype
+# Integer tuple storage and transport — original prototype
+
+The [refined 22e5b72c source](refined/README.md) is retained for full qualification.
+This page preserves the original 1b88 checkpoint; its adverse observations remain.
+The [first quiet-VM comparison](vm/summary.json) confirms CSV benefit and a text
+regression, prompting the bounded accessor refinement. Descriptive inherited
+metadata is [corrected explicitly](vm/metadata-correction.json); raw inputs remain.
 
 2026-11-15. **Uncommitted, not retained or fully qualified.** Reference is qualified
 b58e2dc4/f304b3db; prototype core is 1b88e3c7. Exact code and binaries are archived.
@@ -53,7 +59,7 @@ The corrected size retains the same driver/images/catalog and five measurement
 blocks, with two processes total and 75 seconds per process. This resolves a
 measurement sizing error, not a failed design. No result was dropped.
 
-Next gate: a bounded quiet-VM source-pair CPU/elapsed comparison with text/JSON
+At this original checkpoint, the next gate was a bounded quiet-VM source-pair CPU/elapsed comparison with text/JSON
 controls, followed by an explicit retain/refine/withdraw and regression-debt
 decision. Current VM staging needs an exact proved archived superseded-image
 retirement before adding the new image; disk floors and qualified images stay.

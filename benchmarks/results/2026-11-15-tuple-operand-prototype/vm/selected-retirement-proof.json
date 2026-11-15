@@ -1,0 +1,15 @@
+{
+  "commit": "3ad030587781e2f77fbc1cbe397eae6ff39eadb5",
+  "archive": "benchmarks/results/2026-11-14-protected-helper-activation/source-and-local-checks.tar.xz",
+  "archiveSHA256": "609056be824fe847d19adb79e2f5d10b95002f9f9563f69f974b344a1808815d",
+  "member": "candidate-core.dll",
+  "coreSHA256": "b5a6426eeb88a41bb61703802375ce26da843814fee7fbf13fbe80c5b3f77886",
+  "bytes": 5746688,
+  "paths": [
+    "native-entry-b758-20261114/reference/Lokad.Lython.dll",
+    "scalar-results-b759-20261114/reference/Lokad.Lython.dll",
+    "protected-checkpoint-b757-20261114/candidate/Lokad.Lython.dll",
+    "protected-activation-b756-20261114/candidate/Lokad.Lython.dll",
+    "protected-activation-b756-20261114/candidate-core.dll"
+  ]
+}

@@ -10,6 +10,41 @@ public sealed class TupleConstructionFailureTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public void IntegerTupleAdmissionFailurePreservesOtherFunding(bool cancelled)
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var owner = budget.CreateScope())
+        using (var cancellation = new CancellationTokenSource())
+        {
+            var gate = new AdmissionHookMemoryBudget(owner);
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
+                new() { MemoryBudget = gate, CancellationToken = cancellation.Token });
+            try
+            {
+                using var other = context.MemoryGovernor.ReserveTemporary(17, null);
+                var baseline = budget.ReservedBytes;
+                var committed = context.MemoryGovernor.CurrentCommittedBytes;
+                var first = default(LythonRuntime.ExecutableSlot); first.SetInteger(10001);
+                var second = default(LythonRuntime.ExecutableSlot); second.SetInteger(10002);
+                if (cancelled) gate.AfterGrowth = _ => cancellation.Cancel();
+                else gate.RefuseGrowth = _ => true;
+                var error = Assert.Throws<LythonRuntimeException>(() =>
+                    PyTuple.FromIntegerSlots([first, second], context, new(0, 1, 1, 1)));
+                Assert.Equal(cancelled ? LythonFailureReason.Cancelled : LythonFailureReason.SharedMemoryAllowance,
+                    error.Attribution?.Reason);
+                if (!cancelled) Assert.Same(context.MemoryGovernor.AdmissionFailure, error);
+                Assert.Equal(baseline, budget.ReservedBytes);
+                Assert.Equal(committed, context.MemoryGovernor.CurrentCommittedBytes);
+                Assert.Equal(17, context.MemoryGovernor.CurrentReservedBytes);
+            }
+            finally { context.State.CloseResources(); }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task FactoryFailureRefundsScratchWithoutReleasingOtherStorage(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(65536);
