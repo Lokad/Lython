@@ -115,3 +115,15 @@ The broader objective remains open for new demonstrated whole-script bottlenecks
 this review does not manufacture another speculative redesign to keep it busy.
 Publication/tagging remain postponed. Startup, contention, pending-I/O latency,
 RSS/heap peaks and embedding tails remain unmeasured.
+
+## Current collection and operand assessment
+
+[R392 source map at b58e2dc4](current-transport-assessment.json) confirms bulk ASCII
+casing, shared whitespace scanning, single-probe dictionary accumulation and
+machine-integer final slots already exist. The measured invoice/fulfillment scripts
+use integer cents; float slots do not address those sources. Tuple construction
+still materializes scalar objects, but lazy backing alone can move that boxing to
+the next subscript and widen reference-heavy storage. A larger end-to-end aggregate
+transport design needs cost attribution before selection, plus explicit identity,
+alias, promotion, cancellation, refusal and ownership acceptance. No runtime patch
+or unchanged qualification was manufactured from this source assessment.

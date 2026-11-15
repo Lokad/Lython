@@ -1,9 +1,9 @@
 # Scheduled invocation lifetime
 
-R390/R391, 2026-11-15 UTC. **Retained for delivery; full qualification pending.**
+R390/R391, 2026-11-15 UTC. **Retained and fully qualified at b58e2dc4.**
 Qualified reference **810379be / 8fbfa3f0** versus frozen candidate **f304b3db**.
 The candidate's full source and binary are retained in the archive below. Full
-platform, stress and installed-package qualification follows the bounded decision.
+[platform, stress and installed-package qualification passes](delivery/README.md).
 
 The change places setup, execution and ownership cleanup in the existing scheduled
 operation. It removes the outer await/continuation for scope disposal. Caller
@@ -50,7 +50,7 @@ in its first process. Its second process favors the candidate by 3.74–5.35%
 invocation time and 7.28–8.28% wider CPU. Hashing alone does not explain variability.
 Retain the ownership-lifetime simplification, with all text adversity/uncertainty
 and small sync-control debt explicit. No general speedup claimed; full delivery
-qualification follows. This does not complete the performance objective.
+qualification passes. This does not complete the performance objective.
 
 Identity, goldens, quiet, shared-balance, Closed/join and archive gates pass in both
 VM collections. No users or RAM fixtures remain; final free space 270,495,744 B.

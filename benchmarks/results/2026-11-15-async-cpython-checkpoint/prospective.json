@@ -1,0 +1,15 @@
+{
+  "question": "What is the current complete-script cost of public RunAsync against stock CPython, missing from the primarily synchronous table?",
+  "cases": [
+    "scripts.text-summary-helpers.nonlocal-counter.large",
+    "scripts.file-search.large.protected"
+  ],
+  "boundary": "Lython awaited RunAsync with completed benchmark host I/O; CPython synchronous warm execution. Same source/inputs/goldens, two independent processes per engine, five rotating rounds. Guest clocks include mediated RAM I/O, full validation and prior-result cleanup; reset/protocol/startup/compile/final cache cleanup excluded.",
+  "warmupSeconds": 5,
+  "textWarmupSeconds": 12,
+  "targetRequestSeconds": 0.5,
+  "ownerSeconds": 180,
+  "stoppingCriterion": "Finish these two targeted deployment comparisons, retain uncertainty and all controls. Reuse earlier named-revision compile/fresh measurements; do not infer a whole-HEAD or source-pair speedup.",
+  "noNewRuntimeFrameworkOrImageUpload": true,
+  "publicationHeld": true
+}

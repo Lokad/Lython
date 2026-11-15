@@ -22,7 +22,7 @@ Decision: retain the complete-invocation lifetime simplification for delivery,
 with text uncertainty explicit. The [earlier file-search comparison](../2026-11-15-invocation-lifetime/quiet/summary.json)
 supports lower wider CPU. Preserve asynchronous caller publication, cancellation
 state/token, genuine suspension, first refusal and funded cleanup. No general or
-portable speedup claimed. Full platform/stress/package qualification follows;
+portable speedup claimed. [Full platform/stress/package qualification passes](../2026-11-15-invocation-lifetime/delivery/README.md);
 this closes the bounded R390 measurement decision, not the performance objective.
 
 Quiet Azure F4as_v7, Ubuntu 24.04.4, four EPYC 9V45 vCPUs, .NET 11 RC3 and ordinary

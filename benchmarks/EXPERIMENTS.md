@@ -8309,3 +8309,21 @@ for coherent ownership/dispatch simplification and favorable file CPU, with text
 uncertainty and small sync-control debt explicit. No general speedup or allocation
 gain claimed. All users/fixtures joined/removed; no new runtime image/retirement.
 Full changed-runtime platform/stress/package qualification follows. Publication held.
+
+
+[R390 full delivery 43700041511](results/2026-11-15-invocation-lifetime/delivery/README.md)
+passes b58e2dc4 / frozen f304b3db on Windows/Ubuntu actual .NET 11/10, original
+stress and installed Release consumers. Each framework/platform: 4,776 internal /
+17,858 public ordinary, 13 / 406 stress. Frozen 585+4+2 inputs and 16 summaries/
+full logs are verified and terminal-cached. All timing uncertainty/debt remains;
+no general speedup or publication claim. Never requery the terminal run.
+
+[R393/B780 current async CPython boundary](results/2026-11-15-async-cpython-checkpoint/README.md)
+finishes 99.638 s at fully qualified b58e2dc4 / f304b3db. Captured text RunAsync is
+1.37–1.46× stock CPython 3.13.16; protected search 1.78–1.88×. Lython process spread
+is about 4.2%; all ranges, controls and included I/O/cleanup costs remain explicit.
+Compilation/fresh/startup are separate; no source-pair speedup inferred. No new
+runtime image/framework, all identity/golden/quiet/balance/Closed/join/archive gates
+pass, no VM users/RAM remain. [R392 current transport assessment](results/2026-11-15-runtime-roadmap-review/current-transport-assessment.json)
+rules out rediscovering already-bulk text paths or a float rewrite for integer-cents
+sources; tuple allocation/typed transport needs attribution before selection.

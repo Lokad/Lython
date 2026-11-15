@@ -1,0 +1,64 @@
+{
+  "revision": "b58e2dc44d5b75669ec78e9027ae3d6ffb100d86",
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/Text/PyStringOps.Helpers.cs": "07659af3ca8ab2dc77c053c0a8d2e7838ce1c66c21100f6968daa482c9caf599",
+    "src/Lokad.Lython/Runtime/Text/PyStringOps.Whitespace.cs": "0e2a5c06ca9c66a0a40accc531127be86fbae5dd9e059ba45066bcdc19e21b80",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.DictionaryAccumulation.cs": "8e203be79b6b658c5b74f707b71f2340f064f372681f6cda2c5155453d1db670",
+    "src/Lokad.Lython/Runtime/PyDict.Accumulation.cs": "0d2b6e0f10a11539acfc5c13adf7a8c6e3b578a4f116a0878824e8ad0a8fb04b",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Slot.cs": "b450166319c902fd57d221a9268b3ca7c215c54f1002a2d3bc31fb4b56c849f7",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Integers.cs": "e07b7acf075fee74908ba36822a133c12a78b4791b75f09c83498b1c68a368da",
+    "src/Lokad.Lython/Runtime/PyTuple.cs": "4aefef9c8360720473180323462335068098cfde4ee64d4cb03aed999214a862",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Inputs.cs": "f05f71048c0d0f01adecfd10b35625ece54a0d7fc15421cdc8567c641bfb20bd",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Imports.cs": "e23e449ebcd9a6a62afc23547b4f83f5c676897009d68cff7f0f4b5c7b70c400",
+    "src/Lokad.Lython/Public/LythonEngine.cs": "424434fd6909971bb54c887ad79abb4d2d5590505ba96aed2a178d709990e90f"
+  },
+  "completedAssessment": [
+    "Bulk ASCII casing and byte-range whitespace scanning already exist; do not propose per-character string removal as missing.",
+    "Dictionary segments already share one probe and prevalidated native storage. Repeated integer-bound checks are not established as dominant removable work.",
+    "Unpublished machine integers already use final slots and exact promotion. The measured CSV sources use integer cents.",
+    "Tuple construction still materializes scalar objects into object arrays. Lazy tuple storage alone would often move boxing to the next subscript, while widening reference-heavy arrays."
+  ],
+  "tupleCandidate": {
+    "status": "not-selected-without-cost-attribution",
+    "hypothesis": "End-to-end typed tuple aggregate transport could remove intermediate integer boxes and object-array payloads in per-record collection construction.",
+    "workToDisplace": [
+      "PyTuple object-array backing for affected aggregate construction",
+      "CreateSlotTuple scalar materialization",
+      "Object-only tuple subscript transport when an immediate closed arithmetic consumer can avoid observation"
+    ],
+    "semanticAcceptance": [
+      "Stable repeated-item/alias identity through indexing, iteration, repetition and concatenation",
+      "Named tuples, equality/hash/repr, errors and evaluation order unchanged",
+      "Exact promotion and custom-index/protocol behavior preserved; no replay through fallback",
+      "Retained aliases/results and replacement peaks funded; refusal before allocation/mutation",
+      "Current cancellation and cleanup, genuine suspension and managed stack preserved"
+    ],
+    "risks": [
+      "Typed backing widens reference-heavy arrays",
+      "Borrowed unboxed element identity may require more machinery than the saved storage justifies",
+      "Current source samples do not establish tuple construction as a dominant removable stage"
+    ],
+    "boundedNext": "Attribute tuple/scalar allocations and transport in an existing complete CSV script before selecting this larger redesign. Stop if no material whole-script target appears; keep reference-heavy text/JSON controls. No new identity ledger, universal tagged-value rewrite or narrow opcode series."
+  },
+  "workloads": [
+    {
+      "case": "scripts.csv-invoice.large",
+      "sourceSHA256": "26e03969795a72457ecf6e18d06781ff93017731764b3bad714d93801daa2992",
+      "integerConversions": 4,
+      "floatConversions": 0,
+      "floatLiterals": 0,
+      "meaning": "Integer-cents representative; float-slot redesign does not address this measured source."
+    },
+    {
+      "case": "scripts.csv-fulfillment.large",
+      "sourceSHA256": "f9f7477dfdeff1876f55286db983f6aa6a64861c900423f51a5b9183350e06f7",
+      "integerConversions": 8,
+      "floatConversions": 0,
+      "floatLiterals": 0,
+      "meaning": "Integer-cents representative; float-slot redesign does not address this measured source."
+    }
+  ],
+  "runtimeChanged": false,
+  "testsRepeated": false,
+  "publicationHeld": true
+}
