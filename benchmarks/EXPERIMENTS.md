@@ -8628,3 +8628,6 @@ verified before unmount, all users joined. No CPU speedup or production change.
 
 
 [R419one runtime format operation](results/2026-11-15-runtime-format-operation/README.md), retained0393331a/9d071eba. Deletes generic callback executor/captures/fallback/duplicate names/native async field bridge; real protocol work/current tokens/funding preserved.6internal/691public each actual11/10 pass,3CPython semantic ports,6new held lookup cases. Allocation−9.41%,warm1.9–4.2%/fresh1.1–4.2%lower elapsed with CPU support; controls/adversity remain. B814all gates/cleanup; original pre-worker headroom refusal preserved. Full delivery pending; publication held/broader roadmap active.
+
+
+[R418full delivery43771040409](results/2026-11-15-method-format-layout/delivery/README.md) qualifies58eeea6f/9d071eba on Windows/Ubuntu actual11/10:4,783internal/17,885public ordinary, original13/406stress and installed Release consumers each.16summaries/593source inputs verified. Terminal cached forever. Publication held; broader performance work continues.

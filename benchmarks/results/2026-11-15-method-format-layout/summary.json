@@ -126,8 +126,10 @@
     }
   ],
   "retentionDecisionPending": false,
-  "CPythonRefreshed": false,
+  "CPythonRefreshed": true,
   "retained": true,
-  "fullQualificationPending": true,
-  "reason": "Complete method template/field/native-spec construction reused through one executor;18.47%less allocation and17\u201320%whole-script elapsed/CPU support. Moving/adverse controls and conservative retained cache charge accepted explicitly. No external CPython speedup inferred."
+  "fullQualificationPending": false,
+  "reason": "Complete method template/field/native-spec construction reused through one executor;18.47%less allocation and17\u201320%whole-script elapsed/CPU support. Moving/adverse controls and conservative retained cache charge accepted explicitly. No external CPython speedup inferred.",
+  "fullQualificationRun": "43771040409",
+  "runtimeCommit": "58eeea6f31f259ce173c2a0a415cc7bf98716e58"
 }

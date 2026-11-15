@@ -1,6 +1,6 @@
 # Reusable method-format layouts
 
-R418, retained prototype**9d071eba**, qualified baseline**b06b8593 /8afb146e**.
+R418, committed**58eeea6f / frozen9d071eba**, qualified baseline**b06b8593 /8afb146e**.
 Same complete JSON-to-Markdown report,1,024records/189,441B JSON; final stdout/file
 goldens match the original f-string variant. No CPython source-change claim.
 
@@ -54,7 +54,7 @@ passes. Evidence persists/hash-verifies under lease; no workers or RAM fixtures 
 B811working trace archive retired only after fresh UID/path/hash/link/all-alias proof;
 current8afb/preceding55ba images and canonical evidence retained. Terminal cached forever.
 
-**Full platform/stress/package delivery pending; publication held.**
+[Full platform/stress/package delivery passes](delivery/README.md); publication held.
 [Prior attribution](../2026-11-15-method-format-attribution/README.md),
 [medians/all controls](summary.json),[allocations](allocation-summary.json),
 [source/image identity](identity.json),[checks](checks.json),

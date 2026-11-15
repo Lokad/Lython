@@ -37,3 +37,5 @@ images remain. Terminal cached forever.12internal/682public actual11/10 focused 
 and593frozen input proofs pass; **full43771040409 active at capture**, not yet claimed
 qualified. Publication held. [Prior guide](prior-BENCHMARKS.md),[summary](summary.json),
 [identity](identity.json),[raw](observations.tgz),[inputs/procedure](procedure-and-inputs.tar.xz).
+
+[Subsequent full runtime qualification passes](../2026-11-15-method-format-layout/delivery/README.md).
