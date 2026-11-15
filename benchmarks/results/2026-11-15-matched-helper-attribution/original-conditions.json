@@ -1,0 +1,9 @@
+{
+  "readOnlyInventory": {
+    "expectedPath": "cased-preparation-b794-20261115/candidate/Lokad.Lython.dll",
+    "expectedSHA256": "4e49a5eda06cb34529d4aac00737459685613423de03e31a29e8e2ac8e567de8",
+    "outcome": "Tool-reported FileNotFoundError before mutation; raw stderr was not separately retained locally. The exact inspection script is in the procedure archive."
+  },
+  "staging": "Original archive preserves the exact refused payload/config/launch stderr; headroom.json preserves the subsequent read-only inventory. The stronger diagnostic headroom and existing disk floors were retained.",
+  "compilerFacts": "Original local invocation omitted the output-path argument: dotnet Inspect.dll catalog.json. Raw stderr remains in the procedure archive. Corrected invocation adds compiler-facts.json; identical copied runtime and driver, no source correction."
+}

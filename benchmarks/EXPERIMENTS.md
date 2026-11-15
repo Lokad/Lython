@@ -30,6 +30,15 @@ all raw adversity and the original missing-catalog staging failure are preserved
 The guide refreshes affected external rows without inferring source-pair gains;
 full runtime qualification remains separate.
 
+[R414 matched helper attribution](results/2026-11-15-matched-helper-attribution/README.md)
+at2865f619/55ba4c8a retains950inline/1,016helper active samples and all unknowns.
+Both main scopes are unmirrored; helper is native eligible. Entry/body work is
+appreciable but inclusive/compound; no dominant removable binding allocation is
+isolated. The ordinary prefix already loops completed operations. Close the bounded
+capture with a complete call/operand invariant question; do not repeat an arena,
+controller, missing-sync-prefix claim or weaken stack/cancellation. All gates,
+joined users and persistent-before-RAM-teardown archive verification pass.
+
 [R402 live async keyword defaults](results/2026-11-15-live-keyword-defaults/README.md)
 at6e276759 removes a pre-admission protocol-eligibility snapshot. Admission can
 replace __kwdefaults__ with a suspending key protocol; the binder now inspects
