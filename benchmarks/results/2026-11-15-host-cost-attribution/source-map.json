@@ -1,0 +1,56 @@
+{
+  "sourceRevision": "51e3c2c1",
+  "normalization": "CRLF to LF only",
+  "entries": [
+    {
+      "path": "src/Lokad.Lython/Public/LythonMemoryBudget.cs",
+      "normalizedSHA256": "a2cdb0711ba48ee73679bbce5fc40bab1f5c756066a94ae3fa1bbc62c3635e49",
+      "fact": "One shared State.Gate; scope and reservation balances share it."
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/MemoryGovernor.cs",
+      "normalizedSHA256": "7143ef7d7157ecbb0c686bbccc040ef07349f93eea17e9f8bf5601dd3131b092",
+      "fact": "Single ownership reservation; existing one-idle invocation workspace cache."
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/ExecutableScript.cs",
+      "normalizedSHA256": "954df316258cc74a46bfdf350a1f18aedfd29ea4fac670899766bcc1caa99b26",
+      "fact": "Compact instruction record reuses primary/secondary operands and result/live fields."
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs",
+      "normalizedSHA256": "2da3bc1604be7506c0347f8ace16138c37c55fda615e2bc3032dad694b99e010",
+      "fact": "Ordinary dispatch reads instructions ref readonly."
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativePrefix.cs",
+      "normalizedSHA256": "70735161db484b0f3278a7ea6f0ee062714666fb681a8b4487544dd6b4af01f8",
+      "fact": "Native dispatch reads ref readonly; child calls recurse through StartNativeCall and preserve exact transfer state."
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.cs",
+      "normalizedSHA256": "db95c68c4823ea4a4744f3cad32aee8a68915f625bc31d3281dcfbfbc8fad243",
+      "fact": "Default affix bounds are byte-span boundaries; no scalar-count pass."
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.Builtins.cs",
+      "normalizedSHA256": "90f257f4e61ab414a1016b3342954a0eafb268e862f760d10907a8fc79112e5f",
+      "fact": "Plain builtin definitions and immutable signatures already shared."
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Json.Construction.cs",
+      "normalizedSHA256": "4bf89c605538c3c89d73c06ffb53f84a981a2fd37896f16a4b9d06c9b2045a25",
+      "fact": "One iterative construction loop with continuation only for actual pending callbacks."
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyExecutableFunction.cs",
+      "normalizedSHA256": "e187911f6a1d280f5a4a2bea42d9f86d19e9b4560b31cc6286b02118466483c7",
+      "fact": "Fixed sixteen-slot prefix; direct binding; separate function entry, completion and transfer shell."
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs",
+      "normalizedSHA256": "ec5bfafc929b029ec7e8f273ddcc355613fe956c642b13b235754f959bc317e9",
+      "fact": "Binding fills final slots; pooled arrays already cover larger/suspended calls."
+    }
+  ]
+}

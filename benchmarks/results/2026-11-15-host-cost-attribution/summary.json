@@ -1,0 +1,186 @@
+{
+  "sourceRevision": "51e3c2c1",
+  "coreSHA256": "22e5b72c3d02a987758a2c84d08c61b4345fb11e7acac0394b5fef9d98e18141",
+  "rows": [
+    {
+      "role": "raw",
+      "runMicroseconds": 261.774921875,
+      "cleanupMicroseconds": 0.06993359375,
+      "fullMicroseconds": 333.03525390625,
+      "wideCpuMicroseconds": 333.33203125,
+      "samples": [
+        261.249609375,
+        260.87075390625,
+        264.87100390625,
+        261.774921875,
+        262.633203125
+      ]
+    },
+    {
+      "role": "forwarded",
+      "runMicroseconds": 262.98117578125,
+      "cleanupMicroseconds": 0.07253515625,
+      "fullMicroseconds": 333.8494921875,
+      "wideCpuMicroseconds": 332.68359375,
+      "samples": [
+        262.2516484375,
+        262.98117578125,
+        263.95395703125,
+        263.32592578125,
+        262.6149296875
+      ],
+      "operations": [
+        {
+          "operation": "Cwd",
+          "callsPerRun": [
+            4.0
+          ],
+          "microsecondsPerRun": 0.0
+        },
+        {
+          "operation": "Open",
+          "callsPerRun": [
+            2.0
+          ],
+          "microsecondsPerRun": 0.0
+        },
+        {
+          "operation": "Position",
+          "callsPerRun": [
+            2.0
+          ],
+          "microsecondsPerRun": 0.0
+        },
+        {
+          "operation": "Length",
+          "callsPerRun": [
+            1.0
+          ],
+          "microsecondsPerRun": 0.0
+        },
+        {
+          "operation": "Read",
+          "callsPerRun": [
+            2.0
+          ],
+          "microsecondsPerRun": 0.0
+        },
+        {
+          "operation": "Write",
+          "callsPerRun": [
+            1.0
+          ],
+          "microsecondsPerRun": 0.0
+        },
+        {
+          "operation": "Flush",
+          "callsPerRun": [
+            1.0
+          ],
+          "microsecondsPerRun": 0.0
+        },
+        {
+          "operation": "Dispose",
+          "callsPerRun": [
+            2.0
+          ],
+          "microsecondsPerRun": 0.0
+        }
+      ],
+      "totalHostMicroseconds": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "medianHostMicroseconds": 0.0,
+      "medianHostSharePercent": 0.0
+    },
+    {
+      "role": "timed",
+      "runMicroseconds": 263.066890625,
+      "cleanupMicroseconds": 0.07195703125,
+      "fullMicroseconds": 334.47148828125,
+      "wideCpuMicroseconds": 332.4453125,
+      "samples": [
+        263.066890625,
+        263.53604296875,
+        262.30824609375,
+        265.0285390625,
+        262.47025390625
+      ],
+      "operations": [
+        {
+          "operation": "Cwd",
+          "callsPerRun": [
+            4.0
+          ],
+          "microsecondsPerRun": 0.10115234375
+        },
+        {
+          "operation": "Open",
+          "callsPerRun": [
+            2.0
+          ],
+          "microsecondsPerRun": 27.94821484375
+        },
+        {
+          "operation": "Position",
+          "callsPerRun": [
+            2.0
+          ],
+          "microsecondsPerRun": 0.337109375
+        },
+        {
+          "operation": "Length",
+          "callsPerRun": [
+            1.0
+          ],
+          "microsecondsPerRun": 0.427546875
+        },
+        {
+          "operation": "Read",
+          "callsPerRun": [
+            2.0
+          ],
+          "microsecondsPerRun": 2.83562890625
+        },
+        {
+          "operation": "Write",
+          "callsPerRun": [
+            1.0
+          ],
+          "microsecondsPerRun": 2.16294140625
+        },
+        {
+          "operation": "Flush",
+          "callsPerRun": [
+            1.0
+          ],
+          "microsecondsPerRun": 0.04453125
+        },
+        {
+          "operation": "Dispose",
+          "callsPerRun": [
+            2.0
+          ],
+          "microsecondsPerRun": 2.66321484375
+        }
+      ],
+      "totalHostMicroseconds": [
+        36.41133984375,
+        36.5321328125,
+        36.6371953125,
+        37.28775,
+        36.1787109375
+      ],
+      "medianHostMicroseconds": 36.5321328125,
+      "medianHostSharePercent": 13.862290865781864
+    }
+  ],
+  "hostShareInTimedRunPercent": 13.862290865781864,
+  "forwardOnlyOverRawPercent": 0.4607981152701779,
+  "timedOverRawPercent": 0.49354183385714734,
+  "performanceComparison": false
+}

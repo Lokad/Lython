@@ -1,0 +1,21 @@
+{
+  "live": false,
+  "service": "MainPID=0\nResult=success\nExecMainStatus=0\nActiveState=inactive\nSubState=dead\n",
+  "exitCode": "0",
+  "receiptText": "{\n  \"complete\": true,\n  \"elapsedSeconds\": 20.125706852413714,\n  \"allActualUsersJoined\": true,\n  \"allGoldensAndBalancesPassed\": true,\n  \"guestFixturesRemoved\": true,\n  \"quietBeforeAndAfter\": true,\n  \"archivedAndVerifiedUnderLease\": true,\n  \"archiveSHA256\": \"7d337c29e8cad4f40773167d703fb0904cacc62c54df47479b7282f1a8e5836d\",\n  \"freeBytes\": 266469376,\n  \"performanceComparison\": false\n}\n",
+  "remainingWorkers": "",
+  "remainingTrace": false,
+  "journal": "Nov 15 12:09:06 lython-bench systemd[1]: Started lython-b786-host-cost-20261115.service - /bin/sh /home/lokad/lython-bench-checks/host-cost-b786-20261115/run.sh.\nNov 15 12:09:09 lython-bench sh[3749415]: Initial machine gate passed; a campaign still needs every sampling gate.\nNov 15 12:09:29 lython-bench sh[3749436]: Initial machine gate passed; a campaign still needs every sampling gate.\nNov 15 12:09:29 lython-bench sudo[3749448]:    lokad : PWD=/home/lokad/lython-bench-checks/host-cost-b786-20261115 ; USER=root ; COMMAND=/usr/bin/umount /home/lokad/lython-bench-checks/host-cost-b786-20261115/guest-fixtures\nNov 15 12:09:29 lython-bench sudo[3749448]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)\nNov 15 12:09:29 lython-bench sudo[3749448]: pam_unix(sudo:session): session closed for user root\nNov 15 12:09:29 lython-bench sh[3749412]: {\"complete\": true, \"elapsedSeconds\": 20.125706852413714, \"allActualUsersJoined\": true, \"allGoldensAndBalancesPassed\": true, \"guestFixturesRemoved\": true, \"quietBeforeAndAfter\": true, \"archivedAndVerifiedUnderLease\": true, \"archiveSHA256\": \"7d337c29e8cad4f40773167d703fb0904cacc62c54df47479b7282f1a8e5836d\", \"freeBytes\": 266469376, \"performanceComparison\": false}\nNov 15 12:09:29 lython-bench systemd[1]: lython-b786-host-cost-20261115.service: Deactivated successfully.\nNov 15 12:09:29 lython-bench systemd[1]: lython-b786-host-cost-20261115.service: Consumed 17.518s CPU time, 1.9M memory peak, 0B memory swap peak.\n",
+  "receipt": {
+    "complete": true,
+    "elapsedSeconds": 20.125706852413714,
+    "allActualUsersJoined": true,
+    "allGoldensAndBalancesPassed": true,
+    "guestFixturesRemoved": true,
+    "quietBeforeAndAfter": true,
+    "archivedAndVerifiedUnderLease": true,
+    "archiveSHA256": "7d337c29e8cad4f40773167d703fb0904cacc62c54df47479b7282f1a8e5836d",
+    "freeBytes": 266469376,
+    "performanceComparison": false
+  }
+}

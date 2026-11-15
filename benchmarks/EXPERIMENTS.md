@@ -6,6 +6,17 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[R401 complete file-search host boundary](results/2026-11-15-host-cost-attribution/README.md)
+at51e3/22e5 closes the R400 host question: original public Run261.775us,
+forwarded262.981us, timed263.067us; host spans about36.5us/13.9%, predominantly
+opens. Result disposal about0.07us. Same-process controls expose about0.5%
+observer perturbation. Full job333us additionally includes fixture reset/goldens/
+cleanup. All identity/golden/owner/quiet/join/archive gates pass. Wall spans are
+not removable CPU; no runtime change or new CPython ratio. Current admission,
+instruction representation, affix matching and JSON/numeric construction already
+have the simplified mechanisms assessed; no duplicate rewrite is selected from
+those source checks. Complete activation remains an open redesign question.
+
 [R373 shared executable slots](results/2026-11-15-shared-executable-slots/README.md)
 retains one managed layout through final function storage and compiled returns,
 removing the native integer side bank, loans, flags and capacity facts. Completed

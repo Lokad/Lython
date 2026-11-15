@@ -1,0 +1,12 @@
+{
+  "complete": true,
+  "elapsedSeconds": 20.125706852413714,
+  "allActualUsersJoined": true,
+  "allGoldensAndBalancesPassed": true,
+  "guestFixturesRemoved": true,
+  "quietBeforeAndAfter": true,
+  "archivedAndVerifiedUnderLease": true,
+  "archiveSHA256": "7d337c29e8cad4f40773167d703fb0904cacc62c54df47479b7282f1a8e5836d",
+  "freeBytes": 266469376,
+  "performanceComparison": false
+}
