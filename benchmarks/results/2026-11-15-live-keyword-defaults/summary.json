@@ -1,0 +1,114 @@
+{
+  "runtimeRevision": "6e276759",
+  "qualification": "Focused Release passes; full43717654522 Windows/Ubuntu actual11/10/stress/installed-consumer checkpoint dispatched, not yet observed.",
+  "checks": [
+    {
+      "framework": "net11.0",
+      "suite": "internal",
+      "passed": 71,
+      "trx": "tests/Lokad.Lython.Tests/TestResults/r402-after-net11.trx",
+      "sha256": "a224f641064b76367ad7351a07a8457a782af6c08010090fc26901cd33b0355e"
+    },
+    {
+      "framework": "net11.0",
+      "suite": "internal-minimal",
+      "passed": 3,
+      "trx": "tests/Lokad.Lython.Tests/TestResults/r402-minimal-net11.trx",
+      "sha256": "d336410016fee9e53b842ccffb1783e33d5f00171295a3138eefed0b3f6b11f0"
+    },
+    {
+      "framework": "net11.0",
+      "suite": "public",
+      "passed": 72,
+      "trx": "tests/Lokad.Lython.PublicApi.Tests/TestResults/r402-public-net11.trx",
+      "sha256": "8c01b4aebf5fb3c9052324e0b62b70bcb1bae6edfe010c7f37d4d0db4f573b1c"
+    },
+    {
+      "framework": "net11.0",
+      "suite": "public-extra",
+      "passed": 61,
+      "trx": "tests/Lokad.Lython.PublicApi.Tests/TestResults/r402-extra-net11.0.trx",
+      "sha256": "bdb37f1c78335bf99ea34ec95db39fdd68d3792cb65a1f7c8d4a64b81470c69b"
+    },
+    {
+      "framework": "net10.0",
+      "suite": "internal",
+      "passed": 71,
+      "trx": "tests/Lokad.Lython.Tests/TestResults/r402-after-net10.trx",
+      "sha256": "d2bb33e87900da7c873ec3d1770c9df782f7b1a85e6f1c31bd96dc5cae287863"
+    },
+    {
+      "framework": "net10.0",
+      "suite": "internal-minimal",
+      "passed": 3,
+      "trx": "tests/Lokad.Lython.Tests/TestResults/r402-minimal-net10.trx",
+      "sha256": "f157b3b2bd851e4d6ec5660d0fe4ff2cef8defbf36a48c877fed0fb36deb7ad8"
+    },
+    {
+      "framework": "net10.0",
+      "suite": "public",
+      "passed": 72,
+      "trx": "tests/Lokad.Lython.PublicApi.Tests/TestResults/r402-public-net10.trx",
+      "sha256": "b516204a72ac1f9c6e3541cc7f5a5039e76e9cddb9dc1eae4ddb8449009ad393"
+    },
+    {
+      "framework": "net10.0",
+      "suite": "public-extra",
+      "passed": 61,
+      "trx": "tests/Lokad.Lython.PublicApi.Tests/TestResults/r402-extra-net10.0.trx",
+      "sha256": "3416e41d9cde81b8911a77c664e980c02b2f4546f82c92b448a476f7bdadbb59"
+    }
+  ],
+  "uniqueFocusedChecksPerTarget": 204,
+  "newRegressionCasesPerTarget": 3,
+  "reference": "Final seventeen-local fixture fails all three cases on frozen51e3/22e5; final changed runtime passes. Original forty-local first failure also retained.",
+  "sourceChange": "Remove pre-admission protocol-default snapshot; inspect actual live dictionary during binding, finish native lookups synchronously and defer protocol defaults in order.",
+  "compatibility": "No public API or intended Python contract change. Synchronous binding unchanged. No new policy/cache/owner/retry or dispatch framework.",
+  "diagnostic": [
+    {
+      "case": "diagnostic.file-search.wide-keyword-default",
+      "lane": "warm-async",
+      "medians": {
+        "reference": 9.0796375,
+        "candidate": 8.709333333333333,
+        "reference-control": 9.542677777777778
+      },
+      "changePercent": [
+        -8.73281550368461,
+        -4.078402542685955
+      ]
+    },
+    {
+      "case": "diagnostic.file-search.wide-keyword-default",
+      "lane": "warm",
+      "medians": {
+        "reference": 8.806575,
+        "candidate": 8.5305,
+        "reference-control": 9.649071428571428
+      },
+      "changePercent": [
+        -11.592529258922024,
+        -3.134873659737192
+      ]
+    },
+    {
+      "case": "scripts.file-search.large.protected",
+      "lane": "warm-async",
+      "medians": {
+        "reference": 7.892054545454545,
+        "candidate": 8.145616666666667,
+        "reference-control": 10.221042857142859
+      },
+      "changePercent": [
+        -20.305424989249545,
+        3.212878468486524
+      ]
+    }
+  ],
+  "limitation": "Desktop I/O and moving unchanged controls (about5 to30percent) prevent CPU, quiet-machine or speedup claims. Candidate is retained for correctness.",
+  "setupCorrections": [
+    "Initial new test used protected BindingPlan; use ordinary function default-attribute mutation instead. No production change in that correction.",
+    "First screen launch referred to missing candidate-identity.json and stopped before workers; use the actual identity.json."
+  ],
+  "publicationPostponed": true
+}

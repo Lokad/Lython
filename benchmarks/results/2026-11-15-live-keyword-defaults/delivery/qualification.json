@@ -1,0 +1,156 @@
+{
+  "commit": "6e276759ebeea586bbb0c33abb361ffb3a30eb34",
+  "runId": 43717654522,
+  "terminalConclusion": "success",
+  "all16SummariesVerified": true,
+  "tests": [
+    {
+      "platform": "windows-latest",
+      "framework": "net11.0",
+      "category": "ordinary",
+      "assembly": "Lokad.Lython.WhiteBox.Tests.dll",
+      "passed": 4781
+    },
+    {
+      "platform": "windows-latest",
+      "framework": "net11.0",
+      "category": "ordinary",
+      "assembly": "Lokad.Lython.PublicApi.Tests.dll",
+      "passed": 17864
+    },
+    {
+      "platform": "windows-latest",
+      "framework": "net10.0",
+      "category": "ordinary",
+      "assembly": "Lokad.Lython.WhiteBox.Tests.dll",
+      "passed": 4781
+    },
+    {
+      "platform": "windows-latest",
+      "framework": "net10.0",
+      "category": "ordinary",
+      "assembly": "Lokad.Lython.PublicApi.Tests.dll",
+      "passed": 17864
+    },
+    {
+      "platform": "windows-latest",
+      "framework": "net11.0",
+      "category": "original-stress",
+      "assembly": "Lokad.Lython.WhiteBox.Tests.dll",
+      "passed": 13
+    },
+    {
+      "platform": "windows-latest",
+      "framework": "net11.0",
+      "category": "original-stress",
+      "assembly": "Lokad.Lython.PublicApi.Tests.dll",
+      "passed": 406
+    },
+    {
+      "platform": "windows-latest",
+      "framework": "net10.0",
+      "category": "original-stress",
+      "assembly": "Lokad.Lython.WhiteBox.Tests.dll",
+      "passed": 13
+    },
+    {
+      "platform": "windows-latest",
+      "framework": "net10.0",
+      "category": "original-stress",
+      "assembly": "Lokad.Lython.PublicApi.Tests.dll",
+      "passed": 406
+    },
+    {
+      "platform": "ubuntu-latest",
+      "framework": "net11.0",
+      "category": "ordinary",
+      "assembly": "Lokad.Lython.WhiteBox.Tests.dll",
+      "passed": 4781
+    },
+    {
+      "platform": "ubuntu-latest",
+      "framework": "net11.0",
+      "category": "ordinary",
+      "assembly": "Lokad.Lython.PublicApi.Tests.dll",
+      "passed": 17864
+    },
+    {
+      "platform": "ubuntu-latest",
+      "framework": "net10.0",
+      "category": "ordinary",
+      "assembly": "Lokad.Lython.WhiteBox.Tests.dll",
+      "passed": 4781
+    },
+    {
+      "platform": "ubuntu-latest",
+      "framework": "net10.0",
+      "category": "ordinary",
+      "assembly": "Lokad.Lython.PublicApi.Tests.dll",
+      "passed": 17864
+    },
+    {
+      "platform": "ubuntu-latest",
+      "framework": "net11.0",
+      "category": "original-stress",
+      "assembly": "Lokad.Lython.WhiteBox.Tests.dll",
+      "passed": 13
+    },
+    {
+      "platform": "ubuntu-latest",
+      "framework": "net11.0",
+      "category": "original-stress",
+      "assembly": "Lokad.Lython.PublicApi.Tests.dll",
+      "passed": 406
+    },
+    {
+      "platform": "ubuntu-latest",
+      "framework": "net10.0",
+      "category": "original-stress",
+      "assembly": "Lokad.Lython.WhiteBox.Tests.dll",
+      "passed": 13
+    },
+    {
+      "platform": "ubuntu-latest",
+      "framework": "net10.0",
+      "category": "original-stress",
+      "assembly": "Lokad.Lython.PublicApi.Tests.dll",
+      "passed": 406
+    }
+  ],
+  "consumers": [
+    {
+      "platform": "windows-latest",
+      "installedReleaseConsumersPassed": true,
+      "runtimes": [
+        [
+          ".NET 11.0.0-rc.3.26522.148",
+          "net11.0"
+        ],
+        [
+          ".NET 10.0.15",
+          "net10.0"
+        ]
+      ]
+    },
+    {
+      "platform": "ubuntu-latest",
+      "installedReleaseConsumersPassed": true,
+      "runtimes": [
+        [
+          ".NET 11.0.0-rc.3.26522.148",
+          "net11.0"
+        ],
+        [
+          ".NET 10.0.15",
+          "net10.0"
+        ]
+      ]
+    }
+  ],
+  "sourceProof": "../source-proof.json",
+  "fullMeasuredImages": "../source-and-images.tar.xz",
+  "independentCiBinaryIdentityNotInferred": true,
+  "logsSHA256": "1b9c4d531d1ddfa13d3b09aa2412179513fc79a73cd4b83a4f6b52720f01a11f",
+  "terminalCachedNeverRequery": true,
+  "publicationPostponed": true
+}

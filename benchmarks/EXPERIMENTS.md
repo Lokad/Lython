@@ -6,6 +6,16 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[R402 live async keyword defaults](results/2026-11-15-live-keyword-defaults/README.md)
+at6e276759 removes a pre-admission protocol-eligibility snapshot. Admission can
+replace __kwdefaults__ with a suspending key protocol; the binder now inspects
+live storage at lookup while final arguments stay owned. Three final regressions
+fail on51e3/22e5 and pass after correction, including cancellation/terminal refusal.
+204unique focused cases pass per actual11/10. Complete desktop search diagnostics
+retain all controls, including adverse+3.21% and5–30%unchanged drift; no CPU or
+speedup claim. [Full43717654522 qualification passes](results/2026-11-15-live-keyword-defaults/delivery/README.md):
+Windows/Ubuntu actual11/10, original stress and installed Release consumers.
+
 [R401 complete file-search host boundary](results/2026-11-15-host-cost-attribution/README.md)
 at51e3/22e5 closes the R400 host question: original public Run261.775us,
 forwarded262.981us, timed263.067us; host spans about36.5us/13.9%, predominantly
