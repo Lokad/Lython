@@ -1,0 +1,74 @@
+namespace Lokad.Lython.PublicApi.Tests;
+
+public sealed class FormatOperationTests
+{
+    [Fact]
+    public async Task NestedFieldsShareNumberingAndPreserveConversionOrder()
+    {
+        await FormatTemplateTests.AssertReusable("""
+            events=[]
+            class Field:
+             def __init__(self,name):self.name=name
+             def __format__(self,spec):
+              events.append(self.name+':'+spec)
+              return self.name
+             def __repr__(self):
+              events.append('repr:'+self.name)
+              return self.name
+            a,b=Field('a'),Field('b')
+            assert '{1:{0}}|{0!r:>3}'.format(a,b)=='b|  a'
+            assert events==['a:','b:a','repr:a']
+            events.clear()
+            assert '{:{}}'.format(a,b)=='a'
+            assert events==['b:','a:b']
+            assert 'value={0}, none={1}, braces={{ok}}'.format(12,None)=='value=12, none=None, braces={ok}'
+            return 'ok'
+            """, requireAsyncIo: false);
+    }
+
+    [Fact]
+    public async Task MappingAndStructuralErrorsRemainPythonShaped()
+    {
+        await FormatTemplateTests.AssertReusable("""
+            assert '{name:>3}'.format_map({'name':'x'})=='  x'
+            for template in ['{}','{0}']:
+             try:template.format_map({'name':'x'})
+             except ValueError as error:assert str(error)=='Format string contains positional fields'
+             else:raise AssertionError('positional field accepted')
+            cases=[('{'+'9'*19+'}','Too many decimal digits in format string'),
+                   ('{0!{}}','Unknown conversion specifier {'),
+                   ('{0:{1:{2}}}','Max string recursion exceeded')]
+            for template,message in cases:
+             try:template.format('ab',5,6)
+             except ValueError as error:assert str(error)==message
+             else:raise AssertionError('invalid format accepted')
+            events=[]
+            class Items:
+             def __getitem__(self,key):events.append(key);return 1
+            try:'{0[a]b}'.format(Items())
+            except ValueError as error:assert str(error)=="Only '.' or '[' may follow ']' in format field specifier"
+            else:raise AssertionError('trailing content accepted')
+            assert events==['a']
+            return 'ok'
+            """, requireAsyncIo: false);
+    }
+
+    [Fact]
+    public async Task ExpandedSpecsKeepEscapingAliasesFundedAcrossRepeatedCalls()
+    {
+        await FormatTemplateTests.AssertReusable("""
+            saved=[]
+            spec='λ'*4096
+            class Field:
+             def __format__(self,value):
+              assert value==spec
+              saved.append(value)
+              return ''
+            method='{0:{1}}'.format
+            for repeat in range(3):assert method(Field(),spec)==''
+            assert len(saved)==3
+            assert all(value==spec for value in saved)
+            return 'ok'
+            """, requireAsyncIo: false);
+    }
+}

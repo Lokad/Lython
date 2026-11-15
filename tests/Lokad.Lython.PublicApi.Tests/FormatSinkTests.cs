@@ -13,15 +13,8 @@ public sealed class FormatSinkTests
     [InlineData(true, "refuse")]
     public async Task PendingFieldKeepsStorageFundedAndJoinsBeforeReuse(bool mapping, string outcome)
     {
-        const long limit = 2 * 1024 * 1024;
-        var budget = new LythonMemoryBudget(limit);
-        var timing = new HeldTiming();
-        var host = new DelayedLythonHost();
-        var payload = new string('x', 4096);
-        host.SeedFile("/data.txt", payload);
-        host.SetTiming(timing);
-        var expression = mapping ? "'begin|{value:>9}|end'.format_map({'value':Field()})"
-            : "'begin|{0:>9}|end'.format(Field())";
+        var expression = mapping ? "'begin|{value:>9}|end'.format_map({'value':value})"
+            : "'begin|{0:>9}|end'.format(value)";
         var source = """
             import time
             class Field:
@@ -30,7 +23,49 @@ public sealed class FormatSinkTests
                value=stream.read()
                time.sleep(0)
                return value+spec
-            """ + "\ntry:\n result=" + expression + "\nexcept BaseException:print('caught')\nprint('done')\nreturn result";
+            """ + "\ndef render(value):return " + expression + "\nrender('warm')\ntry:\n result=render(Field())\nexcept BaseException:print('caught')\nprint('done')\nreturn result";
+        await AssertHeldOperation(source, outcome, ">9");
+    }
+
+    [Theory]
+    [InlineData(false, "success")]
+    [InlineData(true, "success")]
+    [InlineData(false, "cancel")]
+    [InlineData(true, "cancel")]
+    [InlineData(false, "refuse")]
+    [InlineData(true, "refuse")]
+    public async Task PendingMappingOrSuffixLookupKeepsItsOwnerUntilCleanup(bool attribute, string outcome)
+    {
+        const string setup = """
+            import time
+            def read_value():
+             with open('data.txt') as stream:
+              value=stream.read()
+              time.sleep(0)
+              return value+'!'
+            class Mapping:
+             def __getitem__(self,key):return read_value()
+            class Warm:value='warm'
+            class Source:
+             @property
+             def value(self):return read_value()
+            """;
+        var selection = attribute
+            ? "render='begin|{0.value}|end'.format\nrender(Warm())\ntarget=Source()"
+            : "render='begin|{value}|end'.format_map\nrender({'value':'warm'})\ntarget=Mapping()";
+        var source = setup + "\n" + selection + "\ntry:\n result=render(target)\nexcept BaseException:print('caught')\nprint('done')\nreturn result";
+        await AssertHeldOperation(source, outcome, "!");
+    }
+
+    private static async Task AssertHeldOperation(string source, string outcome, string suffix)
+    {
+        const long limit = 2 * 1024 * 1024;
+        var budget = new LythonMemoryBudget(limit);
+        var timing = new HeldTiming();
+        var host = new DelayedLythonHost();
+        var payload = new string('x', 4096);
+        host.SeedFile("/data.txt", payload);
+        host.SetTiming(timing);
         using (var script = new LythonEngine().Compile(source, budget))
         {
             Assert.True(script.IsValid, string.Join(";", script.Diagnostics.Select(d => d.Message)));
@@ -59,7 +94,7 @@ public sealed class FormatSinkTests
                     {
                         Assert.True(result.Success, result.Failure?.Message);
                         Assert.Equal("done\n", result.StandardOutput);
-                        Assert.Equal("begin|" + payload + ">9|end", result.ReturnValue);
+                        Assert.Equal("begin|" + payload + suffix + "|end", result.ReturnValue);
                         Assert.True(budget.ReservedBytes > baseline);
                     }
                     else

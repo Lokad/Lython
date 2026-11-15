@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Execute prepared method-format layouts directly through runtime lookup and
+  formatting, removing the generic callback executor and private rendering fallback.
+  Preserve nested numbering, deferred errors, actual async hooks and funded cleanup.
+
 - Reuse execution-owned field and native-spec layouts in `str.format` and
   `format_map`, replacing repeated template parsing and metadata construction.
   Preserve deferred errors, custom hooks and current-token cancellation. Cached

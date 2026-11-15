@@ -8625,3 +8625,6 @@ verified before unmount, all users joined. No CPU speedup or production change.
 
 
 [B813CPython checkpoint](results/2026-11-15-layout-cpython-checkpoint/README.md), committed58eeea6f/9d071eba: method-report warm1.657–1.685×,compile1.019–1.030×,fresh1.601–1.643×;f-string1.170–1.185×. Four phases139.049s/all gates/cleanup. Compilation/disposal and mediated I/O/prior-result cleanup stated; no causal cross-collection speedup. Original B810noise retained; full43771040409 active at capture. Broader performance objective stays open.
+
+
+[R419one runtime format operation](results/2026-11-15-runtime-format-operation/README.md), retained0393331a/9d071eba. Deletes generic callback executor/captures/fallback/duplicate names/native async field bridge; real protocol work/current tokens/funding preserved.6internal/691public each actual11/10 pass,3CPython semantic ports,6new held lookup cases. Allocation−9.41%,warm1.9–4.2%/fresh1.1–4.2%lower elapsed with CPU support; controls/adversity remain. B814all gates/cleanup; original pre-worker headroom refusal preserved. Full delivery pending; publication held/broader roadmap active.

@@ -1023,6 +1023,9 @@ same formatter as f-strings. Immediate calls reuse the existing execution member
 cache. Layouts live in the execution owner, separately from shared compiled literals;
 they hold no guest arguments, callbacks or cancellation token. Reusing an internal
 method with another execution owner prepares a layout funded by that owner.
+The runtime executes the layout through its existing lookup and formatting functions.
+Builtin fields append synchronously; actual mapping, attribute and formatting
+protocol work follows the current execution API and is awaited by RunAsync.
 
 Preparation admits conservative capacity, metadata and replacement overlap before
 allocation. Its charge remains until execution/result cleanup, including when a

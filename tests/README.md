@@ -672,8 +672,12 @@ returns. Exposed method values keep their Python identity and metadata behavior.
 [Formatting sinks](Lokad.Lython.PublicApi.Tests/FormatSinkTests.cs) hold actual
 formatting callbacks through host I/O, cancellation and refused admission. Working
 storage remains funded until the user settles; file cleanup precedes budget reuse
-and returned output retains its owner. Primitive formatting checks keep nested
-specification order and scratch refunds; method protocol checks await real host work.
+and returned output retains its owner. Warmed methods also hold real mapping and
+property lookups through cancellation/refusal before later formatting runs.
+[Public formatting operations](Lokad.Lython.PublicApi.Tests/FormatOperationTests.cs)
+preserve nested numbering/conversion order, Python-shaped structural errors and
+escaping expanded-spec aliases. They replace callback-wiring tests of the removed
+generic executor; method protocol checks still await real host work.
 
 [Reusable method templates](Lokad.Lython.PublicApi.Tests/FormatTemplateTests.cs)
 check repeated malformed templates after earlier hooks, Unicode suffixes, custom

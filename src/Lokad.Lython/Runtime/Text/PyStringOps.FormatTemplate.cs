@@ -1,4 +1,5 @@
 using System.Text;
+using System.Globalization;
 
 namespace Lokad.Lython.Runtime.Text;
 
@@ -10,7 +11,7 @@ internal static partial class PyStringOps
 
     internal readonly record struct FormatPart(ReadOnlyMemory<byte> Literal, FormatField? Field = null, string? Error = null);
 
-    internal sealed record FormatField(string Root, string Suffix, string Name, Rune? Conversion,
+    internal sealed record FormatField(string Root, string Suffix, Rune? Conversion,
         string? Spec, FormatTemplate? NestedSpec, bool RecursiveSpec,
         LythonRuntime.InterpolatedFormatSpecifier? PreparedSpec);
 
@@ -206,9 +207,55 @@ internal static partial class PyStringOps
             else spec = Encoding.UTF8.GetString(rawSpec.Span);
         }
         var prepared = LythonRuntime.PrepareConstantFormatSpecifier(spec, span ?? new(0, 0, 0, 0), token);
-        return new(root, suffix, Encoding.UTF8.GetString(fieldBytes.Span[..fieldNameEnd]),
-            conversion, spec, nested, recursive, prepared);
+        return new(root, suffix, conversion, spec, nested, recursive, prepared);
     }
 
+
+    private static bool IsFormatFieldDelimiter(byte value)
+        => value is (byte)'.' or (byte)'[' or (byte)'!' or (byte)':';
+
+    private static int SkipFormatAttribute(ReadOnlySpan<byte> field, int index, CancellationToken token)
+    {
+        var scan = index + 1;
+        while (scan < field.Length && !IsFormatFieldDelimiter(field[scan]))
+        {
+            if ((scan & 2047) == 0) token.ThrowIfCancellationRequested();
+            if (field[scan] == (byte)'{')
+                throw new InvalidOperationException("unexpected '{' in field name");
+            scan++;
+        }
+        return scan;
+    }
+
+    private static int SkipFormatBracket(ReadOnlySpan<byte> field, int index, CancellationToken token)
+    {
+        var scan = index + 1;
+        while (scan < field.Length && field[scan] != (byte)']')
+        {
+            if ((scan & 2047) == 0) token.ThrowIfCancellationRequested();
+            scan++;
+        }
+        if (scan >= field.Length)
+            throw new InvalidOperationException("expected '}' before end of string");
+        return scan + 1;
+    }
+
+    internal static bool TryParseFormatIndex(string text, out long value, CancellationToken cancellationToken = default)
+    {
+        value = 0;
+        if (text.Length == 0) return false;
+        var offset = 0;
+        foreach (var digit in text.EnumerateRunes())
+        {
+            if ((offset++ & 2047) == 0) cancellationToken.ThrowIfCancellationRequested();
+            if (Rune.GetUnicodeCategory(digit) != UnicodeCategory.DecimalDigitNumber) return false;
+            // CPython checks overflow while walking, even before a later nondigit.
+            var number = (int)Rune.GetNumericValue(digit);
+            if (value > (long.MaxValue - number) / 10)
+                throw new InvalidOperationException("Too many decimal digits in format string");
+            value = value * 10 + number;
+        }
+        return true;
+    }
 
 }

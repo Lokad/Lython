@@ -1,0 +1,133 @@
+{
+  "complete": true,
+  "elapsedSeconds": 140.95821134885773,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "rows": [
+    {
+      "case": "scripts.report-render.format-method.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 4.2054831875000005,
+        "reference": 4.390468401785715,
+        "candidate-control": 4.240283633928571,
+        "reference-control": 4.320553817391304
+      },
+      "cpuMilliseconds": {
+        "candidate": 4.464285714285714,
+        "reference": 4.642857142857143,
+        "candidate-control": 4.464285714285714,
+        "reference-control": 4.521739130434783
+      },
+      "elapsedChangePercent": [
+        -4.2133366501505005,
+        -3.420700347053185,
+        -2.6633305533220297,
+        -1.8578679228488215
+      ],
+      "cpuChangePercent": [
+        -3.8461538461538547,
+        -3.8461538461538547,
+        -1.2706043956044022,
+        -1.2706043956044022
+      ],
+      "referenceSpreadPercent": 1.6181857083457096,
+      "candidateSpreadPercent": 0.8275017370657389
+    },
+    {
+      "case": "scripts.report-render.format-method.large",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "candidate": 4.3039836330275225,
+        "reference": 4.409675533333333,
+        "candidate-control": 4.361216158878505,
+        "reference-control": 4.494345951456311
+      },
+      "cpuMilliseconds": {
+        "candidate": 4.587155963302752,
+        "reference": 4.666666666666666,
+        "candidate-control": 4.579439252336448,
+        "reference-control": 4.757281553398058
+      },
+      "elapsedChangePercent": [
+        -4.235595579087659,
+        -2.9621616585761013,
+        -2.396818076678686,
+        -1.0989328826694233
+      ],
+      "cpuChangePercent": [
+        -3.738317757009346,
+        -3.576109342819689,
+        -1.869158878504662,
+        -1.7038007863695803
+      ],
+      "referenceSpreadPercent": 1.9201054019267971,
+      "candidateSpreadPercent": 1.3297570513929546
+    },
+    {
+      "case": "scripts.report-render.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 2.8400838875739645,
+        "candidate-control": 2.8146605697674416,
+        "reference": 2.8643193333333334,
+        "candidate": 2.8512409345238097
+      },
+      "cpuMilliseconds": {
+        "reference-control": 3.017751479289941,
+        "candidate-control": 2.9651162790697674,
+        "reference": 3.0357142857142856,
+        "candidate": 3.0357142857142856
+      },
+      "elapsedChangePercent": [
+        -1.7337020697375194,
+        -0.8951608055577487,
+        -0.4565970929750973,
+        0.392842162115703
+      ],
+      "cpuChangePercent": [
+        -2.3255813953488302,
+        -1.744186046511642,
+        0.0,
+        0.5952380952380709
+      ],
+      "referenceSpreadPercent": 0.8533355604531501,
+      "candidateSpreadPercent": 1.2996368069841724
+    },
+    {
+      "case": "scripts.csv-invoice.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 6.7145049189189185,
+        "candidate-control": 6.7457939189189196,
+        "reference": 6.721934146666666,
+        "candidate": 6.6617704
+      },
+      "cpuMilliseconds": {
+        "reference-control": 6.891891891891892,
+        "candidate-control": 6.891891891891892,
+        "reference": 6.933333333333334,
+        "candidate": 6.800000000000001
+      },
+      "elapsedChangePercent": [
+        -0.8950362403728818,
+        -0.7853820878190532,
+        0.35495397205109747,
+        0.4659911695326979
+      ],
+      "cpuChangePercent": [
+        -1.9230769230769162,
+        -1.3333333333333308,
+        -0.5977130977130929,
+        0.0
+      ],
+      "referenceSpreadPercent": 0.11064446057393873,
+      "candidateSpreadPercent": 1.2612791176189297
+    }
+  ],
+  "retentionDecisionPending": false,
+  "CPythonRefreshed": false,
+  "retained": true,
+  "fullQualificationPending": true,
+  "reason": "Complete runtime format operation deletes callback executor/captures/fallback/duplicate field names and native per-field async wrapper;9.41%less allocation and modest whole-report elapsed/CPU support. Small adverse controls remain explicit. Not completion of larger call/frame/frontend roadmap."
+}

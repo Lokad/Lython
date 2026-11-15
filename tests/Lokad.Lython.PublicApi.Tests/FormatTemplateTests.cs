@@ -68,7 +68,7 @@ public sealed class FormatTemplateTests
             """);
     }
 
-    private static async Task AssertReusable(string source)
+    internal static async Task AssertReusable(string source, bool requireAsyncIo = true)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
         using (var script = new LythonEngine().Compile(source, budget))
@@ -86,7 +86,7 @@ public sealed class FormatTemplateTests
                     Assert.True(result.Success, result.Failure?.Message);
                     Assert.Equal("ok", result.ReturnValue);
                     Assert.True(budget.ReservedBytes > baseline);
-                    if (asynchronous) Assert.True(delayed.CompletedAsynchronously > 0);
+                    if (asynchronous && requireAsyncIo) Assert.True(delayed.CompletedAsynchronously > 0);
                 }
                 Assert.Equal(baseline, budget.ReservedBytes);
             }

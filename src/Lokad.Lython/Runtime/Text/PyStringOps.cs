@@ -378,4 +378,20 @@ internal static partial class PyStringOps
         finally { builder.Release(); }
     }
 
+    public static PyString EscapeRegex(PyString value)
+    {
+        var builder = CreateBuilder(value, value.ByteLength * 2);
+        foreach (var rune in value.EnumerateRunes())
+        {
+            if (rune.ByteLength == 1 && ".^$*+?{}[]\\|()&~#- \t\n\r\v\f".Contains((char)rune.Utf8Span[0], StringComparison.Ordinal))
+            {
+                builder.Append((byte)'\\');
+            }
+
+            builder.Append(rune);
+        }
+
+        return builder.ToPyStringAndRelease();
+    }
+
 }
