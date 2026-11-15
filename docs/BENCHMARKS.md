@@ -2,16 +2,17 @@
 
 | Representative workload / phase | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| CSV invoice / warm Run | 4,096 records / 127,031 B | 6.710–6.749 ms | 5.983–6.077 ms | 1.10–1.13× | Diagnostic; spreads 0.57/1.55%; IQR ≤1.10% |
-| CSV invoice / compilation only | 4,096 records / 127,031 B | 0.101–0.106 ms | 0.094–0.094 ms | 1.08–1.13× | Diagnostic; spreads 4.52/0.49%; IQR ≤1.74% |
-| CSV invoice / compile and execute once | 4,096 records / 127,031 B | 6.826–7.004 ms | 6.215–6.263 ms | 1.09–1.13× | Diagnostic; spreads 2.54/0.76%; IQR ≤2.10% |
+| CSV invoice / warm Run | 4,096 records / 127,031 B | 6.637–6.728 ms | 6.087–6.144 ms | 1.08–1.11× | Diagnostic; spreads 1.35/0.94%; IQR ≤1.52% |
+| CSV invoice / compilation only | 4,096 records / 127,031 B | 0.100–0.101 ms | 0.094–0.094 ms | 1.07–1.08× | Diagnostic; spreads 0.67/0.14%; IQR ≤1.06% |
+| CSV invoice / compile and execute once | 4,096 records / 127,031 B | 6.883–6.972 ms | 6.249–6.276 ms | 1.10–1.12× | Diagnostic; spreads 1.29/0.44%; IQR ≤1.50% |
 | CSV fulfillment / warm Run | 4,096 records / 126,821 B | 7.568–7.594 ms | 6.783–6.794 ms | 1.11–1.12× | Diagnostic; spreads 0.34/0.17%; IQR ≤1.70% |
-| Text / captured helper and counter / warm Run | 3,072 lines / 35,840 B | 1.213–1.236 ms | 0.891–0.893 ms | 1.36–1.39× | Diagnostic; spreads 1.84/0.19%; IQR ≤1.21% |
+| Text / captured helper and counter / warm Run | 3,072 lines / 35,840 B | 1.205–1.255 ms | 0.885–0.898 ms | 1.34–1.42× | Diagnostic; spreads 4.14/1.37%; IQR ≤1.73% |
 | Text / captured helper and counter / compile and execute once | 3,072 lines / 35,840 B | 1.267–1.301 ms | 1.034–1.042 ms | 1.22–1.26× | Diagnostic; spreads 2.67/0.74%; IQR ≤1.04% |
 | Text / inline / warm Run | 3,072 lines / 35,840 B | 0.818–0.851 ms | 0.802–0.804 ms | 1.02–1.06× | Diagnostic; spreads 3.91/0.21%; IQR ≤1.71% |
-| JSON-lines / aggregation helpers / warm Run | 4,096 records / 110,592 B | 3.416–3.484 ms | 4.053–4.070 ms | 0.84–0.86× | Diagnostic; spreads 1.98/0.42%; IQR ≤1.31% |
-| File search / defensive helper / warm Run | 2,049 lines / 42,010 B; stop after 1,025 | 0.286–0.303 ms | 0.157–0.158 ms | 1.81–1.93× | Diagnostic; spreads 5.90/1.10%; IQR ≤3.18% |
-| Configuration / six-helper manifest / compile and execute once | 833 B inputs / 1,877 B source | 0.498–0.498 ms | 0.470–0.475 ms | 1.05–1.06× | Diagnostic; spreads 0.08/1.02%; IQR ≤1.40% |
+| JSON-lines / aggregation helpers / warm Run | 4,096 records / 110,592 B | 3.467–3.563 ms | 4.098–4.117 ms | 0.84–0.87× | Diagnostic; spreads 2.77/0.47%; IQR ≤1.59% |
+| File search / defensive helper / warm Run | 2,049 lines / 42,010 B; stop after 1,025 | 0.272–0.273 ms | 0.152–0.155 ms | 1.76–1.80× | Diagnostic; spreads 0.51/1.74%; IQR ≤2.91% |
+| Configuration / six-helper manifest / compilation only | 833 B inputs / 1,877 B source | 0.198–0.200 ms | 0.155–0.158 ms | 1.25–1.29× | Diagnostic; spreads 1.02/1.92%; IQR ≤1.96% |
+| Configuration / six-helper manifest / compile and execute once | 833 B inputs / 1,877 B source | 0.497–0.498 ms | 0.463–0.470 ms | 1.06–1.08× | Diagnostic; spreads 0.04/1.49%; IQR ≤1.68% |
 
 **Ratio = Lython elapsed / CPython elapsed; above one means slower.** These are
 complete embedding measurements, not isolated interpreter CPU. Spreads compare
@@ -19,16 +20,20 @@ the two Lython/CPython process medians; IQRs and moving controls stay visible.
 
 Measured **2026-11-15 UTC**, stock **CPython3.13.16**, quiet Azure F4as_v7 /
 Ubuntu24.04.4, four AMD EPYC9V45 vCPUs,16GiB/no swap,.NET11RC3 workstation
-GC/normal tiering and CPython GIL/GC. **Text rows:1b82cd46/frozen0edc0c1c**;
-[affected checkpoint](../benchmarks/results/2026-11-15-cased-cpython-checkpoint/README.md)
-passes all measurement/cleanup gates; [full runtime qualification passes](../benchmarks/results/2026-11-15-fused-cased-preparation/delivery/README.md).
-**Other rows:43bce13a/frozen9e890d18**, with
-[full runtime qualification](../benchmarks/results/2026-11-15-completed-arithmetic/delivery/README.md)
-and [source/controls](../benchmarks/results/2026-11-15-arithmetic-cpython-checkpoint/README.md).
-That earlier collection's archive-floor failure and verified recovery remain
-explicit. Moving compilation/text/search controls preclude exact portable gaps
-or cross-collection speedups. The captured text script also updates a nonlocal
-counter; its difference from inline text does not isolate call overhead.
+GC/normal tiering and CPython GIL/GC. **CSV invoice, captured warm text, JSON,
+file search and configuration:2865f619/frozen55ba4c8a**;
+[eight-phase checkpoint](../benchmarks/results/2026-11-15-store-cpython-checkpoint/README.md)
+passes all measurement/cleanup gates; full runtime qualification is pending.
+**Captured fresh and inline text:1b82cd46/frozen0edc0c1c**, with
+[measurement](../benchmarks/results/2026-11-15-cased-cpython-checkpoint/README.md)
+and [full runtime qualification](../benchmarks/results/2026-11-15-fused-cased-preparation/delivery/README.md).
+**CSV fulfillment:43bce13a/frozen9e890d18**, with
+[measurement](../benchmarks/results/2026-11-15-arithmetic-cpython-checkpoint/README.md)
+and [full qualification](../benchmarks/results/2026-11-15-completed-arithmetic/delivery/README.md).
+Earlier archive-floor/staging failures and all original controls remain preserved.
+The current captured-text control moves4.14%; this limits exact gap claims. These
+cross-collection rows do not establish source-change speedups. Captured text also
+updates a nonlocal counter; its difference from inline text does not isolate calls.
 
 Warm includes synchronous Run, mediated RAM I/O, stdout/file goldens and prior-result
 cleanup; excludes compilation/startup, fixture reset/protocol and final cache teardown.

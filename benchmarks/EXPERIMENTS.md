@@ -15,6 +15,21 @@ regression remains explicit. Original staging refusal, unsupported-lane B805 par
 and diagnostic/environment failures are preserved. Focused 103 internal / 324 public
 each actual 11/10 pass; full qualification pending. Broader performance work continues.
 
+The A2 source gate at2865f619 finds shared record keys, adopted CSV final arrays and
+immutable field payloads already delivered. Universal executable-slot row values
+would widen reference-only backing; copying an unpublished integer must establish
+one stable identity before independent mutation. No replacement is selected without
+a concrete numeric-dominant workload and complete copy/publication invariant.
+This source tradeoff is not a timing result or a permanent ban on different designs.
+
+[B807 representative CPython checkpoint](results/2026-11-15-store-cpython-checkpoint/README.md)
+at2865f619/55ba4c8a passes all eight-phase gates in295.766s. Warm CSV1.08–1.11×,
+text1.34–1.42× (4.14%Lython control drift), JSON0.84–0.87×, search1.76–1.80×;
+manifest compilation1.25–1.29×, fresh1.06–1.08×. Existing I/O/cleanup boundaries,
+all raw adversity and the original missing-catalog staging failure are preserved.
+The guide refreshes affected external rows without inferring source-pair gains;
+full runtime qualification remains separate.
+
 [R402 live async keyword defaults](results/2026-11-15-live-keyword-defaults/README.md)
 at6e276759 removes a pre-admission protocol-eligibility snapshot. Admission can
 replace __kwdefaults__ with a suspending key protocol; the binder now inspects
