@@ -19,17 +19,21 @@ internal sealed partial class PyDict
         return TryAccumulateAt(index, key, hash, fallback, increment);
     }
 
+    internal bool CanAccumulateInlineWords(LythonRuntime.ExecutionContext context)
+        => _nativeItems is not null && _nativeValues is not null && _recordKeys is null
+            && !HasProtocolKeys && ReferenceEquals(_memoryGovernor, context.MemoryGovernor);
+
+    // The private word segment validates storage once. Until it exits, its
+    // prepaid cursor and exact native updates cannot admit or invoke Python.
     internal bool TryAccumulateInlineWord(ReadOnlySpan<byte> bytes, object fallback, BigInteger increment,
         LythonRuntime.ExecutionContext context, LythonSourceSpan querySpan)
     {
-        if (_nativeItems is null || _nativeValues is null || _recordKeys is not null || HasProtocolKeys ||
-            !ReferenceEquals(_memoryGovernor, context.MemoryGovernor) || increment.GetByteCount() >= 8) return false;
         context.CheckExecution(querySpan);
         var hash = MixNativeHash(PyValueComparer.NormalizeHash(PyString.HashUtf8(bytes, context, querySpan)));
-        var index = FindNativeTextIndex(_nativeItems, hash, bytes, context, querySpan);
+        var index = FindNativeTextIndex(_nativeItems!, hash, bytes, context, querySpan);
         // New keys need their real word identity. Resume the original body
         // after publishing that binding, before any insertion/growth admission.
-        return index >= 0 && TryAccumulateAt(index, (PyString)_nativeItems[index].Key!, hash,
+        return index >= 0 && TryAccumulateAt(index, (PyString)_nativeItems![index].Key!, hash,
             fallback, increment);
     }
 

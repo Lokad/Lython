@@ -8073,3 +8073,15 @@ flat. CSV controls overlap flat; observed control lower; JSON+1.16..+1.82%elapse
 remains adverse. Refine only by restoring the unnecessarily changed ordinary
 arithmetic ABI/kernel and removing its converted local. No isolated cause or
 recovery claim. One final source-pair decision follows, all original data retained.
+
+
+R376 refined [closed private word segment](results/2026-11-15-closed-word-segment/README.md)
+is retained: warm text elapsed−2.89..−5.68%, wider CPU−3.48..−5.26%, allocationflat.
+One reference fresh process spread8.77% makes magnitude inconclusive. Restoring
+ordinary BigInteger arithmetic ABI does not resolve JSON+.80..+2.70%elapsed/
+0..+3.41%CPU; accept that unresolved debt for reduced machinery and measured warm
+benefit. CSV varies, observedflat does not erase R373debt. B7676jobs265.002s/allgates;
+all users/fixtures closed and archive verified under lease. Per actual11/10 focused
+53internal/197public,144isolatedCPython controls/16goldenspass; full delivery pending.
+The original B766 form/adverse controls remain separate; no extra retiming or
+universal CPU, allocation, heap, tail or causality claim. Publication held.

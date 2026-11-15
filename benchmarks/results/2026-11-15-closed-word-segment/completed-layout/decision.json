@@ -1,0 +1,11 @@
+{
+  "status": "retain",
+  "core": "6164a933f5eef8f39e91e4541ac54bcfdd38832f01c4e58d68d331bafaa58217",
+  "reference": "95798eb99ca4945d06d10c05d4f0a64925719377190abb82c5a5775d91bb52b0",
+  "simplification": "One scoped frame/eligibility validation for the existing private prepaid cased-word segment; remove repeated private reads, frame brackets and no-op retirement. Generic observable loops retain their checks. No new dispatcher, owner, cache or option.",
+  "observations": "Warm captured text -2.89..-5.68% elapsed/-3.48..-5.26% wider CPU; allocation flat. Fresh process reference spread 8.77%, magnitude inconclusive. CSV controls variable. Observed control flat relative to this reference, not recovery of earlier R373 debt.",
+  "acceptedTradeoff": "JSON +0.80..+2.70% elapsed/0..+3.41% wider CPU remains unexplained after restoring the ordinary BigInteger arithmetic ABI. Retain for reduced execution machinery and measured warm-text benefit; no universal speedup, heap or tail claim.",
+  "preserved": "Per-word cancellation, managed body-local stack admission, exact protocol/growth/promotion continuation, publication before refunds/reentry, terminal refusal and funded cleanup; committed R375 distinct-binding guard.",
+  "qualification": "Focused actual11/10 pass; full Windows/Ubuntu, original stress and installed consumers pending.",
+  "publicationHeld": true
+}

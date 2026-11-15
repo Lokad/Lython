@@ -588,7 +588,10 @@ Dictionary, word and optional total bindings must be distinct for whole-loop
 fusion; overlapping names use ordinary executable operations and Python errors.
 Eligible dictionary counting loops run consecutive native iterations without
 repeating operand and call setup. They preserve ordinary local binding,
-optional integer totals and cancellation.
+optional integer totals and cancellation. Private prepaid cased-word segments
+validate their native dictionary once and share one managed interpreter frame;
+observable namespaces and general iteration keep per-iteration validation.
+The frame ends before publishing pending bindings or returning owned storage.
 Each update excludes admission and guest callbacks, so it completes as one finite
 native operation after its checked entry. Long hashing/comparison retain internal
 checks; checks after observable binding and retirement precede later work.

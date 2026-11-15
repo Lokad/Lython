@@ -46,6 +46,9 @@ internal sealed partial class LythonRuntime
             var totalChanged = false;
             long pendingTotal = 0;
             var exhausted = false;
+            PyDict? dictionary = null;
+            object? priorTotal = null;
+            var wordFrameEntered = false;
             try
             {
                 while (true)
@@ -64,31 +67,52 @@ internal sealed partial class LythonRuntime
                         PublishInstructionResult(ref execution, invocation, head, word.Value!);
                         wordChanged = false;
                     }
-                    // Binding may admit namespace storage and reenter. Read the
-                    // actual locals afterwards, and stop a refused command first.
-                    scope.CheckExecution(member.Span);
-                    var dictionary = execution.Locals[store.SecondInput].Object as PyDict;
+                    if (!wordFrameEntered)
+                    {
+                        // Observable bindings may admit/reenter. Private words
+                        // use prepaid storage and leave these uncaptured slots
+                        // unchanged until this callback-free segment ends.
+                        scope.CheckExecution(member.Span);
+                        dictionary = execution.Locals[store.SecondInput].Object as PyDict;
+                        priorTotal = hasTotal ? execution.Locals[total.InputStart].Object : null;
+                        if (dictionary is null || hasTotal &&
+                            (priorTotal is not BigInteger integer || integer.GetByteCount() >= 8))
+                        {
+                            execution.InstructionIndex = headIndex + 2;
+                            return true;
+                        }
+                    }
                     var key = compact ? null : execution.Locals[store.ThirdInput].Object as PyString;
-                    var priorTotal = hasTotal ? execution.Locals[total.InputStart].Object : null;
-                    if (dictionary is null || !compact && key is null ||
-                        hasTotal && (priorTotal is not BigInteger integer || integer.GetByteCount() >= 8))
+                    if (!compact && key is null)
                     {
                         execution.InstructionIndex = headIndex + 2;
                         return true;
                     }
 
                     execution.InstructionIndex = callIndex;
-                    scope.EnterInterpreterFrame(call.CallSpan);
+                    if (!wordFrameEntered)
+                    {
+                        scope.EnterInterpreterFrame(call.CallSpan);
+                        if (cursor is not null)
+                        {
+                            wordFrameEntered = true;
+                            if (!dictionary!.CanAccumulateInlineWords(scope))
+                            {
+                                execution.InstructionIndex = headIndex + 2;
+                                return true;
+                            }
+                        }
+                    }
                     bool updated;
                     try
                     {
                         updated = compact
-                            ? dictionary.TryAccumulateInlineWord(PyStringOps.CompactWordBytes(ref word), fallback, increment, scope,
+                            ? dictionary!.TryAccumulateInlineWord(PyStringOps.CompactWordBytes(ref word), fallback, increment, scope,
                                 call.CallSpan)
-                            : dictionary.TryAccumulateWithoutAdmission(key!, fallback, increment, scope,
+                            : dictionary!.TryAccumulateWithoutAdmission(key!, fallback, increment, scope,
                                 call.CallSpan);
                     }
-                    finally { scope.LeaveInterpreterFrame(); }
+                    finally { if (!wordFrameEntered) scope.LeaveInterpreterFrame(); }
                     if (!updated)
                     {
                         // Only the loop binding happened. The original body now
@@ -96,13 +120,13 @@ internal sealed partial class LythonRuntime
                         execution.InstructionIndex = headIndex + 2;
                         return true;
                     }
-                    execution.Stack.RetireTo(store.LiveExtent);
+                    if (!wordFrameEntered) execution.Stack.RetireTo(store.LiveExtent);
                     if (hasTotal)
                     {
                         execution.InstructionIndex = totalIndex;
                         // Retirement can refund/reenter. Observe a first refusal
                         // before performing the following Python store.
-                        scope.CheckExecution(total.Span);
+                        if (!wordFrameEntered) scope.CheckExecution(total.Span);
                         if (deferTotal)
                         {
                             // Both operands fit seven signed bytes. Stop this
@@ -135,19 +159,23 @@ internal sealed partial class LythonRuntime
             }
             finally
             {
-                // Publish before any continuation, callback or error handler.
-                // This private scalar store cannot admit or invoke guest code;
-                // it must not replace a cancellation or first refusal.
-                try
-                {
-                    if (wordChanged) execution.Locals[store.ThirdInput].Object = cursor!.Materialize(ref pendingWord);
-                }
+                try { if (wordFrameEntered) scope.LeaveInterpreterFrame(); }
                 finally
                 {
-                    if (totalChanged) execution.Locals[total.InputStart].Object = new BigInteger(pendingTotal);
-                    // Returning the prepared ranges can refund storage and
-                    // reenter. Publish both Python bindings before that point.
-                    if (exhausted) execution.Stack.RetireTo(head.InputStart);
+                    // Publish before any continuation, callback or error handler.
+                    // This private scalar store cannot admit or invoke guest code;
+                    // it must not replace a cancellation or first refusal.
+                    try
+                    {
+                        if (wordChanged) execution.Locals[store.ThirdInput].Object = cursor!.Materialize(ref pendingWord);
+                    }
+                    finally
+                    {
+                        if (totalChanged) execution.Locals[total.InputStart].Object = new BigInteger(pendingTotal);
+                        // Returning the prepared ranges can refund storage and
+                        // reenter. Publish both Python bindings before that point.
+                        if (exhausted) execution.Stack.RetireTo(head.InputStart);
+                    }
                 }
             }
         }

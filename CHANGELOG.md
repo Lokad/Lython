@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Share activation and native-dictionary validation across private prepaid word
+  segments, preserving per-word cancellation, managed stack safety and exact
+  continuation/publication before cleanup.
+
 - Preserve assignment order and Python errors when histogram loop bindings
   overlap. Use the ordinary executable loop when its dictionary, word or total
   refer to the same local.
