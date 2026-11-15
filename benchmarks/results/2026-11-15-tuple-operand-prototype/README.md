@@ -1,6 +1,7 @@
 # Integer tuple storage and transport — original prototype
 
-The [refined 22e5b72c source](refined/README.md) is retained for full qualification.
+The [refined 22e5b72c source](refined/README.md) passes
+[full delivery qualification](delivery/README.md).
 This page preserves the original 1b88 checkpoint; its adverse observations remain.
 The [first quiet-VM comparison](vm/summary.json) confirms CSV benefit and a text
 regression, prompting the bounded accessor refinement. Descriptive inherited

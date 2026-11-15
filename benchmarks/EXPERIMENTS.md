@@ -8360,3 +8360,26 @@ confirmation; remaining small uncertainty is accepted explicitly, not neutrality
 or recovered original debt. Both targets418public/173internal plus alias controls
 pass. Full delivery and representative CPython refresh remain pending. No release,
 tag, repeated unchanged full qualification or completion of the broader objective.
+
+[R399/B784 CSV versus CPython](results/2026-11-15-csv-cpython-checkpoint/README.md)
+refreshes committed51e3/22e5 in137.835s: invoice warm1.12–1.17×, compile1.08–1.11×,
+compile-plus-one-run1.10–1.11×; fulfillment warm1.16–1.18×. Warm invoice Lython
+spread4.47% remains visible. All phase/cleanup boundaries and raw controls are
+preserved; no cross-source attribution or startup claim. Full delivery pending.
+
+[R400/B785 complete search attribution](results/2026-11-15-search-cost-attribution/README.md)
+preserves one5s199Hz capture,15,872invocations,746guest/256other-thread samples.
+Native203, line210 and admission144inclusive counts overlap useful work;129guest
+leaves remain unknown. Existing16-slot final binding, Monitor.Wait and direct
+line reserve/commit rule out another arena, busy-spin deletion or per-line lease
+wrapper as missing work. Next is bounded host-cost attribution, not a speculative
+runtime or memory-policy rewrite. All RAM evidence verified before teardown;
+first retrieval configuration omission corrected without recapture/restart.
+
+
+[R397 full delivery43708277205](results/2026-11-15-tuple-operand-prototype/delivery/README.md)
+passes51e3c2c1/frozen22e5b72c: Windows/Ubuntu actual11/10 each4778internal/17864public
+ordinary,13/406originalstress,installed Release consumers. All585+4+2 inputs,
+16summaries/full logs terminal-cached forever; no unchanged qualification repeated.
+Original1b88 regressions, refined moving text/JSON controls and accepted uncertainty
+remain. CPython phases are separate; no universal speedup or publication claim.

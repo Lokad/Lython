@@ -1,0 +1,82 @@
+[
+  {
+    "file": "tests (ubuntu-latest)/6_Test Release (.NET 11).txt",
+    "passed": 4778,
+    "line": "2026-11-15T11:21:47.9482184Z Passed!  - Failed:     0, Passed:  4778, Skipped:     0, Total:  4778, Duration: 25 s - Lokad.Lython.WhiteBox.Tests.dll (net11.0)"
+  },
+  {
+    "file": "tests (ubuntu-latest)/6_Test Release (.NET 11).txt",
+    "passed": 17864,
+    "line": "2026-11-15T11:25:16.3797286Z Passed!  - Failed:     0, Passed: 17864, Skipped:     0, Total: 17864, Duration: 3 m 47 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)"
+  },
+  {
+    "file": "tests (ubuntu-latest)/7_Test Release (.NET 10 checkpoint).txt",
+    "passed": 4778,
+    "line": "2026-11-15T11:25:43.9326613Z Passed!  - Failed:     0, Passed:  4778, Skipped:     0, Total:  4778, Duration: 21 s - Lokad.Lython.WhiteBox.Tests.dll (net10.0)"
+  },
+  {
+    "file": "tests (ubuntu-latest)/7_Test Release (.NET 10 checkpoint).txt",
+    "passed": 17864,
+    "line": "2026-11-15T11:29:30.5834740Z Passed!  - Failed:     0, Passed: 17864, Skipped:     0, Total: 17864, Duration: 4 m 2 s - Lokad.Lython.PublicApi.Tests.dll (net10.0)"
+  },
+  {
+    "file": "tests (ubuntu-latest)/9_Test original stress scales.txt",
+    "passed": 13,
+    "line": "2026-11-15T11:29:44.6438390Z Passed!  - Failed:     0, Passed:    13, Skipped:     0, Total:    13, Duration: 1 s - Lokad.Lython.WhiteBox.Tests.dll (net11.0)"
+  },
+  {
+    "file": "tests (ubuntu-latest)/9_Test original stress scales.txt",
+    "passed": 406,
+    "line": "2026-11-15T11:33:41.7616829Z Passed!  - Failed:     0, Passed:   406, Skipped:     0, Total:   406, Duration: 3 m 56 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)"
+  },
+  {
+    "file": "tests (ubuntu-latest)/9_Test original stress scales.txt",
+    "passed": 13,
+    "line": "2026-11-15T11:33:45.9926805Z Passed!  - Failed:     0, Passed:    13, Skipped:     0, Total:    13, Duration: 1 s - Lokad.Lython.WhiteBox.Tests.dll (net10.0)"
+  },
+  {
+    "file": "tests (ubuntu-latest)/9_Test original stress scales.txt",
+    "passed": 406,
+    "line": "2026-11-15T11:37:52.9115824Z Passed!  - Failed:     0, Passed:   406, Skipped:     0, Total:   406, Duration: 4 m 6 s - Lokad.Lython.PublicApi.Tests.dll (net10.0)"
+  },
+  {
+    "file": "tests (windows-latest)/6_Test Release (.NET 11).txt",
+    "passed": 4778,
+    "line": "2026-11-15T11:24:35.5416959Z Passed!  - Failed:     0, Passed:  4778, Skipped:     0, Total:  4778, Duration: 31 s - Lokad.Lython.WhiteBox.Tests.dll (net11.0)"
+  },
+  {
+    "file": "tests (windows-latest)/6_Test Release (.NET 11).txt",
+    "passed": 17864,
+    "line": "2026-11-15T11:28:53.6723221Z Passed!  - Failed:     0, Passed: 17864, Skipped:     0, Total: 17864, Duration: 4 m 40 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)"
+  },
+  {
+    "file": "tests (windows-latest)/7_Test Release (.NET 10 checkpoint).txt",
+    "passed": 4778,
+    "line": "2026-11-15T11:29:28.9268631Z Passed!  - Failed:     0, Passed:  4778, Skipped:     0, Total:  4778, Duration: 28 s - Lokad.Lython.WhiteBox.Tests.dll (net10.0)"
+  },
+  {
+    "file": "tests (windows-latest)/7_Test Release (.NET 10 checkpoint).txt",
+    "passed": 17864,
+    "line": "2026-11-15T11:33:39.7913039Z Passed!  - Failed:     0, Passed: 17864, Skipped:     0, Total: 17864, Duration: 4 m 31 s - Lokad.Lython.PublicApi.Tests.dll (net10.0)"
+  },
+  {
+    "file": "tests (windows-latest)/9_Test original stress scales.txt",
+    "passed": 13,
+    "line": "2026-11-15T11:34:03.3104967Z Passed!  - Failed:     0, Passed:    13, Skipped:     0, Total:    13, Duration: 2 s - Lokad.Lython.WhiteBox.Tests.dll (net11.0)"
+  },
+  {
+    "file": "tests (windows-latest)/9_Test original stress scales.txt",
+    "passed": 406,
+    "line": "2026-11-15T11:39:40.8796972Z Passed!  - Failed:     0, Passed:   406, Skipped:     0, Total:   406, Duration: 5 m 36 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)"
+  },
+  {
+    "file": "tests (windows-latest)/9_Test original stress scales.txt",
+    "passed": 13,
+    "line": "2026-11-15T11:39:47.9013008Z Passed!  - Failed:     0, Passed:    13, Skipped:     0, Total:    13, Duration: 2 s - Lokad.Lython.WhiteBox.Tests.dll (net10.0)"
+  },
+  {
+    "file": "tests (windows-latest)/9_Test original stress scales.txt",
+    "passed": 406,
+    "line": "2026-11-15T11:45:29.3059179Z Passed!  - Failed:     0, Passed:   406, Skipped:     0, Total:   406, Duration: 5 m 39 s - Lokad.Lython.PublicApi.Tests.dll (net10.0)"
+  }
+]

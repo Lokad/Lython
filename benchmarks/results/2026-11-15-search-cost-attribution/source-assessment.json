@@ -1,0 +1,15 @@
+{
+  "revision": "51e3c2c153bddf9937e01df2a1c3f2c9d3b10748",
+  "coreSHA256": "22e5b72c3d02a987758a2c84d08c61b4345fb11e7acac0394b5fef9d98e18141",
+  "facts": [
+    "Native call working storage is a fixed16-slot managed buffer, not64; direct arguments already enter final slots.",
+    "Synchronous callers use Monitor.Wait; no custom busy-spin or ManualResetEventSlim policy was found.",
+    "Decoded line windows already borrow admitted stable UTF8 backing; metadata publication uses direct Reserve/Commit/rollback, not a per-line transaction wrapper.",
+    "Every Reserve currently resizes the borrowed shared lease; batching would change admission timing/retention and needs an explicit ownership contract.",
+    "Inclusive frame counts overlap useful work; no whole activation or dispatch controller is established as disposable."
+  ],
+  "next": "One bounded host-call timing attribution on the same complete file-search script using a private forwarding wrapper around the existing trusted comparison host. Keep capabilities, paths/tokens/budgets, stream contracts and goldens identical. Separate host work from the remaining frame/operand question before selecting a redesign. No new runtime policy, benchmark framework, coupon pool or guest tracing.",
+  "stopping": "Close this capture/source gate with overlapping costs and explicit kernel/runtime unknowns. No unchanged recapture or another call arena from inclusive percentages.",
+  "runtimeChanged": false,
+  "testsRepeated": false
+}

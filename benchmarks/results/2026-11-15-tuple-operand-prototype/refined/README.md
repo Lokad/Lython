@@ -1,7 +1,7 @@
 # Final-slot integer tuples — retained refinement
 
 2026-11-15. Frozen **22e5b72c** against qualified b58e2dc4/f304b3db.
-Retained for full delivery qualification; publication remains postponed.
+[Full Windows/Ubuntu11/10, original stress and installed-consumer qualification passes](../delivery/README.md); publication remains postponed.
 
 The original [1b88 source and adverse results](../README.md) stay preserved.
 That source grew the common slot accessor from 42 to 89 IL bytes. The refinement
@@ -44,7 +44,7 @@ plus unchanged-reference/candidate walrus, closure, wider-tuple and helper-call
 alias controls under both APIs. Current tokens, eager refusal, conservative
 capacity/eventual-box admission, retained owners and awaited I/O cleanup remain.
 A private scalar borrow may retain its source tuple until observation/retirement.
-Full Windows/Ubuntu, original stress and installed-package delivery is pending.
+Full Windows/Ubuntu, original stress and installed-package delivery passes as linked above.
 
 All VM identity, golden, quiet, balance, Closed/exit/join and archive gates pass.
 No users/RAM fixtures remain. The original VM prototype image is retired only

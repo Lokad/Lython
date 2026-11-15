@@ -1,0 +1,12 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "ramTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 266670080,
+  "archiveSHA256": "5a81f5c5071259075257061a996d454e74353eac78b5da7d012fd90f2a62fed1",
+  "source": "Committed51e3c2c1/frozen22e5b72c; R400 complete search CPU attribution",
+  "performanceComparison": false
+}
