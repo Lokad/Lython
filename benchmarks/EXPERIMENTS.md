@@ -8141,3 +8141,17 @@ CPU unmeasured, no retention/full-qualification claim. Preserve initial Windows
 console newline validation refusal/corrected StringIO capture, all source/core/
 raw/tool checks. All local users/fixtures close; no VM collection yet. Next bounded
 quiet warm/fresh pair with controls, then explicit decision. Publication held.
+
+
+R379 [final CSV payload retained](results/2026-11-15-csv-final-payload/README.md),
+716176a8 versus6164: one existing window-backed payload replaces long-field arrays,
+short inline values/identities/error order unchanged; no new owners/cache/policy.
+B770fivejobs203.485s/allgates. Target warm elapsed−.25..−1.05%/CPU−.92..−1.74%
+observed; allocation−5.557%. Fresh−1.53..+4.46%elapsed/−4..+3%CPU with3.05/2.77%
+processspread remains inconclusive/accepted; ordinary CSV mixed,textCPU+.26..+.99%
+possible smallcontrolcost. No broadCPU/neutrality/fresh/heap/tail/debtclosure claim.
+118internal/390public per actual11/10,24goldens/reference-firstfundingtestpass.
+AllVMusers/RAMclosed; rawarchivedunderlease, two exact superseded archived957/bed
+inodegroups retired with fullGit/local/member/remoteproof. Currentimages/data/
+aux/toolchain and254/252MiBfloors survive. Full deliverypending/publicationheld;
+broader performance objective continues. Original preparation failure/data retained.

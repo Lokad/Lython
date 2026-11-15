@@ -944,8 +944,12 @@ same parser compacts in place. Public file iteration still returns independent
 strings. Raw line bytes and an unfinished multiline prefix can require more
 working capacity than the decoded fields; replacement peaks remain admitted.
 Each source item completes at most one record, with trailing CR/LF allowed.
-One independently funded final field array awaits consumption. DictReader
-transfers it to matching native-key records; otherwise it relinquishes private
+Final row admission covers all field storage before construction. Long fields
+have separate Python string identities over one exact immutable payload; short
+fields retain inline storage. That payload stays funded by the execution/result
+owner, including after unpublished sibling storage is relinquished. It never
+borrows the mutable parser buffer. One independently funded final field array
+awaits consumption. DictReader transfers it to matching native-key records; otherwise it relinquishes private
 array capacity after header/key protocols and awaited cleanup. Escaping
 dictionaries/rest lists retain their storage funding.
 csv.reader and exposed fieldnames adopt the funded array without copying.

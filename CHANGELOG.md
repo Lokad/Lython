@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Construct long CSV fields over one admitted immutable payload, preserving
+  separate string identities, short inline values and numeric/error order.
+  Shared backing remains conservatively funded until its owner ends.
+
 - Share activation and native-dictionary validation across private prepaid word
   segments, preserving per-word cancellation, managed stack safety and exact
   continuation/publication before cleanup.

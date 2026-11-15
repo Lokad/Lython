@@ -60,3 +60,9 @@ Scalar snapshot/window validation and counter cleanup do not close the three
 integration gaps. [Committed source delta](source-update-d1822732.json) preserves
 exact hashes; no pin change or repeated qualification follows. These gaps defer
 only affected final-adapter qualification, never independent Lython work.
+
+At the next coherent Lython delivery checkpoint, read-only [4d923414 assessment](source-update-4d923414.json)
+finds the entire integration code unchanged fromd1822732 (READMEonly). The same
+three precise final-adapter gaps remain. No package pin, semantic/interruption/
+performance/safety qualification or unchanged dev80 rerun follows; independent
+Lython implementation continues.

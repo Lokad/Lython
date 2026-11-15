@@ -1,0 +1,158 @@
+{
+  "groups": [
+    {
+      "commit": "ab435af9c95d0532dc3c6cbe3bc7341bbf2b547c",
+      "canonicalArchive": "benchmarks/results/2026-11-15-shared-executable-slots/completed-sources-and-checks.tar.xz",
+      "canonicalArchiveSHA256": "a5e42e4eb1b1a0a014cda9c3bcf451d770926057efea1dbec423b1cf4fca9162",
+      "member": "candidate-core.dll",
+      "bytes": 5749760,
+      "sha256": "95798eb99ca4945d06d10c05d4f0a64925719377190abb82c5a5775d91bb52b0",
+      "paths": [
+        "shared-slots-b763-20261115/candidate-core.dll",
+        "slots-cpython-b764-20261115/candidate/Lokad.Lython.dll",
+        "shared-slots-b763-20261115/candidate/Lokad.Lython.dll",
+        "text-stage-b765-20261115/candidate/Lokad.Lython.dll",
+        "word-segment-b766-20261115/reference/Lokad.Lython.dll",
+        "word-segment-b767-20261115/reference/Lokad.Lython.dll"
+      ],
+      "expectedLinks": 6
+    },
+    {
+      "commit": "ab435af9c95d0532dc3c6cbe3bc7341bbf2b547c",
+      "canonicalArchive": "benchmarks/results/2026-11-14-builtin-scalar-publication/sources-and-local-checks.tar.xz",
+      "canonicalArchiveSHA256": "5f500de90c608e7f5f7965e0bf72a2c44da3e6bcabda25035ae540515ebdc44e",
+      "member": "candidate-core.dll",
+      "bytes": 5747712,
+      "sha256": "bed6e57e060da7983b4c995f75c6d6adbb335cbe91aecca1e7a943840c44df54",
+      "paths": [
+        "scalar-results-b759-20261114/candidate-core.dll",
+        "scalar-results-b759-20261114/candidate/Lokad.Lython.dll",
+        "current-cpython-b761-20261114/candidate/Lokad.Lython.dll",
+        "call-publication-b760-20261114/candidate/Lokad.Lython.dll",
+        "shared-slots-b763-20261115/reference/Lokad.Lython.dll",
+        "shared-slots-b762-20261115/reference/Lokad.Lython.dll"
+      ],
+      "expectedLinks": 6
+    }
+  ],
+  "remoteMetadataAndHashes": [
+    {
+      "path": "/home/lokad/lython-bench-checks/shared-slots-b763-20261115/candidate-core.dll",
+      "inode": 847201,
+      "links": 6,
+      "uid": 1000,
+      "bytes": 5749760,
+      "sha256": "95798eb99ca4945d06d10c05d4f0a64925719377190abb82c5a5775d91bb52b0"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/slots-cpython-b764-20261115/candidate/Lokad.Lython.dll",
+      "inode": 847201,
+      "links": 6,
+      "uid": 1000,
+      "bytes": 5749760,
+      "sha256": "95798eb99ca4945d06d10c05d4f0a64925719377190abb82c5a5775d91bb52b0"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/shared-slots-b763-20261115/candidate/Lokad.Lython.dll",
+      "inode": 847201,
+      "links": 6,
+      "uid": 1000,
+      "bytes": 5749760,
+      "sha256": "95798eb99ca4945d06d10c05d4f0a64925719377190abb82c5a5775d91bb52b0"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/text-stage-b765-20261115/candidate/Lokad.Lython.dll",
+      "inode": 847201,
+      "links": 6,
+      "uid": 1000,
+      "bytes": 5749760,
+      "sha256": "95798eb99ca4945d06d10c05d4f0a64925719377190abb82c5a5775d91bb52b0"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/word-segment-b766-20261115/reference/Lokad.Lython.dll",
+      "inode": 847201,
+      "links": 6,
+      "uid": 1000,
+      "bytes": 5749760,
+      "sha256": "95798eb99ca4945d06d10c05d4f0a64925719377190abb82c5a5775d91bb52b0"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/word-segment-b767-20261115/reference/Lokad.Lython.dll",
+      "inode": 847201,
+      "links": 6,
+      "uid": 1000,
+      "bytes": 5749760,
+      "sha256": "95798eb99ca4945d06d10c05d4f0a64925719377190abb82c5a5775d91bb52b0"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/scalar-results-b759-20261114/candidate-core.dll",
+      "inode": 847131,
+      "links": 6,
+      "uid": 1000,
+      "bytes": 5747712,
+      "sha256": "bed6e57e060da7983b4c995f75c6d6adbb335cbe91aecca1e7a943840c44df54"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/scalar-results-b759-20261114/candidate/Lokad.Lython.dll",
+      "inode": 847131,
+      "links": 6,
+      "uid": 1000,
+      "bytes": 5747712,
+      "sha256": "bed6e57e060da7983b4c995f75c6d6adbb335cbe91aecca1e7a943840c44df54"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/current-cpython-b761-20261114/candidate/Lokad.Lython.dll",
+      "inode": 847131,
+      "links": 6,
+      "uid": 1000,
+      "bytes": 5747712,
+      "sha256": "bed6e57e060da7983b4c995f75c6d6adbb335cbe91aecca1e7a943840c44df54"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/call-publication-b760-20261114/candidate/Lokad.Lython.dll",
+      "inode": 847131,
+      "links": 6,
+      "uid": 1000,
+      "bytes": 5747712,
+      "sha256": "bed6e57e060da7983b4c995f75c6d6adbb335cbe91aecca1e7a943840c44df54"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/shared-slots-b763-20261115/reference/Lokad.Lython.dll",
+      "inode": 847131,
+      "links": 6,
+      "uid": 1000,
+      "bytes": 5747712,
+      "sha256": "bed6e57e060da7983b4c995f75c6d6adbb335cbe91aecca1e7a943840c44df54"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/shared-slots-b762-20261115/reference/Lokad.Lython.dll",
+      "inode": 847131,
+      "links": 6,
+      "uid": 1000,
+      "bytes": 5747712,
+      "sha256": "bed6e57e060da7983b4c995f75c6d6adbb335cbe91aecca1e7a943840c44df54"
+    }
+  ],
+  "allMetadataHashesVerifiedBeforeMutation": true,
+  "freshIdleLease": true,
+  "retiredOnly": [
+    "/home/lokad/lython-bench-checks/shared-slots-b763-20261115/candidate-core.dll",
+    "/home/lokad/lython-bench-checks/slots-cpython-b764-20261115/candidate/Lokad.Lython.dll",
+    "/home/lokad/lython-bench-checks/shared-slots-b763-20261115/candidate/Lokad.Lython.dll",
+    "/home/lokad/lython-bench-checks/text-stage-b765-20261115/candidate/Lokad.Lython.dll",
+    "/home/lokad/lython-bench-checks/word-segment-b766-20261115/reference/Lokad.Lython.dll",
+    "/home/lokad/lython-bench-checks/word-segment-b767-20261115/reference/Lokad.Lython.dll",
+    "/home/lokad/lython-bench-checks/scalar-results-b759-20261114/candidate-core.dll",
+    "/home/lokad/lython-bench-checks/scalar-results-b759-20261114/candidate/Lokad.Lython.dll",
+    "/home/lokad/lython-bench-checks/current-cpython-b761-20261114/candidate/Lokad.Lython.dll",
+    "/home/lokad/lython-bench-checks/call-publication-b760-20261114/candidate/Lokad.Lython.dll",
+    "/home/lokad/lython-bench-checks/shared-slots-b763-20261115/reference/Lokad.Lython.dll",
+    "/home/lokad/lython-bench-checks/shared-slots-b762-20261115/reference/Lokad.Lython.dll"
+  ],
+  "beforeFreeBytes": 266043392,
+  "afterFreeBytes": 277553152,
+  "current6164AndLocal7161Preserved": true,
+  "allEvidenceArchivesCatalogsAuxiliariesToolchainsAndFloorsPreserved": true,
+  "localAndCommittedArchiveMemberCustody": true,
+  "plannedUnpackedBytes": 7733668
+}

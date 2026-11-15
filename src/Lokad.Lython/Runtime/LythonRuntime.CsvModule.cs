@@ -507,13 +507,15 @@ internal sealed partial class LythonRuntime
         private readonly GovernedByteBuilder _record;
         private int _fieldStart;
         private long _stringBytes;
+        private int _payloadBytes;
         private object[]? _readyRecord;
         private enum FieldState { RecordStart, FieldStart, Bare, Quoted, AfterQuote }
         private FieldState _state;
         private bool _fieldWasQuoted;
 
         // Field descriptors and native record bytes are private working storage.
-        // Returned strings acquire independent payloads before publication.
+        // Long fields share one immutable final payload. Short fields retain
+        // inline bytes; every field keeps its own Python string identity.
         private readonly struct CsvField(int start, int length, object? converted)
         {
             internal readonly int Start = start, Length = length;
@@ -715,7 +717,11 @@ internal sealed partial class LythonRuntime
             EnsureListCapacity(_fields);
             _fields.Add(new CsvField(_fieldStart, length, converted));
             if (converted is null && length != 0)
+            {
                 _stringBytes = checked(_stringBytes + PyString.EstimateApproximateBytes(length));
+                if (length > PyString.InlineUtf8Capacity)
+                    _payloadBytes = checked(_payloadBytes + length);
+            }
             _fieldStart = _record.Length;
             _state = FieldState.FieldStart;
             _fieldWasQuoted = false;
@@ -744,6 +750,11 @@ internal sealed partial class LythonRuntime
             using var storage = _context.MemoryGovernor.ReserveTemporary(resultBytes, _span);
             _context.CheckExecution(_span);
             var row = _fields.Count == 0 ? Array.Empty<object>() : new object[_fields.Count];
+            // The existing conservative field estimate funds this entire final
+            // backing and all shells before allocation. Windows never borrow
+            // the mutable parser buffer or refund a retained sibling's bytes.
+            var payload = _payloadBytes == 0 ? Array.Empty<byte>() : new byte[_payloadBytes];
+            var payloadOffset = 0;
             var index = 0;
             foreach (var field in _fields)
             {
@@ -753,8 +764,9 @@ internal sealed partial class LythonRuntime
                 else if (field.Length == 0) cell = PyString.Empty;
                 else
                 {
-                    var text = PyString.CreateReservedUtf8(field.Length, _context.MemoryGovernor);
-                    var bytes = text.UnpublishedUtf8;
+                    var text = field.Length <= PyString.InlineUtf8Capacity
+                        ? PyString.CreateReservedUtf8(field.Length, _context.MemoryGovernor) : null;
+                    var bytes = text is null ? payload.AsSpan(payloadOffset, field.Length) : text.UnpublishedUtf8;
                     for (var offset = 0; offset < bytes.Length;)
                     {
                         _context.CheckExecution(_span);
@@ -762,7 +774,12 @@ internal sealed partial class LythonRuntime
                         _record.WrittenSpan.Slice(field.Start + offset, count).CopyTo(bytes.Slice(offset, count));
                         offset += count;
                     }
-                    text.CompleteUnpublishedUtf8(field.Length);
+                    if (text is null)
+                    {
+                        text = PyString.CreateReservedUtf8Window(payload, payloadOffset, field.Length, _context.MemoryGovernor);
+                        payloadOffset += field.Length;
+                    }
+                    else text.CompleteUnpublishedUtf8(field.Length);
                     cell = text;
                 }
                 row[index++] = cell;
@@ -770,12 +787,8 @@ internal sealed partial class LythonRuntime
             _context.CheckExecution(_span);
             storage.Commit(resultBytes);
             _readyRecord = row;
-            _fields.Clear();
-            _record.Truncate(0);
-            _fieldStart = 0;
-            _stringBytes = 0;
+            ResetRecord();
             ReleaseRowScratch();
-            _state = FieldState.RecordStart;
         }
 
         // Drops the in-progress record after a failed feed so the next pull
@@ -786,6 +799,7 @@ internal sealed partial class LythonRuntime
             _record.Truncate(0);
             _fieldStart = 0;
             _stringBytes = 0;
+            _payloadBytes = 0;
             _state = FieldState.RecordStart;
             _fieldWasQuoted = false;
         }
@@ -808,6 +822,7 @@ internal sealed partial class LythonRuntime
             _fields.Capacity = 0;
             _fieldStart = 0;
             _stringBytes = 0;
+            _payloadBytes = 0;
             _context.MemoryGovernor.Release(before - StorageBytes);
         }
 

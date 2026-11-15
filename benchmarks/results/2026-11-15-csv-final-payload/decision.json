@@ -1,0 +1,12 @@
+{
+  "status": "retain",
+  "core": "716176a82b2a350fee8a9f4224fa00e167929050ca2ce255e9a3704c5ec7e85c",
+  "reference": "6164a933f5eef8f39e91e4541ac54bcfdd38832f01c4e58d68d331bafaa58217",
+  "simplification": "One exact immutable CSV long-field payload with existing UTF8 windows replaces per-field byte arrays. Independent string identities/short inline fields remain; duplicate parser reset is consolidated. No new owner/cache/refcount/policy/raw-range inventory.",
+  "allocation": "Metadata-heavy complete validation script5120rows/400411B:3982195.875 to3760902.125B/run,-5.557%; ordinary invoice/fulfillment effectivelyflat. Existing no-forcedGC process-wide tool, allocation not live memory/CPU.",
+  "timing": "B770fivejobs203.485s/allgates. Warm target elapsed-.25..-1.05%,widerCPU-.92..-1.74%observed; small effect, no dependable universal CPU magnitude. Fresh-1.53..+4.46%elapsed/-4..+3%CPU, reference3.05%/candidate2.77%spread; inconclusive. Invoice/fulfillment mixed.",
+  "acceptedLimits": "Retain for coherent storage/5.557%allocation benefit. Fresh uncertainty incl adverse+4.46% remains; no neutrality claim. Text elapsedmixed,widerCPU+.26..+.99%possible small control debt; do not attribute or erase prior debt. Shared backing may remain charged longer after private sibling withdrawal.",
+  "validation": "118internal/390public per actual11/10;24reference/candidate/CPythongoldens; new actual-backing funding test passes reference first. Cancellation/terminalrefusal preflight, aliases, realI/O/join and ownershipcleanup preserved. Fullplatform/stress/installedconsumers pending at retained boundary.",
+  "custody": "AllVMworkersjoined,RAMfixturesremoved,rawarchiveverifiedunderlease. Two superseded archived957/bed inodegroups retired only after committed/local/member and freshremote UID/path/link/hash proof. Current6164/7161,catalogs,auxiliaries,toolchains and254/252MiBfloors preserved.",
+  "publicationHeld": true
+}
