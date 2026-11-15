@@ -8438,3 +8438,13 @@ were verified; inherited descriptive role labels are corrected explicitly while
 the raw originals stay archived. All users join and RAM data is archived/verified
 before teardown. No new timing campaign, full qualification or publication follows
 from this attribution alone.
+
+[R405/B790 completed arithmetic](results/2026-11-15-completed-arithmetic/README.md)
+is an uncommitted coherent prototype: shared builtin arithmetic and operand reads
+remove duplicate selectors/probes and keep completed arithmetic outside generic
+async operand handling. Corrected132internal actual11/164actual10 and401public each
+pass; the attempted locals-field removal's51failures remain and its required
+loan-return handle is restored. Allocation is flat. Stable invoice elapsed is
+2–4%lower/CPU2–3%lower; text/search controls move and one fresh-config process is
+adverse. One same-bits text/fresh confirmation with longer full-request warmup is
+selected; no attribution of uncertainty to code size or retained-runtime claim.

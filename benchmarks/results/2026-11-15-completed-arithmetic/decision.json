@@ -1,0 +1,12 @@
+{
+  "retained": false,
+  "fullyQualified": false,
+  "sourcePair": "uncommitted9e890d18 versus qualified51e3/22e5; allocation reference6e/45dd",
+  "initialInvoiceGain": "elapsed2.29..3.84% and CPU2.14..3.30% lower; source-pair evidence, no isolated causal claim",
+  "remainingUncertainty": "Moving text/search controls and adverse fresh-config process remain; one same-bits text/fresh confirmation with longer full-request warmup selected.",
+  "allocation": "Effectively flat across the four existing complete workloads",
+  "originalLifetimeFailure": "Derived Locals lost the return handle after Stack.ReleaseStorage;51public failures. Existing handle restored without relaxing assertions or adding ownership machinery.",
+  "codegen": "Shared reader92IL bytes; short config diagnostic captures Tier1 reader but no optimized prefix. Does not establish a CPU cause; source remains unchanged.",
+  "reconstruction": "Exact changed core plus full per-image manifests; unchanged auxiliaries are in3c3eb130 canonical activation reference-image archive.",
+  "archiveSHA256": "392f230fe5039383fae199194ea59d11baedc5cb9792f91c025a223f20e302cb"
+}
