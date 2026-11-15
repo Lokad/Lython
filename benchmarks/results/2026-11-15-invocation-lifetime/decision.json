@@ -1,0 +1,18 @@
+{
+  "status": "prototype",
+  "coreSHA256": {
+    "reference": "8fbfa3f043eb01876fc6163241e0d4a9c2e5acd5a8107d61c6ed1b7108025515",
+    "candidate": "f304b3db8f03e9e9310cabf4b6daf458e22be4fb3df0bcf4d18809cabfd97df8"
+  },
+  "runtimeCommitted": false,
+  "simplification": "One scheduled invocation lifetime owns setup, execution and cleanup; removes outer ownership continuation and old faulted-cancellation relay treatment. Caller publication stays asynchronous.",
+  "focusedRelease": "193public/92internal each actual.NET11/10 pass, including genuine suspension, first refusal, funded cleanup, context, managed stack and owner-creation faults/cancellation.",
+  "initialQuiet": "Async file elapsed -.40..-4.01%, wider CPU -10.77..-12.90%. Text -.24..+10.59%elapsed with6.56%reference/4.03%candidate spread. Unchanged sync text +.05..+1.44%elapsed.",
+  "confirmation": "Same frozen images, fresh text processes: elapsed .0003..+8.76%, wider CPU -4.28..+6.75%; candidate spread7.11%. Original adverse results preserved.",
+  "conclusion": "No general speedup proved. Favorable file wider CPU, unresolved text cost/process variation. Neither promote nor reject on unstable controls alone.",
+  "next": "Use the existing complete-job shared-process driver for one bounded text method control: same CoreLib/hash witness, distinct images and unchanged reference control. Hash variation is a source-supported hypothesis, not a demonstrated cause. Decide retain/refine/withdraw before full delivery qualification.",
+  "publicCompatibility": "Python and public cancellation status/token retained. Host scope setup moves to captured-context startup worker; no thread affinity promised. Internal relay cancellation state now canceled.",
+  "preserved": "No new dispatcher/options/scheduler. Genuine I/O releases startup worker; all users/cleanup finish before disposal. Shared admission, retained results, terminal refusal and managed stack unchanged.",
+  "fullQualificationPending": true,
+  "publicationHeld": true
+}

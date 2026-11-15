@@ -1,0 +1,12 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "ramTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 265850880,
+  "archiveSHA256": "3d8a67c64e725b614a88df1ab99d8e8bfc2e63c0909957394696fff0d3b85a6f",
+  "source": "Committed810379be/frozen8fbfa3f0; R389 captured-text API CPU attribution",
+  "performanceComparison": false
+}

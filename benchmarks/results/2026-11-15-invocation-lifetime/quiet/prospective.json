@@ -1,0 +1,26 @@
+{
+  "question": "Does eliminating the outer async ownership continuation reduce complete-script elapsed/wider CPU with unchanged synchronous controls?",
+  "cases": [
+    [
+      "scripts.text-summary-helpers.nonlocal-counter.large",
+      "warm-async"
+    ],
+    [
+      "scripts.file-search.large.protected",
+      "warm-async"
+    ],
+    [
+      "scripts.text-summary-helpers.nonlocal-counter.large",
+      "warm"
+    ]
+  ],
+  "warmupSeconds": 5,
+  "capturedWarmupSeconds": 12,
+  "targetRequestSeconds": 0.5,
+  "rounds": 5,
+  "ownerSeconds": 240,
+  "acceptance": "Existing identities/goldens/quiet/balances/Closed/join/archive gates. Retain every moving/adverse control; separate architecture and CPU; short-case/source debts explicit.",
+  "stoppingCriterion": "Finish three jobs; retain/refine/withdraw the invocation lifetime change. Qualify full delivery if retained; do not repeat unchanged qualification.",
+  "storage": "One frozen core upload, existing immutable auxiliaries/catalog, retire only the two exact obsolete range images proved in committed archives; preserve current7161/8fbf and254/252MiBfloors.",
+  "publicationHeld": true
+}

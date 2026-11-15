@@ -1,0 +1,20 @@
+[
+  {
+    "root": "fresh-config-b774-20261115",
+    "path": "confirmation/confirmation.json",
+    "bytes": 210538,
+    "rawSHA256": "604cdc78a69234fd98dd961e982c680d3ccb24736a6e7b58f300cf6fcda71740",
+    "archiveSHA256": "87b8df0e26f65f4cd38d3425e4e0235ec7a97fc101fdb21bd84b4c950e5eb324",
+    "committedArchive": "benchmarks/results/2026-11-15-config-manifest-phases/observations.tgz",
+    "custodyCommit": "42115627cf89f1bd29ced9210908eec071182971"
+  },
+  {
+    "root": "hosting-whole-b775-20261115",
+    "path": "confirmation/confirmation.json",
+    "bytes": 286463,
+    "rawSHA256": "e1230343c1dcdf4c755e9c80e132c9a1f66f0017facc02859c922f1ebe0cc041",
+    "archiveSHA256": "5bcfe3a232000c8a89447d16eed1e69833447075defd1220c1f0f90511412f15",
+    "committedArchive": "benchmarks/results/2026-11-15-whole-script-hosting/observations.tgz",
+    "custodyCommit": "42115627cf89f1bd29ced9210908eec071182971"
+  }
+]

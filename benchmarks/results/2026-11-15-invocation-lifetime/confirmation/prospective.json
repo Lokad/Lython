@@ -1,0 +1,13 @@
+{
+  "question": "One justified captured-text confirmation after reference process spread6.56% and candidate spread4.03%; unchanged frozen cores, original adverse observations retained.",
+  "case": "scripts.text-summary-helpers.nonlocal-counter.large",
+  "lane": "warm-async",
+  "independentProcessesPerSource": 2,
+  "warmupSeconds": 12,
+  "targetRequestSeconds": 0.5,
+  "rounds": 5,
+  "ownerSeconds": 150,
+  "stoppingCriterion": "Finish this bounded confirmation, combine interpretation with original controls and file/sync evidence, then retain/refine/withdraw. No cherry-picking or automated restart.",
+  "noNewImageOrCatalogUpload": true,
+  "publicationHeld": true
+}

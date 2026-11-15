@@ -1,0 +1,51 @@
+[
+  {
+    "name": "probe-build",
+    "exit": 0,
+    "seconds": 19.933472599834204,
+    "command": [
+      "C:/Users/JoannesVermorel/.dotnet11/dotnet.exe",
+      "build",
+      "tools/LythonProbe/LythonProbe.csproj",
+      "-c",
+      "Release",
+      "-f",
+      "net11.0",
+      "--no-restore"
+    ]
+  },
+  {
+    "name": "public-net11",
+    "exit": 0,
+    "seconds": 47.620873500127345,
+    "command": [
+      "C:/Users/JoannesVermorel/.dotnet11/dotnet.exe",
+      "test",
+      "tests/Lokad.Lython.PublicApi.Tests/Lokad.Lython.PublicApi.Tests.csproj",
+      "-c",
+      "Release",
+      "-f",
+      "net11.0",
+      "--no-restore",
+      "--filter",
+      "FullyQualifiedName~AsyncInvocationOwnershipTests|FullyQualifiedName~AsyncExecutionWorkerLifetimeTests|FullyQualifiedName~ExecutionThreadContextTests|FullyQualifiedName~AsyncMidFlightCancellationTests|FullyQualifiedName~GovernedHostLifetimeTests|FullyQualifiedName~GovernedAdmissionPreflightTests|FullyQualifiedName~AdmissionFailureCommandTests|FullyQualifiedName~AsyncFunctionHostingTests|FullyQualifiedName~BoundMethodAsyncLifetimeTests|FullyQualifiedName~AsyncBoundaryContractTests|FullyQualifiedName~CooperativeCancellationTests|FullyQualifiedName~GovernedMemoryContractTests|FullyQualifiedName~StackGuardScenarioTests"
+    ]
+  },
+  {
+    "name": "internal-net11",
+    "exit": 0,
+    "seconds": 10.121284800115973,
+    "command": [
+      "C:/Users/JoannesVermorel/.dotnet11/dotnet.exe",
+      "test",
+      "tests/Lokad.Lython.Tests/Lokad.Lython.Tests.csproj",
+      "-c",
+      "Release",
+      "-f",
+      "net11.0",
+      "--no-restore",
+      "--filter",
+      "FullyQualifiedName~AsyncExecutionThreadTests|FullyQualifiedName~AsyncExecutableFunctionTests|FullyQualifiedName~AsyncStructuralAmbientTests|FullyQualifiedName~StructuralGuardAsyncIsolationTests|FullyQualifiedName~CompletedHelperCallOwnershipTests|FullyQualifiedName~DeferredFunctionOwnershipTests|FullyQualifiedName~FunctionWorkspaceOwnershipTests|FullyQualifiedName~StorageOwnershipBalanceTests"
+    ]
+  }
+]

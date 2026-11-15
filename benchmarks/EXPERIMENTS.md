@@ -8275,3 +8275,26 @@ verified correction preserved all conditions. No new image/catalog upload,
 retirement or runtime patch. Next attribute captured-text completed-operation
 work versus shared dispatch/scheduling. No pending-I/O, heap, portable speedup
 or objective-completion claim. Publication held.
+
+[R389/B776 hosting attribution](results/2026-11-15-hosting-attribution/README.md)
+captures unchanged 810379be / frozen 8fbfa3f0. Run/RunAsync each complete 4,096
+invocations: guest CPU 1,274/1,260 µs per invocation, other CPU 95/171 µs;
+1,034/1,025 guest leaves, 77/81 unknown, zero ambiguous. Instrumented observations
+do not reproduce the prior elapsed ratio or prove all extra CPU removable.
+All-thread data and source identify scheduling/completion as a bounded candidate;
+per-line async work remains visible. Identity, goldens, quiet, balance, join and
+archive-before-unmount gates pass; no users/RAM remain. Only two exact working
+JSON copies retired against committed archive custody. Next prototype one scheduled
+invocation ownership lifetime; no duplicate dispatcher or new policy. Publication held.
+
+[R390 scheduled invocation prototype](results/2026-11-15-invocation-lifetime/README.md)
+freezes f304b3db versus qualified 8fbfa3f0. One scheduled lifetime removes the outer
+ownership continuation while preserving asynchronous caller publication. Focused
+Release passes 193 public / 92 internal per actual .NET 11/10. Initial quiet file
+CPU −12.90..−10.77%, elapsed −4.01..−0.40%; captured text is adverse/inconclusive
+with moving source controls. One same-image text confirmation retains that result
+and remains inconclusive (candidate process spread 7.11%). Both VM collections
+close/join/archive successfully; all raw/adverse observations remain. No general
+speedup or delivered-runtime claim. Next bounded method control shares CoreLib/hash
+witnesses through the existing complete-job driver; then retain/refine/withdraw.
+Full delivery qualification waits for that decision, not a producer release.

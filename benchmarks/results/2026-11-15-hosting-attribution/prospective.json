@@ -1,0 +1,27 @@
+{
+  "question": "Which current captured-text CPU work distinguishes completed-I/O RunAsync from Run?",
+  "hypotheses": [
+    "Per-line async file/iteration machinery",
+    "Completed builtin/protocol setup and disposal",
+    "Invocation/result scheduling"
+  ],
+  "source": "810379be/frozen8fbfa3f0",
+  "captures": [
+    [
+      "sync",
+      "warm"
+    ],
+    [
+      "async",
+      "warm-async"
+    ]
+  ],
+  "captureSecondsEach": 5,
+  "guestWarmupSeconds": 8,
+  "event": "cpu-clock/fp199Hz",
+  "acceptance": "Current exact core/aux/catalog identity, full goldens, quiet-before/after, shared-balance/Closed/join, all-thread CPU/stacks, verified RAM archive before unmount under lease.",
+  "stoppingCriterion": "Select a coherent displaced stage only if current source and attribution identify distinct dominant avoidable work; otherwise keep uncertainty and progress common operand/iteration assessment without repeated unchanged captures.",
+  "retiredOnly": "Two exact working confirmation.json copies, each proved in a SHA-verified Git-committed archive; preserve all archives/images/catalogs/toolchains and254/252MiBfloors.",
+  "performanceComparison": false,
+  "publicationHeld": true
+}
