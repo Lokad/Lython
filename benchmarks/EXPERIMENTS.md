@@ -8543,3 +8543,12 @@ versus inline0.849–0.893ms; controls up to5.85%, no removable-share claim.
 Existing caller tail6slots can fund5-slot helper work. Select whole-workspace
 borrowing prototype, no new arena/owner/capacity/controller. B802all gates pass,
 130.803s/users cleaned; original staging/directory/path failures preserved.
+
+
+[R411 caller-workspace borrowing](results/2026-11-15-caller-workspace-prototype/README.md)
+is withdrawn: allocation flat, plain helper+1.23..3.79%elapsed/+0.98..2.91%CPU,
+JSON+0.49..1.83%elapsed, captured controls move6.96%. Added routing/clearing is
+not justified. B803all gates pass197.523s; original disk-floor refusal/payload
+and test evaluation-order failure preserved. All586production inputs restored;
+forced Release solution build,97internal/98public each actual11/10 pass. Borrow
+helpers/six mechanism-only tests removed. Broader call/frame objective stays open.

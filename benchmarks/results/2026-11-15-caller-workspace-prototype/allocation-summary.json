@@ -1,0 +1,22 @@
+{
+  "rows": [
+    {
+      "case": "scripts.csv-invoice.large",
+      "baselineBytes": 4197002.5,
+      "nativeBytes": 4197006,
+      "changePercent": 8.339285002545438e-05
+    },
+    {
+      "case": "scripts.helper-boundary.helper",
+      "baselineBytes": 447461.75,
+      "nativeBytes": 447461.75,
+      "changePercent": 0.0
+    }
+  ],
+  "complete": true,
+  "elapsedSeconds": 30.280978600028902,
+  "allGoldensAndBalancesPassed": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "performanceQualified": false,
+  "CPUorElapsedClaim": false
+}
