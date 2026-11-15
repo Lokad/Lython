@@ -1,0 +1,12 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "ramTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 266809344,
+  "archiveSHA256": "503a0dc73098be6fffb8594d04febf73f8017a9abd8b5c393d8c1a3e78e505ca",
+  "source": "Committed43bce13a/frozen9e890d18; R407 current text-loop interior attribution",
+  "performanceComparison": false
+}

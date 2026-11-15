@@ -8458,3 +8458,14 @@ moving/adverse controls remain. Full43737584665 qualification active.
 completes321.442s sampling/cleanup, then refuses archive disk floor; recovered
 persistent evidence keeps original failed owners and exact conditions. No retiming
 or cross-collection attribution. Publication and broader objective remain open.
+
+
+[R407 current loop interior](results/2026-11-15-text-loop-interior/README.md)
+at43bce13a/9e89 maps151of993guest leaves into an exact9912Boptimized body,96unknown,
+0ambiguous. Mixed useful/control work supports no new call arena or isolated copy
+patch. Source selects R408one-pass whitespace/casing preparation retaining ranges,
+displacing deferred per-word conversion, distinct from R343's slower extra scans.
+No speedup forecast; eager funding/Unicode/alias/cancellation/refusal/cleanup and
+scratch/earlier-denial tradeoffs require the named completion gate. All users
+joined; RAM bytes archived/verified before unmount. Original missing-duplicate
+preflight and exact committed replica retirement survive; floors unchanged.

@@ -1,0 +1,15 @@
+{
+  "source": "Committed43bce13a/frozen9e890d18",
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/Text/PyStringOps.Whitespace.cs": "0e2a5c06ca9c66a0a40accc531127be86fbae5dd9e059ba45066bcdc19e21b80",
+    "src/Lokad.Lython/Runtime/Text/PyStringOps.Helpers.cs": "07659af3ca8ab2dc77c053c0a8d2e7838ce1c66c21100f6968daa482c9caf599",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.DictionaryAccumulation.cs": "8e203be79b6b658c5b74f707b71f2340f064f372681f6cda2c5155453d1db670",
+    "src/Lokad.Lython/Runtime/PyDict.Accumulation.cs": "0d2b6e0f10a11539acfc5c13adf7a8c6e3b578a4f116a0878824e8ad0a8fb04b"
+  },
+  "attributionClosed": true,
+  "runtimeChanged": false,
+  "interpretation": "993guest leaves/96unknown/0ambiguous;151in exact9912byte optimized loop. Mixed metadata/transport/hash/probe work does not identify a complete activation to remove. Useful text preparation remains prominent; no exact removable CPU fraction.",
+  "selectedMilestone": "R408 single-pass whitespace/case preparation retaining ranges, removing deferred per-word conversion; not the slower R343 whole-buffer extra-scan design",
+  "semanticBoundary": "Eager all-word preflight before guest effects; independent escaped words, active/nested loans, current token/refusal, publication-before-callback and joined funded cleanup",
+  "performanceComparison": false
+}
