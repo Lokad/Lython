@@ -1,0 +1,167 @@
+{
+  "revision": "810379bed830f3d2baf2a8b0ddff57b60a60d3df",
+  "coreSHA256": "8fbfa3f043eb01876fc6163241e0d4a9c2e5acd5a8107d61c6ed1b7108025515",
+  "runtimeChanged": false,
+  "portablePerformanceClaim": false,
+  "groups": [
+    {
+      "name": "initial",
+      "rows": [
+        {
+          "process": 1,
+          "method": "CallsIdentity10k",
+          "meanMilliseconds": 1.0220546478873238,
+          "medianMilliseconds": 1.1643901408450703,
+          "iqrOverMedianPercent": 48.197629902372874,
+          "originalMilliseconds": [
+            0.7115007042253522,
+            0.6886105633802817,
+            1.1643901408450703,
+            1.273062676056338,
+            1.2727091549295775
+          ]
+        },
+        {
+          "process": 1,
+          "method": "CallsIdentity10kAsync",
+          "meanMilliseconds": 1.433187142857143,
+          "medianMilliseconds": 1.426322857142857,
+          "iqrOverMedianPercent": 1.25177028643084,
+          "originalMilliseconds": [
+            1.44305,
+            1.44976,
+            1.4251957142857143,
+            1.4216071428571428,
+            1.426322857142857
+          ]
+        },
+        {
+          "process": 2,
+          "method": "CallsIdentity10k",
+          "meanMilliseconds": 1.2657672483221474,
+          "medianMilliseconds": 1.2637046979865771,
+          "iqrOverMedianPercent": 0.8623839568330175,
+          "originalMilliseconds": [
+            1.2738906040268456,
+            1.273178523489933,
+            1.2622805369127517,
+            1.2557818791946307,
+            1.2637046979865771
+          ]
+        },
+        {
+          "process": 2,
+          "method": "CallsIdentity10kAsync",
+          "meanMilliseconds": 1.4326865714285717,
+          "medianMilliseconds": 1.4326714285714286,
+          "iqrOverMedianPercent": 1.5906348779004211,
+          "originalMilliseconds": [
+            1.412207142857143,
+            1.41415,
+            1.4369385714285714,
+            1.4674657142857144,
+            1.4326714285714286
+          ]
+        }
+      ],
+      "meanAsyncOverSyncAllPairings": [
+        1.4022607752136014,
+        1.1322675197647285,
+        1.401771005483963,
+        1.131872050985429
+      ],
+      "medianAsyncOverSyncAllPairings": [
+        1.2249527088126029,
+        1.128683670651359,
+        1.2304049805262434,
+        1.1337074483097682
+      ],
+      "totalHostSeconds": 15.02567799994722,
+      "completeImageVerifiedBeforeAfter": true
+    },
+    {
+      "name": "longer-warmup-confirmation",
+      "rows": [
+        {
+          "process": 1,
+          "method": "CallsIdentity10k",
+          "meanMilliseconds": 1.2958009204712813,
+          "medianMilliseconds": 1.3029654639175257,
+          "iqrOverMedianPercent": 1.2960225939797136,
+          "originalMilliseconds": [
+            1.29139793814433,
+            1.2459559278350514,
+            1.3240420103092783,
+            1.3029654639175257,
+            1.2905368556701031,
+            1.304410824742268,
+            1.3112974226804124
+          ]
+        },
+        {
+          "process": 1,
+          "method": "CallsIdentity10kAsync",
+          "meanMilliseconds": 1.4027087690407576,
+          "medianMilliseconds": 1.4317011527377521,
+          "iqrOverMedianPercent": 4.168475743674074,
+          "originalMilliseconds": [
+            1.4380397694524496,
+            1.4477383285302592,
+            1.4114878962536024,
+            1.3424475504322766,
+            1.4317011527377521,
+            1.3122907780979827,
+            1.4352559077809797
+          ]
+        },
+        {
+          "process": 2,
+          "method": "CallsIdentity10k",
+          "meanMilliseconds": 1.2743730272108842,
+          "medianMilliseconds": 1.2752069047619048,
+          "iqrOverMedianPercent": 0.1890449523690766,
+          "originalMilliseconds": [
+            1.2653180952380951,
+            1.2765830952380954,
+            1.2802104761904762,
+            1.2752069047619048,
+            1.275765476190476,
+            1.2738914285714287,
+            1.2736357142857144
+          ]
+        },
+        {
+          "process": 2,
+          "method": "CallsIdentity10kAsync",
+          "meanMilliseconds": 1.3508680482897386,
+          "medianMilliseconds": 1.332352676056338,
+          "iqrOverMedianPercent": 6.018528698149536,
+          "originalMilliseconds": [
+            1.4021884507042253,
+            1.3991301408450703,
+            1.2809952112676057,
+            1.332352676056338,
+            1.4013278873239436,
+            1.3227067605633802,
+            1.3173752112676056
+          ]
+        }
+      ],
+      "meanAsyncOverSyncAllPairings": [
+        1.082503297289366,
+        1.100705004805972,
+        1.042496595694985,
+        1.060025612160258
+      ],
+      "medianAsyncOverSyncAllPairings": [
+        1.0988020729522383,
+        1.1227206717525313,
+        1.022554099055286,
+        1.0448129406146078
+      ],
+      "totalHostSeconds": 71.91872660024092,
+      "completeImageVerifiedBeforeAfter": true
+    }
+  ],
+  "archiveSHA256": "4e1f61d2a1e122850b51840c12027b0d1270795dc29af2896510c5faaf1101ef"
+}

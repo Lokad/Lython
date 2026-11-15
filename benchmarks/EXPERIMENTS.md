@@ -8226,3 +8226,40 @@ passes preserved, no causal fix claimed. Local8job122.508splus justified same-im
 whole-script allocation claim. Accept short-helper+.49–2.48%diagnostic debt for
 simplification/correctness; report's original+23.72%moving result not erased.
 Full platform/originalstress/installed-consumer qualification pending; publication held.
+
+
+[R384 full delivery43689267617](results/2026-11-15-function-slot-binding/delivery/README.md)
+passes at810379be/8fbfa3f0: Windows/Ubuntu actual11/10 each4,775internal/17,854public
+ordinary,13/406originalstress,installed Release consumers. All585production+4build
+inputs/16summaries/full logs cached. The source-pair timing debt/uncertainties and
+initial isolated fixtureexit7 remain; no performance gain or causal fix inferred.
+No publication or tag. Terminal run must never be queried again.
+
+
+[R385/B773current entry attribution](results/2026-11-15-function-entry-attribution/README.md)
+at810379be/8fbfa3f0passes all capture/custody/cleanup gates:749guest leaves,137unknown,
+zero ambiguous, exact same-process3,694byteTier1/disassembly. Entry53leaves remain
+distributed across live defaults/probing/setup; no dominant removable whole stage
+or new patch inferred. All original arena/control adversity retained. Five proved
+archived superseded6164aliases retired; current7161/8fbfimages and254/252MiBfloors
+preserved, no users/RAM remain. Next concrete fresh config/manifest phase question,
+not an unchanged capture or a declaration that the performance objective is done.
+
+
+[R386/B774helper-rich config/manifest phases](results/2026-11-15-config-manifest-phases/README.md)
+at qualified810379be/8fbf:833Binputs,1,877Bsource,sixordinaryhelpers. Independent
+goldens/CPython/public worker pass; quiet three-phase101.821scomplete. Fresh
+1.066–1.077xCPython,compile1.284–1.293x,warm1.231–1.242x; medians not additive.
+No dominant removable frontend stage or speculative rewrite inferred. Every
+local-preparation failure and original missing-stderr condition remains explicit.
+No new framework/image retirement/elapsed gain; all final ownership/join/archive
+gates pass,254/252MiBfloors kept, no VM users/RAM remain. Publication held.
+
+[R387 hosting diagnostic](results/2026-11-15-hosting-parity/README.md) reuses the
+validated identity-call pair and qualified 810379be / frozen 8fbfa3f0. Initial
+sync IQR/median is 48.20%; bounded longer-warmup confirmation retains that result
+and gives +6.00–8.25% within-process async mean overhead, with 4.17–6.02% async
+IQRs. Both independent process pairs pass complete frozen-image identity and
+result checks; 15.026 s initial / 71.919 s confirmation. No runtime, allocation,
+portable CPU or pending-I/O claim. Next use existing warm/warm-async lanes on
+complete scripts before attributing a redesign; publication remains postponed.

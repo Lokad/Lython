@@ -1,7 +1,8 @@
 # Performance against CPython
 
-| Representative workload, warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
+| Representative workload (warm unless stated) | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| Configuration/manifest / compile and execute once | 833 B inputs / 1,877 B source | 495.332–496.371 µs | 460.923–464.835 µs | 1.07–1.08× | Diagnostic 8103; spreads 0.21/0.85%; max IQR 1.46% |
 | CSV invoice / ordinary pricing helper | 4,096 records / 127,031 B | 7.358–7.414 ms | 6.087–6.100 ms | 1.21–1.22× | Earlier cf754; diagnostic; spreads 0.76/0.23%; max IQR 1.96% |
 | Text / captured helper and counter | 3,072 lines / 35,840 B | 1.220–1.267 ms | 0.903–0.921 ms | 1.32–1.40× | Variable a7ab; spreads 3.90/2.02%; max IQR 3.22% |
 | JSON-lines / aggregation helpers | 4,096 records / 110,592 B | 3.454–3.481 ms | 4.071–4.100 ms | 0.84–0.85× | Diagnostic a7ab; spreads 0.79/0.70%; max IQR 1.15% |
@@ -9,11 +10,19 @@
 | JSON-to-Markdown report | 3,072 records / 189,441 B | 2.772–2.840 ms | 2.308–2.319 ms | 1.20–1.23× | Variable a7ab; spreads 2.44/0.45%; max IQR 6.24% |
 | CSV fulfillment / pricing and validation | 4,096 records / 126,821 B | 8.067–8.184 ms | 6.736–6.793 ms | 1.19–1.22× | Diagnostic a7ab; spreads 1.43/0.84%; max IQR 0.94% |
 | CSV validation / for-loop checksum|4,096 records /49,163 B|5.441–5.579 ms|4.210–4.219 ms|1.29–1.33×|Earlier fa40; Diagnostic; spreads 2.47/0.21%; max IQR 1.30%|
-| Configuration JSON edit |96 B|75.3–76.4 µs|59.6–59.7 µs|1.26–1.28×|Earlier cdd9; Diagnostic; spreads1.56/0.15%; maxIQR1.55%|
+| Configuration/manifest / warm | 833 B inputs / 1,877 B source | 191.507–192.335 µs | 154.809–155.556 µs | 1.23–1.24× | Diagnostic 8103; spreads 0.43/0.48%; max IQR 1.87% |
 
 **Ratio = Lython elapsed / CPython elapsed; above one means slower.** These are
 complete embedding measurements, not isolated interpreter CPU. Spreads are the
 Lython/CPython process-median differences; moving controls and IQRs remain visible.
+
+The six-helper configuration/manifest script measured **2026-11-15 UTC** at
+**810379be / frozen 8fbfa3f0** against stock **CPython 3.13.16**. It reads configuration
+and dependency declarations, normalizes targets and labels, updates configuration
+and writes a manifest. [Source, independent goldens, phases and raw controls](../benchmarks/results/2026-11-15-config-manifest-phases/README.md).
+This source passes [full platform, original stress and installed-package checks](../benchmarks/results/2026-11-15-function-slot-binding/delivery/README.md).
+The one-shot ratio includes compilation and compiled-owner disposal; it is not the
+sum of the separately warmed phase medians. No startup or cross-source gain claim.
 
 Fulfillment, captured text, JSON-lines, file search and report rows measured
 **2026-11-15 UTC** at **a7ab41f5 / frozen 716176a8**, against stock **CPython
@@ -45,17 +54,18 @@ attribute differences from older collections to individual changes.
 
 ## Compilation, compile-to-result and startup
 
-Current fulfillment and earlier defensive invoice/configuration sources separate
-compilation from execution:
+Current helper-rich configuration, earlier fulfillment and defensive invoice/configuration
+sources separate compilation from execution:
 
 | Phase | Lython | CPython | Lython / CPython | Status |
 | --- | ---: | ---: | ---: | --- |
+| Configuration/manifest compilation alone | 202.568–202.781 µs | 156.855–157.823 µs | 1.28–1.29× | Diagnostic 8103; spreads 0.11/0.62%; max IQR 1.26% |
 | Fulfillment compilation alone | 129.617–130.770 µs | 114.740–115.506 µs | 1.12–1.14× | Diagnostic a7ab; spreads 0.88/0.67%; max IQR 1.07% |
 | Fulfillment compile and execute once | 8.223–8.254 ms | 6.990–7.120 ms | 1.15–1.18× | Diagnostic a7ab; spreads 0.38/1.82%; max IQR 1.12% |
 | Defensive invoice compilation alone |103.845–105.523 µs|98.430–98.738 µs|1.05–1.07×|Earlier3994; Diagnostic; spreads 1.62/0.31%; max IQR 2.78%|
 | Defensive invoice compile and execute once |7.729–7.743 ms|6.218–6.237 ms|1.24–1.25×|Earlier3994; Diagnostic; spreads 0.19/0.31%; max IQR 1.30%|
-| Configuration compilation alone |36.6–37.3 µs|34.3–34.4 µs|1.06–1.09×|Diagnostic; spreads1.94/0.17%; maxIQR1.97%|
-| Configuration compile and execute once |136.5–137.3 µs|121.4–124.2 µs|1.10–1.13×|Diagnostic; spreads0.61/2.27%; maxIQR3.65%|
+| Earlier 96 B configuration compilation alone |36.6–37.3 µs|34.3–34.4 µs|1.06–1.09×|Diagnostic; spreads1.94/0.17%; maxIQR1.97%|
+| Earlier 96 B configuration compile and execute once |136.5–137.3 µs|121.4–124.2 µs|1.10–1.13×|Diagnostic; spreads0.61/2.27%; maxIQR3.65%|
 | Process startup |—|—|—|No current comparison|
 
 Compile-to-result includes compilation and compiled-owner disposal, plus warm

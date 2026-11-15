@@ -1,0 +1,20 @@
+{
+  "source": "810379be/8fbfa3f0",
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/PyExecutableFunction.cs": "e187911f6a1d280f5a4a2bea42d9f86d19e9b4560b31cc6286b02118466483c7",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs": "ec5bfafc929b029ec7e8f273ddcc355613fe956c642b13b235754f959bc317e9",
+    "src/Lokad.Lython/Runtime/Calls/BoundFunctionArguments.cs": "2380478dce17c54a1139209ea1fd713b6d457cc16856a2ca10423b4d05ff442e",
+    "src/Lokad.Lython/Runtime/Calls/FunctionBindingPlan.cs": "e76996f3d4764370a96500ae2718bc36214dd02dc836f6b431c663043839bf15",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativePrefix.cs": "f0d7b97905869eb5ae4832643ff99291928dc5791c931a3ed056206abd4ddcb7",
+    "src/Lokad.Lython/Runtime/PyDict.Query.cs": "f4095fb8fbf57041da53c83eb37dae6f296b79422953084fc06ffbbf7b6aa892",
+    "src/Lokad.Lython/Runtime/PyDict.Storage.cs": "7ed51aec76e8bda3aa81ae5b10725edd23fb682ddb02b846afa1995bd2b0da96",
+    "src/Lokad.Lython/Frontend/LoweredScript.cs": "b64548b70e218cbe8795ea558c449937aa05961064bafb3bc592c077f4ecee5f",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Shared.cs": "9679d9cb7ebfcbd0d5410452223ad2fbe3635beda23ffd804e1e15d2709b4f40"
+  },
+  "decision": "Close bounded attribution with an explicit evidence gap; no new activation arena, mutable-default cache, exception-shell deletion or dispatcher selected from these samples.",
+  "evidence": "Native entry53/749guest leaves; largest instruction groups include required live keyword-default query/probing. Four prologue samples do not establish a dominant removable allocation/initialization stage. Ordinary dispatch85/nativeRun55 remain useful distributed work; do not sum buckets.",
+  "next": "Assess a representative helper-rich configuration/manifest script with compile/warm/fresh phases, because long-record workloads do not isolate freshly generated frontend cost. Reuse existing workers/catalog schema and one bounded comparison; no new framework.",
+  "runtimeChange": false,
+  "allGatesPassed": true,
+  "publicationHeld": true
+}

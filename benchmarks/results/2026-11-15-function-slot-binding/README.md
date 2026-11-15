@@ -1,8 +1,8 @@
 # Final-slot function binding
 
 2026-11-15. Retained candidate frozen **8fbfa3f0** versus qualified
-**a7ab41f5 /716176a8**. Full changed-runtime platform/stress/package qualification
-is pending. Publication remains held.
+**a7ab41f5 /716176a8**. [Full changed-runtime platform/stress/package qualification
+passes](delivery/README.md). Publication remains held.
 
 Function binding now uses the existing unassigned-slot sentinel rather than a
 parallel ArgumentPresence. Python None remains an ordinary non-null guest value.

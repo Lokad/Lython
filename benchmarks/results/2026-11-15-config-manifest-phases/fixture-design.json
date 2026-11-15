@@ -1,0 +1,20 @@
+{
+  "purpose": "A complete newly generated helper-rich configuration edit and manifest, not an artificial helper count. Separate compile/warm/fresh through existing workers.",
+  "source": "benchmarks/scripts/config-manifest.py",
+  "sourceBytes": 1877,
+  "helpers": 6,
+  "inputBytes": 833,
+  "outputBytes": 1443,
+  "inputFiles": {
+    "config.json": 712,
+    "requirements.txt": 121
+  },
+  "outputFiles": {
+    "config.json": 687,
+    "manifest.json": 756
+  },
+  "manualExpected": "Three enabled normalized targets, four sorted de-duplicated dependencies with last version winning; original defaults/options retained; project trimmed; two exact UTF8 JSON outputs.",
+  "cpythonControl": "Isolated stock CPython3.13.2 matched independent expected stdout/files.",
+  "newFramework": false,
+  "publicationHeld": true
+}

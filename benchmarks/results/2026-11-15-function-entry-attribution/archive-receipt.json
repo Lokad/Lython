@@ -1,0 +1,12 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "ramTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 267145216,
+  "archiveSHA256": "2a71d0ab92d72ae970bd446f687f907977306d059b45931bac60fcc8d8788211",
+  "source": "Committed810379be/frozen8fbfa3f0; R385 protected file-search native-entry attribution",
+  "performanceComparison": false
+}
