@@ -681,7 +681,7 @@ internal sealed partial class LythonRuntime
         {
             var locals = stack.Values;
             var argumentValues = boundArguments.Values ?? Array.Empty<ExecutableSlot>();
-            for (var i = 0; !argumentsAreLocals && i < boundArguments.Assigned.Length; i++)
+            for (var i = 0; !argumentsAreLocals && i < boundArguments.ParameterCount; i++)
                 locals[i] = argumentValues[i];
             // A captured slot holds its cell, never a second cached value. The
             // frame array and escaped closures borrow this same identity.

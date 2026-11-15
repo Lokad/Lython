@@ -257,7 +257,7 @@ internal sealed partial class LythonRuntime
             try
             {
                 CheckExecution(span);
-                var arguments = bound.Values.AsSpan(0, bound.Assigned.Length);
+                var arguments = bound.Values.AsSpan(0, bound.ParameterCount);
                 var originalExtent = _execution.Stack.LiveExtent;
                 var returned = completion == CallCompletion.Call && site is not null
                     ? PrepareUnpackedCallReturn(ref _execution, site, start, out originalExtent) : default;

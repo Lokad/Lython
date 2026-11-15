@@ -250,7 +250,7 @@ public sealed class ExecutableAsyncIteratorCleanupTests
         frame.Variables["source"] = sources[0];
         if (sources.Length > 1) context.Variables["inner"] = sources[1];
         return LythonRuntime.PyGenerator.Create(code, frame, definition.Span,
-            arguments: new BoundFunctionArguments([LythonRuntime.ExecutableSlot.FromObject(sources[0])], new ArgumentPresence(1)));
+            arguments: new BoundFunctionArguments([LythonRuntime.ExecutableSlot.FromObject(sources[0])], 1));
     }
 
     private sealed class PausedSource(bool empty = false) : IPyAsyncIterableValue, IEnumerable<object>, IAsyncEnumerable<object>, IAsyncEnumerator<object>

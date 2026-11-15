@@ -155,7 +155,7 @@ public sealed class FunctionWorkspaceOwnershipTests
         previous[63] = Slot.FromObject(new object());
         governor.ReturnFunctionWorkspace(previous, previous.Length);
         var bound = function.BindCallOperands([Slot.FromObject(retained)], Span, context, receiver: null, callSite: null);
-        Assert.Equal(1, bound.Assigned.Length);
+        Assert.Equal(1, bound.ParameterCount);
         Assert.True(bound.Values.Length >= function.CodeObject.ValueStorageCapacity);
         Assert.Same(retained, bound.Values[0].Object);
         Assert.All(bound.Values.Skip(1), value => Assert.Null(value.Object));

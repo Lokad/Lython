@@ -64,7 +64,7 @@ public sealed class StackGuardScenarioTests
         var result = SubprocessProbeRunner.Run(executable,
             [fixture, "stack-guard", typeof(LythonEngine).Assembly.Location, scenario], timeout: TimeSpan.FromSeconds(25),
             environment: scenario == "native-call-continuation" ? new Dictionary<string, string> { ["DOTNET_PROCESSOR_COUNT"] = "1" } : null);
-        Assert.True(result.ExitCode == 0, "fixture exited with " + result.ExitCode + ": " + result.StandardError);
+        Assert.True(result.ExitCode == 0, "fixture exited with " + result.ExitCode + ": " + result.StandardError + "\n" + result.StandardOutput);
         Assert.Equal("", result.StandardError);
         using var document = JsonDocument.Parse(result.StandardOutput);
         var value = document.RootElement;

@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Use final function argument slots for omission, default completion and duplicate
+  detection, removing separate function presence storage and transport. Reject a
+  starred positional argument that duplicates an explicit keyword parameter.
+
 - Construct long CSV fields over one admitted immutable payload, preserving
   separate string identities, short inline values and numeric/error order.
   Shared backing remains conservatively funded until its owner ends.

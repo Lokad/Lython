@@ -94,8 +94,8 @@ internal sealed class FunctionBindingPlan
 
     // Flat call-time layout: positional, then keyword-only, then variadic
     // names. Prepared once per definition and shared across functions; per-call
-    // binding fills values in this order with presence bits instead of a
-    // per-call name dictionary.
+    // binding fills the final slots in this order; their unassigned sentinel
+    // distinguishes omission without a parallel presence map or name dictionary.
     public IReadOnlyList<string> LayoutParameterNames => _layout.LayoutParameterNames;
 
     public IReadOnlyDictionary<string, int> LayoutParameterIndex => _layout.LayoutParameterIndex;

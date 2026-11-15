@@ -98,15 +98,13 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         // This span is private to the synchronous prefix and cannot escape. Its
         // live values transfer before suspension; stack exit ends the remaining
         // references. Owned callback arrays keep their ordinary full clear.
-        var assigned = new ArgumentPresence(BindingPlan.ParameterCount);
         if (borrow)
         {
             arguments.CopyTo(values!);
-            for (var i = 0; i < assigned.Length; i++) assigned[i] = true;
         }
-        else LythonRuntime.BindFunctionArgumentsInto(values[..BindingPlan.ParameterCount], ref assigned,
+        else LythonRuntime.BindFunctionArgumentsInto(values[..BindingPlan.ParameterCount],
             [], span, BindingPlan, context, receiver: receiver, callSite: call, operands: arguments);
-        StartInline(values, assigned, null, span, consumedByIteration, unpackedReturn,
+        StartInline(values, null, span, consumedByIteration, unpackedReturn,
             out unpacked, out result, out frame);
     }
 
@@ -122,11 +120,11 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         frame = null;
         if (!CanRunNativePrefix) return false;
         StartInline(bound.Values.AsSpan(0, _codeObject.ValueStorageCapacity),
-            bound.Assigned, bound, span, consumedByIteration, unpackedReturn, out unpacked, out result, out frame);
+            bound, span, consumedByIteration, unpackedReturn, out unpacked, out result, out frame);
         return true;
     }
 
-    private void StartInline(Span<LythonRuntime.ExecutableSlot> values, ArgumentPresence assigned, BoundFunctionArguments? existing,
+    private void StartInline(Span<LythonRuntime.ExecutableSlot> values, BoundFunctionArguments? existing,
         LythonSourceSpan span, bool consumedByIteration, Span<LythonRuntime.ExecutableSlot> unpackedReturn, out bool unpacked,
         out LythonRuntime.ExecutableSlot result, out LythonRuntime.ExecutionContext? frame)
     {
@@ -156,7 +154,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
             if (existing is null)
             {
                 owned = LythonRuntime.RentFunctionArgumentStorage(BindingPlan, span, Closure,
-                    _codeObject.ValueStorageCapacity) with { Assigned = assigned };
+                    _codeObject.ValueStorageCapacity);
                 rented = true;
                 values[..state.LiveExtent].CopyTo(owned.Values);
             }

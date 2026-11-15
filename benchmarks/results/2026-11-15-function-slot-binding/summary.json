@@ -1,0 +1,224 @@
+{
+  "status": "retain",
+  "reason": "Remove redundant function-presence construction/overflow/marking/transport and fix proven Python duplicate-binding defect. No new dispatcher/cache/policy. CPU magnitude remains diagnostic.",
+  "core": {
+    "reference": "716176a82b2a350fee8a9f4224fa00e167929050ca2ce255e9a3704c5ec7e85c",
+    "candidate": "8fbfa3f043eb01876fc6163241e0d4a9c2e5acd5a8107d61c6ed1b7108025515"
+  },
+  "initialElapsedSeconds": 122.50750990025699,
+  "confirmationElapsedSeconds": 173.66230569966137,
+  "focused": [
+    {
+      "project": "Lokad.Lython.Tests",
+      "framework": "net11.0",
+      "passed": 452,
+      "log": "corrected-Lokad.Lython.Tests-net11.0.log"
+    },
+    {
+      "project": "Lokad.Lython.PublicApi.Tests",
+      "framework": "net11.0",
+      "passed": 2396,
+      "log": "corrected-Lokad.Lython.PublicApi.Tests-net11.0.log"
+    },
+    {
+      "project": "Lokad.Lython.Tests",
+      "framework": "net10.0",
+      "passed": 452,
+      "log": "corrected-Lokad.Lython.Tests-net10.0.log"
+    },
+    {
+      "project": "Lokad.Lython.PublicApi.Tests",
+      "framework": "net10.0",
+      "passed": 2396,
+      "log": "corrected-Lokad.Lython.PublicApi.Tests-net10.0.log"
+    }
+  ],
+  "initial": [
+    {
+      "case": "scripts.file-search.large.protected",
+      "phase": "warm",
+      "changePercent": [
+        -10.99659468026294,
+        -7.428722847275493,
+        -6.022619137298035,
+        -2.255355975698381
+      ],
+      "processMedianMilliseconds": {
+        "reference": 8.327586666666667,
+        "candidate": 7.708953333333333,
+        "candidate-control": 7.411835714285714,
+        "reference-control": 7.8868294117647055
+      }
+    },
+    {
+      "case": "scripts.report-render.large",
+      "phase": "warm",
+      "changePercent": [
+        -0.8346333512495585,
+        7.38654243375676,
+        14.245355986418652,
+        23.716718680127858
+      ],
+      "processMedianMilliseconds": {
+        "reference": 27.46116,
+        "candidate": 31.3731,
+        "candidate-control": 27.231959999999997,
+        "reference-control": 25.35882
+      }
+    },
+    {
+      "case": "scripts.csv-fulfillment.large",
+      "phase": "warm",
+      "changePercent": [
+        -0.6088974138741987,
+        1.944281013706406,
+        5.237564835244868,
+        7.940928348851473
+      ],
+      "processMedianMilliseconds": {
+        "reference": 22.9455,
+        "candidate": 23.391625,
+        "candidate-control": 24.767585714285712,
+        "reference-control": 23.53492857142857
+      }
+    },
+    {
+      "case": "scripts.csv-fulfillment.large",
+      "phase": "compile-run",
+      "changePercent": [
+        -5.563705282675602,
+        -4.385410198341678,
+        -0.6184685980749283,
+        0.6215289079155584
+      ],
+      "processMedianMilliseconds": {
+        "reference": 24.974128571428572,
+        "candidate": 25.129350000000002,
+        "candidate-control": 24.81967142857143,
+        "reference-control": 26.281920000000003
+      }
+    },
+    {
+      "case": "scripts.text-summary-helpers.nonlocal-counter.large",
+      "phase": "warm",
+      "changePercent": [
+        -6.079315565863375,
+        -3.5299638270110845,
+        6.388620247776955,
+        9.27639747871234
+      ],
+      "processMedianMilliseconds": {
+        "reference": 9.873850000000001,
+        "candidate": 9.525306666666667,
+        "candidate-control": 9.2735875,
+        "reference-control": 8.71671
+      }
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "phase": "warm",
+      "changePercent": [
+        -2.5887986388402173,
+        -0.5806624338887012,
+        0.08503245391584535,
+        2.148289804569914
+      ],
+      "processMedianMilliseconds": {
+        "reference": 19.60511111111111,
+        "candidate": 20.026285714285713,
+        "candidate-control": 19.621781818181816,
+        "reference-control": 20.14325
+      }
+    },
+    {
+      "case": "diagnostic.loop-helper.short-zero.large",
+      "phase": "warm",
+      "changePercent": [
+        0.49250929727153725,
+        0.8377636031700941,
+        2.131262770098785,
+        2.4821472139723744
+      ],
+      "processMedianMilliseconds": {
+        "reference": 2.3513239130434784,
+        "candidate": 2.4096872340425532,
+        "candidate-control": 2.3710224489795917,
+        "reference-control": 2.3594021739130433
+      }
+    },
+    {
+      "case": "diagnostic.loop-helper.observed.large",
+      "phase": "warm",
+      "changePercent": [
+        -3.9718206284439006,
+        -1.6359183645001107,
+        0.8646978089961399,
+        3.3182492301098154
+      ],
+      "processMedianMilliseconds": {
+        "reference": 2.164152830188679,
+        "candidate": 2.235964814814815,
+        "candidate-control": 2.1287490566037737,
+        "reference-control": 2.216796226415094
+      }
+    }
+  ],
+  "confirmation": [
+    {
+      "case": "scripts.file-search.large.protected",
+      "phase": "warm",
+      "changePercent": [
+        -9.66017257803572,
+        -8.993013397654693,
+        -3.0741029749645543,
+        -2.3583057030162946
+      ],
+      "processMedianMilliseconds": {
+        "reference": 8.02665625,
+        "candidate": 7.779908571428572,
+        "candidate-control": 7.837363157894736,
+        "reference-control": 8.611825806451614
+      }
+    },
+    {
+      "case": "scripts.report-render.large",
+      "phase": "warm",
+      "changePercent": [
+        -3.962515396464217,
+        -3.091834472928867,
+        -2.606488650182981,
+        -1.7235139163227942
+      ],
+      "processMedianMilliseconds": {
+        "reference": 32.40118181818182,
+        "candidate": 31.11728,
+        "candidate-control": 31.39939090909091,
+        "reference-control": 31.950054545454545
+      }
+    },
+    {
+      "case": "scripts.csv-fulfillment.large",
+      "phase": "warm",
+      "changePercent": [
+        -2.6985811116506775,
+        -1.8670213449426543,
+        0.5824704224192123,
+        1.4420707920228537
+      ],
+      "processMedianMilliseconds": {
+        "reference": 23.903621428571427,
+        "candidate": 23.457335714285712,
+        "candidate-control": 24.248328571428573,
+        "reference-control": 24.10790714285714
+      }
+    }
+  ],
+  "fullQualificationPending": true,
+  "publicationHeld": true,
+  "acceptedDebt": "Initial short helpers +0.49..+2.48%local elapsed. Other original controls move; report adverse up to23.72%not reproduced with longer warmup, but original condition and unexplained cause remain. No whole-script allocation/portableCPU/CPython/heap/tail claim.",
+  "correctness": "Qualified7161 and initial migrated source fail all3wide/None duplicate tests; CPython3.13.2controls reject. Dynamic positional fill now rejects already-bound slots. All original semantic/ownership assertions retained.",
+  "unresolvedFixture": "One initial net11native-call-continuation fixture exited7 without stdout in its failure message. Direct reference/candidate reproductions and subsequent focused actual11/10pass. Cause unestablished; failure retained and diagnostic stdout added, assertions/deadlines/stacks unchanged.",
+  "imagesReconstructible": true,
+  "allUsersJoined": true,
+  "allGoldensAndBudgetsPassed": true
+}

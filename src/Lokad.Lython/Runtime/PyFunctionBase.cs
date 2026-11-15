@@ -136,7 +136,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
                 // One relinquishment covers native success, entry failure and
                 // a framed body. A throwing refund must never return it again.
                 LythonRuntime.ReturnBoundArguments(boundArguments,
-                    _storageCapacity ?? boundArguments.Assigned.Length);
+                    _storageCapacity ?? boundArguments.ParameterCount);
             }
         }
     }
@@ -185,7 +185,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
             finally
             {
                 LythonRuntime.ReturnBoundArguments(boundArguments,
-                    _storageCapacity ?? boundArguments.Assigned.Length);
+                    _storageCapacity ?? boundArguments.ParameterCount);
             }
         }
     }

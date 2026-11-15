@@ -8215,3 +8215,14 @@ Captured text1.324–1.403x/file1.756–1.881x/report1.196–1.231xretain moving
 or IQRs. Exact phases/CPU/goldens/quiet/ownership/join/archive gates preserved;
 no source-pair causal improvement, heap or tail claim. VM users closed and original
 254/252MiB floors unchanged; no deletion or new frozen-image upload. Publication held.
+
+
+[R384 final-slot function binding](results/2026-11-15-function-slot-binding/README.md)
+retains8fbfa3f0: removes function presence/overflow/marking/transport and corrects
+starred-positional/keyword duplicate binding, confirmed reference-first and CPython.
+452internal/2,396public per actual11/10pass. Initial fixtureexit7 and subsequent
+passes preserved, no causal fix claimed. Local8job122.508splus justified same-image
+3job longer-warmup confirmation keep every adverse control; no portableCPU or
+whole-script allocation claim. Accept short-helper+.49–2.48%diagnostic debt for
+simplification/correctness; report's original+23.72%moving result not erased.
+Full platform/originalstress/installed-consumer qualification pending; publication held.
