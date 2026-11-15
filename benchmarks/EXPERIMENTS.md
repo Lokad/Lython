@@ -8552,3 +8552,12 @@ not justified. B803all gates pass197.523s; original disk-floor refusal/payload
 and test evaluation-order failure preserved. All586production inputs restored;
 forced Release solution build,97internal/98public each actual11/10 pass. Borrow
 helpers/six mechanism-only tests removed. Broader call/frame objective stays open.
+
+
+[R412 public compilation attribution](results/2026-11-15-frontend-phase-attribution/README.md)
+at unchanged1b82/0ed profiles existing manifest/generated96-field normalizer.
+Static analysis/parsing/executable prep are mixed; region scans are not isolated
+as a dominant stage, no index selected. Source finds duplicate target lowering,
+syntax-keyed read tables and runtime target reconstruction. Select prepared-store
+migration R413, not a traversal framework. B804all gates pass; RAM traces archived/
+verified before unmount, all users joined. No CPU speedup or production change.

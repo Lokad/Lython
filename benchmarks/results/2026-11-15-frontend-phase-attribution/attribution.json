@@ -1,0 +1,1080 @@
+{
+  "kind": "Diagnostic sampled CPU, nearest phase owners include useful/inlined work; not exclusive cost/removable shares or a timing comparison.",
+  "rows": [
+    {
+      "case": "scripts.config-manifest.small",
+      "activeCpuTids": [
+        "3764737",
+        "3764741",
+        "3764742"
+      ],
+      "threadCpuSeconds": [
+        {
+          "tid": "3764730",
+          "name": "dotnet",
+          "seconds": 0.0
+        },
+        {
+          "tid": "3764731",
+          "name": ".NET EventPipe",
+          "seconds": 0.0
+        },
+        {
+          "tid": "3764732",
+          "name": ".NET DebugPipe",
+          "seconds": 0.0
+        },
+        {
+          "tid": "3764733",
+          "name": ".NET Debugger",
+          "seconds": 0.0
+        },
+        {
+          "tid": "3764734",
+          "name": ".NET Finalizer",
+          "seconds": 0.0
+        },
+        {
+          "tid": "3764735",
+          "name": ".NET Tiered JIT",
+          "seconds": 0.06000000000000005
+        },
+        {
+          "tid": "3764736",
+          "name": ".NET BGC",
+          "seconds": 0.0
+        },
+        {
+          "tid": "3764737",
+          "name": ".NET TP Worker",
+          "seconds": 0.82
+        },
+        {
+          "tid": "3764738",
+          "name": ".NET TP Gate",
+          "seconds": 0.0
+        },
+        {
+          "tid": "3764739",
+          "name": ".NET TP Worker",
+          "seconds": 0.0
+        },
+        {
+          "tid": "3764740",
+          "name": ".NET SigHandler",
+          "seconds": 0.0
+        },
+        {
+          "tid": "3764741",
+          "name": ".NET TP Worker",
+          "seconds": 3.27
+        },
+        {
+          "tid": "3764742",
+          "name": ".NET TP Worker",
+          "seconds": 1.63
+        },
+        {
+          "tid": "3764743",
+          "name": "Lython executio",
+          "seconds": 0.0
+        }
+      ],
+      "sampleCount": 1136,
+      "unmappedLeafSamples": 201,
+      "ambiguousLeafSamples": 0,
+      "phaseOwners": [
+        [
+          "static/annotation analysis",
+          408
+        ],
+        [
+          "parse/tokenization",
+          261
+        ],
+        [
+          "executable preparation",
+          235
+        ],
+        [
+          "scope/syntax facts",
+          153
+        ],
+        [
+          "lowering",
+          54
+        ],
+        [
+          "other/CLR/protocol",
+          25
+        ]
+      ],
+      "nearestLythonFrame": [
+        [
+          "instance bool [Lokad.Lython] Lokad.Lython.Frontend.ExpressionSyntaxTraversal+Enumerator::MoveNext()[OptimizedTier1]",
+          43
+        ],
+        [
+          "bool [Lokad.Lython] Lokad.Lython.Frontend.AbstractState::MatchesFactQuery(valuetype Lokad.Lython.Frontend.AbstractValue,valuetype Lokad.Lython.Frontend.AbstractState/FactQuery,class Lokad.Lython.Frontend.StaticAnalysisContext)[OptimizedTier1]",
+          43
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.ExpressionSyntax [Lokad.Lython] Lokad.Lython.Frontend.Parser+CallPostfixParser::Parse(class Lokad.Lython.Frontend.Parser,class Lokad.Lython.Frontend.ExpressionSyntax)[OptimizedTier1]",
+          42
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.ExecutableCodeObject [Lokad.Lython] Lokad.Lython.Frontend.ExecutableScript+Builder::CompileCodeObject(string,class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Frontend.LoweredStatement>,class Lokad.Lython.Frontend.LoweredGeneratorExpression)[OptimizedTier1]",
+          35
+        ],
+        [
+          "class Lokad.Lython.Frontend.LoweredExpression [Lokad.Lython] Lokad.Lython.Frontend.LoweredScript::LowerExpression(class Lokad.Lython.Frontend.ExpressionSyntax)[OptimizedTier1]",
+          33
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.ExpressionSyntax [Lokad.Lython] Lokad.Lython.Frontend.Parser::ParsePostfixExpression()[OptimizedTier1]",
+          28
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.ExpressionSyntax [Lokad.Lython] Lokad.Lython.Frontend.Parser::ParsePrimaryExpression()[OptimizedTier1]",
+          25
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Frontend.AbstractState::InvalidateDictionaryFacts()[OptimizedTier1]",
+          22
+        ],
+        [
+          "void [Lokad.Lython] Lokad.Lython.Frontend.LexicalScopePreparation::Prepare(class Lokad.Lython.Frontend.ScriptSyntax,class Lokad.Lython.Runtime.MemoryGovernor,valuetype [System.Runtime]System.Threading.CancellationToken)[OptimizedTier1]",
+          21
+        ],
+        [
+          "instance int32 [Lokad.Lython] Lokad.Lython.Frontend.ExecutableScript+Builder::CompileExpression(class Lokad.Lython.Frontend.LoweredExpression,int32)[OptimizedTier1]",
+          20
+        ],
+        [
+          "void [Lokad.Lython] Lokad.Lython.Frontend.SyntaxValidityDiagnostics::<Analyze>g__Expressions|0_3(class Lokad.Lython.Frontend.ExpressionSyntax,valuetype Lokad.Lython.Frontend.SyntaxValidityDiagnostics/<>c__DisplayClass0_0&)[OptimizedTier1]",
+          20
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.ExpressionSyntax [Lokad.Lython] Lokad.Lython.Frontend.Parser::ParseStringLiteralExpression()[OptimizedTier1]",
+          18
+        ],
+        [
+          "class Lokad.Lython.Frontend.ExecutableStackLayout [Lokad.Lython] Lokad.Lython.Frontend.ExecutableStackLayout::Prepare(class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Frontend.ExecutableBasicBlock>,class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<object>,class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Frontend.ExecutableCallSite>,class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Frontend.ExecutableExceptionRegion>,int32,int32,int32)[OptimizedTier1]",
+          18
+        ],
+        [
+          "instance bool [Lokad.Lython] Lokad.Lython.Frontend.StatementSyntaxTraversal+ExpressionEnumerator::MoveNext()[OptimizedTier1]",
+          18
+        ],
+        [
+          "void [Lokad.Lython] Lokad.Lython.Frontend.StaticAbstractInterpreter+AccessCallExpressionAnalyzer::<TryAnalyze>g__AnalyzeCall|1_0(class Lokad.Lython.Frontend.CallExpressionSyntax,valuetype Lokad.Lython.Frontend.StaticAbstractInterpreter/AccessCallExpressionAnalyzer/<>c__DisplayClass1_0&)[OptimizedTier1]",
+          17
+        ],
+        [
+          "instance bool [Lokad.Lython] Lokad.Lython.Frontend.ExpressionSyntaxTraversal+<EnumerateComplexChildren>d__3::MoveNext()[OptimizedTier1]",
+          15
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.TokenizedSource [Lokad.Lython] Lokad.Lython.Frontend.PythonTokenization+Reader::Read()[OptimizedTier1]",
+          14
+        ],
+        [
+          "class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.LythonDiagnostic> [Lokad.Lython] Lokad.Lython.Frontend.SyntaxValidityDiagnostics::Analyze(class Lokad.Lython.Frontend.ScriptSyntax)[OptimizedTier1]",
+          14
+        ],
+        [
+          "class Lokad.Lython.Frontend.ScopeDirectiveFacts [Lokad.Lython] Lokad.Lython.Frontend.ScopeDirectiveFactsCollector::CollectFunctionBindings(class [System.Runtime]System.Collections.Generic.IEnumerable`1<string>,class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Frontend.StatementSyntax>,bool)[OptimizedTier1]",
+          13
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Frontend.ExecutableScript+Builder::CompileLoadIdentifier(string,class Lokad.Lython.LythonSourceSpan,int32)[OptimizedTier1]",
+          12
+        ],
+        [
+          "instance bool [Lokad.Lython] Lokad.Lython.Frontend.StaticAbstractInterpreter+AccessCallExpressionAnalyzer::TryAnalyze(class Lokad.Lython.Frontend.ExpressionSyntax,class [System.Collections]System.Collections.Generic.List`1<class Lokad.Lython.LythonDiagnostic>,class Lokad.Lython.Frontend.AbstractState)[OptimizedTier1]",
+          11
+        ],
+        [
+          "bool [Lokad.Lython] Lokad.Lython.Frontend.StaticAbstractValueResolver::TryResolveCallAbstractValue(class Lokad.Lython.Frontend.CallExpressionSyntax,class Lokad.Lython.Frontend.AbstractState,valuetype Lokad.Lython.Frontend.AbstractValue&)[OptimizedTier1]",
+          11
+        ],
+        [
+          "instance int32 [Lokad.Lython] Lokad.Lython.Frontend.ExecutableScript+Builder::InternFunction(class Lokad.Lython.Frontend.LoweredFunctionDefinitionStatement)[OptimizedTier1]",
+          11
+        ],
+        [
+          "class Lokad.Lython.Frontend.FrontendResult [Lokad.Lython] Lokad.Lython.Frontend.LythonFrontend::Compile(string,class Lokad.Lython.Runtime.MemoryGovernor,class Lokad.Lython.ILythonRegexProvider,valuetype [System.Runtime]System.Threading.CancellationToken,class Lokad.Lython.Frontend.CompiledRegexPrograms)[OptimizedTier1]",
+          9
+        ],
+        [
+          "instance int32 [Lokad.Lython] Lokad.Lython.Frontend.ExecutableInstruction::get_ValueInputCount()[OptimizedTier1]",
+          9
+        ],
+        [
+          "bool [Lokad.Lython] Lokad.Lython.Frontend.ScopeDirectiveFactsCollector::CollectScopeBindings(class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Frontend.StatementSyntax>,class [System.Runtime]System.Collections.Generic.ICollection`1<string>,class [System.Collections]System.Collections.Generic.HashSet`1<string>,class [System.Collections]System.Collections.Generic.HashSet`1<string>)[OptimizedTier1]",
+          9
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.ExpressionSyntax [Lokad.Lython] Lokad.Lython.Frontend.Parser+MemberPostfixParser::Parse(class Lokad.Lython.Frontend.Parser,class Lokad.Lython.Frontend.ExpressionSyntax)[OptimizedTier1]",
+          9
+        ],
+        [
+          "instance int32 [Lokad.Lython] Lokad.Lython.Frontend.ExecutableScript+Builder::CompileCallExpression(class Lokad.Lython.Frontend.LoweredCallExpression,int32)[OptimizedTier1]",
+          9
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Frontend.ExecutableScript+Builder::AddInstruction(int32,valuetype Lokad.Lython.Frontend.ExecutableInstruction)[OptimizedTier1]",
+          8
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Frontend.AbstractState::InvalidateMutableSequenceFacts()[OptimizedTier1]",
+          8
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.ExpressionSyntax [Lokad.Lython] Lokad.Lython.Frontend.Parser::ParseLeftAssociativeExpression(valuetype Lokad.Lython.Frontend.Parser/LeftAssociativeLayer)[OptimizedTier1]",
+          8
+        ],
+        [
+          "valuetype [System.Runtime]System.ValueTuple`3<int32,int32,int32> [Lokad.Lython] Lokad.Lython.Frontend.ExecutableStackLayout::Effect(valuetype Lokad.Lython.Frontend.ExecutableInstruction,class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<object>,class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Frontend.ExecutableCallSite>,int32)[OptimizedTier1]",
+          8
+        ],
+        [
+          "instance int32[] [Lokad.Lython] Lokad.Lython.Frontend.ExecutableScript+Builder::<CompileCodeObject>g__CollectCapturedLocalSlots|30_6()[OptimizedTier1]",
+          8
+        ],
+        [
+          "void [Lokad.Lython] Lokad.Lython.Frontend.StaticNameBindingDiagnostics::AnalyzeStatement(class Lokad.Lython.Frontend.StatementSyntax,class Lokad.Lython.Frontend.StaticAnalysisContext,class [System.Collections]System.Collections.Generic.HashSet`1<string>,class [System.Collections]System.Collections.Generic.HashSet`1<string>)[OptimizedTier1]",
+          8
+        ],
+        [
+          "instance !1& [System.Private.CoreLib] System.Collections.Generic.Dictionary`2[System.__Canon,Lokad.Lython.Frontend.AbstractValueResolution]::FindValue(!0)[OptimizedTier1]",
+          8
+        ]
+      ],
+      "topLeaves": [
+        [
+          "[unknown] (/home/lokad/lython-bench-toolchains/dotnet/11.0.100-rc.3.26522.148/shared/Microsoft.NETCore.App/11.0.0-rc.3.26522.148/libcoreclr.so)",
+          177
+        ],
+        [
+          "instance bool [Lokad.Lython] Lokad.Lython.Frontend.ExpressionSyntaxTraversal+Enumerator::MoveNext()[OptimizedTier1]",
+          42
+        ],
+        [
+          "bool [Lokad.Lython] Lokad.Lython.Frontend.AbstractState::MatchesFactQuery(valuetype Lokad.Lython.Frontend.AbstractValue,valuetype Lokad.Lython.Frontend.AbstractState/FactQuery,class Lokad.Lython.Frontend.StaticAnalysisContext)[OptimizedTier1]",
+          42
+        ],
+        [
+          "stub InitThreadManagerPerfMapData<JIT_CopiedWriteBarriers>",
+          38
+        ],
+        [
+          "[unknown] (/usr/lib/x86_64-linux-gnu/libc.so.6)",
+          19
+        ],
+        [
+          "class Lokad.Lython.Frontend.ExecutableStackLayout [Lokad.Lython] Lokad.Lython.Frontend.ExecutableStackLayout::Prepare(class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Frontend.ExecutableBasicBlock>,class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<object>,class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Frontend.ExecutableCallSite>,class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Frontend.ExecutableExceptionRegion>,int32,int32,int32)[OptimizedTier1]",
+          18
+        ],
+        [
+          "instance int32 [System.Private.CoreLib] System.Collections.Generic.GenericArraySortHelper`1[System.Int32]::BinarySearch(!0[],int32,int32,!0,class System.Collections.Generic.IComparer`1<!0>)[OptimizedTier1]",
+          16
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.ExpressionSyntax [Lokad.Lython] Lokad.Lython.Frontend.Parser+CallPostfixParser::Parse(class Lokad.Lython.Frontend.Parser,class Lokad.Lython.Frontend.ExpressionSyntax)[OptimizedTier1]",
+          15
+        ],
+        [
+          "instance bool [Lokad.Lython] Lokad.Lython.Frontend.StatementSyntaxTraversal+ExpressionEnumerator::MoveNext()[OptimizedTier1]",
+          14
+        ],
+        [
+          "void [Lokad.Lython] Lokad.Lython.Frontend.LexicalScopePreparation::Prepare(class Lokad.Lython.Frontend.ScriptSyntax,class Lokad.Lython.Runtime.MemoryGovernor,valuetype [System.Runtime]System.Threading.CancellationToken)[OptimizedTier1]",
+          13
+        ],
+        [
+          "instance int32 [Lokad.Lython] Lokad.Lython.Frontend.ExecutableScript+Builder::CompileExpression(class Lokad.Lython.Frontend.LoweredExpression,int32)[OptimizedTier1]",
+          13
+        ],
+        [
+          "instance bool [Lokad.Lython] Lokad.Lython.Frontend.ExpressionSyntaxTraversal+<EnumerateComplexChildren>d__3::MoveNext()[OptimizedTier1]",
+          12
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.TokenizedSource [Lokad.Lython] Lokad.Lython.Frontend.PythonTokenization+Reader::Read()[OptimizedTier1]",
+          12
+        ],
+        [
+          "stub ReportStubBlock<VSD_ResolveStub>",
+          11
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.ExpressionSyntax [Lokad.Lython] Lokad.Lython.Frontend.Parser::ParsePrimaryExpression()[OptimizedTier1]",
+          11
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.ExpressionSyntax [Lokad.Lython] Lokad.Lython.Frontend.Parser::ParsePostfixExpression()[OptimizedTier1]",
+          10
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Frontend.AbstractState::InvalidateDictionaryFacts()[OptimizedTier1]",
+          10
+        ],
+        [
+          "void [Lokad.Lython] Lokad.Lython.Frontend.StaticAbstractInterpreter+AccessCallExpressionAnalyzer::<TryAnalyze>g__AnalyzeCall|1_0(class Lokad.Lython.Frontend.CallExpressionSyntax,valuetype Lokad.Lython.Frontend.StaticAbstractInterpreter/AccessCallExpressionAnalyzer/<>c__DisplayClass1_0&)[OptimizedTier1]",
+          10
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.ExpressionSyntax [Lokad.Lython] Lokad.Lython.Frontend.Parser::ParseStringLiteralExpression()[OptimizedTier1]",
+          9
+        ],
+        [
+          "instance int32 [Lokad.Lython] Lokad.Lython.Frontend.ExecutableInstruction::get_ValueInputCount()[OptimizedTier1]",
+          9
+        ],
+        [
+          "__tls_get_addr+0x0 (/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)",
+          9
+        ],
+        [
+          "bool [Lokad.Lython] Lokad.Lython.Frontend.StaticAbstractValueResolver::TryResolveCallAbstractValue(class Lokad.Lython.Frontend.CallExpressionSyntax,class Lokad.Lython.Frontend.AbstractState,valuetype Lokad.Lython.Frontend.AbstractValue&)[OptimizedTier1]",
+          9
+        ],
+        [
+          "__tls_get_addr+0x20 (/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)",
+          8
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Frontend.AbstractState::InvalidateMutableSequenceFacts()[OptimizedTier1]",
+          8
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.ExpressionSyntax [Lokad.Lython] Lokad.Lython.Frontend.Parser::ParseLeftAssociativeExpression(valuetype Lokad.Lython.Frontend.Parser/LeftAssociativeLayer)[OptimizedTier1]",
+          8
+        ],
+        [
+          "instance !1& [System.Private.CoreLib] System.Collections.Generic.Dictionary`2[System.__Canon,Lokad.Lython.Frontend.AbstractValue]::FindValue(!0)[OptimizedTier1]",
+          8
+        ],
+        [
+          "instance bool [Lokad.Lython] Lokad.Lython.Frontend.PythonTokenization+Reader::ReadIndentation(int32)[OptimizedTier1]",
+          7
+        ],
+        [
+          "object [System.Private.CoreLib] System.Runtime.CompilerServices.CastHelpers::IsInstanceOfAny(void*,object)[OptimizedTier1]",
+          7
+        ],
+        [
+          "valuetype [System.Runtime]System.ValueTuple`3<int32,int32,int32> [Lokad.Lython] Lokad.Lython.Frontend.ExecutableStackLayout::Effect(valuetype Lokad.Lython.Frontend.ExecutableInstruction,class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<object>,class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Frontend.ExecutableCallSite>,int32)[OptimizedTier1]",
+          7
+        ],
+        [
+          "stub ReportStubBlock<VSD_DispatchStub>",
+          7
+        ],
+        [
+          "bool [Lokad.Lython] Lokad.Lython.Frontend.StaticAbstractValueResolver::TryResolveComputed(class Lokad.Lython.Frontend.ExpressionSyntax,class Lokad.Lython.Frontend.AbstractState,valuetype Lokad.Lython.Frontend.AbstractValue&)[OptimizedTier1]",
+          7
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Frontend.ExecutableScript+Builder::AddInstruction(int32,valuetype Lokad.Lython.Frontend.ExecutableInstruction)[OptimizedTier1]",
+          7
+        ],
+        [
+          "instance bool [System.Private.CoreLib] System.Collections.Generic.Dictionary`2[System.__Canon,Lokad.Lython.Frontend.AbstractValueResolution]::TryInsert(!0,!1,valuetype System.Collections.Generic.InsertionBehavior)[OptimizedTier1]",
+          7
+        ],
+        [
+          "class [System.Collections]System.Collections.Generic.HashSet`1<string> [Lokad.Lython] Lokad.Lython.Frontend.StaticBindingEngine::CollectMutatedReceiverNames(class Lokad.Lython.Frontend.StatementSyntax,class Lokad.Lython.Frontend.AbstractState)[OptimizedTier1]",
+          7
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.ExpressionSyntax [Lokad.Lython] Lokad.Lython.Frontend.Parser::ParseExpression()[OptimizedTier1]",
+          6
+        ]
+      ],
+      "phaseOwnerMethods": [
+        [
+          "void [Lokad.Lython] Lokad.Lython.Frontend.StaticAbstractInterpreter::Analyze(class Lokad.Lython.Frontend.StaticAnalysisContext)[OptimizedTier1]",
+          184
+        ],
+        [
+          "bool [Lokad.Lython] Lokad.Lython.Frontend.AbstractState::MatchesFactQuery(valuetype Lokad.Lython.Frontend.AbstractValue,valuetype Lokad.Lython.Frontend.AbstractState/FactQuery,class Lokad.Lython.Frontend.StaticAnalysisContext)[OptimizedTier1]",
+          44
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.ExpressionSyntax [Lokad.Lython] Lokad.Lython.Frontend.Parser+CallPostfixParser::Parse(class Lokad.Lython.Frontend.Parser,class Lokad.Lython.Frontend.ExpressionSyntax)[OptimizedTier1]",
+          42
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.ExecutableCodeObject [Lokad.Lython] Lokad.Lython.Frontend.ExecutableScript+Builder::CompileCodeObject(string,class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Frontend.LoweredStatement>,class Lokad.Lython.Frontend.LoweredGeneratorExpression)[OptimizedTier1]",
+          39
+        ],
+        [
+          "class Lokad.Lython.Frontend.LoweredExpression [Lokad.Lython] Lokad.Lython.Frontend.LoweredScript::LowerExpression(class Lokad.Lython.Frontend.ExpressionSyntax)[OptimizedTier1]",
+          36
+        ],
+        [
+          "void [Lokad.Lython] Lokad.Lython.Frontend.LexicalScopePreparation::Prepare(class Lokad.Lython.Frontend.ScriptSyntax,class Lokad.Lython.Runtime.MemoryGovernor,valuetype [System.Runtime]System.Threading.CancellationToken)[OptimizedTier1]",
+          32
+        ],
+        [
+          "void [Lokad.Lython] Lokad.Lython.Frontend.SyntaxValidityDiagnostics::<Analyze>g__Expressions|0_3(class Lokad.Lython.Frontend.ExpressionSyntax,valuetype Lokad.Lython.Frontend.SyntaxValidityDiagnostics/<>c__DisplayClass0_0&)[OptimizedTier1]",
+          32
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.ExpressionSyntax [Lokad.Lython] Lokad.Lython.Frontend.Parser::ParsePostfixExpression()[OptimizedTier1]",
+          28
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.ExpressionSyntax [Lokad.Lython] Lokad.Lython.Frontend.Parser::ParsePrimaryExpression()[OptimizedTier1]",
+          25
+        ],
+        [
+          "void [Lokad.Lython] Lokad.Lython.Frontend.ScopeDirectiveFactsCollector::CollectExpressionBindings(class Lokad.Lython.Frontend.ExpressionSyntax,class [System.Runtime]System.Collections.Generic.ICollection`1<string>)[OptimizedTier1]",
+          20
+        ],
+        [
+          "instance int32 [Lokad.Lython] Lokad.Lython.Frontend.ExecutableScript+Builder::CompileExpression(class Lokad.Lython.Frontend.LoweredExpression,int32)[OptimizedTier1]",
+          20
+        ],
+        [
+          "class Lokad.Lython.Frontend.ExecutableStackLayout [Lokad.Lython] Lokad.Lython.Frontend.ExecutableStackLayout::Prepare(class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Frontend.ExecutableBasicBlock>,class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<object>,class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Frontend.ExecutableCallSite>,class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Frontend.ExecutableExceptionRegion>,int32,int32,int32)[OptimizedTier1]",
+          20
+        ],
+        [
+          "class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.LythonDiagnostic> [Lokad.Lython] Lokad.Lython.Frontend.SyntaxValidityDiagnostics::Analyze(class Lokad.Lython.Frontend.ScriptSyntax)[OptimizedTier1]",
+          19
+        ],
+        [
+          "instance valuetype [System.Runtime]System.Nullable`1<int32> [Lokad.Lython] Lokad.Lython.Frontend.ExecutableScript+Builder::CompileStatement(class Lokad.Lython.Frontend.LoweredStatement,int32)[OptimizedTier1]",
+          19
+        ],
+        [
+          "bool [Lokad.Lython] Lokad.Lython.Frontend.StaticBindingEngine::TryInferStraightLineReturn(class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Frontend.StatementSyntax>,class Lokad.Lython.Frontend.AbstractState,valuetype Lokad.Lython.Frontend.AbstractValue&)[OptimizedTier1]",
+          19
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.ExpressionSyntax [Lokad.Lython] Lokad.Lython.Frontend.Parser::ParseStringLiteralExpression()[OptimizedTier1]",
+          18
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.TokenizedSource [Lokad.Lython] Lokad.Lython.Frontend.PythonTokenization+Reader::Read()[OptimizedTier1]",
+          17
+        ],
+        [
+          "class [System.Collections]System.Collections.Generic.HashSet`1<string> [Lokad.Lython] Lokad.Lython.Frontend.StaticBindingEngine::CollectMutatedReceiverNames(class Lokad.Lython.Frontend.StatementSyntax,class Lokad.Lython.Frontend.AbstractState)[OptimizedTier1]",
+          16
+        ],
+        [
+          "void [Lokad.Lython] Lokad.Lython.Frontend.StaticBindingEngine::CollectMutatedReceiverNames(class Lokad.Lython.Frontend.ExpressionSyntax,class Lokad.Lython.Frontend.AbstractState,class [System.Collections]System.Collections.Generic.HashSet`1<string>)[OptimizedTier1]",
+          15
+        ],
+        [
+          "void [Lokad.Lython] Lokad.Lython.Frontend.StaticNameBindingDiagnostics::AnalyzeExpression(class Lokad.Lython.Frontend.ExpressionSyntax,class Lokad.Lython.Frontend.StaticAnalysisContext,class [System.Collections]System.Collections.Generic.HashSet`1<string>,class [System.Collections]System.Collections.Generic.HashSet`1<string>)[OptimizedTier1]",
+          15
+        ],
+        [
+          "class Lokad.Lython.Frontend.ScopeDirectiveFacts [Lokad.Lython] Lokad.Lython.Frontend.ScopeDirectiveFactsCollector::CollectFunctionBindings(class [System.Runtime]System.Collections.Generic.IEnumerable`1<string>,class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Frontend.StatementSyntax>,bool)[OptimizedTier1]",
+          15
+        ],
+        [
+          "bool [Lokad.Lython] Lokad.Lython.Frontend.StaticBindingEngine::TryResolveFunctionCallReturn(class Lokad.Lython.Frontend.AbstractFunctionSummary,valuetype Lokad.Lython.Frontend.ConcreteCallArguments,class Lokad.Lython.Frontend.AbstractState,class Lokad.Lython.LythonSourceSpan,valuetype Lokad.Lython.Frontend.AbstractValue&)[OptimizedTier1]",
+          13
+        ],
+        [
+          "bool [Lokad.Lython] Lokad.Lython.Frontend.StaticBindingEngine::CallMayMutateContainerFacts(class Lokad.Lython.Frontend.CallExpressionSyntax,class Lokad.Lython.Frontend.AbstractState)[OptimizedTier1]",
+          13
+        ],
+        [
+          "instance bool [Lokad.Lython] Lokad.Lython.Frontend.LexicalScopePreparation+<ReadExpressions>d__4::MoveNext()[OptimizedTier1]",
+          13
+        ],
+        [
+          "void [Lokad.Lython] Lokad.Lython.Frontend.StaticNameBindingDiagnostics::AnalyzeStatement(class Lokad.Lython.Frontend.StatementSyntax,class Lokad.Lython.Frontend.StaticAnalysisContext,class [System.Collections]System.Collections.Generic.HashSet`1<string>,class [System.Collections]System.Collections.Generic.HashSet`1<string>)[OptimizedTier1]",
+          12
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Frontend.ExecutableScript+Builder::CompileLoadIdentifier(string,class Lokad.Lython.LythonSourceSpan,int32)[OptimizedTier1]",
+          12
+        ],
+        [
+          "bool [Lokad.Lython] Lokad.Lython.Frontend.ScopeDirectiveFactsCollector::CollectScopeBindings(class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Frontend.StatementSyntax>,class [System.Runtime]System.Collections.Generic.ICollection`1<string>,class [System.Collections]System.Collections.Generic.HashSet`1<string>,class [System.Collections]System.Collections.Generic.HashSet`1<string>)[OptimizedTier1]",
+          11
+        ],
+        [
+          "bool [Lokad.Lython] Lokad.Lython.Frontend.StaticBindingEngine::TryGetIterableElementAbstractValue(class Lokad.Lython.Frontend.ExpressionSyntax,class Lokad.Lython.Frontend.AbstractState,valuetype Lokad.Lython.Frontend.AbstractValue&)[OptimizedTier1]",
+          11
+        ],
+        [
+          "instance int32 [Lokad.Lython] Lokad.Lython.Frontend.ExecutableScript+Builder::CompileCallExpression(class Lokad.Lython.Frontend.LoweredCallExpression,int32)[OptimizedTier1]",
+          11
+        ],
+        [
+          "instance int32 [Lokad.Lython] Lokad.Lython.Frontend.ExecutableScript+Builder::InternFunction(class Lokad.Lython.Frontend.LoweredFunctionDefinitionStatement)[OptimizedTier1]",
+          11
+        ],
+        [
+          "class [System.Collections]System.Collections.Generic.List`1<valuetype [System.Runtime]System.ValueTuple`4<int32,int32,int32,class Lokad.Lython.LythonSourceSpan>> [Lokad.Lython] Lokad.Lython.Frontend.ExecutableStackLayout::ForwardValues(class Lokad.Lython.Frontend.ExecutableCodeObject,class [System.Collections]System.Collections.Generic.List`1<class Lokad.Lython.Frontend.ExecutableBasicBlock>)[OptimizedTier1]",
+          10
+        ],
+        [
+          "class Lokad.Lython.Frontend.LoweredStatement [Lokad.Lython] Lokad.Lython.Frontend.LoweredScript::LowerStatement(class Lokad.Lython.Frontend.StatementSyntax,bool)[OptimizedTier1]",
+          10
+        ],
+        [
+          "void [Lokad.Lython] Lokad.Lython.Frontend.StaticBindingEngine::UpdateBindings(class Lokad.Lython.Frontend.StatementSyntax,class Lokad.Lython.Frontend.AbstractState)[OptimizedTier1]",
+          10
+        ],
+        [
+          "void [Lokad.Lython] Lokad.Lython.Frontend.StaticBindingEngine::UpdateBinding(string,class Lokad.Lython.Frontend.ExpressionSyntax,class Lokad.Lython.Frontend.AbstractState)[OptimizedTier1]",
+          9
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.ExpressionSyntax [Lokad.Lython] Lokad.Lython.Frontend.Parser+MemberPostfixParser::Parse(class Lokad.Lython.Frontend.Parser,class Lokad.Lython.Frontend.ExpressionSyntax)[OptimizedTier1]",
+          9
+        ]
+      ],
+      "malformedMapLines": [],
+      "compileInvocations": 28672,
+      "compiledClockSeconds": 5.71875026
+    },
+    {
+      "case": "scripts.config-generated-guards.medium",
+      "activeCpuTids": [
+        "3764773",
+        "3764775"
+      ],
+      "threadCpuSeconds": [
+        {
+          "tid": "3764762",
+          "name": "dotnet",
+          "seconds": 0.0
+        },
+        {
+          "tid": "3764763",
+          "name": ".NET EventPipe",
+          "seconds": 0.0
+        },
+        {
+          "tid": "3764764",
+          "name": ".NET DebugPipe",
+          "seconds": 0.0
+        },
+        {
+          "tid": "3764765",
+          "name": ".NET Debugger",
+          "seconds": 0.0
+        },
+        {
+          "tid": "3764766",
+          "name": ".NET Finalizer",
+          "seconds": 0.0
+        },
+        {
+          "tid": "3764767",
+          "name": ".NET Tiered JIT",
+          "seconds": 0.06000000000000005
+        },
+        {
+          "tid": "3764768",
+          "name": ".NET BGC",
+          "seconds": 0.0
+        },
+        {
+          "tid": "3764769",
+          "name": ".NET TP Worker",
+          "seconds": 0.0
+        },
+        {
+          "tid": "3764770",
+          "name": ".NET TP Gate",
+          "seconds": 0.0
+        },
+        {
+          "tid": "3764771",
+          "name": ".NET TP Worker",
+          "seconds": 0.0
+        },
+        {
+          "tid": "3764772",
+          "name": ".NET SigHandler",
+          "seconds": 0.0
+        },
+        {
+          "tid": "3764773",
+          "name": ".NET TP Worker",
+          "seconds": 2.9299999999999997
+        },
+        {
+          "tid": "3764774",
+          "name": "Lython executio",
+          "seconds": 0.0
+        },
+        {
+          "tid": "3764775",
+          "name": ".NET TP Worker",
+          "seconds": 2.9499999999999997
+        }
+      ],
+      "sampleCount": 1167,
+      "unmappedLeafSamples": 369,
+      "ambiguousLeafSamples": 0,
+      "phaseOwners": [
+        [
+          "parse/tokenization",
+          390
+        ],
+        [
+          "executable preparation",
+          315
+        ],
+        [
+          "static/annotation analysis",
+          256
+        ],
+        [
+          "scope/syntax facts",
+          137
+        ],
+        [
+          "lowering",
+          59
+        ],
+        [
+          "other/CLR/protocol",
+          10
+        ]
+      ],
+      "nearestLythonFrame": [
+        [
+          "instance class Lokad.Lython.Frontend.ExecutableCodeObject [Lokad.Lython] Lokad.Lython.Frontend.ExecutableScript+Builder::CompileCodeObject(string,class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Frontend.LoweredStatement>,class Lokad.Lython.Frontend.LoweredGeneratorExpression)[OptimizedTier1]",
+          123
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.ExpressionSyntax [Lokad.Lython] Lokad.Lython.Frontend.Parser::ParsePostfixExpression()[OptimizedTier1]",
+          79
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.ExpressionSyntax [Lokad.Lython] Lokad.Lython.Frontend.Parser::ParsePrimaryExpression()[OptimizedTier1]",
+          46
+        ],
+        [
+          "instance bool [Lokad.Lython] Lokad.Lython.Frontend.ExpressionSyntaxTraversal+Enumerator::MoveNext()[OptimizedTier1]",
+          42
+        ],
+        [
+          "class Lokad.Lython.Frontend.LoweredExpression [Lokad.Lython] Lokad.Lython.Frontend.LoweredScript::LowerExpression(class Lokad.Lython.Frontend.ExpressionSyntax)[OptimizedTier1]",
+          38
+        ],
+        [
+          "class Lokad.Lython.Frontend.ExecutableStackLayout [Lokad.Lython] Lokad.Lython.Frontend.ExecutableStackLayout::Prepare(class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Frontend.ExecutableBasicBlock>,class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<object>,class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Frontend.ExecutableCallSite>,class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Frontend.ExecutableExceptionRegion>,int32,int32,int32)[OptimizedTier1]",
+          37
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.ExpressionSyntax [Lokad.Lython] Lokad.Lython.Frontend.Parser+CallPostfixParser::Parse(class Lokad.Lython.Frontend.Parser,class Lokad.Lython.Frontend.ExpressionSyntax)[OptimizedTier1]",
+          35
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.TokenizedSource [Lokad.Lython] Lokad.Lython.Frontend.PythonTokenization+Reader::Read()[OptimizedTier1]",
+          35
+        ],
+        [
+          "void [Lokad.Lython] Lokad.Lython.Frontend.SyntaxValidityDiagnostics::<Analyze>g__Expressions|0_3(class Lokad.Lython.Frontend.ExpressionSyntax,valuetype Lokad.Lython.Frontend.SyntaxValidityDiagnostics/<>c__DisplayClass0_0&)[OptimizedTier1]",
+          29
+        ],
+        [
+          "instance int32[] [Lokad.Lython] Lokad.Lython.Frontend.ExecutableScript+Builder::CollectReachableBlocks(int32,int32[])[OptimizedTier1]",
+          29
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Frontend.AbstractState::MergeFrom(class Lokad.Lython.Frontend.AbstractState,class Lokad.Lython.Frontend.AbstractState)[OptimizedTier1]",
+          24
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.ExpressionSyntax [Lokad.Lython] Lokad.Lython.Frontend.Parser::ParseStringLiteralExpression()[OptimizedTier1]",
+          22
+        ],
+        [
+          "void [Lokad.Lython] Lokad.Lython.Frontend.StaticNameBindingDiagnostics::AnalyzeStatement(class Lokad.Lython.Frontend.StatementSyntax,class Lokad.Lython.Frontend.StaticAnalysisContext,class [System.Collections]System.Collections.Generic.HashSet`1<string>,class [System.Collections]System.Collections.Generic.HashSet`1<string>)[OptimizedTier1]",
+          22
+        ],
+        [
+          "class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.LythonDiagnostic> [Lokad.Lython] Lokad.Lython.Frontend.SyntaxValidityDiagnostics::Analyze(class Lokad.Lython.Frontend.ScriptSyntax)[OptimizedTier1]",
+          21
+        ],
+        [
+          "bool [Lokad.Lython] Lokad.Lython.Frontend.ScopeDirectiveFactsCollector::CollectScopeBindings(class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Frontend.StatementSyntax>,class [System.Runtime]System.Collections.Generic.ICollection`1<string>,class [System.Collections]System.Collections.Generic.HashSet`1<string>,class [System.Collections]System.Collections.Generic.HashSet`1<string>)[OptimizedTier1]",
+          19
+        ],
+        [
+          "void [Lokad.Lython] Lokad.Lython.Frontend.LexicalScopePreparation::Prepare(class Lokad.Lython.Frontend.ScriptSyntax,class Lokad.Lython.Runtime.MemoryGovernor,valuetype [System.Runtime]System.Threading.CancellationToken)[OptimizedTier1]",
+          18
+        ],
+        [
+          "instance class Lokad.Lython.LythonSourceSpan [Lokad.Lython] Lokad.Lython.Frontend.Parser::SpanOf(int32)[OptimizedTier1]",
+          16
+        ],
+        [
+          "void [Lokad.Lython] Lokad.Lython.Frontend.StaticNameBindingDiagnostics::AnalyzeFunctionDefinition(class Lokad.Lython.Frontend.FunctionDefinitionStatementSyntax,class Lokad.Lython.Frontend.StaticAnalysisContext)[OptimizedTier1]",
+          15
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.StatementSyntax [Lokad.Lython] Lokad.Lython.Frontend.Parser::ParseFunctionDefinition(class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Frontend.ExpressionSyntax>)[OptimizedTier1]",
+          15
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.ExpressionSyntax [Lokad.Lython] Lokad.Lython.Frontend.Parser+MemberPostfixParser::Parse(class Lokad.Lython.Frontend.Parser,class Lokad.Lython.Frontend.ExpressionSyntax)[OptimizedTier1]",
+          15
+        ],
+        [
+          "instance int32 [Lokad.Lython] Lokad.Lython.Frontend.ExecutableScript+Builder::CompileExpression(class Lokad.Lython.Frontend.LoweredExpression,int32)[OptimizedTier1]",
+          14
+        ],
+        [
+          "instance bool [System.Private.CoreLib] System.Collections.Generic.Dictionary`2[System.__Canon,Lokad.Lython.Frontend.AbstractValueResolution]::TryInsert(!0,!1,valuetype System.Collections.Generic.InsertionBehavior)[OptimizedTier1]",
+          13
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.StatementSyntax [Lokad.Lython] Lokad.Lython.Frontend.Parser::ParseSimpleStatement()[OptimizedTier1]",
+          13
+        ],
+        [
+          "instance bool [Lokad.Lython] Lokad.Lython.Frontend.StaticAbstractInterpreter+AccessCallExpressionAnalyzer::TryAnalyze(class Lokad.Lython.Frontend.ExpressionSyntax,class [System.Collections]System.Collections.Generic.List`1<class Lokad.Lython.LythonDiagnostic>,class Lokad.Lython.Frontend.AbstractState)[OptimizedTier1]",
+          11
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.ExpressionSyntax [Lokad.Lython] Lokad.Lython.Frontend.Parser::ParseComparisonExpression()[OptimizedTier1]",
+          11
+        ],
+        [
+          "instance bool [Lokad.Lython] Lokad.Lython.Frontend.StatementSyntaxTraversal+ExpressionEnumerator::MoveNext()[OptimizedTier1]",
+          11
+        ],
+        [
+          "instance class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Frontend.StatementSyntax> [Lokad.Lython] Lokad.Lython.Frontend.Parser::ParseIndentedSuite(valuetype Lokad.Lython.Frontend.LythonDiagnosticCode,string)[OptimizedTier1]",
+          11
+        ],
+        [
+          "bool [Lokad.Lython] Lokad.Lython.Frontend.StaticBindingEngine::CallMayMutateContainerFacts(class Lokad.Lython.Frontend.CallExpressionSyntax,class Lokad.Lython.Frontend.AbstractState)[OptimizedTier1]",
+          11
+        ],
+        [
+          "void [Lokad.Lython] Lokad.Lython.Frontend.StaticAbstractInterpreter+AccessCallExpressionAnalyzer::<TryAnalyze>g__AnalyzeCall|1_0(class Lokad.Lython.Frontend.CallExpressionSyntax,valuetype Lokad.Lython.Frontend.StaticAbstractInterpreter/AccessCallExpressionAnalyzer/<>c__DisplayClass1_0&)[OptimizedTier1]",
+          10
+        ],
+        [
+          "instance class [System.Collections]System.Collections.Generic.List`1<class Lokad.Lython.Frontend.ExecutableBasicBlock> [Lokad.Lython] Lokad.Lython.Frontend.ExecutableScript+Builder::NormalizeBlocks(class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<int32>,int32[],int32[])[OptimizedTier1]",
+          10
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Frontend.ExecutableScript+Builder::CompileLoadIdentifier(string,class Lokad.Lython.LythonSourceSpan,int32)[OptimizedTier1]",
+          10
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.StatementSyntax [Lokad.Lython] Lokad.Lython.Frontend.Parser::ParseStatement()[OptimizedTier1]",
+          9
+        ],
+        [
+          "void [Lokad.Lython] Lokad.Lython.Frontend.StaticNameBindingDiagnostics::AnalyzeExpression(class Lokad.Lython.Frontend.ExpressionSyntax,class Lokad.Lython.Frontend.StaticAnalysisContext,class [System.Collections]System.Collections.Generic.HashSet`1<string>,class [System.Collections]System.Collections.Generic.HashSet`1<string>)[OptimizedTier1]",
+          9
+        ],
+        [
+          "class [System.Collections]System.Collections.Generic.List`1<valuetype [System.Runtime]System.ValueTuple`4<int32,int32,int32,class Lokad.Lython.LythonSourceSpan>> [Lokad.Lython] Lokad.Lython.Frontend.ExecutableStackLayout::ForwardValues(class Lokad.Lython.Frontend.ExecutableCodeObject,class [System.Collections]System.Collections.Generic.List`1<class Lokad.Lython.Frontend.ExecutableBasicBlock>)[OptimizedTier1]",
+          8
+        ],
+        [
+          "instance int32 [Lokad.Lython] Lokad.Lython.Frontend.ExecutableInstruction::get_ValueInputCount()[OptimizedTier1]",
+          8
+        ]
+      ],
+      "topLeaves": [
+        [
+          "[unknown] (/home/lokad/lython-bench-toolchains/dotnet/11.0.100-rc.3.26522.148/shared/Microsoft.NETCore.App/11.0.0-rc.3.26522.148/libcoreclr.so)",
+          349
+        ],
+        [
+          "instance int32 [System.Private.CoreLib] System.Collections.Generic.GenericArraySortHelper`1[System.Int32]::BinarySearch(!0[],int32,int32,!0,class System.Collections.Generic.IComparer`1<!0>)[OptimizedTier1]",
+          59
+        ],
+        [
+          "instance bool [Lokad.Lython] Lokad.Lython.Frontend.ExpressionSyntaxTraversal+Enumerator::MoveNext()[OptimizedTier1]",
+          42
+        ],
+        [
+          "class Lokad.Lython.Frontend.ExecutableStackLayout [Lokad.Lython] Lokad.Lython.Frontend.ExecutableStackLayout::Prepare(class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Frontend.ExecutableBasicBlock>,class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<object>,class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Frontend.ExecutableCallSite>,class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Frontend.ExecutableExceptionRegion>,int32,int32,int32)[OptimizedTier1]",
+          37
+        ],
+        [
+          "instance int32[] [Lokad.Lython] Lokad.Lython.Frontend.ExecutableScript+Builder::CollectReachableBlocks(int32,int32[])[OptimizedTier1]",
+          29
+        ],
+        [
+          "stub InitThreadManagerPerfMapData<JIT_CopiedWriteBarriers>",
+          25
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.ExpressionSyntax [Lokad.Lython] Lokad.Lython.Frontend.Parser::ParsePrimaryExpression()[OptimizedTier1]",
+          19
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.TokenizedSource [Lokad.Lython] Lokad.Lython.Frontend.PythonTokenization+Reader::Read()[OptimizedTier1]",
+          14
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.ExpressionSyntax [Lokad.Lython] Lokad.Lython.Frontend.Parser+CallPostfixParser::Parse(class Lokad.Lython.Frontend.Parser,class Lokad.Lython.Frontend.ExpressionSyntax)[OptimizedTier1]",
+          13
+        ],
+        [
+          "bool [System.Private.CoreLib] System.Text.Ascii::IsValidCore(!!0&,int32)[OptimizedTier1]",
+          12
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.ExpressionSyntax [Lokad.Lython] Lokad.Lython.Frontend.Parser::ParseComparisonExpression()[OptimizedTier1]",
+          11
+        ],
+        [
+          "[unknown] ([kernel.kallsyms])",
+          11
+        ],
+        [
+          "stub ReportStubBlock<VSD_ResolveStub>",
+          11
+        ],
+        [
+          "instance class [System.Collections]System.Collections.Generic.List`1<class Lokad.Lython.Frontend.ExecutableBasicBlock> [Lokad.Lython] Lokad.Lython.Frontend.ExecutableScript+Builder::NormalizeBlocks(class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<int32>,int32[],int32[])[OptimizedTier1]",
+          10
+        ],
+        [
+          "void [Lokad.Lython] Lokad.Lython.Frontend.LexicalScopePreparation::Prepare(class Lokad.Lython.Frontend.ScriptSyntax,class Lokad.Lython.Runtime.MemoryGovernor,valuetype [System.Runtime]System.Threading.CancellationToken)[OptimizedTier1]",
+          10
+        ],
+        [
+          "instance bool [Lokad.Lython] Lokad.Lython.Frontend.StatementSyntaxTraversal+ExpressionEnumerator::MoveNext()[OptimizedTier1]",
+          9
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.ExpressionSyntax [Lokad.Lython] Lokad.Lython.Frontend.Parser::ParsePostfixExpression()[OptimizedTier1]",
+          9
+        ],
+        [
+          "instance void [System.Linq] System.Collections.Generic.SegmentedArrayBuilder`1[System.__Canon]::AddNonICollectionRange(class [System.Runtime]System.Collections.Generic.IEnumerable`1<!0>)[OptimizedTier1]",
+          9
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.StatementSyntax [Lokad.Lython] Lokad.Lython.Frontend.Parser::ParseSimpleStatement()[OptimizedTier1]",
+          9
+        ],
+        [
+          "bool [Lokad.Lython] Lokad.Lython.Frontend.StaticBindingEngine::CallMayMutateContainerFacts(class Lokad.Lython.Frontend.CallExpressionSyntax,class Lokad.Lython.Frontend.AbstractState)[OptimizedTier1]",
+          9
+        ],
+        [
+          "instance int32 [Lokad.Lython] Lokad.Lython.Frontend.ExecutableInstruction::get_ValueInputCount()[OptimizedTier1]",
+          8
+        ],
+        [
+          "void [System.Private.CoreLib] System.SpanHelpers::Memmove(uint8&,uint8&,native uint)[OptimizedTier1]",
+          8
+        ],
+        [
+          "[unknown] (/usr/lib/x86_64-linux-gnu/libc.so.6)",
+          8
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Frontend.ExecutableScript+Builder::CompileLoadIdentifier(string,class Lokad.Lython.LythonSourceSpan,int32)[OptimizedTier1]",
+          8
+        ],
+        [
+          "instance int32 [Lokad.Lython] Lokad.Lython.Frontend.ExecutableScript+Builder::CompileExpression(class Lokad.Lython.Frontend.LoweredExpression,int32)[OptimizedTier1]",
+          8
+        ],
+        [
+          "class [System.Collections]System.Collections.Generic.HashSet`1<string> [Lokad.Lython] Lokad.Lython.Frontend.StaticBindingEngine::CollectMutatedReceiverNames(class Lokad.Lython.Frontend.StatementSyntax,class Lokad.Lython.Frontend.AbstractState)[OptimizedTier1]",
+          7
+        ],
+        [
+          "void [Lokad.Lython] Lokad.Lython.Frontend.StaticAbstractInterpreter+AccessCallExpressionAnalyzer::<TryAnalyze>g__AnalyzeCall|1_0(class Lokad.Lython.Frontend.CallExpressionSyntax,valuetype Lokad.Lython.Frontend.StaticAbstractInterpreter/AccessCallExpressionAnalyzer/<>c__DisplayClass1_0&)[OptimizedTier1]",
+          7
+        ],
+        [
+          "instance bool [Lokad.Lython] Lokad.Lython.Frontend.StaticAbstractInterpreter+AccessCallExpressionAnalyzer::TryAnalyze(class Lokad.Lython.Frontend.ExpressionSyntax,class [System.Collections]System.Collections.Generic.List`1<class Lokad.Lython.LythonDiagnostic>,class Lokad.Lython.Frontend.AbstractState)[OptimizedTier1]",
+          7
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.StatementSyntax [Lokad.Lython] Lokad.Lython.Frontend.Parser::ParseStatement()[OptimizedTier1]",
+          7
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Frontend.ExecutableScript+Builder::AddInstruction(int32,valuetype Lokad.Lython.Frontend.ExecutableInstruction)[OptimizedTier1]",
+          7
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Frontend.AbstractState::InvalidateDictionaryFacts()[OptimizedTier1]",
+          7
+        ],
+        [
+          "void [Lokad.Lython] Lokad.Lython.Frontend.SyntaxValidityDiagnostics::<Analyze>g__Expressions|0_3(class Lokad.Lython.Frontend.ExpressionSyntax,valuetype Lokad.Lython.Frontend.SyntaxValidityDiagnostics/<>c__DisplayClass0_0&)[OptimizedTier1]",
+          7
+        ],
+        [
+          "class [System.Collections]System.Collections.Generic.List`1<valuetype [System.Runtime]System.ValueTuple`4<int32,int32,int32,class Lokad.Lython.LythonSourceSpan>> [Lokad.Lython] Lokad.Lython.Frontend.ExecutableStackLayout::ForwardValues(class Lokad.Lython.Frontend.ExecutableCodeObject,class [System.Collections]System.Collections.Generic.List`1<class Lokad.Lython.Frontend.ExecutableBasicBlock>)[OptimizedTier1]",
+          6
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.ExpressionSyntax [Lokad.Lython] Lokad.Lython.Frontend.Parser::ParseStringLiteralExpression()[OptimizedTier1]",
+          6
+        ],
+        [
+          "instance bool [System.Private.CoreLib] System.Collections.Generic.Dictionary`2[System.__Canon,Lokad.Lython.Frontend.AbstractValueResolution]::TryInsert(!0,!1,valuetype System.Collections.Generic.InsertionBehavior)[OptimizedTier1]",
+          6
+        ]
+      ],
+      "phaseOwnerMethods": [
+        [
+          "void [Lokad.Lython] Lokad.Lython.Frontend.StaticAbstractInterpreter::Analyze(class Lokad.Lython.Frontend.StaticAnalysisContext)[OptimizedTier1]",
+          147
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.ExecutableCodeObject [Lokad.Lython] Lokad.Lython.Frontend.ExecutableScript+Builder::CompileCodeObject(string,class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Frontend.LoweredStatement>,class Lokad.Lython.Frontend.LoweredGeneratorExpression)[OptimizedTier1]",
+          126
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.ExpressionSyntax [Lokad.Lython] Lokad.Lython.Frontend.Parser::ParsePostfixExpression()[OptimizedTier1]",
+          79
+        ],
+        [
+          "class Lokad.Lython.Frontend.LoweredExpression [Lokad.Lython] Lokad.Lython.Frontend.LoweredScript::LowerExpression(class Lokad.Lython.Frontend.ExpressionSyntax)[OptimizedTier1]",
+          50
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.ExpressionSyntax [Lokad.Lython] Lokad.Lython.Frontend.Parser::ParsePrimaryExpression()[OptimizedTier1]",
+          46
+        ],
+        [
+          "class Lokad.Lython.Frontend.ExecutableStackLayout [Lokad.Lython] Lokad.Lython.Frontend.ExecutableStackLayout::Prepare(class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Frontend.ExecutableBasicBlock>,class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<object>,class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Frontend.ExecutableCallSite>,class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Frontend.ExecutableExceptionRegion>,int32,int32,int32)[OptimizedTier1]",
+          40
+        ],
+        [
+          "void [Lokad.Lython] Lokad.Lython.Frontend.SyntaxValidityDiagnostics::<Analyze>g__Expressions|0_3(class Lokad.Lython.Frontend.ExpressionSyntax,valuetype Lokad.Lython.Frontend.SyntaxValidityDiagnostics/<>c__DisplayClass0_0&)[OptimizedTier1]",
+          36
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.TokenizedSource [Lokad.Lython] Lokad.Lython.Frontend.PythonTokenization+Reader::Read()[OptimizedTier1]",
+          36
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.ExpressionSyntax [Lokad.Lython] Lokad.Lython.Frontend.Parser+CallPostfixParser::Parse(class Lokad.Lython.Frontend.Parser,class Lokad.Lython.Frontend.ExpressionSyntax)[OptimizedTier1]",
+          35
+        ],
+        [
+          "instance int32[] [Lokad.Lython] Lokad.Lython.Frontend.ExecutableScript+Builder::CollectReachableBlocks(int32,int32[])[OptimizedTier1]",
+          29
+        ],
+        [
+          "void [Lokad.Lython] Lokad.Lython.Frontend.LexicalScopePreparation::Prepare(class Lokad.Lython.Frontend.ScriptSyntax,class Lokad.Lython.Runtime.MemoryGovernor,valuetype [System.Runtime]System.Threading.CancellationToken)[OptimizedTier1]",
+          28
+        ],
+        [
+          "class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.LythonDiagnostic> [Lokad.Lython] Lokad.Lython.Frontend.SyntaxValidityDiagnostics::Analyze(class Lokad.Lython.Frontend.ScriptSyntax)[OptimizedTier1]",
+          27
+        ],
+        [
+          "instance valuetype [System.Runtime]System.Nullable`1<int32> [Lokad.Lython] Lokad.Lython.Frontend.ExecutableScript+Builder::CompileStatement(class Lokad.Lython.Frontend.LoweredStatement,int32)[OptimizedTier1]",
+          24
+        ],
+        [
+          "void [Lokad.Lython] Lokad.Lython.Frontend.StaticNameBindingDiagnostics::AnalyzeStatement(class Lokad.Lython.Frontend.StatementSyntax,class Lokad.Lython.Frontend.StaticAnalysisContext,class [System.Collections]System.Collections.Generic.HashSet`1<string>,class [System.Collections]System.Collections.Generic.HashSet`1<string>)[OptimizedTier1]",
+          24
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.ExpressionSyntax [Lokad.Lython] Lokad.Lython.Frontend.Parser::ParseStringLiteralExpression()[OptimizedTier1]",
+          22
+        ],
+        [
+          "bool [Lokad.Lython] Lokad.Lython.Frontend.ScopeDirectiveFactsCollector::CollectScopeBindings(class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Frontend.StatementSyntax>,class [System.Runtime]System.Collections.Generic.ICollection`1<string>,class [System.Collections]System.Collections.Generic.HashSet`1<string>,class [System.Collections]System.Collections.Generic.HashSet`1<string>)[OptimizedTier1]",
+          21
+        ],
+        [
+          "instance class Lokad.Lython.LythonSourceSpan [Lokad.Lython] Lokad.Lython.Frontend.Parser::SpanOf(int32)[OptimizedTier1]",
+          16
+        ],
+        [
+          "void [Lokad.Lython] Lokad.Lython.Frontend.StaticNameBindingDiagnostics::AnalyzeFunctionDefinition(class Lokad.Lython.Frontend.FunctionDefinitionStatementSyntax,class Lokad.Lython.Frontend.StaticAnalysisContext)[OptimizedTier1]",
+          16
+        ],
+        [
+          "class [System.Collections]System.Collections.Generic.HashSet`1<string> [Lokad.Lython] Lokad.Lython.Frontend.StaticBindingEngine::CollectMutatedReceiverNames(class Lokad.Lython.Frontend.StatementSyntax,class Lokad.Lython.Frontend.AbstractState)[OptimizedTier1]",
+          15
+        ],
+        [
+          "void [Lokad.Lython] Lokad.Lython.Frontend.StaticBindingEngine::UpdateBindings(class Lokad.Lython.Frontend.StatementSyntax,class Lokad.Lython.Frontend.AbstractState)[OptimizedTier1]",
+          15
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.StatementSyntax [Lokad.Lython] Lokad.Lython.Frontend.Parser::ParseFunctionDefinition(class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Frontend.ExpressionSyntax>)[OptimizedTier1]",
+          15
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.ExpressionSyntax [Lokad.Lython] Lokad.Lython.Frontend.Parser+MemberPostfixParser::Parse(class Lokad.Lython.Frontend.Parser,class Lokad.Lython.Frontend.ExpressionSyntax)[OptimizedTier1]",
+          15
+        ],
+        [
+          "instance int32 [Lokad.Lython] Lokad.Lython.Frontend.ExecutableScript+Builder::CompileExpression(class Lokad.Lython.Frontend.LoweredExpression,int32)[OptimizedTier1]",
+          14
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.StatementSyntax [Lokad.Lython] Lokad.Lython.Frontend.Parser::ParseSimpleStatement()[OptimizedTier1]",
+          13
+        ],
+        [
+          "void [Lokad.Lython] Lokad.Lython.Frontend.StaticNameBindingDiagnostics::AnalyzeExpression(class Lokad.Lython.Frontend.ExpressionSyntax,class Lokad.Lython.Frontend.StaticAnalysisContext,class [System.Collections]System.Collections.Generic.HashSet`1<string>,class [System.Collections]System.Collections.Generic.HashSet`1<string>)[OptimizedTier1]",
+          12
+        ],
+        [
+          "bool [Lokad.Lython] Lokad.Lython.Frontend.StaticBindingEngine::CallMayMutateContainerFacts(class Lokad.Lython.Frontend.CallExpressionSyntax,class Lokad.Lython.Frontend.AbstractState)[OptimizedTier1]",
+          12
+        ],
+        [
+          "void [Lokad.Lython] Lokad.Lython.Frontend.ScopeDirectiveFactsCollector::CollectExpressionBindings(class Lokad.Lython.Frontend.ExpressionSyntax,class [System.Runtime]System.Collections.Generic.ICollection`1<string>)[OptimizedTier1]",
+          11
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.ExpressionSyntax [Lokad.Lython] Lokad.Lython.Frontend.Parser::ParseComparisonExpression()[OptimizedTier1]",
+          11
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Frontend.ExecutableScript+Builder::CompileLoadIdentifier(string,class Lokad.Lython.LythonSourceSpan,int32)[OptimizedTier1]",
+          11
+        ],
+        [
+          "instance class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Frontend.StatementSyntax> [Lokad.Lython] Lokad.Lython.Frontend.Parser::ParseIndentedSuite(valuetype Lokad.Lython.Frontend.LythonDiagnosticCode,string)[OptimizedTier1]",
+          11
+        ],
+        [
+          "class [System.Collections]System.Collections.Generic.List`1<valuetype [System.Runtime]System.ValueTuple`4<int32,int32,int32,class Lokad.Lython.LythonSourceSpan>> [Lokad.Lython] Lokad.Lython.Frontend.ExecutableStackLayout::ForwardValues(class Lokad.Lython.Frontend.ExecutableCodeObject,class [System.Collections]System.Collections.Generic.List`1<class Lokad.Lython.Frontend.ExecutableBasicBlock>)[OptimizedTier1]",
+          10
+        ],
+        [
+          "instance class [System.Collections]System.Collections.Generic.List`1<class Lokad.Lython.Frontend.ExecutableBasicBlock> [Lokad.Lython] Lokad.Lython.Frontend.ExecutableScript+Builder::NormalizeBlocks(class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<int32>,int32[],int32[])[OptimizedTier1]",
+          10
+        ],
+        [
+          "void [Lokad.Lython] Lokad.Lython.Frontend.StaticBindingEngine::CollectMutatedReceiverNames(class Lokad.Lython.Frontend.ExpressionSyntax,class Lokad.Lython.Frontend.AbstractState,class [System.Collections]System.Collections.Generic.HashSet`1<string>)[OptimizedTier1]",
+          9
+        ],
+        [
+          "instance class Lokad.Lython.Frontend.StatementSyntax [Lokad.Lython] Lokad.Lython.Frontend.Parser::ParseStatement()[OptimizedTier1]",
+          9
+        ],
+        [
+          "class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Frontend.LoweredStatement> [Lokad.Lython] Lokad.Lython.Frontend.LoweredScript::LowerStatements(class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Frontend.StatementSyntax>,bool)[OptimizedTier1]",
+          8
+        ]
+      ],
+      "malformedMapLines": [],
+      "compileInvocations": 2048,
+      "compiledClockSeconds": 5.869974316
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "ramTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 266567680,
+  "archiveSHA256": "5a9bc92181c97a98b269708d35e7220c903e81317ff7ba55b345e2bdbb8ea833",
+  "source": "Unchanged qualified1b82/frozen0ed; R412 public compilation attribution",
+  "performanceComparison": false
+}
