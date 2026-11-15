@@ -1,0 +1,203 @@
+{
+  "complete": true,
+  "processes": [
+    {
+      "process": 1,
+      "hashWitness": [
+        "-825707767",
+        "-1436459309",
+        "-193594029",
+        "1995725297"
+      ],
+      "coreLibSHA256": "D67D98F3B2178CB3768FEA37C791577500E9CEE904C859AFD3871138BBC58653",
+      "medians": {
+        "before": {
+          "invocationMilliseconds": 1.233862796875,
+          "fullRequestMilliseconds": 1.30669375,
+          "fullRequestCpuMilliseconds": 1.374921875,
+          "fullRequestAllocatedBytes": 449085.40625
+        },
+        "candidate": {
+          "invocationMilliseconds": 1.29807930078125,
+          "fullRequestMilliseconds": 1.37172578125,
+          "fullRequestCpuMilliseconds": 1.381328125,
+          "fullRequestAllocatedBytes": 449013.40625
+        },
+        "before-control": {
+          "invocationMilliseconds": 1.330411015625,
+          "fullRequestMilliseconds": 1.40064296875,
+          "fullRequestCpuMilliseconds": 1.46490625,
+          "fullRequestAllocatedBytes": 448980.15625
+        }
+      },
+      "candidateChangePercent": {
+        "invocationMilliseconds": [
+          5.204509291380766,
+          -2.43020498658163
+        ],
+        "fullRequestMilliseconds": [
+          4.976838011967244,
+          -2.064565213632341
+        ],
+        "fullRequestCpuMilliseconds": [
+          0.46593556452070306,
+          -5.705356571452958
+        ],
+        "fullRequestAllocatedBytes": [
+          -0.01603258511587713,
+          0.007405672508498107
+        ]
+      },
+      "unchangedReferenceControlPercent": {
+        "invocationMilliseconds": 7.824874774936674,
+        "fullRequestMilliseconds": 7.1898422067144585,
+        "fullRequestCpuMilliseconds": 6.544690039206769,
+        "fullRequestAllocatedBytes": -0.023436521992303838
+      },
+      "iqrPercent": {
+        "before": {
+          "invocationMilliseconds": 1.6633498578694885,
+          "fullRequestMilliseconds": 1.7059396090323324,
+          "fullRequestCpuMilliseconds": 1.7287914086027556,
+          "fullRequestAllocatedBytes": 3.13136428044415e-05
+        },
+        "candidate": {
+          "invocationMilliseconds": 1.262910823283962,
+          "fullRequestMilliseconds": 1.2220862291969072,
+          "fullRequestCpuMilliseconds": 1.0497143826706603,
+          "fullRequestAllocatedBytes": 0.00013919406220401688
+        },
+        "before-control": {
+          "invocationMilliseconds": 1.892526046785008,
+          "fullRequestMilliseconds": 1.927741890861503,
+          "fullRequestCpuMilliseconds": 1.963116240373735,
+          "fullRequestAllocatedBytes": 0.0004732948595654109
+        }
+      },
+      "identities": {
+        "before": {
+          "Lokad.Lython.Benchmarks.dll": "ACDA3EF3D79D7447CBD6099D903475DA61F9B7BD36D949E6D4D3EB6E085DE6C6",
+          "Lokad.Lython.dll": "8FBFA3F043EB01876FC6163241E0D4A9C2E5ACD5A8107D61C6ED1B7108025515",
+          "Lokad.Lython.Utf8Regex.dll": "9F7282ADE883F103956EFAF7E46182F7705FB7675F1F46963B9C42AE5AAE7F94",
+          "Lokad.Utf8Regex.dll": "AF5FB1E550CF23559BC7E26EF3D895B45E5EF98D57BCF46B414785A6E24CC857",
+          "Lokad.Utf8Regex.PythonRe.dll": "96E45B20C1DB361A9B3B94BD557405B413510801BDB1488AE5B15D6AAE7AEDFE"
+        },
+        "candidate": {
+          "Lokad.Lython.Benchmarks.dll": "ACDA3EF3D79D7447CBD6099D903475DA61F9B7BD36D949E6D4D3EB6E085DE6C6",
+          "Lokad.Lython.dll": "F304B3DB8F03E9E9310CABF4B6DAF458E22BE4FB3DF0BCF4D18809CABFD97DF8",
+          "Lokad.Lython.Utf8Regex.dll": "9F7282ADE883F103956EFAF7E46182F7705FB7675F1F46963B9C42AE5AAE7F94",
+          "Lokad.Utf8Regex.dll": "AF5FB1E550CF23559BC7E26EF3D895B45E5EF98D57BCF46B414785A6E24CC857",
+          "Lokad.Utf8Regex.PythonRe.dll": "96E45B20C1DB361A9B3B94BD557405B413510801BDB1488AE5B15D6AAE7AEDFE"
+        },
+        "before-control": {
+          "Lokad.Lython.Benchmarks.dll": "ACDA3EF3D79D7447CBD6099D903475DA61F9B7BD36D949E6D4D3EB6E085DE6C6",
+          "Lokad.Lython.dll": "8FBFA3F043EB01876FC6163241E0D4A9C2E5ACD5A8107D61C6ED1B7108025515",
+          "Lokad.Lython.Utf8Regex.dll": "9F7282ADE883F103956EFAF7E46182F7705FB7675F1F46963B9C42AE5AAE7F94",
+          "Lokad.Utf8Regex.dll": "AF5FB1E550CF23559BC7E26EF3D895B45E5EF98D57BCF46B414785A6E24CC857",
+          "Lokad.Utf8Regex.PythonRe.dll": "96E45B20C1DB361A9B3B94BD557405B413510801BDB1488AE5B15D6AAE7AEDFE"
+        }
+      }
+    },
+    {
+      "process": 2,
+      "hashWitness": [
+        "670679710",
+        "1476351069",
+        "961344154",
+        "-1085986509"
+      ],
+      "coreLibSHA256": "D67D98F3B2178CB3768FEA37C791577500E9CEE904C859AFD3871138BBC58653",
+      "medians": {
+        "before": {
+          "invocationMilliseconds": 1.2895397109375,
+          "fullRequestMilliseconds": 1.359851953125,
+          "fullRequestCpuMilliseconds": 1.42058203125,
+          "fullRequestAllocatedBytes": 448980.15625
+        },
+        "candidate": {
+          "invocationMilliseconds": 1.22049672265625,
+          "fullRequestMilliseconds": 1.29365859375,
+          "fullRequestCpuMilliseconds": 1.30295703125,
+          "fullRequestAllocatedBytes": 449013.40625
+        },
+        "before-control": {
+          "invocationMilliseconds": 1.2678637421875,
+          "fullRequestMilliseconds": 1.341389453125,
+          "fullRequestCpuMilliseconds": 1.40521875,
+          "fullRequestAllocatedBytes": 449085.40625
+        }
+      },
+      "candidateChangePercent": {
+        "invocationMilliseconds": [
+          -5.354080040781028,
+          -3.735970826764534
+        ],
+        "fullRequestMilliseconds": [
+          -4.867688664408254,
+          -3.5583147954386107
+        ],
+        "fullRequestCpuMilliseconds": [
+          -8.280056864896368,
+          -7.277281117263767
+        ],
+        "fullRequestAllocatedBytes": [
+          0.007405672508498107,
+          -0.01603258511587713
+        ]
+      },
+      "unchangedReferenceControlPercent": {
+        "invocationMilliseconds": -1.680907425040934,
+        "fullRequestMilliseconds": -1.3576845595266729,
+        "fullRequestCpuMilliseconds": -1.0814779373551242,
+        "fullRequestAllocatedBytes": 0.023442015985541964
+      },
+      "iqrPercent": {
+        "before": {
+          "invocationMilliseconds": 0.8577992608954247,
+          "fullRequestMilliseconds": 0.8259458391179364,
+          "fullRequestCpuMilliseconds": 0.8485738404978188,
+          "fullRequestAllocatedBytes": 0.00044197387621181753
+        },
+        "candidate": {
+          "invocationMilliseconds": 0.40291580693864654,
+          "fullRequestMilliseconds": 0.43164281534382615,
+          "fullRequestCpuMilliseconds": 0.3029467227490291,
+          "fullRequestAllocatedBytes": 0.00013919406220401688
+        },
+        "before-control": {
+          "invocationMilliseconds": 3.009064509156301,
+          "fullRequestMilliseconds": 2.9507649629858594,
+          "fullRequestCpuMilliseconds": 2.86418373473882,
+          "fullRequestAllocatedBytes": 0.0
+        }
+      },
+      "identities": {
+        "before-control": {
+          "Lokad.Lython.Benchmarks.dll": "ACDA3EF3D79D7447CBD6099D903475DA61F9B7BD36D949E6D4D3EB6E085DE6C6",
+          "Lokad.Lython.dll": "8FBFA3F043EB01876FC6163241E0D4A9C2E5ACD5A8107D61C6ED1B7108025515",
+          "Lokad.Lython.Utf8Regex.dll": "9F7282ADE883F103956EFAF7E46182F7705FB7675F1F46963B9C42AE5AAE7F94",
+          "Lokad.Utf8Regex.dll": "AF5FB1E550CF23559BC7E26EF3D895B45E5EF98D57BCF46B414785A6E24CC857",
+          "Lokad.Utf8Regex.PythonRe.dll": "96E45B20C1DB361A9B3B94BD557405B413510801BDB1488AE5B15D6AAE7AEDFE"
+        },
+        "candidate": {
+          "Lokad.Lython.Benchmarks.dll": "ACDA3EF3D79D7447CBD6099D903475DA61F9B7BD36D949E6D4D3EB6E085DE6C6",
+          "Lokad.Lython.dll": "F304B3DB8F03E9E9310CABF4B6DAF458E22BE4FB3DF0BCF4D18809CABFD97DF8",
+          "Lokad.Lython.Utf8Regex.dll": "9F7282ADE883F103956EFAF7E46182F7705FB7675F1F46963B9C42AE5AAE7F94",
+          "Lokad.Utf8Regex.dll": "AF5FB1E550CF23559BC7E26EF3D895B45E5EF98D57BCF46B414785A6E24CC857",
+          "Lokad.Utf8Regex.PythonRe.dll": "96E45B20C1DB361A9B3B94BD557405B413510801BDB1488AE5B15D6AAE7AEDFE"
+        },
+        "before": {
+          "Lokad.Lython.Benchmarks.dll": "ACDA3EF3D79D7447CBD6099D903475DA61F9B7BD36D949E6D4D3EB6E085DE6C6",
+          "Lokad.Lython.dll": "8FBFA3F043EB01876FC6163241E0D4A9C2E5ACD5A8107D61C6ED1B7108025515",
+          "Lokad.Lython.Utf8Regex.dll": "9F7282ADE883F103956EFAF7E46182F7705FB7675F1F46963B9C42AE5AAE7F94",
+          "Lokad.Utf8Regex.dll": "AF5FB1E550CF23559BC7E26EF3D895B45E5EF98D57BCF46B414785A6E24CC857",
+          "Lokad.Utf8Regex.PythonRe.dll": "96E45B20C1DB361A9B3B94BD557405B413510801BDB1488AE5B15D6AAE7AEDFE"
+        }
+      }
+    }
+  ],
+  "allGoldensAndBalancesPassed": true,
+  "allImagesAndWitnessesValidated": true,
+  "performanceQualified": false,
+  "boundary": "Same CoreLib/hash witnesses inside each process, distinct noncollectible images share process GC. Invocation clock includes RunAsync and its native cleanup, excludes result disposal/full goldens/reset; full-request clocks include those. No portable CPU claim or inferred explanation of all B777/B778 variability."
+}

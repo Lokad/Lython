@@ -1,0 +1,15 @@
+{
+  "status": "retain-pending-delivery",
+  "candidate": "f304b3db8f03e9e9310cabf4b6daf458e22be4fb3df0bcf4d18809cabfd97df8",
+  "reference": "810379be/8fbfa3f0",
+  "reason": "Coherent complete-invocation ownership lifetime removes outer cleanup continuation without a replacement dispatcher. Focused semantics/ownership/cancellation/stack pass. File wider CPU improves. Text remains uncertain rather than proving consistent regression.",
+  "newControl": "Same CoreLib/hash witnesses still give7.82%unchanged-reference invocation spread in process1. Candidate -2.43..+5.20%invocation there; process2 -5.35..-3.74%invocation/-8.28..-7.28%widerCPU with1.68%reference spread. Hashing alone cannot explain variability.",
+  "retainedDebt": [
+    "All B777/B778 adverse/moving text observations remain unresolved",
+    "Initial unchanged sync-text elapsed +.05..+1.44% and local short-sync +.96..+4.12% diagnostics remain",
+    "No general speedup, allocation reduction, pending-I/O latency or portable CPU claim"
+  ],
+  "completionMilestone": "Full Windows/Ubuntu actual.NET11/10, originalstress and installed Release consumers. Preserve no-public-thread-affinity, public cancellation status/token, scope-creation failure cleanup, retained aliases/results and first refusal.",
+  "nextRoadmap": "Continue substantial common text/operand work from current dominant samples. No further unchanged R390 timing campaign; different justified designs remain eligible.",
+  "publicationHeld": true
+}

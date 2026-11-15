@@ -237,7 +237,8 @@ internal sealed class ExecutionThreads : IDisposable
             _completion = null;
             _pending = null;
             Failure = null;
-            if (failure is not null) completion.TrySetException(failure.SourceException);
+            if (failure?.SourceException is OperationCanceledException cancellation) completion.TrySetCanceled(cancellation.CancellationToken);
+            else if (failure is not null) completion.TrySetException(failure.SourceException);
             else if (pending is null) completion.TrySetException(new InvalidOperationException("Lython async execution ended without a task."));
             else if (pending.IsCompleted) Relay(pending, completion);
             else
@@ -250,8 +251,8 @@ internal sealed class ExecutionThreads : IDisposable
         private static void Relay(Task<LythonExecutionResult> task, TaskCompletionSource<LythonExecutionResult> completion)
         {
             // Called only for a terminal task: no worker waits through I/O.
-            // Keep the old relay's faulted-task treatment of cancellation.
             try { completion.TrySetResult(task.GetAwaiter().GetResult()); }
+            catch (OperationCanceledException error) { completion.TrySetCanceled(error.CancellationToken); }
             catch (Exception error) { completion.TrySetException(error); }
         }
     }

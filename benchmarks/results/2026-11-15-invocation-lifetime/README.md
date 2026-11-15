@@ -1,9 +1,9 @@
-# Scheduled invocation lifetime prototype
+# Scheduled invocation lifetime
 
-R390, 2026-11-15 UTC. **Active prototype, not a delivered runtime change.**
+R390/R391, 2026-11-15 UTC. **Retained for delivery; full qualification pending.**
 Qualified reference **810379be / 8fbfa3f0** versus frozen candidate **f304b3db**.
 The candidate's full source and binary are retained in the archive below. Full
-platform, stress and installed-package qualification awaits a retention decision.
+platform, stress and installed-package qualification follows the bounded decision.
 
 The change places setup, execution and ownership cleanup in the existing scheduled
 operation. It removes the outer await/continuation for scope disposal. Caller
@@ -44,12 +44,13 @@ public invocation, prior-result cleanup and full goldens; excludes compilation,
 startup, reset/protocol and final cache teardown. Wider CPU includes reset/protocol.
 No pending-I/O latency, heap/RSS, tail-latency or allocation claim.
 
-Next method control: reuse the existing complete-job shared-process driver with
-identical CoreLib/hash witnesses, distinct images and an unchanged reference
-control. Source uses process-randomized `System.HashCode`; variation in hash layout
-is plausible but is not established as the cause. Decide retain/refine/withdraw
-before delivery qualification; neither promote nor reject solely on these unstable
-controls. This investigation does not complete the performance objective.
+The [completed shared-process method control](../2026-11-15-shared-hash-control/README.md)
+retains 7.82% unchanged-reference spread despite identical CoreLib/hash witnesses
+in its first process. Its second process favors the candidate by 3.74–5.35%
+invocation time and 7.28–8.28% wider CPU. Hashing alone does not explain variability.
+Retain the ownership-lifetime simplification, with all text adversity/uncertainty
+and small sync-control debt explicit. No general speedup claimed; full delivery
+qualification follows. This does not complete the performance objective.
 
 Identity, goldens, quiet, shared-balance, Closed/join and archive gates pass in both
 VM collections. No users or RAM fixtures remain; final free space 270,495,744 B.
@@ -64,7 +65,7 @@ fields. The candidate's authoritative source/binary mapping is the separate
 [589-input frozen identity](candidate-identity.json), not those baseline fields.
 Publication remains postponed.
 
-[Decision and limits](decision.json), [local observations](local-screen.json),
+[Original prototype decision](decision.json), [retention and debt](retention-decision.json), [local observations](local-screen.json),
 [initial quiet comparison](quiet/summary.json), [confirmation](confirmation/summary.json),
 [source/binary, checks and procedures](sources-checks-and-procedures.tar.xz),
 [initial raw evidence](quiet/observations.tgz), [confirmation raw evidence](confirmation/observations.tgz).

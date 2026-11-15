@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Keep asynchronous invocation setup, execution and ownership cleanup in one
+  scheduled lifetime, avoiding a separate completion hop for scope disposal.
+  Preserve caller context, cancellation outcomes and funded cleanup through I/O.
+
 - Use final function argument slots for omission, default completion and duplicate
   detection, removing separate function presence storage and transport. Reject a
   starred positional argument that duplicates an explicit keyword parameter.

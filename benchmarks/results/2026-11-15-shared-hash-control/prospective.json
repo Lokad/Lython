@@ -1,0 +1,21 @@
+{
+  "purpose": "Source-supported hash-variation method control after unresolved independent-process text comparisons. Hash variation is plausible, not proved causal.",
+  "reference": "810379be/frozen8fbfa3f0",
+  "candidate": "R390/frozenf304b3db",
+  "tool": "Existing R301 complete-job driver, one fixture, warmup corrected from iteration count to eight full-request seconds,256jobs/batch; removed discarded node-storage inspection.",
+  "processes": 2,
+  "imagesPerProcess": [
+    "before",
+    "candidate",
+    "before-control"
+  ],
+  "sharedCoreLib": true,
+  "hashWitnessesMustAgree": true,
+  "rounds": 5,
+  "warmupSecondsPerImage": 8,
+  "boundary": "Separate RunAsync clocks from wider fixture reset/goldens/disposal; shared process GC remains a limitation. No forced GC or runtime overrides.",
+  "stoppingCriterion": "Finish both process controls, interpret alongside all B777/B778 adversity and file/sync controls, then retain/refine/withdraw. Do not infer a general gain or erase prior regressions.",
+  "ownerSeconds": 150,
+  "noNewRuntimeOrFramework": true,
+  "publicationHeld": true
+}

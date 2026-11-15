@@ -1,0 +1,12 @@
+{
+  "complete": true,
+  "processes": 2,
+  "allUsersJoined": true,
+  "guestFixturesRemoved": true,
+  "quietBeforeAndAfter": true,
+  "archivedAndVerifiedUnderLease": true,
+  "archiveSHA256": "8f9aab08ea1d12f22f5e67bc273df137dcba60e68e0eb5d2d67404e09f84a8ad",
+  "freeBytesAfterArchive": 270180352,
+  "elapsedSeconds": 63.805725606158376,
+  "performanceQualified": false
+}

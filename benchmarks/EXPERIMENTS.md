@@ -8298,3 +8298,14 @@ close/join/archive successfully; all raw/adverse observations remain. No general
 speedup or delivered-runtime claim. Next bounded method control shares CoreLib/hash
 witnesses through the existing complete-job driver; then retain/refine/withdraw.
 Full delivery qualification waits for that decision, not a producer release.
+
+[R391/B779 shared-hash method control](results/2026-11-15-shared-hash-control/README.md)
+finishes in 63.806 s on the unchanged f304b3db/8fbfa3f0 pair. Same CoreLib and hash
+witnesses do not eliminate variability: first process retains 7.82% unchanged
+reference spread and candidate −2.43..+5.20% invocation change. Second process
+gives −5.35..−3.74% invocation / −8.28..−7.28% wider CPU, reference spread 1.68%.
+Every earlier adverse observation remains. Retain one scheduled invocation lifetime
+for coherent ownership/dispatch simplification and favorable file CPU, with text
+uncertainty and small sync-control debt explicit. No general speedup or allocation
+gain claimed. All users/fixtures joined/removed; no new runtime image/retirement.
+Full changed-runtime platform/stress/package qualification follows. Publication held.

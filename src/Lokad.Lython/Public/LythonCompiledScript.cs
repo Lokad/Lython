@@ -172,7 +172,18 @@ public sealed class LythonCompiledScript : IDisposable
     {
         ObjectDisposedException.ThrowIf(_asyncRunner is null, this);
         var mergedOptions = MergeCancellation(options, cancellationToken, out var linkedCancellation);
-        return RunAndDisposeAsync(host, mergedOptions, linkedCancellation);
+        try
+        {
+            // Schedule the entire invocation lifetime. Completed guest work
+            // transfers its result and refunds scratch before publication,
+            // without another pool continuation just for ownership cleanup.
+            return LythonRuntime.RunAsyncOnDedicatedStack(() => RunAndDisposeAsync(host, mergedOptions, linkedCancellation));
+        }
+        catch (Exception error)
+        {
+            linkedCancellation?.Dispose();
+            return Task.FromException<LythonExecutionResult>(error);
+        }
 
         async Task<LythonExecutionResult> RunAndDisposeAsync(
             ILythonHost runHost,
@@ -195,7 +206,7 @@ public sealed class LythonCompiledScript : IDisposable
                 // stacks while the persisted counters keep bounding them.
                 var effective = runOptions.WithMemoryOwners(execution, resultOwner);
                 var runner = _asyncRunner ?? throw new ObjectDisposedException(nameof(LythonCompiledScript));
-                var result = await LythonRuntime.RunAsyncOnDedicatedStack(() => runner(runHost, effective)).ConfigureAwait(false);
+                var result = await runner(runHost, effective).ConfigureAwait(false);
                 returned = true;
                 return result.OwnMemoryScope(resultOwner);
             }

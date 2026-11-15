@@ -171,6 +171,12 @@ still precedes returning/refunding their storage.
 Python `async`/`await`. Both APIs use the executable engine and preserve evaluation
 order, closures, generators and exception cleanup.
 
+Async invocation setup and cleanup belong to the scheduled execution lifetime.
+The host's execution context flows to the reusable startup worker; continuations
+after actual I/O suspension may use pool threads, so callbacks have no thread
+affinity. Completion awaits native users and cleanup; surviving results keep their
+separate memory owner until disposal.
+
 [`LythonRunOptions`](../src/Lokad.Lython/Public/LythonRunOptions.cs) supplies:
 
 | Option | Meaning |

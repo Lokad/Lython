@@ -1,0 +1,14 @@
+{
+  "toolFiles": {
+    "complete-jobs.deps.json": "fa2bf2935f506c8f757f335a34a516c86b9b46a2c4298b7ee86e3080177be7a8",
+    "complete-jobs.dll": "0e1c886bec7e877381d97b57f167b6464868f503c5398503db318fac6b27cdc9",
+    "complete-jobs.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0"
+  },
+  "programSHA256": "9a7c20a8d25667e94e3b327ad68b97b413b0850d0ab739bf9d0c1b5896355a6a",
+  "catalogSHA256": "a72422585dfb8195a18a5c16e96ff1ccec7d84f48b6635836fb14ef3374ca772",
+  "witnessSHA256": "ede6e567e19f1e5f1655b85a5eb9933b5297ae1d82397ef7740092422fa09dfb",
+  "cores": {
+    "reference": "8fbfa3f043eb01876fc6163241e0d4a9c2e5acd5a8107d61c6ed1b7108025515",
+    "candidate": "f304b3db8f03e9e9310cabf4b6daf458e22be4fb3df0bcf4d18809cabfd97df8"
+  }
+}

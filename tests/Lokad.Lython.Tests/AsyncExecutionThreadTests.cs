@@ -113,18 +113,23 @@ public sealed class AsyncExecutionThreadTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task CancellationPreservesFaultedRelayContract(bool delayed)
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    public async Task CancellationPreservesCancellationStateAndToken(int phase)
     {
         var release = new TaskCompletionSource<LythonExecutionResult>(TaskCreationOptions.RunContinuationsAsynchronously);
         using var cancellation = new CancellationTokenSource();
         cancellation.Cancel();
-        var pending = LythonRuntime.RunAsyncOnDedicatedStack(() => delayed
-            ? release.Task : Task.FromCanceled<LythonExecutionResult>(cancellation.Token));
-        if (delayed) release.SetCanceled(cancellation.Token);
+        var pending = LythonRuntime.RunAsyncOnDedicatedStack(() => phase switch
+        {
+            0 => throw new OperationCanceledException(cancellation.Token),
+            1 => Task.FromCanceled<LythonExecutionResult>(cancellation.Token),
+            _ => release.Task,
+        });
+        if (phase == 2) release.SetCanceled(cancellation.Token);
         var error = await Assert.ThrowsAnyAsync<OperationCanceledException>(() => pending.WaitAsync(Watchdog));
         Assert.Equal(cancellation.Token, error.CancellationToken);
-        Assert.True(pending.IsFaulted);
+        Assert.True(pending.IsCanceled);
     }
 }
