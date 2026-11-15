@@ -8404,3 +8404,15 @@ ordinary,13/406originalstress,installed Release consumers. All585+4+2 inputs,
 16summaries/full logs terminal-cached forever; no unchanged qualification repeated.
 Original1b88 regressions, refined moving text/JSON controls and accepted uncertainty
 remain. CPython phases are separate; no universal speedup or publication claim.
+
+[R403/B787 canonical activation](results/2026-11-15-canonical-activation-prototype/README.md)
+is an active, uncommitted runtime prototype, not retained or fully qualified.
+It removes duplicate native dispatch/child transfer and replaces array-only reuse
+with canonical activation/final-slot loans. Four changed-source allocation screens
+preserve the original large regressions and final effectively flat allocation.
+Quiet six-job170.682s results are adverse with stable controls: invoice+28–33%,
+fulfillment+15–17%, text+47–50%, JSON+14–15%, search+44–55%elapsed; CPU is adverse.
+Fresh configuration is roughly flat. Exact sources/images, original failures,
+controls and cleanup/custody proofs stay linked. One changed retirement-lifetime
+refinement is selected before the coherent decision; no CPU gain, current-runtime
+replacement or completed performance objective is claimed.
