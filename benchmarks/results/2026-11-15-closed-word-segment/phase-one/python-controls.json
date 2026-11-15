@@ -1,0 +1,16 @@
+{
+  "complete": true,
+  "coreSHA256": "47e43687579c030216b53541dd98454952195c7ab7ee3a242be6f249386e7022",
+  "controls": [
+    {
+      "asynchronous": false,
+      "cases": 72,
+      "matched": true
+    },
+    {
+      "asynchronous": true,
+      "cases": 72,
+      "matched": true
+    }
+  ]
+}

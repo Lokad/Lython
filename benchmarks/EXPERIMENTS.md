@@ -8063,3 +8063,13 @@ require distinct dictionary/word/total bindings for fusion. Ordinary executable
 errors/effects remain; 165public+34internal per actual11/10 and both-API CPython
 controls pass. Preserve this correction independently of R376. All raw/failed
 conditions and verified archival custody remain; no VM users remain from B765.
+
+## R376 — closed word-segment prototype, first comparison
+
+[First form](results/2026-11-15-closed-word-segment/phase-one/README.md), exact47e4
+versus qualified957, finishes six jobs266.163s/all gates. Text warm elapsed
+-3.31..-6.54%/CPU-3.05..-6.87%, fresh-4.40..-8.59%/CPU-4.13..-8.99%; allocation
+flat. CSV controls overlap flat; observed control lower; JSON+1.16..+1.82%elapsed
+remains adverse. Refine only by restoring the unnecessarily changed ordinary
+arithmetic ABI/kernel and removing its converted local. No isolated cause or
+recovery claim. One final source-pair decision follows, all original data retained.

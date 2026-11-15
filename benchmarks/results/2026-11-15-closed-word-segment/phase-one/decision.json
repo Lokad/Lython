@@ -1,0 +1,9 @@
+{
+  "status": "refine",
+  "core": "47e43687579c030216b53541dd98454952195c7ab7ee3a242be6f249386e7022",
+  "reference": "95798eb99ca4945d06d10c05d4f0a64925719377190abb82c5a5775d91bb52b0",
+  "observations": "Text warm-3.31..-6.54%,fresh-4.40..-8.59%withCPU support; allocationflat. CSV roughlyflat, observed control lower, JSON+1.16..+1.82%elapsed/0..+2.73%CPU with small process spreads.",
+  "reason": "The prototype unnecessarily changed the shared ordinary arithmetic argument ABI from BigInteger to long. Restore that existing ABI/kernel and remove the extra converted local; keep only the coherent closed-word segment. The control regression is retained and not attributed conclusively.",
+  "completion": "One corrected focused check and bounded final source pair with the same affected/control scripts, then retain/debt or withdraw. Do not retime the same code or lose the original adverse conditions.",
+  "publicationHeld": true
+}

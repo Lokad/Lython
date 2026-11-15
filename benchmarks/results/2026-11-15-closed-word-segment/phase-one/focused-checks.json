@@ -1,0 +1,26 @@
+[
+  {
+    "project": "Lokad.Lython.Tests",
+    "framework": "net11.0",
+    "exitCode": 0,
+    "elapsedSeconds": 19.560562499798834
+  },
+  {
+    "project": "Lokad.Lython.PublicApi.Tests",
+    "framework": "net11.0",
+    "exitCode": 0,
+    "elapsedSeconds": 21.953142799902707
+  },
+  {
+    "project": "Lokad.Lython.Tests",
+    "framework": "net10.0",
+    "exitCode": 0,
+    "elapsedSeconds": 20.88452470023185
+  },
+  {
+    "project": "Lokad.Lython.PublicApi.Tests",
+    "framework": "net10.0",
+    "exitCode": 0,
+    "elapsedSeconds": 18.1496000001207
+  }
+]
