@@ -1,0 +1,223 @@
+{
+  "ticks": 2406,
+  "productionStackTicks": 2394,
+  "otherOrUnresolvedTicks": 12,
+  "threads": {
+    "112700": 2394
+  },
+  "note": "Sampled allocation triggers with resolved production stacks during the request; not exact per-type allocated bytes, retained memory, CPU or elapsed comparison. Other/unresolved ticks remain explicit. Event loss is not inferred absent.",
+  "allocations": [
+    {
+      "type": "Lokad.Lython.Runtime.Text.PyString",
+      "ticks": 893,
+      "origins": [
+        {
+          "frames": "Lokad.Lython.Runtime.Text.PyString.CopyFromUtf8(value class System.ReadOnlySpan\u00601\u003Cunsigned int8\u003E,class Lokad.Lython.Runtime.MemoryGovernor,class Lokad.Lython.LythonSourceSpan) -\u003E Lokad.Lython.Runtime.Text.PyString.CopyOrBorrowUtf8Range(int32,int32,class Lokad.Lython.Runtime.MemoryGovernor,class Lokad.Lython.LythonSourceSpan) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BJsonModule.ReadJsonString(class Lokad.Lython.Runtime.Text.PyString,bool,int32,class ExecutionContext,class Lokad.Lython.LythonSourceSpan,class RecordKeys,int32) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BJsonModule.ContinueJsonConstruction(value class JsonDecodeState\u0026,value class System.ValueTuple\u00602\u003Cclass System.Object,int32\u003E\u0026,value class System.Threading.Tasks.ValueTask\u00601\u003Cvalue class System.ValueTuple\u00602\u003Cclass System.Object,int32\u003E\u003E\u0026) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BJsonModule.ReadJsonValueExactAsync(class Lokad.Lython.Runtime.Text.PyString,class JsonLoadOptions,class ExecutionContext,class Lokad.Lython.LythonSourceSpan,int32,bool) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BJsonModule\u002B\u003CParseJsonTextCoreAsync\u003Ed__13.MoveNext()",
+          "ticks": 289,
+          "triggerObjectBytes": 16184
+        },
+        {
+          "frames": "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext\u002BChunkedTextFileReadState.CreateWindowValue(int32,int32) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext.ExecuteForNext(value class Lokad.Lython.Frontend.ExecutableInstruction\u0026) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext.ExecuteInstructionPrefix(value class ExecutableWorkState\u0026,class ExecutionContext,class ExecutionContext,bool,value class System.Threading.Tasks.ValueTask\u00601\u003Cbool\u003E\u0026,class Lokad.Lython.LythonSourceSpan\u0026,value class System.Threading.Tasks.ValueTask\u00601\u003Cclass ExecutionContext\u003E\u0026) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext.Execute() -\u003E Lokad.Lython.Runtime.LythonRuntime\u002B\u003C\u003Ec__DisplayClass739_0.\u003CRun\u003Eb__0() -\u003E Lokad.Lython.Runtime.ExecutionThreads\u002BWorkItem.Execute(class System.Threading.ExecutionContext)",
+          "ticks": 264,
+          "triggerObjectBytes": 14784
+        },
+        {
+          "frames": "Lokad.Lython.Runtime.Text.PyString.CopyFromUtf8(value class System.ReadOnlySpan\u00601\u003Cunsigned int8\u003E,class Lokad.Lython.Runtime.MemoryGovernor,class Lokad.Lython.LythonSourceSpan) -\u003E Lokad.Lython.Runtime.Text.PyStringOps.SliceUtf8(class Lokad.Lython.Runtime.Text.PyString,int32,int32,class Lokad.Lython.Runtime.MemoryGovernor,class Lokad.Lython.LythonSourceSpan) -\u003E Lokad.Lython.Runtime.Text.PyStringOps.Strip(class Lokad.Lython.Runtime.Text.PyString) -\u003E Lokad.Lython.Runtime.LythonRuntime.InvokeReceiverMethod(class ReceiverMethod,class System.Object,class Lokad.Lython.LythonSourceSpan,class ExecutionContext) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext.TryExecuteNativeCall(value class ExecutableWorkState\u0026,class ExecutionContext,class ExecutionContext,class Lokad.Lython.Frontend.ExecutableCallSite,int32,class System.Object,class ExecutionContext\u0026) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext.ExecuteInstructionPrefix(value class ExecutableWorkState\u0026,class ExecutionContext,class ExecutionContext,bool,value class System.Threading.Tasks.ValueTask\u00601\u003Cbool\u003E\u0026,class Lokad.Lython.LythonSourceSpan\u0026,value class System.Threading.Tasks.ValueTask\u00601\u003Cclass ExecutionContext\u003E\u0026)",
+          "ticks": 248,
+          "triggerObjectBytes": 13888
+        },
+        {
+          "frames": "Lokad.Lython.Runtime.Text.PyString.CopyFromUtf8(value class System.ReadOnlySpan\u00601\u003Cunsigned int8\u003E,class Lokad.Lython.Runtime.MemoryGovernor,class Lokad.Lython.LythonSourceSpan) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext\u002BChunkedTextFileReadState.CreateWindowValue(int32,int32) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext.ExecuteForNext(value class Lokad.Lython.Frontend.ExecutableInstruction\u0026) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext.ExecuteInstructionPrefix(value class ExecutableWorkState\u0026,class ExecutionContext,class ExecutionContext,bool,value class System.Threading.Tasks.ValueTask\u00601\u003Cbool\u003E\u0026,class Lokad.Lython.LythonSourceSpan\u0026,value class System.Threading.Tasks.ValueTask\u00601\u003Cclass ExecutionContext\u003E\u0026) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext.Execute() -\u003E Lokad.Lython.Runtime.LythonRuntime\u002B\u003C\u003Ec__DisplayClass739_0.\u003CRun\u003Eb__0()",
+          "ticks": 92,
+          "triggerObjectBytes": 5152
+        }
+      ]
+    },
+    {
+      "type": "Lokad.Lython.Runtime.PyDict",
+      "ticks": 483,
+      "origins": [
+        {
+          "frames": "Lokad.Lython.Runtime.PyDict\u002BRecordKeys.CreateRecord(class ExecutionContext,class Lokad.Lython.LythonSourceSpan,int32) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BJsonModule.PushJsonContainer(value class JsonDecodeState\u0026,int32,bool) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BJsonModule.ReadJsonValueExactAsync(class Lokad.Lython.Runtime.Text.PyString,class JsonLoadOptions,class ExecutionContext,class Lokad.Lython.LythonSourceSpan,int32,bool) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BJsonModule\u002B\u003CParseJsonTextCoreAsync\u003Ed__13.MoveNext() -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext.ExecuteOrdinaryCall(class Lokad.Lython.Frontend.ExecutableCallSite,int32,class System.Object,bool) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext.ExecuteInstructionPrefix(value class ExecutableWorkState\u0026,class ExecutionContext,class ExecutionContext,bool,value class System.Threading.Tasks.ValueTask\u00601\u003Cbool\u003E\u0026,class Lokad.Lython.LythonSourceSpan\u0026,value class System.Threading.Tasks.ValueTask\u00601\u003Cclass ExecutionContext\u003E\u0026)",
+          "ticks": 483,
+          "triggerObjectBytes": 46368
+        }
+      ]
+    },
+    {
+      "type": "System.Byte[]",
+      "ticks": 382,
+      "origins": [
+        {
+          "frames": "Lokad.Lython.Runtime.Text.PyString.AllocateGovernedUtf8(int32,class Lokad.Lython.Runtime.MemoryGovernor,class Lokad.Lython.LythonSourceSpan) -\u003E Lokad.Lython.Runtime.Text.PyString.CopyFromUtf8(value class System.ReadOnlySpan\u00601\u003Cunsigned int8\u003E,class Lokad.Lython.Runtime.MemoryGovernor,class Lokad.Lython.LythonSourceSpan) -\u003E Lokad.Lython.Runtime.Text.PyStringOps.SliceUtf8(class Lokad.Lython.Runtime.Text.PyString,int32,int32,class Lokad.Lython.Runtime.MemoryGovernor,class Lokad.Lython.LythonSourceSpan) -\u003E Lokad.Lython.Runtime.Text.PyStringOps.Strip(class Lokad.Lython.Runtime.Text.PyString) -\u003E Lokad.Lython.Runtime.LythonRuntime.InvokeReceiverMethod(class ReceiverMethod,class System.Object,class Lokad.Lython.LythonSourceSpan,class ExecutionContext) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext.TryExecuteNativeCall(value class ExecutableWorkState\u0026,class ExecutionContext,class ExecutionContext,class Lokad.Lython.Frontend.ExecutableCallSite,int32,class System.Object,class ExecutionContext\u0026)",
+          "ticks": 257,
+          "triggerObjectBytes": 14392
+        },
+        {
+          "frames": "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext\u002BChunkedTextFileReadState.EnsureRaw() -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext\u002BChunkedTextFileReadState.Refill() -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext.ExecuteForNext(value class Lokad.Lython.Frontend.ExecutableInstruction\u0026) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext.ExecuteInstructionPrefix(value class ExecutableWorkState\u0026,class ExecutionContext,class ExecutionContext,bool,value class System.Threading.Tasks.ValueTask\u00601\u003Cbool\u003E\u0026,class Lokad.Lython.LythonSourceSpan\u0026,value class System.Threading.Tasks.ValueTask\u00601\u003Cclass ExecutionContext\u003E\u0026) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext.Execute() -\u003E Lokad.Lython.Runtime.LythonRuntime\u002B\u003C\u003Ec__DisplayClass739_0.\u003CRun\u003Eb__0()",
+          "ticks": 125,
+          "triggerObjectBytes": 2052000
+        }
+      ]
+    },
+    {
+      "type": "System.Object[]",
+      "ticks": 304,
+      "origins": [
+        {
+          "frames": "Lokad.Lython.Runtime.PyDict\u002BRecordKeys.CreateRecord(class ExecutionContext,class Lokad.Lython.LythonSourceSpan,int32) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BJsonModule.PushJsonContainer(value class JsonDecodeState\u0026,int32,bool) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BJsonModule.ReadJsonValueExactAsync(class Lokad.Lython.Runtime.Text.PyString,class JsonLoadOptions,class ExecutionContext,class Lokad.Lython.LythonSourceSpan,int32,bool) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BJsonModule\u002B\u003CParseJsonTextCoreAsync\u003Ed__13.MoveNext() -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext.ExecuteOrdinaryCall(class Lokad.Lython.Frontend.ExecutableCallSite,int32,class System.Object,bool) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext.ExecuteInstructionPrefix(value class ExecutableWorkState\u0026,class ExecutionContext,class ExecutionContext,bool,value class System.Threading.Tasks.ValueTask\u00601\u003Cbool\u003E\u0026,class Lokad.Lython.LythonSourceSpan\u0026,value class System.Threading.Tasks.ValueTask\u00601\u003Cclass ExecutionContext\u003E\u0026)",
+          "ticks": 304,
+          "triggerObjectBytes": 17024
+        }
+      ]
+    },
+    {
+      "type": "System.Numerics.BigInteger",
+      "ticks": 173,
+      "origins": [
+        {
+          "frames": "Lokad.Lython.Runtime.LythonRuntime\u002BJsonModule.ReadJsonNumberOrConstantAsync(class Lokad.Lython.Runtime.Text.PyString,class JsonLoadOptions,class ExecutionContext,class Lokad.Lython.LythonSourceSpan,int32,bool) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BJsonModule.ContinueJsonConstruction(value class JsonDecodeState\u0026,value class System.ValueTuple\u00602\u003Cclass System.Object,int32\u003E\u0026,value class System.Threading.Tasks.ValueTask\u00601\u003Cvalue class System.ValueTuple\u00602\u003Cclass System.Object,int32\u003E\u003E\u0026) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BJsonModule.ReadJsonValueExactAsync(class Lokad.Lython.Runtime.Text.PyString,class JsonLoadOptions,class ExecutionContext,class Lokad.Lython.LythonSourceSpan,int32,bool) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BJsonModule\u002B\u003CParseJsonTextCoreAsync\u003Ed__13.MoveNext() -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext.ExecuteOrdinaryCall(class Lokad.Lython.Frontend.ExecutableCallSite,int32,class System.Object,bool) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext.ExecuteInstructionPrefix(value class ExecutableWorkState\u0026,class ExecutionContext,class ExecutionContext,bool,value class System.Threading.Tasks.ValueTask\u00601\u003Cbool\u003E\u0026,class Lokad.Lython.LythonSourceSpan\u0026,value class System.Threading.Tasks.ValueTask\u00601\u003Cclass ExecutionContext\u003E\u0026)",
+          "ticks": 173,
+          "triggerObjectBytes": 5536
+        }
+      ]
+    },
+    {
+      "type": "TemporaryMemoryReservation",
+      "ticks": 131,
+      "origins": [
+        {
+          "frames": "Lokad.Lython.Runtime.PyDict\u002BRecordKeys.CreateRecord(class ExecutionContext,class Lokad.Lython.LythonSourceSpan,int32) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BJsonModule.PushJsonContainer(value class JsonDecodeState\u0026,int32,bool) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BJsonModule.ReadJsonValueExactAsync(class Lokad.Lython.Runtime.Text.PyString,class JsonLoadOptions,class ExecutionContext,class Lokad.Lython.LythonSourceSpan,int32,bool) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BJsonModule\u002B\u003CParseJsonTextCoreAsync\u003Ed__13.MoveNext() -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext.ExecuteOrdinaryCall(class Lokad.Lython.Frontend.ExecutableCallSite,int32,class System.Object,bool) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext.ExecuteInstructionPrefix(value class ExecutableWorkState\u0026,class ExecutionContext,class ExecutionContext,bool,value class System.Threading.Tasks.ValueTask\u00601\u003Cbool\u003E\u0026,class Lokad.Lython.LythonSourceSpan\u0026,value class System.Threading.Tasks.ValueTask\u00601\u003Cclass ExecutionContext\u003E\u0026)",
+          "ticks": 131,
+          "triggerObjectBytes": 4192
+        }
+      ]
+    },
+    {
+      "type": "Entry[System.String,System.Object][]",
+      "ticks": 8,
+      "origins": [
+        {
+          "frames": "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext.CreateBuiltinVariables() -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext..ctor(class Lokad.Lython.ILythonHost,class Lokad.Lython.LythonRunOptions,class Lokad.Lython.ILythonRegexProvider,class Lokad.Lython.Frontend.CompiledRegexPrograms) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002B\u003C\u003Ec__DisplayClass739_0.\u003CRun\u003Eb__0() -\u003E Lokad.Lython.Runtime.ExecutionThreads\u002BWorkItem.Execute(class System.Threading.ExecutionContext) -\u003E Lokad.Lython.Runtime.ExecutionThreads\u002BWorker.Run()",
+          "ticks": 8,
+          "triggerObjectBytes": 25344
+        }
+      ]
+    },
+    {
+      "type": "ExceptionTypeValue",
+      "ticks": 5,
+      "origins": [
+        {
+          "frames": "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext.CreateBuiltinVariables() -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext..ctor(class Lokad.Lython.ILythonHost,class Lokad.Lython.LythonRunOptions,class Lokad.Lython.ILythonRegexProvider,class Lokad.Lython.Frontend.CompiledRegexPrograms) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002B\u003C\u003Ec__DisplayClass739_0.\u003CRun\u003Eb__0() -\u003E Lokad.Lython.Runtime.ExecutionThreads\u002BWorkItem.Execute(class System.Threading.ExecutionContext) -\u003E Lokad.Lython.Runtime.ExecutionThreads\u002BWorker.Run()",
+          "ticks": 5,
+          "triggerObjectBytes": 240
+        }
+      ]
+    },
+    {
+      "type": "Lokad.Lython.Runtime.Text.GovernedByteBuilder",
+      "ticks": 3,
+      "origins": [
+        {
+          "frames": "Lokad.Lython.Runtime.ExecutionState..ctor(class Lokad.Lython.ILythonHost,class Lokad.Lython.LythonRunOptions,class System.Collections.Generic.Dictionary\u00602\u003Cclass System.String,class System.Object\u003E,class Lokad.Lython.ILythonRegexProvider,class Lokad.Lython.Frontend.CompiledRegexPrograms) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext..ctor(class Lokad.Lython.ILythonHost,class Lokad.Lython.LythonRunOptions,class Lokad.Lython.ILythonRegexProvider,class Lokad.Lython.Frontend.CompiledRegexPrograms) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002B\u003C\u003Ec__DisplayClass739_0.\u003CRun\u003Eb__0() -\u003E Lokad.Lython.Runtime.ExecutionThreads\u002BWorkItem.Execute(class System.Threading.ExecutionContext) -\u003E Lokad.Lython.Runtime.ExecutionThreads\u002BWorker.Run()",
+          "ticks": 3,
+          "triggerObjectBytes": 168
+        }
+      ]
+    },
+    {
+      "type": "System.IO.Strategies.SyncWindowsFileStreamStrategy",
+      "ticks": 2,
+      "origins": [
+        {
+          "frames": "Lokad.Lython.Runtime.OpenedByteFile\u002B\u003COpenAsync\u003Ed__7.MoveNext() -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext\u002BTextFileHandle\u002B\u003COpenAsync\u003Ed__35.MoveNext() -\u003E Lokad.Lython.Runtime.LythonRuntime.Open(value class BoundOpenArguments,class Lokad.Lython.LythonSourceSpan,class ExecutionContext) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BICallable.InvokeBorrowed(value class System.ReadOnlySpan\u00601\u003Cvalue class Lokad.Lython.Runtime.CallArgumentValue\u003E,class Lokad.Lython.LythonSourceSpan,class ExecutionContext) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext.ExecuteOrdinaryCall(class Lokad.Lython.Frontend.ExecutableCallSite,int32,class System.Object,bool) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext.ExecuteInstructionPrefix(value class ExecutableWorkState\u0026,class ExecutionContext,class ExecutionContext,bool,value class System.Threading.Tasks.ValueTask\u00601\u003Cbool\u003E\u0026,class Lokad.Lython.LythonSourceSpan\u0026,value class System.Threading.Tasks.ValueTask\u00601\u003Cclass ExecutionContext\u003E\u0026)",
+          "ticks": 2,
+          "triggerObjectBytes": 128
+        }
+      ]
+    },
+    {
+      "type": "System.String",
+      "ticks": 2,
+      "origins": [
+        {
+          "frames": "Lokad.Lython.Runtime.OpenedByteFile\u002B\u003COpenAsync\u003Ed__7.MoveNext() -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext\u002BTextFileHandle\u002B\u003COpenAsync\u003Ed__35.MoveNext() -\u003E Lokad.Lython.Runtime.LythonRuntime.Open(value class BoundOpenArguments,class Lokad.Lython.LythonSourceSpan,class ExecutionContext) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BICallable.InvokeBorrowed(value class System.ReadOnlySpan\u00601\u003Cvalue class Lokad.Lython.Runtime.CallArgumentValue\u003E,class Lokad.Lython.LythonSourceSpan,class ExecutionContext) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext.ExecuteOrdinaryCall(class Lokad.Lython.Frontend.ExecutableCallSite,int32,class System.Object,bool) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext.ExecuteInstructionPrefix(value class ExecutableWorkState\u0026,class ExecutionContext,class ExecutionContext,bool,value class System.Threading.Tasks.ValueTask\u00601\u003Cbool\u003E\u0026,class Lokad.Lython.LythonSourceSpan\u0026,value class System.Threading.Tasks.ValueTask\u00601\u003Cclass ExecutionContext\u003E\u0026)",
+          "ticks": 1,
+          "triggerObjectBytes": 288
+        },
+        {
+          "frames": "Lokad.Lython.Runtime.LythonRuntime.Open(value class BoundOpenArguments,class Lokad.Lython.LythonSourceSpan,class ExecutionContext) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BICallable.InvokeBorrowed(value class System.ReadOnlySpan\u00601\u003Cvalue class Lokad.Lython.Runtime.CallArgumentValue\u003E,class Lokad.Lython.LythonSourceSpan,class ExecutionContext) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext.ExecuteOrdinaryCall(class Lokad.Lython.Frontend.ExecutableCallSite,int32,class System.Object,bool) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext.ExecuteInstructionPrefix(value class ExecutableWorkState\u0026,class ExecutionContext,class ExecutionContext,bool,value class System.Threading.Tasks.ValueTask\u00601\u003Cbool\u003E\u0026,class Lokad.Lython.LythonSourceSpan\u0026,value class System.Threading.Tasks.ValueTask\u00601\u003Cclass ExecutionContext\u003E\u0026) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext.Execute() -\u003E Lokad.Lython.Runtime.LythonRuntime\u002B\u003C\u003Ec__DisplayClass739_0.\u003CRun\u003Eb__0()",
+          "ticks": 1,
+          "triggerObjectBytes": 48
+        }
+      ]
+    },
+    {
+      "type": "Entry[System.Object,System.Runtime.CompilerServices.StrongBox\u00601[System.Int64]][]",
+      "ticks": 2,
+      "origins": [
+        {
+          "frames": "Lokad.Lython.Runtime.ExecutionState..ctor(class Lokad.Lython.ILythonHost,class Lokad.Lython.LythonRunOptions,class System.Collections.Generic.Dictionary\u00602\u003Cclass System.String,class System.Object\u003E,class Lokad.Lython.ILythonRegexProvider,class Lokad.Lython.Frontend.CompiledRegexPrograms) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext..ctor(class Lokad.Lython.ILythonHost,class Lokad.Lython.LythonRunOptions,class Lokad.Lython.ILythonRegexProvider,class Lokad.Lython.Frontend.CompiledRegexPrograms) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002B\u003C\u003Ec__DisplayClass739_0.\u003CRun\u003Eb__0() -\u003E Lokad.Lython.Runtime.ExecutionThreads\u002BWorkItem.Execute(class System.Threading.ExecutionContext) -\u003E Lokad.Lython.Runtime.ExecutionThreads\u002BWorker.Run()",
+          "ticks": 2,
+          "triggerObjectBytes": 304
+        }
+      ]
+    },
+    {
+      "type": "System.String[]",
+      "ticks": 2,
+      "origins": [
+        {
+          "frames": "Lokad.Lython.Runtime.OpenedByteFile\u002B\u003COpenAsync\u003Ed__7.MoveNext() -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext\u002BTextFileHandle\u002B\u003COpenAsync\u003Ed__35.MoveNext() -\u003E Lokad.Lython.Runtime.LythonRuntime.Open(value class BoundOpenArguments,class Lokad.Lython.LythonSourceSpan,class ExecutionContext) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BICallable.InvokeBorrowed(value class System.ReadOnlySpan\u00601\u003Cvalue class Lokad.Lython.Runtime.CallArgumentValue\u003E,class Lokad.Lython.LythonSourceSpan,class ExecutionContext) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext.ExecuteOrdinaryCall(class Lokad.Lython.Frontend.ExecutableCallSite,int32,class System.Object,bool) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext.ExecuteInstructionPrefix(value class ExecutableWorkState\u0026,class ExecutionContext,class ExecutionContext,bool,value class System.Threading.Tasks.ValueTask\u00601\u003Cbool\u003E\u0026,class Lokad.Lython.LythonSourceSpan\u0026,value class System.Threading.Tasks.ValueTask\u00601\u003Cclass ExecutionContext\u003E\u0026)",
+          "ticks": 2,
+          "triggerObjectBytes": 80
+        }
+      ]
+    },
+    {
+      "type": "System.Int32[]",
+      "ticks": 1,
+      "origins": [
+        {
+          "frames": "Lokad.Lython.Runtime.ExecutionState..ctor(class Lokad.Lython.ILythonHost,class Lokad.Lython.LythonRunOptions,class System.Collections.Generic.Dictionary\u00602\u003Cclass System.String,class System.Object\u003E,class Lokad.Lython.ILythonRegexProvider,class Lokad.Lython.Frontend.CompiledRegexPrograms) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext..ctor(class Lokad.Lython.ILythonHost,class Lokad.Lython.LythonRunOptions,class Lokad.Lython.ILythonRegexProvider,class Lokad.Lython.Frontend.CompiledRegexPrograms) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002B\u003C\u003Ec__DisplayClass739_0.\u003CRun\u003Eb__0() -\u003E Lokad.Lython.Runtime.ExecutionThreads\u002BWorkItem.Execute(class System.Threading.ExecutionContext) -\u003E Lokad.Lython.Runtime.ExecutionThreads\u002BWorker.Run()",
+          "ticks": 1,
+          "triggerObjectBytes": 56
+        }
+      ]
+    },
+    {
+      "type": "Reservation",
+      "ticks": 1,
+      "origins": [
+        {
+          "frames": "Lokad.Lython.Runtime.OpenedByteFile\u002B\u003COpenAsync\u003Ed__7.MoveNext() -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext\u002BTextFileHandle\u002B\u003COpenAsync\u003Ed__35.MoveNext() -\u003E Lokad.Lython.Runtime.LythonRuntime.Open(value class BoundOpenArguments,class Lokad.Lython.LythonSourceSpan,class ExecutionContext) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BICallable.InvokeBorrowed(value class System.ReadOnlySpan\u00601\u003Cvalue class Lokad.Lython.Runtime.CallArgumentValue\u003E,class Lokad.Lython.LythonSourceSpan,class ExecutionContext) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext.ExecuteOrdinaryCall(class Lokad.Lython.Frontend.ExecutableCallSite,int32,class System.Object,bool) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext.ExecuteInstructionPrefix(value class ExecutableWorkState\u0026,class ExecutionContext,class ExecutionContext,bool,value class System.Threading.Tasks.ValueTask\u00601\u003Cbool\u003E\u0026,class Lokad.Lython.LythonSourceSpan\u0026,value class System.Threading.Tasks.ValueTask\u00601\u003Cclass ExecutionContext\u003E\u0026)",
+          "ticks": 1,
+          "triggerObjectBytes": 56
+        }
+      ]
+    },
+    {
+      "type": "StrCallable",
+      "ticks": 1,
+      "origins": [
+        {
+          "frames": "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext.CreateBuiltinVariables() -\u003E Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext..ctor(class Lokad.Lython.ILythonHost,class Lokad.Lython.LythonRunOptions,class Lokad.Lython.ILythonRegexProvider,class Lokad.Lython.Frontend.CompiledRegexPrograms) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002B\u003C\u003Ec__DisplayClass739_0.\u003CRun\u003Eb__0() -\u003E Lokad.Lython.Runtime.ExecutionThreads\u002BWorkItem.Execute(class System.Threading.ExecutionContext) -\u003E Lokad.Lython.Runtime.ExecutionThreads\u002BWorker.Run()",
+          "ticks": 1,
+          "triggerObjectBytes": 96
+        }
+      ]
+    },
+    {
+      "type": "Lokad.Lython.Runtime.ExecutionState",
+      "ticks": 1,
+      "origins": [
+        {
+          "frames": "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext..ctor(class Lokad.Lython.ILythonHost,class Lokad.Lython.LythonRunOptions,class Lokad.Lython.ILythonRegexProvider,class Lokad.Lython.Frontend.CompiledRegexPrograms) -\u003E Lokad.Lython.Runtime.LythonRuntime\u002B\u003C\u003Ec__DisplayClass739_0.\u003CRun\u003Eb__0() -\u003E Lokad.Lython.Runtime.ExecutionThreads\u002BWorkItem.Execute(class System.Threading.ExecutionContext) -\u003E Lokad.Lython.Runtime.ExecutionThreads\u002BWorker.Run()",
+          "ticks": 1,
+          "triggerObjectBytes": 400
+        }
+      ]
+    }
+  ]
+}

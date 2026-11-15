@@ -1,0 +1,121 @@
+{
+  "status": "Active uncommitted prototype; not retained or fully qualified",
+  "referenceRevision": "b58e2dc44d5b75669ec78e9027ae3d6ffb100d86",
+  "coreSHA256": "1b88e3c7580caa0c8e9227628b61c3a68e12cc391c0c4c339749190b24d75876",
+  "runtimeSourceFiles": 4,
+  "summary": [
+    {
+      "case": "scripts.csv-invoice.large",
+      "allocationBytesPerJob": {
+        "reference": 4590600.25,
+        "candidate": 4197750
+      },
+      "allocationChangePercent": [
+        -8.557709855045648
+      ],
+      "diagnosticElapsedChangePercent": [
+        -15.664896496395341,
+        -13.048030145797906,
+        -3.3619725230339514,
+        -0.36335401441051074
+      ],
+      "referenceSpreadPercent": 3.1029384466049637,
+      "candidateSpreadPercent": 14.588141191805782
+    },
+    {
+      "case": "scripts.csv-fulfillment.large",
+      "allocationBytesPerJob": {
+        "reference": 4673353.625,
+        "candidate": 4424701.875
+      },
+      "allocationChangePercent": [
+        -5.320627753693685
+      ],
+      "diagnosticElapsedChangePercent": [
+        -6.094107111965896,
+        -3.128104590532077,
+        -1.6170589492322307,
+        1.4903504182563143
+      ],
+      "referenceSpreadPercent": 3.158483914284549,
+      "candidateSpreadPercent": 4.767590217231343
+    },
+    {
+      "case": "scripts.text-summary-helpers.nonlocal-counter.large",
+      "allocationBytesPerJob": {
+        "reference": 448229.75,
+        "candidate": 448229.75
+      },
+      "allocationChangePercent": [
+        0.0
+      ],
+      "diagnosticElapsedChangePercent": [
+        1.336620129920707,
+        2.924421777416608,
+        2.937469595229736,
+        4.550354291826264
+      ],
+      "referenceSpreadPercent": 1.5797344170908945,
+      "candidateSpreadPercent": 1.566858698721374
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "allocationBytesPerJob": {
+        "reference": 2021871,
+        "candidate": 2021871
+      },
+      "allocationChangePercent": [
+        0.0
+      ],
+      "diagnosticElapsedChangePercent": [
+        -5.469699316538779,
+        -2.552758714695247,
+        2.93115041377523,
+        6.107317734365747
+      ],
+      "referenceSpreadPercent": 8.886938547296719,
+      "candidateSpreadPercent": 3.0857202196056033
+    }
+  ],
+  "focusedChecksPerTarget": {
+    "public": 416,
+    "internal": 171
+  },
+  "supplementalChecks": [
+    {
+      "log": "lifetime-net11.log",
+      "passed": 6,
+      "sha256": "78637327a7a331b5e2a86307818259305dcc269681d7ed93f16f5e6e0dcbc486"
+    },
+    {
+      "log": "lifetime-net10.log",
+      "passed": 6,
+      "sha256": "3a56c4ec3daa57ab1f8250ac848dce02e700dabb5159a1cd41adef4796734562"
+    },
+    {
+      "log": "admission-net11.log",
+      "passed": 6,
+      "sha256": "680bbf45fa24a84a82012a3fed47fe9332491d6077cff081c61c866ddd312bd6"
+    },
+    {
+      "log": "admission-net10.log",
+      "passed": 6,
+      "sha256": "4b7c5e065fffb9198e8bc355174585088cb1224daf8cd9adb1ce93f2a11ac04f"
+    }
+  ],
+  "allocationBoundary": "Same unchanged allocation driver, warm complete scripts including fixture reset, mediated local I/O, full output validation and result cleanup; compilation/startup/final compiled owner disposal excluded. One process/image, five64-invocation blocks per shape; process-wide CLR allocation counter, no forced GC.",
+  "elapsedBoundary": "Unchanged command-v2 warm: mediated filesystem I/O/full stdout-file validation/prior-result cleanup; excludes compile/startup/reset/protocol/final cache. Fresh adds compile/compiled-owner disposal. No CPU/heap/tail claim.",
+  "elapsedObservationSeconds": 61.753643200267106,
+  "allocationObservationSeconds": 82.80444730026647,
+  "limitations": [
+    "Desktop elapsed is diagnostic; no portable CPU gain.",
+    "Invoice candidate process roles differ substantially; fulfillment and JSON cross zero.",
+    "Text +1.34..+4.55% is retained adverse evidence, not neutrality.",
+    "New tuple/borrow branches add complexity; generic reference tuples still require their existing backing.",
+    "Wider typed capacity and all eventual boxes are conservatively admitted; earlier rejection is possible.",
+    "A scalar borrow can retain its whole tuple until observation/slot retirement.",
+    "Final platform, original stress and installed-package checks not run for this prototype."
+  ],
+  "nextGate": "Controlled quiet-VM source-pair CPU/elapsed with unchanged text/JSON controls; retain/refine/withdraw with explicit debt. First safely fund staging by retiring only an exact proved archived superseded image if needed; do not relax disk floors or replace qualified images.",
+  "publicationHeld": true
+}

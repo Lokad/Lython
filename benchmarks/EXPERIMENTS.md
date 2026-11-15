@@ -8327,3 +8327,20 @@ runtime image/framework, all identity/golden/quiet/balance/Closed/join/archive g
 pass, no VM users/RAM remain. [R392 current transport assessment](results/2026-11-15-runtime-roadmap-review/current-transport-assessment.json)
 rules out rediscovering already-bulk text paths or a float rewrite for integer-cents
 sources; tuple allocation/typed transport needs attribution before selection.
+
+[R394 current CSV/JSON allocation origins](results/2026-11-15-tuple-allocation-origins/README.md)
+resolve 5,504/5,506 invoice and 2,394/2,406 JSON allocation ticks on qualified
+f304b3db. Tuple construction is a material observed origin; sample counts are
+neither type-byte nor CPU shares. All original setup/cleanup errors and streams
+remain. No production change or repeated unchanged qualification follows.
+
+[R395 integer tuple/operand prototype](results/2026-11-15-tuple-operand-prototype/README.md)
+is active and uncommitted, frozen 1b88e3c7 against qualified f304b3db. Existing
+slots displace eager scalar boxing/object-array transfer for computed integer
+tuples; canonical observation and managed source/index preserve item identity.
+Invoice allocation −8.56%, fulfillment −5.32%, text/JSON flat. Desktop elapsed
+is diagnostic: invoice candidate spread 14.59%, fulfillment/JSON cross zero,
+text +1.34..+4.55% remains adverse. Both targets pass 416public/171internal focused
+checks plus overlapping lifetime/admission supplements. Original reference-only
+allocation timeout and the bounded size correction survive. Quiet-VM CPU/control
+decision and full delivery are pending; no retained speedup or publication claim.

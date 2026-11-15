@@ -1,0 +1,11 @@
+{
+  "completeCaptures": true,
+  "allGoldensPassed": true,
+  "allActualUsersJoined": true,
+  "fixturesRemoved": true,
+  "compilerShadowCacheRemovedAfterServerShutdown": true,
+  "initialSetupPathErrorPreserved": true,
+  "cleanupAssertionFailurePreserved": true,
+  "exactTypeBytesOrCpuClaim": false,
+  "productionChanged": false
+}
