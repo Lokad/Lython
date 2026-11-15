@@ -1,0 +1,66 @@
+{
+  "sourceHead": "c5e02a27",
+  "candidateSource": "dcfe880ab656b556ddf7e1dc464e837e845705b4",
+  "packages": [
+    {
+      "id": "Lokad.Utf8Regex",
+      "version": "0.5.0",
+      "packageSHA256": "42f1c4f98171c456012ed99f8f5bc2dd304cfe024fb47606d4ae4d57575d9244",
+      "availableImmutableCandidate": true,
+      "published": false
+    },
+    {
+      "id": "Lokad.Utf8Regex.PythonRe",
+      "version": "0.5.0",
+      "packageSHA256": "9370a9227faf74c469dc4d26317e1788e0bd48c721490201566c78b5198edcc2",
+      "availableImmutableCandidate": true,
+      "published": false
+    }
+  ],
+  "entryFiles": [
+    {
+      "path": "src/Lokad.Utf8Regex.PythonRe/Utf8PythonRegex.Cursor.cs",
+      "sha256": "065369aef137589d4f553ddeb3acb4ca4b7d6d9279812ca5ee093bceae20edbb",
+      "committedC5e02a27Matches": true
+    },
+    {
+      "path": "src/Lokad.Utf8Regex.PythonRe/Utf8PythonMatchCursor.cs",
+      "sha256": "33c638917ef2374d4c6a60115e1bdb2e6122411e2ee628ecb66898b2d1590858",
+      "committedC5e02a27Matches": true
+    },
+    {
+      "path": "src/Lokad.Utf8Regex.PythonRe/Utf8PythonRegex.Metadata.cs",
+      "sha256": "021ac85a07cb5e19b2780a7a8728adb4936f93c8b312149cc7103436f3212322",
+      "committedC5e02a27Matches": true
+    },
+    {
+      "path": "src/Lokad.Utf8Regex.PythonRe/Utf8PythonRegex.Compilation.cs",
+      "sha256": "5cb8915ec561a41b673313c8b35a062a258dc34189ba87e0eb81889b420a2e45",
+      "committedC5e02a27Matches": true
+    },
+    {
+      "path": "src/Lokad.Utf8Regex.PythonRe/Utf8PythonRegex.cs",
+      "sha256": "335c346c37b0a3dcb82951a28d8c86483ad05cd9116d25f4bb68516ff371fc32",
+      "committedC5e02a27Matches": true
+    }
+  ],
+  "sourceOnlyLythonAssessment": true,
+  "normalPin": "0.4.0 unchanged",
+  "coreDependencyChanged": false,
+  "adapterQualifiedAgainst050": false,
+  "capabilities": [
+    "Validated EffectiveOptions can replace adapter global-inline-flag parser",
+    "Range-only cursor advancement avoids unnecessary captured text/whole coordinate maps",
+    "Per-advance cancellation and explicit working allowance plus retained-range receipt exist; compile/program Dispose exists"
+  ],
+  "remainingGaps": [
+    "No native UTF8 name enumeration/copy: public GetGroupNames returns string[]; lookup is separate",
+    "Cursor constructors still retain creation token; token-free construction cannot cancel preparation",
+    "Program defaults still fund temporary/result staging; one-match operations lack independent per-operation scratch and escaping-result owners"
+  ],
+  "next": "Use exact immutable0.5 candidate in adapter-local development when implementing simplification; only affected final released-adapter qualification waits. Do not change CI normal restore to unpublished pin or alter sibling uncommitted source.",
+  "dateUTC": "2026-11-15",
+  "newCoreReleaseGate": false,
+  "producerStatusBoundary": "Local committed acceptance atc5e02a27; not an assertion about current NuGet availability",
+  "dependencyPolicy": "Source assessment is not package safety/semantic/performance qualification; Lython core remains decoupled and introduces no backend types or Unsafe APIs."
+}

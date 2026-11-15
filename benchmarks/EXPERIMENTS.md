@@ -8487,3 +8487,17 @@ refinement removing global builder changes/object: private cursor replaces capac
 only between lines, with ordinary conservative overlap admission. No causal JSON
 claim or unchanged retiming. All original source/failedconditions/control processes
 and six-alias historical-image retirement proof survive. Broader objective open.
+
+
+[R408refinedB795](results/2026-11-15-fused-cased-preparation/refined/README.md)
+0ed/9e restores general builder, uses existing cursor's coarse capacity replacement
+only between lines.196internal/439public per11/10 including3original64MiB cases
+pass. Allocationflat(+128Btext). Same5jobs259.695s/allgates:directtext−3.96..−7.65%
+elapsed/CPU−2.55..−7.94%;capturedwarm+0.75..+5.34%/CPU+0.45..+7.51%;fresh/JSONmove.
+Keep original4e49adversity. One same-bits capturedwarm/fresh+JSON confirmation
+selected before retention; no full/stable-row repetition or causal recovery claim.
+[R409source update](results/2026-11-14-regex-provider-capabilities/source-update-c5e02a27.json)
+records exact locally qualified0.5candidate hashes atc5e02a27, not publication or
+Lython adapter qualification. New effective-flags/range/cursor funding APIs support
+independent development; remaining three precise gaps defer affected final checks
+only. Core dependency/pin unchanged; no producer-policy gate added to core.

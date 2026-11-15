@@ -1,0 +1,33 @@
+{
+  "complete": true,
+  "elapsedSeconds": 72.02681410033256,
+  "rows": [
+    {
+      "case": "scripts.csv-invoice.large",
+      "referenceBytes": 4197002.5,
+      "candidateBytes": 4196998.625,
+      "changePercent": -9.232779822898607e-05
+    },
+    {
+      "case": "scripts.csv-fulfillment.large",
+      "referenceBytes": 4423953.5,
+      "candidateBytes": 4423953.5,
+      "changePercent": 0.0
+    },
+    {
+      "case": "scripts.text-summary-helpers.nonlocal-counter.large",
+      "referenceBytes": 447485.75,
+      "candidateBytes": 447613.75,
+      "changePercent": 0.028604262817299997
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "referenceBytes": 2021095,
+      "candidateBytes": 2021084.125,
+      "changePercent": -0.0005380746575522899
+    }
+  ],
+  "allGoldensAndBudgetChecksPassed": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "CPUorElapsedClaim": false
+}
