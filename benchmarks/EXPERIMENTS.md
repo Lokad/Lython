@@ -16,6 +16,12 @@ deny earlier. B809all gates/cleanup141.884s,10internal/484public each11/10 and f
 local ordinary11 pass; platform/stress/package qualification pending. R415 closes
 its source gate with the span/durable-state tradeoff, without another wrapper design.
 
+[B810 report CPython phases](results/2026-11-15-format-cpython-checkpoint/README.md)
+atb06b/8afb pass all gates138.629s. Method warm2.04–2.07× / fresh1.97–2.01×,
+compilation1.03–1.05×; f-string warm1.16–1.21×. Fresh CPython IQR8.86% and
+f-string Lython control3.88% remain explicit. This supports investigating the
+ordinary method execution boundary, not attributing its whole gap to parsing.
+
 [R413 prepared stores](results/2026-11-15-prepared-store-targets/README.md) retains
 one lowered target tree and deletes syntax-keyed reads, duplicate lowering and
 augmented target shapes, premature syntax lowering and obsolete dispatchers.
