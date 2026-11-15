@@ -46,7 +46,7 @@ internal sealed partial class LythonRuntime
         object? receiver = null,
         ExecutableCallSite? callSite = null,
         ReadOnlySpan<ExecutableSlot> operands = default,
-        bool deferKeywordDefaults = false,
+        bool deferProtocolDefaults = false,
         int? storageCapacity = null)
     {
         // Values travel in plan layout order (positional, keyword-only, then
@@ -57,7 +57,7 @@ internal sealed partial class LythonRuntime
         try
         {
             BindFunctionArgumentsInto(storage.Values, arguments, span, plan, context,
-                deferKeywordDefaults, receiver, callSite, operands);
+                deferProtocolDefaults, receiver, callSite, operands);
             return storage;
         }
         catch
@@ -75,10 +75,15 @@ internal sealed partial class LythonRuntime
         object? receiver = null, ExecutableCallSite? callSite = null, ReadOnlySpan<ExecutableSlot> operands = default,
         int? storageCapacity = null)
     {
-        var defer = plan.KeywordDefaultStorage is { HasProtocolKeys: true };
-        // Consume borrowed operands before any default-key protocol can suspend.
-        var bound = BindFunctionArguments(arguments, span, plan, context, receiver, callSite, operands, defer, storageCapacity);
-        return defer ? CompleteProtocolDefaultsAsync(bound, span, plan, context) : new(bound);
+        // Admission and supplied-argument construction can reenter and replace
+        // defaults. Inspect their live storage at lookup, after owning borrowed
+        // operands, rather than saving a pre-admission protocol decision.
+        var bound = BindFunctionArguments(arguments, span, plan, context, receiver, callSite, operands,
+            deferProtocolDefaults: true, storageCapacity: storageCapacity);
+        for (var k = 0; k < plan.KeywordOnlyCount; k++)
+            if (bound.Values[plan.PositionalCount + k].IsUnassigned)
+                return CompleteProtocolDefaultsAsync(bound, span, plan, context);
+        return new(bound);
     }
 
     private static async ValueTask<BoundFunctionArguments> CompleteProtocolDefaultsAsync(
@@ -117,7 +122,7 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span,
         FunctionBindingPlan plan,
         ExecutionContext context,
-        bool deferKeywordDefaults = false,
+        bool deferProtocolDefaults = false,
         object? receiver = null,
         ExecutableCallSite? callSite = null,
         ReadOnlySpan<ExecutableSlot> operands = default)
@@ -168,7 +173,7 @@ internal sealed partial class LythonRuntime
             throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, parameterName, span);
         }
 
-        for (var k = 0; !deferKeywordDefaults && k < plan.KeywordOnlyCount; k++)
+        for (var k = 0; k < plan.KeywordOnlyCount; k++)
         {
             var i = plan.PositionalCount + k;
             if (!values[i].IsUnassigned)
@@ -178,6 +183,9 @@ internal sealed partial class LythonRuntime
 
             var parameterName = plan.NameAt(plan.PositionalCount + k);
             var keywordDefaults = plan.KeywordDefaultStorage;
+            // Exact native dictionaries finish synchronously. A protocol lookup
+            // defers this and the remaining defaults in their original order.
+            if (deferProtocolDefaults && keywordDefaults is { HasProtocolKeys: true }) break;
             if (keywordDefaults is not null && keywordDefaults.TryGetValue(plan.KeywordDefaultNames[k], out var defaultValue, context, span))
             {
                 values[i].Object = defaultValue;

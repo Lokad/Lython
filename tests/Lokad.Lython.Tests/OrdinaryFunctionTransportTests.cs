@@ -132,6 +132,99 @@ public sealed class OrdinaryFunctionTransportTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
+    [Theory]
+    [InlineData("success")]
+    [InlineData("cancel")]
+    [InlineData("admission")]
+    public async Task AdmissionCanReplaceNativeDefaultsWithSuspendingProtocols(string route)
+    {
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using var owner = budget.CreateScope();
+        using var cancellation = new CancellationTokenSource();
+        var gate = new AdmissionHookMemoryBudget(owner);
+        var context = new Context(new MockLythonHost(), new LythonRunOptions
+        { MemoryBudget = gate, CancellationToken = cancellation.Token }, regexProvider: Utf8RegexProvider.Instance);
+        var tap = new SuspendedDefault();
+        var effects = new List<string>();
+        var argument = PyString.FromString("argument", context.MemoryGovernor, null);
+        var payload = PyString.FromString("payload", context.MemoryGovernor, null);
+        context.Variables["tap"] = tap;
+        context.Variables["body"] = new Body(effects);
+        context.Variables["payload"] = payload;
+        // Wider final locals require a fresh workspace even if definition-time
+        // protocol calls have left a smaller idle loan behind.
+        var locals = string.Join('=', Enumerable.Range(0, 17).Select(i => "a" + i));
+        var source = "class Key:\n def __hash__(self):return hash('value')\n def __eq__(self,other):\n  tap()\n  return other=='value'\n"
+            + "replacement={Key():payload}\ndef f(arg,*,value=0):\n " + locals + "=arg\n body()\n return value";
+        try
+        {
+            await LythonRuntime.ExecuteExecutableCodeObjectAsync(Compile(source), context);
+            var function = Assert.IsType<PyExecutableFunction>(context.Variables["f"]);
+            var replacement = Assert.IsType<PyDict>(context.Variables["replacement"]);
+            var baseline = budget.ReservedBytes;
+            var replaced = false;
+            gate.AfterGrowth = _ =>
+            {
+                gate.AfterGrowth = null;
+                Assert.True(function.TrySetMember("__kwdefaults__", replacement));
+                replaced = true;
+            };
+            var span = new LythonSourceSpan(1000, 5, 50, 1);
+            Task<object> pending;
+            try { pending = function.InvokeBorrowedAsync([CallArgumentValue.Positional(argument)], span, context).AsTask(); }
+            catch (Exception error) { pending = Task.FromException<object>(error); }
+            try
+            {
+                var first = await Task.WhenAny(tap.Entered.Task, pending).WaitAsync(TimeSpan.FromSeconds(5));
+                Assert.True(replaced);
+                Assert.Same(tap.Entered.Task, first);
+                Assert.False(pending.IsCompleted);
+                Assert.Empty(effects);
+                Assert.True(budget.ReservedBytes >= baseline);
+                if (route == "cancel") cancellation.Cancel();
+                if (route == "admission")
+                {
+                    var governor = context.MemoryGovernor;
+                    Assert.Throws<LythonRuntimeException>(() => governor.Reserve(
+                        budget.LimitBytes!.Value - governor.CurrentAccountedBytes + 1, span));
+                }
+            }
+            finally
+            {
+                tap.Release.TrySetResult();
+                // Observe every real user even when an assertion fails. The
+                // outcome is checked separately after deterministic completion.
+                try { await pending.WaitAsync(TimeSpan.FromSeconds(5)); }
+                catch (LythonRuntimeException) { }
+            }
+            if (route == "success")
+            {
+                Assert.Same(payload, await pending);
+                Assert.Single(effects);
+            }
+            else
+            {
+                var failure = await Assert.ThrowsAsync<LythonRuntimeException>(() => pending);
+                Assert.Equal(route == "cancel" ? LythonFailureReason.Cancelled : LythonFailureReason.SharedMemoryAllowance,
+                    failure.Attribution?.Reason);
+                if (route == "admission")
+                {
+                    Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
+                    Assert.Same(span, failure.Span);
+                }
+                Assert.Empty(effects);
+            }
+            Assert.True(tap.Finished);
+            Assert.Equal(1, tap.Calls);
+            Assert.Equal("argument", argument.AsString());
+            Assert.Equal("payload", payload.AsString());
+            Check(context);
+        }
+        finally { context.State.CloseResources(); }
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     private sealed class Body(List<string> events) : LythonRuntime.ICallable
     {
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)

@@ -403,6 +403,8 @@ before routing through finally. Public/callback results retain their object ABI.
 Function binding uses these cleared slots to distinguish omitted arguments from
 Python `None`; only the logical parameter count travels with completed arguments.
 Live defaults and genuinely suspending default protocols use the same slots.
+Async binding checks the live default dictionary at lookup, after storage admission
+can reenter; it does not save an earlier decision about whether lookup may suspend.
 Builtins retain their object-array binding ABI; receiver
 methods borrow their caller's existing array window without conversion arrays.
 

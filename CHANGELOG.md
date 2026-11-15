@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Resolve asynchronous keyword defaults from their live dictionary after argument
+  storage admission. Host reentry can replace native defaults with a suspending
+  Python key protocol; preserve argument ownership, cancellation and cleanup.
+
 - Keep computed integer tuples and their arithmetic consumers in shared managed
   slots until observation, avoiding eager boxing and object-array transport.
   Preserve canonical item identities, cancellation and retained ownership; admit

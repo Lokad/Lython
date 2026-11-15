@@ -1,5 +1,10 @@
 # Testing Lython
 
+[Argument transport](Lokad.Lython.Tests/OrdinaryFunctionTransportTests.cs) covers
+host admission replacing keyword defaults with a genuinely suspending key protocol.
+Inputs stay owned until lookup finishes; cancellation and terminal refusal prevent
+body effects, await the user and return allowance after cleanup.
+
 [Builtin scalar publication](Lokad.Lython.PublicApi.Tests/BuiltinScalarPublicationTests.cs)
 covers exact integer boundaries, Unicode/bytes conversion, aliases, builtin rebinding
 and protocol/error order. Retained results and suspended users keep shared funding;
