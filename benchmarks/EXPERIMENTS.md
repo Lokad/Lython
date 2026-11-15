@@ -8108,3 +8108,11 @@ controller, cached mutable defaults or global list versioning follows. One usabl
 gate is closed, not the broader objective. Raw traces/failed floor preflight/corrected
 exact-duplicate custody persist; all users/RAM closed, floors unchanged. No CPU
 comparison, pin/API/runtime change or unchanged qualification. Publication held.
+
+
+R375/R376 exact ec6c/6164 [passes43669461343](results/2026-11-15-closed-word-segment/delivery/README.md):
+Windows/Ubuntu actual11/10 each4,774internal/17,851public ordinary,13/406original
+stress, installed Release consumers. All585frozen input sources proved; full logs/
+16summaries terminal-cached. No unchanged R373requalification or altered assertion.
+Warm-text benefit, fresh uncertainty and accepted unresolved JSONdebt remain;
+qualification is not a timing claim. Publication held; wider roadmap remains open.

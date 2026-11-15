@@ -22,7 +22,7 @@ not confidence intervals. Ordinary GC/tiering; no tail/heap or universal gain cl
 
 Focused actual .NET 11/10: 53 internal/197 public each, 144 isolated Python effect
 controls, and 16 workload/phase goldens pass, including cancellation, first refusal,
-funding and unwind. Full platform/stress/installed-consumer qualification is pending.
+funding and unwind. [Full platform/stress/installed-consumer qualification passes](delivery/README.md).
 All workers joined, RAM fixtures removed and persistent archive verified under the
 lease; 254/252 MiB floors unchanged. Full source/core/checks and raw observations
 are in [completed-layout](completed-layout/). Publication remains held.

@@ -25,8 +25,7 @@ archived duplicate B767 JSON leaf; compressed evidence/all images remain,254/252
 floors unchanged. Full local/Git/remote/member custody is in the receipt.
 
 All585 runtime inputs match committed source with explicit newline normalization.
-Full43669461343platform/stress/installed-consumer qualification is running, not
-claimed green here. Publication remains held. The [R376 source pair](../2026-11-15-closed-word-segment/README.md)
+[Full43669461343platform/stress/installed-consumer qualification passes](../2026-11-15-closed-word-segment/delivery/README.md). Publication remains held. The [R376 source pair](../2026-11-15-closed-word-segment/README.md)
 retains JSON+.80..+2.70%elapsed debt and inconclusive fresh magnitude; this external
 baseline cannot erase or attribute those observations. All original raw, CPU and
 machine observations remain in observations.tgz; no cross-collection causal gain.

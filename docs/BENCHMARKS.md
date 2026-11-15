@@ -17,7 +17,7 @@ Lython/CPython process-median differences; moving controls and IQRs remain visib
 
 Text and JSON-lines measured **2026-11-15 UTC** at **ec6c0416 / frozen 6164a933**,
 against stock **CPython 3.13.16**. [Exact observations and controls](../benchmarks/results/2026-11-15-word-segment-cpython-checkpoint/README.md).
-Full platform qualification is running. The source pair retains a small JSON
+[Full platform/stress/installed-consumer qualification passes](../benchmarks/results/2026-11-15-closed-word-segment/delivery/README.md). The source pair retains a small JSON
 regression against earlier Lython; the CPython comparison does not erase it.
 
 Invoice and fulfillment rows measured **2026-11-15 UTC** at
@@ -111,7 +111,7 @@ These source-pair results are separate from CPython and cannot be added together
 
 | Change / complete affected script | CPU/elapsed evidence | Allocation | Limits and exact evidence |
 | --- | --- | ---: | --- |
-| Closed word segment / captured text | Warm 2.9–5.7% lower elapsed / 3.5–5.3% lower CPU | Flat | Retained 6164a933 versus 957; full qualification pending. Fresh magnitude inconclusive (8.77% reference spread), JSON +0.8–2.7% elapsed unresolved/accepted; no universal gain. [All controls](../benchmarks/results/2026-11-15-closed-word-segment/README.md). |
+| Closed word segment / captured text | Warm 2.9–5.7% lower elapsed / 3.5–5.3% lower CPU | Flat | Retained 6164a933 versus 957; [full qualification passes](../benchmarks/results/2026-11-15-closed-word-segment/delivery/README.md). Fresh magnitude inconclusive (8.77% reference spread), JSON +0.8–2.7% elapsed unresolved/accepted; no universal gain. [All controls](../benchmarks/results/2026-11-15-closed-word-segment/README.md). |
 | Typed builtin results /CSV fulfillment | Warm3–4%lower, compile-to-result2.6–5.6%lower, supporting CPU | −18.20% | Later bed6e57e versus3994/b5; [full delivery passes](../benchmarks/results/2026-11-14-builtin-scalar-publication/delivery/README.md). Invoice−5%allocation but+.94–1.87%elapsed/+2–4%CPU debt; text adverse/uncertain, short/observed controls variable. [Exact source and every control](../benchmarks/results/2026-11-14-builtin-scalar-publication/README.md). |
 | Protected try/except helpers /invoice and file search | Invoice17–18.5%faster warm,16–19%faster compile-to-result; search41–43%faster, with CPU support | −29.19%/−74.65% | Later b5a6426e versus1c5/ff2; [full qualification passes](../benchmarks/results/2026-11-14-protected-helper-activation/delivery/README.md). Short calls+.5–3.4%, text uncertain. [Source and every control](../benchmarks/results/2026-11-14-protected-helper-activation/README.md). |
 | Native primitive storage /CSV while-validator | Warm21–23%lower, compile-to-result21–22%lower, supportingCPU | −40.9% | Source-specific; short/zero helpers+4–10%, observed+2–4%, small JSONCPU debt. [Qualified evidence](../benchmarks/results/2026-11-14-native-primitive-storage/README.md). |
