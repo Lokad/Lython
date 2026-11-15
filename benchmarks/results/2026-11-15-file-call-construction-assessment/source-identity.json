@@ -1,0 +1,23 @@
+{
+  "runtimeCommit": "ec6c041672a5e6edf85676bfe2442cd62abe1b76",
+  "frozenCore": "6164a933f5eef8f39e91e4541ac54bcfdd38832f01c4e58d68d331bafaa58217",
+  "inspectionCommit": "e5d27565ba9eab35dd3978b86c43e248a792f33c",
+  "files": {
+    "src/Lokad.Lython/Runtime/PyExecutableFunction.cs": "9ea1c244859ab3e6ffd89efb7f10ba2f26ed84e8b1d860b599d47b1447d67017",
+    "src/Lokad.Lython/Runtime/PyFunctionBase.cs": "097a6cd7e22455cc755c045da4d59aee8a7934129cfb807bca839df4fde97f41",
+    "src/Lokad.Lython/Runtime/PyFunctionBinding.cs": "bdb4974b1fd43e533ec952560561b634e353cdee83ae06afa96a2748a90e2559",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs": "e7868f8ba0fa49a22954dd630a240ff5050d03686fd6fe5c9631f3e52b693fdc",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs": "62a7d603166174e3f7a172b8e75a004937e3e6995fbb7696f39ec35e072d0d41",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs": "6c105645abfdcaed4b6a0dff92e5171b67eb5bb2f6f1d5385ae1f9338acb64a3",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativePrefix.cs": "f0d7b97905869eb5ae4832643ff99291928dc5791c931a3ed056206abd4ddcb7",
+    "src/Lokad.Lython/Runtime/ExecutionState.Guards.cs": "c75820251c40a51e29e409b5573d9941d6d37686f7797ab3f6317e30a9994123",
+    "src/Lokad.Lython/Runtime/ExecutionState.Host.cs": "00722bcdf2d3a473705caa23ac93011a2176a1f1e53e03c952bb3a374dc2d2db",
+    "src/Lokad.Lython/Runtime/LythonRuntime.TextFileHandle.Read.cs": "4b43d206567bdc7fdedaacecb076868cb360edcdfd3708423a9502374cbe5bdf",
+    "src/Lokad.Lython/Runtime/LythonRuntime.CsvModule.cs": "63320503920a248cb3a0c3dc2ee98d6a1538d9b262198d9eeccd435512edab27",
+    "src/Lokad.Lython/Runtime/LythonRuntime.CsvObjects.cs": "c17e21724cd95aa73791b823c6a1d0d9a16aa41b8aa1afb3b30606e4959eacfc",
+    "src/Lokad.Lython/Runtime/PyDict.Records.cs": "842eb8f53585e92e2fb389bdb89505b2bd7f4770740296b00f15ec714da6e97a",
+    "src/Lokad.Lython/Runtime/Text/PyString.cs": "dd00578a500f1340d3f8b6606addd7c8bdc4ecb80a31a0bac9bef390448b99c3"
+  },
+  "runtimeEdited": false,
+  "performanceComparison": false
+}
