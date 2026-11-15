@@ -18,7 +18,7 @@ the two Lython/CPython process medians; IQRs and moving controls stay visible.
 Measured **2026-11-15 UTC**, committed **43bce13a / frozen9e890d18**, stock
 **CPython3.13.16**, quiet Azure F4as_v7 / Ubuntu24.04.4, four AMD EPYC9V45 vCPUs,
 16GiB/no swap,.NET11RC3 workstation GC/normal tiering and CPython GIL/GC.
-Full runtime qualification is active in43737584665. [All source identities,
+[Full runtime qualification passes](../benchmarks/results/2026-11-15-completed-arithmetic/delivery/README.md). [All source identities,
 controls, boundaries and original failures](../benchmarks/results/2026-11-15-arithmetic-cpython-checkpoint/README.md).
 The measurement owner completes sampling and cleanup, then fails its archive disk
 floor; persistent evidence is recovered and independently verified. That failure
@@ -50,7 +50,7 @@ These source-pair results are separate from CPython and cannot be added together
 
 | Change / complete affected script | CPU/elapsed evidence | Allocation | Limits and exact evidence |
 | --- | --- | ---: | --- |
-| Shared completed arithmetic / invoice | Elapsed2.3–3.8% lower / CPU2.1–3.3% | Flat | Retained43bce13a/9e89; fresh widerCPU+0.4–3.1% and original adverse/moving controls remain. [Source pair and confirmation](../benchmarks/results/2026-11-15-completed-arithmetic/confirmation/README.md). Full delivery active; no isolated causal or universal gain. |
+| Shared completed arithmetic / invoice | Elapsed2.3–3.8% lower / CPU2.1–3.3% | Flat | Retained43bce13a/9e89; fresh widerCPU+0.4–3.1% and original adverse/moving controls remain. [Source pair and confirmation](../benchmarks/results/2026-11-15-completed-arithmetic/confirmation/README.md). [Full delivery passes](../benchmarks/results/2026-11-15-completed-arithmetic/delivery/README.md); no isolated causal or universal gain. |
 | Final-slot integer tuples / invoice and fulfillment | Invoice elapsed 8.5–10.1% lower / CPU 6.4–10.8%; fulfillment elapsed 3.8–5.0% lower / CPU 2.7–4.6% | −8.56% / −5.32% | Retained 22e5b72c versus f304. Original text regressions and refined moving controls remain explicit; no universal gain. [Source pairs and limits](../benchmarks/results/2026-11-15-tuple-operand-prototype/refined/README.md). |
 | Scheduled async invocation lifetime / file search | Wider process CPU 10.8–12.9% lower; elapsed 0.4–4.0% lower | No reduction claimed | Retained f304b3db versus 8fbf; [full qualification passes](../benchmarks/results/2026-11-15-invocation-lifetime/delivery/README.md). Text remains uncertain despite a bounded shared-hash control; all original adversity and sync-control debt retained. [Source pair and limits](../benchmarks/results/2026-11-15-invocation-lifetime/README.md). |
 | Shared CSV payload / metadata-heavy validated records | Warm slightly lower; fresh and ordinary controls mixed | −5.56% | Retained 716176a8 versus 6164; allocation improvement; [full qualification passes](../benchmarks/results/2026-11-15-csv-final-payload/delivery/README.md). [Exact fixture, controls and limits](../benchmarks/results/2026-11-15-csv-final-payload/README.md). |

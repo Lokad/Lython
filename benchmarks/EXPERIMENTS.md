@@ -8469,3 +8469,11 @@ No speedup forecast; eager funding/Unicode/alias/cancellation/refusal/cleanup an
 scratch/earlier-denial tradeoffs require the named completion gate. All users
 joined; RAM bytes archived/verified before unmount. Original missing-duplicate
 preflight and exact committed replica retirement survive; floors unchanged.
+
+
+[R405 full delivery43737584665](results/2026-11-15-completed-arithmetic/delivery/README.md)
+passes43bce13a/frozen9e89: Windows/Ubuntu actual11/10 each4781internal/17865public
+ordinary,13/406original stress,installed Release consumers. All586production inputs,
+4separate unchanged qualified build inputs and16summaries/full logs verified.
+Terminal cached forever; original adversity/CPU debt and independent CPython
+archive-floor recovery remain. No unchanged qualification or publication follows.

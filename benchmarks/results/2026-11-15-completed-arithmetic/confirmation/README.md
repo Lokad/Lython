@@ -22,7 +22,7 @@ selection and operand reading, keeps the existing lean native path, and B790
 shows stable invoice elapsed 2.29–3.84%/CPU 2.14–3.30% lower. Allocation is flat;
 the source pair also contains the live-default correctness correction. No isolated
 causal claim, universal arithmetic fast path or substantial-objective completion.
-Full platform, original stress and installed-package qualification is pending.
+[Full platform, original stress and installed-package qualification passes](../delivery/README.md).
 
 Boundary, VM and runtime settings are unchanged from the original collection.
 Warm includes Run, mediated RAM I/O, goldens and prior-result cleanup; fresh

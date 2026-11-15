@@ -1,7 +1,7 @@
 # Representative CPython delivery checkpoint
 
 2026-11-15 UTC, committed **43bce13a / frozen9e890d18**, stock **CPython3.13.16**.
-Full platform/stress/installed-consumer qualification is active in43737584665.
+[Full Windows/Ubuntu11/10, original stress and installed-consumer qualification passes](../2026-11-15-completed-arithmetic/delivery/README.md). Original capture metadata retains its at-capture status.
 All586 production inputs match the frozen source with explicit newline normalization;
 independent rebuilt binary identity is not inferred.
 
