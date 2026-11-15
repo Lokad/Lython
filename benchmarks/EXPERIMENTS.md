@@ -8477,3 +8477,13 @@ ordinary,13/406original stress,installed Release consumers. All586production inp
 4separate unchanged qualified build inputs and16summaries/full logs verified.
 Terminal cached forever; original adversity/CPU debt and independent CPython
 archive-floor recovery remain. No unchanged qualification or publication follows.
+
+
+[R408 initial fused casing](results/2026-11-15-fused-cased-preparation/README.md)
+4e49/9e,5jobs259.624s/all gates. Allocation flat(+152Btext). Warm text elapsed
+−3.40..+6.81%with9%candidate spread; freshCPU−7.94..−1.96%; directtextmixed;
+JSON+2.53..+5.79%elapsed/+2.17..+7.96%CPU. Not retained. Select changed-source
+refinement removing global builder changes/object: private cursor replaces capacity
+only between lines, with ordinary conservative overlap admission. No causal JSON
+claim or unchanged retiming. All original source/failedconditions/control processes
+and six-alias historical-image retirement proof survive. Broader objective open.
