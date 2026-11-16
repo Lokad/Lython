@@ -70,7 +70,7 @@ internal static class LexicalScopePreparation
         var moduleFacts = ScopeDirectiveFactsCollector.ForFunction([], script.Statements, includeClassCellRequirement: false);
         var moduleUsesSuper = moduleFacts.LocalNames.Contains("super") || moduleFacts.IsGlobal("super");
         List<CallExpressionSyntax>? preloads = null;
-        List<LambdaExpressionSyntax>? lambdas = null;
+        List<ExpressionSyntax>? callables = null;
         var requiresAnnotationChecks = false;
         var importsRegex = false;
         // Module bindings do not supply lexical class cells to child functions.
@@ -135,7 +135,7 @@ internal static class LexicalScopePreparation
                 (preloads ??= []).Add(call);
             if (node is LambdaExpressionSyntax lambda)
             {
-                (lambdas ??= []).Add(lambda);
+                (callables ??= []).Add(lambda);
                 foreach (var parameter in lambda.Parameters)
                     if (parameter.DefaultValue is { } value) pending.Push((value, scope));
                 var facts = ScopeDirectiveFactsCollector.ForLambda(lambda);
@@ -149,7 +149,11 @@ internal static class LexicalScopePreparation
                 pending.Push((clauses[0].Iterable, scope));
                 var facts = ComprehensionSyntaxFacts.Bindings(clauses.Select(clause => clause.Target), generator);
                 if (!generator && scope.IsModule && facts.LocalNames.Contains("super")) moduleUsesSuper = true;
-                if (generator) facts = scope.BindGeneratorAssignments(node, facts);
+                if (generator)
+                {
+                    (callables ??= []).Add(node);
+                    facts = scope.BindGeneratorAssignments(node, facts);
+                }
                 var bodyScope = new Scope(scope, facts, Function: generator || scope.Function, Positional: generator || scope.Positional);
                 if (generator)
                     facts = facts with { RequiresClassCell = !facts.LocalNames.Contains("__class__") && bodyScope.HasEnclosingClassBinding() &&
@@ -172,7 +176,7 @@ internal static class LexicalScopePreparation
             foreach (var call in preloads) call.PreloadImplicitSuperArguments = true;
 
         script.PreparedScopeFacts = moduleFacts;
-        script.PreparedLambdas = lambdas ?? [];
+        script.PreparedCallables = callables ?? [];
         script.RequiresAnnotationChecks = requiresAnnotationChecks;
         script.ImportsRegex = importsRegex;
 

@@ -8,7 +8,7 @@ internal sealed record ScriptSyntax(
     IReadOnlyList<StatementSyntax> Statements)
 {
     internal ScopeDirectiveFacts? PreparedScopeFacts { get; set; }
-    internal IReadOnlyList<LambdaExpressionSyntax> PreparedLambdas { get; set; } = [];
+    internal IReadOnlyList<ExpressionSyntax> PreparedCallables { get; set; } = [];
     internal bool RequiresAnnotationChecks { get; set; }
     internal bool ImportsRegex { get; set; }
 }
@@ -569,7 +569,19 @@ internal sealed record ListComprehensionExpressionSyntax(
 internal sealed record GeneratorExpressionSyntax(
     ExpressionSyntax ItemExpression,
     IReadOnlyList<ComprehensionClauseSyntax> Clauses,
-    LythonSourceSpan Span) : ExpressionSyntax(Span);
+    LythonSourceSpan Span) : ExpressionSyntax(Span)
+{
+    internal LoweredGeneratorExpression? PreparedCallable { get; set; }
+
+    // Prepared code points back to this syntax; exclude compilation metadata
+    // from structural equality, as for lambda callables.
+    public bool Equals(GeneratorExpressionSyntax? other)
+        => ReferenceEquals(this, other) || other is not null && base.Equals(other) &&
+            EqualityComparer<ExpressionSyntax>.Default.Equals(ItemExpression, other.ItemExpression) &&
+            EqualityComparer<IReadOnlyList<ComprehensionClauseSyntax>>.Default.Equals(Clauses, other.Clauses);
+
+    public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), ItemExpression, Clauses);
+}
 
 internal abstract record LoopTargetSyntax;
 

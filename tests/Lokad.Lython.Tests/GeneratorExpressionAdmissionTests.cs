@@ -15,30 +15,33 @@ public sealed class GeneratorExpressionAdmissionTests
         using var owner = budget.CreateScope();
         var root = new Context(new MockLythonHost(), new LythonRunOptions
         { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
-        var function = new Context(root, new ScopeDirectiveFacts(
-            new HashSet<string>(), new HashSet<string>(), new HashSet<string> { "total" }, ["total"]));
-        function.Variables["total"] = BigInteger.Zero;
+        root.Variables["total"] = BigInteger.Zero;
         var frontend = LythonFrontend.Compile("(i for i in (7,) if (total:=i)<0)",regexProvider:Utf8RegexProvider.Instance);
         var expression = Assert.IsType<ExpressionStatementSyntax>(Assert.Single(frontend.Script!.Statements)).Expression;
         var lowered = Assert.IsType<LoweredGeneratorExpression>(LoweredScript.LowerStandaloneExpression(expression));
-        var facts = lowered.ScopeFacts with
-        { GlobalNames = new HashSet<string>(), NonlocalNames = new HashSet<string> { "total" } };
-        var outer = PyIteration.AcquireGeneratorOuter(new PyTuple([new BigInteger(7)]), lowered.Span, function);
-        var generator = new PyGeneratorExpression(lowered.Clauses, lowered.ItemExpression, function, lowered.Span, outer, facts);
-        var acquired = new PausedOuter();
-        generator.AttachAsyncOuter(acquired);
+        _ = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script!));
         var governor = root.MemoryGovernor;
-        var fill = budget.LimitBytes!.Value - governor.CurrentAccountedBytes;
-        governor.Reserve(fill, lowered.Span);
-        governor.Commit(fill);
-        var held = budget.ReservedBytes;
-        var pending = generator.TryMoveNextAsync().AsTask();
+        long held = 0;
+        var acquired = new PausedOuter
+        {
+            Acquired = () =>
+            {
+                // Refuse publication after the actual outer has been acquired.
+                // Its pending cleanup must retain all construction funding.
+                var fill = budget.LimitBytes!.Value - governor.CurrentAccountedBytes;
+                governor.Reserve(fill, lowered.Span);
+                governor.Commit(fill);
+                held = budget.ReservedBytes;
+            }
+        };
+        var pending = LythonRuntime.PyGenerator.CreateExpressionAsync(lowered.Code, root, acquired,
+            lowered.Span, lowered.Span, true).AsTask();
         try
         {
             await acquired.Disposing.Task.WaitAsync(TimeSpan.FromSeconds(5));
             Assert.False(pending.IsCompleted);
             Assert.Equal(held, budget.ReservedBytes);
-            Assert.Equal(BigInteger.Zero, function.Variables["total"]);
+            Assert.Equal(BigInteger.Zero, root.Variables["total"]);
             Assert.Equal(0, acquired.Moves);
         }
         finally
@@ -61,16 +64,28 @@ public sealed class GeneratorExpressionAdmissionTests
         public TaskCompletionSource Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public int Moves { get; private set; }
         public int Disposals { get; private set; }
+        public Action? Acquired { get; init; }
         public object Current => BigInteger.Zero;
-        public IEnumerable<object> Iterate() => throw new InvalidOperationException("Unexpected synchronous traversal.");
+        public IEnumerable<object> Iterate() => new NoSynchronousTraversal();
         public IAsyncEnumerable<object> IterateAsync() => this;
-        public IAsyncEnumerator<object> GetAsyncEnumerator(CancellationToken cancellationToken = default) => this;
+        public IAsyncEnumerator<object> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+        {
+            Acquired?.Invoke();
+            return this;
+        }
         public ValueTask<bool> MoveNextAsync() { Moves++; return new(false); }
         public async ValueTask DisposeAsync()
         {
             Disposals++;
             Disposing.TrySetResult();
             await Release.Task.ConfigureAwait(false);
+        }
+
+        private sealed class NoSynchronousTraversal : IEnumerable<object>
+        {
+            public IEnumerator<object> GetEnumerator()
+                => throw new InvalidOperationException("Unexpected synchronous traversal.");
+            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
         }
     }
 }

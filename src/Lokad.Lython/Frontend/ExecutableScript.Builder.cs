@@ -21,18 +21,31 @@ internal sealed partial class ExecutableScript
         var entryPoint = new Builder(null, null, ScopeDirectiveFactsCollector.ForModule(lowered.Syntax), completeLexicalParent: true)
             .CompileCodeObject("<module>", lowered.Statements);
         // Actual executable sites have supplied their lexical capture facts.
-        // Remaining lambdas belong to retained lowered consumers and keep their
-        // existing namespace closure, with code prepared before execution.
-        foreach (var syntax in lowered.Syntax.PreparedLambdas)
+        // Remaining callables belong to retained lowered consumers or lazy
+        // annotations. Prepare their namespace code without evaluating them.
+        foreach (var syntax in lowered.Syntax.PreparedCallables)
         {
-            // Lazy annotations/type values can retain raw expressions until
-            // runtime. Prepare their callable code without evaluating them.
-            var lambda = syntax.PreparedCallable ?? (LoweredLambdaExpression)LoweredScript.LowerStandaloneExpression(syntax);
-            if (lambda.PreparedCode is null) CompileNamespaceLambda(lambda);
+            switch (syntax)
+            {
+                case LambdaExpressionSyntax lambdaSyntax:
+                    var lambda = lambdaSyntax.PreparedCallable ?? (LoweredLambdaExpression)LoweredScript.LowerStandaloneExpression(lambdaSyntax);
+                    if (lambda.PreparedCode is null) CompileNamespaceLambda(lambda);
+                    break;
+                case GeneratorExpressionSyntax generatorSyntax:
+                    var generator = generatorSyntax.PreparedCallable ?? (LoweredGeneratorExpression)LoweredScript.LowerStandaloneExpression(generatorSyntax);
+                    if (generator.PreparedCode is null)
+                        generator.CompleteCompilation(new Builder(FunctionParameterLayout.Create([]), true, GeneratorFacts(generator))
+                            .CompileCodeObject("<genexpr>", [], generator));
+                    break;
+                default: throw new InvalidOperationException("Unexpected prepared callable syntax.");
+            }
         }
         return new ExecutableScript(entryPoint.ScopeFacts.ContainsVariableAnnotations
             ? lowered.Syntax.Statements[0].Span : null, entryPoint);
     }
+
+    private static ScopeDirectiveFacts GeneratorFacts(LoweredGeneratorExpression expression)
+        => expression.ScopeFacts with { LocalNames = new HashSet<string>(expression.ScopeFacts.LocalNames, StringComparer.Ordinal) { ".0" } };
 
     private static void CompileNamespaceLambda(LoweredLambdaExpression lambda)
         => lambda.CompleteCompilation(new Builder(lambda.ParameterLayout, lambda.IsGenerator, lambda.ScopeFacts)

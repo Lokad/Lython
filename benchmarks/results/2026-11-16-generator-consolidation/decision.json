@@ -1,0 +1,25 @@
+{
+  "retain": true,
+  "coherentDeletion": "261-line secondary generator interpreter and per-construction lowering removed; shared precompiled executable generator retained",
+  "semanticFix": "Class/annotation expressions support send/throw/close",
+  "allocationPercent": -21.090633325919374,
+  "warmElapsedPercent": [
+    -9.365692870418485,
+    -8.144013203896828
+  ],
+  "compilationElapsedPercent": [
+    4.001357080718049,
+    9.431275816119488
+  ],
+  "freshElapsedPercent": [
+    -7.2052762521908065,
+    -4.140234586818781
+  ],
+  "acceptedDebts": [
+    "Extra compile-time work and earlier conservative frame/cursor admission",
+    "Calls elapsed +0.77..+0.99%,CPU -2.34..0%; do not claim broad call improvement",
+    "Normalization unchanged-control spread 4.78%; inconclusive"
+  ],
+  "qualificationPending": true,
+  "publicationHeld": true
+}

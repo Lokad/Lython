@@ -6,11 +6,13 @@ internal sealed partial class ExecutableScript
     {
         private int CompileGeneratorExpression(LoweredGeneratorExpression expression, int block)
         {
-            var locals = new HashSet<string>(expression.ScopeFacts.LocalNames, StringComparer.Ordinal) { ".0" };
-            var facts = expression.ScopeFacts with { LocalNames = locals };
-            var builder = new Builder(FunctionParameterLayout.Create([]), ChildClosureCandidates(), facts,
-                completeLexicalParent: _completeLexicalParent) { _generator = true };
-            var code = builder.CompileCodeObject("<genexpr>", [], expression);
+            if (expression.PreparedCode is null)
+            {
+                var builder = new Builder(FunctionParameterLayout.Create([]), ChildClosureCandidates(), GeneratorFacts(expression),
+                    completeLexicalParent: _completeLexicalParent) { _generator = true };
+                expression.CompleteCompilation(builder.CompileCodeObject("<genexpr>", [], expression));
+            }
+            var code = expression.Code;
             block = CompileExpression(expression.Clauses[0].Iterable, block);
             EmitOperation(new ExecutableCreateGeneratorExpression(code, expression.Clauses[0].Iterable.Span), expression.Span, block);
             return block;

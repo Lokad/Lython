@@ -195,7 +195,7 @@ internal sealed class LoweredScript
                 comprehension,
                 LowerExpression(comprehension.ItemExpression),
                 comprehension.Clauses.Select(LowerComprehensionClause).ToArray()),
-            GeneratorExpressionSyntax generator => new LoweredGeneratorExpression(
+            GeneratorExpressionSyntax generator => generator.PreparedCallable ?? new LoweredGeneratorExpression(
                 generator,
                 LowerExpression(generator.ItemExpression),
                 generator.Clauses.Select(LowerComprehensionClause).ToArray()),

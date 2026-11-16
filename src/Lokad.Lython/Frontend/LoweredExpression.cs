@@ -169,14 +169,27 @@ internal sealed record LoweredListComprehensionExpression(
     public ScopeDirectiveFacts ScopeFacts { get; } = ComprehensionSyntaxFacts.Bindings(Clauses.Select(clause => clause.Target));
 }
 
-internal sealed record LoweredGeneratorExpression(
-    GeneratorExpressionSyntax Generator,
-    LoweredExpression ItemExpression,
-    IReadOnlyList<LoweredComprehensionClause> Clauses) : LoweredExpression
+internal sealed record LoweredGeneratorExpression : LoweredExpression
 {
+    public LoweredGeneratorExpression(GeneratorExpressionSyntax generator, LoweredExpression itemExpression,
+        IReadOnlyList<LoweredComprehensionClause> clauses)
+    {
+        Generator = generator;
+        ItemExpression = itemExpression;
+        Clauses = clauses;
+        ScopeFacts = generator.PreparedComprehensionScopeFacts ??
+            ComprehensionSyntaxFacts.Bindings(clauses.Select(clause => clause.Target), generator: true);
+        generator.PreparedCallable = this;
+    }
+
+    public GeneratorExpressionSyntax Generator { get; }
+    public LoweredExpression ItemExpression { get; }
+    public IReadOnlyList<LoweredComprehensionClause> Clauses { get; }
     public override ExpressionSyntax Syntax => Generator;
-    public ScopeDirectiveFacts ScopeFacts { get; } = Generator.PreparedComprehensionScopeFacts ??
-        ComprehensionSyntaxFacts.Bindings(Clauses.Select(clause => clause.Target), generator: true);
+    public ScopeDirectiveFacts ScopeFacts { get; }
+    internal ExecutableCodeObject? PreparedCode { get; private set; }
+    public ExecutableCodeObject Code => PreparedCode.RequireNotNull();
+    internal void CompleteCompilation(ExecutableCodeObject code) => PreparedCode = code;
 }
 
 internal abstract record LoweredDictionaryDisplayItem(

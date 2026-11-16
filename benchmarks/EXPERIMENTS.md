@@ -8805,3 +8805,5 @@ R431 bounded source gate at1fe2a174: plain builtin wrappers/signatures already l
 
 
 [R438/B837 direct materialization withdrawn](results/2026-11-16-direct-materialization-withdrawn/README.md):e0d2bdea/qualified0443b5cf,fivejobs/173.539s/all gates. Normalization warm+2.90..4.56%elapsed/+1.89..3.86%CPU,allocation effectively flat. Fresh/drain/CSV controls move6.24/8.88/4.51%; preserve uncertainty, not blanket failure. Four cleanup wrappers/shared append add work and35lines while generic bridges retain genuine users. Withdraw complete transport/proposed acquisition contract; qualified runtime unchanged. Independent two pending-cleanup tests carried forward for baseline verification. Larger coherent kernel remains open; no permanent retry ban or new full qualification campaign.
+
+R445: [one executable generator-expression engine](results/2026-11-16-generator-consolidation/README.md). Retained coherent deletion/protocol fix; report warm −8–9%, allocation −21.09%; compilation cost and unchanged-control adversity remain explicit. Full delivery qualification pending.

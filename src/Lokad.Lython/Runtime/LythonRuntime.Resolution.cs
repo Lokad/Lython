@@ -527,23 +527,11 @@ internal sealed partial class LythonRuntime
 
     private static object EvaluateGeneratorExpression(GeneratorExpressionSyntax generator, ExecutionContext context)
     {
-        var clauses = generator.Clauses.Select(clause => new LoweredComprehensionClause(
-            clause.Target,
-            LoweredScript.LowerStandaloneExpression(clause.Iterable),
-            clause.Condition is null ? null : LoweredScript.LowerStandaloneExpression(clause.Condition),
-            clause.Span)).ToArray();
-        // The outermost iterable is evaluated and acquired eagerly, matching
-        // CPython; only element expressions, filters, and later clauses stay
-        // deferred. Rebinding the source name later observes the old value.
-        var outer = PyIteration.AcquireGeneratorOuter(EvaluateLoweredExpression(clauses[0].Iterable, context), clauses[0].Iterable.Span, context);
-        var produced = new PyGeneratorExpression(
-            clauses,
-            LoweredScript.LowerStandaloneExpression(generator.ItemExpression),
-            context.FunctionClosureContext,
-            generator.Span,
-            outer, generator.PreparedComprehensionScopeFacts ??
-                ComprehensionSyntaxFacts.Bindings(clauses.Select(clause => clause.Target), generator: true));
-        return produced;
+        var prepared = generator.PreparedCallable.RequireNotNull();
+        var outer = prepared.Clauses[0].Iterable;
+        return PyGenerator.CreateExpressionAsync(prepared.Code, context,
+            EvaluateLoweredExpression(outer, context), outer.Span, generator.Span, false)
+            .GetAwaiter().GetResult();
     }
 
     private static void EvaluateComprehensionClauses(

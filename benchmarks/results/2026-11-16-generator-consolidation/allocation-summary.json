@@ -1,0 +1,34 @@
+{
+  "rows": [
+    {
+      "case": "scripts.report-render.class-generator",
+      "referenceBytes": 3381008,
+      "candidateBytes": 2667932,
+      "changePercent": -21.090633325919374,
+      "referencePeakExecutionBytes": 3493993,
+      "candidatePeakExecutionBytes": 3494889
+    },
+    {
+      "case": "scripts.text-normalization.large",
+      "referenceBytes": 1515784,
+      "candidateBytes": 1516014,
+      "changePercent": 0.01517366590491065,
+      "referencePeakExecutionBytes": 2324834,
+      "candidatePeakExecutionBytes": 2324834
+    },
+    {
+      "case": "calls.positional.large",
+      "referenceBytes": 1060672,
+      "candidateBytes": 1060672,
+      "changePercent": 0.0,
+      "referencePeakExecutionBytes": 1383,
+      "candidatePeakExecutionBytes": 1383
+    }
+  ],
+  "complete": true,
+  "elapsedSeconds": 12.005046000238508,
+  "allOutputAndFileGoldensPassed": true,
+  "budgetBaselineAndCleanupPassed": true,
+  "CPUorElapsedClaim": false,
+  "boundary": "Existing local whole warm jobs with reset/mediated I/O/full stdout and file hashing/result cleanup; compilation/startup excluded. Natural-GC whole-process allocation counters. Governor execution peaks are conservative admission,not heap/RSS."
+}

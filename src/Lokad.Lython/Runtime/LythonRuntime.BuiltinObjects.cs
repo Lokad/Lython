@@ -767,7 +767,7 @@ internal sealed partial class LythonRuntime
             "types.GenericAlias" or "typing._GenericAlias" => value is PyGenericAlias,
             "argparse.Namespace" => value is ArgparseNamespaceObject,
             "argparse.ArgumentParser" => value is ArgumentParserObject,
-            "generator" => value is PyGenerator or PyGeneratorExpression,
+            "generator" => value is PyGenerator,
             "bool" => value is bool,
             "type" => value is UrllibParseModule.UrlResultType,
             "int" => Numbers.PyNumberOps.IsInteger(value),

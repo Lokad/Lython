@@ -38,7 +38,11 @@ internal sealed partial class LythonRuntime
             PyGenerator? generator = null;
             try
             {
-                var cells = CaptureExecutableClosures(code, context, span);
+                // A class suite's new __class__ cell belongs to its function
+                // closure. Ordinary suite lookup deliberately skips that cell
+                // and could otherwise select an enclosing class instead.
+                var closure = context.IsClassBody ? context.FunctionClosureContext : context;
+                var cells = CaptureExecutableClosures(code, closure, span);
                 var frame = new ExecutionContext(context.FunctionClosureContext, code.ScopeFacts)
                 { FunctionName = "<genexpr>", FirstPositionalParameterName = ".0" };
                 generator = new PyGenerator(code, frame, span, cells, default);

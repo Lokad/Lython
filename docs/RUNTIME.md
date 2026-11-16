@@ -319,12 +319,17 @@ names. Generator definitions use that same enclosing compilation; they do not
 first build a separate code object without its capture facts. Independently
 compiled class methods and namespace-backed class/type-scope lambdas
 retain general lexical resolution. No global value is frozen or cached by this choice.
-Lambda code is prepared once during compilation, including lambdas in lazy type
-metadata; their values and defaults still evaluate at the Python definition point.
+Lambda and generator-expression code is prepared once during compilation, including
+callables in lazy type metadata. Values and defaults still evaluate at the Python
+definition point; generator expressions acquire their outer iterator immediately.
 Executable sites reuse their enclosing builder's capture facts. Remaining lowered
 consumers use their live namespace closure. Calls use the same executable/native
 function machinery; there is no separate interpreted function backend or runtime
-lambda compilation. Lowered class suites and annotations retain their evaluator.
+callable compilation. Generator expressions use the same executable generator and
+protocols in class suites and annotations as at ordinary executable sites. Their
+frame and cursor storage is admitted at construction, which can reject a tight
+allowance earlier than deferred interpretation. Lowered class suites and annotations
+retain their evaluator for their remaining expressions.
 Each abstract binding state caches resolutions by syntax-node identity and clears
 them when its facts change; clones and branch joins have independent caches.
 Container and callback queries inspect shared fact payloads

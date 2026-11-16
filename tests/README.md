@@ -407,6 +407,11 @@ retained arguments, defaults, transitive captures and class barriers under both
 execution APIs. Each cleanup returns the shared allowance to its compiled baseline.
 Existing generator fixtures retain pending-protocol cancellation/refusal, send,
 throw, close and awaited resource cleanup checks.
+[Lowered generator protocols](Lokad.Lython.PublicApi.Tests/LoweredGeneratorProtocolTests.cs)
+cover class and annotation creation, eager outer acquisition and live captures
+against independent Python results under both APIs. Class-created generators also
+exercise genuinely pending host work and cancellation; construction refusal keeps
+the outer resource funded until its asynchronous disposal completes.
 
 [Lambda execution](Lokad.Lython.PublicApi.Tests/LambdaExecutionTests.cs) checks
 ordinary and class callables, live/deleted captures, class cells, lazy type metadata

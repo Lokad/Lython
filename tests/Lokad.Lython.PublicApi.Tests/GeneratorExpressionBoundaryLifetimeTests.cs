@@ -5,11 +5,15 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class GeneratorExpressionBoundaryLifetimeTests
 {
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task ExecutableFilterAwaitsTruthProtocolWithoutReplay(bool cancel)
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task ExecutableFilterAwaitsTruthProtocolWithoutReplay(bool classScope, bool cancel)
     {
-        const string source = "class Truth:\n def __bool__(self):\n  with open('/events.txt','a') as output:output.write('truth')\n  return True\ng=(i for i in (7,) if Truth())\nprint(list(g))";
+        var source = "class Truth:\n def __bool__(self):\n  with open('/events.txt','a') as output:output.write('truth')\n  return True\n" +
+            (classScope ? "class Holder:\n g=(i for i in (7,) if Truth())\ng=Holder.g\n" : "g=(i for i in (7,) if Truth())\n") +
+            "print(list(g))";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));

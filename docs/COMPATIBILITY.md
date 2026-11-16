@@ -228,8 +228,8 @@ yield in comprehension bodies, postponed annotations and generic annotation scop
 is rejected at compilation. Generator frame/code introspection is excluded.
 
 Generator expressions acquire the outer iterator at construction and defer their
-remaining work. Executable creation sites support send/throw/close; required
-lowered/class creation routes retain an iterator-only interface. Closing a
+remaining work. All creation sites, including class suites and annotations, support
+`send`, `throw` and `close` through the same executable generator. Closing a
 generator expression does not close a separately retained Python outer iterator;
 native resources still receive deterministic cleanup.
 
