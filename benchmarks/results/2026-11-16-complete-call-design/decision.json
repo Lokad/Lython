@@ -1,0 +1,17 @@
+{
+  "assessmentComplete": true,
+  "sourceRevision": "b686ebfe00f97fb10e318b07f3b0a0bffcf26dc8",
+  "sources": {
+    "src/Lokad.Lython/Runtime/PyExecutableFunction.cs": "efbae3c8a9dd406fb4db3df90b868fcba6d60e85192ff126d4cc70dc01df78d9",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs": "b14f2f8f878bbb9d6cce499956bbaadfb6e91a15641a82c478b16c3d2d73d5b2",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Slot.cs": "d399efeb5c07365089dd0f9a1e9632aa8a3cab34ca36930a537aa9d9343d56f6",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs": "ea10839140780d36b318c8d44144efe1a9a286567fef05a8ba73feeb266fcd7a",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativePrefix.cs": "48d4c62ecbeb2c613da9df1f31b8e810fe9f4613b21172b00aea2999647b2dbc",
+    "src/Lokad.Lython/Frontend/ExecutableScript.cs": "83331f8c49b89d2549ee800cef342644763b1572e59e66563e687a22e9073fdf"
+  },
+  "implemented": false,
+  "prototypeSelected": false,
+  "decision": "No call/frame prototype justified by this bounded source pass. Existing calls bind directly into final slots. Consumed-operand reuse requires overlapping binding/default/error/return ownership handling while R411 already loses with tail borrowing. Managed compilation could remove dispatch,but one-shot cost,complete native coverage and safe exact continuation remain unmeasured. Keep qualified native engine; do not infer removable shares or add a parallel backend. Independent changed producer assets qualify next.",
+  "remainingPerformanceUncertainty": true,
+  "publicationHeld": true
+}

@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[R442 complete call/frame design pass](results/2026-11-16-complete-call-design/README.md)
+confirms final-slot binding/owned continuations already exist. Consumed-operand
+reuse adds overlapping binding/lifetime obligations beyond slower R411; managed
+block compilation has unmeasured one-shot cost/full replacement semantics. No
+prototype selected from overlapping samples. Qualified engine preserved,no new
+backend/dependency or unchanged retiming; complete-script gaps remain unresolved.
+
 [R441/B844 protected-search attribution](results/2026-11-16-protected-search-attribution/README.md)
 uses qualified0443/current fixed catalog.947active samples separate749execution/
 140unknown from198protocol-reset/179unknown. Reset146nearest samples is outside
