@@ -1,0 +1,133 @@
+{
+  "complete": true,
+  "elapsedSeconds": 139.78580554621294,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "rows": [
+    {
+      "case": "scripts.text-normalization.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 1.1813353869346732,
+        "reference": 1.2125613794871795,
+        "candidate-control": 1.2092823781725888,
+        "reference-control": 1.1596632518337409
+      },
+      "cpuMilliseconds": {
+        "candidate": 1.2814070351758793,
+        "reference": 1.3333333333333333,
+        "candidate-control": 1.3197969543147208,
+        "reference-control": 1.271393643031785
+      },
+      "elapsedChangePercent": [
+        -2.5752092290546535,
+        -0.27041940886963767,
+        1.868830030326718,
+        4.278753013893177
+      ],
+      "cpuChangePercent": [
+        -3.8944723618090538,
+        -1.0152284263959421,
+        0.7875918051797326,
+        3.8071065989847552
+      ],
+      "referenceSpreadPercent": 4.5615076247171205,
+      "candidateSpreadPercent": 2.3657118500811425
+    },
+    {
+      "case": "scripts.text-normalization.large",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "candidate": 1.2515118403361345,
+        "reference": 1.278628956284153,
+        "candidate-control": 1.2621099973045822,
+        "reference-control": 1.3209395482954545
+      },
+      "cpuMilliseconds": {
+        "candidate": 1.3725490196078431,
+        "reference": 1.4207650273224044,
+        "candidate-control": 1.3746630727762803,
+        "reference-control": 1.4772727272727273
+      },
+      "elapsedChangePercent": [
+        -5.255933782050038,
+        -4.45361417687783,
+        -2.120796327561991,
+        -1.2919274898620325
+      ],
+      "cpuChangePercent": [
+        -7.088989441930615,
+        -6.9458843043748715,
+        -3.3936651583710398,
+        -3.2448683392079625
+      ],
+      "referenceSpreadPercent": 3.3090594267676243,
+      "candidateSpreadPercent": 0.8468283420795419
+    },
+    {
+      "case": "scripts.report-render.format-method.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 4.017372669491525,
+        "candidate-control": 4.054193420168067,
+        "reference": 4.061793091666667,
+        "candidate": 4.088930457627119
+      },
+      "cpuMilliseconds": {
+        "reference-control": 4.237288135593221,
+        "candidate-control": 4.285714285714286,
+        "reference": 4.25,
+        "candidate": 4.237288135593221
+      },
+      "elapsedChangePercent": [
+        -0.18710139406636905,
+        0.6681129577015721,
+        0.9165380885911789,
+        1.7812086162434682
+      ],
+      "cpuChangePercent": [
+        -0.29910269192422456,
+        0.0,
+        0.8403361344537785,
+        1.1428571428571344
+      ],
+      "referenceSpreadPercent": 1.1057082782604644,
+      "candidateSpreadPercent": 0.8568174691974129
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 3.451527915492958,
+        "candidate-control": 3.5046124782608694,
+        "reference": 3.4454154647887325,
+        "candidate": 3.4845101142857144
+      },
+      "cpuMilliseconds": {
+        "reference-control": 3.591549295774648,
+        "candidate-control": 3.6231884057971016,
+        "reference": 3.5211267605633805,
+        "candidate": 3.571428571428571
+      },
+      "elapsedChangePercent": [
+        0.9555825593850376,
+        1.1346860747715182,
+        1.5380018376681681,
+        1.7181386128063636
+      ],
+      "cpuChangePercent": [
+        -0.5602240896358635,
+        0.8809320829781253,
+        1.4285714285714235,
+        2.898550724637672
+      ],
+      "referenceSpreadPercent": 0.17740823325063104,
+      "candidateSpreadPercent": 0.5769064607601404
+    }
+  ],
+  "retentionDecisionPending": false,
+  "CPythonRefreshed": false,
+  "retained": true,
+  "fullQualificationPending": true,
+  "decision": "Retain direct final output/ownership simplification and normalization allocation\u221211.46%. Fresh elapsed1.29\u20135.26%lower/CPU3.24\u20137.09%lower, with3.31%reference spread; warm uncertain, original5\u20137%regression not proven recovered. Report/JSON adverse elapsed and mixed CPU remain accepted debt. No general CPU/embedding-latency gain or broader-goal completion."
+}

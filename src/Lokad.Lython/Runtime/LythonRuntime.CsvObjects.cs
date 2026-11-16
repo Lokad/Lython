@@ -384,31 +384,6 @@ internal sealed partial class LythonRuntime
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
     }
 
-    private static PyString JoinStrings(PyString separator, IEnumerable<PyString> parts, MemoryGovernor governor, LythonSourceSpan? span)
-    {
-        var builder = new GovernedByteBuilder(governor, span);
-        try
-        {
-            var first = true;
-            foreach (var part in parts)
-            {
-                if (!first)
-                {
-                    builder.Append(separator);
-                }
-
-                builder.Append(part);
-                first = false;
-            }
-
-            return builder.ToPyStringAndRelease();
-        }
-        finally
-        {
-            builder.Release();
-        }
-    }
-
     private static PyString SliceByByteCount(PyString text, int start, int length)
         => text.SliceByByteRange(start, start + length);
 

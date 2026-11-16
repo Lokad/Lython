@@ -52,3 +52,6 @@ fixtures remain. Existing immutable catalog linked, not restaged. Only the obsol
 
 [Original timing](summary.json), [allocation/peaks](allocation-summary.json),
 [raw observations](observations.tgz), [frozen source/images/checks/procedure](source-checks-and-procedure.tar.xz).
+
+
+[One refined source pair retained](refined/README.md): direct copies/check simplification, allocation−11.46%, modest fresh CPU support, warm uncertainty and adverse controls explicitly retained. Original5eb result above remains unchanged.

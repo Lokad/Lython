@@ -63,6 +63,14 @@ reduce construction overlap while retaining more spare capacity. Reused
 `iterencode` chunk builders still produce independent copies. Returned values and
 aliases keep their owner funded until their users relinquish it.
 
+Tab expansion measures native UTF-8 and writes one admitted final value in bounded
+literal runs and space fills. Joined text drains arbitrary iterables before item
+validation, preserving iteration effects and error precedence, then measures and
+writes final UTF-8 directly. Its private drain stays funded through output admission
+and completion. These operations retain exact output capacity; there is no growing
+byte buffer or final payload copy. Exact capacity can admit earlier than geometric
+growth and replacement overlap. Actual retained results still fund their storage.
+
 Unicode indexing caches use the active caller's cancellation context during
 construction and remain unpublished until completion. Cancelled construction
 returns its working allowance while retaining the input's charge.

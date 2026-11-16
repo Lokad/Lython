@@ -61,7 +61,7 @@ public sealed class DirectStringJoinTests
             Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
             Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
             Assert.Equal(1, failure.Span?.Line);
-            Assert.Equal(PyString.EstimateApproximateBytes(0), context.MemoryGovernor.LastDeniedReservationBytes);
+            Assert.Equal(PyString.EstimateApproximateBytes(9), context.MemoryGovernor.LastDeniedReservationBytes);
             Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
             Assert.Equal(1, pad.Calls);
             Assert.Same(first, parts[0]);
@@ -103,9 +103,9 @@ public sealed class DirectStringJoinTests
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)
         {
             Calls++;
-            // The completed builder retains its funded payload; final admission
-            // covers only immutable string metadata, not a second byte array.
-            var available = 64 + 16 + PyString.EstimateApproximateBytes(0) - 1;
+            // The private drain and final nine-byte value overlap. Leave one
+            // byte too little for that one complete output admission.
+            var available = 64 + PyString.EstimateApproximateBytes(9) - 1;
             if (shared) Assert.True(budget.TryReserve(limit - budget.ReservedBytes - available, out _shared));
             else _temporary = context.MemoryGovernor.ReserveTemporary(limit - context.MemoryGovernor.CurrentAccountedBytes - available, span);
             return parts;

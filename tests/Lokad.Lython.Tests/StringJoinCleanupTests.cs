@@ -16,7 +16,7 @@ public sealed class StringJoinCleanupTests
     [InlineData(true, false)]
     [InlineData(false, true)]
     [InlineData(true, true)]
-    public async Task ResultAdmissionIncludesLiveDrainAndBuilder(bool asynchronous, bool shared)
+    public async Task ResultAdmissionIncludesLiveDrain(bool asynchronous, bool shared)
     {
         const long limit = 1024 * 1024;
         var budget = new LythonMemoryBudget(limit);
@@ -30,9 +30,9 @@ public sealed class StringJoinCleanupTests
             var parts = new PyList([first, last], governor, Span);
             var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile("return '|'.join",regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
             var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null));
-            // Drain shell/slots and builder capacity remain live while the
-            // string's metadata is admitted. Leave one byte too little.
-            var available = 32 + 64 + 16 + PyString.EstimateApproximateBytes(0) - 1;
+            // Drain shell/slots remain live through the one complete final
+            // output admission. Leave one byte too little.
+            var available = 32 + 64 + PyString.EstimateApproximateBytes(9) - 1;
             ILythonMemoryReservation? blocker = null;
             if (shared) Assert.True(budget.TryReserve(limit - budget.ReservedBytes - available, out blocker));
             else
@@ -55,7 +55,7 @@ public sealed class StringJoinCleanupTests
                 Assert.Equal(LythonFailureReason.SharedMemoryAllowance, error.Attribution?.Reason);
                 Assert.Same(governor.AdmissionFailure, error);
                 Assert.Same(Span, error.Span);
-                Assert.Equal(PyString.EstimateApproximateBytes(0), governor.LastDeniedReservationBytes);
+                Assert.Equal(PyString.EstimateApproximateBytes(9), governor.LastDeniedReservationBytes);
                 Assert.Equal(before, governor.CurrentCommittedBytes);
                 Assert.Equal(0, governor.CurrentReservedBytes);
                 Assert.Same(first, parts[0]);

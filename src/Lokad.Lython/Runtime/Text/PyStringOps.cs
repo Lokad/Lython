@@ -345,37 +345,88 @@ internal static partial class PyStringOps
     {
         context ??= PyStructuralGuard.AmbientContext;
         span ??= PyStructuralGuard.AmbientSpan;
-        var builder = CreateBuilder(context?.MemoryGovernor ?? value.OwnerMemoryGovernor, span, value.ByteLength);
+        var source = value.Utf8Span;
+        var length = ExpandTabsUtf8(source, default, tabSize, context, span);
+        if (length == 0) return PyString.Empty;
+        var governor = context?.MemoryGovernor ?? value.OwnerMemoryGovernor;
+        var uncommitted = PyString.EstimateApproximateBytes(length);
+        governor?.Reserve(uncommitted, span);
         try
         {
-            var source = value.Utf8Span;
-            long column = 0;
-            for (var byteIndex = 0; byteIndex < source.Length;)
+            context?.CheckExecution(span);
+            var output = PyString.CreateReservedUtf8(length, governor);
+            ExpandTabsUtf8(source, output.UnpublishedUtf8, tabSize, context, span);
+            context?.CheckExecution(span);
+            governor?.Commit(uncommitted);
+            uncommitted = 0;
+            return output;
+        }
+        finally { if (uncommitted != 0) governor?.ReleaseReserved(uncommitted); }
+    }
+
+    // The empty destination measures; the second pass writes the one admitted
+    // final value. UTF-8 is already validated. Copy literal runs together and
+    // count their scalars without decoding or appending each character.
+    private static int ExpandTabsUtf8(ReadOnlySpan<byte> source, Span<byte> output, int tabSize,
+        LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
+    {
+        long column = 0;
+        var written = 0;
+        var writing = !output.IsEmpty;
+        for (var offset = 0; offset < source.Length;)
+        {
+            context?.CheckExecution(span);
+            var end = offset + Math.Min(4096, source.Length - offset);
+            while (end < source.Length && (source[end] & 0xc0) == 0x80) end--;
+            while (offset < end)
             {
-                context?.CheckExecution(span);
-                Rune.DecodeFromUtf8(source[byteIndex..], out var rune, out var runeLength);
-                if (rune.Value == '\t')
+                var control = source[offset..end].IndexOfAny((byte)'\t', (byte)'\r', (byte)'\n');
+                var count = control < 0 ? end - offset : control;
+                var literal = source.Slice(offset, count);
+                var characters = literal;
+                while (!characters.IsEmpty)
+                {
+                    var ascii = characters.IndexOfAnyExceptInRange((byte)0, (byte)0x7f);
+                    if (ascii < 0) { column += characters.Length; break; }
+                    column += ascii + 1;
+                    var lead = characters[ascii];
+                    var width = lead < 0xe0 ? 2 : lead < 0xf0 ? 3 : 4;
+                    characters = characters[(ascii + width)..];
+                }
+                if ((long)written + count > Array.MaxLength)
+                    throw RuntimeErrors.Memory("expanded string exceeds supported capacity", span);
+                if (writing) literal.CopyTo(output[written..]);
+                written += count;
+                offset += count;
+                if (control < 0) break;
+                if (source[offset++] == '\t')
                 {
                     var spaces = tabSize <= 0 ? 0 : (int)(tabSize - column % tabSize);
                     column += spaces;
-                    while (spaces > 0)
+                    if ((long)written + spaces > Array.MaxLength)
+                        throw RuntimeErrors.Memory("expanded string exceeds supported capacity", span);
+                    var after = written + spaces;
+                    while (writing && written < after)
                     {
                         context?.CheckExecution(span);
-                        var count = Math.Min(spaces, 4096);
-                        builder.AppendRepeated((byte)' ', count);
-                        spaces -= count;
+                        var chunk = Math.Min(after - written, 4096);
+                        output.Slice(written, chunk).Fill((byte)' ');
+                        written += chunk;
                     }
+                    written = after;
                 }
                 else
                 {
-                    builder.Append(source.Slice(byteIndex, runeLength));
-                    column = rune.Value is '\n' or '\r' ? 0 : column + 1;
+                    if (written == Array.MaxLength)
+                        throw RuntimeErrors.Memory("expanded string exceeds supported capacity", span);
+                    if (writing) output[written] = source[offset - 1];
+                    written++;
+                    column = 0;
                 }
-                byteIndex += runeLength;
             }
-            return builder.ToPyStringAndRelease();
         }
-        finally { builder.Release(); }
+        context?.CheckExecution(span);
+        return written;
     }
 
     public static PyString EscapeRegex(PyString value)

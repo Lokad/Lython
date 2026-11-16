@@ -12,7 +12,7 @@ internal sealed partial class LythonRuntime
             // Consume arbitrary input before item validation so later effects
             // and iteration errors retain Python precedence.
             using var parts = PyIteration.MaterializeLeased(iterable, span, context);
-            return JoinStrings(text, EnumerateJoinParts(parts.Items, span), context.MemoryGovernor, span);
+            return JoinParts(text, parts.Items, span, context);
         }
 
         internal static async ValueTask<object> JoinAsync(PyString text, object iterable, LythonSourceSpan span, ExecutionContext context)
@@ -20,19 +20,60 @@ internal sealed partial class LythonRuntime
             // Keep the drain funded through output admission, awaiting every
             // guest callback and its cleanup before this scope ends.
             using var parts = await PyIteration.MaterializeLeasedAsync(iterable, span, context).ConfigureAwait(false);
-            return JoinStrings(text, EnumerateJoinParts(parts.Items, span), context.MemoryGovernor, span);
+            return JoinParts(text, parts.Items, span, context);
         }
 
-        private static IEnumerable<PyString> EnumerateJoinParts(IEnumerable<object> parts, LythonSourceSpan span)
+        private static PyString JoinParts(PyString separator, List<object> parts, LythonSourceSpan span, ExecutionContext context)
         {
-            var index = 0;
-            foreach (var part in parts)
+            long length = parts.Count == 0 ? 0 : (long)(parts.Count - 1) * separator.ByteLength;
+            for (var index = 0; index < parts.Count; index++)
             {
+                if ((index & 255) == 0) context.CheckExecution(span);
+                var part = parts[index];
                 if (!PyStringOps.TryAsString(part, out var text))
                     throw new LythonRuntimeException("TypeError", "sequence item " + index + ": expected str instance, " + RuntimeErrors.OperandTypeName(part) + " found", span);
-                yield return text;
-                index++;
+                // The private drain owns this list. Convert native string-like
+                // values once, before any output admission can reenter the host.
+                parts[index] = text;
+                length = checked(length + text.ByteLength);
             }
+            if (length > Array.MaxLength) throw RuntimeErrors.Memory("joined string exceeds supported capacity", span);
+            if (length == 0) return PyString.Empty;
+            var bytes = PyString.EstimateApproximateBytes((int)length);
+            using var storage = context.MemoryGovernor.ReserveTemporary(bytes, span);
+            context.CheckExecution(span);
+            var result = PyString.CreateReservedUtf8((int)length, context.MemoryGovernor);
+            var output = result.UnpublishedUtf8;
+            var written = 0;
+            for (var index = 0; index < parts.Count; index++)
+            {
+                if ((index & 15) == 0) context.CheckExecution(span);
+                if (index != 0)
+                {
+                    CopyJoinBytes(separator.Utf8Span,
+                        output.Slice(written, separator.ByteLength), context, span);
+                    written += separator.ByteLength;
+                }
+                var text = (PyString)parts[index];
+                CopyJoinBytes(text.Utf8Span,
+                    output.Slice(written, text.ByteLength), context, span);
+                written += text.ByteLength;
+            }
+            context.CheckExecution(span);
+            storage.Commit(bytes);
+            return result;
+        }
+
+        private static void CopyJoinBytes(ReadOnlySpan<byte> source, Span<byte> output, ExecutionContext context, LythonSourceSpan span)
+        {
+            while (source.Length > 4096)
+            {
+                context.CheckExecution(span);
+                source[..4096].CopyTo(output);
+                source = source[4096..];
+                output = output[4096..];
+            }
+            source.CopyTo(output);
         }
 
         private static readonly ReceiverMethod CenterMethod = CreatePaddingMethod("center", PyStringOps.Center);

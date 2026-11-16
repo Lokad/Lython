@@ -8679,3 +8679,6 @@ verified before unmount, all users joined. No CPU speedup or production change.
 
 
 [R426 corrected full delivery43800910729](results/2026-11-16-consuming-text-completion/delivery/README.md) qualifies0a04e253/unchanged810dafdd: Windows/Ubuntu actual11/10 each4,777internal/17,914public ordinary, original13/406stress and installed Release consumers.16summaries/597inputs verified; terminal cached forever. Original failed43797131423 and test-only corrections retained. Later bulk-output prototypes are separate; publication held/broader objective open.
+
+
+[R429 refinedB826 direct bulk output retained](results/2026-11-16-bulk-text-construction/refined/README.md):efd82707 vs810dafdd; normalization allocation−11.46%/accounted peak−3.50%. Fresh elapsed1.29–5.26%lower/CPU3.24–7.09%lower with3.31%reference spread; warm uncertain, original5–7%regression not proven recovered. Report/JSON adversity/mixed CPU accepted debt. Four jobs139.786s/all gates;145internal/412public eachactual11/10/598inputs. Full delivery pending, next line-construction/cancellation milestone active.
