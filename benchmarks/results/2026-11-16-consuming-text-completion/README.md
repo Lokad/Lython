@@ -99,3 +99,6 @@ Broader call/frame/operand/collection/frontend priorities remain active.
 [normalization allocation](normalization-allocation-summary.json),
 [focused checks](focused-checks.json),[identity](identity.json),
 [raw observations](observations.tgz),[source/binaries/procedures/original conditions](source-checks-and-procedure.tar.xz).
+
+
+[Full Windows/Ubuntu actual11/10, original stress and installed-package qualification passes](delivery/README.md) at0a04e253/unchanged810dafdd. Initial failed CI and test-only corrections remain preserved; later prototypes are separate.

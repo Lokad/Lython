@@ -128,6 +128,8 @@
   "retentionDecisionPending": false,
   "CPythonRefreshed": false,
   "retained": true,
-  "fullQualificationPending": true,
-  "decision": "Thirteen terminal paths use existing funded-capacity transfer; remove exact byte-array copy and temporary lease per completed text. Actual reusable JSON snapshots remain. Report allocation\u22126.29%, normalization\u22129.07%; accounted peaks+0.86/+3.71%. Report elapsed modestly lower; normalization+0.79..2.36% and adverse JSON/mixed CPU retained as explicit debt. No universal CPU/embedding-latency or broader-goal completion claim."
+  "fullQualificationPending": false,
+  "decision": "Thirteen terminal paths use existing funded-capacity transfer; remove exact byte-array copy and temporary lease per completed text. Actual reusable JSON snapshots remain. Report allocation\u22126.29%, normalization\u22129.07%; accounted peaks+0.86/+3.71%. Report elapsed modestly lower; normalization+0.79..2.36% and adverse JSON/mixed CPU retained as explicit debt. No universal CPU/embedding-latency or broader-goal completion claim.",
+  "fullQualificationRun": "43800910729",
+  "qualifiedCommit": "0a04e2536cbc7fe1777c313559c59a53977e40c2"
 }

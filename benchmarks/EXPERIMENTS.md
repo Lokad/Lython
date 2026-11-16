@@ -8676,3 +8676,6 @@ verified before unmount, all users joined. No CPU speedup or production change.
 
 
 [R429/B825 original bulk-text prototype](results/2026-11-16-bulk-text-construction/README.md):5ebd657a vs810dafdd; normalization allocation−11.44%/accounted peak−3.50%, but warm elapsed+5.34..7.50%/CPU+4.20..5.97% with stable controls. Fresh/report inconclusive, JSON control mixed. Four jobs140.165s/all gates. One direct-copy/check refinement justified; no promotion or CPU gain claimed, all originals retained.
+
+
+[R426 corrected full delivery43800910729](results/2026-11-16-consuming-text-completion/delivery/README.md) qualifies0a04e253/unchanged810dafdd: Windows/Ubuntu actual11/10 each4,777internal/17,914public ordinary, original13/406stress and installed Release consumers.16summaries/597inputs verified; terminal cached forever. Original failed43797131423 and test-only corrections retained. Later bulk-output prototypes are separate; publication held/broader objective open.

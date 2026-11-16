@@ -29,8 +29,7 @@ the two Lython/CPython process medians; IQRs and moving controls stay visible.
 
 **File normalization: 116fe6e0 / measured810dafdd**, 2026-11-16 UTC;
 [complete warm/fresh checkpoint](../benchmarks/results/2026-11-16-normalization-cpython-checkpoint/README.md).
-All measurement/cleanup gates pass; initial full runtime CI found accounting-test
-corrections, now under qualification. Warm remains 1.63–1.68× CPython; fresh
+All measurement/cleanup gates pass; [full runtime qualification passes](../benchmarks/results/2026-11-16-consuming-text-completion/delivery/README.md) after test-only accounting corrections. Warm remains 1.63–1.68× CPython; fresh
 1.49–1.58× with 5.11% Lython control spread / 7.35% maximum IQR. This new workload
 baseline is diagnostic, not evidence of a source-change speedup.
 
@@ -92,7 +91,7 @@ These source-pair results are separate from CPython and cannot be added together
 
 | Change / complete affected script | CPU/elapsed evidence | Allocation | Limits and exact evidence |
 | --- | --- | ---: | --- |
-| Consuming text completion / report and file normalization | Report elapsed modestly lower; normalization0.8–2.4%slower; CPU mixed | −6.29% / −9.07% | Retained810dafdd/9d26d408; accounted peaks+0.86/+3.71%. Thirteen terminal copies/temporary leases removed, real JSON snapshots remain. Adverse JSON/moving controls retained. [Source pair/debt](../benchmarks/results/2026-11-16-consuming-text-completion/README.md); full delivery pending. |
+| Consuming text completion / report and file normalization | Report elapsed modestly lower; normalization0.8–2.4%slower; CPU mixed | −6.29% / −9.07% | Retained810dafdd/9d26d408; accounted peaks+0.86/+3.71%. Thirteen terminal copies/temporary leases removed, real JSON snapshots remain. Adverse JSON/moving controls retained. [Source pair/debt](../benchmarks/results/2026-11-16-consuming-text-completion/README.md); [full delivery passes](../benchmarks/results/2026-11-16-consuming-text-completion/delivery/README.md). |
 | One compiler instruction store / complete compilation | Generated normalizer compile1.3–3.8%lower, supporting CPU; manifest/fresh inconclusive | Compile−3.35..−4.74% | Retained9d26d408/eee74a10. Removes block wrappers/intermediate arrays; adverse manifest/fresh timings retained. Generated case is diagnostic, not typical agent-script evidence. [Source pair/limits](../benchmarks/results/2026-11-16-compiler-instruction-store/README.md); [Full delivery passes](../benchmarks/results/2026-11-16-compiler-instruction-store/delivery/README.md). |
 | Native work before finally / complete protected invoice | Warm elapsed4.8–6.2%lower, supporting CPU; fresh inconclusive | −2.91% | Retainedeee74a10/8f468f0a. Existing cleanup frame/ownership retained; ordinary/JSON controls move/adverse up to3.5%. [Exact source pair and limits](../benchmarks/results/2026-11-16-finally-prefix/README.md); [Full delivery passes](../benchmarks/results/2026-11-16-finally-prefix/delivery/README.md). |
 | Known scalar boundaries / complete regex diagnostics | Unicode suffix elapsed5–10%lower at1,024scalars/about5%at4,096; CPU support | Effectively flat(+16B) | Retained8f468f0a/0393331a; normal0.4 adapter unchanged. Diagnostic, not general regex throughput; moving small-input control/initial short adversity/ASCII CPU debt retained. [Evidence](../benchmarks/results/2026-11-16-regex-known-boundaries/README.md); [Full delivery passes](../benchmarks/results/2026-11-16-regex-known-boundaries/delivery/README.md). |
