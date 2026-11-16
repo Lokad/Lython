@@ -128,6 +128,8 @@
   "retentionDecisionPending": false,
   "CPythonRefreshed": false,
   "retained": true,
-  "fullQualificationPending": true,
-  "reason": "Remove repeated traversal to already-known Unicode subject/window endpoints, no dense map/cache or backend change. Real normal0.4 complete diagnostics improve; refined controls modest/mixed, initial adversity retained. Allocation effectively flat+16B. Not a general asymptotic/backend or representative-script speedup."
+  "fullQualificationPending": false,
+  "reason": "Remove repeated traversal to already-known Unicode subject/window endpoints, no dense map/cache or backend change. Real normal0.4 complete diagnostics improve; refined controls modest/mixed, initial adversity retained. Allocation effectively flat+16B. Not a general asymptotic/backend or representative-script speedup.",
+  "fullQualificationRun": "43783452636",
+  "runtimeCommit": "7d522f1fa3708ef57b691da7f9a8f71ce933dd4b"
 }

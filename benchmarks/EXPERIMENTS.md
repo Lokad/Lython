@@ -8646,3 +8646,6 @@ verified before unmount, all users joined. No CPU speedup or production change.
 
 
 [R422/B818 known scalar boundaries retained](results/2026-11-16-regex-known-boundaries/README.md):8f468f0a versus0393331a, released0.4 unchanged. Four complete regex diagnostics153.252s/all gates/cleanup; Unicode suffix elapsed5–10%/about5%lower at1,024/4,096with CPU support. Allocation effectively flat+16B; ASCII mixed and initial adverse short control retained.64internal/363public each actual11/10;592source inputs frozen. Full qualification pending; larger non-regex roadmap open.
+
+
+[R422full delivery43783452636](results/2026-11-16-regex-known-boundaries/delivery/README.md) qualifies7d522f1f/8f468f0a on Windows/Ubuntu actual11/10,4,777internal/17,896public ordinary plus original13/406stress and installed Release consumers each.16summaries/592inputs verified; terminal cached forever. Broader roadmap active, publication held.

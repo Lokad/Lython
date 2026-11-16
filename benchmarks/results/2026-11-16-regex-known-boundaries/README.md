@@ -72,7 +72,7 @@ remain;254/252MiB floors unchanged. Terminal cached forever. Initial driver fixt
 failure and long-run timeout remain under initial, with missing cleanup witness
 explicit; completed shortened allocation runs retain all output/ownership assertions.
 
-**Full platform/stress/installed-package qualification pending; publication held.**
+[Full platform/stress/installed-package qualification passes](delivery/README.md); publication held.
 Broader non-regex call/operand/collection/frontend work remains independent.
 [All medians](summary.json),[allocation](allocation-summary.json),
 [focused checks](focused-checks.json),[identity](identity.json),
