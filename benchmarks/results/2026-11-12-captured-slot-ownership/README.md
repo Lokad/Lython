@@ -78,3 +78,9 @@ Frozen source/core, all original diagnostics/failures and raw observations survi
 in the archives. No extrapolated CPython ratio, RSS, pending-I/O or embedding-tail
 claim. Full platform/stress/installed-consumer [delivery passes](delivery/README.md) separately on9bca1337.
 Publication stays held.
+
+The [original VM source snapshot](vm-source-snapshot.tar.xz) is also preserved
+byte-for-byte (925,408B,SHA256a10dd6b1ab952a33d1c7299e4084305a73803387a9778a89357e3cb694a12bed).
+Recovered2026-11-16 from the joined B638 working replica before retirement; its
+bytes match the previously recorded B638/B639 inventory. This adds original
+container evidence, with no new runtime or qualification claim.
