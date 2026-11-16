@@ -1,0 +1,1 @@
+A hypothetical invalid-target compiler guard was considered then removed before freezing. Existing validated instruction layout supplies real target constraints; the measured source is the same as focused checks. Both forced builds retained, and freeze requires exact tested-core hashes. No semantic assertion was relaxed.

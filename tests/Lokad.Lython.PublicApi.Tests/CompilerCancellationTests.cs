@@ -6,6 +6,32 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class CompilerCancellationTests
 {
     [Theory]
+    [InlineData("def helper(value):return value*3+1\nreturn helper(14)")]
+    [InlineData("class Helper:\n def apply(self,value):return value*3+1\nreturn Helper().apply(14)")]
+    [InlineData("helper=lambda value:value*3+1\nreturn helper(14)")]
+    public async Task CompilationTokenIsNotRetainedByPreparedCallables(string source)
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var compilation = new CancellationTokenSource();
+        using (var script = new LythonEngine().Compile(source, budget, compilation.Token))
+        {
+            Assert.True(script.IsValid, string.Join("; ", script.Diagnostics));
+            var baseline = budget.ReservedBytes;
+            compilation.Cancel();
+            foreach (var asynchronous in new[] { false, true })
+            {
+                using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
+                {
+                    Assert.True(result.Success, result.Failure?.Message);
+                    Assert.Equal(new System.Numerics.BigInteger(43), result.ReturnValue);
+                }
+                Assert.Equal(baseline, budget.ReservedBytes);
+            }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public void CancellationDuringAnnotationStorageUnwindsCompilationAndPreservesRefusal(bool refuse)

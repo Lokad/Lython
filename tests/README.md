@@ -1,5 +1,10 @@
 # Testing Lython
 
+[Compiler cancellation](Lokad.Lython.PublicApi.Tests/CompilerCancellationTests.cs)
+preserves first admission refusal and cleanup during compilation. Prepared
+functions, class methods and lambdas use each execution's token after the earlier
+compilation token is cancelled; both APIs restore their shared-budget baseline.
+
 [Unchanged replacements](Lokad.Lython.PublicApi.Tests/BulkReplacementTests.cs)
 repeat string/byte operations in a bounded shared allowance through both APIs,
 retain an earlier result during another execution, and verify cleanup and reuse.

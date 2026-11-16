@@ -1,0 +1,35 @@
+{
+  "status": "private complete prototype; functional tests pass except four explicit positive tiny-budget import cases per target",
+  "rows": [
+    {
+      "target": "net11.0",
+      "publicPassed": 242,
+      "publicFailed": 4,
+      "internalPassed": 135,
+      "failures": [
+        "Lokad.Lython.PublicApi.Tests.ImportedCodeRetentionScenarioTests.FundedLoopDefinitionsPreserveCallableCode",
+        "Lokad.Lython.PublicApi.Tests.ImportedCodeRetentionScenarioTests.FundedImportedBodiesSucceedAndRun",
+        "Lokad.Lython.PublicApi.Tests.ImportedCodeRetentionScenarioTests.SharedImportsPayOnce",
+        "Lokad.Lython.PublicApi.Tests.ImportedCodeRetentionScenarioTests.SmallImportedBodiesFitTightBudget"
+      ]
+    },
+    {
+      "target": "net10.0",
+      "publicPassed": 242,
+      "publicFailed": 4,
+      "internalPassed": 135,
+      "failures": [
+        "Lokad.Lython.PublicApi.Tests.ImportedCodeRetentionScenarioTests.SharedImportsPayOnce",
+        "Lokad.Lython.PublicApi.Tests.ImportedCodeRetentionScenarioTests.FundedImportedBodiesSucceedAndRun",
+        "Lokad.Lython.PublicApi.Tests.ImportedCodeRetentionScenarioTests.FundedLoopDefinitionsPreserveCallableCode",
+        "Lokad.Lython.PublicApi.Tests.ImportedCodeRetentionScenarioTests.SmallImportedBodiesFitTightBudget"
+      ]
+    }
+  ],
+  "contractTradeoff": "Additional compiled-code retention plus construction scratch requires more shared allowance. Earlier refusal is permitted in principle; no fixture budgets/assertions changed. Decision pending whole-script benefit and compatibility review.",
+  "originalSuccessorFailure": "47pass/1fail; corrected producer/consumer recipe distinction, then48pass",
+  "firstAdditionalChecks": "101internal/97public pass net11",
+  "normalAdapterPin": "0.4.0",
+  "fullQualification": false,
+  "publicationHeld": true
+}

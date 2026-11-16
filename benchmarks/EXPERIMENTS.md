@@ -8923,3 +8923,17 @@ GREEN9e8d1cf5: each Windows/Ubuntu actual11/10 passes4,808internal/17,940public
 ordinary, original14/406stress and installed Release consumers. All16summaries/
 2,372committed inputs verified, measured production text matches; terminal/logs
 cached forever. No new CPU claim or unchanged qualification; roadmap continues.
+
+[R456/B860 complete managed native blocks withdrawn](results/2026-11-16-managed-native-blocks/README.md)
+removes the30-op native switch/frontend inventory and passes complete-script
+goldens, but numeric warm+5.45..8.05%/fresh+31.20..41.53% and report
+fresh+48.48..51.91% are adverse; report compilation costs~33x. Allocation flat,
+compiled allowance+34..100KiB; four original small-budget import positives remain
+denied on both targets with no relaxed fixtures. FullOpts/39inlinee diagnostic
+does not support a blanket missed-inlining explanation. All source, original
+successor failure/correction, control movement and first-use requests retained;
+seven jobs201.311s/all gates/joins/persistent archive checks. No full qualification
+or runtime promotion, no permanent design ban. Three independent compiler-token
+lifetime cases are retained: five total cases pass per actual.NET11/10 on the
+qualified production runtime; six codegen-specific admission rows stay private.
+Whole-script/call-frame roadmap continues; publication held.
