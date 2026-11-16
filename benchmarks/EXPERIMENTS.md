@@ -8709,3 +8709,6 @@ R431 bounded source gate at1fe2a174: plain builtin wrappers/signatures already l
 
 
 [R435qualification fixture correction](results/2026-11-16-shared-subtext/qualification-corrections/README.md):initial43814304379failed12internal per platform on obsolete copied-payload size assumptions; all17914public ordinary pass, later steps skipped. Terminal/logs cached.77focused/all4800internal ordinary pass eachactual11/10 after test-only correction, runtime1c8eunchanged. Keep actual-admission cancellation, complete-output refusal/allocation bound, source-owner funding, origin/depths/cleanup; no timeout/assertion relaxed or performance rerun.606inputs for new full delivery.
+
+
+[R435original-scale stress correction](results/2026-11-16-shared-subtext/stress-fixture-correction/README.md):43816267076ordinary4800/17914eachactual11/10 and installed consumers pass on both platforms;2/14internal stress fail old64MiBcopy trigger,406public.NET11stress pass/.NET10stress skipped. Correct actual-growth trigger and bounded retained sharing header; original64MiBdata/deadlines/join/funding/major rollback assertions retained. All14internal stress pass locally eachactual11/10, runtime1c8eunchanged.606inputs for final combined qualification; no retiming, both failed terminals preserved/cached.

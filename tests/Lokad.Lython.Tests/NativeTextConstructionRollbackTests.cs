@@ -44,9 +44,12 @@ public sealed class NativeTextConstructionRollbackTests
             }
             var committed = context.MemoryGovernor.CurrentCommittedBytes;
             var held = budget.ReservedBytes;
+            // Sharing can retain this header after private construction is
+            // interrupted; the original backing never leaves its live owner.
+            var sharingHeader = operation is 0 or 3 ? input.Utf8SharingHeaderBytes : 0;
             hook.AfterGrowth = growth =>
             {
-                if (growth < payloadBytes) return;
+                if (growth <= 0) return;
                 hook.AfterGrowth = null;
                 admitted.Set();
             };
@@ -82,8 +85,8 @@ public sealed class NativeTextConstructionRollbackTests
                 {
                     Assert.Equal(LythonFailureReason.Cancelled, failure.Attribution?.Reason);
                     if (parser is not null) Assert.False(parser.TryTakeReady(out _));
-                    Assert.Equal(committed, context.MemoryGovernor.CurrentCommittedBytes);
-                    Assert.Equal(held, budget.ReservedBytes);
+                    Assert.InRange(context.MemoryGovernor.CurrentCommittedBytes, committed, committed + sharingHeader);
+                    Assert.Equal(held + context.MemoryGovernor.CurrentCommittedBytes - committed, budget.ReservedBytes);
                 }
                 else
                 {

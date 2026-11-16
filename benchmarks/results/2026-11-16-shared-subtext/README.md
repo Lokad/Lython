@@ -69,3 +69,9 @@ Baseline auxiliary image is unchanged from
 [Initial full qualification failed on12obsolete copy-size fixtures per platform;
 original failures preserved and corrected tests pass, runtime unchanged](qualification-corrections/README.md).
 New full delivery remains pending; this does not change the original measurements.
+
+
+[Second full checkpoint passes ordinary/platform/package checks but exposes two
+original-scale fixtures awaiting removed64MiBcopies; corrected stress passes each
+actual11/10 with unchanged runtime](stress-fixture-correction/README.md). Final combined
+qualification remains pending; both original failed terminals are cached.
