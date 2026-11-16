@@ -725,8 +725,9 @@ public sealed class SimpleFunctionExecutionBoundaryTests
             var budget = new LythonMemoryBudget(64 * 1024);
             using (var inputOwner = budget.CreateScope())
             {
+                var inputGovernor = new MemoryGovernor(inputOwner);
                 var input = PyString.FromString(" " + new string('9', digits) + " ",
-                    new MemoryGovernor(inputOwner), CallSpan);
+                    inputGovernor, CallSpan);
                 var inputCharge = budget.ReservedBytes;
                 using (var executionOwner = budget.CreateScope())
                 {
@@ -749,8 +750,8 @@ public sealed class SimpleFunctionExecutionBoundaryTests
                         var error = Assert.Throws<LythonRuntimeException>(() =>
                             Invoke(function, [CallArgumentValue.Positional(input)], context, driver));
                         Assert.True(refused);
-                        Assert.True(budget.ReservedBytes >= inputCharge + digits,
-                            "The preceding stripped value must remain funded by the source owner.");
+                        Assert.True(inputGovernor.CurrentAccountedBytes >= inputCharge + PyString.EstimateApproximateBytes(0),
+                            "The stripped window and original backing must remain funded by the source owner.");
                         Assert.Equal(LythonFailureReason.SharedMemoryAllowance, error.Attribution?.Reason);
                         Assert.Same(code.CallSites.MaxBy(site => site.CallSpan.Length)!.CallSpan, error.Span);
                         Assert.Same(context.MemoryGovernor.AdmissionFailure, error);

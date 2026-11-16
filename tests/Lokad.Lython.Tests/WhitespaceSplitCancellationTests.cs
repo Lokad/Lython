@@ -1,5 +1,4 @@
 using System.Numerics;
-using System.Text;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
@@ -27,7 +26,7 @@ public sealed class WhitespaceSplitCancellationTests
             var input = PyString.FromString(Word + "::" + Word, context.MemoryGovernor, Span);
             var separator = PyString.FromString("::");
             var committed = context.MemoryGovernor.CurrentCommittedBytes;
-            hook.CancelOnPayload(cancellation, Encoding.UTF8.GetByteCount(Word));
+            hook.CancelOnGrowth(cancellation);
             using var ambient = PyStructuralGuard.PushAmbient(context, Span);
             var error = Assert.Throws<LythonRuntimeException>(() => reverse
                 ? PyStringOps.RSplit(input, separator, -1, context.MemoryGovernor, Span)
@@ -51,7 +50,7 @@ public sealed class WhitespaceSplitCancellationTests
             var hook = new AdmissionHook(owner);
             var context = new Context(new MockLythonHost(), new() { MemoryBudget = hook, CancellationToken = cancellation.Token });
             var input = PyString.FromString(Word + " " + Word, context.MemoryGovernor, Span);
-            hook.CancelOnPayload(cancellation, Encoding.UTF8.GetByteCount(Word));
+            hook.CancelOnGrowth(cancellation);
             var error = Assert.Throws<LythonRuntimeException>(() =>
                 PyStringOps.SplitCasedWhitespace(input, upper, context.MemoryGovernor, Span, context));
             AssertCancelled(error, context, cancellation, hook);
@@ -64,7 +63,7 @@ public sealed class WhitespaceSplitCancellationTests
     [InlineData(false, -1)]
     [InlineData(false, 1)]
     [InlineData(true, 1)]
-    public void CancellationBetweenWordsStopsTheNextNonallocatingScan(bool reverse, int count)
+    public void WhitespaceOutputAdmissionCancellationUnwindsBeforeConstruction(bool reverse, int count)
     {
         var root = new LythonMemoryBudget(1024 * 1024);
         using var cancellation = new CancellationTokenSource();
@@ -75,7 +74,7 @@ public sealed class WhitespaceSplitCancellationTests
             { MemoryBudget = hook, CancellationToken = cancellation.Token });
             var text = Word + "\u2003" + Word;
             var input = PyString.FromString(text, context.MemoryGovernor, Span);
-            hook.CancelOnPayload(cancellation, Encoding.UTF8.GetByteCount(Word));
+            hook.CancelOnGrowth(cancellation);
             var error = Assert.Throws<LythonRuntimeException>(() =>
             {
                 if (reverse)
@@ -123,7 +122,7 @@ public sealed class WhitespaceSplitCancellationTests
     [InlineData(0)]
     [InlineData(1)]
     [InlineData(2)]
-    public async Task SuspendedIndexProtocolKeepsCancellationContextThroughTheScan(int mode)
+    public async Task SuspendedIndexProtocolKeepsCancellationAndAdmissionUnwind(int mode)
     {
         var root = new LythonMemoryBudget(1024 * 1024);
         using var cancellation = new CancellationTokenSource();
@@ -134,8 +133,7 @@ public sealed class WhitespaceSplitCancellationTests
             var hook = new AdmissionHook(owner);
             var context = new Context(host, new()
             { MemoryBudget = hook, CancellationToken = cancellation.Token });
-            context.Variables["arm"] = new Arm(() =>
-                hook.CancelOnPayload(cancellation, Encoding.UTF8.GetByteCount(Word)));
+            context.Variables["arm"] = new Arm(() => hook.CancelOnGrowth(cancellation));
             var frontend = LythonFrontend.Compile("""
                 class Count:
                     def __index__(self):
@@ -170,7 +168,7 @@ public sealed class WhitespaceSplitCancellationTests
         Assert.True(cancellation.IsCancellationRequested);
         Assert.Equal(LythonFailureReason.Cancelled, error.Attribution?.Reason);
         Assert.Equal(Span, error.Span);
-        Assert.False(hook.PayloadAdmittedAfterCancellation);
+        Assert.False(hook.FurtherGrowthAfterCancellation);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         Assert.Equal(0, context.State.CurrentInterpreterDepth);
         Assert.Equal(0, context.State.CurrentRecursionDepth);
@@ -192,12 +190,12 @@ public sealed class WhitespaceSplitCancellationTests
     private sealed class AdmissionHook(ILythonMemoryBudget parent) : ILythonMemoryBudget
     {
         private Action<long>? _afterGrowth;
-        internal bool PayloadAdmittedAfterCancellation { get; private set; }
-        internal void CancelOnPayload(CancellationTokenSource cancellation, int payloadBytes)
+        internal bool FurtherGrowthAfterCancellation { get; private set; }
+        internal void CancelOnGrowth(CancellationTokenSource cancellation)
             => _afterGrowth = bytes =>
             {
-                if (bytes < payloadBytes) return;
-                if (cancellation.IsCancellationRequested) PayloadAdmittedAfterCancellation = true;
+                if (bytes <= 0) return;
+                if (cancellation.IsCancellationRequested) FurtherGrowthAfterCancellation = true;
                 else cancellation.Cancel();
             };
         public ILythonMemoryScope CreateScope() => parent.CreateScope();

@@ -8706,3 +8706,6 @@ R431 bounded source gate at1fe2a174: plain builtin wrappers/signatures already l
 
 
 [R435/B832 shared immutable subtext retained](results/2026-11-16-shared-subtext/README.md):1c8e1be5/ecd9e956,151.601s/all gates. Normalization allocation−19.8%/JSON-lines−11.3%, accounted peaks lower; warm/fresh elapsed/CPU lower with3.37%moving fresh reference explicit. Existing JSON windows replace ordinary slice/split payload copies; full source backing/header stays funded, foreign/transformed input independent.548internal/3619public eachactual11/10; new-test-only ambient-scope correction preserves assertions/runtime image, original failure retained. Original staging/transport/floor failures retained. Full602input delivery next; broader performance objective open.
+
+
+[R435qualification fixture correction](results/2026-11-16-shared-subtext/qualification-corrections/README.md):initial43814304379failed12internal per platform on obsolete copied-payload size assumptions; all17914public ordinary pass, later steps skipped. Terminal/logs cached.77focused/all4800internal ordinary pass eachactual11/10 after test-only correction, runtime1c8eunchanged. Keep actual-admission cancellation, complete-output refusal/allocation bound, source-owner funding, origin/depths/cleanup; no timeout/assertion relaxed or performance rerun.606inputs for new full delivery.

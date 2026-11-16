@@ -59,7 +59,10 @@ public sealed class SeparatedSplitOwnershipTests
             var governor = context.MemoryGovernor;
             var input = PyString.FromString(new string('a', 65536) + "::" + new string('b', 65536), governor);
             var separator = PyString.FromString("::");
-            Assert.True(budget.TryReserve(allowance - budget.ReservedBytes - 70000, out var pressure));
+            // A single window shell fits; the complete two-fragment result does
+            // not. Its shared backing is already charged to the input owner.
+            var available = PyString.EstimateApproximateBytes(0) + PyList.EstimateCapacityBytes(2);
+            Assert.True(budget.TryReserve(allowance - budget.ReservedBytes - available, out var pressure));
             using (pressure)
             using (PyStructuralGuard.PushAmbient(context, Span))
             {

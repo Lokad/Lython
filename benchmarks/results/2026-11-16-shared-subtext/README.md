@@ -64,3 +64,8 @@ all users joined, terminal cached. Broad call/frame/operand work remains open.
 [exact image/procedures/staging conditions](procedure-and-image.tar.xz).
 Baseline auxiliary image is unchanged from
 [line construction](../2026-11-16-line-construction/README.md).
+
+
+[Initial full qualification failed on12obsolete copy-size fixtures per platform;
+original failures preserved and corrected tests pass, runtime unchanged](qualification-corrections/README.md).
+New full delivery remains pending; this does not change the original measurements.

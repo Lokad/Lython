@@ -21,8 +21,12 @@ public sealed class WhitespaceStorageOwnershipTests
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = owner });
             var governor = context.MemoryGovernor;
             var input = PyString.FromString(new string('a', 65536) + " " + new string('b', 65536), governor);
-            // Enough for an individual fragment, but not the complete output.
-            Assert.True(budget.TryReserve(allowance - budget.ReservedBytes - 70000, out var pressure));
+            // Ordinary fragments share the input; casing still constructs
+            // independent payloads. One fragment fits, not the complete output.
+            var available = casing < 0
+                ? PyString.EstimateApproximateBytes(0) + PyList.EstimateCapacityBytes(2)
+                : 70000;
+            Assert.True(budget.TryReserve(allowance - budget.ReservedBytes - available, out var pressure));
             using (pressure)
             {
                 var committed = governor.CurrentCommittedBytes;
