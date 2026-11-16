@@ -8640,3 +8640,6 @@ verified before unmount, all users joined. No CPU speedup or production change.
 
 
 [R421/B816 current patch/CSV phases](results/2026-11-16-patch-cpython-checkpoint/README.md): c023042d/0393331a versus CPython3.13.16; four jobs 137.167s, all image/golden/quiet/budget/Closed/join/archive gates. No source edit, causal speedup or arbitrary diff claim; every control retained. [Producer availability](results/2026-11-15-regex-range-prototype/availability-20261116.json): NuGet still0.4; local0.5 package hashes equal qualified R409 and PythonRe source changes only its README, so unchanged backend tests not repeated.
+
+
+[R422/B817 initial scalar-boundary correction](results/2026-11-16-regex-known-boundaries/initial/README.md): normal0.4 real backend, Unicode suffix elapsed8–11%/3–5%lower at1,024/4,096scalars, allocation+16B. ASCII mixed; short Unicode up to4.72%slower with3.70%candidate spread. Retain every adverse control and failed allocation-driver condition. One justified source refinement removes duplicate full-window anchors; no unchanged retiming or broader objective completion.
