@@ -51,8 +51,8 @@ Focused Release checks pass each actual .NET 11/10: 191 internal / 957 public
 generator, comprehension, lambda, scope, annotation and compilation checks, plus
 39 type-scope checks. Overlapping targeted checks are not summed. Independent
 pending host cancellation and construction refusal retain outer storage until
-awaited disposal and return the shared allowance to baseline. Full platform,
-original stress and installed-package delivery qualification is pending.
+awaited disposal and return the shared allowance to baseline. [Full Windows/Ubuntu actual .NET 11/10, original stress and installed-package
+delivery qualification passes](delivery/README.md).
 
 Original failed fixture and class-cell checks remain in the checks archive. An
 initial staging failure listed unused local Allocation harness files as remote
