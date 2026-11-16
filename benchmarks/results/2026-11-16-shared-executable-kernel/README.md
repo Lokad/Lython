@@ -74,3 +74,6 @@ floors remain. Profiling/retention is independent of unpublished regex capabilit
 
 [Matched-source CPU attribution and bounded refinement](attribution/README.md)
 are recorded separately; the first prototype remains unpromoted.
+
+[Immutable-fact refinement and adverse controls](refined/README.md) are preserved;
+next the existing view eliminates unused private working-state initialization.
