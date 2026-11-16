@@ -12,7 +12,7 @@ public sealed class IterationIndexingSubsystemTests
     [Fact]
     public void PyIteration_UsesRuntimeIterableProtocols()
     {
-        var items = PyIteration.ToSequence(PyString.FromString("ab"), Span).ToArray();
+        var items = PyIteration.Cursor.Create(PyString.FromString("ab"), Span).ToArray();
 
         Assert.Equal(2, items.Length);
         Assert.Equal("a", ((PyString)items[0]).AsString());

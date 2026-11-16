@@ -27,10 +27,10 @@ public sealed class EnumerableStateTests
         Assert.NotNull(source);
         if (asynchronous)
         {
-            var sequence = PyIteration.ToSequenceAsync(source, Span, context);
             Assert.Equal(0, probe.Calls);
             for (var i = 1; i <= 2; i++)
             {
+                var sequence = PyIteration.Cursor.ForAsyncEnumeration(source, Span, context);
                 await using var iterator = sequence.GetAsyncEnumerator();
                 Assert.Equal(i - 1, probe.Calls);
                 Assert.True(await iterator.MoveNextAsync());
@@ -42,7 +42,7 @@ public sealed class EnumerableStateTests
         }
         else
         {
-            var sequence = PyIteration.ToSequence(source, Span, context);
+            var sequence = PyIteration.Cursor.Create(source, Span, context);
             Assert.Equal(1, probe.Calls);
             using var iterator = sequence.GetEnumerator();
             Assert.Equal(1, probe.Calls);
@@ -59,7 +59,7 @@ public sealed class EnumerableStateTests
         var context = Context();
         var dictionary = new PyDict();
         dictionary.SetItem(PyString.FromString("first"), BigInteger.One);
-        var sequence = PyIteration.ToSequenceAsync(dictionary, Span, context);
+        var sequence = PyIteration.Cursor.ForAsyncEnumeration(dictionary, Span, context);
         dictionary.SetItem(PyString.FromString("second"), new BigInteger(2));
         await using var iterator = sequence.GetAsyncEnumerator();
         var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await iterator.MoveNextAsync());
@@ -77,14 +77,14 @@ public sealed class EnumerableStateTests
         object enumerator;
         if (asynchronous)
         {
-            var iterator = PyIteration.ToSequenceAsync(source, Span, context).GetAsyncEnumerator();
+            var iterator = PyIteration.Cursor.ForAsyncEnumeration(source, Span, context).GetAsyncEnumerator();
             Assert.Equal(0, source.Acquired);
             Assert.True(await iterator.MoveNextAsync());
             enumerator = iterator;
         }
         else
         {
-            var iterator = PyIteration.ToSequence(source, Span, context).GetEnumerator();
+            var iterator = PyIteration.Cursor.Create(source, Span, context).GetEnumerator();
             Assert.Equal(0, source.Acquired);
             Assert.True(iterator.MoveNext());
             enumerator = iterator;
@@ -126,7 +126,7 @@ public sealed class EnumerableStateTests
         using var cancellation = new CancellationTokenSource();
         var context = Context(cancellation.Token);
         var source = new OwnedSource(PyNone.Instance);
-        using var iterator = PyIteration.ToSequence(source, Span, context).GetEnumerator();
+        using var iterator = PyIteration.Cursor.Create(source, Span, context).GetEnumerator();
         cancellation.Cancel();
         Assert.Throws<LythonRuntimeException>(() => iterator.MoveNext());
         Assert.Equal(1, source.Acquired);
@@ -150,7 +150,7 @@ public sealed class EnumerableStateTests
         object enumerator;
         if (asynchronous)
         {
-            var iterator = PyIteration.ToSequenceAsync(source, Span, context).GetAsyncEnumerator();
+            var iterator = PyIteration.Cursor.ForAsyncEnumeration(source, Span, context).GetAsyncEnumerator();
             enumerator = iterator;
             if (cleanupFailure) Assert.True(await iterator.MoveNextAsync());
             var failure = await Assert.ThrowsAsync<InvalidOperationException>(async () => await iterator.MoveNextAsync());
@@ -159,7 +159,7 @@ public sealed class EnumerableStateTests
         }
         else
         {
-            var iterator = PyIteration.ToSequence(source, Span, context).GetEnumerator();
+            var iterator = PyIteration.Cursor.Create(source, Span, context).GetEnumerator();
             enumerator = iterator;
             if (cleanupFailure) Assert.True(iterator.MoveNext());
             var failure = Assert.Throws<InvalidOperationException>(() => iterator.MoveNext());

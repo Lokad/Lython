@@ -184,13 +184,13 @@ internal sealed partial class LythonRuntime
         bool hasElement;
         if (asynchronous)
         {
-            await using var enumerator = ToSequenceAsync(GetArgument(arguments, index), span, context).GetAsyncEnumerator();
-            hasElement = await enumerator.MoveNextAsync().ConfigureAwait(false);
+            await using var cursor = await PyIteration.Cursor.CreateAsync(GetArgument(arguments, index), span, context).ConfigureAwait(false);
+            hasElement = (await cursor.TryMoveNextAsync().ConfigureAwait(false)).HasValue;
         }
         else
         {
-            using var enumerator = ToSequence(GetArgument(arguments, index), span, context).GetEnumerator();
-            hasElement = enumerator.MoveNext();
+            using var cursor = PyIteration.Cursor.Create(GetArgument(arguments, index), span, context);
+            hasElement = cursor.TryMoveNext().HasValue;
         }
         if (hasElement) throw new LythonRuntimeException("NotImplementedError", $"subprocess.Popen(..., {name}=...) cannot expose file descriptors through Lython.", span);
     }

@@ -80,8 +80,9 @@ internal sealed partial class LythonRuntime
     {
         var operationName = operation == ExtremumOperation.Minimum ? "min" : "max";
         var (positional, keyArgument, defaultValue) = BindMinMaxArguments(arguments, operationName, span);
-        using var enumerator = (positional.Count == 1 ? ToSequence(positional[0], span, context) : positional).GetEnumerator();
-        if (!enumerator.MoveNext())
+        using var cursor = PyIteration.Cursor.Create(positional.Count == 1 ? positional[0] : positional, span, context);
+        var first = cursor.TryMoveNext();
+        if (!first.HasValue)
         {
             if (defaultValue.HasValue)
             {
@@ -91,7 +92,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("ValueError", $"{operationName}() iterable argument is empty", span);
         }
 
-        var best = enumerator.Current;
+        var best = first.Value;
         var keyCallable = keyArgument as ICallable;
         if (keyArgument is not null && keyCallable is null)
         {
@@ -101,9 +102,11 @@ internal sealed partial class LythonRuntime
         var bestKey = keyCallable is null
             ? best
             : CallableInvocation.InvokeUnary(keyCallable, best, span, context);
-        while (enumerator.MoveNext())
+        while (true)
         {
-            var candidate = enumerator.Current;
+            var next = cursor.TryMoveNext();
+            if (!next.HasValue) break;
+            var candidate = next.Value;
             var candidateKey = keyCallable is null
                 ? candidate
                 : CallableInvocation.InvokeUnary(keyCallable, candidate, span, context);

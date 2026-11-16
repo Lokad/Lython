@@ -259,7 +259,7 @@ internal static class CallExpansion
             var keys = LythonRuntime.InvokeCallableTarget(keysMember, span, span, context, () => []);
             using var keyStorage = context.MemoryGovernor.ReserveTemporary(0, span);
             var snapshot = new List<object>();
-            foreach (var key in PyIteration.ToSequence(keys, span, context))
+            foreach (var key in PyIteration.Cursor.Create(keys, span, context))
                 AppendMappingKey(snapshot, key, keyStorage, context, span);
             foreach (var key in snapshot)
             {
@@ -301,7 +301,7 @@ internal static class CallExpansion
             () => new ValueTask<CallArgumentValue[]>([])).ConfigureAwait(false);
         using var keyStorage = context.MemoryGovernor.ReserveTemporary(0, span);
         var snapshot = new List<object>();
-        await foreach (var key in PyIteration.ToSequenceAsync(keys, span, context).ConfigureAwait(false))
+        await foreach (var key in PyIteration.Cursor.ForAsyncEnumeration(keys, span, context).ConfigureAwait(false))
             AppendMappingKey(snapshot, key, keyStorage, context, span);
         foreach (var key in snapshot)
         {
@@ -363,7 +363,7 @@ internal static class CallExpansion
     {
         try
         {
-            foreach (var item in PyIteration.ToSequence(value, span, context))
+            foreach (var item in PyIteration.Cursor.Create(value, span, context))
             {
                 expanded.Add(CallArgumentValue.Positional(item), span);
             }
@@ -391,7 +391,7 @@ internal static class CallExpansion
     {
         try
         {
-            await foreach (var item in PyIteration.ToSequenceAsync(value, span, context).ConfigureAwait(false))
+            await foreach (var item in PyIteration.Cursor.ForAsyncEnumeration(value, span, context).ConfigureAwait(false))
             {
                 expanded.Add(CallArgumentValue.Positional(item), span);
             }

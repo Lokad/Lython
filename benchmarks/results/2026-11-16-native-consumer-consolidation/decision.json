@@ -1,0 +1,21 @@
+{
+  "retain": true,
+  "qualificationPending": true,
+  "source": "a44f65a8",
+  "normalizationFreshElapsedPercent": [
+    -6.1918,
+    -2.7549
+  ],
+  "callWarmElapsedPercent": [
+    -2.7551,
+    -1.5571
+  ],
+  "allocationEffectivelyFlat": true,
+  "acceptedDebt": [
+    "Final numeric elapsed+1.1..+6.7%,moving reference and mixed CPU; initial favorable numeric cannot be transferred",
+    "Compilation elapsed+1.0..+2.6%",
+    "CSV/report inconclusive with adverse/moving controls"
+  ],
+  "noUniversalGain": true,
+  "publicationHeld": true
+}

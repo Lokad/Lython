@@ -182,8 +182,10 @@ internal sealed partial class LythonRuntime
                     var tail = asynchronous ? await ReadSliceValueAsync(fields, new BigInteger(row.Length), null, null, _span, _context).ConfigureAwait(false)
                         : ReadSliceValue(fields, new BigInteger(row.Length), null, null, _span, _context);
                     if (asynchronous)
-                        await foreach (var key in ToSequenceAsync(tail, _span, _context).ConfigureAwait(false)) Store(key, _restValue);
-                    else foreach (var key in ToSequence(tail, _span, _context)) Store(key, _restValue);
+                        await foreach (var key in PyIteration.Cursor.ForAsyncEnumeration(tail, _span, _context).ConfigureAwait(false))
+                            Store(key, _restValue);
+                    else foreach (var key in PyIteration.Cursor.Create(tail, _span, _context))
+                             Store(key, _restValue);
                 }
                 return PyIterationResult.Yield(result);
                 void Store(object key, object value)

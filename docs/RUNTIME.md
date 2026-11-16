@@ -903,10 +903,15 @@ capture, exception state, cancellation, memory admission and nesting counters.
 Lexical frames and closure cells remain distinct from that shared state. Guard
 checks test terminal admission refusal before cancellation; nesting entry also
 checks the managed stack. Retained file owners use the same state without keeping
-the lexical frame that opened them. Executable loops and checked enumerable
-consumers share one cursor, with synchronous iterator dispatch resolved at
-construction. Native acquisition stays lazy where required; dictionary iteration
-captures its version at acquisition. Exact list/tuple cursors keep their position
+the lexical frame that opened them. Executable loops, native reductions and CLR
+collection builders share one cursor and cleanup lifetime. C# foreach uses the
+strongly typed cursor pattern; object builders use its single-pass CLR bridge.
+Independent enumeration creates a fresh cursor. Native slot consumers avoid object
+publication until observation. Synchronous user dispatch resolves at construction;
+the CLR async bridge resolves it once on first pull. Dictionary iteration captures
+its version at acquisition. Count hints admit capacity without consuming input;
+partly consumed cursors resume their position, and direct list self-extension
+snapshots its source before mutation. Exact list/tuple cursors keep their position
 directly, sharing live indexed advancement with executable operand storage without
 a separate CLR enumerator. List replacement and growth remain visible until
 exhaustion; appending after exhaustion cannot revive the cursor.

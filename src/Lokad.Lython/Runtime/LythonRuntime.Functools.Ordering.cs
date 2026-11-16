@@ -252,7 +252,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "functools.reduce(function, iterable[, initializer]) expects a callable, an iterable, and an optional initializer.", span);
         }
 
-        using var enumerator = ToSequence(arguments[1], span, context).GetEnumerator();
+        using var cursor = PyIteration.Cursor.Create(arguments[1], span, context);
         object accumulator;
         if (arguments.Length == 3)
         {
@@ -260,20 +260,23 @@ internal sealed partial class LythonRuntime
         }
         else
         {
-            if (!enumerator.MoveNext())
+            var first = cursor.TryMoveNext();
+            if (!first.HasValue)
             {
                 throw new LythonRuntimeException("TypeError", "reduce() of empty iterable with no initial value", span);
             }
 
-            accumulator = RuntimeValue(enumerator.Current);
+            accumulator = first.Value;
         }
 
-        while (enumerator.MoveNext())
+        while (true)
         {
+            var next = cursor.TryMoveNext();
+            if (!next.HasValue) break;
             accumulator = CallableInvocation.InvokeBinary(
                 callable,
                 accumulator,
-                RuntimeValue(enumerator.Current),
+                next.Value,
                 span,
                 context);
         }
@@ -288,7 +291,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "functools.reduce(function, iterable[, initializer]) expects a callable, an iterable, and an optional initializer.", span);
         }
 
-        await using var enumerator = ToSequenceAsync(arguments[1], span, context).GetAsyncEnumerator();
+        await using var cursor = await PyIteration.Cursor.CreateAsync(arguments[1], span, context).ConfigureAwait(false);
         object accumulator;
         if (arguments.Length == 3)
         {
@@ -296,20 +299,23 @@ internal sealed partial class LythonRuntime
         }
         else
         {
-            if (!await enumerator.MoveNextAsync().ConfigureAwait(false))
+            var first = await cursor.TryMoveNextAsync().ConfigureAwait(false);
+            if (!first.HasValue)
             {
                 throw new LythonRuntimeException("TypeError", "reduce() of empty iterable with no initial value", span);
             }
 
-            accumulator = RuntimeValue(enumerator.Current);
+            accumulator = first.Value;
         }
 
-        while (await enumerator.MoveNextAsync().ConfigureAwait(false))
+        while (true)
         {
+            var next = await cursor.TryMoveNextAsync().ConfigureAwait(false);
+            if (!next.HasValue) break;
             accumulator = await CallableInvocation.InvokeBinaryAsync(
                 callable,
                 accumulator,
-                RuntimeValue(enumerator.Current),
+                next.Value,
                 span,
                 context).ConfigureAwait(false);
         }

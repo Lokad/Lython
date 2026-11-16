@@ -137,7 +137,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     list.AttachMemoryGovernor(context.MemoryGovernor, span);
-                    list.AddRange(ToSequence(arguments[0], span, context), context, span);
+                    list.AddRange(PyIteration.Cursor.Create(arguments[0], span, context), context, span);
                     context.CheckExecution(span);
                     return PyNone.Instance;
                 }, ListExtendSignature, async (arguments, span, context) =>
@@ -2307,7 +2307,7 @@ internal sealed partial class LythonRuntime
 
         try
         {
-            _ = PyIteration.ToSequence(value, span);
+            _ = PyIteration.Cursor.Create(value, span);
             return true;
         }
         catch (PyNotIterableException)
@@ -2354,7 +2354,7 @@ internal sealed partial class LythonRuntime
             {
                 "isdisjoint" => BoundCallable.Create((arguments, span, context) =>
                 {
-                    foreach (var item in ToSequence(arguments[0], span, context))
+                    foreach (var item in PyIteration.Cursor.Create(arguments[0], span, context))
                     {
                         if (view.Source.ContainsKey(ValidateDictionaryKey(item, span)))
                         {
@@ -2504,11 +2504,9 @@ internal sealed partial class LythonRuntime
                 "isdisjoint" => BoundCallable.Create((arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
-                    foreach (var item in ToSequence(arguments[0], span, context))
+                    foreach (var item in PyIteration.Cursor.Create(arguments[0], span, context))
                     {
-                        if (item is PyTuple pair && pair.Count == 2 &&
-                            view.Source.TryGetValue(ValidateDictionaryKey(pair[0], span), out var found) &&
-                            PyEquality.AreEqual(found, pair[1]))
+                        if (item is PyTuple pair && pair.Count == 2 && view.Source.TryGetValue(ValidateDictionaryKey(pair[0], span), out var found) && PyEquality.AreEqual(found, pair[1]))
                         {
                             return false;
                         }
@@ -2626,7 +2624,7 @@ internal sealed partial class LythonRuntime
             {
                 "isdisjoint" => BoundCallable.Create((arguments, span, context) =>
                 {
-                    foreach (var item in ToSequence(arguments[0], span, context))
+                    foreach (var item in PyIteration.Cursor.Create(arguments[0], span, context))
                     {
                         if (view.Owner.TryGetMergedValue(ValidateDictionaryKey(item, span), out _))
                         {
@@ -2776,11 +2774,9 @@ internal sealed partial class LythonRuntime
                 "isdisjoint" => BoundCallable.Create((arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
-                    foreach (var item in ToSequence(arguments[0], span, context))
+                    foreach (var item in PyIteration.Cursor.Create(arguments[0], span, context))
                     {
-                        if (item is PyTuple pair && pair.Count == 2 &&
-                            view.Owner.TryGetMergedValue(ValidateDictionaryKey(pair[0], span), out var found) &&
-                            PyEquality.AreEqual(found, pair[1]))
+                        if (item is PyTuple pair && pair.Count == 2 && view.Owner.TryGetMergedValue(ValidateDictionaryKey(pair[0], span), out var found) && PyEquality.AreEqual(found, pair[1]))
                         {
                             return false;
                         }
@@ -3598,7 +3594,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", " + RuntimeErrors.OperandTypeName(itemsMember) +  object is not callable", span);
                     }
 
-                    foreach (var element in ToSequence(RuntimeValue(itemsCallable.Invoke([], span, context)), span, context))
+                    foreach (var element in PyIteration.Cursor.Create(RuntimeValue(itemsCallable.Invoke([], span, context)), span, context))
                     {
                         using var materialized = MaterializeUnpackingSequence(element, span, context);
                         var values = materialized.Items;

@@ -152,11 +152,11 @@ internal sealed partial class LythonRuntime
         PyString? prefix = null;
         if (asynchronous)
         {
-            await foreach (var item in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
+            await foreach (var item in PyIteration.Cursor.ForAsyncEnumeration(arguments[0], span, context).ConfigureAwait(false))
                 prefix = CommonPathPart(prefix, await CoercePathLikeAsync(item, context, span, "os.path.commonpath").ConfigureAwait(false), context, span);
         }
-        else foreach (var item in ToSequence(arguments[0], span, context))
-            prefix = CommonPathPart(prefix, CoercePathLike(item, context, span, "os.path.commonpath"), context, span);
+        else foreach (var item in PyIteration.Cursor.Create(arguments[0], span, context))
+                 prefix = CommonPathPart(prefix, CoercePathLike(item, context, span, "os.path.commonpath"), context, span);
         return prefix ?? throw RuntimeErrors.Value("os.path.commonpath() arg is an empty sequence", span);
     }
 
@@ -192,10 +192,11 @@ internal sealed partial class LythonRuntime
         PyString? first = null; var length = 0;
         if (asynchronous)
         {
-            await foreach (var item in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
+            await foreach (var item in PyIteration.Cursor.ForAsyncEnumeration(arguments[0], span, context).ConfigureAwait(false))
                 Accept(await CoercePathLikeAsync(item, context, span, "os.path.commonprefix").ConfigureAwait(false));
         }
-        else foreach (var item in ToSequence(arguments[0], span, context)) Accept(CoercePathLike(item, context, span, "os.path.commonprefix"));
+        else foreach (var item in PyIteration.Cursor.Create(arguments[0], span, context))
+                 Accept(CoercePathLike(item, context, span, "os.path.commonprefix"));
         if (first is null || length == 0) return PyString.Empty;
         return length == first.ByteLength ? first : PyString.CopyFromUtf8(first.Utf8Span[..length], context.MemoryGovernor, span);
         void Accept(PyString candidate)

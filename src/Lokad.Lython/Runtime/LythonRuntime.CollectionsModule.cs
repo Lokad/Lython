@@ -596,7 +596,7 @@ internal sealed partial class LythonRuntime
         }
 
         var result = hasIterable
-            ? new PyDeque(ToSequence(iterable, span, context), maxLength, context.MemoryGovernor, span)
+            ? new PyDeque(PyIteration.Cursor.Create(iterable, span, context), maxLength, context.MemoryGovernor, span)
             : new PyDeque(maxLength, context.MemoryGovernor, span);
         context.CheckExecution(span);
         return result;
@@ -681,7 +681,7 @@ internal sealed partial class LythonRuntime
 
         var result = arguments.Length == 0
             ? new PyDeque(null, context.MemoryGovernor, span)
-            : new PyDeque(ToSequence(arguments[0], span, context), null, context.MemoryGovernor, span);
+            : new PyDeque(PyIteration.Cursor.Create(arguments[0], span, context), null, context.MemoryGovernor, span);
         context.CheckExecution(span);
         return result;
     }
@@ -721,7 +721,7 @@ internal sealed partial class LythonRuntime
         var names = ParseNamedTupleFieldNames(shape.FieldNamesValue, span, context);
         var fields = ValidateNamedTupleFields(shape, names, arguments, span);
         using var defaults = TryGetArgument(arguments, 3, "defaults", span, out var value) && value is not PyNone
-            ? PyIteration.DrainLeased(RetainNamedTupleDefaults(ToSequence(value, span, context), fields.Count, span), span, context)
+            ? PyIteration.DrainLeased(RetainNamedTupleDefaults(PyIteration.Cursor.Create(value, span, context), fields.Count, span), span, context)
             : null;
         return BuildNamedTupleType(shape.TypeName, fields, defaults?.Items, arguments, span, context);
     }
@@ -732,7 +732,7 @@ internal sealed partial class LythonRuntime
         var names = await ParseNamedTupleFieldNamesAsync(shape.FieldNamesValue, span, context).ConfigureAwait(false);
         var fields = ValidateNamedTupleFields(shape, names, arguments, span);
         using var defaults = TryGetArgument(arguments, 3, "defaults", span, out var value) && value is not PyNone
-            ? await PyIteration.DrainLeasedAsync(RetainNamedTupleDefaultsAsync(ToSequenceAsync(value, span, context), fields.Count, span), span, context).ConfigureAwait(false)
+            ? await PyIteration.DrainLeasedAsync(RetainNamedTupleDefaultsAsync(PyIteration.Cursor.ForAsyncEnumeration(value, span, context), fields.Count, span), span, context).ConfigureAwait(false)
             : null;
         return BuildNamedTupleType(shape.TypeName, fields, defaults?.Items, arguments, span, context);
     }
@@ -748,7 +748,7 @@ internal sealed partial class LythonRuntime
 
     // Keep only defaults that could be used. Consume the entire iterator before
     // reporting excess, preserving tail effects/errors without retaining its tail. The source
-    // is already cancellation-checked by ToSequence/ToSequenceAsync.
+    // is already cancellation-checked by its native cursor.
     private static IEnumerable<object> RetainNamedTupleDefaults(IEnumerable<object> source, int fields,
         LythonSourceSpan span)
     {
@@ -924,7 +924,7 @@ internal sealed partial class LythonRuntime
             return;
         }
 
-        foreach (var item in ToSequence(source, span, context))
+        foreach (var item in PyIteration.Cursor.Create(source, span, context))
         {
             if (item is not PyTuple tuple || tuple.Count != 2)
             {
@@ -953,12 +953,13 @@ internal sealed partial class LythonRuntime
         }
         else if (asynchronous)
         {
-            await foreach (var item in ToSequenceAsync(source, span, context).ConfigureAwait(false))
+            await foreach (var item in PyIteration.Cursor.ForAsyncEnumeration(source, span, context).ConfigureAwait(false))
                 await AddItemAsync(item).ConfigureAwait(false);
         }
         else
         {
-            foreach (var item in ToSequence(source, span, context)) await AddItemAsync(item).ConfigureAwait(false);
+            foreach (var item in PyIteration.Cursor.Create(source, span, context))
+                await AddItemAsync(item).ConfigureAwait(false);
         }
 
         ValueTask AddItemAsync(object item) => ApplyCounterDeltaAsync(counter, RuntimeValue(item),
@@ -1106,7 +1107,7 @@ internal sealed partial class LythonRuntime
         }
 
         var names = new List<string>();
-        foreach (var item in ToSequence(value, span, context))
+        foreach (var item in PyIteration.Cursor.Create(value, span, context))
         {
             if (!PyStringOps.TryAsString(item, out var name))
             {
@@ -1131,7 +1132,7 @@ internal sealed partial class LythonRuntime
         }
 
         var names = new List<string>();
-        await foreach (var item in ToSequenceAsync(value, span, context).ConfigureAwait(false))
+        await foreach (var item in PyIteration.Cursor.ForAsyncEnumeration(value, span, context).ConfigureAwait(false))
         {
             if (!PyStringOps.TryAsString(item, out var name))
             {

@@ -153,9 +153,11 @@ internal sealed partial class LythonRuntime
                     if (!append.Unpacking) Add(value);
                     else if (asynchronous)
                     {
-                        await foreach (var item in ToSequenceAsync(value, span, this).ConfigureAwait(false)) Add(item);
+                        await foreach (var item in PyIteration.Cursor.ForAsyncEnumeration(value, span, this).ConfigureAwait(false))
+                            Add(item);
                     }
-                    else foreach (var item in ToSequence(value, span, this)) Add(item);
+                    else foreach (var item in PyIteration.Cursor.Create(value, span, this))
+                             Add(item);
                     break;
 
                     void Add(object item)
@@ -189,10 +191,11 @@ internal sealed partial class LythonRuntime
                         var snapshot = new PyList([], MemoryGovernor, span);
                         if (asynchronous)
                         {
-                            await foreach (var key in ToSequenceAsync(keys, span, this).ConfigureAwait(false))
+                            await foreach (var key in PyIteration.Cursor.ForAsyncEnumeration(keys, span, this).ConfigureAwait(false))
                                 AddListDisplayValue(snapshot, key, span, this);
                         }
-                        else foreach (var key in ToSequence(keys, span, this)) AddListDisplayValue(snapshot, key, span, this);
+                        else foreach (var key in PyIteration.Cursor.Create(keys, span, this))
+                                 AddListDisplayValue(snapshot, key, span, this);
                         foreach (var key in snapshot)
                             Put(key, asynchronous ? await GetUserItemAsync(mapping, key, this, span).ConfigureAwait(false)
                                 : GetUserItem(mapping, key, this, span));

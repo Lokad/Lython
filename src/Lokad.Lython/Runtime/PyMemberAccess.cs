@@ -332,7 +332,7 @@ internal static class PyMemberAccess
             // the dict, so __dict__ stays clean like CPython.
             if (memberName == "args")
             {
-                var tuple = value as PyTuple ?? new PyTuple(LythonRuntime.ToSequence(value, span, context), context.MemoryGovernor, span);
+                var tuple = value as PyTuple ?? new PyTuple(PyIteration.Cursor.Create(value, span, context), context.MemoryGovernor, span);
                 context.CheckExecution(span);
                 exception.Args = tuple;
                 return true;

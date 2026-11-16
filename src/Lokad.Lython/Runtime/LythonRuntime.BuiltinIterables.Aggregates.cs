@@ -19,7 +19,7 @@ internal sealed partial class LythonRuntime
 
         if (arguments[0] is PyBytes bytes) return RuntimeValue(ReduceBytesTruth(bytes, false, span, context));
 
-        foreach (var item in ToSequence(arguments[0], span, context))
+        foreach (var item in PyIteration.Cursor.Create(arguments[0], span, context))
         {
             if (IsTruthy(item, context, span))
             {
@@ -43,7 +43,7 @@ internal sealed partial class LythonRuntime
         }
 
         var cursor = await PyIteration.Cursor.CreateAsync(arguments[0], span, context).ConfigureAwait(false);
-        await using (cursor.ConfigureAwait(false))
+        await using (((IAsyncDisposable)cursor).ConfigureAwait(false))
         {
             while (true)
             {
@@ -63,7 +63,7 @@ internal sealed partial class LythonRuntime
 
         if (arguments[0] is PyBytes bytes) return RuntimeValue(ReduceBytesTruth(bytes, true, span, context));
 
-        foreach (var item in ToSequence(arguments[0], span, context))
+        foreach (var item in PyIteration.Cursor.Create(arguments[0], span, context))
         {
             if (!IsTruthy(item, context, span))
             {
@@ -87,7 +87,7 @@ internal sealed partial class LythonRuntime
         }
 
         var cursor = await PyIteration.Cursor.CreateAsync(arguments[0], span, context).ConfigureAwait(false);
-        await using (cursor.ConfigureAwait(false))
+        await using (((IAsyncDisposable)cursor).ConfigureAwait(false))
         {
             while (true)
             {
@@ -140,7 +140,7 @@ internal sealed partial class LythonRuntime
         if (TrySumExactBytes(arguments[0], total, span, context, out var byteResult)) return byteResult;
         var cursor = await PyIteration.Cursor.CreateAsync(arguments[0], span, context).ConfigureAwait(false);
         var sum = new SumState(total);
-        await using (cursor.ConfigureAwait(false))
+        await using (((IAsyncDisposable)cursor).ConfigureAwait(false))
         {
             ValidateSumStart(total, span);
             while (true)

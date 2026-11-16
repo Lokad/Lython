@@ -173,7 +173,7 @@ internal sealed partial class LythonRuntime
             var syntax = statement.Syntax;
             var iterable = await EvaluateLoweredExpressionAsync(statement.Iterable, context).ConfigureAwait(false);
             var broke = false;
-            await foreach (var item in ToSequenceAsync(iterable, statement.Iterable.Span, context).ConfigureAwait(false))
+            await foreach (var item in PyIteration.Cursor.ForAsyncEnumeration(iterable, statement.Iterable.Span, context).ConfigureAwait(false))
             {
                 context.CheckExecution(statement.Span);
                 await AssignTargetAsync(statement.Target, item, context).ConfigureAwait(false);
@@ -188,6 +188,7 @@ internal sealed partial class LythonRuntime
                     broke = true;
                     break;
                 }
+
                 if (bodyFlow.Return is not null)
                 {
                     throw bodyFlow.Return;

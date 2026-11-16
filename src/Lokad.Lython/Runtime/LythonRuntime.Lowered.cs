@@ -175,7 +175,7 @@ internal sealed partial class LythonRuntime
             var syntax = statement.Syntax;
             var iterable = EvaluateLoweredExpression(statement.Iterable, context);
             var broke = false;
-            foreach (var item in ToSequence(iterable, statement.Iterable.Span, context))
+            foreach (var item in PyIteration.Cursor.Create(iterable, statement.Iterable.Span, context))
             {
                 // A pass-only body and a builtin range iterator may otherwise
                 // perform no expression, call or allocation checkpoints.
@@ -192,6 +192,7 @@ internal sealed partial class LythonRuntime
                     broke = true;
                     break;
                 }
+
                 if (bodyFlow.Return is not null)
                 {
                     throw bodyFlow.Return;

@@ -229,8 +229,10 @@ internal sealed partial class LythonRuntime
                 for (var i = 1; i < currentArgs.Count; i++) AddArgumentText(currentArgs[i]);
             }
             else if (asynchronous)
-                await foreach (var item in ToSequenceAsync(argsValue, span, context).ConfigureAwait(false)) AddArgumentText(item);
-            else foreach (var item in ToSequence(argsValue, span, context)) AddArgumentText(item);
+                await foreach (var item in PyIteration.Cursor.ForAsyncEnumeration(argsValue, span, context).ConfigureAwait(false))
+                    AddArgumentText(item);
+            else foreach (var item in PyIteration.Cursor.Create(argsValue, span, context))
+                     AddArgumentText(item);
             void AddArgumentText(object item)
             {
                 context.CheckExecution(span);

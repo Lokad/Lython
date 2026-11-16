@@ -8842,3 +8842,13 @@ All image/golden/quiet/join/archive gates pass. Both-target focused and full loc
 ordinary pass on initial snapshot. Refine before promotion: fix partial-cursor
 restart caught by two red cases and replace124manual loops with standard strongly
 typed foreach. Originals retained; no fixed threshold or permanent attempt ban.
+
+
+[R450/B853 final native/CLR cursor consolidation retained](results/2026-11-16-native-consumer-consolidation/README.md):
+a44f65a8 versus qualifiede1204916; old routing methods/four wrapper classes/file and
+orphaned eager zip deleted. Strongly typed standard foreach replaces manual loop
+scaffolding; partial-cursor restart corrected by two regressions. Focused1,563/4,989
+each target pass. Normalization fresh−2.8..−6.2%and calls−1.6..−2.8%elapsed with CPU;
+allocation flat. Compilation elapsed+1.0..+2.6%, final numeric+1.1..+6.7%with moving
+reference/mixed CPU, CSV/report inconclusive: explicit debt, no universal gain.
+Initial source/adverse evidence preserved separately. Full delivery pending.

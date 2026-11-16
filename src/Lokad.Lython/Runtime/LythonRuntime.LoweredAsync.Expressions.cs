@@ -45,7 +45,7 @@ internal sealed partial class LythonRuntime
                     continue;
                 }
 
-                await foreach (var item in ToSequenceAsync(value, list.Items[i].Span, context).ConfigureAwait(false))
+                await foreach (var item in PyIteration.Cursor.ForAsyncEnumeration(value, list.Items[i].Span, context).ConfigureAwait(false))
                 {
                     AddListDisplayValue(expanded, item, list.Span, context);
                 }
@@ -94,7 +94,7 @@ internal sealed partial class LythonRuntime
                 continue;
             }
 
-            await foreach (var item in ToSequenceAsync(value, tuple.Items[i].Span, context).ConfigureAwait(false))
+            await foreach (var item in PyIteration.Cursor.ForAsyncEnumeration(value, tuple.Items[i].Span, context).ConfigureAwait(false))
             {
                 AddTupleDisplayValue(expanded, storage, item, tuple.Span, context);
             }
@@ -147,7 +147,7 @@ internal sealed partial class LythonRuntime
                     continue;
                 }
 
-                await foreach (var item in ToSequenceAsync(value, set.Items[i].Span, context).ConfigureAwait(false))
+                await foreach (var item in PyIteration.Cursor.ForAsyncEnumeration(value, set.Items[i].Span, context).ConfigureAwait(false))
                 {
                     using var ambient = PyStructuralGuard.PushAmbient(context, set.Span);
                     AddSetLiteralValue(items, RuntimeValue(item), set.Items[i].Span, set.Span, context);
@@ -174,7 +174,7 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> EvaluateLoweredListComprehensionAsync(LoweredListComprehensionExpression comprehension, ExecutionContext context)
     {
         var result = new PyList([], context.MemoryGovernor, comprehension.Span);
-        var outer = await PyIteration.AcquireComprehensionSequenceAsync(await EvaluateLoweredExpressionAsync(comprehension.Clauses[0].Iterable, context).ConfigureAwait(false), comprehension.Clauses[0].Iterable.Span, context).ConfigureAwait(false);
+        await using var outer = await PyIteration.Cursor.CreateAsync(await EvaluateLoweredExpressionAsync(comprehension.Clauses[0].Iterable, context).ConfigureAwait(false), comprehension.Clauses[0].Iterable.Span, context).ConfigureAwait(false);
         using var scope = context.EnterComprehension(comprehension.ScopeFacts);
         await EvaluateLoweredComprehensionClausesAsync(
                 comprehension.Clauses,
@@ -192,7 +192,7 @@ internal sealed partial class LythonRuntime
         var result = new PySet(context.MemoryGovernor, comprehension.Span);
         try
         {
-            var outer = await PyIteration.AcquireComprehensionSequenceAsync(await EvaluateLoweredExpressionAsync(comprehension.Clauses[0].Iterable, context).ConfigureAwait(false), comprehension.Clauses[0].Iterable.Span, context).ConfigureAwait(false);
+            await using var outer = await PyIteration.Cursor.CreateAsync(await EvaluateLoweredExpressionAsync(comprehension.Clauses[0].Iterable, context).ConfigureAwait(false), comprehension.Clauses[0].Iterable.Span, context).ConfigureAwait(false);
             using var scope = context.EnterComprehension(comprehension.ScopeFacts);
             await EvaluateLoweredComprehensionClausesAsync(
                     comprehension.Clauses,
@@ -221,7 +221,7 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> EvaluateLoweredDictComprehensionAsync(LoweredDictComprehensionExpression comprehension, ExecutionContext context)
     {
         var result = new PyDict(context.MemoryGovernor, comprehension.Span);
-        var outer = await PyIteration.AcquireComprehensionSequenceAsync(await EvaluateLoweredExpressionAsync(comprehension.Clauses[0].Iterable, context).ConfigureAwait(false), comprehension.Clauses[0].Iterable.Span, context).ConfigureAwait(false);
+        await using var outer = await PyIteration.Cursor.CreateAsync(await EvaluateLoweredExpressionAsync(comprehension.Clauses[0].Iterable, context).ConfigureAwait(false), comprehension.Clauses[0].Iterable.Span, context).ConfigureAwait(false);
         using var scope = context.EnterComprehension(comprehension.ScopeFacts);
         await EvaluateLoweredComprehensionClausesAsync(
                 comprehension.Clauses,
@@ -247,13 +247,16 @@ internal sealed partial class LythonRuntime
         int index,
         ExecutionContext context,
         Func<ExecutionContext, ValueTask> emit,
-        IAsyncEnumerable<object>? outerSequence = null)
+        PyIteration.Cursor? outerSequence = null)
     {
         var clause = clauses[index];
-        var sequence = outerSequence ?? ToSequenceAsync(await EvaluateLoweredExpressionAsync(clause.Iterable, context).ConfigureAwait(false), clause.Iterable.Span, context);
+        await using var sequence = outerSequence ?? await PyIteration.Cursor.CreateAsync(await EvaluateLoweredExpressionAsync(clause.Iterable, context).ConfigureAwait(false), clause.Iterable.Span, context).ConfigureAwait(false);
 
-        await foreach (var item in sequence.ConfigureAwait(false))
+        while (true)
         {
+            var nextItem = await sequence.TryMoveNextAsync().ConfigureAwait(false);
+            if (!nextItem.HasValue) break;
+            var item = nextItem.Value;
             await AssignTargetAsync(clause.StoreTarget, item, context).ConfigureAwait(false);
 
             if (clause.Condition is not null &&

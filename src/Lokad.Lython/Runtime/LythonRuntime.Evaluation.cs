@@ -137,7 +137,7 @@ internal sealed partial class LythonRuntime
             return;
         }
 
-        foreach (var item in ToSequence(value, itemSpan, context))
+        foreach (var item in PyIteration.Cursor.Create(value, itemSpan, context))
         {
             AddListDisplayValue(expanded, item, displaySpan, context);
         }
@@ -168,7 +168,7 @@ internal sealed partial class LythonRuntime
             return;
         }
 
-        foreach (var item in ToSequence(value, itemSpan, context))
+        foreach (var item in PyIteration.Cursor.Create(value, itemSpan, context))
         {
             AddTupleDisplayValue(expanded, storage, item, displaySpan, context);
         }

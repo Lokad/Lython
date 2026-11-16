@@ -203,7 +203,7 @@ internal sealed partial class LythonRuntime
             scratch.Grow(32L + (sizedCount > 0 ? 32L + 8L * sizedCount.Value : 0), span);
             var result = sizedCount.HasValue ? new List<object>(sizedCount.Value) : new List<object>();
 
-            foreach (var item in ToSequence(value, span, context))
+            foreach (var item in PyIteration.Cursor.Create(value, span, context))
             {
                 if (result.Count == result.Capacity)
                 {
@@ -211,7 +211,8 @@ internal sealed partial class LythonRuntime
                     var previous = result.Capacity;
                     scratch.Grow(checked(32L + 8L * predicted), span);
                     result.Capacity = checked((int)predicted);
-                    if (previous > 0) scratch.Shrink(32L + 8L * previous);
+                    if (previous > 0)
+                        scratch.Shrink(32L + 8L * previous);
                 }
 
                 result.Add(RuntimeValue(item));

@@ -22,7 +22,7 @@ internal sealed partial class LythonRuntime
         {
             if (asynchronous)
             {
-                await foreach (var item in PyIteration.ToSequenceAsync(value, span, context).ConfigureAwait(false))
+                await foreach (var item in PyIteration.Cursor.ForAsyncEnumeration(value, span, context).ConfigureAwait(false))
                 {
                     context.CheckExecution(span);
                     yield return item;
@@ -30,7 +30,7 @@ internal sealed partial class LythonRuntime
             }
             else
             {
-                foreach (var item in PyIteration.ToSequence(value, span, context))
+                foreach (var item in PyIteration.Cursor.Create(value, span, context))
                 {
                     context.CheckExecution(span);
                     yield return item;

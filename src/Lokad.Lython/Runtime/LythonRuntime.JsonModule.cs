@@ -255,7 +255,7 @@ internal sealed partial class LythonRuntime
                 native.WriteToAsync(textFile, span, false).GetAwaiter().GetResult();
                 return PyNone.Instance;
             }
-            foreach (var chunk in PyIteration.ToSequence(chunks, span, context))
+            foreach (var chunk in PyIteration.Cursor.Create(chunks, span, context))
             {
                 context.CheckExecution(span);
                 PyTextStream.Write(bound.Values[1], chunk, span, context);
@@ -286,7 +286,7 @@ internal sealed partial class LythonRuntime
                 await native.WriteToAsync(textFile, span, true).ConfigureAwait(false);
                 return PyNone.Instance;
             }
-            await foreach (var chunk in PyIteration.ToSequenceAsync(chunks, span, context).ConfigureAwait(false))
+            await foreach (var chunk in PyIteration.Cursor.ForAsyncEnumeration(chunks, span, context).ConfigureAwait(false))
             {
                 context.CheckExecution(span);
                 await PyTextStream.WriteAsync(bound.Values[1], chunk, span, context).ConfigureAwait(false);

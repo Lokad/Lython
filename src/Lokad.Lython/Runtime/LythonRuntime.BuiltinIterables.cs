@@ -318,54 +318,6 @@ internal sealed partial class LythonRuntime
         catch { zipResult.DiscardUnpublishedStorage(); throw; }
     }
 
-    private static object Zip(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-    {
-        var result = new PyList([], context.MemoryGovernor, span);
-        if (arguments.Length == 0)
-        {
-            return result;
-        }
-
-        var enumerators = new System.Collections.IEnumerator[arguments.Length];
-        for (var i = 0; i < arguments.Length; i++)
-        {
-            enumerators[i] = ToSequence(arguments[i], span, context).GetEnumerator();
-        }
-
-        try
-        {
-            while (true)
-            {
-                var ready = true;
-                foreach (var enumerator in enumerators)
-                {
-                    if (enumerator.MoveNext())
-                    {
-                        continue;
-                    }
-
-                    ready = false;
-                    break;
-                }
-
-                if (!ready)
-                {
-                    return result;
-                }
-
-                result.Add(CreateTuple(enumerators.Length, i => RuntimeValue(enumerators[i].Current), context, span));
-                context.CheckExecution(span);
-            }
-        }
-        finally
-        {
-            foreach (var enumerator in enumerators)
-            {
-                (enumerator as IDisposable)?.Dispose();
-            }
-        }
-    }
-
     private static object Iter(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         if (arguments.Length == 1)

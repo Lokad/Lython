@@ -4,13 +4,13 @@ namespace Lokad.Lython.Runtime;
 
 internal static partial class PyIteration
 {
-    internal readonly record struct GeneratorOuter(object Iterator, IEnumerable<object> Sequence, IAsyncEnumerable<object>? AsyncSequence = null);
+    internal readonly record struct GeneratorOuter(object Iterator, PyUserIterator? User = null);
 
     internal static GeneratorOuter AcquireGeneratorOuter(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         if (value is PyInstance or IPyProtocolIterator)
-            return AcquiredUserOuter(PyUserIterator.Create(value, context, span), span, context);
-        if (value is IPyIteratorValue) return new(value, ToSequence(value, span, context));
+            return AcquiredUserOuter(PyUserIterator.Create(value, context, span));
+        if (value is IPyIteratorValue) return new(value);
         PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
         PyEnumerableIterator iterator;
         try { iterator = new PyEnumerableIterator(value, span, context); }
@@ -19,80 +19,16 @@ internal static partial class PyIteration
             context.MemoryGovernor.Release(PyIteratorBase.IteratorValueBytes);
             throw;
         }
-        return new(iterator, iterator.Iterate(), EnumerateAsyncIterator(iterator));
+        return new(iterator);
     }
 
     internal static async ValueTask<GeneratorOuter> AcquireGeneratorOuterAsync(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         => value is PyInstance or IPyProtocolIterator
-            ? AcquiredUserOuter(await PyUserIterator.CreateAsync(value, context, span).ConfigureAwait(false), span, context)
+            ? AcquiredUserOuter(await PyUserIterator.CreateAsync(value, context, span).ConfigureAwait(false))
             : AcquireGeneratorOuter(value, span, context);
 
-    private static GeneratorOuter AcquiredUserOuter(PyUserIterator user, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-        => new(user.Iterator, WithCheckpoints(user.Iterate(), span, context), new AsyncSequence(user, span, context));
-
-    public static IEnumerable<object> ToSequence(object value, LythonSourceSpan span)
-        => GetSyncEnumerable(value, span);
-
-    /// <summary>Resolves the Python iteration protocol for arbitrary values, including user-defined <c>__iter__</c>.</summary>
-    public static IEnumerable<object> ToSequence(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-        => WithCheckpoints(value switch
-        {
-            PyInstance or IPyProtocolIterator => PyUserIterator.Create(value, context, span).Iterate(),
-            // ChainMap iteration snapshots merged keys eagerly with lifetime
-            // ownership; values and items keep live per-pull lookups over an
-            // owned key order (see PyChainMap for the CPython behavior notes).
-            PyChainMap chainMap => chainMap.BuildOwnedKeySnapshot(context, span),
-            ChainMapKeysView keysView => keysView.Owner.BuildOwnedKeySnapshot(context, span),
-            ChainMapValuesView valuesView => PyChainMap.EnumerateOwnedValues(
-                valuesView.Owner,
-                valuesView.Owner.BuildOwnedKeySnapshot(context, span),
-                span),
-            ChainMapItemsView itemsView => PyChainMap.EnumerateOwnedItems(
-                itemsView.Owner,
-                itemsView.Owner.BuildOwnedKeySnapshot(context, span),
-                span),
-            _ => GetSyncEnumerable(value, span),
-        }, span, context);
-
-    // Bulk materializers inspect known-size/list sources to reserve their
-    // backing storage and snapshot self-extension. Keep that source identity
-    // available instead of hiding it in a compiler-generated iterator.
-    private static IEnumerable<object> WithCheckpoints(
-        IEnumerable<object> source, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-        => source is IReadOnlyCollection<object> collection
-            ? new CheckedCollection(collection, span, context)
-            : new CheckedSequence(source, span, context);
-
-    internal class CheckedSequence(
-        IEnumerable<object> source, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-        : IEnumerable<object>
-    {
-        internal IEnumerable<object> Source => source;
-        protected LythonSourceSpan Span { get; } = span;
-        protected LythonRuntime.ExecutionContext Context { get; } = context;
-        public IEnumerator<object> GetEnumerator() => Cursor.FromSequence(source, Span, Context);
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
-    }
-
-    private sealed class CheckedCollection(
-        IReadOnlyCollection<object> source, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-        : CheckedSequence(source, span, context), IReadOnlyCollection<object>
-    {
-        public int Count => source.Count;
-    }
-
-    public static IAsyncEnumerable<object> ToSequenceAsync(object value, LythonSourceSpan span)
-        => new AsyncSequence(Cursor.Create(value, span), span, null);
-
-    /// <summary>Resolves the Python iteration protocol for asynchronous execution, driving synchronous user protocols when needed.</summary>
-    public static IAsyncEnumerable<object> ToSequenceAsync(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-        => value switch
-        {
-            PyInstance or IPyProtocolIterator => new AsyncSequence(value, span, context),
-            // Context-aware cursors retain the same owned ChainMap shapes as
-            // the sync router and checkpoint primitive pulls in both modes.
-            _ => new AsyncSequence(Cursor.Create(value, span, context), span, null),
-        };
+    private static GeneratorOuter AcquiredUserOuter(PyUserIterator user)
+        => new(user.Iterator, user);
 
     // The lease keeps private backing funded through callbacks, suspension and
     // conversion. Dispose only after every user relinquishes the working list.
@@ -176,15 +112,10 @@ internal static partial class PyIteration
     }
 
     public static DrainLease MaterializeLeased(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context, int? maximumItems = null)
-        => DrainLeased(ToSequence(value, span, context), span, context, maximumItems);
+        => DrainLeased(Cursor.Create(value, span, context), span, context, maximumItems);
 
     public static async ValueTask<DrainLease> MaterializeLeasedAsync(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context, int? maximumItems = null)
-        => await DrainLeasedAsync(ToSequenceAsync(value, span, context), span, context, maximumItems).ConfigureAwait(false);
-
-    internal static async ValueTask<IAsyncEnumerable<object>> AcquireComprehensionSequenceAsync(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-        => value is PyInstance or IPyProtocolIterator
-            ? new AsyncSequence(await PyUserIterator.CreateAsync(value, context, span).ConfigureAwait(false), span, context)
-            : ToSequenceAsync(value, span, context);
+        => await DrainLeasedAsync(Cursor.ForAsyncEnumeration(value, span, context), span, context, maximumItems).ConfigureAwait(false);
 
     public static IEnumerable<object> EnumerateIterator(IPyIteratorValue iterator)
     {
@@ -222,7 +153,6 @@ internal static partial class PyIteration
         {
             PyNone => throw RuntimeErrors.NotIterable(value, span),
             PyDict dict => dict.Keys,
-            IPyIteratorValue iterator => EnumerateIterator(iterator),
             IPyIterableValue iterable => iterable.Iterate(),
             IEnumerable<object> typed => typed,
             System.Collections.IEnumerable untyped => EnumerateUntyped(untyped),
@@ -255,7 +185,7 @@ internal static partial class PyIteration
         }
     }
 
-    internal sealed class Cursor : ExecutableTemporaryValue, IAsyncDisposable, IEnumerator<object>
+    internal sealed class Cursor : ExecutableTemporaryValue, IEnumerator<object>, IEnumerable<object>, IAsyncEnumerator<object>, IAsyncEnumerable<object>
     {
         private object? _value;
         private readonly LythonSourceSpan _span;
@@ -272,37 +202,64 @@ internal static partial class PyIteration
         // stack. Awaiting cleanup needs no extra list or per-removal allocation.
         internal Cursor? NextPendingDisposal;
 
-        internal static Cursor FromAcquired(PyUserIterator iterator, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-            => new(iterator.Iterator, span, iterator, context);
-
-        internal static Cursor FromSequence(IEnumerable<object> source, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-            => new(source, span, context: context) { _syncSource = source };
-
         internal static Cursor FromGeneratorOuter(GeneratorOuter outer, object source, bool asynchronous,
             LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
-            var cursor = new Cursor(outer.Iterator, span, context: context);
+            var cursor = new Cursor(outer.Iterator, span, outer.User, context);
             try
             {
-                if (cursor._iterator is null) cursor._syncEnumerator = outer.Sequence.GetEnumerator();
+                // Preserve an explicitly supplied async iterable slot. Native
+                // and user iterator pulls otherwise use the one result protocol.
                 if (asynchronous && source is IPyAsyncIterableValue iterable)
                     cursor._asyncEnumerator = iterable.IterateAsync().GetAsyncEnumerator();
-                else if (cursor._iterator is not IPyAsyncIteratorValue && outer.AsyncSequence is not null)
-                    cursor._asyncEnumerator = outer.AsyncSequence.GetAsyncEnumerator();
                 return cursor;
             }
             catch { cursor.Dispose(); throw; }
         }
 
-        object IEnumerator<object>.Current => _current;
-        object System.Collections.IEnumerator.Current => _current;
-        void System.Collections.IEnumerator.Reset() => throw new NotSupportedException();
-        bool System.Collections.IEnumerator.MoveNext()
+        // CLR collection builders share this single-pass cursor; native consumers
+        // use TryMoveNext directly. Source identity preserves their capacity hints
+        // and self-extension snapshots without a second enumerable wrapper.
+        internal PyList? UnstartedListSource => !_disposed && _iterator is null
+            && _sequencePosition == 0 && _syncEnumerator is null ? _value as PyList : null;
+        internal int? KnownCount => _iterator is null && (_syncSource ?? _value) is IReadOnlyCollection<object> known
+            ? known.Count : null;
+        public Cursor GetEnumerator() => this;
+        IEnumerator<object> IEnumerable<object>.GetEnumerator() => this;
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => this;
+        IAsyncEnumerator<object> IAsyncEnumerable<object>.GetAsyncEnumerator(CancellationToken cancellationToken) => this;
+        ValueTask<bool> IAsyncEnumerator<object>.MoveNextAsync() => MoveNextForClrAsync();
+
+        // Only CLR async transforms need deferred acquisition. The active
+        // execution token is carried by the cursor, not captured by a wrapper.
+        internal static IAsyncEnumerable<object> ForAsyncEnumeration(object value, LythonSourceSpan span)
+            => Create(value, span);
+        internal static IAsyncEnumerable<object> ForAsyncEnumeration(object value, LythonSourceSpan span,
+            LythonRuntime.ExecutionContext context)
+            => value is PyInstance or IPyProtocolIterator ? new Cursor(value, span, context: context)
+                : Create(value, span, context);
+
+        private async ValueTask<bool> MoveNextForClrAsync()
         {
             if (_disposed) return false;
             try
             {
-                // Checked sequence acquisition remains lazy and precedes its
+                var next = await TryMoveNextAsync().ConfigureAwait(false);
+                if (next.HasValue) { _current = next.Value; return true; }
+                await DisposeAsync().ConfigureAwait(false);
+                return false;
+            }
+            catch { await DisposeAsync().ConfigureAwait(false); throw; }
+        }
+
+        public object Current => _current;
+        void System.Collections.IEnumerator.Reset() => throw new NotSupportedException();
+        public bool MoveNext()
+        {
+            if (_disposed) return false;
+            try
+            {
+                // CLR enumerator acquisition remains lazy and precedes its
                 // first checkpoint. Python iterator values themselves stay open.
                 if (_syncEnumerator is null && _iterator is null && _value is not (PyList or PyTuple))
                     _syncEnumerator = (_syncSource ??= GetSyncEnumerable(_value!, _span)).GetEnumerator();
@@ -348,7 +305,7 @@ internal static partial class PyIteration
                 return new Cursor(value, span, PyUserIterator.Create(value, context, span), context);
             }
 
-            // ChainMap cursors enumerate owned snapshots (see ToSequence above)
+            // ChainMap cursors enumerate owned snapshots
             // so retained enumerate/zip iterators stay charged instead of
             // holding unowned merge scratch.
             if (value is PyChainMap chainMap)
@@ -416,6 +373,8 @@ internal static partial class PyIteration
         {
             CheckExecution();
             if (_disposed) return ValueTask.FromResult(PyIterationResult.End);
+            if (_iterator is null && _value is PyInstance or IPyProtocolIterator)
+                return AcquireDeferredUserAsync();
             if (_asyncEnumerator is not null)
                 return PullAsyncEnumeratorAsync();
             if (_iterator is IPyAsyncIteratorValue asyncIterator)
@@ -431,6 +390,12 @@ internal static partial class PyIteration
             }
 
             return ValueTask.FromResult(TryMoveNextCore());
+        }
+
+        private async ValueTask<PyIterationResult> AcquireDeferredUserAsync()
+        {
+            _iterator = await PyUserIterator.CreateAsync(_value!, _context!, _span).ConfigureAwait(false);
+            return await ((IPyAsyncIteratorValue)_iterator).TryMoveNextAsync().ConfigureAwait(false);
         }
 
         private async ValueTask<PyIterationResult> PullAsyncEnumeratorAsync()

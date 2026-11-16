@@ -1735,7 +1735,7 @@ internal sealed partial class LythonRuntime
         var value = arguments.Length == 2 ? arguments[1] : PyNone.Instance;
         var result = new PyDict(context.MemoryGovernor, span);
         using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
-        foreach (var key in ToSequence(arguments[0], span, context))
+        foreach (var key in PyIteration.Cursor.Create(arguments[0], span, context))
         {
             result.SetItem(ValidateDictionaryKey(key, span), value);
         }
@@ -1760,7 +1760,7 @@ internal sealed partial class LythonRuntime
 
         var value = arguments.Length == 2 ? arguments[1] : PyNone.Instance;
         var result = new PyDict(context.MemoryGovernor, span);
-        await foreach (var key in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
+        await foreach (var key in PyIteration.Cursor.ForAsyncEnumeration(arguments[0], span, context).ConfigureAwait(false))
         {
             using var ambient = PyStructuralGuard.PushAmbient(context, span);
             result.SetItem(ValidateDictionaryKey(key, span), value);
@@ -2184,7 +2184,7 @@ internal sealed partial class LythonRuntime
     {
         try
         {
-            foreach (var item in ToSequence(source, span, context))
+            foreach (var item in PyIteration.Cursor.Create(source, span, context))
                 builder.Append(ValidateByteOperand(InterpretByteInteger(item, context, span), span));
         }
         catch (PyNotIterableException)
@@ -2197,7 +2197,7 @@ internal sealed partial class LythonRuntime
     {
         try
         {
-            await foreach (var item in ToSequenceAsync(source, span, context).ConfigureAwait(false))
+            await foreach (var item in PyIteration.Cursor.ForAsyncEnumeration(source, span, context).ConfigureAwait(false))
             {
                 var value = await ConvertIntegerIndexAsync(item, context, span).ConfigureAwait(false);
                 if (!Numbers.PyNumberOps.TryAsInteger(value, out var number))

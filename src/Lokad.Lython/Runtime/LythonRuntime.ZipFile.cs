@@ -441,7 +441,7 @@ internal sealed partial class LythonRuntime
             if (members is not PyNone)
             {
                 var count = 0;
-                foreach (var item in ToSequence(members, span, context))
+                foreach (var item in PyIteration.Cursor.Create(members, span, context))
                 {
                     plans.Add(PlanExtraction(await ResolveReadTargetAsync(item, span, asynchronous).ConfigureAwait(false), destination, span));
                     if ((++count & 63) == 0)

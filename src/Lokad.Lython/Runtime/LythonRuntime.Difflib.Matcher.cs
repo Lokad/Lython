@@ -185,7 +185,7 @@ internal sealed partial class LythonRuntime
 
         private static object PrepareSequence(object value, LythonSourceSpan span, ExecutionContext context)
             => value is IPyIndexableValue or IReadOnlyList<object> ? value :
-                new PyList(ToSequence(value, span, context), context.MemoryGovernor, span);
+                new PyList(PyIteration.Cursor.Create(value, span, context), context.MemoryGovernor, span);
 
         private static int SequenceLength(object value)
             => value is IPyIndexableValue indexed ? indexed.Length : ((IReadOnlyList<object>)value).Count;
@@ -380,18 +380,30 @@ internal sealed partial class LythonRuntime
                 current.Clear();
                 if (_b2j.TryGetValue(ValidateDictionaryKey(SequenceItem(_a, i, span), span), out var indexes, context, span))
                 {
-                    foreach (var position in ToSequence(indexes, span, context))
+                    foreach (var position in PyIteration.Cursor.Create(indexes, span, context))
                     {
                         context.CheckExecution(span);
                         var j = DifflibModule.RequireInteger(position, "index must be an integer", span);
-                        if (j < range.BLo) continue;
-                        if (j >= range.BHi) break;
+                        if (j < range.BLo)
+                            continue;
+                        if (j >= range.BHi)
+                            break;
                         var at = (int)j;
                         var need = previous.Count + current.Count + 1;
-                        if (need > covered) { storage.Grow(64L * (need - covered), span); covered = need; }
+                        if (need > covered)
+                        {
+                            storage.Grow(64L * (need - covered), span);
+                            covered = need;
+                        }
+
                         var length = previous.TryGetValue(at - 1, out var prior) ? prior + 1 : 1;
                         current[at] = length;
-                        if (length > bestSize) { bestA = i - length + 1; bestB = at - length + 1; bestSize = length; }
+                        if (length > bestSize)
+                        {
+                            bestA = i - length + 1;
+                            bestB = at - length + 1;
+                            bestSize = length;
+                        }
                     }
                 }
                 (previous, current) = (current, previous);

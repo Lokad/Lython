@@ -354,7 +354,7 @@ internal sealed partial class LythonRuntime
         private static object Prod(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var total = ReadProdStart(arguments, span);
-            foreach (var item in ToSequence(arguments[0], span, context))
+            foreach (var item in PyIteration.Cursor.Create(arguments[0], span, context))
             {
                 total = MultiplyNumeric(total, item, span, context);
                 context.CheckExecution(span);
@@ -368,7 +368,7 @@ internal sealed partial class LythonRuntime
             // Async twin of the guarded body above: awaits delayed host reads
             // through the async boundary with the same per-pair enforcement.
             var total = ReadProdStart(arguments, span);
-            await foreach (var item in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
+            await foreach (var item in PyIteration.Cursor.ForAsyncEnumeration(arguments[0], span, context).ConfigureAwait(false))
             {
                 total = MultiplyNumeric(total, item, span, context);
                 context.CheckExecution(span);
@@ -393,11 +393,10 @@ internal sealed partial class LythonRuntime
             var infinitySign = 0;
             var sawNaN = false;
             var seen = 0;
-            foreach (var item in ToSequence(arguments[0], span, context))
+            foreach (var item in PyIteration.Cursor.Create(arguments[0], span, context))
             {
                 seen++;
                 context.CheckExecution(span);
-
                 var value = ExpectReal(item, "math.fsum", span);
                 if (double.IsNaN(value))
                 {
@@ -499,11 +498,10 @@ internal sealed partial class LythonRuntime
             var infinitySign = 0;
             var sawNaN = false;
             var seen = 0;
-            await foreach (var item in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
+            await foreach (var item in PyIteration.Cursor.ForAsyncEnumeration(arguments[0], span, context).ConfigureAwait(false))
             {
                 seen++;
                 context.CheckExecution(span);
-
                 var value = ExpectReal(item, "math.fsum", span);
                 if (double.IsNaN(value))
                 {

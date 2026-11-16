@@ -12,6 +12,32 @@ public sealed class CursorDispatchTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public void ExtendingFromAPartlyConsumedCursorDoesNotRestartItsSource(bool list)
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var owner = budget.CreateScope())
+        {
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = owner });
+            var first = new PyList([], context.MemoryGovernor, Span);
+            var second = new PyList([], context.MemoryGovernor, Span);
+            var third = new PyList([], context.MemoryGovernor, Span);
+            object[] items = [first, second, third];
+            object source = list ? new PyList(items, context.MemoryGovernor, Span) : items;
+            using var cursor = PyIteration.Cursor.Create(source, Span, context);
+            Assert.Same(first, cursor.TryMoveNext().Value);
+            var target = new PyList([], context.MemoryGovernor, Span);
+            target.AddRange(cursor, context, Span);
+            Assert.Equal(2, target.Count);
+            Assert.Same(second, target[0]);
+            Assert.Same(third, target[1]);
+            Assert.False(cursor.TryMoveNext().HasValue);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task ExactSequencesKeepAliasesAcrossPullModesAndExhaustion(bool asynchronous)
     {
         foreach (var tuple in new[] { false, true })
@@ -79,7 +105,7 @@ public sealed class CursorDispatchTests
     }
 
     [Fact]
-    public void CheckedSequenceEnumeratorPreservesCurrentAndDisposeBehavior()
+    public void ClrCursorPreservesCurrentAndDisposeBehavior()
     {
         var budget = new LythonMemoryBudget(1024 * 1024);
         using (var owner = budget.CreateScope())
@@ -88,7 +114,7 @@ public sealed class CursorDispatchTests
             var source = new PyList([BigInteger.One, new BigInteger(2)], context.MemoryGovernor, Span);
             try
             {
-                using var cursor = PyIteration.ToSequence(source, Span, context).GetEnumerator();
+                using var cursor = PyIteration.Cursor.Create(source, Span, context).GetEnumerator();
                 Assert.True(cursor.MoveNext());
                 Assert.Equal(BigInteger.One, cursor.Current);
                 source.SetItem(1, new BigInteger(9));
@@ -221,7 +247,7 @@ public sealed class CursorDispatchTests
     {
         var source = new AsyncIterator();
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
-        var outer = new PyIteration.GeneratorOuter(source, source.Iterate());
+        var outer = new PyIteration.GeneratorOuter(source);
         await using var cursor = PyIteration.Cursor.FromGeneratorOuter(outer, source, true, Span, context);
         var next = await cursor.TryMoveNextAsync();
         Assert.Equal(new BigInteger(3), Assert.IsType<BigInteger>(next.Value));

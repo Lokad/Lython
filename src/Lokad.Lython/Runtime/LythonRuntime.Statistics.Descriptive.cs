@@ -451,7 +451,7 @@ internal sealed partial class LythonRuntime
             }
 
             var accumulator = new MeanAccumulator();
-            foreach (var value in ToSequence(arguments[0], span, context))
+            foreach (var value in PyIteration.Cursor.Create(arguments[0], span, context))
             {
                 accumulator.Add(value, span, context);
             }
@@ -467,7 +467,7 @@ internal sealed partial class LythonRuntime
             }
 
             var accumulator = new MeanAccumulator();
-            await foreach (var value in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
+            await foreach (var value in PyIteration.Cursor.ForAsyncEnumeration(arguments[0], span, context).ConfigureAwait(false))
             {
                 accumulator.Add(value, span, context);
             }
@@ -498,11 +498,13 @@ internal sealed partial class LythonRuntime
                 var sum = new ExactDoubleSum();
                 if (asynchronous)
                 {
-                    await foreach (var value in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false)) AddValue(value);
+                    await foreach (var value in PyIteration.Cursor.ForAsyncEnumeration(arguments[0], span, context).ConfigureAwait(false))
+                        AddValue(value);
                 }
                 else
                 {
-                    foreach (var value in ToSequence(arguments[0], span, context)) AddValue(value);
+                    foreach (var value in PyIteration.Cursor.Create(arguments[0], span, context))
+                        AddValue(value);
                 }
                 var total = sum.TotalFSum(span);
                 var denominator = knownCount ?? count;
@@ -520,19 +522,21 @@ internal sealed partial class LythonRuntime
             // Python prepares weights before consuming data. Retain their original
             // values so conversion/denominator errors occur after the paired pass.
             using var weights = asynchronous
-                ? await PyIteration.DrainLeasedAsync(ToSequenceAsync(arguments[1], span, context), span, context).ConfigureAwait(false)
-                : PyIteration.DrainLeased(ToSequence(arguments[1], span, context), span, context);
+                ? await PyIteration.DrainLeasedAsync(PyIteration.Cursor.ForAsyncEnumeration(arguments[1], span, context), span, context).ConfigureAwait(false)
+                : PyIteration.DrainLeased(PyIteration.Cursor.Create(arguments[1], span, context), span, context);
             var products = new ExactDoubleSum();
             var index = 0;
             try
             {
                 if (asynchronous)
                 {
-                    await foreach (var value in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false)) AddPair(value);
+                    await foreach (var value in PyIteration.Cursor.ForAsyncEnumeration(arguments[0], span, context).ConfigureAwait(false))
+                        AddPair(value);
                 }
                 else
                 {
-                    foreach (var value in ToSequence(arguments[0], span, context)) AddPair(value);
+                    foreach (var value in PyIteration.Cursor.Create(arguments[0], span, context))
+                        AddPair(value);
                 }
                 if (index != weights.Items.Count) throw StatisticsError("data and weights must be the same length", span);
             }
@@ -1299,7 +1303,7 @@ internal sealed partial class LythonRuntime
             }
 
             // N03: leased drain keeps input scratch charged beside the frequency table.
-            var lease = PyIteration.DrainLeased(ToSequence(arguments[0], span, context), span, context);
+            var lease = PyIteration.DrainLeased(PyIteration.Cursor.Create(arguments[0], span, context), span, context);
             if (!allowEmpty && lease.Items.Count == 0)
             {
                 lease.Dispose();
@@ -1320,7 +1324,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", $"{owner}(data) expects one iterable argument.", span);
             }
 
-            var lease = await PyIteration.DrainLeasedAsync(ToSequenceAsync(arguments[0], span, context), span, context).ConfigureAwait(false);
+            var lease = await PyIteration.DrainLeasedAsync(PyIteration.Cursor.ForAsyncEnumeration(arguments[0], span, context), span, context).ConfigureAwait(false);
             if (!allowEmpty && lease.Items.Count == 0)
             {
                 lease.Dispose();
@@ -1504,11 +1508,10 @@ internal sealed partial class LythonRuntime
             // released on every exit path instead of stranding.
             var values = CreateNumericBuffer<object>(arguments[0] is IReadOnlyCollection<object> sized ? sized.Count : 0, scratch, span);
 
-            foreach (var value in ToSequence(arguments[0], span, context))
+            foreach (var value in PyIteration.Cursor.Create(arguments[0], span, context))
             {
                 GrowNumericBuffer(values, scratch, span);
                 values.Add(value);
-
                 context.CheckExecution(span);
             }
 
@@ -1534,11 +1537,10 @@ internal sealed partial class LythonRuntime
 
             var values = CreateNumericBuffer<object>(arguments[0] is IReadOnlyCollection<object> sized ? sized.Count : 0, scratch, span);
 
-            await foreach (var value in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
+            await foreach (var value in PyIteration.Cursor.ForAsyncEnumeration(arguments[0], span, context).ConfigureAwait(false))
             {
                 GrowNumericBuffer(values, scratch, span);
                 values.Add(value);
-
                 context.CheckExecution(span);
             }
 
@@ -1594,12 +1596,11 @@ internal sealed partial class LythonRuntime
             // alongside the old backing before resizing.
             var values = CreateNumericBuffer<double>(data is IReadOnlyCollection<object> sized ? sized.Count : 0, scratch, span);
 
-            foreach (var value in ToSequence(data, span, context))
+            foreach (var value in PyIteration.Cursor.Create(data, span, context))
             {
                 var real = ExpectRealForStatistics(value, owner, span);
                 GrowNumericBuffer(values, scratch, span);
                 values.Add(real);
-
                 context.CheckExecution(span);
             }
 
@@ -1615,12 +1616,11 @@ internal sealed partial class LythonRuntime
         {
             var values = CreateNumericBuffer<double>(data is IReadOnlyCollection<object> sized ? sized.Count : 0, scratch, span);
 
-            await foreach (var value in ToSequenceAsync(data, span, context).ConfigureAwait(false))
+            await foreach (var value in PyIteration.Cursor.ForAsyncEnumeration(data, span, context).ConfigureAwait(false))
             {
                 var real = ExpectRealForStatistics(value, owner, span);
                 GrowNumericBuffer(values, scratch, span);
                 values.Add(real);
-
                 context.CheckExecution(span);
             }
 

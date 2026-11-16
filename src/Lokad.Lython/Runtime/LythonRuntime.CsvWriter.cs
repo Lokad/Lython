@@ -35,10 +35,10 @@ internal sealed partial class LythonRuntime
         private static async ValueTask<object> WriteRowsAsync(CsvWriterObject writer, object rows, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             if (asynchronous)
-                await foreach (var row in ToSequenceAsync(rows, span, context).ConfigureAwait(false))
+                await foreach (var row in PyIteration.Cursor.ForAsyncEnumeration(rows, span, context).ConfigureAwait(false))
                     await WriteRowCoreAsync(writer, row, span, context, true).ConfigureAwait(false);
-            else foreach (var row in ToSequence(rows, span, context))
-                _ = await WriteRowCoreAsync(writer, row, span, context, false).ConfigureAwait(false);
+            else foreach (var row in PyIteration.Cursor.Create(rows, span, context))
+                     _ = await WriteRowCoreAsync(writer, row, span, context, false).ConfigureAwait(false);
             return PyNone.Instance;
         }
 
@@ -52,8 +52,10 @@ internal sealed partial class LythonRuntime
                 if (values is not null)
                     await foreach (var item in values.ConfigureAwait(false)) await AppendAsync(item).ConfigureAwait(false);
                 else if (asynchronous)
-                    await foreach (var item in ToSequenceAsync(row, span, context).ConfigureAwait(false)) await AppendAsync(item).ConfigureAwait(false);
-                else foreach (var item in ToSequence(row, span, context)) await AppendAsync(item).ConfigureAwait(false);
+                    await foreach (var item in PyIteration.Cursor.ForAsyncEnumeration(row, span, context).ConfigureAwait(false))
+                        await AppendAsync(item).ConfigureAwait(false);
+                else foreach (var item in PyIteration.Cursor.Create(row, span, context))
+                         await AppendAsync(item).ConfigureAwait(false);
                 if (count == 1 && builder.Length == 0)
                 {
                     if (writer.Options.Quoting == CsvQuotingMode.None) throw CsvError("single empty field record must be quoted", span);

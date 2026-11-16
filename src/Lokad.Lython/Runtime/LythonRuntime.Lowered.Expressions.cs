@@ -147,7 +147,7 @@ internal sealed partial class LythonRuntime
     private static object EvaluateLoweredListComprehension(LoweredListComprehensionExpression comprehension, ExecutionContext context)
     {
         var result = new PyList([], context.MemoryGovernor, comprehension.Span);
-        var outer = ToSequence(EvaluateLoweredExpression(comprehension.Clauses[0].Iterable, context), comprehension.Clauses[0].Iterable.Span, context);
+        using var outer = PyIteration.Cursor.Create(EvaluateLoweredExpression(comprehension.Clauses[0].Iterable, context), comprehension.Clauses[0].Iterable.Span, context);
         using var scope = context.EnterComprehension(comprehension.ScopeFacts);
         EvaluateLoweredComprehensionClauses(
             comprehension.Clauses,
@@ -165,7 +165,7 @@ internal sealed partial class LythonRuntime
         using var _ambientScope = PyStructuralGuard.PushAmbient(context, comprehension.Span);
         try
         {
-            var outer = ToSequence(EvaluateLoweredExpression(comprehension.Clauses[0].Iterable, context), comprehension.Clauses[0].Iterable.Span, context);
+            using var outer = PyIteration.Cursor.Create(EvaluateLoweredExpression(comprehension.Clauses[0].Iterable, context), comprehension.Clauses[0].Iterable.Span, context);
             using var scope = context.EnterComprehension(comprehension.ScopeFacts);
             EvaluateLoweredComprehensionClauses(
                 comprehension.Clauses,
@@ -193,7 +193,7 @@ internal sealed partial class LythonRuntime
     {
         var result = new PyDict(context.MemoryGovernor, comprehension.Span);
         using var _ambientScope = PyStructuralGuard.PushAmbient(context, comprehension.Span);
-        var outer = ToSequence(EvaluateLoweredExpression(comprehension.Clauses[0].Iterable, context), comprehension.Clauses[0].Iterable.Span, context);
+        using var outer = PyIteration.Cursor.Create(EvaluateLoweredExpression(comprehension.Clauses[0].Iterable, context), comprehension.Clauses[0].Iterable.Span, context);
         using var scope = context.EnterComprehension(comprehension.ScopeFacts);
         EvaluateLoweredComprehensionClauses(
             comprehension.Clauses,
@@ -214,13 +214,16 @@ internal sealed partial class LythonRuntime
         int index,
         ExecutionContext context,
         Action<ExecutionContext> emit,
-        IEnumerable<object>? outerSequence = null)
+        PyIteration.Cursor? outerSequence = null)
     {
         var clause = clauses[index];
-        var sequence = outerSequence ?? ToSequence(EvaluateLoweredExpression(clause.Iterable, context), clause.Iterable.Span, context);
+        using var sequence = outerSequence ?? PyIteration.Cursor.Create(EvaluateLoweredExpression(clause.Iterable, context), clause.Iterable.Span, context);
 
-        foreach (var item in sequence)
+        while (true)
         {
+            var nextItem = sequence.TryMoveNext();
+            if (!nextItem.HasValue) break;
+            var item = nextItem.Value;
             AssignTarget(clause.StoreTarget, item, context);
 
             if (clause.Condition is not null && !IsTruthy(EvaluateLoweredExpression(clause.Condition, context), context, clause.Condition.Span))

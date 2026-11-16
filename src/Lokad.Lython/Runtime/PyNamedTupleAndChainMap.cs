@@ -273,7 +273,7 @@ internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableV
                 throw new LythonRuntimeException("TypeError", $"{_type.Name}._make(iterable) expects one iterable argument.", span);
             }
 
-            var record = _type.CreateFromValues(LythonRuntime.ToSequence(arguments[0].Value, span, context), context.MemoryGovernor, span);
+            var record = _type.CreateFromValues(PyIteration.Cursor.Create(arguments[0].Value, span, context), context.MemoryGovernor, span);
             return record;
         }
 
@@ -839,8 +839,8 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
     private IEnumerable<IChainMapSource> EnumerateMaps()
     {
         var values = _context is null
-            ? PyIteration.ToSequence(_mapValues, _span)
-            : PyIteration.ToSequence(_mapValues, _span, _context);
+            ? PyIteration.Cursor.Create(_mapValues, _span)
+            : PyIteration.Cursor.Create(_mapValues, _span, _context);
         foreach (var value in values) yield return ExpectMap(value, _span);
     }
 
@@ -992,7 +992,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
     }
 
     public PyString RenderPython(PyRenderingContext context)
-            => PyRendering.JoinRenderedSequence("ChainMap(", new RenderedMaps(PyIteration.ToSequence(_mapValues, _span, context.Context), context), ")", context);
+            => PyRendering.JoinRenderedSequence("ChainMap(", new RenderedMaps(PyIteration.Cursor.Create(_mapValues, _span, context.Context), context), ")", context);
 
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 

@@ -485,7 +485,7 @@ internal sealed partial class LythonRuntime
         {
             EnsureOpen(span);
             var count = 0;
-            foreach (var item in ToSequence(arguments[0], span, context))
+            foreach (var item in PyIteration.Cursor.Create(arguments[0], span, context))
             {
                 if (item is not PyBytes bytes)
                 {

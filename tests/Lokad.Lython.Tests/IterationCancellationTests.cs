@@ -38,11 +38,11 @@ public sealed class IterationCancellationTests
             }
             else if (asynchronous)
             {
-                await foreach (var _ in PyIteration.ToSequenceAsync(source, Span, context)) { }
+                await foreach (var _ in PyIteration.Cursor.ForAsyncEnumeration(source, Span, context)) { }
             }
             else
             {
-                foreach (var _ in PyIteration.ToSequence(source, Span, context)) { }
+                foreach (var _ in PyIteration.Cursor.Create(source, Span, context)) { }
             }
         });
 

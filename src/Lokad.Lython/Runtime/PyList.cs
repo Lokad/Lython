@@ -36,7 +36,7 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
     }
 
     public PyList(IEnumerable<object> items, MemoryGovernor? governor, LythonSourceSpan? allocationSpan)
-        : this(items is IReadOnlyCollection<object> known ? known.Count : 0, governor, allocationSpan)
+        : this(items is PyIteration.Cursor cursor ? cursor.KnownCount.GetValueOrDefault() : items is IReadOnlyCollection<object> known ? known.Count : 0, governor, allocationSpan)
     {
         try
         {
@@ -100,10 +100,11 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
 
     internal void AddRange(IEnumerable<object> values, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
     {
+        using var inputCursor = values as PyIteration.Cursor;
         context?.CheckExecution(span);
-        if (values is PyIteration.CheckedSequence { Source: PyList or IReadOnlyCollection<object> } checkedSequence)
+        if (inputCursor?.UnstartedListSource is { } unstartedList)
         {
-            values = checkedSequence.Source;
+            values = unstartedList;
         }
 
         if (values is PyList sourceList)
@@ -116,13 +117,14 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
 
         // List-backed inputs are snapshotted above (PyList implements this interface
         // through its sequence interfaces, so it must never reach this live count).
-        if (values is IReadOnlyCollection<object> known)
+        var knownCount = values is IReadOnlyCollection<object> known ? known.Count : inputCursor?.KnownCount;
+        if (knownCount is { } count)
         {
             // Admit the reported count before mutation. A changing collection
             // can yield more, so each store also ensures its actual capacity.
-            EnsureCapacity(checked(_count + known.Count));
+            EnsureCapacity(checked(_count + count));
 
-            foreach (var value in known)
+            foreach (var value in values)
             {
                 context?.CheckExecution(span);
                 Add(value);
@@ -159,14 +161,14 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
         // possible, self-extension stays snapshotted); only lazy sources await.
         if (source is PyList || source is IReadOnlyCollection<object>)
         {
-            AddRange(LythonRuntime.ToSequence(source, span, context), context, span);
+            AddRange(PyIteration.Cursor.Create(source, span, context), context, span);
             return;
         }
 
         try
         {
             context.CheckExecution(span);
-            await foreach (var value in LythonRuntime.ToSequenceAsync(source, span, context).ConfigureAwait(false))
+            await foreach (var value in PyIteration.Cursor.ForAsyncEnumeration(source, span, context).ConfigureAwait(false))
             {
                 context.CheckExecution(span);
                 Add(value);

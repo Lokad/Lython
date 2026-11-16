@@ -586,28 +586,34 @@ internal sealed partial class LythonRuntime
         var index = BigInteger.Zero;
         if (asynchronous)
         {
-            await foreach (var item in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
+            await foreach (var item in PyIteration.Cursor.ForAsyncEnumeration(arguments[0], span, context).ConfigureAwait(false))
             {
                 context.CheckExecution(span);
                 if (await ElementEqualsAsync(item, arguments[1], context, span).ConfigureAwait(false))
                 {
-                    if (!count) return index;
+                    if (!count)
+                        return index;
                     matches++;
                 }
-                if (!count) index++;
+
+                if (!count)
+                    index++;
             }
         }
         else
         {
-            foreach (var item in ToSequence(arguments[0], span, context))
+            foreach (var item in PyIteration.Cursor.Create(arguments[0], span, context))
             {
                 context.CheckExecution(span);
                 if (ElementEquals(item, arguments[1], context, span))
                 {
-                    if (!count) return index;
+                    if (!count)
+                        return index;
                     matches++;
                 }
-                if (!count) index++;
+
+                if (!count)
+                    index++;
             }
         }
         if (count) return matches;

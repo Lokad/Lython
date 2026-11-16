@@ -104,8 +104,10 @@ internal sealed partial class LythonRuntime
         try
         {
             if (asynchronous)
-                await foreach (var item in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false)) Append(item);
-            else foreach (var item in ToSequence(arguments[0], span, context)) Append(item);
+                await foreach (var item in PyIteration.Cursor.ForAsyncEnumeration(arguments[0], span, context).ConfigureAwait(false))
+                    Append(item);
+            else foreach (var item in PyIteration.Cursor.Create(arguments[0], span, context))
+                     Append(item);
             context.CheckExecution(span);
             return builder.ToPyStringAndRelease();
         }

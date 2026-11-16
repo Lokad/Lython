@@ -98,10 +98,10 @@ internal sealed partial class LythonRuntime
                 case "writelines":
                     if (_reader is not null) throw new LythonRuntimeException(ModuleException("io", "UnsupportedOperation"), "not writable", span);
                     if (asynchronous)
-                        await foreach (var item in PyIteration.ToSequenceAsync(args[0], span, context).ConfigureAwait(false))
+                        await foreach (var item in PyIteration.Cursor.ForAsyncEnumeration(args[0], span, context).ConfigureAwait(false))
                             await WriteAsync(item, context, span, true).ConfigureAwait(false);
-                    else foreach (var item in PyIteration.ToSequence(args[0], span, context))
-                        await WriteAsync(item, context, span, false).ConfigureAwait(false);
+                    else foreach (var item in PyIteration.Cursor.Create(args[0], span, context))
+                             await WriteAsync(item, context, span, false).ConfigureAwait(false);
                     return PyNone.Instance;
                 case "read": case "readline":
                 {

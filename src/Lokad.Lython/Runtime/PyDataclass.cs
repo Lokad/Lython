@@ -306,12 +306,11 @@ internal static partial class PyDataclass
     private static IEnumerable<MakeDataclassField> ParseMakeDataclassFields(object fieldsArgument, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         var seenNames = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var item in LythonRuntime.ToSequence(fieldsArgument, span, context))
+        foreach (var item in PyIteration.Cursor.Create(fieldsArgument, span, context))
         {
             string name;
             object annotation = PyString.FromString("typing.Any");
             object defaultValue = PyDataclassMissing.Instance;
-
             if (PyStringOps.TryAsString(item, out var text))
             {
                 name = text.AsString();
@@ -358,7 +357,7 @@ internal static partial class PyDataclass
         }
 
         var bases = new List<PyType>();
-        foreach (var item in LythonRuntime.ToSequence(basesArgument, span, context))
+        foreach (var item in PyIteration.Cursor.Create(basesArgument, span, context))
         {
             if (item is not PyType type)
             {

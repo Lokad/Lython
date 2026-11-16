@@ -302,17 +302,6 @@ internal sealed partial class LythonRuntime
         Length,
     }
 
-    internal static IEnumerable<object> ToSequence(object value, LythonSourceSpan span)
-        => PyIteration.ToSequence(value, span);
-
-    internal static IEnumerable<object> ToSequence(object value, LythonSourceSpan span, ExecutionContext context)
-        => PyIteration.ToSequence(value, span, context);
-
-    internal static IAsyncEnumerable<object> ToSequenceAsync(object value, LythonSourceSpan span)
-        => PyIteration.ToSequenceAsync(value, span);
-
-    internal static IAsyncEnumerable<object> ToSequenceAsync(object value, LythonSourceSpan span, ExecutionContext context)
-        => PyIteration.ToSequenceAsync(value, span, context);
 
     internal static bool AreEqual(object left, object right) => PyEquality.AreEqual(left, right);
 
@@ -471,7 +460,7 @@ internal sealed partial class LythonRuntime
     private static object EvaluateListComprehension(ListComprehensionExpressionSyntax comprehension, ExecutionContext context)
     {
         var result = new PyList([], context.MemoryGovernor, comprehension.Span);
-        var outer = ToSequence(EvaluateExpression(comprehension.Clauses[0].Iterable, context), comprehension.Clauses[0].Iterable.Span, context);
+        using var outer = PyIteration.Cursor.Create(EvaluateExpression(comprehension.Clauses[0].Iterable, context), comprehension.Clauses[0].Iterable.Span, context);
         using var bindings = context.EnterComprehension(ComprehensionSyntaxFacts.Bindings(comprehension.Clauses.Select(clause => clause.Target)));
         EvaluateComprehensionClauses(
             comprehension.Clauses,
@@ -487,7 +476,7 @@ internal sealed partial class LythonRuntime
     {
         using var _ambientScope = PyStructuralGuard.PushAmbient(context, comprehension.Span);
         var result = new PySet(context.MemoryGovernor, comprehension.Span);
-        var outer = ToSequence(EvaluateExpression(comprehension.Clauses[0].Iterable, context), comprehension.Clauses[0].Iterable.Span, context);
+        using var outer = PyIteration.Cursor.Create(EvaluateExpression(comprehension.Clauses[0].Iterable, context), comprehension.Clauses[0].Iterable.Span, context);
         using var bindings = context.EnterComprehension(ComprehensionSyntaxFacts.Bindings(comprehension.Clauses.Select(clause => clause.Target)));
         EvaluateComprehensionClauses(
             comprehension.Clauses,
@@ -509,7 +498,7 @@ internal sealed partial class LythonRuntime
     {
         using var _ambientScope = PyStructuralGuard.PushAmbient(context, comprehension.Span);
         var result = new PyDict(context.MemoryGovernor, comprehension.Span);
-        var outer = ToSequence(EvaluateExpression(comprehension.Clauses[0].Iterable, context), comprehension.Clauses[0].Iterable.Span, context);
+        using var outer = PyIteration.Cursor.Create(EvaluateExpression(comprehension.Clauses[0].Iterable, context), comprehension.Clauses[0].Iterable.Span, context);
         using var bindings = context.EnterComprehension(ComprehensionSyntaxFacts.Bindings(comprehension.Clauses.Select(clause => clause.Target)));
         EvaluateComprehensionClauses(
             comprehension.Clauses,
@@ -539,13 +528,16 @@ internal sealed partial class LythonRuntime
         int index,
         ExecutionContext context,
         Action<ExecutionContext> emit,
-        IEnumerable<object>? outerSequence = null)
+        PyIteration.Cursor? outerSequence = null)
     {
         var clause = clauses[index];
-        var sequence = outerSequence ?? ToSequence(EvaluateExpression(clause.Iterable, context), clause.Iterable.Span, context);
+        using var sequence = outerSequence ?? PyIteration.Cursor.Create(EvaluateExpression(clause.Iterable, context), clause.Iterable.Span, context);
 
-        foreach (var item in sequence)
+        while (true)
         {
+            var nextItem = sequence.TryMoveNext();
+            if (!nextItem.HasValue) break;
+            var item = nextItem.Value;
             AssignLoopTarget(clause.Target, item, clause.Iterable.Span, context);
 
             if (clause.Condition is not null &&

@@ -138,10 +138,11 @@ internal sealed partial class LythonRuntime
             var which = RequireInteger(whichValue, "restore which must be 1 or 2", span);
             if (which != 1 && which != 2) throw new LythonRuntimeException("ValueError", "restore which must be 1 or 2", span);
             var accepted = which == 1 ? "- " : "+ ";
-            foreach (var item in ToSequence(source, span, context))
+            foreach (var item in PyIteration.Cursor.Create(source, span, context))
             {
                 context.CheckExecution(span);
-                if (item is not PyString line) throw new LythonRuntimeException("TypeError", "restore expects string lines", span);
+                if (item is not PyString line)
+                    throw new LythonRuntimeException("TypeError", "restore expects string lines", span);
                 var text = line.AsString();
                 if (text.StartsWith("  ", StringComparison.Ordinal) || text.StartsWith(accepted, StringComparison.Ordinal))
                     yield return PyString.FromString(text[2..], context.MemoryGovernor, span);
@@ -230,7 +231,7 @@ internal sealed partial class LythonRuntime
                 context);
 
             var bytes = new List<object>();
-            foreach (var line in ToSequence(result, span, context))
+            foreach (var line in PyIteration.Cursor.Create(result, span, context))
             {
                 if (!PyStringOps.TryAsString(line, out var text))
                 {
@@ -372,12 +373,9 @@ internal sealed partial class LythonRuntime
             {
                 using var reservation = context.MemoryGovernor.ReserveTemporary(32, span);
                 var items = new List<PyString>();
-                foreach (var item in ToSequence(value, span, context))
+                foreach (var item in PyIteration.Cursor.Create(value, span, context))
                 {
-                    var text = PyStringOps.TryAsString(item, out var parsed)
-                        ? parsed
-                        : throw new LythonRuntimeException("TypeError", $"{owner} expects an iterable of strings.", span);
-
+                    var text = PyStringOps.TryAsString(item, out var parsed) ? parsed : throw new LythonRuntimeException("TypeError", $"{owner} expects an iterable of strings.", span);
                     AddSequenceItem(items, text, reservation, span);
                     context.CheckExecution(span);
                 }
@@ -402,7 +400,7 @@ internal sealed partial class LythonRuntime
                 using var reservation = context.MemoryGovernor.ReserveTemporary(32, span);
                 var items = new List<byte[]>();
                 long payloadBytes = 0;
-                foreach (var item in ToSequence(value, span, context))
+                foreach (var item in PyIteration.Cursor.Create(value, span, context))
                 {
                     if (item is not PyBytes bytes)
                     {

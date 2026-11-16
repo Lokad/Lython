@@ -93,7 +93,7 @@ internal sealed partial class LythonRuntime
         var result = new PyList(arguments[0] is IReadOnlyCollection<object> known ? known.Count : 0, context.MemoryGovernor, span);
         try
         {
-            foreach (var item in ToSequence(arguments[0], span, context))
+            foreach (var item in PyIteration.Cursor.Create(arguments[0], span, context))
             {
                 result.Add(item);
                 context.CheckExecution(span);
@@ -118,7 +118,7 @@ internal sealed partial class LythonRuntime
         var result = new PyList(arguments[0] is IReadOnlyCollection<object> known ? known.Count : 0, context.MemoryGovernor, span);
         try
         {
-            await foreach (var item in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
+            await foreach (var item in PyIteration.Cursor.ForAsyncEnumeration(arguments[0], span, context).ConfigureAwait(false))
             {
                 result.Add(item);
                 context.CheckExecution(span);
@@ -140,7 +140,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "tuple(iterable) expects one argument.", span);
         }
 
-        var result = new PyTuple(ToSequence(arguments[0], span, context), context.MemoryGovernor, span);
+        var result = new PyTuple(PyIteration.Cursor.Create(arguments[0], span, context), context.MemoryGovernor, span);
         context.CheckExecution(span);
         return result;
     }
@@ -183,9 +183,9 @@ internal sealed partial class LythonRuntime
         }
 
         var result = new PyDict(context.MemoryGovernor, span);
-        foreach (var pair in ToSequence(arguments[0], span, context))
+        foreach (var pair in PyIteration.Cursor.Create(arguments[0], span, context))
         {
-            using var enumerator = ToSequence(pair, span, context).GetEnumerator();
+            using var enumerator = PyIteration.Cursor.Create(pair, span, context).GetEnumerator();
             if (!enumerator.MoveNext())
             {
                 throw new LythonRuntimeException("TypeError", "dict(iterable_of_pairs) expects key-value pairs.", span);
@@ -493,7 +493,7 @@ internal sealed partial class LythonRuntime
         }
 
         var elementIndex = 0;
-        foreach (var pair in ToSequence(source, span, context))
+        foreach (var pair in PyIteration.Cursor.Create(source, span, context))
         {
             ReadUpdatePair(pair, elementIndex, context, span, out var key, out var elementValue);
             target.SetItem(ValidateDictionaryKey(key, span), elementValue);
@@ -565,7 +565,7 @@ internal sealed partial class LythonRuntime
         }
 
         var elementIndex = 0;
-        await foreach (var pair in ToSequenceAsync(source, span, context).ConfigureAwait(false))
+        await foreach (var pair in PyIteration.Cursor.ForAsyncEnumeration(source, span, context).ConfigureAwait(false))
         {
             using var ambient = PyStructuralGuard.PushAmbient(context, span);
             ReadUpdatePair(pair, elementIndex, context, span, out var key, out var elementValue);
@@ -580,7 +580,7 @@ internal sealed partial class LythonRuntime
     {
         try
         {
-            return ToSequence(pair, span, context).GetEnumerator();
+            return PyIteration.Cursor.Create(pair, span, context).GetEnumerator();
         }
         catch (PyNotIterableException)
         {

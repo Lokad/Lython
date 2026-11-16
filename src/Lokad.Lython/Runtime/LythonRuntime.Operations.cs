@@ -928,7 +928,7 @@ internal sealed partial class LythonRuntime
             return;
         }
 
-        foreach (var item in ToSequence(value, itemSpan, context))
+        foreach (var item in PyIteration.Cursor.Create(value, itemSpan, context))
         {
             AddSetLiteralValue(result, RuntimeValue(item), itemSpan, setSpan, context);
         }
@@ -981,7 +981,7 @@ internal sealed partial class LythonRuntime
                 }
 
                 var keys = InvokeCallableTarget(keysMember, span, span, context, () => []);
-                items = ToSequence(keys, span, context).Select(key =>
+                items = Enumerable.Select(PyIteration.Cursor.Create(keys, span, context), key =>
                     new KeyValuePair<object, object>(key, GetUserItem(instance, key, context, span)));
                 return true;
         }

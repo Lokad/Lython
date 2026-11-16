@@ -162,9 +162,11 @@ internal sealed partial class LythonRuntime
                     EnsureOpen(span);
                     if (asynchronous)
                     {
-                        await foreach (var item in PyIteration.ToSequenceAsync(args[0], span, context).ConfigureAwait(false)) Write(item, span);
+                        await foreach (var item in PyIteration.Cursor.ForAsyncEnumeration(args[0], span, context).ConfigureAwait(false))
+                            Write(item, span);
                     }
-                    else foreach (var item in PyIteration.ToSequence(args[0], span, context)) Write(item, span);
+                    else foreach (var item in PyIteration.Cursor.Create(args[0], span, context))
+                             Write(item, span);
                     return PyNone.Instance;
                 case "getvalue": return GetValue(span);
                 case "tell": EnsureOpen(span); return new BigInteger(_position);

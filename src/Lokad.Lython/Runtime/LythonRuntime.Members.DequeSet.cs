@@ -132,7 +132,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     deque.AttachMemoryGovernor(context.MemoryGovernor, span);
-                    deque.Extend(ToSequence(arguments[0], span, context));
+                    deque.Extend(PyIteration.Cursor.Create(arguments[0], span, context));
                     context.CheckExecution(span);
                     return PyNone.Instance;
                 }, async (arguments, span, context) =>
@@ -156,7 +156,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     deque.AttachMemoryGovernor(context.MemoryGovernor, span);
-                    deque.ExtendLeft(ToSequence(arguments[0], span, context));
+                    deque.ExtendLeft(PyIteration.Cursor.Create(arguments[0], span, context));
                     context.CheckExecution(span);
                     return PyNone.Instance;
                 }, async (arguments, span, context) =>
@@ -540,7 +540,7 @@ internal sealed partial class LythonRuntime
                 "isdisjoint" => BoundCallable.Create((arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
-                    foreach (var item in ToSequence(arguments[0], span, context))
+                    foreach (var item in PyIteration.Cursor.Create(arguments[0], span, context))
                     {
                         if (set.Contains(ValidateSetItem(item, span)))
                         {
@@ -559,7 +559,7 @@ internal sealed partial class LythonRuntime
                 "issuperset" => BoundCallable.Create((arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
-                    foreach (var item in ToSequence(arguments[0], span, context))
+                    foreach (var item in PyIteration.Cursor.Create(arguments[0], span, context))
                     {
                         if (!set.Contains(ValidateSetItem(item, span)))
                         {
@@ -967,7 +967,7 @@ internal sealed partial class LythonRuntime
             var result = new PySet(context.MemoryGovernor, span);
             try
             {
-                foreach (var item in ToSequence(value, span, context))
+                foreach (var item in PyIteration.Cursor.Create(value, span, context))
                 {
                     result.Add(ValidateSetItem(item, span));
                     context.CheckExecution(span);
@@ -993,7 +993,7 @@ internal sealed partial class LythonRuntime
             var result = new PySet(context.MemoryGovernor, span);
             try
             {
-                await foreach (var item in ToSequenceAsync(value, span, context).ConfigureAwait(false))
+                await foreach (var item in PyIteration.Cursor.ForAsyncEnumeration(value, span, context).ConfigureAwait(false))
                 {
                     using var ambient = PyStructuralGuard.PushAmbient(context, span);
                     result.Add(ValidateSetItem(item, span));
@@ -1022,7 +1022,7 @@ internal sealed partial class LythonRuntime
             var retained = new PySet(context.MemoryGovernor, span);
             try
             {
-                await foreach (var item in ToSequenceAsync(value, span, context).ConfigureAwait(false))
+                await foreach (var item in PyIteration.Cursor.ForAsyncEnumeration(value, span, context).ConfigureAwait(false))
                 {
                     var candidate = ValidateSetItem(item, span);
                     if (target.Contains(candidate))
@@ -1055,7 +1055,7 @@ internal sealed partial class LythonRuntime
             var retained = new PySet(context.MemoryGovernor, span);
             try
             {
-                foreach (var item in ToSequence(value, span, context))
+                foreach (var item in PyIteration.Cursor.Create(value, span, context))
                 {
                     var candidate = ValidateSetItem(item, span);
                     if (target.Contains(candidate))
@@ -1087,7 +1087,7 @@ internal sealed partial class LythonRuntime
             var found = new PySet(context.MemoryGovernor, span);
             try
             {
-                foreach (var item in ToSequence(value, span, context))
+                foreach (var item in PyIteration.Cursor.Create(value, span, context))
                 {
                     var candidate = ValidateSetItem(item, span);
                     if (set.Contains(candidate))
@@ -1113,7 +1113,7 @@ internal sealed partial class LythonRuntime
         {
             foreach (var iterable in iterables)
             {
-                foreach (var item in ToSequence(iterable, span, context))
+                foreach (var item in PyIteration.Cursor.Create(iterable, span, context))
                 {
                     target.Add(ValidateSetItem(item, span));
                     context.CheckExecution(span);
@@ -1125,7 +1125,7 @@ internal sealed partial class LythonRuntime
         {
             foreach (var iterable in iterables)
             {
-                await foreach (var item in ToSequenceAsync(iterable, span, context).ConfigureAwait(false))
+                await foreach (var item in PyIteration.Cursor.ForAsyncEnumeration(iterable, span, context).ConfigureAwait(false))
                 {
                     target.Add(ValidateSetItem(item, span));
                     context.CheckExecution(span);

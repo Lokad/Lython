@@ -380,7 +380,7 @@ internal sealed partial class LythonRuntime
             public object WriteLines(object value, LythonSourceSpan span, ExecutionContext context)
             {
                 EnsureOpen();
-                foreach (var item in ToSequence(value, span, context))
+                foreach (var item in PyIteration.Cursor.Create(value, span, context))
                 {
                     if (!PyStringOps.TryAsString(item, out var text))
                         throw new LythonRuntimeException("TypeError", "file.writelines(lines) expects an iterable of strings.", span);
@@ -392,7 +392,7 @@ internal sealed partial class LythonRuntime
             internal async ValueTask<object> WriteLinesAsync(object value, LythonSourceSpan span, ExecutionContext context)
             {
                 EnsureOpen();
-                await foreach (var item in ToSequenceAsync(value, span, context).ConfigureAwait(false))
+                await foreach (var item in PyIteration.Cursor.ForAsyncEnumeration(value, span, context).ConfigureAwait(false))
                 {
                     if (!PyStringOps.TryAsString(item, out var text))
                         throw new LythonRuntimeException("TypeError", "file.writelines(lines) expects an iterable of strings.", span);

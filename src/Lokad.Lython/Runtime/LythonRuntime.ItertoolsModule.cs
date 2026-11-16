@@ -661,14 +661,14 @@ internal sealed partial class LythonRuntime
     // Private governed pools retain capacity directly. No ungoverned staging
     // list or final array copy; the iterator is the only user of this storage.
     private static PyList MaterializeSequence(object value, LythonSourceSpan span, ExecutionContext context)
-        => new(ToSequence(value, span, context).Select(RuntimeValue), context.MemoryGovernor, span);
+        => new(Enumerable.Select(PyIteration.Cursor.Create(value, span, context), RuntimeValue), context.MemoryGovernor, span);
 
     private static async ValueTask<PyList> MaterializeItSequenceAsync(object value, LythonSourceSpan span, ExecutionContext context)
     {
         var pool = new PyList(Array.Empty<object>(), context.MemoryGovernor, span);
         try
         {
-            await foreach (var item in ToSequenceAsync(value, span, context).ConfigureAwait(false))
+            await foreach (var item in PyIteration.Cursor.ForAsyncEnumeration(value, span, context).ConfigureAwait(false))
                 pool.Add(RuntimeValue(item));
             return pool;
         }

@@ -57,7 +57,10 @@ output construction and promotion before a callback can run.
 
 [Private cursor checks](Lokad.Lython.Tests/CursorDispatchTests.cs) preserve live
 list mutation, tuple aliases, sticky exhaustion, Current/Dispose behavior and
-cooperative cancellation across synchronous and asynchronous pulls.
+cooperative cancellation across synchronous and asynchronous pulls. Partial list
+and array cursors retain their remaining position and aliases when extending a
+list; cleanup returns the shared allowance. CLR bridge checks retain acquisition,
+invalidation, current-value errors and idempotent synchronous/asynchronous cleanup.
 [Sequence mutation](Lokad.Lython.PublicApi.Tests/SequenceMutationExhaustionTests.cs)
 also replaces list storage during a genuinely asynchronous key callback, checking
 Python output, awaited file cleanup and shared-budget reuse.

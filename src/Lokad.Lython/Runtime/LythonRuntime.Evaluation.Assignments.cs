@@ -338,11 +338,13 @@ internal sealed partial class LythonRuntime
         }
         else if (asynchronous)
         {
-            await foreach (var item in ToSequenceAsync(source, span, context).ConfigureAwait(false)) target.Append(item);
+            await foreach (var item in PyIteration.Cursor.ForAsyncEnumeration(source, span, context).ConfigureAwait(false))
+                target.Append(item);
         }
         else
         {
-            foreach (var item in ToSequence(source, span, context)) target.Append(item);
+            foreach (var item in PyIteration.Cursor.Create(source, span, context))
+                target.Append(item);
         }
     }
 
@@ -544,7 +546,7 @@ internal sealed partial class LythonRuntime
         if (op == AugmentedAssignmentOperatorSyntax.Add &&
             currentValue is PyList currentList)
         {
-            currentList.AddRange(ToSequence(right, span, context), context, span);
+            currentList.AddRange(PyIteration.Cursor.Create(right, span, context), context, span);
             return currentList;
         }
 

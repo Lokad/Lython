@@ -231,8 +231,8 @@ internal static partial class PyDecimalOps
         }
 
         using var digits = asynchronous
-            ? await PyIteration.DrainLeasedAsync(ValidateDigitsAsync(PyIteration.ToSequenceAsync(digitsValue, span, context), span), span, context).ConfigureAwait(false)
-            : PyIteration.DrainLeased(ValidateDigits(PyIteration.ToSequence(digitsValue, span, context), span), span, context);
+            ? await PyIteration.DrainLeasedAsync(ValidateDigitsAsync(PyIteration.Cursor.ForAsyncEnumeration(digitsValue, span, context), span), span, context).ConfigureAwait(false)
+            : PyIteration.DrainLeased(ValidateDigits(PyIteration.Cursor.Create(digitsValue, span, context), span), span, context);
         return new PyDecimalTuple(sign, new PyTuple(digits.Items, context.MemoryGovernor, span), exponent);
     }
 

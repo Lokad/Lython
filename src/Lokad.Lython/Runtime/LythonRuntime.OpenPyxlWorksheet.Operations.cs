@@ -129,11 +129,17 @@ internal sealed partial class LythonRuntime
                 var column = 1;
                 if (asynchronous)
                 {
-                    await foreach (var item in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
-                    { context.CheckExecution(span); SetCellValue(row, column++, item, advanceRow: false); }
+                    await foreach (var item in PyIteration.Cursor.ForAsyncEnumeration(arguments[0], span, context).ConfigureAwait(false))
+                    {
+                        context.CheckExecution(span);
+                        SetCellValue(row, column++, item, advanceRow: false);
+                    }
                 }
-                else foreach (var item in ToSequence(arguments[0], span, context))
-                    { context.CheckExecution(span); SetCellValue(row, column++, item, advanceRow: false); }
+                else foreach (var item in PyIteration.Cursor.Create(arguments[0], span, context))
+                     {
+                         context.CheckExecution(span);
+                         SetCellValue(row, column++, item, advanceRow: false);
+                     }
             }
             _appendRow = row;
             return PyNone.Instance;

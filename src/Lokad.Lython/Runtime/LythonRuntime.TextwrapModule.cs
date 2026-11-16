@@ -164,12 +164,12 @@ internal sealed partial class LythonRuntime
             {
                 if (asynchronous)
                 {
-                    await foreach (var line in PyIteration.ToSequenceAsync(lines, span, context).ConfigureAwait(false))
+                    await foreach (var line in PyIteration.Cursor.ForAsyncEnumeration(lines, span, context).ConfigureAwait(false))
                         await AppendLineAsync(line).ConfigureAwait(false);
                 }
                 else
                 {
-                    foreach (var line in PyIteration.ToSequence(lines, span, context))
+                    foreach (var line in PyIteration.Cursor.Create(lines, span, context))
                         await AppendLineAsync(line).ConfigureAwait(false);
                 }
                 if (invalidItem)

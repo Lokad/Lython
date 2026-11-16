@@ -24,7 +24,7 @@ public sealed class CheckedRangeIterationTests
             var context = Context();
             var start = BigInteger.One << 100;
             var range = new PyRange(start, start + direction * length, new BigInteger(direction));
-            using var iterator = PyIteration.ToSequence(range, Span, context).GetEnumerator();
+            using var iterator = PyIteration.Cursor.Create(range, Span, context).GetEnumerator();
 
             for (var i = 0; i < length; i++)
             {
@@ -52,7 +52,7 @@ public sealed class CheckedRangeIterationTests
         var start = BigInteger.One << 10000;
         var allocationSpan = new LythonSourceSpan(20, 5, 3, 4);
         var range = new PyRange(start,start + length,BigInteger.One,            context.MemoryGovernor,allocationSpan);
-        using var iterator = PyIteration.ToSequence(range, Span, context).GetEnumerator();
+        using var iterator = PyIteration.Cursor.Create(range, Span, context).GetEnumerator();
 
         var error = Assert.Throws<LythonRuntimeException>(() => iterator.MoveNext());
         Assert.Equal("RuntimeError", error.ExceptionType);
@@ -70,7 +70,7 @@ public sealed class CheckedRangeIterationTests
     {
         using var cancellation = new CancellationTokenSource();
         var context = Context(cancellation.Token);
-        using var iterator = PyIteration.ToSequence(new PyRange(0, length, 1), Span, context).GetEnumerator();
+        using var iterator = PyIteration.Cursor.Create(new PyRange(0, length, 1), Span, context).GetEnumerator();
         for (var i = 0; i < 3; i++)
         {
             Assert.True(iterator.MoveNext());
@@ -93,7 +93,7 @@ public sealed class CheckedRangeIterationTests
     public void DisposingActiveIterationIsTerminal(int pulls)
     {
         var context = Context();
-        var iterator = PyIteration.ToSequence(new PyRange(0, 130, 1), Span, context).GetEnumerator();
+        var iterator = PyIteration.Cursor.Create(new PyRange(0, 130, 1), Span, context).GetEnumerator();
         for (var i = 0; i < pulls; i++) Assert.True(iterator.MoveNext());
 
         iterator.Dispose();
@@ -111,7 +111,7 @@ public sealed class CheckedRangeIterationTests
         var start = BigInteger.One << 10000;
         var allocationSpan = new LythonSourceSpan(20, 5, 3, 4);
         var range = new PyRange(start,start + 1,BigInteger.One,            context.MemoryGovernor,allocationSpan);
-        using var iterator = PyIteration.ToSequence(range, Span, context).GetEnumerator();
+        using var iterator = PyIteration.Cursor.Create(range, Span, context).GetEnumerator();
 
         var error = Assert.Throws<LythonRuntimeException>(() => iterator.MoveNext());
         Assert.Equal("MemoryError", error.ExceptionType);

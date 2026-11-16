@@ -251,6 +251,7 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
 
         var capacity = items switch
         {
+            PyIteration.Cursor cursor => cursor.KnownCount.GetValueOrDefault(),
             ICollection<object> collection => collection.Count,
             IReadOnlyCollection<object> collection => collection.Count,
             _ => 0,

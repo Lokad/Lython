@@ -339,7 +339,7 @@ internal sealed class PyStarmapIterator : PyIteratorBase
         using var scratch = _context.MemoryGovernor.ReserveTemporary(0, _span);
         var collected = new List<CallArgumentValue>();
         var chargedCapacity = 0;
-        foreach (var item in LythonRuntime.ToSequence(current, _span, _context))
+        foreach (var item in PyIteration.Cursor.Create(current, _span, _context))
         {
             if (collected.Count == collected.Capacity)
             {

@@ -470,7 +470,7 @@ internal sealed partial class LythonRuntime
         }
 
         var ranges = new List<string>();
-        foreach (var item in ToSequence(value, span.RequireNotNull()))
+        foreach (var item in PyIteration.Cursor.Create(value, span.RequireNotNull()))
         {
             ranges.Add(NormalizeCellOrRangeReference(ExpectString(item, owner, span), span));
         }

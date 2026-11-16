@@ -116,8 +116,10 @@ internal sealed partial class LythonRuntime
         {
             if (arguments.Length != 1) throw RuntimeErrors.Type("Popen.stdin.writelines() expects one iterable.", span);
             if (asynchronous)
-                await foreach (var item in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false)) _ = Write(item, span);
-            else foreach (var item in ToSequence(arguments[0], span, context)) _ = Write(item, span);
+                await foreach (var item in PyIteration.Cursor.ForAsyncEnumeration(arguments[0], span, context).ConfigureAwait(false))
+                    _ = Write(item, span);
+            else foreach (var item in PyIteration.Cursor.Create(arguments[0], span, context))
+                     _ = Write(item, span);
             return PyNone.Instance;
         }
 

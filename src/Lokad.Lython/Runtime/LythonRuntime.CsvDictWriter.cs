@@ -31,9 +31,10 @@ internal sealed partial class LythonRuntime
         private static async ValueTask<object> RowsAsync(CsvDictWriterObject writer, object rows, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             if (asynchronous)
-                await foreach (var row in ToSequenceAsync(rows, span, context).ConfigureAwait(false))
+                await foreach (var row in PyIteration.Cursor.ForAsyncEnumeration(rows, span, context).ConfigureAwait(false))
                     await RowAsync(writer, row, span, context, true).ConfigureAwait(false);
-            else foreach (var row in ToSequence(rows, span, context)) await RowAsync(writer, row, span, context, false).ConfigureAwait(false);
+            else foreach (var row in PyIteration.Cursor.Create(rows, span, context))
+                     await RowAsync(writer, row, span, context, false).ConfigureAwait(false);
             return PyNone.Instance;
         }
         private static async ValueTask<object> HeaderAsync(CsvDictWriterObject writer, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
@@ -78,9 +79,10 @@ internal sealed partial class LythonRuntime
                 for (var i = 0; i < list.Count; i++) yield return await GetAsync(list[i]).ConfigureAwait(false);
             }
             else if (asynchronous)
-                await foreach (var name in ToSequenceAsync(writer.FieldNames, span, context).ConfigureAwait(false))
+                await foreach (var name in PyIteration.Cursor.ForAsyncEnumeration(writer.FieldNames, span, context).ConfigureAwait(false))
                     yield return await GetAsync(name).ConfigureAwait(false);
-            else foreach (var name in ToSequence(writer.FieldNames, span, context)) yield return await GetAsync(name).ConfigureAwait(false);
+            else foreach (var name in PyIteration.Cursor.Create(writer.FieldNames, span, context))
+                     yield return await GetAsync(name).ConfigureAwait(false);
 
             async ValueTask<object> GetAsync(object name)
             {

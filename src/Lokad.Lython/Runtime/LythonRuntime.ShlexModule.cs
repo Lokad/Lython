@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
@@ -62,11 +62,13 @@ internal sealed partial class LythonRuntime
             {
                 if (asynchronous)
                 {
-                    await foreach (var item in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false)) AppendWord(item);
+                    await foreach (var item in PyIteration.Cursor.ForAsyncEnumeration(arguments[0], span, context).ConfigureAwait(false))
+                        AppendWord(item);
                 }
                 else
                 {
-                    foreach (var item in ToSequence(arguments[0], span, context)) AppendWord(item);
+                    foreach (var item in PyIteration.Cursor.Create(arguments[0], span, context))
+                        AppendWord(item);
                 }
                 return builder.ToPyStringAndRelease();
             }
