@@ -8885,8 +8885,7 @@ inconclusive. Magnitude/cause uncertain,original4scondition preserved,no univers
 gain or inferred recovery of prior debt. Both actual Windows targets focused
 176public/63internal pass,including new pending __index__ cancellation and helper
 aliases;all frozen-worker goldens/ownership/quiet/join/archive gates pass.
-Promoted source matches measured production text;full delivery qualification
-pending. Whole-script roadmap continues;publication/tagging held.
+Promoted source matches measured production text;[full delivery qualification passes](results/2026-11-16-scalar-index-transport/delivery/README.md). Whole-script roadmap continues;publication/tagging held.
 
 [R454 bounded regex creation-token deletion](results/2026-11-16-regex-creation-token/README.md):
 matched immutable R443dev105 producers/current be176core;reference passes existing

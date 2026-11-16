@@ -1,7 +1,6 @@
 # Shared scalar-index transport
 
-R453/B856–B857,2026-11-16UTC. **Retain the coherent operand migration; full delivery
-qualification pending.** Qualified reference81f60210/frozen a44f65a8 versus private
+R453/B856–B857,2026-11-16UTC. **Retain the coherent operand migration; [full delivery qualification passes](delivery/README.md).** Qualified reference81f60210/frozen a44f65a8 versus private
 candidate at af5e6149 plus archived source/frozen642f5115. Only core differs in the
 complete32-file images; normal optional adapter remains0.4.0. No public API change.
 
@@ -61,8 +60,7 @@ cancellation;existing __getitem__ cases remain. No architecture-only assertion,
 timeout relaxation or exact-checkpoint counting. All2,369 frozen source inputs
 (584production files) remain identical through measurement. Forced nonincremental
 core build and matching test-bin core hashes recorded;rebuilt production binary
-equality after promotion is not inferred. Full platform/stress/package qualification
-remains a separate delivery checkpoint.
+equality after promotion is not inferred. [Full platform/stress/package qualification passes](delivery/README.md).
 Main-worktree nonincremental Release solution build passes both targets with zero
 warnings/errors. An additional23public .NET11operand-error checks preserve the
 original failing name,span and evaluation order;[promotion checks](promotion-checks.tar.xz).
