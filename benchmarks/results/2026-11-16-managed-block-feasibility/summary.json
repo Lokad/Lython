@@ -1,0 +1,67 @@
+{
+  "sourceRevision": "01c6c72a",
+  "purpose": "Managed API/compilation-cost feasibility only; no Lython CPU or speedup claim",
+  "runtimeUnchanged": true,
+  "apiSupported": true,
+  "newProductionDependency": false,
+  "productionPrototypeSelected": false,
+  "rows": [
+    {
+      "processOrder": "span-first",
+      "shape": "span-argument",
+      "firstCompileMilliseconds": 19.3635,
+      "firstInvocationMilliseconds": 0.0006,
+      "warmCompileMedianMilliseconds": 0.1946,
+      "warmCompileRangeMilliseconds": [
+        0.1706,
+        0.5056
+      ],
+      "warmFirstInvocationMedianMilliseconds": 0.0003,
+      "warmCompileAllocatedBytes": 11496
+    },
+    {
+      "processOrder": "span-first",
+      "shape": "ref-managed-state-containing-span",
+      "firstCompileMilliseconds": 0.6678,
+      "firstInvocationMilliseconds": 0.0004,
+      "warmCompileMedianMilliseconds": 0.1876,
+      "warmCompileRangeMilliseconds": [
+        0.1765,
+        0.221
+      ],
+      "warmFirstInvocationMedianMilliseconds": 0.0003,
+      "warmCompileAllocatedBytes": 11696
+    },
+    {
+      "processOrder": "ref-state-first",
+      "shape": "ref-managed-state-containing-span",
+      "firstCompileMilliseconds": 8.7218,
+      "firstInvocationMilliseconds": 0.0008,
+      "warmCompileMedianMilliseconds": 0.2113,
+      "warmCompileRangeMilliseconds": [
+        0.1882,
+        0.361
+      ],
+      "warmFirstInvocationMedianMilliseconds": 0.0003,
+      "warmCompileAllocatedBytes": 11688
+    },
+    {
+      "processOrder": "ref-state-first",
+      "shape": "span-argument",
+      "firstCompileMilliseconds": 0.3229,
+      "firstInvocationMilliseconds": 0.0003,
+      "warmCompileMedianMilliseconds": 0.1933,
+      "warmCompileRangeMilliseconds": [
+        0.184,
+        0.2215
+      ],
+      "warmFirstInvocationMedianMilliseconds": 0.0003,
+      "warmCompileAllocatedBytes": 11504
+    }
+  ],
+  "sourceSHA256": {
+    "Program.cs": "a27d3af886f225021f68387ee3ce0ea5cbb07d6e849186363b3fe1b2e41f0fff",
+    "Feasibility.csproj": "8bd22970fd3797b875358869343af82886c7bacb8e1b35c721e29f914235b9c4"
+  },
+  "programSHA256": "65c2e720bb033ca1cab5dd0dfb2b46c87cbff7a5e9482b9f3361cf9ca1303fe9"
+}

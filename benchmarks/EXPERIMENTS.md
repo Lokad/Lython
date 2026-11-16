@@ -8809,3 +8809,5 @@ R431 bounded source gate at1fe2a174: plain builtin wrappers/signatures already l
 R445: [one executable generator-expression engine](results/2026-11-16-generator-consolidation/README.md). Retained coherent deletion/protocol fix; report warm −8–9%, allocation −21.09%; compilation cost and unchanged-control adversity remain explicit. [Full delivery qualification passes](results/2026-11-16-generator-consolidation/delivery/README.md).
 
 R446: [remaining generator/aggregate value transport](results/2026-11-16-remaining-value-transport/README.md). Source boundary identified; whole-script relevance and identity/copy tradeoffs remain unresolved. No prototype or new speedup claim; existing async-worker and immutable-metadata reuse confirmed.
+
+R447: [managed block API feasibility](results/2026-11-16-managed-block-feasibility/README.md). Borrowed span/ref-state APIs work without heap frames; original startup and corrected invocation/order controls retained. No Lython speedup or new production backend; one-shot merit and integration obligations remain unresolved.

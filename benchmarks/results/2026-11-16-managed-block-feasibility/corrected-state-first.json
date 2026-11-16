@@ -1,0 +1,265 @@
+{
+  "purpose": "Managed borrowed-storage expression feasibility; not Lython performance",
+  "framework": ".NET 11.0.0-rc.3.26522.148",
+  "os": "Microsoft Windows 10.0.26200",
+  "dynamicCodeSupported": true,
+  "dynamicCodeCompiled": true,
+  "localTimingDiagnosticOnly": true,
+  "newRuntimeDependency": false,
+  "shapeOrder": "ref-state-first",
+  "measurementBoundary": "Expression construction/Compile and first invocation separately; independently sampled intervals must not be treated as whole-script latency.",
+  "rows": [
+    {
+      "shape": "ref-managed-state-containing-span",
+      "supported": true,
+      "observations": [
+        {
+          "attempt": 0,
+          "firstInShape": true,
+          "compileMilliseconds": 8.7218,
+          "compileAllocatedBytes": 25056,
+          "firstInvocationMilliseconds": 0.0008,
+          "firstInvocationAllocatedBytes": 0,
+          "correctResult": 16,
+          "borrowedInputPreserved": true
+        },
+        {
+          "attempt": 1,
+          "firstInShape": false,
+          "compileMilliseconds": 0.361,
+          "compileAllocatedBytes": 11664,
+          "firstInvocationMilliseconds": 0.0004,
+          "firstInvocationAllocatedBytes": 0,
+          "correctResult": 16,
+          "borrowedInputPreserved": true
+        },
+        {
+          "attempt": 2,
+          "firstInShape": false,
+          "compileMilliseconds": 0.2169,
+          "compileAllocatedBytes": 11688,
+          "firstInvocationMilliseconds": 0.0003,
+          "firstInvocationAllocatedBytes": 0,
+          "correctResult": 16,
+          "borrowedInputPreserved": true
+        },
+        {
+          "attempt": 3,
+          "firstInShape": false,
+          "compileMilliseconds": 0.2556,
+          "compileAllocatedBytes": 11688,
+          "firstInvocationMilliseconds": 0.0005,
+          "firstInvocationAllocatedBytes": 0,
+          "correctResult": 16,
+          "borrowedInputPreserved": true
+        },
+        {
+          "attempt": 4,
+          "firstInShape": false,
+          "compileMilliseconds": 0.2615,
+          "compileAllocatedBytes": 11688,
+          "firstInvocationMilliseconds": 0.0003,
+          "firstInvocationAllocatedBytes": 0,
+          "correctResult": 16,
+          "borrowedInputPreserved": true
+        },
+        {
+          "attempt": 5,
+          "firstInShape": false,
+          "compileMilliseconds": 0.1988,
+          "compileAllocatedBytes": 11688,
+          "firstInvocationMilliseconds": 0.0002,
+          "firstInvocationAllocatedBytes": 0,
+          "correctResult": 16,
+          "borrowedInputPreserved": true
+        },
+        {
+          "attempt": 6,
+          "firstInShape": false,
+          "compileMilliseconds": 0.1939,
+          "compileAllocatedBytes": 11688,
+          "firstInvocationMilliseconds": 0.0003,
+          "firstInvocationAllocatedBytes": 0,
+          "correctResult": 16,
+          "borrowedInputPreserved": true
+        },
+        {
+          "attempt": 7,
+          "firstInShape": false,
+          "compileMilliseconds": 0.2096,
+          "compileAllocatedBytes": 11688,
+          "firstInvocationMilliseconds": 0.0004,
+          "firstInvocationAllocatedBytes": 0,
+          "correctResult": 16,
+          "borrowedInputPreserved": true
+        },
+        {
+          "attempt": 8,
+          "firstInShape": false,
+          "compileMilliseconds": 0.2053,
+          "compileAllocatedBytes": 11688,
+          "firstInvocationMilliseconds": 0.0004,
+          "firstInvocationAllocatedBytes": 0,
+          "correctResult": 16,
+          "borrowedInputPreserved": true
+        },
+        {
+          "attempt": 9,
+          "firstInShape": false,
+          "compileMilliseconds": 0.1882,
+          "compileAllocatedBytes": 11696,
+          "firstInvocationMilliseconds": 0.0003,
+          "firstInvocationAllocatedBytes": 0,
+          "correctResult": 16,
+          "borrowedInputPreserved": true
+        },
+        {
+          "attempt": 10,
+          "firstInShape": false,
+          "compileMilliseconds": 0.2851,
+          "compileAllocatedBytes": 11696,
+          "firstInvocationMilliseconds": 0.0004,
+          "firstInvocationAllocatedBytes": 0,
+          "correctResult": 16,
+          "borrowedInputPreserved": true
+        },
+        {
+          "attempt": 11,
+          "firstInShape": false,
+          "compileMilliseconds": 0.2113,
+          "compileAllocatedBytes": 11696,
+          "firstInvocationMilliseconds": 0.0003,
+          "firstInvocationAllocatedBytes": 0,
+          "correctResult": 16,
+          "borrowedInputPreserved": true
+        }
+      ]
+    },
+    {
+      "shape": "span-argument",
+      "supported": true,
+      "observations": [
+        {
+          "attempt": 0,
+          "firstInShape": true,
+          "compileMilliseconds": 0.3229,
+          "compileAllocatedBytes": 12576,
+          "firstInvocationMilliseconds": 0.0003,
+          "firstInvocationAllocatedBytes": 0,
+          "correctResult": 16,
+          "borrowedInputPreserved": true
+        },
+        {
+          "attempt": 1,
+          "firstInShape": false,
+          "compileMilliseconds": 0.2215,
+          "compileAllocatedBytes": 11504,
+          "firstInvocationMilliseconds": 0.0006,
+          "firstInvocationAllocatedBytes": 0,
+          "correctResult": 16,
+          "borrowedInputPreserved": true
+        },
+        {
+          "attempt": 2,
+          "firstInShape": false,
+          "compileMilliseconds": 0.2198,
+          "compileAllocatedBytes": 11504,
+          "firstInvocationMilliseconds": 0.0002,
+          "firstInvocationAllocatedBytes": 0,
+          "correctResult": 16,
+          "borrowedInputPreserved": true
+        },
+        {
+          "attempt": 3,
+          "firstInShape": false,
+          "compileMilliseconds": 0.2028,
+          "compileAllocatedBytes": 11504,
+          "firstInvocationMilliseconds": 0.0003,
+          "firstInvocationAllocatedBytes": 0,
+          "correctResult": 16,
+          "borrowedInputPreserved": true
+        },
+        {
+          "attempt": 4,
+          "firstInShape": false,
+          "compileMilliseconds": 0.1923,
+          "compileAllocatedBytes": 11504,
+          "firstInvocationMilliseconds": 0.0003,
+          "firstInvocationAllocatedBytes": 0,
+          "correctResult": 16,
+          "borrowedInputPreserved": true
+        },
+        {
+          "attempt": 5,
+          "firstInShape": false,
+          "compileMilliseconds": 0.1926,
+          "compileAllocatedBytes": 11504,
+          "firstInvocationMilliseconds": 0.0003,
+          "firstInvocationAllocatedBytes": 0,
+          "correctResult": 16,
+          "borrowedInputPreserved": true
+        },
+        {
+          "attempt": 6,
+          "firstInShape": false,
+          "compileMilliseconds": 0.1865,
+          "compileAllocatedBytes": 11504,
+          "firstInvocationMilliseconds": 0.0002,
+          "firstInvocationAllocatedBytes": 0,
+          "correctResult": 16,
+          "borrowedInputPreserved": true
+        },
+        {
+          "attempt": 7,
+          "firstInShape": false,
+          "compileMilliseconds": 0.1899,
+          "compileAllocatedBytes": 11504,
+          "firstInvocationMilliseconds": 0.0003,
+          "firstInvocationAllocatedBytes": 0,
+          "correctResult": 16,
+          "borrowedInputPreserved": true
+        },
+        {
+          "attempt": 8,
+          "firstInShape": false,
+          "compileMilliseconds": 0.2077,
+          "compileAllocatedBytes": 11504,
+          "firstInvocationMilliseconds": 0.0003,
+          "firstInvocationAllocatedBytes": 0,
+          "correctResult": 16,
+          "borrowedInputPreserved": true
+        },
+        {
+          "attempt": 9,
+          "firstInShape": false,
+          "compileMilliseconds": 0.2079,
+          "compileAllocatedBytes": 11504,
+          "firstInvocationMilliseconds": 0.0004,
+          "firstInvocationAllocatedBytes": 0,
+          "correctResult": 16,
+          "borrowedInputPreserved": true
+        },
+        {
+          "attempt": 10,
+          "firstInShape": false,
+          "compileMilliseconds": 0.1933,
+          "compileAllocatedBytes": 11504,
+          "firstInvocationMilliseconds": 0.0003,
+          "firstInvocationAllocatedBytes": 0,
+          "correctResult": 16,
+          "borrowedInputPreserved": true
+        },
+        {
+          "attempt": 11,
+          "firstInShape": false,
+          "compileMilliseconds": 0.184,
+          "compileAllocatedBytes": 11504,
+          "firstInvocationMilliseconds": 0.0003,
+          "firstInvocationAllocatedBytes": 0,
+          "correctResult": 16,
+          "borrowedInputPreserved": true
+        }
+      ]
+    }
+  ]
+}
