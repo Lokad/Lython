@@ -1,0 +1,191 @@
+{
+  "complete": true,
+  "elapsedSeconds": 148.52199889114127,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "rows": [
+    {
+      "case": "scripts.text-normalization.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 1.2957651318681318,
+        "reference": 1.2256723932291667,
+        "candidate-control": 1.304529608815427,
+        "reference-control": 1.1929957926509187
+      },
+      "cpuMilliseconds": {
+        "candidate": 1.4010989010989012,
+        "reference": 1.328125,
+        "candidate-control": 1.4325068870523416,
+        "reference-control": 1.3123359580052494
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.8068547339763011,
+        "reference": 0.34799818710901365,
+        "candidate-control": 0.10643546028247139,
+        "reference-control": 0.2835687498172998
+      },
+      "elapsedChangePercent": [
+        5.718717254803973,
+        6.433792261446181,
+        8.61439242705564,
+        9.34905360535032
+      ],
+      "cpuChangePercent": [
+        5.494505494505497,
+        6.763736263736275,
+        7.859342083941012,
+        9.157024793388423
+      ],
+      "referenceSpreadPercent": 2.7390373695818537,
+      "candidateSpreadPercent": 0.6763939491610804
+    },
+    {
+      "case": "scripts.text-normalization.large",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "candidate": 1.3573084158075603,
+        "reference": 1.3359638996655518,
+        "candidate-control": 1.3605820631229237,
+        "reference-control": 1.3692088576271186
+      },
+      "cpuMilliseconds": {
+        "candidate": 1.5120274914089349,
+        "reference": 1.471571906354515,
+        "candidate-control": 1.495016611295681,
+        "reference-control": 1.5254237288135593
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.3117573384047359,
+        "reference": 0.2781865268093422,
+        "candidate-control": 0.11711642828965185,
+        "reference-control": 0.5426820609629316
+      },
+      "elapsedChangePercent": [
+        -0.8691473001556593,
+        -0.6300568723419886,
+        1.5976865952255004,
+        1.8427266981940749
+      ],
+      "cpuChangePercent": [
+        -1.9933554817275656,
+        -0.8781977854142586,
+        1.5931742675928895,
+        2.749140893470803
+      ],
+      "referenceSpreadPercent": 2.4884622982619176,
+      "candidateSpreadPercent": 0.24118669546564497
+    },
+    {
+      "case": "scripts.binary-normalization.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 0.1543276647398844,
+        "candidate-control": 0.17809872265624999,
+        "reference": 0.15462947761862128,
+        "candidate": 0.17785338032305434
+      },
+      "cpuMilliseconds": {
+        "reference-control": 0.2223210315695865,
+        "candidate-control": 0.2490234375,
+        "reference": 0.22381378692927484,
+        "candidate": 0.2447381302006853
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.3832061248257771,
+        "candidate-control": 0.6207601612632688,
+        "reference": 1.004599747095794,
+        "candidate": 1.467615963405157
+      },
+      "elapsedChangePercent": [
+        15.01906561549189,
+        15.177730274374547,
+        15.24400412772522,
+        15.40297908118491
+      ],
+      "cpuChangePercent": [
+        9.348996573666192,
+        10.083210964268252,
+        11.263671874999993,
+        12.0107421875
+      ],
+      "referenceSpreadPercent": 0.19556628375447804,
+      "candidateSpreadPercent": 0.13794639874147308
+    },
+    {
+      "case": "scripts.binary-normalization.large",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "reference-control": 0.1942414218045113,
+        "candidate-control": 0.21748142655145325,
+        "reference": 0.19746572860447187,
+        "candidate": 0.21593341946308725
+      },
+      "cpuMilliseconds": {
+        "reference-control": 0.27819548872180455,
+        "candidate-control": 0.2906520031421838,
+        "reference": 0.27756360832690824,
+        "candidate": 0.2936241610738255
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 1.134120394343313,
+        "candidate-control": 0.9572433045685884,
+        "reference": 1.2897851163773162,
+        "candidate": 0.9750974382965637
+      },
+      "elapsedChangePercent": [
+        9.352352425471544,
+        10.136289516381481,
+        11.16754472710113,
+        11.964494766894362
+      ],
+      "cpuChangePercent": [
+        4.477611940298498,
+        4.715457798725664,
+        5.545982223834556,
+        5.7862602535421415
+      ],
+      "referenceSpreadPercent": 1.6599481047897102,
+      "candidateSpreadPercent": 0.7168909250893529
+    },
+    {
+      "case": "calls.positional.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 2.0009993739130434,
+        "candidate-control": 2.0487493974358975,
+        "reference": 2.083685770212766,
+        "candidate": 2.026192842553191
+      },
+      "cpuMilliseconds": {
+        "reference-control": 2.0869565217391304,
+        "candidate-control": 2.051282051282051,
+        "reference": 2.085106382978723,
+        "candidate": 2.085106382978723
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 6.004389467509917,
+        "candidate-control": 6.440813521179191,
+        "reference": 5.719866210234868,
+        "candidate": 5.8187950344387325
+      },
+      "elapsedChangePercent": [
+        -2.7591937556738277,
+        -1.6766622528358144,
+        1.259044303990997,
+        2.3863087687767015
+      ],
+      "cpuChangePercent": [
+        -1.7094017094017144,
+        -1.6221873364730466,
+        -0.08865248226951339,
+        0.0
+      ],
+      "referenceSpreadPercent": 4.13225498107106,
+      "candidateSpreadPercent": 1.113248177023607
+    }
+  ],
+  "retentionDecisionPending": false,
+  "CPythonRefreshed": false,
+  "decision": "Do not promote the two-pass prototype: binary warm/fresh clearly slower despite -9.8% allocation. One bounded single-pass consolidation refinement justified; preserve original sources/images/adverse controls. No universal bytes representation change."
+}

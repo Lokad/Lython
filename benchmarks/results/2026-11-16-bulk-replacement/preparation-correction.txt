@@ -1,0 +1,1 @@
+Before any VM launch: corrected guessed B855 working path call-attribution to call-frame-cost using the committed archive collect.py/run.sh. Canonical bytes unchanged; no remote mutation or measurement had begun.

@@ -1,0 +1,1 @@
+An initial local retrieve.py invocation was refused by its not-before assertion. No SSH observation was sent; collection/conditions unchanged. The guard was preserved.

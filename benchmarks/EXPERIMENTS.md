@@ -8896,3 +8896,13 @@ No new public test,VM timing,normal pin/core change or unchanged qualification.
 Latest sibling6adsource is not the unchanged dev105package;core caller capture
 APIs do not imply PythonRe caller buffers. EffectiveOptions alone also loses the
 reported/parsing Verbose distinction. Precise bridges remain;core work proceeds.
+
+[R455/B858 initial two-pass replacement](results/2026-11-16-bulk-replacement/README.md)
+removes duplicate builders and reduces complete binary-normalization allocation
+9.80%, but warm elapsed+15.02..15.40% and fresh+9.35..11.96% have supporting adverse
+CPU and stable binary controls. Text warm+5.72..9.35%, fresh/calls inconclusive.
+Do not promote this shape. Both actual Windows targets779public/99internal pass;
+two bounded no-op cases fail on reference/pass here. Original capacity-diagnostic
+failure/correction, exact images/sources and all observations retained. Five jobs
+148.522s/all gates/joins/archive checks. One changed single-pass consolidation
+refinement is justified; no unchanged retiming, full qualification or CPU claim.
