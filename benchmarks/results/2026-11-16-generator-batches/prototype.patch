@@ -1,0 +1,150 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs
+index 42273c4b..2dddd07e 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs
+@@ -114,7 +114,19 @@ internal sealed partial class LythonRuntime
+         public PyIterationResult TryMoveNext() => Advance(PyNone.Instance, null);
+         public ValueTask<PyIterationResult> TryMoveNextAsync() => AdvanceAsync(PyNone.Instance, null);
+ 
+-        private PyIterationResult Advance(object sent, LythonRuntimeException? injected)
++        // The native drain owns this already-admitted capacity. No consumer or
++        // admission callback can run between yields; leave the frame before
++        // growing the list, observing its contents or returning to Python.
++        internal bool AppendBatch(List<object> items, int? maximumItems)
++            => items.Count < Math.Min(items.Capacity, maximumItems ?? int.MaxValue)
++                && !Advance(PyNone.Instance, null, items, maximumItems).HasValue;
++
++        internal async ValueTask<bool> AppendBatchAsync(List<object> items, int? maximumItems)
++            => items.Count < Math.Min(items.Capacity, maximumItems ?? int.MaxValue)
++                && !(await AdvanceAsync(PyNone.Instance, null, items, maximumItems).ConfigureAwait(false)).HasValue;
++
++        private PyIterationResult Advance(object sent, LythonRuntimeException? injected,
++            List<object>? destination = null, int? maximumItems = null)
+         {
+             if (!CanAdvance(sent, injected)) return PyIterationResult.End;
+             if (!_started && injected is not null) { CompleteSynchronously(); throw injected; }
+@@ -125,11 +137,18 @@ internal sealed partial class LythonRuntime
+             {
+                 EnterFrame(frame, previousException);
+                 entered = true;
+-                frame.Resume(sent, injected);
+-                frame.Execute();
+-                var result = ReadResult(frame);
+-                if (!result.HasValue) CompleteSynchronously();
+-                return result;
++                while (true)
++                {
++                    frame.Resume(sent, injected);
++                    frame.Execute();
++                    var result = ReadResult(frame);
++                    if (!result.HasValue) { CompleteSynchronously(); return result; }
++                    if (destination is null) return result;
++                    destination.Add(result.Value);
++                    if (destination.Count >= Math.Min(destination.Capacity, maximumItems ?? int.MaxValue)) return result;
++                    frame.CheckExecution(_span);
++                    PrepareResume(frame, previousException);
++                }
+             }
+             catch (LythonRuntimeException exception)
+             {
+@@ -143,7 +162,8 @@ internal sealed partial class LythonRuntime
+             finally { if (entered) LeaveFrame(frame, previousException); }
+         }
+ 
+-        private async ValueTask<PyIterationResult> AdvanceAsync(object sent, LythonRuntimeException? injected)
++        private async ValueTask<PyIterationResult> AdvanceAsync(object sent, LythonRuntimeException? injected,
++            List<object>? destination = null, int? maximumItems = null)
+         {
+             if (!CanAdvance(sent, injected)) return PyIterationResult.End;
+             if (!_started && injected is not null) { await CompleteAsync(true).ConfigureAwait(false); throw injected; }
+@@ -154,11 +174,18 @@ internal sealed partial class LythonRuntime
+             {
+                 EnterFrame(frame, previousException);
+                 entered = true;
+-                frame.Resume(sent, injected);
+-                await frame.ExecuteAsync().ConfigureAwait(false);
+-                var result = ReadResult(frame);
+-                if (!result.HasValue) await CompleteAsync(true).ConfigureAwait(false);
+-                return result;
++                while (true)
++                {
++                    frame.Resume(sent, injected);
++                    await frame.ExecuteAsync().ConfigureAwait(false);
++                    var result = ReadResult(frame);
++                    if (!result.HasValue) { await CompleteAsync(true).ConfigureAwait(false); return result; }
++                    if (destination is null) return result;
++                    destination.Add(result.Value);
++                    if (destination.Count >= Math.Min(destination.Capacity, maximumItems ?? int.MaxValue)) return result;
++                    frame.CheckExecution(_span);
++                    PrepareResume(frame, previousException);
++                }
+             }
+             catch (LythonRuntimeException exception)
+             {
+@@ -188,9 +215,14 @@ internal sealed partial class LythonRuntime
+             catch { frame.LeaveFunctionCall(); throw; }
+             _running = true;
+             frame.EnterExecutableSlots();
++            PrepareResume(frame, previousException);
++            _started = true;
++        }
++
++        private void PrepareResume(ExecutionContext frame, PyException? previousException)
++        {
+             frame.SetCallerException(previousException);
+             frame.State.SetCurrentException(frame.HasActiveHandler ? _suspendedException : previousException);
+-            _started = true;
+         }
+ 
+         private void LeaveFrame(ExecutionContext frame, PyException? previousException)
+diff --git a/src/Lokad.Lython/Runtime/PyIteration.cs b/src/Lokad.Lython/Runtime/PyIteration.cs
+index 26bee59b..55f87f00 100644
+--- a/src/Lokad.Lython/Runtime/PyIteration.cs
++++ b/src/Lokad.Lython/Runtime/PyIteration.cs
+@@ -53,6 +53,7 @@ internal static partial class PyIteration
+     {
+         var reservation = context.MemoryGovernor.ReserveTemporary(32, span);
+         var result = new List<object>();
++        var generator = (items as Cursor)?.BulkGenerator;
+         try
+         {
+             foreach (var item in items)
+@@ -67,8 +68,9 @@ internal static partial class PyIteration
+                 }
+                 result.Add(item);
+ 
++                var exhausted = generator is not null && generator.AppendBatch(result, maximumItems);
+                 context.CheckExecution(span);
+-                if (result.Count == maximumItems) break;
++                if (exhausted || result.Count == maximumItems) break;
+             }
+         }
+         catch
+@@ -84,6 +86,7 @@ internal static partial class PyIteration
+     {
+         var reservation = context.MemoryGovernor.ReserveTemporary(32, span);
+         var result = new List<object>();
++        var generator = (items as Cursor)?.BulkGenerator;
+         try
+         {
+             await foreach (var item in items.ConfigureAwait(false))
+@@ -98,8 +101,9 @@ internal static partial class PyIteration
+                 }
+                 result.Add(item);
+ 
++                var exhausted = generator is not null && await generator.AppendBatchAsync(result, maximumItems).ConfigureAwait(false);
+                 context.CheckExecution(span);
+-                if (result.Count == maximumItems) break;
++                if (exhausted || result.Count == maximumItems) break;
+             }
+         }
+         catch
+@@ -224,6 +228,8 @@ internal static partial class PyIteration
+             && _sequencePosition == 0 && _syncEnumerator is null ? _value as PyList : null;
+         internal int? KnownCount => _iterator is null && (_syncSource ?? _value) is IReadOnlyCollection<object> known
+             ? known.Count : null;
++        internal LythonRuntime.PyGenerator? BulkGenerator => !_disposed && _syncEnumerator is null && _asyncEnumerator is null
++            ? _iterator as LythonRuntime.PyGenerator : null;
+         public Cursor GetEnumerator() => this;
+         IEnumerator<object> IEnumerable<object>.GetEnumerator() => this;
+         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => this;

@@ -8937,3 +8937,11 @@ or runtime promotion, no permanent design ban. Three independent compiler-token
 lifetime cases are retained: five total cases pass per actual.NET11/10 on the
 qualified production runtime; six codegen-specific admission rows stay private.
 Whole-script/call-frame roadmap continues; publication held.
+
+[R457 source assessment / R458 initial generator batches](results/2026-11-16-generator-batches/README.md):
+text shells require broader publication machinery, no range prototype. Existing
+Advance batching99e6554d gives favorable complete normalization but B862 supports
+ordinary-generator CPU adversity with moving controls. Both original collections,
+all sources/conditions preserved; no production promotion or full qualification.
+Refine once by restoring single-item advancement and consuming private buffered
+yields inside the existing instruction loop. Allocation flat; broader roadmap open.

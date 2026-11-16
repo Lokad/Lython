@@ -1,0 +1,32 @@
+{
+  "head": "82e45812d480454a26f1e7c3fc016e49d687834f",
+  "status": "closed source assessment; no prototype or timing",
+  "facts": [
+    "ExecutableSlot already has one reference/one long; do not introduce a wider generic tagged value.",
+    "YieldValue/TakeYieldValue already use ExecutableSlot and PyIterationResult; no generator transport rewrite is established.",
+    "Synchronous generator Advance already calls frame.Execute directly, without async advancement.",
+    "ExecuteInstructionPrefix already loops across completed instructions; it is not a per-op driver call.",
+    "String Join/JoinAsync drain through MaterializeLeased into List<object>, validate after complete consumption, then write exact final UTF8.",
+    "Ordinary split returns a PyList; cased whitespace uses an existing private native range carrier."
+  ],
+  "investigation": "Assess one complete UTF8 range transport path across private split iteration, existing slots/yield and final string consumers. Require concrete removed storage/work before implementation; no identity ledger, scalar coupons, new memory subsystem or mere extra wrapper.",
+  "sources": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Slot.cs": "d399efeb5c07365089dd0f9a1e9632aa8a3cab34ca36930a537aa9d9343d56f6",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": "c5b1046f3cec2e5ce5c4deec26e389e1af5c529ea1c01521a9c524eb904e2dee",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs": "de7aa976aa93bf92df8cb6b3714ce6fb3746049c318fe001d417fccf404f0698",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs": "c34fe4506a3a58dd3f8ba515a8d7ed1210734fe6827103f51eaa0e2a06dd4726",
+    "src/Lokad.Lython/Runtime/PyIteration.cs": "c766177478bf7defd0d41681fa7720acea6939d4f0948e172aee18d20c39fd67",
+    "src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Advanced.cs": "6c59a24047d36ea6aec04f23aebee3bcf3cfd60622b32a2db92626737c928731",
+    "src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Segmentation.cs": "6682e92ca22b65f4be9a8c4f41aa9e66335648f7d6881ae33dc79293cb5075de",
+    "src/Lokad.Lython/Runtime/Text/PyString.cs": "618bc416ac056f4183a43c26348fc79652a155ea0b1677f2b319ee911cf12954"
+  },
+  "priorLessons": [
+    "R438 materialization wrappers were slower",
+    "R440 streaming casing/bulk refinement reduced allocation but lost CPU",
+    "R445 one generator-expression engine is delivered",
+    "R450 native/CLR cursor consolidation is delivered",
+    "R456 managed code generation lost whole-script CPU and increased compilation cost"
+  ],
+  "publicationHeld": true,
+  "decision": "Existing split fragments already share admitted source backing. Removing remaining shells across mutable slot copies and published collection aliases requires canonical publication/ownership machinery or a narrow fused recipe; neither justified. Preserve current representation; no permanent ban."
+}
