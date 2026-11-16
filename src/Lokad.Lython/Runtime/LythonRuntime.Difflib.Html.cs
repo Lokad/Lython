@@ -51,7 +51,7 @@ internal sealed partial class LythonRuntime
                 BuildTable(builder, fromLines, toLines, options, context, span);
                 if (file) builder.AppendAscii("\n</body></html>\n");
                 context.CheckExecution(span);
-                return builder.ToPyString();
+                return builder.ToPyStringAndRelease();
             }
             finally { builder.Release(); }
         }
@@ -166,7 +166,7 @@ internal sealed partial class LythonRuntime
                     }
                     bytes = bytes[consumed..];
                 }
-                return builder.ToPyString();
+                return builder.ToPyStringAndRelease();
             }
             finally { builder.Release(); }
         }

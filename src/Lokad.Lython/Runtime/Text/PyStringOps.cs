@@ -335,7 +335,7 @@ internal static partial class PyStringOps
                 builder.Append(source[..count]);
                 source = source[count..];
             }
-            return builder.ToPyString();
+            return builder.ToPyStringAndRelease();
         }
         finally { builder.Release(); }
     }
@@ -373,7 +373,7 @@ internal static partial class PyStringOps
                 }
                 byteIndex += runeLength;
             }
-            return builder.ToPyString();
+            return builder.ToPyStringAndRelease();
         }
         finally { builder.Release(); }
     }

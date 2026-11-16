@@ -500,7 +500,7 @@ internal sealed partial class LythonRuntime
                 builder.Append((byte)digits[source[i] >> 4]);
                 builder.Append((byte)digits[source[i] & 15]);
             }
-            return builder.ToPyString();
+            return builder.ToPyStringAndRelease();
         }
         finally { builder.Release(); }
     }

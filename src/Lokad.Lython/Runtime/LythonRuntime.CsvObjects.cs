@@ -401,7 +401,7 @@ internal sealed partial class LythonRuntime
                 first = false;
             }
 
-            return builder.ToPyString();
+            return builder.ToPyStringAndRelease();
         }
         finally
         {

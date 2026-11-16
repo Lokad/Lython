@@ -8664,3 +8664,6 @@ verified before unmount, all users joined. No CPU speedup or production change.
 
 
 [R424full delivery43789371043](results/2026-11-16-compiler-instruction-store/delivery/README.md) qualifiesa2d20928/9d26d408 on Windows/Ubuntu actual11/10,4,777internal/17,912public ordinary, original13/406stress and installed Release consumers each.16summaries/590inputs verified; terminal cached forever. Publication held; broader performance roadmap active.
+
+
+[R426/B822 consuming completed text](results/2026-11-16-consuming-text-completion/README.md): retained810dafdd versus qualifieda2d20928/9d26d408. Thirteen terminal paths lose exact byte-array copy/temporary lease, existing capacity/metadata ownership retained; actual JSON snapshots remain. Complete report allocation−6.29%/accounted peak+0.86%, new file normalization−9.07%/peak+3.71%. Report elapsed modestly lower, normalization+0.79..2.36%slower and JSON+0.40..2.28%/mixed CPU accepted as debt, not neutrality or universal gain.87internal/2,547public eachactual11/10, independent CPython/full goldens/budget cleanup pass;593inputs frozen. B822four jobs140.446s/all gates. Original fixture failures/staging projection preserved; full delivery pending, broader objective active/publication held.

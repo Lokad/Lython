@@ -675,7 +675,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
                     byteIndex += runeLength;
                 }
                 builder.Append(Utf8Span[prefixEnd..]);
-                return builder.ToPyString();
+                return builder.ToPyStringAndRelease();
             }
             finally { builder.Release(); }
         }
@@ -697,7 +697,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
                 remaining--;
             }
             result.Append(Utf8Span[offset..]);
-            return result.ToPyString();
+            return result.ToPyStringAndRelease();
         }
         finally { result.Release(); }
     }

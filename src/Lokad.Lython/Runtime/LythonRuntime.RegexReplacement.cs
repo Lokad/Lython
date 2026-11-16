@@ -70,7 +70,7 @@ internal sealed partial class LythonRuntime
             try
             {
                 plan.AppendTo(builder, match, context, span);
-                var result = builder.ToPyString();
+                var result = builder.ToPyStringAndRelease();
                 context.CheckExecution(span);
                 return result;
             }

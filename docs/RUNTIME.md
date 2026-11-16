@@ -1092,6 +1092,10 @@ result owner; finalization admits new string metadata without duplicating payloa
 funding. This avoids a final copy but can retain more capacity than an exact-sized
 copy. Builders detach before reuse. Nonconsuming snapshots remain independent
 copies and admit their real working/output overlap; byte-array results stay exact-sized.
+Terminal joins, replacement/translation, case folding, padding/tabs, byte rendering,
+method formatting, HTML rendering and match expansion use consuming finalization.
+JSON chunk iteration keeps snapshots because its working buffer is reused across
+advances; an exposed chunk must remain independent of later output.
 Builder growth commits and publishes its surviving backing before refunding the
 old one. Release publishes an empty owner before refund callbacks. A failing or
 reentrant refund therefore cannot make later cleanup refund retained input storage.

@@ -819,7 +819,7 @@ internal static partial class PyStringOps
                 else builder.Append(source.Slice(byteIndex, runeLength));
                 byteIndex += runeLength;
             }
-            return builder.ToPyString();
+            return builder.ToPyStringAndRelease();
         }
         finally { builder.Release(); }
     }

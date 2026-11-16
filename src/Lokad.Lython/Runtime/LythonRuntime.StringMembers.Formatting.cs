@@ -28,7 +28,7 @@ internal sealed partial class LythonRuntime
                 {
                     await AppendTemplateAsync(template, output).ConfigureAwait(false);
                     context.CheckExecution(span);
-                    return output.ToPyString();
+                    return output.ToPyStringAndRelease();
                 }
                 catch (InvalidOperationException error) { throw new LythonRuntimeException("ValueError", error.Message, span); }
                 catch (IndexOutOfRangeException error) { throw new LythonRuntimeException("IndexError", error.Message, span); }

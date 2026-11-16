@@ -205,7 +205,7 @@ internal sealed partial class LythonRuntime
                     }
                     offset += consumed;
                 }
-                return builder.ToPyString();
+                return builder.ToPyStringAndRelease();
             }
             finally { builder.Release(); }
         }

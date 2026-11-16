@@ -1,0 +1,8 @@
+{
+  "version": "CPython3.13.2",
+  "dateUTC": "2026-11-16T02:35:18.256959+00:00",
+  "matched": true,
+  "source": "original = 'Aβ\\tß\\n' * 8\nchanged = original.replace('Aβ', 'Ω').expandtabs(4).casefold()\ntranslated = original.translate({ord('A'): None, ord('β'): 'B'})\njoined = '|'.join([changed, b'\\x00\\xff'.hex(':'), repr(b'\\x00\\xff'), translated])\nwith open('input.txt') as source: source.read()\nresult = original, changed, joined, '-12'.zfill(6)\n",
+  "output": "matched all returned values\n",
+  "semantics": "Unicode replace/expandtabs/casefold/translate/join, byte hex/repr and sign-aware zfill; independently expected returned aliases."
+}

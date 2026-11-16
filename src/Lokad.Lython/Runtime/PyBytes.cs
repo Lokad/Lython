@@ -174,7 +174,7 @@ internal sealed class PyBytes : IEquatable<PyBytes>, IPyTruthyValue, IPyIterable
 
             builder.Append(quote);
             execution.CheckExecution(span);
-            return builder.ToPyString();
+            return builder.ToPyStringAndRelease();
         }
         finally { builder.Release(); }
     }

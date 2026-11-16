@@ -36,22 +36,27 @@ public sealed class StringReplaceCallTests
     public async Task DeniedReplaceDoesNotPublishTheResult(bool exposed)
     {
         var source = "value='before'\ntext='a'*32768\n" + (exposed ? "method=text.replace\n" : "") +
-            "print('ready')\ntry: value=" + (exposed ? "method('a','b')" : "text.replace('a','b')") +
+            "print('ready')\ntry: value=" + (exposed ? "method('a','bbbb')" : "text.replace('a','bbbb')") +
             "\nexcept MemoryError: print(value,len(text))";
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
         using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
-        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(80 * 1024) };
+        // The expanded output exceeds the allowance independently of whether
+        // completed text copies or transfers its final backing.
+        var runBudget = new LythonMemoryBudget(80 * 1024);
+        var options = new LythonRunOptions { MemoryBudget = runBudget };
         foreach (var asynchronous in new[] { false, true })
         {
             using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
             {
                 Assert.False(result.Success);
                 Assert.Equal("MemoryError", result.Failure?.ExceptionType);
+                Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
                 Assert.Equal("ready\n", result.StandardOutput);
             }
             Assert.Equal(baseline, budget.ReservedBytes);
+            Assert.Equal(0, runBudget.ReservedBytes);
         }
     }
 

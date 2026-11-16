@@ -1,0 +1,12 @@
+{
+  "version": "CPython3.13.2",
+  "inputBytes": 52224,
+  "inputLines": 4096,
+  "outputBytes": 54269,
+  "outputLines": 4095,
+  "stdout": "45053 4095\n",
+  "independentExpectedRows": true,
+  "inputSHA256": "b78db4c3bf483f12e8ab501c817f1cdc936ef834e686a9fa2b907bd400d92df4",
+  "outputSHA256": "89e62bc695594ce40cd7eb0e18b89cb5125d9e20d6821d2c676a48f7d9ada08e",
+  "matched": true
+}

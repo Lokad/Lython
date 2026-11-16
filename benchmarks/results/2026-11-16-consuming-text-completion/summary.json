@@ -1,0 +1,133 @@
+{
+  "complete": true,
+  "elapsedSeconds": 140.44634241703898,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "rows": [
+    {
+      "case": "scripts.text-normalization.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 1.2069012784810125,
+        "reference": 1.1892461275000001,
+        "candidate-control": 1.198684398989899,
+        "reference-control": 1.1791093366336634
+      },
+      "cpuMilliseconds": {
+        "candidate": 1.3164556962025316,
+        "reference": 1.325,
+        "candidate-control": 1.3383838383838385,
+        "reference-control": 1.311881188118812
+      },
+      "elapsedChangePercent": [
+        0.7936348306418095,
+        1.4845666151654058,
+        1.660156674878177,
+        2.3570283928625813
+      ],
+      "cpuChangePercent": [
+        -0.6448531167900673,
+        0.3486983520420317,
+        1.0101010101010166,
+        2.020202020202011
+      ],
+      "referenceSpreadPercent": 0.8596989737420957,
+      "candidateSpreadPercent": 0.6854914853348992
+    },
+    {
+      "case": "scripts.report-render.format-method.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 4.073624512820513,
+        "reference": 4.152869879310345,
+        "candidate-control": 4.1036466,
+        "reference-control": 4.210837686956522
+      },
+      "cpuMilliseconds": {
+        "candidate": 4.273504273504274,
+        "reference": 4.310344827586206,
+        "candidate-control": 4.333333333333333,
+        "reference-control": 4.3478260869565215
+      },
+      "elapsedChangePercent": [
+        -3.2585719122121493,
+        -2.5456000664322964,
+        -1.9082073070633365,
+        -1.1852834483347507
+      ],
+      "cpuChangePercent": [
+        -1.7094017094016811,
+        -0.8547008547008295,
+        -0.33333333333332993,
+        0.5333333333333412
+      ],
+      "referenceSpreadPercent": 1.3958493603416944,
+      "candidateSpreadPercent": 0.7369871004311301
+    },
+    {
+      "case": "scripts.report-render.format-method.large",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "reference-control": 4.2301235526315795,
+        "candidate-control": 4.220445990825688,
+        "reference": 4.2950573963963965,
+        "candidate": 4.137010330357143
+      },
+      "cpuMilliseconds": {
+        "reference-control": 4.473684210526315,
+        "candidate-control": 4.495412844036697,
+        "reference": 4.594594594594595,
+        "candidate": 4.374999999999999
+      },
+      "elapsedChangePercent": [
+        -3.6797428172172353,
+        -2.20119391587299,
+        -1.737145716220423,
+        -0.22877728476443648
+      ],
+      "cpuChangePercent": [
+        -4.77941176470591,
+        -2.2058823529411797,
+        -2.1586616297895267,
+        0.48569886670266627
+      ],
+      "referenceSpreadPercent": 1.5350342125213245,
+      "candidateSpreadPercent": 2.0168105420549587
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 3.5558358571428568,
+        "candidate-control": 3.5698911376811595,
+        "reference": 3.4988270642857144,
+        "candidate": 3.578431671532847
+      },
+      "cpuMilliseconds": {
+        "reference-control": 3.7142857142857144,
+        "candidate-control": 3.6956521739130435,
+        "reference": 3.642857142857143,
+        "candidate": 3.7226277372262775
+      },
+      "elapsedChangePercent": [
+        0.39527360381579335,
+        0.6354571835648803,
+        2.031082762587255,
+        2.275179818393891
+      ],
+      "cpuChangePercent": [
+        -0.5016722408026753,
+        0.2245929253228418,
+        1.449275362318847,
+        2.1897810218978186
+      ],
+      "referenceSpreadPercent": 1.6293686944136132,
+      "candidateSpreadPercent": 0.23923793534037507
+    }
+  ],
+  "retentionDecisionPending": false,
+  "CPythonRefreshed": false,
+  "retained": true,
+  "fullQualificationPending": true,
+  "decision": "Thirteen terminal paths use existing funded-capacity transfer; remove exact byte-array copy and temporary lease per completed text. Actual reusable JSON snapshots remain. Report allocation\u22126.29%, normalization\u22129.07%; accounted peaks+0.86/+3.71%. Report elapsed modestly lower; normalization+0.79..2.36% and adverse JSON/mixed CPU retained as explicit debt. No universal CPU/embedding-latency or broader-goal completion claim."
+}
