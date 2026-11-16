@@ -1,0 +1,14 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "ramTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 266752000,
+  "archiveSHA256": "e1f73fac74e5880d21ce4dda52fda14cbadf1a0ac224a8daeb8348d6e109fd72",
+  "source": "0a04e253/frozen810dafdd",
+  "performanceComparison": false,
+  "postprocessingRecovered": true,
+  "originalServiceExitCode": 1
+}

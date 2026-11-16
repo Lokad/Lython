@@ -8670,3 +8670,9 @@ verified before unmount, all users joined. No CPU speedup or production change.
 
 
 [R427/B823 complete file-normalization CPython phases](results/2026-11-16-normalization-cpython-checkpoint/README.md): 116fe6e0/810dafdd vs CPython3.13.16; two jobs71.314s/all measurement gates. Warm1.63–1.68×, fresh1.49–1.58×; fresh control5.11%/IQR7.35% retained. New useful workload, no causal source gain. Initial runtime CI failed accounting-test expectations; corrections active. One bounded current-source profile follows; broader objective remains open.
+
+
+[R428/B824 complete normalization CPU attribution](results/2026-11-16-normalization-attribution/README.md): 0a04e253/810dafdd;981active-thread samples/193unknown,4.841guest seconds. Expanding tabs resolved by managed metadata to94nearest/78leaf samples; overlapping generator/iteration groups are not removable shares. R429 selects whole expandtabs/join output construction for one bounded storage milestone. Original staging failures and mistaken perf-report command retained; same raw capture recovered offline, no reexecution; users joined/RAM archived. Full43800910729pending, broader objective remains open.
+
+
+[R429/B825 original bulk-text prototype](results/2026-11-16-bulk-text-construction/README.md):5ebd657a vs810dafdd; normalization allocation−11.44%/accounted peak−3.50%, but warm elapsed+5.34..7.50%/CPU+4.20..5.97% with stable controls. Fresh/report inconclusive, JSON control mixed. Four jobs140.165s/all gates. One direct-copy/check refinement justified; no promotion or CPU gain claimed, all originals retained.

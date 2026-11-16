@@ -1,0 +1,240 @@
+{
+  "coreSHA256": "810dafdd2afb684158374098c5b16e850369b7a6ebe2a56e451f3bd96f741d46",
+  "rows": [
+    {
+      "field": "StringMembers.CenterMethod",
+      "method": "System.Object \u003CCreatePaddingMethod\u003Eb__0(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BStringMembers\u002B\u003C\u003Ec__DisplayClass12_0"
+    },
+    {
+      "field": "StringMembers.CenterMethod",
+      "method": "System.Threading.Tasks.ValueTask\u00601[System.Object] \u003CCreatePaddingMethod\u003Eb__1(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BStringMembers\u002B\u003C\u003Ec__DisplayClass12_0"
+    },
+    {
+      "field": "StringMembers.LJustMethod",
+      "method": "System.Object \u003CCreatePaddingMethod\u003Eb__0(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BStringMembers\u002B\u003C\u003Ec__DisplayClass12_0"
+    },
+    {
+      "field": "StringMembers.LJustMethod",
+      "method": "System.Threading.Tasks.ValueTask\u00601[System.Object] \u003CCreatePaddingMethod\u003Eb__1(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BStringMembers\u002B\u003C\u003Ec__DisplayClass12_0"
+    },
+    {
+      "field": "StringMembers.RJustMethod",
+      "method": "System.Object \u003CCreatePaddingMethod\u003Eb__0(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BStringMembers\u002B\u003C\u003Ec__DisplayClass12_0"
+    },
+    {
+      "field": "StringMembers.RJustMethod",
+      "method": "System.Threading.Tasks.ValueTask\u00601[System.Object] \u003CCreatePaddingMethod\u003Eb__1(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BStringMembers\u002B\u003C\u003Ec__DisplayClass12_0"
+    },
+    {
+      "field": "StringMembers.ZFillMethod",
+      "method": "System.Object \u003C.cctor\u003Eb__80_0(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BStringMembers\u002B\u003C\u003Ec"
+    },
+    {
+      "field": "StringMembers.ZFillMethod",
+      "method": "System.Threading.Tasks.ValueTask\u00601[System.Object] \u003C.cctor\u003Eb__80_1(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BStringMembers\u002B\u003C\u003Ec"
+    },
+    {
+      "field": "StringMembers.FindMethod",
+      "method": "System.Object \u003CCreateSearchMethod\u003Eb__0(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BStringMembers\u002B\u003C\u003Ec__DisplayClass18_0"
+    },
+    {
+      "field": "StringMembers.FindMethod",
+      "method": "System.Threading.Tasks.ValueTask\u00601[System.Object] \u003CCreateSearchMethod\u003Eb__1(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BStringMembers\u002B\u003C\u003Ec__DisplayClass18_0"
+    },
+    {
+      "field": "StringMembers.IndexMethod",
+      "method": "System.Object \u003CCreateSearchMethod\u003Eb__0(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BStringMembers\u002B\u003C\u003Ec__DisplayClass18_0"
+    },
+    {
+      "field": "StringMembers.IndexMethod",
+      "method": "System.Threading.Tasks.ValueTask\u00601[System.Object] \u003CCreateSearchMethod\u003Eb__1(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BStringMembers\u002B\u003C\u003Ec__DisplayClass18_0"
+    },
+    {
+      "field": "StringMembers.RFindMethod",
+      "method": "System.Object \u003CCreateSearchMethod\u003Eb__0(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BStringMembers\u002B\u003C\u003Ec__DisplayClass18_0"
+    },
+    {
+      "field": "StringMembers.RFindMethod",
+      "method": "System.Threading.Tasks.ValueTask\u00601[System.Object] \u003CCreateSearchMethod\u003Eb__1(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BStringMembers\u002B\u003C\u003Ec__DisplayClass18_0"
+    },
+    {
+      "field": "StringMembers.RIndexMethod",
+      "method": "System.Object \u003CCreateSearchMethod\u003Eb__0(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BStringMembers\u002B\u003C\u003Ec__DisplayClass18_0"
+    },
+    {
+      "field": "StringMembers.RIndexMethod",
+      "method": "System.Threading.Tasks.ValueTask\u00601[System.Object] \u003CCreateSearchMethod\u003Eb__1(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BStringMembers\u002B\u003C\u003Ec__DisplayClass18_0"
+    },
+    {
+      "field": "StringMembers.CountMethod",
+      "method": "System.Object \u003CCreateSearchMethod\u003Eb__0(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BStringMembers\u002B\u003C\u003Ec__DisplayClass18_0"
+    },
+    {
+      "field": "StringMembers.CountMethod",
+      "method": "System.Threading.Tasks.ValueTask\u00601[System.Object] \u003CCreateSearchMethod\u003Eb__1(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BStringMembers\u002B\u003C\u003Ec__DisplayClass18_0"
+    },
+    {
+      "field": "StringMembers.EncodeMethod",
+      "method": "System.Object \u003C.cctor\u003Eb__80_2(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BStringMembers\u002B\u003C\u003Ec"
+    },
+    {
+      "field": "StringMembers.RSplitMethod",
+      "method": "System.Object \u003C.cctor\u003Eb__80_3(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BStringMembers\u002B\u003C\u003Ec"
+    },
+    {
+      "field": "StringMembers.RSplitMethod",
+      "method": "System.Threading.Tasks.ValueTask\u00601[System.Object] \u003C.cctor\u003Eb__80_4(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BStringMembers\u002B\u003C\u003Ec"
+    },
+    {
+      "field": "StringMembers.SplitLinesMethod",
+      "method": "System.Object \u003C.cctor\u003Eb__80_5(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BStringMembers\u002B\u003C\u003Ec"
+    },
+    {
+      "field": "StringMembers.SplitLinesMethod",
+      "method": "System.Threading.Tasks.ValueTask\u00601[System.Object] \u003C.cctor\u003Eb__80_6(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BStringMembers\u002B\u003C\u003Ec"
+    },
+    {
+      "field": "StringMembers.ExpandTabsMethod",
+      "method": "System.Object \u003C.cctor\u003Eb__80_7(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BStringMembers\u002B\u003C\u003Ec"
+    },
+    {
+      "field": "StringMembers.ExpandTabsMethod",
+      "method": "System.Threading.Tasks.ValueTask\u00601[System.Object] \u003C.cctor\u003Eb__80_8(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BStringMembers\u002B\u003C\u003Ec"
+    },
+    {
+      "field": "StringMembers.StripMethod",
+      "method": "System.Object \u003CCreateStripMethod\u003Eb__0(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BStringMembers\u002B\u003C\u003Ec__DisplayClass79_0"
+    },
+    {
+      "field": "StringMembers.LStripMethod",
+      "method": "System.Object \u003CCreateStripMethod\u003Eb__0(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BStringMembers\u002B\u003C\u003Ec__DisplayClass79_0"
+    },
+    {
+      "field": "StringMembers.RStripMethod",
+      "method": "System.Object \u003CCreateStripMethod\u003Eb__0(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BStringMembers\u002B\u003C\u003Ec__DisplayClass79_0"
+    },
+    {
+      "field": "ReceiverMethods.ListAppend",
+      "method": "System.Object \u003C.cctor\u003Eb__12_0(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BReceiverMethods\u002B\u003C\u003Ec"
+    },
+    {
+      "field": "ReceiverMethods.DictionaryGet",
+      "method": "System.Object \u003C.cctor\u003Eb__12_1(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BReceiverMethods\u002B\u003C\u003Ec"
+    },
+    {
+      "field": "ReceiverMethods.DictionaryGet",
+      "method": "System.Threading.Tasks.ValueTask\u00601[System.Object] \u003C.cctor\u003Eb__12_2(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BReceiverMethods\u002B\u003C\u003Ec"
+    },
+    {
+      "field": "ReceiverMethods.DictionarySetDefault",
+      "method": "System.Object \u003C.cctor\u003Eb__12_3(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BReceiverMethods\u002B\u003C\u003Ec"
+    },
+    {
+      "field": "ReceiverMethods.TextWrite",
+      "method": "System.Object \u003C.cctor\u003Eb__12_4(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BReceiverMethods\u002B\u003C\u003Ec"
+    },
+    {
+      "field": "ReceiverMethods.TextWrite",
+      "method": "System.Threading.Tasks.ValueTask\u00601[System.Object] \u003C.cctor\u003Eb__12_5(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BReceiverMethods\u002B\u003C\u003Ec"
+    },
+    {
+      "field": "ReceiverMethods.BinaryWrite",
+      "method": "System.Object \u003C.cctor\u003Eb__12_6(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BReceiverMethods\u002B\u003C\u003Ec"
+    },
+    {
+      "field": "ReceiverMethods.CsvWriterow",
+      "method": "System.Object \u003C.cctor\u003Eb__12_7(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BReceiverMethods\u002B\u003C\u003Ec"
+    },
+    {
+      "field": "ReceiverMethods.CsvWriterow",
+      "method": "System.Threading.Tasks.ValueTask\u00601[System.Object] \u003C.cctor\u003Eb__12_8(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BReceiverMethods\u002B\u003C\u003Ec"
+    },
+    {
+      "field": "ReceiverMethods.StringJoin",
+      "method": "System.Object \u003C.cctor\u003Eb__12_9(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BReceiverMethods\u002B\u003C\u003Ec"
+    },
+    {
+      "field": "ReceiverMethods.StringJoin",
+      "method": "System.Threading.Tasks.ValueTask\u00601[System.Object] \u003C.cctor\u003Eb__12_10(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BReceiverMethods\u002B\u003C\u003Ec"
+    },
+    {
+      "field": "ReceiverMethods.StringSplit",
+      "method": "System.Object \u003C.cctor\u003Eb__12_11(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BReceiverMethods\u002B\u003C\u003Ec"
+    },
+    {
+      "field": "ReceiverMethods.StringSplit",
+      "method": "System.Threading.Tasks.ValueTask\u00601[System.Object] \u003C.cctor\u003Eb__12_12(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BReceiverMethods\u002B\u003C\u003Ec"
+    },
+    {
+      "field": "ReceiverMethods.StringReplace",
+      "method": "System.Object \u003C.cctor\u003Eb__12_13(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BReceiverMethods\u002B\u003C\u003Ec"
+    },
+    {
+      "field": "ReceiverMethods.StringReplace",
+      "method": "System.Threading.Tasks.ValueTask\u00601[System.Object] \u003C.cctor\u003Eb__12_14(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BReceiverMethods\u002B\u003C\u003Ec"
+    },
+    {
+      "field": "ReceiverMethods.StringStartsWith",
+      "method": "System.Object \u003CAffix\u003Eb__0(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BReceiverMethods\u002B\u003C\u003Ec__DisplayClass11_0"
+    },
+    {
+      "field": "ReceiverMethods.StringStartsWith",
+      "method": "System.Threading.Tasks.ValueTask\u00601[System.Object] \u003CAffix\u003Eb__1(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BReceiverMethods\u002B\u003C\u003Ec__DisplayClass11_0"
+    },
+    {
+      "field": "ReceiverMethods.StringEndsWith",
+      "method": "System.Object \u003CAffix\u003Eb__0(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BReceiverMethods\u002B\u003C\u003Ec__DisplayClass11_0"
+    },
+    {
+      "field": "ReceiverMethods.StringEndsWith",
+      "method": "System.Threading.Tasks.ValueTask\u00601[System.Object] \u003CAffix\u003Eb__1(System.Object, ReceiverArguments, Lokad.Lython.LythonSourceSpan, ExecutionContext)",
+      "declaringType": "Lokad.Lython.Runtime.LythonRuntime\u002BReceiverMethods\u002B\u003C\u003Ec__DisplayClass11_0"
+    }
+  ]
+}
