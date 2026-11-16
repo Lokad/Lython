@@ -1,0 +1,16 @@
+{
+  "assessmentComplete": true,
+  "sourceUnchanged": true,
+  "wholeActiveSamples": 947,
+  "executionThreadSamples": 749,
+  "executionThreadUnknownLeaves": 140,
+  "protocolResetThreadSamples": 198,
+  "protocolResetUnknownLeaves": 179,
+  "entryBindingRetirementInclusiveSamples": 251,
+  "closedExecutionInclusiveSamples": 149,
+  "groupsOverlapAndAreNotRemovableShares": true,
+  "speedupClaim": false,
+  "nextDesign": "Bounded complete-call/frame design assessment. Compare direct consumed-operand reuse and managed executable-block compilation against prior call-arena/control/shared-kernel failures. Reject replay, unsafe storage, abandoned users, extra lifetime carriers or unbounded per-script compilation. Select an actual displaced stage only if its whole-script compile-to-result tradeoff is credible; otherwise record unresolved feasibility. No new engine or switch approved merely from inclusive samples.",
+  "physicalStackPolicyUnchanged": true,
+  "publicationHeld": true
+}

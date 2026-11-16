@@ -6,6 +6,15 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[R441/B844 protected-search attribution](results/2026-11-16-protected-search-attribution/README.md)
+uses qualified0443/current fixed catalog.947active samples separate749execution/
+140unknown from198protocol-reset/179unknown. Reset146nearest samples is outside
+the guest timer.251inclusive call-entry/binding overlaps149closed execution and
+useful work; no dominant removable stage or speedup established. All gates/joins/
+RAM archive verification pass. Close bounded attribution; assess complete calls/
+frames against prior slower carriers and one-shot preparation costs before another
+prototype. No runtime/full qualification change; broader objective remains open.
+
 [R440 bulk-snapshot refinement](results/2026-11-16-cased-word-stream/refined/README.md)
 recordsce368f52/0443,B843seven jobs212.918s/all gates. Long-line allocation−46.31%/
 accounted peak−15.82%,but elapsed+6.26..8.01% with1.20/0.45%controls; captured CPU
