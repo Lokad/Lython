@@ -1,0 +1,32 @@
+[
+  {
+    "source": "def inner():\n    for i in range(37): yield str(i)\n    return 7\ndef outer():\n    result = yield from inner()\n    yield str(result)\nassert ','.join(outer()) == ','.join([str(i) for i in range(37)] + ['7'])\nreturn 'ok'",
+    "exitCode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "source": "def values():\n    for i in range(37):\n        try: next(g)\n        except ValueError as error: assert str(error) == 'generator already executing'\n        else: assert False\n        yield str(i)\ng = values()\nassert ','.join(g) == ','.join(str(i) for i in range(37))\nassert next(g, 'end') == 'end'\nreturn 'ok'",
+    "exitCode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "source": "def values():\n    try: raise KeyError('inner')\n    except KeyError as original:\n        for i in range(37):\n            try: raise\n            except KeyError as error: assert error is original\n            yield 'x'\n    try: raise\n    except ValueError as error: assert str(error) == 'caller'\n    yield '!'\ntry: raise ValueError('caller')\nexcept ValueError as original:\n    assert ''.join(values()) == 'x' * 37 + '!'\n    try: raise\n    except ValueError as error: assert error is original\nreturn 'ok'",
+    "exitCode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "source": "def values():\n    for i in range(9): yield i\ng = values()\ntry: a, b = g\nexcept ValueError: pass\nelse: assert False\nassert next(g) == 3\ng.close()\nreturn 'ok'",
+    "exitCode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "source": "shared = []\ndef values():\n    for i in range(37):\n        shared.append(i)\n        yield shared\nparts = sorted(values(), key=lambda value: 0)\nassert len(parts) == 37 and len(shared) == 37\nassert all(value is shared for value in parts)\nreturn 'ok'",
+    "exitCode": 0,
+    "stdout": "",
+    "stderr": ""
+  }
+]

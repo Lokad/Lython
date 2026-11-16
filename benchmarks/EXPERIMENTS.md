@@ -8945,3 +8945,11 @@ ordinary-generator CPU adversity with moving controls. Both original collections
 all sources/conditions preserved; no production promotion or full qualification.
 Refine once by restoring single-item advancement and consuming private buffered
 yields inside the existing instruction loop. Allocation flat; broader roadmap open.
+
+[R458 existing-loop refinement](results/2026-11-16-generator-batches/refined/README.md):
+4fcfcc71/B864 normalization warm11.6–14.8%lower elapsed/fresh7.7–10.5%lower,
+ordinary-generator control mixed, numeric5.3–13.3%adverse with CPU support/moving
+reference. Private, not promoted; guard inactive bulk helper before another source
+comparison. Allocation+32B (<0.006%), peaks unchanged. All gates/join/archive pass;
+failed B863 stale launcher and diagnostic extractor preserved/corrected. Full
+qualification waits for retained design; whole-script roadmap remains open.
