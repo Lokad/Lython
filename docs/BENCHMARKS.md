@@ -2,14 +2,16 @@
 
 | Representative workload / phase | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| Configuration / six-helper manifest / compilation only | 833 B inputs / 1,877 B source | 0.192–0.201 ms | 0.157–0.157 ms | 1.22–1.28× | Diagnostic; spreads 4.89/0.08%; IQR ≤1.25% |
+| Configuration / six-helper manifest / compile and execute once | 833 B inputs / 1,877 B source | 0.496–0.498 ms | 0.456–0.457 ms | 1.08–1.09× | Diagnostic; spreads 0.53/0.16%; IQR ≤1.67% |
+| Report / format method / warm Run | 1,024 records / 189,441 B JSON | 4.155–4.213 ms | 2.560–2.616 ms | 1.59–1.65× | Diagnostic; spreads 1.38/2.16%; IQR ≤3.99% |
+| Report / f-string / warm Run | 1,024 records / 189,441 B JSON | 2.786–2.822 ms | 2.350–2.356 ms | 1.18–1.20× | Diagnostic; spreads 1.28/0.26%; IQR ≤4.50% |
 | Patch generation / warm Run | Two 1,024-line files / 67,597 B | 0.471–0.472 ms | 0.572–0.576 ms | 0.817–0.825× | Diagnostic; spreads 0.14/0.72%; IQR ≤1.37% |
 | Patch generation / compilation only | Two 1,024-line files / 67,597 B | 0.033–0.033 ms | 0.034–0.034 ms | 0.96–0.97× | Diagnostic; spreads 0.49/0.81%; IQR ≤1.37% |
 | Patch generation / compile and execute once | Two 1,024-line files / 67,597 B | 0.521–0.534 ms | 0.651–0.654 ms | 0.80–0.82× | Diagnostic; spreads 2.37/0.57%; IQR ≤2.08% |
 | CSV invoice / warm Run | 4,096 records / 127,031 B | 6.718–6.917 ms | 6.017–6.071 ms | 1.11–1.15× | Diagnostic; spreads 2.95/0.88%; IQR ≤1.99% |
-| Report / format method / warm Run | 1,024 records / 189,441 B JSON | 4.364–4.403 ms | 2.614–2.633 ms | 1.66–1.68× | Diagnostic; spreads 0.89/0.75%; IQR ≤4.49% |
 | Report / format method / compilation only | 1,024 records / 189,441 B JSON | 0.037–0.037 ms | 0.036–0.036 ms | 1.02–1.03× | Diagnostic; spreads 0.05/0.95%; IQR ≤0.94% |
 | Report / format method / compile and execute once | 1,024 records / 189,441 B JSON | 4.438–4.479 ms | 2.727–2.771 ms | 1.60–1.64× | Diagnostic; spreads 0.92/1.62%; IQR ≤4.15% |
-| Report / f-string / warm Run | 1,024 records / 189,441 B JSON | 2.789–2.803 ms | 2.366–2.384 ms | 1.17–1.18× | Diagnostic; spreads 0.51/0.72%; IQR ≤4.63% |
 | CSV invoice / compilation only | 4,096 records / 127,031 B | 0.100–0.101 ms | 0.094–0.094 ms | 1.07–1.08× | Diagnostic; spreads 0.67/0.14%; IQR ≤1.06% |
 | CSV invoice / compile and execute once | 4,096 records / 127,031 B | 6.883–6.972 ms | 6.249–6.276 ms | 1.10–1.12× | Diagnostic; spreads 1.29/0.44%; IQR ≤1.50% |
 | CSV fulfillment / warm Run | 4,096 records / 126,821 B | 7.568–7.594 ms | 6.783–6.794 ms | 1.11–1.12× | Diagnostic; spreads 0.34/0.17%; IQR ≤1.70% |
@@ -18,8 +20,6 @@
 | Text / inline / warm Run | 3,072 lines / 35,840 B | 0.818–0.851 ms | 0.802–0.804 ms | 1.02–1.06× | Diagnostic; spreads 3.91/0.21%; IQR ≤1.71% |
 | JSON-lines / aggregation helpers / warm Run | 4,096 records / 110,592 B | 3.467–3.563 ms | 4.098–4.117 ms | 0.84–0.87× | Diagnostic; spreads 2.77/0.47%; IQR ≤1.59% |
 | File search / defensive helper / warm Run | 2,049 lines / 42,010 B; stop after 1,025 | 0.272–0.273 ms | 0.152–0.155 ms | 1.76–1.80× | Diagnostic; spreads 0.51/1.74%; IQR ≤2.91% |
-| Configuration / six-helper manifest / compilation only | 833 B inputs / 1,877 B source | 0.198–0.200 ms | 0.155–0.158 ms | 1.25–1.29× | Diagnostic; spreads 1.02/1.92%; IQR ≤1.96% |
-| Configuration / six-helper manifest / compile and execute once | 833 B inputs / 1,877 B source | 0.497–0.498 ms | 0.463–0.470 ms | 1.06–1.08× | Diagnostic; spreads 0.04/1.49%; IQR ≤1.68% |
 
 **Ratio = Lython elapsed / CPython elapsed; above one means slower.** These are
 complete embedding measurements, not isolated interpreter CPU. Spreads compare
@@ -31,16 +31,21 @@ passes measurement/cleanup gates and [full runtime qualification](../benchmarks/
 Patch is one central edit between unique lines, not arbitrary diff throughput.
 CSV compilation/fresh rows below retain their earlier revision.
 
-**Report rows:58eeea6f/frozen9d071eba**; [affected checkpoint](../benchmarks/results/2026-11-15-layout-cpython-checkpoint/README.md)
-passes all measurement/cleanup gates. [Full runtime qualification passes](../benchmarks/results/2026-11-15-method-format-layout/delivery/README.md).
-Method formatting remains1.66–1.68×CPython warm; compilation is1.02–1.03×.
-The [preceding report checkpoint](../benchmarks/results/2026-11-15-format-cpython-checkpoint/README.md)
-retains the2.04–2.07×warm result and noisy8.86%fresh CPython IQR atb06b8593.
+**Manifest phases and report warm rows: a2d20928 / measured9d26d408**,2026-11-16UTC;
+[current checkpoint](../benchmarks/results/2026-11-16-compiler-cpython-checkpoint/README.md)
+passes all measurement/cleanup gates. Full platform/stress/installed-package
+qualification is pending. Method report remains1.59–1.65×CPython warm; manifest
+fresh is1.085–1.092×. Manifest compilation control moves4.89%, report IQRs reach4.50%.
+**Report compilation/fresh retain58eeea6f/frozen9d071eba** and their
+[earlier checkpoint](../benchmarks/results/2026-11-15-layout-cpython-checkpoint/README.md),
+with [full runtime qualification](../benchmarks/results/2026-11-15-method-format-layout/delivery/README.md).
+All preceding warm observations remain in the linked history; no source-change
+speedup or recovery is inferred across collections.
 
 Measured **2026-11-15 UTC**, stock **CPython3.13.16**, quiet Azure F4as_v7 /
 Ubuntu24.04.4, four AMD EPYC9V45 vCPUs,16GiB/no swap,.NET11RC3 workstation
 GC/normal tiering and CPython GIL/GC. **CSV invoice compilation/fresh, captured warm text, JSON,
-file search and configuration:2865f619/frozen55ba4c8a**;
+file search:2865f619/frozen55ba4c8a**;
 [eight-phase checkpoint](../benchmarks/results/2026-11-15-store-cpython-checkpoint/README.md)
 passes all measurement/cleanup gates; [full runtime qualification passes](../benchmarks/results/2026-11-15-prepared-store-targets/delivery/README.md).
 **Captured fresh and inline text:1b82cd46/frozen0edc0c1c**, with
@@ -80,7 +85,7 @@ These source-pair results are separate from CPython and cannot be added together
 | Change / complete affected script | CPU/elapsed evidence | Allocation | Limits and exact evidence |
 | --- | --- | ---: | --- |
 | One compiler instruction store / complete compilation | Generated normalizer compile1.3–3.8%lower, supporting CPU; manifest/fresh inconclusive | Compile−3.35..−4.74% | Retained9d26d408/eee74a10. Removes block wrappers/intermediate arrays; adverse manifest/fresh timings retained. Generated case is diagnostic, not typical agent-script evidence. [Source pair/limits](../benchmarks/results/2026-11-16-compiler-instruction-store/README.md); full delivery pending. |
-| Native work before finally / complete protected invoice | Warm elapsed4.8–6.2%lower, supporting CPU; fresh inconclusive | −2.91% | Retainedeee74a10/8f468f0a. Existing cleanup frame/ownership retained; ordinary/JSON controls move/adverse up to3.5%. [Exact source pair and limits](../benchmarks/results/2026-11-16-finally-prefix/README.md); full delivery pending. |
+| Native work before finally / complete protected invoice | Warm elapsed4.8–6.2%lower, supporting CPU; fresh inconclusive | −2.91% | Retainedeee74a10/8f468f0a. Existing cleanup frame/ownership retained; ordinary/JSON controls move/adverse up to3.5%. [Exact source pair and limits](../benchmarks/results/2026-11-16-finally-prefix/README.md); [Full delivery passes](../benchmarks/results/2026-11-16-finally-prefix/delivery/README.md). |
 | Known scalar boundaries / complete regex diagnostics | Unicode suffix elapsed5–10%lower at1,024scalars/about5%at4,096; CPU support | Effectively flat(+16B) | Retained8f468f0a/0393331a; normal0.4 adapter unchanged. Diagnostic, not general regex throughput; moving small-input control/initial short adversity/ASCII CPU debt retained. [Evidence](../benchmarks/results/2026-11-16-regex-known-boundaries/README.md); [Full delivery passes](../benchmarks/results/2026-11-16-regex-known-boundaries/delivery/README.md). |
 | One runtime format operation / complete report | Warm elapsed1.9–4.2%lower; compile-to-result1.1–4.2%lower, supporting CPU | −9.41% | Committedc023042d / measured0393331a versus9d071eba; callback executor/captures/private fallback removed. Moving controls/CSVup to0.5%slower retained. [Source pair/limits](../benchmarks/results/2026-11-15-runtime-format-operation/README.md); [Full delivery passes](../benchmarks/results/2026-11-15-runtime-format-operation/delivery/README.md). |
 | Reused method-format layout / complete report | Warm elapsed17.4–19.3%lower; compile-to-result18.2–19.8%lower, supporting CPU | −18.47% | Retained9d071eba/8afb; moving f-string controls/CSVup to2.8%slower and conservative retained layout charges remain. [Source pair/limits](../benchmarks/results/2026-11-15-method-format-layout/README.md); [Full delivery passes](../benchmarks/results/2026-11-15-method-format-layout/delivery/README.md). |

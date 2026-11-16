@@ -128,6 +128,8 @@
   "retentionDecisionPending": false,
   "CPythonRefreshed": false,
   "retained": true,
-  "fullQualificationPending": true,
-  "decision": "Remove blanket finally-helper rejection using the existing exact-PC transfer. Protected invoice warm lower with CPU support and 2.91% allocation reduction. Fresh inconclusive; ordinary/JSON controls adverse/moving, retained as debt. No universal improvement or broader objective completion."
+  "fullQualificationPending": false,
+  "decision": "Remove blanket finally-helper rejection using the existing exact-PC transfer. Protected invoice warm lower with CPU support and 2.91% allocation reduction. Fresh inconclusive; ordinary/JSON controls adverse/moving, retained as debt. No universal improvement or broader objective completion.",
+  "fullQualificationRun": "43787325151",
+  "runtimeCommit": "e6500781d6c15b172a1eca94d8124c6ea337234b"
 }

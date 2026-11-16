@@ -83,7 +83,7 @@ toolchains remain; 254/252 MiB stage/archive floors unchanged. The unexecuted
 original launcher unnecessarily coupled development comparison to reference CI;
 its bounded correction preserved all runtime/ownership/quiet gates and both sources.
 
-**Full platform/stress/installed-package qualification pending; publication held.**
+[Full platform/stress/installed-package qualification passes](delivery/README.md); publication held.
 The broader call/operand/collection/frontend objective remains active.
 [Medians](summary.json), [allocation](allocation-summary.json),
 [focused checks](focused-checks.json), [source/image identity](identity.json),

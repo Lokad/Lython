@@ -8655,3 +8655,9 @@ verified before unmount, all users joined. No CPU speedup or production change.
 
 
 [R424/B820 one compiler instruction store](results/2026-11-16-compiler-instruction-store/README.md): retained9d26d408 versuse6500781/eee74a10. Deletes two block wrappers, normalized/shortened instruction arrays and copies; final code/metadata agree.151internal/1,011public eachactual11/10 pass;590inputs frozen. Complete compile allocation3.35–4.74%lower, generated fresh3.88%lower. Generated compile elapsed1.3–3.8%lower/CPU2–4.2%lower; manifest/fresh inconclusive with adverse/moving controls, favorable unchanged invoice control not attributed to source. B820four jobs162.446s/all gates/joined cleanup. Full delivery pending; broader objective active, publication held.
+
+
+[R425/B821 current manifest/report CPython phases](results/2026-11-16-compiler-cpython-checkpoint/README.md): a2d20928/9d26d408 versusCPython3.13.16; four jobs136.664s/all gates. Manifest compile1.22–1.28×/fresh1.085–1.092×; method report warm1.59–1.65×/f-string1.18–1.20×. Manifest control4.89%, report IQR≤4.50%retained. Phases/I/O/cleanup/source labels explicit; no causal source gain. Full43789371043pending; broader objective active/publication held.
+
+
+[R423full delivery43787325151](results/2026-11-16-finally-prefix/delivery/README.md) qualifiese6500781/eee74a10 on Windows/Ubuntu actual11/10:4,777internal/17,912public ordinary, original13/406stress and installed Release consumers each.16summaries/591inputs verified; terminal cached forever. R424compiler prototype continues independently; publication held.
