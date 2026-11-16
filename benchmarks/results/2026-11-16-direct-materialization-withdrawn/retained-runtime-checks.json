@@ -1,0 +1,11 @@
+{
+  "sourceCommit": "5c4cc53b8c7f446a43fe0c7322f1382e35409ec7",
+  "productionTree": "d6655e47ea8d50cca1d9c1e0846c69c1d5339e66",
+  "productionIdenticalToQualified312f5911": true,
+  "newCasesPerTarget": 2,
+  "frameworks": [
+    "net11.0",
+    "net10.0"
+  ],
+  "fullUnchangedQualificationRepeated": false
+}

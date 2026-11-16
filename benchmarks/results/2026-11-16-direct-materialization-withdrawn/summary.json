@@ -1,0 +1,192 @@
+{
+  "complete": true,
+  "elapsedSeconds": 173.53931096708402,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "rows": [
+    {
+      "case": "scripts.text-normalization.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 1.13447711407767,
+        "reference": 1.1018186651162791,
+        "candidate-control": 1.152098579710145,
+        "reference-control": 1.1025328387850468
+      },
+      "cpuMilliseconds": {
+        "candidate": 1.237864077669903,
+        "reference": 1.2093023255813953,
+        "candidate-control": 1.2560386473429952,
+        "reference-control": 1.2149532710280375
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.11733924613243768,
+        "reference": 0.14120354156281237,
+        "candidate-control": 0.6464839885589686,
+        "reference-control": 0.30455553324429535
+      },
+      "elapsedChangePercent": [
+        2.8973536359991447,
+        2.964049348169673,
+        4.495624908525908,
+        4.563356583595324
+      ],
+      "cpuChangePercent": [
+        1.8857356235997047,
+        2.3618371919343017,
+        3.3816425120772875,
+        3.8647342995169254
+      ],
+      "referenceSpreadPercent": 0.06481771378346046,
+      "candidateSpreadPercent": 1.5532676167558712
+    },
+    {
+      "case": "scripts.text-normalization.large",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "candidate": 1.2004799974424551,
+        "reference": 1.2850075777777779,
+        "candidate-control": 1.2100771752577322,
+        "reference-control": 1.2095254615384614
+      },
+      "cpuMilliseconds": {
+        "candidate": 1.329923273657289,
+        "reference": 1.4166666666666667,
+        "candidate-control": 1.3402061855670104,
+        "reference-control": 1.3186813186813187
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.29971408772321223,
+        "reference": 0.35581372533540334,
+        "candidate-control": 1.1963429255930584,
+        "reference-control": 0.8489082136353556
+      },
+      "elapsedChangePercent": [
+        -6.577983024932821,
+        -5.831125342437771,
+        -0.7478523093264022,
+        0.04561406409493429
+      ],
+      "cpuChangePercent": [
+        -6.123063035956077,
+        -5.39721043056397,
+        0.8525149190110826,
+        1.6323024054982982
+      ],
+      "referenceSpreadPercent": 6.240638881905514,
+      "candidateSpreadPercent": 0.799445041626945
+    },
+    {
+      "case": "generators.drain.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 6.107548176470588,
+        "candidate-control": 5.870164079545455,
+        "reference": 6.009419647727273,
+        "candidate": 6.391650062499999
+      },
+      "cpuMilliseconds": {
+        "reference-control": 6.352941176470589,
+        "candidate-control": 6.136363636363637,
+        "reference": 6.25,
+        "candidate": 6.625000000000001
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.5817062298774266,
+        "candidate-control": 1.9680300131923425,
+        "reference": 2.9764031687457075,
+        "candidate": 0.650379786025731
+      },
+      "elapsedChangePercent": [
+        -3.886733105760165,
+        -2.317288130052364,
+        4.651651985716909,
+        6.36052126792781
+      ],
+      "cpuChangePercent": [
+        -3.409090909090917,
+        -1.8181818181818077,
+        4.282407407407418,
+        6.000000000000005
+      ],
+      "referenceSpreadPercent": 1.6329119032388872,
+      "candidateSpreadPercent": 8.883669619587952
+    },
+    {
+      "case": "scripts.csv-invoice.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 7.033883301369864,
+        "candidate-control": 6.921621805555556,
+        "reference": 6.730657135135135,
+        "candidate": 6.866195944444445
+      },
+      "cpuMilliseconds": {
+        "reference-control": 7.123287671232878,
+        "candidate-control": 7.083333333333334,
+        "reference": 6.891891891891892,
+        "candidate": 7.083333333333334
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.6510425803275209,
+        "candidate-control": 0.2549201849911747,
+        "reference": 0.46190421774567414,
+        "candidate": 0.5977602331913955
+      },
+      "elapsedChangePercent": [
+        -2.3839940149811945,
+        -1.5960102123452224,
+        2.0137529900576157,
+        2.837236641033969
+      ],
+      "cpuChangePercent": [
+        -0.560897435897445,
+        -0.560897435897445,
+        2.77777777777779,
+        2.77777777777779
+      ],
+      "referenceSpreadPercent": 4.505149499472183,
+      "candidateSpreadPercent": 0.8072280715489377
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 3.4314278461538463,
+        "candidate-control": 3.4264434685314686,
+        "reference": 3.4303410839160837,
+        "candidate": 3.473320141843972
+      },
+      "cpuMilliseconds": {
+        "reference-control": 3.5664335664335667,
+        "candidate-control": 3.4965034965034967,
+        "reference": 3.5664335664335667,
+        "candidate": 3.617021276595745
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.41944536444495517,
+        "candidate-control": 0.0638767083362235,
+        "reference": 0.32645778103880924,
+        "candidate": 1.2077570678893779
+      },
+      "elapsedChangePercent": [
+        -0.14525666415992067,
+        -0.1136218028839786,
+        1.2208415146214069,
+        1.2529091678202153
+      ],
+      "cpuChangePercent": [
+        -1.9607843137254943,
+        -1.9607843137254943,
+        1.4184397163120588,
+        1.4184397163120588
+      ],
+      "referenceSpreadPercent": 0.03168087986522572,
+      "candidateSpreadPercent": 1.3680854140165843
+    }
+  ],
+  "retentionDecisionPending": false,
+  "CPythonRefreshed": false,
+  "retained": false,
+  "decision": "Withdraw complete transport prototype: flat allocation, stable adverse warm normalization,extra cleanup wrappers; broader kernel remains independent."
+}

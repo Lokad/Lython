@@ -8726,3 +8726,6 @@ R431 bounded source gate at1fe2a174: plain builtin wrappers/signatures already l
 
 
 [R436full delivery43828954661](results/2026-11-16-iteration-slot-transport/refined/delivery/README.md) GREEN at312f5911/0443b5cf: Windows/Ubuntu actual11/10 each4800internal/17921public ordinary,14internal/406public stress,installed Release consumers.607inputs/16summaries verified; terminal cached. CSV uncertainty/original adversity retained; external checkpoint and broader whole-script roadmap remain active.
+
+
+[R438/B837 direct materialization withdrawn](results/2026-11-16-direct-materialization-withdrawn/README.md):e0d2bdea/qualified0443b5cf,fivejobs/173.539s/all gates. Normalization warm+2.90..4.56%elapsed/+1.89..3.86%CPU,allocation effectively flat. Fresh/drain/CSV controls move6.24/8.88/4.51%; preserve uncertainty, not blanket failure. Four cleanup wrappers/shared append add work and35lines while generic bridges retain genuine users. Withdraw complete transport/proposed acquisition contract; qualified runtime unchanged. Independent two pending-cleanup tests carried forward for baseline verification. Larger coherent kernel remains open; no permanent retry ban or new full qualification campaign.

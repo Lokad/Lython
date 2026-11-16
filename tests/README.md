@@ -101,6 +101,11 @@ including a full signed span and strides whose final successor would overflow.
 preserve call/yield identities and aliases across real I/O under both APIs,
 with exact endpoints, deterministic cleanup and shared-budget reuse.
 
+[Drain cleanup](Lokad.Lython.Tests/DrainCleanupOwnershipTests.cs) keeps private
+storage charged during pending asynchronous disposal after failed iteration or
+cancellation. Cleanup faults and cancellation return allowance only after the
+actual user has joined.
+
 ## Assembly boundaries
 
 - `Lokad.Lython.PublicApi.Tests` references `Lokad.Lython.csproj` normally. It
