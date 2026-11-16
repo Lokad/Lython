@@ -1,0 +1,10 @@
+{
+  "equal": true,
+  "cases": [
+    "scripts.config-manifest.small",
+    "scripts.config-generated-guards.medium",
+    "scripts.csv-invoice.large",
+    "scripts.json-summary-helpers.large"
+  ],
+  "compared": "Every final instruction backing field including original span; exception regions, entry, cold operand-read spans, slots, locals/closures, call sites and eligibility, recursively defined functions. Known compiled metadata, no guest tracing. Independent semantic/lifetime/cancellation tests remain necessary."
+}

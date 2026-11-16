@@ -1,0 +1,66 @@
+{
+  "rows": [
+    {
+      "case": "scripts.config-manifest.small",
+      "phase": "compilation",
+      "referenceBytes": 435312,
+      "candidateBytes": 417304,
+      "changePercent": -4.136803028632341
+    },
+    {
+      "case": "scripts.config-manifest.small",
+      "phase": "compile-run",
+      "referenceBytes": 546872,
+      "candidateBytes": 529728,
+      "changePercent": -3.1349200544185885
+    },
+    {
+      "case": "scripts.config-generated-guards.medium",
+      "phase": "compilation",
+      "referenceBytes": 4768776,
+      "candidateBytes": 4568064,
+      "changePercent": -4.208878756309797
+    },
+    {
+      "case": "scripts.config-generated-guards.medium",
+      "phase": "compile-run",
+      "referenceBytes": 4800230,
+      "candidateBytes": 4614166,
+      "changePercent": -3.876147601260771
+    },
+    {
+      "case": "scripts.csv-invoice.large",
+      "phase": "compilation",
+      "referenceBytes": 234632,
+      "candidateBytes": 226776,
+      "changePercent": -3.3482218964165145
+    },
+    {
+      "case": "scripts.csv-invoice.large",
+      "phase": "compile-run",
+      "referenceBytes": 4431956,
+      "candidateBytes": 4420532,
+      "changePercent": -0.25776429188376637
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "phase": "compilation",
+      "referenceBytes": 130496,
+      "candidateBytes": 124304,
+      "changePercent": -4.744973025993138
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "phase": "compile-run",
+      "referenceBytes": 2152782,
+      "candidateBytes": 2146590,
+      "changePercent": -0.2876278229751117
+    }
+  ],
+  "complete": true,
+  "elapsedSeconds": 17.1707755997777,
+  "allOutputAndFileGoldensPassed": true,
+  "budgetBaselineAndCleanupPassed": true,
+  "CPUorElapsedClaim": false,
+  "boundary": "Compilation includes public compile/compiled-owner disposal, no I/O; independent complete goldens checked first. Compile-run includes compile/one execution/mediated I/O/reset/full goldens/result and compiled-owner cleanup. No startup or forced GC, process-wide natural allocation counters; no timing comparison."
+}

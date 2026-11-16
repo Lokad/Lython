@@ -114,7 +114,7 @@ internal sealed partial class ExecutableScript
                     }
 
                     var tupleBlock = currentBlock;
-                    var tupleStart = _blocks[currentBlock].Instructions.Count;
+                    var tupleStart = _blocks[currentBlock].Count;
                     foreach (var item in tuple.Items)
                     {
                         currentBlock = CompileExpression(item.Expression, currentBlock);
@@ -377,7 +377,7 @@ internal sealed partial class ExecutableScript
 
         private bool TryCompleteLiteralTuple(int block, int start, int count, LythonSourceSpan span)
         {
-            var instructions = _blocks[block].Instructions;
+            var instructions = _blocks[block];
             if (instructions.Count - start != count) return false;
             for (var index = start; index < instructions.Count; index++)
             {

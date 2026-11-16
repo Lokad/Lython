@@ -432,13 +432,6 @@ internal readonly record struct ExecutableInstruction
         => new($"Instruction '{OpCode}' has no {name} operand.");
 }
 
-internal sealed record ExecutableBasicBlock(
-    int Index,
-    ExecutableInstruction[] InstructionArray)
-{
-    public IReadOnlyList<ExecutableInstruction> Instructions => InstructionArray;
-}
-
 internal sealed record ExecutableExceptionRegion(
     int ProtectedStartIndex,
     int ProtectedEndIndex,
@@ -502,7 +495,7 @@ internal sealed partial class ExecutableCodeObject
         IReadOnlyList<string> closureNames,
         IReadOnlyDictionary<string, int> closureNameToSlot,
         ScopeDirectiveFacts scopeFacts,
-        List<ExecutableBasicBlock> blocks,
+        List<List<ExecutableInstruction>> blocks,
         int entryBlockIndex,
         IReadOnlyList<ExecutableExceptionRegion> exceptionRegions,
         IReadOnlyList<ImportStatementSyntax> imports,

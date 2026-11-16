@@ -55,7 +55,7 @@ internal sealed partial class ExecutableScript
         private readonly Dictionary<string, int> _nameIndexes = new(StringComparer.Ordinal);
         private readonly Dictionary<string, int> _localIndexes = new(StringComparer.Ordinal);
         private readonly Dictionary<string, int> _closureIndexes = new(StringComparer.Ordinal);
-        private readonly List<BasicBlockBuilder> _blocks = [];
+        private readonly List<List<ExecutableInstruction>> _blocks = [];
         private readonly List<ExecutableExceptionRegion> _regions = [];
         private readonly List<ImportStatementSyntax> _imports = [];
         private readonly List<ExecutableCallSite> _callSites = [];

@@ -1,0 +1,133 @@
+{
+  "complete": true,
+  "elapsedSeconds": 162.44592933589593,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "rows": [
+    {
+      "case": "scripts.config-manifest.small",
+      "lane": "compile",
+      "elapsedMilliseconds": {
+        "candidate": 0.20067110693641618,
+        "reference": 0.1998264358974359,
+        "candidate-control": 0.19277133593445184,
+        "reference-control": 0.19562045867606737
+      },
+      "cpuMilliseconds": {
+        "candidate": 0.20644095788604458,
+        "reference": 0.2003205128205128,
+        "candidate-control": 0.19508388607101054,
+        "reference-control": 0.19584802193497844
+      },
+      "elapsedChangePercent": [
+        -3.5306139206752407,
+        -1.4564543815600905,
+        0.42270234925965156,
+        2.581860964099003
+      ],
+      "cpuChangePercent": [
+        -2.6141240733515314,
+        -0.3901677721420027,
+        3.0553261767134687,
+        5.4087530966143715
+      ],
+      "referenceSpreadPercent": 2.1500702175191844,
+      "candidateSpreadPercent": 4.098000858722339
+    },
+    {
+      "case": "scripts.config-generated-guards.medium",
+      "lane": "compile",
+      "elapsedMilliseconds": {
+        "candidate": 2.756902483333333,
+        "reference": 2.8644600909090907,
+        "candidate-control": 2.776659220338983,
+        "reference-control": 2.812643774011299
+      },
+      "cpuMilliseconds": {
+        "candidate": 2.7222222222222223,
+        "reference": 2.840909090909091,
+        "candidate-control": 2.768361581920904,
+        "reference-control": 2.824858757062147
+      },
+      "elapsedChangePercent": [
+        -3.7548998471688355,
+        -3.0651804453048714,
+        -1.981811247944476,
+        -1.2793853955062384
+      ],
+      "cpuChangePercent": [
+        -4.177777777777769,
+        -3.633333333333333,
+        -2.5536723163841812,
+        -2.0000000000000018
+      ],
+      "referenceSpreadPercent": 1.8422637582680146,
+      "candidateSpreadPercent": 0.7166280680977355
+    },
+    {
+      "case": "scripts.config-generated-guards.medium",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "reference-control": 2.9003992012578617,
+        "candidate-control": 2.9241363128834355,
+        "reference": 2.990608419354839,
+        "candidate": 2.906704350993377
+      },
+      "cpuMilliseconds": {
+        "reference-control": 2.9559748427672954,
+        "candidate-control": 3.0061349693251533,
+        "reference": 3.096774193548387,
+        "candidate": 2.980132450331126
+      },
+      "elapsedChangePercent": [
+        -2.805585238724173,
+        -2.22269508910643,
+        0.21738903157817457,
+        0.8184084320282281
+      ],
+      "cpuChangePercent": [
+        -3.7665562913907213,
+        -2.9268916155419156,
+        0.8172467239678793,
+        1.696906409084975
+      ],
+      "referenceSpreadPercent": 3.1102345517766805,
+      "candidateSpreadPercent": 0.5997156843316809
+    },
+    {
+      "case": "scripts.csv-invoice.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 6.707514273972603,
+        "candidate-control": 6.685603053333335,
+        "reference": 6.770925202702703,
+        "candidate": 6.616336986666666
+      },
+      "cpuMilliseconds": {
+        "reference-control": 6.8493150684931505,
+        "candidate-control": 6.800000000000001,
+        "reference": 6.891891891891892,
+        "candidate": 6.800000000000001
+      },
+      "elapsedChangePercent": [
+        -2.283118058582756,
+        -1.359330499820699,
+        -1.2601254158783326,
+        -0.32666677616014494
+      ],
+      "cpuChangePercent": [
+        -1.3333333333333308,
+        -1.3333333333333308,
+        -0.7199999999999873,
+        -0.7199999999999873
+      ],
+      "referenceSpreadPercent": 0.9453715063441059,
+      "candidateSpreadPercent": 1.0468944796230062
+    }
+  ],
+  "retentionDecisionPending": false,
+  "CPythonRefreshed": false,
+  "retained": true,
+  "fullQualificationPending": true,
+  "decision": "Remove both block wrappers and normalized/shortened instruction arrays; one single-use list reaches final tape. Compilation allocation3.35\u20134.74%lower; generated compilation modest lower elapsed/CPU. Manifest/fresh inconclusive with adverse timings retained; unchanged runtime control improvement is not attributed to source. Broader objective remains active."
+}

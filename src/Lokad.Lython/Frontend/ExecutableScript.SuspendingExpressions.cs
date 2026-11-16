@@ -48,7 +48,7 @@ internal sealed partial class ExecutableScript
             }
             var append = parts.Count > 1;
             var startBlock = block;
-            var startIndex = _blocks[block].Instructions.Count;
+            var startIndex = _blocks[block].Count;
             var initialCapacity = 0;
             // Fill the construction descriptor after this existing parts walk;
             // prepared specifiers are parsed once and no old constant is kept.
@@ -82,7 +82,7 @@ internal sealed partial class ExecutableScript
                 // through the builder's ordinary admitted growth.
                 if (initialCapacity != 0)
                     initialCapacity = (int)System.Numerics.BitOperations.RoundUpToPowerOf2((uint)Math.Max(8, initialCapacity));
-                _blocks[startBlock].Instructions[startIndex] = ExecutableInstruction.StartFormattedString(initialCapacity, span);
+                _blocks[startBlock][startIndex] = ExecutableInstruction.StartFormattedString(initialCapacity, span);
                 AddInstruction(block, ExecutableInstruction.FinishFormattedString(span));
             }
             return block;

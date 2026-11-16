@@ -7,17 +7,17 @@ namespace Lokad.Lython.Frontend;
 internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepths, int FirstTemporarySlot,
     int LastOwnedTemporarySlot)
 {
-    internal static ExecutableInstruction[] Linearize(IReadOnlyList<ExecutableBasicBlock> blocks,
+    internal static ExecutableInstruction[] Linearize(IReadOnlyList<List<ExecutableInstruction>> blocks,
         ExecutableStackLayout layout, out int[] offsets)
     {
         offsets = new int[blocks.Count + 1];
         for (var i = 0; i < blocks.Count; i++)
-            offsets[i + 1] = checked(offsets[i] + blocks[i].InstructionArray.Length + (Completes(blocks[i]) ? 1 : 0));
+            offsets[i + 1] = checked(offsets[i] + blocks[i].Count + (Completes(blocks[i]) ? 1 : 0));
         var instructions = new ExecutableInstruction[offsets[^1]];
         for (var i = 0; i < blocks.Count; i++)
         {
-            var source = blocks[i].InstructionArray;
-            for (var j = 0; j < source.Length; j++)
+            var source = blocks[i];
+            for (var j = 0; j < source.Count; j++)
             {
                 var instruction = source[j];
                 instructions[offsets[i] + j] = instruction.OpCode switch
@@ -32,20 +32,20 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
             // distinctly from a guest top-level return (not legal in imports).
             if (Completes(blocks[i]))
             {
-                var extent = source.Length == 0 ? checked(layout.FirstTemporarySlot + (layout.EntryDepths[i] ?? 0)) : source[^1].LiveExtent;
+                var extent = source.Count == 0 ? checked(layout.FirstTemporarySlot + (layout.EntryDepths[i] ?? 0)) : source[^1].LiveExtent;
                 instructions[offsets[i + 1] - 1] = ExecutableInstruction.Complete(
-                    source.Length == 0 ? new LythonSourceSpan(0, 0, 0, 0) : source[^1].Span)
+                    source.Count == 0 ? new LythonSourceSpan(0, 0, 0, 0) : source[^1].Span)
                     .WithStorageSlots(extent, extent, extent);
             }
         }
         return instructions;
 
-        static bool Completes(ExecutableBasicBlock block) => block.InstructionArray.Length == 0 ||
-            block.InstructionArray[^1].OpCode is not (ExecutableOpCode.Jump or ExecutableOpCode.AbruptJump or
+        static bool Completes(List<ExecutableInstruction> block) => block.Count == 0 ||
+            block[^1].OpCode is not (ExecutableOpCode.Jump or ExecutableOpCode.AbruptJump or
                 ExecutableOpCode.EndFinally or ExecutableOpCode.Return or ExecutableOpCode.ReturnNone or ExecutableOpCode.ReraiseException);
     }
 
-    internal static ExecutableStackLayout Prepare(IReadOnlyList<ExecutableBasicBlock> blocks,
+    internal static ExecutableStackLayout Prepare(IReadOnlyList<List<ExecutableInstruction>> blocks,
         IReadOnlyList<object?> constants, IReadOnlyList<ExecutableCallSite> calls,
         IReadOnlyList<ExecutableExceptionRegion> regions, int entryBlock, int initialDepth, int firstTemporarySlot)
     {
@@ -66,8 +66,8 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
                 if (region.FinallyIndex is int cleanup) Enter(cleanup, depth);
             }
 
-            var instructions = blocks[blockIndex].InstructionArray;
-            for (var instructionIndex = 0; instructionIndex < instructions.Length; instructionIndex++)
+            var instructions = blocks[blockIndex];
+            for (var instructionIndex = 0; instructionIndex < instructions.Count; instructionIndex++)
             {
                 var instruction = instructions[instructionIndex];
                 var (pop, push, minimum) = Effect(instruction, constants, calls, firstTemporarySlot);
@@ -163,14 +163,14 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
     // Checked locals keep their original spans in cold metadata; neither branch
     // initialization facts nor their invalidation inventories are needed.
     internal static List<(int Block, int Instruction, int Input, LythonSourceSpan Span)> ForwardValues(
-        ExecutableCodeObject code, List<ExecutableBasicBlock> blocks)
+        ExecutableCodeObject code, List<List<ExecutableInstruction>> blocks)
     {
         var reads = new List<(int Block, int Instruction, int Input, LythonSourceSpan Span)>();
         for (var block = 0; block < blocks.Count; block++)
         {
-            var instructions = blocks[block].InstructionArray;
+            var instructions = blocks[block];
             var kept = 0;
-            for (var index = 0; index < instructions.Length; index++)
+            for (var index = 0; index < instructions.Count; index++)
             {
                 var instruction = instructions[index];
                 var count = instruction.ValueInputCount;
@@ -207,8 +207,8 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
                 if (thirdSpan is not null) reads.Add((block, kept, 2, thirdSpan));
                 instructions[kept++] = instruction;
             }
-            if (kept != instructions.Length)
-                blocks[block] = blocks[block] with { InstructionArray = instructions[..kept] };
+            if (kept != instructions.Count)
+                instructions.RemoveRange(kept, instructions.Count - kept);
         }
         return reads;
     }

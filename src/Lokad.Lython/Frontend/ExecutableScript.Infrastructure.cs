@@ -59,13 +59,13 @@ internal sealed partial class ExecutableScript
         private int CreateBlock()
         {
             var index = _blocks.Count;
-            _blocks.Add(new BasicBlockBuilder(index));
+            _blocks.Add([]);
             return index;
         }
 
         private void AddInstruction(int blockIndex, ExecutableInstruction instruction)
         {
-            var instructions = _blocks[blockIndex].Instructions;
+            var instructions = _blocks[blockIndex];
             if (instruction.OpCode == ExecutableOpCode.JumpIfFalse && instructions.Count != 0
                 && instructions[^1] is { OpCode: ExecutableOpCode.Binary } previous
                 && LythonRuntime.IsScalarComparison(previous.BinaryOperator) && previous.Span == instruction.Span)
@@ -80,7 +80,7 @@ internal sealed partial class ExecutableScript
 
         private bool IsTerminated(int blockIndex)
         {
-            var instructions = _blocks[blockIndex].Instructions;
+            var instructions = _blocks[blockIndex];
             if (instructions.Count == 0)
             {
                 return false;
@@ -89,16 +89,17 @@ internal sealed partial class ExecutableScript
             return instructions[^1].OpCode is ExecutableOpCode.Jump or ExecutableOpCode.AbruptJump or ExecutableOpCode.Return or ExecutableOpCode.ReturnNone or ExecutableOpCode.ReraiseException;
         }
 
-        private List<ExecutableBasicBlock> NormalizeBlocks(IReadOnlyList<int> ordered, int[] indexMap, int[] jumpTargets)
+        private List<List<ExecutableInstruction>> NormalizeBlocks(IReadOnlyList<int> ordered, int[] indexMap, int[] jumpTargets)
         {
-            var normalized = new List<ExecutableBasicBlock>(ordered.Count);
+            var normalized = new List<List<ExecutableInstruction>>(ordered.Count);
             foreach (var originalIndex in ordered)
             {
-                var instructions = _blocks[originalIndex].Instructions;
-                var rewritten = new ExecutableInstruction[instructions.Count];
-                for (var i = 0; i < rewritten.Length; i++)
-                    rewritten[i] = RewriteInstructionTargets(instructions[i], indexMap, jumpTargets);
-                normalized.Add(new ExecutableBasicBlock(NormalizedBlock(indexMap, originalIndex), rewritten));
+                var instructions = _blocks[originalIndex];
+                // This single-use builder owns the lists throughout preparation.
+                // Normalize targets in place; only the final tape needs an array.
+                for (var i = 0; i < instructions.Count; i++)
+                    instructions[i] = RewriteInstructionTargets(instructions[i], indexMap, jumpTargets);
+                normalized.Add(instructions);
             }
 
             return normalized;
@@ -208,7 +209,7 @@ internal sealed partial class ExecutableScript
                 count++;
 
                 var block = _blocks[blockIndex];
-                if (block.Instructions.Count == 0)
+                if (block.Count == 0)
                 {
                     if (blockIndex + 1 < _blocks.Count)
                     {
@@ -217,7 +218,7 @@ internal sealed partial class ExecutableScript
                     continue;
                 }
 
-                foreach (var instruction in block.Instructions)
+                foreach (var instruction in block)
                 {
                     switch (instruction.OpCode)
                     {
@@ -258,7 +259,7 @@ internal sealed partial class ExecutableScript
                     }
                 }
 
-                var last = block.Instructions[^1];
+                var last = block[^1];
                 if (last.OpCode is not ExecutableOpCode.Jump and
                     not ExecutableOpCode.Return and
                     not ExecutableOpCode.ReturnNone and
@@ -302,7 +303,7 @@ internal sealed partial class ExecutableScript
             var successors = new int[_blocks.Count];
             for (var i = 0; i < successors.Length; i++)
             {
-                var instructions = _blocks[i].Instructions;
+                var instructions = _blocks[i];
                 successors[i] = instructions.Count == 1 && instructions[0].OpCode == ExecutableOpCode.Jump
                     ? instructions[0].TargetIndex : -1;
             }
@@ -561,18 +562,6 @@ internal sealed partial class ExecutableScript
 
                 return hash.ToHashCode();
             }
-        }
-
-        private sealed class BasicBlockBuilder
-        {
-            public BasicBlockBuilder(int index)
-            {
-                Index = index;
-            }
-
-            public int Index { get; }
-
-            public List<ExecutableInstruction> Instructions { get; } = [];
         }
 
         // A for-loop owns one iterator slot on the value stack above the loop-entry
