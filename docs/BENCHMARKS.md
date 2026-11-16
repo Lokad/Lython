@@ -6,6 +6,8 @@
 | Text normalization | 4,096 lines / 52,224 B | 1.116–1.151 ms | 0.500–0.505 ms | 2.21–2.30× | Diagnostic; controls L/C 3.12/0.84%; IQR≤1.60% |
 | JSON-lines aggregation | 4,096 records / 110,592 B | 3.451–3.453 ms | 4.078–4.101 ms | 0.84–0.85× | Diagnostic; controls L/C 0.03/0.56%; IQR≤0.90% |
 | File search / defensive helper | 2,049 lines / 42,010 B; stop at 1,025 | 0.284–0.287 ms | 0.159–0.161 ms | 1.76–1.80× | Diagnostic; controls L/C 0.97/1.31%; IQR≤2.19% |
+| Configuration edit | 1,024 paths / 7,177 B | 0.179–0.182 ms | 0.185–0.185 ms | 0.96–0.98× | Diagnostic; controls L/C 2.10/0.01%; IQR≤1.37% |
+| Report rendering | 1,024 records / 189,441 B | 2.774–2.790 ms | 2.327–2.361 ms | 1.18–1.20× | Diagnostic; controls L/C 0.57/1.46%; IQR≤2.04% |
 
 **Ratio = Lython elapsed / CPython elapsed; above one means slower.** These are
 complete scripts inside warm processes, with two independent processes per engine.
@@ -16,10 +18,14 @@ the percentage differences between the two Lython/CPython process medians.
 Measured **2026-11-16 UTC**, Lython **312f5911 / frozen0443b5cf** versus stock
 **CPython3.13.16**. Quiet Azure F4as_v7 / Ubuntu24.04.4, four AMD EPYC9V45 vCPUs,
 16GiB/no swap; .NET11RC3 natural workstation GC/normal tiering, CPython GIL/GC.
-Every worker loads the same four-case catalog, SHA43b7c6b0; initialization and
-startup are outside the clocks. Two six-job collections use5s full-request warmup
-and five rotated approximately0.5s rounds; all image/golden/quiet/join/archive gates
-pass. [Raw results, identities and procedure](../benchmarks/results/2026-11-16-representative-cpython-checkpoint/README.md).
+The first four rows use the fixed four-case R437catalog43b7c6b0; the configuration/
+report rows use R444catalog36c0a528with all six cases. Every engine/control within
+each collection loads identical catalog bytes; initialization/startup stay outside
+the clocks. Three bounded six-phase collections use5s full-request warmups and
+five rotated approximately0.5s rounds. All image/golden/quiet/join/archive gates
+pass. [CSV/text/JSON/search evidence](../benchmarks/results/2026-11-16-representative-cpython-checkpoint/README.md),
+[configuration/report evidence](../benchmarks/results/2026-11-16-generated-scripts-cpython/README.md).
+Different collection initialization is explicit; no causal source-change gain is inferred.
 
 Warm includes synchronous Run, mediated RAM I/O, complete stdout/file goldens and
 prior-result cleanup. It excludes compilation/startup, fixture reset/protocol and
@@ -40,11 +46,16 @@ No startup, pending-I/O, contention, heap/RSS or embedding-tail comparison is av
 | JSON-lines aggregation | Compile and execute once | 3.553–3.576 ms | 4.209–4.225 ms | 0.84–0.85× | Diagnostic; controls L/C 0.64/0.37%; IQR≤1.92% |
 | File search / defensive helper | Compilation only | 0.031–0.031 ms | 0.036–0.036 ms | ~0.85× | Diagnostic; controls L/C 0.87/0.14%; IQR≤1.68% |
 | File search / defensive helper | Compile and execute once | 0.355–0.380 ms | 0.221–0.228 ms | 1.56–1.72× | Diagnostic; controls L/C 6.88/3.30%; IQR≤2.93% |
+| Configuration edit | Compilation only | 0.036–0.036 ms | 0.035–0.035 ms | 1.04–1.05× | Diagnostic; controls L/C 0.23/0.07%; IQR≤1.01% |
+| Configuration edit | Compile and execute once | 0.240–0.245 ms | 0.255–0.255 ms | 0.94–0.96× | Diagnostic; controls L/C 1.92/0.10%; IQR≤0.67% |
+| Report rendering | Compilation only | 0.040–0.040 ms | 0.038–0.038 ms | 1.06–1.06× | Diagnostic; controls L/C 0.27/0.32%; IQR≤0.53% |
+| Report rendering | Compile and execute once | 2.974–2.994 ms | 2.456–2.475 ms | 1.20–1.22× | Diagnostic; controls L/C 0.66/0.77%; IQR≤4.04% |
 
 Compilation includes compiled-owner disposal; compile-to-result includes compilation,
 one execution and compiled-owner disposal. Independently warmed phase medians are
 not additive. Wider process CPU in the artifacts also includes reset/protocol.
-Compilation is not the main gap in these measured scripts; text normalization
+Compilation is not the main gap in these measured scripts; configuration is near
+CPython and report execution remains18–22%slower. Text normalization
 retains a substantial execution gap. This does not establish the cause of that gap.
 
 ## Historical and unresolved measurements

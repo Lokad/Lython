@@ -6,6 +6,15 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[R444/B847 generated scripts against CPython](results/2026-11-16-generated-scripts-cpython/README.md)
+adds existing configuration-edit/report workloads at qualified0443:compile,warm,
+compile-once/run-once separated,six-phase200.960s/all gates. Config fresh0.94–0.96×,
+report1.20–1.22×CPython; compile1.04–1.06×. Moving controls/IQRand six-case catalog
+initialization are explicit; no causal earlier-source gain. Local actual-worker/
+CPython preflight passes; no four-case retest or new framework. Current guide adds
+these rows,prior guide preserved. Prepared f-string layouts/direct receiver arguments
+already exist; remaining normalization/search costs need actual displaced stages.
+
 [R443/B846 immutable dev105](results/2026-11-16-regex-dev105/README.md)
 qualifies changed producer assets with identical native adapter source/0443core.
 Rewrite elapsed−8.59..−6.25%/CPU−8.09..−6.61%; extraction inconclusive with2.12%
