@@ -1,0 +1,66 @@
+{
+  "rows": [
+    {
+      "case": "loops.integer.large.sync",
+      "referenceBytes": 535976,
+      "candidateBytes": 11688,
+      "changePercent": -97.81930534203023,
+      "referencePeakExecutionBytes": 428,
+      "candidatePeakExecutionBytes": 428
+    },
+    {
+      "case": "loops.integer.large.async",
+      "referenceBytes": 536296,
+      "candidateBytes": 12008,
+      "changePercent": -97.7609379894685,
+      "referencePeakExecutionBytes": 428,
+      "candidatePeakExecutionBytes": 428
+    },
+    {
+      "case": "loops.integer.native-helper.control",
+      "referenceBytes": 12064,
+      "candidateBytes": 12064,
+      "changePercent": 0.0,
+      "referencePeakExecutionBytes": 1272,
+      "candidatePeakExecutionBytes": 1272
+    },
+    {
+      "case": "calls.positional.large",
+      "referenceBytes": 1060672,
+      "candidateBytes": 1060672,
+      "changePercent": 0.0,
+      "referencePeakExecutionBytes": 1383,
+      "candidatePeakExecutionBytes": 1383
+    },
+    {
+      "case": "generators.drain.large",
+      "referenceBytes": 3833652,
+      "candidateBytes": 3309152,
+      "changePercent": -13.68147134899047,
+      "referencePeakExecutionBytes": 3781782,
+      "candidatePeakExecutionBytes": 3781782
+    },
+    {
+      "case": "scripts.csv-validated-records.large",
+      "referenceBytes": 2974254,
+      "candidateBytes": 2974198,
+      "changePercent": -0.0018828250714308936,
+      "referencePeakExecutionBytes": 4975000,
+      "candidatePeakExecutionBytes": 4975000
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "referenceBytes": 1793448,
+      "candidateBytes": 1793504,
+      "changePercent": 0.0031224769271309682,
+      "referencePeakExecutionBytes": 3954823,
+      "candidatePeakExecutionBytes": 3954823
+    }
+  ],
+  "complete": true,
+  "elapsedSeconds": 14.014958499930799,
+  "allOutputAndFileGoldensPassed": true,
+  "budgetBaselineAndCleanupPassed": true,
+  "CPUorElapsedClaim": false,
+  "boundary": "Local whole warm jobs with reset/mediated I/O/full stdout and file hashing/result cleanup; compilation/startup excluded. Natural-GC whole-process counters. Includes conservative governor execution peaks, not physical heap/RSS."
+}

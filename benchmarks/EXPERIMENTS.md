@@ -8715,3 +8715,6 @@ R431 bounded source gate at1fe2a174: plain builtin wrappers/signatures already l
 
 
 [R435full delivery43819495111](results/2026-11-16-shared-subtext/delivery/README.md) GREEN at6581454d/1c8e1be5: Windows/Ubuntu actual11/10 each4800internal/17914public ordinary,14internal/406public stress, installed Release consumers.16summaries/606inputs verified; terminal cached forever. Initial43814304379failed fixtures preserved, runtime unchanged through correction. Allocation/CPU/control limits remain; kernel roadmap open and publication held.
+
+
+[R436/B833original iteration-slot prototype](results/2026-11-16-iteration-slot-transport/README.md):c7e25f12/1c8e1be5,171.119s/fivejobs/all gates. Module elapsed24–25%lower(sync)/27–30%lower(async), generator7–10%lower; allocations−97.8%/−13.7%. Native-helper elapsed+0.71..4.72%/CPU+1.10..6.85% and mixed CSV adversity retained. Refine added helper/probing once, no retention/whole-file/CPython claim.446internal/1990public eachactual11/10, added aliases7cases pass; runtime unchanged. Superseded ecd9/catalog replicas retired only with exact committed custody, current selected catalog/images retained.
