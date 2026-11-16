@@ -1,0 +1,12 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "ramTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 271425536,
+  "archiveSHA256": "66cae466905847798c6529d3e1b9f266e25df9699e539a91fd3a2cb3df2e4e53",
+  "source": "Qualified86d9344e/frozenecd9e956; R434 complete normalization attribution",
+  "performanceComparison": false
+}
