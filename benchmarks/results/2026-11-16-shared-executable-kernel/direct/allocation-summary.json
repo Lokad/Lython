@@ -1,0 +1,74 @@
+{
+  "rows": [
+    {
+      "case": "scripts.csv-invoice.large",
+      "referenceBytes": 4198990,
+      "candidateBytes": 4199124,
+      "changePercent": 0.0031912436085912432,
+      "referencePeakExecutionBytes": 9432323,
+      "candidatePeakExecutionBytes": 9432323
+    },
+    {
+      "case": "scripts.text-normalization.large",
+      "referenceBytes": 1515680,
+      "candidateBytes": 1515680,
+      "changePercent": 0.0,
+      "referencePeakExecutionBytes": 2324834,
+      "candidatePeakExecutionBytes": 2324834
+    },
+    {
+      "case": "scripts.text-normalization.large.async",
+      "referenceBytes": 1516008,
+      "candidateBytes": 1516366,
+      "changePercent": 0.023614651110026585,
+      "referencePeakExecutionBytes": 2324834,
+      "candidatePeakExecutionBytes": 2324834
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "referenceBytes": 1793798,
+      "candidateBytes": 1793120,
+      "changePercent": -0.037796897978481514,
+      "referencePeakExecutionBytes": 3954823,
+      "candidatePeakExecutionBytes": 3954823
+    },
+    {
+      "case": "scripts.file-search.large.protected",
+      "referenceBytes": 115622,
+      "candidateBytes": 115616,
+      "changePercent": -0.005189323831100712,
+      "referencePeakExecutionBytes": 167988,
+      "candidatePeakExecutionBytes": 167988
+    },
+    {
+      "case": "scripts.text-summary-helpers.nonlocal-counter.large",
+      "referenceBytes": 448904,
+      "candidateBytes": 448704,
+      "changePercent": -0.04455295564307349,
+      "referencePeakExecutionBytes": 1280557,
+      "candidatePeakExecutionBytes": 1280557
+    },
+    {
+      "case": "generators.drain.large",
+      "referenceBytes": 3309152,
+      "candidateBytes": 3309128,
+      "changePercent": -0.0007252613358321724,
+      "referencePeakExecutionBytes": 3781782,
+      "candidatePeakExecutionBytes": 3781782
+    },
+    {
+      "case": "calls.positional.large",
+      "referenceBytes": 1060552,
+      "candidateBytes": 1060520,
+      "changePercent": -0.0030172966530628287,
+      "referencePeakExecutionBytes": 1383,
+      "candidatePeakExecutionBytes": 1383
+    }
+  ],
+  "complete": true,
+  "elapsedSeconds": 16.956649999599904,
+  "allOutputAndFileGoldensPassed": true,
+  "budgetBaselineAndCleanupPassed": true,
+  "CPUorElapsedClaim": false,
+  "boundary": "Local whole warm jobs with reset/mediated I/O/full stdout and file hashing/result cleanup; compilation/startup excluded. Natural-GC whole-process counters. Includes conservative governor execution peaks, not physical heap/RSS."
+}

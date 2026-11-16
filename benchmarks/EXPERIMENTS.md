@@ -7,14 +7,15 @@ original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
 [R439 shared kernel](results/2026-11-16-shared-executable-kernel/README.md)
-records first coherent91ca4a41/0443b5cf,B838six jobs206.412s/all gates. One
-managed-slot closed loop replaces duplicate selectors/storage and compiler opcode
-inventory; full qualification/retention remains pending. Allocation is flat.
-Captured text+6.75..8.63%elapsed/+4.00..6.28%CPU and search+3.11..5.44%/
-+2.96..3.66% are adverse. Normalization control7.82% and CSV candidate3.75%
-remain uncertainty. Preserve all originals; bounded attribution/refinement is
-selected before promotion,no unchanged retiming or permanent ban. Existing
-qualified baseline and CPython checkpoint remain unchanged.
+is withdrawn after three coherent shapes,all source/images/adverse controls
+preserved. [Direct primitives ba4a/B841](results/2026-11-16-shared-executable-kernel/direct/README.md)
+remove private full-state initialization yet calls remain+17.15..17.48%elapsed/
++16.03..17.81%CPU with0.12/0.16%controls; normalization+4.18..6.04%/+4.60..7.00%.
+Allocation flat. Moving captured/search/CSV/JSON controls and original setup
+failures remain explicit. B839 does not isolate a causal new binding cost.
+1787internal/1976public per actual11/10 pass; no full qualification for withdrawn
+code. Qualified runtime and independent cleanup coverage stay. No permanent
+architecture ban or unchanged retiming; continue another whole-workload stage.
 
 [R416 final-output method formatting](results/2026-11-15-formatting-final-sink/README.md)
 retains8afb/55ba: one append contract, existing numeric/string sink, one operation

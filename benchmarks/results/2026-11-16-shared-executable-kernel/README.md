@@ -77,3 +77,6 @@ are recorded separately; the first prototype remains unpromoted.
 
 [Immutable-fact refinement and adverse controls](refined/README.md) are preserved;
 next the existing view eliminates unused private working-state initialization.
+
+The[direct-borrow completion](direct/README.md) closes this bounded migration
+with withdrawal. All three shapes remain evidence; qualified runtime restored.
