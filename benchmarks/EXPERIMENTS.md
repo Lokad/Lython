@@ -8691,3 +8691,6 @@ verified before unmount, all users joined. No CPU speedup or production change.
 
 
 R431 bounded source gate at1fe2a174: plain builtin wrappers/signatures already live in SharedFunctions; mutable types remain per run. Default JSON already has one iterative inline/heap-frame constructor, native number/literal/string paths, shared record-key prefixes and one final value-capacity growth. No duplicate row/value or unconditional async-token pipeline identified. A document-wide admission prepass would introduce new machinery rather than remove an existing duplicate; not selected without changed dominant-cost evidence. Complete call/frame/operand displacement remains unresolved; R403/R411 regressions and useful-work overlap in R420 remain. No runtime prototype or speedup claim for this gate.
+
+
+[R432/B829 current normalization CPython checkpoint](results/2026-11-16-line-cpython-checkpoint/README.md):86d9344e/ecd9e956 versusCPython3.13.16;2jobs70.938s/all gates. Warm2.28–2.34×,fresh2.05–2.10×. CPython shifts0.73→0.50ms warm/0.83→0.59msfresh despite identical worker/binary/flags/case fields;4-case versus1-case catalog initialization not isolated. Current controls/IQRstable; keep bothcollections/no causal cross-collection claims. Full43805966777active, broader objective open.

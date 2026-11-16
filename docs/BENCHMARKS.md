@@ -2,8 +2,8 @@
 
 | Representative workload / phase | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| File normalization / warm Run | 4,096 lines / 52,224 B | 1.192–1.219 ms | 0.727–0.731 ms | 1.63–1.68× | Diagnostic; spreads 2.24/0.56%; IQR ≤6.70% |
-| File normalization / compile and execute once | 4,096 lines / 52,224 B | 1.248–1.316 ms | 0.830–0.839 ms | 1.49–1.58× | Diagnostic; spreads 5.11/1.10%; IQR ≤7.35% |
+| File normalization / warm Run | 4,096 lines / 52,224 B | 1.146–1.166 ms | 0.499–0.502 ms | 2.28–2.34× | Diagnostic; CPython shifted across collections; IQR ≤0.67% |
+| File normalization / compile and execute once | 4,096 lines / 52,224 B | 1.213–1.235 ms | 0.587–0.593 ms | 2.05–2.10× | Diagnostic; CPython shifted across collections; IQR ≤0.98% |
 | Configuration / six-helper manifest / compilation only | 833 B inputs / 1,877 B source | 0.192–0.201 ms | 0.157–0.157 ms | 1.22–1.28× | Diagnostic; spreads 4.89/0.08%; IQR ≤1.25% |
 | Configuration / six-helper manifest / compile and execute once | 833 B inputs / 1,877 B source | 0.496–0.498 ms | 0.456–0.457 ms | 1.08–1.09× | Diagnostic; spreads 0.53/0.16%; IQR ≤1.67% |
 | Report / format method / warm Run | 1,024 records / 189,441 B JSON | 4.155–4.213 ms | 2.560–2.616 ms | 1.59–1.65× | Diagnostic; spreads 1.38/2.16%; IQR ≤3.99% |
@@ -27,11 +27,14 @@
 complete embedding measurements, not isolated interpreter CPU. Spreads compare
 the two Lython/CPython process medians; IQRs and moving controls stay visible.
 
-**File normalization: 116fe6e0 / measured810dafdd**, 2026-11-16 UTC;
-[complete warm/fresh checkpoint](../benchmarks/results/2026-11-16-normalization-cpython-checkpoint/README.md).
-All measurement/cleanup gates pass; [full runtime qualification passes](../benchmarks/results/2026-11-16-consuming-text-completion/delivery/README.md) after test-only accounting corrections. Warm remains 1.63–1.68× CPython; fresh
-1.49–1.58× with 5.11% Lython control spread / 7.35% maximum IQR. This new workload
-baseline is diagnostic, not evidence of a source-change speedup.
+**File normalization: 86d9344e /measured ecd9e956**,2026-11-16UTC;
+[current warm/fresh checkpoint](../benchmarks/results/2026-11-16-line-cpython-checkpoint/README.md)
+passes all measurement/cleanup gates; full runtime qualification is pending.
+Warm is2.28–2.34×CPython, fresh2.05–2.10×. **Uncertainty:** CPython is markedly
+faster than in the [previous same-case collection](../benchmarks/results/2026-11-16-normalization-cpython-checkpoint/README.md),
+despite identical worker/binary/flags/case bytes; catalog initialization differs and
+its effect is unisolated. Exact ratios are diagnostic and collection-specific;
+this does not establish a Lython regression or causal source gain.
 
 **Patch phases and CSV warm: c023042d / measured0393331a**,2026-11-16UTC;
 [current checkpoint](../benchmarks/results/2026-11-16-patch-cpython-checkpoint/README.md)
