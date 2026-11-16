@@ -8953,3 +8953,12 @@ reference. Private, not promoted; guard inactive bulk helper before another sour
 comparison. Allocation+32B (<0.006%), peaks unchanged. All gates/join/archive pass;
 failed B863 stale launcher and diagnostic extractor preserved/corrected. Full
 qualification waits for retained design; whole-script roadmap remains open.
+
+[R458 guarded engine/B865](results/2026-11-16-generator-batches/guarded/README.md):
+8dd7eda1 normalization warm11.7–17.3%lower elapsed/fresh8.2–15.4%lower with CPU
+support; ordinary generator3.5–13.2%adverse, numeric reference moves15.2%, CSV
+roughly flat. Private pending coherent sequence-construction integration, not
+promoted or fully qualified. Focused actual11/10 each167public/59internal, all
+goldens/refusal/cleanup gates pass; exact source/core/results persisted, all users
+joined. No unchanged retiming or objective completion. Independent producer source
+00e7905d differs from unchanged dev105 assets; core development remains independent.

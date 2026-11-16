@@ -1,0 +1,18 @@
+{
+  "status": "source/design milestone selected; no prototype or speedup claim",
+  "sourceCommit": "82e45812 production baseline; later main commits only preserve evidence",
+  "sources": {
+    "src/Lokad.Lython/Runtime/PyTuple.cs": "f0865cda10356eb9210067ad7971bffd91585e7b65e758fccffc2321ecd712f1",
+    "src/Lokad.Lython/Runtime/PyList.cs": "2d2dd81ce645cc8386e68270c176b893f422f47cca8effdc210340a505a7e55c",
+    "src/Lokad.Lython/Runtime/LythonRuntime.BuiltinObjects.cs": "b39f957036035ebcafcbe56331bc0842157baf9c5c96f9d1147834388de5c2d0"
+  },
+  "facts": [
+    "Tuple sync directly builds governed array; async first drains List<object> then uses that builder.",
+    "List builtins repeat loops already present in PyList.AddRange/Async.",
+    "Tuple array length is logical count; retaining spare array capacity would need a representation change. Prefer existing funded trim behavior first.",
+    "Tuple materialization currently grows scalar estimates per item; changing to capacity-level headroom must preserve retained values and replacement overlap.",
+    "PyList already has private-storage rollback; reuse only where the builder cannot escape, preserving mutations and custom protocols."
+  ],
+  "candidate": "Assess shared private native sequence construction, removing async tuple staging and duplicate growth/loop code. Preserve exact direct/native tuple construction, cancellation, refusal, aliases and async cleanup; no ledger, controller, wider universal slots or silent budget weakening.",
+  "stoppingCriteria": "Require concrete removed storage/code and one complete affected warm/fresh script with unchanged controls. Stop/refine if a broader representation/ownership redesign is needed or useful budgets regress without a justified contract."
+}

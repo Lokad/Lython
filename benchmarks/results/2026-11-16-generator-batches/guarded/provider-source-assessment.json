@@ -1,0 +1,19 @@
+{
+  "sourceCommit": "9883dcb81fa5399eeb3fa47df1182960e5f98e4e",
+  "readOnly": true,
+  "sourceFiles": {
+    "src/Lokad.Utf8Regex.PythonRe/Utf8PythonMatchCursor.cs": "2f33984085fc11524b184c6ba1c91e96967e063e05f80cafc2ee75b48e33ba2a",
+    "src/Lokad.Utf8Regex.PythonRe/Utf8PythonRegex.Utf8.cs": "7c71263dddba9b9016d862fe49d0f3ba51279738ee6ab6f165878df649353202",
+    "src/Lokad.Utf8Regex.PythonRe/PythonReRangeTypes.cs": "62de695d309430b8d09ff55d0fe61e8a6b1ae2b55d2fb2b6453751bfc850fe54"
+  },
+  "packages": {
+    "Lokad.Utf8Regex.0.5.0-dev.105.nupkg": "49c0d0c2309c29dda650760d889f84e4a2f661629eaa55d751eabcc19e4e2550",
+    "Lokad.Utf8Regex.PythonRe.0.5.0-dev.105.nupkg": "89ad65d76adea14c329e2e19d1f70ab90f39d4d8ab4c866f0cecf6c6dfe09f6a"
+  },
+  "facts": [
+    "Source removes PythonRe UTF16 result coordinates and prefix projection.",
+    "Cursor still links supplied pull token with retained original invocation token; R454 bridge remains justified.",
+    "Existing dev105 bytes match previously qualified immutable assets; they are not current source.",
+    "No source build, package promotion, new qualification or producer safety claim."
+  ]
+}
