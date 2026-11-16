@@ -8682,3 +8682,6 @@ verified before unmount, all users joined. No CPU speedup or production change.
 
 
 [R429 refinedB826 direct bulk output retained](results/2026-11-16-bulk-text-construction/refined/README.md):efd82707 vs810dafdd; normalization allocation−11.46%/accounted peak−3.50%. Fresh elapsed1.29–5.26%lower/CPU3.24–7.09%lower with3.31%reference spread; warm uncertain, original5–7%regression not proven recovered. Report/JSON adversity/mixed CPU accepted debt. Four jobs139.786s/all gates;145internal/412public eachactual11/10/598inputs. Full delivery pending, next line-construction/cancellation milestone active.
+
+
+[R430/B827 original line-construction prototype](results/2026-11-16-line-construction/README.md):ecd9e956 vs efd82707,600inputs;487internal/1656public+4relatedstress eachactual11/10. Normalization allocation−1.73%; favorable elapsed/CPU UNQUALIFIED because final idle window4.975% violates3%median. Four jobs finish/all users join, original missing elapsed/failed gate/receipt correction preserved and RAM archived. One bounded same-source/image confirmation justified; no promotion/CPU claim.

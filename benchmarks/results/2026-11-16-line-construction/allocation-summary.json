@@ -1,0 +1,42 @@
+{
+  "rows": [
+    {
+      "case": "scripts.text-normalization.large",
+      "referenceBytes": 1922704,
+      "candidateBytes": 1889456,
+      "changePercent": -1.7292313325400044,
+      "referencePeakExecutionBytes": 2515276,
+      "candidatePeakExecutionBytes": 2515196
+    },
+    {
+      "case": "scripts.report-render.format-method.large",
+      "referenceBytes": 4877374,
+      "candidateBytes": 4877374,
+      "changePercent": 0.0,
+      "referencePeakExecutionBytes": 3478447,
+      "candidatePeakExecutionBytes": 3478447
+    },
+    {
+      "case": "scripts.csv-invoice.large",
+      "referenceBytes": 4198990,
+      "candidateBytes": 4198990,
+      "changePercent": 0.0,
+      "referencePeakExecutionBytes": 9432323,
+      "candidatePeakExecutionBytes": 9432323
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "referenceBytes": 2022950,
+      "candidateBytes": 2022384,
+      "changePercent": -0.02797894164462411,
+      "referencePeakExecutionBytes": 4060103,
+      "candidatePeakExecutionBytes": 4060103
+    }
+  ],
+  "complete": true,
+  "elapsedSeconds": 11.95788099989295,
+  "allOutputAndFileGoldensPassed": true,
+  "budgetBaselineAndCleanupPassed": true,
+  "CPUorElapsedClaim": false,
+  "boundary": "Local whole warm jobs with reset/mediated I/O/full stdout and file hashing/result cleanup; compilation/startup excluded. Natural-GC whole-process counters. Includes conservative governor execution peaks, not physical heap/RSS."
+}

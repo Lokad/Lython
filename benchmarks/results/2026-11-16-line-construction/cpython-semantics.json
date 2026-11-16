@@ -1,0 +1,269 @@
+{
+  "reference": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "cases": [
+    {
+      "keepEnds": false,
+      "prefix": 4094,
+      "separator": "'\\r\\n'",
+      "agrees": true
+    },
+    {
+      "keepEnds": false,
+      "prefix": 4094,
+      "separator": "'\\r'",
+      "agrees": true
+    },
+    {
+      "keepEnds": false,
+      "prefix": 4094,
+      "separator": "'\\n'",
+      "agrees": true
+    },
+    {
+      "keepEnds": false,
+      "prefix": 4094,
+      "separator": "'\\x0b'",
+      "agrees": true
+    },
+    {
+      "keepEnds": false,
+      "prefix": 4094,
+      "separator": "'\\x0c'",
+      "agrees": true
+    },
+    {
+      "keepEnds": false,
+      "prefix": 4094,
+      "separator": "'\\x1c'",
+      "agrees": true
+    },
+    {
+      "keepEnds": false,
+      "prefix": 4094,
+      "separator": "'\\x1d'",
+      "agrees": true
+    },
+    {
+      "keepEnds": false,
+      "prefix": 4094,
+      "separator": "'\\x1e'",
+      "agrees": true
+    },
+    {
+      "keepEnds": false,
+      "prefix": 4094,
+      "separator": "'\\x85'",
+      "agrees": true
+    },
+    {
+      "keepEnds": false,
+      "prefix": 4094,
+      "separator": "'\\u2028'",
+      "agrees": true
+    },
+    {
+      "keepEnds": false,
+      "prefix": 4094,
+      "separator": "'\\u2029'",
+      "agrees": true
+    },
+    {
+      "keepEnds": false,
+      "prefix": 4095,
+      "separator": "'\\r\\n'",
+      "agrees": true
+    },
+    {
+      "keepEnds": false,
+      "prefix": 4095,
+      "separator": "'\\r'",
+      "agrees": true
+    },
+    {
+      "keepEnds": false,
+      "prefix": 4095,
+      "separator": "'\\n'",
+      "agrees": true
+    },
+    {
+      "keepEnds": false,
+      "prefix": 4095,
+      "separator": "'\\x0b'",
+      "agrees": true
+    },
+    {
+      "keepEnds": false,
+      "prefix": 4095,
+      "separator": "'\\x0c'",
+      "agrees": true
+    },
+    {
+      "keepEnds": false,
+      "prefix": 4095,
+      "separator": "'\\x1c'",
+      "agrees": true
+    },
+    {
+      "keepEnds": false,
+      "prefix": 4095,
+      "separator": "'\\x1d'",
+      "agrees": true
+    },
+    {
+      "keepEnds": false,
+      "prefix": 4095,
+      "separator": "'\\x1e'",
+      "agrees": true
+    },
+    {
+      "keepEnds": false,
+      "prefix": 4095,
+      "separator": "'\\x85'",
+      "agrees": true
+    },
+    {
+      "keepEnds": false,
+      "prefix": 4095,
+      "separator": "'\\u2028'",
+      "agrees": true
+    },
+    {
+      "keepEnds": false,
+      "prefix": 4095,
+      "separator": "'\\u2029'",
+      "agrees": true
+    },
+    {
+      "keepEnds": true,
+      "prefix": 4094,
+      "separator": "'\\r\\n'",
+      "agrees": true
+    },
+    {
+      "keepEnds": true,
+      "prefix": 4094,
+      "separator": "'\\r'",
+      "agrees": true
+    },
+    {
+      "keepEnds": true,
+      "prefix": 4094,
+      "separator": "'\\n'",
+      "agrees": true
+    },
+    {
+      "keepEnds": true,
+      "prefix": 4094,
+      "separator": "'\\x0b'",
+      "agrees": true
+    },
+    {
+      "keepEnds": true,
+      "prefix": 4094,
+      "separator": "'\\x0c'",
+      "agrees": true
+    },
+    {
+      "keepEnds": true,
+      "prefix": 4094,
+      "separator": "'\\x1c'",
+      "agrees": true
+    },
+    {
+      "keepEnds": true,
+      "prefix": 4094,
+      "separator": "'\\x1d'",
+      "agrees": true
+    },
+    {
+      "keepEnds": true,
+      "prefix": 4094,
+      "separator": "'\\x1e'",
+      "agrees": true
+    },
+    {
+      "keepEnds": true,
+      "prefix": 4094,
+      "separator": "'\\x85'",
+      "agrees": true
+    },
+    {
+      "keepEnds": true,
+      "prefix": 4094,
+      "separator": "'\\u2028'",
+      "agrees": true
+    },
+    {
+      "keepEnds": true,
+      "prefix": 4094,
+      "separator": "'\\u2029'",
+      "agrees": true
+    },
+    {
+      "keepEnds": true,
+      "prefix": 4095,
+      "separator": "'\\r\\n'",
+      "agrees": true
+    },
+    {
+      "keepEnds": true,
+      "prefix": 4095,
+      "separator": "'\\r'",
+      "agrees": true
+    },
+    {
+      "keepEnds": true,
+      "prefix": 4095,
+      "separator": "'\\n'",
+      "agrees": true
+    },
+    {
+      "keepEnds": true,
+      "prefix": 4095,
+      "separator": "'\\x0b'",
+      "agrees": true
+    },
+    {
+      "keepEnds": true,
+      "prefix": 4095,
+      "separator": "'\\x0c'",
+      "agrees": true
+    },
+    {
+      "keepEnds": true,
+      "prefix": 4095,
+      "separator": "'\\x1c'",
+      "agrees": true
+    },
+    {
+      "keepEnds": true,
+      "prefix": 4095,
+      "separator": "'\\x1d'",
+      "agrees": true
+    },
+    {
+      "keepEnds": true,
+      "prefix": 4095,
+      "separator": "'\\x1e'",
+      "agrees": true
+    },
+    {
+      "keepEnds": true,
+      "prefix": 4095,
+      "separator": "'\\x85'",
+      "agrees": true
+    },
+    {
+      "keepEnds": true,
+      "prefix": 4095,
+      "separator": "'\\u2028'",
+      "agrees": true
+    },
+    {
+      "keepEnds": true,
+      "prefix": 4095,
+      "separator": "'\\u2029'",
+      "agrees": true
+    }
+  ]
+}

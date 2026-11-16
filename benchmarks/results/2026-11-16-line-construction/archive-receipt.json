@@ -1,0 +1,18 @@
+{
+  "complete": false,
+  "workloadJobsComplete": true,
+  "jobs": 4,
+  "elapsedSeconds": null,
+  "allWorkersJoined": true,
+  "guestFixturesRemoved": true,
+  "quietBeforeAndAfter": false,
+  "quietBefore": true,
+  "quietAfter": false,
+  "originalServiceExitCode": 1,
+  "archivedAndVerifiedUnderLease": true,
+  "archiveSHA256": "507e05f91daa65dcafb667e1801b2b573ce7c64b37defe0e8fa236f490c5ea4c",
+  "freeBytesAfterArchive": 266182656,
+  "performanceQualified": false,
+  "missingElapsedSecondsPreserved": true,
+  "archivalReceiptCorrection": "Original archive verified under lease and fixtures unmounted; receipt construction referenced absent elapsedSeconds after failed gate. Fresh lease verifies every archived byte against persistent working files; no reexecution."
+}
