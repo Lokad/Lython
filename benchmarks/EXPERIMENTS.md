@@ -8851,7 +8851,7 @@ scaffolding; partial-cursor restart corrected by two regressions. Focused1,563/4
 each target pass. Normalization fresh−2.8..−6.2%and calls−1.6..−2.8%elapsed with CPU;
 allocation flat. Compilation elapsed+1.0..+2.6%, final numeric+1.1..+6.7%with moving
 reference/mixed CPU, CSV/report inconclusive: explicit debt, no universal gain.
-Initial source/adverse evidence preserved separately. Full delivery pending.
+Initial source/adverse evidence preserved separately. [Full platform/stress/package delivery passes](results/2026-11-16-native-consumer-consolidation/delivery/README.md).
 
 [R451/B854 consolidated-runtime CPython checkpoint](results/2026-11-16-consolidated-cpython-checkpoint/README.md):
 81f60210/frozena44f versus CPython3.13.16,four complete maintained scripts and
@@ -8862,3 +8862,13 @@ precise ratio uncertain; both show substantial gap. Earlier config/report remain
 named312f/0443measurements. No causal source gain or RSS/tail claim. Original
 adversity/control movement retained,not automatically retimed. Guide refreshed;
 whole-script redesign objective continues. Publication/tagging held.
+
+[R452/B855 current call/frame and operand attribution](results/2026-11-16-call-frame-attribution/README.md):
+exact81f60210/a44f source,two bounded captures994/1,010active samples,71/62unknown
+leaves,all image/golden/quiet/join/archive gates. Numeric input/index/stack routing
+is substantial alongside helper execution; calls remain dominated by dispatch/
+arithmetic/entry. Inclusive samples overlap useful work and forecast no gain or
+source of timing debt. Select shared scalar-index operand transport,displacing
+tuple-only routes and avoiding objectification for builtin reads; generic protocols/
+identity/order/admission/current tokens remain. No call arena/JIT selected from
+sampling alone. Next implementation/comparison remains; objective not complete.

@@ -1,0 +1,91 @@
+{
+  "run": 43925936851,
+  "head": "81f60210113383a5537889c2f593a8fc35e93249",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "log": "0_tests (windows-latest).txt",
+      "summaries": [
+        {
+          "framework": "net11.0",
+          "passed": 4808
+        },
+        {
+          "framework": "net11.0",
+          "passed": 17935
+        },
+        {
+          "framework": "net10.0",
+          "passed": 4808
+        },
+        {
+          "framework": "net10.0",
+          "passed": 17935
+        },
+        {
+          "framework": "net11.0",
+          "passed": 14
+        },
+        {
+          "framework": "net11.0",
+          "passed": 406
+        },
+        {
+          "framework": "net10.0",
+          "passed": 14
+        },
+        {
+          "framework": "net10.0",
+          "passed": 406
+        }
+      ]
+    },
+    {
+      "log": "1_tests (ubuntu-latest).txt",
+      "summaries": [
+        {
+          "framework": "net11.0",
+          "passed": 4808
+        },
+        {
+          "framework": "net11.0",
+          "passed": 17935
+        },
+        {
+          "framework": "net10.0",
+          "passed": 4808
+        },
+        {
+          "framework": "net10.0",
+          "passed": 17935
+        },
+        {
+          "framework": "net11.0",
+          "passed": 14
+        },
+        {
+          "framework": "net11.0",
+          "passed": 406
+        },
+        {
+          "framework": "net10.0",
+          "passed": 14
+        },
+        {
+          "framework": "net10.0",
+          "passed": 406
+        }
+      ]
+    }
+  ],
+  "summaries": 16,
+  "sourceInputsVerified": 619,
+  "production": 584,
+  "normalAdapterPin": "0.4.0",
+  "allMeaningfulStepsPassed": true,
+  "logsSHA256": "e190de28ab4df9a51399eee87b9033b7c603f6915d163d4aec5a88689aa3ec94",
+  "finalProductionSourceMatchesQualifiedInputs": true,
+  "measuredBinaryEqualityInferred": false,
+  "binaryEqualityInferred": false,
+  "publicationHeld": true
+}

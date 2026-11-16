@@ -1,6 +1,6 @@
 {
   "retain": true,
-  "qualificationPending": true,
+  "qualificationPending": false,
   "source": "a44f65a8",
   "normalizationFreshElapsedPercent": [
     -6.1918,
@@ -17,5 +17,6 @@
     "CSV/report inconclusive with adverse/moving controls"
   ],
   "noUniversalGain": true,
-  "publicationHeld": true
+  "publicationHeld": true,
+  "qualifiedRun": 43925936851
 }

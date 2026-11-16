@@ -1,7 +1,6 @@
 # One native and CLR iteration lifetime
 
-R450/B853,2026-11-16UTC. **Retain the coherent consolidation; delivery qualification
-pending.** Reference qualified R448 d77a8bdd/finale1204916; final candidatea44f65a8
+R450/B853,2026-11-16UTC. **Retain the coherent consolidation; [full delivery qualification passes](delivery/README.md).** Reference qualified R448 d77a8bdd/finale1204916; final candidatea44f65a8
 at base3f98a725 plus exact archived source. No public API, dependency or policy change.
 
 Delete eight ToSequence/ToSequenceAsync routing methods, CheckedSequence,
@@ -62,8 +61,7 @@ Final source builds both targets without warnings/errors;1,563internal/4,989publ
 focused checks pass each actual Windows .NET11/10, including current cancellation,
 first refusal, real pending users, aliases, disposal and budget reuse. Initial
 5755snapshot full local11 ordinary passes4,806/17,935; it does not qualify the final
-refinement. Final platform, original stress and installed-package qualification is
-pending. Documentation-only updates after freeze describe the resulting contract;
+refinement. [Final platform, original stress and installed-package qualification passes](delivery/README.md). Documentation-only updates after freeze describe the resulting contract;
 production source parity is required at delivery, no rebuilt binary equality.
 
 Two new cases reproduced a prototype bug (remaining2items became3): list extension
