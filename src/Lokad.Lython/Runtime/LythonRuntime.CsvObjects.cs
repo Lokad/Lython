@@ -26,16 +26,14 @@ internal sealed partial class LythonRuntime
         // pull input.
         public bool IsTruthy() => true;
 
-        public bool TryMoveNext([MaybeNullWhen(false)] out object value)
+        public PyIterationResult TryMoveNext()
         {
             if (Records.TryMoveNext(out var row))
             {
-                value = Records.AdoptRecord(row);
-                return true;
+                return PyIterationResult.Yield(Records.AdoptRecord(row));
             }
 
-            value = PyNone.Instance;
-            return false;
+            return PyIterationResult.End;
         }
 
         public async ValueTask<PyIterationResult> TryMoveNextAsync()
@@ -111,11 +109,9 @@ internal sealed partial class LythonRuntime
             LineNum = new BigInteger(Rows.PhysicalLineCount);
             return _fieldNames;
         }
-        public bool TryMoveNext([MaybeNullWhen(false)] out object value)
+        public PyIterationResult TryMoveNext()
         {
-            var result = NextAsync(false).GetAwaiter().GetResult();
-            value = result.HasValue ? result.Value : PyNone.Instance;
-            return result.HasValue;
+            return NextAsync(false).GetAwaiter().GetResult();
         }
         public ValueTask<PyIterationResult> TryMoveNextAsync() => NextAsync(true);
         private async ValueTask<PyIterationResult> NextAsync(bool asynchronous)
@@ -173,7 +169,7 @@ internal sealed partial class LythonRuntime
                     for (var i = 0; ; i++)
                     {
                         var key = asynchronous ? await keys.TryMoveNextAsync().ConfigureAwait(false)
-                            : keys.TryMoveNext(out var value) ? PyIterationResult.Yield(value) : PyIterationResult.End;
+                            : keys.TryMoveNext();
                         if (!key.HasValue || i >= row.Length) break;
                         Store(key.Value, row[i]);
                     }

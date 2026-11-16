@@ -74,7 +74,7 @@ internal sealed partial class LythonRuntime
                 while (true)
                 {
                     var next = asynchronous ? await cursor.TryMoveNextAsync().ConfigureAwait(false)
-                        : cursor.TryMoveNext(out var value) ? PyIterationResult.Yield(value) : PyIterationResult.End;
+                        : cursor.TryMoveNext();
                     if (!next.HasValue) break;
                     if (!PyStringOps.TryAsString(next.Value, out var name))
                         throw new LythonRuntimeException("TypeError", "fnmatch.filter(names, pattern) expects an iterable of strings.", span);

@@ -23,11 +23,11 @@ internal sealed partial class LythonRuntime
             _pattern = pattern; _range = range; _context = context; _span = span;
         }
 
-        public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
+        public override PyIterationResult TryMoveNext()
         {
             _context.CheckExecution(_span);
-            value = PyNone.Instance;
-            if (_finished || !_range.IsValid) return false;
+
+            if (_finished || !_range.IsValid) return PyIterationResult.End;
             try
             {
                 if (_subject is null)
@@ -36,9 +36,8 @@ internal sealed partial class LythonRuntime
                     _cursor = _subject.Find();
                     _context.State.TrackRegexIterator(this);
                 }
-                if (!_subject.Next(_cursor!)) { Dispose(); return false; }
-                value = RegexMatcher.CreateMatchObject(_pattern, _range, _subject, _context, _span);
-                return true;
+                if (!_subject.Next(_cursor!)) { Dispose(); return PyIterationResult.End; }
+                return PyIterationResult.Yield(RegexMatcher.CreateMatchObject(_pattern, _range, _subject, _context, _span));
             }
             catch { Dispose(); throw; }
         }

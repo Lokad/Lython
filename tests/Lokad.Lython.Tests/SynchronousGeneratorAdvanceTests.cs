@@ -103,7 +103,7 @@ public sealed class SynchronousGeneratorAdvanceTests
 
     private static async ValueTask<PyIterationResult> Move(LythonRuntime.PyGenerator generator, bool asynchronous)
         => asynchronous ? await generator.TryMoveNextAsync()
-            : generator.TryMoveNext(out var value) ? PyIterationResult.Yield(value) : PyIterationResult.End;
+            : generator.TryMoveNext();
 
     private static ExecutableCodeObject GeneratorCode(string body)
     {

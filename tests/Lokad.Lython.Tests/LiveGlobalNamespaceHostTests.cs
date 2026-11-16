@@ -183,7 +183,7 @@ public sealed class LiveGlobalNamespaceHostTests
         var root = await Setup("scope=globals()\nkeys=scope.keys()\nvalues=scope.values()\nitems=scope.items()\n");
         using var cursor = PyIteration.Cursor.Create(root.Variables[name], Span, root);
         LythonRuntime.StoreName("new_name", new BigInteger(9), root, Span);
-        var error = Assert.Throws<LythonRuntimeException>(() => cursor.TryMoveNext(out _));
+        var error = Assert.Throws<LythonRuntimeException>(() => cursor.TryMoveNext().HasValue);
         Assert.Equal("RuntimeError", error.ExceptionType);
         Assert.Equal("dictionary changed size during iteration", error.Message);
         Assert.Equal(0, root.MemoryGovernor.CurrentReservedBytes);

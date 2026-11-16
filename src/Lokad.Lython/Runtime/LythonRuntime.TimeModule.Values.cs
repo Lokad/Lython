@@ -70,7 +70,7 @@ internal sealed partial class LythonRuntime
             using var cursor = PyIteration.Cursor.Create(arguments[0].Value, span, context);
             var head = new object[12];
             var buffered = 0;
-            while (buffered < 12 && cursor.TryMoveNext(out var item))
+            while (buffered < 12 && (cursor.TryMoveNext() is { HasValue: true, Value: var item }))
             {
                 head[buffered++] = item!;
                 context.CheckExecution(span);
@@ -84,7 +84,7 @@ internal sealed partial class LythonRuntime
             var total = buffered;
             if (buffered == 12)
             {
-                while (cursor.TryMoveNext(out _))
+                while (cursor.TryMoveNext().HasValue)
                 {
                     total++;
                     context.CheckExecution(span);

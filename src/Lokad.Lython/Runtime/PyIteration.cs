@@ -188,7 +188,7 @@ internal static partial class PyIteration
 
     public static IEnumerable<object> EnumerateIterator(IPyIteratorValue iterator)
     {
-        while (iterator.TryMoveNext(out var value))
+        while ((iterator.TryMoveNext() is { HasValue: true, Value: var value }))
         {
             yield return value;
         }
@@ -284,10 +284,10 @@ internal static partial class PyIteration
             var cursor = new Cursor(outer.Iterator, span, context: context);
             try
             {
-                cursor._syncEnumerator = outer.Sequence.GetEnumerator();
+                if (cursor._iterator is null) cursor._syncEnumerator = outer.Sequence.GetEnumerator();
                 if (asynchronous && source is IPyAsyncIterableValue iterable)
                     cursor._asyncEnumerator = iterable.IterateAsync().GetAsyncEnumerator();
-                else if (outer.AsyncSequence is not null)
+                else if (cursor._iterator is not IPyAsyncIteratorValue && outer.AsyncSequence is not null)
                     cursor._asyncEnumerator = outer.AsyncSequence.GetAsyncEnumerator();
                 return cursor;
             }
@@ -306,7 +306,7 @@ internal static partial class PyIteration
                 // first checkpoint. Python iterator values themselves stay open.
                 if (_syncEnumerator is null && _iterator is null && _value is not (PyList or PyTuple))
                     _syncEnumerator = (_syncSource ??= GetSyncEnumerable(_value!, _span)).GetEnumerator();
-                if (TryMoveNext(out var value)) { _current = value; return true; }
+                if ((TryMoveNext() is { HasValue: true, Value: var value })) { _current = value; return true; }
                 Dispose();
                 return false;
             }
@@ -383,59 +383,33 @@ internal static partial class PyIteration
                 ? new Cursor(value, span, await PyUserIterator.CreateAsync(value, context, span).ConfigureAwait(false), context)
                 : Create(value, span, context);
 
-        public bool TryMoveNext([MaybeNullWhen(false)] out object value)
+        public PyIterationResult TryMoveNext()
         {
             CheckExecution();
-            return TryMoveNextCore(out value);
+            return TryMoveNextCore();
         }
 
         internal bool IsBuiltinRange => _value is PyRange && _iterator is null;
 
-        internal bool TryMoveNextInteger(out bool hasValue, out long value)
+        private PyIterationResult TryMoveNextCore()
         {
-            hasValue = false;
-            value = 0;
-            if (_disposed) return true;
-            if (!IsBuiltinRange) return false;
-            var range = (PyRange)_value!;
-            _syncEnumerator ??= range.GetEnumerator();
-            if (_syncEnumerator is not PyRange.Enumerator { HasMachineBounds: true } integers) return false;
-            CheckExecution();
-            hasValue = integers.MoveNext();
-            if (hasValue) value = integers.MachineValue;
-            return true;
-        }
-
-        private bool TryMoveNextCore([MaybeNullWhen(false)] out object value)
-        {
-            if (_disposed || _value is null)
-            {
-                value = PyNone.Instance;
-                return false;
-            }
-            if (_iterator is { } iterator)
-            {
-                return iterator.TryMoveNext(out value);
-            }
+            if (_disposed || _value is null) return PyIterationResult.End;
+            if (_iterator is { } iterator) return iterator.TryMoveNext();
 
             if (_syncEnumerator is null && _value is (PyList or PyTuple))
             {
                 var next = AdvanceBuiltinSequence(_value, ref _sequencePosition);
-                value = next.HasValue ? next.Value : PyNone.Instance;
                 // A retained list cursor cannot revive after append at EOF.
                 if (!next.HasValue) _disposed = true;
-                return next.HasValue;
+                return next;
             }
 
             _syncEnumerator ??= (_syncSource ??= GetSyncEnumerable(_value, _span)).GetEnumerator();
-            if (_syncEnumerator.MoveNext())
-            {
-                value = _syncEnumerator.Current;
-                return true;
-            }
-
-            value = PyNone.Instance;
-            return false;
+            if (_syncEnumerator is PyRange.Enumerator { HasMachineBounds: true } integers)
+                return integers.MoveNext()
+                    ? PyIterationResult.Yield(LythonRuntime.ExecutableSlot.FromInteger(integers.MachineValue))
+                    : PyIterationResult.End;
+            return _syncEnumerator.MoveNext() ? PyIterationResult.Yield(_syncEnumerator.Current) : PyIterationResult.End;
         }
 
         public ValueTask<PyIterationResult> TryMoveNextAsync()
@@ -456,9 +430,7 @@ internal static partial class PyIteration
                 return PullAsyncEnumeratorAsync();
             }
 
-            return ValueTask.FromResult(TryMoveNextCore(out var syncValue)
-                ? PyIterationResult.Yield(syncValue)
-                : PyIterationResult.End);
+            return ValueTask.FromResult(TryMoveNextCore());
         }
 
         private async ValueTask<PyIterationResult> PullAsyncEnumeratorAsync()

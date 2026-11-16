@@ -296,17 +296,15 @@ internal sealed partial class LythonRuntime
 
             public IAsyncEnumerable<object> IterateAsync() => PyIteration.EnumerateAsyncIterator(this);
 
-            public bool TryMoveNext([MaybeNullWhen(false)] out object value)
+            public PyIterationResult TryMoveNext()
             {
                 var line = ReadLine();
                 if (!line.IsTruthy())
                 {
-                    value = PyNone.Instance;
-                    return false;
+                    return PyIterationResult.End;
                 }
 
-                value = line;
-                return true;
+                return PyIterationResult.Yield(line);
             }
 
             public ValueTask<PyIterationResult> TryMoveNextAsync()

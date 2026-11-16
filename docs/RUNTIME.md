@@ -1584,8 +1584,19 @@ The same diagnostic is returned by compilation and compile-to-result APIs.
 | Retained result | On disposal after consumers relinquish projected values/aliases |
 | Cache or pool | At its owner's end or ordinary funded eviction, after users finish |
 
+Native synchronous and asynchronous iteration use one result containing the
+existing executable value slot. Exhaustion uses the unassigned state; guest `None`
+remains a value. Generator yields and ranges can move unpublished signed-64-bit
+values through executable loops and native reductions without first boxing them.
+An object consumer materializes the value before exposing an identity or alias;
+previously observed objects and immutable tuple borrows keep their original identity.
+CLR enumerable adapters still materialize at their object boundary. Iterator state,
+retained inputs and pending operations keep their existing owners and cancellation
+checks; there is no separate typed-iterator protocol or per-yield owner.
+
 `sum` keeps eligible signed 64-bit and compensated-double prefixes in scalar
-fields, materializing numbers at result or general-operation transitions. Larger
+fields, consuming native iteration results directly and materializing numbers at
+result or general-operation transitions. Larger
 integers use the existing exact arithmetic and admission preflights. Iterator
 and callback cleanup, cancellation and the supplied empty-start value are retained.
 

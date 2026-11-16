@@ -386,18 +386,18 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
             _nextIndex = snapshot.Length - 1;
         }
 
-        public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
+        public override PyIterationResult TryMoveNext()
         {
+            object? value;
             _owner.EnsureUnmodified(_expectedVersion);
             if (_nextIndex < 0)
             {
-                value = PyNone.Instance;
-                return false;
+                return PyIterationResult.End;
             }
 
             value = _snapshot[_nextIndex];
             _nextIndex--;
-            return true;
+            return PyIterationResult.Yield(value!);
         }
 
         public override PyString RenderPython(PyRenderingContext context)
@@ -430,22 +430,20 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
             _nextIndex = snapshot.Length - 1;
         }
 
-        public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
+        public override PyIterationResult TryMoveNext()
         {
             _owner.EnsureUnmodified(_expectedVersion);
             if (_nextIndex < 0)
             {
-                value = PyNone.Instance;
-                return false;
+                return PyIterationResult.End;
             }
 
             var pair = _snapshot[_nextIndex];
             _nextIndex--;
             var governor = _owner.OwnerMemoryGovernor;
-            value = governor is null
+            return PyIterationResult.Yield(governor is null
                 ? new PyTuple([pair.Key, pair.Value])
-                : new PyTuple([pair.Key, pair.Value], governor, _owner.AllocationSpan);
-            return true;
+                : new PyTuple([pair.Key, pair.Value], governor, _owner.AllocationSpan));
         }
 
         public override PyString RenderPython(PyRenderingContext context)
@@ -478,18 +476,18 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
             _nextIndex = snapshot.Length - 1;
         }
 
-        public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
+        public override PyIterationResult TryMoveNext()
         {
+            object? value;
             _owner.EnsureUnmodified(_expectedVersion);
             if (_nextIndex < 0)
             {
-                value = PyNone.Instance;
-                return false;
+                return PyIterationResult.End;
             }
 
             value = _snapshot[_nextIndex];
             _nextIndex--;
-            return true;
+            return PyIterationResult.Yield(value!);
         }
 
         public override PyString RenderPython(PyRenderingContext context)

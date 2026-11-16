@@ -55,11 +55,9 @@ internal sealed partial class LythonRuntime
             if (snapshot is not null) OwnNames(_frame!, snapshot);
         }
 
-        public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
+        public override PyIterationResult TryMoveNext()
         {
-            var result = MoveNext(false).GetAwaiter().GetResult();
-            value = result.HasValue ? result.Value : PyNone.Instance;
-            return result.HasValue;
+            return MoveNext(false).GetAwaiter().GetResult();
         }
 
         public override ValueTask<PyIterationResult> TryMoveNextAsync() => MoveNext(true);

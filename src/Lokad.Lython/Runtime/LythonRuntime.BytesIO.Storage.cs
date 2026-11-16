@@ -153,15 +153,16 @@ internal sealed partial class LythonRuntime
         internal void RewindInitialValue() => _position = 0;
         public object Enter() { EnsureOpen(_creationSpan); return this; }
         public bool Exit(object exceptionType, object exceptionValue, object traceback) { Close(); return false; }
-        public bool TryMoveNext([MaybeNullWhen(false)] out object value)
+        public PyIterationResult TryMoveNext()
         {
+            object? value;
             var line = Read(-1, true, _creationSpan);
             value = line;
-            return line.Length != 0;
+            return (line.Length != 0) ? PyIterationResult.Yield(value!) : PyIterationResult.End;
         }
         public IEnumerable<object> Iterate()
         {
-            while (TryMoveNext(out var line)) yield return line;
+            while ((TryMoveNext() is { HasValue: true, Value: var line })) yield return line;
         }
         public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<_io.BytesIO object>");
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);

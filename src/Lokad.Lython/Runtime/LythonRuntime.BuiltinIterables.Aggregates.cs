@@ -114,12 +114,15 @@ internal sealed partial class LythonRuntime
     {
         var total = ReadSumStart(arguments, span);
         if (TrySumExactBytes(arguments[0], total, span, context, out var byteResult)) return byteResult;
-        var sequence = ToSequence(arguments[0], span, context);
+        using var cursor = PyIteration.Cursor.Create(arguments[0], span, context);
         ValidateSumStart(total, span);
         var sum = new SumState(total);
-        foreach (var item in sequence)
+        while (true)
         {
-            if (sum.TryAddNumber(item)) continue;
+            var next = cursor.TryMoveNext();
+            if (!next.HasValue) break;
+            if (sum.TryAddResult(ref next)) continue;
+            var item = next.Value;
             var result = sum.Total is PyInstance || item is PyInstance
                 ? EvaluateBinaryOperator(BinaryOperatorSyntax.Add, sum.Total, item, context, span)
                 : EvaluateAdd(sum.Total, item, context, span);
@@ -144,11 +147,12 @@ internal sealed partial class LythonRuntime
             {
                 var item = await cursor.TryMoveNextAsync().ConfigureAwait(false);
                 if (!item.HasValue) break;
-                if (sum.TryAddNumber(item.Value)) continue;
-                var result = sum.Total is PyInstance || item.Value is PyInstance
-                    ? await EvaluateBinaryOperatorAsync(BinaryOperatorSyntax.Add, sum.Total, item.Value, context, span).ConfigureAwait(false)
-                    : EvaluateAdd(sum.Total, item.Value, context, span);
-                sum.CompleteAddition(item.Value, result);
+                if (sum.TryAddResult(ref item)) continue;
+                var value = item.Value;
+                var result = sum.Total is PyInstance || value is PyInstance
+                    ? await EvaluateBinaryOperatorAsync(BinaryOperatorSyntax.Add, sum.Total, value, context, span).ConfigureAwait(false)
+                    : EvaluateAdd(sum.Total, value, context, span);
+                sum.CompleteAddition(value, result);
             }
         }
         return sum.Result;
@@ -199,20 +203,41 @@ internal sealed partial class LythonRuntime
             }
         }
 
+        internal bool TryAddResult(ref PyIterationResult item)
+        {
+            if (_phase == SumPhase.General) return false;
+            return item.TryGetInteger(out var integer) ? TryAddInteger(integer) : TryAddNumber(item.Value);
+        }
+
+        private bool TryAddInteger(long integer)
+        {
+            if (_phase == SumPhase.Float)
+            {
+                // Python 3.13 adds small integers without compensating them.
+                _floating += integer;
+                _numericAddition = true;
+                return true;
+            }
+            try
+            {
+                _integer = checked(_integer + integer);
+                _numericAddition = true;
+                return true;
+            }
+            catch (OverflowException)
+            {
+                // Exact promotion uses the same guarded general addition.
+                Total = Result;
+                _numericAddition = false;
+                return false;
+            }
+        }
+
         internal bool TryAddNumber(object item)
         {
             if (_phase == SumPhase.Integer)
             {
-                if (TryInt64(item, out var integer))
-                {
-                    try
-                    {
-                        _integer = checked(_integer + integer);
-                        _numericAddition = true;
-                        return true;
-                    }
-                    catch (OverflowException) { } // Exact promotion uses the existing guarded addition below.
-                }
+                if (TryInt64(item, out var integer)) return TryAddInteger(integer);
                 // At most 64 bits: materialization uses the existing minor-scalar
                 // headroom. Substantial integer promotion keeps its preflight.
                 Total = Result;
@@ -230,13 +255,7 @@ internal sealed partial class LythonRuntime
                 _numericAddition = true;
                 return true;
             }
-            if (TryInt64(item, out var small))
-            {
-                // Python 3.13 adds small integers without compensating them.
-                _floating += small;
-                _numericAddition = true;
-                return true;
-            }
+            if (TryInt64(item, out var small)) return TryAddInteger(small);
 
             // A genuine general addition sees the completed corrected prefix.
             // A later double result never restarts compensation from this phase.

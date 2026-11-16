@@ -46,10 +46,10 @@ internal sealed partial class LythonRuntime
             while (true)
             {
                 var key = asynchronous ? await keys.TryMoveNextAsync().ConfigureAwait(false)
-                    : keys.TryMoveNext(out var k) ? PyIterationResult.Yield(k) : PyIterationResult.End;
+                    : (keys.TryMoveNext() is { HasValue: true, Value: var k }) ? PyIterationResult.Yield(k) : PyIterationResult.End;
                 if (!key.HasValue) break;
                 var value = asynchronous ? await values.TryMoveNextAsync().ConfigureAwait(false)
-                    : values.TryMoveNext(out var v) ? PyIterationResult.Yield(v) : PyIterationResult.End;
+                    : (values.TryMoveNext() is { HasValue: true, Value: var v }) ? PyIterationResult.Yield(v) : PyIterationResult.End;
                 if (!value.HasValue) break;
                 using var ambient = PyStructuralGuard.PushAmbient(context, span);
                 header.SetItem(ValidateDictionaryKey(key.Value, span), value.Value);

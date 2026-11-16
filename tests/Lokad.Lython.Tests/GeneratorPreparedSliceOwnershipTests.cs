@@ -110,7 +110,7 @@ public sealed class GeneratorPreparedSliceOwnershipTests
     }
 
     private static ValueTask<PyIterationResult> Next(LythonRuntime.PyGenerator generator, bool asynchronous)
-        => asynchronous ? generator.TryMoveNextAsync() : new(generator.TryMoveNext(out var value)
+        => asynchronous ? generator.TryMoveNextAsync() : new((generator.TryMoveNext() is { HasValue: true, Value: var value })
             ? PyIterationResult.Yield(value) : PyIterationResult.End);
 
     private static async Task<Fixture> Define(bool asynchronous, CancellationToken cancellation = default, string source = Source)

@@ -23,7 +23,7 @@ internal sealed class PyGroupByIterator : PyIteratorBase
 
     private bool Advance()
     {
-        if (!_source.TryMoveNext(out var item)) return false;
+        if (!(_source.TryMoveNext() is { HasValue: true, Value: var item })) return false;
         var key = _keyFunction is null ? item : CallableInvocation.InvokeUnary(_keyFunction, item, _span, _context);
         _item = LythonRuntime.RuntimeValue(item); _key = LythonRuntime.RuntimeValue(key); _hasCurrent = true;
         return true;
@@ -52,18 +52,17 @@ internal sealed class PyGroupByIterator : PyIteratorBase
         return new PyTuple([_key, new PyGroupIterator(this, _groupId, _target)], _memoryGovernor, _span);
     }
 
-    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
+    public override PyIterationResult TryMoveNext()
     {
         _groupId++;
         while (true)
         {
             _context.CheckExecution(_span);
-            if (!_hasCurrent && !Advance()) { value = PyNone.Instance; return false; }
+            if (!_hasCurrent && !Advance()) { return PyIterationResult.End; }
             if (!_hasTarget || !LythonRuntime.ElementEquals(_target, _key, _context, _span)) break;
             TakeCurrent();
         }
-        value = CreateGroup();
-        return true;
+        return PyIterationResult.Yield(CreateGroup());
     }
 
     public override async ValueTask<PyIterationResult> TryMoveNextAsync()
@@ -91,13 +90,12 @@ internal sealed class PyGroupByIterator : PyIteratorBase
             ChargeIteratorValue(parent._memoryGovernor, parent._span);
             _parent = parent; _id = id; _target = target;
         }
-        public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
+        public override PyIterationResult TryMoveNext()
         {
-            value = PyNone.Instance;
-            if (_parent._groupId != _id || !_parent._hasCurrent && !_parent.Advance()) return false;
-            if (!LythonRuntime.ElementEquals(_target, _parent._key, _parent._context, _parent._span) || !_parent._hasCurrent) return false;
-            value = _parent.TakeCurrent();
-            return true;
+
+            if (_parent._groupId != _id || !_parent._hasCurrent && !_parent.Advance()) return PyIterationResult.End;
+            if (!LythonRuntime.ElementEquals(_target, _parent._key, _parent._context, _parent._span) || !_parent._hasCurrent) return PyIterationResult.End;
+            return PyIterationResult.Yield(_parent.TakeCurrent());
         }
         public override async ValueTask<PyIterationResult> TryMoveNextAsync()
         {
@@ -120,7 +118,11 @@ internal sealed class PyTeeIterator : PyIteratorBase
         _index = index;
     }
 
-    public override bool TryMoveNext([MaybeNullWhen(false)] out object value) => _state.TryGetNext(_index, out value);
+    public override PyIterationResult TryMoveNext()
+    {
+        return _state.TryGetNext(_index, out var value)
+            ? PyIterationResult.Yield(value) : PyIterationResult.End;
+    }
 
     public override async ValueTask<PyIterationResult> TryMoveNextAsync()
         => await _state.TryGetNextAsync(_index).ConfigureAwait(false);
@@ -232,7 +234,7 @@ internal sealed class PyTeeSharedState
         _reading = true;
         try
         {
-            if (!_source.TryMoveNext(out var current)) { _sourceExhausted = true; return false; }
+            if (!(_source.TryMoveNext() is { HasValue: true, Value: var current })) { _sourceExhausted = true; return false; }
             value = LythonRuntime.RuntimeValue(current);
             Publish(index, value, payload);
             return true;

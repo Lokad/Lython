@@ -97,7 +97,7 @@ public sealed class CsvExhaustedInputLifetimeTests
             Options() with { Strict = !quotedEof }, new(0, 0, 0, 0), context);
         var reader = new LythonRuntime.CsvReaderObject(source);
         var item = asynchronous ? await reader.TryMoveNextAsync()
-            : reader.TryMoveNext(out var next) ? PyIterationResult.Yield(next) : PyIterationResult.End;
+            : (reader.TryMoveNext() is { HasValue: true, Value: var next }) ? PyIterationResult.Yield(next) : PyIterationResult.End;
         var row = Assert.IsType<PyList>(item.Value);
         Assert.NotNull(row);
         if (asynchronous) Assert.Null(await source.TryMoveNextAsync());

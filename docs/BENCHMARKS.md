@@ -80,6 +80,7 @@ Source-pair results are separate from CPython and cannot be added together:
 
 | Change / affected workload | Separate source-pair evidence | Limits |
 | --- | --- | --- |
+| Compact native iteration / complete numeric squared-error report | Allocation about16%lower through both APIs; repeated warm elapsed/CPU favorable with uncertain magnitude | Call loop repeatedly about2–3%slower; normalization inconclusive with moving controls. [Measured revisions, phases and controls](../benchmarks/results/2026-11-16-compact-iteration-result/README.md). |
 | One generator-expression engine / complete class-generator report | Allocation −21.09%; warm 8.1–9.4% lower elapsed, compile-to-result 4.1–7.2% lower, supporting CPU | Compilation 4–9% higher; earlier frame/cursor admission. Normalization control moves; calls elapsed about 1% higher without supporting CPU. [Source pair and controls](../benchmarks/results/2026-11-16-generator-consolidation/README.md). |
 | Shared immutable subtext / complete normalization and JSON-lines | Allocation−19.8%/−11.3%; normalization warm1.8–4.6%lower elapsed, JSON2.9–5.6%lower, supporting CPU | Full backing stays charged for surviving views; fresh reference moves3.37%. [Evidence and full delivery](../benchmarks/results/2026-11-16-shared-subtext/README.md). |
 | Shared line construction / normalization | Allocation−1.73%; warm3.8–8.5%lower elapsed, supporting CPU | Original failed idle gate and moving JSON control retained. [Evidence and full delivery](../benchmarks/results/2026-11-16-line-construction/confirmation/README.md). |

@@ -33,7 +33,7 @@ public sealed class IterationCancellationTests
                 }
                 else
                 {
-                    while (cursor.TryMoveNext(out _)) { }
+                    while (cursor.TryMoveNext().HasValue) { }
                 }
             }
             else if (asynchronous)

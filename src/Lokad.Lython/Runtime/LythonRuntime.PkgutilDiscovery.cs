@@ -23,11 +23,9 @@ internal sealed partial class LythonRuntime
             _recursive = recursive; _context = context; _span = span;
         }
 
-        public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
+        public override PyIterationResult TryMoveNext()
         {
-            var result = MoveNextAsync(false).GetAwaiter().GetResult();
-            value = result.HasValue ? result.Value : PyNone.Instance;
-            return result.HasValue;
+            return MoveNextAsync(false).GetAwaiter().GetResult();
         }
 
         public override ValueTask<PyIterationResult> TryMoveNextAsync() => MoveNextAsync(true);
@@ -166,7 +164,7 @@ internal sealed partial class LythonRuntime
                 {
                     context.CheckExecution(_span);
                     var pulled = _asynchronous ? await cursor.TryMoveNextAsync().ConfigureAwait(false)
-                        : cursor.TryMoveNext(out var item) ? PyIterationResult.Yield(item) : PyIterationResult.End;
+                        : (cursor.TryMoveNext() is { HasValue: true, Value: var item }) ? PyIterationResult.Yield(item) : PyIterationResult.End;
                     if (!pulled.HasValue) break;
                     var text = pulled.Value is PyPath pyPath ? pyPath.Value : pulled.Value as PyString
                         ?? throw RuntimeErrors.Type("pkgutil discovery expects an iterable of path strings", _span);

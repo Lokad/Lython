@@ -20,8 +20,12 @@ public sealed class IteratorItemAccountingTests
         var committedBefore = context.MemoryGovernor.CurrentCommittedBytes;
 
         var iterator = new PyEnumerateIterator(source, BigInteger.Zero, span, context);
-        Assert.True(iterator.TryMoveNext(out var first));
-        Assert.True(iterator.TryMoveNext(out var second));
+        var nextFirst = iterator.TryMoveNext();
+        Assert.True(nextFirst.HasValue);
+        var first = nextFirst.Value;
+        var nextSecond = iterator.TryMoveNext();
+        Assert.True(nextSecond.HasValue);
+        var second = nextSecond.Value;
         Assert.Equal(new BigInteger(0), ((PyTuple)first)[0]);
         Assert.Equal(new BigInteger(1), ((PyTuple)second)[0]);
         Assert.Equal(committedBefore + 128L + ((PyTuple)first).CommittedStorageBytes +
@@ -41,7 +45,9 @@ public sealed class IteratorItemAccountingTests
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var source = new PyList(new object[] { new BigInteger(10) }, context.MemoryGovernor, span);
         var iterator = new PyEnumerateIterator(source, BigInteger.Zero, span, context);
-        Assert.True(iterator.TryMoveNext(out var first));
+        var nextFirst = iterator.TryMoveNext();
+        Assert.True(nextFirst.HasValue);
+        var first = nextFirst.Value;
 
         GC.KeepAlive(iterator);
         GC.KeepAlive(source);
@@ -75,7 +81,7 @@ public sealed class IteratorItemAccountingTests
         var iterator = new PyEnumerateIterator(range, BigInteger.Zero, span, context);
         for (var i = 0; i < 16; i++)
         {
-            Assert.True(iterator.TryMoveNext(out _));
+            Assert.True(iterator.TryMoveNext().HasValue);
         }
     }
 }

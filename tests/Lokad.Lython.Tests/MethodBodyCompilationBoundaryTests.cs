@@ -173,16 +173,16 @@ public sealed class MethodBodyCompilationBoundaryTests
         Assert.Equal(new[] { "saved", "default" }, fixture.Tape.Events);
         AssertUnwound(fixture.Context);
         var first = asynchronous ? await generator.TryMoveNextAsync()
-            : generator.TryMoveNext(out var firstValue) ? PyIterationResult.Yield(firstValue) : PyIterationResult.End;
+            : (generator.TryMoveNext() is { HasValue: true, Value: var firstValue }) ? PyIterationResult.Yield(firstValue) : PyIterationResult.End;
         Assert.True(first.HasValue);
         Assert.Same(fixture.Tape.Saved, first.Value);
         Assert.Same(fixture.Receiver, await Invoke(Bind(fixture.Receiver, "identity"), fixture.Context, asynchronous));
         var second = asynchronous ? await generator.TryMoveNextAsync()
-            : generator.TryMoveNext(out var secondValue) ? PyIterationResult.Yield(secondValue) : PyIterationResult.End;
+            : (generator.TryMoveNext() is { HasValue: true, Value: var secondValue }) ? PyIterationResult.Yield(secondValue) : PyIterationResult.End;
         Assert.True(second.HasValue);
         Assert.Same(fixture.Type, second.Value);
         var final = asynchronous ? await generator.TryMoveNextAsync()
-            : generator.TryMoveNext(out var finalValue) ? PyIterationResult.Yield(finalValue) : PyIterationResult.End;
+            : (generator.TryMoveNext() is { HasValue: true, Value: var finalValue }) ? PyIterationResult.Yield(finalValue) : PyIterationResult.End;
         Assert.False(final.HasValue);
         AssertUnwound(fixture.Context);
         Assert.Same(fixture.Active, fixture.Context.State.CurrentException);

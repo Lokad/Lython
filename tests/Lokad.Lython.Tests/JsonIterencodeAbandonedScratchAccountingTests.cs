@@ -37,7 +37,7 @@ public sealed class JsonIterencodeAbandonedScratchAccountingTests
             Assert.Equal(baseline, budget.ReservedBytes);
         }
         var text = new StringBuilder();
-        while (iterator.TryMoveNext(out var chunk)) text.Append(((PyString)chunk).AsString());
+        while ((iterator.TryMoveNext() is { HasValue: true, Value: var chunk })) text.Append(((PyString)chunk).AsString());
         Assert.Equal("{\"a\": 2, \"b\": 1}", text.ToString());
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         GC.KeepAlive(iterator);
@@ -70,7 +70,7 @@ public sealed class JsonIterencodeAbandonedScratchAccountingTests
             var iterator = new LythonRuntime.JsonEncodeIterator(big, options, context, span);
             for (var k = 0; k < 5; k++)
             {
-                Assert.True(iterator.TryMoveNext(out _));
+                Assert.True(iterator.TryMoveNext().HasValue);
             }
         }
     }

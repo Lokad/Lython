@@ -27,7 +27,7 @@ public sealed class BatchedSharedAdmissionTests
             var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
             {
                 if (asynchronous) await batch.TryMoveNextAsync();
-                else batch.TryMoveNext(out _);
+                else batch.TryMoveNext();
             });
             Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
             Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
@@ -103,7 +103,7 @@ public sealed class BatchedSharedAdmissionTests
             var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
             {
                 if (asynchronous) await batch.TryMoveNextAsync();
-                else batch.TryMoveNext(out _);
+                else batch.TryMoveNext();
             });
             Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
             Assert.Equal(4, source.Pulls); // Three values and the exhaustion pull.
@@ -122,12 +122,13 @@ public sealed class BatchedSharedAdmissionTests
         internal bool FailSecond;
         internal readonly TaskCompletionSource Paused = new(TaskCreationOptions.RunContinuationsAsynchronously);
         internal readonly TaskCompletionSource Resume = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        public override bool TryMoveNext(out object value)
+        public override PyIterationResult TryMoveNext()
         {
+            object? value;
             Pulls++;
             if (FailSecond && Pulls == 2) throw new LythonRuntimeException("ValueError", "source failed", null);
             value = PyNone.Instance;
-            return Pulls <= count;
+            return (Pulls <= count) ? PyIterationResult.Yield(value!) : PyIterationResult.End;
         }
         public override async ValueTask<PyIterationResult> TryMoveNextAsync()
         {
@@ -136,7 +137,7 @@ public sealed class BatchedSharedAdmissionTests
                 Paused.TrySetResult();
                 await Resume.Task;
             }
-            return TryMoveNext(out var value) ? PyIterationResult.Yield(value) : PyIterationResult.End;
+            return TryMoveNext();
         }
         public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<source>");
     }

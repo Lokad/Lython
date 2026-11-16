@@ -28,7 +28,7 @@ public sealed class IteratorValueAccountingTests
         var map = await PyMapIterator.CreateAsync([new StubCallable(), source], context, span, false);
         var funded = budget.ReservedBytes;
         Assert.True(funded > PyIteratorBase.IteratorValueBytes);
-        Assert.True(map.TryMoveNext(out _));
+        Assert.True(map.TryMoveNext().HasValue);
         Assert.True(budget.ReservedBytes >= funded);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         GC.KeepAlive(map);
@@ -44,10 +44,10 @@ public sealed class IteratorValueAccountingTests
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var source = new PyList([PyNone.Instance]);
         var zip = new PyZipIterator([source], false, span, context);
-        Assert.True(zip.TryMoveNext(out _));
+        Assert.True(zip.TryMoveNext().HasValue);
         var afterZip = context.MemoryGovernor.CurrentCommittedBytes;
         var enumerate = new PyEnumerateIterator(source, new System.Numerics.BigInteger(0), span, context);
-        Assert.True(enumerate.TryMoveNext(out _));
+        Assert.True(enumerate.TryMoveNext().HasValue);
         var afterEnumerate = context.MemoryGovernor.CurrentCommittedBytes;
         Assert.True(afterZip > 128L);
         Assert.True(afterEnumerate > afterZip + 128L);

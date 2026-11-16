@@ -63,7 +63,7 @@ internal sealed partial class LythonRuntime
         {
             if (next.HasValue)
             {
-                PublishInstructionResult(instruction, next.Value);
+                PublishInstructionResult(instruction, next.TakeSlotValue());
                 return new(false);
             }
             _ = _execution.Stack.TakeValue(instruction.InputStart, instruction.InputStart);
@@ -107,7 +107,7 @@ internal sealed partial class LythonRuntime
             _injectedException = null;
             if (delegated.HasValue)
             {
-                YieldValue = delegated.Value;
+                YieldValue = ExecutableSlot.FromObject(delegated.Value);
                 HasYield = true;
             }
             else

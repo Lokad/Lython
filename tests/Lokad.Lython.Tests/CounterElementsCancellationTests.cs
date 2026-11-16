@@ -18,10 +18,12 @@ public sealed class CounterElementsCancellationTests
             var counter = new PyCounter(context.MemoryGovernor);
             counter.SetItem(BigInteger.One, new BigInteger(long.MaxValue));
             var iterator = new PyCounterElementsIterator(counter, context, new LythonSourceSpan(0, 0, 0, 0));
-            Assert.True(iterator.TryMoveNext(out var value));
+            var nextValue = iterator.TryMoveNext();
+            Assert.True(nextValue.HasValue);
+            var value = nextValue.Value;
             Assert.Equal(BigInteger.One, value);
             cancellation.Cancel();
-            var error = Assert.Throws<LythonRuntimeException>(() => iterator.TryMoveNext(out _));
+            var error = Assert.Throws<LythonRuntimeException>(() => iterator.TryMoveNext().HasValue);
             Assert.Equal("execution canceled", error.Message);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         }

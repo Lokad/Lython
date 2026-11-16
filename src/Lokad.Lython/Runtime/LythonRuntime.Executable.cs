@@ -458,20 +458,15 @@ internal sealed partial class LythonRuntime
                     result = PyIteration.AdvanceBuiltinSequence(source, ref _nativeIterationPositions![slot - _firstTemporarySlot]);
                     break;
                 case PyIteration.Cursor { IsBuiltinRange: true } cursor:
-                    if (!cursor.TryMoveNextInteger(out hasValue, out var integer))
-                    {
-                        next = default;
-                        return false;
-                    }
-                    next = hasValue ? ExecutableSlot.FromInteger(integer) : default;
-                    return true;
+                    result = cursor.TryMoveNext();
+                    break;
                 default:
                     hasValue = false;
                     next = default;
                     return false;
             }
             hasValue = result.HasValue;
-            next = hasValue ? ExecutableSlot.FromObject(result.Value) : default;
+            next = hasValue ? result.TakeSlotValue() : default;
             return true;
         }
 

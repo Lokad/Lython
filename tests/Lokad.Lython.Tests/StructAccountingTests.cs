@@ -122,7 +122,7 @@ public sealed class StructAccountingTests
         var backingBefore = 0;
         for (var attempt = 0; attempt < 20; attempt++)
         {
-            Assert.Equal("MemoryError", Assert.Throws<LythonRuntimeException>(() => iterator.TryMoveNext(out _)).ExceptionType);
+            Assert.Equal("MemoryError", Assert.Throws<LythonRuntimeException>(() => iterator.TryMoveNext().HasValue).ExceptionType);
             Assert.Equal(before - backingBefore,
                 context.MemoryGovernor.CurrentCommittedBytes);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);

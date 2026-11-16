@@ -25,14 +25,11 @@ internal abstract class PyIteratorBase : IPyAsyncIteratorValue, IPyRenderableVal
     public IAsyncEnumerable<object> IterateAsync() => PyIteration.EnumerateAsyncIterator(this);
 
     /// <summary>Advances once and supplies the current Python value when successful.</summary>
-    public abstract bool TryMoveNext([MaybeNullWhen(false)] out object value);
+    public abstract PyIterationResult TryMoveNext();
 
     /// <summary>Provides async iteration with semantics identical to <see cref="TryMoveNext"/>.</summary>
     public virtual ValueTask<PyIterationResult> TryMoveNextAsync()
-        => ValueTask.FromResult<PyIterationResult>(
-            TryMoveNext(out var value)
-                ? PyIterationResult.Yield(value)
-                : PyIterationResult.End);
+        => new(TryMoveNext());
 
     public bool IsTruthy() => true;
 
@@ -82,22 +79,22 @@ internal sealed class PyChainIterator : PyIteratorBase
         return result;
     }
 
-    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
+    public override PyIterationResult TryMoveNext()
     {
         while (_outer is not null)
         {
             _context.CheckExecution(_span);
             if (_current is not null)
             {
-                if (_current.TryMoveNext(out value)) { value = LythonRuntime.RuntimeValue(value); return true; }
+                var next = _current.TryMoveNext();
+                if (next.HasValue) return next;
                 _current.Dispose(); _current = null;
             }
-            if (!_outer.TryMoveNext(out var source)) { var ended = _outer; _outer = null; ended.Dispose(); break; }
+            if (!(_outer.TryMoveNext() is { HasValue: true, Value: var source })) { var ended = _outer; _outer = null; ended.Dispose(); break; }
             try { _current = PyIteration.Cursor.Create(source, _span, _context); }
             catch { var ended = _outer; _outer = null; ended.Dispose(); throw; }
         }
-        value = PyNone.Instance;
-        return false;
+        return PyIterationResult.End;
     }
 
     public override async ValueTask<PyIterationResult> TryMoveNextAsync()
@@ -133,24 +130,23 @@ internal sealed class PyIsliceIterator : PyIteratorBase
     public PyIsliceIterator(PyIteration.Cursor source, long start, long? stop, long step)
     { _source = source; _skip = start; _stop = stop; _step = step; }
 
-    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
+    public override PyIterationResult TryMoveNext()
     {
-        value = PyNone.Instance;
+
         var source = _source;
-        if (source is null) return false;
+        if (source is null) return PyIterationResult.End;
         while (_skip > 0 && (_initial || _stop is null || _position < _stop))
         {
-            if (!source.TryMoveNext(out _)) { _source = null; source.Dispose(); return false; }
+            if (!source.TryMoveNext().HasValue) { _source = null; source.Dispose(); return PyIterationResult.End; }
             if (_position < long.MaxValue) _position++;
             _skip--;
         }
         _initial = false;
-        if (_stop is { } stop && _position >= stop || !source.TryMoveNext(out var item))
-        { _source = null; source.Dispose(); return false; }
+        if (_stop is { } stop && _position >= stop || !(source.TryMoveNext() is { HasValue: true, Value: var item }))
+        { _source = null; source.Dispose(); return PyIterationResult.End; }
         if (_position < long.MaxValue) _position++;
         _skip = _step - 1;
-        value = LythonRuntime.RuntimeValue(item);
-        return true;
+        return PyIterationResult.Yield(LythonRuntime.RuntimeValue(item));
     }
 
     public override async ValueTask<PyIterationResult> TryMoveNextAsync()

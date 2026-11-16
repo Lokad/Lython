@@ -23,13 +23,13 @@ public sealed class JsonIteratorTerminalOwnershipTests
             PyString.FromString(", "), PyString.FromString(": "), null, true);
         var iterator = new LythonRuntime.JsonEncodeIterator(input, options, context, span);
         if (asynchronous) Assert.True((await iterator.TryMoveNextAsync()).HasValue);
-        else Assert.True(iterator.TryMoveNext(out _));
+        else Assert.True(iterator.TryMoveNext().HasValue);
         var activeCharge = budget.ReservedBytes;
         Assert.True(activeCharge >= inputCharge + 32 * 32);
         var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
         {
             if (asynchronous) _ = await iterator.TryMoveNextAsync();
-            else iterator.TryMoveNext(out _);
+            else iterator.TryMoveNext();
         });
         Assert.Equal("TypeError", error.ExceptionType);
         Assert.InRange(budget.ReservedBytes, inputCharge, activeCharge - 32 * 32);
@@ -39,7 +39,7 @@ public sealed class JsonIteratorTerminalOwnershipTests
         Assert.Empty(frames);
         Assert.Null(iterator.GetType().GetField("_rootValue", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(iterator));
         Assert.Equal(32, input.Count);
-        Assert.False(iterator.TryMoveNext(out _));
+        Assert.False(iterator.TryMoveNext().HasValue);
         GC.KeepAlive(iterator);
         GC.KeepAlive(input);
         owner.Dispose();

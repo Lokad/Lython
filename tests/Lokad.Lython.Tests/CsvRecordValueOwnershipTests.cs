@@ -45,14 +45,14 @@ public sealed class CsvRecordValueOwnershipTests
             Assert.True(copy.TryGetValue(names[0], out var copied));
             Assert.Same(retained, copied);
             var ended = asynchronous ? await reader.TryMoveNextAsync()
-                : reader.TryMoveNext(out var value) ? PyIterationResult.Yield(value) : PyIterationResult.End;
+                : reader.TryMoveNext();
             Assert.False(ended.HasValue);
             Assert.Equal(0, governor.CurrentReservedBytes);
 
             async ValueTask<PyDict> Next()
             {
                 var next = asynchronous ? await reader.TryMoveNextAsync()
-                    : reader.TryMoveNext(out var value) ? PyIterationResult.Yield(value) : PyIterationResult.End;
+                    : reader.TryMoveNext();
                 Assert.True(next.HasValue);
                 return Assert.IsType<PyDict>(next.Value);
             }

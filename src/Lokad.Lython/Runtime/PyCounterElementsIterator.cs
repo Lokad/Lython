@@ -24,11 +24,9 @@ internal sealed class PyCounterElementsIterator : PyIteratorBase
         storage.Commit(2 * IteratorValueBytes);
     }
 
-    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
+    public override PyIterationResult TryMoveNext()
     {
-        var result = AdvanceAsync(false).GetAwaiter().GetResult();
-        value = result.HasValue ? result.Value : null;
-        return result.HasValue;
+        return AdvanceAsync(false).GetAwaiter().GetResult();
     }
 
     public override ValueTask<PyIterationResult> TryMoveNextAsync() => AdvanceAsync(true);

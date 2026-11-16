@@ -569,7 +569,7 @@ internal sealed partial class LythonRuntime
         }
         else if (arguments[0] is IPyIteratorValue iterator)
         {
-            if (iterator.TryMoveNext(out var value))
+            if ((iterator.TryMoveNext() is { HasValue: true, Value: var value }))
             {
                 return RuntimeValue(value);
             }
@@ -621,7 +621,7 @@ internal sealed partial class LythonRuntime
             advanced = arguments[0] switch
             {
                 IPyAsyncIteratorValue asyncIterator => await asyncIterator.TryMoveNextAsync().ConfigureAwait(false),
-                IPyIteratorValue iterator => iterator.TryMoveNext(out var item)
+                IPyIteratorValue iterator => (iterator.TryMoveNext() is { HasValue: true, Value: var item })
                     ? PyIterationResult.Yield(item)
                     : PyIterationResult.End,
                 _ => throw RuntimeErrors.NotAnIterator(arguments[0], span),

@@ -93,7 +93,7 @@ public sealed class JsonIntegerEmissionAdmissionTests
                         else _ = callable.Invoke(arguments, Span, context);
                     }
                     else if (asynchronous) await enumerator.TryMoveNextAsync();
-                    else enumerator.TryMoveNext(out _);
+                    else enumerator.TryMoveNext();
                 });
                 Assert.Equal(LythonFailureReason.SharedMemoryAllowance, error.Attribution?.Reason);
                 Assert.Same(context.MemoryGovernor.AdmissionFailure, error);
@@ -130,7 +130,7 @@ public sealed class JsonIntegerEmissionAdmissionTests
                     chunks.Add(Assert.IsType<PyString>(next.Value));
                 }
             }
-            else while (iterator.TryMoveNext(out var chunk)) chunks.Add(Assert.IsType<PyString>(chunk));
+            else while ((iterator.TryMoveNext() is { HasValue: true, Value: var chunk })) chunks.Add(Assert.IsType<PyString>(chunk));
             Assert.Equal("{\"9223372036854775807\": 1208925819614629174706176}", string.Concat(chunks.Select(x => x.AsString())));
             Assert.All(chunks, chunk => Assert.Same(context.MemoryGovernor, chunk.OwnerMemoryGovernor));
             Assert.True(budget.ReservedBytes >= before + chunks.Sum(chunk => PyString.EstimateApproximateBytes(chunk.Utf8Bytes.Length)));
@@ -207,7 +207,7 @@ public sealed class JsonIntegerEmissionAdmissionTests
                     }
                     else
                     {
-                        while (iterator.TryMoveNext(out var chunk)) retained.Add(Assert.IsType<PyString>(chunk));
+                        while ((iterator.TryMoveNext() is { HasValue: true, Value: var chunk })) retained.Add(Assert.IsType<PyString>(chunk));
                     }
                 }
                 catch (LythonRuntimeException error) { failure = error; }

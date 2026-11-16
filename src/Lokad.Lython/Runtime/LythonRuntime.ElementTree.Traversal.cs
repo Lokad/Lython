@@ -37,11 +37,9 @@ internal sealed partial class LythonRuntime
                 storage.Commit(256L + bytes);
             }
 
-            public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
+            public override PyIterationResult TryMoveNext()
             {
-                var result = _tag is null or PyString ? MoveNextNative() : MoveNextProtocol(false).GetAwaiter().GetResult();
-                value = result.HasValue ? result.Value : null;
-                return result.HasValue;
+                return _tag is null or PyString ? MoveNextNative() : MoveNextProtocol(false).GetAwaiter().GetResult();
             }
 
             public override ValueTask<PyIterationResult> TryMoveNextAsync()

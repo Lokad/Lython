@@ -81,7 +81,7 @@ internal sealed partial class LythonRuntime
                 }),
                 "__next__" => BoundCallable.CreateNoArguments(this, "zip member.__next__", static (receiver, span, _) =>
                 {
-                    if (receiver.TryMoveNext(out var item))
+                    if ((receiver.TryMoveNext() is { HasValue: true, Value: var item }))
                     {
                         return LythonRuntime.RuntimeValue(item);
                     }
@@ -132,16 +132,14 @@ internal sealed partial class LythonRuntime
 
         public IEnumerable<object> Iterate() => PyIteration.EnumerateIterator(this);
 
-        public bool TryMoveNext([MaybeNullWhen(false)] out object value)
+        public PyIterationResult TryMoveNext()
         {
             if (ReadLine(-1, null) is not PyBytes line || line.Length == 0)
             {
-                value = PyNone.Instance;
-                return false;
+                return PyIterationResult.End;
             }
 
-            value = line;
-            return true;
+            return PyIterationResult.Yield(line);
         }
 
         public void Close(LythonSourceSpan? span)

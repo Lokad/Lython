@@ -33,7 +33,9 @@ public sealed class XmlIterparseOwnershipTests
             try
             {
                 var iterator = Open(context, true);
-                Assert.True(iterator.TryMoveNext(out var pair));
+                var nextPair = iterator.TryMoveNext();
+                Assert.True(nextPair.HasValue);
+                var pair = nextPair.Value;
                 var root = Assert.IsType<LythonRuntime.ElementTreeModule.Element>(Assert.IsType<PyTuple>(pair).GetIndex(1));
                 var attributes = root.Attributes;
                 var key = PyString.FromString("a");
@@ -47,7 +49,7 @@ public sealed class XmlIterparseOwnershipTests
                 Assert.Equal("kept", text.AsString());
                 Assert.Same(attributes, root.Attributes);
                 Assert.Equal(1, host.ClosedFileCount);
-                Assert.False(iterator.TryMoveNext(out _));
+                Assert.False(iterator.TryMoveNext().HasValue);
                 var closed = budget.ReservedBytes;
                 Close(iterator, context);
                 Assert.Equal(closed, budget.ReservedBytes);
@@ -70,7 +72,7 @@ public sealed class XmlIterparseOwnershipTests
             {
                 var iterator = Open(context);
                 hook.RefuseGrowth = _ => true;
-                var failure = Assert.Throws<LythonRuntimeException>(() => iterator.TryMoveNext(out _));
+                var failure = Assert.Throws<LythonRuntimeException>(() => iterator.TryMoveNext().HasValue);
                 Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
                 Assert.Equal(0, host.RangedReadCount);
                 Assert.Equal(1, host.ClosedFileCount);
@@ -95,7 +97,7 @@ public sealed class XmlIterparseOwnershipTests
                 var iterator = Open(context);
                 var shell = context.MemoryGovernor.CurrentCommittedBytes;
                 Assert.True(shell > before);
-                var error = Assert.Throws<LythonRuntimeException>(() => iterator.TryMoveNext(out _));
+                var error = Assert.Throws<LythonRuntimeException>(() => iterator.TryMoveNext().HasValue);
                 Assert.Equal(PythonExceptionIdentity.Module("xml.etree.ElementTree", "ParseError"), error.Identity);
                 Assert.Equal(shell, context.MemoryGovernor.CurrentCommittedBytes);
                 Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);

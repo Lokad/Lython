@@ -140,7 +140,7 @@ public sealed class SpreadsheetAdmissionTests
             {
                 var error = Assert.Throws<LythonRuntimeException>(() =>
                 {
-                    if (iterator is not null) { iterator.TryMoveNext(out _); return; }
+                    if (iterator is not null) { iterator.TryMoveNext(); return; }
                     _ = operation == "move_range"
                         ? callable.Invoke([CallArgumentValue.Positional(PyString.FromString("A1:A32")), CallArgumentValue.Keyword("rows", BigInteger.One)], Span, context)
                         : callable.Invoke([CallArgumentValue.Positional(BigInteger.One)], Span, context);

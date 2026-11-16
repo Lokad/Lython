@@ -273,7 +273,7 @@ internal static class PyTyping
         while (true)
         {
             var next = asynchronous ? await cursor.TryMoveNextAsync().ConfigureAwait(false)
-                : cursor.TryMoveNext(out var item) ? PyIterationResult.Yield(item) : PyIterationResult.End;
+                : (cursor.TryMoveNext() is { HasValue: true, Value: var item }) ? PyIterationResult.Yield(item) : PyIterationResult.End;
             if (!next.HasValue) yield break;
             using var pair = asynchronous
                 ? await PyIteration.MaterializeLeasedAsync(next.Value, span, context, 3).ConfigureAwait(false)

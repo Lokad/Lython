@@ -413,6 +413,13 @@ against independent Python results under both APIs. Class-created generators als
 exercise genuinely pending host work and cancellation; construction refusal keeps
 the outer resource funded until its asynchronous disposal completes.
 
+[Iterator scalar identity](Lokad.Lython.PublicApi.Tests/IteratorScalarIdentityTests.cs)
+checks held integers, tuple aliases, callbacks retaining native-reduction inputs,
+reentrant generator advancement, guest `None` and exact overflow promotion against
+independent Python results through both APIs. Cleanup returns the shared allowance
+to its compiled baseline and then to zero. Existing iterator/generator checks
+retain genuine suspension, cancellation, terminal refusal and awaited cleanup.
+
 [Lambda execution](Lokad.Lython.PublicApi.Tests/LambdaExecutionTests.cs) checks
 ordinary and class callables, live/deleted captures, class cells, lazy type metadata
 and bound/default expressions against independent Python results. Both APIs return

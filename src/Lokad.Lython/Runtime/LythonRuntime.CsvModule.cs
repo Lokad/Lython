@@ -409,7 +409,9 @@ internal sealed partial class LythonRuntime
                 bool moved;
                 try
                 {
-                    moved = _cursor!.TryMoveNext(out current!);
+                    var next = _cursor!.TryMoveNext();
+                    moved = next.HasValue;
+                    current = moved ? next.Value : PyNone.Instance;
                 }
                 catch (InvalidOperationException)
                 {

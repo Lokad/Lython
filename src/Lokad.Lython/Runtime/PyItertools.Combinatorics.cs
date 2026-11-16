@@ -79,21 +79,19 @@ internal sealed class PyProductIterator : PyIteratorBase
         }
     }
 
-    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
+    public override PyIterationResult TryMoveNext()
     {
         _context.CheckExecution(_allocationSpan);
         if (_done)
         {
-            value = PyNone.Instance;
-            return false;
+            return PyIterationResult.End;
         }
 
         if (!_started)
         {
             var first = CurrentTuple();
             _started = true;
-            value = first;
-            return true;
+            return PyIterationResult.Yield(first);
         }
 
         for (var i = _indices.Length - 1; i >= 0; i--)
@@ -108,14 +106,12 @@ internal sealed class PyProductIterator : PyIteratorBase
                     _indices[j] = 0;
                 }
 
-                value = CurrentTuple();
-                return true;
+                return PyIterationResult.Yield(CurrentTuple());
             }
         }
 
         _done = true;
-        value = PyNone.Instance;
-        return false;
+        return PyIterationResult.End;
     }
 
     public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<itertools.product object>");
@@ -185,14 +181,13 @@ internal sealed class PyZipLongestIterator : PyIteratorBase
         }
     }
 
-    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
+    public override PyIterationResult TryMoveNext()
     {
         _context.CheckExecution(_allocationSpan);
         if (_done || _remaining == 0)
         {
             _done = true;
-            value = PyNone.Instance;
-            return false;
+            return PyIterationResult.End;
         }
 
         using var storage = PyCombinatoricTuple.Reserve(_iterators.Length, _memoryGovernor, _allocationSpan);
@@ -207,7 +202,7 @@ internal sealed class PyZipLongestIterator : PyIteratorBase
                 continue;
             }
 
-            if (_iterators[i].TryMoveNext(out var current))
+            if ((_iterators[i].TryMoveNext() is { HasValue: true, Value: var current }))
             {
                 items[i] = LythonRuntime.RuntimeValue(current);
                 anyAdvanced = true;
@@ -223,15 +218,13 @@ internal sealed class PyZipLongestIterator : PyIteratorBase
         if (!anyAdvanced)
         {
             _done = true;
-            value = PyNone.Instance;
-            return false;
+            return PyIterationResult.End;
         }
 
         // The row array is built fresh above and never escapes except into
         // the tuple, so the tuple takes ownership instead of copying it.
         var produced = PyCombinatoricTuple.Publish(items, _memoryGovernor, _allocationSpan, storage);
-        value = produced;
-        return true;
+        return PyIterationResult.Yield(produced);
     }
 
     public override async ValueTask<PyIterationResult> TryMoveNextAsync()
@@ -301,19 +294,17 @@ internal sealed class PyCountIterator : PyIteratorBase
         _span = span;
     }
 
-    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
+    public override PyIterationResult TryMoveNext()
     {
         _context.CheckExecution(_span);
         if (!_started)
         {
             _started = true;
-            value = _current;
-            return true;
+            return PyIterationResult.Yield(_current);
         }
 
         _current = LythonRuntime.RuntimeValue(LythonRuntime.EvaluateBinaryOperator(Lokad.Lython.Frontend.BinaryOperatorSyntax.Add, _current, _step, _context, _span));
-        value = _current;
-        return true;
+        return PyIterationResult.Yield(_current);
     }
 
     public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<itertools.count object>");
@@ -334,21 +325,19 @@ internal sealed class PyRepeatIterator : PyIteratorBase
     // repeats report no hint so callers fall back to their default.
     public long? RemainingHint => _remaining;
 
-    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
+    public override PyIterationResult TryMoveNext()
     {
         if (_remaining is { } remaining)
         {
             if (remaining <= 0)
             {
-                value = PyNone.Instance;
-                return false;
+                return PyIterationResult.End;
             }
 
             _remaining = remaining - 1;
         }
 
-        value = _item;
-        return true;
+        return PyIterationResult.Yield(_item);
     }
 
     public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<itertools.repeat object>");
@@ -374,19 +363,20 @@ internal sealed class PyCycleIterator : PyIteratorBase
         _span = span;
     }
 
-    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
+    public override PyIterationResult TryMoveNext()
     {
+        object? value;
         _context.CheckExecution(_span);
         if (!_sourceExhausted)
         {
-            if (_source.TryMoveNext(out var current))
+            if ((_source.TryMoveNext() is { HasValue: true, Value: var current }))
             {
                 value = LythonRuntime.RuntimeValue(current);
                 _memoryGovernor.Reserve(CachedItemBytes, _span);
                 _memoryGovernor.Commit(CachedItemBytes);
                 _saved.Add(value);
                 _context.CheckExecution(_span);
-                return true;
+                return PyIterationResult.Yield(value!);
             }
 
             _sourceExhausted = true;
@@ -394,13 +384,12 @@ internal sealed class PyCycleIterator : PyIteratorBase
 
         if (_saved.Count == 0)
         {
-            value = PyNone.Instance;
-            return false;
+            return PyIterationResult.End;
         }
 
         value = _saved[_index];
         _index = (_index + 1) % _saved.Count;
-        return true;
+        return PyIterationResult.Yield(value!);
     }
 
     public override async ValueTask<PyIterationResult> TryMoveNextAsync()
@@ -463,21 +452,19 @@ internal sealed class PyCombinationsIterator : PyIteratorBase
         _done = r > pool.Count;
     }
 
-    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
+    public override PyIterationResult TryMoveNext()
     {
         _context.CheckExecution(_span);
         if (_done)
         {
-            value = PyNone.Instance;
-            return false;
+            return PyIterationResult.End;
         }
 
         if (!_started)
         {
             var first = PyCombinatoricTuple.Create(_pool, _indices, _indices.Length, _memoryGovernor, _span, _context);
             _started = true;
-            value = first;
-            return true;
+            return PyIterationResult.Yield(first);
         }
 
         var r = _indices.Length;
@@ -492,8 +479,7 @@ internal sealed class PyCombinationsIterator : PyIteratorBase
         if (i < 0)
         {
             _done = true;
-            value = PyNone.Instance;
-            return false;
+            return PyIterationResult.End;
         }
 
         _indices[i]++;
@@ -503,8 +489,7 @@ internal sealed class PyCombinationsIterator : PyIteratorBase
             _indices[j] = _indices[j - 1] + 1;
         }
 
-        value = PyCombinatoricTuple.Create(_pool, _indices, _indices.Length, _memoryGovernor, _span, _context);
-        return true;
+        return PyIterationResult.Yield(PyCombinatoricTuple.Create(_pool, _indices, _indices.Length, _memoryGovernor, _span, _context));
     }
 
     public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<itertools.combinations object>");
@@ -533,21 +518,19 @@ internal sealed class PyCombinationsWithReplacementIterator : PyIteratorBase
         _done = pool.Count == 0 && r > 0;
     }
 
-    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
+    public override PyIterationResult TryMoveNext()
     {
         _context.CheckExecution(_span);
         if (_done)
         {
-            value = PyNone.Instance;
-            return false;
+            return PyIterationResult.End;
         }
 
         if (!_started)
         {
             var first = PyCombinatoricTuple.Create(_pool, _indices, _indices.Length, _memoryGovernor, _span, _context);
             _started = true;
-            value = first;
-            return true;
+            return PyIterationResult.Yield(first);
         }
 
         var n = _pool.Count;
@@ -561,8 +544,7 @@ internal sealed class PyCombinationsWithReplacementIterator : PyIteratorBase
         if (i < 0)
         {
             _done = true;
-            value = PyNone.Instance;
-            return false;
+            return PyIterationResult.End;
         }
 
         var next = _indices[i] + 1;
@@ -572,8 +554,7 @@ internal sealed class PyCombinationsWithReplacementIterator : PyIteratorBase
             _indices[j] = next;
         }
 
-        value = PyCombinatoricTuple.Create(_pool, _indices, _indices.Length, _memoryGovernor, _span, _context);
-        return true;
+        return PyIterationResult.Yield(PyCombinatoricTuple.Create(_pool, _indices, _indices.Length, _memoryGovernor, _span, _context));
     }
 
     public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<itertools.combinations_with_replacement object>");
@@ -619,21 +600,19 @@ internal sealed class PyPermutationsIterator : PyIteratorBase
         _done = r > pool.Count;
     }
 
-    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
+    public override PyIterationResult TryMoveNext()
     {
         _context.CheckExecution(_span);
         if (_done)
         {
-            value = PyNone.Instance;
-            return false;
+            return PyIterationResult.End;
         }
 
         if (!_started)
         {
             var first = PyCombinatoricTuple.Create(_pool, _indices, _r, _memoryGovernor, _span, _context);
             _started = true;
-            value = first;
-            return true;
+            return PyIterationResult.Yield(first);
         }
 
         for (var i = _r - 1; i >= 0; i--)
@@ -649,13 +628,11 @@ internal sealed class PyPermutationsIterator : PyIteratorBase
 
             var j = _cycles[i];
             (_indices[i], _indices[^j]) = (_indices[^j], _indices[i]);
-            value = PyCombinatoricTuple.Create(_pool, _indices, _r, _memoryGovernor, _span, _context);
-            return true;
+            return PyIterationResult.Yield(PyCombinatoricTuple.Create(_pool, _indices, _r, _memoryGovernor, _span, _context));
         }
 
         _done = true;
-        value = PyNone.Instance;
-        return false;
+        return PyIterationResult.End;
 
         void RotateLeft(int[] values, int start)
         {

@@ -171,16 +171,17 @@ public sealed class ExecutableValueTransferTests
     private sealed class OneValueIterator : IPyIteratorValue
     {
         private bool _advanced;
-        public bool TryMoveNext(out object value)
+        public PyIterationResult TryMoveNext()
         {
+            object? value;
             value = new BigInteger(7);
-            if (_advanced) return false;
+            if (_advanced) return PyIterationResult.End;
             _advanced = true;
-            return true;
+            return PyIterationResult.Yield(value!);
         }
         public IEnumerable<object> Iterate()
         {
-            while (TryMoveNext(out var value)) yield return value;
+            while ((TryMoveNext() is { HasValue: true, Value: var value })) yield return value;
         }
     }
 }

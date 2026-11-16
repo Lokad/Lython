@@ -55,7 +55,7 @@ internal sealed partial class LythonRuntime
         {
             while (await cursor.TryMoveNextAsync().ConfigureAwait(false) is { HasValue: true } item) result.Add(item.Value);
         }
-        else while (cursor.TryMoveNext(out var item)) result.Add(item);
+        else while ((cursor.TryMoveNext() is { HasValue: true, Value: var item })) result.Add(item);
         return result;
     }
 

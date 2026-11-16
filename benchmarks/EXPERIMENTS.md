@@ -8811,3 +8811,14 @@ R445: [one executable generator-expression engine](results/2026-11-16-generator-
 R446: [remaining generator/aggregate value transport](results/2026-11-16-remaining-value-transport/README.md). Source boundary identified; whole-script relevance and identity/copy tradeoffs remain unresolved. No prototype or new speedup claim; existing async-worker and immutable-metadata reuse confirmed.
 
 R447: [managed block API feasibility](results/2026-11-16-managed-block-feasibility/README.md). Borrowed span/ref-state APIs work without heap frames; original startup and corrected invocation/order controls retained. No Lython speedup or new production backend; one-shot merit and integration obligations remain unresolved.
+
+
+## R448 — compact native iteration protocol (2026-11-16)
+
+Retain one sync/async result using the existing executable slot; delete the
+bool/out-object protocol and range-only integer pull. Complete JSON numeric-report
+allocation falls about16%; both collections favor numeric warm elapsed/CPU, with
+moving process controls limiting magnitude. Repeated call-loop elapsed/CPU is
+about2–3%adverse; normalization inconclusive. Accepted debt, not universal speedup.
+[Exact sources, goldens, controls, failures and retention](results/2026-11-16-compact-iteration-result/README.md).
+Full platform/stress/package delivery pending. This does not close the broader objective.

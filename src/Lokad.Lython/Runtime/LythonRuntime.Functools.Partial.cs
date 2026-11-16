@@ -450,7 +450,7 @@ internal sealed partial class LythonRuntime
             {
                 context.CheckExecution(span);
                 var next = asynchronous ? await cursor.TryMoveNextAsync().ConfigureAwait(false)
-                    : cursor.TryMoveNext(out var item) ? PyIterationResult.Yield(item) : PyIterationResult.End;
+                    : (cursor.TryMoveNext() is { HasValue: true, Value: var item }) ? PyIterationResult.Yield(item) : PyIterationResult.End;
                 if (!next.HasValue) break;
                 if (next.Value is not PyString text) throw RuntimeErrors.Type("attribute name must be string", span);
                 var nameBytes = checked(64L + 2L * text.GetUtf16CodeUnitCount() + text.ByteLength);

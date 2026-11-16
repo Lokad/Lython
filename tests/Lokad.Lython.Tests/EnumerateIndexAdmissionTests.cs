@@ -45,7 +45,7 @@ public sealed class EnumerateIndexAdmissionTests(ITestOutputHelper output)
                             Assert.True(pending.IsCompleted);
                             await pending;
                         }
-                        else iterator.TryMoveNext(out _);
+                        else iterator.TryMoveNext();
                     }
                     catch (LythonRuntimeException error) { failure = error; }
                     var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
@@ -102,7 +102,7 @@ public sealed class EnumerateIndexAdmissionTests(ITestOutputHelper output)
                 Assert.Equal(start + 1, Assert.IsType<PyTuple>(second.Value)[0]);
             }
             ValueTask<PyIterationResult> Pull() => asynchronous ? iterator.TryMoveNextAsync()
-                : ValueTask.FromResult(iterator.TryMoveNext(out var value) ? PyIterationResult.Yield(value) : PyIterationResult.End);
+                : ValueTask.FromResult(iterator.TryMoveNext());
         }
         Assert.Equal(0, budget.ReservedBytes);
     }
@@ -110,13 +110,14 @@ public sealed class EnumerateIndexAdmissionTests(ITestOutputHelper output)
     private sealed class FiniteItems(int count = 1) : PyIteratorBase
     {
         public int Pulls { get; private set; }
-        public override bool TryMoveNext(out object value)
+        public override PyIterationResult TryMoveNext()
         {
+            object? value;
             value = PyNone.Instance;
-            return ++Pulls <= count;
+            return (++Pulls <= count) ? PyIterationResult.Yield(value!) : PyIterationResult.End;
         }
         public override ValueTask<PyIterationResult> TryMoveNextAsync()
-            => ValueTask.FromResult(TryMoveNext(out var value) ? PyIterationResult.Yield(value) : PyIterationResult.End);
+            => ValueTask.FromResult(TryMoveNext());
         public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<one item>");
     }
 }

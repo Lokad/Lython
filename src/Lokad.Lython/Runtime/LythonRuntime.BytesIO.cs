@@ -128,7 +128,7 @@ internal sealed partial class LythonRuntime
                 case "readable": case "writable": case "seekable": EnsureOpen(span); return true;
                 case "__enter__": EnsureOpen(span); return this;
                 case "__next__":
-                    if (TryMoveNext(out var next)) return next;
+                    if ((TryMoveNext() is { HasValue: true, Value: var next })) return next;
                     throw new LythonRuntimeException("StopIteration", string.Empty, span);
                 default: throw new InvalidOperationException("Unknown BytesIO member");
             }

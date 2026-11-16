@@ -54,7 +54,7 @@ public sealed class CombinatoricTupleAdmissionTests
                     var before = GC.GetAllocatedBytesForCurrentThread();
                     var error = Assert.Throws<LythonRuntimeException>(() =>
                     {
-                        if (!asynchronous) iterator.TryMoveNext(out _);
+                        if (!asynchronous) iterator.TryMoveNext();
                         else
                         {
                             var pending = iterator.TryMoveNextAsync();
@@ -87,7 +87,7 @@ public sealed class CombinatoricTupleAdmissionTests
             { MemoryBudget = owner, CancellationToken = cancellation.Token });
             var source = new CancelOnRead(cancellation);
             var iterator = new PyCombinationsIterator(source, source.Count, context.MemoryGovernor, Span, context);
-            var error = Assert.Throws<LythonRuntimeException>(() => iterator.TryMoveNext(out _));
+            var error = Assert.Throws<LythonRuntimeException>(() => iterator.TryMoveNext().HasValue);
             Assert.Equal("execution canceled", error.Message);
             Assert.InRange(source.Reads, 1, source.Count - 1);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);

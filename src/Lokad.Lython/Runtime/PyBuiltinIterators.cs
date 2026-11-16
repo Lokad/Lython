@@ -1,4 +1,4 @@
-﻿using Lokad.Lython.Runtime.Text;
+using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
@@ -29,26 +29,20 @@ internal sealed class PyEnumerableIterator : PyIteratorBase
         // Construction sites own the shell charge; this wrapper does not charge it twice.
     }
 
-    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
+    public override PyIterationResult TryMoveNext()
     {
-        if (_source.TryMoveNext(out value))
-        {
-            value = LythonRuntime.RuntimeValue(value);
-            if (_position < int.MaxValue) _position++;
-            return true;
-        }
-
-        _exhausted = true;
-        value = PyNone.Instance;
-        return false;
+        var next = _source.TryMoveNext();
+        if (!next.HasValue) { _exhausted = true; return next; }
+        if (_position < int.MaxValue) _position++;
+        return next;
     }
 
     public override async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
-        var (hasValue, value) = await _source.TryMoveNextAsync().ConfigureAwait(false);
-        if (!hasValue) { _exhausted = true; return PyIterationResult.End; }
+        var next = await _source.TryMoveNextAsync().ConfigureAwait(false);
+        if (!next.HasValue) { _exhausted = true; return next; }
         if (_position < int.MaxValue) _position++;
-        return PyIterationResult.Yield(LythonRuntime.RuntimeValue(value));
+        return next;
     }
 
     public override PyString RenderPython(PyRenderingContext context)
@@ -73,18 +67,17 @@ internal sealed class PyCallableSentinelIterator : PyIteratorBase
         ChargeIteratorValue(context.MemoryGovernor, span);
     }
 
-    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
+    public override PyIterationResult TryMoveNext()
     {
         _context.CheckExecution(_span);
-        value = PyNone.Instance;
+
         var callable = _callable;
-        if (callable is null) return false;
+        if (callable is null) return PyIterationResult.End;
         object result;
         try { result = LythonRuntime.RuntimeValue(callable.Invoke([], _span, _context)); }
-        catch (LythonRuntimeException ex) when (ex.ExceptionType == "StopIteration") { _callable = null; _sentinel = null; return false; }
-        if (_sentinel is null || LythonRuntime.ElementEquals(_sentinel, result, _context, _span)) { _callable = null; _sentinel = null; return false; }
-        value = result;
-        return true;
+        catch (LythonRuntimeException ex) when (ex.ExceptionType == "StopIteration") { _callable = null; _sentinel = null; return PyIterationResult.End; }
+        if (_sentinel is null || LythonRuntime.ElementEquals(_sentinel, result, _context, _span)) { _callable = null; _sentinel = null; return PyIterationResult.End; }
+        return PyIterationResult.Yield(result);
     }
 
     public override async ValueTask<PyIterationResult> TryMoveNextAsync()
@@ -116,17 +109,17 @@ internal sealed class PyReversedIterator : PyIteratorBase
         _getIndex = getIndex;
     }
 
-    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
+    public override PyIterationResult TryMoveNext()
     {
+        object? value;
         if (_nextIndex < 0)
         {
-            value = PyNone.Instance;
-            return false;
+            return PyIterationResult.End;
         }
 
         value = LythonRuntime.RuntimeValue(_getIndex(_nextIndex));
         _nextIndex--;
-        return true;
+        return PyIterationResult.Yield(value!);
     }
 
     public override PyString RenderPython(PyRenderingContext context)
@@ -182,7 +175,7 @@ internal sealed class PyMapIterator : PyIteratorBase
         }
     }
 
-    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
+    public override PyIterationResult TryMoveNext()
     {
         using var scratch = _iterators.Length > 3
             ? _context.MemoryGovernor.ReserveTemporary(32L + 24L * _iterators.Length, _span) : null;
@@ -190,10 +183,9 @@ internal sealed class PyMapIterator : PyIteratorBase
         var arguments = _iterators.Length > 3 ? new CallArgumentValue[_iterators.Length] : null;
         for (var i = 0; i < _iterators.Length; i++)
         {
-            if (!_iterators[i].TryMoveNext(out var current))
+            if (!(_iterators[i].TryMoveNext() is { HasValue: true, Value: var current }))
             {
-                value = PyNone.Instance;
-                return false;
+                return PyIterationResult.End;
             }
 
             var argument = CallArgumentValue.Positional(LythonRuntime.RuntimeValue(current));
@@ -201,10 +193,9 @@ internal sealed class PyMapIterator : PyIteratorBase
             else arguments[i] = argument;
         }
 
-        value = LythonRuntime.RuntimeValue(arguments is null
+        return PyIterationResult.Yield(LythonRuntime.RuntimeValue(arguments is null
             ? CallableInvocation.Invoke(_function, inline[.._iterators.Length], _span, _context)
-            : (_function as LythonRuntime.ICallable ?? throw LythonRuntime.NotCallableError(_function, _context, _span)).Invoke(arguments, _span, _context));
-        return true;
+            : (_function as LythonRuntime.ICallable ?? throw LythonRuntime.NotCallableError(_function, _context, _span)).Invoke(arguments, _span, _context)));
     }
 
     public override async ValueTask<PyIterationResult> TryMoveNextAsync()
@@ -259,9 +250,9 @@ internal sealed class PyFilterIterator : PyIteratorBase
         _span = span;
     }
 
-    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
+    public override PyIterationResult TryMoveNext()
     {
-        while (_source.TryMoveNext(out var current))
+        while ((_source.TryMoveNext() is { HasValue: true, Value: var current }))
         {
             var candidate = LythonRuntime.RuntimeValue(current);
             var keep = _function is null
@@ -270,13 +261,11 @@ internal sealed class PyFilterIterator : PyIteratorBase
 
             if (keep)
             {
-                value = candidate;
-                return true;
+                return PyIterationResult.Yield(candidate);
             }
         }
 
-        value = PyNone.Instance;
-        return false;
+        return PyIterationResult.End;
     }
 
     public override async ValueTask<PyIterationResult> TryMoveNextAsync()

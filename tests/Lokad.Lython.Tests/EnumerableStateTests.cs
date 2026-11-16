@@ -109,11 +109,11 @@ public sealed class EnumerableStateTests
         var source = new OwnedSource(PyNone.Instance);
         var cursor = PyIteration.Cursor.Create(source, Span, Context());
         if (asynchronous) Assert.True((await cursor.TryMoveNextAsync()).HasValue);
-        else Assert.True(cursor.TryMoveNext(out _));
+        else Assert.True(cursor.TryMoveNext().HasValue);
         Assert.Equal(1, source.Acquired);
 
         await cursor.DisposeAsync();
-        Assert.False(cursor.TryMoveNext(out _));
+        Assert.False(cursor.TryMoveNext().HasValue);
         Assert.False((await cursor.TryMoveNextAsync()).HasValue);
         await cursor.DisposeAsync();
         Assert.Equal(1, source.Acquired);

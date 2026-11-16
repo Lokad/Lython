@@ -74,7 +74,7 @@ internal sealed partial class LythonRuntime
             _injectedException = null;
             _delegation = null;
             HasYield = false;
-            YieldValue = PyNone.Instance;
+            YieldValue = default;
             _execution.ReturnValue = default;
             _savedActiveExceptions = null;
             _entryActiveException = null;
@@ -96,8 +96,15 @@ internal sealed partial class LythonRuntime
         private object _sentValue = PyNone.Instance;
         private LythonRuntimeException? _injectedException;
         private GeneratorDelegation? _delegation;
+        internal ExecutableSlot TakeYieldValue()
+        {
+            var value = YieldValue;
+            YieldValue = default;
+            return value;
+        }
+
         internal bool HasYield { get; private set; }
-        internal object YieldValue { get; private set; } = PyNone.Instance;
+        internal ExecutableSlot YieldValue { get; private set; }
         internal LythonSourceSpan? CurrentInstructionSpan
             => _execution.InstructionIndex < _execution.Code.Instructions.Length
                 ? _execution.Code.Instructions[_execution.InstructionIndex].Span : null;
@@ -481,7 +488,8 @@ internal sealed partial class LythonRuntime
         private bool ExecuteForNext(in ExecutableInstruction instruction)
         {
             var iterator = (PyIteration.Cursor)_execution.Stack[instruction.InputStart];
-            if (!iterator.TryMoveNext(out var value))
+            var next = iterator.TryMoveNext();
+            if (!next.HasValue)
             {
                 _ = _execution.Stack.TakeValue(instruction.InputStart, instruction.InputStart);
                 iterator.Dispose();
@@ -489,7 +497,7 @@ internal sealed partial class LythonRuntime
                 return true;
             }
 
-            PublishInstructionResult(instruction, value);
+            PublishInstructionResult(instruction, next.TakeSlotValue());
             return false;
         }
 

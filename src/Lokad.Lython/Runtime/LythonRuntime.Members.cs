@@ -3329,7 +3329,7 @@ internal sealed partial class LythonRuntime
                 "__iter__" => BoundCallable.CreateNoArguments(iterator, "iterator.__iter__", static (receiver, _, _) => receiver),
                 "__next__" => BoundCallable.CreateNoArguments(iterator, "iterator.__next__", static (receiver, span, context) =>
                 {
-                    if (receiver.TryMoveNext(out var item))
+                    if ((receiver.TryMoveNext() is { HasValue: true, Value: var item }))
                     {
                         return LythonRuntime.RuntimeValue(item);
                     }
@@ -3339,7 +3339,7 @@ internal sealed partial class LythonRuntime
                 {
                     var advanced = receiver is IPyAsyncIteratorValue asyncIterator
                         ? await asyncIterator.TryMoveNextAsync().ConfigureAwait(false)
-                        : receiver.TryMoveNext(out var item) ? PyIterationResult.Yield(item) : PyIterationResult.End;
+                        : (receiver.TryMoveNext() is { HasValue: true, Value: var item }) ? PyIterationResult.Yield(item) : PyIterationResult.End;
                     if (advanced.HasValue)
                     {
                         return LythonRuntime.RuntimeValue(advanced.Value);

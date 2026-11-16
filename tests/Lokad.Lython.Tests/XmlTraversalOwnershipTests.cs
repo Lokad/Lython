@@ -37,18 +37,22 @@ public sealed class XmlTraversalOwnershipTests
                 {
                     var iterator = Assert.IsAssignableFrom<IPyIteratorValue>(Method(root, "iter").Invoke([], Span, context));
                     var retained = budget.ReservedBytes;
-                    Assert.True(iterator.TryMoveNext(out var first));
+                    var nextFirst = iterator.TryMoveNext();
+                    Assert.True(nextFirst.HasValue);
+                    var first = nextFirst.Value;
                     Assert.Same(root, first);
                     foreach (var child in root.Children)
                     {
-                        Assert.True(iterator.TryMoveNext(out var actual));
+                        var nextActual = iterator.TryMoveNext();
+                        Assert.True(nextActual.HasValue);
+                        var actual = nextActual.Value;
                         Assert.Same(child, actual);
                         Assert.Equal(retained, budget.ReservedBytes);
                     }
-                    Assert.False(iterator.TryMoveNext(out _));
+                    Assert.False(iterator.TryMoveNext().HasValue);
                     Assert.True(budget.ReservedBytes < retained);
                     var exhausted = budget.ReservedBytes;
-                    Assert.False(iterator.TryMoveNext(out _));
+                    Assert.False(iterator.TryMoveNext().HasValue);
                     Assert.Equal(exhausted, budget.ReservedBytes);
                     Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
                     Assert.Equal("kept", Assert.IsType<PyString>(((LythonRuntime.ElementTreeModule.Element)root.GetIndex(0)).Text).AsString());

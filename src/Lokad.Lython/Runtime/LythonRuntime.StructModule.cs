@@ -377,13 +377,14 @@ internal sealed partial class LythonRuntime
                 }
                 return base.TryGetMember(name, out value);
             }
-            public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
+            public override PyIterationResult TryMoveNext()
             {
-                if (_offset == _bytes.Length) { value = null; return false; }
+                object? value;
+                if (_offset == _bytes.Length) { return PyIterationResult.End; }
                 _context.CheckExecution(_span);
                 value = UnpackRecord(_layout, _bytes.Memory.Slice(_offset, (int)_layout.Size), _context, _span);
                 _offset += (int)_layout.Size;
-                return true;
+                return PyIterationResult.Yield(value!);
             }
             public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<_struct.unpack_iterator object>");
         }

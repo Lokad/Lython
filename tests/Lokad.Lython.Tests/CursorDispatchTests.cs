@@ -235,7 +235,7 @@ public sealed class CursorDispatchTests
 
     private static ValueTask<PyIterationResult> Pull(PyIteration.Cursor cursor, bool asynchronous)
         => asynchronous ? cursor.TryMoveNextAsync()
-            : ValueTask.FromResult(cursor.TryMoveNext(out var value) ? PyIterationResult.Yield(value) : PyIterationResult.End);
+            : ValueTask.FromResult(cursor.TryMoveNext());
 
     private class SyncIteratorAndAsyncIterable : IPyIteratorValue, IPyAsyncIterableValue
     {
@@ -243,16 +243,15 @@ public sealed class CursorDispatchTests
         internal int AsyncEnumerations;
         internal int AsyncDisposals;
 
-        public bool TryMoveNext([MaybeNullWhen(false)] out object value)
+        public PyIterationResult TryMoveNext()
         {
             SyncMoves++;
-            value = BigInteger.One;
-            return true;
+            return PyIterationResult.Yield(BigInteger.One);
         }
 
         public IEnumerable<object> Iterate()
         {
-            while (TryMoveNext(out var value)) yield return value;
+            while ((TryMoveNext() is { HasValue: true, Value: var value })) yield return value;
         }
 
         public async IAsyncEnumerable<object> IterateAsync()

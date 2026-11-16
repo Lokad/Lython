@@ -1,0 +1,10 @@
+{
+  "retain": true,
+  "qualificationPending": true,
+  "allocationReductionPercent": 15.972,
+  "preciseElapsedMagnitudeUncertain": true,
+  "acceptedCallLoopRegressionPercent": "about 2\u20133%",
+  "normalizationInconclusive": true,
+  "completionMilestone": "Qualify single compact iterator protocol, then assess general cursor/result transport and representative remaining costs; no new range side API.",
+  "publicationHeld": true
+}

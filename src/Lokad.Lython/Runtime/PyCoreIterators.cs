@@ -299,12 +299,11 @@ internal sealed class PyEnumerateIterator : PyIteratorBase
         ChargeIteratorValue(context.MemoryGovernor, span);
     }
 
-    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
+    public override PyIterationResult TryMoveNext()
     {
-        if (!_cursor.TryMoveNext(out var item))
+        if (!(_cursor.TryMoveNext() is { HasValue: true, Value: var item }))
         {
-            value = PyNone.Instance;
-            return false;
+            return PyIterationResult.End;
         }
 
         object indexBox = _index;
@@ -312,8 +311,7 @@ internal sealed class PyEnumerateIterator : PyIteratorBase
         // refused result cannot reuse its index for the following item.
         AdvanceIndex();
         var produced = new PyTuple([indexBox, item], _governor, _span);
-        value = produced;
-        return true;
+        return PyIterationResult.Yield(produced);
     }
 
     public override async ValueTask<PyIterationResult> TryMoveNextAsync()
@@ -396,12 +394,11 @@ internal sealed class PyZipIterator : PyIteratorBase
         _governor.Release(bytes);
     }
 
-    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
+    public override PyIterationResult TryMoveNext()
     {
         if (_finished || _cursors.Length == 0)
         {
-            value = PyNone.Instance;
-            return false;
+            return PyIterationResult.End;
         }
 
         var funding = checked(32L + 80L * _cursors.Length);
@@ -413,7 +410,7 @@ internal sealed class PyZipIterator : PyIteratorBase
 
             for (var i = 0; i < _cursors.Length; i++)
             {
-                if (_cursors[i].TryMoveNext(out var item))
+                if ((_cursors[i].TryMoveNext() is { HasValue: true, Value: var item }))
                 {
                     items[i] = item;
                     continue;
@@ -432,20 +429,18 @@ internal sealed class PyZipIterator : PyIteratorBase
 
                     for (var j = i + 1; j < _cursors.Length; j++)
                     {
-                        if (_cursors[j].TryMoveNext(out _))
+                        if (_cursors[j].TryMoveNext().HasValue)
                         {
                             throw new LythonRuntimeException("ValueError", "zip() argument " + (j + 1) + " is longer than " + StrictOthers(j), _span);
                         }
                     }
                 }
 
-                value = PyNone.Instance;
-                return false;
+                return PyIterationResult.End;
             }
 
             var produced = PyTuple.FromOwnedArray(items, _governor, _span);
-            value = produced;
-            return true;
+            return PyIterationResult.Yield(produced);
         }
         finally
         {

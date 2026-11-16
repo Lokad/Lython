@@ -1,4 +1,4 @@
-﻿using System.Numerics;
+using System.Numerics;
 using System.Text;
 using Lokad.Lython.Runtime.Text;
 
@@ -88,17 +88,15 @@ internal sealed partial class LythonRuntime
 
             public IEnumerable<object> Iterate() => PyIteration.EnumerateIterator(this);
 
-            public bool TryMoveNext([MaybeNullWhen(false)] out object value)
+            public PyIterationResult TryMoveNext()
             {
                 var token = GetToken(_creationSpan);
                 if (EqualAsync(token, _eof, _creationSpan, false).GetAwaiter().GetResult())
                 {
-                    value = PyNone.Instance;
-                    return false;
+                    return PyIterationResult.End;
                 }
 
-                value = token;
-                return true;
+                return PyIterationResult.Yield(token);
             }
 
             public PyString RenderPython(PyRenderingContext context)

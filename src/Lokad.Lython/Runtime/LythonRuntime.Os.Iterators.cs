@@ -24,16 +24,14 @@ internal sealed partial class LythonRuntime
             _entries = entries;
         }
 
-        public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
+        public override PyIterationResult TryMoveNext()
         {
             if (_closed || _index >= _entries.Length)
             {
-                value = PyNone.Instance;
-                return false;
+                return PyIterationResult.End;
             }
 
-            value = _entries[_index++];
-            return true;
+            return PyIterationResult.Yield(_entries[_index++]);
         }
 
         public object Enter() => this;
@@ -251,7 +249,7 @@ internal sealed partial class LythonRuntime
             _frames.Push(new WalkFrame(root));
         }
 
-        public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
+        public override PyIterationResult TryMoveNext()
         {
             while (_frames.Count != 0)
             {
@@ -267,8 +265,7 @@ internal sealed partial class LythonRuntime
                     if (_topdown)
                     {
                         frame.Yielded = true;
-                        value = CreateTuple(frame);
-                        return true;
+                        return PyIterationResult.Yield(CreateTuple(frame));
                     }
                 }
 
@@ -299,8 +296,7 @@ internal sealed partial class LythonRuntime
                 if (!_topdown && !frame.Yielded)
                 {
                     frame.Yielded = true;
-                    value = CreateTuple(frame);
-                    return true;
+                    return PyIterationResult.Yield(CreateTuple(frame));
                 }
 
                 _frames.Pop();
@@ -309,8 +305,7 @@ internal sealed partial class LythonRuntime
                 continue;
             }
 
-            value = PyNone.Instance;
-            return false;
+            return PyIterationResult.End;
         }
 
         public override async ValueTask<PyIterationResult> TryMoveNextAsync()

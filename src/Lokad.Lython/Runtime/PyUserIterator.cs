@@ -87,14 +87,15 @@ internal sealed class PyUserIterator : IPyAsyncIteratorValue
         => PyMemberAccess.TryResolve(value, name, context, span, out var member) && member is LythonRuntime.ICallable
             ? member : throw new PyNotIterableException("native iterator does not provide " + name, span);
 
-    public bool TryMoveNext([MaybeNullWhen(false)] out object value)
+    public PyIterationResult TryMoveNext()
     {
+        object? value;
         if (_iterator is IPyIteratorValue iterator)
         {
-            return iterator.TryMoveNext(out value);
+            return iterator.TryMoveNext();
         }
 
-        return TryAdvanceInstance(_iterator, _context, _span, out value);
+        return (TryAdvanceInstance(_iterator, _context, _span, out value)) ? PyIterationResult.Yield(value!) : PyIterationResult.End;
     }
 
     public async ValueTask<PyIterationResult> TryMoveNextAsync()
@@ -104,9 +105,7 @@ internal sealed class PyUserIterator : IPyAsyncIteratorValue
 
         if (_iterator is IPyIteratorValue iterator)
         {
-            return iterator.TryMoveNext(out var value)
-                ? PyIterationResult.Yield(value)
-                : PyIterationResult.End;
+            return iterator.TryMoveNext();
         }
 
         return await TryAdvanceInstanceAsync(_iterator, _context, _span).ConfigureAwait(false);

@@ -111,12 +111,7 @@ internal sealed partial class LythonRuntime
                 yield return result.Value;
             }
         }
-        public bool TryMoveNext([MaybeNullWhen(false)] out object value)
-        {
-            var result = Advance(PyNone.Instance, null);
-            value = result.HasValue ? result.Value : PyNone.Instance;
-            return result.HasValue;
-        }
+        public PyIterationResult TryMoveNext() => Advance(PyNone.Instance, null);
         public ValueTask<PyIterationResult> TryMoveNextAsync() => AdvanceAsync(PyNone.Instance, null);
 
         private PyIterationResult Advance(object sent, LythonRuntimeException? injected)
@@ -210,7 +205,7 @@ internal sealed partial class LythonRuntime
         private PyIterationResult ReadResult(ExecutionContext frame)
         {
             _suspendedException = frame.State.CurrentException;
-            if (frame.HasYield) return PyIterationResult.Yield(frame.YieldValue);
+            if (frame.HasYield) return PyIterationResult.Yield(frame.TakeYieldValue());
             ReturnValue = frame.HasFrameReturn ? frame.FrameReturnValue : PyNone.Instance;
             return PyIterationResult.End;
         }

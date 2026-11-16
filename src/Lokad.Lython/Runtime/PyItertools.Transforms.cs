@@ -31,7 +31,7 @@ internal sealed class PyAccumulateIterator : PyIteratorBase
         _span = span;
     }
 
-    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
+    public override PyIterationResult TryMoveNext()
     {
         _context.CheckExecution(_span);
         if (!_started)
@@ -40,33 +40,28 @@ internal sealed class PyAccumulateIterator : PyIteratorBase
             if (_hasInitial)
             {
                 _total = LythonRuntime.RuntimeValue(_initial);
-                value = _total;
-                return true;
+                return PyIterationResult.Yield(_total);
             }
 
-            if (!_source.TryMoveNext(out var first))
+            if (!(_source.TryMoveNext() is { HasValue: true, Value: var first }))
             {
-                value = PyNone.Instance;
-                return false;
+                return PyIterationResult.End;
             }
 
             _total = LythonRuntime.RuntimeValue(first);
-            value = _total;
-            return true;
+            return PyIterationResult.Yield(_total);
         }
 
-        if (!_source.TryMoveNext(out var current))
+        if (!(_source.TryMoveNext() is { HasValue: true, Value: var current }))
         {
-            value = PyNone.Instance;
-            return false;
+            return PyIterationResult.End;
         }
 
         var next = LythonRuntime.RuntimeValue(current);
         _total = _function is null
             ? LythonRuntime.RuntimeValue(LythonRuntime.EvaluateBinaryOperator(BinaryOperatorSyntax.Add, _total, next, _context, _span))
             : LythonRuntime.RuntimeValue(CallableInvocation.InvokeBinary(_function, _total, next, _span, _context));
-        value = _total;
-        return true;
+        return PyIterationResult.Yield(_total);
     }
 
     public override async ValueTask<PyIterationResult> TryMoveNextAsync()
@@ -121,19 +116,17 @@ internal sealed class PyCompressIterator : PyIteratorBase
         _context = LythonRuntime.GetGlobalContext(context); _span = span;
     }
 
-    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
+    public override PyIterationResult TryMoveNext()
     {
-        while (_data.TryMoveNext(out var data) && _selectors.TryMoveNext(out var selector))
+        while ((_data.TryMoveNext() is { HasValue: true, Value: var data }) && (_selectors.TryMoveNext() is { HasValue: true, Value: var selector }))
         {
             if (LythonRuntime.IsTruthy(selector, _context, _span))
             {
-                value = LythonRuntime.RuntimeValue(data);
-                return true;
+                return PyIterationResult.Yield(LythonRuntime.RuntimeValue(data));
             }
         }
 
-        value = PyNone.Instance;
-        return false;
+        return PyIterationResult.End;
     }
 
     public override async ValueTask<PyIterationResult> TryMoveNextAsync()
@@ -193,27 +186,26 @@ internal sealed class PyPredicateIterator : PyIteratorBase
         _span = span;
     }
 
-    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
+    public override PyIterationResult TryMoveNext()
     {
+        object? value;
         _context.CheckExecution(_span);
         if (_done)
         {
-            value = PyNone.Instance;
-            return false;
+            return PyIterationResult.End;
         }
 
-        while (_source.TryMoveNext(out var current))
+        while ((_source.TryMoveNext() is { HasValue: true, Value: var current }))
         {
             var item = LythonRuntime.RuntimeValue(current);
-            if (_mode == PyPredicateIteratorMode.DropWhile && !_dropping) { value = item; return true; }
+            if (_mode == PyPredicateIteratorMode.DropWhile && !_dropping) { return PyIterationResult.Yield(item); }
             var matched = PredicateMatches(item);
             switch (_mode)
             {
                 case PyPredicateIteratorMode.FilterFalse:
                     if (!matched)
                     {
-                        value = item;
-                        return true;
+                        return PyIterationResult.Yield(item);
                     }
 
                     break;
@@ -222,8 +214,7 @@ internal sealed class PyPredicateIterator : PyIteratorBase
                     if (!matched)
                     {
                         _dropping = false;
-                        value = item;
-                        return true;
+                        return PyIterationResult.Yield(item);
                     }
 
                     break;
@@ -232,17 +223,15 @@ internal sealed class PyPredicateIterator : PyIteratorBase
                     if (!matched)
                     {
                         _done = true;
-                        value = PyNone.Instance;
-                        return false;
+                        return PyIterationResult.End;
                     }
 
                     value = item;
-                    return true;
+                    return PyIterationResult.Yield(value!);
             }
         }
 
-        value = PyNone.Instance;
-        return false;
+        return PyIterationResult.End;
     }
 
     public override async ValueTask<PyIterationResult> TryMoveNextAsync()
@@ -336,13 +325,12 @@ internal sealed class PyStarmapIterator : PyIteratorBase
     // the async shape reuses the leased drain and covers the exact final array.
     private const long ArgumentSlotBytes = 24;
 
-    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
+    public override PyIterationResult TryMoveNext()
     {
         _context.CheckExecution(_span);
-        if (!_source.TryMoveNext(out var current))
+        if (!(_source.TryMoveNext() is { HasValue: true, Value: var current }))
         {
-            value = PyNone.Instance;
-            return false;
+            return PyIterationResult.End;
         }
 
         // The argument array duplicates the streamed element beside it; grow a
@@ -371,8 +359,7 @@ internal sealed class PyStarmapIterator : PyIteratorBase
 
         scratch.Grow(ArgumentSlotBytes * collected.Count, _span);
         var args = collected.ToArray();
-        value = LythonRuntime.RuntimeValue((_function as LythonRuntime.ICallable ?? throw LythonRuntime.NotCallableError(_function, _context, _span)).Invoke(args, _span, _context));
-        return true;
+        return PyIterationResult.Yield(LythonRuntime.RuntimeValue((_function as LythonRuntime.ICallable ?? throw LythonRuntime.NotCallableError(_function, _context, _span)).Invoke(args, _span, _context)));
     }
 
     public override async ValueTask<PyIterationResult> TryMoveNextAsync()
@@ -418,21 +405,22 @@ internal sealed class PyPairwiseIterator : PyIteratorBase
         LythonRuntime.ExecutionContext context)
     { _source = source; _memoryGovernor = governor; _span = span; }
 
-    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
+    public override PyIterationResult TryMoveNext()
     {
-        value = PyNone.Instance;
+        object? value;
+
         var source = _source;
-        if (source is null) return false;
+        if (source is null) return PyIterationResult.End;
         if (!_hasPrevious)
         {
-            if (!source.TryMoveNext(out var first)) { _source = null; source.Dispose(); return false; }
+            if (!(source.TryMoveNext() is { HasValue: true, Value: var first })) { _source = null; source.Dispose(); return PyIterationResult.End; }
             _previous = LythonRuntime.RuntimeValue(first); _hasPrevious = true;
         }
-        if (!source.TryMoveNext(out var next)) { _source = null; _previous = PyNone.Instance; source.Dispose(); return false; }
+        if (!(source.TryMoveNext() is { HasValue: true, Value: var next })) { _source = null; _previous = PyNone.Instance; source.Dispose(); return PyIterationResult.End; }
         var current = LythonRuntime.RuntimeValue(next);
         value = new PyTuple([_previous, current], _memoryGovernor, _span);
         _previous = current;
-        return true;
+        return PyIterationResult.Yield(value!);
     }
 
     public override async ValueTask<PyIterationResult> TryMoveNextAsync()

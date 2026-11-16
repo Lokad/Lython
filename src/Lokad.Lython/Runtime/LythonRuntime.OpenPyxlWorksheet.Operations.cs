@@ -456,14 +456,15 @@ internal sealed partial class LythonRuntime
         private sealed class WorksheetGridIterator(OpenPyxlWorksheet sheet, IterationBounds bounds, bool columns, ExecutionContext? context, LythonSourceSpan? span) : PyIteratorBase
         {
             private int _next = columns ? bounds.MinColumn : bounds.MinRow;
-            public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
+            public override PyIterationResult TryMoveNext()
             {
+                object? value;
                 context?.CheckExecution(span);
                 if (_next > (columns ? bounds.MaxColumn : bounds.MaxRow) || bounds.MaxRow < bounds.MinRow || bounds.MaxColumn < bounds.MinColumn)
-                { value = null; return false; }
+                { return PyIterationResult.End; }
                 value = sheet.LineTuple(_next, columns ? bounds.MinRow : bounds.MinColumn, columns ? bounds.MaxRow : bounds.MaxColumn, columns, bounds.ValuesOnly, context, span);
                 _next++;
-                return true;
+                return PyIterationResult.Yield(value!);
             }
             public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<generator object>");
         }

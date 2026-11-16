@@ -42,12 +42,11 @@ internal sealed class PyBatchedIterator : PyIteratorBase
         return result;
     }
 
-    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
+    public override PyIterationResult TryMoveNext()
     {
         if (_exhausted)
         {
-            value = PyNone.Instance;
-            return false;
+            return PyIterationResult.End;
         }
 
         _context.CheckExecution(_span);
@@ -57,7 +56,7 @@ internal sealed class PyBatchedIterator : PyIteratorBase
         while (count < _size)
         {
             GrowBufferIfNeeded(ref buffer, count, storage);
-            if (!_source.TryMoveNext(out var current)) break;
+            if (!(_source.TryMoveNext() is { HasValue: true, Value: var current })) break;
 
             buffer[count++] = LythonRuntime.RuntimeValue(current);
             _context.CheckExecution(_span);
@@ -66,8 +65,7 @@ internal sealed class PyBatchedIterator : PyIteratorBase
         if (count == 0)
         {
             _exhausted = true;
-            value = PyNone.Instance;
-            return false;
+            return PyIterationResult.End;
         }
 
         if (count < _size)
@@ -79,8 +77,7 @@ internal sealed class PyBatchedIterator : PyIteratorBase
             }
         }
 
-        value = CreateBatch(buffer, count, storage);
-        return true;
+        return PyIterationResult.Yield(CreateBatch(buffer, count, storage));
     }
 
     public override async ValueTask<PyIterationResult> TryMoveNextAsync()

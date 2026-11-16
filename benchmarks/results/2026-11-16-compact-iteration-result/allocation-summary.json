@@ -1,0 +1,50 @@
+{
+  "rows": [
+    {
+      "case": "scripts.numeric-squared-error.large",
+      "referenceBytes": 821688,
+      "candidateBytes": 690448,
+      "changePercent": -15.971999104282887,
+      "referencePeakExecutionBytes": 906718,
+      "candidatePeakExecutionBytes": 906718
+    },
+    {
+      "case": "scripts.numeric-squared-error.async",
+      "referenceBytes": 821792,
+      "candidateBytes": 690736,
+      "changePercent": -15.947587710758926,
+      "referencePeakExecutionBytes": 906718,
+      "candidatePeakExecutionBytes": 906718
+    },
+    {
+      "case": "scripts.numeric-report.integer.large",
+      "referenceBytes": 556472,
+      "candidateBytes": 556384,
+      "changePercent": -0.01581391336851201,
+      "referencePeakExecutionBytes": 905305,
+      "candidatePeakExecutionBytes": 905305
+    },
+    {
+      "case": "scripts.text-normalization.large",
+      "referenceBytes": 1515784,
+      "candidateBytes": 1515800,
+      "changePercent": 0.0010555593672911812,
+      "referencePeakExecutionBytes": 2324834,
+      "candidatePeakExecutionBytes": 2324834
+    },
+    {
+      "case": "calls.positional.large",
+      "referenceBytes": 1060672,
+      "candidateBytes": 1060680,
+      "changePercent": 0.0007542388221759566,
+      "referencePeakExecutionBytes": 1383,
+      "candidatePeakExecutionBytes": 1383
+    }
+  ],
+  "complete": true,
+  "elapsedSeconds": 12.802400799933821,
+  "allOutputAndFileGoldensPassed": true,
+  "budgetBaselineAndCleanupPassed": true,
+  "CPUorElapsedClaim": false,
+  "boundary": "Existing local whole warm jobs with reset/mediated I/O/full stdout and file hashing/result cleanup; compilation/startup excluded. Natural-GC whole-process allocation counters. Governor execution peaks are conservative admission,not heap/RSS."
+}

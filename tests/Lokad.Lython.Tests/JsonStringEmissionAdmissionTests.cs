@@ -74,7 +74,7 @@ public sealed class JsonStringEmissionAdmissionTests(ITestOutputHelper output)
                     published = asynchronous ? await callable.InvokeAsync(arguments, Span, context)
                         : callable.Invoke(arguments, Span, context);
                 else if (asynchronous) published = await iterator.TryMoveNextAsync();
-                else { iterator.TryMoveNext(out var chunk); published = chunk; }
+                else published = iterator.TryMoveNext().Value;
             });
             Assert.Null(published);
             Assert.Equal(LythonFailureReason.SharedMemoryAllowance, error.Attribution?.Reason);
@@ -183,7 +183,7 @@ public sealed class JsonStringEmissionAdmissionTests(ITestOutputHelper output)
                             retained.Add(Assert.IsType<PyString>(next.Value));
                         }
                     }
-                    else while (iterator.TryMoveNext(out var chunk)) retained.Add(Assert.IsType<PyString>(chunk));
+                    else while ((iterator.TryMoveNext() is { HasValue: true, Value: var chunk })) retained.Add(Assert.IsType<PyString>(chunk));
                 }
                 catch (LythonRuntimeException error) { failure = error; }
                 var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
@@ -238,7 +238,7 @@ public sealed class JsonStringEmissionAdmissionTests(ITestOutputHelper output)
                         else _ = callable.Invoke(arguments, Span, context);
                     }
                     else if (asynchronous) await enumerator.TryMoveNextAsync();
-                    else enumerator.TryMoveNext(out _);
+                    else enumerator.TryMoveNext();
                 });
                 Assert.Equal(LythonFailureReason.SharedMemoryAllowance, error.Attribution?.Reason);
                 Assert.Same(context.MemoryGovernor.AdmissionFailure, error);
@@ -266,14 +266,14 @@ public sealed class JsonStringEmissionAdmissionTests(ITestOutputHelper output)
             var iterator = Assert.IsType<LythonRuntime.JsonEncodeIterator>(callable.Invoke([CallArgumentValue.Positional(input)], Span, context));
             var before = budget.ReservedBytes;
             var next = asynchronous ? await iterator.TryMoveNextAsync()
-                : iterator.TryMoveNext(out var value) ? PyIterationResult.Yield(value) : PyIterationResult.End;
+                : iterator.TryMoveNext();
             Assert.True(next.HasValue);
             var chunk = Assert.IsType<PyString>(next.Value);
             Assert.Equal("\"" + new string('a', 4097) + "\"", chunk.AsString());
             Assert.Same(context.MemoryGovernor, chunk.OwnerMemoryGovernor);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
             var end = asynchronous ? await iterator.TryMoveNextAsync()
-                : iterator.TryMoveNext(out _) ? throw new Xunit.Sdk.XunitException("Unexpected second chunk.") : PyIterationResult.End;
+                : iterator.TryMoveNext().HasValue ? throw new Xunit.Sdk.XunitException("Unexpected second chunk.") : PyIterationResult.End;
             Assert.False(end.HasValue);
             Assert.True(budget.ReservedBytes >= before + PyString.EstimateApproximateBytes(chunk.Utf8Bytes.Length));
             var held = budget.ReservedBytes;

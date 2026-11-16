@@ -271,11 +271,9 @@ internal sealed partial class LythonRuntime
             return PyString.FromString("<json.encoder._iterencode object>");
         }
 
-        public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
+        public override PyIterationResult TryMoveNext()
         {
-            var result = TryMoveNextCoreAsync(false).GetAwaiter().GetResult();
-            value = result.HasValue ? result.Value : PyNone.Instance;
-            return result.HasValue;
+            return TryMoveNextCoreAsync(false).GetAwaiter().GetResult();
         }
 
         public override ValueTask<PyIterationResult> TryMoveNextAsync() => TryMoveNextCoreAsync(true);

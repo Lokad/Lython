@@ -104,7 +104,7 @@ internal sealed partial class LythonRuntime
                 }),
                 "__next__" => BoundCallable.CreateNoArguments(handle, "file.__next__", static (receiver, span, _) =>
                 {
-                    if (receiver.TryMoveNext(out var item))
+                    if ((receiver.TryMoveNext() is { HasValue: true, Value: var item }))
                     {
                         return LythonRuntime.RuntimeValue(item);
                     }

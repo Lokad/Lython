@@ -91,7 +91,7 @@ internal sealed partial class LythonRuntime
                             break;
                         case ExecutableOpCode.Yield:
                             if (invocation is null) return InstructionPause.ContextRequired;
-                            invocation!.YieldValue = execution.Stack.TakeValue(instruction.InputStart, instruction.ResultSlot);
+                            invocation!.YieldValue = execution.Stack.TakeSlotValue(instruction.InputStart, instruction.ResultSlot);
                             invocation!.HasYield = true;
                             invocation!._waitingForSend = true;
                             execution.InstructionIndex++;

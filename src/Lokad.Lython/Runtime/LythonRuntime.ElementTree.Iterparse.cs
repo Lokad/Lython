@@ -32,7 +32,7 @@ internal sealed partial class LythonRuntime
                 {
                     context.CheckExecution(span);
                     var next = asynchronous ? await cursor.TryMoveNextAsync().ConfigureAwait(false)
-                        : cursor.TryMoveNext(out var item) ? PyIterationResult.Yield(item) : PyIterationResult.End;
+                        : (cursor.TryMoveNext() is { HasValue: true, Value: var item }) ? PyIterationResult.Yield(item) : PyIterationResult.End;
                     if (!next.HasValue) break;
                     var name = next.Value as PyString;
                     if (name is not null && name.Equals(StartEvent, context, span)) start = true;
@@ -90,11 +90,9 @@ internal sealed partial class LythonRuntime
             internal XmlEventIterator(ExecutionContext context, LythonSourceSpan span, bool start, bool end)
             { _context = context; _span = span; _start = start; _end = end; }
 
-            public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
+            public override PyIterationResult TryMoveNext()
             {
-                var next = StepAsync(false).GetAwaiter().GetResult();
-                value = next.HasValue ? next.Value : null;
-                return next.HasValue;
+                return StepAsync(false).GetAwaiter().GetResult();
             }
 
             public override ValueTask<PyIterationResult> TryMoveNextAsync() => StepAsync(true);

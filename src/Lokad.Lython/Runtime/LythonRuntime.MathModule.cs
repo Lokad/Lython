@@ -185,8 +185,12 @@ internal sealed partial class LythonRuntime
             long charged = 0;
             while (true)
             {
-                var pHas = pCursor.TryMoveNext(out var pItem);
-                var qHas = qCursor.TryMoveNext(out var qItem);
+                var pNext = pCursor.TryMoveNext();
+                var qNext = qCursor.TryMoveNext();
+                var pHas = pNext.HasValue;
+                var qHas = qNext.HasValue;
+                var pItem = pHas ? pNext.Value : PyNone.Instance;
+                var qItem = qHas ? qNext.Value : PyNone.Instance;
                 if (!pHas || !qHas)
                 {
                     if (pHas != qHas)
@@ -594,8 +598,12 @@ internal sealed partial class LythonRuntime
             var pairs = 0;
             while (true)
             {
-                var pHas = pCursor.TryMoveNext(out var pItem);
-                var qHas = qCursor.TryMoveNext(out var qItem);
+                var pNext = pCursor.TryMoveNext();
+                var qNext = qCursor.TryMoveNext();
+                var pHas = pNext.HasValue;
+                var qHas = qNext.HasValue;
+                var pItem = pHas ? pNext.Value : PyNone.Instance;
+                var qItem = qHas ? qNext.Value : PyNone.Instance;
                 if (!pHas || !qHas)
                 {
                     if (pHas != qHas)
