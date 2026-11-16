@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[R440 private word stream](results/2026-11-16-cased-word-stream/README.md)
+records1427/0443,B842seven jobs213.199s/all gates. Whole-line/range deletion
+cuts long-line allocation71.54%/accounted peak27.02%,but captured text CPU+7.58..12.07%
+and long-line+1.95..7.76% are adverse. Moving controls preserved; short allocation
+flat.243internal/623public eachactual11/10 pass. No promotion/full qualification.
+Refine to bulk mapped snapshot without private range inventory,using existing
+scanner/loan and exact eager prepayment; no foreign source retention or new mode.
+
 [R439 shared kernel](results/2026-11-16-shared-executable-kernel/README.md)
 is withdrawn after three coherent shapes,all source/images/adverse controls
 preserved. [Direct primitives ba4a/B841](results/2026-11-16-shared-executable-kernel/direct/README.md)
