@@ -1,0 +1,26 @@
+{
+  "rows": [
+    {
+      "case": "scripts.regex-range.extract",
+      "referenceBytes": 341592,
+      "candidateBytes": 341592,
+      "changePercent": 0.0,
+      "referencePeakExecutionBytes": 174351,
+      "candidatePeakExecutionBytes": 174351
+    },
+    {
+      "case": "scripts.regex-range.rewrite",
+      "referenceBytes": 170432,
+      "candidateBytes": 170432,
+      "changePercent": 0.0,
+      "referencePeakExecutionBytes": 21803,
+      "candidatePeakExecutionBytes": 21803
+    }
+  ],
+  "complete": true,
+  "elapsedSeconds": 7.379253000020981,
+  "allOutputAndFileGoldensPassed": true,
+  "budgetBaselineAndCleanupPassed": true,
+  "CPUorElapsedClaim": false,
+  "boundary": "Local whole warm jobs with reset/mediated I/O/full stdout and file hashing/result cleanup; compilation/startup excluded. Natural-GC whole-process counters. Includes conservative governor execution peaks, not physical heap/RSS."
+}

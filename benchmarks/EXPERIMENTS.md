@@ -6,6 +6,15 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[R443/B846 immutable dev105](results/2026-11-16-regex-dev105/README.md)
+qualifies changed producer assets with identical native adapter source/0443core.
+Rewrite elapsed−8.59..−6.25%/CPU−8.09..−6.61%; extraction inconclusive with2.12%
+candidate control,allocation flat.363regex checks eachactual11/10 for both private
+producers include actual matched child cancellation.64.057s/all gates; original
+metadata startup failure/no timings and correction preserved. Normal0.4pin/core
+dependency unchanged,three final capability gaps explicit. Full43869939863pending;
+publication held and non-regex whole-script uncertainty remains.
+
 [R443 exact regex subprocess identity](results/2026-11-16-regex-dev105/fixture-identity/README.md)
 corrects R409's private-parent/normal-child qualification gap. All3deliberate
 mismatches fail hash equality; matching private images pass363regex checks each

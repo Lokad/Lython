@@ -23,6 +23,10 @@ Build before measurement. Use focused short diagnostics during development;
 full lanes are infrequent declared milestones. BenchmarkDotNet and CPython
 comparison boundaries differ; compilation, warm execution and startup are
 reported separately. Complete output checks and declared owners remain active.
+Run the existing `--compare verify` command against each frozen worker image and
+custom catalog before VM staging. Even file-only fixtures require their matching
+`size` and nullable `text` metadata; parser success alone does not validate the
+worker protocol.
 
 BenchmarkDotNet run helpers consume projected values inside their result lifetime
 and include deterministic result disposal. `GovernorBenchmarks` uses a shared

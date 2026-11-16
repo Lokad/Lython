@@ -1,0 +1,31 @@
+{
+  "url": "https://api.nuget.org/v3-flatcontainer/lokad.utf8regex.pythonre/index.json",
+  "observedUTC": "2026-11-16T12:57:32.582956+00:00",
+  "versions": [
+    "0.1.0",
+    "0.2.0",
+    "0.3.0",
+    "0.4.0"
+  ],
+  "headers": {
+    "Date": "Mon, 16 Nov 2026 12:57:33 GMT",
+    "Content-Type": "application/json",
+    "Content-Length": "81",
+    "Connection": "close",
+    "Cache-Control": "max-age=0, no-cache",
+    "Last-Modified": "Tue, 27 Oct 2026 15:15:01 GMT",
+    "ETag": "0x8DF343D1226D0BA",
+    "x-ms-request-id": "d63e8425-201e-0015-49ca-75aa44000000",
+    "x-ms-version": "2009-09-19",
+    "x-ms-lease-status": "unlocked",
+    "x-ms-blob-type": "BlockBlob",
+    "Access-Control-Expose-Headers": "x-ms-request-id,Server,x-ms-version,Content-Type,Cache-Control,ETag,Last-Modified,x-ms-lease-status,x-ms-blob-type,Content-Length,Date,Transfer-Encoding",
+    "Access-Control-Allow-Origin": "*",
+    "x-azure-ref": "20261116T125733Z-15cff6bb9ccn9c4bhC1PARyyb400000014w00000000001cf",
+    "x-fd-int-roxy-purgeid": "0",
+    "X-Cache": "TCP_MISS",
+    "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+    "X-Content-Type-Options": "nosniff",
+    "Accept-Ranges": "bytes"
+  }
+}

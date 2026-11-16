@@ -1,0 +1,85 @@
+{
+  "complete": true,
+  "elapsedSeconds": 64.05659418506548,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "rows": [
+    {
+      "case": "scripts.regex-range.extract",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 0.4411909440937782,
+        "reference": 0.4445824589720469,
+        "candidate-control": 0.4505398279963404,
+        "reference-control": 0.44325676784101176
+      },
+      "cpuMilliseconds": {
+        "candidate": 0.45987376014427417,
+        "reference": 0.45987376014427417,
+        "candidate-control": 0.46660567246111617,
+        "reference-control": 0.46070460704607047
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.3830641146592287,
+        "reference": 2.7334004909728464,
+        "candidate-control": 0.4501299358213071,
+        "reference-control": 0.25997888071800124
+      },
+      "elapsedChangePercent": [
+        -0.7628539565214698,
+        -0.46605577108177476,
+        1.3399919191746879,
+        1.643079290318017
+      ],
+      "cpuChangePercent": [
+        -0.18034265103695768,
+        0.0,
+        1.2808783165599191,
+        1.4638609332113361
+      ],
+      "referenceSpreadPercent": 0.2990797269700529,
+      "candidateSpreadPercent": 2.1190108336800018
+    },
+    {
+      "case": "scripts.regex-range.rewrite",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 0.1954092086065574,
+        "reference": 0.2124306163716814,
+        "candidate-control": 0.194190352010845,
+        "reference-control": 0.20843196928140426
+      },
+      "cpuMilliseconds": {
+        "candidate": 0.20491803278688525,
+        "reference": 0.22123893805309736,
+        "candidate-control": 0.2033438770899232,
+        "reference-control": 0.21941854086670323
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.889814098794854,
+        "reference": 1.2452911407973317,
+        "candidate-control": 0.47148803494060265,
+        "reference-control": 0.8825391316211327
+      },
+      "elapsedChangePercent": [
+        -8.586457391302826,
+        -8.012690475530293,
+        -6.8327413110661706,
+        -6.2479670080096135
+      ],
+      "cpuChangePercent": [
+        -8.08856755535472,
+        -7.377049180327866,
+        -7.3260280162675055,
+        -6.60860655737705
+      ],
+      "referenceSpreadPercent": 1.9184423119269933,
+      "candidateSpreadPercent": 0.6276607375655496
+    }
+  ],
+  "retentionDecisionPending": false,
+  "CPythonRefreshed": false,
+  "developmentQualificationComplete": true,
+  "normalAdapterPinChanged": false,
+  "decision": "Qualify immutabledev105 for continued development. Same native adapter source and qualified0443core. Rewrite elapsed/CPU lower,extraction uncertain,allocation flat. Final released-package qualification remains pending precise producer gaps. No normal pin/dependency or safety-certification change."
+}

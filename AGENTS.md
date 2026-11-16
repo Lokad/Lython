@@ -52,6 +52,8 @@ hash alone does not prove that the binary matches the restored source.
 Frozen benchmark images must not hard-link mutable build outputs. Copy mutable
 images and verify the complete measured image, including workers and adapters,
 against its recorded hashes before use; checking only the core DLL is insufficient.
+Validate custom comparison catalogs through the existing verification command with
+the actual frozen worker images before staging a quiet-VM collection.
 Use the SDK pinned in global.json. Builds target .NET 11 and .NET 10; select
 `-f net11.0` for ordinary development tests and qualify both at checkpoints.
 Ordinary test runs exclude `Category=Stress` by default. An explicit test filter
