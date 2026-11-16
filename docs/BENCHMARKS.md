@@ -2,6 +2,8 @@
 
 | Representative workload / phase | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| File normalization / warm Run | 4,096 lines / 52,224 B | 1.192–1.219 ms | 0.727–0.731 ms | 1.63–1.68× | Diagnostic; spreads 2.24/0.56%; IQR ≤6.70% |
+| File normalization / compile and execute once | 4,096 lines / 52,224 B | 1.248–1.316 ms | 0.830–0.839 ms | 1.49–1.58× | Diagnostic; spreads 5.11/1.10%; IQR ≤7.35% |
 | Configuration / six-helper manifest / compilation only | 833 B inputs / 1,877 B source | 0.192–0.201 ms | 0.157–0.157 ms | 1.22–1.28× | Diagnostic; spreads 4.89/0.08%; IQR ≤1.25% |
 | Configuration / six-helper manifest / compile and execute once | 833 B inputs / 1,877 B source | 0.496–0.498 ms | 0.456–0.457 ms | 1.08–1.09× | Diagnostic; spreads 0.53/0.16%; IQR ≤1.67% |
 | Report / format method / warm Run | 1,024 records / 189,441 B JSON | 4.155–4.213 ms | 2.560–2.616 ms | 1.59–1.65× | Diagnostic; spreads 1.38/2.16%; IQR ≤3.99% |
@@ -24,6 +26,13 @@
 **Ratio = Lython elapsed / CPython elapsed; above one means slower.** These are
 complete embedding measurements, not isolated interpreter CPU. Spreads compare
 the two Lython/CPython process medians; IQRs and moving controls stay visible.
+
+**File normalization: 116fe6e0 / measured810dafdd**, 2026-11-16 UTC;
+[complete warm/fresh checkpoint](../benchmarks/results/2026-11-16-normalization-cpython-checkpoint/README.md).
+All measurement/cleanup gates pass; initial full runtime CI found accounting-test
+corrections, now under qualification. Warm remains 1.63–1.68× CPython; fresh
+1.49–1.58× with 5.11% Lython control spread / 7.35% maximum IQR. This new workload
+baseline is diagnostic, not evidence of a source-change speedup.
 
 **Patch phases and CSV warm: c023042d / measured0393331a**,2026-11-16UTC;
 [current checkpoint](../benchmarks/results/2026-11-16-patch-cpython-checkpoint/README.md)

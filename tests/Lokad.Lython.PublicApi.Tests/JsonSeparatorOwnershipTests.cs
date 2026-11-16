@@ -10,7 +10,7 @@ public sealed class JsonSeparatorOwnershipTests
     [InlineData(false, true)] [InlineData(true, true)]
     public async Task RetainedOptionsBorrowAlreadyFundedSeparators(bool asynchronous, bool iterators)
     {
-        var setup = "import json,time\ns='x'*262144\n";
+        var setup = "import json,time\ns='x'*separator_size\n";
         var expression = "json.JSONEncoder(separators=(s,s))";
         if (iterators)
         {
@@ -23,16 +23,30 @@ public sealed class JsonSeparatorOwnershipTests
             time.time()
             return 0
             """);
-        var budget = new AdmissionGateBudget();
-        var host = new AdmissionGateHost(budget, 32768);
-        using (var result = asynchronous
-            ? await script.RunAsync(host, new LythonRunOptions { MemoryBudget = budget })
-            : script.Run(host, new LythonRunOptions { MemoryBudget = budget }))
+        async Task<long> Measure(int size)
         {
-            Assert.True(result.Success, result.Failure?.Message);
-            Assert.InRange(host.AllocatedAtSecondGate - host.AllocatedAtGate, 0, 128 * 1024);
+            var budget = new AdmissionGateBudget();
+            var host = new AdmissionGateHost(budget, 32768);
+            var options = new LythonRunOptions
+            {
+                MemoryBudget = budget,
+                Globals = new Dictionary<string, object?> { ["separator_size"] = size },
+            };
+            long allocated;
+            using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                allocated = host.AllocatedAtSecondGate - host.AllocatedAtGate;
+            }
+            Assert.Equal(0, budget.Root.ReservedBytes);
+            return allocated;
         }
-        Assert.Equal(0, budget.Root.ReservedBytes);
+        _ = await Measure(16); // Warm the same constructor/iterator path outside the comparison.
+        var small = await Measure(16);
+        var large = await Measure(262144);
+        // Constructor overhead and process-wide startup work are not separator
+        // copies. Retaining larger existing strings must not add substantial data.
+        Assert.True(large - small <= 128 * 1024, $"Size-dependent allocation: {large - small} bytes.");
     }
 
     [Theory]

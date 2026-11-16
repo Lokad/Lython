@@ -1,4 +1,3 @@
-using System.Reflection;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
 using Lokad.Lython.Tests.Harness;
@@ -6,39 +5,30 @@ using Lokad.Lython.Tests.Harness;
 namespace Lokad.Lython.Tests;
 
 /// <summary>
-/// MG06: str.join builds through the owning governor. A fixed join pins the
-/// exact contract: builder growth peaks, then releases, leaving exactly the
-/// retained string charge behind. Reflection reaches the private helper;
-/// renames fail loudly here by design.
+/// A completed join owns its retained backing, including unused capacity.
+/// Its input drain and unpublished working storage end before return.
 /// </summary>
 public sealed class StringJoinAccountingTests
 {
     [Fact]
-    public void JoinStringsCommitsExactOutput()
+    public void JoinKeepsRetainedBackingFundedAndReturnsWorkingStorage()
     {
-        var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
-        var span = new LythonSourceSpan(0, 0, 0, 0);
-        // JoinStrings lives directly on LythonRuntime, shared by string and CSV members.
-        var join = typeof(LythonRuntime).GetMethod("JoinStrings", BindingFlags.NonPublic | BindingFlags.Static)
-            ?? throw new InvalidOperationException("JoinStrings not found.");
-        var parts = Enumerable.Range(0, 100).Select(static _ => PyString.FromString("abcdefghij")).ToList();
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var owner = budget.CreateScope())
+        {
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
+                new LythonRunOptions { MemoryBudget = owner });
+            var span = new LythonSourceSpan(0, 0, 0, 0);
+            var parts = new PyList(Enumerable.Range(0, 100).Select(static _ => (object)PyString.FromString("abcdefghij")));
+            var before = context.MemoryGovernor.CurrentCommittedBytes;
+            var result = Assert.IsType<PyString>(LythonRuntime.StringMembers.Join(PyString.FromString(","), parts, span, context));
 
-        var committedBefore = context.MemoryGovernor.CurrentCommittedBytes;
-        var peakBefore = context.MemoryGovernor.PeakAccountedBytes;
-        var result = Assert.IsType<PyString>(join.Invoke(
-            null,
-            [PyString.FromString(","), parts, context.MemoryGovernor, span]));
-
-        Assert.Equal(string.Join(",", Enumerable.Repeat("abcdefghij", 100)), result.AsString());
-        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-        Assert.Equal(128 + 1099, context.MemoryGovernor.CurrentCommittedBytes - committedBefore);
-        // The builder peaks above the retained charge and releases the
-        // difference: with an ungoverned builder the peak would equal the
-        // retained charge exactly (same idiom as SetConstructionAccounting).
-        Assert.True(
-            context.MemoryGovernor.PeakAccountedBytes - peakBefore >
-                context.MemoryGovernor.CurrentCommittedBytes - committedBefore,
-            "Join scratch was never covered while building.");
+            Assert.Equal(string.Join(",", Enumerable.Repeat("abcdefghij", 100)), result.AsString());
+            Assert.Same(context.MemoryGovernor, result.OwnerMemoryGovernor);
+            Assert.True(result.CommittedOwnedBytes >= PyString.EstimateApproximateBytes(result.ByteLength));
+            Assert.Equal(result.CommittedOwnedBytes, context.MemoryGovernor.CurrentCommittedBytes - before);
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
     }
 }

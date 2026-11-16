@@ -30,9 +30,9 @@ public sealed class StringJoinCleanupTests
             var parts = new PyList([first, last], governor, Span);
             var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile("return '|'.join",regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
             var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null));
-            // Four drained slots (64), builder capacity (16), nine output bytes
-            // plus metadata (137). Leave one byte too little for the final value.
-            var available = 64 + 16 + PyString.EstimateApproximateBytes(9) - 1;
+            // Drain shell/slots and builder capacity remain live while the
+            // string's metadata is admitted. Leave one byte too little.
+            var available = 32 + 64 + 16 + PyString.EstimateApproximateBytes(0) - 1;
             ILythonMemoryReservation? blocker = null;
             if (shared) Assert.True(budget.TryReserve(limit - budget.ReservedBytes - available, out blocker));
             else
@@ -52,10 +52,10 @@ public sealed class StringJoinCleanupTests
                         : callable.Invoke(arguments, Span, context);
                 });
                 Assert.Null(published);
-                Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.SharedMemoryAllowance, error.Attribution?.Reason);
+                Assert.Equal(LythonFailureReason.SharedMemoryAllowance, error.Attribution?.Reason);
                 Assert.Same(governor.AdmissionFailure, error);
                 Assert.Same(Span, error.Span);
-                Assert.Equal(PyString.EstimateApproximateBytes(9), governor.LastDeniedReservationBytes);
+                Assert.Equal(PyString.EstimateApproximateBytes(0), governor.LastDeniedReservationBytes);
                 Assert.Equal(before, governor.CurrentCommittedBytes);
                 Assert.Equal(0, governor.CurrentReservedBytes);
                 Assert.Same(first, parts[0]);

@@ -8667,3 +8667,6 @@ verified before unmount, all users joined. No CPU speedup or production change.
 
 
 [R426/B822 consuming completed text](results/2026-11-16-consuming-text-completion/README.md): retained810dafdd versus qualifieda2d20928/9d26d408. Thirteen terminal paths lose exact byte-array copy/temporary lease, existing capacity/metadata ownership retained; actual JSON snapshots remain. Complete report allocation−6.29%/accounted peak+0.86%, new file normalization−9.07%/peak+3.71%. Report elapsed modestly lower, normalization+0.79..2.36%slower and JSON+0.40..2.28%/mixed CPU accepted as debt, not neutrality or universal gain.87internal/2,547public eachactual11/10, independent CPython/full goldens/budget cleanup pass;593inputs frozen. B822four jobs140.446s/all gates. Original fixture failures/staging projection preserved; full delivery pending, broader objective active/publication held.
+
+
+[R427/B823 complete file-normalization CPython phases](results/2026-11-16-normalization-cpython-checkpoint/README.md): 116fe6e0/810dafdd vs CPython3.13.16; two jobs71.314s/all measurement gates. Warm1.63–1.68×, fresh1.49–1.58×; fresh control5.11%/IQR7.35% retained. New useful workload, no causal source gain. Initial runtime CI failed accounting-test expectations; corrections active. One bounded current-source profile follows; broader objective remains open.

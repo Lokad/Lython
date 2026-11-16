@@ -11,8 +11,8 @@ public sealed class RegexExpansionOwnershipTests
 
     [Theory]
     [InlineData(64)]
-    [InlineData(8192)]
-    public void ExpansionFundsGrowthAndFinalCopyOverlapAndRefundsWorkingStorage(long available)
+    [InlineData(4096)]
+    public void ExpansionFundsPlanAndOutputAndRefundsWorkingStorage(long available)
     {
         var root = new LythonMemoryBudget(1024 * 1024);
         using (var owner = root.CreateScope())
@@ -126,6 +126,7 @@ public sealed class RegexExpansionOwnershipTests
             var result = LythonRuntime.ReMatchMembers.ExpandReplacementTemplate(match, PyString.FromString(@"<\1>"), context, Span);
             Assert.Equal("<" + new string('x', 4096) + ">", result.AsString());
             Assert.True(root.ReservedBytes > before);
+            Assert.True(root.ReservedBytes - before >= result.CommittedOwnedBytes);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         }
         Assert.Equal(0, root.ReservedBytes);
