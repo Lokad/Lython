@@ -8661,3 +8661,6 @@ verified before unmount, all users joined. No CPU speedup or production change.
 
 
 [R423full delivery43787325151](results/2026-11-16-finally-prefix/delivery/README.md) qualifiese6500781/eee74a10 on Windows/Ubuntu actual11/10:4,777internal/17,912public ordinary, original13/406stress and installed Release consumers each.16summaries/591inputs verified; terminal cached forever. R424compiler prototype continues independently; publication held.
+
+
+[R424full delivery43789371043](results/2026-11-16-compiler-instruction-store/delivery/README.md) qualifiesa2d20928/9d26d408 on Windows/Ubuntu actual11/10,4,777internal/17,912public ordinary, original13/406stress and installed Release consumers each.16summaries/590inputs verified; terminal cached forever. Publication held; broader performance roadmap active.

@@ -33,8 +33,7 @@ CSV compilation/fresh rows below retain their earlier revision.
 
 **Manifest phases and report warm rows: a2d20928 / measured9d26d408**,2026-11-16UTC;
 [current checkpoint](../benchmarks/results/2026-11-16-compiler-cpython-checkpoint/README.md)
-passes all measurement/cleanup gates. Full platform/stress/installed-package
-qualification is pending. Method report remains1.59–1.65×CPython warm; manifest
+passes all measurement/cleanup gates; [full platform/stress/installed-package qualification passes](../benchmarks/results/2026-11-16-compiler-instruction-store/delivery/README.md). Method report remains1.59–1.65×CPython warm; manifest
 fresh is1.085–1.092×. Manifest compilation control moves4.89%, report IQRs reach4.50%.
 **Report compilation/fresh retain58eeea6f/frozen9d071eba** and their
 [earlier checkpoint](../benchmarks/results/2026-11-15-layout-cpython-checkpoint/README.md),
@@ -84,7 +83,7 @@ These source-pair results are separate from CPython and cannot be added together
 
 | Change / complete affected script | CPU/elapsed evidence | Allocation | Limits and exact evidence |
 | --- | --- | ---: | --- |
-| One compiler instruction store / complete compilation | Generated normalizer compile1.3–3.8%lower, supporting CPU; manifest/fresh inconclusive | Compile−3.35..−4.74% | Retained9d26d408/eee74a10. Removes block wrappers/intermediate arrays; adverse manifest/fresh timings retained. Generated case is diagnostic, not typical agent-script evidence. [Source pair/limits](../benchmarks/results/2026-11-16-compiler-instruction-store/README.md); full delivery pending. |
+| One compiler instruction store / complete compilation | Generated normalizer compile1.3–3.8%lower, supporting CPU; manifest/fresh inconclusive | Compile−3.35..−4.74% | Retained9d26d408/eee74a10. Removes block wrappers/intermediate arrays; adverse manifest/fresh timings retained. Generated case is diagnostic, not typical agent-script evidence. [Source pair/limits](../benchmarks/results/2026-11-16-compiler-instruction-store/README.md); [Full delivery passes](../benchmarks/results/2026-11-16-compiler-instruction-store/delivery/README.md). |
 | Native work before finally / complete protected invoice | Warm elapsed4.8–6.2%lower, supporting CPU; fresh inconclusive | −2.91% | Retainedeee74a10/8f468f0a. Existing cleanup frame/ownership retained; ordinary/JSON controls move/adverse up to3.5%. [Exact source pair and limits](../benchmarks/results/2026-11-16-finally-prefix/README.md); [Full delivery passes](../benchmarks/results/2026-11-16-finally-prefix/delivery/README.md). |
 | Known scalar boundaries / complete regex diagnostics | Unicode suffix elapsed5–10%lower at1,024scalars/about5%at4,096; CPU support | Effectively flat(+16B) | Retained8f468f0a/0393331a; normal0.4 adapter unchanged. Diagnostic, not general regex throughput; moving small-input control/initial short adversity/ASCII CPU debt retained. [Evidence](../benchmarks/results/2026-11-16-regex-known-boundaries/README.md); [Full delivery passes](../benchmarks/results/2026-11-16-regex-known-boundaries/delivery/README.md). |
 | One runtime format operation / complete report | Warm elapsed1.9–4.2%lower; compile-to-result1.1–4.2%lower, supporting CPU | −9.41% | Committedc023042d / measured0393331a versus9d071eba; callback executor/captures/private fallback removed. Moving controls/CSVup to0.5%slower retained. [Source pair/limits](../benchmarks/results/2026-11-15-runtime-format-operation/README.md); [Full delivery passes](../benchmarks/results/2026-11-15-runtime-format-operation/delivery/README.md). |

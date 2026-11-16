@@ -77,7 +77,7 @@ toolchains remain; 254/252 MiB stage/archive floors unchanged. The original firs
 build missed one old member access and failed explicitly; corrected source then
 received the full nonincremental build/checks/freeze. Original condition retained.
 
-**Full platform/stress/installed-package qualification pending; publication held.**
+[Full platform/stress/installed-package qualification passes](delivery/README.md); publication held.
 The broader performance objective remains active; this is a storage simplification
 with modest diagnostic CPU evidence. [All medians](summary.json),
 [allocation](allocation-summary.json), [code comparison](equivalence.json),

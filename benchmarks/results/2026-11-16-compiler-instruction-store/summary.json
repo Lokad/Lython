@@ -128,6 +128,8 @@
   "retentionDecisionPending": false,
   "CPythonRefreshed": false,
   "retained": true,
-  "fullQualificationPending": true,
-  "decision": "Remove both block wrappers and normalized/shortened instruction arrays; one single-use list reaches final tape. Compilation allocation3.35\u20134.74%lower; generated compilation modest lower elapsed/CPU. Manifest/fresh inconclusive with adverse timings retained; unchanged runtime control improvement is not attributed to source. Broader objective remains active."
+  "fullQualificationPending": false,
+  "decision": "Remove both block wrappers and normalized/shortened instruction arrays; one single-use list reaches final tape. Compilation allocation3.35\u20134.74%lower; generated compilation modest lower elapsed/CPU. Manifest/fresh inconclusive with adverse timings retained; unchanged runtime control improvement is not attributed to source. Broader objective remains active.",
+  "fullQualificationRun": "43789371043",
+  "runtimeCommit": "a2d20928475fdf893bf38e3e427c86ec7ed5a7db"
 }
