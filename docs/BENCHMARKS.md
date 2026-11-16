@@ -2,11 +2,14 @@
 
 | Representative workload / phase | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| Patch generation / warm Run | Two 1,024-line files / 67,597 B | 0.471–0.472 ms | 0.572–0.576 ms | 0.817–0.825× | Diagnostic; spreads 0.14/0.72%; IQR ≤1.37% |
+| Patch generation / compilation only | Two 1,024-line files / 67,597 B | 0.033–0.033 ms | 0.034–0.034 ms | 0.96–0.97× | Diagnostic; spreads 0.49/0.81%; IQR ≤1.37% |
+| Patch generation / compile and execute once | Two 1,024-line files / 67,597 B | 0.521–0.534 ms | 0.651–0.654 ms | 0.80–0.82× | Diagnostic; spreads 2.37/0.57%; IQR ≤2.08% |
+| CSV invoice / warm Run | 4,096 records / 127,031 B | 6.718–6.917 ms | 6.017–6.071 ms | 1.11–1.15× | Diagnostic; spreads 2.95/0.88%; IQR ≤1.99% |
 | Report / format method / warm Run | 1,024 records / 189,441 B JSON | 4.364–4.403 ms | 2.614–2.633 ms | 1.66–1.68× | Diagnostic; spreads 0.89/0.75%; IQR ≤4.49% |
 | Report / format method / compilation only | 1,024 records / 189,441 B JSON | 0.037–0.037 ms | 0.036–0.036 ms | 1.02–1.03× | Diagnostic; spreads 0.05/0.95%; IQR ≤0.94% |
 | Report / format method / compile and execute once | 1,024 records / 189,441 B JSON | 4.438–4.479 ms | 2.727–2.771 ms | 1.60–1.64× | Diagnostic; spreads 0.92/1.62%; IQR ≤4.15% |
 | Report / f-string / warm Run | 1,024 records / 189,441 B JSON | 2.789–2.803 ms | 2.366–2.384 ms | 1.17–1.18× | Diagnostic; spreads 0.51/0.72%; IQR ≤4.63% |
-| CSV invoice / warm Run | 4,096 records / 127,031 B | 6.637–6.728 ms | 6.087–6.144 ms | 1.08–1.11× | Diagnostic; spreads 1.35/0.94%; IQR ≤1.52% |
 | CSV invoice / compilation only | 4,096 records / 127,031 B | 0.100–0.101 ms | 0.094–0.094 ms | 1.07–1.08× | Diagnostic; spreads 0.67/0.14%; IQR ≤1.06% |
 | CSV invoice / compile and execute once | 4,096 records / 127,031 B | 6.883–6.972 ms | 6.249–6.276 ms | 1.10–1.12× | Diagnostic; spreads 1.29/0.44%; IQR ≤1.50% |
 | CSV fulfillment / warm Run | 4,096 records / 126,821 B | 7.568–7.594 ms | 6.783–6.794 ms | 1.11–1.12× | Diagnostic; spreads 0.34/0.17%; IQR ≤1.70% |
@@ -22,6 +25,12 @@
 complete embedding measurements, not isolated interpreter CPU. Spreads compare
 the two Lython/CPython process medians; IQRs and moving controls stay visible.
 
+**Patch phases and CSV warm: c023042d / measured0393331a**,2026-11-16UTC;
+[current checkpoint](../benchmarks/results/2026-11-16-patch-cpython-checkpoint/README.md)
+passes measurement/cleanup gates and [full runtime qualification](../benchmarks/results/2026-11-15-runtime-format-operation/delivery/README.md).
+Patch is one central edit between unique lines, not arbitrary diff throughput.
+CSV compilation/fresh rows below retain their earlier revision.
+
 **Report rows:58eeea6f/frozen9d071eba**; [affected checkpoint](../benchmarks/results/2026-11-15-layout-cpython-checkpoint/README.md)
 passes all measurement/cleanup gates. [Full runtime qualification passes](../benchmarks/results/2026-11-15-method-format-layout/delivery/README.md).
 Method formatting remains1.66–1.68×CPython warm; compilation is1.02–1.03×.
@@ -30,7 +39,7 @@ retains the2.04–2.07×warm result and noisy8.86%fresh CPython IQR atb06b8593.
 
 Measured **2026-11-15 UTC**, stock **CPython3.13.16**, quiet Azure F4as_v7 /
 Ubuntu24.04.4, four AMD EPYC9V45 vCPUs,16GiB/no swap,.NET11RC3 workstation
-GC/normal tiering and CPython GIL/GC. **CSV invoice, captured warm text, JSON,
+GC/normal tiering and CPython GIL/GC. **CSV invoice compilation/fresh, captured warm text, JSON,
 file search and configuration:2865f619/frozen55ba4c8a**;
 [eight-phase checkpoint](../benchmarks/results/2026-11-15-store-cpython-checkpoint/README.md)
 passes all measurement/cleanup gates; [full runtime qualification passes](../benchmarks/results/2026-11-15-prepared-store-targets/delivery/README.md).

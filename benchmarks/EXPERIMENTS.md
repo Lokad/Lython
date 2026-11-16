@@ -8637,3 +8637,6 @@ verified before unmount, all users joined. No CPU speedup or production change.
 
 
 [R420current call/frame attribution](results/2026-11-16-current-call-attribution/README.md): c023042d/0393331a, B8151,016active samples/146unknown leaves/all other-thread CPU retained. Broad overlapping call groups include useful work; no isolated dominant ABI/storage cost or runtime prototype selected. Compiler facts and already-delivered routes verified. All image/golden/quiet/join/archive gates pass; terminal cached, no users/RAM remain. Next different workload/source gate; no repeated unchanged capture or new format micro-tweak.
+
+
+[R421/B816 current patch/CSV phases](results/2026-11-16-patch-cpython-checkpoint/README.md): c023042d/0393331a versus CPython3.13.16; four jobs 137.167s, all image/golden/quiet/budget/Closed/join/archive gates. No source edit, causal speedup or arbitrary diff claim; every control retained. [Producer availability](results/2026-11-15-regex-range-prototype/availability-20261116.json): NuGet still0.4; local0.5 package hashes equal qualified R409 and PythonRe source changes only its README, so unchanged backend tests not repeated.

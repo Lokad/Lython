@@ -1,0 +1,25 @@
+{
+  "checkedUTC": "2026-11-16T00:23:03.4454722Z",
+  "source": "https://api.nuget.org/v3-flatcontainer/lokad.utf8regex.pythonre/index.json",
+  "versions": [
+    "0.1.0",
+    "0.2.0",
+    "0.3.0",
+    "0.4.0"
+  ],
+  "developmentPackages": [
+    {
+      "Path": "D:\\code\\utf8regex\\artifacts\\nuget\\Lokad.Utf8Regex.0.5.0.nupkg",
+      "Hash": "42F1C4F98171C456012ED99F8F5BC2DD304CFE024FB47606D4AE4D57575D9244"
+    },
+    {
+      "Path": "D:\\code\\utf8regex\\artifacts\\nuget\\Lokad.Utf8Regex.PythonRe.0.5.0.nupkg",
+      "Hash": "9370A9227FAF74C469DC4D26317E1788E0BD48C721490201566C78B5198EDCC2"
+    }
+  ],
+  "producerHead": "e4af894350b965b802a75216ddaa8759c2dc3ca5",
+  "changesSinceQualifiedPythonRe": [
+    " src/Lokad.Utf8Regex.PythonRe/README.md | 203 ++++++++++++++++++++++++++++++++++++-------------------------------------",
+    " 1 file changed, 101 insertions(+), 102 deletions(-)"
+  ]
+}
