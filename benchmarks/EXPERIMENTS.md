@@ -8832,3 +8832,13 @@ and orphaned adapters rather than replaying slower R438's four wrappers. Source
 inventory223mentions/66files includes definitions. Actual strip scratch is already
 funded by its receiver; no duplicate admission fix. All users joined and evidence
 verified before RAM unmount; final-source R448 CI remains independent.
+
+
+[R450/B852 initial consumer consolidation](results/2026-11-16-native-consumer-consolidation/initial/README.md):
+complete routing/wrapper-class deletion, private5755fa15 versus qualifiede1204916.
+Normalization fresh elapsed/CPU favorable; moving warm/numeric controls and adverse
+CSV/report pairings preserved. Allocation effectively flat; no universal gain.
+All image/golden/quiet/join/archive gates pass. Both-target focused and full local11
+ordinary pass on initial snapshot. Refine before promotion: fix partial-cursor
+restart caught by two red cases and replace124manual loops with standard strongly
+typed foreach. Originals retained; no fixed threshold or permanent attempt ban.
