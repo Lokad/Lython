@@ -2,12 +2,12 @@
 
 | Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| CSV invoice | 4,096 records / 127,031 B | 6.637–6.697 ms | 6.090–6.173 ms | 1.08–1.10× | Diagnostic; controls L/C 0.91/1.35%; IQR≤1.41% |
-| Text normalization | 4,096 lines / 52,224 B | 1.116–1.151 ms | 0.500–0.505 ms | 2.21–2.30× | Diagnostic; controls L/C 3.12/0.84%; IQR≤1.60% |
-| JSON-lines aggregation | 4,096 records / 110,592 B | 3.451–3.453 ms | 4.078–4.101 ms | 0.84–0.85× | Diagnostic; controls L/C 0.03/0.56%; IQR≤0.90% |
-| File search / defensive helper | 2,049 lines / 42,010 B; stop at 1,025 | 0.284–0.287 ms | 0.159–0.161 ms | 1.76–1.80× | Diagnostic; controls L/C 0.97/1.31%; IQR≤2.19% |
-| Configuration edit | 1,024 paths / 7,177 B | 0.179–0.182 ms | 0.185–0.185 ms | 0.96–0.98× | Diagnostic; controls L/C 2.10/0.01%; IQR≤1.37% |
-| Report rendering | 1,024 records / 189,441 B | 2.774–2.790 ms | 2.327–2.361 ms | 1.18–1.20× | Diagnostic; controls L/C 0.57/1.46%; IQR≤2.04% |
+| CSV invoice | 4,096 records / 127,031 B | 6.790–6.809 ms | 6.019–6.064 ms | 1.12–1.13× | Diagnostic; controls L/C 0.29/0.74%; IQR≤0.62% |
+| Text normalization | 4,096 lines / 52,224 B | 1.125–1.140 ms | 0.508–0.564 ms | 2.00–2.24× | Diagnostic; controls L/C 1.31/10.85%; IQR≤1.32% |
+| JSON-lines aggregation | 4,096 records / 110,592 B | 3.456–3.458 ms | 4.087–4.100 ms | 0.84–0.85× | Diagnostic; controls L/C 0.05/0.33%; IQR≤0.66% |
+| File search / defensive helper | 2,049 lines / 42,010 B; stop at 1,025 | 0.275–0.283 ms | 0.171–0.176 ms | 1.56–1.65× | Diagnostic; controls L/C 2.79/2.98%; IQR≤1.15% |
+| Configuration edit | 1,024 paths / 7,177 B | 0.179–0.182 ms | 0.185–0.185 ms | 0.96–0.98× | Earlier312f/0443; diagnostic; controls L/C 2.10/0.01%; IQR≤1.37% |
+| Report rendering | 1,024 records / 189,441 B | 2.774–2.790 ms | 2.327–2.361 ms | 1.18–1.20× | Earlier312f/0443; diagnostic; controls L/C 0.57/1.46%; IQR≤2.04% |
 
 **Ratio = Lython elapsed / CPython elapsed; above one means slower.** These are
 complete scripts inside warm processes, with two independent processes per engine.
@@ -15,19 +15,19 @@ Ranges are process-median combinations, not confidence intervals. Control moveme
 and sample IQRs remain visible; exact magnitudes are diagnostic. Controls L/C are
 the percentage differences between the two Lython/CPython process medians.
 
-Measured **2026-11-16 UTC**, Lython **312f5911 / frozen0443b5cf** versus stock
-**CPython3.13.16**. Quiet Azure F4as_v7 / Ubuntu24.04.4, four AMD EPYC9V45 vCPUs,
-16GiB/no swap; .NET11RC3 natural workstation GC/normal tiering, CPython GIL/GC.
-The first four rows use the fixed four-case R437catalog43b7c6b0; the configuration/
-report rows use R444catalog36c0a528with all six cases. Every engine/control within
-each collection loads identical catalog bytes; initialization/startup stay outside
-the clocks. Three bounded six-phase collections use5s full-request warmups and
-five rotated approximately0.5s rounds. All image/golden/quiet/join/archive gates
-pass. [CSV/text/JSON/search evidence](../benchmarks/results/2026-11-16-representative-cpython-checkpoint/README.md),
-[configuration/report evidence](../benchmarks/results/2026-11-16-generated-scripts-cpython/README.md).
-Different collection initialization is explicit; no causal source-change gain is inferred.
-These tables describe the named measured revision, not today's HEAD. Later
-source-pair measurements appear separately below.
+Measured **2026-11-16 UTC**: the first four workloads use committed
+**81f60210 / frozen a44f65a8** versus stock **CPython3.13.16**. Configuration/report
+remain earlier **312f5911 / frozen0443b5cf** measurements, identified per row.
+Quiet Azure F4as_v7 / Ubuntu24.04.4, four AMD EPYC9V45vCPUs,16GiB/no swap;
+.NET11RC3 natural workstation GC/normal tiering, CPython GIL/GC. The fixed six-case
+catalog36c0a528 is identical in every process within each collection. Two processes
+per engine,5s full-request warmups,five rotated approximately0.5s samples; startup
+is outside the clocks. Latest twelve jobs400.971s,all correctness/quiet/join/archive
+gates pass. Normalization's **10.85%CPython control movement** makes its precise
+warm ratio uncertain. No causal gain is inferred across source collections.
+[Latest CSV/text/JSON/search evidence](../benchmarks/results/2026-11-16-consolidated-cpython-checkpoint/README.md),
+[earlier configuration/report evidence](../benchmarks/results/2026-11-16-generated-scripts-cpython/README.md).
+Tables describe named measured sources; later changes require their own evidence.
 
 Warm includes synchronous Run, mediated RAM I/O, complete stdout/file goldens and
 prior-result cleanup. It excludes compilation/startup, fixture reset/protocol and
@@ -40,18 +40,18 @@ No startup, pending-I/O, contention, heap/RSS or embedding-tail comparison is av
 
 | Workload | Phase | Lython | CPython | Ratio | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| CSV invoice | Compilation only | 0.099–0.100 ms | 0.093–0.094 ms | 1.06–1.07× | Diagnostic; controls L/C 0.08/0.64%; IQR≤1.62% |
-| CSV invoice | Compile and execute once | 6.890–6.925 ms | 6.216–6.255 ms | 1.10–1.11× | Diagnostic; controls L/C 0.50/0.63%; IQR≤1.83% |
-| Text normalization | Compilation only | 0.036–0.036 ms | 0.037–0.037 ms | 0.95–0.96× | Diagnostic; controls L/C 0.15/0.65%; IQR≤1.65% |
-| Text normalization | Compile and execute once | 1.211–1.252 ms | 0.593–0.614 ms | 1.97–2.11× | Diagnostic; controls L/C 3.31/3.58%; IQR≤2.15% |
-| JSON-lines aggregation | Compilation only | 0.051–0.052 ms | 0.051–0.051 ms | 0.99–1.02× | Diagnostic; controls L/C 2.26/0.40%; IQR≤1.68% |
-| JSON-lines aggregation | Compile and execute once | 3.553–3.576 ms | 4.209–4.225 ms | 0.84–0.85× | Diagnostic; controls L/C 0.64/0.37%; IQR≤1.92% |
-| File search / defensive helper | Compilation only | 0.031–0.031 ms | 0.036–0.036 ms | ~0.85× | Diagnostic; controls L/C 0.87/0.14%; IQR≤1.68% |
-| File search / defensive helper | Compile and execute once | 0.355–0.380 ms | 0.221–0.228 ms | 1.56–1.72× | Diagnostic; controls L/C 6.88/3.30%; IQR≤2.93% |
-| Configuration edit | Compilation only | 0.036–0.036 ms | 0.035–0.035 ms | 1.04–1.05× | Diagnostic; controls L/C 0.23/0.07%; IQR≤1.01% |
-| Configuration edit | Compile and execute once | 0.240–0.245 ms | 0.255–0.255 ms | 0.94–0.96× | Diagnostic; controls L/C 1.92/0.10%; IQR≤0.67% |
-| Report rendering | Compilation only | 0.040–0.040 ms | 0.038–0.038 ms | 1.06–1.06× | Diagnostic; controls L/C 0.27/0.32%; IQR≤0.53% |
-| Report rendering | Compile and execute once | 2.974–2.994 ms | 2.456–2.475 ms | 1.20–1.22× | Diagnostic; controls L/C 0.66/0.77%; IQR≤4.04% |
+| CSV invoice | Compilation only | 0.099–0.100 ms | 0.094–0.094 ms | 1.06–1.06× | Diagnostic; controls L/C 0.19/0.23%; IQR≤1.27% |
+| CSV invoice | Compile and execute once | 6.920–6.994 ms | 6.213–6.316 ms | 1.10–1.13× | Diagnostic; controls L/C 1.07/1.67%; IQR≤0.92% |
+| Text normalization | Compilation only | 0.035–0.036 ms | 0.037–0.038 ms | 0.94–0.97× | Diagnostic; controls L/C 1.69/1.37%; IQR≤1.96% |
+| Text normalization | Compile and execute once | 1.215–1.257 ms | 0.597–0.613 ms | 1.98–2.11× | Diagnostic; controls L/C 3.48/2.64%; IQR≤0.95% |
+| JSON-lines aggregation | Compilation only | 0.054–0.054 ms | 0.053–0.053 ms | 1.02–1.03× | Diagnostic; controls L/C 0.39/0.34%; IQR≤4.14% |
+| JSON-lines aggregation | Compile and execute once | 3.590–3.609 ms | 4.177–4.312 ms | 0.83–0.86× | Diagnostic; controls L/C 0.55/3.22%; IQR≤3.80% |
+| File search / defensive helper | Compilation only | 0.031–0.031 ms | 0.036–0.036 ms | 0.85–0.86× | Diagnostic; controls L/C 0.16/1.14%; IQR≤1.05% |
+| File search / defensive helper | Compile and execute once | 0.363–0.372 ms | 0.237–0.245 ms | 1.48–1.57× | Diagnostic; controls L/C 2.44/3.18%; IQR≤0.76% |
+| Configuration edit | Compilation only | 0.036–0.036 ms | 0.035–0.035 ms | 1.04–1.05× | Earlier312f/0443; diagnostic; controls L/C 0.23/0.07%; IQR≤1.01% |
+| Configuration edit | Compile and execute once | 0.240–0.245 ms | 0.255–0.255 ms | 0.94–0.96× | Earlier312f/0443; diagnostic; controls L/C 1.92/0.10%; IQR≤0.67% |
+| Report rendering | Compilation only | 0.040–0.040 ms | 0.038–0.038 ms | 1.06–1.06× | Earlier312f/0443; diagnostic; controls L/C 0.27/0.32%; IQR≤0.53% |
+| Report rendering | Compile and execute once | 2.974–2.994 ms | 2.456–2.475 ms | 1.20–1.22× | Earlier312f/0443; diagnostic; controls L/C 0.66/0.77%; IQR≤4.04% |
 
 Compilation includes compiled-owner disposal; compile-to-result includes compilation,
 one execution and compiled-owner disposal. Independently warmed phase medians are
@@ -71,7 +71,8 @@ recovery is inferred across collections.
 In particular, normalization CPython shifted about0.73→0.50ms in earlier same-case
 collections despite identical worker/binary/flags/case bytes. Catalog initialization
 differed, but its causal effect remains unisolated. This checkpoint fixes catalog
-and initialization within its twelve jobs; it does not explain the earlier shift.
+and initialization within its twelve jobs; it does not explain the earlier shift
+or the latest10.85%CPython normalization-control movement.
 Moving process controls remain uncertainty, not proof of a failed design.
 
 ## Improvements within Lython

@@ -8852,3 +8852,13 @@ each target pass. Normalization fresh−2.8..−6.2%and calls−1.6..−2.8%elap
 allocation flat. Compilation elapsed+1.0..+2.6%, final numeric+1.1..+6.7%with moving
 reference/mixed CPU, CSV/report inconclusive: explicit debt, no universal gain.
 Initial source/adverse evidence preserved separately. Full delivery pending.
+
+[R451/B854 consolidated-runtime CPython checkpoint](results/2026-11-16-consolidated-cpython-checkpoint/README.md):
+81f60210/frozena44f versus CPython3.13.16,four complete maintained scripts and
+compile/warm/fresh phases. Twelve jobs400.971s/all gates,all users joined and
+archive SHAverified under lease. Warm CSV1.12–1.13×,normalization2.00–2.24×,
+JSON0.84–0.85×,search1.56–1.65×. Normalization CPython controls move10.85%,
+precise ratio uncertain; both show substantial gap. Earlier config/report remain
+named312f/0443measurements. No causal source gain or RSS/tail claim. Original
+adversity/control movement retained,not automatically retimed. Guide refreshed;
+whole-script redesign objective continues. Publication/tagging held.
