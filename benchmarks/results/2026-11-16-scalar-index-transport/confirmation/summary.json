@@ -1,0 +1,82 @@
+{
+  "complete": true,
+  "elapsedSeconds": 97.23738470394164,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "rows": [
+    {
+      "case": "scripts.numeric-squared-error.large",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "candidate": 1.9318245702811245,
+        "reference": 1.9595820685483871,
+        "candidate-control": 1.8785702918287936,
+        "reference-control": 2.0934496767241377
+      },
+      "cpuMilliseconds": {
+        "candidate": 2.008032128514056,
+        "reference": 2.056451612903226,
+        "candidate-control": 1.9844357976653697,
+        "reference-control": 2.1982758620689657
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.6046386619480788,
+        "reference": 0.7310888643176224,
+        "candidate-control": 0.18409376291866042,
+        "reference-control": 0.6623523405029909
+      },
+      "elapsedChangePercent": [
+        -10.264368295281434,
+        -7.720515484084944,
+        -4.134135437338693,
+        -1.4165009321515543
+      ],
+      "cpuChangePercent": [
+        -9.727626459143979,
+        -8.654224742105699,
+        -3.5019455252918386,
+        -2.354516103630233
+      ],
+      "referenceSpreadPercent": 6.831436678480962,
+      "candidateSpreadPercent": 2.834830226155005
+    },
+    {
+      "case": "calls.positional.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 1.9873374308300396,
+        "reference": 2.011261419354839,
+        "candidate-control": 2.0154638211382117,
+        "reference-control": 2.001640744
+      },
+      "cpuMilliseconds": {
+        "candidate": 1.976284584980237,
+        "reference": 2.0161290322580645,
+        "candidate-control": 2.032520325203252,
+        "reference-control": 2.0
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.3299240207322979,
+        "reference": 0.3771467589975,
+        "candidate-control": 1.076816226408787,
+        "reference-control": 0.6917101403687274
+      },
+      "elapsedChangePercent": [
+        -1.189501687576433,
+        -0.7145794375356895,
+        0.20894358848293493,
+        0.6905873184110067
+      ],
+      "cpuChangePercent": [
+        -1.9762845849802368,
+        -1.1857707509881465,
+        0.8130081300813163,
+        1.6260162601626105
+      ],
+      "referenceSpreadPercent": 0.48063946458312135,
+      "candidateSpreadPercent": 1.4152800562119205
+    }
+  ],
+  "retentionDecisionPending": true,
+  "CPythonRefreshed": false
+}

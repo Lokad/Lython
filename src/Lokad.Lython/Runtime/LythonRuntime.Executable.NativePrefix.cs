@@ -128,14 +128,13 @@ internal sealed partial class LythonRuntime
                     case ExecutableOpCode.Subscript:
                     {
                         var target = Read(instruction.InputStart, 0);
-                        var key = Read(instruction.SecondInput, 1);
-                        if (target is PyTuple tuple && TryMachineInteger(key, out var tupleIndex)
-                            && tuple.TryBorrowInteger(tupleIndex, out var tupleItem))
+                        if (TryReadMachineOperand(Code, Values, instruction.SecondInput, out var index)
+                            && PyIndexing.TryReadSequenceIndex(target, index, instruction.Span, _scope, out var item))
                         {
-                            _scope.CheckExecution(instruction.Span);
-                            Publish(instruction, tupleItem);
+                            Publish(instruction, item);
                             break;
                         }
+                        var key = Read(instruction.SecondInput, 1);
                         if (target is not PyDict { HasProtocolKeys: false } dictionary || key is not PyString field) return false;
                         if (instruction.LookupCacheIndex >= 0 && dictionary.HasSharedRecordKeys)
                         {

@@ -177,9 +177,12 @@ internal sealed partial class LythonRuntime
                             break;
                         case ExecutableOpCode.Binary or ExecutableOpCode.Augmented or ExecutableOpCode.Unary:
                             if (TryExecuteBuiltinArithmetic(ref execution, scope, invocation, instruction)) break;
-                            goto case ExecutableOpCode.Subscript;
+                            goto case ExecutableOpCode.StoreSubscript;
                         case ExecutableOpCode.Subscript:
-                        case ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast:
+                            if (TryExecuteSequenceIndex(ref execution, scope, invocation, instruction)) break;
+                            goto case ExecutableOpCode.StoreSubscript;
+                        case ExecutableOpCode.StoreSubscript:
+                        case ExecutableOpCode.StoreSubscriptLast:
                             var pause = ExecuteInputInstruction(ref execution, scope, invocation, instruction, asynchronous,
                                 out pending, out pendingSpan, out nextCall);
                             if (pause != InstructionPause.Continue) return pause;

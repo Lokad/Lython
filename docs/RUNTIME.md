@@ -465,6 +465,14 @@ backing. A private item borrow can retain its whole source tuple until observati
 or slot retirement. Its owner stays funded; wider capacity, metadata and eventual
 boxes are admitted before allocation and can cause earlier shared-budget refusal.
 
+Builtin list, tuple, bytes and string reads share one scalar-index path in native
+helpers and ordinary executable work. A machine index stays in its existing slot
+rather than being boxed and converted back; tuple item borrows keep the tuple's
+canonical identity. Bounds/errors and UTF-8 scalar indexing use the same sequence
+operations, with active cancellation and admitted output storage. User containers,
+index protocols, slices and arbitrary-width keys retain their general paths,
+including genuine suspension and retained input ownership.
+
 There is no separate native integer bank, loan or capacity fact. Small native
 prefixes use a fixed managed buffer; larger helpers use admitted final slots.
 Continuation transfers the live slots once into owned storage, without retaining a

@@ -519,6 +519,11 @@ and restores managed depths and shared funding after cleanup. Public
 [operand read failures](Lokad.Lython.PublicApi.Tests/OperandReadFailureTests.cs)
 retain the original failing name/span and evaluation order. Class-subscription
 controls preserve the original type/key through descriptor and body suspension.
+[Exact sequence reads](Lokad.Lython.PublicApi.Tests/ExactSequenceSubscriptTests.cs)
+cover scalar bounds, Unicode, helper-loop aliases and retained-result funding.
+Custom `__index__` and `__getitem__` perform real asynchronous I/O; cancellation
+awaits cleanup without publishing a value or side effect and restores the budget.
+
 
 [Receiver methods](Lokad.Lython.PublicApi.Tests/ReceiverMethodSemanticsTests.cs)
 check receiver snapshots, exposed metadata, default presence, invalid-call effects

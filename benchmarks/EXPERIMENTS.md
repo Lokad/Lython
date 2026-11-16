@@ -8872,3 +8872,18 @@ source of timing debt. Select shared scalar-index operand transport,displacing
 tuple-only routes and avoiding objectification for builtin reads; generic protocols/
 identity/order/admission/current tokens remain. No call arena/JIT selected from
 sampling alone. Next implementation/comparison remains; objective not complete.
+
+[R453/B856–B857 shared scalar-index transport retained](results/2026-11-16-scalar-index-transport/README.md):
+qualified81f60210/a44f versus private642f at af5e6149 plus archived sources.
+Both tuple-only native/ordinary routes replaced by one builtin sequence read;
+scalar keys avoid objectification/conversion,canonical aliases/protocols remain.
+Complete numeric allocation−18.99%,conservative peak unchanged. Initial four
+jobs120.520s:warm elapsed/CPU favorable with5.70%moving reference,fresh includes
++3.02%adversity/10–11%moving controls,text/calls inconclusive. One8s-warmup two-job
+confirmation97.237s:fresh elapsed/CPU favorable,reference still moves6.83%,calls
+inconclusive. Magnitude/cause uncertain,original4scondition preserved,no universal
+gain or inferred recovery of prior debt. Both actual Windows targets focused
+176public/63internal pass,including new pending __index__ cancellation and helper
+aliases;all frozen-worker goldens/ownership/quiet/join/archive gates pass.
+Promoted source matches measured production text;full delivery qualification
+pending. Whole-script roadmap continues;publication/tagging held.

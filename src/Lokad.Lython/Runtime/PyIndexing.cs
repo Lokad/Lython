@@ -120,6 +120,23 @@ internal static class PyIndexing
         };
     }
 
+    // These sealed builtin sequences cannot expose or coerce their integer key.
+    // Keep its executable scalar unpublished; tuple elements retain the tuple's
+    // canonical identity when borrowed. Other receivers/keys keep ReadIndex.
+    internal static bool TryReadSequenceIndex(object target, long index, LythonSourceSpan span,
+        LythonRuntime.ExecutionContext context, out LythonRuntime.ExecutableSlot result)
+    {
+        result = default;
+        if (target is not (PyList or PyTuple or PyBytes or PyString)) return false;
+        context.CheckExecution(span);
+        using var ambient = PyStructuralGuard.PushAmbient(context, span);
+        var sequence = (IPyIndexableValue)target;
+        var position = ApplyIndexBounds(index, sequence.Length, span, TargetKind(target), IndexOperation.Read);
+        if (target is PyTuple tuple && tuple.TryBorrowInteger(position, out result)) return true;
+        result.Object = sequence.GetIndex(position);
+        return true;
+    }
+
     // Guest-visible colon keys keep raw bounds, like explicit slice() calls.
     // Fund the actual key before exposing it to a user or mapping; its storage
     // remains charged to the execution owner, including escaped aliases.

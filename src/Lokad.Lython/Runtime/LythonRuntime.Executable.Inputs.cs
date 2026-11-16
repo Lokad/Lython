@@ -8,6 +8,24 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class ExecutionContext
     {
+        private static bool TryExecuteSequenceIndex(ref ExecutableWorkState execution, ExecutionContext scope,
+            ExecutionContext? invocation, in ExecutableInstruction instruction)
+        {
+            // A prepared user descriptor owns the original receiver/key until
+            // resumption. It must finish through the ordinary protocol path.
+            if (invocation?._preparedCallValue is not null) return false;
+            var receiver = ReadOperand(ref execution, instruction.InputStart, scope, 0);
+            if (!TryReadMachineOperand(execution.Code, execution.Stack.Values, instruction.SecondInput, out var index))
+                return false;
+            try
+            {
+                if (!PyIndexing.TryReadSequenceIndex(receiver, index, instruction.Span, scope, out var value)) return false;
+                PublishInstructionResult(ref execution, invocation, instruction, value);
+                return true;
+            }
+            catch { execution.Stack.RetireTo(instruction.ResultSlot); throw; }
+        }
+
         // Genuine async work captures its values; raw type protocols use the
         // existing stack scratch. Context promotion runs no guest/admission hook.
         private static InstructionPause ExecuteInputInstruction(ref ExecutableWorkState execution, ExecutionContext scope,
@@ -32,14 +50,6 @@ internal sealed partial class LythonRuntime
                 ? ReadOperand(ref execution, instruction.ThirdInput, scope, 2) : null;
             try
             {
-                if (instruction.OpCode == ExecutableOpCode.Subscript && first is PyTuple tuple
-                    && second is BigInteger integerIndex && TryMachineInteger(integerIndex, out var tupleIndex)
-                    && tuple.TryBorrowInteger(tupleIndex, out var tupleItem))
-                {
-                    scope.CheckExecution(instruction.Span);
-                    PublishInstructionResult(ref execution, invocation, instruction, tupleItem);
-                    return InstructionPause.Continue;
-                }
                 if (instruction.OpCode is ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast)
                 {
                     var receiver = instruction.ValueLast ? first : second!;

@@ -11,6 +11,7 @@ public sealed class ExactSequenceSubscriptTests
         { "text='a😀𝄞z'\nprint(text[1],text[-2],text[True])", "😀 𝄞 😀\n" },
         { "data=range(0,1<<102,2)\nprint(data[1<<100]==1<<101,data[-1]==(1<<102)-2)", "True True\n" },
         { "events=[]\nclass Items:\n def __getitem__(self,key):\n  events.append(key)\n  return key*2\ndata=Items()\nprint(data[1],data[True],events)", "2 2 [1, True]\n" },
+        { "def last(values):\n value=None\n for index in range(len(values)):\n  value=values[index]\n return value\nseed=1<<100\nfor values in ([0,seed],(0,seed)):\n print(last(values) is seed)\nprint(last('a😀𝄞z'),last(b'ab'))", "True\nTrue\nz 98\n" },
     };
 
     [Theory]
@@ -58,11 +59,15 @@ public sealed class ExactSequenceSubscriptTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task CustomContainersStillSuspendAndCancel(bool cancel)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task CustomContainersAndIndicesStillSuspendAndCancel(bool cancel, bool indexProtocol)
     {
-        const string source = "class Items:\n def __getitem__(self,key):\n  with open('events.txt','a') as output: output.write('item')\n  return key+41\nprint(Items()[1])";
+        var source = indexProtocol
+            ? "class Key:\n def __index__(self):\n  with open('events.txt','a') as output: output.write('item')\n  return 1\ndef lookup(values,key):return values[key]\nprint(lookup([0,42],Key()))"
+            : "class Items:\n def __getitem__(self,key):\n  with open('events.txt','a') as output: output.write('item')\n  return key+41\nprint(Items()[1])";
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
         using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
