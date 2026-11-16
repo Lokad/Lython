@@ -8821,7 +8821,7 @@ allocation falls about16%; both collections favor numeric warm elapsed/CPU, with
 moving process controls limiting magnitude. Repeated call-loop elapsed/CPU is
 about2–3%adverse; normalization inconclusive. Accepted debt, not universal speedup.
 [Exact sources, goldens, controls, failures and retention](results/2026-11-16-compact-iteration-result/README.md).
-Full platform/stress/package delivery pending. This does not close the broader objective.
+[Full platform/stress/package delivery passes](results/2026-11-16-compact-iteration-result/delivery/README.md). This does not close the broader objective.
 
 
 [R449/B851 native iteration attribution](results/2026-11-16-native-iteration-attribution/README.md):

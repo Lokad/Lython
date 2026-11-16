@@ -4,7 +4,7 @@ R448/B849–B850, 2026-11-16 UTC. Retain the complete protocol migration for
 simplification, lower allocation and numeric whole-script evidence. Reference
 qualified R445 `cc794368`, frozen core `16c37b02`; measured candidate private
 `d545a2ad` plus [exact source](measured-sources.tar.xz), core `3bb9da5a`.
-No public API, policy or regex-provider change. Full delivery qualification pending.
+No public API, policy or regex-provider change. [Full Windows/Ubuntu actual .NET11/10, original stress and installed-package delivery passes](delivery/README.md).
 
 Replace synchronous bool/out-object iteration with the single result already used
 asynchronously. Store the existing executable slot; its unassigned state replaces
