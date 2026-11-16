@@ -1,0 +1,12 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "ramTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 271273984,
+  "archiveSHA256": "d28840115243bfd04dd05a33a802b33993d81c650e6fbcf8179f1a3b7504e6a6",
+  "source": "Committedc023042d/frozen0393331a; R420 current complete method-report call attribution",
+  "performanceComparison": false
+}

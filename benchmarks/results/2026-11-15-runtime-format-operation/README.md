@@ -1,6 +1,6 @@
 # One runtime method-format operation
 
-R419, retained**0393331a** versus committed**58eeea6f / frozen9d071eba**.
+R419, committed**c023042d / frozen0393331a** versus committed**58eeea6f / frozen9d071eba**.
 The complete1,024record/189,441B JSON-to-Markdown method-format report keeps
 the original stdout/file goldens. Baseline full43771040409 is still active at capture;
 its ordinary11/10/package checks pass both platforms and Ubuntu stress passes.
@@ -61,7 +61,7 @@ working response. Historical55ba core's5aliases and committed B813/B801response 
 are verified by fresh UID/path/hash/link/all-alias proofs before retirement. Canonical
 evidence/current0393/9d/8afbimages remain;254/252MiB floors unchanged.
 
-**Full delivery pending; publication held.** [Medians/controls](summary.json),
+[Full platform/stress/package delivery passes](delivery/README.md); publication held. [Medians/controls](summary.json),
 [allocation](allocation-summary.json),[source/image identity](identity.json),
 [checks](checks.json),[raw](observations.tgz),
 [source/original tests/procedures/failed staging](source-checks-and-procedure.tar.xz).

@@ -8631,3 +8631,9 @@ verified before unmount, all users joined. No CPU speedup or production change.
 
 
 [R418full delivery43771040409](results/2026-11-15-method-format-layout/delivery/README.md) qualifies58eeea6f/9d071eba on Windows/Ubuntu actual11/10:4,783internal/17,885public ordinary, original13/406stress and installed Release consumers each.16summaries/593source inputs verified. Terminal cached forever. Publication held; broader performance work continues.
+
+
+[R419full delivery43774159426](results/2026-11-15-runtime-format-operation/delivery/README.md) qualifies c023042d/0393331a at0e978c0b on Windows/Ubuntu actual11/10:4,777internal/17,894public ordinary, original13/406stress and installed Release consumers each.16summaries/595source inputs and deleted paths verified. Terminal cached forever; publication held.
+
+
+[R420current call/frame attribution](results/2026-11-16-current-call-attribution/README.md): c023042d/0393331a, B8151,016active samples/146unknown leaves/all other-thread CPU retained. Broad overlapping call groups include useful work; no isolated dominant ABI/storage cost or runtime prototype selected. Compiler facts and already-delivered routes verified. All image/golden/quiet/join/archive gates pass; terminal cached, no users/RAM remain. Next different workload/source gate; no repeated unchanged capture or new format micro-tweak.

@@ -128,6 +128,9 @@
   "retentionDecisionPending": false,
   "CPythonRefreshed": false,
   "retained": true,
-  "fullQualificationPending": true,
-  "reason": "Complete runtime format operation deletes callback executor/captures/fallback/duplicate field names and native per-field async wrapper;9.41%less allocation and modest whole-report elapsed/CPU support. Small adverse controls remain explicit. Not completion of larger call/frame/frontend roadmap."
+  "fullQualificationPending": false,
+  "reason": "Complete runtime format operation deletes callback executor/captures/fallback/duplicate field names and native per-field async wrapper;9.41%less allocation and modest whole-report elapsed/CPU support. Small adverse controls remain explicit. Not completion of larger call/frame/frontend roadmap.",
+  "fullQualificationRun": "43774159426",
+  "runtimeCommit": "c023042d",
+  "qualificationHead": "0e978c0b9b7aca52c89a0ffb332f8dcadcd19ea0"
 }

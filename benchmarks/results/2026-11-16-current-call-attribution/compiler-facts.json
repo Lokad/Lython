@@ -1,0 +1,248 @@
+{
+  "coreSHA256": "0393331afcdd9bffcb3dc1b2e1764316df152a20749ec08cec0c51f6e9a1b12f",
+  "purpose": "Known compiler metadata only, not guest heap traversal or CPU attribution",
+  "rows": [
+    {
+      "id": "scripts.report-render.large",
+      "codes": [
+        {
+          "name": "\u003Cmodule\u003E",
+          "mirrors": false,
+          "native": false,
+          "capacity": 16,
+          "locals": [
+            "json",
+            "render",
+            "\u003Cwith_manager:0\u003E",
+            "\u003Cwith_value:1\u003E",
+            "source",
+            "records",
+            "written",
+            "\u003Cwith_manager:2\u003E",
+            "\u003Cwith_value:3\u003E",
+            "target",
+            "record"
+          ],
+          "captured": [],
+          "closures": [],
+          "opcodeCounts": {
+            "Import": 1,
+            "DefineFunction": 1,
+            "LoadName": 3,
+            "LoadConst": 5,
+            "Call": 7,
+            "ResolveContextManager": 2,
+            "Dup": 2,
+            "StoreLocal": 10,
+            "EnterContextManager": 2,
+            "Jump": 5,
+            "LoadCallMember": 3,
+            "LoadLocal": 6,
+            "ExitContextManager": 2,
+            "EndFinally": 2,
+            "PopTop": 3,
+            "GetIter": 1,
+            "ForNext": 1,
+            "Augmented": 1,
+            "Complete": 1
+          },
+          "calls": [
+            {
+              "first": 11,
+              "count": 1,
+              "offset": 1,
+              "deadTailCapacity": 3,
+              "span": "LythonSourceSpan { Start = 136, Length = 20, Line = 8, Column = 6 }"
+            },
+            {
+              "first": 11,
+              "count": 1,
+              "offset": 2,
+              "deadTailCapacity": 2,
+              "span": "LythonSourceSpan { Start = 182, Length = 17, Line = 9, Column = 15 }"
+            },
+            {
+              "first": 11,
+              "count": 3,
+              "offset": 1,
+              "deadTailCapacity": 1,
+              "span": "LythonSourceSpan { Start = 217, Length = 34, Line = 11, Column = 6 }"
+            },
+            {
+              "first": 11,
+              "count": 1,
+              "offset": 2,
+              "deadTailCapacity": 2,
+              "span": "LythonSourceSpan { Start = 267, Length = 86, Line = 12, Column = 5 }"
+            },
+            {
+              "first": 14,
+              "count": 1,
+              "offset": 1,
+              "deadTailCapacity": 0,
+              "span": "LythonSourceSpan { Start = 402, Length = 14, Line = 14, Column = 22 }"
+            },
+            {
+              "first": 12,
+              "count": 1,
+              "offset": 2,
+              "deadTailCapacity": 1,
+              "span": "LythonSourceSpan { Start = 389, Length = 28, Line = 14, Column = 9 }"
+            },
+            {
+              "first": 11,
+              "count": 1,
+              "offset": 1,
+              "deadTailCapacity": 3,
+              "span": "LythonSourceSpan { Start = 439, Length = 14, Line = 16, Column = 1 }"
+            }
+          ]
+        },
+        {
+          "name": "render",
+          "mirrors": false,
+          "native": true,
+          "capacity": 6,
+          "locals": [
+            "record"
+          ],
+          "captured": [],
+          "closures": [],
+          "opcodeCounts": {
+            "StartFormattedString": 1,
+            "AppendFormattedText": 4,
+            "Subscript": 3,
+            "FormatField": 3,
+            "FinishFormattedString": 1,
+            "Return": 1
+          },
+          "calls": []
+        }
+      ]
+    },
+    {
+      "id": "scripts.report-render.format-method.large",
+      "codes": [
+        {
+          "name": "\u003Cmodule\u003E",
+          "mirrors": false,
+          "native": false,
+          "capacity": 16,
+          "locals": [
+            "json",
+            "render",
+            "\u003Cwith_manager:0\u003E",
+            "\u003Cwith_value:1\u003E",
+            "source",
+            "records",
+            "written",
+            "\u003Cwith_manager:2\u003E",
+            "\u003Cwith_value:3\u003E",
+            "target",
+            "record"
+          ],
+          "captured": [],
+          "closures": [],
+          "opcodeCounts": {
+            "Import": 1,
+            "DefineFunction": 1,
+            "LoadName": 3,
+            "LoadConst": 5,
+            "Call": 7,
+            "ResolveContextManager": 2,
+            "Dup": 2,
+            "StoreLocal": 10,
+            "EnterContextManager": 2,
+            "Jump": 5,
+            "LoadCallMember": 3,
+            "LoadLocal": 6,
+            "ExitContextManager": 2,
+            "EndFinally": 2,
+            "PopTop": 3,
+            "GetIter": 1,
+            "ForNext": 1,
+            "Augmented": 1,
+            "Complete": 1
+          },
+          "calls": [
+            {
+              "first": 11,
+              "count": 1,
+              "offset": 1,
+              "deadTailCapacity": 3,
+              "span": "LythonSourceSpan { Start = 146, Length = 20, Line = 8, Column = 6 }"
+            },
+            {
+              "first": 11,
+              "count": 1,
+              "offset": 2,
+              "deadTailCapacity": 2,
+              "span": "LythonSourceSpan { Start = 192, Length = 17, Line = 9, Column = 15 }"
+            },
+            {
+              "first": 11,
+              "count": 3,
+              "offset": 1,
+              "deadTailCapacity": 1,
+              "span": "LythonSourceSpan { Start = 227, Length = 34, Line = 11, Column = 6 }"
+            },
+            {
+              "first": 11,
+              "count": 1,
+              "offset": 2,
+              "deadTailCapacity": 2,
+              "span": "LythonSourceSpan { Start = 277, Length = 86, Line = 12, Column = 5 }"
+            },
+            {
+              "first": 14,
+              "count": 1,
+              "offset": 1,
+              "deadTailCapacity": 0,
+              "span": "LythonSourceSpan { Start = 412, Length = 14, Line = 14, Column = 22 }"
+            },
+            {
+              "first": 12,
+              "count": 1,
+              "offset": 2,
+              "deadTailCapacity": 1,
+              "span": "LythonSourceSpan { Start = 399, Length = 28, Line = 14, Column = 9 }"
+            },
+            {
+              "first": 11,
+              "count": 1,
+              "offset": 1,
+              "deadTailCapacity": 3,
+              "span": "LythonSourceSpan { Start = 449, Length = 14, Line = 16, Column = 1 }"
+            }
+          ]
+        },
+        {
+          "name": "render",
+          "mirrors": false,
+          "native": true,
+          "capacity": 9,
+          "locals": [
+            "record"
+          ],
+          "captured": [],
+          "closures": [],
+          "opcodeCounts": {
+            "LoadCallMember": 1,
+            "Subscript": 3,
+            "Call": 1,
+            "Return": 1
+          },
+          "calls": [
+            {
+              "first": 1,
+              "count": 3,
+              "offset": 2,
+              "deadTailCapacity": 3,
+              "span": "LythonSourceSpan { Start = 45, Length = 93, Line = 5, Column = 12 }"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
