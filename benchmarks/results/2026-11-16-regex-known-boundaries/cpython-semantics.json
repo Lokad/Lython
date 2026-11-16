@@ -1,0 +1,13 @@
+{
+  "version": "Python 3.13.2",
+  "cases": [
+    {
+      "source": "import re\ntext='\u00e9\ud83d\ude00a'*64\nmatches=list(re.finditer(r'(?=(.*))',text))\nprint(len(matches),sum(m.start() for m in matches),sum(m.end(1) for m in matches))\nprint(matches[0].regs,matches[-1].regs,matches[17].group(1)==text[17:])\nre.purge()\nprint(matches[0].string is text,matches[0].span(1),matches[-1].group(1))\n",
+      "expected": "193 18528 37056\n((0, 0), (0, 192)) ((192, 192), (192, 192)) True\nTrue (0, 192) \n"
+    },
+    {
+      "source": "import re\ntext='\u00e9\ud83d\ude00a'*64\np=re.compile(r'(?<=(..))(?=(.*))|(?P<missing>Z)')\nmatches=list(p.finditer(text,5,len(text)-7))\nprint(len(matches),sum(m.start() for m in matches),sum(m.end(2) for m in matches))\nprint(matches[0].regs,matches[-1].regs,matches[0].pos,matches[0].endpos)\nre.purge()\nprint(matches[0].group(1)==text[3:5],matches[0].group(2)==text[5:-7],matches[-1].group(2),matches[-1].span('missing'))\n",
+      "expected": "181 17195 33485\n((5, 5), (3, 5), (5, 185), (-1, -1)) ((185, 185), (183, 185), (185, 185), (-1, -1)) 5 185\nTrue True  (-1, -1)\n"
+    }
+  ]
+}

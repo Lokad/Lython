@@ -32,6 +32,7 @@ internal sealed partial class LythonRuntime
             private readonly MemoryGovernor.TemporaryMemoryReservation _storage;
             private ILythonRegexSubject? _subject;
             private long[]? _coordinates;
+            private readonly LythonRegexWindow _window;
             private RegexScalarPosition _position;
             internal readonly LythonRegexCapture?[] Captures;
             internal int? LastIndex;
@@ -40,6 +41,7 @@ internal sealed partial class LythonRuntime
                 ExecutionContext context, LythonSourceSpan span)
             {
                 _pattern = pattern; _context = context; _span = span;
+                _window = window;
                 _position = new(window.StartByte, window.Pos);
                 if (pattern.CaptureSlotCount <= 0 || pattern.CaptureSlotCount > Array.MaxLength)
                     throw RuntimeErrors.Runtime("Regex provider returned inconsistent capture metadata.", span);
@@ -83,7 +85,7 @@ internal sealed partial class LythonRuntime
                     _context.CheckExecution(_span);
                     _coordinates = new long[count];
                 }
-                ProjectScalarBounds(range, captures, ref _position, _coordinates, _context, _span);
+                ProjectScalarBounds(range, _window, captures, ref _position, _coordinates, _context, _span);
             }
 
             public void Dispose()
@@ -137,7 +139,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private static void ProjectScalarBounds(RegexSubjectRange range, ReCaptureRange[] captures,
+        private static void ProjectScalarBounds(RegexSubjectRange range, LythonRegexWindow window, ReCaptureRange[] captures,
             ref RegexScalarPosition previous, Span<long> coordinates, ExecutionContext context, LythonSourceSpan span)
         {
             var count = checked(2 * captures.Length);
@@ -170,10 +172,25 @@ internal sealed partial class LythonRuntime
                 context.CheckExecution(span);
                 var boundary = (int)(coordinates[i] >> 32);
                 var endpoint = (int)(coordinates[i] & uint.MaxValue);
-                // Lookbehind captures can precede the previous whole match.
-                // Seek from the nearer known byte boundary instead of rescanning
-                // the entire prefix for every nearby overlapping capture.
-                if (boundary >= 0 && boundary < offset - boundary) { offset = 0; scalar = 0; }
+                // All these scalar boundaries are already known. Long lookahead
+                // captures can repeatedly reach an end far beyond the whole match;
+                // lookbehind can precede the window. Neither needs a dense index
+                // or a repeated walk from the previous match through that prefix.
+                if (boundary >= 0 && boundary != offset)
+                {
+                    var nearest = new RegexScalarPosition(offset, scalar);
+                    var distance = Math.Abs(boundary - offset);
+                    if (boundary < distance) nearest = default;
+                    else if (input.Length - boundary < distance)
+                        nearest = new(input.Length, range.Original.Length);
+                    // Full-window endpoints are the same anchors above. Only
+                    // distinct bounds can supply additional position knowledge.
+                    if (window.StartByte != 0)
+                        SelectCloserBoundary(boundary, new(window.StartByte, window.Pos), ref nearest);
+                    if (window.EndByte != input.Length)
+                        SelectCloserBoundary(boundary, new(window.EndByte, window.EndPos), ref nearest);
+                    (offset, scalar) = nearest;
+                }
                 while (boundary >= 0 && offset > boundary)
                 {
                     if ((scalar & 1023) == 0) context.CheckExecution(span);
@@ -194,6 +211,12 @@ internal sealed partial class LythonRuntime
                     ? captures[slot] with { Start = value } : captures[slot] with { End = value };
             }
             previous = new(captures[0].EndByte, captures[0].End);
+        }
+
+        private static void SelectCloserBoundary(int boundary, RegexScalarPosition candidate, ref RegexScalarPosition current)
+        {
+            if (Math.Abs(candidate.ByteOffset - boundary) < Math.Abs(current.ByteOffset - boundary))
+                current = candidate;
         }
 
         internal static object Match(RePatternObject pattern, RegexSubjectRange range, LythonRegexMatchMode mode,

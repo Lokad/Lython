@@ -2101,7 +2101,9 @@ The prepared operation owns Unicode projection working storage and its scalar
 cursor, seeded from the original window. One admitted coordinate array is reused
 across matches and released after cursor/provider cleanup; ASCII needs no such
 array. It stays charged while iteration or a replacement callback is suspended.
-Projection seeks from the nearer known byte boundary for lookbehind captures.
+Projection seeks from the nearest already-known byte boundary: the current cursor,
+original subject endpoints or original window bounds. Lookbehind can precede the
+window; lookahead can reach its end without rescanning that suffix for each match.
 Forward and backward scans observe current cancellation; no dense subject index
 is retained. Arbitrary far captures can still require long walks.
 

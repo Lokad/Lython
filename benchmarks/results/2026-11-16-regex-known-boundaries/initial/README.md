@@ -17,8 +17,8 @@ Ubuntu24.04.4/four EPYC9V45vCPUs/16GiB/no swap/.NET11RC3.
 | Unicode short4,096 |−0.08..+4.72%|0..+3.05%|1.06/3.70%|
 
 All source/control pairings preserved; positive means slower. Existing backend
-capture-text staging remains quadratic in these suffix cases and dominates
-larger inputs. These clocks do not isolate that causal share or prove new
+capture-text staging grows quadratically in these suffix cases and can obscure
+core projection gains. These clocks do not isolate that causal share or prove new
 whole-script asymptotic behavior. The short control is adverse/moving, not parity.
 
 The algorithm replaces the origin-only reset with nearest known subject/window

@@ -1,0 +1,133 @@
+{
+  "complete": true,
+  "elapsedSeconds": 153.25219850800931,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "rows": [
+    {
+      "case": "diagnostic.regex.unicode-tail.1024",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 18.78510951851852,
+        "reference": 19.933840500000002,
+        "candidate-control": 18.875620481481484,
+        "reference-control": 20.90652091666667
+      },
+      "cpuMilliseconds": {
+        "candidate": 18.88888888888889,
+        "reference": 20.0,
+        "candidate-control": 18.88888888888889,
+        "reference-control": 21.25
+      },
+      "elapsedChangePercent": [
+        -10.147127810524225,
+        -9.71419607920585,
+        -5.762717833934117,
+        -5.308661010498794
+      ],
+      "cpuChangePercent": [
+        -11.111111111111105,
+        -11.111111111111105,
+        -5.555555555555558,
+        -5.555555555555558
+      ],
+      "referenceSpreadPercent": 4.879543491213667,
+      "candidateSpreadPercent": 0.4818229186991818
+    },
+    {
+      "case": "diagnostic.regex.unicode-tail.4096",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 287.469766,
+        "reference": 303.2366065,
+        "candidate-control": 287.9672445,
+        "reference-control": 302.93968049999995
+      },
+      "cpuMilliseconds": {
+        "candidate": 290.0,
+        "reference": 305.0,
+        "candidate-control": 290.0,
+        "reference-control": 310.0
+      },
+      "elapsedChangePercent": [
+        -5.199517525929043,
+        -5.106598935625395,
+        -5.035461310638301,
+        -4.942381920812766
+      ],
+      "cpuChangePercent": [
+        -6.451612903225811,
+        -6.451612903225811,
+        -4.918032786885251,
+        -4.918032786885251
+      ],
+      "referenceSpreadPercent": 0.09801489177976297,
+      "candidateSpreadPercent": 0.1730541986805001
+    },
+    {
+      "case": "diagnostic.regex.ascii-tail.4096",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 281.564151,
+        "candidate-control": 281.352685,
+        "reference": 283.7991185,
+        "candidate": 281.92043
+      },
+      "cpuMilliseconds": {
+        "reference-control": 285.0,
+        "candidate-control": 285.0,
+        "reference": 290.0,
+        "candidate": 290.0
+      },
+      "elapsedChangePercent": [
+        -0.862029985480739,
+        -0.661978271789454,
+        -0.07510402132122618,
+        0.1265356398300943
+      ],
+      "cpuChangePercent": [
+        -1.7241379310344862,
+        0.0,
+        0.0,
+        1.7543859649122862
+      ],
+      "referenceSpreadPercent": 0.7937684865286787,
+      "candidateSpreadPercent": 0.20179121446806114
+    },
+    {
+      "case": "diagnostic.regex.unicode-short.4096",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 3.7001174701492534,
+        "candidate-control": 3.680503051094891,
+        "reference": 3.7046475555555554,
+        "candidate": 3.646887543478261
+      },
+      "cpuMilliseconds": {
+        "reference-control": 3.7313432835820897,
+        "candidate-control": 3.7226277372262775,
+        "reference": 3.777777777777778,
+        "candidate": 3.6956521739130435
+      },
+      "elapsedChangePercent": [
+        -1.559122999181839,
+        -1.4386009930880683,
+        -0.651735532154929,
+        -0.5301026038389889
+      ],
+      "cpuChangePercent": [
+        -2.1739130434782705,
+        -1.4598540145985495,
+        -0.9565217391304337,
+        -0.23357664233576436
+      ],
+      "referenceSpreadPercent": 0.12243085369176843,
+      "candidateSpreadPercent": 0.921758820798968
+    }
+  ],
+  "retentionDecisionPending": false,
+  "CPythonRefreshed": false,
+  "retained": true,
+  "fullQualificationPending": true,
+  "reason": "Remove repeated traversal to already-known Unicode subject/window endpoints, no dense map/cache or backend change. Real normal0.4 complete diagnostics improve; refined controls modest/mixed, initial adversity retained. Allocation effectively flat+16B. Not a general asymptotic/backend or representative-script speedup."
+}

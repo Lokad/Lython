@@ -8643,3 +8643,6 @@ verified before unmount, all users joined. No CPU speedup or production change.
 
 
 [R422/B817 initial scalar-boundary correction](results/2026-11-16-regex-known-boundaries/initial/README.md): normal0.4 real backend, Unicode suffix elapsed8–11%/3–5%lower at1,024/4,096scalars, allocation+16B. ASCII mixed; short Unicode up to4.72%slower with3.70%candidate spread. Retain every adverse control and failed allocation-driver condition. One justified source refinement removes duplicate full-window anchors; no unchanged retiming or broader objective completion.
+
+
+[R422/B818 known scalar boundaries retained](results/2026-11-16-regex-known-boundaries/README.md):8f468f0a versus0393331a, released0.4 unchanged. Four complete regex diagnostics153.252s/all gates/cleanup; Unicode suffix elapsed5–10%/about5%lower at1,024/4,096with CPU support. Allocation effectively flat+16B; ASCII mixed and initial adverse short control retained.64internal/363public each actual11/10;592source inputs frozen. Full qualification pending; larger non-regex roadmap open.

@@ -1,0 +1,34 @@
+{
+  "rows": [
+    {
+      "case": "diagnostic.regex.unicode-tail.1024",
+      "referenceBytes": 1988950,
+      "candidateBytes": 1988966,
+      "changePercent": 0.0008044445561683489
+    },
+    {
+      "case": "diagnostic.regex.unicode-tail.4096",
+      "referenceBytes": 24485056,
+      "candidateBytes": 24485072,
+      "changePercent": 6.534598082641452e-05
+    },
+    {
+      "case": "diagnostic.regex.ascii-tail.4096",
+      "referenceBytes": 18872744,
+      "candidateBytes": 18872760,
+      "changePercent": 8.477834489983849e-05
+    },
+    {
+      "case": "diagnostic.regex.unicode-short.4096",
+      "referenceBytes": 1946112,
+      "candidateBytes": 1946072,
+      "changePercent": -0.0020553801631129076
+    }
+  ],
+  "complete": true,
+  "elapsedSeconds": 26.21763419965282,
+  "allOutputAndFileGoldensPassed": true,
+  "budgetBaselineAndCleanupPassed": true,
+  "CPUorElapsedClaim": false,
+  "boundary": "Local complete warm jobs, empty file fixtures/reset/full stdout and file goldens/result disposal. >=4/.5s warmup,3x4 allocation observations, natural process-wide counters. Compilation/startup/final cache teardown excluded. Original driver failure/timeout preserved under initial."
+}
