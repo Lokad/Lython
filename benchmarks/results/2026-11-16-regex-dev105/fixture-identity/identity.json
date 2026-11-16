@@ -1,0 +1,97 @@
+{
+  "assets": [
+    {
+      "role": "candidate",
+      "id": "Lokad.Utf8Regex",
+      "tfm": "net11.0",
+      "packageSHA256": "49c0d0c2309c29dda650760d889f84e4a2f661629eaa55d751eabcc19e4e2550",
+      "assemblySHA256": "32d94bc92d03292b8ea2ca3387ebcc9acbc2d460cf44588a23c913fc950f76d5"
+    },
+    {
+      "role": "candidate",
+      "id": "Lokad.Utf8Regex",
+      "tfm": "net10.0",
+      "packageSHA256": "49c0d0c2309c29dda650760d889f84e4a2f661629eaa55d751eabcc19e4e2550",
+      "assemblySHA256": "0ed447406d04f37eacf3ded95bedfb6b0102d8e34df039f141287c31fc502796"
+    },
+    {
+      "role": "candidate",
+      "id": "Lokad.Utf8Regex.PythonRe",
+      "tfm": "net11.0",
+      "packageSHA256": "89ad65d76adea14c329e2e19d1f70ab90f39d4d8ab4c866f0cecf6c6dfe09f6a",
+      "assemblySHA256": "f2463007307161c0fdbb66b3ed04284b0899269d7318c81f14a0a1f1b91727a2"
+    },
+    {
+      "role": "candidate",
+      "id": "Lokad.Utf8Regex.PythonRe",
+      "tfm": "net10.0",
+      "packageSHA256": "89ad65d76adea14c329e2e19d1f70ab90f39d4d8ab4c866f0cecf6c6dfe09f6a",
+      "assemblySHA256": "14580d5308e8d074c38d161a0ebd91605eac6e99a5a6bc20fb6d16785dcbcd2e"
+    },
+    {
+      "role": "reference",
+      "id": "Lokad.Utf8Regex",
+      "tfm": "net11.0",
+      "packageSHA256": "42f1c4f98171c456012ed99f8f5bc2dd304cfe024fb47606d4ae4d57575d9244",
+      "assemblySHA256": "1b96ff921bcf17f863e3f27c06d5bb5d7aa729ceb75175edabcfc41d8a1cb8a8"
+    },
+    {
+      "role": "reference",
+      "id": "Lokad.Utf8Regex.PythonRe",
+      "tfm": "net11.0",
+      "packageSHA256": "9370a9227faf74c469dc4d26317e1788e0bd48c721490201566c78b5198edcc2",
+      "assemblySHA256": "b16a537080ef71907a3d546921ef8e0d93a6dfb73c708d2b89ce90831a175bcb"
+    },
+    {
+      "role": "reference",
+      "id": "Lokad.Utf8Regex",
+      "tfm": "net10.0",
+      "packageSHA256": "42f1c4f98171c456012ed99f8f5bc2dd304cfe024fb47606d4ae4d57575d9244",
+      "assemblySHA256": "f213bea23b5ade5f3aff86ba665442eb077afd333dcb38506ae4542cb85a7f69"
+    },
+    {
+      "role": "reference",
+      "id": "Lokad.Utf8Regex.PythonRe",
+      "tfm": "net10.0",
+      "packageSHA256": "9370a9227faf74c469dc4d26317e1788e0bd48c721490201566c78b5198edcc2",
+      "assemblySHA256": "358f1472ac8a1a1f271c4fe3608cf03b8c646129fbc44ce463b17f4123049dfe"
+    }
+  ],
+  "images": {
+    "reference/net11.0": {
+      "Lokad.Lython.dll": "11cead6956c90f4d0e99a6ae3bb41ddc364dede0ddadba19c20d705a92cd7508",
+      "Lokad.Lython.Utf8Regex.dll": "fbb562a14c709c41015e2ac4002c2dcb548e47e2ae3b115e619bb421c90611cd",
+      "Lokad.Utf8Regex.dll": "1b96ff921bcf17f863e3f27c06d5bb5d7aa729ceb75175edabcfc41d8a1cb8a8",
+      "Lokad.Utf8Regex.PythonRe.dll": "b16a537080ef71907a3d546921ef8e0d93a6dfb73c708d2b89ce90831a175bcb",
+      "Lokad.Lython.PublicApi.Tests.dll": "54c19a85dcded8a697c246ad80a027db12079a323fef20a95dc14d6faa5e0e66"
+    },
+    "reference/net10.0": {
+      "Lokad.Lython.dll": "964c2c1dae633a27ab593995d2840c491042ac9e9c0476dcd3a6536ac9a9769a",
+      "Lokad.Lython.Utf8Regex.dll": "3c0736a2b63d92b0ebf13290bdb6d4a83ad875f3755b346b99e673998357d3b6",
+      "Lokad.Utf8Regex.dll": "f213bea23b5ade5f3aff86ba665442eb077afd333dcb38506ae4542cb85a7f69",
+      "Lokad.Utf8Regex.PythonRe.dll": "358f1472ac8a1a1f271c4fe3608cf03b8c646129fbc44ce463b17f4123049dfe",
+      "Lokad.Lython.PublicApi.Tests.dll": "481363c247128cc02e4147d7847d8acd02bd1074895c6f72de6def291458fb26"
+    },
+    "candidate/net11.0": {
+      "Lokad.Lython.dll": "11cead6956c90f4d0e99a6ae3bb41ddc364dede0ddadba19c20d705a92cd7508",
+      "Lokad.Lython.Utf8Regex.dll": "e32213e64faa976b3368bd412896f60ff7c4ea443bd262182920c617835e131c",
+      "Lokad.Utf8Regex.dll": "32d94bc92d03292b8ea2ca3387ebcc9acbc2d460cf44588a23c913fc950f76d5",
+      "Lokad.Utf8Regex.PythonRe.dll": "f2463007307161c0fdbb66b3ed04284b0899269d7318c81f14a0a1f1b91727a2",
+      "Lokad.Lython.PublicApi.Tests.dll": "54c19a85dcded8a697c246ad80a027db12079a323fef20a95dc14d6faa5e0e66"
+    },
+    "candidate/net10.0": {
+      "Lokad.Lython.dll": "964c2c1dae633a27ab593995d2840c491042ac9e9c0476dcd3a6536ac9a9769a",
+      "Lokad.Lython.Utf8Regex.dll": "f117ae60b107140d4a29588548213efa750eb77a4b5bf443cd35d56c83ed2695",
+      "Lokad.Utf8Regex.dll": "0ed447406d04f37eacf3ded95bedfb6b0102d8e34df039f141287c31fc502796",
+      "Lokad.Utf8Regex.PythonRe.dll": "14580d5308e8d074c38d161a0ebd91605eac6e99a5a6bc20fb6d16785dcbcd2e",
+      "Lokad.Lython.PublicApi.Tests.dll": "481363c247128cc02e4147d7847d8acd02bd1074895c6f72de6def291458fb26"
+    }
+  },
+  "nativeSourceSHA256": "46e24753f262c852c48deae6d7f66044cd400f71fd99789528c0245d6d4e1b14",
+  "sameAdapterSourceBothRoles": true,
+  "onlyProducerChangesApartFromNecessaryReferenceRecompilation": true,
+  "normalPinUnchanged": true,
+  "coreProductionUnchanged": true,
+  "privateSubprocessImagesCopiedAndHashVerified": true,
+  "publicationHeld": true
+}

@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[R443 exact regex subprocess identity](results/2026-11-16-regex-dev105/fixture-identity/README.md)
+corrects R409's private-parent/normal-child qualification gap. All3deliberate
+mismatches fail hash equality; matching private images pass363regex checks each
+actual11/10 for both old0.5and immutabledev105. Normal0.4passes6lifetime cases per
+target. Same native adapter source; new producer packages frozen/hashed. Parent
+semantics/timing evidence remains,old private in-flight claim was unproven. No
+runtime/core dependency or normal pin change; affected comparison/full delivery pending.
+
 [R442 complete call/frame design pass](results/2026-11-16-complete-call-design/README.md)
 confirms final-slot binding/owned continuations already exist. Consumed-operand
 reuse adds overlapping binding/lifetime obligations beyond slower R411; managed

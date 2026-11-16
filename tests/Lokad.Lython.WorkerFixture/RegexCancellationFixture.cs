@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Lokad.Lython;
@@ -8,6 +9,14 @@ internal static class RegexCancellationFixture
 {
     internal static int Run(string stage)
     {
+        var libraries = new[]
+        {
+            typeof(LythonEngine).Assembly,
+            typeof(Utf8RegexProvider).Assembly,
+            typeof(Lokad.Utf8Regex.Utf8Regex).Assembly,
+            typeof(Lokad.Utf8Regex.PythonRe.Utf8PythonRegex).Assembly,
+        }.ToDictionary(assembly => assembly.GetName().Name!,
+            assembly => Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(assembly.Location))));
         var budget = new LythonMemoryBudget();
         using var cancellation = new CancellationTokenSource();
         using var entered = new ManualResetEventSlim();
@@ -74,7 +83,7 @@ internal static class RegexCancellationFixture
         }
         if (!runningAtCancellation || !cancelled || !originalToken || budget.ReservedBytes != 0)
             throw new InvalidOperationException($"{stage}: running={runningAtCancellation}, cancelled={cancelled}, originalToken={originalToken}, balance={budget.ReservedBytes}");
-        Console.Write(JsonSerializer.Serialize(new { stage, runningAtCancellation, cancelled, originalToken, balance = budget.ReservedBytes }));
+        Console.Write(JsonSerializer.Serialize(new { stage, runningAtCancellation, cancelled, originalToken, balance = budget.ReservedBytes, libraries }));
         return 0;
     }
 }

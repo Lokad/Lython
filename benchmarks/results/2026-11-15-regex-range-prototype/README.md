@@ -8,6 +8,15 @@ source dcfe880a accepted by its producer atc5e02a27; immutable asset hashes are
 recorded. Separate sibling worktree edits are not consumed. No core release gate
 or runtime dependency edge is added.
 
+## Qualification correction
+
+[R443 fixture identity](../2026-11-16-regex-dev105/fixture-identity/README.md)
+finds that the private-parent qualification located the normal repository child
+fixture. These three subprocess checks did not establish development-producer
+in-flight cancellation. Historical child bytes were not recorded. Parent semantics
+and timing/allocation evidence remain. R443 adds exact parent/child image checks
+and separately qualifies both immutable producers with matching private fixtures.
+
 ## Displacement and semantics
 
 The native candidate advances directly into byte-range captures, removing detailed

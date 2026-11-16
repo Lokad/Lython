@@ -727,7 +727,9 @@ under the same allowance. Real-adapter controls retain Unicode group dictionarie
 after script disposal; their result owners remain funded until release.
 
 Regex adapter cancellation runs in an owned fixture process so a broken backend
-cannot leave matching work running in the test host. Its semantic goldens use
+cannot leave matching work running in the test host. The child reports loaded
+core, adapter and producer hashes; the parent requires exact image equality,
+including for private development providers. Its semantic goldens use
 frozen CPython output; cooperating-provider forwarding controls remain separate.
 Pattern-lifetime controls cover frontend analysis/imports, unpublished cancellation,
 publication refusal, retained programs across purge/eviction, suspended users and

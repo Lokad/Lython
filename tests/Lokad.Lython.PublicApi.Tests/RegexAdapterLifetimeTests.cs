@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Text.Json;
+using System.Security.Cryptography;
 using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
@@ -44,6 +45,16 @@ public sealed class RegexAdapterLifetimeTests
         Assert.True(result.ExitCode == 0, result.StandardError);
         Assert.Empty(result.StandardError);
         using var document = JsonDocument.Parse(result.StandardOutput);
+        var libraries = document.RootElement.GetProperty("libraries");
+        foreach (var assembly in new[]
+        {
+            typeof(LythonEngine).Assembly,
+            typeof(Utf8RegexProvider).Assembly,
+            typeof(Lokad.Utf8Regex.Utf8Regex).Assembly,
+            typeof(Lokad.Utf8Regex.PythonRe.Utf8PythonRegex).Assembly,
+        })
+            Assert.Equal(Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(assembly.Location))),
+                libraries.GetProperty(assembly.GetName().Name!).GetString());
         Assert.True(document.RootElement.GetProperty("runningAtCancellation").GetBoolean());
         Assert.True(document.RootElement.GetProperty("cancelled").GetBoolean());
         Assert.True(document.RootElement.GetProperty("originalToken").GetBoolean());
