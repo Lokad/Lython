@@ -63,6 +63,12 @@ reduce construction overlap while retaining more spare capacity. Reused
 `iterencode` chunk builders still produce independent copies. Returned values and
 aliases keep their owner funded until their users relinquish it.
 
+String and byte replacement share one native-byte construction pass. Missing
+needles reuse the immutable receiver and its existing funding. Changed results
+retain ordinary capacity admission and replacement overlap; growing output can
+reject earlier than an exact-size result. Empty string needles insert at Unicode
+scalar boundaries, while empty byte needles insert between individual bytes.
+
 Tab expansion measures native UTF-8 and writes one admitted final value in bounded
 literal runs and space fills. Joined text drains arbitrary iterables before item
 validation, preserving iteration effects and error precedence, then measures and

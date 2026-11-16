@@ -8906,3 +8906,14 @@ two bounded no-op cases fail on reference/pass here. Original capacity-diagnosti
 failure/correction, exact images/sources and all observations retained. Five jobs
 148.522s/all gates/joins/archive checks. One changed single-pass consolidation
 refinement is justified; no unchanged retiming, full qualification or CPU claim.
+
+[R455/B859 one-pass replacement retained](results/2026-11-16-bulk-replacement/refined/README.md)
+shares str/bytes construction and avoids missing-needle copies; the two-pass
+count/write pipeline is removed. Allocation essentially flat, binary warm
+elapsed+1.00..1.52%/fresh+0.34..1.65%; text/call/CPU outcomes remain mixed or moving.
+Retain for consolidation and demonstrated bounded no-op behavior with explicit
+small CPU debt; no speedup claim or unchanged retiming. Both actual Windows
+targets779public/99internal pass before and after promotion, nonincremental Release
+solution clean, six-case actual-worker/CPython goldens pass. Five jobs148.196s/all
+gates/joins/persistent archive checks. Full platform/stress/package checkpoint
+pending; complete call/frame and whole-script objectives remain active.

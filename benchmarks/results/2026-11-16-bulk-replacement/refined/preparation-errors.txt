@@ -1,0 +1,1 @@
+Before net10 tests began, an overbroad generated-script replacement changed the SDK executable path to nonexistent .dotnet10. Process creation failed, no test ran. Corrected to the pinned .dotnet11 SDK with actual net10.0 target; empty original log retained. An earlier apply_patch attempt to delete/add the same path was rejected before mutation, then applied sequentially.

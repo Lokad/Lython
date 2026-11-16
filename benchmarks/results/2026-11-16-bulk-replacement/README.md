@@ -5,6 +5,8 @@ qualified be176ed0/frozen642f5115 reference, candidate903bf146. The same 32-file
 worker image differs only in core. Normal optional adapter remains 0.4.0.
 **Do not promote this initial shape.** A single-pass refinement is independent
 changed-source work; these observations remain its original adverse condition.
+The [retained refinement](refined/README.md) records its separate measurements
+and accepted debt; it does not inherit this prototype's allocation reduction.
 
 The prototype replaces duplicate str/bytes builders with shared measurement and
 direct-final writing. No-op receiver aliases avoid new storage. It removes growth

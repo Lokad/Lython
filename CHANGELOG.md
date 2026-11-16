@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Share string/byte replacement construction and reuse immutable receivers when
+  the needle is absent, keeping repeated unchanged replacements within a bounded
+  working set. Preserve count semantics, cancellation and retained-result funding.
+
 - Carry machine-range iteration results directly in executable slots in ordinary
   loops and RunAsync, matching native helpers. Preserve observed identities,
   exact large integers, cancellation and cursor cleanup.

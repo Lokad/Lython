@@ -728,59 +728,10 @@ internal sealed partial class LythonRuntime
             return value;
         }
 
-        var source = value.Bytes;
-        var oldSpan = oldBytes.Bytes;
-        var newSpan = newBytes.Bytes;
-        var builder = new GovernedByteBuilder(context.MemoryGovernor, span, source.Length);
-        try
-        {
-
-            if (oldSpan.IsEmpty)
-            {
-                var insertions = 0;
-                if (count < 0 || insertions < count)
-                {
-                    builder.Append(newSpan);
-                    insertions++;
-                }
-
-                for (var i = 0; i < source.Length; i++)
-                {
-                    if ((i & 1023) == 0) context.CheckExecution(span);
-                    builder.Append(source[i]);
-                    if (count < 0 || insertions < count)
-                    {
-                        builder.Append(newSpan);
-                        insertions++;
-                    }
-                }
-
-                context.CheckExecution(span);
-                return builder.ToPyBytesAndRelease();
-            }
-
-            var offset = 0;
-            var replaced = 0;
-            while (offset < source.Length && (count < 0 || replaced < count))
-            {
-                context.CheckExecution(span);
-                var found = FindBytes(source[offset..], oldSpan, context, span);
-                if (found < 0)
-                {
-                    break;
-                }
-
-                builder.Append(source.Slice(offset, found));
-                builder.Append(newSpan);
-                offset += found + oldSpan.Length;
-                replaced++;
-            }
-
-            builder.Append(source[offset..]);
-            context.CheckExecution(span);
-            return builder.ToPyBytesAndRelease();
-        }
-        finally { builder.Release(); }
+        if (ReferenceEquals(oldBytes, newBytes) || oldBytes.Length == 0 && newBytes.Length == 0) return value;
+        using var result = ReplaceByteContent(value.Bytes, oldBytes.Bytes, newBytes.Bytes,
+            count, false, context.MemoryGovernor, context, span);
+        return result is null ? value : result.ToPyBytesAndRelease();
     }
 
     private static bool IsAsciiLetter(byte octet)

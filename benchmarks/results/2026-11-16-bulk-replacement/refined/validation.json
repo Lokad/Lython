@@ -1,0 +1,18 @@
+{
+  "productionTextParity": true,
+  "productionFiles": 585,
+  "localTargets": [
+    "net11.0",
+    "net10.0"
+  ],
+  "focusedEach": {
+    "public": 779,
+    "internal": 99
+  },
+  "promotedNonincrementalReleaseSolutionBuild": "clean",
+  "actualWorkerCPythonPreflightEach": 6,
+  "fullPlatformStressPackage": "pending",
+  "APIChanges": false,
+  "CPUImprovementEstablished": false,
+  "publicationHeld": true
+}

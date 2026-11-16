@@ -1,5 +1,11 @@
 # Testing Lython
 
+[Unchanged replacements](Lokad.Lython.PublicApi.Tests/BulkReplacementTests.cs)
+repeat string/byte operations in a bounded shared allowance through both APIs,
+retain an earlier result during another execution, and verify cleanup and reuse.
+Existing counted replacement cases cover protocols, cancellation and terminal
+refusal independently of the internal construction algorithm.
+
 [Argument transport](Lokad.Lython.Tests/OrdinaryFunctionTransportTests.cs) covers
 host admission replacing keyword defaults with a genuinely suspending key protocol.
 Inputs stay owned until lookup finishes; cancellation and terminal refusal prevent

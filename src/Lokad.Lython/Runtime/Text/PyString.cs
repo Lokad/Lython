@@ -661,63 +661,10 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         span ??= PyStructuralGuard.AmbientSpan;
         var governor = context?.MemoryGovernor ?? OwnerMemoryGovernor;
         context?.CheckExecution(span);
-        var remaining = count < 0 ? long.MaxValue : count;
-        if (oldValue._byteLength == 0)
-        {
-            long insertionCount = 1;
-            var prefixEnd = 0;
-            while (prefixEnd < _byteLength && insertionCount < remaining)
-            {
-                context?.CheckExecution(span);
-                prefixEnd += GetRuneLengthAtByteIndex(prefixEnd);
-                insertionCount++;
-            }
-            if (prefixEnd == _byteLength) _runeLength = (int)(insertionCount - 1);
-            var capacity = CheckedByteLength(
-                RuntimeMemoryEstimates.SaturatingAdd(
-                    _byteLength,
-                    RuntimeMemoryEstimates.SaturatingMultiply(insertionCount, newValue._byteLength)),
-                span);
-            var builder = governor is null
-                ? new GovernedByteBuilder(capacity)
-                : new GovernedByteBuilder(governor, span, capacity);
-            try
-            {
-                builder.Append(newValue);
-                for (var byteIndex = 0; byteIndex < prefixEnd;)
-                {
-                    context?.CheckExecution(span);
-                    var runeLength = GetRuneLengthAtByteIndex(byteIndex);
-                    builder.Append(Utf8Span.Slice(byteIndex, runeLength));
-                    builder.Append(newValue);
-                    byteIndex += runeLength;
-                }
-                builder.Append(Utf8Span[prefixEnd..]);
-                return builder.ToPyStringAndRelease();
-            }
-            finally { builder.Release(); }
-        }
-
-        var result = governor is null
-            ? new GovernedByteBuilder(_byteLength)
-            : new GovernedByteBuilder(governor, span, _byteLength);
-        try
-        {
-            var offset = 0;
-            while (offset < _byteLength && remaining > 0)
-            {
-                context?.CheckExecution(span);
-                var found = IndexOfBytes(Utf8Span[offset..], oldValue.Utf8Span);
-                if (found < 0) break;
-                result.Append(Utf8Span.Slice(offset, found));
-                result.Append(newValue);
-                offset += found + oldValue._byteLength;
-                remaining--;
-            }
-            result.Append(Utf8Span[offset..]);
-            return result.ToPyStringAndRelease();
-        }
-        finally { result.Release(); }
+        if (ReferenceEquals(oldValue, newValue) || oldValue.ByteLength == 0 && newValue.ByteLength == 0) return this;
+        using var result = LythonRuntime.ReplaceByteContent(Utf8Span, oldValue.Utf8Span, newValue.Utf8Span,
+            count, true, governor, context, span);
+        return result is null ? this : result.ToPyStringAndRelease();
     }
 
     public PyString ToLowerInvariant()

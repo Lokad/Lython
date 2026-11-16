@@ -1,0 +1,54 @@
+{
+  "rows": [
+    {
+      "id": "scripts.text-normalization.large",
+      "referenceBytes": 1514072,
+      "candidateBytes": 1514072,
+      "changePercent": 0.0,
+      "referencePeak": 2324834,
+      "candidatePeak": 2324834
+    },
+    {
+      "id": "scripts.numeric-squared-error.large",
+      "referenceBytes": 557704,
+      "candidateBytes": 557704,
+      "changePercent": 0.0,
+      "referencePeak": 906718,
+      "candidatePeak": 906718
+    },
+    {
+      "id": "scripts.csv-invoice.large",
+      "referenceBytes": 4197270,
+      "candidateBytes": 4197270,
+      "changePercent": 0.0,
+      "referencePeak": 9432323,
+      "candidatePeak": 9432323
+    },
+    {
+      "id": "scripts.report-render.large",
+      "referenceBytes": 2565632,
+      "candidateBytes": 2563864,
+      "changePercent": -0.0689108960287399,
+      "referencePeak": 3493303,
+      "candidatePeak": 3493303
+    },
+    {
+      "id": "calls.positional.large",
+      "referenceBytes": 1060680,
+      "candidateBytes": 1060680,
+      "changePercent": 0.0,
+      "referencePeak": 1383,
+      "candidatePeak": 1383
+    },
+    {
+      "id": "scripts.binary-normalization.large",
+      "referenceBytes": 536964,
+      "candidateBytes": 536936,
+      "changePercent": -0.005214502275763255,
+      "referencePeak": 252246,
+      "candidatePeak": 252246
+    }
+  ],
+  "boundary": "Complete warm runs including mediated I/O/reset, all output/file checks and result cleanup; compilation/startup/final cache teardown excluded. Process-wide CLR allocation counters, no forced GC; no timing comparison.",
+  "CPUOrElapsedClaim": false
+}
