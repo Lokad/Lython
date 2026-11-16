@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Carry machine-range iteration results directly in executable slots in ordinary
+  loops and RunAsync, matching native helpers. Preserve observed identities,
+  exact large integers, cancellation and cursor cleanup.
+
 - Share admitted immutable UTF-8 backing across ordinary slices and split fragments,
   removing independent payload arrays and copies. Preserve aggregate admission and
   funding for retained aliases; small views can conservatively retain full source

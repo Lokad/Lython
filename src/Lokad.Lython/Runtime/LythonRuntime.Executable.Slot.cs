@@ -83,6 +83,9 @@ internal sealed partial class LythonRuntime
             : RuntimeMemoryEstimates.EstimateScalarStorageBytes(_value);
 
         internal static ExecutableSlot FromObject(object? value) => new() { _value = value };
+
+        internal static ExecutableSlot FromInteger(long value)
+            => new() { _value = UnpublishedInteger, _integer = value };
     }
 
     internal static long ExecutableSlotsBytes(int capacity) => checked(32L + 24L * capacity);

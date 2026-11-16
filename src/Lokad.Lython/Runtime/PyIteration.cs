@@ -389,12 +389,15 @@ internal static partial class PyIteration
             return TryMoveNextCore(out value);
         }
 
+        internal bool IsBuiltinRange => _value is PyRange && _iterator is null;
+
         internal bool TryMoveNextInteger(out bool hasValue, out long value)
         {
             hasValue = false;
             value = 0;
             if (_disposed) return true;
-            if (_value is not PyRange range || _iterator is not null) return false;
+            if (!IsBuiltinRange) return false;
+            var range = (PyRange)_value!;
             _syncEnumerator ??= range.GetEnumerator();
             if (_syncEnumerator is not PyRange.Enumerator { HasMachineBounds: true } integers) return false;
             CheckExecution();

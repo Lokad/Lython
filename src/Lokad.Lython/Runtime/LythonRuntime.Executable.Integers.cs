@@ -71,12 +71,5 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
-        private void PublishInteger(in ExecutableInstruction instruction, long value)
-        {
-            var slot = default(ExecutableSlot);
-            slot.SetInteger(value);
-            Publish(instruction, slot);
-        }
-
     }
 }

@@ -212,7 +212,7 @@ internal sealed partial class LythonRuntime
                                 Index = instruction.TargetIndex;
                                 continue;
                             }
-                            PublishInteger(instruction, integer);
+                            Publish(instruction, ExecutableSlot.FromInteger(integer));
                             break;
                         }
                         var next = iterator is PyStringOps.CasedWhitespaceIteration words ? words.MoveNext()

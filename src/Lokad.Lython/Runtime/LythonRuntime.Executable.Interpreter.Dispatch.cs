@@ -192,9 +192,9 @@ internal sealed partial class LythonRuntime
                             }
                             goto case ExecutableOpCode.ForNext;
                         case ExecutableOpCode.ForNext:
-                            if (execution.Stack.TryAdvanceNativeIteration(instruction.InputStart, out var nativeNext))
+                            if (execution.Stack.TryAdvanceNativeIteration(instruction.InputStart, out var hasNativeNext, out var nativeNext))
                             {
-                                if (nativeNext.HasValue) PublishInstructionResult(ref execution, invocation, instruction, nativeNext.Value);
+                                if (hasNativeNext) PublishInstructionResult(ref execution, invocation, instruction, nativeNext);
                                 else
                                 {
                                     execution.Stack.RetireTo(instruction.InputStart);

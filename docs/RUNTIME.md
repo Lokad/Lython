@@ -441,6 +441,9 @@ when identity or an object representation is observed. Wider integers retain
 the exact-integer path. Compiled return and completion storage carries the same
 slots; cleanup that can observe a returning alias publishes its original identity
 before routing through finally. Public/callback results retain their object ABI.
+Exact-range iteration also publishes directly into these slots in ordinary,
+persistent and asynchronous execution. Observing an item still establishes its
+stable Python identity; custom iterators and wider bounds keep the general path.
 Function binding uses these cleared slots to distinguish omitted arguments from
 Python `None`; only the logical parameter count travels with completed arguments.
 Live defaults and genuinely suspending default protocols use the same slots.

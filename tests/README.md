@@ -97,6 +97,9 @@ before loop effects and verifies first failure, unwind and budget reuse.
 [Range iteration](Lokad.Lython.Tests/RangeIterationStateTests.cs) covers independent
 enumerators, stable observed values, disposal/exhaustion and signed/wider bounds,
 including a full signed span and strides whose final successor would overflow.
+[Public transport cases](Lokad.Lython.PublicApi.Tests/RangeSlotTransportTests.cs)
+preserve call/yield identities and aliases across real I/O under both APIs,
+with exact endpoints, deterministic cleanup and shared-budget reuse.
 
 ## Assembly boundaries
 

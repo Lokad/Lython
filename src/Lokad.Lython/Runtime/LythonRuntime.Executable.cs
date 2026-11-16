@@ -445,20 +445,34 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
-        internal bool TryAdvanceNativeIteration(int slot, out PyIterationResult next)
+        internal bool TryAdvanceNativeIteration(int slot, out bool hasValue, out ExecutableSlot next)
         {
-            switch (_items[slot].Object)
+            var source = _items[slot].Object.RequireNotNull();
+            PyIterationResult result;
+            switch (source)
             {
                 case PyStringOps.CasedWhitespaceIteration words:
-                    next = words.MoveNext();
-                    return true;
+                    result = words.MoveNext();
+                    break;
                 case PyList or PyTuple:
-                    next = PyIteration.AdvanceBuiltinSequence(_items[slot].Object!, ref _nativeIterationPositions![slot - _firstTemporarySlot]);
+                    result = PyIteration.AdvanceBuiltinSequence(source, ref _nativeIterationPositions![slot - _firstTemporarySlot]);
+                    break;
+                case PyIteration.Cursor { IsBuiltinRange: true } cursor:
+                    if (!cursor.TryMoveNextInteger(out hasValue, out var integer))
+                    {
+                        next = default;
+                        return false;
+                    }
+                    next = hasValue ? ExecutableSlot.FromInteger(integer) : default;
                     return true;
                 default:
-                    next = PyIterationResult.End;
+                    hasValue = false;
+                    next = default;
                     return false;
             }
+            hasValue = result.HasValue;
+            next = hasValue ? ExecutableSlot.FromObject(result.Value) : default;
+            return true;
         }
 
         public Memory<ExecutableSlot> Slice(int start, int count) => _items.AsMemory(start, count);

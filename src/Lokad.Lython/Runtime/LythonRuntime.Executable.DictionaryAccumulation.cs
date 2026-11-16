@@ -185,9 +185,8 @@ internal sealed partial class LythonRuntime
         {
             if (cursor is not null) { hasWord = cursor.TryReadWord(out word); return true; }
             word = default;
-            if (!execution.Stack.TryAdvanceNativeIteration(slot, out var next)) { hasWord = false; return false; }
-            hasWord = next.HasValue;
-            if (hasWord) word.Value = next.Value;
+            if (!execution.Stack.TryAdvanceNativeIteration(slot, out hasWord, out var next)) return false;
+            if (hasWord) word.Value = next.Object;
             return true;
         }
 
