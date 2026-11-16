@@ -8723,3 +8723,6 @@ R431 bounded source gate at1fe2a174: plain builtin wrappers/signatures already l
 
 
 [R437 fixed-catalog CPython checkpoint](results/2026-11-16-representative-cpython-checkpoint/README.md):312f5911/0443b5cf versus CPython3.13.16,twelve complete phases/two bounded collections,all gates. Four representative CSV/text/JSON/search scripts,compilation/warm/fresh separated; all processes use catalog43b7c6b0. Ratios/control movement preserved, no causal cross-collection gain or explanation of earlier CPython shift. Current guide leads with four warm rows; prior mixed-revision table preserved as historical. Broader whole-script objective remains open.
+
+
+[R436full delivery43828954661](results/2026-11-16-iteration-slot-transport/refined/delivery/README.md) GREEN at312f5911/0443b5cf: Windows/Ubuntu actual11/10 each4800internal/17921public ordinary,14internal/406public stress,installed Release consumers.607inputs/16summaries verified; terminal cached. CSV uncertainty/original adversity retained; external checkpoint and broader whole-script roadmap remain active.

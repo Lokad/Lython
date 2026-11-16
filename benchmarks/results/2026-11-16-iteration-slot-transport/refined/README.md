@@ -49,3 +49,8 @@ cached.607frozen inputs include updated seven-case source. Publication held.
 
 [Controls](summary.json),[allocation](allocation-summary.json),[raw](observations.tgz),
 [source/checks](source-and-checks.tar.xz),[image/procedure/original refusal](procedure-and-image.tar.xz).
+
+
+[Full Windows/Ubuntu actual11/10 ordinary/original stress and installed Release
+consumer delivery passes](delivery/README.md) at312f5911/measured0443b5cf. Original
+capture-time pending states and all control limitations remain evidence.

@@ -36,3 +36,8 @@ source-golden relaxation. Both measurement terminals cached; publication held.
 [all procedures/custody](procedures.tar.xz),[preceding guide](prior-BENCHMARKS.md).
 The preceding guide is an exact snapshot of `docs/BENCHMARKS.md` at312f5911;
 its relative links retain that original source location.
+
+[Full runtime qualification passes](../2026-11-16-iteration-slot-transport/refined/delivery/README.md)
+at312f5911/measured0443b5cf: Windows/Ubuntu actual11/10 ordinary,original
+stress and installed Release consumers. This closes the capture-time pending
+qualification; it does not strengthen timing precision or establish causal gains.

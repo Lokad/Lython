@@ -188,6 +188,8 @@
   "retentionDecisionPending": false,
   "CPythonRefreshed": false,
   "retainedFor": "Remove range boxing from ordinary execution through existing final slots, preserving native direct advancement.",
-  "fullQualificationPending": true,
-  "limitations": "CSV control moves3.58% in both sources and does not prove neutrality; no substantial complete-file/CPython gain inferred. Original adverse prototype retained."
+  "fullQualificationPending": false,
+  "limitations": "CSV control moves3.58% in both sources and does not prove neutrality; no substantial complete-file/CPython gain inferred. Original adverse prototype retained.",
+  "fullQualificationRun": "43828954661",
+  "qualifiedAsPartOfCommit": "312f5911ab567437b7f8a07e7d886fccdd2a106d"
 }
