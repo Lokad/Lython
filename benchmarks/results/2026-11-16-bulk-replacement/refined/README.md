@@ -4,7 +4,7 @@ R455/B859, 2026-11-16 UTC. Qualified be176ed0/frozen642f5115 reference;
 private single-pass refinement at9ee6552d/frozene92d9598. The same32-file workers
 differ only in core; normal optional adapter remains0.4.0. Production is retained
 for shared semantics and the bounded no-op correction, **without a CPU gain claim**.
-Full platform/stress/installed-package delivery qualification is pending.
+[Full platform/stress/installed-package delivery qualification passes](delivery/README.md).
 
 One shared native-byte operation replaces the duplicate str/bytes construction
 loops. Missing needles reuse the funded immutable receiver. Existing builders

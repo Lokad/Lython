@@ -188,6 +188,7 @@
   "retentionDecisionPending": false,
   "CPythonRefreshed": false,
   "decision": "Retain shared one-pass construction and bounded no-op aliases, with explicit small binary elapsed debt and uncertain text/call outcomes. No CPU speedup claim; no unchanged retiming. Broader complete call/frame objective remains active.",
-  "fullQualificationPending": true,
-  "publicationHeld": true
+  "fullQualificationPending": false,
+  "publicationHeld": true,
+  "qualifiedRun": 43950899310
 }

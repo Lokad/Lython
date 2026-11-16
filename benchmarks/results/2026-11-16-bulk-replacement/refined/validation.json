@@ -11,8 +11,10 @@
   },
   "promotedNonincrementalReleaseSolutionBuild": "clean",
   "actualWorkerCPythonPreflightEach": 6,
-  "fullPlatformStressPackage": "pending",
+  "fullPlatformStressPackage": "passed",
   "APIChanges": false,
   "CPUImprovementEstablished": false,
-  "publicationHeld": true
+  "publicationHeld": true,
+  "fullQualificationPending": false,
+  "qualifiedRun": 43950899310
 }

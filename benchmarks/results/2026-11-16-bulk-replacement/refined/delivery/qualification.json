@@ -1,0 +1,91 @@
+{
+  "run": 43950899310,
+  "head": "9e8d1cf5fb03b8c8e5c0abe72c010776f12debdc",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "log": "0_tests (windows-latest).txt",
+      "summaries": [
+        {
+          "framework": "net11.0",
+          "passed": 4808
+        },
+        {
+          "framework": "net11.0",
+          "passed": 17940
+        },
+        {
+          "framework": "net10.0",
+          "passed": 4808
+        },
+        {
+          "framework": "net10.0",
+          "passed": 17940
+        },
+        {
+          "framework": "net11.0",
+          "passed": 14
+        },
+        {
+          "framework": "net11.0",
+          "passed": 406
+        },
+        {
+          "framework": "net10.0",
+          "passed": 14
+        },
+        {
+          "framework": "net10.0",
+          "passed": 406
+        }
+      ]
+    },
+    {
+      "log": "1_tests (ubuntu-latest).txt",
+      "summaries": [
+        {
+          "framework": "net11.0",
+          "passed": 4808
+        },
+        {
+          "framework": "net11.0",
+          "passed": 17940
+        },
+        {
+          "framework": "net10.0",
+          "passed": 4808
+        },
+        {
+          "framework": "net10.0",
+          "passed": 17940
+        },
+        {
+          "framework": "net11.0",
+          "passed": 14
+        },
+        {
+          "framework": "net11.0",
+          "passed": 406
+        },
+        {
+          "framework": "net10.0",
+          "passed": 14
+        },
+        {
+          "framework": "net10.0",
+          "passed": 406
+        }
+      ]
+    }
+  ],
+  "summaries": 16,
+  "sourceInputsVerified": 2372,
+  "production": 585,
+  "normalAdapterPin": "0.4.0",
+  "allMeaningfulStepsPassed": true,
+  "logsSHA256": "04d6a95144c2e8fcda512fcd9db83b923828a5419c556c38e3fb4b14b5d79a01",
+  "measuredProductionTextMatchesQualifiedInputs": true,
+  "binaryEqualityInferred": false,
+  "CPUImprovementEstablished": false,
+  "publicationHeld": true
+}
