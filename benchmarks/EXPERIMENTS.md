@@ -6,6 +6,16 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[R439 shared kernel](results/2026-11-16-shared-executable-kernel/README.md)
+records first coherent91ca4a41/0443b5cf,B838six jobs206.412s/all gates. One
+managed-slot closed loop replaces duplicate selectors/storage and compiler opcode
+inventory; full qualification/retention remains pending. Allocation is flat.
+Captured text+6.75..8.63%elapsed/+4.00..6.28%CPU and search+3.11..5.44%/
++2.96..3.66% are adverse. Normalization control7.82% and CSV candidate3.75%
+remain uncertainty. Preserve all originals; bounded attribution/refinement is
+selected before promotion,no unchanged retiming or permanent ban. Existing
+qualified baseline and CPython checkpoint remain unchanged.
+
 [R416 final-output method formatting](results/2026-11-15-formatting-final-sink/README.md)
 retains8afb/55ba: one append contract, existing numeric/string sink, one operation
 metadata reservation. Old field-result callbacks/facades/per-field leases disappear;
