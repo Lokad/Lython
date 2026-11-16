@@ -64,3 +64,7 @@ non-regex complete-script execution gaps remain unresolved.
 [Raw](observations.tgz),[medians/controls](summary.json),[allocation](allocation-summary.json),
 [asset/worker identity](identity.json),[procedures/images/preflight](procedure-and-images.tar.xz),
 [initial failure](initial-failed-observations.tgz),[published-version observation](published-observation.json).
+
+[Cumulative normal-adapter/core delivery passes](delivery/README.md): c18babe9/43869939863,
+Windows/Ubuntu actual11/10,original stress and installed Release consumers. Private
+dev105focused checks are Windows-only; Linux VM workload checks are separate.

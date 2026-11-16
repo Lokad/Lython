@@ -31,3 +31,7 @@ stress/package qualification are tracked separately; publication held.
 
 [Checks and deliberate failure](checks.json),[asset/image identity](identity.json),
 [source,immutable assets,logs,TRX and procedures](sources-assets-checks.tar.xz).
+
+[Cumulative normal-adapter/core delivery passes](../delivery/README.md): c18babe9/43869939863,
+Windows/Ubuntu actual11/10,original stress and installed Release consumers. Private
+dev105focused checks are Windows-only; Linux VM workload checks are separate.

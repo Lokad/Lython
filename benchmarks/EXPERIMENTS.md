@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Cumulative fixture/ownership delivery43869939863](results/2026-11-16-regex-dev105/delivery/README.md)
+GREENc18babe9: Windows/Ubuntu actual11/10 each4806internal/17921public ordinary,
+14internal/406public original stress and installed Release consumers.16summaries/
+611inputs verified; complete terminal/logs cached. Normal adapter0.4; private
+old0.5/dev105focused363checks Windowsactual11/10 and Linux two-script VM checks
+remain distinct. Runtime source unchanged/no speedup claim; publication held.
+
 [R444/B847 generated scripts against CPython](results/2026-11-16-generated-scripts-cpython/README.md)
 adds existing configuration-edit/report workloads at qualified0443:compile,warm,
 compile-once/run-once separated,six-phase200.960s/all gates. Config fresh0.94–0.96×,
