@@ -316,22 +316,42 @@ internal static partial class PyStringOps
         LythonSourceSpan? span, LythonRuntime.ExecutionContext? context)
     {
         // All split forms admit final backing/fragments together, then adopt the
-        // completed array. Only a whole unchanged same-owner source is reused;
-        // other fragments keep their independent payload and owner.
+        // completed array. Immutable same-owner ranges share their existing
+        // backing; transformed, foreign and small inline fragments are copied.
         var source = value.Utf8Span;
         var reuseWhole = casing is null && ranges.Length == 1 && ranges[0].Start == 0 &&
             ranges[0].End == source.Length && ReferenceEquals(governor, value.OwnerMemoryGovernor);
         if (reuseWhole && ranges[0].Capacity != 0)
             outputBytes -= PyString.EstimateApproximateBytes(ranges[0].Capacity);
+        var borrow = !reuseWhole && casing is null && value.CanBorrowUtf8Ranges(governor);
+        var sharedHeader = 0;
+        if (borrow)
+        {
+            var sharesBacking = false;
+            foreach (var range in ranges)
+            {
+                context?.CheckExecution(span);
+                if (range.Capacity <= PyString.InlineUtf8Capacity) continue;
+                outputBytes -= range.Capacity;
+                sharesBacking = true;
+            }
+            if (sharesBacking) sharedHeader = value.Utf8SharingHeaderBytes;
+        }
         var resultBytes = checked(outputBytes + PyList.EstimateCapacityBytes(ranges.Length));
-        using var output = governor?.ReserveTemporary(resultBytes, span);
+        using var output = governor?.ReserveTemporary(checked(resultBytes + sharedHeader), span);
         context?.CheckExecution(span);
+        // This part belongs to the surviving source backing, even when later
+        // construction fails and private output reservations are rolled back.
+        output?.Commit(sharedHeader);
         var parts = ranges.IsEmpty ? Array.Empty<object>() : new object[ranges.Length];
         for (var index = 0; index < parts.Length; index++)
         {
             context?.CheckExecution(span);
             var range = ranges[reverse ? parts.Length - index - 1 : index];
-            parts[index] = reuseWhole ? value : CreateSplitFragment(source, range, casing, governor, span, context);
+            parts[index] = reuseWhole ? value
+                : borrow && range.Capacity > PyString.InlineUtf8Capacity
+                    ? value.CreateReservedUtf8Range(range.Start, range.Capacity, governor!)
+                    : CreateSplitFragment(source, range, casing, governor, span, context);
         }
         var result = PyList.FromTransferredArray(parts, governor, span);
         context?.CheckExecution(span);

@@ -69,7 +69,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
     // command. Unowned/other-owner input and inline values retain independent
     // copies. Once shared, the source refunds only its shell; the full backing
     // stays with the command/result owner, without reference tracking.
-    internal PyString CopyOrBorrowUtf8Range(int start, int length, MemoryGovernor governor, LythonSourceSpan span)
+    internal PyString CopyOrBorrowUtf8Range(int start, int length, MemoryGovernor governor, LythonSourceSpan? span)
     {
         var content = Utf8Span.Slice(start, length);
         if (length <= InlineUtf8Capacity || !ReferenceEquals(OwnerMemoryGovernor, governor))
@@ -77,7 +77,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
 
         // The ordinary string estimate includes array metadata in its shell.
         // Keep that header funded after the source shell can be relinquished.
-        var header = _inlineCapacity == 0 ? 32 : 0;
+        var header = Utf8SharingHeaderBytes;
         var metadata = EstimateApproximateBytes(0);
         var reserved = metadata + header;
         governor.Reserve(reserved, span);
@@ -88,14 +88,32 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
             {
                 governor.Commit(header);
                 reserved -= header;
-                _inlineUtf8[0] = 0;
-                _inlineCapacity = WindowStorage;
             }
-            var result = CreateReservedUtf8Window(_utf8!, checked((int)_inlineUtf8[0] + start), length, governor);
+            var result = CreateReservedUtf8Range(start, length, governor);
             governor.Commit(metadata);
             return result;
         }
         catch { governor.ReleaseReserved(reserved); throw; }
+    }
+
+    internal bool CanBorrowUtf8Ranges(MemoryGovernor? governor)
+        => governor is not null && ReferenceEquals(OwnerMemoryGovernor, governor)
+            && (_inlineCapacity == 0 || _inlineCapacity == WindowStorage);
+
+    internal int Utf8SharingHeaderBytes => _inlineCapacity == 0 ? 32 : 0;
+
+    // The caller already funds the new shell and any sharing header. Once a
+    // view exists, refunding this source shell cannot relinquish its backing.
+    internal PyString CreateReservedUtf8Range(int start, int length, MemoryGovernor governor)
+    {
+        var offset = _inlineCapacity == WindowStorage ? checked((int)_inlineUtf8[0]) : 0;
+        var result = CreateReservedUtf8Window(_utf8!, checked(offset + start), length, governor);
+        if (_inlineCapacity == 0)
+        {
+            _inlineUtf8[0] = 0;
+            _inlineCapacity = WindowStorage;
+        }
+        return result;
     }
 
     private PyString(ReadOnlySpan<byte> utf8, int capacity, MemoryGovernor? governor)
@@ -901,7 +919,10 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
             return Empty;
         }
 
-        return CopyFromUtf8(Utf8Span[startByte..endByte], OwnerMemoryGovernor, PyStructuralGuard.AmbientSpan);
+        var governor = OwnerMemoryGovernor;
+        return governor is null
+            ? CopyFromUtf8(Utf8Span[startByte..endByte], null, PyStructuralGuard.AmbientSpan)
+            : CopyOrBorrowUtf8Range(startByte, endByte - startByte, governor, PyStructuralGuard.AmbientSpan);
     }
 
     public static int IndexOfBytes(ReadOnlySpan<byte> haystack, ReadOnlySpan<byte> needle)

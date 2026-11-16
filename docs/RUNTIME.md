@@ -73,10 +73,15 @@ growth and replacement overlap. Actual retained results still fund their storage
 
 Line splitting and ordinary text split share range-based final construction. A
 bounded UTF-8 scan identifies Python line breaks, including CRLF and Unicode
-separators, using the active execution context. Final list capacity and independent
-fragments are admitted together before allocation. A whole unchanged same-owner
-input can remain an alias. Existing range-loan capacity stays funded when cached;
-working overlap and conservative capacity can cause earlier rejection.
+separators, using the active execution context. Final list capacity, fragment shells
+and any shared-backing header are admitted together before allocation. Ordinary
+long fragments and slices share immutable UTF-8 backing already funded by the same
+owner. Short inline values, transformed output and foreign/unowned input retain
+independent construction. A whole unchanged same-owner input can remain an alias.
+Relinquishing a private source shell never refunds its shared backing: a small view
+can keep the entire capacity charged until owner cleanup. This conservative sibling
+retention, cached range capacity and replacement overlap can cause earlier rejection;
+exact tiny-budget thresholds are not a compatibility contract.
 
 Unicode indexing caches use the active caller's cancellation context during
 construction and remain unpublished until completion. Cancelled construction

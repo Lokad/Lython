@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Share admitted immutable UTF-8 backing across ordinary slices and split fragments,
+  removing independent payload arrays and copies. Preserve aggregate admission and
+  funding for retained aliases; small views can conservatively retain full source
+  capacity until ownership cleanup. Foreign and transformed input remains independent.
+
 - Execute prepared method-format layouts directly through runtime lookup and
   formatting, removing the generic callback executor and private rendering fallback.
   Preserve nested numbering, deferred errors, actual async hooks and funded cleanup.
