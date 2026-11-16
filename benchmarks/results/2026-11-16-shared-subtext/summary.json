@@ -152,6 +152,8 @@
   "retentionDecisionPending": false,
   "CPythonRefreshed": false,
   "retained": true,
-  "fullQualificationPending": true,
-  "decision": "Retain existing-window subtext storage. Remove independent UTF8 payload arrays/copies for same-owner immutable slices/split fragments, retaining aggregate admission and backing/header funding. Normalization allocation\u221219.8%, JSON-lines\u221211.3%; supporting warm/fresh CPU evidence with process-control movement explicit. No new owner/cache/ledger, broad async/CPython/startup or embedding-latency claim. Conservative sibling retention until owner cleanup is intentional."
+  "fullQualificationPending": false,
+  "decision": "Retain existing-window subtext storage. Remove independent UTF8 payload arrays/copies for same-owner immutable slices/split fragments, retaining aggregate admission and backing/header funding. Normalization allocation\u221219.8%, JSON-lines\u221211.3%; supporting warm/fresh CPU evidence with process-control movement explicit. No new owner/cache/ledger, broad async/CPython/startup or embedding-latency claim. Conservative sibling retention until owner cleanup is intentional.",
+  "fullQualificationRun": "43819495111",
+  "qualifiedAsPartOfCommit": "6581454d3f8c18d9e1e22379873ca7cbb3f4c392"
 }

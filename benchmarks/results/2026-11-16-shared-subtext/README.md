@@ -75,3 +75,8 @@ New full delivery remains pending; this does not change the original measurement
 original-scale fixtures awaiting removed64MiBcopies; corrected stress passes each
 actual11/10 with unchanged runtime](stress-fixture-correction/README.md). Final combined
 qualification remains pending; both original failed terminals are cached.
+
+
+[Corrected full Windows/Ubuntu actual11/10 ordinary/stress and installed Release
+consumer delivery passes](delivery/README.md) at6581454d/measured1c8e1be5. Capture-time
+pending/failed states remain historical evidence; no runtime retiming required.

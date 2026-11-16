@@ -24,3 +24,9 @@ Publication held.
 
 [Checks](checks.json),[original/corrected stress source and TRX](original-and-corrected-stress.tar.xz),
 [completed failed terminal](ci-terminal.json),[full logs](ci-logs.zip).
+
+
+[Final combined qualification passes](../delivery/README.md) at6581454d /measured
+1c8e1be5: Windows/Ubuntu actual11/10 ordinary/stress/installed Release consumers,
+16summaries/606inputs verified. Original failed terminal remains cached/failed;
+no unchanged runtime retiming required.

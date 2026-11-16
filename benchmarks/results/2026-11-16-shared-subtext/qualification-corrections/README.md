@@ -25,3 +25,8 @@ Release consumer qualification is still required. Publication held.
 
 [Checks](checks.json),[original/corrected sources and TRX](original-and-corrected-tests.tar.xz),
 [initial terminal](ci-terminal.json),[initial full logs](ci-logs.zip).
+
+
+[Corrected full Windows/Ubuntu actual11/10 ordinary/stress and installed Release
+consumer delivery passes](../delivery/README.md) at6581454d/measured1c8e1be5. Capture-time
+pending/failed states remain historical evidence; no runtime retiming required.
