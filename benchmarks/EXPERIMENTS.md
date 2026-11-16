@@ -8887,3 +8887,13 @@ gain or inferred recovery of prior debt. Both actual Windows targets focused
 aliases;all frozen-worker goldens/ownership/quiet/join/archive gates pass.
 Promoted source matches measured production text;full delivery qualification
 pending. Whole-script roadmap continues;publication/tagging held.
+
+[R454 bounded regex creation-token deletion](results/2026-11-16-regex-creation-token/README.md):
+matched immutable R443dev105 producers/current be176core;reference passes existing
+current-advance-token/budget-cleanup case,deletion fails first later pull with
+OperationCanceledException after cancelling creation's token. Keep detached CTS
+bridge pending creation/preparation authority independent of retained cursor token.
+No new public test,VM timing,normal pin/core change or unchanged qualification.
+Latest sibling6adsource is not the unchanged dev105package;core caller capture
+APIs do not imply PythonRe caller buffers. EffectiveOptions alone also loses the
+reported/parsing Verbose distinction. Precise bridges remain;core work proceeds.

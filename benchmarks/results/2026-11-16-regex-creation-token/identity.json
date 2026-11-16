@@ -1,0 +1,27 @@
+{
+  "base": "be176ed0",
+  "purpose": "Bounded removal of detached creation-token bridge against immutable R443dev105; producer sources6ad are distinct/not represented by these unchanged assets",
+  "images": {
+    "reference": {
+      "Lokad.Lython.dll": "5076c6ef5d8b7f307505d14a515da081c5089c121218be8a3b67912a49781e47",
+      "Lokad.Lython.Utf8Regex.dll": "b16fc4286878afdc2fef75341cf12d71dd0b291130ae88581397f4cf9d2033e2",
+      "Lokad.Utf8Regex.dll": "32d94bc92d03292b8ea2ca3387ebcc9acbc2d460cf44588a23c913fc950f76d5",
+      "Lokad.Utf8Regex.PythonRe.dll": "f2463007307161c0fdbb66b3ed04284b0899269d7318c81f14a0a1f1b91727a2",
+      "Lokad.Lython.PublicApi.Tests.dll": "397f91ac91908a3e187d4a31031d46e90eda801ea6f0129ec982e6d13ec5c7e4"
+    },
+    "deletion": {
+      "Lokad.Lython.dll": "5076c6ef5d8b7f307505d14a515da081c5089c121218be8a3b67912a49781e47",
+      "Lokad.Lython.Utf8Regex.dll": "87a47685a4c45937131073d45c399a8d150801ac8981d9c0fa76284d1820d33e",
+      "Lokad.Utf8Regex.dll": "32d94bc92d03292b8ea2ca3387ebcc9acbc2d460cf44588a23c913fc950f76d5",
+      "Lokad.Utf8Regex.PythonRe.dll": "f2463007307161c0fdbb66b3ed04284b0899269d7318c81f14a0a1f1b91727a2",
+      "Lokad.Lython.PublicApi.Tests.dll": "397f91ac91908a3e187d4a31031d46e90eda801ea6f0129ec982e6d13ec5c7e4"
+    }
+  },
+  "sourceSHA256": {
+    "reference": "46e24753f262c852c48deae6d7f66044cd400f71fd99789528c0245d6d4e1b14",
+    "deletion": "c8ac6f16d5630e194a3c3b142621f54c77e1c194c24a4c0462b0cb69dc5bd8e5"
+  },
+  "producerPackagesUnchangedFromR443": true,
+  "noNormalPinOrCoreChange": true,
+  "publicationHeld": true
+}
