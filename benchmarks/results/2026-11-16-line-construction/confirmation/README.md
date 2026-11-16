@@ -55,3 +55,6 @@ complete representation, not repeat already-delivered builtin/JSON construction.
 [All controls](summary.json),[raw observations](observations.tgz),
 [procedure/baseline source proof](procedures-and-source-proof.tar.xz),
 [original source/images/checks/allocation](../README.md).
+
+
+[Combined Windows/Ubuntu actual11/10, original stress plus line case and installed-package qualification passes](../delivery/README.md) at86d9344e/ecd9e956. Earlier capture-time pending state and all measurement limits remain evidence; later prototypes are separate.

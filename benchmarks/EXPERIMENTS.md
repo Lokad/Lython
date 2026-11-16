@@ -8694,3 +8694,6 @@ R431 bounded source gate at1fe2a174: plain builtin wrappers/signatures already l
 
 
 [R432/B829 current normalization CPython checkpoint](results/2026-11-16-line-cpython-checkpoint/README.md):86d9344e/ecd9e956 versusCPython3.13.16;2jobs70.938s/all gates. Warm2.28–2.34×,fresh2.05–2.10×. CPython shifts0.73→0.50ms warm/0.83→0.59msfresh despite identical worker/binary/flags/case fields;4-case versus1-case catalog initialization not isolated. Current controls/IQRstable; keep bothcollections/no causal cross-collection claims. Full43805966777active, broader objective open.
+
+
+[R429/R430 full delivery43805966777](results/2026-11-16-line-construction/delivery/README.md) GREEN at86d9344e/ecd9e956: Windows/Ubuntu actual11/10 each4797internal/17914public ordinary,14internal/406public stress(original13plus line case), installed Release consumers.16summaries/600inputs verified; terminal cached forever. Exactefd image not separately fully qualified; R429 covered cumulatively. All source-pair/control/failed-gate uncertainty remains; later async prototype unqualified, publication held.

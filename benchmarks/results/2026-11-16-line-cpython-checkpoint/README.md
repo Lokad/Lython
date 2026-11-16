@@ -51,3 +51,6 @@ no workers/fixtures remain. Terminal cached. No new framework or runtime edit.
 [All controls](summary.json),[identity review](identity-review.json),
 [raw observations](observations.tgz),[procedure/inputs/source proof/original conditions](procedure-and-inputs.tar.xz),
 [previous guide](prior-BENCHMARKS.md).
+
+
+[Combined Windows/Ubuntu actual11/10, original stress plus line case and installed-package qualification passes](../2026-11-16-line-construction/delivery/README.md) at86d9344e/ecd9e956. Earlier capture-time pending state and all measurement limits remain evidence; later prototypes are separate.

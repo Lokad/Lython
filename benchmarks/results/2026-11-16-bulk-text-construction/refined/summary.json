@@ -128,6 +128,8 @@
   "retentionDecisionPending": false,
   "CPythonRefreshed": false,
   "retained": true,
-  "fullQualificationPending": true,
-  "decision": "Retain direct final output/ownership simplification and normalization allocation\u221211.46%. Fresh elapsed1.29\u20135.26%lower/CPU3.24\u20137.09%lower, with3.31%reference spread; warm uncertain, original5\u20137%regression not proven recovered. Report/JSON adverse elapsed and mixed CPU remain accepted debt. No general CPU/embedding-latency gain or broader-goal completion."
+  "fullQualificationPending": false,
+  "decision": "Retain direct final output/ownership simplification and normalization allocation\u221211.46%. Fresh elapsed1.29\u20135.26%lower/CPU3.24\u20137.09%lower, with3.31%reference spread; warm uncertain, original5\u20137%regression not proven recovered. Report/JSON adverse elapsed and mixed CPU remain accepted debt. No general CPU/embedding-latency gain or broader-goal completion.",
+  "fullQualificationRun": "43805966777",
+  "qualifiedAsPartOfCommit": "86d9344e654e94eeab738c8156bd2b7f95c12576"
 }

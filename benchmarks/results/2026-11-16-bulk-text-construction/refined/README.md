@@ -58,3 +58,6 @@ fixes its source-demonstrated no-break cancellation gap before further tuning.
 
 [All timing/controls](summary.json),[allocation/ownership](allocation-summary.json),
 [raw observations](observations.tgz),[source/images/checks/procedure](source-checks-and-procedure.tar.xz).
+
+
+[Combined Windows/Ubuntu actual11/10, original stress plus line case and installed-package qualification passes](../../2026-11-16-line-construction/delivery/README.md) at86d9344e/ecd9e956. Earlier capture-time pending state and all measurement limits remain evidence; later prototypes are separate.

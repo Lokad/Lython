@@ -128,6 +128,8 @@
   "retentionDecisionPending": false,
   "CPythonRefreshed": false,
   "retained": true,
-  "fullQualificationPending": true,
-  "decision": "Retain one shared final split constructor and bounded explicit-context splitlines scanner. Normalization allocation\u22121.73%; warm elapsed3.81\u20138.53%lower/CPU5.03\u20138.29%lower, fresh elapsed3.36\u20136.30%lower/CPU2.23\u20133.46%lower. Moving5%JSON reference/control adversity and original failed final quiet gate retained. No universal CPU or embedding-latency claim."
+  "fullQualificationPending": false,
+  "decision": "Retain one shared final split constructor and bounded explicit-context splitlines scanner. Normalization allocation\u22121.73%; warm elapsed3.81\u20138.53%lower/CPU5.03\u20138.29%lower, fresh elapsed3.36\u20136.30%lower/CPU2.23\u20133.46%lower. Moving5%JSON reference/control adversity and original failed final quiet gate retained. No universal CPU or embedding-latency claim.",
+  "fullQualificationRun": "43805966777",
+  "qualifiedAsPartOfCommit": "86d9344e654e94eeab738c8156bd2b7f95c12576"
 }
