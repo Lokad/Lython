@@ -1,0 +1,1227 @@
+{
+  "kind": "Textual candidate inventory, not resolved semantic call counts; includes definitions.",
+  "files": [
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.ArgparseParser.Invocation.cs",
+      "hits": [
+        {
+          "line": 232,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 233,
+          "token": "ToSequence("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.BinaryFileHandle.Members.cs",
+      "hits": [
+        {
+          "line": 83,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 87,
+          "token": "ToSequence("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.BuiltinIterables.Aggregates.cs",
+      "hits": [
+        {
+          "line": 22,
+          "token": "ToSequence("
+        },
+        {
+          "line": 66,
+          "token": "ToSequence("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.BuiltinIterables.cs",
+      "hits": [
+        {
+          "line": 332,
+          "token": "ToSequence("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.BuiltinIterables.Ordering.cs",
+      "hits": [
+        {
+          "line": 34,
+          "token": "MaterializeLeased("
+        },
+        {
+          "line": 63,
+          "token": "MaterializeLeasedAsync("
+        },
+        {
+          "line": 83,
+          "token": "ToSequence("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.BuiltinObjects.cs",
+      "hits": [
+        {
+          "line": 96,
+          "token": "ToSequence("
+        },
+        {
+          "line": 121,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 143,
+          "token": "ToSequence("
+        },
+        {
+          "line": 160,
+          "token": "MaterializeLeasedAsync("
+        },
+        {
+          "line": 186,
+          "token": "ToSequence("
+        },
+        {
+          "line": 188,
+          "token": "ToSequence("
+        },
+        {
+          "line": 496,
+          "token": "ToSequence("
+        },
+        {
+          "line": 568,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 583,
+          "token": "ToSequence("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.BytesIO.cs",
+      "hits": [
+        {
+          "line": 121,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 123,
+          "token": "ToSequence("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.BytesMembers.cs",
+      "hits": [
+        {
+          "line": 1448,
+          "token": "MaterializeLeased("
+        },
+        {
+          "line": 1454,
+          "token": "MaterializeLeasedAsync("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs",
+      "hits": [
+        {
+          "line": 1738,
+          "token": "ToSequence("
+        },
+        {
+          "line": 1763,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 2187,
+          "token": "ToSequence("
+        },
+        {
+          "line": 2200,
+          "token": "ToSequenceAsync("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.CollectionsModule.cs",
+      "hits": [
+        {
+          "line": 599,
+          "token": "ToSequence("
+        },
+        {
+          "line": 666,
+          "token": "MaterializeLeasedAsync("
+        },
+        {
+          "line": 684,
+          "token": "ToSequence("
+        },
+        {
+          "line": 724,
+          "token": "DrainLeased("
+        },
+        {
+          "line": 724,
+          "token": "ToSequence("
+        },
+        {
+          "line": 735,
+          "token": "DrainLeasedAsync("
+        },
+        {
+          "line": 735,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 927,
+          "token": "ToSequence("
+        },
+        {
+          "line": 956,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 961,
+          "token": "ToSequence("
+        },
+        {
+          "line": 1109,
+          "token": "ToSequence("
+        },
+        {
+          "line": 1134,
+          "token": "ToSequenceAsync("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.CsvDictWriter.cs",
+      "hits": [
+        {
+          "line": 34,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 36,
+          "token": "ToSequence("
+        },
+        {
+          "line": 81,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 83,
+          "token": "ToSequence("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.CsvModule.cs",
+      "hits": [
+        {
+          "line": 116,
+          "token": "MaterializeLeasedAsync("
+        },
+        {
+          "line": 117,
+          "token": "MaterializeLeased("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.CsvObjects.cs",
+      "hits": [
+        {
+          "line": 185,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 186,
+          "token": "ToSequence("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.CsvWriter.cs",
+      "hits": [
+        {
+          "line": 38,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 40,
+          "token": "ToSequence("
+        },
+        {
+          "line": 55,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 56,
+          "token": "ToSequence("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Difflib.Matcher.cs",
+      "hits": [
+        {
+          "line": 188,
+          "token": "ToSequence("
+        },
+        {
+          "line": 383,
+          "token": "ToSequence("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.DifflibModule.cs",
+      "hits": [
+        {
+          "line": 141,
+          "token": "ToSequence("
+        },
+        {
+          "line": 233,
+          "token": "ToSequence("
+        },
+        {
+          "line": 375,
+          "token": "ToSequence("
+        },
+        {
+          "line": 405,
+          "token": "ToSequence("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Evaluation.Assignments.cs",
+      "hits": [
+        {
+          "line": 332,
+          "token": "DrainLeased("
+        },
+        {
+          "line": 341,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 345,
+          "token": "ToSequence("
+        },
+        {
+          "line": 392,
+          "token": "MaterializeLeasedAsync("
+        },
+        {
+          "line": 393,
+          "token": "MaterializeLeased("
+        },
+        {
+          "line": 547,
+          "token": "ToSequence("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Evaluation.cs",
+      "hits": [
+        {
+          "line": 140,
+          "token": "ToSequence("
+        },
+        {
+          "line": 171,
+          "token": "ToSequence("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs",
+      "hits": [
+        {
+          "line": 156,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 158,
+          "token": "ToSequence("
+        },
+        {
+          "line": 192,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 195,
+          "token": "ToSequence("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Functools.Ordering.cs",
+      "hits": [
+        {
+          "line": 255,
+          "token": "ToSequence("
+        },
+        {
+          "line": 291,
+          "token": "ToSequenceAsync("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.GzipFileObject.Members.cs",
+      "hits": [
+        {
+          "line": 95,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 98,
+          "token": "ToSequence("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.GzipTextFile.cs",
+      "hits": [
+        {
+          "line": 101,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 103,
+          "token": "ToSequence("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.HeaderTargets.cs",
+      "hits": [
+        {
+          "line": 113,
+          "token": "MaterializeLeasedAsync("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.IoModule.cs",
+      "hits": [
+        {
+          "line": 165,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 167,
+          "token": "ToSequence("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.ItertoolsModule.cs",
+      "hits": [
+        {
+          "line": 664,
+          "token": "ToSequence("
+        },
+        {
+          "line": 671,
+          "token": "ToSequenceAsync("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Json.Options.cs",
+      "hits": [
+        {
+          "line": 224,
+          "token": "MaterializeLeasedAsync("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.JsonModule.cs",
+      "hits": [
+        {
+          "line": 258,
+          "token": "ToSequence("
+        },
+        {
+          "line": 289,
+          "token": "ToSequenceAsync("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Lowered.cs",
+      "hits": [
+        {
+          "line": 178,
+          "token": "ToSequence("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Expressions.cs",
+      "hits": [
+        {
+          "line": 150,
+          "token": "ToSequence("
+        },
+        {
+          "line": 168,
+          "token": "ToSequence("
+        },
+        {
+          "line": 196,
+          "token": "ToSequence("
+        },
+        {
+          "line": 220,
+          "token": "ToSequence("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.LoweredAsync.cs",
+      "hits": [
+        {
+          "line": 176,
+          "token": "ToSequenceAsync("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.LoweredAsync.Expressions.cs",
+      "hits": [
+        {
+          "line": 48,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 97,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 150,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 253,
+          "token": "ToSequenceAsync("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Members.cs",
+      "hits": [
+        {
+          "line": 140,
+          "token": "ToSequence("
+        },
+        {
+          "line": 2310,
+          "token": "ToSequence("
+        },
+        {
+          "line": 2357,
+          "token": "ToSequence("
+        },
+        {
+          "line": 2507,
+          "token": "ToSequence("
+        },
+        {
+          "line": 2629,
+          "token": "ToSequence("
+        },
+        {
+          "line": 2779,
+          "token": "ToSequence("
+        },
+        {
+          "line": 3601,
+          "token": "ToSequence("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Members.DequeSet.cs",
+      "hits": [
+        {
+          "line": 135,
+          "token": "ToSequence("
+        },
+        {
+          "line": 146,
+          "token": "MaterializeLeasedAsync("
+        },
+        {
+          "line": 159,
+          "token": "ToSequence("
+        },
+        {
+          "line": 170,
+          "token": "MaterializeLeasedAsync("
+        },
+        {
+          "line": 543,
+          "token": "ToSequence("
+        },
+        {
+          "line": 562,
+          "token": "ToSequence("
+        },
+        {
+          "line": 970,
+          "token": "ToSequence("
+        },
+        {
+          "line": 996,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 1025,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 1058,
+          "token": "ToSequence("
+        },
+        {
+          "line": 1090,
+          "token": "ToSequence("
+        },
+        {
+          "line": 1116,
+          "token": "ToSequence("
+        },
+        {
+          "line": 1128,
+          "token": "ToSequenceAsync("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Modules.cs",
+      "hits": [
+        {
+          "line": 357,
+          "token": "ToSequence("
+        },
+        {
+          "line": 371,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 396,
+          "token": "ToSequence("
+        },
+        {
+          "line": 502,
+          "token": "ToSequenceAsync("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.OpenPyxlHelpers.cs",
+      "hits": [
+        {
+          "line": 473,
+          "token": "ToSequence("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.OpenPyxlWorksheet.Operations.cs",
+      "hits": [
+        {
+          "line": 132,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 135,
+          "token": "ToSequence("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Operations.cs",
+      "hits": [
+        {
+          "line": 931,
+          "token": "ToSequence("
+        },
+        {
+          "line": 984,
+          "token": "ToSequence("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.OperatorModule.cs",
+      "hits": [
+        {
+          "line": 589,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 602,
+          "token": "ToSequence("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Os.Path.cs",
+      "hits": [
+        {
+          "line": 155,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 158,
+          "token": "ToSequence("
+        },
+        {
+          "line": 195,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 198,
+          "token": "ToSequence("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.PathMembers.cs",
+      "hits": [
+        {
+          "line": 661,
+          "token": "DrainLeased("
+        },
+        {
+          "line": 682,
+          "token": "DrainLeased("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Random.Helpers.cs",
+      "hits": [
+        {
+          "line": 206,
+          "token": "ToSequence("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Resolution.cs",
+      "hits": [
+        {
+          "line": 305,
+          "token": "ToSequence("
+        },
+        {
+          "line": 306,
+          "token": "ToSequence("
+        },
+        {
+          "line": 308,
+          "token": "ToSequence("
+        },
+        {
+          "line": 309,
+          "token": "ToSequence("
+        },
+        {
+          "line": 311,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 312,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 314,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 315,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 474,
+          "token": "ToSequence("
+        },
+        {
+          "line": 490,
+          "token": "ToSequence("
+        },
+        {
+          "line": 512,
+          "token": "ToSequence("
+        },
+        {
+          "line": 545,
+          "token": "ToSequence("
+        },
+        {
+          "line": 746,
+          "token": "MaterializeLeased("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.ShlexModule.cs",
+      "hits": [
+        {
+          "line": 65,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 69,
+          "token": "ToSequence("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Statistics.Descriptive.cs",
+      "hits": [
+        {
+          "line": 454,
+          "token": "ToSequence("
+        },
+        {
+          "line": 470,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 501,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 505,
+          "token": "ToSequence("
+        },
+        {
+          "line": 523,
+          "token": "DrainLeasedAsync("
+        },
+        {
+          "line": 523,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 524,
+          "token": "DrainLeased("
+        },
+        {
+          "line": 524,
+          "token": "ToSequence("
+        },
+        {
+          "line": 531,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 535,
+          "token": "ToSequence("
+        },
+        {
+          "line": 1302,
+          "token": "DrainLeased("
+        },
+        {
+          "line": 1302,
+          "token": "ToSequence("
+        },
+        {
+          "line": 1323,
+          "token": "DrainLeasedAsync("
+        },
+        {
+          "line": 1323,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 1507,
+          "token": "ToSequence("
+        },
+        {
+          "line": 1537,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 1597,
+          "token": "ToSequence("
+        },
+        {
+          "line": 1618,
+          "token": "ToSequenceAsync("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Advanced.cs",
+      "hits": [
+        {
+          "line": 14,
+          "token": "MaterializeLeased("
+        },
+        {
+          "line": 22,
+          "token": "MaterializeLeasedAsync("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.SubprocessModule.Arguments.cs",
+      "hits": [
+        {
+          "line": 113,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 114,
+          "token": "ToSequence("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.SubprocessModule.cs",
+      "hits": [
+        {
+          "line": 107,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 108,
+          "token": "ToSequence("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.SubprocessPopen.cs",
+      "hits": [
+        {
+          "line": 187,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 192,
+          "token": "ToSequence("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.SubprocessPopen.Streams.cs",
+      "hits": [
+        {
+          "line": 119,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 120,
+          "token": "ToSequence("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.TextFileHandle.cs",
+      "hits": [
+        {
+          "line": 383,
+          "token": "ToSequence("
+        },
+        {
+          "line": 395,
+          "token": "ToSequenceAsync("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.TextwrapModule.cs",
+      "hits": [
+        {
+          "line": 167,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 172,
+          "token": "ToSequence("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.UrllibParseModule.cs",
+      "hits": [
+        {
+          "line": 244,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 246,
+          "token": "ToSequence("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.UrllibParseModule.Query.cs",
+      "hits": [
+        {
+          "line": 25,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 33,
+          "token": "ToSequence("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.ZipFile.cs",
+      "hits": [
+        {
+          "line": 444,
+          "token": "ToSequence("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.ZipMember.cs",
+      "hits": [
+        {
+          "line": 488,
+          "token": "ToSequence("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyDataclass.Conversion.cs",
+      "hits": [
+        {
+          "line": 16,
+          "token": "DrainLeased("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyDataclass.cs",
+      "hits": [
+        {
+          "line": 309,
+          "token": "ToSequence("
+        },
+        {
+          "line": 361,
+          "token": "ToSequence("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyDataclass.Operations.cs",
+      "hits": [
+        {
+          "line": 59,
+          "token": "DrainLeased("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyDecimal.cs",
+      "hits": [
+        {
+          "line": 234,
+          "token": "DrainLeasedAsync("
+        },
+        {
+          "line": 234,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 235,
+          "token": "DrainLeased("
+        },
+        {
+          "line": 235,
+          "token": "ToSequence("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyIteration.cs",
+      "hits": [
+        {
+          "line": 13,
+          "token": "ToSequence("
+        },
+        {
+          "line": 33,
+          "token": "ToSequence("
+        },
+        {
+          "line": 37,
+          "token": "ToSequence("
+        },
+        {
+          "line": 84,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 88,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 116,
+          "token": "DrainLeased("
+        },
+        {
+          "line": 147,
+          "token": "DrainLeasedAsync("
+        },
+        {
+          "line": 178,
+          "token": "MaterializeLeased("
+        },
+        {
+          "line": 179,
+          "token": "DrainLeased("
+        },
+        {
+          "line": 179,
+          "token": "ToSequence("
+        },
+        {
+          "line": 181,
+          "token": "MaterializeLeasedAsync("
+        },
+        {
+          "line": 182,
+          "token": "DrainLeasedAsync("
+        },
+        {
+          "line": 182,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 187,
+          "token": "ToSequenceAsync("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyItertools.Transforms.cs",
+      "hits": [
+        {
+          "line": 342,
+          "token": "ToSequence("
+        },
+        {
+          "line": 376,
+          "token": "MaterializeLeasedAsync("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyList.cs",
+      "hits": [
+        {
+          "line": 162,
+          "token": "ToSequence("
+        },
+        {
+          "line": 169,
+          "token": "ToSequenceAsync("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyMemberAccess.cs",
+      "hits": [
+        {
+          "line": 254,
+          "token": "MaterializeLeasedAsync("
+        },
+        {
+          "line": 335,
+          "token": "ToSequence("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyNamedTupleAndChainMap.cs",
+      "hits": [
+        {
+          "line": 276,
+          "token": "ToSequence("
+        },
+        {
+          "line": 842,
+          "token": "ToSequence("
+        },
+        {
+          "line": 843,
+          "token": "ToSequence("
+        },
+        {
+          "line": 995,
+          "token": "ToSequence("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyTyping.cs",
+      "hits": [
+        {
+          "line": 260,
+          "token": "DrainLeasedAsync("
+        },
+        {
+          "line": 279,
+          "token": "MaterializeLeasedAsync("
+        },
+        {
+          "line": 280,
+          "token": "MaterializeLeased("
+        }
+      ]
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/Calls/CallExpansion.cs",
+      "hits": [
+        {
+          "line": 262,
+          "token": "ToSequence("
+        },
+        {
+          "line": 304,
+          "token": "ToSequenceAsync("
+        },
+        {
+          "line": 366,
+          "token": "ToSequence("
+        },
+        {
+          "line": 394,
+          "token": "ToSequenceAsync("
+        }
+      ]
+    }
+  ]
+}

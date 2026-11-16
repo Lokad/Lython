@@ -1,0 +1,12 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "ramTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 266530816,
+  "archiveSHA256": "ecea8637502e468ce4040b0b05c49effca1242172cf4b8845b5965f003325377",
+  "source": "R448 frozen3bb9da5a before final forwarding tidy; R449 two complete-workload attribution",
+  "performanceComparison": false
+}

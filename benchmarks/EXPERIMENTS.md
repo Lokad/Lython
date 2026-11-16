@@ -8822,3 +8822,13 @@ moving process controls limiting magnitude. Repeated call-loop elapsed/CPU is
 about2–3%adverse; normalization inconclusive. Accepted debt, not universal speedup.
 [Exact sources, goldens, controls, failures and retention](results/2026-11-16-compact-iteration-result/README.md).
 Full platform/stress/package delivery pending. This does not close the broader objective.
+
+
+[R449/B851 native iteration attribution](results/2026-11-16-native-iteration-attribution/README.md):
+exact3bb9da5a private snapshot,948normalization/1,006call samples,105/63unknowns.
+Inclusive stages overlap useful operations; no timing or cause-of-regression claim.
+Select complete native consumer consolidation, retiring generic language routers
+and orphaned adapters rather than replaying slower R438's four wrappers. Source
+inventory223mentions/66files includes definitions. Actual strip scratch is already
+funded by its receiver; no duplicate admission fix. All users joined and evidence
+verified before RAM unmount; final-source R448 CI remains independent.
