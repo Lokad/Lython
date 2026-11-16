@@ -17,6 +17,8 @@ internal static partial class PyStringOps
 
     private static readonly SearchValues<byte> AsciiWhitespaceCharacters = CreateAsciiCharacters(whitespace: true);
     private static readonly SearchValues<byte> AsciiWordCharacters = CreateAsciiCharacters(whitespace: false);
+    private static readonly SearchValues<byte> LineBreakCandidates = SearchValues.Create(
+        (ReadOnlySpan<byte>)[(byte)'\n', (byte)'\r', (byte)'\v', (byte)'\f', 0x1c, 0x1d, 0x1e, 0xc2, 0xe2]);
 
     private static SearchValues<byte> CreateAsciiCharacters(bool whitespace)
     {
@@ -261,32 +263,80 @@ internal static partial class PyStringOps
                 CollectWhitespaceForward(source, maxSplit, ref ranges, ref count, ref outputBytes,
                     ref prepared, governor, span, context, casing);
 
-            // Admit final backing and all fragments together. Each value keeps
-            // its own payload; adoption transfers the completed list capacity.
-            // A whole unchanged source remains a funded alias in its owner.
-            // Independent output owners still receive their own copied storage.
-            var reuseWhole = casing is null && count == 1 && ranges[0].Start == 0 &&
-                ranges[0].End == source.Length && ReferenceEquals(governor, value.OwnerMemoryGovernor);
-            if (reuseWhole && ranges[0].Capacity != 0)
-                outputBytes -= PyString.EstimateApproximateBytes(ranges[0].Capacity);
-            var listBytes = PyList.EstimateCapacityBytes(count);
-            var resultBytes = checked(outputBytes + listBytes);
-            using var output = governor?.ReserveTemporary(resultBytes, span);
-            context?.CheckExecution(span);
-            var parts = count == 0 ? Array.Empty<object>() : new object[count];
-            for (var index = 0; index < count; index++)
-            {
-                context?.CheckExecution(span);
-                var range = ranges[reverse ? count - index - 1 : index];
-                if (reuseWhole) { parts[index] = value; continue; }
-                parts[index] = CreateSplitFragment(source, range, casing, governor, span, context);
-            }
-            var result = PyList.FromTransferredArray(parts, governor, span);
-            context?.CheckExecution(span);
-            output?.Commit(resultBytes);
-            return result;
+            return BuildSplitResult(value, ranges[..count], outputBytes, reverse, casing, governor, span, context);
         }
         finally { if (prepared is not null) governor?.ReturnWordRanges(prepared, count); }
+    }
+
+    private static PyList SplitLineRanges(PyString value, bool keepEnds, MemoryGovernor? governor,
+        LythonSourceSpan? span, LythonRuntime.ExecutionContext? context)
+    {
+        governor ??= value.OwnerMemoryGovernor;
+        span ??= PyStructuralGuard.AmbientSpan;
+        context ??= PyStructuralGuard.AmbientContext;
+        governor?.ThrowIfAdmissionFailed();
+        context?.CheckExecution(span);
+        Span<(int Start, int End, int Capacity)> ranges = stackalloc (int, int, int)[8];
+        var count = 0;
+        long outputBytes = 0;
+        CasedWhitespaceIteration? prepared = null;
+        try
+        {
+            var source = value.Utf8Span;
+            var start = 0;
+            for (var offset = 0; offset < source.Length;)
+            {
+                context?.CheckExecution(span);
+                var end = offset + Math.Min(4096, source.Length - offset);
+                while (offset < end)
+                {
+                    var candidate = source[offset..end].IndexOfAny(LineBreakCandidates);
+                    if (candidate < 0) { offset = end; break; }
+                    offset += candidate;
+                    if (TryGetLineBreakByteLength(source, offset, out var width))
+                    {
+                        var after = offset + width;
+                        AppendSplitRange(ref ranges, ref count, start, keepEnds ? after : offset,
+                            ref outputBytes, ref prepared, governor, span, context);
+                        start = offset = after;
+                    }
+                    else offset++;
+                }
+            }
+            if (start < source.Length)
+                AppendSplitRange(ref ranges, ref count, start, source.Length,
+                    ref outputBytes, ref prepared, governor, span, context);
+            return BuildSplitResult(value, ranges[..count], outputBytes, false, null, governor, span, context);
+        }
+        finally { if (prepared is not null) governor?.ReturnWordRanges(prepared, count); }
+    }
+
+    private static PyList BuildSplitResult(PyString value, ReadOnlySpan<(int Start, int End, int Capacity)> ranges,
+        long outputBytes, bool reverse, CaseMapping? casing, MemoryGovernor? governor,
+        LythonSourceSpan? span, LythonRuntime.ExecutionContext? context)
+    {
+        // All split forms admit final backing/fragments together, then adopt the
+        // completed array. Only a whole unchanged same-owner source is reused;
+        // other fragments keep their independent payload and owner.
+        var source = value.Utf8Span;
+        var reuseWhole = casing is null && ranges.Length == 1 && ranges[0].Start == 0 &&
+            ranges[0].End == source.Length && ReferenceEquals(governor, value.OwnerMemoryGovernor);
+        if (reuseWhole && ranges[0].Capacity != 0)
+            outputBytes -= PyString.EstimateApproximateBytes(ranges[0].Capacity);
+        var resultBytes = checked(outputBytes + PyList.EstimateCapacityBytes(ranges.Length));
+        using var output = governor?.ReserveTemporary(resultBytes, span);
+        context?.CheckExecution(span);
+        var parts = ranges.IsEmpty ? Array.Empty<object>() : new object[ranges.Length];
+        for (var index = 0; index < parts.Length; index++)
+        {
+            context?.CheckExecution(span);
+            var range = ranges[reverse ? parts.Length - index - 1 : index];
+            parts[index] = reuseWhole ? value : CreateSplitFragment(source, range, casing, governor, span, context);
+        }
+        var result = PyList.FromTransferredArray(parts, governor, span);
+        context?.CheckExecution(span);
+        output?.Commit(resultBytes);
+        return result;
     }
 
     private static PyString CreateSplitFragment(ReadOnlySpan<byte> source,

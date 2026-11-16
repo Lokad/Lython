@@ -71,35 +71,9 @@ internal static partial class PyStringOps
     public static PyList SplitLines(PyString value, bool keepEnds, MemoryGovernor? governor)
         => SplitLines(value, keepEnds, governor, null);
 
-    public static PyList SplitLines(PyString value, bool keepEnds, MemoryGovernor? governor, LythonSourceSpan? span)
-    {
-        governor ??= value.OwnerMemoryGovernor;
-        span ??= PyStructuralGuard.AmbientSpan;
-        var lines = governor is null ? new PyList() : new PyList([], governor, span);
-        var source = value.Utf8Span;
-        var startByte = 0;
-        for (var byteIndex = 0; byteIndex < source.Length;)
-        {
-            if (!TryGetLineBreakByteLength(source, byteIndex, out var lineBreakLength))
-            {
-                Rune.DecodeFromUtf8(source[byteIndex..], out _, out var runeLength);
-                byteIndex += runeLength;
-                continue;
-            }
-
-            var endByte = keepEnds ? byteIndex + lineBreakLength : byteIndex;
-            lines.Add(SliceUtf8(value, startByte, endByte, governor, span));
-            byteIndex += lineBreakLength;
-            startByte = byteIndex;
-        }
-
-        if (startByte < source.Length)
-        {
-            lines.Add(SliceUtf8(value, startByte, source.Length, governor, span));
-        }
-
-        return lines;
-    }
+    public static PyList SplitLines(PyString value, bool keepEnds, MemoryGovernor? governor, LythonSourceSpan? span,
+        LythonRuntime.ExecutionContext? context = null)
+        => SplitLineRanges(value, keepEnds, governor, span, context);
 
     public static PyList SplitWhitespace(PyString value)
         => SplitWhitespace(value, null, null);

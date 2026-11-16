@@ -71,6 +71,13 @@ and completion. These operations retain exact output capacity; there is no growi
 byte buffer or final payload copy. Exact capacity can admit earlier than geometric
 growth and replacement overlap. Actual retained results still fund their storage.
 
+Line splitting and ordinary text split share range-based final construction. A
+bounded UTF-8 scan identifies Python line breaks, including CRLF and Unicode
+separators, using the active execution context. Final list capacity and independent
+fragments are admitted together before allocation. A whole unchanged same-owner
+input can remain an alias. Existing range-loan capacity stays funded when cached;
+working overlap and conservative capacity can cause earlier rejection.
+
 Unicode indexing caches use the active caller's cancellation context during
 construction and remain unpublished until completion. Cancelled construction
 returns its working allowance while retaining the input's charge.

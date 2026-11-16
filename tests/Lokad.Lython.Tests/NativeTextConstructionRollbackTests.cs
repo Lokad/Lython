@@ -11,6 +11,7 @@ public sealed class NativeTextConstructionRollbackTests
     [InlineData(0)]
     [InlineData(1)]
     [InlineData(2)]
+    [InlineData(3)]
     public void CancellationReturnsUnpublishedFragmentsWithoutRetiringInput(int operation)
     {
         const int payloadBytes = 64 * 1024 * 1024;
@@ -30,7 +31,7 @@ public sealed class NativeTextConstructionRollbackTests
             var bytes = new byte[payloadBytes + (operation == 2 ? 3 : 2)];
             bytes.AsSpan().Fill((byte)'B');
             bytes[0] = (byte)'a';
-            bytes[1] = operation == 2 ? (byte)',' : (byte)' ';
+            bytes[1] = operation == 2 ? (byte)',' : operation == 3 ? (byte)'\n' : (byte)' ';
             if (operation == 2) bytes[2] = (byte)'"';
             var input = PyString.FromOwnedUtf8(bytes, context.MemoryGovernor, span);
             LythonRuntime.CsvRecordParser? parser = null;
@@ -71,6 +72,7 @@ public sealed class NativeTextConstructionRollbackTests
                         Assert.True(parser.TryTakeReady(out var row));
                         result = row;
                     }
+                    else if (operation == 3) result = PyStringOps.SplitLines(input, false, context.MemoryGovernor, span, context);
                     else if (operation == 1) result = PyStringOps.SplitCasedWhitespace(input, false, context.MemoryGovernor, span, context);
                     else result = PyStringOps.SplitWhitespace(input, -1, context.MemoryGovernor, span);
                 }

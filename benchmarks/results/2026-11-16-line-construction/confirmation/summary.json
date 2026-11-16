@@ -1,0 +1,133 @@
+{
+  "complete": true,
+  "elapsedSeconds": 140.32331046788022,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "rows": [
+    {
+      "case": "scripts.text-normalization.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 1.147942384428224,
+        "reference": 1.2184088759689922,
+        "candidate-control": 1.114530950236967,
+        "reference-control": 1.193435796482412
+      },
+      "cpuMilliseconds": {
+        "candidate": 1.2408759124087592,
+        "reference": 1.317829457364341,
+        "candidate-control": 1.2085308056872037,
+        "reference-control": 1.3065326633165828
+      },
+      "elapsedChangePercent": [
+        -8.52570329885457,
+        -6.611570264442623,
+        -5.7834847505298,
+        -3.8119697924494544
+      ],
+      "cpuChangePercent": [
+        -8.293838862559245,
+        -7.50091141086402,
+        -5.8394160583941535,
+        -5.025266704098808
+      ],
+      "referenceSpreadPercent": 2.0925364866871687,
+      "candidateSpreadPercent": 2.9978022758500478
+    },
+    {
+      "case": "scripts.text-normalization.large",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "candidate": 1.2341635519125682,
+        "reference": 1.2770946804407712,
+        "candidate-control": 1.2076459787234042,
+        "reference-control": 1.288906909589041
+      },
+      "cpuMilliseconds": {
+        "candidate": 1.366120218579235,
+        "reference": 1.4049586776859506,
+        "candidate-control": 1.3563829787234043,
+        "reference-control": 1.3972602739726028
+      },
+      "elapsedChangePercent": [
+        -6.304639245944177,
+        -5.43802294230823,
+        -4.247270091361943,
+        -3.361624567521171
+      ],
+      "cpuChangePercent": [
+        -3.4574468085106447,
+        -2.92553191489362,
+        -2.7643844423015262,
+        -2.2286510232508383
+      ],
+      "referenceSpreadPercent": 0.9249297901854137,
+      "candidateSpreadPercent": 2.1958068553497467
+    },
+    {
+      "case": "scripts.report-render.format-method.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 4.069438084033613,
+        "candidate-control": 4.05751544262295,
+        "reference": 4.036338917355372,
+        "candidate": 4.050003041666667
+      },
+      "cpuMilliseconds": {
+        "reference-control": 4.285714285714286,
+        "candidate-control": 4.262295081967213,
+        "reference": 4.214876033057851,
+        "candidate": 4.25
+      },
+      "elapsedChangePercent": [
+        -0.4775854052970874,
+        -0.2929800420711892,
+        0.33852767547695173,
+        0.5246468569951812
+      ],
+      "cpuChangePercent": [
+        -0.8333333333333304,
+        -0.5464480874316835,
+        0.8333333333333304,
+        1.1250401800064314
+      ],
+      "referenceSpreadPercent": 0.8200294216108128,
+      "candidateSpreadPercent": 0.18549124232736247
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 3.6473890666666664,
+        "candidate-control": 3.4867760357142856,
+        "reference": 3.4738946357142853,
+        "candidate": 3.4727090514705883
+      },
+      "cpuMilliseconds": {
+        "reference-control": 3.777777777777778,
+        "candidate-control": 3.642857142857143,
+        "reference": 3.571428571428571,
+        "candidate": 3.6029411764705883
+      },
+      "elapsedChangePercent": [
+        -4.789179657099685,
+        -4.403506947482416,
+        -0.03412838810676888,
+        0.3708057195393799
+      ],
+      "cpuChangePercent": [
+        -4.628027681660907,
+        -3.571428571428581,
+        0.8823529411764897,
+        2.0000000000000018
+      ],
+      "referenceSpreadPercent": 4.994234113168727,
+      "candidateSpreadPercent": 0.40507235231066474
+    }
+  ],
+  "retentionDecisionPending": false,
+  "CPythonRefreshed": false,
+  "retained": true,
+  "fullQualificationPending": true,
+  "decision": "Retain one shared final split constructor and bounded explicit-context splitlines scanner. Normalization allocation\u22121.73%; warm elapsed3.81\u20138.53%lower/CPU5.03\u20138.29%lower, fresh elapsed3.36\u20136.30%lower/CPU2.23\u20133.46%lower. Moving5%JSON reference/control adversity and original failed final quiet gate retained. No universal CPU or embedding-latency claim."
+}

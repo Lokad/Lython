@@ -8685,3 +8685,9 @@ verified before unmount, all users joined. No CPU speedup or production change.
 
 
 [R430/B827 original line-construction prototype](results/2026-11-16-line-construction/README.md):ecd9e956 vs efd82707,600inputs;487internal/1656public+4relatedstress eachactual11/10. Normalization allocation−1.73%; favorable elapsed/CPU UNQUALIFIED because final idle window4.975% violates3%median. Four jobs finish/all users join, original missing elapsed/failed gate/receipt correction preserved and RAM archived. One bounded same-source/image confirmation justified; no promotion/CPU claim.
+
+
+[R430/B828 unchanged-image line-construction confirmation retained](results/2026-11-16-line-construction/confirmation/README.md):ecd9e956/efd82707, four jobs140.323s/all gates. Normalization warm elapsed3.81–8.53%lower/CPU5.03–8.29%lower; fresh elapsed3.36–6.30%lower/CPU2.23–3.46%lower. Original failed final idle gate and4.99%moving JSON reference/adverse CPU retained; no universal gain. Shared final construction and bounded explicit-context scanner retained; full600input delivery next.
+
+
+R431 bounded source gate at1fe2a174: plain builtin wrappers/signatures already live in SharedFunctions; mutable types remain per run. Default JSON already has one iterative inline/heap-frame constructor, native number/literal/string paths, shared record-key prefixes and one final value-capacity growth. No duplicate row/value or unconditional async-token pipeline identified. A document-wide admission prepass would introduce new machinery rather than remove an existing duplicate; not selected without changed dominant-cost evidence. Complete call/frame/operand displacement remains unresolved; R403/R411 regressions and useful-work overlap in R420 remain. No runtime prototype or speedup claim for this gate.

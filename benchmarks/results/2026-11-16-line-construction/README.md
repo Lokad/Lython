@@ -64,3 +64,6 @@ toolchains and254/252MiB floors retained. Publication held; broader objective op
 
 [Unqualified original controls](summary.json),[allocation](allocation-summary.json),
 [failed gate/raw jobs](observations.tgz),[source/images/checks/original conditions](source-checks-and-procedure.tar.xz).
+
+
+[One bounded unchanged-source/image confirmation passes all gates; implementation retained](confirmation/README.md). Normalization warm3.8–8.5%lower/fresh3.4–6.3%lower with CPU support; original failed gate and moving JSON control remain. Full runtime delivery pending.

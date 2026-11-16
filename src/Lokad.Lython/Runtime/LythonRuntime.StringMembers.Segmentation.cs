@@ -71,10 +71,10 @@ internal sealed partial class LythonRuntime
         private static readonly ReceiverMethod SplitLinesMethod = new(
             LythonCallableSignature.Create("str.splitlines", ["keepends"], 0, 1, LythonVariadicParameters.None, 0),
             static (receiver, arguments, span, context) => PyStringOps.SplitLines((PyString)receiver,
-                arguments.Length == 1 && IsTruthy(arguments[0]!, context, span), context.MemoryGovernor, span),
+                arguments.Length == 1 && IsTruthy(arguments[0]!, context, span), context.MemoryGovernor, span, context),
             static (receiver, arguments, span, context) => arguments.Length == 1 && arguments[0] is PyInstance
                 ? SplitLinesWithGuestTruthAsync((PyString)receiver, arguments[0]!, span, context)
-                : new(PyStringOps.SplitLines((PyString)receiver, arguments.Length == 1 && IsTruthy(arguments[0]!), context.MemoryGovernor, span)));
+                : new(PyStringOps.SplitLines((PyString)receiver, arguments.Length == 1 && IsTruthy(arguments[0]!), context.MemoryGovernor, span, context)));
 
         private static readonly ReceiverMethod ExpandTabsMethod = new(
             LythonCallableSignature.Create("str.expandtabs", ["tabsize"], 0),
@@ -122,7 +122,7 @@ internal sealed partial class LythonRuntime
 
         private static async ValueTask<object> SplitLinesWithGuestTruthAsync(PyString text, object keepEnds,
             LythonSourceSpan span, ExecutionContext context)
-            => PyStringOps.SplitLines(text, await IsTruthyAsync(keepEnds, context, span).ConfigureAwait(false), context.MemoryGovernor, span);
+            => PyStringOps.SplitLines(text, await IsTruthyAsync(keepEnds, context, span).ConfigureAwait(false), context.MemoryGovernor, span, context);
 
         private static async ValueTask<object> ExpandTabsWithGuestWidthAsync(PyString text, object width,
             LythonSourceSpan span, ExecutionContext context)
