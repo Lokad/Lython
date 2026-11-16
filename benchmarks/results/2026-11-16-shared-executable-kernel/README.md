@@ -71,3 +71,6 @@ floors remain. Profiling/retention is independent of unpublished regex capabilit
 [allocation](allocation-summary.json),[focused checks](focused-checks.json),
 [frozen sources/checks](sources-and-checks.tar.xz),
 [procedures/images/original conditions](procedure-and-image.tar.xz).
+
+[Matched-source CPU attribution and bounded refinement](attribution/README.md)
+are recorded separately; the first prototype remains unpromoted.

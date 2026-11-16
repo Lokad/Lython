@@ -1,0 +1,12 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "ramTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 265809920,
+  "archiveSHA256": "1638896f68199a23c1897a03dc94c13b1f5de545d748c5548b6cdf260693f871",
+  "source": "R439/B839 matched source attribution,91ca4a41 versus0443b5cf; elapsed not comparable with unprofiled B838",
+  "performanceComparison": false
+}

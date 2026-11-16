@@ -1,0 +1,16 @@
+{
+  "hypothesis": "A shared borrowed kernel should borrow changing execution metadata,but carry immutable compiled code and derive its fixed storage shape/loop boundary once. Removing repeated aliased metadata reads may reduce dispatch cost without a second engine or state synchronization.",
+  "evidence": "B838 captured/search adversity; B839938/974active samples with3840invocations each and225/223combined dispatch/call leaves do not isolate a causal added call/binding bottleneck. Useful/inlined work and unknowns remain.",
+  "changedWork": "One existing view caches its immutable Code reference; one loop derives persistent/cleanup boundary once. No cached PC/live extent/cells,stored mode,heap allocation,new owner,API,policy or exception router.",
+  "workloads": [
+    "complete captured-helper text",
+    "protected search",
+    "normalization",
+    "CSV invoice",
+    "JSON helpers"
+  ],
+  "semantics": "Code/storage backing cannot be replaced during an active borrowed view,as the existing outer instruction-array snapshot already requires. Current PC/live extent/cells remain actual metadata during callbacks. Preserve child transfer,no replay,first refusal,awaited cleanup,closures/identity,stack safety and active cancellation.",
+  "acceptance": "Both-target focused semantics/cancellation/ownership,then one bounded changed-source pair with independent unchanged controls against qualified0443. Preserve91ca/B838 and B839 including initial schema failure. Decide residual regression debt at coherent retention; no claim of explaining original regression from sampling or cross-collection source gain.",
+  "fullDeliveryPending": true,
+  "retained": false
+}
