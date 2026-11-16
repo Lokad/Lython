@@ -8697,3 +8697,6 @@ R431 bounded source gate at1fe2a174: plain builtin wrappers/signatures already l
 
 
 [R429/R430 full delivery43805966777](results/2026-11-16-line-construction/delivery/README.md) GREEN at86d9344e/ecd9e956: Windows/Ubuntu actual11/10 each4797internal/17914public ordinary,14internal/406public stress(original13plus line case), installed Release consumers.16summaries/600inputs verified; terminal cached forever. Exactefd image not separately fully qualified; R429 covered cumulatively. All source-pair/control/failed-gate uncertainty remains; later async prototype unqualified, publication held.
+
+
+[R433/B830 completed async entry withdrawn](results/2026-11-16-completed-async-entry/README.md):7c592066/ecd9e956,140.053s/all gates; allocation/peaks flat. Async normalization elapsed1.76–7.70%lower with5.49%moving reference; protected search mixed and sync controls move. Two handwritten entry layers add83net runtime lines, displace no complete frame/storage representation. Withdraw for complexity/evidence; not a fixed threshold or permanent ban. Exact source, original fixture placement failures and invalid baseline hash attempt retained; minimal held-operation fixture correction kept independently, original256KiB/owned-thread/refund assertions intact. No new production debt; broader objective open.

@@ -38,7 +38,7 @@ internal static class NativeCallStackFixture
         // prefix returned and registered its whole await chain. No timer race.
         using (var barrier = new LythonEngine().Run("return 1", new MockLythonHost()))
             if (!barrier.Success) throw new InvalidOperationException("Prefix-release barrier failed.");
-        var continuation = new Thread(() => timing.Release.SetResult(), 256 * 1024);
+        var continuation = new Thread(timing.Release, 256 * 1024);
         continuation.Start();
         if (!continuation.Join(TimeSpan.FromSeconds(5))) throw new TimeoutException("Owned continuation did not join.");
         bool success;
@@ -67,15 +67,21 @@ internal static class NativeCallStackFixture
     private sealed class HeldTiming : ILythonTiming
     {
         internal readonly TaskCompletionSource Entered = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        internal readonly TaskCompletionSource Release = new();
+        private readonly TaskCompletionSource _release = new();
         internal int ResumeThread;
         internal int CompletedAsynchronously;
         public long MonotonicNanoseconds { get { ResumeThread = Environment.CurrentManagedThreadId; return 0; } }
-        public async ValueTask DelayAsync(TimeSpan duration, CancellationToken cancellationToken)
+        internal void Release()
+        {
+            CompletedAsynchronously++;
+            _release.SetResult();
+        }
+        public ValueTask DelayAsync(TimeSpan duration, CancellationToken cancellationToken)
         {
             Entered.SetResult();
-            await Release.Task.ConfigureAwait(false);
-            CompletedAsynchronously++;
+            // Return the actual held operation. An extra async wrapper can make
+            // the CLR queue a continuation before it reaches the small stack.
+            return new(_release.Task);
         }
     }
 }

@@ -1,0 +1,52 @@
+{
+  "restoredProductionMatchesCommittedSource": true,
+  "productionInputs": 586,
+  "productionSourceCommit": "ea1cf25d5bcc00e511d1dc767125efc0b166c313",
+  "nonincrementalReleaseBuild": true,
+  "checks": [
+    {
+      "framework": "net11.0",
+      "total": "37",
+      "executed": "37",
+      "passed": "37",
+      "failed": "0",
+      "error": "0",
+      "timeout": "0",
+      "aborted": "0",
+      "inconclusive": "0",
+      "passedButRunAborted": "0",
+      "notRunnable": "0",
+      "notExecuted": "0",
+      "disconnected": "0",
+      "warning": "0",
+      "completed": "0",
+      "inProgress": "0",
+      "pending": "0"
+    },
+    {
+      "framework": "net10.0",
+      "total": "37",
+      "executed": "37",
+      "passed": "37",
+      "failed": "0",
+      "error": "0",
+      "timeout": "0",
+      "aborted": "0",
+      "inconclusive": "0",
+      "passedButRunAborted": "0",
+      "notRunnable": "0",
+      "notExecuted": "0",
+      "disconnected": "0",
+      "warning": "0",
+      "completed": "0",
+      "inProgress": "0",
+      "pending": "0"
+    }
+  ],
+  "rebuiltCoreSHA256": {
+    "net11.0": "0c52d52bbf27b9bfe224bbec9a8436f77496f6be5f2f64120f74cdec6a160626",
+    "net10.0": "80f9b2a021e78ecb148a01e13e36d21abd2cc95fbda482edf6b4b5971bb6dcf9"
+  },
+  "rebuiltBinaryEqualityNotInferred": true,
+  "fullQualification": "Unchanged production source already fully qualified by43805966777; do not repeat. Only independent test fixture changes."
+}

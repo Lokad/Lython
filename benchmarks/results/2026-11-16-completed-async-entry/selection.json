@@ -1,0 +1,11 @@
+{
+  "baseCommit": "93baaf300113fb523a350622ed89d9346b6a1b64",
+  "baselineCoreSHA256": "ecd9e956b007224f927de3c722c612668da094529aa125ca6adcd456184eaab2",
+  "paths": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs": "6f73efb30a1d5e3c2859ce137b2a28ba3c96ea164bef835c7af745f374e845d9",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs": "79c672d96e710541c6808ec7eaed854e6f9158683e831cab643c0dc0f0515b25"
+  },
+  "hypothesis": "Async public hosting repeatedly enters call-runner and generator advancement state machines even when frame work completes inline. Remove those unconditional state-machine entries; plain completed prefixes feed one iterative pending continuation and existing cleanup. Existing instruction engine, synchronous runner, generator frame and managed stack policy remain. No new controller/view/arena/cache or claimed explanation of synchronous CPython gap. Dominance/benefit remains to be measured in complete RunAsync scripts with synchronous controls.",
+  "sourceTradeoff": "More explicit completed/pending control in two entry methods replaces unconditional generated state entry. Existing ExecuteUntilCallAsync stays: manually rebuilding its routing/disposal phase machine is outside this bounded change. Do not claim all async state machines or duplicate dispatch are removed.",
+  "acceptance": "RunAsync normalization and protected file search, sync normalization and JSON controls; focused actual11/10 generators/protocols/closures/deep async stack/cancellation/refusal/awaited cleanup. Preserve ValueTask single consumption and entered-frame state through actual pending work; nonstarting injection and guest StopIteration behavior unchanged. One bounded source pair with controls and allocation; retain/refine/remove with debt explicit, no fixed-percent veto."
+}

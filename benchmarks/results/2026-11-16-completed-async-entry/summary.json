@@ -1,0 +1,157 @@
+{
+  "complete": true,
+  "elapsedSeconds": 140.05342521285638,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "rows": [
+    {
+      "case": "scripts.text-normalization.large",
+      "lane": "warm-async",
+      "elapsedMilliseconds": {
+        "candidate": 1.4037947188405797,
+        "reference": 1.4418492012012012,
+        "candidate-control": 1.4164597163742692,
+        "reference-control": 1.5209743627760253
+      },
+      "cpuMilliseconds": {
+        "candidate": 1.5072463768115945,
+        "reference": 1.5615615615615615,
+        "candidate-control": 1.5497076023391814,
+        "reference-control": 1.640378548895899
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.3469178525458359,
+        "reference": 0.40032404666592886,
+        "candidate-control": 0.4260325145578709,
+        "reference-control": 0.24872898541443
+      },
+      "elapsedChangePercent": [
+        -7.704248460938789,
+        -6.871558716545357,
+        -2.6392831045658816,
+        -1.7608973813475148
+      ],
+      "cpuChangePercent": [
+        -8.11594202898549,
+        -5.527440395861449,
+        -3.4782608695651973,
+        -0.7591093117408798
+      ],
+      "referenceSpreadPercent": 5.487755689631424,
+      "candidateSpreadPercent": 0.9021972631546582
+    },
+    {
+      "case": "scripts.text-normalization.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 1.1402025927710844,
+        "reference": 1.1504678504901962,
+        "candidate-control": 1.1032906502347417,
+        "reference-control": 1.1457386560975609
+      },
+      "cpuMilliseconds": {
+        "candidate": 1.2530120481927711,
+        "reference": 1.25,
+        "candidate-control": 1.1971830985915493,
+        "reference-control": 1.2439024390243902
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.9083779903024466,
+        "reference": 0.3199787329486751,
+        "candidate-control": 0.4033880149871767,
+        "reference-control": 0.1718129015541202
+      },
+      "elapsedChangePercent": [
+        -4.100696967355755,
+        -3.70485936185474,
+        -0.8922681076866223,
+        -0.48318726936669165
+      ],
+      "cpuChangePercent": [
+        -4.225352112676061,
+        -3.7558685446009377,
+        0.24096385542169418,
+        0.7323411292227799
+      ],
+      "referenceSpreadPercent": 0.41276379804999763,
+      "candidateSpreadPercent": 3.34562270862071
+    },
+    {
+      "case": "scripts.file-search.large.protected",
+      "lane": "warm-async",
+      "elapsedMilliseconds": {
+        "reference-control": 0.2784758142952572,
+        "candidate-control": 0.2817418641484427,
+        "reference": 0.27263092954990215,
+        "candidate": 0.2673925877419355
+      },
+      "cpuMilliseconds": {
+        "reference-control": 0.3540414161656647,
+        "candidate-control": 0.35785288270377735,
+        "reference": 0.35225048923679064,
+        "candidate": 0.3419354838709677
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.21496945580954602,
+        "candidate-control": 1.4020579582324002,
+        "reference": 1.9875886727817782,
+        "candidate": 0.8869073507818531
+      },
+      "elapsedChangePercent": [
+        -3.979960192008125,
+        -1.9214040815599631,
+        1.1728307039700958,
+        3.3418565580883186
+      ],
+      "cpuChangePercent": [
+        -3.4193548387096873,
+        -2.9283154121863886,
+        1.076559510859365,
+        1.5904572564612307
+      ],
+      "referenceSpreadPercent": 2.143881750689336,
+      "candidateSpreadPercent": 5.366370297577561
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 3.4643861830985916,
+        "candidate-control": 3.450425147887324,
+        "reference": 3.4155171549295775,
+        "candidate": 3.4901269929078014
+      },
+      "cpuMilliseconds": {
+        "reference-control": 3.591549295774648,
+        "candidate-control": 3.591549295774648,
+        "reference": 3.5211267605633805,
+        "candidate": 3.617021276595745
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.10917345644942451,
+        "candidate-control": 0.060739402126044825,
+        "reference": 0.755152382054485,
+        "candidate": 0.6459729586217995
+      },
+      "elapsedChangePercent": [
+        -0.40298726739468327,
+        0.7430121368913634,
+        1.0220412129203993,
+        2.1844375125020354
+      ],
+      "cpuChangePercent": [
+        0.0,
+        0.7092198581560183,
+        2.0000000000000018,
+        2.7234042553191395
+      ],
+      "referenceSpreadPercent": 1.430794399567925,
+      "candidateSpreadPercent": 1.1506363221583493
+    }
+  ],
+  "retentionDecisionPending": false,
+  "CPythonRefreshed": false,
+  "retained": false,
+  "fullQualificationRequiredForWithdrawnRuntime": false,
+  "decision": "Withdraw runtime prototype. Completed-entry state traffic is plausible, but two new handwritten control layers add83net runtime lines without material allocation reduction or a whole-frame simplification. Normalization async is lower with moving reference; protected search is inconclusive and synchronous controls move. Not a failed design or a fixed-percent veto: reconsider only with a changed integration removing existing machinery or demonstrated representative dominance. Preserve useful independent held-operation fixture correction; fully qualifiedecd runtime restored."
+}
