@@ -8,6 +8,64 @@ namespace Lokad.Lython.Tests;
 public sealed class CasedSplitOwnershipTests
 {
     [Theory]
+    [InlineData(false), InlineData(true)]
+    public void ForeignSourceCleanupKeepsCursorAndRetainedWordsFunded(bool upper)
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var resultOwner = budget.CreateScope())
+        {
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = resultOwner });
+            var span = new LythonSourceSpan(0, 1, 1, 1);
+            PyStringOps.CasedWhitespaceIteration cursor;
+            using (var sourceOwner = budget.CreateScope())
+            {
+                var sourceContext = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = sourceOwner });
+                var input = PyString.FromString("ΟΣ " + new string('A', 4096) + " CAFÉ ß", sourceContext.MemoryGovernor, span);
+                cursor = PyStringOps.PrepareCasedWhitespaceIteration(input, upper, context, span);
+                sourceContext.State.CloseResources();
+            }
+            Assert.Equal(context.MemoryGovernor.CurrentAccountedBytes, budget.ReservedBytes);
+            var retained = new List<PyString>();
+            using (cursor)
+                while (cursor.TryReadWord(out var word)) retained.Add(Assert.IsType<PyString>(cursor.Materialize(ref word)));
+            context.State.CloseResources();
+            Assert.Equal(upper ? ["ΟΣ", new string('A', 4096), "CAFÉ", "SS"]
+                : ["ος", new string('a', 4096), "café", "ß"], retained.Select(word => word.AsString()).ToArray());
+            Assert.All(retained, word => Assert.Same(context.MemoryGovernor, word.OwnerMemoryGovernor));
+            Assert.True(budget.ReservedBytes >= retained.Sum(word => word.CommittedOwnedBytes));
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false), InlineData(true)]
+    public void WordAdvancementUsesPrepaidStorage(bool upper)
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var owner = budget.CreateScope())
+        {
+            var hook = new AdmissionHookMemoryBudget(owner);
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = hook });
+            var span = new LythonSourceSpan(0, 1, 1, 1);
+            var repeated = string.Concat(Enumerable.Repeat("ßﬃ", 256));
+            var input = PyString.FromString("FIRST " + repeated + " ΟΣ İ", context.MemoryGovernor, span);
+            using var cursor = PyStringOps.PrepareCasedWhitespaceIteration(input, upper, context, span);
+            var admitted = context.MemoryGovernor.CurrentAccountedBytes;
+            hook.RefuseGrowth = _ => throw new InvalidOperationException("Word advancement requested late admission.");
+            var retained = new List<PyString>();
+            while (cursor.TryReadWord(out var word)) retained.Add(Assert.IsType<PyString>(cursor.Materialize(ref word)));
+            Assert.Equal(upper ? ["FIRST", string.Concat(Enumerable.Repeat("SSFFI", 256)), "ΟΣ", "İ"]
+                : ["first", repeated, "ος", "i\u0307"], retained.Select(word => word.AsString()).ToArray());
+            Assert.Equal(admitted, context.MemoryGovernor.CurrentAccountedBytes);
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            cursor.Dispose();
+            context.State.CloseResources();
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
     [InlineData(0), InlineData(1), InlineData(2)]
     public void LongWordPublicationAfterStopKeepsRetainedBackingFunded(int failureKind)
     {

@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[R440 bulk-snapshot refinement](results/2026-11-16-cased-word-stream/refined/README.md)
+recordsce368f52/0443,B843seven jobs212.918s/all gates. Long-line allocation−46.31%/
+accounted peak−15.82%,but elapsed+6.26..8.01% with1.20/0.45%controls; captured CPU
++3.65..8.73% with moving controls. Withdraw both shapes: added scan does not justify
+CPU debt.243internal/623public eachactual11/10 pass; source/full adverse evidence
+preserved. Keep independent ownership cases,restore original range-growth fixture
+and qualified engine. No unchanged full qualification or permanent design ban.
+
 [R440 private word stream](results/2026-11-16-cased-word-stream/README.md)
 records1427/0443,B842seven jobs213.199s/all gates. Whole-line/range deletion
 cuts long-line allocation71.54%/accounted peak27.02%,but captured text CPU+7.58..12.07%

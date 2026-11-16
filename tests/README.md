@@ -389,6 +389,9 @@ Prepared-range ownership checks keep overlapping active cursors funded through
 cache shutdown and return a loan after eager refusal without publishing a cursor.
 Counting-loop refund callbacks observe completed word/total bindings and preserve
 the first refusal before subsequent guest effects.
+Cased-word ownership cases also dispose a foreign source owner before iteration
+and retain the completed words. Advancement uses prepaid storage and completes
+without new admission; cleanup returns the shared allowance to baseline.
 
 [Scalar comparisons](Lokad.Lython.Tests/ScalarComparisonCancellationTests.cs) check
 current tokens, bound-method reuse, nested native comparisons, terminal admission
