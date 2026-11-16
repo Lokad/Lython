@@ -1,0 +1,18 @@
+{
+  "revision": "cc794368",
+  "sourceSHA256": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs": "d42befa544e5faa89fb36e48c7cb067c8e6d7f0cfce27f92f1de3cfbefa621ec",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs": "992ff5610006b1eb719cdd54312cb3517496ddb72a7770f3cfe3eccc4322c5b3",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Slot.cs": "7b5f5d2f882f99e6db53059e60d5e0b69ec4dd1211467c7fecdb6facef890486",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs": "19d5689120f51f14b6d27dce20b804a5a60613251126f0cedc7a2a69ee1e7990",
+    "src/Lokad.Lython/Runtime/Protocols/IPyIterableValue.cs": "8130f6c0b3f09ef4c34710f7dcb8340c7405ccd1840c27151f7dff0040b60b56",
+    "src/Lokad.Lython/Runtime/LythonRuntime.BuiltinIterables.Aggregates.cs": "0922415ed45bf4fa6511010718e6b452b9d0ba3c3cd75980a1cac14f840bf368",
+    "src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.Builtins.cs": "90f257f4e61ab414a1016b3342954a0eafb268e862f760d10907a8fc79112e5f",
+    "src/Lokad.Lython/Runtime/LythonRuntime.cs": "60a2312c27af1513a0d628782eb9ef4b28c876697fdbfaf1b4cd11f708d4f3fe",
+    "src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Advanced.cs": "6c59a24047d36ea6aec04f23aebee3bcf3cfd60622b32a2db92626737c928731"
+  },
+  "prototypeSelected": false,
+  "newTimingClaim": false,
+  "reason": "A real unpublished-integer transport remains at yield, but its relevance to the remaining representative gaps and shared result identity/copy costs are not established. No duplicate result protocol or per-item owner is justified.",
+  "futureGate": "A complete numeric record-processing script must demonstrate fresh scalar publication as a material allocation/CPU cost; preserve repeated observation/aliases and reference-only traffic. Compare warm/fresh/compilation plus text and call controls, then remove the displaced transport coherently."
+}

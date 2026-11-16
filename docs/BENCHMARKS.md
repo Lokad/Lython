@@ -26,6 +26,8 @@ five rotated approximately0.5s rounds. All image/golden/quiet/join/archive gates
 pass. [CSV/text/JSON/search evidence](../benchmarks/results/2026-11-16-representative-cpython-checkpoint/README.md),
 [configuration/report evidence](../benchmarks/results/2026-11-16-generated-scripts-cpython/README.md).
 Different collection initialization is explicit; no causal source-change gain is inferred.
+These tables describe the named measured revision, not today's HEAD. Later
+source-pair measurements appear separately below.
 
 Warm includes synchronous Run, mediated RAM I/O, complete stdout/file goldens and
 prior-result cleanup. It excludes compilation/startup, fixture reset/protocol and
@@ -78,6 +80,7 @@ Source-pair results are separate from CPython and cannot be added together:
 
 | Change / affected workload | Separate source-pair evidence | Limits |
 | --- | --- | --- |
+| One generator-expression engine / complete class-generator report | Allocation −21.09%; warm 8.1–9.4% lower elapsed, compile-to-result 4.1–7.2% lower, supporting CPU | Compilation 4–9% higher; earlier frame/cursor admission. Normalization control moves; calls elapsed about 1% higher without supporting CPU. [Source pair and controls](../benchmarks/results/2026-11-16-generator-consolidation/README.md). |
 | Shared immutable subtext / complete normalization and JSON-lines | Allocation−19.8%/−11.3%; normalization warm1.8–4.6%lower elapsed, JSON2.9–5.6%lower, supporting CPU | Full backing stays charged for surviving views; fresh reference moves3.37%. [Evidence and full delivery](../benchmarks/results/2026-11-16-shared-subtext/README.md). |
 | Shared line construction / normalization | Allocation−1.73%; warm3.8–8.5%lower elapsed, supporting CPU | Original failed idle gate and moving JSON control retained. [Evidence and full delivery](../benchmarks/results/2026-11-16-line-construction/confirmation/README.md). |
 | Final-slot range transport / diagnostic module and generator drain | Allocation−97.8%/−13.7%; module24–26%lower elapsed through Run/27%through RunAsync; generator6–8%lower, supporting CPU | Native helper roughly flat; CSV inconclusive with3.58%moving controls. No broad file-script gain. [Refinement/original adversity](../benchmarks/results/2026-11-16-iteration-slot-transport/refined/README.md); [Full delivery passes](../benchmarks/results/2026-11-16-iteration-slot-transport/refined/delivery/README.md). |
