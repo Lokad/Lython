@@ -1,0 +1,60 @@
+{
+  "version": "Python 3.13.2",
+  "rows": [
+    {
+      "name": "fallthrough-and-early-return",
+      "source": "def compute(n):\n    if n < 0: return 7\n    try:\n        value = n * 3 + 1\n    finally: print('closed', n)\n    return value\nprint(compute(-1), compute(2))\ndef empty():\n    try: value = 3\n    finally: print('empty')\nprint(empty())\n",
+      "expected": "closed 2\n7 7\nempty\nNone\n"
+    },
+    {
+      "name": "nested-finally-and-fault",
+      "source": "def compute(n):\n    try:\n        try: return 12 // n\n        finally: print('inner', n)\n    finally: print('outer', n)\nprint(compute(3))\ntry: compute(0)\nexcept ZeroDivisionError: print('zero')\n",
+      "expected": "inner 3\nouter 3\n4\ninner 0\nouter 0\nzero\n"
+    },
+    {
+      "name": "tuple-return-retains-alias-through-cleanup",
+      "source": "def compute(n, kept):\n    try: return n + 1000, kept\n    finally: kept.append(n)\nkept = []\nvalue, alias = compute(2, kept)\nprint(value, alias is kept, kept)\n",
+      "expected": "1002 True [2]\n"
+    },
+    {
+      "name": "cleanup-overrides-return-and-fault",
+      "source": "def compute(n):\n    try: return 12 // n, n\n    finally: return 'replaced', n + 1\nfirst, second = compute(0)\nprint(first, second, compute(3))\n",
+      "expected": "replaced 1 ('replaced', 4)\n"
+    },
+    {
+      "name": "prefix-effects-not-replayed",
+      "source": "def outer():\n    count = 0\n    def compute(n):\n        nonlocal count\n        try:\n            count += 1\n            return count, 12 // n\n        finally: print('closed', count)\n    print(compute(3))\n    try: compute(0)\n    except ZeroDivisionError: print('zero', count)\n    print(compute(2))\nouter()\n",
+      "expected": "closed 1\n(1, 4)\nclosed 2\nzero 2\nclosed 3\n(3, 6)\n"
+    },
+    {
+      "name": "abrupt-loop-exits-own-the-cursor",
+      "source": "def compute(n):\n    total = 0\n    for value in range(n):\n        try:\n            total += value + 1\n            if value % 2 == 0: continue\n            if value > 4: break\n        finally: print('closed', value)\n    return total\nprint(compute(8))\n",
+      "expected": "closed 0\nclosed 1\nclosed 2\nclosed 3\nclosed 4\nclosed 5\n21\n"
+    },
+    {
+      "name": "cleanup-fault-preserves-active-exception",
+      "source": "def compute(n):\n    try: return 12 // n\n    finally: int('broken')\nfor n in [0, 3]:\n    try: compute(n)\n    except ValueError as error:\n        print(None if error.__context__ is None else type(error.__context__).__name__)\n",
+      "expected": "ZeroDivisionError\nNone\n"
+    },
+    {
+      "name": "wide-owned-arguments-and-finally",
+      "source": "def compute(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r):\n    try: return (a + r) * 3 + 7\n    finally: print('closed', a, r)\nprint(compute(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17))\n",
+      "expected": "closed 0 17\n58\n"
+    },
+    {
+      "name": "nested-handler-and-finally",
+      "source": "def compute(n):\n    try:\n        try: return 12 // n\n        except ZeroDivisionError: return 'zero'\n    finally: print('closed', n)\nprint(compute(3), compute(0))\n",
+      "expected": "closed 3\nclosed 0\n4 zero\n"
+    },
+    {
+      "name": "iterated-text-return-survives-cleanup",
+      "source": "def words(text):\n    try: return text.lower().split()\n    finally: print('closed')\nfor word in words('A \u03b2 C'): print(word)\n",
+      "expected": "closed\na\n\u03b2\nc\n"
+    },
+    {
+      "name": "cleanup-replaces-private-text-return",
+      "source": "def words(text):\n    try: return text.lower().split()\n    finally: return ['replacement']\nfor word in words('A \u03b2 C'): print(word)\n",
+      "expected": "replacement\n"
+    }
+  ]
+}

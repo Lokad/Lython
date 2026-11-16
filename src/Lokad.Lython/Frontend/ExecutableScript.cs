@@ -558,9 +558,15 @@ internal sealed partial class ExecutableCodeObject
             SuiteStartIndex = region.SuiteStartIndex is int start ? offsets[start] : null,
             SuiteEndIndex = region.SuiteEndIndex is int end ? offsets[end + 1] - 1 : null
         }).ToArray();
+        // Native work can precede cleanup without owning its routing state.
+        // A physical instruction frontier also covers normal fallthrough and
+        // jumps: transfer once before entering any finally suite.
+        NativePrefixEnd = Instructions.Length;
+        foreach (var region in ExceptionRegions)
+            if (region.FinallyIndex is int cleanup) NativePrefixEnd = Math.Min(NativePrefixEnd, cleanup);
         PrepareNativeSegments(callSites);
         CanRunNativeInstructions = IsFunctionScope && !RequiresLocalVariableMirroring && capturedLocalSlots.Count == 0
-            && !ExceptionRegions.Any(region => region.FinallyIndex is not null)
+            && EntryIndex < NativePrefixEnd
             && SupportsNativeInstructions();
     }
 
@@ -614,10 +620,11 @@ internal sealed partial class ExecutableCodeObject
 
     public bool CanRunNativeInstructions { get; }
 
+    public int NativePrefixEnd { get; }
 
     private bool SupportsNativeInstructions()
     {
-        for (var index = 0; index < Instructions.Length; index++)
+        for (var index = 0; index < NativePrefixEnd; index++)
         {
             // Faults transfer at their original PC into ordinary handler
             // routing. Handler-only operations never run in this native prefix.

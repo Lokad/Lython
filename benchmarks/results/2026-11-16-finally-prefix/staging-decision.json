@@ -1,0 +1,7 @@
+{
+  "noPriorLaunchAttempt": true,
+  "removedUnnecessaryFinalCIDependency": true,
+  "reason": "Focused development source pair may use committed source with recorded pending full qualification. Current8f and prototypeeee images remain; older039 exact replicas have committed full source/binary custody. No weakening of fresh UID/path/hash/all-alias, lease, quiet, ownership,254/252MiB floors or source/golden gates.",
+  "referenceRuntime": "7d522f1f/8f468f0a",
+  "pendingRun": "43783452636"
+}

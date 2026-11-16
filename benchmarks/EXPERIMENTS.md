@@ -8649,3 +8649,6 @@ verified before unmount, all users joined. No CPU speedup or production change.
 
 
 [R422full delivery43783452636](results/2026-11-16-regex-known-boundaries/delivery/README.md) qualifies7d522f1f/8f468f0a on Windows/Ubuntu actual11/10,4,777internal/17,896public ordinary plus original13/406stress and installed Release consumers each.16summaries/592inputs verified; terminal cached forever. Broader roadmap active, publication held.
+
+
+[R423/B819 native work before finally](results/2026-11-16-finally-prefix/README.md): retainedeee74a10 versus7d522f1f/8f468f0a. Replaces blanket helper exclusion with earliest-cleanup frontier and existing exact-PC funded-frame transfer; no second cleanup router/controller. Complete protected invoice warm4.8–6.2%lower elapsed/5.3–7.1%lower widerCPU, allocation−2.91%. Fresh inconclusive, ordinary/JSON controls adverse/moving up to3.5%retained.105internal/223public eachactual11/10,11independent CPython programs and complete invoice/active-exception probes pass. B819four jobs141.245s/all gates/joined cleanup;591inputs frozen. Full delivery pending; broader performance objective remains active, publication held.

@@ -1,0 +1,18 @@
+{
+  "reference": {
+    "Inspect.deps.json": "2d4667c19cc8c902aaec0f8f7ee91d1cf12cbad6b6e7bffe82d306ae68c743c4",
+    "Inspect.dll": "4988ee652a9f08e46fc66a30e4fd9a2ee88594f77e29f047687e84e97d8a52c4",
+    "Inspect.exe": "2861970b7ef37ab8118ae2aa48c4616c0f5f3412137083275ba86b68917bb154",
+    "Inspect.pdb": "9da089cbc4f0db110ddd0390dbbce30472ac37f23ec1996d82b908ef9f5e548d",
+    "Inspect.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0",
+    "Lokad.Lython.dll": "8f468f0a5cde74127abf48e9f7a929272e0906a523cef4a006cd494f969f3632"
+  },
+  "candidate": {
+    "Inspect.deps.json": "2d4667c19cc8c902aaec0f8f7ee91d1cf12cbad6b6e7bffe82d306ae68c743c4",
+    "Inspect.dll": "4988ee652a9f08e46fc66a30e4fd9a2ee88594f77e29f047687e84e97d8a52c4",
+    "Inspect.exe": "2861970b7ef37ab8118ae2aa48c4616c0f5f3412137083275ba86b68917bb154",
+    "Inspect.pdb": "9da089cbc4f0db110ddd0390dbbce30472ac37f23ec1996d82b908ef9f5e548d",
+    "Inspect.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0",
+    "Lokad.Lython.dll": "eee74a1030fc154f3de9e35843fac8b178834ea339ea2f45b282935da0fb55f4"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "complete": true,
+  "sourceSHA256": "5104ddf2f430e0e447e9cdf78b59725b476c1e8b67311de531590985b2ac2007",
+  "stdout": "4096 3081216\n4096\n",
+  "allFileGoldensPassed": true,
+  "interpreter": "Python 3.13.2"
+}

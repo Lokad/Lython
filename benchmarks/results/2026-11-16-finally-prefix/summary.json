@@ -1,0 +1,133 @@
+{
+  "complete": true,
+  "elapsedSeconds": 141.24540539691225,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "rows": [
+    {
+      "case": "scripts.csv-invoice.finally.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 13.10454707894737,
+        "reference": 13.899704194444446,
+        "candidate-control": 13.235534842105263,
+        "reference-control": 13.969571694444445
+      },
+      "cpuMilliseconds": {
+        "candidate": 13.421052631578949,
+        "reference": 14.166666666666668,
+        "candidate-control": 13.421052631578949,
+        "reference-control": 14.444444444444445
+      },
+      "elapsedChangePercent": [
+        -6.1922057054983775,
+        -5.720676529324209,
+        -5.254540857763745,
+        -4.7782984662698365
+      ],
+      "cpuChangePercent": [
+        -7.0850202429149745,
+        -7.0850202429149745,
+        -5.263157894736836,
+        -5.263157894736836
+      ],
+      "referenceSpreadPercent": 0.5026545818717754,
+      "candidateSpreadPercent": 0.999559636580849
+    },
+    {
+      "case": "scripts.csv-invoice.finally.large",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "candidate": 14.267582314285715,
+        "reference": 14.187382470588235,
+        "candidate-control": 13.851885305555554,
+        "reference-control": 14.14046622857143
+      },
+      "cpuMilliseconds": {
+        "candidate": 14.571428571428571,
+        "reference": 14.705882352941176,
+        "candidate-control": 14.166666666666668,
+        "reference-control": 14.571428571428571
+      },
+      "elapsedChangePercent": [
+        -2.3647573167791758,
+        -2.040816182091554,
+        0.5652899247887477,
+        0.8989525780800811
+      ],
+      "cpuChangePercent": [
+        -3.6666666666666514,
+        -2.777777777777768,
+        -0.9142857142857119,
+        0.0
+      ],
+      "referenceSpreadPercent": 0.33178709427563735,
+      "candidateSpreadPercent": 3.001013938250252
+    },
+    {
+      "case": "scripts.csv-invoice.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 6.663928081081081,
+        "candidate-control": 6.879365465753425,
+        "reference": 6.687875586666667,
+        "candidate": 6.661811135135135
+      },
+      "cpuMilliseconds": {
+        "reference-control": 6.891891891891892,
+        "candidate-control": 6.986301369863014,
+        "reference": 6.933333333333334,
+        "candidate": 6.891891891891892
+      },
+      "elapsedChangePercent": [
+        -0.389726919913036,
+        -0.03176723878451915,
+        2.863239254458061,
+        3.232888801485889
+      ],
+      "cpuChangePercent": [
+        -0.5977130977130929,
+        0.0,
+        0.7639620653319357,
+        1.3698630136986356
+      ],
+      "referenceSpreadPercent": 0.3593602045852462,
+      "candidateSpreadPercent": 3.265693460910124
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 3.431574251748252,
+        "candidate-control": 3.55078454676259,
+        "reference": 3.4445176901408447,
+        "candidate": 3.489297457142857
+      },
+      "cpuMilliseconds": {
+        "reference-control": 3.5664335664335667,
+        "candidate-control": 3.6690647482014387,
+        "reference": 3.591549295774648,
+        "candidate": 3.571428571428571
+      },
+      "elapsedChangePercent": [
+        1.3000301066876219,
+        1.682120250354413,
+        3.0851012008418444,
+        3.4739243935521857
+      ],
+      "cpuChangePercent": [
+        -0.5602240896358635,
+        0.14005602240894088,
+        2.1582733812949506,
+        2.877697841726601
+      ],
+      "referenceSpreadPercent": 0.37718660425309913,
+      "candidateSpreadPercent": 1.7621624517526913
+    }
+  ],
+  "retentionDecisionPending": false,
+  "CPythonRefreshed": false,
+  "retained": true,
+  "fullQualificationPending": true,
+  "decision": "Remove blanket finally-helper rejection using the existing exact-PC transfer. Protected invoice warm lower with CPU support and 2.91% allocation reduction. Fresh inconclusive; ordinary/JSON controls adverse/moving, retained as debt. No universal improvement or broader objective completion."
+}

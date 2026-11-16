@@ -385,7 +385,12 @@ Eligible `try`/`except` helpers use the same prefix through their normal body.
 Handler-only instructions do not require a lexical frame before that body runs.
 A catchable fault transfers its exact instruction and materialized live values
 to the existing pending-exception router; the failed operation is never replayed.
-Finally regions, context managers and generators keep their existing framed path.
+Eligible finally-containing helpers can run before the earliest compiled cleanup
+suite. Reaching that frontier, returning or taking an abrupt exit transfers the
+exact PC and live values to the existing funded frame before cleanup. Finally
+routing and actual suspension remain framed; context managers and generators keep
+their existing paths. Frame admission may follow completed prefix effects; it does
+not promise rollback of those effects or identical small-budget thresholds.
 Cancellation and refused admission remain terminal through guest handlers.
 
 Eligible tuple returns consumed by immediate exact unpacking can place their
@@ -835,7 +840,8 @@ their lexical frame only when required. Incoming cells use their current shared
 identity; inlined comprehension bindings retain their lexical precedence. Plain
 list/tuple construction uses admitted builders. Scope-sensitive work, dynamic
 protocols, nested calls and host operations adopt the same storage and current PC.
-Protected bodies and functions creating captured local cells start with a frame.
+Scope-sensitive protected work and functions creating captured local cells retain
+their lexical frames; eligible protected prefixes can defer materialization.
 Native dictionary writes remain context-free only when funded capacity needs no
 growth or key protocol; growth establishes a context before admission.
 Mirrored/lowered functions and native/protocol callbacks use their general

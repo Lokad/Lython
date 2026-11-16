@@ -1,0 +1,28 @@
+{
+  "rows": [
+    {
+      "case": "scripts.csv-invoice.finally.large",
+      "referenceBytes": 9016604,
+      "candidateBytes": 8754460,
+      "changePercent": -2.9073473782368575
+    },
+    {
+      "case": "scripts.csv-invoice.large",
+      "referenceBytes": 4198990,
+      "candidateBytes": 4198990,
+      "changePercent": 0.0
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "referenceBytes": 2023174,
+      "candidateBytes": 2022726,
+      "changePercent": -0.022143424144438484
+    }
+  ],
+  "complete": true,
+  "elapsedSeconds": 10.963725800160319,
+  "allOutputAndFileGoldensPassed": true,
+  "budgetBaselineAndCleanupPassed": true,
+  "CPUorElapsedClaim": false,
+  "boundary": "Local complete warm jobs with reset/mediated I/O/full stdout and file goldens/result cleanup; compilation/startup excluded. >=4/.5s warmup,3x4 observations, natural-GC whole-process allocation counters; no elapsed/CPU claim."
+}

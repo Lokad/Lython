@@ -71,7 +71,7 @@ internal sealed partial class LythonRuntime
         private bool RunCore(out ExecutableSlot result)
         {
             result = ExecutableSlot.FromObject(PyNone.Instance);
-            while (Index < Code.Instructions.Length)
+            while (Index < Code.NativePrefixEnd)
             {
                 ref readonly var instruction = ref Code.Instructions[Index];
                 _scope.State.CheckExecution(instruction.Span);
@@ -79,9 +79,11 @@ internal sealed partial class LythonRuntime
                 {
                     case ExecutableOpCode.Complete:
                     case ExecutableOpCode.ReturnNone:
+                        if (Code.NativePrefixEnd != Code.Instructions.Length) return false;
                         Trim(Code.FirstTemporarySlot);
                         return true;
                     case ExecutableOpCode.Return:
+                        if (Code.NativePrefixEnd != Code.Instructions.Length) return false;
                         result = ReadReturnSlot(instruction.InputStart);
                         if (instruction.InputStart >= Code.FirstTemporarySlot) Values[instruction.InputStart].Object = null!;
                         Trim(Code.FirstTemporarySlot);
@@ -182,8 +184,9 @@ internal sealed partial class LythonRuntime
                         Index = instruction.TargetIndex;
                         continue;
                     case ExecutableOpCode.AbruptJump:
-                        // Native eligibility excludes finally regions. The
-                        // only additional work on break is retiring its cursor.
+                        // The ordinary frame owns pending cleanup for an abrupt
+                        // exit. Transfer before retiring or changing its inputs.
+                        if (Code.NativePrefixEnd != Code.Instructions.Length) return false;
                         if (instruction.DiscardIterator) Trim(LiveExtent - 1);
                         Index = instruction.TargetIndex;
                         continue;
@@ -256,7 +259,7 @@ internal sealed partial class LythonRuntime
                 }
                 Index++;
             }
-            return true;
+            return Index >= Code.Instructions.Length;
         }
 
         private bool Format(in ExecutableInstruction instruction)
@@ -423,7 +426,7 @@ internal sealed partial class LythonRuntime
 
         private bool TryReturnUnpackedTuple(in ExecutableInstruction instruction)
         {
-            if (_unpackedReturnCount == 0 || instruction.ItemCount != _unpackedReturnCount
+            if (Code.NativePrefixEnd != Code.Instructions.Length || _unpackedReturnCount == 0 || instruction.ItemCount != _unpackedReturnCount
                 || instruction.HasLocalResult || Index + 1 >= Code.Instructions.Length) return false;
             ref readonly var next = ref Code.Instructions[Index + 1];
             if (next.OpCode != ExecutableOpCode.Return || next.InputStart != instruction.ResultSlot) return false;
