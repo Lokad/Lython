@@ -1,0 +1,39 @@
+{
+  "head": "4fdb981e8d62ae49b3393cd5861189adc556cdc8",
+  "readOnlyCommittedBlobs": true,
+  "producerWorktreeNotReadOrModified": true,
+  "files": [
+    {
+      "path": "src/Lokad.Utf8Regex.PythonRe/Utf8PythonRegex.Metadata.cs",
+      "committedSHA256": "7cf2695affd350bd7808f832b31405fa9ef77b32cbad705c9d7fa3186d8cb96d",
+      "unchangedSincePreviousFactCheck": true
+    },
+    {
+      "path": "src/Lokad.Utf8Regex.PythonRe/Utf8PythonRegex.Cursor.cs",
+      "committedSHA256": "663a0e933731c5774d9f73a6113edb702aa4cbb87e0f6e4317c1d83b6985d6ce",
+      "unchangedSincePreviousFactCheck": true
+    },
+    {
+      "path": "src/Lokad.Utf8Regex.PythonRe/Utf8PythonMatchCursor.cs",
+      "committedSHA256": "05ab94831fcb8d95da9456ef9977f71bd5495bf13953fb3ad966788c534513ed",
+      "unchangedSincePreviousFactCheck": true
+    }
+  ],
+  "changes": "PythonRe legacy structural FindAll, owned UTF16 projection and replacement callback APIs removed; current adapter uses cursors and Lython-owned replacement semantics.",
+  "missingCapabilities": [
+    "UTF8 group-name enumeration; UTF8 name lookup/pattern copying do not replace enumeration.",
+    "Creation/preparation token independent of later retained cursor pulls; MoveNext still links original/current tokens.",
+    "Separately selected per-match result/staging allowance; explicit cursor overload selects working allowance only."
+  ],
+  "removedTypesUnusedByCurrentAdapter": [
+    "Utf8PythonMatchData",
+    "Utf8PythonSubnResult",
+    "Utf8PythonMatchEvaluator",
+    "Utf8PythonUtf8MatchEvaluator"
+  ],
+  "normalAdapterPin": "0.4.0",
+  "development105QualificationReused": true,
+  "newQualification": false,
+  "packageReleaseStatusNotInferred": true,
+  "coreRuntimeWorkIndependent": true
+}
