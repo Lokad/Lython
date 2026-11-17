@@ -77,3 +77,5 @@ Terminal cached. Broader performance objective active; publication postponed.
 ## Refined integration decision
 
 [29964188/B922](refined/README.md) supports retaining the construction design: new JSON-record fresh19.5–22.5%lower/alloc39.55%lower, other controls remain inconclusive. Original adversity stays. A final periodic-check correction for large bound key proofs/new callback regression is qualified and measured separately; no relabelled binary or full-delivery claim yet.
+
+The [final corrected production image](final/README.md) is measured separately: 39.54%lower record allocation,15–22%lower elapsed with named controls; floating uncertainty remains. Periodic key-proof cancellation and large-callback regression are included. Full delivery is independent.

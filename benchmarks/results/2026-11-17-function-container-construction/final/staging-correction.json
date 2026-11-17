@@ -1,0 +1,23 @@
+{
+  "originalRefusedBeforeMutation": true,
+  "spaceGuardUnchanged": true,
+  "extraExactDuplicateCatalogAliases": [
+    {
+      "kind": "completed-replica",
+      "path": "container-construction-b920-20261117/representative.json",
+      "bytes": 690155,
+      "sha256": "5cb1cdc16aa6e33dc5f9b68b7a16d667a43d76bd6c7f91316dc089f463750a1b",
+      "canonical": "benchmarks/results/2026-11-17-function-container-construction/catalog.json",
+      "canonicalSHA256": "5cb1cdc16aa6e33dc5f9b68b7a16d667a43d76bd6c7f91316dc089f463750a1b",
+      "member": "whole-file",
+      "committedBlobVerified": true,
+      "paths": [
+        "container-confirm-b921-20261117/representative.json",
+        "container-construction-b920-20261117/representative.json"
+      ],
+      "links": 2
+    }
+  ],
+  "currentB922CatalogPreserved": true,
+  "retiredOnlyCommittedReplicas": true
+}

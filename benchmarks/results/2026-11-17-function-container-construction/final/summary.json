@@ -1,0 +1,156 @@
+{
+  "complete": true,
+  "elapsedSeconds": 155.09465157613158,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "archivalOnlyRecovery": null,
+  "rows": [
+    {
+      "case": "scripts.json-record-transform.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 4.521372229357798,
+        "reference": 5.329308548387097,
+        "candidate-control": 4.352390026785715,
+        "reference-control": 5.554027202247191
+      },
+      "cpuMilliseconds": {
+        "candidate": 4.678899082568807,
+        "reference": 5.483870967741935,
+        "candidate-control": 4.464285714285714,
+        "reference-control": 5.617977528089887
+      },
+      "elapsedIQRPercent": {
+        "candidate": 1.095310487790049,
+        "reference": 0.49073101425865845,
+        "candidate-control": 0.11604502610691199,
+        "reference-control": 0.46805109961904007
+      },
+      "elapsedChangePercent": [
+        -21.635421140452593,
+        -18.592904486884308,
+        -18.331055759513948,
+        -15.160246619119455
+      ],
+      "cpuChangePercent": [
+        -20.535714285714278,
+        -18.592436974789905,
+        -16.71559633027523,
+        -14.678899082568797
+      ],
+      "referenceSpreadPercent": 4.216656848065314,
+      "candidateSpreadPercent": 3.8825151590763607
+    },
+    {
+      "case": "scripts.json-record-transform.large",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "candidate": 4.470061908256881,
+        "reference": 5.39617978021978,
+        "candidate-control": 4.551531657407407,
+        "reference-control": 5.445759707865169
+      },
+      "cpuMilliseconds": {
+        "candidate": 4.587155963302752,
+        "reference": 5.4945054945054945,
+        "candidate-control": 4.62962962962963,
+        "reference-control": 5.617977528089887
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.3957552479190278,
+        "reference": 0.3015415708418555,
+        "candidate-control": 0.26805730205363343,
+        "reference-control": 0.07298885676261585
+      },
+      "elapsedChangePercent": [
+        -17.916651706080856,
+        -17.16247252098002,
+        -16.420629965847578,
+        -15.652705380730868
+      ],
+      "cpuChangePercent": [
+        -18.348623853211,
+        -17.59259259259258,
+        -16.51376146788991,
+        -15.740740740740744
+      ],
+      "referenceSpreadPercent": 0.9187968093118171,
+      "candidateSpreadPercent": 1.8225642244470874
+    },
+    {
+      "case": "scripts.numeric-squared-error.floating.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 1.5871083606557377,
+        "candidate-control": 1.587641668896321,
+        "reference": 1.677902125,
+        "candidate": 1.4536079515151517
+      },
+      "cpuMilliseconds": {
+        "reference-control": 1.639344262295082,
+        "candidate-control": 1.6722408026755853,
+        "reference": 1.7708333333333335,
+        "candidate": 1.5151515151515151
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.1849494094890217,
+        "candidate-control": 1.3802395058273562,
+        "reference": 0.16062116687658534,
+        "candidate": 0.1009884237387274
+      },
+      "elapsedChangePercent": [
+        -13.367536171685124,
+        -8.411549737248459,
+        -5.3793635968891085,
+        0.03360250968389433
+      ],
+      "cpuChangePercent": [
+        -14.438502673796805,
+        -7.57575757575758,
+        -5.56757820184931,
+        2.006688963210701
+      ],
+      "referenceSpreadPercent": 5.720703550874706,
+      "candidateSpreadPercent": 9.220761157880354
+    },
+    {
+      "case": "scripts.numeric-squared-error.floating.large",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "reference-control": 1.7214671516245486,
+        "candidate-control": 1.655923858131488,
+        "reference": 1.6407360999999998,
+        "candidate": 1.6492322783505153
+      },
+      "cpuMilliseconds": {
+        "reference-control": 1.8050541516245489,
+        "candidate-control": 1.7647058823529413,
+        "reference": 1.7241379310344827,
+        "candidate": 1.7525773195876289
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.10147733085229106,
+        "candidate-control": 0.1411478569250084,
+        "reference": 0.3320093067815174,
+        "candidate": 1.3058432459065556
+      },
+      "elapsedChangePercent": [
+        -4.196122662338642,
+        -3.807408897184439,
+        0.5178272331860967,
+        0.9256673350143352
+      ],
+      "cpuChangePercent": [
+        -2.907216494845366,
+        -2.2352941176470575,
+        1.6494845360824906,
+        2.352941176470602
+      ],
+      "referenceSpreadPercent": 4.920416612065082,
+      "candidateSpreadPercent": 0.4057390744052869
+    }
+  ],
+  "retentionDecisionPending": false,
+  "CPythonRefreshed": false,
+  "decision": "Retain coherent construction simplification; record workload improves, floating control uncertainty remains explicit. Full platform qualification is independent."
+}
