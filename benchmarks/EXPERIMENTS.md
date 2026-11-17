@@ -9124,3 +9124,5 @@ R481/B897 corrected source27ed69a6/abd3c788: withdraw and supersede initial rete
 
 
 R482 [record source gate](results/2026-11-17-record-construction-source-gate/README.md): integrated bulk admission/windows/direct funded-row adoption verified, unused-column string shells remain but deferred state/canonical identity/mutation/copy costs do not establish a coherent lower-cost replacement. No runtime prototype or new capture. Saved R480 stack reclassification motivates assessing existing scalar/UTF16 width loops separately, without a removable-percentage claim. Bounded gate complete; no universal lazy-container framework or automatic promotion, publicationheld.
+
+R483/B898: [first bulk UTF8 widths](results/2026-11-17-utf8-widths/first/README.md). SearchValues CountAny yields ASCII−8.40..−10.61%, but denseUnicode+27.73..+28.76%/CPU+22.90..+23.10%with stable controls; original text moving. Flat allocation/peaks/balances, actual11/10focused63internal/49public. Do not retain first footprint; one changed-source managed-vector refinement justified. All original errors/adversity/custody retained; no predicted gain/publication.
