@@ -1,0 +1,13 @@
+{
+  "retainedProductionFiles": 4,
+  "productionTextMatchesFrozenSnapshot": 585,
+  "publicCasesEachActualWindowsTarget": 93,
+  "internalCasesEachActualWindowsTarget": 79,
+  "finalFloatClassEachActualWindowsTarget": 8,
+  "finalTestSourceSHA256": "043918c9aa8256cb6c719c2df997cd5a0ccd7f2ad5567df6ed7e7732d9bad5d7",
+  "finalTestDifferenceFromTimingSnapshot": "Only stronger independent I/O assertions: unobserved float value crosses real suspension and joins retained result. No production change after freeze.",
+  "independentCPythonSemanticScripts": 6,
+  "workerGoldenCases": 13,
+  "fullQualification": "Pending coherent Windows/Ubuntu actual.NET11/10,originalstress,explicitReleasepackageconsumers",
+  "publicationHeld": true
+}

@@ -396,6 +396,12 @@ Eligible ordinary operations bypass generic asynchronous input handling; operand
 retirement and publication retain their existing cleanup and admission order.
 Other values and guest protocols keep the general path, including actual suspension.
 Both forms share operand reads and Python-shaped missing-local diagnostics.
+Double addition, subtraction, multiplication and negation carry fresh results in
+the existing managed slots through local bindings, helper returns and generator
+iteration. Compensated `sum` consumes those values directly. Object observation
+publishes a stable box before aliases, protocols, cells, containers or public
+results; mixed numeric operations keep their general Python behavior. Slot size,
+scalar-capacity admission and cancellation/cleanup boundaries are unchanged.
 Comparisons consumed immediately as conditions use one comparison/branch
 instruction. Exact numeric truth needs no boxed temporary; escaping comparisons
 retain their Python result objects. Ordered comparison helpers share the operator

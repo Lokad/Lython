@@ -6,6 +6,19 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[R471/B878–B880 floating transport](results/2026-11-17-float-transport/README.md)
+retains existing-slot arithmetic→locals→helper/generator→compensated sum after
+restoring integer-first dispatch. Complete floating report allocation−28.52%,
+peaks flat; refined warm elapsed−25.94..−22.89%/fresh−27.37..−23.37%,supportingCPU.
+Original integer confirmation+1.67..+4.77% is not proven resolved: refined controls
+move7.24/8.99%. Accept explicit debt; no further unchanged retiming. First core/
+sources/adversity, Windows-stdout fixture correction and offline archival-only
+count correction remain preserved; all users joined/RAM removed. Focused each
+actual11/10:93public/79internal plus final8case class; production585sources match
+timing snapshot. SeparateB881three-phase104.54s CPython baseline: warm2.09–2.10×,
+fresh1.92–1.96×,compile0.93–0.95×; substantial remaining gap. Full delivery pending;
+publication held. This milestone does not complete the performance objective.
+
 [Cumulative fixture/ownership delivery43869939863](results/2026-11-16-regex-dev105/delivery/README.md)
 GREENc18babe9: Windows/Ubuntu actual11/10 each4806internal/17921public ordinary,
 14internal/406public original stress and installed Release consumers.16summaries/

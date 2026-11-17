@@ -23,6 +23,8 @@ internal struct PyIterationResult
 
     internal readonly bool TryGetInteger(out long value) => _value.TryGetInteger(out value);
 
+    internal readonly bool TryGetDouble(out double value) => _value.TryGetDouble(out value);
+
     internal LythonRuntime.ExecutableSlot TakeSlotValue()
     {
         var value = _value;

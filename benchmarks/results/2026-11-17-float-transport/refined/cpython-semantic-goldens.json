@@ -1,0 +1,41 @@
+{
+  "version": "Python 3.13.2",
+  "rows": [
+    {
+      "case": 0,
+      "success": true,
+      "stdout": "ok\r\n",
+      "source": "def identity(value):return value\ndef compute(a,b):\n    value=a-b\n    alias=value\n    assert alias is value and identity(value) is value\n    pair=(value,value)\n    values=[value,value]\n    assert pair[0] is values[1] and pair[1] is alias\n    value*=2.0\n    assert alias==1.5 and value==3.0\n    assert +alias is alias\n    return value,pair,values\nassert compute(2.0,0.5)==(3.0,(1.5,1.5),[1.5,1.5])\nprint('ok')\n"
+    },
+    {
+      "case": 1,
+      "success": true,
+      "stdout": "ok\r\n",
+      "source": "import math\ndef compute(a,b):\n    negative=a*b\n    assert math.copysign(1.0,negative)==-1.0\n    assert math.copysign(1.0,-negative)==1.0\n    assert math.isinf(1e308*1e308)\n    assert math.isnan(float('inf')+float('-inf'))\n    return negative\nassert math.copysign(1.0,compute(-0.0,2.0))==-1.0\nprint('ok')\n"
+    },
+    {
+      "case": 2,
+      "success": true,
+      "stdout": "ok\r\n",
+      "source": "def compute(a,b):\n    difference=a-b\n    return difference*difference\nassert sum(compute(value,0.5) for value in [0.0,1.0,2.0])==2.75\ndef keep(value):\n    result=value*2.0\n    yield result\n    yield result\nvalues=list(keep(1.25))\nassert values[0] is values[1] and values[0]==2.5\nprint('ok')\n"
+    },
+    {
+      "case": 3,
+      "success": true,
+      "stdout": "ok\r\n",
+      "source": "def compute(value):return value*1.0\nassert sum(compute(value) for value in [1e16,1.0,-1e16])==1.0\nassert sum((compute(value) for value in [1e16,1.0,-1e16]),True)==0.0\nclass Finish:\n    def __radd__(self,total):\n        assert total==1.0\n        return 7\ndef values():\n    for value in [1e16,1.0,-1e16]:yield compute(value)\n    yield Finish()\nassert sum(values())==7\nprint('ok')\n"
+    },
+    {
+      "case": 4,
+      "success": true,
+      "stdout": "ok\r\n",
+      "source": "saved=[]\ndef compute(a,b):\n    result=a*b\n    try:return result\n    finally:saved.append(result)\nvalue=compute(1.5,2.0)\nassert value is saved[0]\ndef closed(a,b):\n    result=a-b\n    def read():return result\n    assert read() is result\n    return read()\nassert closed(3.0,0.5)==2.5\nprint('ok')\n"
+    },
+    {
+      "case": 5,
+      "success": true,
+      "stdout": "ok\r\n",
+      "source": "def compute(value):\n    result=value*2.0\n    assert result+2==5.0 and result*True==3.0\n    try:result+(1<<10000)\n    except OverflowError:pass\n    else:assert False\n    try:result/0.0\n    except ZeroDivisionError:pass\n    else:assert False\n    return result\nclass Right:\n    def __radd__(self,left):return (left,)\nresult=compute(1.5)\nassert (result+Right())[0] is result\nprint('ok')\n"
+    }
+  ]
+}

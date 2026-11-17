@@ -206,7 +206,9 @@ internal sealed partial class LythonRuntime
         internal bool TryAddResult(ref PyIterationResult item)
         {
             if (_phase == SumPhase.General) return false;
-            return item.TryGetInteger(out var integer) ? TryAddInteger(integer) : TryAddNumber(item.Value);
+            if (item.TryGetInteger(out var integer)) return TryAddInteger(integer);
+            if (_phase == SumPhase.Float && item.TryGetDouble(out var floating)) return TryAddDouble(floating);
+            return TryAddNumber(item.Value);
         }
 
         private bool TryAddInteger(long integer)
@@ -245,16 +247,7 @@ internal sealed partial class LythonRuntime
                 return false;
             }
             if (_phase != SumPhase.Float) return false;
-            if (item is double value)
-            {
-                var previous = _floating;
-                var next = previous + value;
-                _correction += Math.Abs(previous) >= Math.Abs(value)
-                    ? (previous - next) + value : (value - next) + previous;
-                _floating = next;
-                _numericAddition = true;
-                return true;
-            }
+            if (item is double value) return TryAddDouble(value);
             if (TryInt64(item, out var small)) return TryAddInteger(small);
 
             // A genuine general addition sees the completed corrected prefix.
@@ -264,6 +257,17 @@ internal sealed partial class LythonRuntime
             _correction = 0;
             _phase = SumPhase.General;
             return false;
+        }
+
+        private bool TryAddDouble(double value)
+        {
+            var previous = _floating;
+            var next = previous + value;
+            _correction += Math.Abs(previous) >= Math.Abs(value)
+                ? (previous - next) + value : (value - next) + previous;
+            _floating = next;
+            _numericAddition = true;
+            return true;
         }
 
         internal void CompleteAddition(object item, object result)

@@ -1,5 +1,12 @@
 # Testing Lython
 
+[Float arithmetic](Lokad.Lython.PublicApi.Tests/FloatArithmeticPipelineTests.cs)
+preserves aliases, IEEE values, compensated sums, mixed protocols and error order
+across helpers and generators. Private values survive real I/O suspension;
+retained results keep their funding, cancellation joins cleanup and later runs
+return the shared allowance to baseline. Existing sum admission cases retain
+terminal-refusal coverage.
+
 [Receiver calls](Lokad.Lython.PublicApi.Tests/NativeReceiverPipelineTests.cs) check
 evaluated receivers across argument rebinding, retained aliases, recursive handoff
 and faults after completed effects. Actual suspended writes preserve funding and

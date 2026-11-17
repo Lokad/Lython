@@ -17,6 +17,24 @@ internal sealed partial class LythonRuntime
         var augmented = instruction.OpCode == ExecutableOpCode.Augmented;
         if (augmented && instruction.AugmentedOperator == AugmentedAssignmentOperatorSyntax.MatrixMultiply)
             return false;
+        if (TryReadDoubleOperand(code, values, instruction.InputStart, out var left))
+        {
+            if (instruction.OpCode == ExecutableOpCode.Unary)
+            {
+                if (instruction.UnaryOperator == ExecutableUnaryOperator.Minus)
+                { result.SetDouble(-left); return true; }
+            }
+            else if (TryReadDoubleOperand(code, values, instruction.SecondInput, out var right))
+            {
+                var floatingOperation = augmented ? AugmentedBinaryOperator(instruction.AugmentedOperator) : instruction.BinaryOperator;
+                switch (floatingOperation)
+                {
+                    case BinaryOperatorSyntax.Add: result.SetDouble(left + right); return true;
+                    case BinaryOperatorSyntax.Subtract: result.SetDouble(left - right); return true;
+                    case BinaryOperatorSyntax.Multiply: result.SetDouble(left * right); return true;
+                }
+            }
+        }
         var first = ReadExecutableOperand(code, values, instruction.InputStart, index, 0, scope);
         if (instruction.OpCode == ExecutableOpCode.Unary)
         {
@@ -56,6 +74,15 @@ internal sealed partial class LythonRuntime
             ? EvaluateAugmentedBuiltin(first, second, instruction.AugmentedOperator, scope, instruction.Span)
             : EvaluateBinaryOperator(instruction.BinaryOperator, first, second, scope, instruction.Span);
         return true;
+    }
+
+    private static bool TryReadDoubleOperand(ExecutableCodeObject code, ReadOnlySpan<ExecutableSlot> values,
+        int source, out double value)
+    {
+        if (source >= 0) return values[source].TryGetDouble(out value);
+        if (code.Constants[~source] is double floating) { value = floating; return true; }
+        value = 0;
+        return false;
     }
 
     private static object ReadExecutableOperand(ExecutableCodeObject code, Span<ExecutableSlot> values,

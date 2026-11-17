@@ -5,12 +5,14 @@ namespace Lokad.Lython.Runtime;
 internal sealed partial class LythonRuntime
 {
     // One managed layout for final function arguments, locals and operands.
-    // An unpublished integer has no guest identity yet. Object reads cache its
+    // An unpublished numeric result has no guest identity yet. Object reads cache its
     // immutable box before any alias, protocol, collection or public boundary.
     internal struct ExecutableSlot
     {
         private static readonly object UnpublishedInteger = new();
+        private static readonly object UnpublishedDouble = new();
         private object? _value;
+        // Integer value, double bits, or an immutable integer tuple's item offset.
         private long _integer;
 
         internal object? Object
@@ -18,6 +20,7 @@ internal sealed partial class LythonRuntime
             get
             {
                 if (ReferenceEquals(_value, UnpublishedInteger)) return PublishInteger();
+                if (ReferenceEquals(_value, UnpublishedDouble)) return PublishDouble();
                 return _integer == 0 ? _value : PublishTupleBorrow();
             }
             set { _value = value; _integer = 0; }
@@ -32,6 +35,14 @@ internal sealed partial class LythonRuntime
         private object PublishInteger()
         {
             var value = (object)(BigInteger)_integer;
+            _value = value;
+            _integer = 0;
+            return value;
+        }
+
+        private object PublishDouble()
+        {
+            var value = (object)BitConverter.Int64BitsToDouble(_integer);
             _value = value;
             _integer = 0;
             return value;
@@ -70,6 +81,24 @@ internal sealed partial class LythonRuntime
             _integer = value;
         }
 
+        internal void SetDouble(double value)
+        {
+            _value = UnpublishedDouble;
+            _integer = BitConverter.DoubleToInt64Bits(value);
+        }
+
+        internal readonly bool TryGetDouble(out double value)
+        {
+            if (ReferenceEquals(_value, UnpublishedDouble))
+            {
+                value = BitConverter.Int64BitsToDouble(_integer);
+                return true;
+            }
+            if (_value is double floating) { value = floating; return true; }
+            value = 0;
+            return false;
+        }
+
         internal readonly bool TryGetInteger(out long value)
         {
             if (ReferenceEquals(_value, UnpublishedInteger)) { value = _integer; return true; }
@@ -78,6 +107,7 @@ internal sealed partial class LythonRuntime
         }
 
         internal readonly long ScalarStorageBytes => ReferenceEquals(_value, UnpublishedInteger)
+            || ReferenceEquals(_value, UnpublishedDouble)
             || _integer != 0 && _value is PyTuple
             ? RuntimeMemoryEstimates.ScalarStorageBytes
             : RuntimeMemoryEstimates.EstimateScalarStorageBytes(_value);
