@@ -1,0 +1,23 @@
+[
+  {
+    "index": 0,
+    "source": "def choose(flag, base):\n    if flag: value = base + 7\n    return value\nassert choose(True, 10) == 17\ntry: choose(False, 40)\nexcept UnboundLocalError: pass\nelse: raise AssertionError('an earlier invocation supplied an unassigned local')\nassert choose(True, 20) == 27\nprint('ok')",
+    "exitCode": 0,
+    "stdout": "ok\n",
+    "stderr": ""
+  },
+  {
+    "index": 1,
+    "source": "def leaf(value): return value + 1\ndef inner(value):\n    keep = value + 100\n    return leaf(value) + keep\ndef middle(value):\n    before = value * 3\n    after = inner(value)\n    return before + after + value\ndef recurse(depth, value):\n    saved = value + 1\n    if depth: return recurse(depth - 1, saved) + saved\n    return middle(saved)\nassert middle(5) == 131\nassert recurse(12, 5) == 347\nprint('ok')",
+    "exitCode": 0,
+    "stdout": "ok\n",
+    "stderr": ""
+  },
+  {
+    "index": 2,
+    "source": "def pair(left, right): return left + right, left - right\ndef check(value):\n    saved = value + 1\n    left, right = pair(saved, 3)\n    return left, right, saved\nsubject = [10, 20]\nmatch subject:\n    case [left, right] if check(left) == (14, 8, 11):\n        assert (left, right) == (10, 20)\n    case _: raise AssertionError('helper changed pattern state')\nassert check(20) == (24, 18, 21)\nprint('ok')",
+    "exitCode": 0,
+    "stdout": "ok\n",
+    "stderr": ""
+  }
+]

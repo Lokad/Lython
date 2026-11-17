@@ -1,0 +1,18 @@
+{
+  "eachActualWindowsTarget": {
+    "publicFocused": 237,
+    "internalFocused": 272
+  },
+  "newObservablePublicCases": 3,
+  "independentCPythonPrograms": 3,
+  "adaptedDirectTestCalls": 7,
+  "architectureCompatibilityWrapper": false,
+  "candidatePriorCatalogGoldens": 13,
+  "actualFrozenBothCatalogGoldens": 3,
+  "productionFilesChanged": 6,
+  "copiedWorkerImageFiles": 32,
+  "sourceInputs": 2382,
+  "sharedBudgetBaselineRestored": true,
+  "fullDelivery": "Private prototype; retention/qualification pending.",
+  "publicationHeld": true
+}
