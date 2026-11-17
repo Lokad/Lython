@@ -1,0 +1,123 @@
+{
+  "run": 44168196734,
+  "head": "0d2a6ab7a9aac2c3f80e0cd0c3dc670069b07bbc",
+  "conclusion": "failure",
+  "summaries": [
+    {
+      "log": "0_tests (ubuntu-latest).txt",
+      "framework": "net11.0",
+      "failed": 0,
+      "passed": 4831,
+      "total": 4831
+    },
+    {
+      "log": "0_tests (ubuntu-latest).txt",
+      "framework": "net11.0",
+      "failed": 0,
+      "passed": 18021,
+      "total": 18021
+    },
+    {
+      "log": "0_tests (ubuntu-latest).txt",
+      "framework": "net10.0",
+      "failed": 0,
+      "passed": 4831,
+      "total": 4831
+    },
+    {
+      "log": "0_tests (ubuntu-latest).txt",
+      "framework": "net10.0",
+      "failed": 0,
+      "passed": 18021,
+      "total": 18021
+    },
+    {
+      "log": "0_tests (ubuntu-latest).txt",
+      "framework": "net11.0",
+      "failed": 0,
+      "passed": 14,
+      "total": 14
+    },
+    {
+      "log": "0_tests (ubuntu-latest).txt",
+      "framework": "net11.0",
+      "failed": 0,
+      "passed": 406,
+      "total": 406
+    },
+    {
+      "log": "0_tests (ubuntu-latest).txt",
+      "framework": "net10.0",
+      "failed": 0,
+      "passed": 14,
+      "total": 14
+    },
+    {
+      "log": "0_tests (ubuntu-latest).txt",
+      "framework": "net10.0",
+      "failed": 0,
+      "passed": 406,
+      "total": 406
+    },
+    {
+      "log": "1_tests (windows-latest).txt",
+      "framework": "net11.0",
+      "failed": 0,
+      "passed": 4831,
+      "total": 4831
+    },
+    {
+      "log": "1_tests (windows-latest).txt",
+      "framework": "net11.0",
+      "failed": 0,
+      "passed": 18021,
+      "total": 18021
+    },
+    {
+      "log": "1_tests (windows-latest).txt",
+      "framework": "net10.0",
+      "failed": 0,
+      "passed": 4831,
+      "total": 4831
+    },
+    {
+      "log": "1_tests (windows-latest).txt",
+      "framework": "net10.0",
+      "failed": 0,
+      "passed": 18021,
+      "total": 18021
+    },
+    {
+      "log": "1_tests (windows-latest).txt",
+      "framework": "net11.0",
+      "failed": 0,
+      "passed": 14,
+      "total": 14
+    },
+    {
+      "log": "1_tests (windows-latest).txt",
+      "framework": "net11.0",
+      "failed": 0,
+      "passed": 406,
+      "total": 406
+    },
+    {
+      "log": "1_tests (windows-latest).txt",
+      "framework": "net10.0",
+      "failed": 1,
+      "passed": 13,
+      "total": 14
+    },
+    {
+      "log": "1_tests (windows-latest).txt",
+      "framework": "net10.0",
+      "failed": 0,
+      "passed": 406,
+      "total": 406
+    }
+  ],
+  "logsSHA256": "1b782e072b0522d9691a4ea7841b6d986d29297b5f90041962dd60ecf081db86",
+  "fullQualificationComplete": false,
+  "productionUnchangedByFixtureCorrection": true,
+  "publicationHeld": true
+}

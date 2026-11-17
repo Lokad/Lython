@@ -1,0 +1,15 @@
+
+Test run for D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net11.0\Lokad.Lython.WhiteBox.Tests.dll (.NETCoreApp,Version=v11.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:01.22]     Lokad.Lython.Tests.CasedSplitOwnershipTests.CancelledHelperReturnRelinquishesItsPreparedRangeLoan(native: False) [FAIL]
+  Failed Lokad.Lython.Tests.CasedSplitOwnershipTests.CancelledHelperReturnRelinquishesItsPreparedRangeLoan(native: False) [2 ms]
+  Error Message:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stack Trace:
+     at Lokad.Lython.Tests.CasedSplitOwnershipTests.CancelledHelperReturnRelinquishesItsPreparedRangeLoan(Boolean native) in D:\code\Lython\tests\Lokad.Lython.Tests\CasedSplitOwnershipTests.cs:line 216
+   at InvokeStub_CasedSplitOwnershipTests.CancelledHelperReturnRelinquishesItsPreparedRangeLoan(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+
+Failed!  - Failed:     1, Passed:     1, Skipped:     0, Total:     2, Duration: 213 ms - Lokad.Lython.WhiteBox.Tests.dll (net11.0)

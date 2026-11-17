@@ -89,21 +89,17 @@ public sealed class NativeTextKeyCancellationTests
                     cancellation.Cancel();
                 }, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
                 Assert.True(cancellerReady.Wait(TimeSpan.FromSeconds(10)));
-                var requestedAtCompletion = false;
                 run = Task.Factory.StartNew<object>(() =>
                 {
                     started.Set();
-                    try
-                    {
-                        return write ? dictionary.TryWriteKeyWithoutAdmission(requested, true, context, Span)
-                            : dictionary.TryGetValue(requested, out _, context, Span);
-                    }
-                    finally { requestedAtCompletion = cancellation.IsCancellationRequested; }
+                    return write ? dictionary.TryWriteKeyWithoutAdmission(requested, true, context, Span)
+                        : dictionary.TryGetValue(requested, out _, context, Span);
                 }, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
                 var observed = await Record.ExceptionAsync(async () => await run.WaitAsync(TimeSpan.FromSeconds(10)));
                 if (observed is null)
                 {
-                    Assert.False(requestedAtCompletion, "Text-key probe returned after cancellation was requested.");
+                    // Completion can win the race. Reading the token in a
+                    // finally after this return cannot establish the ordering.
                     Assert.True(Assert.IsType<bool>(await run));
                 }
                 else
@@ -115,6 +111,19 @@ public sealed class NativeTextKeyCancellationTests
                 Assert.Single(dictionary);
                 Assert.True(dictionary.TryGetValue(stored, out var value));
                 Assert.Equal(write && observed is null, Assert.IsType<bool>(value));
+                await canceller;
+                Assert.True(cancellation.IsCancellationRequested);
+                var cancelled = Assert.Throws<LythonRuntimeException>(() =>
+                {
+                    if (write) dictionary.TryWriteKeyWithoutAdmission(requested, false, context, Span);
+                    else dictionary.TryGetValue(requested, out _, context, Span);
+                });
+                Assert.Equal(LythonFailureReason.Cancelled, cancelled.Attribution?.Reason);
+                Assert.Equal(Span, cancelled.Span);
+                // An observed cancellation cannot change an already completed
+                // write or admit another mutation, even with cached hashes.
+                Assert.True(dictionary.TryGetValue(stored, out var afterCancellation));
+                Assert.Equal(value, afterCancellation);
                 Assert.Equal(baseline, budget.ReservedBytes);
                 Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
             }
