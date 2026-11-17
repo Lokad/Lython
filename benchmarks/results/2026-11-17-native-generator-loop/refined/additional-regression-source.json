@@ -1,0 +1,6 @@
+{
+  "path": "tests/Lokad.Lython.PublicApi.Tests/BufferedGeneratorContinuationTests.cs",
+  "sha256": "2dd8205d494ad4f2798c70f971b42ad0d29cf2144d1c497be5ff8dd4683525fe",
+  "description": "Added pure lambda/send/nested-yield consumer case after image freeze. Eight targeted cases on both targets overlap earlier627/1808 focused checks; production unchanged. Frozen measured source archive retains its original seven-case fixture.",
+  "measuredSourceArchiveUnchanged": true
+}

@@ -1,0 +1,25 @@
+{
+  "promoted": false,
+  "permanentlyRejected": false,
+  "mode": "Private foundation only; standalone promotion not accepted",
+  "architecture": "Existing native loop can consume admitted generator state with shared yield/cleanup. Redundant frame reference removed; no new owner or dispatcher.",
+  "textWarmElapsedChangePercent": [
+    -6.323754032383877,
+    -4.4662499239880855
+  ],
+  "floatingWarmUncertain": true,
+  "floatingFreshAdverseElapsedChangePercent": [
+    1.4511555791547837,
+    8.848304334824464
+  ],
+  "helperWarmAdverseElapsedChangePercent": [
+    1.5043458551885935,
+    2.596494336101207
+  ],
+  "allocationEffectivelyFlat": true,
+  "accountedPeaksUnchanged": true,
+  "regressionDebt": "Fresh adverse direction requires resolution/explicit evidence at joint completion; magnitude uncertain with2.46/4.71%controls. Helper+1.5..2.6% stable. First conditions/confirmation remain separate. No further unchanged timing selected now.",
+  "nextMilestone": "Bounded R495 source/design gate: one completed-instruction runner over existing admitted/borrowed values, delete duplicate NativeExecution.RunCore and native whole-code eligibility scan rather than accumulate generator-only bridges. Exact protocols/async cleanup/managed stack/cancellation/ownership unchanged. Settle representable transfer before prototype; if it needs a general compiler/storage rewrite, withdraw this private foundation and retain independent regressions.",
+  "publicationHeld": true,
+  "broaderObjectiveActive": true
+}
