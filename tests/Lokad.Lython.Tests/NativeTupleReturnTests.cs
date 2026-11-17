@@ -20,13 +20,14 @@ public sealed class NativeTupleReturnTests
             try
             {
                 var function = Define(context);
+                using var window = new NativeCallWindow(budget, function.CodeObject);
                 var left = PyString.FromString(new string('x', 8192), context.MemoryGovernor, Span);
                 var right = new PyList(0, context.MemoryGovernor, Span);
                 var baseline = budget.ReservedBytes;
                 var call = Assert.Single(Compile("a,b=pair(left,right)").CallSites);
                 LythonRuntime.ExecutableSlot[] returned = new LythonRuntime.ExecutableSlot[2];
-                function.StartNativeCall(call, [Slot.FromObject(left), Slot.FromObject(right)], null, context, Span,
-                    false, true, returned, out var unpacked, out _, out var frame);
+                function.BindNativeCallArguments(call, [Slot.FromObject(left), Slot.FromObject(right)], window.Values, null, context, Span, true);
+                    function.StartInline(window.Values, null, Span, false, returned, out var unpacked, out _, out var frame);
                 Assert.True(unpacked);
                 Assert.Null(frame);
                 Assert.Same(left, returned[0].Object);
@@ -56,6 +57,7 @@ public sealed class NativeTupleReturnTests
             try
             {
                 var function = Define(context);
+                using var window = new NativeCallWindow(budget, function.CodeObject);
                 var left = PyString.FromString("left");
                 var right = PyString.FromString("right");
                 var call = Assert.Single(Compile("a,b=pair(left,right)").CallSites);
@@ -65,8 +67,8 @@ public sealed class NativeTupleReturnTests
                 var baseline = budget.ReservedBytes;
                 if (cancel) gate.AfterGrowth = _ => cancellation.Cancel();
                 else gate.RefuseGrowth = _ => true;
-                var error = Assert.Throws<LythonRuntimeException>(() => function.StartNativeCall(call,
-                    [Slot.FromObject(left), Slot.FromObject(right)], null, context, Span, false, true, returned, out _, out _, out _));
+                var error = Assert.Throws<LythonRuntimeException>(() => { function.BindNativeCallArguments(call, [Slot.FromObject(left), Slot.FromObject(right)], window.Values, null, context, Span, true);
+                    function.StartInline(window.Values, null, Span, false, returned, out _, out _, out _); });
                 Assert.Equal(cancel ? LythonFailureReason.Cancelled : LythonFailureReason.SharedMemoryAllowance,
                     error.Attribution?.Reason);
                 if (!cancel) Assert.Same(context.MemoryGovernor.AdmissionFailure, error);

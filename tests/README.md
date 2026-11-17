@@ -1,5 +1,9 @@
 # Testing Lython
 
+[Helper local lifetimes](Lokad.Lython.PublicApi.Tests/HelperLocalLifetimeTests.cs)
+check unassigned locals across repeated calls, nested/deep helpers, live pattern
+guards and unpacked returns through both APIs, restoring shared-budget balances.
+
 [Closed builtin results](Lokad.Lython.PublicApi.Tests/ClosedBuiltinResultTests.cs)
 preserve aliases across ordinary/helper calls, closures, generators and retained
 results. Pending I/O keeps converted values funded; cancellation joins cleanup

@@ -610,6 +610,10 @@ internal sealed partial class ExecutableCodeObject
     public int PatternStorageCount { get; }
     public int PatternStorageStart => checked(FirstTemporarySlot + Math.Max(4, OperandCapacity));
     public int ValueStorageCapacity => checked(PatternStorageStart + PatternStorageCount);
+    // Native prefixes borrow final operand storage. The existing depth eligibility
+    // bounds a fixed tail; logical slots and pattern storage keep their layout.
+    public int InvocationStorageCapacity => checked(ValueStorageCapacity +
+        (CallSites.Count == 0 ? 0 : LythonRuntime.NativeCallStorageSlots));
 
     public bool CanRunNativeInstructions { get; }
 

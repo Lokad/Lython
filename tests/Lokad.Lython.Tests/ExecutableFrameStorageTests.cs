@@ -28,8 +28,9 @@ public sealed class ExecutableFrameStorageTests(Xunit.Abstractions.ITestOutputHe
             context.Variables["effects"] = effects;
             if (caches) context.Variables["item"] = new PyList();
             // Cache backing is requested at the first generic lookup. Leave
-            // room for the small operand array and preceding assignment.
-            var workingHeadroom = caches ? 1024 : 0;
+            // room for the operand/call working window and preceding assignment;
+            // the large cache backing must still be the refused allocation.
+            var workingHeadroom = caches ? 4096 : 0;
             Assert.True(budget.TryReserve(4 * 1024 * 1024 - budget.ReservedBytes - workingHeadroom, out var blocker));
             using (blocker)
             {

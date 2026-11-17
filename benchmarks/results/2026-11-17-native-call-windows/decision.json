@@ -1,0 +1,22 @@
+{
+  "retain": true,
+  "basis": "Remove NativeValues fixed stack backing, NoInlining StartNativeCall and ordinary positional copy by using already-admitted caller storage. First stable complete floating warm elapsed\u22124.64..\u22123.52%, widerCPU\u22126.48..\u22124.57%. No general/compile-once CPU gain claim.",
+  "freshUncertainty": "Confirmation\u22123.55..+1.71%elapsed/\u22122.42..+3.51%widerCPU, reference4.67%movement/candidate0.75%; first reference5.27%movement. Not resolved or a design failure.",
+  "textDebt": "Confirmed+0.27..+0.98%elapsed, widerCPU\u22121.07..+1.08%, controls0.54/0.18%. Accept small elapsed debt for removed call storage and demonstrated numeric CPU; first+1.01..+5.78%adversity retained, cause unisolated.",
+  "memoryDebt": "Accept4096/2560/~2678B allocation and3072/3072/3584B accounted peak increases (floating/CSV/text). Invocations with calls conservatively admit128extra slots before allocation; earlier denial is intentional.",
+  "removed": [
+    "NativeValues fixed managed stack buffer",
+    "NoInlining StartNativeCall wrapper",
+    "ordinary positional argument copy into separate backing"
+  ],
+  "preserved": [
+    "existing engine, code layout and8prefix eligibility",
+    "all managed stack checks, Python error/identity/default/descriptor/closure semantics",
+    "actual suspension transfers into owned frames without replay or retained spans",
+    "terminal first refusal, current cancellation and funded aliases through awaited cleanup",
+    "measured tuple-unpacking optimization with disjoint windows"
+  ],
+  "fullDeliveryPending": true,
+  "broaderPerformanceObjectiveComplete": false,
+  "publicationHeld": true
+}

@@ -10,6 +10,7 @@ internal sealed partial class LythonRuntime
     // Eligibility only: deeper calls continue in the existing linear runner.
     // Use its logical depth, without a second counter or a guest recursion limit.
     private const int NativeCallDepth = 8;
+    internal const int NativeCallStorageSlots = NativeValueCapacity * NativeCallDepth;
 
     // This view cannot survive a suspension. The final executable slots and PC
     // are also the ordinary frame's representation; transfer never replays work.
@@ -365,9 +366,17 @@ internal sealed partial class LythonRuntime
             try
             {
                 var arguments = Values.Slice(start + call.ArgumentOffset, call.ArgumentCount);
-                function.StartNativeCall(call, arguments, receiver, _scope, call.CallSpan,
+                var inPlace = borrow && Code.PatternStorageCount == 0;
+                if (inPlace)
+                    foreach (var argument in arguments)
+                        if (argument.Reference is ExecutableTemporaryValue) { inPlace = false; break; }
+                var storageStart = inPlace ? start + call.ArgumentOffset : Code.ValueStorageCapacity;
+                var values = Values[storageStart..];
+                if (!inPlace) function.BindNativeCallArguments(call, arguments, values,
+                    receiver, _scope, call.CallSpan, borrow);
+                function.StartInline(values, null, call.CallSpan,
                     call.ConsumedByIteration || _consumedByIteration && call.ReturnedDirectly,
-                    borrow, default, out _, out var childValue, out var child);
+                    default, out _, out var childValue, out var child);
                 result = childValue;
                 if (child is not null)
                 {

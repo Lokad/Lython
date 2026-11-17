@@ -685,7 +685,7 @@ internal sealed partial class LythonRuntime
             bytes = checked(bytes + ExecutableCell.StorageBytes * codeObject.CapturedLocalSlots.Count);
         // The compiler-sized operand lifetime funds private frame arrays before any
         // are allocated. Escaping cells acquire their separate retained charge.
-        var stack = new ExecutableValueStorage(codeObject.ValueStorageCapacity, codeObject.FirstTemporarySlot, codeObject.LastOwnedTemporarySlot,
+        var stack = new ExecutableValueStorage(codeObject.InvocationStorageCapacity, codeObject.FirstTemporarySlot, codeObject.LastOwnedTemporarySlot,
             context, span, bytes, argumentsAreLocals ? boundArguments.Values : null, lookupOwner);
         try
         {

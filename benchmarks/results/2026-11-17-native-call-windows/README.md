@@ -1,6 +1,6 @@
 # Native helper calls borrow admitted caller windows
 
-R481/B895, 2026-11-17 UTC. **Private prototype; retention pending.** Qualified
+R481/B895, 2026-11-17 UTC. **Retained; full delivery qualification pending.** Qualified
 d8611c85/frozen0315de0a versus 0ebab036 on 1390c110, six production files.
 Ordinary positional calls reuse evaluated arguments as callee locals/operands.
 The NativeValues fixed stack buffer and NoInlining StartNativeCall wrapper are
@@ -63,3 +63,38 @@ its moving candidate is the only cause. Retain/refine/withdraw remains explicit.
 [raw](first-pair/observations.tgz), [identity](identity.json),
 [sources](candidate-sources.tar.xz), [prototype](prototype.patch.gz),
 [core](candidate-core.dll.gz), [procedures and failures](procedures-and-checks.tar.xz).
+
+## B896 confirmation and retention decision
+
+Same sources/images/catalog/protocol, eight-second interleaved full-request warmups;
+two unresolved jobs finish 96.83 seconds. No source tuning or forced collection.
+
+| Complete script | Phase | Elapsed change | Wider CPU change | Reference / candidate controls |
+| --- | --- | ---: | ---: | ---: |
+| Floating report | Compile and execute once | **−3.55..+1.71%** | **−2.42..+3.51%** | **4.67 / 0.75%** |
+| Helper text | Warm | **+0.27..+0.98%** | −1.07..+1.08% | 0.54 / 0.18% |
+
+Retain the removed call storage and demonstrated first warm numeric CPU benefit.
+Fresh remains uncertain with moving reference controls; do not claim it improved,
+that a particular speedup is established across all scripts, or that an inconclusive
+measurement disproves the design. Accept the small confirmed text elapsed debt and
+explicit capacity/allocation increase. First larger text adversity is preserved and
+unexplained. R471 integer/R460 async/tuple debts remain; no additive speedups.
+No more unchanged timing is needed for this bounded retention decision. The broader
+performance objective continues with a separate record-construction design gate.
+
+All guards/goldens/Closed/exit/join/archive checks pass; RAM removed, terminal cached.
+The first confirmation staging guard stopped before mutation/timing because disk
+headroom missed its floor by 5006 bytes. The repaired proof retires only an additional
+31309-byte exact committed obsolete bytecode replica; original failure retained.
+Total retirement is 521399 bytes of exact committed first working evidence, with
+fresh path/UID/hash/link/all-alias checks. Current images/toolchains/canonicals and
+254/252 MiB floors are preserved. No observation timeout restarted any collection.
+
+Six production files and their semantic/ownership test adaptations are promoted;
+full Windows/Ubuntu, original stress and installed Release consumers remain pending.
+No public API change; earlier supplied-budget denial from admitted capacity is the
+intentional compatibility tradeoff. Publication and tagging remain held.
+
+[Confirmation](confirmation-summary.json), [raw](confirmation/observations.tgz),
+[decision](decision.json), [procedures and original guard](confirmation-procedures-and-checks.tar.xz).
