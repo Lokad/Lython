@@ -1,0 +1,23 @@
+{
+  "retain": true,
+  "basis": "One private default-allowance gate type uses managed scoped locking, without new policy/storage or changed balances. Bounded confirmation supports modest JSON CPU/elapsed benefit; no fixed-percentage acceptance threshold.",
+  "reference": "Fully qualifiedadd2c00a/frozendfc4c83c; GREEN44103214418",
+  "candidate": "One-file privateR488onadd2/frozen38662446; all585production texts match retained main change",
+  "mainSource": {
+    "mainBase": "505c16bde0995112f2d7485fcfc3a831bd2ea5d5",
+    "measuredBase": "add2c00a",
+    "measuredCore": "3866244627b90049f988c470193b512e519481c780f47fd506de91f3859bbda4",
+    "mainCore": "af1a1686b5920845ca4271085f0867eebacabb2ae8a9fb63c19c2124d4c1816b",
+    "productionTextMatches": true,
+    "productionFiles": 585,
+    "binaryEqualityInferred": false
+  },
+  "first": "B906191.31s: JSONwarm-3.35..+5.38% with7.84%candidate-process spread/tight internal samples; fresh-0.27..+1.78%; CSV/text nearflat; control-1.52..-0.40%. All original adversity preserved.",
+  "confirmation": "B90780.08s unchanged images/four-case catalog/protocol: JSONwarm-1.96..-0.93%,CPU-2.67..-0.71%,candidate-process spread0.0195%; callcontrol-1.45..+0.66%/mixedCPU. Confirmation allocation reuses unchanged original diagnostics.",
+  "allocation": "All four scripts: identical invocation allocation/accounted peaks, owner balances restored.",
+  "validation": "Private and retained main actual Windows11/10 each52internal/76public; clean nonincremental builds. Both actual32file workers pass four CPython3.13.2 goldens. Both VMcollections pass all gates/Closed/exit/join/SHAarchive-before-unmount.",
+  "remainingDebt": "First adverse candidate process remains unexplained; no universal speedup, CSV/text gain, startup/RSS/embedding-tail claim. Revisit if a later representative checkpoint reproduces adversity; no further unchanged campaign now.",
+  "fullDeliveryPending": true,
+  "broaderPerformanceObjectiveComplete": false,
+  "publicationHeld": true
+}

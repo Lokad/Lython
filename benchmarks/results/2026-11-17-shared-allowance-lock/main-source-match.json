@@ -1,0 +1,9 @@
+{
+  "mainBase": "505c16bde0995112f2d7485fcfc3a831bd2ea5d5",
+  "measuredBase": "add2c00a",
+  "measuredCore": "3866244627b90049f988c470193b512e519481c780f47fd506de91f3859bbda4",
+  "mainCore": "af1a1686b5920845ca4271085f0867eebacabb2ae8a9fb63c19c2124d4c1816b",
+  "productionTextMatches": true,
+  "productionFiles": 585,
+  "binaryEqualityInferred": false
+}

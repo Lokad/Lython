@@ -35,7 +35,7 @@ public sealed class LythonMemoryBudget : ILythonMemoryBudget
 
     private sealed class State(long? limit)
     {
-        internal readonly object Gate = new();
+        internal readonly System.Threading.Lock Gate = new();
         internal readonly long? Limit = limit;
         internal long Reserved;
         internal long Peak;

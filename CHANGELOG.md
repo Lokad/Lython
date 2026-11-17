@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Use managed scoped locking for the standalone shared allowance, preserving
+  reservation balances, concurrent admission and deterministic scope cleanup.
+
 - Admit major copied callable arguments and bound receivers before allocation/effects.
   Keep fresh retainable bound prefixes charged to their execution/result owner;
   clear/refund ordinary caller-owned scratch only after awaited cleanup.
