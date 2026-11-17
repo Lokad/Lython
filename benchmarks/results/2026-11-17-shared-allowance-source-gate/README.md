@@ -16,5 +16,13 @@ invalid. No promotion, backend performance claim or new admission/cache policy.
 Hold timing until R489's baseline correction closes. The substantial call/frame,
 record/text/frontend roadmap remains active; publication held.
 
+R489 subsequently [passes full delivery](../2026-11-17-call-packet-lifetimes/delivery/README.md).
+The private prototype is rebased ontoadd2; actual11/10each52internal/76public pass,
+both copied32file images pass four goldens and have identical allocation/accounted
+peaks. First B906191.31s has JSON candidate-process spread7.84%; an unchanged-image
+JSON/control confirmation is justified. No promotion or CPU improvement is claimed.
+Current sources also confirm existing16byte managed slots and no per-number
+ordinary JSON admission to remove; avoid duplicate layout/accounting redesigns.
+
 [Reclassification](source-gate.json),[analysis](analyze-existing.py),
 [original capture](../2026-11-17-json-record-costs/README.md).

@@ -52,7 +52,7 @@ link/all-alias proof. Unmatched older archives remain untouched. Qualifieda95,
 toolchains/canonicals and254/252MiB floors preserved.
 
 CI44103214418 qualifies exactadd2c00a across Windows/Ubuntu actual11/10, original
-stress and installed Release package consumers; currently pending. No publication.
+stress and installed Release package consumers; [full delivery passes](delivery/README.md). No publication.
 R488 synchronization prototype and substantial call/frame/record/text/frontend
 roadmap remain independent; this correction does not finish performance.
 

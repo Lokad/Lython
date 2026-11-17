@@ -18,8 +18,10 @@
   "comparison": "117.58s: boundwarm-1.82..+0.68%,CPU+0.32..+2.16%; fresh+0.14..+4.68% with2.68/1.81%controls. JSONwarm+0.21..+2.26%,CPU-0.74..+2.21%,controls1.29/.74%. Diagnostic costs/uncertainty retained; no CPU gain claim.",
   "accounting": "Bound allocation identical; accountedpeak3079->298279B, exactly295200B for1025 retained288B prefixes. JSONallocation+64B/peakunchanged. All owner baselines restore.",
   "compatibility": "Major fresh bound prefixes can reject earlier until their owner ends. Ordinary cache hits/caught invalid factories remain bounded; no universal cumulative packet counting.",
-  "fullDeliveryPending": true,
+  "fullDeliveryPending": false,
   "deliveryRun": 44103214418,
   "broaderPerformanceObjectiveComplete": false,
-  "publicationHeld": true
+  "publicationHeld": true,
+  "qualifiedRun": 44103214418,
+  "qualifiedHead": "add2c00aac1e8a8dfe70112928c1739bebb58c79"
 }
