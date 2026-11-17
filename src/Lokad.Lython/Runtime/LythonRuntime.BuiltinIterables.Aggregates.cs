@@ -116,19 +116,28 @@ internal sealed partial class LythonRuntime
         if (TrySumExactBytes(arguments[0], total, span, context, out var byteResult)) return byteResult;
         using var cursor = PyIteration.Cursor.Create(arguments[0], span, context);
         ValidateSumStart(total, span);
-        var sum = new SumState(total);
-        while (true)
+        // The private accumulator is borrowed by this command's generator only
+        // until AdvanceBuffered returns. Fund it through all pulls and cleanup.
+        context.MemoryGovernor.Reserve(64, span);
+        try
         {
-            var next = cursor.TryMoveNext();
-            if (!next.HasValue) break;
-            if (sum.TryAddResult(ref next)) continue;
-            var item = next.Value;
-            var result = sum.Total is PyInstance || item is PyInstance
-                ? EvaluateBinaryOperator(BinaryOperatorSyntax.Add, sum.Total, item, context, span)
-                : EvaluateAdd(sum.Total, item, context, span);
-            sum.CompleteAddition(item, result);
+            var sum = new SumState(total);
+            var generator = cursor.GetBulkGenerator(context);
+            while (true)
+            {
+                var next = generator is not null && sum.CanBuffer
+                    ? generator.AdvanceBuffered(sum, 0) : cursor.TryMoveNext();
+                if (!next.HasValue) break;
+                if (sum.TryAddResult(ref next)) continue;
+                var item = next.Value;
+                var result = sum.Total is PyInstance || item is PyInstance
+                    ? EvaluateBinaryOperator(BinaryOperatorSyntax.Add, sum.Total, item, context, span)
+                    : EvaluateAdd(sum.Total, item, context, span);
+                sum.CompleteAddition(item, result);
+            }
+            return sum.Result;
         }
-        return sum.Result;
+        finally { context.MemoryGovernor.ReleaseReserved(64); }
     }
 
     private static async ValueTask<object> SumAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -139,30 +148,38 @@ internal sealed partial class LythonRuntime
         if (arguments[0] is PyRange && PyNumberOps.IsInteger(total)) return Sum(arguments, span, context);
         if (TrySumExactBytes(arguments[0], total, span, context, out var byteResult)) return byteResult;
         var cursor = await PyIteration.Cursor.CreateAsync(arguments[0], span, context).ConfigureAwait(false);
-        var sum = new SumState(total);
         await using (((IAsyncDisposable)cursor).ConfigureAwait(false))
         {
             ValidateSumStart(total, span);
-            while (true)
+            context.MemoryGovernor.Reserve(64, span);
+            try
             {
-                var item = await cursor.TryMoveNextAsync().ConfigureAwait(false);
-                if (!item.HasValue) break;
-                if (sum.TryAddResult(ref item)) continue;
-                var value = item.Value;
-                var result = sum.Total is PyInstance || value is PyInstance
-                    ? await EvaluateBinaryOperatorAsync(BinaryOperatorSyntax.Add, sum.Total, value, context, span).ConfigureAwait(false)
-                    : EvaluateAdd(sum.Total, value, context, span);
-                sum.CompleteAddition(value, result);
+                var sum = new SumState(total);
+                var generator = cursor.GetBulkGenerator(context);
+                while (true)
+                {
+                    var item = generator is not null && sum.CanBuffer
+                        ? await generator.AdvanceBufferedAsync(sum, 0).ConfigureAwait(false)
+                        : await cursor.TryMoveNextAsync().ConfigureAwait(false);
+                    if (!item.HasValue) break;
+                    if (sum.TryAddResult(ref item)) continue;
+                    var value = item.Value;
+                    var result = sum.Total is PyInstance || value is PyInstance
+                        ? await EvaluateBinaryOperatorAsync(BinaryOperatorSyntax.Add, sum.Total, value, context, span).ConfigureAwait(false)
+                        : EvaluateAdd(sum.Total, value, context, span);
+                    sum.CompleteAddition(value, result);
+                }
+                return sum.Result;
             }
+            finally { context.MemoryGovernor.ReleaseReserved(64); }
         }
-        return sum.Result;
     }
 
     // Numeric phases are shared by the existing sync/async loops. Fixed 64-bit
     // eligibility keeps rounding independent of the embedding platform's C long.
     private enum SumPhase { Integer, Float, General }
 
-    private struct SumState
+    private sealed class SumState
     {
         private SumPhase _phase;
         private double _correction;
@@ -190,7 +207,9 @@ internal sealed partial class LythonRuntime
         // During a native prefix, the running value lives only in scalar fields.
         internal object Total { get; private set; }
 
-        internal readonly object Result
+        internal bool CanBuffer => _phase != SumPhase.General;
+
+        internal object Result
         {
             get
             {

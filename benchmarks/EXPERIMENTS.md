@@ -9043,3 +9043,14 @@ focused153public/20internal checks per actual target preserved; all VM users
 joined and RAM removed. No new architecture tests/dormant handlers. Qualified
 runtime unchanged, no repeated full qualification or publication. Assess larger
 existing generator batch lifetime rather than another speculative input selector.
+
+[R475/B886 native generator sum](results/2026-11-17-generator-sum/README.md):
+retain existing batch-lifetime reuse. Three production files remove repeated frame/
+exception/managed-stack entry for closed numeric prefixes; general additions remain
+outside the running generator. Floating warm−10.21..−6.14%,fresh−17.59..−14.53%
+with supporting widerCPU. Integer favorable but candidate controls9.98%; text
+−0.55..+2.11%with moving reference. Allocation+168/+192B, numericpeak unchanged.
+No earlier-debt closure inferred. All exact sources/core/observations/failed fixture
+condition preserved; pending-I/O/refusal/cancellation/ownership focused checks pass
+both actual targets. All VM users joined/RAM removed. Full delivery and external
+baseline refresh pending; publication held, broader roadmap remains active.

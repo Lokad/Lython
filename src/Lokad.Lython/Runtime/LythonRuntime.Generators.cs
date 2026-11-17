@@ -132,14 +132,7 @@ internal sealed partial class LythonRuntime
 
         private bool AppendBatchCore(object items, int limit)
         {
-            var frame = _frame;
-            frame?.BufferYields(items, limit);
-            PyIterationResult next;
-            try
-            {
-                next = Advance(PyNone.Instance, null);
-            }
-            finally { frame?.StopBufferingYields(); }
+            var next = AdvanceBuffered(items, limit);
             if (!next.HasValue) return true;
             // Guest code may change a live PyList's capacity. Its final Add
             // can admit growth only after the frame and buffer borrow end.
@@ -159,18 +152,39 @@ internal sealed partial class LythonRuntime
 
         private async ValueTask<bool> AppendBatchCoreAsync(object items, int limit)
         {
+            var next = await AdvanceBufferedAsync(items, limit).ConfigureAwait(false);
+            if (!next.HasValue) return true;
+            if (items is PyList list) list.Add(next.Value);
+            else ((List<object>)items).Add(next.Value);
+            return false;
+        }
+
+        // Only same-command consumers borrow the existing yield destination.
+        // Unsupported values leave the running frame before consumer protocols.
+        internal PyIterationResult AdvanceBuffered(object destination, int limit)
+        {
             var frame = _frame;
-            frame?.BufferYields(items, limit);
+            frame?.BufferYields(destination, limit);
+            PyIterationResult next;
+            try
+            {
+                next = Advance(PyNone.Instance, null);
+            }
+            finally { frame?.StopBufferingYields(); }
+            return next;
+        }
+
+        internal async ValueTask<PyIterationResult> AdvanceBufferedAsync(object destination, int limit)
+        {
+            var frame = _frame;
+            frame?.BufferYields(destination, limit);
             PyIterationResult next;
             try
             {
                 next = await AdvanceAsync(PyNone.Instance, null).ConfigureAwait(false);
             }
             finally { frame?.StopBufferingYields(); }
-            if (!next.HasValue) return true;
-            if (items is PyList list) list.Add(next.Value);
-            else ((List<object>)items).Add(next.Value);
-            return false;
+            return next;
         }
 
         private PyIterationResult Advance(object sent, LythonRuntimeException? injected)

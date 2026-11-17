@@ -161,7 +161,15 @@ internal sealed partial class LythonRuntime
             // The private list has admitted capacity; Add invokes no Python or
             // host callback. Pending cleanup must finish before resumption.
             if (_execution.Stack.HasPendingDisposals) return false;
-            if (destination is PyList list)
+            if (destination is SumState sum)
+            {
+                // Native addition invokes no guest code. Leave an unsupported
+                // value untouched for ordinary advancement and general addition.
+                var item = PyIterationResult.Yield(YieldValue);
+                if (!sum.TryAddResult(ref item)) return false;
+                TakeYieldValue();
+            }
+            else if (destination is PyList list)
             {
                 if (list.Count >= Math.Min(_yieldLimit, list.Capacity) - 1) return false;
                 var value = TakeYieldValue();

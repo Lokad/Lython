@@ -402,6 +402,11 @@ iteration. Compensated `sum` consumes those values directly. Object observation
 publishes a stable box before aliases, protocols, cells, containers or public
 results; mixed numeric operations keep their general Python behavior. Slot size,
 scalar-capacity admission and cancellation/cleanup boundaries are unchanged.
+For a same-command generator, native integer and floating `sum` prefixes reuse
+the existing yield buffer lifetime, avoiding frame entry and exit for every value.
+The accumulator has an admitted 64-byte command-local lifetime; no batch is
+materialized. General additions leave the running generator first. Per-yield
+cancellation, exception state, exact promotion and compensated summation remain.
 Comparisons consumed immediately as conditions use one comparison/branch
 instruction. Exact numeric truth needs no boxed temporary; escaping comparisons
 retain their Python result objects. Ordered comparison helpers share the operator

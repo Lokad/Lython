@@ -1,5 +1,11 @@
 # Testing Lython
 
+[Native generator sums](Lokad.Lython.PublicApi.Tests/NativeGeneratorSumTests.cs)
+preserve compensation, promotion, consumer errors outside suspended handlers,
+reentry, delegation and active exceptions. Pending host I/O remains funded and
+joined; refused admission stays terminal. Builtin cancellation cases exercise
+both integer and floating generator drains under synchronous and async hosting.
+
 [Global binding lifetimes](Lokad.Lython.PublicApi.Tests/GlobalBindingPipelineTests.cs)
 cover live data and call-target rebinding between generator pulls. Overlapping
 executions read their own values through real I/O; retained results stay funded

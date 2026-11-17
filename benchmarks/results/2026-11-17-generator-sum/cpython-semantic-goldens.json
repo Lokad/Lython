@@ -1,0 +1,29 @@
+{
+  "referenceVersion": "CPython3.13.2 Windows",
+  "rows": [
+    {
+      "index": 0,
+      "source": "\ndef values():\n    yield from [1e16, 1.0, -1e16]\nassert sum(values()) == 1.0\nassert sum((x for x in [1 << 62, 1 << 62, -(1 << 63), 1e16, 1.0, -1e16])) == 0.0\nassert sum((x for x in [1e16, 1, -1e16])) == 0.0\nmarker = []\nassert sum((x for x in []), marker) is marker\nprint('ok')\n",
+      "stdout": "ok\n",
+      "exitCode": 0
+    },
+    {
+      "index": 1,
+      "source": "\nevents = []\ndef values():\n    try:\n        yield from range(37)\n        yield 'bad'\n    except TypeError: events.append('wrong handler')\n    yield 5\ng = values()\ntry: sum(g)\nexcept TypeError: pass\nelse: assert False\nassert next(g) == 5\nassert events == []\nprint('ok')\n",
+      "stdout": "ok\n",
+      "exitCode": 0
+    },
+    {
+      "index": 2,
+      "source": "\nclass Box:\n    def __radd__(self, total):\n        assert total == sum(range(37))\n        assert next(g) == 4\n        return 7\ndef values():\n    yield from range(37)\n    yield Box()\n    yield 4\n    yield 9\ng = values()\nassert sum(g) == 16\nassert next(g, 'end') == 'end'\nprint('ok')\n",
+      "stdout": "ok\n",
+      "exitCode": 0
+    },
+    {
+      "index": 3,
+      "source": "\ndef values():\n    try: raise KeyError('inner')\n    except KeyError as original:\n        for i in range(37):\n            try: next(g)\n            except ValueError as error: assert str(error) == 'generator already executing'\n            else: assert False\n            try: raise\n            except KeyError as error: assert error is original\n            yield i\n    try: raise\n    except ValueError as error: assert str(error) == 'caller'\ng = values()\ntry: raise ValueError('caller')\nexcept ValueError as original:\n    assert sum(g) == sum(range(37))\n    try: raise\n    except ValueError as error: assert error is original\nprint('ok')\n",
+      "stdout": "ok\n",
+      "exitCode": 0
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "productionFiles": 3,
+  "eachActualWindowsTarget": {
+    "publicFocused": 102,
+    "internalFocused": 54,
+    "existingCancellation": 50,
+    "finalTargetedCancellationAndGenerator": 30
+  },
+  "countsOverlap": true,
+  "independentCPythonPrograms": 4,
+  "candidateFullCatalogGoldens": 13,
+  "actualFrozenReferenceAndCandidateCatalogGoldens": 3,
+  "finalTestOnlyChanges": "Four generator cancellation rows added after frozen snapshot; final-tests.tar.xz preserves their exact source, production unchanged.",
+  "priorFailedCondition": "Initial new-test expected CLR int instead of projected BigInteger; corrected assertion, original failing log retained. No runtime semantic failure.",
+  "fullQualification": "Pending combined Windows/Ubuntu actual11/10, originalstress and installed Release package consumers.",
+  "publicationHeld": true
+}
