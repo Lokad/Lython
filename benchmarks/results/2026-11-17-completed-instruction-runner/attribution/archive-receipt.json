@@ -1,0 +1,12 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "ramTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 266194944,
+  "archiveSHA256": "c420dd4d7cda644d6f0a887b6ef06c087fe4c4e49c93aac1da2e39fd07955ad9",
+  "source": "R495 qualified33bd7efd/5e7058a3 versus private39c11156; four diagnostic activation/operand captures, not an elapsed comparison",
+  "performanceComparison": false
+}
