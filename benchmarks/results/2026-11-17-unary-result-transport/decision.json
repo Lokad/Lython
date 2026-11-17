@@ -17,6 +17,7 @@
     "abs/str/sum(bytes) object behavior",
     "terminal refusal and awaited cleanup"
   ],
-  "fullDeliveryPending": true,
-  "publicationHeld": true
+  "fullDeliveryPending": false,
+  "publicationHeld": true,
+  "qualifiedRun": 44050323147
 }

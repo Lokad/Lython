@@ -2,6 +2,7 @@
 
 | Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| Numeric CSV quality report | 4,096 records / 127,031 B | 4.120–4.198 ms | 4.573–4.608 ms | 0.89–0.92× | R477; diagnostic; controls L/C 1.89/0.79%; IQR≤0.65% |
 | Floating JSON numeric report | 4,096 records / 56,495 B | 1.614–1.633 ms | 0.817–0.826 ms | 1.95–2.00× | R475; diagnostic; controls L/C 1.22/1.10%; IQR≤1.28% |
 | Text normalization through a helper | 4,096 lines / 52,224 B | 1.236–1.250 ms | 0.872–0.905 ms | 1.37–1.43× | Diagnostic; controls L/C 1.15/3.76%; IQR≤2.39% |
 | Report rendering through a helper | 3,072 records / 189,441 B | 2.655–2.685 ms | 2.200–2.220 ms | 1.20–1.22× | Diagnostic; controls L/C 1.13/0.92%; IQR≤4.68% |
@@ -18,7 +19,11 @@ Ranges are process-median combinations, not confidence intervals. Control moveme
 and sample IQRs remain visible; exact magnitudes are diagnostic. Controls L/C are
 the percentage differences between the two Lython/CPython process medians.
 
-Measured **2026-11-17 UTC**: floating and CSV warm use **abcbd9fd /
+Measured **2026-11-17 UTC**: the numeric CSV quality report uses **d8611c85 /
+frozen0315de0a**, stock **CPython3.13.16**; [full delivery passes](../benchmarks/results/2026-11-17-unary-result-transport/delivery/README.md).
+Its three separated phases finish104.51s with all measurement gates passed.
+[Numeric CSV baseline](../benchmarks/results/2026-11-17-unary-result-transport/cpython/README.md).
+Floating and invoice CSV warm use **abcbd9fd /
 frozenca1a8239**, stock **CPython3.13.16**. [Full runtime delivery qualification passes](../benchmarks/results/2026-11-17-generator-sum/delivery/README.md). Four separated jobs finish137.80s with all measurement gates passed;
 same machine and5s boundaries below. [Current checkpoint](../benchmarks/results/2026-11-17-generator-sum/cpython/README.md).
 The earlier [R471 baseline](../benchmarks/results/2026-11-17-float-transport/cpython/README.md)
@@ -51,6 +56,8 @@ No startup, pending-I/O, contention, heap/RSS or embedding-tail comparison is av
 
 | Workload | Phase | Lython | CPython | Ratio | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| Numeric CSV quality report | Compilation only | 0.056–0.056 ms | 0.044–0.045 ms | 1.25–1.27× | R477; diagnostic; controls L/C 0.26/1.18%; IQR≤0.95% |
+| Numeric CSV quality report | Compile and execute once | 4.284–4.412 ms | 4.633–4.643 ms | 0.92–0.95× | R477; diagnostic; moving Lython control2.98%,CPython0.21%; IQR≤0.96% |
 | Floating JSON numeric report | Compilation only | 0.056–0.056 ms | 0.061–0.061 ms | 0.91–0.92× | R475; diagnostic; controls L/C 0.19/0.83%; IQR≤0.80% |
 | Floating JSON numeric report | Compile and execute once | 1.771–1.813 ms | 0.965–0.966 ms | 1.83–1.88× | R475; diagnostic; controls L/C 2.39/0.15%; IQR≤0.52% |
 | Text normalization through a helper | Compilation only | 0.047–0.047 ms | 0.044–0.044 ms | 1.05–1.06× | Diagnostic; controls L/C 0.36/0.24%; IQR≤1.01% |
@@ -111,7 +118,7 @@ Source-pair results are separate from CPython and cannot be added together:
 
 | Change / affected workload | Separate source-pair evidence | Limits |
 | --- | --- | --- |
-| Shared unary builtin result transport / complete numeric CSV report | Allocation −5.26%, accounted peak unchanged; one result convention removes signature/boxing/repacking wrappers | Confirmed warm elapsed 0.2–1.6% lower; fresh elapsed −1.39..+0.73%, wider CPU −0.89..+1.80%. Original large fresh advantage was not reproduced; text control small/mixed. [Both comparisons and decision](../benchmarks/results/2026-11-17-unary-result-transport/README.md). Full delivery pending; no substantial CPU gain claimed. |
+| Shared unary builtin result transport / complete numeric CSV report | Allocation −5.26%, accounted peak unchanged; one result convention removes signature/boxing/repacking wrappers | Confirmed warm elapsed 0.2–1.6% lower; fresh elapsed −1.39..+0.73%, wider CPU −0.89..+1.80%. Original large fresh advantage was not reproduced; text control small/mixed. [Both comparisons and decision](../benchmarks/results/2026-11-17-unary-result-transport/README.md). [Full platform/stress/package qualification passes](../benchmarks/results/2026-11-17-unary-result-transport/delivery/README.md); no substantial CPU gain claimed. |
 | Native generator sum / complete JSON numeric report | Warm6–10%lower elapsed, fresh15–18%lower, with supporting CPU | Allocation+168–192B/run, accounted numeric peak unchanged. Integer magnitude uncertain (candidate control9.98%); text−0.55..+2.11%with moving reference. [Source pair and checks](../benchmarks/results/2026-11-17-generator-sum/README.md); combined platform/stress/package qualification passes. |
 | Floating arithmetic-to-iteration transport / complete JSON numeric report | Warm 23–26% lower elapsed, fresh 23–27% lower, with supporting CPU; allocation −28.52%, accounted peak unchanged | Integer control inconclusive with 7–9% movement; earlier confirmed integer 2–5% regression is not proven resolved. [Refinement, original adversity and checks](../benchmarks/results/2026-11-17-float-transport/README.md). Combined platform, stress and package qualification passes. |
 | Shared receiver calls / complete helper-list text and report scripts | Warm text37–40%lower elapsed,report24–25%;fresh37–39%/22–24%,with supporting CPU | Allocation−51.78%/−33.16%;retained peaks essentially flat. Call/CSVcontrols roughly flat,numeric magnitude uncertain. [Exact source pair,workloads and checks](../benchmarks/results/2026-11-17-receiver-calls/README.md). Combined platform/stress/package qualification passes; no inferred CPython ratio. |

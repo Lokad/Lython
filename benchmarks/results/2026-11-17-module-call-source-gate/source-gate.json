@@ -1,0 +1,15 @@
+{
+  "source": "d8611c85",
+  "decision": "No new production design justified. Actual builtin module lookups already use PyModule.TryGetCachedMember, stabilizing factory results in the existing metadata cache; JSON default loads/dumps and short call packet bypasses already exist.",
+  "stalePlanCorrection": "Local imports already compile ExecutableScript and run its Code synchronously/asynchronously since840621405. No later import consolidation project remains.",
+  "evidence": [
+    "Both public API routes pass repeated independent attribute/getattr identity checks on all4JSON functions, aliases and budget reuse; CPython3.13.2 agrees.",
+    "PyModule.TryGetCachedMember checks existing cache before calling TryGetMember; JsonModuleCallable has readonly metadata, not per-record wrapper construction.",
+    "Existing ImportArchitectureSubsystemTests/PyModulePrimitiveTests cover module identity and mutable script namespace behavior."
+  ],
+  "avoided": "Do not add four explicit JSON definitions behind an existing stable-definition cache or replace already stack-backed argument packets.",
+  "temporaryDiagnosticRemoved": true,
+  "prototypeCreated": false,
+  "productionUnchanged": true,
+  "publicationHeld": true
+}

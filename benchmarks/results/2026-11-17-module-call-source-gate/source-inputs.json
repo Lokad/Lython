@@ -1,0 +1,11 @@
+{
+  "revision": "d8611c85",
+  "inputs": {
+    "src/Lokad.Lython/Runtime/PyModule.cs": "a636ab4058f27dfb63dcfe223554a4b67bb9e16bf6c6c7f4cb90e90b7e19b2d2",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Imports.cs": "e23e449ebcd9a6a62afc23547b4f83f5c676897009d68cff7f0f4b5c7b70c400",
+    "src/Lokad.Lython/Runtime/LythonRuntime.JsonModule.cs": "245cdedf0696a2967ea5e7e172feff59600caebdfdb9eba886503dbdd18420d4",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Json.Options.cs": "47b08064b8d098ac2e28b59f1f9c16cbb95381d841f8f56c5840ee6afcc5c87f",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs": "33aba4e87bc1ba4e42bc54939aa571815d1925f6a6b35d4e49924ceb5a89b3b2",
+    "src/Lokad.Lython/Runtime/Calls/CallableInvocation.cs": "d6b1965dc3e65eeb582485a8b305f6000a3b87dd6f685889a8c169d4eabab947"
+  }
+}

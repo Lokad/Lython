@@ -9086,6 +9086,21 @@ allocation, not a substantial CPU gain. Same source/images/catalog,8sinterleaved
 warmups,2jobs95.71s. Warm−1.57..−0.18%/CPU−2.79..0%;fresh−1.39..+0.73%/
 CPU−0.89..+1.80%. Original first fresh advantage not reproduced,cause unisolated;
 first adverse text/older debts retained. Removed Delegate/signature/generic bridge
-and native-only repacking; source7files/five observable tests promoted, full delivery
-pending. Both raw conditions/procedures preserved; all users joined/RAM removed.
+and native-only repacking; source7files/five observable tests [fully qualified44050323147](results/2026-11-17-unary-result-transport/delivery/README.md). Both raw conditions/procedures preserved; all users joined/RAM removed.
 No more unchanged retiming for this decision; broader objective/publicationheld.
+
+[R478 module/call source gate](results/2026-11-17-module-call-source-gate/README.md):
+no runtime prototype. Both API identity/budget checks and CPython agree; builtin
+module factory outputs already use the stable metadata cache. DefaultJSON options/
+binding bypasses and borrowed short packets already exist. Local imports already
+use executable Code since840621405; stale planned consolidation removed. Temporary
+diagnostic archived/removed, existing semantic regressions retained. No duplicate
+cache layer, new framework, timing or repeated full qualification. R477 delivery
+independent, broader design selection active, publication held.
+
+[R477/B891 numeric CSV external baseline](results/2026-11-17-unary-result-transport/cpython/README.md):
+d8611c85/frozen0315de0a versus stockCPython3.13.16,3jobs104.51s; compile1.25–1.27×,
+warm0.89–0.92×,fresh0.92–0.95×with2.98%Lython fresh control movement. Full runtime
+delivery44050323147passes independently; ratio is not attributed to the source
+change or generalized to other workloads. All measurement gates/users joined/RAM
+removed/archives verified. Exact controls/procedures preserved, publication held.

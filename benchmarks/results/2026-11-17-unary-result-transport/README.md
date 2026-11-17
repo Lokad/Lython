@@ -1,7 +1,7 @@
 # Closed unary builtin result transport
 
 R477/B889,2026-11-17UTC. Qualified abcbd9fd/frozenca1a8239 versus private
-seven-file prototype/frozen0315de0a. **Retain for simplification and allocation; full delivery pending.**
+seven-file prototype/frozen0315de0a. **Retained and [fully qualified](delivery/README.md) for simplification and allocation.**
 One existing ExecutableSlot result convention removes the Delegate/two-signature
 bridge, generic invocation switch, native-only integer repacking and fresh scalar
 boxing at ordinary int/len/float boundaries. No new owner, cache, enum registry,
@@ -46,7 +46,7 @@ All image/golden/quiet/Closed/exit/join/archive checks pass. RAM removed/termina
 cached. Fresh UID/path/hash/link/all-alias proofs retire7004853Bof superseded5ec
 core8aliases and exact committed working evidence replicas. Qualified currentca1
 images, toolchains/canonicals and254/252MiBstaging/final floors preserved.
-No staging or timing failure in this collection. Retained source and five observable cases promoted; full delivery pending;
+No staging or timing failure in this collection. Retained source and five observable cases [fully qualified](delivery/README.md);
 publication held; broader performance goal remains active.
 
 [Summary](summary.json),[allocation](allocation-summary.json),[catalog](catalog.json),
@@ -78,7 +78,7 @@ Confirmation retires only465772Bof exact committed first working evidence
 replicas under fresh UID/path/hash/link/all-alias proof, keeping both measured
 cores/toolchains/canonicals and254/252MiBfloors. Three independent CPython
 semantic programs and all13previous catalog goldens also pass the candidate.
-No public API or contract break; full delivery is a separate checkpoint.
+No public API or contract break; [Full delivery passes](delivery/README.md).
 
 [Confirmation](confirmation-summary.json),[raw](confirmation/observations.tgz),
 [decision](decision.json),[validation](validation.json),

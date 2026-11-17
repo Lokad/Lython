@@ -1,0 +1,5 @@
+{
+  "reference": "CPython3.13.2 Windows",
+  "source": "\nimport json\nassert json.loads is json.loads\nassert json.dumps is json.dumps\nassert json.load is json.load\nassert json.dump is json.dump\nfor name in ['load', 'loads', 'dump', 'dumps']:\n    first = getattr(json, name)\n    second = getattr(json, name)\n    assert first is second\nassert json.loads('{\"x\":3}') == {'x':3}\nassert json.dumps({'x':3}, sort_keys=True) == '{\"x\": 3}'\nprint('ok')\n",
+  "stdout": "ok\n"
+}
