@@ -9052,15 +9052,15 @@ with supporting widerCPU. Integer favorable but candidate controls9.98%; text
 −0.55..+2.11%with moving reference. Allocation+168/+192B, numericpeak unchanged.
 No earlier-debt closure inferred. All exact sources/core/observations/failed fixture
 condition preserved; pending-I/O/refusal/cancellation/ownership focused checks pass
-both actual targets. All VM users joined/RAM removed. Full delivery and external
-baseline refresh pending; publication held, broader roadmap remains active.
+both actual targets. All VM users joined/RAM removed. [Full44041981387delivery passes](results/2026-11-17-generator-sum/delivery/README.md), external
+baseline refreshed; publication held, broader roadmap remains active.
 
 [R475/B887 CPython checkpoint](results/2026-11-17-generator-sum/cpython/README.md):
 abcbd9fd/frozenca1a8239 warm floating1.95–2.00×,fresh1.83–1.88×,compile0.91–0.92×;
 CSVwarm1.13–1.18×with3.29%Lython control movement. Fourjobs137.80s, all measurement
 gates pass/users joined/RAM removed. Initial larger staging refused before mutation/
 workers; reduced catalog fills material gaps, original failure preserved. No causal
-source gain across collections. Full runtime delivery separate; publication held.
+source gain across collections. Full runtime44041981387delivery passes; publication held.
 
 [R476/B888 current floating/CSV costs](results/2026-11-17-current-script-costs/README.md):
 950/1090active samples,69/71unknown leaves; useful parsing/index/arithmetic overlaps

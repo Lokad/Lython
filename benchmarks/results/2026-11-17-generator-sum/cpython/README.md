@@ -28,7 +28,7 @@ RSS, contention or embedding-tail comparison.
 
 Both frozen32file images passed actual-worker/CPython2case goldens before staging.
 All identities/outputs/quiet/Closed/exits/joins/archive checks pass, RAM removed and
-terminal cached. Full runtime delivery44041981387 is separate/pending. Initial
+terminal cached. [Full runtime delivery44041981387 passes](../delivery/README.md). Initial
 six-job catalog staging was refused for disk headroom **before mutation or workers**;
 its error/configuration is preserved. A smaller two-case/four-job collection fills
 material gaps. No timing was repeated to repair that staging failure. Exact

@@ -1,7 +1,7 @@
 # Native sum shares the existing generator batch lifetime
 
 R475/B886,2026-11-17UTC. Qualified dc480d38/frozen5ecb2599 versus three-file
-prototype/frozenca1a8239. **Retain this coherent change; full delivery pending.**
+prototype/frozenca1a8239. **Retained and [fully qualified](delivery/README.md).**
 Same-command native integer/compensated-floating prefixes use the existing yield
 destination, without a materialized batch or repeated generator frame/exception/
 managed stack entry per value. General addition runs after ordinary advancement

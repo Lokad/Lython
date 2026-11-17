@@ -19,8 +19,7 @@ and sample IQRs remain visible; exact magnitudes are diagnostic. Controls L/C ar
 the percentage differences between the two Lython/CPython process medians.
 
 Measured **2026-11-17 UTC**: floating and CSV warm use **abcbd9fd /
-frozenca1a8239**, stock **CPython3.13.16**. Runtime delivery qualification is
-pending. Four separated jobs finish137.80s with all measurement gates passed;
+frozenca1a8239**, stock **CPython3.13.16**. [Full runtime delivery qualification passes](../benchmarks/results/2026-11-17-generator-sum/delivery/README.md). Four separated jobs finish137.80s with all measurement gates passed;
 same machine and5s boundaries below. [Current checkpoint](../benchmarks/results/2026-11-17-generator-sum/cpython/README.md).
 The earlier [R471 baseline](../benchmarks/results/2026-11-17-float-transport/cpython/README.md)
 remains preserved, with its fully qualified runtime source and original controls.
@@ -112,7 +111,7 @@ Source-pair results are separate from CPython and cannot be added together:
 
 | Change / affected workload | Separate source-pair evidence | Limits |
 | --- | --- | --- |
-| Native generator sum / complete JSON numeric report | Warm6–10%lower elapsed, fresh15–18%lower, with supporting CPU | Allocation+168–192B/run, accounted numeric peak unchanged. Integer magnitude uncertain (candidate control9.98%); text−0.55..+2.11%with moving reference. [Source pair and checks](../benchmarks/results/2026-11-17-generator-sum/README.md); full delivery pending. |
+| Native generator sum / complete JSON numeric report | Warm6–10%lower elapsed, fresh15–18%lower, with supporting CPU | Allocation+168–192B/run, accounted numeric peak unchanged. Integer magnitude uncertain (candidate control9.98%); text−0.55..+2.11%with moving reference. [Source pair and checks](../benchmarks/results/2026-11-17-generator-sum/README.md); combined platform/stress/package qualification passes. |
 | Floating arithmetic-to-iteration transport / complete JSON numeric report | Warm 23–26% lower elapsed, fresh 23–27% lower, with supporting CPU; allocation −28.52%, accounted peak unchanged | Integer control inconclusive with 7–9% movement; earlier confirmed integer 2–5% regression is not proven resolved. [Refinement, original adversity and checks](../benchmarks/results/2026-11-17-float-transport/README.md). Combined platform, stress and package qualification passes. |
 | Shared receiver calls / complete helper-list text and report scripts | Warm text37–40%lower elapsed,report24–25%;fresh37–39%/22–24%,with supporting CPU | Allocation−51.78%/−33.16%;retained peaks essentially flat. Call/CSVcontrols roughly flat,numeric magnitude uncertain. [Exact source pair,workloads and checks](../benchmarks/results/2026-11-17-receiver-calls/README.md). Combined platform/stress/package qualification passes; no inferred CPython ratio. |
 | Tab-expansion construction / complete normalization | Warm7.2–7.7%lower elapsed and6.8–11.4%lower compile-to-result,with supporting CPU | Physical allocation+0.27%;accounted peak+4KiB. Calls/CSVroughly flat,fresh candidate controls3.49%. [Exact source pair and checks](../benchmarks/results/2026-11-17-tab-expansion/README.md). Qualified with the receiver milestone; no inferred CPython ratio. |
