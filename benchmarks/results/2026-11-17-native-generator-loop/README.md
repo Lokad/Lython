@@ -64,3 +64,32 @@ unchanged dev105 qualification; core/runtime work remains independent.
 [held cleanup](continuation-checks.json),[raw](first/observations.tgz),
 [procedures](procedures-and-checks.tar.xz),[producer facts](regex-source-check.json).
 The broader complete-script objective remains active.
+
+## B913 confirmation; final footprint refinement selected
+
+Same images/catalog,8second rotated warmups/five rounds, three jobs140.85seconds.
+Floating fresh−4.89..−2.09%/CPU−2.97..−1.80%, controls0.48/2.46%; call control
+−0.90..−0.05%/CPU−2.02..−0.40%, controls0.43/0.43%. Helper JSON remains uncertain:
+−3.58..+3.44%/CPU−4.26..+3.70%, controls2.10/5.08%. Preserve original fresh/control
+adversity; improved confirmation does not explain the original13.56%process gap.
+No extra unchanged timing campaign is selected. All gates/usersjoined/SHAarchive
+pass, terminal cached. Original allocation diagnostics reused, not new measurements.
+
+The same7new semantic/effect/alias/refusal/held-cleanup/reuse assertions also pass
+against qualified5e7058a3 in a copied test image: tests do not require this internal
+architecture. The first baseline diagnostic mistyped a hardcoded checksum and
+refused before testing; repaired by checking both recorded manifests. Mutable
+build outputs untouched; original failed script preserved.
+
+One final source simplification before promotion: borrowed mode's existing scope
+already references its generator frame, so a separate NativeExecution frame field
+is redundant. Reuse that scope when function owner is null, retaining ordinary
+call ABI, existing owner lifetimes and exact resume. This removes one stored
+reference; it is not proven to explain the first control variation. Focused11/10
+checks and one changed-footprint affected pair decide final retention/regression
+debt. The current measured footprint is not promoted or permanently rejected.
+No final CPU result is attributed to the not-yet-measured refinement.
+
+[Confirmation](confirmation/summary.json),[raw](confirmation/observations.tgz),
+[baseline semantics](baseline-continuation.json),[procedures](confirmation-procedures.tar.xz).
+Full R492 delivery remains GREEN; broader work/publication hold continue.

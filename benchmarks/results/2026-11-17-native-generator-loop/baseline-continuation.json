@@ -1,0 +1,18 @@
+{
+  "runtimeSource": "Fully qualified33bd7efd/frozen5e7058a3",
+  "testSource": "Current held-cleanup BufferedGeneratorContinuationTests; same binary as private candidate check",
+  "copiedTopLevelTestImage": true,
+  "mutableBuildOutputsUntouched": true,
+  "coreSHA256": "5e7058a313bf77859192c6bbabcf97f33b657561586fe1f7709bc281a2d28658",
+  "testAssemblySHA256": "d7750bb7ac2b76992cd4c5a7947c52f6cbdbe275b803f09d121a5576c1f5dcd7",
+  "command": [
+    "C:\\Users\\JoannesVermorel\\.dotnet11\\dotnet.exe",
+    "vstest",
+    "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\native-generators-r494\\baseline-continuation-image-final\\Lokad.Lython.PublicApi.Tests.dll",
+    "--TestCaseFilter:FullyQualifiedName~BufferedGeneratorContinuationTests",
+    "--logger:console;verbosity=minimal"
+  ],
+  "exitCode": 0,
+  "seconds": 9.403936500195414,
+  "scope": "Seven external semantic/effect/alias/refusal/held-cleanup/reuse assertions only; not full baseline requalification."
+}
