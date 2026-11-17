@@ -10,7 +10,7 @@ Valid UTF-8 scalar count is bytes minus continuation bytes; UTF-16 adds astral
 leads. Safe managed Vector<byte> masks/population counts and a scalar tail replace
 per-scalar width walking and chunk-boundary adjustment. Cancellation remains at
 4KiB boundaries and completion. No per-string state, owner/copy/framework,
-unsafe/pointer/intrinsic API or dependency. Indexing still uses GetRuneLength.
+unsafe code, raw pointers, P/Invoke or new dependency. Indexing still uses GetRuneLength.
 Projection admission/first refusal, retained aliases and budget cleanup remain.
 
 The first SearchValues/CountAny implementation is discarded; stable dense
@@ -43,8 +43,9 @@ terminal cached. Exact committed old raw/archive replicas and discardedbcfcore
 retired after fresh lease/path/UID/hash/link/all-alias proof. Current0315,
 toolchains/canonicals and254/252MiB floors preserved.
 
-Full platform/stress/installed Release qualification and affected CPython refresh
-are next. This milestone does not complete the broader call/frame/record/frontend
+Full platform/stress/installed Release qualification is pending. The affected
+[CPython refresh](cpython/README.md) is complete; original text warm1.75–1.81×,
+fresh1.66–1.67×,compile0.94–0.96×,with warm CPython control movement3.40%. This milestone does not complete the broader call/frame/record/frontend
 performance roadmap. Publication/tagging remain held.
 
 [Decision](decision.json),[summary](summary.json),[allocation](allocation-summary.json),

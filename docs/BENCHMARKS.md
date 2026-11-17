@@ -7,7 +7,7 @@
 | Text normalization through a helper | 4,096 lines / 52,224 B | 1.236–1.250 ms | 0.872–0.905 ms | 1.37–1.43× | Diagnostic; controls L/C 1.15/3.76%; IQR≤2.39% |
 | Report rendering through a helper | 3,072 records / 189,441 B | 2.655–2.685 ms | 2.200–2.220 ms | 1.20–1.22× | Diagnostic; controls L/C 1.13/0.92%; IQR≤4.68% |
 | CSV invoice | 4,096 records / 127,031 B | 6.923–7.151 ms | 6.058–6.106 ms | 1.13–1.18× | R475; diagnostic; moving Lython control 3.29%, CPython 0.79%; IQR≤1.03% |
-| Text normalization | 4,096 lines / 52,224 B | 1.041–1.049 ms | 0.504–0.504 ms | 2.06–2.08× | Earlier checkpoint; diagnostic; controls L/C 0.76/0.09%; IQR≤2.12% |
+| Text normalization | 4,096 lines / 52,224 B | 0.913–0.915 ms | 0.505–0.522 ms | 1.75–1.81× | R483; diagnostic; controls L/C 0.25/3.40%; IQR≤0.75% |
 | JSON-lines aggregation | 4,096 records / 110,592 B | 3.504–3.579 ms | 4.069–4.080 ms | 0.86–0.88× | Earlier checkpoint; diagnostic; controls L/C 2.16/0.27%; IQR≤1.11% |
 | File search / defensive helper | 2,049 lines / 42,010 B; stop at 1,025 | 0.259–0.264 ms | 0.160–0.161 ms | 1.60–1.65× | Earlier checkpoint; diagnostic; controls L/C 2.25/0.87%; IQR≤1.10% |
 | Configuration edit | 1,024 paths / 7,177 B | 0.179–0.182 ms | 0.185–0.185 ms | 0.96–0.98× | Earlier 312f/0443; diagnostic; controls L/C 2.10/0.01%; IQR≤1.37% |
@@ -19,7 +19,11 @@ Ranges are process-median combinations, not confidence intervals. Control moveme
 and sample IQRs remain visible; exact magnitudes are diagnostic. Controls L/C are
 the percentage differences between the two Lython/CPython process medians.
 
-Measured **2026-11-17 UTC**: the numeric CSV quality report uses **d8611c85 /
+Measured **2026-11-17 UTC**: original text normalization uses **dbdf8262 /
+frozena95ff2a4**, stock **CPython3.13.16**, with full runtime qualification pending.
+Three separated phases103.55s; all measurement gates pass.
+[Text baseline and exact boundaries](../benchmarks/results/2026-11-17-utf8-widths/refined/cpython/README.md).
+The the numeric CSV quality report uses **d8611c85 /
 frozen0315de0a**, stock **CPython3.13.16**; [full delivery passes](../benchmarks/results/2026-11-17-unary-result-transport/delivery/README.md).
 Its three separated phases finish104.51s with all measurement gates passed.
 [Numeric CSV baseline](../benchmarks/results/2026-11-17-unary-result-transport/cpython/README.md).
@@ -29,8 +33,7 @@ same machine and5s boundaries below. [Current checkpoint](../benchmarks/results/
 The earlier [R471 baseline](../benchmarks/results/2026-11-17-float-transport/cpython/README.md)
 remains preserved, with its fully qualified runtime source and original controls.
 The two helper workloads use committed
-**ccf20ba3 / frozen7a599347** versus stock **CPython3.13.16**. CSV compilation/fresh, generator
-normalization, JSON and search remain earlier **46343804 / frozen aaef443f**;
+**ccf20ba3 / frozen7a599347** versus stock **CPython3.13.16**. CSV compilation/fresh, JSON and search remain earlier **46343804 / frozen aaef443f**;
 configuration/report remain **312f5911 / frozen0443b5cf**. All rows name a measured
 source; they do not automatically describe current HEAD. Helper scripts use
 explicit loops and functions,not the earlier generator/streaming shapes.
@@ -66,8 +69,8 @@ No startup, pending-I/O, contention, heap/RSS or embedding-tail comparison is av
 | Report rendering through a helper | Compile and execute once | 2.850–2.944 ms | 2.432–2.481 ms | 1.15–1.21× | Diagnostic; controls L/C 3.30/2.03%; IQR≤4.68% |
 | CSV invoice | Compilation only | 0.100–0.101 ms | 0.093–0.094 ms | 1.06–1.08× | Earlier checkpoint; diagnostic; controls L/C 0.62/1.03%; IQR≤0.96% |
 | CSV invoice | Compile and execute once | 7.078–7.560 ms | 6.289–6.324 ms | 1.12–1.20× | Earlier checkpoint; diagnostic; controls L/C 6.81/0.55%; IQR≤0.68% |
-| Text normalization | Compilation only | 0.036–0.036 ms | 0.037–0.037 ms | 0.95–0.96× | Earlier checkpoint; diagnostic; controls L/C 0.80/0.08%; IQR≤0.79% |
-| Text normalization | Compile and execute once | 1.132–1.175 ms | 0.631–0.686 ms | 1.65–1.86× | Earlier checkpoint; diagnostic; controls L/C 3.86/8.75%; IQR≤1.64% |
+| Text normalization | Compilation only | 0.035–0.036 ms | 0.037–0.037 ms | 0.94–0.96× | R483; diagnostic; controls L/C 2.06/0.15%; IQR≤1.09% |
+| Text normalization | Compile and execute once | 0.983–0.987 ms | 0.590–0.592 ms | 1.66–1.67× | R483; diagnostic; controls L/C 0.45/0.36%; IQR≤0.60% |
 | JSON-lines aggregation | Compilation only | 0.050–0.051 ms | 0.051–0.051 ms | 0.99–1.01× | Earlier checkpoint; diagnostic; controls L/C 1.98/0.13%; IQR≤0.53% |
 | JSON-lines aggregation | Compile and execute once | 3.610–3.725 ms | 4.193–4.197 ms | 0.86–0.89× | Earlier checkpoint; diagnostic; controls L/C 3.17/0.10%; IQR≤0.47% |
 | File search / defensive helper | Compilation only | 0.031–0.031 ms | 0.036–0.036 ms | 0.85–0.85× | Earlier checkpoint; diagnostic; controls L/C 0.44/0.02%; IQR≤1.41% |
