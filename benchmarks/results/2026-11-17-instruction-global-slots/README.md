@@ -1,6 +1,6 @@
 # Module binding in an existing instruction operand
 
-R479/B892, 2026-11-17 UTC. **Private prototype; decision pending.** Qualified
+R479/B892, 2026-11-17 UTC. **Withdrawn; no prototype runtime mechanism retained.** Qualified
 d8611c85/frozen0315de0a versus be7497de, eight production files. A cancellable
 compiler fixup puts known module indexes in LoadGlobal's existing spare operand.
 Instructions and code objects gain no fields or retained tables. A name/bounds
@@ -46,3 +46,32 @@ before retain/refine/withdraw. This is uncertainty, not a permanent design ban.
 [identity](identity.json), [exact sources](candidate-sources.tar.xz),
 [prototype](prototype.patch.gz), [core](candidate-core.dll.gz),
 [procedures and original failure](procedures-and-checks.tar.xz).
+
+## B893 confirmation and decision
+
+Same sources, copied images, catalog and protocol; eight-second interleaved
+full-request warmups, two jobs in 96.85 seconds. No source tuning or forced GC.
+
+| Floating report | Elapsed change | Wider CPU change | Reference / candidate controls |
+| --- | ---: | ---: | ---: |
+| Warm | −9.54..−0.15% | −7.64..−0.68% | **6.44 / 3.70%** |
+| Compile and execute once | **+0.28..+5.79%** | **0.00..+6.84%** | **3.13 / 2.29%** |
+
+Withdraw this footprint. Warm magnitude remains uncertain; the adverse fresh
+observations and flat allocation do not justify a new compiler traversal/guard
+for the first CSV improvement. This is a design tradeoff, not a fixed-percentage
+veto, a claim that the hypothesis is disproved, or a permanent timing ban. Further
+work needs a concrete refinement or corrected measurement condition, rather than
+more unchanged runs. All eight modified runtime/frontend files are restored to
+the qualified source; no dormant accessors, traversal, token plumbing or guard
+remain. Existing useful external regressions remain; no internal architecture
+test was added. Restoring the old exact source needs no repeated delivery checks.
+
+Both machine gates, all workers/goldens/Closed/exit/join/archive checks pass. RAM
+is removed and terminal cached; canonical evidence/current images/toolchains are
+preserved. The confirmation retires only 260873 bytes of exact committed older
+working raw/archive replicas with fresh path/UID/hash/link/all-alias proof.
+Broader performance work continues; publication remains held.
+
+[Confirmation summary](confirmation-summary.json), [raw](confirmation/observations.tgz),
+[decision](decision.json), [confirmation procedures](confirmation-procedures-and-checks.tar.xz).

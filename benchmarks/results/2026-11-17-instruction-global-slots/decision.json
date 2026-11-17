@@ -1,0 +1,21 @@
+{
+  "retain": false,
+  "reason": "No established substantial whole-script benefit or net simplification justifies the new compile fixup and guard. First fresh CPU +1.81..+3.27%; confirmation0..+6.84%, controls moving. CSV first\u22122.46..\u22121.95% remains favorable evidence. Allocation/peaks flat. This is a bounded prototype decision, not proof that module binding cannot improve or a permanent ban.",
+  "warmUncertainty": "Confirmation\u22129.54..\u22120.15% but reference6.44/candidate3.70% spread; do not promote magnitude.",
+  "freshUncertainty": "Confirmation+0.28..+5.79%elapsed,0..+6.84%widerCPU; reference3.13/candidate2.29% spread.",
+  "removed": [
+    "compiler global-slot fixup and its transient traversal",
+    "instruction global-slot accessors",
+    "module-frame slot guard",
+    "additional compiler-token plumbing needed only by fixup",
+    "changed global resolver and call sites"
+  ],
+  "preserved": [
+    "all existing observable global/import/closure tests",
+    "qualifiedd8611c85 runtime",
+    "both exact source/images/conditions/raw/adversity"
+  ],
+  "newArchitectureTestsRetained": 0,
+  "broaderPerformanceObjectiveComplete": false,
+  "publicationHeld": true
+}
