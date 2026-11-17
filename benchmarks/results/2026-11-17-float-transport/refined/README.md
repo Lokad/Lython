@@ -1,8 +1,9 @@
 # Scoped floating transport: retained refinement
 
 R471/B880,2026-11-17UTC. Qualified ccf20ba3/frozen7a599347 versus private
-cb7472e7+four-file refinement/frozen5ecb2599. **Retain; full delivery qualification
-pending.** The existing managed16-byte slots carry fresh double bits through
+cb7472e7+four-file refinement/frozen5ecb2599. **Retained and qualified at dc480d38:**
+[combined platform/stress/package delivery passes](../delivery/README.md).
+The existing managed16-byte slots carry fresh double bits through
 arithmetic/fused locals/helper returns/generator iteration into compensated sum.
 Fresh intermediate boxes and repeated generic dispatch disappear from that closed
 path. Canonical publication remains before aliases/protocols/cells/containers/public

@@ -18,8 +18,7 @@ Ranges are process-median combinations, not confidence intervals. Control moveme
 and sample IQRs remain visible; exact magnitudes are diagnostic. Controls L/C are
 the percentage differences between the two Lython/CPython process medians.
 
-Measured **2026-11-17 UTC**: floating report uses **cb7472e7 + R471 refinement /
-frozen5ecb2599**, stock **CPython3.13.16**; runtime delivery qualification pending.
+Measured **2026-11-17 UTC**: floating report uses **dc480d38 / frozen5ecb2599**, stock **CPython3.13.16**; [full runtime delivery qualification passes](../benchmarks/results/2026-11-17-float-transport/delivery/README.md).
 Its three separated phases finish104.54s with all gates passed; same machine and
 5s warmup boundaries below. [Floating baseline](../benchmarks/results/2026-11-17-float-transport/cpython/README.md).
 The two helper workloads use committed
@@ -31,7 +30,7 @@ explicit loops and functions,not the earlier generator/streaming shapes.
 Quiet Azure F4as_v7 / Ubuntu24.04.4,four AMD EPYC9V45vCPUs,16GiB/no swap;
 .NET11RC3 natural workstation GC/normal tiering,CPythonGIL/GC. Two processes per
 engine,5s full-request warmups,five rotated roughly0.5s samples;startup excluded.
-Latest six jobs203.8s,all correctness/quiet/join/archive gates pass. Warm helper
+Helper collection: six jobs203.8s,all correctness/quiet/join/archive gates pass. Warm helper
 text CPython controls move3.76%,report IQR≤4.68%;fresh Lython controls3.65/3.30%.
 Earlier fresh CSV/normalization controls also move. Preserve those uncertainties.
 No causal source gain across collections or additive phase subtraction.
@@ -110,7 +109,7 @@ Source-pair results are separate from CPython and cannot be added together:
 
 | Change / affected workload | Separate source-pair evidence | Limits |
 | --- | --- | --- |
-| Floating arithmetic-to-iteration transport / complete JSON numeric report | Warm 23–26% lower elapsed, fresh 23–27% lower, with supporting CPU; allocation −28.52%, accounted peak unchanged | Integer control inconclusive with 7–9% movement; earlier confirmed integer 2–5% regression is not proven resolved. [Refinement, original adversity and checks](../benchmarks/results/2026-11-17-float-transport/README.md). Focused checks pass; full delivery qualification pending. |
+| Floating arithmetic-to-iteration transport / complete JSON numeric report | Warm 23–26% lower elapsed, fresh 23–27% lower, with supporting CPU; allocation −28.52%, accounted peak unchanged | Integer control inconclusive with 7–9% movement; earlier confirmed integer 2–5% regression is not proven resolved. [Refinement, original adversity and checks](../benchmarks/results/2026-11-17-float-transport/README.md). Combined platform, stress and package qualification passes. |
 | Shared receiver calls / complete helper-list text and report scripts | Warm text37–40%lower elapsed,report24–25%;fresh37–39%/22–24%,with supporting CPU | Allocation−51.78%/−33.16%;retained peaks essentially flat. Call/CSVcontrols roughly flat,numeric magnitude uncertain. [Exact source pair,workloads and checks](../benchmarks/results/2026-11-17-receiver-calls/README.md). Combined platform/stress/package qualification passes; no inferred CPython ratio. |
 | Tab-expansion construction / complete normalization | Warm7.2–7.7%lower elapsed and6.8–11.4%lower compile-to-result,with supporting CPU | Physical allocation+0.27%;accounted peak+4KiB. Calls/CSVroughly flat,fresh candidate controls3.49%. [Exact source pair and checks](../benchmarks/results/2026-11-17-tab-expansion/README.md). Qualified with the receiver milestone; no inferred CPython ratio. |
 | Shared native sequence construction / complete normalization and tuple-report | Warm normalization9–12%lower elapsed, tuple report2–5%lower/warm and about4.7–4.8%lower compile-to-result, with supporting CPU; generator-list diagnostic also favorable | Allocation essentially flat; report accounted peak12%higher. Numeric control uncertain with moving references; Run CSVroughly flat. Actual RunAsync report/generator medians favorable with moving controls; CSV0.1–3.6%adverse. [Exact sources, original adversity and checks](../benchmarks/results/2026-11-17-sequence-construction/README.md). |

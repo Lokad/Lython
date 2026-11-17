@@ -8,6 +8,7 @@
   "finalTestDifferenceFromTimingSnapshot": "Only stronger independent I/O assertions: unobserved float value crosses real suspension and joins retained result. No production change after freeze.",
   "independentCPythonSemanticScripts": 6,
   "workerGoldenCases": 13,
-  "fullQualification": "Pending coherent Windows/Ubuntu actual.NET11/10,originalstress,explicitReleasepackageconsumers",
-  "publicationHeld": true
+  "fullQualification": "GREEN44022750002/dc480d38 Windows/Ubuntu actual.NET11/10,originalstress,installedReleaseconsumers;16summaries/2377inputs verified",
+  "publicationHeld": true,
+  "qualifiedRun": 44022750002
 }

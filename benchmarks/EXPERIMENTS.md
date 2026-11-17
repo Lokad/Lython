@@ -16,7 +16,7 @@ sources/adversity, Windows-stdout fixture correction and offline archival-only
 count correction remain preserved; all users joined/RAM removed. Focused each
 actual11/10:93public/79internal plus final8case class; production585sources match
 timing snapshot. SeparateB881three-phase104.54s CPython baseline: warm2.09–2.10×,
-fresh1.92–1.96×,compile0.93–0.95×; substantial remaining gap. Full delivery pending;
+fresh1.92–1.96×,compile0.93–0.95×; substantial remaining gap. [Full44022750002delivery passes](results/2026-11-17-float-transport/delivery/README.md);
 publication held. This milestone does not complete the performance objective.
 
 [Cumulative fixture/ownership delivery43869939863](results/2026-11-16-regex-dev105/delivery/README.md)
@@ -9014,3 +9014,12 @@ no unchanged replay pending. Full delivery43989114633 independent; roadmap activ
 [R469/B875 bulk JSON token scanning](results/2026-11-17-json-token-scan/README.md): withdraw06797383 versus qualified7a599347 after5jobs154s/all gates. Report warm elapsed−1.70..−0.39%with mixedCPU;fresh inconclusive/movingcandidate5.93%. JSONwarmflat,fresh+1.20..+3.16%elapsed/+1.31..+3.77%CPU with closecontrols; unchangedtextstraddleszero. Allocation/peaks flat. No fixed threshold or permanent design ban; small report effect does not justify freshJSONdebt. Six independent long Unicode/control/ownership cases retained,28classcases pass actual11/10 again on unchanged runtime. Twelve frozen goldens and focused213internal/969→972public pass; filters overlap. Full qualification not replayed; publication held.
 
 [R470/B876–B877 compiler-to-call operand forwarding](results/2026-11-17-call-operand-forwarding/README.md): withdraw24f03c51 after verified42leaf-instruction removal and preserved histogram source shape. First5jobs153s: textmixed, callswarmunstable20.55%/19.29%IQR, freshcalls+0.21..+3.44%,numeric+2.74..+5.70%withCPU. One bounded unchanged-source confirmation2jobs95s/interleaved8s warmups: calls+0.48..+7.04%withcandidate6.52%movement,numericmixed/reference5.33%movement; no established gain or original-adversity recovery claim. Allocation/peaks flat, added metadata. All8production edits removed;2independent precedence cases retained and25classcases pass actual11/10 on unchanged runtime. Original conditions, failures, sources/cores and all gates/join/archive preserved. No permanent ban, fixed threshold or further unchanged retiming. Publication held; roadmap continues.
+
+[R472/B882 current integer/floating report CPU](results/2026-11-17-numeric-runtime-attribution/README.md)
+captures971/983active samples,63/59unmappedleaves; dispatch/indexing/calls distributed,
+JSON useful work present. Inclusive generator/call stacks are not removable cost.
+CurrentJSON alreadyiterative/defaultUTF8; PyList alreadycapacity-funded. No new
+runtime prototype or repeated capture. Next sourcegate assesses immutable global
+binding facts instead of repeated module name-map probes; semantics/ownership/
+compile costs must qualify before retention. All gates/join/RAM-archive verified;
+full44022750002continues independently,publicationheld.

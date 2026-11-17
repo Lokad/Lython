@@ -1,0 +1,12 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "ramTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 266080256,
+  "archiveSHA256": "2c636cd9c33621e4469635458b4657ad3f0c72400b4867abd0fdfbc57f9dbca5",
+  "source": "Committeddc480d38/frozen5ecb2599; R472 complete integer/floating report attribution, fullCI44022750002active",
+  "performanceComparison": false
+}

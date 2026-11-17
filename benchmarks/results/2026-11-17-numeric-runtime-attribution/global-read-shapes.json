@@ -1,0 +1,244 @@
+﻿[
+  {
+    "workload": "calls.positional.large",
+    "function": "\u003Cmodule\u003E",
+    "IsFunctionScope": false,
+    "RequiresLocalVariableMirroring": false,
+    "moduleLocals": [
+      "N",
+      "add",
+      "total",
+      "i"
+    ],
+    "moduleClosures": [],
+    "globalReads": []
+  },
+  {
+    "workload": "calls.positional.large",
+    "function": "add",
+    "IsFunctionScope": true,
+    "RequiresLocalVariableMirroring": false,
+    "moduleLocals": [
+      "N",
+      "add",
+      "total",
+      "i"
+    ],
+    "moduleClosures": [],
+    "globalReads": []
+  },
+  {
+    "workload": "scripts.text-normalization.helper-list",
+    "function": "\u003Cmodule\u003E",
+    "IsFunctionScope": false,
+    "RequiresLocalVariableMirroring": false,
+    "moduleLocals": [
+      "append_cleaned",
+      "\u003Cwith_manager:0\u003E",
+      "\u003Cwith_value:1\u003E",
+      "source",
+      "text",
+      "lines",
+      "line",
+      "cleaned",
+      "\u003Cwith_manager:2\u003E",
+      "\u003Cwith_value:3\u003E",
+      "target"
+    ],
+    "moduleClosures": [],
+    "globalReads": []
+  },
+  {
+    "workload": "scripts.text-normalization.helper-list",
+    "function": "append_cleaned",
+    "IsFunctionScope": true,
+    "RequiresLocalVariableMirroring": false,
+    "moduleLocals": [
+      "append_cleaned",
+      "\u003Cwith_manager:0\u003E",
+      "\u003Cwith_value:1\u003E",
+      "source",
+      "text",
+      "lines",
+      "line",
+      "cleaned",
+      "\u003Cwith_manager:2\u003E",
+      "\u003Cwith_value:3\u003E",
+      "target"
+    ],
+    "moduleClosures": [],
+    "globalReads": []
+  },
+  {
+    "workload": "scripts.report-render.helper-list",
+    "function": "\u003Cmodule\u003E",
+    "IsFunctionScope": false,
+    "RequiresLocalVariableMirroring": false,
+    "moduleLocals": [
+      "json",
+      "render",
+      "\u003Cwith_manager:0\u003E",
+      "\u003Cwith_value:1\u003E",
+      "source",
+      "records",
+      "append_line",
+      "lines",
+      "record",
+      "written",
+      "\u003Cwith_manager:2\u003E",
+      "\u003Cwith_value:3\u003E",
+      "target"
+    ],
+    "moduleClosures": [],
+    "globalReads": []
+  },
+  {
+    "workload": "scripts.report-render.helper-list",
+    "function": "append_line",
+    "IsFunctionScope": true,
+    "RequiresLocalVariableMirroring": false,
+    "moduleLocals": [
+      "json",
+      "render",
+      "\u003Cwith_manager:0\u003E",
+      "\u003Cwith_value:1\u003E",
+      "source",
+      "records",
+      "append_line",
+      "lines",
+      "record",
+      "written",
+      "\u003Cwith_manager:2\u003E",
+      "\u003Cwith_value:3\u003E",
+      "target"
+    ],
+    "moduleClosures": [],
+    "globalReads": []
+  },
+  {
+    "workload": "scripts.report-render.helper-list",
+    "function": "render",
+    "IsFunctionScope": true,
+    "RequiresLocalVariableMirroring": false,
+    "moduleLocals": [
+      "json",
+      "render",
+      "\u003Cwith_manager:0\u003E",
+      "\u003Cwith_value:1\u003E",
+      "source",
+      "records",
+      "append_line",
+      "lines",
+      "record",
+      "written",
+      "\u003Cwith_manager:2\u003E",
+      "\u003Cwith_value:3\u003E",
+      "target"
+    ],
+    "moduleClosures": [],
+    "globalReads": []
+  },
+  {
+    "workload": "scripts.numeric-squared-error.floating.large",
+    "function": "\u003Cmodule\u003E",
+    "IsFunctionScope": false,
+    "RequiresLocalVariableMirroring": false,
+    "moduleLocals": [
+      "json",
+      "squared_error",
+      "\u003Cwith_manager:0\u003E",
+      "\u003Cwith_value:1\u003E",
+      "source",
+      "data",
+      "count",
+      "planned",
+      "actual",
+      "error",
+      "report",
+      "\u003Cwith_manager:2\u003E",
+      "\u003Cwith_value:3\u003E",
+      "target"
+    ],
+    "moduleClosures": [],
+    "globalReads": []
+  },
+  {
+    "workload": "scripts.numeric-squared-error.floating.large",
+    "function": "\u003Cgenexpr\u003E",
+    "IsFunctionScope": true,
+    "RequiresLocalVariableMirroring": false,
+    "moduleLocals": [
+      "json",
+      "squared_error",
+      "\u003Cwith_manager:0\u003E",
+      "\u003Cwith_value:1\u003E",
+      "source",
+      "data",
+      "count",
+      "planned",
+      "actual",
+      "error",
+      "report",
+      "\u003Cwith_manager:2\u003E",
+      "\u003Cwith_value:3\u003E",
+      "target"
+    ],
+    "moduleClosures": [],
+    "globalReads": [
+      {
+        "name": "squared_error",
+        "Span": {
+          "Start": 286,
+          "Length": 13,
+          "Line": 12,
+          "Column": 13
+        },
+        "moduleSlot": 1
+      },
+      {
+        "name": "data",
+        "Span": {
+          "Start": 300,
+          "Length": 4,
+          "Line": 12,
+          "Column": 27
+        },
+        "moduleSlot": 5
+      },
+      {
+        "name": "data",
+        "Span": {
+          "Start": 324,
+          "Length": 4,
+          "Line": 12,
+          "Column": 51
+        },
+        "moduleSlot": 5
+      }
+    ]
+  },
+  {
+    "workload": "scripts.numeric-squared-error.floating.large",
+    "function": "squared_error",
+    "IsFunctionScope": true,
+    "RequiresLocalVariableMirroring": false,
+    "moduleLocals": [
+      "json",
+      "squared_error",
+      "\u003Cwith_manager:0\u003E",
+      "\u003Cwith_value:1\u003E",
+      "source",
+      "data",
+      "count",
+      "planned",
+      "actual",
+      "error",
+      "report",
+      "\u003Cwith_manager:2\u003E",
+      "\u003Cwith_value:3\u003E",
+      "target"
+    ],
+    "moduleClosures": [],
+    "globalReads": []
+  }
+]
