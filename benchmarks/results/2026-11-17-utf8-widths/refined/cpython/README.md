@@ -1,7 +1,7 @@
 # Complete text normalization against CPython
 
 B900,2026-11-17UTC. Committed **dbdf8262 / frozena95ff2a4**, stock **CPython3.13.16**.
-Full runtime delivery44080812207 is pending independently. Original generator
+[Full runtime delivery44080812207 passes](../delivery/README.md) independently. Original generator
 text script,4096lines/52224B mixed Unicode input; reads, normalizes newlines/tabs/
 trailing spaces, joins, writes and checks exact stdout/files.
 

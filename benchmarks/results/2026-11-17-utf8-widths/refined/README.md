@@ -1,6 +1,6 @@
 # Managed bulk scalar and UTF-16 widths
 
-R483/B899,2026-11-17UTC. Retained, full delivery qualification pending. One
+R483/B899,2026-11-17UTC. Retained; [full delivery passes](delivery/README.md). One
 production file on50b33e17, frozena95ff2a4, compared with qualifiedd8611c85/
 frozen0315de0a. Exact585production/2381build-test inputs and copied32file worker
 hashes archived. Actual5case workers agree with CPython3.13.2 before staging;

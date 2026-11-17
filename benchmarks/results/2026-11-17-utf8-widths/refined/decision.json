@@ -15,9 +15,11 @@
   ],
   "allocation": "Effectively flat,\u22120.006..+0.055%; all accounted peaks/compiled balances unchanged, baselines restored.",
   "uncertainty": "ASCII/dense reference movement7.17/6.77%; denseCPU\u22127.51..+0.72%. Fresh candidate movement3.09%; no precise Unicode gain or causal recovery across collections.",
-  "fullDeliveryPending": true,
+  "fullDeliveryPending": false,
   "CPythonRefreshPending": false,
   "broaderPerformanceObjectiveComplete": false,
   "publicationHeld": true,
-  "CPythonBaseline": "B900,dbdf8262/a95ff2a4 vs3.13.16; originaltext warm1.75\u20131.81,fresh1.66\u20131.67,compile0.94\u20130.96; diagnostic controls retained."
+  "CPythonBaseline": "B900,dbdf8262/a95ff2a4 vs3.13.16; originaltext warm1.75\u20131.81,fresh1.66\u20131.67,compile0.94\u20130.96; diagnostic controls retained.",
+  "qualifiedRun": 44080812207,
+  "qualifiedHead": "dbdf8262f22324058d4168eee9bbaa6d16b7bd41"
 }

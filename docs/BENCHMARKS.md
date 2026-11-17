@@ -20,7 +20,7 @@ and sample IQRs remain visible; exact magnitudes are diagnostic. Controls L/C ar
 the percentage differences between the two Lython/CPython process medians.
 
 Measured **2026-11-17 UTC**: original text normalization uses **dbdf8262 /
-frozena95ff2a4**, stock **CPython3.13.16**, with full runtime qualification pending.
+frozena95ff2a4**, stock **CPython3.13.16**, [fully qualified](../benchmarks/results/2026-11-17-utf8-widths/refined/delivery/README.md).
 Three separated phases103.55s; all measurement gates pass.
 [Text baseline and exact boundaries](../benchmarks/results/2026-11-17-utf8-widths/refined/cpython/README.md).
 The numeric CSV quality report uses **d8611c85 /

@@ -1,0 +1,12 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "ramTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 266166272,
+  "archiveSHA256": "fb7c438a60646765b51f5b5bcb024309039c13ce8bd1b99c87383ad9881bf7bb",
+  "source": "Committeddbdf8262/frozena95ff2a4; R484 JSON-lines record attribution",
+  "performanceComparison": false
+}
