@@ -1,0 +1,11 @@
+{
+  "withdrawnProductionFiles": 7,
+  "retainedPublicCases": 3,
+  "prototypeEachActualWindowsTargetPublic": 157,
+  "independentCPythonPrograms": 6,
+  "unchangedRuntimeEachActualWindowsTargetRetainedCases": 3,
+  "actualFrozenReferenceAndCandidateCatalogChecks": 3,
+  "candidateFullCatalogGoldens": 13,
+  "productionUnchanged": "Qualifieddc480d38/GREEN44022750002; no replay",
+  "publicationHeld": true
+}

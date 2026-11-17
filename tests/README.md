@@ -1,5 +1,10 @@
 # Testing Lython
 
+[Global binding lifetimes](Lokad.Lython.PublicApi.Tests/GlobalBindingPipelineTests.cs)
+cover live data and call-target rebinding between generator pulls. Overlapping
+executions read their own values through real I/O; retained results stay funded
+and cancellation joins cleanup before the allowance returns to baseline.
+
 [Float arithmetic](Lokad.Lython.PublicApi.Tests/FloatArithmeticPipelineTests.cs)
 preserves aliases, IEEE values, compensated sums, mixed protocols and error order
 across helpers and generators. Private values survive real I/O suspension;

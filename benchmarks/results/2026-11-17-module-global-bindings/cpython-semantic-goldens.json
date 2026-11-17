@@ -1,0 +1,41 @@
+{
+  "version": "Python 3.13.2",
+  "rows": [
+    {
+      "case": 0,
+      "success": true,
+      "stdout": "ok\r\n",
+      "source": "def read():return value\nvalue=1.25\nassert read() is value\nprevious=read()\nglobals()['value']=2.5\nassert read()==2.5 and previous==1.25\ndel globals()['value']\ntry:read()\nexcept NameError:pass\nelse:assert False\nvalue=3.75\nassert read() is value\nprint('ok')\n"
+    },
+    {
+      "case": 1,
+      "success": true,
+      "stdout": "ok\r\n",
+      "source": "def measure(value):return len(value)\nassert measure([1,2])==2\nlen=lambda value:7\nassert measure([])==7\ndel len\nassert measure([1])==1\ndef read_dynamic():return dynamic()\nglobals()['dynamic']=lambda:9\nassert read_dynamic()==9\ndel globals()['dynamic']\ntry:read_dynamic()\nexcept NameError:pass\nelse:assert False\nprint('ok')\n"
+    },
+    {
+      "case": 2,
+      "success": true,
+      "stdout": "ok\r\n",
+      "source": "data=[1,2,3]\ndef read(index):return data[index]\nvalues=(read(index) for index in range(3))\nassert next(values)==1\ndata=[4,5,6]\nassert next(values)==5\nread=lambda index:index+10\nassert next(values)==12\nprint('ok')\n"
+    },
+    {
+      "case": 3,
+      "success": true,
+      "stdout": "ok\r\n",
+      "source": "value=10\nclass Box:\n    value=99\n    def read(self):return value\ndef outer(value):\n    def inner():return value\n    return inner\nclosed=outer(7)\nassert Box().read()==10 and closed()==7\nvalue=20\nassert Box().read()==20 and closed()==7\nprint('ok')\n"
+    },
+    {
+      "case": 4,
+      "success": true,
+      "stdout": "ok\r\n",
+      "source": "value=1.5\ndef read(first=value):return first,value\ndef update():\n    global value\n    value+=0.5\n    return value\nassert update()==2.0\nfirst,current=read()\nassert first==1.5 and current is value\ndef outer():\n    def inner():return value\n    return inner\nnested=outer()\nassert nested() is value\nvalue=2.5\nassert nested()==2.5\nprint('ok')\n"
+    },
+    {
+      "case": 5,
+      "success": true,
+      "stdout": "ok\r\n",
+      "source": "class Stop:\n    def __call__(self):raise ValueError('current')\ntarget=lambda:1\ndef read():return target()\nassert read()==1\ntarget=Stop()\ntry:read()\nexcept ValueError as error:assert str(error)=='current'\nelse:assert False\ndel target\ntry:read()\nexcept NameError:pass\nelse:assert False\nprint('ok')\n"
+    }
+  ]
+}

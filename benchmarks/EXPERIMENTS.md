@@ -9023,3 +9023,14 @@ runtime prototype or repeated capture. Next sourcegate assesses immutable global
 binding facts instead of repeated module name-map probes; semantics/ownership/
 compile costs must qualify before retention. All gates/join/RAM-archive verified;
 full44022750002continues independently,publicationheld.
+
+[R473/B883–B884 module binding facts](results/2026-11-17-module-global-bindings/README.md):
+withdraw46b7f3de after one bounded confirmation. Warm integer−5.26..−3.41%withCPU
+confirmed; floating warm favorable/moving reference, but fresh confirmation elapsed
+−1.34..+3.62%/widerCPU+0.42..+5.19%. Runtime allocation/peaks flat; extra phase/
+metadata not justified for run-once priority. All7production edits removed,3useful
+external cases retained/passing each actual target; no dormant compiler hooks or
+permanent ban. First/confirmation/missing-protocol staging failure and exact
+sources/cores preserved, all users joined/RAM removed. Source remains qualifiedDC;
+no unchanged full qualification/CPython refresh. Continue coherent input-transport
+assessment; no claimed completion or publication.

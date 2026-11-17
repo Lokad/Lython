@@ -1,0 +1,84 @@
+{
+  "complete": true,
+  "elapsedSeconds": 96.01935051381588,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "archivalOnlyRecovery": null,
+  "rows": [
+    {
+      "case": "scripts.numeric-squared-error.floating.large",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "candidate": 1.8676347131782947,
+        "reference": 1.8282862348484847,
+        "candidate-control": 1.89450466796875,
+        "reference-control": 1.893044027559055
+      },
+      "cpuMilliseconds": {
+        "candidate": 1.9767441860465118,
+        "reference": 1.893939393939394,
+        "candidate-control": 1.9921875,
+        "reference-control": 1.968503937007874
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.8989980686012885,
+        "reference": 0.21865484120801973,
+        "candidate-control": 1.5162068407990748,
+        "reference-control": 0.2532872195719539
+      },
+      "elapsedChangePercent": [
+        -1.3422463508956928,
+        0.07715829047982847,
+        2.1522055780872185,
+        3.621885449777662
+      ],
+      "cpuChangePercent": [
+        0.41860465116279055,
+        1.2031249999999938,
+        4.3720930232558075,
+        5.187499999999989
+      ],
+      "referenceSpreadPercent": 3.541994217111033,
+      "candidateSpreadPercent": 1.4387157510436621
+    },
+    {
+      "case": "scripts.numeric-squared-error.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 1.6261407671232877,
+        "reference": 1.6835375882352939,
+        "candidate-control": 1.61224690397351,
+        "reference-control": 1.7017360842105262
+      },
+      "cpuMilliseconds": {
+        "candidate": 1.678082191780822,
+        "reference": 1.7301038062283738,
+        "candidate-control": 1.6887417218543048,
+        "reference-control": 1.7543859649122808
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.4522723841090885,
+        "reference": 0.3508019300674972,
+        "candidate-control": 0.35106018437331143,
+        "reference-control": 0.7804354036104284
+      },
+      "elapsedChangePercent": [
+        -5.258699105421649,
+        -4.442246820094253,
+        -4.234576332596873,
+        -3.4092984625410327
+      ],
+      "cpuChangePercent": [
+        -4.349315068493153,
+        -3.741721854304636,
+        -3.006849315068494,
+        -2.390728476821191
+      ],
+      "referenceSpreadPercent": 1.080967606687544,
+      "candidateSpreadPercent": 0.8617701864109817
+    }
+  ],
+  "retentionDecisionPending": false,
+  "CPythonRefreshed": false,
+  "decision": "Withdraw this shape: warm benefits exist, but compile-once/run-once elapsed remains inconclusive with adverse wider CPU and flat allocation. Added compiler pass/metadata/guard not justified for current priority. No permanent ban or fixed-percentage veto."
+}
