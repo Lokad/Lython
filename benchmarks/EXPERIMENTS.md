@@ -9104,3 +9104,6 @@ warm0.89–0.92×,fresh0.92–0.95×with2.98%Lython fresh control movement. Full
 delivery44050323147passes independently; ratio is not attributed to the source
 change or generalized to other workloads. All measurement gates/users joined/RAM
 removed/archives verified. Exact controls/procedures preserved, publication held.
+
+
+R479/B892: [existing instruction operand for live module bindings](results/2026-11-17-instruction-global-slots/README.md), private prototype. No new code-object fields/maps; compile-only fixup replaces per-read discovery. First 193.34s pair: floating warm −0.86..+5.46% with 4.88% candidate control movement; fresh +2.00..+3.12%, wider CPU +1.81..+3.27%. CSV −2.46..−1.95%; text near flat; allocation/peak unchanged. Focused actual11/10 and all13 candidate goldens pass. Original staging failure and every adverse observation retained. One unchanged-image floating confirmation justified; no promotion or CPU gain claim. Broader performance work/publication hold continue.

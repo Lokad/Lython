@@ -1,0 +1,14 @@
+{
+  "eachActualWindowsTarget": {
+    "publicFocused": 226,
+    "internalFocused": 65
+  },
+  "newArchitectureOnlyTests": 0,
+  "candidatePriorCatalogGoldens": 13,
+  "actualFrozenBothCatalogGoldens": 3,
+  "productionFilesChanged": 8,
+  "copiedWorkerImageFiles": 32,
+  "sharedBudgetBaselineRestored": true,
+  "fullDelivery": "Not promoted; focused prototype checks only.",
+  "publicationHeld": true
+}
