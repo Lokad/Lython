@@ -100,6 +100,11 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
                 {
                     ExecutableOpCode.GetIter => inputStart,
                     ExecutableOpCode.StartFormattedString => resultSlot,
+                    // A directly consumed/forwarded call can return a private
+                    // iteration loan. Cancellation before Return/GetIter must
+                    // retire it in the same storage cleanup as other wrappers.
+                    ExecutableOpCode.Call when calls[instruction.CallSiteIndex].ConsumedByIteration
+                        || calls[instruction.CallSiteIndex].ReturnedDirectly => resultSlot,
                     // Conservatively include every duplicate, without another
                     // value-liveness analysis or runtime resource registry.
                     ExecutableOpCode.Dup => resultSlot + 1,

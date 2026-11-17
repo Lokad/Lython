@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Retire private iteration loans returned by helper calls when cancellation
+  interrupts publication. Native and array-backed cleanup share the compiler's
+  conservative owned-slot bound.
+
 - Pass default JSON scalar values directly into iterative construction, removing
   completed-task repackaging while preserving parse hooks, offsets and ownership.
 

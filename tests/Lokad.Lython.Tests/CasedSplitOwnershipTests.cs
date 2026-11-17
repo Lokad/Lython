@@ -153,8 +153,10 @@ public sealed class CasedSplitOwnershipTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
-    [Fact]
-    public void CancelledHelperReturnRelinquishesItsPreparedRangeLoan()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CancelledHelperReturnRelinquishesItsPreparedRangeLoan(bool native)
     {
         var budget = new LythonMemoryBudget(1024 * 1024);
         using (var owner = budget.CreateScope())
@@ -176,18 +178,41 @@ public sealed class CasedSplitOwnershipTests
             values[source].Object = cursor;
             // Model interruption after the real fused kernel has completed but
             // before Return publishes its private value, without a timer race.
-            var execution = new LythonRuntime.NativeExecution(function, values, true, default)
-            { Index = index, LiveExtent = source + 1 };
+            var framedStorage = default(LythonRuntime.ExecutableValueStorage);
+            if (!native)
+            {
+                framedStorage = new(values.Length, code.FirstTemporarySlot, code.LastOwnedTemporarySlot,
+                    context, span, 0, values, function);
+                framedStorage.RestoreNativeExtent(source + 1);
+            }
             context.State.CloseResources();
             var active = budget.ReservedBytes;
             cancellation.Cancel();
-            try
+            if (native)
             {
-                try { execution.Run(span, out _); Assert.Fail("Cancelled return completed."); }
-                catch (LythonRuntimeException error)
-                { Assert.Equal(LythonFailureReason.Cancelled, error.Attribution?.Reason); }
+                var execution = new LythonRuntime.NativeExecution(function, values, true, default)
+                { Index = index, LiveExtent = source + 1 };
+                try
+                {
+                    try { execution.Run(span, out _); Assert.Fail("Cancelled return completed."); }
+                    catch (LythonRuntimeException error)
+                    { Assert.Equal(LythonFailureReason.Cancelled, error.Attribution?.Reason); }
+                }
+                finally { execution.Dispose(); }
             }
-            finally { execution.Dispose(); }
+            else
+            {
+                try
+                {
+                    var error = Assert.Throws<LythonRuntimeException>(() => context.CheckExecution(span));
+                    Assert.Equal(LythonFailureReason.Cancelled, error.Attribution?.Reason);
+                }
+                finally
+                {
+                    try { framedStorage.RetireTo(code.FirstTemporarySlot); }
+                    finally { framedStorage.ReleaseStorage(); }
+                }
+            }
             Assert.True(budget.ReservedBytes < active);
             var ended = budget.ReservedBytes;
             cursor.Dispose();

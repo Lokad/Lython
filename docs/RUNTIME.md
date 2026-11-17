@@ -833,7 +833,10 @@ definition-owned record-key cache and recheck protocol eligibility after admissi
 Read-only lexical misses leave unused
 namespace dictionaries unmaterialized; explicit namespace consumers retain the
 same stable dictionary. Arrays do not
-grow. Temporary retirement never clears the local prefix. Terminal cleanup refunds private working storage;
+grow. Temporary retirement never clears the local prefix. The compiler's owned-slot
+bound includes private iteration loans from forwarded calls, even without a
+`GetIter` in the callee. Native and array-backed cleanup use that bound when
+publication is interrupted. Terminal cleanup refunds private working storage;
 escaping cells first acquire retained ownership. Reused bound locals are charged
 once. Generators keep their existing retained metadata owner and admit their
 workspace, including local-cell capacity, before first advancement. These conservative estimates can reject

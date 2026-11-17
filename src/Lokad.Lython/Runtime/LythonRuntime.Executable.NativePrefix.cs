@@ -496,18 +496,7 @@ internal sealed partial class LythonRuntime
                     finally { _scope.LeaveInterpreterFrame(); }
                 }
             }
-            finally { DisposeValues(); }
-        }
-
-        private void DisposeValues()
-        {
-            // A directly returned fused call can produce a private cursor even
-            // without a GetIter slot in this function. Cancellation before Return
-            // must retire that loan too, before the caller can own the result.
-            for (var i = LiveExtent - 1; i >= Code.FirstTemporarySlot; i--)
-                if (Values[i].Reference is ExecutableTemporaryValue owned)
-                { Values[i].Object = null!; owned.Dispose(); }
-            LiveExtent = Code.FirstTemporarySlot;
+            finally { Trim(Code.FirstTemporarySlot); }
         }
     }
 
