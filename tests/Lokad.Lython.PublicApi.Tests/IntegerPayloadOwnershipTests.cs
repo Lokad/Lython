@@ -43,8 +43,13 @@ using         var result = await compiledAdmission2.RunAsync(new MockLythonHost(
         using var compiledAdmission3 = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
 using         var result = compiledAdmission3.Run(new MockLythonHost(),new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(8192) });
         AssertError(result, "MemoryError", "shared memory budget exceeded");
-        // Digit-scale preflight denies before the parse allocates the limbs.
-        Assert.True(result.PeakExecutionMemoryBytes < 4096, $"peak was {result.PeakExecutionMemoryBytes}");
+        // Refusal must identify the digit-scale preflight; unrelated admitted
+        // invocation storage is not a fixed-size prerequisite of JSON parsing.
+        Assert.NotNull(result.FailureAttribution);
+        var attribution = result.FailureAttribution.Value;
+        Assert.Equal(LythonFailureReason.SharedMemoryAllowance, attribution.Reason);
+        Assert.True(attribution.Requested is >= 10001);
+        Assert.InRange(result.PeakExecutionMemoryBytes, 0, 8192);
     }
 
     [Fact]

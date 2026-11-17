@@ -31,15 +31,16 @@ reader, kept = acquire()
 with open('/checkpoint', 'rb') as checkpoint:
     assert checkpoint.read(1) == b'g'
 print('gate')
-candidate = 'y' * 16000
+candidate = 'y' * 32000
 reader.close()
 return len(candidate)
 """, budget);
         Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
-        // The original cap refuses conservatively, even after guest withdrawal.
+        // Admit the first retained payload and call working storage, then refuse
+        // the larger second payload even after guest reference withdrawal.
         // A funded run separately preserves the handle and alias semantics.
-        foreach (var cap in new[] { 28000L, 120000L })
+        foreach (var cap in new[] { 40000L, 120000L })
         {
             var delayed = asynchronous ? new DelayedLythonHost() : null;
             var mock = asynchronous ? null : new MockLythonHost();
@@ -51,7 +52,7 @@ return len(candidate)
             if (delayed is not null) Assert.True(delayed.CompletedAsynchronously > 0);
             Assert.Equal("gate\n", result.StandardOutput);
             Assert.InRange(result.PeakExecutionMemoryBytes, 16000, cap);
-            if (cap == 28000)
+            if (cap == 40000)
             {
                 Assert.False(result.Success);
                 Assert.Equal("MemoryError", result.Failure?.ExceptionType);
@@ -60,7 +61,7 @@ return len(candidate)
             else
             {
                 Assert.True(result.Success, result.Failure?.Message);
-                Assert.Equal(new BigInteger(16000), result.ReturnValue);
+                Assert.Equal(new BigInteger(32000), result.ReturnValue);
             }
             result.Dispose();
             Assert.Equal(baseline, budget.ReservedBytes);

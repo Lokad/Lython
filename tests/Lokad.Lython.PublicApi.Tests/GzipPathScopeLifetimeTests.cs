@@ -31,7 +31,7 @@ file, kept = acquire()
 with open('/checkpoint', 'rb') as checkpoint:
     assert checkpoint.read(1) == b'g'
 print('gate')
-candidate = 'y' * 16000
+candidate = 'y' * 32000
 if '{{mode}}'.startswith('r'):
     expected = 'alpha\nbeta\n' if '{{mode}}'.endswith('t') else b'alpha\nbeta\n'
     assert file.read() == expected
@@ -44,12 +44,13 @@ return len(candidate)
         Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Message)));
         var member = Convert.FromHexString("1F8B08007B00000002FF4BCC29C848E44A4A2D49E402006E50306E0B000000");
         var baseline = budget.ReservedBytes;
-        // The original cap refuses conservatively, even after guest withdrawal.
+        // Admit the first retained payload and call working storage, then refuse
+        // the larger second payload even after guest reference withdrawal.
         // A funded run separately preserves the handle and alias semantics.
         // Native compressor capacity is now shared with GzipFile. Keep the
         // small failing live-data fixture, with that known construction capacity
         // funded independently; neither retained alias assertion is weakened.
-        var low = 28000L + (mode.StartsWith('r') ? 0 : 512 * 1024);
+        var low = 40000L + (mode.StartsWith('r') ? 0 : 512 * 1024);
         foreach (var cap in new[] { low, 2L * 1024 * 1024 })
         {
             var delayed = asynchronous ? new DelayedLythonHost() : null;
@@ -79,7 +80,7 @@ return len(candidate)
             else
             {
                 Assert.True(result.Success, result.Failure?.Message);
-                Assert.Equal(new BigInteger(16000), result.ReturnValue);
+                Assert.Equal(new BigInteger(32000), result.ReturnValue);
                 var bytes = delayed?.ReadBytes("/data.gz") ?? mock!.ReadBytes("/data.gz");
                 using var compressed = new MemoryStream(bytes);
                 using var gzip = new GZipStream(compressed, CompressionMode.Decompress);

@@ -80,7 +80,7 @@ public sealed class CsvWriterowCallBoundaryTests
             var (context, writer, argument, sink) = Prepare(owner, "row", history);
             argument.Value = new PyList([BigInteger.One << 65536], context.MemoryGovernor, Span);
             var committed = context.MemoryGovernor.CurrentCommittedBytes;
-            Assert.True(budget.TryReserve(limit - budget.ReservedBytes - 512, out var padding));
+            Assert.True(budget.TryReserve(limit - budget.ReservedBytes - 4096, out var padding));
             using (padding)
             {
                 var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Run(Compile("return writer.writerow(argument())"), context, asynchronous));

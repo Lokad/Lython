@@ -72,7 +72,7 @@ public sealed class BinaryFileWriteCallBoundaryTests
             var code = Compile(exposed);
             // Admit private frame metadata, leaving less than the first write
             // buffer so refusal still exercises publication, not frame entry.
-            Assert.True(budget.TryReserve(limit - budget.ReservedBytes - 1024, out var padding));
+            Assert.True(budget.TryReserve(limit - budget.ReservedBytes - 4096, out var padding));
             try
             {
                 using (padding)

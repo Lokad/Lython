@@ -98,3 +98,22 @@ intentional compatibility tradeoff. Publication and tagging remain held.
 
 [Confirmation](confirmation-summary.json), [raw](confirmation/observations.tgz),
 [decision](decision.json), [procedures and original guard](confirmation-procedures-and-checks.tar.xz).
+
+## First delivery failure and correction
+
+[CI44067803913 fails](delivery-first-failure/README.md): caught binding errors can
+leave partial parameter values and poison later valid calls. The corrected code
+clears the disjoint parameter window before binding and after failure. Existing
+default-mutation/partial-binding cases reproduce and verify it; two CPython controls
+agree. Tight-budget fixtures now reach their intended later refusal after admitting
+the working window, preserving effects, aliases, terminal failure and cleanup.
+
+Actual .NET11/10 focused corrections pass 124 public/88 internal cases each.
+Corrected frozen core **27ed69a6** has a fresh nonincremental build, copied full
+image, exact production snapshot and actual-worker three-case goldens/allocation
+checks. Source before this correction remains fully preserved as historical
+prototype evidence; its timing is not a measurement of the corrected HEAD.
+Corrected-source comparison and a fresh combined delivery remain pending.
+
+[Corrected identity](corrected/identity.json), [sources](corrected/candidate-sources.tar.xz),
+[correction procedures and failures](delivery-correction-procedures.tar.xz).

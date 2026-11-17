@@ -20,7 +20,7 @@ public sealed class RootLifetimeContainmentTests
         // Each first payload has lost a direct namespace binding by the time
         // allocating_rhs runs, or lives in a caller/suspended frame. It must
         // remain funded even while genuine host I/O suspends the current call.
-        var payloadBytes = root == "bound-buffer" ? 32000 : 16000;
+        const int payloadBytes = 32000;
         var prefix = """
 def allocating_rhs():
     with open('/gate', 'rb') as gate:
@@ -107,7 +107,7 @@ return next(cursor) + len(candidate)
         ILythonHost host = (ILythonHost?)delayed ?? mock!;
         if (delayed is not null) delayed.SeedBytes("/gate", [(byte)'g']);
         else mock!.SeedBytes("/gate", [(byte)'g']);
-        var cap = constrained ? (root == "bound-buffer" ? 44000L : 28000L) : 120000L;
+        var cap = constrained ? (root == "bound-buffer" ? 44000L : 40000L) : 120000L;
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) };
         LythonExecutionResult result;
         if (delayed is not null)
@@ -135,7 +135,8 @@ return next(cursor) + len(candidate)
         else
         {
             Assert.True(result.Success, result.Failure?.Message);
-            var expected = root is "active-exception" or "native-accumulator" ? 16000 : 16000 + payloadBytes;
+            var expected = root == "active-exception" ? payloadBytes
+                : root == "native-accumulator" ? 16000 : 16000 + payloadBytes;
             Assert.Equal(new BigInteger(expected), result.ReturnValue);
         }
     }

@@ -87,8 +87,16 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         object? receiver, LythonRuntime.ExecutionContext context, LythonSourceSpan span, bool borrow)
     {
         if (borrow) arguments.CopyTo(values);
-        else LythonRuntime.BindFunctionArgumentsInto(values[..BindingPlan.ParameterCount],
-            [], span, BindingPlan, context, receiver: receiver, callSite: call, operands: arguments);
+        else
+        {
+            // A caught binding error can leave a partial prefix. The caller's
+            // window is reusable storage, not a fresh default-initialized buffer.
+            var parameters = values[..BindingPlan.ParameterCount];
+            parameters.Clear();
+            try { LythonRuntime.BindFunctionArgumentsInto(parameters, [], span, BindingPlan, context,
+                receiver: receiver, callSite: call, operands: arguments); }
+            catch { parameters.Clear(); throw; }
+        }
     }
 
     internal override bool TryStartBoundInvocation(in BoundFunctionArguments bound, LythonSourceSpan span,

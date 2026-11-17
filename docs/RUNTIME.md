@@ -556,7 +556,8 @@ The sixteen-slot inline capacity is an optimization threshold, not a Python
 argument or expression limit. Caller and definition owners keep all inputs funded.
 Native instruction eligibility is independent of that private-buffer capacity.
 Already-bound calls can run eligible bodies over their admitted full locals array.
-Borrowed working slots initialize unassigned locals before entry and clear after
+Disjoint parameter windows clear before binding and after a binding failure.
+Borrowed working slots initialize unassigned locals before body entry and clear after
 their users and cleanup end. No per-call fixed stack buffer is allocated. The
 dead tail clears before transfer; surviving values move into the existing owned
 frame, and owned arrays clear on return.
