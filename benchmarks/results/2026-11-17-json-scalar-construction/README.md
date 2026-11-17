@@ -1,6 +1,6 @@
 # Direct JSON scalar construction
 
-R492/B910,2026-11-17 UTC. **Private prototype; retention undecided.** Fully
+R492/B910,2026-11-17 UTC. **Retained simplification; full changed-source delivery pending.** Fully
 qualified runtime557381fe/frozend739132f versus84173568 on6aa0fcd2. Two production
 files: remove default ValueTask<object> then ValueTask<(object,int)> transport into
 iterative construction, and two displaced conversion/dispatch helpers. One parser,
@@ -44,3 +44,35 @@ mutation or measurement, to be repaired using committed evidence replicas only.
 [prototype](prototype.patch.gz),[identity](identity.json),[checks](checks.json),
 [raw](first/observations.tgz),[procedures](procedures-and-checks.tar.xz).
 Broader execution/operand work continues; publication remains held.
+
+## B911 confirmation and retention
+
+Same32file images/five-case catalog; eight-second rotated warmups/five rounds,
+four jobs188.23seconds. No source tuning, forced GC or new allocation measurements.
+
+| Complete script | Phase | Elapsed change | Wider CPU change | Reference/candidate process spread |
+| --- | --- | ---: | ---: | ---: |
+| Floating numerical JSON report | Warm | −5.50..+8.49% | −4.21..+7.82% | **7.45/6.85**% |
+| Same | Compile and execute once | **−6.19..−3.62%** | **−6.10..−4.44%** | 2.22/0.51% |
+| JSON-lines helper aggregation | Warm | **+1.28..+1.49%** | **+0.71..+2.00%** | 0.10/0.10% |
+| Unchanged positional-call control | Warm | −2.03..+0.28% | −2.02..−0.40% | 2.16/0.19% |
+
+Retain the simpler shared scalar path: no extra parser, cache, policy or owner,
+with a favorable floating fresh observation. Accept the stable helper regression
+as explicit debt; warm floating remains inconclusive despite longer warmup.
+Allocation effectivelyflat; no broad/substantial CPU gain established. This is a
+design tradeoff, not a percentage veto or uncertainty relabeled as failure.
+Reassess debt with later representative work; no further unchanged campaign is
+needed for this decision. Larger execution/operand improvements remain active.
+
+Confirmation staging first refused below the254MiB floor before mutation/work;
+repair used fresh exact committed first-pair archive and raw-JSON replica proofs,
+including all inode aliases. Earlier preparation named already removed RAM files
+and failed read-only. Original failed conditions remain in procedures. Latest
+qualifiedd739/candidate images, primary catalog/toolchains/canonical evidence
+preserved. Both collections pass all gates/users joined/SHAarchive before RAM
+removal; terminal states cached. Publication remains held.
+
+[Confirmation](confirmation/summary.json),[raw](confirmation/observations.tgz),
+[decision/debt](decision.json). Full platform/stress/installed-package delivery is
+pending; no unchanged qualification was repeated.

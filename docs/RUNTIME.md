@@ -1592,6 +1592,9 @@ validated their grammar, preserving binary64 rounding and signed zero. Conversio
 is atomic; token scanning and surrounding operations check cooperative cancellation.
 
 Arrays, dictionaries and pairs-hook output share one iterative construction loop.
+Default scalar values pass directly into that loop; only callbacks that suspend
+create pending scalar completion work. Document and raw-decode async boundaries
+retain their existing behavior.
 Decoding has no separate document-depth ceiling: nested containers use admitted
 frame capacity rather than CLR recursion. Encoding, guest callbacks and public
 projection retain their own managed nesting checks.

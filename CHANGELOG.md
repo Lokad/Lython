@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Pass default JSON scalar values directly into iterative construction, removing
+  completed-task repackaging while preserving parse hooks, offsets and ownership.
+
 - Use managed scoped locking for the standalone shared allowance, preserving
   reservation balances, concurrent admission and deterministic scope cleanup.
 

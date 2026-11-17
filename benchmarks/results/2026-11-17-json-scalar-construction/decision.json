@@ -1,0 +1,21 @@
+{
+  "retained": true,
+  "mechanism": "Direct scalar parsing into iterative JSON construction; two displaced helpers/default ValueTask repackaging removed. Actual hooks retain real async completion.",
+  "allocationReductionEstablished": false,
+  "accountedPeaksUnchanged": true,
+  "sharedBudgetBaselinesRestored": true,
+  "firstWarmFloatingReferenceSpreadPercent": 9.309434999698919,
+  "confirmedWarmFloatingUncertain": true,
+  "confirmedFloatingFreshElapsedChangePercent": [
+    -6.192300166341069,
+    -3.620936812328679
+  ],
+  "confirmedHelperWarmRegressionPercent": [
+    1.2787685320766462,
+    1.4892642188382155
+  ],
+  "regressionDebt": "Accept confirmed helper+1.3..1.5% for simpler shared scalar path and favorable floating fresh observation. Warm floating magnitude unresolved. Reassess if next representative redesign/checkpoint reproduces/materially increases adversity; no claim of broad or substantial CPU gain.",
+  "fullDeliveryPending": true,
+  "publicationHeld": true,
+  "broaderPerformanceObjectiveActive": true
+}

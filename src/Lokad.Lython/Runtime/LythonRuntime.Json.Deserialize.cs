@@ -83,72 +83,90 @@ internal sealed partial class LythonRuntime
         // the given index.
         private ValueTask<(object Value, int End)> ReadJsonValueExactAsync(PyString input, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, int position, bool asynchronous)
         {
-            context.CheckExecution(span);
-            var bytes = input.Utf8Bytes;
-            if (position >= bytes.Length)
+            var bytes = input.Utf8Span;
+            if (position < bytes.Length && bytes[position] is (byte)'{' or (byte)'[')
             {
-                throw CreateJsonExpectingError(input, bytes.Length, JsonIncompleteExpectation.Value, span, context);
+                return ReadJsonContainerAsync(input, options, context, span, position, bytes[position] == (byte)'{', asynchronous);
             }
 
-            // Strings and true/false/null finish under decoder admission.
-            // Preserve scalar storage/prefix rules without an async token helper.
-            var first = bytes.Span[position];
-            if (first is (byte)'"' or (byte)'t' or (byte)'f' or (byte)'n')
-            {
-                if (first == (byte)'"')
-                {
-                    var (value, end) = ReadJsonString(input, (bool)options.Strict, position, context, span);
-                    return new((value, end));
-                }
-                if (TryMatchJsonLiteral(bytes.Span, position, "true", out var trueEnd))
-                {
-                    return new(((object)true, trueEnd));
-                }
-
-                if (TryMatchJsonLiteral(bytes.Span, position, "false", out var falseEnd))
-                {
-                    return new(((object)false, falseEnd));
-                }
-
-                if (TryMatchJsonLiteral(bytes.Span, position, "null", out var nullEnd))
-                {
-                    return new((PyNone.Instance, nullEnd));
-                }
-
-                throw CreateJsonExpectingError(input, position, JsonIncompleteExpectation.Value, span, context);
-            }
-
-            // The child parser owns its storage and suspended users. No generic
-            // token state is needed around an unchanged container result.
-            if (first is (byte)'{' or (byte)'[')
-            {
-                return ReadJsonContainerAsync(input, options, context, span, position, first == (byte)'{', asynchronous);
-            }
-
-            return ReadJsonNumberOrConstantAsync(input, options, context, span, position, asynchronous);
+            return TryReadJsonScalar(input, options, context, span, position, asynchronous, out var result, out var pending)
+                ? new(result) : pending;
         }
 
-        private ValueTask<(object Value, int End)> ReadJsonNumberOrConstantAsync(PyString input, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, int position, bool asynchronous)
+        // Default scalar values go straight into construction. Only an actual
+        // suspended callback needs a task carrying the value and its end offset.
+        private static bool TryReadJsonScalar(PyString input, JsonLoadOptions options,
+            ExecutionContext context, LythonSourceSpan span, int position, bool asynchronous,
+            out (object Value, int End) result, out ValueTask<(object Value, int End)> pending)
         {
-            var bytes = input.Utf8Bytes;
-            if (TryMatchJsonConstant(bytes.Span, position, out var constant, out var constantEnd))
+            context.CheckExecution(span);
+            var bytes = input.Utf8Span;
+            pending = default;
+            if (position >= bytes.Length)
+                throw CreateJsonExpectingError(input, bytes.Length, JsonIncompleteExpectation.Value, span, context);
+
+            var first = bytes[position];
+            if (first == (byte)'"')
             {
-                var converted = ConvertJsonConstantAsync(constant, options, context, span, asynchronous);
-                return converted.IsCompletedSuccessfully
-                    ? new((converted.Result, constantEnd))
-                    : CompleteJsonScalarAsync(converted, constantEnd);
+                var (value, stringEnd) = ReadJsonString(input, (bool)options.Strict, position, context, span);
+                result = (value, stringEnd);
+                return true;
+            }
+            if (first is (byte)'t' or (byte)'f' or (byte)'n')
+            {
+                if (TryMatchJsonLiteral(bytes, position, "true", out var literalEnd))
+                    result = (true, literalEnd);
+                else if (TryMatchJsonLiteral(bytes, position, "false", out literalEnd))
+                    result = (false, literalEnd);
+                else if (TryMatchJsonLiteral(bytes, position, "null", out literalEnd))
+                    result = (PyNone.Instance, literalEnd);
+                else throw CreateJsonExpectingError(input, position, JsonIncompleteExpectation.Value, span, context);
+                return true;
             }
 
-            // The bounded decoder owns admission through completed/pending hooks.
-            // Numbers retain Python's prefix grammar and token storage ownership.
-            if (TryMatchJsonNumber(bytes.Span, position, context, span, out var numberEnd))
+            object? callback;
+            PyString argument;
+            int end;
+            if (TryMatchJsonConstant(bytes, position, out var constant, out end))
             {
-                var converted = ConvertJsonNumberTextAsync(bytes, position, numberEnd, options, context, span, asynchronous);
-                return converted.IsCompletedSuccessfully
-                    ? new((converted.Result, numberEnd))
-                    : CompleteJsonScalarAsync(converted, numberEnd);
+                callback = options.ParseConstant;
+                if (callback is null)
+                {
+                    result = (constant switch
+                    {
+                        "NaN" => PythonNaN,
+                        "Infinity" => double.PositiveInfinity,
+                        _ => double.NegativeInfinity,
+                    }, end);
+                    return true;
+                }
+                argument = CreateString(constant, context, span);
             }
-            throw CreateJsonExpectingError(input, position, JsonIncompleteExpectation.Value, span, context);
+            else if (TryMatchJsonNumber(bytes, position, context, span, out end))
+            {
+                var raw = bytes.Slice(position, end - position);
+                var isFloat = raw.IndexOfAny((byte)'.', (byte)'e', (byte)'E') >= 0;
+                callback = isFloat ? options.ParseFloat : options.ParseInt;
+                if (callback is null)
+                {
+                    result = (ConvertJsonNumberText(raw, isFloat, context, span), end);
+                    return true;
+                }
+                // Callback text remains execution/result-owned even on failure:
+                // user code may retain it before returning, suspending or raising.
+                argument = CreateUtf8String(input.Utf8Bytes.Slice(position, end - position), context, span);
+            }
+            else throw CreateJsonExpectingError(input, position, JsonIncompleteExpectation.Value, span, context);
+
+            var converted = InvokeJsonCallbackCoreAsync(callback, argument, context, span, asynchronous);
+            if (converted.IsCompleted)
+            {
+                result = (converted.GetAwaiter().GetResult(), end);
+                return true;
+            }
+            result = default;
+            pending = CompleteJsonScalarAsync(converted, end);
+            return false;
         }
 
         private static async ValueTask<(object Value, int End)> CompleteJsonScalarAsync(
@@ -479,25 +497,6 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
-        // Converts an already-matched constant literal: the parse_constant hook
-        // receives the literal text, otherwise the IEEE double. Shared by
-        // whole-text and nested positions.
-        private static ValueTask<object> ConvertJsonConstantAsync(string literal, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
-        {
-            if (options.ParseConstant is not null)
-            {
-                var constantText = CreateString(literal, context, span);
-                return InvokeJsonCallbackCoreAsync(options.ParseConstant, constantText, context, span, asynchronous);
-            }
-
-            return new(literal switch
-            {
-                "NaN" => PythonNaN,
-                "Infinity" => double.PositiveInfinity,
-                _ => double.NegativeInfinity,
-            });
-        }
-
         private static int SkipJsonWhitespace(ReadOnlySpan<byte> bytes, int position, ExecutionContext context, LythonSourceSpan span)
         {
             while (position < bytes.Length && bytes[position] is (byte)' ' or (byte)'\t' or (byte)'\n' or (byte)'\r')
@@ -509,30 +508,19 @@ internal sealed partial class LythonRuntime
             return position;
         }
 
-        // Converts an already-matched NUMBER_RE token: hooks receive the raw
-        // token text, otherwise defaults parse invariant UTF-8. Large integers
-        // retain their existing text fallback. Shared by whole-text/nested values.
-        private static ValueTask<object> ConvertJsonNumberTextAsync(ReadOnlyMemory<byte> bytes, int start, int end, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
+        // Default conversion of a validated native NUMBER_RE token. Hook
+        // dispatch lives at the scalar boundary; this path cannot suspend.
+        private static object ConvertJsonNumberText(ReadOnlySpan<byte> raw, bool isFloat,
+            ExecutionContext context, LythonSourceSpan span)
         {
-            var raw = bytes.Slice(start, end - start);
-            var isFloat = raw.Span.IndexOfAny((byte)'.', (byte)'e', (byte)'E') >= 0;
-            var callback = isFloat ? options.ParseFloat : options.ParseInt;
-            if (callback is not null)
-            {
-                // Fund callback text before invocation. It stays batch-owned
-                // because the callback may retain it even when invocation fails.
-                var text = CreateUtf8String(raw, context, span);
-                return InvokeJsonCallbackCoreAsync(callback, text, context, span, asynchronous);
-            }
-
             if (!isFloat)
             {
                 // A signed Int64 decimal token needs at most 20 ASCII bytes.
                 // Its bounded span parse allocates no limbs; the resulting small
                 // scalar uses the existing execution/container headroom.
-                if (raw.Length <= 20 && long.TryParse(raw.Span, NumberStyles.Integer, CultureInfo.InvariantCulture, out var integer))
+                if (raw.Length <= 20 && long.TryParse(raw, NumberStyles.Integer, CultureInfo.InvariantCulture, out var integer))
                 {
-                    return new(new BigInteger(integer));
+                    return new BigInteger(integer);
                 }
 
                 // Admit large-magnitude construction before any limb/text allocation.
@@ -542,14 +530,14 @@ internal sealed partial class LythonRuntime
                 // Span parsing needs no such lease; callback text already owns
                 // its funding before invocation, including retained aliases.
                 using var numberScratch = context.MemoryGovernor.ReserveTemporary(checked(4L * raw.Length), span);
-                return new(OwnFreshInteger(BigInteger.Parse(Encoding.UTF8.GetString(raw.Span), CultureInfo.InvariantCulture), context.MemoryGovernor, span));
+                return OwnFreshInteger(BigInteger.Parse(Encoding.UTF8.GetString(raw), CultureInfo.InvariantCulture), context.MemoryGovernor, span);
             }
 
             // The prefix lexer has validated the complete native token. A
             // partial parse is an invariant defect, never a parser fallback.
-            if (!Utf8Parser.TryParse(raw.Span, out double floating, out var consumed) || consumed != raw.Length)
+            if (!Utf8Parser.TryParse(raw, out double floating, out var consumed) || consumed != raw.Length)
                 throw new InvalidOperationException("A validated JSON floating-point token did not parse completely.");
-            return new(floating);
+            return floating;
         }
 
         private enum JsonIncompleteExpectation

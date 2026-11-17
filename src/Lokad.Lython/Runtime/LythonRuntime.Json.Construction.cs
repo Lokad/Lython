@@ -116,8 +116,8 @@ internal sealed partial class LythonRuntime
             finally { if (!transferred) ReleaseJsonFrames(ref state); }
         }
 
-        // One construction loop owns both parent and child containers. Scalar
-        // checks/decoders are unchanged; only real callbacks transfer this work.
+        // One construction loop owns both parent and child containers. Default
+        // scalars arrive directly; only real callbacks transfer this work.
         private bool ContinueJsonConstruction(ref JsonDecodeState state,
             out (object Value, int End) result, out ValueTask<(object Value, int End)> pending)
         {
@@ -171,15 +171,13 @@ internal sealed partial class LythonRuntime
                     PushJsonContainer(ref state, position, bytes[position] == (byte)'{');
                     continue;
                 }
-                var child = ReadJsonValueExactAsync(input, options, context, span, position, state.Asynchronous);
-                if (!child.IsCompleted)
+                if (!TryReadJsonScalar(input, options, context, span, position, state.Asynchronous,
+                    out var decoded, out pending))
                 {
                     state.AwaitingContainer = false;
                     result = default;
-                    pending = child;
                     return false;
                 }
-                var decoded = child.GetAwaiter().GetResult();
                 AcceptJsonValue(ref state, decoded.Value, decoded.End);
             }
         }
