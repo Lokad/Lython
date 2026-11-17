@@ -2,6 +2,7 @@ using System.Threading;
 using System.Text;
 using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
+using System.Numerics;
 
 namespace Lokad.Lython.Runtime.Text;
 
@@ -12,6 +13,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
 
     private static readonly UTF8Encoding Utf8 = new(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
     private static readonly PyString[] AsciiCharacters = CreateAsciiCharacters();
+
 
     internal const int InlineUtf8Capacity = 8;
     private const byte WindowStorage = byte.MaxValue;
@@ -198,21 +200,36 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
     {
         var source = Utf8Span;
         var units = 0;
-        // Count both widths without decoding or creating a CLR string. Keep
-        // cancellation ranges on scalar boundaries, deferring at most three bytes.
+        // Valid UTF-8 has one leading byte per scalar; astral leads add a second
+        // UTF-16 unit. Byte counts compose even across scalar boundaries.
         for (var offset = 0; offset < source.Length;)
         {
             if (cancellationToken.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
-            var end = offset + Math.Min(4096, source.Length - offset);
-            while (end < source.Length && (source[end] & 0xC0) == 0x80) end--;
-            var count = 0; // A bounded chunk cannot overflow this subtotal.
-            while (offset < end)
+            var chunk = source.Slice(offset, Math.Min(4096, source.Length - offset));
+            var count = chunk.Length;
+            var index = 0;
+            if (Vector.IsHardwareAccelerated)
             {
-                var width = GetRuneLength(source[offset]);
-                count += utf16 && width == 4 ? 2 : 1;
-                offset += width;
+                for (; index <= chunk.Length - Vector<byte>.Count; index += Vector<byte>.Count)
+                {
+                    var bytes = new Vector<byte>(chunk[index..]);
+                    var continuation = Vector.Equals(bytes & new Vector<byte>(0xC0), new Vector<byte>(0x80));
+                    count -= Vector.Sum(continuation & new Vector<byte>(1));
+                    if (utf16)
+                    {
+                        var astral = Vector.Equals(bytes & new Vector<byte>(0xF8), new Vector<byte>(0xF0));
+                        count += Vector.Sum(astral & new Vector<byte>(1));
+                    }
+                }
+            }
+            for (; index < chunk.Length; index++)
+            {
+                var value = chunk[index];
+                if ((value & 0xC0) == 0x80) count--;
+                else if (utf16 && value >= 0xF0) count++;
             }
             units = checked(units + count);
+            offset += chunk.Length;
         }
         if (cancellationToken.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
         return units;

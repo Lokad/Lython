@@ -1,0 +1,50 @@
+{
+  "boundary": "Complete warm runs including mediated I/O/reset, all output/file checks and result cleanup; compilation/startup/final cache teardown excluded. Process-wide CLR allocation counters, no forced GC. Compilation and first invocation clocks are local diagnostic observations, not a controlled CPU/source timing comparison.",
+  "rows": [
+    {
+      "case": "scripts.text-normalization.large",
+      "referenceBytes": 1518200,
+      "candidateBytes": 1518200,
+      "changePercent": 0.0,
+      "referencePeak": 2328930,
+      "candidatePeak": 2328930,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "case": "scripts.text-normalization.helper-list",
+      "referenceBytes": 1649416,
+      "candidateBytes": 1649422,
+      "changePercent": 0.000363765114430592,
+      "referencePeak": 2983660,
+      "candidatePeak": 2983660,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "case": "scripts.report-render.large",
+      "referenceBytes": 2564110,
+      "candidateBytes": 2563992,
+      "changePercent": -0.004601986654240164,
+      "referencePeak": 3493303,
+      "candidatePeak": 3493303,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "case": "scripts.text-normalization.ascii",
+      "referenceBytes": 1919880,
+      "candidateBytes": 1919768,
+      "changePercent": -0.005833697939450211,
+      "referencePeak": 2833717,
+      "candidatePeak": 2833717,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "case": "scripts.text-normalization.dense",
+      "referenceBytes": 2514298,
+      "candidateBytes": 2515674,
+      "changePercent": 0.05472700531121699,
+      "referencePeak": 3226917,
+      "candidatePeak": 3226917,
+      "sharedBudgetBaselineRestored": true
+    }
+  ]
+}

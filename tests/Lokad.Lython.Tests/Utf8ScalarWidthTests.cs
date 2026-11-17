@@ -32,6 +32,20 @@ public sealed class Utf8ScalarWidthTests
         Assert.Equal(value, text.AsString());
     }
 
+    [Theory]
+    [InlineData("é")]
+    [InlineData("中")]
+    [InlineData("\U0010FFFF")]
+    [InlineData("aé中😀\0")]
+    public void DenseUnicodeWidthsMatchDecodedText(string unit)
+    {
+        var value = string.Concat(Enumerable.Repeat(unit, 4099));
+        var text = PyString.FromString(value);
+        Assert.Equal(value.EnumerateRunes().Count(), text.GetCharacterCount(default, null));
+        Assert.Equal(value.Length, text.GetUtf16CodeUnitCount());
+        Assert.Equal(value, text.AsString());
+    }
+
     [Fact]
     public void CancelledCountingCallerDoesNotPoisonLaterMetadataReuse()
     {

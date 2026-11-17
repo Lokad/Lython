@@ -1,0 +1,22 @@
+{
+  "retain": true,
+  "reason": "Shared managed byte counting removes scalar-width walking/boundary adjustment without per-string state/copies/owners; original text warm/fresh, helper text and report improve with CPU support.",
+  "reference": "Qualifiedd8611c85/frozen0315de0a",
+  "candidate": "One production change on50b33e17/frozena95ff2a4",
+  "removed": [
+    "per-scalar GetRuneLength loop in width counting",
+    "scalar-boundary chunk adjustment",
+    "first prototype SearchValues tables/repeated searches"
+  ],
+  "preserved": [
+    "current cancellation in4KiB chunks and completion",
+    "checked sums, validUTF8 invariant and real indexing users",
+    "projection funding/terminal first refusal, aliases/shared-budget cleanup"
+  ],
+  "allocation": "Effectively flat,\u22120.006..+0.055%; all accounted peaks/compiled balances unchanged, baselines restored.",
+  "uncertainty": "ASCII/dense reference movement7.17/6.77%; denseCPU\u22127.51..+0.72%. Fresh candidate movement3.09%; no precise Unicode gain or causal recovery across collections.",
+  "fullDeliveryPending": true,
+  "CPythonRefreshPending": true,
+  "broaderPerformanceObjectiveComplete": false,
+  "publicationHeld": true
+}
