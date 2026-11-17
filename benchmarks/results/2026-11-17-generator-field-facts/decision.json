@@ -1,0 +1,13 @@
+{
+  "retain": true,
+  "reference": "Qualifiedea8production/cf847936",
+  "candidate": "PrivateR503 on7584/5ae019db",
+  "productionSourceUnchangedSinceMeasurement": true,
+  "reason": "Remove inconsistent generator exclusion, reuse existing private frame/cache ownership, stable floating warm/fresh elapsed and CPU benefit with independent semantic tests.",
+  "warmElapsedImprovementPercent": "9.16-10.03",
+  "freshElapsedImprovementPercent": "11.93-13.56",
+  "allocation": "Essentially flat,+0.12percent floating; peaks flat.",
+  "remainingDebt": "Text elapsed-0.08..+4.00percent/CPU0..+1.63percent with3.28percent candidate spread; positional reference4.67percent spread/maxIQR5.10percent. No universal gain or recovery claimed.",
+  "fullQualification": "Pending coherent delivery; no inherited ea8 qualification",
+  "publicationHeld": true
+}

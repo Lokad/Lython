@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Let generator expressions reuse the existing admitted field-lookup caches.
+  Preserve current values after mutation, suspension and rebinding; cache storage
+  follows its generator frame and can reject tighter allowances earlier.
+
 - Construct string-key dictionary displays with shared immutable record keys and
   final value storage. Remove repeated key operands and per-record key tables;
   preserve duplicate-key identity, mutation, suspended values and cache ownership.

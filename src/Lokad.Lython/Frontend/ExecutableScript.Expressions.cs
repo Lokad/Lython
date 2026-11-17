@@ -170,10 +170,11 @@ internal sealed partial class ExecutableScript
                 case LoweredSubscriptExpression subscript:
                     currentBlock = CompileExpression(subscript.Target, currentBlock);
                     currentBlock = CompileExpression(subscript.Index, currentBlock);
-                    // Function facts survive calls; modules retain invocation
-                    // facts only where a body can repeat within that invocation.
+                    // Functions and retained generators already own lookup
+                    // storage. Generator expressions repeat within that frame;
+                    // modules need facts only where their body can repeat.
                     AddInstruction(currentBlock, ExecutableInstruction.Subscript(subscript.Span,
-                        _parameterLayout is not null && !_generator || _loops.Count != 0 || _comprehensionNames.Count != 0
+                        _parameterLayout is not null || _loops.Count != 0 || _comprehensionNames.Count != 0
                             ? AllocateLookupCache() : -1));
                     return currentBlock;
 

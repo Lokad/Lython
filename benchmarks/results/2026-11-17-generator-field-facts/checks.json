@@ -1,0 +1,70 @@
+[
+  {
+    "kind": "internal",
+    "framework": "net11.0",
+    "command": [
+      "C:\\Users\\JoannesVermorel\\.dotnet11\\dotnet.exe",
+      "test",
+      "tests/Lokad.Lython.Tests/Lokad.Lython.Tests.csproj",
+      "-c",
+      "Release",
+      "-f",
+      "net11.0",
+      "--no-build",
+      "--filter",
+      "(FullyQualifiedName~Executable|FullyQualifiedName~NativeFunctionRefund|FullyQualifiedName~CasedSplitOwnership|FullyQualifiedName~CallablePacketOwnership|FullyQualifiedName~SequenceConstructionOwnership|FullyQualifiedName~FunctionLookupLifetime)&Category!=Stress"
+    ],
+    "exitCode": 0
+  },
+  {
+    "kind": "public",
+    "framework": "net11.0",
+    "command": [
+      "C:\\Users\\JoannesVermorel\\.dotnet11\\dotnet.exe",
+      "test",
+      "tests/Lokad.Lython.PublicApi.Tests/Lokad.Lython.PublicApi.Tests.csproj",
+      "-c",
+      "Release",
+      "-f",
+      "net11.0",
+      "--no-build",
+      "--filter",
+      "(FullyQualifiedName~ContainerDisplayPipeline|FullyQualifiedName~GeneratorRecordLookup|FullyQualifiedName~BufferedGeneratorContinuation|FullyQualifiedName~NativeReceiverPipeline|FullyQualifiedName~HelperLocalLifetime|FullyQualifiedName~ProtectedHelperExecution|FullyQualifiedName~BuiltinCancellation|FullyQualifiedName~RepresentativeProtocolCancellation|FullyQualifiedName~Dictionary|FullyQualifiedName~GovernedMemoryContract|FullyQualifiedName~MemoryDenialAttribution|FullyQualifiedName~SharedRecord|FullyQualifiedName~CsvRecord|FullyQualifiedName~JsonRecord)&Category!=Stress"
+    ],
+    "exitCode": 0
+  },
+  {
+    "kind": "internal",
+    "framework": "net10.0",
+    "command": [
+      "C:\\Users\\JoannesVermorel\\.dotnet11\\dotnet.exe",
+      "test",
+      "tests/Lokad.Lython.Tests/Lokad.Lython.Tests.csproj",
+      "-c",
+      "Release",
+      "-f",
+      "net10.0",
+      "--no-build",
+      "--filter",
+      "(FullyQualifiedName~Executable|FullyQualifiedName~NativeFunctionRefund|FullyQualifiedName~CasedSplitOwnership|FullyQualifiedName~CallablePacketOwnership|FullyQualifiedName~SequenceConstructionOwnership|FullyQualifiedName~FunctionLookupLifetime)&Category!=Stress"
+    ],
+    "exitCode": 0
+  },
+  {
+    "kind": "public",
+    "framework": "net10.0",
+    "command": [
+      "C:\\Users\\JoannesVermorel\\.dotnet11\\dotnet.exe",
+      "test",
+      "tests/Lokad.Lython.PublicApi.Tests/Lokad.Lython.PublicApi.Tests.csproj",
+      "-c",
+      "Release",
+      "-f",
+      "net10.0",
+      "--no-build",
+      "--filter",
+      "(FullyQualifiedName~ContainerDisplayPipeline|FullyQualifiedName~GeneratorRecordLookup|FullyQualifiedName~BufferedGeneratorContinuation|FullyQualifiedName~NativeReceiverPipeline|FullyQualifiedName~HelperLocalLifetime|FullyQualifiedName~ProtectedHelperExecution|FullyQualifiedName~BuiltinCancellation|FullyQualifiedName~RepresentativeProtocolCancellation|FullyQualifiedName~Dictionary|FullyQualifiedName~GovernedMemoryContract|FullyQualifiedName~MemoryDenialAttribution|FullyQualifiedName~SharedRecord|FullyQualifiedName~CsvRecord|FullyQualifiedName~JsonRecord)&Category!=Stress"
+    ],
+    "exitCode": 0
+  }
+]
