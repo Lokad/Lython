@@ -239,7 +239,7 @@ internal sealed partial class LythonRuntime
             // suspension. Other short calls bind a managed stack borrow before
             // returning any pending work; retain no per-thread packet lifecycle.
             if (call.ArgumentCount > 3 || _preparedCallValue is PyInstance)
-                return InvokeBufferedExecutableTargetAsync(call, start, target, asynchronous);
+                return InvokeOwnedExecutableTargetAsync(call, start, target, asynchronous);
             CallableInvocation.Arguments arguments = default;
             PrepareExecutableCallArguments(call, ref _execution.Stack, start, arguments[..call.ArgumentCount], this);
             return asynchronous
@@ -247,23 +247,21 @@ internal sealed partial class LythonRuntime
                 : new(InvokeBorrowedCallableTarget(target, call, arguments[..call.ArgumentCount], this));
         }
 
-        private async ValueTask<object> InvokeBufferedExecutableTargetAsync(ExecutableCallSite call, int start, object target, bool asynchronous)
+        private async ValueTask<object> InvokeOwnedExecutableTargetAsync(ExecutableCallSite call, int start, object target, bool asynchronous)
         {
-            if (_preparedCallValue is PyInstance instance)
-            {
-                var owned = AllocateOwnedCallArguments(call.ArgumentCount, this, call.CallSpan);
-                PrepareExecutableCallArguments(call, ref _execution.Stack, start, owned, this);
-                _preparedCallValue = null;
-                return await InitializePreparedConstructorAsync(instance, owned, call.CallSpan, this, asynchronous).ConfigureAwait(false);
-            }
-            using var storage = MemoryGovernor.ReserveTemporary(CallArgumentStorageBytes(call.ArgumentCount), call.CallSpan);
+            using var storage = ReserveCallArgumentStorage(call.ArgumentCount, this, call.CallSpan);
             var arguments = new CallArgumentValue[call.ArgumentCount];
             try
             {
                 PrepareExecutableCallArguments(call, ref _execution.Stack, start, arguments, this);
+                if (_preparedCallValue is PyInstance instance)
+                {
+                    _preparedCallValue = null;
+                    return await InitializePreparedConstructorAsync(instance, arguments, call.CallSpan, this, asynchronous).ConfigureAwait(false);
+                }
                 return asynchronous
-                    ? await InvokeBorrowedCallableTargetAsync(target, call, arguments, this).ConfigureAwait(false)
-                    : InvokeBorrowedCallableTarget(target, call, arguments, this);
+                    ? await InvokeCallableTargetAsync(target, call.TargetSpan, call.CallSpan, this, arguments).ConfigureAwait(false)
+                    : InvokeCallableTarget(target, call.TargetSpan, call.CallSpan, this, arguments);
             }
             finally { Array.Clear(arguments); }
         }

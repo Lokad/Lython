@@ -1,6 +1,11 @@
 # Owned callable arrays and borrowed scratch
 
-R487/B904,2026-11-17UTC. Corrects the
+**Invalidated by full CI44098253722:**25internal/2public failures on both
+platforms. Universal retention broke bounded cache hits and ordinary packet
+cleanup. See [failed delivery and contract correction](delivery-failure/README.md).
+This page and its measurements are historical6c808cd8, not the corrected source.
+
+R487/B904,2026-11-17UTC. Attempted to correct the
 [failed first delivery](../2026-11-17-call-copy-ownership/delivery-first-failure/README.md).
 Qualifieddbdf8262/frozena95ff2a4 versus four-file source onf2cb4008/frozen6c808cd8;
 585production/2382build-test inputs. No public API change or wider argument view.

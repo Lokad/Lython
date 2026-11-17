@@ -485,13 +485,14 @@ Async binding checks the live default dictionary at lookup, after storage admiss
 can reenter; it does not save an earlier decision about whether lookup may suspend.
 Builtins retain their object-array binding ABI; receiver
 methods borrow their caller's existing array window without conversion arrays.
-Calls that need private argument copies admit their copied capacity, including a
-prepended bound receiver, before allocation. Borrowed scratch remains funded
-through pending invocation and awaited cleanup, then clears and refunds. Arrays
-transferred to a general callable may be retained: their charge remains with the
-execution/result owner, even after success, failure or cancellation. Conservative
-retention can cause earlier admission refusal within one long execution; ending
-the owning execution batch makes that allowance reusable.
+Calls that need private argument copies admit major copied capacity before
+allocation; small packets use the existing minor control headroom. Caller-owned
+scratch remains funded through pending invocation and awaited cleanup, then
+clears and refunds. Bound wrappers supply fresh receiver-prefixed arrays which
+their wrapped callable may retain; their major capacity stays charged to the
+execution/result owner after success, failure or cancellation. Conservative
+retention of these prefixes can deny earlier within one long execution. Ordinary
+cache hits and failed factories do not accumulate retained packet charges.
 
 
 Computed tuples of unpublished machine integers can keep the same slots in their
@@ -934,10 +935,11 @@ invocation routes. Short executable calls and shared native callback helpers pas
 managed stack arguments through the same borrowed entry on the callable contract.
 Function, builtin and JSON binding consume values into invocation-owned storage
 before any default lookup or body can suspend. Bound receivers follow the same
-rules. Wide calls borrow admitted scratch through actual completion. Constructors
-and general callables receive execution-owned arrays which they may retain; these
-arrays are neither cleared nor refunded at call return. Escaping guest values use
-their ordinary retained owners. There are no thread-local argument pools or callable-type switches
+rules. Wide calls and prepared constructors keep caller-owned packets through
+actual completion and then clear them. Initializers copy genuinely escaping inputs
+into admitted owned storage. Non-function bound wrappers supply fresh retainable
+receiver-prefixed arrays, funded by their execution/result owner. Escaping guest
+values use their ordinary retained owners. There are no thread-local argument pools or callable-type switches
 in the shared callback helpers. A bound
 function body reuses its call admission rather than adding a second logical
 nesting charge. Raw protocols retain function-depth and managed-stack protection;

@@ -2,9 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
-- Admit copied callable arguments and bound receivers before allocation/effects.
-  Keep retainable arrays charged to their execution/result owner after return or
-  cancellation; clear/refund borrowed scratch only after awaited cleanup.
+- Admit major copied callable arguments and bound receivers before allocation/effects.
+  Keep fresh retainable bound prefixes charged to their execution/result owner;
+  clear/refund ordinary caller-owned scratch only after awaited cleanup.
 
 - Count UTF-8 scalar and UTF-16 widths in managed bulk operations, preserving bounded cancellation and projection admission.
 

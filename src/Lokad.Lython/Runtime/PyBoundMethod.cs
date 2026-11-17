@@ -91,7 +91,7 @@ internal sealed class PyBoundMethod : IPyRenderableValue, LythonRuntime.ICallabl
     private CallArgumentValue[] PrependReceiver(ReadOnlySpan<CallArgumentValue> arguments,
         LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        var bound = LythonRuntime.AllocateOwnedCallArguments(checked(arguments.Length + 1), context, span);
+        var bound = LythonRuntime.AllocateRetainedBoundArguments(checked(arguments.Length + 1), context, span);
         bound[0] = CallArgumentValue.Positional(_self);
         arguments.CopyTo(bound.AsSpan(1));
         return bound;

@@ -465,26 +465,58 @@ internal sealed partial class LythonRuntime
 
     internal interface ICallable
     {
-        // Owned arrays may be retained; their execution/result owner funds them.
+        // The caller owns array storage; invocation-private packets can be cleared
+        // at completion. Escaping guest values need their own retained storage.
         object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context);
 
         ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             => ValueTask.FromResult(Invoke(arguments, span, context));
 
-        // Consume the span before returning pending work. Implementations that
-        // require the owned ABI receive a fresh execution-owned copy instead.
+        // Consume borrowed inputs before returning pending work. A callable may
+        // borrow its invocation-private packet through completion, never after it.
+        // Escaping guest values need their ordinary retained storage, not this packet.
         object InvokeBorrowed(ReadOnlySpan<CallArgumentValue> arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            var owned = AllocateOwnedCallArguments(arguments.Length, context, span);
-            arguments.CopyTo(owned);
-            return Invoke(owned, span, context);
+            using var storage = ReserveCallArgumentStorage(arguments.Length, context, span);
+            context.CheckExecution(span);
+            var owned = arguments.ToArray();
+            try { return Invoke(owned, span, context); }
+            finally { Array.Clear(owned); }
         }
 
         ValueTask<object> InvokeBorrowedAsync(ReadOnlySpan<CallArgumentValue> arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            var owned = AllocateOwnedCallArguments(arguments.Length, context, span);
-            arguments.CopyTo(owned);
-            return InvokeAsync(owned, span, context);
+            var storage = ReserveCallArgumentStorage(arguments.Length, context, span);
+            CallArgumentValue[]? owned = null;
+            var pendingOwner = false;
+            try
+            {
+                context.CheckExecution(span);
+                owned = arguments.ToArray();
+                var pending = InvokeAsync(owned, span, context);
+                if (pending.IsCompletedSuccessfully) return new(pending.Result);
+                pendingOwner = true;
+                return CompleteBorrowedArguments(pending, owned, storage);
+            }
+            finally
+            {
+                if (!pendingOwner)
+                {
+                    if (owned is not null) Array.Clear(owned);
+                    storage?.Dispose();
+                }
+            }
+        }
+    }
+
+    internal static async ValueTask<object> CompleteBorrowedArguments(ValueTask<object> pending,
+        CallArgumentValue[] owned, MemoryGovernor.TemporaryMemoryReservation? storage)
+    {
+        try { return await pending.ConfigureAwait(false); }
+        finally
+        {
+            Array.Clear(owned);
+            storage?.Dispose();
         }
     }
 

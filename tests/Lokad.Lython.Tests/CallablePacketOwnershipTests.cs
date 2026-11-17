@@ -8,8 +8,6 @@ public sealed class CallablePacketOwnershipTests
     private static readonly LythonSourceSpan Span = new(0, 1, 1, 1);
 
     [Theory]
-    [InlineData(false, 1)]
-    [InlineData(true, 1)]
     [InlineData(false, 8)]
     [InlineData(true, 8)]
     public void RefusedCallStoragePreventsCallableEffects(bool bound, int width)
@@ -64,8 +62,16 @@ public sealed class CallablePacketOwnershipTests
                 callable.ReleaseCleanup.TrySetResult();
                 await Assert.ThrowsAnyAsync<OperationCanceledException>(() => pending);
                 Assert.True(callable.ValuesSurvivedCleanup);
-                Assert.True(budget.ReservedBytes > baseline);
-                Assert.All(callable.RetainedArguments!, argument => Assert.Same(value, argument.Value));
+                if (bound)
+                {
+                    Assert.True(budget.ReservedBytes > baseline);
+                    Assert.All(callable.RetainedArguments!, argument => Assert.Same(value, argument.Value));
+                }
+                else
+                {
+                    Assert.Equal(baseline, budget.ReservedBytes);
+                    Assert.All(callable.RetainedArguments!, argument => Assert.Null(argument.Value));
+                }
                 Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
             }
             finally
@@ -83,11 +89,9 @@ public sealed class CallablePacketOwnershipTests
     }
 
     [Theory]
-    [InlineData(false, false)]
-    [InlineData(false, true)]
-    [InlineData(true, false)]
-    [InlineData(true, true)]
-    public async Task OwnedCopiesRemainFundedAndUnchangedAfterReturn(bool bound, bool asynchronous)
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task BoundCopiesRemainUnchangedAndMajorCapacityStaysFunded(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using (var owner = budget.CreateScope())
@@ -97,7 +101,7 @@ public sealed class CallablePacketOwnershipTests
             {
                 var receiver = new object();
                 var callable = new RetainingCallable();
-                object target = bound ? new PyBoundMethod(receiver, callable) : callable;
+                object target = new PyBoundMethod(receiver, callable);
                 foreach (var width in new[] { 1, 8 })
                 {
                     var value = new object();
@@ -108,9 +112,9 @@ public sealed class CallablePacketOwnershipTests
                         ? await CallableInvocation.InvokeAsync(target, arguments, Span, context)
                         : CallableInvocation.Invoke(target, arguments, Span, context));
                     Assert.NotSame(arguments, first);
-                    Assert.True(budget.ReservedBytes > baseline);
-                    Assert.Equal(arguments, first.Skip(bound ? 1 : 0));
-                    if (bound) Assert.Same(receiver, first[0].Value);
+                    if (width > 3) Assert.True(budget.ReservedBytes > baseline);
+                    Assert.Equal(arguments, first.Skip(1));
+                    Assert.Same(receiver, first[0].Value);
                     var saved = first.ToArray();
                     Array.Clear(arguments);
                     var next = asynchronous
@@ -118,7 +122,7 @@ public sealed class CallablePacketOwnershipTests
                         : CallableInvocation.Invoke(target, [CallArgumentValue.Positional(PyNone.Instance)], Span, context);
                     Assert.NotSame(first, next);
                     Assert.Equal(saved, first);
-                    Assert.True(budget.ReservedBytes > baseline);
+                    if (width > 3) Assert.True(budget.ReservedBytes > baseline);
                     Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
                 }
             }
