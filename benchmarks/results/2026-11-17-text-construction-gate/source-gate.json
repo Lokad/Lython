@@ -1,0 +1,193 @@
+{
+  "source": "Qualifiedd8611c85/frozen0315de0a",
+  "sourceFacts": [
+    "Private DrainLease owns List<object>; unknown capacity grows under preflight and remains funded through consumers. KnownCount currently unused by these drains.",
+    "Public list construction already has final owned arrays; generator drains already batch yields.",
+    "String trimming already uses UTF-8; sufficiently large same-owner slices already share immutable admitted arrays.",
+    "Eligible native helpers already borrow short arguments/defer contexts; bound storage already becomes locals.",
+    "Join drains arbitrary iterables before string validation, preserving late effects/errors; validation converts private items before output admission can reenter the host. Mutable source cannot simply be borrowed through reentrant admission."
+  ],
+  "rows": [
+    {
+      "case": "scripts.text-normalization.large",
+      "sampleCount": 951,
+      "unmappedLeaves": 174,
+      "nearestPrivateDrainJoinSamples": [
+        [
+          "class Lokad.Lython.Runtime.Text.PyString [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+StringMembers::JoinParts(class Lokad.Lython.Runtime.Text.PyString,class [System.Collections]System.Collections.Generic.List`1<object>,class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext)[OptimizedTier1]",
+          27
+        ],
+        [
+          "class Lokad.Lython.Runtime.PyIteration/DrainLease [Lokad.Lython] Lokad.Lython.Runtime.PyIteration::DrainLeased(class [System.Runtime]System.Collections.Generic.IEnumerable`1<object>,class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,valuetype [System.Runtime]System.Nullable`1<int32>)[OptimizedTier1]",
+          1
+        ]
+      ],
+      "topNearest": [
+        {
+          "method": "ExecuteInstructionPrefix",
+          "samples": 118
+        },
+        {
+          "method": "<.cctor>b__81_7",
+          "samples": 62
+        },
+        {
+          "method": "GetRuneLength",
+          "samples": 59
+        },
+        {
+          "method": "RStrip",
+          "samples": 55
+        },
+        {
+          "method": "SplitCore",
+          "samples": 52
+        },
+        {
+          "method": "TryExecuteNativeCall",
+          "samples": 41
+        },
+        {
+          "method": "SplitLineRanges",
+          "samples": 37
+        },
+        {
+          "method": "Reset",
+          "samples": 32
+        },
+        {
+          "method": "JoinParts",
+          "samples": 27
+        },
+        {
+          "method": "ReplaceByteContent",
+          "samples": 27
+        },
+        {
+          "method": "TryLoadDirectCallReceiver",
+          "samples": 25
+        },
+        {
+          "method": "<CreateStripMethod>b__0",
+          "samples": 23
+        },
+        {
+          "method": "SplitWithCount",
+          "samples": 23
+        },
+        {
+          "method": "Resolve",
+          "samples": 22
+        },
+        {
+          "method": "TryBufferYield",
+          "samples": 22
+        }
+      ],
+      "inclusiveOverlappingGroups": {
+        "JSON decode/construction": 0,
+        "indexing/containers": 0,
+        "generator/iteration": 578,
+        "instruction dispatch": 891,
+        "call/frame entry and selection": 356,
+        "enumerable transport": 0,
+        "native text and byte storage": 292,
+        "admission/checks": 20,
+        "host/file/projection": 106
+      }
+    },
+    {
+      "case": "scripts.text-normalization.helper-list",
+      "sampleCount": 939,
+      "unmappedLeaves": 128,
+      "nearestPrivateDrainJoinSamples": [
+        [
+          "class Lokad.Lython.Runtime.Text.PyString [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+StringMembers::JoinParts(class Lokad.Lython.Runtime.Text.PyString,class [System.Collections]System.Collections.Generic.List`1<object>,class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext)[OptimizedTier1]",
+          17
+        ],
+        [
+          "class Lokad.Lython.Runtime.PyIteration/DrainLease [Lokad.Lython] Lokad.Lython.Runtime.PyIteration::DrainLeased(class [System.Runtime]System.Collections.Generic.IEnumerable`1<object>,class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,valuetype [System.Runtime]System.Nullable`1<int32>)[OptimizedTier1]",
+          6
+        ]
+      ],
+      "topNearest": [
+        {
+          "method": "ExecuteInstructionPrefix",
+          "samples": 108
+        },
+        {
+          "method": "Call",
+          "samples": 64
+        },
+        {
+          "method": "RunCore",
+          "samples": 59
+        },
+        {
+          "method": "<.cctor>b__81_7",
+          "samples": 57
+        },
+        {
+          "method": "RStrip",
+          "samples": 56
+        },
+        {
+          "method": "SplitCore",
+          "samples": 44
+        },
+        {
+          "method": "TryExecuteNativeCall",
+          "samples": 34
+        },
+        {
+          "method": "GetRuneLength",
+          "samples": 34
+        },
+        {
+          "method": "SplitLineRanges",
+          "samples": 30
+        },
+        {
+          "method": "Reserve",
+          "samples": 29
+        },
+        {
+          "method": "StartInline",
+          "samples": 24
+        },
+        {
+          "method": "EnsureInterpreterStack",
+          "samples": 24
+        },
+        {
+          "method": "InvokeReceiverMethod",
+          "samples": 23
+        },
+        {
+          "method": "Resolve",
+          "samples": 22
+        },
+        {
+          "method": "SplitWithCount",
+          "samples": 21
+        }
+      ],
+      "inclusiveOverlappingGroups": {
+        "JSON decode/construction": 0,
+        "indexing/containers": 0,
+        "generator/iteration": 82,
+        "instruction dispatch": 927,
+        "call/frame entry and selection": 542,
+        "enumerable transport": 0,
+        "native text and byte storage": 253,
+        "admission/checks": 30,
+        "host/file/projection": 50
+      }
+    }
+  ],
+  "decision": "Source establishes repeated private construction, but these short captures do not establish it as a dominant whole-script cost. Do not start a buffer framework or optimize only growth. Continue call/frame lifecycle design from actual source/stack evidence; select a complete removable stage and semantic contract before a prototype. Unknown samples and overlapping useful work remain explicit.",
+  "performanceComparison": false,
+  "newRuntimePrototype": false,
+  "unchangedQualificationRepeated": false,
+  "publicationHeld": true
+}

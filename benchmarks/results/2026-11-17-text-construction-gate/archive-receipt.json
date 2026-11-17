@@ -1,0 +1,12 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "ramTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 271097856,
+  "archiveSHA256": "be2f59db8eb06b2bef01cd015baf7ad7a5ee529f964cac57c2bd274cd54b0a33",
+  "source": "Qualifiedd8611c85/frozen0315de0a; R480 current text private-construction attribution",
+  "performanceComparison": false
+}
