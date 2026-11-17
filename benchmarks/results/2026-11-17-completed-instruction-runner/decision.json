@@ -1,0 +1,26 @@
+{
+  "status": "Private; not promoted. Bounded representation/cost investigation continues.",
+  "runtimeProductionUnchanged": "33bd7efd; fully qualified44128892209",
+  "sourceSimplification": "Duplicate native opcode/call/format/publication/integer dispatch and eligibility scan removed; one completed-instruction loop.",
+  "correctness": "Actual Windows11/10 each1006internal/4217public focused; five actual32file worker goldens and shared-budget reuse pass; no full delivery claim.",
+  "allocation": "Effectively flat; accounted peaks unchanged.",
+  "elapsed": "All five comparisons adverse. Floating warm+12.38..+14.65%, text+1.83..+2.36%, call control+29.63..+36.61%. Fresh/helper magnitudes uncertain due same-source process spread.",
+  "diagnosticCodegen": {
+    "platform": "Local Windows actual.NET11; diagnostic overrides. Not Linux VM causal attribution or timings.",
+    "optimizedHelperEntryCodeBytes": {
+      "reference": 1099,
+      "candidate": 1763
+    },
+    "optimizedHelperEntryStackBytes": {
+      "reference": 216,
+      "candidate": 440
+    },
+    "hypothesis": "Prefix construction now initializes persistent WorkState/owned-storage metadata; shared ref/span transport may also add per-instruction cost.",
+    "limitation": "Code size/frame changes alone do not identify sampled dominance or explain floating-loop CPU."
+  },
+  "nextStep": "Bounded activation/operand representation gate. Attribute affected call/floating cost using existing tooling; delete unnecessary owned-state initialization/transport while keeping one PC/live extent and one opcode loop. Name a concrete blocker if it requires a general compiler/storage rewrite.",
+  "completion": "Actual11/10 semantic/cancellation/ownership regressions, frozen goldens/allocation checks, bounded changed-source whole-script/control pair and explicit regression-debt decision before promotion. No second dispatcher, arena, owner, unsafe API, hidden policy or unchanged retiming for clear adversity.",
+  "CPythonRefresh": "At the next coherent retained/qualified runner checkpoint; current prototype does not describe published guide timings.",
+  "publicationHeld": true,
+  "broaderObjectiveActive": true
+}
