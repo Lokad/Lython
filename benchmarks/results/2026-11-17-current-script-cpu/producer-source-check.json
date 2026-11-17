@@ -1,0 +1,39 @@
+{
+  "head": "b7adfc21f5709239ef537af06ff51415b43ca961",
+  "readOnlyCommittedBlobs": true,
+  "producerWorktreeNotReadOrModified": true,
+  "files": [
+    {
+      "path": "src/Lokad.Utf8Regex.PythonRe/Utf8PythonRegex.Metadata.cs",
+      "committedSHA256": "7cf2695affd350bd7808f832b31405fa9ef77b32cbad705c9d7fa3186d8cb96d",
+      "unchanged": true
+    },
+    {
+      "path": "src/Lokad.Utf8Regex.PythonRe/Utf8PythonRegex.Cursor.cs",
+      "committedSHA256": "a3e771cde77e13111f46e0ec73a9a5a44fab753ccc2724166cd41dfd9ca0a839",
+      "unchanged": true
+    },
+    {
+      "path": "src/Lokad.Utf8Regex.PythonRe/Utf8PythonMatchCursor.cs",
+      "committedSHA256": "b5d48220a61a766b4068a259c7dd20813d3fdb08afa521dbc24f9713c9425364",
+      "unchanged": true
+    },
+    {
+      "path": "src/Lokad.Utf8Regex.PythonRe/PythonReCoreTypes.cs",
+      "committedSHA256": "eab9ec8ef842033b8e1bf37e200a6dd3bd312cecb7d81a96cef58e4c0df52eed",
+      "unchanged": true
+    }
+  ],
+  "changesSince8403": "Core Match/capture-slot and optional shared-working signatures consolidated; escaped character-class endpoints corrected. PythonRe metadata/cursor/type source unchanged.",
+  "missingCapabilities": [
+    "UTF8 group-name enumeration (metadata file unchanged from4fdb981e).",
+    "Creation/preparation token detached from retained cursor pulls: still links original/current.",
+    "Separately selected per-match result/staging allowance: explicit cursor parameter selects working only."
+  ],
+  "normalAdapterPin": "0.4.0",
+  "normalAdapterSourceCompatibleWithProducerHead": false,
+  "development105QualificationReused": true,
+  "newQualification": false,
+  "packageReleaseStatusNotInferred": true,
+  "coreDevelopmentIndependent": true
+}

@@ -43,3 +43,5 @@ archive replicas retire; currentcf/5dimages/catalog/toolchains stay. Original
 254/252MiB guards retained. All32image hashes/catalog are verified before profiling.
 [Attribution](attribution.json),[raw](observations.tgz),[procedures](procedures.tar.xz).
 R499 full delivery is independent/pending; publication remains postponed.
+
+Independent optional-adapter [source check](producer-source-check.json): producerb7adfc21 advances Core signatures/escaped-range correctness, but all four PythonRe metadata/cursor/type hashes remain unchanged from8403bc8e. Precise UTF8-name/token-lifetime/result-staging capabilities remain outstanding; core runtime work proceeds, no release or new qualification inferred. Committed blobs only; sibling untouched.
