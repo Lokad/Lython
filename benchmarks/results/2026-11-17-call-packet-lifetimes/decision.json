@@ -1,0 +1,25 @@
+{
+  "retain": true,
+  "source": "add2c00a/frozendfc4c83c;585production/2382inputs; only four production files differ from qualifieddbdf8262",
+  "contract": "Ordinary caller-owned scratch clears/refunds after actual completion. Major fresh bound receiver prefixes are execution/result-owned; existing minor control headroom and constructor escape copies preserved.",
+  "removed": "Blanket AllocateOwnedCallArguments, universal ordinary-packet retention and redundant bound-prefix pending-owner state. Real borrowed completion wrapper remains for actual asynchronous scratch users. No wider argument view.",
+  "existingRegressionsUnchanged": [
+    "tests/Lokad.Lython.Tests/BoundMethodInvocationBoundaryTests.cs",
+    "tests/Lokad.Lython.Tests/ExecutableCallTransferTests.cs",
+    "tests/Lokad.Lython.Tests/ExecutableStackAdmissionTests.cs",
+    "tests/Lokad.Lython.Tests/SliceValueDispatchTests.cs",
+    "tests/Lokad.Lython.Tests/SortedOwnershipTests.cs",
+    "tests/Lokad.Lython.Tests/UserSliceMutationOwnershipTests.cs",
+    "tests/Lokad.Lython.Tests/WrapperConstructionTests.cs",
+    "tests/Lokad.Lython.PublicApi.Tests/CacheKeyAccountingScenarioTests.cs",
+    "tests/Lokad.Lython.PublicApi.Tests/DataclassOwnershipContractTests.cs"
+  ],
+  "focused": "Actual Windows11/10 each all4830nonstressinternal plus200focusedpublic. Includes original failing assertions unchanged and6copy ownership cases. Final nonincremental build and actual32file workers/CPython3.13.2 goldens/allocation baseline pass.",
+  "comparison": "117.58s: boundwarm-1.82..+0.68%,CPU+0.32..+2.16%; fresh+0.14..+4.68% with2.68/1.81%controls. JSONwarm+0.21..+2.26%,CPU-0.74..+2.21%,controls1.29/.74%. Diagnostic costs/uncertainty retained; no CPU gain claim.",
+  "accounting": "Bound allocation identical; accountedpeak3079->298279B, exactly295200B for1025 retained288B prefixes. JSONallocation+64B/peakunchanged. All owner baselines restore.",
+  "compatibility": "Major fresh bound prefixes can reject earlier until their owner ends. Ordinary cache hits/caught invalid factories remain bounded; no universal cumulative packet counting.",
+  "fullDeliveryPending": true,
+  "deliveryRun": 44103214418,
+  "broaderPerformanceObjectiveComplete": false,
+  "publicationHeld": true
+}
