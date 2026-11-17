@@ -475,6 +475,8 @@ internal sealed partial class LythonRuntime
         // Escaping guest values need their ordinary retained storage, not this packet.
         object InvokeBorrowed(ReadOnlySpan<CallArgumentValue> arguments, LythonSourceSpan span, ExecutionContext context)
         {
+            using var storage = ReserveCallArgumentStorage(arguments.Length, context, span);
+            context.CheckExecution(span);
             var owned = arguments.ToArray();
             try { return Invoke(owned, span, context); }
             finally { Array.Clear(owned); }
@@ -482,22 +484,37 @@ internal sealed partial class LythonRuntime
 
         ValueTask<object> InvokeBorrowedAsync(ReadOnlySpan<CallArgumentValue> arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            var owned = arguments.ToArray();
+            var storage = ReserveCallArgumentStorage(arguments.Length, context, span);
+            CallArgumentValue[]? owned = null;
             var pendingOwner = false;
             try
             {
+                context.CheckExecution(span);
+                owned = arguments.ToArray();
                 var pending = InvokeAsync(owned, span, context);
                 if (pending.IsCompletedSuccessfully) return new(pending.Result);
                 pendingOwner = true;
-                return CompleteOwnedArguments(pending, owned);
+                return CompleteOwnedArguments(pending, owned, storage);
             }
-            finally { if (!pendingOwner) Array.Clear(owned); }
+            finally
+            {
+                if (!pendingOwner)
+                {
+                    if (owned is not null) Array.Clear(owned);
+                    storage?.Dispose();
+                }
+            }
         }
+    }
 
-        private static async ValueTask<object> CompleteOwnedArguments(ValueTask<object> pending, CallArgumentValue[] owned)
+    internal static async ValueTask<object> CompleteOwnedArguments(ValueTask<object> pending,
+        CallArgumentValue[] owned, MemoryGovernor.TemporaryMemoryReservation? storage)
+    {
+        try { return await pending.ConfigureAwait(false); }
+        finally
         {
-            try { return await pending.ConfigureAwait(false); }
-            finally { Array.Clear(owned); }
+            Array.Clear(owned);
+            storage?.Dispose();
         }
     }
 

@@ -79,13 +79,36 @@ internal sealed class PyBoundMethod : IPyRenderableValue, LythonRuntime.ICallabl
     public object InvokeBorrowed(ReadOnlySpan<CallArgumentValue> arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         if (_function is PyFunctionBase function) return function.Invoke(arguments, span, context, _self);
-        return _function.Invoke(PrependReceiver(arguments), span, context);
+        using var storage = LythonRuntime.ReserveCallArgumentStorage(checked(arguments.Length + 1), context, span);
+        context.CheckExecution(span);
+        var owned = PrependReceiver(arguments);
+        try { return _function.Invoke(owned, span, context); }
+        finally { Array.Clear(owned); }
     }
 
     public ValueTask<object> InvokeBorrowedAsync(ReadOnlySpan<CallArgumentValue> arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         if (_function is PyFunctionBase function) return function.InvokeAsync(arguments, span, context, _self);
-        return _function.InvokeAsync(PrependReceiver(arguments), span, context);
+        var storage = LythonRuntime.ReserveCallArgumentStorage(checked(arguments.Length + 1), context, span);
+        CallArgumentValue[]? owned = null;
+        var pendingOwner = false;
+        try
+        {
+            context.CheckExecution(span);
+            owned = PrependReceiver(arguments);
+            var pending = _function.InvokeAsync(owned, span, context);
+            if (pending.IsCompletedSuccessfully) return new(pending.Result);
+            pendingOwner = true;
+            return LythonRuntime.CompleteOwnedArguments(pending, owned, storage);
+        }
+        finally
+        {
+            if (!pendingOwner)
+            {
+                if (owned is not null) Array.Clear(owned);
+                storage?.Dispose();
+            }
+        }
     }
 
     private CallArgumentValue[] PrependReceiver(ReadOnlySpan<CallArgumentValue> arguments)

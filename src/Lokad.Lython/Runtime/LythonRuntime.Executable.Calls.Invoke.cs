@@ -249,7 +249,7 @@ internal sealed partial class LythonRuntime
 
         private async ValueTask<object> InvokeOwnedExecutableTargetAsync(ExecutableCallSite call, int start, object target, bool asynchronous)
         {
-            using var storage = ReserveExecutableCallArguments(call, this);
+            using var storage = ReserveCallArgumentStorage(call.ArgumentCount, this, call.CallSpan);
             var arguments = new CallArgumentValue[call.ArgumentCount];
             try
             {

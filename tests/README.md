@@ -1,5 +1,9 @@
 # Testing Lython
 
+[Copied callable inputs](Lokad.Lython.Tests/CallablePacketOwnershipTests.cs) check
+admission before effects, funding during cancellation cleanup and allowance reuse
+for ordinary and bound callables.
+
 [Helper local lifetimes](Lokad.Lython.PublicApi.Tests/HelperLocalLifetimeTests.cs)
 check unassigned locals across repeated calls, nested/deep helpers, live pattern
 guards and unpacked returns through both APIs, restoring shared-budget balances.

@@ -390,12 +390,12 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    // Short owned constructor packets use minor control headroom. Wider packets
-    // are admitted through completion, independently of their existing operands.
-    private static MemoryGovernor.TemporaryMemoryReservation? ReserveExecutableCallArguments(
-        ExecutableCallSite callSite, ExecutionContext context)
-        => callSite.ArgumentCount <= 3 ? null : context.MemoryGovernor.ReserveTemporary(
-            checked(32L + 32L * callSite.ArgumentCount), callSite.CallSpan);
+    // Small copied packets use minor control headroom. Wider copies are admitted
+    // through completion, independently of the original evaluated operands.
+    internal static MemoryGovernor.TemporaryMemoryReservation? ReserveCallArgumentStorage(
+        int count, ExecutionContext context, LythonSourceSpan span)
+        => count <= 3 ? null : context.MemoryGovernor.ReserveTemporary(
+            checked(32L + 32L * count), span);
 
     private static CallArgumentValue CreateExecutableCallArgument(CallArgumentForm spec, object value)
         => spec.Kind switch

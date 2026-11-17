@@ -2,6 +2,8 @@
 
 ## 0.11.0 - Unreleased
 
+- Fund copied callable arguments and bound receivers through pending cleanup; refuse before copying or callable effects.
+
 - Count UTF-8 scalar and UTF-16 widths in managed bulk operations, preserving bounded cancellation and projection admission.
 
 - Share builtin receiver resolution and invocation across executable paths. Small

@@ -485,6 +485,11 @@ Async binding checks the live default dictionary at lookup, after storage admiss
 can reenter; it does not save an earlier decision about whether lookup may suspend.
 Builtins retain their object-array binding ABI; receiver
 methods borrow their caller's existing array window without conversion arrays.
+Calls that need private argument copies admit their copied capacity, including a
+prepended bound receiver, before allocation. References and funding remain through
+pending invocation and awaited cleanup, then clear and refund together. Large
+copies can fail shared-budget admission before the callable performs effects.
+
 
 Computed tuples of unpublished machine integers can keep the same slots in their
 immutable backing. Closed arithmetic can read an item without boxing; observation
