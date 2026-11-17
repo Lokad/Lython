@@ -1,0 +1,11 @@
+{
+  "recordedAtUTC": "2026-11-17T00:53:14.123366+00:00",
+  "siblingSource": "13d6b3a992a1b7430e97fe691e0c14a2fa1d40b8",
+  "pythonReSourceChangesSince00e7905d": [],
+  "developmentProducer": "0.5.0-dev.105",
+  "coreSHA256": "49c0d0c2309c29dda650760d889f84e4a2f661629eaa55d751eabcc19e4e2550",
+  "pythonReSHA256": "89ad65d76adea14c329e2e19d1f70ab90f39d4d8ab4c866f0cecf6c6dfe09f6a",
+  "unchangedPackageBytes": true,
+  "qualificationRepeated": false,
+  "remaining": "PythonRe source contract unchanged: creation/advance token coupling, UTF8 name enumeration and per-match facade staging remain adapter concerns. Core legacy detailed-view removal is not a new PythonRe facade capability."
+}

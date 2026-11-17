@@ -1,0 +1,91 @@
+{
+  "run": 43989114633,
+  "head": "9677d8f7e45f5c508979468876b88181da885911",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "log": "0_tests (ubuntu-latest).txt",
+      "summaries": [
+        {
+          "framework": "net11.0",
+          "passed": 4811
+        },
+        {
+          "framework": "net11.0",
+          "passed": 17966
+        },
+        {
+          "framework": "net10.0",
+          "passed": 4811
+        },
+        {
+          "framework": "net10.0",
+          "passed": 17966
+        },
+        {
+          "framework": "net11.0",
+          "passed": 14
+        },
+        {
+          "framework": "net11.0",
+          "passed": 406
+        },
+        {
+          "framework": "net10.0",
+          "passed": 14
+        },
+        {
+          "framework": "net10.0",
+          "passed": 406
+        }
+      ]
+    },
+    {
+      "log": "1_tests (windows-latest).txt",
+      "summaries": [
+        {
+          "framework": "net11.0",
+          "passed": 4811
+        },
+        {
+          "framework": "net11.0",
+          "passed": 17966
+        },
+        {
+          "framework": "net10.0",
+          "passed": 4811
+        },
+        {
+          "framework": "net10.0",
+          "passed": 17966
+        },
+        {
+          "framework": "net11.0",
+          "passed": 14
+        },
+        {
+          "framework": "net11.0",
+          "passed": 406
+        },
+        {
+          "framework": "net10.0",
+          "passed": 14
+        },
+        {
+          "framework": "net10.0",
+          "passed": 406
+        }
+      ]
+    }
+  ],
+  "summaries": 16,
+  "sourceInputsVerified": 2375,
+  "production": 585,
+  "normalAdapterPin": "0.4.0",
+  "allMeaningfulStepsPassed": true,
+  "logsSHA256": "5b26d0c61763d76a4bccb024df3224797d2e2f45921bd3ea8600914e38275563",
+  "measuredProductionTextMatchesQualifiedInputs": true,
+  "binaryEqualityInferred": false,
+  "affectedSourcePairEvidenceSeparate": true,
+  "publicationHeld": true
+}

@@ -8973,3 +8973,15 @@ accounted peak+11.81%, numeric uncertain/moving, CSVroughly flat. Each actualWin
 11/10 focused277public/172internal pass; foreign cancellation regression and final
 trim refusal covered; all gates/join/archive pass. Full platform/stress/package
 delivery next, no publication or claim that the broader objective is complete.
+
+[R461/B868 representative CPython refresh](results/2026-11-17-sequence-cpython-checkpoint/README.md):
+committed46343804/frozenaaef versusCPython3.13.16,12jobs400s/allgates/join/archive.
+Warm CSV1.12–1.15×,normalization2.06–2.08×,JSON0.86–0.88×,search1.60–1.65×.
+Fresh CSV Lython controls6.81%,normalization L/C3.86/8.75%moving; all uncertainty
+and earlier adversity retained. Compile/warm/fresh and I/O/cleanup boundaries
+separate; no causal source gain across collections. Existing tooling reused,
+no unchanged replay pending. Full delivery43989114633 independent; roadmap active.
+
+[R462 current normalization/search attribution](results/2026-11-17-current-pipeline-attribution/README.md): aaef46343804,963/926active samples,145/323unknown leaves retained. Host/reset and inclusive overlap prevent removable-share claims. Old call packets already removed; no repeated call-kernel prototype selected. Next bounded hypothesis removes full tab-column measurement in favor of admitted byte-capacity sizing and one writer. Both captures/allgates/join/SHAarchive complete; no unchanged profiling pending. Producer source13d6b3a9 changes no PythonRe files since00e; dev105bytes unchanged, no qualification replay.
+
+[R460 full delivery43989114633](results/2026-11-17-sequence-construction/delivery/README.md): GREEN9677d8f7,each Windows/Ubuntu actual11/10 passes4811internal/17966public ordinary,original14/406stress and installed Release consumers. All16summaries/2375inputs,production text parity verified; no binary equality inferred. Initial two accounting failures retained. Terminal/logs cached forever; no unchanged qualification pending. Roadmap continues/publication held.

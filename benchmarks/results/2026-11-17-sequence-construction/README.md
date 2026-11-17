@@ -2,7 +2,7 @@
 
 R460/B866, completed2026-11-17UTC; started2026-11-16UTC. Qualified9e8d1cf5/e92d9598
 versus retained private82e45812 plus archivedaaef443f, now promoted with matching
-production text. Full delivery qualification is pending; publication remains held.
+production text. [Full delivery qualification passes](delivery/README.md); publication remains held.
 
 One existing PyList builder now supplies iterable tuple construction. Exact-sized
 backing transfers its funding; a trim copy admits full overlap. Async tuple staging,

@@ -13,7 +13,7 @@
   "supervisedGoldenCases": 9,
   "firstChargeExpectationFailures": 2,
   "foreignAuthorityRegressionFailedBeforeAndPassesAfter": true,
-  "fullQualificationPending": true,
+  "fullQualificationPending": false,
   "allocationReductionEstablished": false,
   "reportedTuplePeakIncreasePercent": 11.81357439299251,
   "remainingDebt": "Numeric elapsed/CPU uncertain with moving controls; CSV roughly flat; do not claim no regression or add gains across source pairs.",
@@ -25,5 +25,7 @@
   "initialDeliveryRun": 43987268690,
   "initialDeliveryFailures": "Two stale reserved/exact-charge assertions, reproduced on Windows; corrected to funded payload/headroom/owner balances. Production unchanged.",
   "correctedAccountingActualWindowsNet11": 31,
-  "correctedAccountingActualWindowsNet10": 31
+  "correctedAccountingActualWindowsNet10": 31,
+  "qualifiedRun": 43989114633,
+  "qualifiedHead": "9677d8f7e45f5c508979468876b88181da885911"
 }

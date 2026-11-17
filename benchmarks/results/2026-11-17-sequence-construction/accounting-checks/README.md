@@ -1,6 +1,8 @@
 # Capacity-accounting assertion corrections
 
-Initial delivery CI43987268690 found two white-box failures. Both reproduce
+Initial delivery CI43987268690 found the same two white-box failures on both
+Windows and Ubuntu. Public ordinary suites passed; later phases did not execute.
+The[initial terminal](initial-terminal.json)and[all logs](initial-run-logs.zip)are cached. Both reproduce
 locally (eight other cases pass). Localtime expected953B but now retains985B;
 iterable tuple construction now commits admitted capacity during consumption,
 so asserting its funding stays entirely reserved is obsolete.
