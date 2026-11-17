@@ -1,0 +1,62 @@
+[
+  {
+    "paths": [
+      "key-cpython-b309-20261106/confirmation/confirmation.json"
+    ],
+    "bytes": 1765535,
+    "links": 1,
+    "sha256": "3432dc21a52e2bad59b485d77d9dff3fb843ea779a3e1dd9b588690fedbe2cb2",
+    "canonical": "benchmarks/results/2026-11-06-canonical-key-storage/checkpoint/observations.tgz",
+    "canonicalSHA256": "710cc1bb52ba9db9c323d977eb0e0f567fa3674858c5a15a7158b8e0c8179d1d",
+    "member": "confirmation/confirmation.json",
+    "committedBlobVerified": true
+  },
+  {
+    "paths": [
+      "call-checkpoint-b320-20261106/confirmation/confirmation.json"
+    ],
+    "bytes": 1764036,
+    "links": 1,
+    "sha256": "c70b888bb8158f7b17de5b32e65f1a0af51dac086b2e0621744876219f44053e",
+    "canonical": "benchmarks/results/2026-11-06-call-frame-cpython/observations.tgz",
+    "canonicalSHA256": "485d8591bf351f8908f6ab724e63709477f35a13b5b8553a4b3079d878963873",
+    "member": "confirmation/confirmation.json",
+    "committedBlobVerified": true
+  },
+  {
+    "paths": [
+      "native-proof-b600-20261112/confirmation/confirmation.json"
+    ],
+    "bytes": 1732665,
+    "links": 1,
+    "sha256": "3afb596e8d27afe655acb1b4fece6a320432c82596a0e0bbdec83f4bd3016411",
+    "canonical": "benchmarks/results/2026-11-12-native-proof/first-form/observations-partial.tgz",
+    "canonicalSHA256": "31e7ef1029101a72751b06cfc57e1b68a854251a5657cdc1e2a9652387cfce74",
+    "member": "confirmation/confirmation.json",
+    "committedBlobVerified": true
+  },
+  {
+    "paths": [
+      "function-cpython-b481-20261108/confirmation/confirmation.json"
+    ],
+    "bytes": 1658799,
+    "links": 1,
+    "sha256": "e0a04b3c879eff49a7e25fe98597eeb416e5c41d8d244e684b42d6b23ccd80f7",
+    "canonical": "benchmarks/results/2026-11-08-function-cpython-checkpoint/observations.tgz",
+    "canonicalSHA256": "6ca0ff4988817f2b057fd29c64429025e4ab2ddd76f0fba13c974c98df49f7ca",
+    "member": "confirmation/confirmation.json",
+    "committedBlobVerified": true
+  },
+  {
+    "paths": [
+      "delivery-comparison-b367-20261106/confirmation/confirmation.json"
+    ],
+    "bytes": 1626233,
+    "links": 1,
+    "sha256": "88059a3a35871a7c16ddabdb8baf3b3714e319de9e690004d1edabd47d55f114",
+    "canonical": "benchmarks/results/2026-11-06-current-cpython/observations.tgz",
+    "canonicalSHA256": "af6373e7514a1cc80b6c22831f682d5cb012aad575719b19b8bb9c1d4218a225",
+    "member": "confirmation/confirmation.json",
+    "committedBlobVerified": true
+  }
+]

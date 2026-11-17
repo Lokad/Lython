@@ -27,17 +27,7 @@ internal sealed partial class LythonRuntime
                 execution.Stack.PublishValue(instruction.ResultSlot + 1, instruction.LiveExtent, function);
                 return true;
             }
-            object? operation = receiver switch
-            {
-                PyList when name == "append" => ReceiverMethods.ListAppend,
-                PyDict => DictMembers.GetMethod(name),
-                ExecutionContext.TextFileHandle when name == "write" => ReceiverMethods.TextWrite,
-                ExecutionContext.BinaryFileHandle when name == "write" => ReceiverMethods.BinaryWrite,
-                CsvWriterObject when name == "writerow" => ReceiverMethods.CsvWriterow,
-                PyString => StringMembers.GetMethod(name),
-                ReMatchObject => ReMatchMembers.GetMethod(name),
-                _ => null,
-            };
+            var operation = ResolveBuiltinReceiverMethod(receiver, name);
             if (operation is null) return false;
             // Keep the evaluated receiver, then append the immutable operation.
             // Arguments are evaluated afterwards and can rebind the source name.

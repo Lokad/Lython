@@ -1,0 +1,69 @@
+{
+  "retained": true,
+  "promotedProductionTextMatchesFrozen": true,
+  "binaryEqualityInferred": false,
+  "initialFocusedEachActualWindowsTarget": {
+    "internal": 155,
+    "public": 152
+  },
+  "coupledNet11": {
+    "internal": 96,
+    "public": 212
+  },
+  "promotedFocusedEachActualWindowsTarget": {
+    "internal": 251,
+    "public": 347
+  },
+  "checks": [
+    {
+      "file": "coupled-internal-net11.trx",
+      "passed": 96
+    },
+    {
+      "file": "coupled-public-net11.trx",
+      "passed": 212
+    },
+    {
+      "file": "initial-internal-net10.trx",
+      "passed": 155
+    },
+    {
+      "file": "initial-internal-net11.trx",
+      "passed": 155
+    },
+    {
+      "file": "initial-public-net10.trx",
+      "passed": 152
+    },
+    {
+      "file": "initial-public-net11.trx",
+      "passed": 152
+    },
+    {
+      "file": "promoted-internal-net10.0.trx",
+      "passed": 251
+    },
+    {
+      "file": "promoted-internal-net11.0.trx",
+      "passed": 251
+    },
+    {
+      "file": "promoted-public-net10.0.trx",
+      "passed": 347
+    },
+    {
+      "file": "promoted-public-net11.0.trx",
+      "passed": 347
+    }
+  ],
+  "overlappingFiltersNotSummed": true,
+  "supervisedGoldenCasesEachImage": 11,
+  "fullPlatformStressPackageQualification": "Pending combined R463/R464 coherent delivery; prior43989114633 qualifies R460 only.",
+  "allocationChangePercent": {
+    "helperText": -51.777,
+    "helperReport": -33.157
+  },
+  "retainedPeaks": "Essentially flat: each affected script208B lower,other cases unchanged.",
+  "remainingDebt": "Fresh text reference/candidate controls1.28/1.13%;warm text3.16/1.82%. Call/CSVroughly flat,numeric magnitude uncertain with3.89%candidate movement. Existing earlier debt is not retroactively resolved.",
+  "publicationHeld": true
+}

@@ -115,8 +115,7 @@ internal sealed partial class LythonRuntime
                     {
                         var receiver = Read(instruction.InputStart, 0);
                         var name = Code.Names[instruction.NameIndex];
-                        var method = receiver is PyString ? StringMembers.GetMethod(name)
-                            : receiver is PyDict ? DictMembers.GetMethod(name) : null;
+                        var method = ResolveBuiltinReceiverMethod(receiver, name);
                         if (method is null) return false;
                         Put(instruction.ResultSlot, instruction.ResultSlot + 1, receiver);
                         Put(instruction.ResultSlot + 1, instruction.LiveExtent, method);
@@ -306,44 +305,26 @@ internal sealed partial class LythonRuntime
                         call.CallSpan, _scope, out var rangeResult)) return false;
                     result.Object = rangeResult;
                 }
-                else if (call.HasReceiver && Values[start].Object is PyDict dictionary)
+                else if (call.HasReceiver && target is ReceiverMethod method)
                 {
-                    if (call.ArgumentCount == 0 && target is ReceiverMethod method && method.AcceptsPositional(0))
-                        result.Object = InvokeReceiverMethod(method, dictionary, call.CallSpan, _scope);
-                    else if (call.ArgumentCount is 1 or 2 && ReferenceEquals(target, ReceiverMethods.DictionaryGet)
-                        && dictionary.CanReadKeySynchronously(Values[start + call.ArgumentOffset].Object!))
-                        result.Object = InvokeDictionaryGet(dictionary, Values[start + call.ArgumentOffset].Object!,
-                            call.ArgumentCount == 2 ? Values[start + call.ArgumentOffset + 1].Object! : PyNone.Instance, call.CallSpan, _scope);
-                    else return false;
-                }
-                else if (call.HasReceiver && Values[start].Object is PyString text)
-                {
-                    if (call.ArgumentCount == 0 && target is ReceiverMethod method && method.AcceptsPositional(0))
+                    var receiver = Values[start].Object!;
+                    if (call.ArgumentCount == 0 && receiver is PyString text
+                        && call.CasedSplit is { } recipe && ReferenceEquals(target, recipe.CasingMethod))
                     {
-                        if (call.CasedSplit is { } recipe && ReferenceEquals(target, recipe.CasingMethod))
-                        {
-                            var final = Code.Instructions[Index + 2];
-                            var consumer = Code.CallSites[final.CallSiteIndex];
-                            _scope.EnterInterpreterFrame(recipe.CasingCallSpan);
-                            try { result.Object = ExecuteCasedSplit(recipe, text, _scope,
-                                consumer.ConsumedByIteration || _consumedByIteration && consumer.ReturnedDirectly); }
-                            finally { _scope.LeaveInterpreterFrame(); }
-                            Index += 2;
-                            Publish(final, result);
-                            return true;
-                        }
-                        result.Object = InvokeReceiverMethod(method, text, call.CallSpan, _scope);
+                        var final = Code.Instructions[Index + 2];
+                        var consumer = Code.CallSites[final.CallSiteIndex];
+                        _scope.EnterInterpreterFrame(recipe.CasingCallSpan);
+                        try { result.Object = ExecuteCasedSplit(recipe, text, _scope,
+                            consumer.ConsumedByIteration || _consumedByIteration && consumer.ReturnedDirectly); }
+                        finally { _scope.LeaveInterpreterFrame(); }
+                        Index += 2;
+                        Publish(final, result);
+                        return true;
                     }
-                    else
-                    {
-                        var args = Values.Slice(start + call.ArgumentOffset, call.ArgumentCount);
-                        var first = args.Length > 0 ? args[0].Object : null;
-                        var second = args.Length > 1 ? args[1].Object : null;
-                        var third = args.Length > 2 ? args[2].Object : null;
-                        if (SelectNativeStringOperation(target, args.Length) is not { } operation
-                            || !CanUseNativeStringCall(operation, first, second, third)) return false;
-                        result.Object = InvokeNativeStringOperation(operation, text, first, second, third, call.CallSpan, _scope);
-                    }
+                    if (!TryInvokeClosedReceiver(method, receiver,
+                        Values.Slice(start + call.ArgumentOffset, call.ArgumentCount), call.CallSpan, _scope,
+                        out var called)) return false;
+                    result.Object = called;
                 }
                 else
                 {

@@ -1,5 +1,10 @@
 # Testing Lython
 
+[Receiver calls](Lokad.Lython.PublicApi.Tests/NativeReceiverPipelineTests.cs) check
+evaluated receivers across argument rebinding, retained aliases, recursive handoff
+and faults after completed effects. Actual suspended writes preserve funding and
+join cleanup on cancellation; refused append admission remains terminal.
+
 [Sequence construction](Lokad.Lython.PublicApi.Tests/SequenceConstructionPipelineTests.cs)
 checks exact/grown/trimmed containers, retained aliases, late iterator errors,
 live target mutation and real asynchronous cancellation/cleanup.

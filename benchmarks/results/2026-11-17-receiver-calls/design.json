@@ -1,0 +1,15 @@
+{
+  "reference": "210c9cae",
+  "productionFiles": [
+    "LythonRuntime.ReceiverArguments.cs",
+    "LythonRuntime.ReceiverMethods.cs",
+    "LythonRuntime.Executable.Interpreter.cs",
+    "LythonRuntime.Executable.NativePrefix.cs",
+    "LythonRuntime.Executable.Calls.Invoke.cs"
+  ],
+  "privatePrototype": true,
+  "promoted": false,
+  "removed": "Duplicate receiver resolution and closed str/dict invocation inventories; native list-append helper continuation/array/frame materialization.",
+  "preserved": "Existing persistent async argument windows, guarded descriptor bodies, dictionary accumulation and cased-split fusion.",
+  "contractTradeoff": "One extra shape branch in the existing16byte argument view; no public API,owner,frame arena,configuration or span escaping."
+}

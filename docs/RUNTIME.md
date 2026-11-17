@@ -767,6 +767,14 @@ into that storage, including functions requiring namespace mirroring. Mirrored
 namespaces copy values for their class, closure and lowered readers; they never
 borrow the reusable array. Mirrored functions retain their scope context.
 Suspended callers retain their operands.
+Immediate builtin receiver calls share resolution and closed invocation across
+ordinary work and native helpers. A helper appending to an exact list can complete
+through the existing guarded operation, without constructing an invocation frame
+or argument array. The compact argument view can retain one evaluated reference;
+ordinary array-backed windows remain funded through actual asynchronous users.
+Exposed bound methods and operations invoking guest protocols keep their general
+binding and continuation semantics. Receiver and argument evaluation order stays
+the same, including rebinding and admission callbacks.
 An immediately unpacked exact tuple return from a completed native helper can
 transfer its elements into the caller's admitted operand slots, avoiding a transient
 tuple object and backing array. The original conservative tuple admission still

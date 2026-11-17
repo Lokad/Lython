@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Share builtin receiver resolution and invocation across executable paths. Small
+  helpers appending to exact lists avoid continuation frames and argument arrays,
+  preserving aliases, evaluation order, cancellation and awaited cleanup.
+
 - Expand tabs into admitted conservative UTF-8 capacity without repeating the full
   Unicode-column sizing pass. Preserve cancellation and exact representation
   checks; retained spare capacity can cause earlier supplied-budget rejection.

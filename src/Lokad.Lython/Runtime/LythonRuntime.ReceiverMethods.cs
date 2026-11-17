@@ -4,6 +4,59 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
+    private static ReceiverMethod? ResolveBuiltinReceiverMethod(object receiver, string name)
+        => receiver switch
+        {
+            PyList when name == "append" => ReceiverMethods.ListAppend,
+            PyDict => DictMembers.GetMethod(name),
+            ExecutionContext.TextFileHandle when name == "write" => ReceiverMethods.TextWrite,
+            ExecutionContext.BinaryFileHandle when name == "write" => ReceiverMethods.BinaryWrite,
+            CsvWriterObject when name == "writerow" => ReceiverMethods.CsvWriterow,
+            PyString => StringMembers.GetMethod(name),
+            ReMatchObject => ReMatchMembers.GetMethod(name),
+            _ => null,
+        };
+
+    // Both instruction drivers use the same closed receiver calls. Declining
+    // performs no operation or admission; protocols and actual I/O still promote.
+    private static bool TryInvokeClosedReceiver(ReceiverMethod method, object receiver,
+        Span<ExecutableSlot> arguments, LythonSourceSpan span, ExecutionContext context, out object result)
+    {
+        result = PyNone.Instance;
+        if (arguments.IsEmpty && receiver is PyString or PyDict && method.AcceptsPositional(0))
+        {
+            result = InvokeReceiverMethod(method, receiver, span, context);
+            return true;
+        }
+        if (arguments.Length == 1 && receiver is PyList && ReferenceEquals(method, ReceiverMethods.ListAppend))
+        {
+            var supplied = ReceiverArguments.Single(arguments[0].Object);
+            result = InvokeReceiverMethod(method, receiver, supplied, span, context);
+            return true;
+        }
+        if (receiver is PyString text && arguments.Length is >= 1 and <= 3
+            && SelectNativeStringOperation(method, arguments.Length) is { } operation)
+        {
+            // Snapshot evaluated inputs before admission can reenter the host.
+            var first = arguments[0].Object;
+            var second = arguments.Length > 1 ? arguments[1].Object : null;
+            var third = arguments.Length > 2 ? arguments[2].Object : null;
+            if (!CanUseNativeStringCall(operation, first, second, third)) return false;
+            result = InvokeNativeStringOperation(operation, text, first, second, third, span, context);
+            return true;
+        }
+        if (receiver is PyDict dictionary && arguments.Length is 1 or 2
+            && ReferenceEquals(method, ReceiverMethods.DictionaryGet))
+        {
+            var key = arguments[0].Object!;
+            if (!dictionary.CanReadKeySynchronously(key)) return false;
+            var fallback = arguments.Length == 2 ? arguments[1].Object! : PyNone.Instance;
+            result = InvokeDictionaryGet(dictionary, key, fallback, span, context);
+            return true;
+        }
+        return false;
+    }
+
     // A shared implementation is not a Python callable until paired with a
     // receiver. Immediate calls keep that pair in the existing operand storage;
     // an attribute exposed as a value uses the ordinary bound-method wrapper.

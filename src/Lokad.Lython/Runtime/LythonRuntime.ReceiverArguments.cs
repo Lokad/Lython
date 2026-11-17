@@ -11,6 +11,17 @@ internal sealed partial class LythonRuntime
         private readonly int _start;
         internal int Length { get; }
 
+        // A completed native call can snapshot one evaluated value without
+        // manufacturing an argument array or retaining a private span.
+        internal static ReceiverArguments Single(object? value) => new(value);
+
+        private ReceiverArguments(object? value)
+        {
+            _storage = value;
+            _start = -1;
+            Length = 1;
+        }
+
         internal ReceiverArguments(ExecutableSlot[] storage, int start, int count)
             : this((object)storage, storage.Length, start, count) { }
 
@@ -29,6 +40,7 @@ internal sealed partial class LythonRuntime
             get
             {
                 ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual((uint)index, (uint)Length);
+                if (_start < 0) return _storage;
                 return _storage is ExecutableSlot[] slots ? slots[_start + index].Object
                     : ((object?[])_storage!)[_start + index];
             }
@@ -39,6 +51,7 @@ internal sealed partial class LythonRuntime
             ArgumentOutOfRangeException.ThrowIfNegative(start);
             ArgumentOutOfRangeException.ThrowIfNegative(count);
             ArgumentOutOfRangeException.ThrowIfGreaterThan(checked(start + count), Length);
+            if (_start < 0) return count == 0 ? default : this;
             return new(_storage!, checked(_start + Length), checked(_start + start), count);
         }
 

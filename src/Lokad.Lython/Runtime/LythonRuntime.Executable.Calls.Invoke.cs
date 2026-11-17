@@ -78,71 +78,36 @@ internal sealed partial class LythonRuntime
                 finally { if (callEntered) scope.LeaveInterpreterFrame(); }
             }
 
-            // These existing native receiver operations need execution services,
-            // not a function namespace. Exact strings with no arguments cannot
-            // invoke a guest coercion protocol; dictionary views only retain
-            // their native receiver. Other shapes still materialize their frame
-            // before binding, callbacks or actual suspension.
-            if (call.HasReceiver && call.ArgumentCount == 0 && call.IsPositionalOnly)
+            if (call.HasReceiver && call.IsPositionalOnly)
             {
-                if (call.CasedSplit is not null
+                if (call.ArgumentCount == 0 && call.CasedSplit is not null
                     && TryExecuteCasedSplit(ref execution, invocation ?? scope, invocation, call, start, target)) return true;
+                if (target is not ReceiverMethod method) return false;
                 try
                 {
-                    object result;
-                    var context = invocation ?? scope;
                     var receiver = execution.Stack[start];
-                    if (receiver is PyString or PyDict && target is ReceiverMethod method && method.AcceptsPositional(0))
-                        result = InvokeReceiverMethod(method, receiver, call.CallSpan, context);
-                    else return false;
+                    var arguments = execution.Stack.Slice(start + call.ArgumentOffset, call.ArgumentCount).Span;
+                    if (call.AccumulatesDictionary && arguments.Length is 1 or 2
+                        && ReferenceEquals(method, ReceiverMethods.DictionaryGet) && receiver is PyDict dictionary
+                        && dictionary.CanReadKeySynchronously(arguments[0].Object!)
+                        && TryExecuteDictionaryAccumulation(ref execution, scope, call, start, dictionary,
+                            (PyString)arguments[0].Object!)) return true;
+                    if (!TryInvokeClosedReceiver(method, receiver, arguments, call.CallSpan, invocation ?? scope,
+                        out var result)) return false;
                     PublishInstructionResult(ref execution, invocation, execution.Code.Instructions[execution.InstructionIndex], result);
                     return true;
                 }
                 catch { execution.Stack.RetireTo(start); throw; }
             }
 
-            // Closed text arguments need execution services, not an invocation
-            // namespace. Snapshot evaluated inputs before admission can reenter;
-            // dynamic coercions/keywords still promote through the existing path.
-            if (call.HasReceiver && call.IsPositionalOnly && call.ArgumentCount is >= 1 and <= 3
-                && execution.Stack[start] is PyString text
-                && SelectNativeStringOperation(target, call.ArgumentCount) is { } operation)
-            {
-                var inputs = execution.Stack.Slice(start + call.ArgumentOffset, call.ArgumentCount).Span;
-                var first = inputs[0].Object;
-                var second = inputs.Length > 1 ? inputs[1].Object : null;
-                var third = inputs.Length > 2 ? inputs[2].Object : null;
-                if (CanUseNativeStringCall(operation, first, second, third))
-                {
-                    try
-                    {
-                        var result = InvokeNativeStringOperation(operation, text, first, second, third,
-                            call.CallSpan, invocation ?? scope);
-                        PublishInstructionResult(ref execution, invocation, execution.Code.Instructions[execution.InstructionIndex], result);
-                        return true;
-                    }
-                    catch { execution.Stack.RetireTo(start); throw; }
-                }
-            }
-
             var argument = call.ArgumentCount == 0 ? null : execution.Stack[start + call.ArgumentOffset];
-            var dictionary = call.HasReceiver && call.IsPositionalOnly && call.ArgumentCount is 1 or 2 &&
-                ReferenceEquals(target, ReceiverMethods.DictionaryGet)
-                ? execution.Stack[start] as PyDict : null;
-            var nativeGet = dictionary is not null && dictionary.CanReadKeySynchronously(argument!);
             var closed = false;
             var unary = call.IsPositionalOnly && call.ArgumentCount == 1
                 ? SelectNativeUnaryOperation(target, argument, out closed) : null;
-            if (invocation is null && !closed) unary = null;
-            if (!nativeGet && unary is null) return false;
+            if (unary is null || invocation is null && !closed) return false;
             try
             {
-                if (nativeGet && call.AccumulatesDictionary && TryExecuteDictionaryAccumulation(
-                    ref execution, scope, call, start, dictionary!, (PyString)argument!)) return true;
-                var result = nativeGet
-                    ? InvokeDictionaryGet(dictionary!, argument!, call.ArgumentCount == 2
-                        ? execution.Stack[start + call.ArgumentOffset + 1] : PyNone.Instance, call.CallSpan, scope)
-                    : InvokeSingleInput(argument!, unary!, call.CallSpan, scope);
+                var result = InvokeSingleInput(argument!, unary, call.CallSpan, scope);
                 PublishInstructionResult(ref execution, invocation, execution.Code.Instructions[execution.InstructionIndex], result);
                 return true;
             }
