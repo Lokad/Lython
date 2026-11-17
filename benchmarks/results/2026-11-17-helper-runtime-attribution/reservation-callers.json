@@ -1,0 +1,23 @@
+{
+  "kind": "Overlapping sampled caller attribution, not a removable CPU share",
+  "sampleCount": 962,
+  "reservationSamples": 88,
+  "callers": [
+    [
+      "instance class Lokad.Lython.Runtime.Text.PyString [Lokad.Lython] Lokad.Lython.Runtime.Text.PyString::CopyOrBorrowUtf8Range(int32,int32,class Lokad.Lython.Runtime.MemoryGovernor,class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+      32
+    ],
+    [
+      "object [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::ExecuteBuiltinFormattedInstruction(valuetype Lokad.Lython.Frontend.ExecutableInstruction&,class Lokad.Lython.Runtime.Text.GovernedByteBuilder,object,string,class Lokad.Lython.Frontend.ExecutableFormatField,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext)[OptimizedTier1]",
+      20
+    ],
+    [
+      "void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+JsonModule::PushJsonContainer(valuetype Lokad.Lython.Runtime.LythonRuntime/JsonModule/JsonDecodeState&,int32,bool)[OptimizedTier1]",
+      19
+    ],
+    [
+      "instance bool [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+NativeExecution::Format(valuetype Lokad.Lython.Frontend.ExecutableInstruction&)[OptimizedTier1]",
+      17
+    ]
+  ]
+}

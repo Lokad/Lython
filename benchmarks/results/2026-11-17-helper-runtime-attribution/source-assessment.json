@@ -1,0 +1,34 @@
+{
+  "source": "ccf20ba3/frozen7a599347",
+  "files": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs": "23c2f70639e5a99f7cb07f2069a92eabf76e3433e38051a4465eb4c5abf8d441",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Formatting.cs": "e0e7de599f256c5be5662555d8b6f32ad9c6437db4b3c03bc8137962daa2e448",
+    "src/Lokad.Lython/Frontend/ExecutableScript.SuspendingExpressions.cs": "bbe1156afb2793e21e849145abddbbff217f00c786c4d02bddc0661788a802ed",
+    "src/Lokad.Lython/Runtime/Text/PyString.cs": "618bc416ac056f4183a43c26348fc79652a155ea0b1677f2b319ee911cf12954",
+    "src/Lokad.Lython/Runtime/ExecutionState.Guards.cs": "c75820251c40a51e29e409b5573d9941d6d37686f7797ab3f6317e30a9994123"
+  },
+  "alreadyRemoved": [
+    "F-string fields already append to one final UTF-8 builder, with compiler-prepared formats and capacity; no per-field temporary string stage for this workload.",
+    "Split output already admits shells in bulk and shares backing.",
+    "Small helper native arguments already borrow final slots without continuation arrays."
+  ],
+  "selectedHypothesis": "JSON string scanning still classifies every ordinary byte in a scalar loop. Replace that scan in the existing decoder with bounded bulk delimiter/control searches; retain escape processing, token UTF-8 validation, errors, ownership and allocation preflights unchanged.",
+  "affectedWorkloads": [
+    "Complete helper report with JSON record input",
+    "Complete JSON-lines aggregate",
+    "Unchanged helper-text control"
+  ],
+  "acceptance": [
+    "Escaped quote/backslash/surrogate and non-ASCII strings",
+    "Strict/non-strict controls and exact scalar error positions",
+    "Long plain/escaped token boundaries and cooperative checks within bounded input chunks",
+    "Retained results, first terminal refusal, cache/budget cleanup, async hooks unchanged"
+  ],
+  "displaced": "Existing per-byte ordinary JSON token classification loop; no second parser, preload pass, prepaid memory ledger, policy, cache or configuration.",
+  "comparison": "One bounded frozen source pair, report and JSON-lines warm/fresh with unchanged helper-text control; physical allocation expected flat. Decide retain/refine/withdraw with original controls/adversity retained; no fixed-percentage veto or speedup forecast.",
+  "notSelected": [
+    "No stack-check removal based on inclusive samples.",
+    "No admission loosening or new reserve-credit machinery.",
+    "No replay of R439/R456 shared-call kernels or native blocks."
+  ]
+}
