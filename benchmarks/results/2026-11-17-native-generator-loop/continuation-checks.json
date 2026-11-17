@@ -1,0 +1,40 @@
+[
+  {
+    "name": "continuation-net11.0",
+    "command": [
+      "C:\\Users\\JoannesVermorel\\.dotnet11\\dotnet.exe",
+      "test",
+      "tests/Lokad.Lython.PublicApi.Tests/Lokad.Lython.PublicApi.Tests.csproj",
+      "-c",
+      "Release",
+      "-f",
+      "net11.0",
+      "--no-build",
+      "--filter",
+      "FullyQualifiedName~BufferedGeneratorContinuationTests",
+      "--logger",
+      "console;verbosity=minimal"
+    ],
+    "exitCode": 0,
+    "seconds": 6.500304599758238
+  },
+  {
+    "name": "continuation-net10.0",
+    "command": [
+      "C:\\Users\\JoannesVermorel\\.dotnet11\\dotnet.exe",
+      "test",
+      "tests/Lokad.Lython.PublicApi.Tests/Lokad.Lython.PublicApi.Tests.csproj",
+      "-c",
+      "Release",
+      "-f",
+      "net10.0",
+      "--no-build",
+      "--filter",
+      "FullyQualifiedName~BufferedGeneratorContinuationTests",
+      "--logger",
+      "console;verbosity=minimal"
+    ],
+    "exitCode": 0,
+    "seconds": 6.028094499837607
+  }
+]

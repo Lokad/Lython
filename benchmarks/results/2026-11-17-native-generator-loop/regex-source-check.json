@@ -1,0 +1,34 @@
+{
+  "head": "a370f693b584cb9177949339706376a40e411848",
+  "readOnly": true,
+  "files": [
+    {
+      "path": "src/Lokad.Utf8Regex.PythonRe/Utf8PythonRegex.Metadata.cs",
+      "committedSHA256": "7cf2695affd350bd7808f832b31405fa9ef77b32cbad705c9d7fa3186d8cb96d",
+      "workingSHA256": "021ac85a07cb5e19b2780a7a8728adb4936f93c8b312149cc7103436f3212322",
+      "workingTextMatchesCommit": true
+    },
+    {
+      "path": "src/Lokad.Utf8Regex.PythonRe/Utf8PythonRegex.Cursor.cs",
+      "committedSHA256": "663a0e933731c5774d9f73a6113edb702aa4cbb87e0f6e4317c1d83b6985d6ce",
+      "workingSHA256": "663a0e933731c5774d9f73a6113edb702aa4cbb87e0f6e4317c1d83b6985d6ce",
+      "workingTextMatchesCommit": true
+    },
+    {
+      "path": "src/Lokad.Utf8Regex.PythonRe/Utf8PythonMatchCursor.cs",
+      "committedSHA256": "05ab94831fcb8d95da9456ef9977f71bd5495bf13953fb3ad966788c534513ed",
+      "workingSHA256": "9dad375fd60c94ac12fc163788478b4c8cf46211ee38d415cb7a4b6c1450408b",
+      "workingTextMatchesCommit": true
+    }
+  ],
+  "findings": [
+    "UTF8 name-to-number lookup and pattern copying present; UTF8 group-name enumeration still absent.",
+    "Cursor MoveNext still links retained creation token with current token.",
+    "Cursor overload selects working allowance; documentation leaves caller-retained result storage separate, no explicit per-match result/staging allowance.",
+    "Recent text/scalar-coordinate removals do not close those gaps or require a core change."
+  ],
+  "normalAdapterPinUnchanged": "0.4.0",
+  "immutableDevelopment105QualificationReused": true,
+  "newQualification": false,
+  "coreRuntimeWorkIndependent": true
+}
