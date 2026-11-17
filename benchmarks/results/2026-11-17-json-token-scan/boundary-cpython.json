@@ -1,0 +1,21 @@
+{
+  "reference": "CPython3.13.2 local",
+  "version": "Python 3.13.2",
+  "rows": [
+    {
+      "prefixLength": 1023,
+      "strictScalarErrorPosition": 1026,
+      "permissiveValueSHA256": "3bd2b16dbce284433dfbdd555536685ef321cd2e19bddfd8cb1ed34c88f88859"
+    },
+    {
+      "prefixLength": 1024,
+      "strictScalarErrorPosition": 1027,
+      "permissiveValueSHA256": "40991e0f531b53b6cb7a7c1126f563092cf65ddfdd3892713fff881250829a6e"
+    },
+    {
+      "prefixLength": 1025,
+      "strictScalarErrorPosition": 1028,
+      "permissiveValueSHA256": "da7de573f4dd09e433dc708076063f76b0b465cf7aeecb3327a5fe0872c4818e"
+    }
+  ]
+}

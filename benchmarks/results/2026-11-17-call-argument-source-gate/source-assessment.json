@@ -1,0 +1,44 @@
+{
+  "source": "c882e206, production unchanged from qualifiedccf20ba3",
+  "sourceSHA256": {
+    "src/Lokad.Lython/Frontend/ExecutableStackLayout.cs": "f2de669413f4c875c78eb8176e2ff72ce175be1b29b3784c4407a2f9fe1050c0",
+    "src/Lokad.Lython/Frontend/ExecutableScript.cs": "83331f8c49b89d2549ee800cef342644763b1572e59e66563e687a22e9073fdf",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativePrefix.cs": "ab986cbf83cf7bfb95bc972fdf5cfc9bf2bb80c16d8d17a6eadfbc6228832ed3",
+    "src/Lokad.Lython/Runtime/PyExecutableFunction.cs": "efbae3c8a9dd406fb4db3df90b868fcba6d60e85192ff126d4cc70dc01df78d9"
+  },
+  "counts": {
+    "scripts.numeric-squared-error.large": {
+      "callSites": 11,
+      "sitesWithAdjacentPureTail": 7,
+      "pureTailLoads": 12
+    },
+    "calls.positional.large": {
+      "callSites": 3,
+      "sitesWithAdjacentPureTail": 3,
+      "pureTailLoads": 3
+    },
+    "scripts.text-normalization.helper-list": {
+      "callSites": 17,
+      "sitesWithAdjacentPureTail": 10,
+      "pureTailLoads": 16
+    },
+    "scripts.report-render.helper-list": {
+      "callSites": 11,
+      "sitesWithAdjacentPureTail": 9,
+      "pureTailLoads": 11
+    }
+  },
+  "finding": "Final executable IR still emits adjacent pure LoadLocal/LoadConst argument instructions at calls. ForwardValues handles ordinary operation inputs, while Call has ValueInputCount0. These instructions dispatch and publish a caller window before the existing call binds final parameters.",
+  "scope": "Static call sites, not dynamic frequency or measured removable CPU share. Only uncaptured, unmirrored local/constant tails qualify; never move reads across arbitrary expressions/protocols.",
+  "hypothesis": "Extend existing compiler operand preparation and call-site metadata to batch adjacent pure argument materialization at the existing call boundary. Eliminate those leaf instructions/dispatch, retaining the funded contiguous caller window and current binder/frame lifecycle for actual async/general calls.",
+  "displaced": "Per-argument executable leaf dispatch/publication; no claim that existing caller storage, final parameter copies or real suspension owners can all disappear.",
+  "compatibility": [
+    "Preserve argument evaluation and missing-name/callability/recursion error order and original spans.",
+    "Resolve forwarded inputs before any callable selection/admission/reentrant host operation, preserving identities and snapshots.",
+    "Keep current cancellation/refusal checks, static capacity and extent ownership through partial failure and actual suspension.",
+    "General/default/keyword/starred binding, receivers, closures and generators retain semantics.",
+    "Admit any retained compiler descriptor capacity; no new policy, arena, pool, frame controller, shared dispatch backend or option."
+  ],
+  "decision": "Select bounded compiler-to-call prototype; source gate distinguishes this from R439 sharing execution kernels and R456 managed native blocks. No CPU prediction or new profiling campaign.",
+  "validation": "Focused existing argument/alias/error/order/cancellation/refusal/actual-I/O checks; one complete helper-text warm/fresh and ordinary-call diagnostic pair, numeric complete-script control. Retain/refine/withdraw with CPU/allocation separate. Batch full delivery only if retained."
+}

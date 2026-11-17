@@ -1,0 +1,49 @@
+{
+  "retainedProductionChange": false,
+  "withdrawn": true,
+  "independentNewPublicCases": 6,
+  "checks": [
+    {
+      "file": "boundaries-public-net11.trx",
+      "passed": 28
+    },
+    {
+      "file": "initial-internal-net10.trx",
+      "passed": 213
+    },
+    {
+      "file": "initial-internal-net11.trx",
+      "passed": 213
+    },
+    {
+      "file": "initial-public-net10.trx",
+      "passed": 972
+    },
+    {
+      "file": "initial-public-net11.trx",
+      "passed": 969
+    },
+    {
+      "file": "unchanged-runtime-boundaries-net10.trx",
+      "passed": 28
+    },
+    {
+      "file": "unchanged-runtime-boundaries-net11.trx",
+      "passed": 28
+    }
+  ],
+  "overlappingFiltersNotSummed": true,
+  "eachActualWindowsTargetUnchangedRuntimeBoundaryCases": 28,
+  "initialPrototypeNet11": {
+    "internal": 213,
+    "publicBeforeFinalThreeCases": 969
+  },
+  "initialPrototypeNet10": {
+    "internal": 213,
+    "public": 972
+  },
+  "frozenGoldenCasesEachImage": 12,
+  "physicalAllocation": "Essentially flat; affected accounted peaks unchanged. Each run returns to compiled baseline and final disposal to zero.",
+  "fullPlatformStressPackageQualification": "Not repeated for withdrawn runtime; only independent tests retained.",
+  "publicationHeld": true
+}

@@ -5,9 +5,47 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class EscapedJsonStringTests
 {
     [Theory]
+    [InlineData(1023)]
+    [InlineData(1024)]
+    [InlineData(1025)]
+    public async Task LongUnicodeTokensPreserveStrictErrorsAndPermissiveValues(int prefixLength)
+    {
+        var prefix = new string('x', prefixLength) + "é😀";
+        var document = "\"" + prefix + "\0tail\"";
+        var budget = new LythonMemoryBudget(262144);
+        using (var script = new LythonEngine().Compile("""
+            import json
+            try:
+                json.loads(source)
+            except json.JSONDecodeError as error:
+                print(error.pos)
+            return json.loads(source, strict=False)
+            """, budget))
+        {
+            var baseline = budget.ReservedBytes;
+            var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["source"] = document } };
+            foreach (var asynchronous in new[] { false, true })
+            {
+                using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
+                {
+                    Assert.True(result.Success, result.Failure?.Message);
+                    Assert.Equal($"{prefixLength + 3}\n", result.StandardOutput);
+                    Assert.Equal(prefix + "\0tail", result.ReturnValue);
+                    Assert.True(budget.ReservedBytes > baseline);
+                }
+                Assert.Equal(baseline, budget.ReservedBytes);
+            }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
     [InlineData(255)]
     [InlineData(256)]
     [InlineData(257)]
+    [InlineData(1023)]
+    [InlineData(1024)]
+    [InlineData(1025)]
     public async Task ManagedBufferBoundaryPreservesUnicodeEscapesAndOwnedResults(int rawLength)
     {
         const string escapes = @"\u00e9\ud83d\ude00\u0301\u0000\n\/";
