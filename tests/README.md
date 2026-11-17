@@ -1,5 +1,11 @@
 # Testing Lython
 
+[Container displays](Lokad.Lython.PublicApi.Tests/ContainerDisplayPipelineTests.cs)
+preserve guest aliases, duplicate-key identity, protocol order, partial effects
+and protected cleanup across helper handoff. Escaping results remain funded
+across later executions; refused admission cannot be suppressed. Public projection
+checks snapshot values and ownership, while Python identity is asserted in the guest.
+
 [Copied callable inputs](Lokad.Lython.Tests/CallablePacketOwnershipTests.cs) check
 major-copy admission before effects and funding during cancellation cleanup.
 Ordinary scratch clears/refunds after completion; fresh retainable bound prefixes

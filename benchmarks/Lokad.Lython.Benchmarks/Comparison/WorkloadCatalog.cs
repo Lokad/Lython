@@ -60,14 +60,15 @@ internal static class WorkloadCatalog
         var cases = new List<ComparisonWorkload>();
         foreach (var n in new[] { 0, 16, 1024 })
         foreach (var name in new[] { "csv-summary", "text-summary", "json-summary", "file-manifest", "file-search", "text-uppercase", "config-edit",
-            "csv-summary-helpers", "text-summary-helpers", "json-summary-helpers", "file-manifest-helpers", "csv-summary-functions", "csv-validated-records",
+            "csv-summary-helpers", "text-summary-helpers", "json-summary-helpers", "json-record-transform", "file-manifest-helpers", "csv-summary-functions", "csv-validated-records",
             "numeric-report.integer", "numeric-report.float", "report-render", "patch-generation", "csv-invoice", "zip-config" })
         {
             var inputs = new Dictionary<string, byte[]>();
             var outputs = new Dictionary<string, byte[]>();
             byte[] Utf8(string text) => ComparisonProtocol.Utf8.GetBytes(text);
             string stdout;
-            var kind = name.EndsWith("-helpers", StringComparison.Ordinal) ? name[..^8]
+            var kind = name == "json-record-transform" ? "json-summary"
+                : name.EndsWith("-helpers", StringComparison.Ordinal) ? name[..^8]
                 : name.EndsWith("-functions", StringComparison.Ordinal) ? name[..^10] : name;
             switch (kind)
             {

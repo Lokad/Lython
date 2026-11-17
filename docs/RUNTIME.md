@@ -439,6 +439,15 @@ bind once, local initializers run once, and returned tuples/lists remain ordinar
 Python values. There is no separate native expression graph or whole-body type
 proof. Each operation checks its actual operands after earlier effects and admission.
 
+Native admission uses lexical/storage facts, without a second whole-code opcode
+inventory. An operation needing a frame transfers its current PC and values;
+completed effects are not replayed. Lists, sets and dictionaries use shared final-slot
+construction. Closed scalar keys can finish in the borrowed helper; composite or
+protocol keys transfer before hashing. Displays reserve their maximum capacity
+up front, including duplicate keys, so supplied-budget rejection can occur earlier.
+Unpublished backing refunds on construction or input-cleanup failure; retained
+values and aliases keep their existing owners. Large scans remain cancellable.
+
 Eligible `try`/`except` helpers use the same prefix through their normal body.
 Handler-only instructions do not require a lexical frame before that body runs.
 A catchable fault transfers its exact instruction and materialized live values

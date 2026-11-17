@@ -228,6 +228,9 @@ internal sealed partial class LythonRuntime
                         Publish(instruction, list);
                         break;
                     }
+                    case ExecutableOpCode.MakeDict or ExecutableOpCode.MakeSet:
+                        if (!ConstructContainer(instruction)) return false;
+                        break;
                     case ExecutableOpCode.StartFormattedString or ExecutableOpCode.AppendFormattedText
                         or ExecutableOpCode.FinishFormattedString or ExecutableOpCode.ConvertFormattedValue or ExecutableOpCode.FormatField:
                         if (!Format(instruction)) return false;
@@ -240,11 +243,38 @@ internal sealed partial class LythonRuntime
                         Trim(instruction.LiveExtent);
                         break;
                     default:
-                        throw new InvalidOperationException($"Unexpected inline opcode: {instruction.OpCode}");
+                        // Preserve the current PC and values. The ordinary frame
+                        // owns protocols, handlers and actual suspension.
+                        return false;
                 }
                 Index++;
             }
             return Index >= Code.Instructions.Length;
+        }
+
+        // Keep new container construction and unpublished-result cleanup out
+        // of the ordinary arithmetic/call loop. Unknown keys transfer before
+        // traversing composites or invoking any Python callback.
+        private bool ConstructContainer(in ExecutableInstruction instruction)
+        {
+            var dictionary = instruction.OpCode == ExecutableOpCode.MakeDict;
+            var inputs = Values.Slice(instruction.InputStart,
+                dictionary ? checked(2 * instruction.PairCount) : instruction.ItemCount);
+            if (!CanConstructClosedSlotKeys(inputs, dictionary ? 2 : 1, _scope, instruction.Span)) return false;
+            object value = dictionary ? CreateSlotDictionary(inputs, _scope, instruction.Span)
+                : CreateSlotSet(inputs, _scope, instruction.Span);
+            try
+            {
+                Trim(instruction.InputStart);
+                Publish(instruction, value);
+                return true;
+            }
+            catch
+            {
+                if (value is PyDict map) map.DiscardUnpublishedStorage();
+                else ((PySet)value).ReleaseUnpublishedStorage();
+                throw;
+            }
         }
 
         private bool Format(in ExecutableInstruction instruction)

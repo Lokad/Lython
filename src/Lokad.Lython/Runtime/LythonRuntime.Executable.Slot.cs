@@ -1,4 +1,5 @@
 using System.Numerics;
+using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
@@ -171,4 +172,64 @@ internal sealed partial class LythonRuntime
         storage.Commit(bytes);
         return PyList.FromTransferredArray(items, context.MemoryGovernor, span);
     }
+
+    // Prove a closed hash/equality path without traversing composite keys or
+    // invoking an earlier key's protocol out of order. Other keys hand off
+    // before construction; both runners then use the same final-slot kernel.
+    private static bool CanConstructClosedSlotKeys(ReadOnlySpan<ExecutableSlot> values, int stride,
+        ExecutionContext context, LythonSourceSpan span)
+    {
+        for (var i = 0; i < values.Length; i += stride)
+        {
+            // Bound callbacks can borrow a larger admitted array than the
+            // fixed small-call buffer. This proof must remain cancellable too.
+            if (i != 0 && (i & 1023) == 0) context.CheckExecution(span);
+            ref readonly var key = ref values[i];
+            if (key.Reference is PyString or PyBytes or BigInteger or double or bool or PyNone
+                || key.TryGetInteger(out _) || key.TryGetDouble(out _)) continue;
+            return false;
+        }
+        return true;
+    }
+
+    private static PyDict CreateSlotDictionary(Span<ExecutableSlot> values,
+        ExecutionContext context, LythonSourceSpan span)
+    {
+        // Pair count conservatively bounds final capacity, including duplicates.
+        // Admission precedes allocation and key callbacks; no growth copies.
+        var dictionary = new PyDict(values.Length / 2, context.MemoryGovernor, span);
+        using var ambient = PyStructuralGuard.PushAmbient(context, span);
+        try
+        {
+            for (var i = 0; i < values.Length; i += 2)
+            {
+                context.CheckExecution(span);
+                var key = ValidateDictionaryKey(values[i].Object.RequireNotNull(), span);
+                dictionary.SetItem(key, values[i + 1].Object.RequireNotNull());
+            }
+            context.CheckExecution(span);
+            return dictionary;
+        }
+        catch { dictionary.DiscardUnpublishedStorage(); throw; }
+    }
+
+    private static PySet CreateSlotSet(Span<ExecutableSlot> values,
+        ExecutionContext context, LythonSourceSpan span)
+    {
+        var set = new PySet(context.MemoryGovernor, span);
+        using var ambient = PyStructuralGuard.PushAmbient(context, span);
+        try
+        {
+            set.EnsureCapacity(values.Length);
+            for (var i = 0; i < values.Length; i++)
+            {
+                context.CheckExecution(span);
+                set.Add(ValidateSetItem(values[i].Object.RequireNotNull(), span));
+            }
+            context.CheckExecution(span);
+            return set;
+        }
+        catch { set.ReleaseUnpublishedStorage(); throw; }
+    }
+
 }

@@ -558,9 +558,10 @@ internal sealed partial class ExecutableCodeObject
         foreach (var region in ExceptionRegions)
             if (region.FinallyIndex is int cleanup) NativePrefixEnd = Math.Min(NativePrefixEnd, cleanup);
         PrepareNativeSegments(callSites);
+        // Lexical/storage admission only. The native loop transfers at the
+        // actual operation needing a frame, without a second opcode inventory.
         CanRunNativeInstructions = IsFunctionScope && !RequiresLocalVariableMirroring && capturedLocalSlots.Count == 0
-            && EntryIndex < NativePrefixEnd
-            && SupportsNativeInstructions();
+            && EntryIndex < NativePrefixEnd;
     }
 
     public string Name { get; }
@@ -615,26 +616,6 @@ internal sealed partial class ExecutableCodeObject
 
     public int NativePrefixEnd { get; }
 
-    private bool SupportsNativeInstructions()
-    {
-        for (var index = 0; index < NativePrefixEnd; index++)
-        {
-            // Faults transfer at their original PC into ordinary handler
-            // routing. Handler-only operations never run in this native prefix.
-            var handlerOnly = false;
-            for (var regionIndex = 0; regionIndex < ExceptionRegions.Count; regionIndex++)
-            {
-                var region = ExceptionRegions[regionIndex];
-                if (region.ExceptIndex is not null && index >= region.SuiteStartIndex && index <= region.SuiteEndIndex)
-                { handlerOnly = true; break; }
-            }
-            if (handlerOnly) continue;
-            ref readonly var instruction = ref Instructions[index];
-            if (!IsInlineInstruction(instruction)) return false;
-        }
-        return true;
-    }
-
     private bool CrossesExceptionBoundary(int start, int end)
     {
         // A fused segment must select the same handler at every original PC.
@@ -646,15 +627,5 @@ internal sealed partial class ExecutableCodeObject
         bool Inside(int? position) => position > start && position <= end;
     }
 
-    private static bool IsInlineInstruction(ExecutableInstruction instruction) => instruction.OpCode is
-        ExecutableOpCode.LoadConst or ExecutableOpCode.LoadLocal or ExecutableOpCode.LoadGlobal
-        or ExecutableOpCode.LoadClosure or ExecutableOpCode.StoreLocal or ExecutableOpCode.StoreClosure
-        or ExecutableOpCode.LoadCallMember or ExecutableOpCode.Call or ExecutableOpCode.Unary
-        or ExecutableOpCode.Binary or ExecutableOpCode.Augmented or ExecutableOpCode.Subscript
-        or ExecutableOpCode.CompareJumpIfFalse or ExecutableOpCode.Jump or ExecutableOpCode.JumpIfFalse
-        or ExecutableOpCode.GetIter or ExecutableOpCode.ForNext or ExecutableOpCode.AbruptJump
-        or ExecutableOpCode.StartFormattedString or ExecutableOpCode.AppendFormattedText
-        or ExecutableOpCode.FinishFormattedString or ExecutableOpCode.ConvertFormattedValue or ExecutableOpCode.FormatField
-        or ExecutableOpCode.MakeList or ExecutableOpCode.MakeTuple or ExecutableOpCode.Return
-        or ExecutableOpCode.ReturnNone or ExecutableOpCode.Complete or ExecutableOpCode.Dup or ExecutableOpCode.PopTop;
+
 }

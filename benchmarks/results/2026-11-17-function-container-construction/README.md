@@ -73,3 +73,7 @@ Terminal cached. Broader performance objective active; publication postponed.
 ## Confirmation and selected refinement
 
 [Same-image B921](confirmation/README.md): floating warm+2.37..+11.82%with9.20%candidate spread; fresh−4.52..+1.37%with6.11%candidate spread. Magnitude/debt unresolved; original adversity retained. Windows JIT diagnostic does not explain Linux variance. One contained cold-construction/publication refinement selected; no standalone promotion or more unchanged campaign.
+
+## Refined integration decision
+
+[29964188/B922](refined/README.md) supports retaining the construction design: new JSON-record fresh19.5–22.5%lower/alloc39.55%lower, other controls remain inconclusive. Original adversity stays. A final periodic-check correction for large bound key proofs/new callback regression is qualified and measured separately; no relabelled binary or full-delivery claim yet.

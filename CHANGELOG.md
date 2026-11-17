@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Construct helper-returned dictionaries and sets from final executable slots.
+  Remove the duplicate whole-code opcode eligibility scan; transfer at the actual
+  operation needing a frame. Admit conservative display capacity before allocation,
+  with deterministic unpublished rollback and unchanged Python aliases/protocols.
+
 - Retire private iteration loans returned by helper calls when cancellation
   interrupts publication. Native and array-backed cleanup share the compiler's
   conservative owned-slot bound.

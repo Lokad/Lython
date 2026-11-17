@@ -9,42 +9,16 @@ internal sealed partial class LythonRuntime
 {
     private static PyDict ExecuteExecutableMakeDict(ref ExecutableValueStorage stack, int start, int pairCount, LythonSourceSpan span, ExecutionContext context)
     {
-        var valueCount = checked(pairCount * 2);
-        var dict = new PyDict(context.MemoryGovernor, span);
-        using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
-        for (var i = 0; i < valueCount; i += 2)
-        {
-            var key = ValidateDictionaryKey(stack[start + i], span);
-            dict.SetItem(key, stack[start + i + 1]);
-        }
-
-        stack.RetireTo(start);
-
-        context.CheckExecution(span);
-        return dict;
+        var dictionary = CreateSlotDictionary(stack.Values.AsSpan(start, checked(pairCount * 2)), context, span);
+        try { stack.RetireTo(start); return dictionary; }
+        catch { dictionary.DiscardUnpublishedStorage(); throw; }
     }
 
     private static PySet ExecuteExecutableMakeSet(ref ExecutableValueStorage stack, int start, int count, LythonSourceSpan span, ExecutionContext context)
     {
-        var set = new PySet(context.MemoryGovernor, span);
-        using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
-        try
-        {
-            for (var i = start; i < start + count; i++)
-            {
-                set.Add(ValidateSetItem(stack[i], span));
-            }
-
-            stack.RetireTo(start);
-
-            context.CheckExecution(span);
-        }
-        catch
-        {
-            set.ReleaseUnpublishedStorage();
-            throw;
-        }
-        return set;
+        var set = CreateSlotSet(stack.Values.AsSpan(start, count), context, span);
+        try { stack.RetireTo(start); return set; }
+        catch { set.ReleaseUnpublishedStorage(); throw; }
     }
 
     private static IPyContextManager RequireContextManager(object value, LythonSourceSpan span)
@@ -99,18 +73,9 @@ internal sealed partial class LythonRuntime
 
     private static PyList CreateListFromStack(ref ExecutableValueStorage stack, int start, int count, LythonSourceSpan span, ExecutionContext context)
     {
-        var bytes = PyList.EstimateCapacityBytes(count);
-        using var storage = context.MemoryGovernor.ReserveTemporary(bytes, span);
-        context.CheckExecution(span);
-        var items = count == 0 ? Array.Empty<object>() : new object[count];
-        for (var i = 0; i < count; i++)
-        {
-            items[i] = stack[start + i];
-        }
-
-        stack.RetireTo(start);
-        storage.Commit(bytes);
-        return PyList.FromTransferredArray(items, context.MemoryGovernor, span);
+        var list = CreateSlotList(stack.Values.AsSpan(start, count), context, span);
+        try { stack.RetireTo(start); return list; }
+        catch { list.DiscardUnpublishedStorage(); throw; }
     }
 
     private static PyTuple CreateTupleFromStack(ref ExecutableValueStorage stack, int start, int count, LythonSourceSpan span, ExecutionContext context)
