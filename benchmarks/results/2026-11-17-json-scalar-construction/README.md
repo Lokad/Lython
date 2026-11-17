@@ -1,6 +1,6 @@
 # Direct JSON scalar construction
 
-R492/B910,2026-11-17 UTC. **Retained simplification; full changed-source delivery pending.** Fully
+R492/B910,2026-11-17 UTC. **Retained simplification; full changed-source delivery passes.** Fully
 qualified runtime557381fe/frozend739132f versus84173568 on6aa0fcd2. Two production
 files: remove default ValueTask<object> then ValueTask<(object,int)> transport into
 iterative construction, and two displaced conversion/dispatch helpers. One parser,
@@ -74,5 +74,4 @@ preserved. Both collections pass all gates/users joined/SHAarchive before RAM
 removal; terminal states cached. Publication remains held.
 
 [Confirmation](confirmation/summary.json),[raw](confirmation/observations.tgz),
-[decision/debt](decision.json). Full platform/stress/installed-package delivery is
-pending; no unchanged qualification was repeated.
+[decision/debt](decision.json). [Full platform/stress/installed-package delivery passes](delivery/README.md); no unchanged qualification was repeated.

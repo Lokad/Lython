@@ -15,7 +15,9 @@
     1.4892642188382155
   ],
   "regressionDebt": "Accept confirmed helper+1.3..1.5% for simpler shared scalar path and favorable floating fresh observation. Warm floating magnitude unresolved. Reassess if next representative redesign/checkpoint reproduces/materially increases adversity; no claim of broad or substantial CPU gain.",
-  "fullDeliveryPending": true,
+  "fullDeliveryPending": false,
   "publicationHeld": true,
-  "broaderPerformanceObjectiveActive": true
+  "broaderPerformanceObjectiveActive": true,
+  "qualifiedRun": 44128892209,
+  "qualifiedHead": "22d5a5f3c3824eb352825a597d932a9ebc02de5b"
 }
