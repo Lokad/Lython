@@ -1,0 +1,12 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "ramTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 265850880,
+  "archiveSHA256": "55ff714c429e4ab028ba0c0c7ff2c396df6074ae141c98708c95f9b015440a54",
+  "source": "Committedabcbd9fd/frozenca1a8239; R476 complete floating report/CSV attribution, delivery44041981387active",
+  "performanceComparison": false
+}

@@ -1,0 +1,16 @@
+{
+  "source": "abcbd9fd/frozenca1a8239",
+  "demonstrated": [
+    "Eligible native calls already use stack-backed small arguments and deferred invocation contexts. Bound storage already becomes locals; no unconditional full child frame per helper.",
+    "Default JSON numeric conversion is a non-async method returning a completed ValueTask over native UTF-8. Construction is iterative and suspends only for hooks; no per-number async state machine to delete.",
+    "PyList already owns its final object[] with explicit count/capacity and replacement preflight; no List<object> wrapper to remove.",
+    "Native integral floor division/modulo and direct unpacked helper returns already exist. Do not repeat their original optimization."
+  ],
+  "hypothesesNotDecisions": [
+    "Native list storage could avoid numeric boxes, but mutable reads must retain canonical identity across aliases and later mutation. Immutable tuple indirection cannot simply be reused. A uniform wider payload also affects string-heavy CSV and direct array transfers.",
+    "Call/record pipeline consolidation still merits inspection, but current profiles do not identify another removable whole stage. Inclusive dispatch/call groups contain useful arithmetic, parsing and indexing."
+  ],
+  "gateDecision": "Two bounded current-source captures and targeted source checks complete. No new runtime prototype justified yet; continue structural call/record design with explicit semantic/storage scope. No permanent design ban, repeated capture, fixed-percentage veto or performance forecast.",
+  "unchangedProduction": true,
+  "publicationHeld": true
+}

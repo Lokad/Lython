@@ -9061,3 +9061,13 @@ CSVwarm1.13–1.18×with3.29%Lython control movement. Fourjobs137.80s, all measu
 gates pass/users joined/RAM removed. Initial larger staging refused before mutation/
 workers; reduced catalog fills material gaps, original failure preserved. No causal
 source gain across collections. Full runtime delivery separate; publication held.
+
+[R476/B888 current floating/CSV costs](results/2026-11-17-current-script-costs/README.md):
+950/1090active samples,69/71unknown leaves; useful parsing/index/arithmetic overlaps
+dispatch/calls, no removable-share forecast. Native stack arguments/deferred contexts,
+iterative/defaultUTF8JSON, owned list arrays, nativefloor/mod and unpacked returns
+already exist. Mutable scalar-slot storage needs identity/mutation/direct-transfer
+design, not immutable-tuple reuse alone. Two bounded captures/source gate complete;
+no justified next runtime prototype yet, no permanent ban or repeated capture.
+All users joined/RAM traces archived+verified before unmount; qualified runtime
+unchanged. Continue structural call/record design; publication held.
