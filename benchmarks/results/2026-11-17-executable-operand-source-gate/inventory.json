@@ -1,0 +1,117 @@
+﻿[
+  {
+    "Case": "scripts.json-summary-helpers.large",
+    "Functions": [
+      {
+        "Name": "\u003Cmodule\u003E",
+        "InstructionCount": 78,
+        "GlobalLoads": 0,
+        "NameLoads": 3,
+        "AdjacentConsumerCandidates": []
+      },
+      {
+        "Name": "record_amount",
+        "InstructionCount": 2,
+        "GlobalLoads": 0,
+        "NameLoads": 0,
+        "AdjacentConsumerCandidates": []
+      }
+    ]
+  },
+  {
+    "Case": "scripts.csv-numeric-quality.large",
+    "Functions": [
+      {
+        "Name": "\u003Cmodule\u003E",
+        "InstructionCount": 81,
+        "GlobalLoads": 0,
+        "NameLoads": 4,
+        "AdjacentConsumerCandidates": []
+      },
+      {
+        "Name": "reading",
+        "InstructionCount": 5,
+        "GlobalLoads": 1,
+        "NameLoads": 0,
+        "AdjacentConsumerCandidates": []
+      }
+    ]
+  },
+  {
+    "Case": "scripts.text-normalization.large",
+    "Functions": [
+      {
+        "Name": "\u003Cmodule\u003E",
+        "InstructionCount": 71,
+        "GlobalLoads": 0,
+        "NameLoads": 5,
+        "AdjacentConsumerCandidates": []
+      },
+      {
+        "Name": "\u003Cgenexpr\u003E",
+        "InstructionCount": 9,
+        "GlobalLoads": 0,
+        "NameLoads": 0,
+        "AdjacentConsumerCandidates": []
+      }
+    ]
+  },
+  {
+    "Case": "calls.positional.large",
+    "Functions": [
+      {
+        "Name": "\u003Cmodule\u003E",
+        "InstructionCount": 22,
+        "GlobalLoads": 0,
+        "NameLoads": 2,
+        "AdjacentConsumerCandidates": []
+      },
+      {
+        "Name": "add",
+        "InstructionCount": 2,
+        "GlobalLoads": 0,
+        "NameLoads": 0,
+        "AdjacentConsumerCandidates": []
+      }
+    ]
+  },
+  {
+    "Case": "scripts.numeric-squared-error.floating.large",
+    "Functions": [
+      {
+        "Name": "\u003Cmodule\u003E",
+        "InstructionCount": 83,
+        "GlobalLoads": 0,
+        "NameLoads": 8,
+        "AdjacentConsumerCandidates": []
+      },
+      {
+        "Name": "squared_error",
+        "InstructionCount": 4,
+        "GlobalLoads": 0,
+        "NameLoads": 0,
+        "AdjacentConsumerCandidates": []
+      },
+      {
+        "Name": "\u003Cgenexpr\u003E",
+        "InstructionCount": 15,
+        "GlobalLoads": 3,
+        "NameLoads": 0,
+        "AdjacentConsumerCandidates": [
+          {
+            "Instruction": 4,
+            "Name": "data",
+            "Load": "LoadGlobal",
+            "Consumer": "Subscript"
+          },
+          {
+            "Instruction": 7,
+            "Name": "data",
+            "Load": "LoadGlobal",
+            "Consumer": "Subscript"
+          }
+        ]
+      }
+    ]
+  }
+]
