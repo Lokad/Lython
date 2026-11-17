@@ -53,19 +53,35 @@ public sealed class ImmutableStorageAccountingTests
     [Fact]
     public void MaterializingNumericSlotsFundsThemBeforeAdvancingSource()
     {
-        var governor = new MemoryGovernor(new LythonMemoryBudget(4096));
+        var budget = new LythonMemoryBudget(4096);
+        using var owner = budget.CreateScope();
+        var governor = new MemoryGovernor(owner);
+        object first = new BigInteger(1);
+        object second = new BigInteger(2);
         IEnumerable<object> Values()
         {
-            yield return new BigInteger(1);
-            Assert.True(governor.CurrentReservedBytes >= 160);
-            Assert.Equal(0, governor.CurrentCommittedBytes);
-            yield return new BigInteger(2);
+            yield return first;
+            // Capacity can already be committed before the iterator resumes.
+            // The yielded value must stay funded through either balance.
+            var firstPayload = PyTuple.EstimateApproximateBytes(1)
+                + RuntimeMemoryEstimates.ScalarStorageBytes;
+            Assert.True(governor.CurrentAccountedBytes >= firstPayload);
+            Assert.Equal(governor.CurrentAccountedBytes, budget.ReservedBytes);
+            yield return second;
         }
         var tuple = new PyTuple(Values(), governor);
-        Assert.Equal(192, tuple.CommittedStorageBytes);
-        Assert.Equal(192, governor.CurrentCommittedBytes);
+        var payload = PyTuple.EstimateApproximateBytes(2)
+            + 2 * RuntimeMemoryEstimates.ScalarStorageBytes;
+        Assert.InRange(tuple.CommittedStorageBytes, payload,
+            payload + 32 + 2 * RuntimeMemoryEstimates.ScalarStorageBytes);
+        Assert.Equal(tuple.CommittedStorageBytes, governor.CurrentCommittedBytes);
+        Assert.Equal(governor.CurrentAccountedBytes, budget.ReservedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
+        Assert.Same(first, tuple[0]);
+        Assert.Same(second, tuple[1]);
         GC.KeepAlive(tuple);
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [Fact]

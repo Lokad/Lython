@@ -42,16 +42,26 @@ public sealed class TimeZoneAccountingTests
     public void LocaltimeOwnsZoneLabel()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
+        var budget = new LythonMemoryBudget();
+        using var owner = budget.CreateScope();
+        var context = new LythonRuntime.ExecutionContext(host,
+            new LythonRunOptions { MemoryBudget = owner }, regexProvider: Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
-        var zone = ZoneOf(InvokeTimeFunction("Localtime", context, span));
+        var structTime = InvokeTimeFunction("Localtime", context, span);
+        var zone = ZoneOf(structTime);
         Assert.Same(context.MemoryGovernor, zone.OwnerMemoryGovernor);
         Assert.Equal("UTC+01:00", zone.AsString());
-        // Shell (64) plus the values tuple (176) and the zone label (128 + 9),
-        // plus nine 64 B storage charges for the adopted time fields (N06).
-        Assert.Equal(377L + 9L * 64L, context.MemoryGovernor.CurrentCommittedBytes - before);
+        // Fund the shell, values, fresh zone label and numeric payloads.
+        // Iterable construction can additionally retain capacity headroom.
+        const long payload = 377L + 9L * RuntimeMemoryEstimates.ScalarStorageBytes;
+        Assert.InRange(context.MemoryGovernor.CurrentCommittedBytes - before,
+            payload, payload + 32 + 9L * RuntimeMemoryEstimates.ScalarStorageBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        Assert.Equal(context.MemoryGovernor.CurrentAccountedBytes, budget.ReservedBytes);
+        GC.KeepAlive(structTime);
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [Fact]

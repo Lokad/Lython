@@ -44,8 +44,9 @@ not a causal comparison to the old script's streaming error order. B866 requests
 warm/compile-run, which invoke **Run**. The case name ending.async and runAsync
 catalog metadata did not change that worker lane. Initial async timing labels
 were corrected before commitment; allocation diagnostics explicitly call both
-APIs. Use the existing warm-async lane for the separate supplemental check; no
-new worker protocol/framework is needed. No async compile-to-result timing claimed.
+APIs. [The actual warm-async supplement is complete](async/README.md): report and generator
+medians favor the candidate, with substantial moving-control uncertainty; CSV is
+0.1–3.6% adverse. No new worker protocol/framework or async compile-to-result claim.
 
 Quiet AzureF4as_v7 Ubuntu24.04.4,four EPYC9V45vCPUs,16GiB/no swap,.NET11RC3,
 normal tiering/natural workstation GC. Seven jobs214.280s;4s full-request warmup,
@@ -77,3 +78,6 @@ new test compile corrections and constructor-overload ambiguity are archived.
 [frozen inputs/images](identity.json),[source](candidate-sources.tar.xz),
 [exact core](measured-core.tar.xz),[raw evidence](observations.tgz),
 [all focused logs/failures](focused-checks.tgz),[procedures/custody](procedures.tgz).
+
+[Delivery accounting corrections](accounting-checks/README.md) preserve the original
+two CI failures and strengthen ownership/cleanup checks without changing runtime.

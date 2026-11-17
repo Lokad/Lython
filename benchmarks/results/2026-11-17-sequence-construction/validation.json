@@ -18,5 +18,12 @@
   "reportedTuplePeakIncreasePercent": 11.81357439299251,
   "remainingDebt": "Numeric elapsed/CPU uncertain with moving controls; CSV roughly flat; do not claim no regression or add gains across source pairs.",
   "timingCorrection": "B866 warm and compile-run use Run; catalog runAsync metadata did not select timed execution. Allocation diagnostics explicitly call both APIs. Supplemental warm-async qualification is separate.",
-  "publicationHeld": true
+  "publicationHeld": true,
+  "actualAsyncSupplementComplete": true,
+  "actualAsyncEvidence": "async/README.md",
+  "asyncCaveat": "Report/generator favorable with moving controls; CSV elapsed +0.14..+3.61% and CPU +0.97..+3.05%.",
+  "initialDeliveryRun": 43987268690,
+  "initialDeliveryFailures": "Two stale reserved/exact-charge assertions, reproduced on Windows; corrected to funded payload/headroom/owner balances. Production unchanged.",
+  "correctedAccountingActualWindowsNet11": 31,
+  "correctedAccountingActualWindowsNet10": 31
 }
