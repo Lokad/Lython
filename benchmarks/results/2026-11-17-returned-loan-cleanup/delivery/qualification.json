@@ -1,0 +1,90 @@
+{
+  "run": 44173843690,
+  "head": "242ca28437183b41ffa642a8937098b875a8b852",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "log": "0_tests (ubuntu-latest).txt",
+      "summaries": [
+        {
+          "framework": "net11.0",
+          "passed": 4831
+        },
+        {
+          "framework": "net11.0",
+          "passed": 18021
+        },
+        {
+          "framework": "net10.0",
+          "passed": 4831
+        },
+        {
+          "framework": "net10.0",
+          "passed": 18021
+        },
+        {
+          "framework": "net11.0",
+          "passed": 14
+        },
+        {
+          "framework": "net11.0",
+          "passed": 406
+        },
+        {
+          "framework": "net10.0",
+          "passed": 14
+        },
+        {
+          "framework": "net10.0",
+          "passed": 406
+        }
+      ]
+    },
+    {
+      "log": "1_tests (windows-latest).txt",
+      "summaries": [
+        {
+          "framework": "net11.0",
+          "passed": 4831
+        },
+        {
+          "framework": "net11.0",
+          "passed": 18021
+        },
+        {
+          "framework": "net10.0",
+          "passed": 4831
+        },
+        {
+          "framework": "net10.0",
+          "passed": 18021
+        },
+        {
+          "framework": "net11.0",
+          "passed": 14
+        },
+        {
+          "framework": "net11.0",
+          "passed": 406
+        },
+        {
+          "framework": "net10.0",
+          "passed": 14
+        },
+        {
+          "framework": "net10.0",
+          "passed": 406
+        }
+      ]
+    }
+  ],
+  "summaries": 16,
+  "sourceInputsVerified": 2383,
+  "production": 585,
+  "normalAdapterPin": "0.4.0",
+  "allMeaningfulStepsPassed": true,
+  "logsSHA256": "bf62c9f345ac3f5c82d84ad8ebd9c3b71504e116a2bc9b5ef2688bca72e2d500",
+  "committedProductionMatchesQualifiedInputs": true,
+  "binaryEqualityInferred": false,
+  "publicationHeld": true
+}

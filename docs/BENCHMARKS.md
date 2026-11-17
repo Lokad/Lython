@@ -55,10 +55,11 @@ measurements with their named revisions, original adverse controls and unresolve
 phase inversions. Those results are historical, not this checkpoint or today's HEAD.
 The new ratios do not establish a source-change gain across collections.
 
-The measured runtime's [first delivery](../benchmarks/results/2026-11-17-returned-loan-cleanup/README.md)
-passed Ubuntu and both platforms' ordinary/package checks but failed a Windows10
-stress fixture's post-return cancellation inference. A fixture correction is
-committed; complete delivery qualification remains separate from benchmark gates.
+The same production source is [fully qualified at242ca284](../benchmarks/results/2026-11-17-returned-loan-cleanup/delivery/README.md)
+on Windows/Ubuntu actual11/10, originalstress and installed Release consumers.
+The earlier Windows10 fixture failure and correction remain linked there. This
+does not imply binary equality with measured8d26963c or turn diagnostic ratios
+into universal performance claims.
 
 ## Improvements within Lython
 
