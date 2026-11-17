@@ -1,0 +1,113 @@
+{
+  "purpose": "Windows11 JIT diagnostic on actual images; no Linux causal or portable CPU claim.",
+  "rows": [
+    {
+      "role": "reference",
+      "method": "Lokad.Lython.Runtime.PyExecutableFunction:StartNativeCall(Lokad.Lython.Frontend.ExecutableCallSite,System.ReadOnlySpan`1[Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot],System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,bool,bool,System.Span`1[Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot],byref,byref,byref):this (Tier0)",
+      "codeBytes": 664,
+      "initialStackSubtraction": 592
+    },
+    {
+      "role": "reference",
+      "method": "Lokad.Lython.Runtime.PyExecutableFunction:StartInline(System.Span`1[Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot],System.Nullable`1[Lokad.Lython.Runtime.BoundFunctionArguments],Lokad.Lython.LythonSourceSpan,bool,System.Span`1[Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot],byref,byref,byref):this (Tier0)",
+      "codeBytes": 1039,
+      "initialStackSubtraction": 448
+    },
+    {
+      "role": "reference",
+      "method": "Lokad.Lython.Runtime.LythonRuntime+NativeExecution:RunCore(byref):bool:this (Instrumented Tier0)",
+      "codeBytes": 6495,
+      "initialStackSubtraction": 1360
+    },
+    {
+      "role": "reference",
+      "method": "Lokad.Lython.Runtime.PyExecutableFunction:StartNativeCall(Lokad.Lython.Frontend.ExecutableCallSite,System.ReadOnlySpan`1[Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot],System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,bool,bool,System.Span`1[Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot],byref,byref,byref):this (Instrumented Tier0)",
+      "codeBytes": 694,
+      "initialStackSubtraction": 592
+    },
+    {
+      "role": "reference",
+      "method": "Lokad.Lython.Runtime.PyExecutableFunction:StartInline(System.Span`1[Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot],System.Nullable`1[Lokad.Lython.Runtime.BoundFunctionArguments],Lokad.Lython.LythonSourceSpan,bool,System.Span`1[Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot],byref,byref,byref):this (Instrumented Tier0)",
+      "codeBytes": 1202,
+      "initialStackSubtraction": 448
+    },
+    {
+      "role": "reference",
+      "method": "Lokad.Lython.Runtime.LythonRuntime+NativeExecution:RunCore(byref):bool:this (Instrumented Tier0)",
+      "codeBytes": 6495,
+      "initialStackSubtraction": 1360
+    },
+    {
+      "role": "reference",
+      "method": "Lokad.Lython.Runtime.PyExecutableFunction:StartNativeCall(Lokad.Lython.Frontend.ExecutableCallSite,System.ReadOnlySpan`1[Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot],System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,bool,bool,System.Span`1[Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot],byref,byref,byref):this (Tier1)",
+      "codeBytes": 544,
+      "initialStackSubtraction": 408
+    },
+    {
+      "role": "reference",
+      "method": "Lokad.Lython.Runtime.PyExecutableFunction:StartInline(System.Span`1[Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot],System.Nullable`1[Lokad.Lython.Runtime.BoundFunctionArguments],Lokad.Lython.LythonSourceSpan,bool,System.Span`1[Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot],byref,byref,byref):this (Tier1)",
+      "codeBytes": 1110,
+      "initialStackSubtraction": 216
+    },
+    {
+      "role": "reference",
+      "method": "Lokad.Lython.Runtime.LythonRuntime+NativeExecution:RunCore(byref):bool:this (Tier1)",
+      "codeBytes": 7039,
+      "initialStackSubtraction": 648
+    },
+    {
+      "role": "candidate",
+      "method": "Lokad.Lython.Runtime.PyExecutableFunction:StartNativeCall(Lokad.Lython.Frontend.ExecutableCallSite,System.ReadOnlySpan`1[Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot],System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,bool,bool,System.Span`1[Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot],byref,byref,byref):this (Tier0)",
+      "codeBytes": 664,
+      "initialStackSubtraction": 592
+    },
+    {
+      "role": "candidate",
+      "method": "Lokad.Lython.Runtime.PyExecutableFunction:StartInline(System.Span`1[Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot],System.Nullable`1[Lokad.Lython.Runtime.BoundFunctionArguments],Lokad.Lython.LythonSourceSpan,bool,System.Span`1[Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot],byref,byref,byref):this (Tier0)",
+      "codeBytes": 1039,
+      "initialStackSubtraction": 448
+    },
+    {
+      "role": "candidate",
+      "method": "Lokad.Lython.Runtime.LythonRuntime+NativeExecution:RunCore(byref):bool:this (Instrumented Tier0)",
+      "codeBytes": 7039,
+      "initialStackSubtraction": 1552
+    },
+    {
+      "role": "candidate",
+      "method": "Lokad.Lython.Runtime.PyExecutableFunction:StartNativeCall(Lokad.Lython.Frontend.ExecutableCallSite,System.ReadOnlySpan`1[Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot],System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,bool,bool,System.Span`1[Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot],byref,byref,byref):this (Instrumented Tier0)",
+      "codeBytes": 694,
+      "initialStackSubtraction": 592
+    },
+    {
+      "role": "candidate",
+      "method": "Lokad.Lython.Runtime.PyExecutableFunction:StartInline(System.Span`1[Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot],System.Nullable`1[Lokad.Lython.Runtime.BoundFunctionArguments],Lokad.Lython.LythonSourceSpan,bool,System.Span`1[Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot],byref,byref,byref):this (Instrumented Tier0)",
+      "codeBytes": 1202,
+      "initialStackSubtraction": 448
+    },
+    {
+      "role": "candidate",
+      "method": "Lokad.Lython.Runtime.LythonRuntime+NativeExecution:RunCore(byref):bool:this (Instrumented Tier0)",
+      "codeBytes": 7039,
+      "initialStackSubtraction": 1552
+    },
+    {
+      "role": "candidate",
+      "method": "Lokad.Lython.Runtime.PyExecutableFunction:StartNativeCall(Lokad.Lython.Frontend.ExecutableCallSite,System.ReadOnlySpan`1[Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot],System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,bool,bool,System.Span`1[Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot],byref,byref,byref):this (Tier1)",
+      "codeBytes": 544,
+      "initialStackSubtraction": 408
+    },
+    {
+      "role": "candidate",
+      "method": "Lokad.Lython.Runtime.PyExecutableFunction:StartInline(System.Span`1[Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot],System.Nullable`1[Lokad.Lython.Runtime.BoundFunctionArguments],Lokad.Lython.LythonSourceSpan,bool,System.Span`1[Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot],byref,byref,byref):this (Tier1)",
+      "codeBytes": 1110,
+      "initialStackSubtraction": 216
+    },
+    {
+      "role": "candidate",
+      "method": "Lokad.Lython.Runtime.LythonRuntime+NativeExecution:RunCore(byref):bool:this (Tier1)",
+      "codeBytes": 7104,
+      "initialStackSubtraction": 632
+    }
+  ]
+}

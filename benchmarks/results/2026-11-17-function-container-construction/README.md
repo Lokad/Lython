@@ -69,3 +69,7 @@ Terminal cached. Broader performance objective active; publication postponed.
 [patch](prototype.patch.gz),[identity](identity.json),[checks](checks.json),
 [final checks](final-checks.json),[raw](first/observations.tgz),
 [procedures](procedures-and-checks.tar.xz).
+
+## Confirmation and selected refinement
+
+[Same-image B921](confirmation/README.md): floating warm+2.37..+11.82%with9.20%candidate spread; fresh−4.52..+1.37%with6.11%candidate spread. Magnitude/debt unresolved; original adversity retained. Windows JIT diagnostic does not explain Linux variance. One contained cold-construction/publication refinement selected; no standalone promotion or more unchanged campaign.
