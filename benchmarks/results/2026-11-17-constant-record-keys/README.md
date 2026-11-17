@@ -53,3 +53,5 @@ is retained; no worker/source change or retiming was needed.
 [identity](identity.json),[sources](candidate-sources.tar.xz),[decision](integration-decision.json),
 [procedures/checks](procedures-and-checks.tar.xz).
 The broader performance objective continues; publication remains postponed.
+
+Subsequent [full delivery](delivery/README.md) GREEN44192474928 at ea8e9f91 verifies all16summaries/2,385inputs/585production against measuredcf847936 source; no rebuilt-binary equality inferred. Original source/control conditions remain.

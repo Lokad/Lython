@@ -2,6 +2,7 @@
 
 | Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| JSON-lines record transform | 4,096 records / 110,592 B | 3.898–4.012 ms | 4.388–4.423 ms | 0.88–0.91× | Diagnostic ea8/cf; controls L/C 2.93/0.79%; IQR≤0.79% |
 | Numeric CSV quality report | 4,096 records / 127,031 B | 4.066–4.166 ms | 4.574–4.693 ms | 0.87–0.91× | Diagnostic; controls L/C 2.46/2.60%; IQR≤1.47% |
 | Text normalization | 4,096 lines / 52,224 B | 0.916–0.925 ms | 0.503–0.520 ms | 1.76–1.84× | Diagnostic; controls L/C 0.99/3.37%; IQR≤0.98% |
 | JSON-lines aggregation with a helper | 4,096 records / 110,592 B | 3.548–3.613 ms | 4.077–4.102 ms | 0.86–0.89× | Diagnostic; controls L/C 1.85/0.62%; IQR≤0.39% |
@@ -12,13 +13,19 @@ the combinations of two process medians per engine, not confidence intervals.
 Controls L/C report the difference between the two Lython/CPython medians. These
 complete scripts show substantial text/numeric gaps alongside faster CSV/JSON-lines.
 
-Measured **2026-11-17 UTC**, committed **0d2a6ab7 / frozen8d26963c**, stock
+The CSV/text/aggregation/floating rows were measured **2026-11-17 UTC**, committed
+**0d2a6ab7 / frozen8d26963c**, stock
 **CPython3.13.16** (PGO/LTO, GIL enabled, no JIT), quiet **AzureF4as_v7**,4vCPU
 AMD EPYC9V45/16GiB, Ubuntu24.04.4, .NET11RC3. Existing workers/catalog;12jobs,
 447.28seconds, rotated6second full-request warmups/five rounds, natural GC/tiering.
 All actual-image/golden/quiet/exit/join gates pass. Exact magnitudes remain
 diagnostic; these measurements do not describe an unmeasured later HEAD.
 [Sources, raw observations and procedures](../benchmarks/results/2026-11-17-current-cpython-checkpoint/README.md).
+
+The record-transform row is a separate **2026-11-17** checkpoint of qualified
+**ea8e9f91 production / frozencf847936**, on the same machine/toolchains/boundaries:
+three jobs116.40s. Its2.93%warm/3.31%fresh Lython control spread limits precision.
+[Source, controls and raw data](../benchmarks/results/2026-11-17-record-cpython-baseline/README.md).
 
 Warm clocks include Run, mediated RAM-backed file I/O, stdout/file golden checks
 and previous-result cleanup. Lython's host supplies efficient range/append I/O;
@@ -31,6 +38,8 @@ This is useful workload latency, not equivalent containment or cold startup.
 
 | Workload | Phase | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| JSON-lines record transform | Compilation only | 0.057–0.058 ms | 0.056–0.056 ms | 1.01–1.02× | Diagnostic; controls L/C 1.68/0.08%; IQR≤1.81% |
+| JSON-lines record transform | Compile-to-result | 4.085–4.220 ms | 4.517–4.546 ms | 0.90–0.93× | Diagnostic; controls L/C 3.31/0.63%; IQR≤1.11% |
 | Numeric CSV quality report | Compilation only | 0.056–0.056 ms | 0.044–0.045 ms | 1.26–1.26× | Diagnostic; controls L/C 0.41/0.23%; IQR≤1.26% |
 | Numeric CSV quality report | Compile and execute once | 4.220–4.315 ms | 4.613–4.681 ms | 0.90–0.94× | Diagnostic; controls L/C 2.25/1.47%; IQR≤0.79% |
 | Text normalization | Compilation only | 0.036–0.036 ms | 0.037–0.037 ms | 0.96–0.96× | Diagnostic; controls L/C 0.42/0.44%; IQR≤0.48% |
@@ -68,7 +77,7 @@ for the CPython ratios above.
 
 | Change | Established outcome | Limits / evidence |
 | --- | --- | --- |
-| Reuse constant record keys | JSON record-transform allocation14.67% lower; warm elapsed12–14% lower/fresh9–12% lower with supporting CPU | Separate R499/cf847936 versus4b975a44/5d9633a8 pair; do not add independent medians. Text/JSON controls broadly flat; floating uncertain. [Evidence](../benchmarks/results/2026-11-17-constant-record-keys/README.md). |
+| Reuse constant record keys | JSON record-transform allocation14.67% lower; warm elapsed12–14% lower/fresh9–12% lower with supporting CPU | Separate R499/cf847936 versus4b975a44/5d9633a8 pair; do not add independent medians. Text/JSON controls broadly flat; floating uncertain. [Evidence](../benchmarks/results/2026-11-17-constant-record-keys/README.md), [full qualification](../benchmarks/results/2026-11-17-constant-record-keys/delivery/README.md). |
 | Final-slot helper container construction | JSON record-transform allocation39.54% lower, warm elapsed15–22% lower/fresh16–18% lower, supporting CPU | Named4b975a44/5d9633a8 versus0d2a6ab7/8d26963c; floating controls remain uncertain. [Source pair](../benchmarks/results/2026-11-17-function-container-construction/final/README.md), [full qualification](../benchmarks/results/2026-11-17-function-container-construction/delivery/README.md). |
 | Native helper returns | Allocation about19–20% lower; qualified | Original elapsed improvements diagnostic; no universal CPU claim. [History](../benchmarks/EXPERIMENTS.md). |
 | Direct UTF-8 formatting/storage | Allocation8.67% lower; controlled report elapsed/CPU5–8% lower supports retention | Original adverse15.125ms remains unexplained. [Original/confirmation](../benchmarks/results/2026-11-02-formatting-confirmation/README.md). |

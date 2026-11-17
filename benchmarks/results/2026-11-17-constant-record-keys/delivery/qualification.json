@@ -1,0 +1,91 @@
+{
+  "run": 44192474928,
+  "head": "ea8e9f911fe39aa4133b2d362d8a11754469a2b1",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "log": "0_tests (windows-latest).txt",
+      "summaries": [
+        {
+          "framework": "net11.0",
+          "passed": 4831
+        },
+        {
+          "framework": "net11.0",
+          "passed": 18035
+        },
+        {
+          "framework": "net10.0",
+          "passed": 4831
+        },
+        {
+          "framework": "net10.0",
+          "passed": 18035
+        },
+        {
+          "framework": "net11.0",
+          "passed": 14
+        },
+        {
+          "framework": "net11.0",
+          "passed": 406
+        },
+        {
+          "framework": "net10.0",
+          "passed": 14
+        },
+        {
+          "framework": "net10.0",
+          "passed": 406
+        }
+      ]
+    },
+    {
+      "log": "1_tests (ubuntu-latest).txt",
+      "summaries": [
+        {
+          "framework": "net11.0",
+          "passed": 4831
+        },
+        {
+          "framework": "net11.0",
+          "passed": 18035
+        },
+        {
+          "framework": "net10.0",
+          "passed": 4831
+        },
+        {
+          "framework": "net10.0",
+          "passed": 18035
+        },
+        {
+          "framework": "net11.0",
+          "passed": 14
+        },
+        {
+          "framework": "net11.0",
+          "passed": 406
+        },
+        {
+          "framework": "net10.0",
+          "passed": 14
+        },
+        {
+          "framework": "net10.0",
+          "passed": 406
+        }
+      ]
+    }
+  ],
+  "summaries": 16,
+  "sourceInputsVerified": 2385,
+  "production": 585,
+  "normalAdapterPin": "0.4.0",
+  "allMeaningfulStepsPassed": true,
+  "logsSHA256": "ee670cc58900e7698658c6ad6b3b9f5d5e11a46b51e2cebe0f05248e5721ca22",
+  "committedProductionMatchesQualifiedInputs": true,
+  "binaryEqualityInferred": false,
+  "publicationHeld": true,
+  "all585ProductionInputsMatchMeasuredCf847936": true
+}
