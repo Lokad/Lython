@@ -8962,3 +8962,14 @@ promoted or fully qualified. Focused actual11/10 each167public/59internal, all
 goldens/refusal/cleanup gates pass; exact source/core/results persisted, all users
 joined. No unchanged retiming or objective completion. Independent producer source
 00e7905d differs from unchanged dev105 assets; core development remains independent.
+
+[R460 shared sequence construction/B866](results/2026-11-17-sequence-construction/README.md):
+retainedaaef443f removes async tuple staging/separate growth-scalar loop and shares
+existing native capacity/rollback and generator consumption. Normalization warm9–12%,
+tuple report2–5%warm/4.7–4.8%fresh and generator-list6–16%warm/5–9%fresh lower elapsed
+with CPU support. All timings use Run; catalog async flag did not select timed API,
+labels corrected and supplemental warm-async check separate. Allocation flat; tuple
+accounted peak+11.81%, numeric uncertain/moving, CSVroughly flat. Each actualWindows
+11/10 focused277public/172internal pass; foreign cancellation regression and final
+trim refusal covered; all gates/join/archive pass. Full platform/stress/package
+delivery next, no publication or claim that the broader objective is complete.

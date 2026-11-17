@@ -1,5 +1,15 @@
 # Testing Lython
 
+[Sequence construction](Lokad.Lython.PublicApi.Tests/SequenceConstructionPipelineTests.cs)
+checks exact/grown/trimmed containers, retained aliases, late iterator errors,
+live target mutation and real asynchronous cancellation/cleanup.
+[Ownership regressions](Lokad.Lython.Tests/SequenceConstructionOwnershipTests.cs)
+check final-array refusal before allocation, other owners' funding, terminal refusal
+and cancellation when a source has a different execution authority.
+[Bulk consumption](Lokad.Lython.PublicApi.Tests/BulkGeneratorConsumptionTests.cs)
+preserves exception state, bounded unpacking, reentry and delegated return values.
+
+
 [Compiler cancellation](Lokad.Lython.PublicApi.Tests/CompilerCancellationTests.cs)
 preserves first admission refusal and cleanup during compilation. Prepared
 functions, class methods and lambdas use each execution's token after the earlier

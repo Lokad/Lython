@@ -1,0 +1,548 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.BuiltinObjects.cs b/src/Lokad.Lython/Runtime/LythonRuntime.BuiltinObjects.cs
+index a341c242..d2810790 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.BuiltinObjects.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.BuiltinObjects.cs
+@@ -93,11 +93,7 @@ internal sealed partial class LythonRuntime
+         var result = new PyList(arguments[0] is IReadOnlyCollection<object> known ? known.Count : 0, context.MemoryGovernor, span);
+         try
+         {
+-            foreach (var item in PyIteration.Cursor.Create(arguments[0], span, context))
+-            {
+-                result.Add(item);
+-                context.CheckExecution(span);
+-            }
++            result.AppendItems(PyIteration.Cursor.Create(arguments[0], span, context), context, span);
+             return result;
+         }
+         catch { result.DiscardUnpublishedStorage(); throw; }
+@@ -118,11 +114,7 @@ internal sealed partial class LythonRuntime
+         var result = new PyList(arguments[0] is IReadOnlyCollection<object> known ? known.Count : 0, context.MemoryGovernor, span);
+         try
+         {
+-            await foreach (var item in PyIteration.Cursor.ForAsyncEnumeration(arguments[0], span, context).ConfigureAwait(false))
+-            {
+-                result.Add(item);
+-                context.CheckExecution(span);
+-            }
++            await result.AppendItemsAsync(PyIteration.Cursor.ForAsyncEnumeration(arguments[0], span, context), context, span).ConfigureAwait(false);
+             return result;
+         }
+         catch { result.DiscardUnpublishedStorage(); throw; }
+@@ -140,7 +132,7 @@ internal sealed partial class LythonRuntime
+             throw new LythonRuntimeException("TypeError", "tuple(iterable) expects one argument.", span);
+         }
+ 
+-        var result = new PyTuple(PyIteration.Cursor.Create(arguments[0], span, context), context.MemoryGovernor, span);
++        var result = PyTuple.CreateFromIterable(PyIteration.Cursor.Create(arguments[0], span, context), context, span);
+         context.CheckExecution(span);
+         return result;
+     }
+@@ -157,10 +149,7 @@ internal sealed partial class LythonRuntime
+             throw new LythonRuntimeException("TypeError", "tuple(iterable) expects one argument.", span);
+         }
+ 
+-        using var items = await PyIteration.MaterializeLeasedAsync(arguments[0], span, context).ConfigureAwait(false);
+-        var result = new PyTuple(items.Items, context.MemoryGovernor, span);
+-        context.CheckExecution(span);
+-        return result;
++        return await PyTuple.CreateFromIterableAsync(arguments[0], context, span).ConfigureAwait(false);
+     }
+ 
+     private static object Dict(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Sync.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Sync.cs
+index aaa2fb4e..1c4502f6 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Sync.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Sync.cs
+@@ -13,7 +13,11 @@ internal sealed partial class LythonRuntime
+                 while (true)
+                 {
+                     var pause = ExecuteInstructionPrefix(ref _execution, this, this, false, out _, out _, out var nextCall);
+-                    if (pause != InstructionPause.Call) return null;
++                    if (pause != InstructionPause.Call)
++                    {
++                        if (_yieldDestination is { } destination && HasYield && TryBufferYield(destination)) continue;
++                        return null;
++                    }
+                     var child = nextCall.GetAwaiter().GetResult();
+                     if (!ReferenceEquals(child, this)) return child;
+                 }
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
+index 0c92b7e2..34c3e953 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
+@@ -65,6 +65,7 @@ internal sealed partial class LythonRuntime
+         // handler/caller chain may survive in that retained lexical context.
+         internal void DetachExecutableExecution()
+         {
++            StopBufferingYields();
+             ClearExecutableBindings();
+             _execution.Stack = default;
+             _pendingAbrupt = null;
+@@ -148,6 +149,46 @@ internal sealed partial class LythonRuntime
+                 _sentValue = PyNone.Instance;
+             }
+         }
++
++        private object? _yieldDestination;
++        private int _yieldLimit;
++
++        internal void BufferYields(object destination, int limit)
++        {
++            _yieldDestination = destination;
++            _yieldLimit = limit;
++        }
++
++        internal void StopBufferingYields()
++        {
++            _yieldDestination = null;
++            _yieldLimit = 0;
++        }
++
++        private bool TryBufferYield(object destination)
++        {
++            // Keep the final yielded item for the ordinary Advance result.
++            // The private list has admitted capacity; Add invokes no Python or
++            // host callback. Pending cleanup must finish before resumption.
++            if (_execution.Stack.HasPendingDisposals) return false;
++            if (destination is PyList list)
++            {
++                if (list.Count >= Math.Min(_yieldLimit, list.Capacity) - 1) return false;
++                var value = TakeYieldValue();
++                list.Add(value.Object.RequireNotNull());
++            }
++            else
++            {
++                var items = (List<object>)destination;
++                if (items.Count >= _yieldLimit - 1) return false;
++                var value = TakeYieldValue();
++                items.Add(value.Object.RequireNotNull());
++            }
++            CheckExecution(_execution.Code.Instructions[_execution.InstructionIndex].Span);
++            State.SetCurrentException(HasActiveHandler ? State.CurrentException : _entryActiveException);
++            Resume(PyNone.Instance, null);
++            return true;
++        }
+         // Handler-save chain, created on first except-route push: plain calls
+         // never touch it, so the per-frame Stack box is skipped.
+         private Stack<ActiveExceptionSave>? _savedActiveExceptions;
+@@ -699,7 +740,11 @@ internal sealed partial class LythonRuntime
+                 while (true)
+                 {
+                     var pause = ExecuteInstructionPrefix(ref _execution, this, this, true, out var pending, out var span, out var nextCall);
+-                    if (pause == InstructionPause.Boundary) return null;
++                    if (pause == InstructionPause.Boundary)
++                    {
++                        if (_yieldDestination is { } destination && HasYield && TryBufferYield(destination)) continue;
++                        return null;
++                    }
+                     var jumped = false;
+                     if (pause is InstructionPause.Call or InstructionPause.Operation)
+                     {
+@@ -736,7 +781,12 @@ internal sealed partial class LythonRuntime
+                     // A relinquished cursor must finish before another guest
+                     // instruction or handler observes its cleanup effects.
+                     if (_execution.Stack.HasPendingDisposals) await DrainPendingDisposalsAsync().ConfigureAwait(false);
+-                    if (!_execution.ReturnValue.IsUnassigned || HasYield) return null;
++                    if (!_execution.ReturnValue.IsUnassigned) return null;
++                    if (HasYield)
++                    {
++                        if (_yieldDestination is { } destination && TryBufferYield(destination)) continue;
++                        return null;
++                    }
+                     if (!jumped) _execution.InstructionIndex++;
+                 }
+             }
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs
+index 42273c4b..b219d0b0 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs
+@@ -114,6 +114,65 @@ internal sealed partial class LythonRuntime
+         public PyIterationResult TryMoveNext() => Advance(PyNone.Instance, null);
+         public ValueTask<PyIterationResult> TryMoveNextAsync() => AdvanceAsync(PyNone.Instance, null);
+ 
++        // A foreign source retains its own authority. Its consumer must keep
++        // checking the active command between ordinary, unbuffered pulls.
++        internal bool CanBufferFor(ExecutionContext consumer)
++            => ReferenceEquals(_frame?.State, consumer.State);
++
++        // Only private drains borrow this admitted capacity. The last value
++        // still crosses the ordinary advancement boundary before publication.
++        internal bool AppendBatch(List<object> items, int? maximumItems)
++        {
++            var limit = Math.Min(items.Capacity, maximumItems ?? int.MaxValue);
++            return items.Count < limit && AppendBatchCore(items, limit);
++        }
++
++        internal bool AppendBatch(PyList items)
++            => items.Count < items.Capacity && AppendBatchCore(items, items.Capacity);
++
++        private bool AppendBatchCore(object items, int limit)
++        {
++            var frame = _frame;
++            frame?.BufferYields(items, limit);
++            PyIterationResult next;
++            try
++            {
++                next = Advance(PyNone.Instance, null);
++            }
++            finally { frame?.StopBufferingYields(); }
++            if (!next.HasValue) return true;
++            // Guest code may change a live PyList's capacity. Its final Add
++            // can admit growth only after the frame and buffer borrow end.
++            if (items is PyList list) list.Add(next.Value);
++            else ((List<object>)items).Add(next.Value);
++            return false;
++        }
++
++        internal ValueTask<bool> AppendBatchAsync(List<object> items, int? maximumItems)
++        {
++            var limit = Math.Min(items.Capacity, maximumItems ?? int.MaxValue);
++            return items.Count < limit ? AppendBatchCoreAsync(items, limit) : new(false);
++        }
++
++        internal ValueTask<bool> AppendBatchAsync(PyList items)
++            => items.Count < items.Capacity ? AppendBatchCoreAsync(items, items.Capacity) : new(false);
++
++        private async ValueTask<bool> AppendBatchCoreAsync(object items, int limit)
++        {
++            var frame = _frame;
++            frame?.BufferYields(items, limit);
++            PyIterationResult next;
++            try
++            {
++                next = await AdvanceAsync(PyNone.Instance, null).ConfigureAwait(false);
++            }
++            finally { frame?.StopBufferingYields(); }
++            if (!next.HasValue) return true;
++            if (items is PyList list) list.Add(next.Value);
++            else ((List<object>)items).Add(next.Value);
++            return false;
++        }
++
+         private PyIterationResult Advance(object sent, LythonRuntimeException? injected)
+         {
+             if (!CanAdvance(sent, injected)) return PyIterationResult.End;
+diff --git a/src/Lokad.Lython/Runtime/PyIteration.cs b/src/Lokad.Lython/Runtime/PyIteration.cs
+index 26bee59b..4b174f58 100644
+--- a/src/Lokad.Lython/Runtime/PyIteration.cs
++++ b/src/Lokad.Lython/Runtime/PyIteration.cs
+@@ -53,6 +53,7 @@ internal static partial class PyIteration
+     {
+         var reservation = context.MemoryGovernor.ReserveTemporary(32, span);
+         var result = new List<object>();
++        var generator = (items as Cursor)?.GetBulkGenerator(context);
+         try
+         {
+             foreach (var item in items)
+@@ -67,8 +68,9 @@ internal static partial class PyIteration
+                 }
+                 result.Add(item);
+ 
++                var exhausted = generator is not null && generator.AppendBatch(result, maximumItems);
+                 context.CheckExecution(span);
+-                if (result.Count == maximumItems) break;
++                if (exhausted || result.Count == maximumItems) break;
+             }
+         }
+         catch
+@@ -84,6 +86,7 @@ internal static partial class PyIteration
+     {
+         var reservation = context.MemoryGovernor.ReserveTemporary(32, span);
+         var result = new List<object>();
++        var generator = (items as Cursor)?.GetBulkGenerator(context);
+         try
+         {
+             await foreach (var item in items.ConfigureAwait(false))
+@@ -98,8 +101,9 @@ internal static partial class PyIteration
+                 }
+                 result.Add(item);
+ 
++                var exhausted = generator is not null && await generator.AppendBatchAsync(result, maximumItems).ConfigureAwait(false);
+                 context.CheckExecution(span);
+-                if (result.Count == maximumItems) break;
++                if (exhausted || result.Count == maximumItems) break;
+             }
+         }
+         catch
+@@ -224,6 +228,10 @@ internal static partial class PyIteration
+             && _sequencePosition == 0 && _syncEnumerator is null ? _value as PyList : null;
+         internal int? KnownCount => _iterator is null && (_syncSource ?? _value) is IReadOnlyCollection<object> known
+             ? known.Count : null;
++        internal LythonRuntime.PyGenerator? GetBulkGenerator(LythonRuntime.ExecutionContext? context)
++            => context is not null && !_disposed && _syncEnumerator is null && _asyncEnumerator is null
++                && _iterator is LythonRuntime.PyGenerator generator && generator.CanBufferFor(context)
++                    ? generator : null;
+         public Cursor GetEnumerator() => this;
+         IEnumerator<object> IEnumerable<object>.GetEnumerator() => this;
+         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => this;
+diff --git a/src/Lokad.Lython/Runtime/PyList.cs b/src/Lokad.Lython/Runtime/PyList.cs
+index ea6a51d6..7ad1a34d 100644
+--- a/src/Lokad.Lython/Runtime/PyList.cs
++++ b/src/Lokad.Lython/Runtime/PyList.cs
+@@ -45,7 +45,7 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
+                 array.CopyTo(_items, 0);
+                 _count = array.Length;
+             }
+-            else foreach (var item in items) Add(item);
++            else AppendItems(items, PyStructuralGuard.AmbientContext, allocationSpan);
+         }
+         catch { DiscardUnpublishedStorage(); throw; }
+     }
+@@ -73,6 +73,7 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
+     }
+ 
+     public int Count => _count;
++    internal int Capacity => _items.Length;
+     internal long CommittedStorageBytes => _committedBytes;
+ 
+     public MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;
+@@ -96,6 +97,72 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
+         _items[_count++] = value;
+     }
+ 
++    // Source preparation belongs to each caller (including self-extension).
++    // Once prepared, constructors and extension share native append/cleanup.
++    internal void AppendItems(IEnumerable<object> values, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
++    {
++        var generator = (values as PyIteration.Cursor)?.GetBulkGenerator(context);
++        foreach (var value in values)
++        {
++            context?.CheckExecution(span);
++            Add(value);
++            var exhausted = generator is not null && generator.AppendBatch(this);
++            context?.CheckExecution(span);
++            if (exhausted) break;
++        }
++        context?.CheckExecution(span);
++    }
++
++    internal async ValueTask AppendItemsAsync(IAsyncEnumerable<object> values,
++        LythonRuntime.ExecutionContext context, LythonSourceSpan span)
++    {
++        var generator = (values as PyIteration.Cursor)?.GetBulkGenerator(context);
++        await foreach (var value in values.ConfigureAwait(false))
++        {
++            context.CheckExecution(span);
++            Add(value);
++            var exhausted = generator is not null && await generator.AppendBatchAsync(this).ConfigureAwait(false);
++            context.CheckExecution(span);
++            if (exhausted) break;
++        }
++        context.CheckExecution(span);
++    }
++
++    // Only a private constructor builder may transfer this storage. Capacity
++    // headroom funds scalar boxes; preserve larger scalar estimates as well.
++    // The caller keeps a separate temporary metadata charge for this builder.
++    internal object[] TakeConstructorStorage(out long bytes, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
++    {
++        var governor = _memoryGovernor.RequireNotNull();
++        var items = _items.AsSpan(0, _count);
++        bytes = Math.Max(EstimateCapacityBytes(_count), PyTuple.EstimateStorageBytes(items, context, span));
++        if (_count == _items.Length)
++        {
++            using var extra = governor.ReserveTemporary(Math.Max(0, bytes - _committedBytes), span);
++            context?.CheckExecution(span);
++            extra.Commit(Math.Max(0, bytes - _committedBytes));
++            var result = _items;
++            _items = [];
++            _count = 0;
++            _committedBytes = 0; // Existing funding transfers; refund nothing.
++            return result;
++        }
++        using var final = governor.ReserveTemporary(bytes, span);
++        context?.CheckExecution(span);
++        var trimmed = new object[_count];
++        for (var offset = 0; offset < trimmed.Length;)
++        {
++            context?.CheckExecution(span);
++            var count = Math.Min(4096, trimmed.Length - offset);
++            items.Slice(offset, count).CopyTo(trimmed.AsSpan(offset));
++            offset += count;
++        }
++        context?.CheckExecution(span);
++        final.Commit(bytes);
++        DiscardUnpublishedStorage();
++        return trimmed;
++    }
++
+     public void AddRange(IEnumerable<object> values) => AddRange(values, null, null);
+ 
+     internal void AddRange(IEnumerable<object> values, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
+@@ -124,13 +191,7 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
+             // can yield more, so each store also ensures its actual capacity.
+             EnsureCapacity(checked(_count + count));
+ 
+-            foreach (var value in values)
+-            {
+-                context?.CheckExecution(span);
+-                Add(value);
+-            }
+-
+-            context?.CheckExecution(span);
++            AppendItems(values, context, span);
+             return;
+         }
+ 
+@@ -139,12 +200,7 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
+             // Unknown-length inputs stream incrementally, admitting actual
+             // capacity before each store. Failing iterables retain their
+             // successful prefix and its funding.
+-            foreach (var value in values)
+-            {
+-                context?.CheckExecution(span);
+-                Add(value);
+-            }
+-            context?.CheckExecution(span);
++            AppendItems(values, context, span);
+         }
+         catch (InvalidOperationException)
+         {
+@@ -168,12 +224,7 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
+         try
+         {
+             context.CheckExecution(span);
+-            await foreach (var value in PyIteration.Cursor.ForAsyncEnumeration(source, span, context).ConfigureAwait(false))
+-            {
+-                context.CheckExecution(span);
+-                Add(value);
+-            }
+-            context.CheckExecution(span);
++            await AppendItemsAsync(PyIteration.Cursor.ForAsyncEnumeration(source, span, context), context, span).ConfigureAwait(false);
+         }
+         catch (InvalidOperationException)
+         {
+diff --git a/src/Lokad.Lython/Runtime/PyTuple.cs b/src/Lokad.Lython/Runtime/PyTuple.cs
+index 9c641c96..ef42bef3 100644
+--- a/src/Lokad.Lython/Runtime/PyTuple.cs
++++ b/src/Lokad.Lython/Runtime/PyTuple.cs
+@@ -241,12 +241,14 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
+     }
+ 
+     internal static object[] MaterializeGovernedItems(IEnumerable<object> items, MemoryGovernor governor,
+-        LythonSourceSpan? allocationSpan, out long bytes, int? expectedCount = null)
++        LythonSourceSpan? allocationSpan, out long bytes, int? expectedCount = null,
++        LythonRuntime.ExecutionContext? context = null)
+     {
++        context ??= PyStructuralGuard.AmbientContext;
+         if (items is object[] array)
+         {
+             ValidateCount(array.Length);
+-            return CopyGovernedItems(array, governor, allocationSpan, out bytes);
++            return CopyGovernedItems(array, governor, allocationSpan, out bytes, context);
+         }
+ 
+         var capacity = items switch
+@@ -259,38 +261,15 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
+         // Fixed records know their necessary result capacity even when their
+         // source is a generator. This is admission, not an iteration cutoff.
+         capacity = Math.Max(capacity, expectedCount.GetValueOrDefault());
+-        using var funding = governor.ReserveTemporary(EstimateApproximateBytes(capacity), allocationSpan);
+-        var buffer = capacity == 0 ? Array.Empty<object>() : new object[capacity];
+-        var count = 0;
+-        long scalarBytes = 0;
+-        foreach (var item in items)
+-        {
+-            if (count == buffer.Length)
+-            {
+-                var nextCapacity = buffer.Length == 0 ? 4 : checked(buffer.Length * 2);
+-                funding.Grow(EstimateApproximateBytes(nextCapacity) - EstimateApproximateBytes(buffer.Length), allocationSpan);
+-                Array.Resize(ref buffer, nextCapacity);
+-            }
+-
+-            var scalar = RuntimeMemoryEstimates.EstimateScalarStorageBytes(item);
+-            funding.Grow(scalar, allocationSpan);
+-            scalarBytes += scalar;
+-            buffer[count++] = item;
+-        }
+-
+-        ValidateCount(count);
+-        var backingBytes = EstimateApproximateBytes(count);
+-        var materialized = buffer;
+-        if (count != buffer.Length)
++        using var metadata = governor.ReserveTemporary(PyList.EstimateCapacityBytes(0), allocationSpan);
++        var builder = new PyList(capacity, governor, allocationSpan);
++        try
+         {
+-            // The exact final array coexists with the temporary growth buffer.
+-            funding.Grow(backingBytes, allocationSpan);
+-            materialized = new object[count];
+-            Array.Copy(buffer, materialized, count);
++            builder.AppendItems(items, context, allocationSpan);
++            ValidateCount(builder.Count);
++            return builder.TakeConstructorStorage(out bytes, context, allocationSpan);
+         }
+-        bytes = backingBytes + scalarBytes;
+-        funding.Commit(bytes);
+-        return materialized;
++        finally { builder.DiscardUnpublishedStorage(); }
+ 
+         void ValidateCount(int count)
+         {
+@@ -299,6 +278,28 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
+         }
+     }
+ 
++    internal static PyTuple CreateFromIterable(IEnumerable<object> source,
++        LythonRuntime.ExecutionContext context, LythonSourceSpan span)
++    {
++        var items = MaterializeGovernedItems(source, context.MemoryGovernor, span, out var bytes, context: context);
++        return new PyTuple(items, context.MemoryGovernor, span, bytes);
++    }
++
++    internal static async ValueTask<PyTuple> CreateFromIterableAsync(object source,
++        LythonRuntime.ExecutionContext context, LythonSourceSpan span)
++    {
++        var governor = context.MemoryGovernor;
++        using var metadata = governor.ReserveTemporary(PyList.EstimateCapacityBytes(0), span);
++        var builder = new PyList(source is IReadOnlyCollection<object> known ? known.Count : 0, governor, span);
++        try
++        {
++            await builder.AppendItemsAsync(PyIteration.Cursor.ForAsyncEnumeration(source, span, context), context, span).ConfigureAwait(false);
++            var items = builder.TakeConstructorStorage(out var bytes, context, span);
++            return new PyTuple(items, governor, span, bytes);
++        }
++        finally { builder.DiscardUnpublishedStorage(); }
++    }
++
+     public int Count => _items.Length;
+ 
+     public int Length => _items.Length;
+diff --git a/tests/Lokad.Lython.Tests/SmallTupleAdoptionTests.cs b/tests/Lokad.Lython.Tests/SmallTupleAdoptionTests.cs
+index aec6a588..90023e9e 100644
+--- a/tests/Lokad.Lython.Tests/SmallTupleAdoptionTests.cs
++++ b/tests/Lokad.Lython.Tests/SmallTupleAdoptionTests.cs
+@@ -58,8 +58,12 @@ public sealed class SmallTupleAdoptionTests
+             var tuple = Make(items, governor, construction);
+             var slots = items.Count(item => RuntimeMemoryEstimates.EstimateScalarStorageBytes(item) > 0);
+             var expected = PyTuple.EstimateApproximateBytes(items.Length) + slots * 64L;
+-            Assert.Equal(expected, tuple.CommittedStorageBytes);
+-            Assert.Equal(expected, governor.CurrentCommittedBytes);
++            // Native constructors can retain per-capacity scalar headroom.
++            // Require complete payload funding and bounded linear overhead,
++            // without prescribing one internal constructor's exact estimate.
++            Assert.InRange(tuple.CommittedStorageBytes, expected,
++                expected + 32 + items.Length * RuntimeMemoryEstimates.ScalarStorageBytes);
++            Assert.Equal(tuple.CommittedStorageBytes, governor.CurrentCommittedBytes);
+             Assert.Equal(0, governor.CurrentReservedBytes);
+             for (var i = 0; i < items.Length; i++) Assert.Same(items[i], tuple[i]);
+             GC.KeepAlive(tuple);
+@@ -98,11 +102,16 @@ public sealed class SmallTupleAdoptionTests
+         LythonRuntime.OwnFreshInteger(large, governor, null);
+         var before = governor.CurrentCommittedBytes;
+         var alias = Make([large, large], governor, construction);
+-        Assert.Equal(PyTuple.EstimateApproximateBytes(2) + 2 * RuntimeMemoryEstimates.EstimateScalarStorageBytes(large), alias.CommittedStorageBytes);
++        var aliasMinimum = PyTuple.EstimateApproximateBytes(2) + 2 * RuntimeMemoryEstimates.EstimateScalarStorageBytes(large);
++        Assert.InRange(alias.CommittedStorageBytes, aliasMinimum, aliasMinimum + 32 + 2 * RuntimeMemoryEstimates.ScalarStorageBytes);
++        Assert.Same(large, alias[0]);
++        Assert.Same(large, alias[1]);
+         Assert.Equal(alias.CommittedStorageBytes, governor.CurrentCommittedBytes - before);
+         before = governor.CurrentCommittedBytes;
+         var mixed = Make([large, new BigInteger(1)], governor, construction);
+-        Assert.Equal(PyTuple.EstimateApproximateBytes(2) + RuntimeMemoryEstimates.EstimateScalarStorageBytes(large) + 64, mixed.CommittedStorageBytes);
++        var mixedMinimum = PyTuple.EstimateApproximateBytes(2) + RuntimeMemoryEstimates.EstimateScalarStorageBytes(large) + 64;
++        Assert.InRange(mixed.CommittedStorageBytes, mixedMinimum, mixedMinimum + 32 + 2 * RuntimeMemoryEstimates.ScalarStorageBytes);
++        Assert.Same(large, mixed[0]);
+         Assert.Equal(mixed.CommittedStorageBytes, governor.CurrentCommittedBytes - before);
+         Assert.Equal(0, governor.CurrentReservedBytes);
+         GC.KeepAlive(alias);

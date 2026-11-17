@@ -45,7 +45,7 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
                 array.CopyTo(_items, 0);
                 _count = array.Length;
             }
-            else foreach (var item in items) Add(item);
+            else AppendItems(items, PyStructuralGuard.AmbientContext, allocationSpan);
         }
         catch { DiscardUnpublishedStorage(); throw; }
     }
@@ -73,6 +73,7 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
     }
 
     public int Count => _count;
+    internal int Capacity => _items.Length;
     internal long CommittedStorageBytes => _committedBytes;
 
     public MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;
@@ -94,6 +95,72 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
     {
         EnsureCapacity(checked(_count + 1));
         _items[_count++] = value;
+    }
+
+    // Source preparation belongs to each caller (including self-extension).
+    // Once prepared, constructors and extension share native append/cleanup.
+    internal void AppendItems(IEnumerable<object> values, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
+    {
+        var generator = (values as PyIteration.Cursor)?.GetBulkGenerator(context);
+        foreach (var value in values)
+        {
+            context?.CheckExecution(span);
+            Add(value);
+            var exhausted = generator is not null && generator.AppendBatch(this);
+            context?.CheckExecution(span);
+            if (exhausted) break;
+        }
+        context?.CheckExecution(span);
+    }
+
+    internal async ValueTask AppendItemsAsync(IAsyncEnumerable<object> values,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        var generator = (values as PyIteration.Cursor)?.GetBulkGenerator(context);
+        await foreach (var value in values.ConfigureAwait(false))
+        {
+            context.CheckExecution(span);
+            Add(value);
+            var exhausted = generator is not null && await generator.AppendBatchAsync(this).ConfigureAwait(false);
+            context.CheckExecution(span);
+            if (exhausted) break;
+        }
+        context.CheckExecution(span);
+    }
+
+    // Only a private constructor builder may transfer this storage. Capacity
+    // headroom funds scalar boxes; preserve larger scalar estimates as well.
+    // The caller keeps a separate temporary metadata charge for this builder.
+    internal object[] TakeConstructorStorage(out long bytes, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
+    {
+        var governor = _memoryGovernor.RequireNotNull();
+        var items = _items.AsSpan(0, _count);
+        bytes = Math.Max(EstimateCapacityBytes(_count), PyTuple.EstimateStorageBytes(items, context, span));
+        if (_count == _items.Length)
+        {
+            using var extra = governor.ReserveTemporary(Math.Max(0, bytes - _committedBytes), span);
+            context?.CheckExecution(span);
+            extra.Commit(Math.Max(0, bytes - _committedBytes));
+            var result = _items;
+            _items = [];
+            _count = 0;
+            _committedBytes = 0; // Existing funding transfers; refund nothing.
+            return result;
+        }
+        using var final = governor.ReserveTemporary(bytes, span);
+        context?.CheckExecution(span);
+        var trimmed = new object[_count];
+        for (var offset = 0; offset < trimmed.Length;)
+        {
+            context?.CheckExecution(span);
+            var count = Math.Min(4096, trimmed.Length - offset);
+            items.Slice(offset, count).CopyTo(trimmed.AsSpan(offset));
+            offset += count;
+        }
+        context?.CheckExecution(span);
+        final.Commit(bytes);
+        DiscardUnpublishedStorage();
+        return trimmed;
     }
 
     public void AddRange(IEnumerable<object> values) => AddRange(values, null, null);
@@ -124,13 +191,7 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
             // can yield more, so each store also ensures its actual capacity.
             EnsureCapacity(checked(_count + count));
 
-            foreach (var value in values)
-            {
-                context?.CheckExecution(span);
-                Add(value);
-            }
-
-            context?.CheckExecution(span);
+            AppendItems(values, context, span);
             return;
         }
 
@@ -139,12 +200,7 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
             // Unknown-length inputs stream incrementally, admitting actual
             // capacity before each store. Failing iterables retain their
             // successful prefix and its funding.
-            foreach (var value in values)
-            {
-                context?.CheckExecution(span);
-                Add(value);
-            }
-            context?.CheckExecution(span);
+            AppendItems(values, context, span);
         }
         catch (InvalidOperationException)
         {
@@ -168,12 +224,7 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
         try
         {
             context.CheckExecution(span);
-            await foreach (var value in PyIteration.Cursor.ForAsyncEnumeration(source, span, context).ConfigureAwait(false))
-            {
-                context.CheckExecution(span);
-                Add(value);
-            }
-            context.CheckExecution(span);
+            await AppendItemsAsync(PyIteration.Cursor.ForAsyncEnumeration(source, span, context), context, span).ConfigureAwait(false);
         }
         catch (InvalidOperationException)
         {

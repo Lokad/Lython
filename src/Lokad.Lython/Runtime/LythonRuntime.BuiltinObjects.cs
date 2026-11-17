@@ -93,11 +93,7 @@ internal sealed partial class LythonRuntime
         var result = new PyList(arguments[0] is IReadOnlyCollection<object> known ? known.Count : 0, context.MemoryGovernor, span);
         try
         {
-            foreach (var item in PyIteration.Cursor.Create(arguments[0], span, context))
-            {
-                result.Add(item);
-                context.CheckExecution(span);
-            }
+            result.AppendItems(PyIteration.Cursor.Create(arguments[0], span, context), context, span);
             return result;
         }
         catch { result.DiscardUnpublishedStorage(); throw; }
@@ -118,11 +114,7 @@ internal sealed partial class LythonRuntime
         var result = new PyList(arguments[0] is IReadOnlyCollection<object> known ? known.Count : 0, context.MemoryGovernor, span);
         try
         {
-            await foreach (var item in PyIteration.Cursor.ForAsyncEnumeration(arguments[0], span, context).ConfigureAwait(false))
-            {
-                result.Add(item);
-                context.CheckExecution(span);
-            }
+            await result.AppendItemsAsync(PyIteration.Cursor.ForAsyncEnumeration(arguments[0], span, context), context, span).ConfigureAwait(false);
             return result;
         }
         catch { result.DiscardUnpublishedStorage(); throw; }
@@ -140,7 +132,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "tuple(iterable) expects one argument.", span);
         }
 
-        var result = new PyTuple(PyIteration.Cursor.Create(arguments[0], span, context), context.MemoryGovernor, span);
+        var result = PyTuple.CreateFromIterable(PyIteration.Cursor.Create(arguments[0], span, context), context, span);
         context.CheckExecution(span);
         return result;
     }
@@ -157,10 +149,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "tuple(iterable) expects one argument.", span);
         }
 
-        using var items = await PyIteration.MaterializeLeasedAsync(arguments[0], span, context).ConfigureAwait(false);
-        var result = new PyTuple(items.Items, context.MemoryGovernor, span);
-        context.CheckExecution(span);
-        return result;
+        return await PyTuple.CreateFromIterableAsync(arguments[0], context, span).ConfigureAwait(false);
     }
 
     private static object Dict(object[] arguments, LythonSourceSpan span, ExecutionContext context)

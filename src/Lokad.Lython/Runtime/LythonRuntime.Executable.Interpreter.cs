@@ -65,6 +65,7 @@ internal sealed partial class LythonRuntime
         // handler/caller chain may survive in that retained lexical context.
         internal void DetachExecutableExecution()
         {
+            StopBufferingYields();
             ClearExecutableBindings();
             _execution.Stack = default;
             _pendingAbrupt = null;
@@ -147,6 +148,46 @@ internal sealed partial class LythonRuntime
                 }
                 _sentValue = PyNone.Instance;
             }
+        }
+
+        private object? _yieldDestination;
+        private int _yieldLimit;
+
+        internal void BufferYields(object destination, int limit)
+        {
+            _yieldDestination = destination;
+            _yieldLimit = limit;
+        }
+
+        internal void StopBufferingYields()
+        {
+            _yieldDestination = null;
+            _yieldLimit = 0;
+        }
+
+        private bool TryBufferYield(object destination)
+        {
+            // Keep the final yielded item for the ordinary Advance result.
+            // The private list has admitted capacity; Add invokes no Python or
+            // host callback. Pending cleanup must finish before resumption.
+            if (_execution.Stack.HasPendingDisposals) return false;
+            if (destination is PyList list)
+            {
+                if (list.Count >= Math.Min(_yieldLimit, list.Capacity) - 1) return false;
+                var value = TakeYieldValue();
+                list.Add(value.Object.RequireNotNull());
+            }
+            else
+            {
+                var items = (List<object>)destination;
+                if (items.Count >= _yieldLimit - 1) return false;
+                var value = TakeYieldValue();
+                items.Add(value.Object.RequireNotNull());
+            }
+            CheckExecution(_execution.Code.Instructions[_execution.InstructionIndex].Span);
+            State.SetCurrentException(HasActiveHandler ? State.CurrentException : _entryActiveException);
+            Resume(PyNone.Instance, null);
+            return true;
         }
         // Handler-save chain, created on first except-route push: plain calls
         // never touch it, so the per-frame Stack box is skipped.
@@ -699,7 +740,11 @@ internal sealed partial class LythonRuntime
                 while (true)
                 {
                     var pause = ExecuteInstructionPrefix(ref _execution, this, this, true, out var pending, out var span, out var nextCall);
-                    if (pause == InstructionPause.Boundary) return null;
+                    if (pause == InstructionPause.Boundary)
+                    {
+                        if (_yieldDestination is { } destination && HasYield && TryBufferYield(destination)) continue;
+                        return null;
+                    }
                     var jumped = false;
                     if (pause is InstructionPause.Call or InstructionPause.Operation)
                     {
@@ -736,7 +781,12 @@ internal sealed partial class LythonRuntime
                     // A relinquished cursor must finish before another guest
                     // instruction or handler observes its cleanup effects.
                     if (_execution.Stack.HasPendingDisposals) await DrainPendingDisposalsAsync().ConfigureAwait(false);
-                    if (!_execution.ReturnValue.IsUnassigned || HasYield) return null;
+                    if (!_execution.ReturnValue.IsUnassigned) return null;
+                    if (HasYield)
+                    {
+                        if (_yieldDestination is { } destination && TryBufferYield(destination)) continue;
+                        return null;
+                    }
                     if (!jumped) _execution.InstructionIndex++;
                 }
             }

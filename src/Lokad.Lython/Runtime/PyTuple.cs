@@ -241,12 +241,14 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
     }
 
     internal static object[] MaterializeGovernedItems(IEnumerable<object> items, MemoryGovernor governor,
-        LythonSourceSpan? allocationSpan, out long bytes, int? expectedCount = null)
+        LythonSourceSpan? allocationSpan, out long bytes, int? expectedCount = null,
+        LythonRuntime.ExecutionContext? context = null)
     {
+        context ??= PyStructuralGuard.AmbientContext;
         if (items is object[] array)
         {
             ValidateCount(array.Length);
-            return CopyGovernedItems(array, governor, allocationSpan, out bytes);
+            return CopyGovernedItems(array, governor, allocationSpan, out bytes, context);
         }
 
         var capacity = items switch
@@ -259,44 +261,43 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
         // Fixed records know their necessary result capacity even when their
         // source is a generator. This is admission, not an iteration cutoff.
         capacity = Math.Max(capacity, expectedCount.GetValueOrDefault());
-        using var funding = governor.ReserveTemporary(EstimateApproximateBytes(capacity), allocationSpan);
-        var buffer = capacity == 0 ? Array.Empty<object>() : new object[capacity];
-        var count = 0;
-        long scalarBytes = 0;
-        foreach (var item in items)
+        using var metadata = governor.ReserveTemporary(PyList.EstimateCapacityBytes(0), allocationSpan);
+        var builder = new PyList(capacity, governor, allocationSpan);
+        try
         {
-            if (count == buffer.Length)
-            {
-                var nextCapacity = buffer.Length == 0 ? 4 : checked(buffer.Length * 2);
-                funding.Grow(EstimateApproximateBytes(nextCapacity) - EstimateApproximateBytes(buffer.Length), allocationSpan);
-                Array.Resize(ref buffer, nextCapacity);
-            }
-
-            var scalar = RuntimeMemoryEstimates.EstimateScalarStorageBytes(item);
-            funding.Grow(scalar, allocationSpan);
-            scalarBytes += scalar;
-            buffer[count++] = item;
+            builder.AppendItems(items, context, allocationSpan);
+            ValidateCount(builder.Count);
+            return builder.TakeConstructorStorage(out bytes, context, allocationSpan);
         }
-
-        ValidateCount(count);
-        var backingBytes = EstimateApproximateBytes(count);
-        var materialized = buffer;
-        if (count != buffer.Length)
-        {
-            // The exact final array coexists with the temporary growth buffer.
-            funding.Grow(backingBytes, allocationSpan);
-            materialized = new object[count];
-            Array.Copy(buffer, materialized, count);
-        }
-        bytes = backingBytes + scalarBytes;
-        funding.Commit(bytes);
-        return materialized;
+        finally { builder.DiscardUnpublishedStorage(); }
 
         void ValidateCount(int count)
         {
             if (expectedCount is { } expected && count != expected)
                 throw new LythonRuntimeException("TypeError", $"Expected {expected} arguments, got {count}", allocationSpan);
         }
+    }
+
+    internal static PyTuple CreateFromIterable(IEnumerable<object> source,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        var items = MaterializeGovernedItems(source, context.MemoryGovernor, span, out var bytes, context: context);
+        return new PyTuple(items, context.MemoryGovernor, span, bytes);
+    }
+
+    internal static async ValueTask<PyTuple> CreateFromIterableAsync(object source,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        var governor = context.MemoryGovernor;
+        using var metadata = governor.ReserveTemporary(PyList.EstimateCapacityBytes(0), span);
+        var builder = new PyList(source is IReadOnlyCollection<object> known ? known.Count : 0, governor, span);
+        try
+        {
+            await builder.AppendItemsAsync(PyIteration.Cursor.ForAsyncEnumeration(source, span, context), context, span).ConfigureAwait(false);
+            var items = builder.TakeConstructorStorage(out var bytes, context, span);
+            return new PyTuple(items, governor, span, bytes);
+        }
+        finally { builder.DiscardUnpublishedStorage(); }
     }
 
     public int Count => _items.Length;

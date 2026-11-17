@@ -53,6 +53,7 @@ internal static partial class PyIteration
     {
         var reservation = context.MemoryGovernor.ReserveTemporary(32, span);
         var result = new List<object>();
+        var generator = (items as Cursor)?.GetBulkGenerator(context);
         try
         {
             foreach (var item in items)
@@ -67,8 +68,9 @@ internal static partial class PyIteration
                 }
                 result.Add(item);
 
+                var exhausted = generator is not null && generator.AppendBatch(result, maximumItems);
                 context.CheckExecution(span);
-                if (result.Count == maximumItems) break;
+                if (exhausted || result.Count == maximumItems) break;
             }
         }
         catch
@@ -84,6 +86,7 @@ internal static partial class PyIteration
     {
         var reservation = context.MemoryGovernor.ReserveTemporary(32, span);
         var result = new List<object>();
+        var generator = (items as Cursor)?.GetBulkGenerator(context);
         try
         {
             await foreach (var item in items.ConfigureAwait(false))
@@ -98,8 +101,9 @@ internal static partial class PyIteration
                 }
                 result.Add(item);
 
+                var exhausted = generator is not null && await generator.AppendBatchAsync(result, maximumItems).ConfigureAwait(false);
                 context.CheckExecution(span);
-                if (result.Count == maximumItems) break;
+                if (exhausted || result.Count == maximumItems) break;
             }
         }
         catch
@@ -224,6 +228,10 @@ internal static partial class PyIteration
             && _sequencePosition == 0 && _syncEnumerator is null ? _value as PyList : null;
         internal int? KnownCount => _iterator is null && (_syncSource ?? _value) is IReadOnlyCollection<object> known
             ? known.Count : null;
+        internal LythonRuntime.PyGenerator? GetBulkGenerator(LythonRuntime.ExecutionContext? context)
+            => context is not null && !_disposed && _syncEnumerator is null && _asyncEnumerator is null
+                && _iterator is LythonRuntime.PyGenerator generator && generator.CanBufferFor(context)
+                    ? generator : null;
         public Cursor GetEnumerator() => this;
         IEnumerator<object> IEnumerable<object>.GetEnumerator() => this;
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => this;

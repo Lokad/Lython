@@ -114,6 +114,65 @@ internal sealed partial class LythonRuntime
         public PyIterationResult TryMoveNext() => Advance(PyNone.Instance, null);
         public ValueTask<PyIterationResult> TryMoveNextAsync() => AdvanceAsync(PyNone.Instance, null);
 
+        // A foreign source retains its own authority. Its consumer must keep
+        // checking the active command between ordinary, unbuffered pulls.
+        internal bool CanBufferFor(ExecutionContext consumer)
+            => ReferenceEquals(_frame?.State, consumer.State);
+
+        // Only private drains borrow this admitted capacity. The last value
+        // still crosses the ordinary advancement boundary before publication.
+        internal bool AppendBatch(List<object> items, int? maximumItems)
+        {
+            var limit = Math.Min(items.Capacity, maximumItems ?? int.MaxValue);
+            return items.Count < limit && AppendBatchCore(items, limit);
+        }
+
+        internal bool AppendBatch(PyList items)
+            => items.Count < items.Capacity && AppendBatchCore(items, items.Capacity);
+
+        private bool AppendBatchCore(object items, int limit)
+        {
+            var frame = _frame;
+            frame?.BufferYields(items, limit);
+            PyIterationResult next;
+            try
+            {
+                next = Advance(PyNone.Instance, null);
+            }
+            finally { frame?.StopBufferingYields(); }
+            if (!next.HasValue) return true;
+            // Guest code may change a live PyList's capacity. Its final Add
+            // can admit growth only after the frame and buffer borrow end.
+            if (items is PyList list) list.Add(next.Value);
+            else ((List<object>)items).Add(next.Value);
+            return false;
+        }
+
+        internal ValueTask<bool> AppendBatchAsync(List<object> items, int? maximumItems)
+        {
+            var limit = Math.Min(items.Capacity, maximumItems ?? int.MaxValue);
+            return items.Count < limit ? AppendBatchCoreAsync(items, limit) : new(false);
+        }
+
+        internal ValueTask<bool> AppendBatchAsync(PyList items)
+            => items.Count < items.Capacity ? AppendBatchCoreAsync(items, items.Capacity) : new(false);
+
+        private async ValueTask<bool> AppendBatchCoreAsync(object items, int limit)
+        {
+            var frame = _frame;
+            frame?.BufferYields(items, limit);
+            PyIterationResult next;
+            try
+            {
+                next = await AdvanceAsync(PyNone.Instance, null).ConfigureAwait(false);
+            }
+            finally { frame?.StopBufferingYields(); }
+            if (!next.HasValue) return true;
+            if (items is PyList list) list.Add(next.Value);
+            else ((List<object>)items).Add(next.Value);
+            return false;
+        }
+
         private PyIterationResult Advance(object sent, LythonRuntimeException? injected)
         {
             if (!CanAdvance(sent, injected)) return PyIterationResult.End;

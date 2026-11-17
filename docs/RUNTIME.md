@@ -1331,6 +1331,19 @@ Mutation or inspection of a list during `list.sort` is undefined, as in Python.
 Normal key evaluation, stable ordering and `sorted()` input materialization remain
 part of the supported behavior.
 
+Native iterable constructors share one governed sequence builder. Tuples adopt
+exact-sized backing or admit a trim copy while the old capacity remains funded.
+Per-capacity scalar headroom replaces per-item reservation growth; larger scalar
+payload estimates remain funded before publication. With a supplied allowance,
+this conservative working and retained storage can reject some tuples earlier.
+Input effects and aliases remain ordinary Python behavior; failed private builders
+refund their storage after iterator cleanup.
+
+Native sequence consumers buffer generator yields only while writing admitted
+capacity under the same execution authority. Growth, pending disposal and consumer
+callbacks return through the ordinary boundary. Other execution authorities keep
+per-pull consumer checks. Both APIs preserve current cancellation and awaited cleanup.
+
 ## Shared memory ownership
 
 Substantial storage uses a borrowed

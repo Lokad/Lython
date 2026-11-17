@@ -2,6 +2,12 @@
 
 ## 0.11.0 - Unreleased
 
+- Share governed native sequence construction and buffer admitted generator output
+  through the existing engine. Remove async tuple staging and per-item scalar
+  reservation growth. Preserve aliases, active cancellation, terminal refusal and
+  awaited cleanup; conservative tuple headroom can reject earlier under a supplied
+  memory allowance.
+
 - Share string/byte replacement construction and reuse immutable receivers when
   the needle is absent, keeping repeated unchanged replacements within a bounded
   working set. Preserve count semantics, cancellation and retained-result funding.

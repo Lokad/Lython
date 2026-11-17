@@ -13,7 +13,11 @@ internal sealed partial class LythonRuntime
                 while (true)
                 {
                     var pause = ExecuteInstructionPrefix(ref _execution, this, this, false, out _, out _, out var nextCall);
-                    if (pause != InstructionPause.Call) return null;
+                    if (pause != InstructionPause.Call)
+                    {
+                        if (_yieldDestination is { } destination && HasYield && TryBufferYield(destination)) continue;
+                        return null;
+                    }
                     var child = nextCall.GetAwaiter().GetResult();
                     if (!ReferenceEquals(child, this)) return child;
                 }
