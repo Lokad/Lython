@@ -1,0 +1,938 @@
+﻿[
+  {
+    "workload": "scripts.numeric-squared-error.large",
+    "function": "\u003Cmodule\u003E",
+    "IsFunctionScope": false,
+    "RequiresLocalVariableMirroring": false,
+    "instruction": 3,
+    "ArgumentCount": 1,
+    "IsPositionalOnly": true,
+    "HasReceiver": false,
+    "adjacentPureArgumentLoads": 0,
+    "forwardedArguments": [
+      -1
+    ],
+    "MaterializedArgumentCount": 0,
+    "instructionCount": 71,
+    "precedingInstructions": [
+      "Import",
+      "DefineFunction",
+      "LoadName"
+    ]
+  },
+  {
+    "workload": "scripts.numeric-squared-error.large",
+    "function": "\u003Cmodule\u003E",
+    "IsFunctionScope": false,
+    "RequiresLocalVariableMirroring": false,
+    "instruction": 12,
+    "ArgumentCount": 1,
+    "IsPositionalOnly": true,
+    "HasReceiver": true,
+    "adjacentPureArgumentLoads": 0,
+    "forwardedArguments": [
+      4
+    ],
+    "MaterializedArgumentCount": 0,
+    "instructionCount": 71,
+    "precedingInstructions": [
+      "EnterContextManager",
+      "StoreLocal",
+      "Jump",
+      "StoreLocal",
+      "LoadCallMember"
+    ]
+  },
+  {
+    "workload": "scripts.numeric-squared-error.large",
+    "function": "\u003Cmodule\u003E",
+    "IsFunctionScope": false,
+    "RequiresLocalVariableMirroring": false,
+    "instruction": 20,
+    "ArgumentCount": 1,
+    "IsPositionalOnly": true,
+    "HasReceiver": false,
+    "adjacentPureArgumentLoads": 0,
+    "forwardedArguments": [],
+    "MaterializedArgumentCount": 1,
+    "instructionCount": 71,
+    "precedingInstructions": [
+      "LoadLocal",
+      "ExitContextManager",
+      "EndFinally",
+      "LoadName",
+      "Subscript"
+    ]
+  },
+  {
+    "workload": "scripts.numeric-squared-error.large",
+    "function": "\u003Cmodule\u003E",
+    "IsFunctionScope": false,
+    "RequiresLocalVariableMirroring": false,
+    "instruction": 24,
+    "ArgumentCount": 1,
+    "IsPositionalOnly": true,
+    "HasReceiver": false,
+    "adjacentPureArgumentLoads": 0,
+    "forwardedArguments": [],
+    "MaterializedArgumentCount": 1,
+    "instructionCount": 71,
+    "precedingInstructions": [
+      "Subscript",
+      "Call",
+      "StoreLocal",
+      "LoadName",
+      "Subscript"
+    ]
+  },
+  {
+    "workload": "scripts.numeric-squared-error.large",
+    "function": "\u003Cmodule\u003E",
+    "IsFunctionScope": false,
+    "RequiresLocalVariableMirroring": false,
+    "instruction": 28,
+    "ArgumentCount": 1,
+    "IsPositionalOnly": true,
+    "HasReceiver": false,
+    "adjacentPureArgumentLoads": 0,
+    "forwardedArguments": [],
+    "MaterializedArgumentCount": 1,
+    "instructionCount": 71,
+    "precedingInstructions": [
+      "Subscript",
+      "Call",
+      "StoreLocal",
+      "LoadName",
+      "Subscript"
+    ]
+  },
+  {
+    "workload": "scripts.numeric-squared-error.large",
+    "function": "\u003Cmodule\u003E",
+    "IsFunctionScope": false,
+    "RequiresLocalVariableMirroring": false,
+    "instruction": 32,
+    "ArgumentCount": 1,
+    "IsPositionalOnly": true,
+    "HasReceiver": false,
+    "adjacentPureArgumentLoads": 0,
+    "forwardedArguments": [
+      6
+    ],
+    "MaterializedArgumentCount": 0,
+    "instructionCount": 71,
+    "precedingInstructions": [
+      "Subscript",
+      "Call",
+      "StoreLocal",
+      "LoadName",
+      "LoadName"
+    ]
+  },
+  {
+    "workload": "scripts.numeric-squared-error.large",
+    "function": "\u003Cmodule\u003E",
+    "IsFunctionScope": false,
+    "RequiresLocalVariableMirroring": false,
+    "instruction": 34,
+    "ArgumentCount": 1,
+    "IsPositionalOnly": true,
+    "HasReceiver": false,
+    "adjacentPureArgumentLoads": 0,
+    "forwardedArguments": [],
+    "MaterializedArgumentCount": 1,
+    "instructionCount": 71,
+    "precedingInstructions": [
+      "StoreLocal",
+      "LoadName",
+      "LoadName",
+      "Call",
+      "ApplyOperation"
+    ]
+  },
+  {
+    "workload": "scripts.numeric-squared-error.large",
+    "function": "\u003Cmodule\u003E",
+    "IsFunctionScope": false,
+    "RequiresLocalVariableMirroring": false,
+    "instruction": 49,
+    "ArgumentCount": 3,
+    "IsPositionalOnly": false,
+    "HasReceiver": false,
+    "adjacentPureArgumentLoads": 0,
+    "forwardedArguments": [
+      -8,
+      -9,
+      -10
+    ],
+    "MaterializedArgumentCount": 0,
+    "instructionCount": 71,
+    "precedingInstructions": [
+      "LoadConst",
+      "LoadLocal",
+      "MakeDict",
+      "StoreLocal",
+      "LoadName"
+    ]
+  },
+  {
+    "workload": "scripts.numeric-squared-error.large",
+    "function": "\u003Cmodule\u003E",
+    "IsFunctionScope": false,
+    "RequiresLocalVariableMirroring": false,
+    "instruction": 58,
+    "ArgumentCount": 4,
+    "IsPositionalOnly": false,
+    "HasReceiver": true,
+    "adjacentPureArgumentLoads": 0,
+    "forwardedArguments": [
+      10,
+      13,
+      -11,
+      -14
+    ],
+    "MaterializedArgumentCount": 0,
+    "instructionCount": 71,
+    "precedingInstructions": [
+      "EnterContextManager",
+      "StoreLocal",
+      "Jump",
+      "StoreLocal",
+      "LoadCallMember"
+    ]
+  },
+  {
+    "workload": "scripts.numeric-squared-error.large",
+    "function": "\u003Cmodule\u003E",
+    "IsFunctionScope": false,
+    "RequiresLocalVariableMirroring": false,
+    "instruction": 61,
+    "ArgumentCount": 1,
+    "IsPositionalOnly": true,
+    "HasReceiver": true,
+    "adjacentPureArgumentLoads": 0,
+    "forwardedArguments": [
+      -15
+    ],
+    "MaterializedArgumentCount": 0,
+    "instructionCount": 71,
+    "precedingInstructions": [
+      "StoreLocal",
+      "LoadCallMember",
+      "Call",
+      "PopTop",
+      "LoadCallMember"
+    ]
+  },
+  {
+    "workload": "scripts.numeric-squared-error.large",
+    "function": "\u003Cmodule\u003E",
+    "IsFunctionScope": false,
+    "RequiresLocalVariableMirroring": false,
+    "instruction": 68,
+    "ArgumentCount": 1,
+    "IsPositionalOnly": true,
+    "HasReceiver": false,
+    "adjacentPureArgumentLoads": 0,
+    "forwardedArguments": [
+      6
+    ],
+    "MaterializedArgumentCount": 0,
+    "instructionCount": 71,
+    "precedingInstructions": [
+      "Jump",
+      "LoadLocal",
+      "ExitContextManager",
+      "EndFinally",
+      "LoadName"
+    ]
+  },
+  {
+    "workload": "calls.positional.large",
+    "function": "\u003Cmodule\u003E",
+    "IsFunctionScope": false,
+    "RequiresLocalVariableMirroring": false,
+    "instruction": 4,
+    "ArgumentCount": 1,
+    "IsPositionalOnly": true,
+    "HasReceiver": false,
+    "adjacentPureArgumentLoads": 0,
+    "forwardedArguments": [
+      0
+    ],
+    "MaterializedArgumentCount": 0,
+    "instructionCount": 19,
+    "precedingInstructions": [
+      "StoreLocal",
+      "DefineFunction",
+      "StoreLocal",
+      "LoadName"
+    ]
+  },
+  {
+    "workload": "calls.positional.large",
+    "function": "\u003Cmodule\u003E",
+    "IsFunctionScope": false,
+    "RequiresLocalVariableMirroring": false,
+    "instruction": 11,
+    "ArgumentCount": 1,
+    "IsPositionalOnly": true,
+    "HasReceiver": false,
+    "adjacentPureArgumentLoads": 1,
+    "forwardedArguments": [
+      3
+    ],
+    "MaterializedArgumentCount": 0,
+    "instructionCount": 19,
+    "precedingInstructions": [
+      "Jump",
+      "ForNext",
+      "StoreLocal",
+      "LoadLocal",
+      "LoadLocal"
+    ]
+  },
+  {
+    "workload": "calls.positional.large",
+    "function": "\u003Cmodule\u003E",
+    "IsFunctionScope": false,
+    "RequiresLocalVariableMirroring": false,
+    "instruction": 16,
+    "ArgumentCount": 1,
+    "IsPositionalOnly": true,
+    "HasReceiver": false,
+    "adjacentPureArgumentLoads": 0,
+    "forwardedArguments": [
+      2
+    ],
+    "MaterializedArgumentCount": 0,
+    "instructionCount": 19,
+    "precedingInstructions": [
+      "Call",
+      "Augmented",
+      "StoreLocal",
+      "Jump",
+      "LoadName"
+    ]
+  },
+  {
+    "workload": "scripts.text-normalization.helper-list",
+    "function": "\u003Cmodule\u003E",
+    "IsFunctionScope": false,
+    "RequiresLocalVariableMirroring": false,
+    "instruction": 2,
+    "ArgumentCount": 2,
+    "IsPositionalOnly": false,
+    "HasReceiver": false,
+    "adjacentPureArgumentLoads": 0,
+    "forwardedArguments": [
+      -1,
+      -2
+    ],
+    "MaterializedArgumentCount": 0,
+    "instructionCount": 68,
+    "precedingInstructions": [
+      "DefineFunction",
+      "LoadName"
+    ]
+  },
+  {
+    "workload": "scripts.text-normalization.helper-list",
+    "function": "\u003Cmodule\u003E",
+    "IsFunctionScope": false,
+    "RequiresLocalVariableMirroring": false,
+    "instruction": 11,
+    "ArgumentCount": 0,
+    "IsPositionalOnly": true,
+    "HasReceiver": true,
+    "adjacentPureArgumentLoads": 0,
+    "forwardedArguments": [],
+    "MaterializedArgumentCount": 0,
+    "instructionCount": 68,
+    "precedingInstructions": [
+      "EnterContextManager",
+      "StoreLocal",
+      "Jump",
+      "StoreLocal",
+      "LoadCallMember"
+    ]
+  },
+  {
+    "workload": "scripts.text-normalization.helper-list",
+    "function": "\u003Cmodule\u003E",
+    "IsFunctionScope": false,
+    "RequiresLocalVariableMirroring": false,
+    "instruction": 18,
+    "ArgumentCount": 2,
+    "IsPositionalOnly": true,
+    "HasReceiver": true,
+    "adjacentPureArgumentLoads": 0,
+    "forwardedArguments": [
+      -3,
+      -4
+    ],
+    "MaterializedArgumentCount": 0,
+    "instructionCount": 68,
+    "precedingInstructions": [
+      "Jump",
+      "LoadLocal",
+      "ExitContextManager",
+      "EndFinally",
+      "LoadCallMember"
+    ]
+  },
+  {
+    "workload": "scripts.text-normalization.helper-list",
+    "function": "\u003Cmodule\u003E",
+    "IsFunctionScope": false,
+    "RequiresLocalVariableMirroring": false,
+    "instruction": 20,
+    "ArgumentCount": 2,
+    "IsPositionalOnly": true,
+    "HasReceiver": true,
+    "adjacentPureArgumentLoads": 0,
+    "forwardedArguments": [
+      -5,
+      -4
+    ],
+    "MaterializedArgumentCount": 0,
+    "instructionCount": 68,
+    "precedingInstructions": [
+      "ExitContextManager",
+      "EndFinally",
+      "LoadCallMember",
+      "Call",
+      "LoadCallMember"
+    ]
+  },
+  {
+    "workload": "scripts.text-normalization.helper-list",
+    "function": "\u003Cmodule\u003E",
+    "IsFunctionScope": false,
+    "RequiresLocalVariableMirroring": false,
+    "instruction": 22,
+    "ArgumentCount": 1,
+    "IsPositionalOnly": true,
+    "HasReceiver": true,
+    "adjacentPureArgumentLoads": 0,
+    "forwardedArguments": [
+      -6
+    ],
+    "MaterializedArgumentCount": 0,
+    "instructionCount": 68,
+    "precedingInstructions": [
+      "LoadCallMember",
+      "Call",
+      "LoadCallMember",
+      "Call",
+      "LoadCallMember"
+    ]
+  },
+  {
+    "workload": "scripts.text-normalization.helper-list",
+    "function": "\u003Cmodule\u003E",
+    "IsFunctionScope": false,
+    "RequiresLocalVariableMirroring": false,
+    "instruction": 27,
+    "ArgumentCount": 1,
+    "IsPositionalOnly": true,
+    "HasReceiver": true,
+    "adjacentPureArgumentLoads": 0,
+    "forwardedArguments": [
+      -4
+    ],
+    "MaterializedArgumentCount": 0,
+    "instructionCount": 68,
+    "precedingInstructions": [
+      "Call",
+      "StoreLocal",
+      "MakeList",
+      "StoreLocal",
+      "LoadCallMember"
+    ]
+  },
+  {
+    "workload": "scripts.text-normalization.helper-list",
+    "function": "\u003Cmodule\u003E",
+    "IsFunctionScope": false,
+    "RequiresLocalVariableMirroring": false,
+    "instruction": 33,
+    "ArgumentCount": 2,
+    "IsPositionalOnly": true,
+    "HasReceiver": false,
+    "adjacentPureArgumentLoads": 1,
+    "forwardedArguments": [
+      5,
+      6
+    ],
+    "MaterializedArgumentCount": 0,
+    "instructionCount": 68,
+    "precedingInstructions": [
+      "GetIter",
+      "Jump",
+      "ForNext",
+      "StoreLocal",
+      "LoadLocal"
+    ]
+  },
+  {
+    "workload": "scripts.text-normalization.helper-list",
+    "function": "\u003Cmodule\u003E",
+    "IsFunctionScope": false,
+    "RequiresLocalVariableMirroring": false,
+    "instruction": 37,
+    "ArgumentCount": 1,
+    "IsPositionalOnly": true,
+    "HasReceiver": true,
+    "adjacentPureArgumentLoads": 0,
+    "forwardedArguments": [
+      5
+    ],
+    "MaterializedArgumentCount": 0,
+    "instructionCount": 68,
+    "precedingInstructions": [
+      "LoadLocal",
+      "Call",
+      "PopTop",
+      "Jump",
+      "LoadCallMember"
+    ]
+  },
+  {
+    "workload": "scripts.text-normalization.helper-list",
+    "function": "\u003Cmodule\u003E",
+    "IsFunctionScope": false,
+    "RequiresLocalVariableMirroring": false,
+    "instruction": 39,
+    "ArgumentCount": 0,
+    "IsPositionalOnly": true,
+    "HasReceiver": true,
+    "adjacentPureArgumentLoads": 0,
+    "forwardedArguments": [],
+    "MaterializedArgumentCount": 0,
+    "instructionCount": 68,
+    "precedingInstructions": [
+      "PopTop",
+      "Jump",
+      "LoadCallMember",
+      "Call",
+      "LoadCallMember"
+    ]
+  },
+  {
+    "workload": "scripts.text-normalization.helper-list",
+    "function": "\u003Cmodule\u003E",
+    "IsFunctionScope": false,
+    "RequiresLocalVariableMirroring": false,
+    "instruction": 43,
+    "ArgumentCount": 3,
+    "IsPositionalOnly": false,
+    "HasReceiver": false,
+    "adjacentPureArgumentLoads": 0,
+    "forwardedArguments": [
+      -7,
+      -8,
+      -2
+    ],
+    "MaterializedArgumentCount": 0,
+    "instructionCount": 68,
+    "precedingInstructions": [
+      "LoadCallMember",
+      "Call",
+      "Binary",
+      "StoreLocal",
+      "LoadName"
+    ]
+  },
+  {
+    "workload": "scripts.text-normalization.helper-list",
+    "function": "\u003Cmodule\u003E",
+    "IsFunctionScope": false,
+    "RequiresLocalVariableMirroring": false,
+    "instruction": 52,
+    "ArgumentCount": 1,
+    "IsPositionalOnly": true,
+    "HasReceiver": true,
+    "adjacentPureArgumentLoads": 0,
+    "forwardedArguments": [
+      7
+    ],
+    "MaterializedArgumentCount": 0,
+    "instructionCount": 68,
+    "precedingInstructions": [
+      "EnterContextManager",
+      "StoreLocal",
+      "Jump",
+      "StoreLocal",
+      "LoadCallMember"
+    ]
+  },
+  {
+    "workload": "scripts.text-normalization.helper-list",
+    "function": "\u003Cmodule\u003E",
+    "IsFunctionScope": false,
+    "RequiresLocalVariableMirroring": false,
+    "instruction": 60,
+    "ArgumentCount": 1,
+    "IsPositionalOnly": true,
+    "HasReceiver": false,
+    "adjacentPureArgumentLoads": 0,
+    "forwardedArguments": [
+      7
+    ],
+    "MaterializedArgumentCount": 0,
+    "instructionCount": 68,
+    "precedingInstructions": [
+      "LoadLocal",
+      "ExitContextManager",
+      "EndFinally",
+      "LoadName",
+      "LoadName"
+    ]
+  },
+  {
+    "workload": "scripts.text-normalization.helper-list",
+    "function": "\u003Cmodule\u003E",
+    "IsFunctionScope": false,
+    "RequiresLocalVariableMirroring": false,
+    "instruction": 63,
+    "ArgumentCount": 0,
+    "IsPositionalOnly": true,
+    "HasReceiver": true,
+    "adjacentPureArgumentLoads": 0,
+    "forwardedArguments": [],
+    "MaterializedArgumentCount": 0,
+    "instructionCount": 68,
+    "precedingInstructions": [
+      "LoadName",
+      "LoadName",
+      "Call",
+      "LoadName",
+      "LoadCallMember"
+    ]
+  },
+  {
+    "workload": "scripts.text-normalization.helper-list",
+    "function": "\u003Cmodule\u003E",
+    "IsFunctionScope": false,
+    "RequiresLocalVariableMirroring": false,
+    "instruction": 64,
+    "ArgumentCount": 1,
+    "IsPositionalOnly": true,
+    "HasReceiver": false,
+    "adjacentPureArgumentLoads": 0,
+    "forwardedArguments": [],
+    "MaterializedArgumentCount": 1,
+    "instructionCount": 68,
+    "precedingInstructions": [
+      "LoadName",
+      "Call",
+      "LoadName",
+      "LoadCallMember",
+      "Call"
+    ]
+  },
+  {
+    "workload": "scripts.text-normalization.helper-list",
+    "function": "\u003Cmodule\u003E",
+    "IsFunctionScope": false,
+    "RequiresLocalVariableMirroring": false,
+    "instruction": 65,
+    "ArgumentCount": 2,
+    "IsPositionalOnly": true,
+    "HasReceiver": false,
+    "adjacentPureArgumentLoads": 0,
+    "forwardedArguments": [],
+    "MaterializedArgumentCount": 2,
+    "instructionCount": 68,
+    "precedingInstructions": [
+      "Call",
+      "LoadName",
+      "LoadCallMember",
+      "Call",
+      "Call"
+    ]
+  },
+  {
+    "workload": "scripts.text-normalization.helper-list",
+    "function": "append_cleaned",
+    "IsFunctionScope": true,
+    "RequiresLocalVariableMirroring": false,
+    "instruction": 2,
+    "ArgumentCount": 0,
+    "IsPositionalOnly": true,
+    "HasReceiver": true,
+    "adjacentPureArgumentLoads": 0,
+    "forwardedArguments": [],
+    "MaterializedArgumentCount": 0,
+    "instructionCount": 6,
+    "precedingInstructions": [
+      "LoadCallMember",
+      "LoadCallMember"
+    ]
+  },
+  {
+    "workload": "scripts.text-normalization.helper-list",
+    "function": "append_cleaned",
+    "IsFunctionScope": true,
+    "RequiresLocalVariableMirroring": false,
+    "instruction": 3,
+    "ArgumentCount": 1,
+    "IsPositionalOnly": true,
+    "HasReceiver": true,
+    "adjacentPureArgumentLoads": 0,
+    "forwardedArguments": [],
+    "MaterializedArgumentCount": 1,
+    "instructionCount": 6,
+    "precedingInstructions": [
+      "LoadCallMember",
+      "LoadCallMember",
+      "Call"
+    ]
+  },
+  {
+    "workload": "scripts.report-render.helper-list",
+    "function": "\u003Cmodule\u003E",
+    "IsFunctionScope": false,
+    "RequiresLocalVariableMirroring": false,
+    "instruction": 3,
+    "ArgumentCount": 1,
+    "IsPositionalOnly": true,
+    "HasReceiver": false,
+    "adjacentPureArgumentLoads": 0,
+    "forwardedArguments": [
+      -1
+    ],
+    "MaterializedArgumentCount": 0,
+    "instructionCount": 60,
+    "precedingInstructions": [
+      "Import",
+      "DefineFunction",
+      "LoadName"
+    ]
+  },
+  {
+    "workload": "scripts.report-render.helper-list",
+    "function": "\u003Cmodule\u003E",
+    "IsFunctionScope": false,
+    "RequiresLocalVariableMirroring": false,
+    "instruction": 12,
+    "ArgumentCount": 1,
+    "IsPositionalOnly": true,
+    "HasReceiver": true,
+    "adjacentPureArgumentLoads": 0,
+    "forwardedArguments": [
+      4
+    ],
+    "MaterializedArgumentCount": 0,
+    "instructionCount": 60,
+    "precedingInstructions": [
+      "EnterContextManager",
+      "StoreLocal",
+      "Jump",
+      "StoreLocal",
+      "LoadCallMember"
+    ]
+  },
+  {
+    "workload": "scripts.report-render.helper-list",
+    "function": "\u003Cmodule\u003E",
+    "IsFunctionScope": false,
+    "RequiresLocalVariableMirroring": false,
+    "instruction": 28,
+    "ArgumentCount": 1,
+    "IsPositionalOnly": true,
+    "HasReceiver": false,
+    "adjacentPureArgumentLoads": 1,
+    "forwardedArguments": [
+      8
+    ],
+    "MaterializedArgumentCount": 0,
+    "instructionCount": 60,
+    "precedingInstructions": [
+      "ForNext",
+      "StoreLocal",
+      "LoadLocal",
+      "LoadLocal",
+      "LoadLocal"
+    ]
+  },
+  {
+    "workload": "scripts.report-render.helper-list",
+    "function": "\u003Cmodule\u003E",
+    "IsFunctionScope": false,
+    "RequiresLocalVariableMirroring": false,
+    "instruction": 29,
+    "ArgumentCount": 2,
+    "IsPositionalOnly": true,
+    "HasReceiver": false,
+    "adjacentPureArgumentLoads": 0,
+    "forwardedArguments": [],
+    "MaterializedArgumentCount": 2,
+    "instructionCount": 60,
+    "precedingInstructions": [
+      "StoreLocal",
+      "LoadLocal",
+      "LoadLocal",
+      "LoadLocal",
+      "Call"
+    ]
+  },
+  {
+    "workload": "scripts.report-render.helper-list",
+    "function": "\u003Cmodule\u003E",
+    "IsFunctionScope": false,
+    "RequiresLocalVariableMirroring": false,
+    "instruction": 33,
+    "ArgumentCount": 1,
+    "IsPositionalOnly": true,
+    "HasReceiver": false,
+    "adjacentPureArgumentLoads": 0,
+    "forwardedArguments": [
+      7
+    ],
+    "MaterializedArgumentCount": 0,
+    "instructionCount": 60,
+    "precedingInstructions": [
+      "Call",
+      "Call",
+      "PopTop",
+      "Jump",
+      "LoadName"
+    ]
+  },
+  {
+    "workload": "scripts.report-render.helper-list",
+    "function": "\u003Cmodule\u003E",
+    "IsFunctionScope": false,
+    "RequiresLocalVariableMirroring": false,
+    "instruction": 36,
+    "ArgumentCount": 3,
+    "IsPositionalOnly": false,
+    "HasReceiver": false,
+    "adjacentPureArgumentLoads": 0,
+    "forwardedArguments": [
+      -2,
+      -3,
+      -4
+    ],
+    "MaterializedArgumentCount": 0,
+    "instructionCount": 60,
+    "precedingInstructions": [
+      "Jump",
+      "LoadName",
+      "Call",
+      "StoreLocal",
+      "LoadName"
+    ]
+  },
+  {
+    "workload": "scripts.report-render.helper-list",
+    "function": "\u003Cmodule\u003E",
+    "IsFunctionScope": false,
+    "RequiresLocalVariableMirroring": false,
+    "instruction": 45,
+    "ArgumentCount": 1,
+    "IsPositionalOnly": true,
+    "HasReceiver": true,
+    "adjacentPureArgumentLoads": 0,
+    "forwardedArguments": [
+      -5
+    ],
+    "MaterializedArgumentCount": 0,
+    "instructionCount": 60,
+    "precedingInstructions": [
+      "EnterContextManager",
+      "StoreLocal",
+      "Jump",
+      "StoreLocal",
+      "LoadCallMember"
+    ]
+  },
+  {
+    "workload": "scripts.report-render.helper-list",
+    "function": "\u003Cmodule\u003E",
+    "IsFunctionScope": false,
+    "RequiresLocalVariableMirroring": false,
+    "instruction": 49,
+    "ArgumentCount": 1,
+    "IsPositionalOnly": true,
+    "HasReceiver": true,
+    "adjacentPureArgumentLoads": 0,
+    "forwardedArguments": [
+      7
+    ],
+    "MaterializedArgumentCount": 0,
+    "instructionCount": 60,
+    "precedingInstructions": [
+      "LoadCallMember",
+      "Call",
+      "PopTop",
+      "LoadCallMember",
+      "LoadCallMember"
+    ]
+  },
+  {
+    "workload": "scripts.report-render.helper-list",
+    "function": "\u003Cmodule\u003E",
+    "IsFunctionScope": false,
+    "RequiresLocalVariableMirroring": false,
+    "instruction": 50,
+    "ArgumentCount": 1,
+    "IsPositionalOnly": true,
+    "HasReceiver": true,
+    "adjacentPureArgumentLoads": 0,
+    "forwardedArguments": [],
+    "MaterializedArgumentCount": 1,
+    "instructionCount": 60,
+    "precedingInstructions": [
+      "Call",
+      "PopTop",
+      "LoadCallMember",
+      "LoadCallMember",
+      "Call"
+    ]
+  },
+  {
+    "workload": "scripts.report-render.helper-list",
+    "function": "\u003Cmodule\u003E",
+    "IsFunctionScope": false,
+    "RequiresLocalVariableMirroring": false,
+    "instruction": 57,
+    "ArgumentCount": 1,
+    "IsPositionalOnly": true,
+    "HasReceiver": false,
+    "adjacentPureArgumentLoads": 0,
+    "forwardedArguments": [
+      9
+    ],
+    "MaterializedArgumentCount": 0,
+    "instructionCount": 60,
+    "precedingInstructions": [
+      "Jump",
+      "LoadLocal",
+      "ExitContextManager",
+      "EndFinally",
+      "LoadName"
+    ]
+  },
+  {
+    "workload": "scripts.report-render.helper-list",
+    "function": "append_line",
+    "IsFunctionScope": true,
+    "RequiresLocalVariableMirroring": false,
+    "instruction": 1,
+    "ArgumentCount": 1,
+    "IsPositionalOnly": true,
+    "HasReceiver": true,
+    "adjacentPureArgumentLoads": 0,
+    "forwardedArguments": [
+      1
+    ],
+    "MaterializedArgumentCount": 0,
+    "instructionCount": 4,
+    "precedingInstructions": [
+      "LoadCallMember"
+    ]
+  }
+]

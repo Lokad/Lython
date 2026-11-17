@@ -1,0 +1,6 @@
+{
+  "originalPair": "B876",
+  "kind": "Retained uncertainty and adversity, not a failed architectural design",
+  "condition": "One candidate warm-call process shows20.55%between-process spread/19.29%maximumIQR, while numeric control has2.74..5.70%consistent elapsed/+3.42..5.58%CPU adversity. Helper text mixed, no gain established.",
+  "next": "One bounded same-source confirmation of warm call diagnostic and numeric control with8second full-request warmup; retain original4second condition. No source edit, CPU cause claim, full-lane replay or automatic promotion."
+}

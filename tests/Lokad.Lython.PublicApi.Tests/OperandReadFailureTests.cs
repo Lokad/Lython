@@ -5,6 +5,37 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class OperandReadFailureTests
 {
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task MissingArgumentsPrecedeNonCallableTargets(bool functionLocal)
+    {
+        var source = functionLocal
+            ? "def fail():\n for missing in []:pass\n return target(1,2,3,4,missing)\nfail()"
+            : "for missing in []:pass\ntarget(1,2,3,4,missing)";
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var script = new LythonEngine().Compile(source, budget))
+        {
+            Assert.True(script.IsValid);
+            var baseline = budget.ReservedBytes;
+            var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["target"] = 42 } };
+            foreach (var asynchronous in new[] { false, true })
+            {
+                using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options)
+                    : script.Run(new MockLythonHost(), options))
+                {
+                    Assert.False(result.Success);
+                    var failure = Assert.IsType<LythonRuntimeFailure>(result.Failure);
+                    Assert.Equal(functionLocal ? "UnboundLocalError" : "NameError", failure.ExceptionType);
+                    Assert.Equal(source.LastIndexOf("missing", StringComparison.Ordinal), failure.Span?.Start);
+                    Assert.Empty(result.StandardOutput);
+                }
+                Assert.Equal(baseline, budget.ReservedBytes);
+            }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
     [InlineData("for left in []:pass\nfor right in []:pass\nleft + right", "left", "NameError")]
     [InlineData("for left in []:pass\nfor right in []:pass\nleft[right]", "left", "NameError")]
     [InlineData("class Probe:\n def __getitem__(self,key):print('called')\nleft=Probe()\nfor missing in []:pass\nleft[missing]", "missing", "NameError")]

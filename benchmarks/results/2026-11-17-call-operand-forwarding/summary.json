@@ -1,0 +1,191 @@
+{
+  "complete": true,
+  "elapsedSeconds": 152.515080539044,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "rows": [
+    {
+      "case": "scripts.text-normalization.helper-list",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 1.25906776984127,
+        "reference": 1.2615992594594596,
+        "candidate-control": 1.2907895943661971,
+        "reference-control": 1.2529723819628646
+      },
+      "cpuMilliseconds": {
+        "candidate": 1.3756613756613758,
+        "reference": 1.3783783783783783,
+        "candidate-control": 1.380281690140845,
+        "reference-control": 1.3527851458885942
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.4446739219169877,
+        "reference": 1.488599435886332,
+        "candidate-control": 0.5827039296698228,
+        "reference-control": 0.28142035803466053
+      },
+      "elapsedChangePercent": [
+        -0.20065718961139734,
+        0.486474240466217,
+        2.3137565029361484,
+        3.018199997679849
+      ],
+      "cpuChangePercent": [
+        -0.19711588339037522,
+        0.13808340237504435,
+        1.6910467890860037,
+        2.032587682960507
+      ],
+      "referenceSpreadPercent": 0.6885129808751556,
+      "candidateSpreadPercent": 2.5194691886145426
+    },
+    {
+      "case": "scripts.text-normalization.helper-list",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "candidate": 1.4120302084805654,
+        "reference": 1.3755807785467127,
+        "candidate-control": 1.3681602491349478,
+        "reference-control": 1.3914735670103093
+      },
+      "cpuMilliseconds": {
+        "candidate": 1.519434628975265,
+        "reference": 1.4878892733564013,
+        "candidate-control": 1.4878892733564013,
+        "reference-control": 1.5120274914089349
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.5181897966832469,
+        "reference": 1.3375730608357306,
+        "candidate-control": 0.3937813978325809,
+        "reference-control": 0.5243021460242836
+      },
+      "elapsedChangePercent": [
+        -1.6754409446276486,
+        -0.5394470123088357,
+        1.4773289236405418,
+        2.6497484191630782
+      ],
+      "cpuChangePercent": [
+        -1.596413966656196,
+        0.0,
+        0.48988114359136414,
+        2.1201413427561766
+      ],
+      "referenceSpreadPercent": 1.155351158685658,
+      "candidateSpreadPercent": 3.2064927608703275
+    },
+    {
+      "case": "calls.positional.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 2.0010176135458164,
+        "candidate-control": 1.986539092,
+        "reference": 2.0086625863453818,
+        "candidate": 2.3947625571428572
+      },
+      "cpuMilliseconds": {
+        "reference-control": 2.0318725099601593,
+        "candidate-control": 2.0,
+        "reference": 2.0481927710843375,
+        "candidate": 2.428571428571429
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.43135721575416847,
+        "candidate-control": 0.5408954720937608,
+        "reference": 0.17459338326465038,
+        "candidate": 19.294291423110124
+      },
+      "elapsedChangePercent": [
+        -1.1014042127221568,
+        -0.7235579261174241,
+        19.221743533340607,
+        19.677235269274917
+      ],
+      "cpuChangePercent": [
+        -2.352941176470591,
+        -1.5686274509803866,
+        18.571428571428573,
+        19.523809523809543
+      ],
+      "referenceSpreadPercent": 0.38205424818917866,
+      "candidateSpreadPercent": 20.54948059098438
+    },
+    {
+      "case": "calls.positional.large",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "reference-control": 2.0051681646586346,
+        "candidate-control": 2.0470542307692305,
+        "reference": 2.0428039218106995,
+        "candidate": 2.074077631147541
+      },
+      "cpuMilliseconds": {
+        "reference-control": 2.0481927710843375,
+        "candidate-control": 2.064777327935223,
+        "reference": 2.05761316872428,
+        "candidate": 2.0901639344262293
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.3774403257743943,
+        "candidate-control": 0.8925020024083501,
+        "reference": 1.1516471430729618,
+        "candidate": 0.4451054207698747
+      },
+      "elapsedChangePercent": [
+        0.20806250238465385,
+        1.5309207605750608,
+        2.088905401992891,
+        3.4365928854968475
+      ],
+      "cpuChangePercent": [
+        0.34817813765182226,
+        0.809716599190291,
+        1.5819672131147433,
+        2.049180327868827
+      ],
+      "referenceSpreadPercent": 1.8769376960696027,
+      "candidateSpreadPercent": 1.320111600959173
+    },
+    {
+      "case": "scripts.numeric-squared-error.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 1.755648694852941,
+        "candidate-control": 1.8036667794676806,
+        "reference": 1.738200917857143,
+        "candidate": 1.8372326115384614
+      },
+      "cpuMilliseconds": {
+        "reference-control": 1.838235294117647,
+        "candidate-control": 1.9011406844106464,
+        "reference": 1.8214285714285714,
+        "candidate": 1.9230769230769231
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.1870759832791224,
+        "candidate-control": 0.08537298152813314,
+        "reference": 0.49977002391453473,
+        "candidate": 0.0738841161646061
+      },
+      "elapsedChangePercent": [
+        2.735062245397657,
+        3.7663000253874035,
+        4.6469385888362025,
+        5.697367471385584
+      ],
+      "cpuChangePercent": [
+        3.4220532319391817,
+        4.376351300976666,
+        4.615384615384621,
+        5.580693815987936
+      ],
+      "referenceSpreadPercent": 1.0037836717580184,
+      "candidateSpreadPercent": 1.860977451760082
+    }
+  ],
+  "retentionDecisionPending": false,
+  "CPythonRefreshed": false,
+  "decision": "Withdraw this batch-materialization shape: no established complete-script CPU benefit, flat allocation/peaks and additional compiler/runtime machinery. Preserve uncertainty; no permanent design ban."
+}

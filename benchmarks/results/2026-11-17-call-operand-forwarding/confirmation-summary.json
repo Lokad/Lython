@@ -1,0 +1,83 @@
+{
+  "complete": true,
+  "elapsedSeconds": 95.11199569422752,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "rows": [
+    {
+      "case": "calls.positional.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 2.036858918367347,
+        "reference": 2.026979943319838,
+        "candidate-control": 2.169631159482759,
+        "reference-control": 2.0270312008032128
+      },
+      "cpuMilliseconds": {
+        "candidate": 2.0408163265306123,
+        "reference": 2.0242914979757085,
+        "candidate-control": 2.1982758620689657,
+        "reference-control": 2.008032128514056
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.1414054034600161,
+        "reference": 0.04685557149038348,
+        "candidate-control": 0.4534472865440793,
+        "reference-control": 0.21765306723357675
+      },
+      "elapsedChangePercent": [
+        0.48483306819551153,
+        0.48737408971737395,
+        7.034916809521263,
+        7.0376234670227245
+      ],
+      "cpuChangePercent": [
+        0.8163265306122547,
+        1.6326530612245094,
+        8.594827586206911,
+        9.474137931034509
+      ],
+      "referenceSpreadPercent": 0.0025287612511304403,
+      "candidateSpreadPercent": 6.518479994767423
+    },
+    {
+      "case": "scripts.numeric-squared-error.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 1.687068159010601,
+        "reference": 1.7076035802919707,
+        "candidate-control": 1.7374338791208792,
+        "reference-control": 1.7986194870848708
+      },
+      "cpuMilliseconds": {
+        "candidate": 1.7667844522968197,
+        "reference": 1.751824817518248,
+        "candidate-control": 1.794871794871795,
+        "reference-control": 1.8450184501845017
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.9583039189220901,
+        "reference": 0.47709025168390523,
+        "candidate-control": 0.31792476635297395,
+        "reference-control": 0.6769601550968887
+      },
+      "elapsedChangePercent": [
+        -6.202052678472181,
+        -3.4018094657230047,
+        -1.2025871530357501,
+        1.7469100658484171
+      ],
+      "cpuChangePercent": [
+        -4.240282685512364,
+        -2.717948717948704,
+        0.8539458186101356,
+        2.4572649572649707
+      ],
+      "referenceSpreadPercent": 5.330037243031427,
+      "candidateSpreadPercent": 2.9853992466917223
+    }
+  ],
+  "retentionDecisionPending": false,
+  "CPythonRefreshed": false,
+  "decision": "Withdraw this batch-materialization shape: no established complete-script CPU benefit, flat allocation/peaks and additional compiler/runtime machinery. Preserve uncertainty; no permanent design ban."
+}

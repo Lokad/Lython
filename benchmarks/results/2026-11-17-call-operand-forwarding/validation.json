@@ -1,0 +1,50 @@
+{
+  "withdrawn": true,
+  "retainedProductionChange": false,
+  "independentNewPublicCases": 2,
+  "checks": [
+    {
+      "file": "initial-internal-net10.trx",
+      "passed": 105
+    },
+    {
+      "file": "initial-internal-net11.trx",
+      "passed": 105
+    },
+    {
+      "file": "initial-public-net10.trx",
+      "passed": 244
+    },
+    {
+      "file": "initial-public-net11.trx",
+      "passed": 242
+    },
+    {
+      "file": "operand-precedence-net11.trx",
+      "passed": 25
+    },
+    {
+      "file": "unchanged-runtime-precedence-net10.trx",
+      "passed": 25
+    },
+    {
+      "file": "unchanged-runtime-precedence-net11.trx",
+      "passed": 25
+    }
+  ],
+  "overlappingFiltersNotSummed": true,
+  "prototypeActualWindowsNet11": {
+    "internal": 105,
+    "publicBeforeTwoNewCases": 242,
+    "finalOperandClass": 25
+  },
+  "prototypeActualWindowsNet10": {
+    "internal": 105,
+    "public": 244
+  },
+  "unchangedProductionEachActualTargetOperandClass": 25,
+  "frozenGoldenCasesEachImage": 12,
+  "sourceAcceptance": "42pure-argument leaf instructions folded across4scripts; existing histogram segment remains prepared.",
+  "fullQualification": "Not replayed for withdrawn runtime. Production remains qualifiedccf20ba3.",
+  "publicationHeld": true
+}
