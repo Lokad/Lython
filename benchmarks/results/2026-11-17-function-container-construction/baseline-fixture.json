@@ -1,0 +1,6 @@
+{
+  "coreSHA256": "8d26963c6629fe62413b8c131ecb4459edf1710dc7e0e341c73c73760e09c6cb",
+  "failed": 2,
+  "passed": 5,
+  "reason": "Public CLR projection creates snapshots; Assert.Same on two projected mutable aliases is not the guest Python identity contract. Both unmodified production and prototype fail the new assertion. Move identity assertion into the guest and assert projected values plus owner funding at public boundary."
+}
