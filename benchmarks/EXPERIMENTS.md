@@ -9034,3 +9034,12 @@ permanent ban. First/confirmation/missing-protocol staging failure and exact
 sources/cores preserved, all users joined/RAM removed. Source remains qualifiedDC;
 no unchanged full qualification/CPython refresh. Continue coherent input-transport
 assessment; no claimed completion or publication.
+
+[R474/B885 single subscript entry](results/2026-11-17-subscript-entry/README.md):
+withdraw both production edits. Floating warm−5.30..−1.89% with supporting CPU,
+but fresh+0.47..+2.19%/widerCPU+2.81..+3.24%; runtime allocation flat. Integer
+controls moving, prior debt unresolved. Exact source/core, all observations and
+focused153public/20internal checks per actual target preserved; all VM users
+joined and RAM removed. No new architecture tests/dormant handlers. Qualified
+runtime unchanged, no repeated full qualification or publication. Assess larger
+existing generator batch lifetime rather than another speculative input selector.
