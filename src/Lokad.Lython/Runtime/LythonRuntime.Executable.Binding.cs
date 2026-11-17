@@ -390,12 +390,26 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    // Small copied packets use minor control headroom. Wider copies are admitted
-    // through completion, independently of the original evaluated operands.
-    internal static MemoryGovernor.TemporaryMemoryReservation? ReserveCallArgumentStorage(
+    private static long CallArgumentStorageBytes(int count)
+        => count == 0 ? 0 : checked(32L + 32L * count);
+
+    // The owned callable ABI permits retention until execution-owner cleanup.
+    internal static CallArgumentValue[] AllocateOwnedCallArguments(
         int count, ExecutionContext context, LythonSourceSpan span)
-        => count <= 3 ? null : context.MemoryGovernor.ReserveTemporary(
-            checked(32L + 32L * count), span);
+    {
+        context.CheckExecution(span);
+        if (count == 0) return [];
+        var bytes = CallArgumentStorageBytes(count);
+        context.MemoryGovernor.Reserve(bytes, span);
+        try
+        {
+            context.CheckExecution(span);
+            var arguments = new CallArgumentValue[count];
+            context.MemoryGovernor.Commit(bytes);
+            return arguments;
+        }
+        catch { context.MemoryGovernor.ReleaseReserved(bytes); throw; }
+    }
 
     private static CallArgumentValue CreateExecutableCallArgument(CallArgumentForm spec, object value)
         => spec.Kind switch

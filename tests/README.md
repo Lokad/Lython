@@ -1,8 +1,8 @@
 # Testing Lython
 
 [Copied callable inputs](Lokad.Lython.Tests/CallablePacketOwnershipTests.cs) check
-admission before effects, funding during cancellation cleanup and allowance reuse
-for ordinary and bound callables.
+admission before effects, funding during cancellation cleanup, retainable arrays
+after return and allowance reuse after owner cleanup for ordinary/bound callables.
 
 [Helper local lifetimes](Lokad.Lython.PublicApi.Tests/HelperLocalLifetimeTests.cs)
 check unassigned locals across repeated calls, nested/deep helpers, live pattern

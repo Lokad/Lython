@@ -1,0 +1,15 @@
+{
+  "head": "f2cb4008d5062b5de3c4cbbcd250b33cec75b928",
+  "workflow": "ci.yml",
+  "stress": true,
+  "recordedAtUTC": "2026-11-17T13:17:14.014598+00:00",
+  "run": 44091209377,
+  "url": "https://github.com/Lokad/Lython/actions/runs/44091209377",
+  "expectedEachPlatformTarget": {
+    "ordinaryInternal": 4828,
+    "ordinaryPublic": 18013,
+    "stressInternal": 14,
+    "stressPublic": 406
+  },
+  "publicationHeld": true
+}

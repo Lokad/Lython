@@ -8,9 +8,11 @@ public sealed class CallablePacketOwnershipTests
     private static readonly LythonSourceSpan Span = new(0, 1, 1, 1);
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void RefusedWideCallStoragePreventsCallableEffects(bool bound)
+    [InlineData(false, 1)]
+    [InlineData(true, 1)]
+    [InlineData(false, 8)]
+    [InlineData(true, 8)]
+    public void RefusedCallStoragePreventsCallableEffects(bool bound, int width)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using (var owner = budget.CreateScope())
@@ -19,7 +21,7 @@ public sealed class CallablePacketOwnershipTests
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = hook });
             var callable = new PendingCallable();
             object target = bound ? new PyBoundMethod(PyNone.Instance, callable) : callable;
-            var arguments = Enumerable.Repeat(CallArgumentValue.Positional(PyNone.Instance), 8).ToArray();
+            var arguments = Enumerable.Repeat(CallArgumentValue.Positional(PyNone.Instance), width).ToArray();
             var baseline = budget.ReservedBytes;
             hook.RefuseGrowth = _ => true;
             var failure = Assert.Throws<LythonRuntimeException>(() =>
@@ -62,7 +64,8 @@ public sealed class CallablePacketOwnershipTests
                 callable.ReleaseCleanup.TrySetResult();
                 await Assert.ThrowsAnyAsync<OperationCanceledException>(() => pending);
                 Assert.True(callable.ValuesSurvivedCleanup);
-                Assert.Equal(baseline, budget.ReservedBytes);
+                Assert.True(budget.ReservedBytes > baseline);
+                Assert.All(callable.RetainedArguments!, argument => Assert.Same(value, argument.Value));
                 Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
             }
             finally
@@ -79,10 +82,71 @@ public sealed class CallablePacketOwnershipTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task OwnedCopiesRemainFundedAndUnchangedAfterReturn(bool bound, bool asynchronous)
+    {
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using (var owner = budget.CreateScope())
+        {
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = owner });
+            try
+            {
+                var receiver = new object();
+                var callable = new RetainingCallable();
+                object target = bound ? new PyBoundMethod(receiver, callable) : callable;
+                foreach (var width in new[] { 1, 8 })
+                {
+                    var value = new object();
+                    var arguments = Enumerable.Repeat(CallArgumentValue.Positional(value), width).ToArray();
+                    arguments[^1] = CallArgumentValue.Keyword("last", value);
+                    var baseline = budget.ReservedBytes;
+                    var first = Assert.IsType<CallArgumentValue[]>(asynchronous
+                        ? await CallableInvocation.InvokeAsync(target, arguments, Span, context)
+                        : CallableInvocation.Invoke(target, arguments, Span, context));
+                    Assert.NotSame(arguments, first);
+                    Assert.True(budget.ReservedBytes > baseline);
+                    Assert.Equal(arguments, first.Skip(bound ? 1 : 0));
+                    if (bound) Assert.Same(receiver, first[0].Value);
+                    var saved = first.ToArray();
+                    Array.Clear(arguments);
+                    var next = asynchronous
+                        ? await CallableInvocation.InvokeAsync(target, [CallArgumentValue.Positional(PyNone.Instance)], Span, context)
+                        : CallableInvocation.Invoke(target, [CallArgumentValue.Positional(PyNone.Instance)], Span, context);
+                    Assert.NotSame(first, next);
+                    Assert.Equal(saved, first);
+                    Assert.True(budget.ReservedBytes > baseline);
+                    Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+                }
+            }
+            finally { context.State.CloseResources(); }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+        Assert.True(budget.TryReserve(budget.LimitBytes!.Value, out var reused));
+        reused.Dispose();
+    }
+
+    private sealed class RetainingCallable : LythonRuntime.ICallable
+    {
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+            => arguments;
+
+        public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span,
+            LythonRuntime.ExecutionContext context)
+        {
+            await Task.Yield();
+            return arguments;
+        }
+    }
+
     private sealed class PendingCallable : LythonRuntime.ICallable
     {
         internal int Calls;
         internal bool ValuesSurvivedCleanup;
+        internal CallArgumentValue[]? RetainedArguments;
         internal readonly TaskCompletionSource Entered = new(TaskCreationOptions.RunContinuationsAsynchronously);
         internal readonly TaskCompletionSource CleanupEntered = new(TaskCreationOptions.RunContinuationsAsynchronously);
         internal readonly TaskCompletionSource ReleaseCleanup = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -97,6 +161,7 @@ public sealed class CallablePacketOwnershipTests
             LythonRuntime.ExecutionContext context)
         {
             Calls++;
+            RetainedArguments = arguments;
             var values = arguments.Select(value => value.Value).ToArray();
             Entered.TrySetResult();
             try { await Task.Delay(Timeout.Infinite, context.State.CancellationToken); }

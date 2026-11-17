@@ -1,6 +1,12 @@
 # Copied callable storage: admission and pending ownership
 
-R486/B903,2026-11-17UTC. Retained correctness correction, full delivery pending.
+**First attempt invalidated by full CI44091209377.** Both platforms caught
+two existing retained-array regressions. The owned callable ABI permits retaining
+fresh arrays, so clearing them at completion is incorrect. This page and B903
+measurements describe frozen384327c2 only. They do not qualify its replacement.
+See [failed delivery and exact inputs](delivery-first-failure/README.md).
+
+R486/B903,2026-11-17UTC. Historical first attempt; qualification failed.
 Qualifieddbdf8262/frozena95ff2a4 versus four-file source on9d9fd1e9/frozen384327c2.
 585production/2382build-test inputs archived; public API unchanged. No wider
 argument view/collection bridge or migrated binder signatures remain. Original

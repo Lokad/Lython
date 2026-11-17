@@ -1,0 +1,12 @@
+{
+  "retain": true,
+  "basis": "Copied argument capacity and prepended receivers must remain admitted until actual pending users/cleanup finish. Independent4regressions fail qualified baseline/pass final fix. Correct resource funding required despite diagnostic overhead.",
+  "reference": "Qualifieddbdf8262/frozena95ff2a4",
+  "candidate": "Four-fileR486on9d9fd1e9/frozen384327c2; no borrowed-view representation",
+  "compatibility": "Large private copies can refuse earlier; failure before allocation/body effects and cleanup/refunds preserved; public API unchanged.",
+  "diagnosticCost": "1025wide bound calls allocate32800additional bytes (+2.86%),accountedpeak+288B; fresh+2.13..+3.89%,warmuncertain/ref5.26%movement. JSONcontrol essentiallyflat. No speedup claim.",
+  "focused": "Each actualWindows11/10:38internal,1050ordinarypublic,422continuation/generator; filters overlap, not summed. Extra18context-manager/cleanup11 pass.",
+  "fullDeliveryPending": true,
+  "broaderPerformanceObjectiveComplete": false,
+  "publicationHeld": true
+}

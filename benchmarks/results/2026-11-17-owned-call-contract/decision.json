@@ -1,0 +1,12 @@
+{
+  "retain": true,
+  "source": "Four production files onf2cb4008; frozen6c808cd8,585production/2382inputs",
+  "contract": "Owned arrays may be retained after success/fault/cancellation; admit before allocation and keep funded under existing execution/result owner. Borrowed scratch reclaims only after actual users finish.",
+  "removed": "Incorrect CompleteOwnedArguments async wrapper, pending-owner flags and temporary-reservation objects for retained copies; no new layer.",
+  "compatibility": "Conservative capacity stays charged until execution/result owner ends, so long executions with opaque retained-capable calls can reject earlier. Bounded host-driven batches remain required.",
+  "focused": "Final nonincremental build; actual Windows11/10 each99internal/239public; includes unchanged retainability tests and10copy ownership cases. Actual copied32file workers and CPython3.13.2 verify both goldens; allocation diagnostics restore owner baseline.",
+  "comparison": "116.43s source pair onquietVM: affected warm+2.19..+3.38%,CPU+3.47..+6.73%; fresh+2.11..+4.40%,CPU-0.52..+4.49%. JSONcontrol effectivelyflat. Allocationflat; affected accountedpeak3079->298471B after1025calls, as explicit retained funding requires.",
+  "fullDeliveryPending": true,
+  "broaderPerformanceObjectiveComplete": false,
+  "publicationHeld": true
+}
