@@ -23,7 +23,7 @@ Measured **2026-11-17 UTC**: original text normalization uses **dbdf8262 /
 frozena95ff2a4**, stock **CPython3.13.16**, with full runtime qualification pending.
 Three separated phases103.55s; all measurement gates pass.
 [Text baseline and exact boundaries](../benchmarks/results/2026-11-17-utf8-widths/refined/cpython/README.md).
-The the numeric CSV quality report uses **d8611c85 /
+The numeric CSV quality report uses **d8611c85 /
 frozen0315de0a**, stock **CPython3.13.16**; [full delivery passes](../benchmarks/results/2026-11-17-unary-result-transport/delivery/README.md).
 Its three separated phases finish104.51s with all measurement gates passed.
 [Numeric CSV baseline](../benchmarks/results/2026-11-17-unary-result-transport/cpython/README.md).
