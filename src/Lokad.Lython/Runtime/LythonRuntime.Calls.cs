@@ -188,18 +188,11 @@ internal sealed partial class LythonRuntime
         finally { context.LeaveInterpreterFrame(); }
     }
 
-    // The selector has just these two result signatures. Ordinary callers box
-    // integer values here; native callers can keep the shared typed result.
-    private static object InvokeSingleInput(object value, Delegate operation, LythonSourceSpan span, ExecutionContext context)
-        => operation switch
-        {
-            Func<object, LythonSourceSpan, ExecutionContext, BigInteger> integer => InvokeSingleInput(value, integer, span, context),
-            Func<object, LythonSourceSpan, ExecutionContext, object> reference => InvokeSingleInput(value, reference, span, context),
-            _ => throw new InvalidOperationException("Unknown native unary result signature."),
-        };
-
-    private static TResult InvokeSingleInput<TResult>(object value,
-        Func<object, LythonSourceSpan, ExecutionContext, TResult> operation, LythonSourceSpan span, ExecutionContext context)
+    // Completed builtin calls share one result convention with executable
+    // operands. Observation/publication owns materialization, not this boundary.
+    private static ExecutableSlot InvokeSingleInput(object value,
+        Func<object, LythonSourceSpan, ExecutionContext, ExecutableSlot> operation,
+        LythonSourceSpan span, ExecutionContext context)
     {
         context.EnterInterpreterFrame(span);
         try

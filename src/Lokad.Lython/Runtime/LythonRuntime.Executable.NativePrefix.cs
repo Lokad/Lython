@@ -333,15 +333,7 @@ internal sealed partial class LythonRuntime
                     var closed = false;
                     var operation = argument is not null ? SelectNativeUnaryOperation(target, argument, out closed) : null;
                     if (operation is not null && closed)
-                    {
-                        if (operation is Func<object, LythonSourceSpan, ExecutionContext, BigInteger> integerOperation)
-                        {
-                            var integer = InvokeSingleInput(argument!, integerOperation, call.CallSpan, _scope);
-                            if (TryMachineInteger(integer, out var integerResult)) result.SetInteger(integerResult);
-                            else result.Object = integer;
-                        }
-                        else result.Object = InvokeSingleInput(argument!, operation, call.CallSpan, _scope);
-                    }
+                        result = InvokeSingleInput(argument!, operation, call.CallSpan, _scope);
                     else if (!CallFunction(call, start, target, out result)) return false;
                 }
             }

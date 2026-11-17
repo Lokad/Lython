@@ -9080,3 +9080,12 @@ Original integerCSVslightlyfavorable,textsmallmixed/adverse. All original eviden
 sources/core/checks preserved; one bounded unchanged-image warm/fresh confirmation
 justified. Root production qualifiedabcbd9fd unchanged, no full qualification replay;
 all VM users joined/RAM removed. No permanent ban/automatic threshold/publication.
+
+R477/B890 confirmation: retain the smaller shared result convention and−5.26%
+allocation, not a substantial CPU gain. Same source/images/catalog,8sinterleaved
+warmups,2jobs95.71s. Warm−1.57..−0.18%/CPU−2.79..0%;fresh−1.39..+0.73%/
+CPU−0.89..+1.80%. Original first fresh advantage not reproduced,cause unisolated;
+first adverse text/older debts retained. Removed Delegate/signature/generic bridge
+and native-only repacking; source7files/five observable tests promoted, full delivery
+pending. Both raw conditions/procedures preserved; all users joined/RAM removed.
+No more unchanged retiming for this decision; broader objective/publicationheld.

@@ -1,0 +1,22 @@
+{
+  "retain": true,
+  "basis": "One existing-slot result convention removes heterogeneous Delegate/signature bridge and native-only integer repacking; established complete-script allocation reduction5.26%, unchanged accounted peaks. No substantial CPU gain claim.",
+  "warmConfirmation": "Elapsed\u22121.57..\u22120.18%, widerCPU\u22122.79..0.00%; controls reference0.24/candidate1.17%.",
+  "freshConfirmation": "Elapsed\u22121.39..+0.73%, widerCPU\u22120.89..+1.80%; controls1.36/0.79%. Original first fresh\u221211.02..\u22124.89%not reproduced; cause not isolated.",
+  "explicitDebt": "First text control small mixed/adverse; fresh CPU uncertain/slightly adverse. R471 integer and R460 async/tuple debts remain. No further unchanged-source retiming needed for this retention decision.",
+  "removed": [
+    "Delegate result carrier over two signatures",
+    "runtime signature/type switch at ordinary unary boundary",
+    "generic invocation overload",
+    "native-only integer unpack/repack branch"
+  ],
+  "preserved": [
+    "managed stack/cancellation/callable translation",
+    "native parsing and major allocation preflights",
+    "public materialization and canonical aliases",
+    "abs/str/sum(bytes) object behavior",
+    "terminal refusal and awaited cleanup"
+  ],
+  "fullDeliveryPending": true,
+  "publicationHeld": true
+}

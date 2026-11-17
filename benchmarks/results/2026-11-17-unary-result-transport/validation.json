@@ -1,0 +1,19 @@
+{
+  "eachActualWindowsTarget": {
+    "publicFocused": 433,
+    "internalFocused": 107,
+    "publicBoundaryAndCancellation": 211,
+    "internalActualAsyncProtocols": 6
+  },
+  "countsMayOverlap": true,
+  "newObservablePublicCases": 5,
+  "independentCPythonPrograms": 3,
+  "independentCompleteCsvGolden": true,
+  "candidatePriorCatalogGoldens": 13,
+  "actualFrozenReferenceAndCandidateCatalogGoldens": 3,
+  "productionFilesChanged": 7,
+  "productionSnapshotFiles": 585,
+  "copiedWorkerImageFiles": 32,
+  "fullDelivery": "Pending coherent Windows/Ubuntu actual11/10, originalstress and installed Release package consumers.",
+  "publicationHeld": true
+}

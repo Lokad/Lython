@@ -1,7 +1,7 @@
-# Closed unary builtin result transport: decision pending
+# Closed unary builtin result transport
 
 R477/B889,2026-11-17UTC. Qualified abcbd9fd/frozenca1a8239 versus private
-seven-file prototype/frozen0315de0a. **Prototype only; not promoted or qualified.**
+seven-file prototype/frozen0315de0a. **Retain for simplification and allocation; full delivery pending.**
 One existing ExecutableSlot result convention removes the Delegate/two-signature
 bridge, generic invocation switch, native-only integer repacking and fresh scalar
 boxing at ordinary int/len/float boundaries. No new owner, cache, enum registry,
@@ -25,8 +25,8 @@ Natural-GC allocation3739038→3542430B/run, **−196608B/−5.26%**; accounted
 peak6284280B unchanged. Original integer CSV allocation/peak flat; text essentially
 flat (56Bdiagnostic noise). All shared budgets restore baseline. Warm CPU remains
 inconclusive; moving fresh reference makes magnitude uncertain. Preserve the small
-adverse text result. One bounded unchanged-image warm/fresh confirmation is
-justified; no source/performance promotion or preferred-sign conclusion yet.
+adverse text result. One bounded unchanged-image warm/fresh confirmation follows below. The original
+favorable fresh magnitude is not confirmed; do not select only that observation.
 
 Both actual Windows.NET11/10 pass433public/107internal focused checks, plus
 211public boundary/cancellation checks and6actual async protocol checks (counts
@@ -46,7 +46,7 @@ All image/golden/quiet/Closed/exit/join/archive checks pass. RAM removed/termina
 cached. Fresh UID/path/hash/link/all-alias proofs retire7004853Bof superseded5ec
 core8aliases and exact committed working evidence replicas. Qualified currentca1
 images, toolchains/canonicals and254/252MiBstaging/final floors preserved.
-No staging or timing failure in this collection. Root production unchanged;
+No staging or timing failure in this collection. Retained source and five observable cases promoted; full delivery pending;
 publication held; broader performance goal remains active.
 
 [Summary](summary.json),[allocation](allocation-summary.json),[catalog](catalog.json),
@@ -54,3 +54,32 @@ publication held; broader performance goal remains active.
 [exact source](candidate-sources.tar.xz),[prototype](prototype.patch.gz),
 [core](candidate-core.dll.gz),[identity](identity.json),
 [checks/procedures](procedures-and-checks.tar.xz).
+
+## B890 unchanged-image confirmation and decision
+
+Two jobs95.71s; same source/images/catalog/rotation, interleaved8s full-request
+warmups instead of6s, because the first fresh reference moved6.04% and warm was
+inconclusive. No source tuning, forced GC or timing repair.
+
+| Numeric CSV report | Elapsed change | Wider CPU change | Reference / candidate controls |
+| --- | ---: | ---: | ---: |
+| Warm | −1.57..−0.18% | −2.79..0.00% | 0.24 / 1.17% |
+| Compile and execute once | **−1.39..+0.73%** | **−0.89..+1.80%** | 1.36 / 0.79% |
+
+Retain for the shared smaller result boundary and demonstrated5.26%allocation
+reduction, not a substantial CPU claim. Original fresh advantage is not reproduced;
+its cause is unisolated. Small warm benefit, essentially flat fresh elapsed and
+uncertain/slightly adverse fresh wider CPU remain separate. Preserve the first
+small adverse text control; no prior integer/async debt is declared resolved.
+No further unchanged-source timing is needed to make this retention decision.
+
+Both collections pass all gates/users joined/RAM removed; raw/terminals cached.
+Confirmation retires only465772Bof exact committed first working evidence
+replicas under fresh UID/path/hash/link/all-alias proof, keeping both measured
+cores/toolchains/canonicals and254/252MiBfloors. Three independent CPython
+semantic programs and all13previous catalog goldens also pass the candidate.
+No public API or contract break; full delivery is a separate checkpoint.
+
+[Confirmation](confirmation-summary.json),[raw](confirmation/observations.tgz),
+[decision](decision.json),[validation](validation.json),
+[additional checks/procedures](confirmation-procedures-and-checks.tar.xz).

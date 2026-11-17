@@ -60,9 +60,15 @@ internal sealed partial class LythonRuntime
             _ => throw new InvalidOperationException("Unknown prepared string operation."),
         };
 
+    // Fresh integer results share the same private result convention as
+    // floating parses. Large results keep their existing admitted object owner.
+    private static ExecutableSlot NativeIntegerResult(BigInteger value)
+        => TryMachineInteger(value, out var small) ? ExecutableSlot.FromInteger(small)
+            : ExecutableSlot.FromObject(value);
+
     // A closed operation cannot invoke guest protocols. Ordinary framed calls
     // retain len's broader selection and its original error/protocol behavior.
-    private static Delegate? SelectNativeUnaryOperation(
+    private static Func<object, LythonSourceSpan, ExecutionContext, ExecutableSlot>? SelectNativeUnaryOperation(
         object? target, object? value, out bool closed)
     {
         closed = true;

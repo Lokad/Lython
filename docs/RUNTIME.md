@@ -402,6 +402,10 @@ iteration. Compensated `sum` consumes those values directly. Object observation
 publishes a stable box before aliases, protocols, cells, containers or public
 results; mixed numeric operations keep their general Python behavior. Slot size,
 scalar-capacity admission and cancellation/cleanup boundaries are unchanged.
+Completed unary builtin calls share the executable-slot result convention in
+ordinary and native helper execution. Fresh small integer, length and float-text
+results stay private until observation publishes a stable object. Other result
+objects retain their existing identity and ownership behavior.
 For a same-command generator, native integer and floating `sum` prefixes reuse
 the existing yield buffer lifetime, avoiding frame entry and exit for every value.
 The accumulator has an admitted 64-byte command-local lifetime; no batch is

@@ -195,8 +195,8 @@ internal sealed partial class LythonRuntime
         return PyStringOps.TrimTrailingNewline(line);
     }
 
-    private static readonly Func<object, LythonSourceSpan, ExecutionContext, object> NativeStrOperation
-        = static (value, _, context) => PyRendering.ToInterpolatedPyString(value, new PyRenderingContext(context));
+    private static readonly Func<object, LythonSourceSpan, ExecutionContext, ExecutableSlot> NativeStrOperation
+        = static (value, _, context) => ExecutableSlot.FromObject(PyRendering.ToInterpolatedPyString(value, new PyRenderingContext(context)));
 
     private sealed class StrCallable() : BuiltinCallable(
         LythonCallableSignature.Create("str", ["object", "encoding", "errors"], requiredCount: 0,
@@ -214,7 +214,7 @@ internal sealed partial class LythonRuntime
 
             if (!bound.Assigned[0]) return PyString.Empty;
             if (!bound.Assigned[1] && !bound.Assigned[2])
-                return NativeStrOperation(bound.Values[0], span, context);
+                return NativeStrOperation(bound.Values[0], span, context).Object.RequireNotNull();
 
             return base.InvokeBound(bound.Values, span, context);
         }
@@ -338,8 +338,8 @@ internal sealed partial class LythonRuntime
         return RuntimeValue(arguments.Length == 1 && await IsTruthyAsync(arguments[0], context, span).ConfigureAwait(false));
     }
 
-    private static readonly Func<object, LythonSourceSpan, ExecutionContext, BigInteger> IntegerTextOperation
-        = static (value, span, context) => ParseOwnedIntegerText(value, 10, context, span);
+    private static readonly Func<object, LythonSourceSpan, ExecutionContext, ExecutableSlot> IntegerTextOperation
+        = static (value, span, context) => NativeIntegerResult(ParseOwnedIntegerText(value, 10, context, span));
 
     private static object Int(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
@@ -402,8 +402,8 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static readonly Func<object, LythonSourceSpan, ExecutionContext, object> AbsoluteOperation
-        = static (value, span, context) => AbsValueWithoutProtocols(value, context, span);
+    private static readonly Func<object, LythonSourceSpan, ExecutionContext, ExecutableSlot> AbsoluteOperation
+        = static (value, span, context) => ExecutableSlot.FromObject(AbsValueWithoutProtocols(value, context, span));
 
     private static object Abs(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {

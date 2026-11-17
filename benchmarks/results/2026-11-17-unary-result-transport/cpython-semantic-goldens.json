@@ -1,0 +1,23 @@
+{
+  "referenceVersion": "CPython3.13.2 Windows",
+  "rows": [
+    {
+      "index": 0,
+      "source": "\ndef parse(text): return float(text)\ndef measure(text): return len(text)\na = float('2.5')\nb = int('2147483648')\nc = len('\ud83d\ude00\u00e9')\naliases = [a, b, c]\nassert aliases[0] is a and aliases[1] is b and aliases[2] is c\nassert parse('3.25') + a == 5.75\nassert measure('\ud83d\ude00\u00e9') == 2\ndef capture(): return a, b, c\ncaptured = capture()\nassert captured[0] is a and captured[1] is b and captured[2] is c\nprint('ok')\n",
+      "stdout": "ok\n",
+      "exitCode": 0
+    },
+    {
+      "index": 1,
+      "source": "\ndef values():\n    for text in ['1.25', '2.5', '-0.75']:\n        yield float(text)\nassert sum(values()) == 3.0\nassert sum(int(text) for text in ['2147483648', '-2147483648', '9']) == 9\nhuge = int('9' * 101)\nalias = huge\nassert huge is alias and huge == 10 ** 101 - 1\ntext = 'already a string'\nassert str(text) is text\nassert abs(-7) == 7 and sum(b'abc') == 294\nprint('ok')\n",
+      "stdout": "ok\n",
+      "exitCode": 0
+    },
+    {
+      "index": 2,
+      "source": "\nnative_float, native_int, native_len = float, int, len\nevents = []\ndef argument():\n    global float, int, len\n    float = lambda value: events.append('float') or 19\n    int = lambda value: events.append('int') or 23\n    len = lambda value: events.append('len') or 29\n    return '2.5'\nassert native_float(argument()) == 2.5\nassert native_int('31') == 31 and native_len('\ud83d\ude00') == 1\nassert float('ignored') == 19 and int('ignored') == 23 and len('ignored') == 29\nassert events == ['float', 'int', 'len']\nprint('ok')\n",
+      "stdout": "ok\n",
+      "exitCode": 0
+    }
+  ]
+}

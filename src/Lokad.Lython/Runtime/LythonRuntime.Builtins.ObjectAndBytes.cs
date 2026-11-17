@@ -10,8 +10,13 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private static readonly Func<object, LythonSourceSpan, ExecutionContext, object> FloatTextOperation
-        = static (value, span, context) => ParseOwnedFloatText(value, context, span);
+    private static readonly Func<object, LythonSourceSpan, ExecutionContext, ExecutableSlot> FloatTextOperation
+        = static (value, span, context) =>
+        {
+            ExecutableSlot result = default;
+            result.SetDouble(ParseOwnedFloatText(value, context, span));
+            return result;
+        };
 
     private static object Float(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {

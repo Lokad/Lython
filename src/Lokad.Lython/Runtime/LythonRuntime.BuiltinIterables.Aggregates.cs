@@ -316,8 +316,8 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static readonly Func<object, LythonSourceSpan, ExecutionContext, object> SumBytesOperation
-        = static (bytes, span, context) => SumExactBytes((PyBytes)bytes, BigInteger.Zero, span, context);
+    private static readonly Func<object, LythonSourceSpan, ExecutionContext, ExecutableSlot> SumBytesOperation
+        = static (bytes, span, context) => ExecutableSlot.FromObject(SumExactBytes((PyBytes)bytes, BigInteger.Zero, span, context));
 
     private static bool TrySumExactBytes(object value, object start, LythonSourceSpan span, ExecutionContext context, out object result)
     {

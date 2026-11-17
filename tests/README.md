@@ -1,5 +1,11 @@
 # Testing Lython
 
+[Closed builtin results](Lokad.Lython.PublicApi.Tests/ClosedBuiltinResultTests.cs)
+preserve aliases across ordinary/helper calls, closures, generators and retained
+results. Pending I/O keeps converted values funded; cancellation joins cleanup
+before the shared allowance returns to baseline. Existing int/float grammar,
+large-value admission and protocol tests apply to the same result boundary.
+
 [Native generator sums](Lokad.Lython.PublicApi.Tests/NativeGeneratorSumTests.cs)
 preserve compensation, promotion, consumer errors outside suspended handlers,
 reentry, delegation and active exceptions. Pending host I/O remains funded and

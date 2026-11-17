@@ -9,7 +9,8 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private static readonly Func<object, LythonSourceSpan, ExecutionContext, BigInteger> LengthOperation = GetLength;
+    private static readonly Func<object, LythonSourceSpan, ExecutionContext, ExecutableSlot> LengthOperation
+        = static (value, span, context) => NativeIntegerResult(GetLength(value, span, context));
 
     private static object Len(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
