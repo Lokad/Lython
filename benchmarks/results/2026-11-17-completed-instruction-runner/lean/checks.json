@@ -1,0 +1,91 @@
+[
+  {
+    "name": "build",
+    "command": [
+      "C:\\Users\\JoannesVermorel\\.dotnet11\\dotnet.exe",
+      "build",
+      "Lokad.Lython.slnx",
+      "-c",
+      "Release",
+      "--no-incremental"
+    ],
+    "exitCode": 0,
+    "seconds": 42.13940009986982
+  },
+  {
+    "name": "internal-net11.0",
+    "command": [
+      "C:\\Users\\JoannesVermorel\\.dotnet11\\dotnet.exe",
+      "test",
+      "tests/Lokad.Lython.Tests/Lokad.Lython.Tests.csproj",
+      "-c",
+      "Release",
+      "-f",
+      "net11.0",
+      "--no-build",
+      "--filter",
+      "(FullyQualifiedName~Generator|FullyQualifiedName~Native|FullyQualifiedName~CursorDispatch|FullyQualifiedName~ForHelper|FullyQualifiedName~CallablePacketOwnership|FullyQualifiedName~HelperLocalLifetime|FullyQualifiedName~RepresentativeProtocolCancellation|FullyQualifiedName~BuiltinCancellation|FullyQualifiedName~FloatArithmeticPipeline|FullyQualifiedName~BulkConsumption|FullyQualifiedName~SequenceConstructionOwnership|FullyQualifiedName~BufferedGeneratorContinuation|FullyQualifiedName~ProtectedHelperExecution|FullyQualifiedName~ClosedBuiltinResult|FullyQualifiedName~CompilerCancellation|FullyQualifiedName~OrdinaryFunctionTransport|FullyQualifiedName~CasedSplit|FullyQualifiedName~Function|FullyQualifiedName~Stack|FullyQualifiedName~Loop|FullyQualifiedName~Exception)&Category!=Stress",
+      "--logger",
+      "console;verbosity=minimal"
+    ],
+    "exitCode": 0,
+    "seconds": 9.437752000056207
+  },
+  {
+    "name": "public-net11.0",
+    "command": [
+      "C:\\Users\\JoannesVermorel\\.dotnet11\\dotnet.exe",
+      "test",
+      "tests/Lokad.Lython.PublicApi.Tests/Lokad.Lython.PublicApi.Tests.csproj",
+      "-c",
+      "Release",
+      "-f",
+      "net11.0",
+      "--no-build",
+      "--filter",
+      "(FullyQualifiedName~Generator|FullyQualifiedName~Native|FullyQualifiedName~CursorDispatch|FullyQualifiedName~ForHelper|FullyQualifiedName~CallablePacketOwnership|FullyQualifiedName~HelperLocalLifetime|FullyQualifiedName~RepresentativeProtocolCancellation|FullyQualifiedName~BuiltinCancellation|FullyQualifiedName~FloatArithmeticPipeline|FullyQualifiedName~BulkConsumption|FullyQualifiedName~SequenceConstructionOwnership|FullyQualifiedName~BufferedGeneratorContinuation|FullyQualifiedName~ProtectedHelperExecution|FullyQualifiedName~ClosedBuiltinResult|FullyQualifiedName~CompilerCancellation|FullyQualifiedName~OrdinaryFunctionTransport|FullyQualifiedName~CasedSplit|FullyQualifiedName~Function|FullyQualifiedName~Stack|FullyQualifiedName~Loop|FullyQualifiedName~Exception)&Category!=Stress",
+      "--logger",
+      "console;verbosity=minimal"
+    ],
+    "exitCode": 0,
+    "seconds": 77.59627560013905
+  },
+  {
+    "name": "internal-net10.0",
+    "command": [
+      "C:\\Users\\JoannesVermorel\\.dotnet11\\dotnet.exe",
+      "test",
+      "tests/Lokad.Lython.Tests/Lokad.Lython.Tests.csproj",
+      "-c",
+      "Release",
+      "-f",
+      "net10.0",
+      "--no-build",
+      "--filter",
+      "(FullyQualifiedName~Generator|FullyQualifiedName~Native|FullyQualifiedName~CursorDispatch|FullyQualifiedName~ForHelper|FullyQualifiedName~CallablePacketOwnership|FullyQualifiedName~HelperLocalLifetime|FullyQualifiedName~RepresentativeProtocolCancellation|FullyQualifiedName~BuiltinCancellation|FullyQualifiedName~FloatArithmeticPipeline|FullyQualifiedName~BulkConsumption|FullyQualifiedName~SequenceConstructionOwnership|FullyQualifiedName~BufferedGeneratorContinuation|FullyQualifiedName~ProtectedHelperExecution|FullyQualifiedName~ClosedBuiltinResult|FullyQualifiedName~CompilerCancellation|FullyQualifiedName~OrdinaryFunctionTransport|FullyQualifiedName~CasedSplit|FullyQualifiedName~Function|FullyQualifiedName~Stack|FullyQualifiedName~Loop|FullyQualifiedName~Exception)&Category!=Stress",
+      "--logger",
+      "console;verbosity=minimal"
+    ],
+    "exitCode": 0,
+    "seconds": 6.731395700015128
+  },
+  {
+    "name": "public-net10.0",
+    "command": [
+      "C:\\Users\\JoannesVermorel\\.dotnet11\\dotnet.exe",
+      "test",
+      "tests/Lokad.Lython.PublicApi.Tests/Lokad.Lython.PublicApi.Tests.csproj",
+      "-c",
+      "Release",
+      "-f",
+      "net10.0",
+      "--no-build",
+      "--filter",
+      "(FullyQualifiedName~Generator|FullyQualifiedName~Native|FullyQualifiedName~CursorDispatch|FullyQualifiedName~ForHelper|FullyQualifiedName~CallablePacketOwnership|FullyQualifiedName~HelperLocalLifetime|FullyQualifiedName~RepresentativeProtocolCancellation|FullyQualifiedName~BuiltinCancellation|FullyQualifiedName~FloatArithmeticPipeline|FullyQualifiedName~BulkConsumption|FullyQualifiedName~SequenceConstructionOwnership|FullyQualifiedName~BufferedGeneratorContinuation|FullyQualifiedName~ProtectedHelperExecution|FullyQualifiedName~ClosedBuiltinResult|FullyQualifiedName~CompilerCancellation|FullyQualifiedName~OrdinaryFunctionTransport|FullyQualifiedName~CasedSplit|FullyQualifiedName~Function|FullyQualifiedName~Stack|FullyQualifiedName~Loop|FullyQualifiedName~Exception)&Category!=Stress",
+      "--logger",
+      "console;verbosity=minimal"
+    ],
+    "exitCode": 0,
+    "seconds": 75.68794089974836
+  }
+]

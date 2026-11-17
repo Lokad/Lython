@@ -1,0 +1,14 @@
+{
+  "status": "Not promoted; joint shared-runner milestone continues with a concrete hot-operation deletion map.",
+  "source": "Private9d59fb57 on22d5a5f3; main qualified runtime33bd7efd unchanged",
+  "structural": "Borrowed work/storage construction and second common transfer/jump/return selection removed; helper-entry code/frame reduced versus initial private footprint.",
+  "correctness": "Windows actual11/10 each1006internal/4217public focused, five copied32-file worker goldens and allocation/budget reuse checks pass. No full delivery claim.",
+  "elapsed": "Floating warm+14.01..+18.45%, fresh+8.09..+18.14%(reference spread6.95%), text+0.03..+3.69%, helper+6.92..+9.70%, calls+20.69..+24.96% against qualified source. No gain or promotion claimed.",
+  "allocation": "Effectively flat; accounted peaks unchanged and allowance baseline restored.",
+  "interpretation": "Smaller activation metadata alone does not resolve the design cost. Initial-versus-refined collections are not a controlled causal pair.",
+  "nextDesign": "Eliminate the shared loop to closed-operation selector stage: execute existing arithmetic/sequence/comparison selection in its opcode cases, retain pure kernels and protocol/async helpers. Delete TryExecuteBuiltinArithmetic, TryExecuteSequenceIndex and ExecuteComparisonInstruction selectors; completed comparison branches keep bools instead of ValueTask wrapping/unwrapping. Preserve catch/retirement/read order and actual suspension.",
+  "hypothesis": "The earlier sampled arithmetic/indexing/publication costs include instruction/operand transport through non-inlined selector frames. Consolidating that stage may reduce register reload/dispatch/result transport, not just rearrange fields. No new primitive specialization or opcode backend.",
+  "acceptance": "Actual11/10 semantic/cancellation/ownership regressions, frozen-image goldens/allocation/reuse, bounded changed-source complete-script/control pair and explicit debt decision before promotion. No fixed-percentage veto or unchanged retiming for clear adversity.",
+  "publicationHeld": true,
+  "broaderObjectiveActive": true
+}
