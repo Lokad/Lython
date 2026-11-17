@@ -3,7 +3,7 @@
 R464/B871,2026-11-17UTC. Committed210c9cae / frozen ae389c19 versus private
 7a599347,now promoted with identical585production source texts. Five production
 files change; public APIs and shared-memory ownership contract stay the same.
-Full combined R463/R464 platform/stress/installed-package qualification is pending.
+[Full combined R463/R464 qualification passes](delivery/README.md).
 Prior43989114633qualifies R460,not these later sources. Publication remains held.
 
 Ordinary and native instructions now share builtin receiver resolution and closed

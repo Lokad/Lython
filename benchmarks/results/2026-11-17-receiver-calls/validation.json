@@ -58,12 +58,14 @@
   ],
   "overlappingFiltersNotSummed": true,
   "supervisedGoldenCasesEachImage": 11,
-  "fullPlatformStressPackageQualification": "Pending combined R463/R464 coherent delivery; prior43989114633 qualifies R460 only.",
+  "fullPlatformStressPackageQualification": "Passed integrated R463/R464 atccf20ba3",
   "allocationChangePercent": {
     "helperText": -51.777,
     "helperReport": -33.157
   },
   "retainedPeaks": "Essentially flat: each affected script208B lower,other cases unchanged.",
   "remainingDebt": "Fresh text reference/candidate controls1.28/1.13%;warm text3.16/1.82%. Call/CSVroughly flat,numeric magnitude uncertain with3.89%candidate movement. Existing earlier debt is not retroactively resolved.",
-  "publicationHeld": true
+  "publicationHeld": true,
+  "qualifiedRun": 44000267422,
+  "qualifiedHead": "ccf20ba3927303c66c7010dc503d2889166c64e8"
 }

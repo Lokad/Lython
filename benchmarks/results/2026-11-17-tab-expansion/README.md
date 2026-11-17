@@ -4,8 +4,8 @@ R463/B870,2026-11-17UTC. Fully qualified production46343804 / aaef443f versus
 private ae389c19,now promoted with identical production text. One production file
 changes; new edge tests are separate from the immutable measured snapshot. Prior
 [full delivery43989114633](../2026-11-17-sequence-construction/delivery/README.md)
-qualifies the reference. This migration has focused qualification; its full
-platform/stress/installed-package checks will be batched at the next delivery.
+qualifies the reference. [Full qualification passes as integrated into R464](../2026-11-17-receiver-calls/delivery/README.md);
+this does not claim a separate full run of standaloneae389.
 Publication remains held.
 
 Tab bytes determine conservative final capacity; Unicode column counting and

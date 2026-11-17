@@ -1,0 +1,14 @@
+{
+  "source": "ccf20ba3927303c66c7010dc503d2889166c64e8",
+  "files": {
+    "src/Lokad.Lython/Runtime/PyDict.cs": "4fdca61b2dc103c2f7efb2cb297cdcf347826f9342b52c8cceaf07822189a135",
+    "src/Lokad.Lython/Runtime/PyDict.Records.cs": "842eb8f53585e92e2fb389bdb89505b2bd7f4770740296b00f15ec714da6e97a",
+    "src/Lokad.Lython/Runtime/PyDict.Query.cs": "f4095fb8fbf57041da53c83eb37dae6f296b79422953084fc06ffbbf7b6aa892"
+  },
+  "existingNativeRecordKeyUpdate": "PrepareNativeKeyMutation checks existing native keys without allocating or admitting replacement keys; missing/protocol keys promote before callbacks.",
+  "remainingWork": "Existing-key mutation can repeat a pure lookup; no allocation/copy stage to remove demonstrated. This alone does not justify another record-construction prototype/campaign.",
+  "asyncMutation": "Already documented synchronous-completion limitation in docs/RUNTIME.md; no new unsupported behavior discovered or corrected.",
+  "prototypeSelected": false,
+  "timingRepeated": false,
+  "scope": "Bounded per-record source gate; no heap/ownership audit or permanent design ban."
+}

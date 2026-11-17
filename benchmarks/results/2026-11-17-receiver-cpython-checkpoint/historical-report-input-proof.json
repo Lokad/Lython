@@ -1,0 +1,11 @@
+{
+  "archive": "benchmarks\\results\\2026-11-16-generated-scripts-cpython\\procedure.tar.xz",
+  "member": "quiet/representative.json",
+  "archiveSHA256": "73b47f99da4e86a87b35bf6b8515424572fb580d30f46e80d33d714928ca27cf",
+  "catalogSHA256": "36c0a5284b7a9301cf835367fbd7ba0c2c57bbc45f886692e6a3f94a41e26055",
+  "declaredSize": 1024,
+  "actualRecords": 3072,
+  "expectedOutput": "3072\n",
+  "fixtureSHA": "d5b2f3e1eef1bfdd2a1b8095e5b87c6c145720ba0bd57378e1d5a81703960da8",
+  "inputBytes": 189441
+}

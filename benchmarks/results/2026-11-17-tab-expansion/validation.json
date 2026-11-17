@@ -45,7 +45,7 @@
     }
   ],
   "supervisedGoldenCasesEachImage": 9,
-  "fullPlatformStressPackageQualification": "Pending next coherent delivery; prior sequence-construction delivery43989114633 is fully qualified separately.",
+  "fullPlatformStressPackageQualification": "Passed as integrated into R464 atccf20ba3; not a standaloneae389binary qualification",
   "normalizationAllocationChangePercent": 0.27052302880119505,
   "normalizationAccountedPeak": {
     "reference": 2324834,
@@ -55,5 +55,6 @@
   "wholeScriptElapsedAndCpuFavorable": true,
   "controls": "Call/CSV pairings straddle zero; fresh normalization candidate controls move3.49%. No universal gain or exact timing magnitude claim.",
   "representation": "Capacity-bound overflow uses exact measurement before admission, never admission retry.",
-  "publicationHeld": true
+  "publicationHeld": true,
+  "qualifiedRun": 44000267422
 }
