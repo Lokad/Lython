@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Expand tabs into admitted conservative UTF-8 capacity without repeating the full
+  Unicode-column sizing pass. Preserve cancellation and exact representation
+  checks; retained spare capacity can cause earlier supplied-budget rejection.
+
 - Share governed native sequence construction and buffer admitted generator output
   through the existing engine. Remove async tuple staging and per-item scalar
   reservation growth. Preserve aliases, active cancellation, terminal refusal and

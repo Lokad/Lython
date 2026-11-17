@@ -1,0 +1,59 @@
+{
+  "retained": true,
+  "promotedProductionTextMatchesFrozen": true,
+  "binaryEqualityInferred": false,
+  "initialFocusedEachActualWindowsTarget": {
+    "internal": 136,
+    "public": 215
+  },
+  "promotedFocusedEachActualWindowsTarget": {
+    "internal": 145,
+    "public": 215
+  },
+  "checks": [
+    {
+      "file": "initial-internal-net10.trx",
+      "passed": 136
+    },
+    {
+      "file": "initial-internal-net11.trx",
+      "passed": 136
+    },
+    {
+      "file": "initial-public-net10.trx",
+      "passed": 215
+    },
+    {
+      "file": "initial-public-net11.trx",
+      "passed": 215
+    },
+    {
+      "file": "promoted-internal-net10.0.trx",
+      "passed": 145
+    },
+    {
+      "file": "promoted-internal-net11.0.trx",
+      "passed": 145
+    },
+    {
+      "file": "promoted-public-net10.0.trx",
+      "passed": 215
+    },
+    {
+      "file": "promoted-public-net11.0.trx",
+      "passed": 215
+    }
+  ],
+  "supervisedGoldenCasesEachImage": 9,
+  "fullPlatformStressPackageQualification": "Pending next coherent delivery; prior sequence-construction delivery43989114633 is fully qualified separately.",
+  "normalizationAllocationChangePercent": 0.27052302880119505,
+  "normalizationAccountedPeak": {
+    "reference": 2324834,
+    "candidate": 2328930,
+    "deltaBytes": 4096
+  },
+  "wholeScriptElapsedAndCpuFavorable": true,
+  "controls": "Call/CSV pairings straddle zero; fresh normalization candidate controls move3.49%. No universal gain or exact timing magnitude claim.",
+  "representation": "Capacity-bound overflow uses exact measurement before admission, never admission retry.",
+  "publicationHeld": true
+}

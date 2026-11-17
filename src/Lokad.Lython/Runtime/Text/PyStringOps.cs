@@ -320,7 +320,8 @@ internal static partial class PyStringOps
         context ??= PyStructuralGuard.AmbientContext;
         span ??= PyStructuralGuard.AmbientSpan;
         var source = value.Utf8Span;
-        var length = ExpandTabsUtf8(source, default, tabSize, context, span);
+        var length = TabExpansionCapacity(source, tabSize, context, span, out var hasTabs);
+        if (!hasTabs) return value;
         if (length == 0) return PyString.Empty;
         var governor = context?.MemoryGovernor ?? value.OwnerMemoryGovernor;
         var uncommitted = PyString.EstimateApproximateBytes(length);
@@ -329,7 +330,8 @@ internal static partial class PyStringOps
         {
             context?.CheckExecution(span);
             var output = PyString.CreateReservedUtf8(length, governor);
-            ExpandTabsUtf8(source, output.UnpublishedUtf8, tabSize, context, span);
+            var written = ExpandTabsUtf8(source, output.UnpublishedUtf8, tabSize, context, span);
+            output.CompleteUnpublishedUtf8(written);
             context?.CheckExecution(span);
             governor?.Commit(uncommitted);
             uncommitted = 0;
@@ -338,9 +340,31 @@ internal static partial class PyStringOps
         finally { if (uncommitted != 0) governor?.ReleaseReserved(uncommitted); }
     }
 
-    // The empty destination measures; the second pass writes the one admitted
-    // final value. UTF-8 is already validated. Copy literal runs together and
-    // count their scalars without decoding or appending each character.
+    private static int TabExpansionCapacity(ReadOnlySpan<byte> source, int tabSize,
+        LythonRuntime.ExecutionContext? context, LythonSourceSpan? span, out bool hasTabs)
+    {
+        var tabs = 0;
+        for (var offset = 0; offset < source.Length;)
+        {
+            context?.CheckExecution(span);
+            var count = Math.Min(4096, source.Length - offset);
+            tabs += source.Slice(offset, count).Count((byte)'\t');
+            offset += count;
+        }
+        context?.CheckExecution(span);
+        hasTabs = tabs != 0;
+        var capacity = tabSize <= 0 ? source.Length - tabs
+            : checked(source.Length + (long)tabs * (tabSize - 1L));
+        // A conservative bound cannot establish an actual representation error.
+        // Determine the exact length before admission in that uncommon case;
+        // refusal is never retried with a smaller reservation.
+        return capacity <= Array.MaxLength ? (int)capacity
+            : ExpandTabsUtf8(source, default, tabSize, context, span);
+    }
+
+    // Normal construction measures tab bytes only, then processes scalar columns
+    // once into fully admitted final capacity. An empty destination is reserved
+    // for exact sizing when a capacity bound exceeds the representation limit.
     private static int ExpandTabsUtf8(ReadOnlySpan<byte> source, Span<byte> output, int tabSize,
         LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
     {

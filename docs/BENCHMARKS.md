@@ -29,7 +29,8 @@ warm normalization still shows about a 2.07× gap. No causal gain across collect
 [Current CSV/text/JSON/search evidence](../benchmarks/results/2026-11-17-sequence-cpython-checkpoint/README.md),
 [previous checkpoint](../benchmarks/results/2026-11-16-consolidated-cpython-checkpoint/README.md),
 [earlier configuration/report evidence](../benchmarks/results/2026-11-16-generated-scripts-cpython/README.md).
-Tables describe named measured sources; later runtime changes require their own evidence.
+The tab-expansion change below is later source-pair evidence; these CPython
+ratios exclude it. Tables describe named sources,not automatically current HEAD.
 
 Warm includes synchronous Run, mediated RAM I/O, complete stdout/file goldens and
 prior-result cleanup. It excludes compilation/startup, fixture reset/protocol and
@@ -84,6 +85,7 @@ Source-pair results are separate from CPython and cannot be added together:
 
 | Change / affected workload | Separate source-pair evidence | Limits |
 | --- | --- | --- |
+| Tab-expansion construction / complete normalization | Warm7.2–7.7%lower elapsed and6.8–11.4%lower compile-to-result,with supporting CPU | Physical allocation+0.27%;accounted peak+4KiB. Calls/CSVroughly flat,fresh candidate controls3.49%. [Exact source pair and checks](../benchmarks/results/2026-11-17-tab-expansion/README.md). Full delivery pending; no inferred CPython ratio. |
 | Shared native sequence construction / complete normalization and tuple-report | Warm normalization9–12%lower elapsed, tuple report2–5%lower/warm and about4.7–4.8%lower compile-to-result, with supporting CPU; generator-list diagnostic also favorable | Allocation essentially flat; report accounted peak12%higher. Numeric control uncertain with moving references; Run CSVroughly flat. Actual RunAsync report/generator medians favorable with moving controls; CSV0.1–3.6%adverse. [Exact sources, original adversity and checks](../benchmarks/results/2026-11-17-sequence-construction/README.md). |
 | Shared string/byte replacement / complete normalization | Bounded unchanged replacements reuse their input; changing-data allocation essentially flat; no CPU gain established | Binary elapsed1–1.5%higher, text mixed, moving call/CPU controls. Retained for consolidation and bounded no-op behavior. [Original adversity and refinement](../benchmarks/results/2026-11-16-bulk-replacement/refined/README.md). |
 | Shared scalar-index reads / complete numeric report | Allocation −18.99%; warm and confirmed compile-to-result elapsed/CPU favor candidate, magnitude uncertain | Reference controls move 5.70/6.83%; original fresh pairings include +3.02% adversity. Calls/text inconclusive. [Sources, original condition and confirmation](../benchmarks/results/2026-11-16-scalar-index-transport/README.md). |

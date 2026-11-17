@@ -69,13 +69,17 @@ retain ordinary capacity admission and replacement overlap; growing output can
 reject earlier than an exact-size result. Empty string needles insert at Unicode
 scalar boundaries, while empty byte needles insert between individual bytes.
 
-Tab expansion measures native UTF-8 and writes one admitted final value in bounded
-literal runs and space fills. Joined text drains arbitrary iterables before item
-validation, preserving iteration effects and error precedence, then measures and
-writes final UTF-8 directly. Its private drain stays funded through output admission
-and completion. These operations retain exact output capacity; there is no growing
-byte buffer or final payload copy. Exact capacity can admit earlier than geometric
-growth and replacement overlap. Actual retained results still fund their storage.
+Tab expansion admits a conservative byte capacity, then processes Unicode columns
+once into final storage with bounded copies and space fills. Unchanged input can
+remain an alias. Spare capacity stays funded and can cause earlier supplied-budget
+refusal. A capacity bound alone never establishes a representation error: exact
+sizing precedes admission when that bound exceeds the array representation limit.
+
+Joined text drains arbitrary iterables before item validation, preserving iteration
+effects and error precedence, then measures and writes final UTF-8 directly. Its
+private drain stays funded through output admission and completion. Join retains
+exact output capacity; neither operation needs a growing byte buffer or final
+payload copy. Actual retained results still fund their storage.
 
 Line splitting and ordinary text split share range-based final construction. A
 bounded UTF-8 scan identifies Python line breaks, including CRLF and Unicode

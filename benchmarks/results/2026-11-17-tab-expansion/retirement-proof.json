@@ -1,0 +1,26 @@
+[
+  {
+    "paths": [
+      "generator-batches-b865-20261116/candidate/Lokad.Lython.dll"
+    ],
+    "bytes": 5744640,
+    "links": 1,
+    "sha256": "8dd7eda16934522a28bfafb6b10f2e6726cd0c761b71820e8cc7ed472dd5df61",
+    "canonical": "benchmarks/results/2026-11-16-generator-batches/guarded/measured-core.tar.xz",
+    "canonicalSHA256": "a1c772b0e55e36886b5e4f25026af5e9a71ea222e06310d9dd4167cf12f323fc",
+    "member": "generator-batches-8dd7eda1.dll",
+    "committedBlobVerified": true
+  },
+  {
+    "paths": [
+      "sequence-construction-b866-20261116/confirmation/confirmation.json"
+    ],
+    "bytes": 491083,
+    "links": 1,
+    "sha256": "e6559a9780d59eb8926a63b77ebca3f568746fd5b2ff869264b60128798b0aac",
+    "canonical": "benchmarks/results/2026-11-17-sequence-construction/observations.tgz",
+    "canonicalSHA256": "f5e91943528b273ba1e767e7b30f5495aef97663a467cd5630e1fe2b9a6df218",
+    "member": "confirmation/confirmation.json",
+    "committedBlobVerified": true
+  }
+]
