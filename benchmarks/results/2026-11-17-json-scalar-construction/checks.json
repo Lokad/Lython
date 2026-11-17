@@ -1,0 +1,78 @@
+[
+  {
+    "name": "internal-net11.0",
+    "command": [
+      "C:\\Users\\JoannesVermorel\\.dotnet11\\dotnet.exe",
+      "test",
+      "tests/Lokad.Lython.Tests/Lokad.Lython.Tests.csproj",
+      "-c",
+      "Release",
+      "-f",
+      "net11.0",
+      "--no-build",
+      "--filter",
+      "(FullyQualifiedName~Json|FullyQualifiedName~BuiltinCancellationTests|FullyQualifiedName~AdmissionFailureCommandTests)&Category!=Stress",
+      "--logger",
+      "console;verbosity=minimal"
+    ],
+    "exitCode": 0,
+    "seconds": 4.338030599988997
+  },
+  {
+    "name": "public-net11.0",
+    "command": [
+      "C:\\Users\\JoannesVermorel\\.dotnet11\\dotnet.exe",
+      "test",
+      "tests/Lokad.Lython.PublicApi.Tests/Lokad.Lython.PublicApi.Tests.csproj",
+      "-c",
+      "Release",
+      "-f",
+      "net11.0",
+      "--no-build",
+      "--filter",
+      "(FullyQualifiedName~Json|FullyQualifiedName~BuiltinCancellationTests|FullyQualifiedName~AdmissionFailureCommandTests)&Category!=Stress",
+      "--logger",
+      "console;verbosity=minimal"
+    ],
+    "exitCode": 0,
+    "seconds": 32.20495059993118
+  },
+  {
+    "name": "internal-net10.0",
+    "command": [
+      "C:\\Users\\JoannesVermorel\\.dotnet11\\dotnet.exe",
+      "test",
+      "tests/Lokad.Lython.Tests/Lokad.Lython.Tests.csproj",
+      "-c",
+      "Release",
+      "-f",
+      "net10.0",
+      "--no-build",
+      "--filter",
+      "(FullyQualifiedName~Json|FullyQualifiedName~BuiltinCancellationTests|FullyQualifiedName~AdmissionFailureCommandTests)&Category!=Stress",
+      "--logger",
+      "console;verbosity=minimal"
+    ],
+    "exitCode": 0,
+    "seconds": 6.351513300091028
+  },
+  {
+    "name": "public-net10.0",
+    "command": [
+      "C:\\Users\\JoannesVermorel\\.dotnet11\\dotnet.exe",
+      "test",
+      "tests/Lokad.Lython.PublicApi.Tests/Lokad.Lython.PublicApi.Tests.csproj",
+      "-c",
+      "Release",
+      "-f",
+      "net10.0",
+      "--no-build",
+      "--filter",
+      "(FullyQualifiedName~Json|FullyQualifiedName~BuiltinCancellationTests|FullyQualifiedName~AdmissionFailureCommandTests)&Category!=Stress",
+      "--logger",
+      "console;verbosity=minimal"
+    ],
+    "exitCode": 0,
+    "seconds": 20.895588600076735
+  }
+]
