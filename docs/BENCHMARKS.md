@@ -2,10 +2,10 @@
 
 | Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| Floating JSON numeric report | 4,096 records / 56,495 B | 1.739–1.740 ms | 0.829–0.830 ms | 2.09–2.10× | R471; diagnostic; controls L/C 0.07/0.22%; IQR≤1.79% |
+| Floating JSON numeric report | 4,096 records / 56,495 B | 1.614–1.633 ms | 0.817–0.826 ms | 1.95–2.00× | R475; diagnostic; controls L/C 1.22/1.10%; IQR≤1.28% |
 | Text normalization through a helper | 4,096 lines / 52,224 B | 1.236–1.250 ms | 0.872–0.905 ms | 1.37–1.43× | Diagnostic; controls L/C 1.15/3.76%; IQR≤2.39% |
 | Report rendering through a helper | 3,072 records / 189,441 B | 2.655–2.685 ms | 2.200–2.220 ms | 1.20–1.22× | Diagnostic; controls L/C 1.13/0.92%; IQR≤4.68% |
-| CSV invoice | 4,096 records / 127,031 B | 6.844–6.963 ms | 6.064–6.114 ms | 1.12–1.15× | Earlier checkpoint; diagnostic; controls L/C 1.74/0.83%; IQR≤1.62% |
+| CSV invoice | 4,096 records / 127,031 B | 6.923–7.151 ms | 6.058–6.106 ms | 1.13–1.18× | R475; diagnostic; moving Lython control 3.29%, CPython 0.79%; IQR≤1.03% |
 | Text normalization | 4,096 lines / 52,224 B | 1.041–1.049 ms | 0.504–0.504 ms | 2.06–2.08× | Earlier checkpoint; diagnostic; controls L/C 0.76/0.09%; IQR≤2.12% |
 | JSON-lines aggregation | 4,096 records / 110,592 B | 3.504–3.579 ms | 4.069–4.080 ms | 0.86–0.88× | Earlier checkpoint; diagnostic; controls L/C 2.16/0.27%; IQR≤1.11% |
 | File search / defensive helper | 2,049 lines / 42,010 B; stop at 1,025 | 0.259–0.264 ms | 0.160–0.161 ms | 1.60–1.65× | Earlier checkpoint; diagnostic; controls L/C 2.25/0.87%; IQR≤1.10% |
@@ -18,12 +18,15 @@ Ranges are process-median combinations, not confidence intervals. Control moveme
 and sample IQRs remain visible; exact magnitudes are diagnostic. Controls L/C are
 the percentage differences between the two Lython/CPython process medians.
 
-Measured **2026-11-17 UTC**: floating report uses **dc480d38 / frozen5ecb2599**, stock **CPython3.13.16**; [full runtime delivery qualification passes](../benchmarks/results/2026-11-17-float-transport/delivery/README.md).
-Its three separated phases finish104.54s with all gates passed; same machine and
-5s warmup boundaries below. [Floating baseline](../benchmarks/results/2026-11-17-float-transport/cpython/README.md).
+Measured **2026-11-17 UTC**: floating and CSV warm use **abcbd9fd /
+frozenca1a8239**, stock **CPython3.13.16**. Runtime delivery qualification is
+pending. Four separated jobs finish137.80s with all measurement gates passed;
+same machine and5s boundaries below. [Current checkpoint](../benchmarks/results/2026-11-17-generator-sum/cpython/README.md).
+The earlier [R471 baseline](../benchmarks/results/2026-11-17-float-transport/cpython/README.md)
+remains preserved, with its fully qualified runtime source and original controls.
 The two helper workloads use committed
-**ccf20ba3 / frozen7a599347** versus stock **CPython3.13.16**. CSV,generator
-normalization,JSON and search remain earlier **46343804 / frozen aaef443f**;
+**ccf20ba3 / frozen7a599347** versus stock **CPython3.13.16**. CSV compilation/fresh, generator
+normalization, JSON and search remain earlier **46343804 / frozen aaef443f**;
 configuration/report remain **312f5911 / frozen0443b5cf**. All rows name a measured
 source; they do not automatically describe current HEAD. Helper scripts use
 explicit loops and functions,not the earlier generator/streaming shapes.
@@ -49,8 +52,8 @@ No startup, pending-I/O, contention, heap/RSS or embedding-tail comparison is av
 
 | Workload | Phase | Lython | CPython | Ratio | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| Floating JSON numeric report | Compilation only | 0.057–0.058 ms | 0.061–0.061 ms | 0.93–0.95× | R471; diagnostic; controls L/C 1.95/0.26%; IQR≤0.52% |
-| Floating JSON numeric report | Compile and execute once | 1.841–1.872 ms | 0.956–0.957 ms | 1.92–1.96× | R471; diagnostic; controls L/C 1.66/0.03%; IQR≤0.79% |
+| Floating JSON numeric report | Compilation only | 0.056–0.056 ms | 0.061–0.061 ms | 0.91–0.92× | R475; diagnostic; controls L/C 0.19/0.83%; IQR≤0.80% |
+| Floating JSON numeric report | Compile and execute once | 1.771–1.813 ms | 0.965–0.966 ms | 1.83–1.88× | R475; diagnostic; controls L/C 2.39/0.15%; IQR≤0.52% |
 | Text normalization through a helper | Compilation only | 0.047–0.047 ms | 0.044–0.044 ms | 1.05–1.06× | Diagnostic; controls L/C 0.36/0.24%; IQR≤1.01% |
 | Text normalization through a helper | Compile and execute once | 1.345–1.394 ms | 0.795–0.802 ms | 1.68–1.75× | Diagnostic; controls L/C 3.65/0.82%; IQR≤1.93% |
 | Report rendering through a helper | Compilation only | 0.053–0.054 ms | 0.049–0.049 ms | 1.08–1.10× | Diagnostic; controls L/C 1.69/0.19%; IQR≤0.74% |
@@ -109,6 +112,7 @@ Source-pair results are separate from CPython and cannot be added together:
 
 | Change / affected workload | Separate source-pair evidence | Limits |
 | --- | --- | --- |
+| Native generator sum / complete JSON numeric report | Warm6–10%lower elapsed, fresh15–18%lower, with supporting CPU | Allocation+168–192B/run, accounted numeric peak unchanged. Integer magnitude uncertain (candidate control9.98%); text−0.55..+2.11%with moving reference. [Source pair and checks](../benchmarks/results/2026-11-17-generator-sum/README.md); full delivery pending. |
 | Floating arithmetic-to-iteration transport / complete JSON numeric report | Warm 23–26% lower elapsed, fresh 23–27% lower, with supporting CPU; allocation −28.52%, accounted peak unchanged | Integer control inconclusive with 7–9% movement; earlier confirmed integer 2–5% regression is not proven resolved. [Refinement, original adversity and checks](../benchmarks/results/2026-11-17-float-transport/README.md). Combined platform, stress and package qualification passes. |
 | Shared receiver calls / complete helper-list text and report scripts | Warm text37–40%lower elapsed,report24–25%;fresh37–39%/22–24%,with supporting CPU | Allocation−51.78%/−33.16%;retained peaks essentially flat. Call/CSVcontrols roughly flat,numeric magnitude uncertain. [Exact source pair,workloads and checks](../benchmarks/results/2026-11-17-receiver-calls/README.md). Combined platform/stress/package qualification passes; no inferred CPython ratio. |
 | Tab-expansion construction / complete normalization | Warm7.2–7.7%lower elapsed and6.8–11.4%lower compile-to-result,with supporting CPU | Physical allocation+0.27%;accounted peak+4KiB. Calls/CSVroughly flat,fresh candidate controls3.49%. [Exact source pair and checks](../benchmarks/results/2026-11-17-tab-expansion/README.md). Qualified with the receiver milestone; no inferred CPython ratio. |

@@ -9054,3 +9054,10 @@ No earlier-debt closure inferred. All exact sources/core/observations/failed fix
 condition preserved; pending-I/O/refusal/cancellation/ownership focused checks pass
 both actual targets. All VM users joined/RAM removed. Full delivery and external
 baseline refresh pending; publication held, broader roadmap remains active.
+
+[R475/B887 CPython checkpoint](results/2026-11-17-generator-sum/cpython/README.md):
+abcbd9fd/frozenca1a8239 warm floating1.95–2.00×,fresh1.83–1.88×,compile0.91–0.92×;
+CSVwarm1.13–1.18×with3.29%Lython control movement. Fourjobs137.80s, all measurement
+gates pass/users joined/RAM removed. Initial larger staging refused before mutation/
+workers; reduced catalog fills material gaps, original failure preserved. No causal
+source gain across collections. Full runtime delivery separate; publication held.
