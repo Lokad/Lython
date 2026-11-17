@@ -8,8 +8,8 @@ Main retains identical production text; rebuilt-binary equality is not inferred.
 C# emits managed scoped locking instead of Monitor entry/exit bookkeeping. Exact
 reservations/refunds, concurrency/reentry, scope disposal and public API stay the
 same. No new allowance, counter, cache, credit layer, ownership state or policy.
-Custom host budget implementations are unaffected. Source motivation is the
-existing .NET10/11BCL; no new runtime package is introduced. Source motivation is the
+Custom host budget implementations are unaffected. This uses the existing
+.NET10/11BCL; no new runtime package is introduced. Source motivation is the
 [existing CPU gate](../2026-11-17-shared-allowance-source-gate/README.md), not a
 claim that every sampled lock cycle disappears.
 
