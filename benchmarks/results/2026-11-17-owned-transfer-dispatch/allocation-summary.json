@@ -1,0 +1,59 @@
+{
+  "boundary": "Complete warm runs including mediated I/O/reset, all output/file checks and result cleanup; compilation/startup/final cache teardown excluded. Process-wide CLR allocation counters, no forced GC. Compilation and first invocation clocks are local diagnostic observations, not a controlled CPU/source timing comparison.",
+  "rows": [
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "referenceBytes": 1792176,
+      "candidateBytes": 1792602,
+      "changePercent": 0.02376998687629861,
+      "referencePeak": 3954823,
+      "candidatePeak": 3954823,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "case": "scripts.csv-numeric-quality.large",
+      "referenceBytes": 3542374,
+      "candidateBytes": 3542430,
+      "changePercent": 0.0015808607447986844,
+      "referencePeak": 6284280,
+      "candidatePeak": 6284280,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "case": "scripts.text-normalization.large",
+      "referenceBytes": 1517976,
+      "candidateBytes": 1518256,
+      "changePercent": 0.018445614423412415,
+      "referencePeak": 2328930,
+      "candidatePeak": 2328930,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "case": "calls.positional.large",
+      "referenceBytes": 1060576,
+      "candidateBytes": 1060696,
+      "changePercent": 0.011314606402557104,
+      "referencePeak": 1383,
+      "candidatePeak": 1383,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "case": "scripts.numeric-squared-error.floating.large",
+      "referenceBytes": 491776,
+      "candidateBytes": 492232,
+      "changePercent": 0.092725143154615,
+      "referencePeak": 906686,
+      "candidatePeak": 906686,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "case": "scripts.json-record-transform.large",
+      "referenceBytes": 2479712,
+      "candidateBytes": 2480168,
+      "changePercent": 0.018389232297955083,
+      "referencePeak": 5462675,
+      "candidatePeak": 5462675,
+      "sharedBudgetBaselineRestored": true
+    }
+  ]
+}

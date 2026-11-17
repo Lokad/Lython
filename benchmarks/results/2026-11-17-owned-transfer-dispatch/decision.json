@@ -1,0 +1,8 @@
+{
+  "promoted": false,
+  "classification": "Unproven CPU benefit; control uncertainty, not permanent design rejection.",
+  "reason": "One switch removed but the actual operand work/storage remains; text warm flat, fresh CPU straddles zero and call CPU slightly adverse. No allocation reduction. Retention would not advance the substantial-performance objective enough on this evidence.",
+  "furtherWork": "Bounded refinement/confirmation remains possible with a named cause or changed design; do not promote or infer recovery from source simplification alone.",
+  "source": "Private R501 on ea8/corebfef519a versus committedea8 production/corecf847936",
+  "publicationHeld": true
+}
