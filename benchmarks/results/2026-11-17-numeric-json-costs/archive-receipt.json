@@ -1,0 +1,12 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "ramTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 266457088,
+  "archiveSHA256": "34ed5e017d75a3cf39247b66d90edccb801e5bb48d9e2b734b55052e15c6e9d7",
+  "source": "Committed557381fe/frozend739132f; R490 floating JSON attribution",
+  "performanceComparison": false
+}

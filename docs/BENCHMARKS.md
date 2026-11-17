@@ -21,7 +21,7 @@ the percentage differences between the two Lython/CPython process medians.
 
 Measured **2026-11-17 UTC**: JSON-lines helpers and the numerical JSON report use
 **557381fe / frozend739132f**, stock **CPython3.13.16**. Six separated jobs204.45s;
-all measurement gates pass. Changed-source full delivery44116196658 is pending.
+all measurement gates pass. [Full changed-source delivery44116196658 passes](../benchmarks/results/2026-11-17-shared-allowance-lock/delivery/README.md).
 [Current JSON checkpoint and boundaries](../benchmarks/results/2026-11-17-json-cpython-checkpoint/README.md).
 Floating fresh controls2.92/2.50% and compilationIQR≤5.15% limit precision; warm
 controls are close. These observations do not establish a causal source gain.

@@ -55,7 +55,7 @@ after fresh lease/path/UID/hash/link/all-alias proof. Qualifieddfc/toolchains/
 canonicals and254/252MiB floors remain. Confirmation hardlinks both verified
 images/catalog without retirement or binary payload. All original conditions remain.
 
-Full changed-source platform/stress/package delivery is pending. Publication held.
+[Full changed-source platform/stress/package delivery passes](delivery/README.md). Publication held.
 The representative CPython refresh and substantial numeric/call/record/text/frontend
 roadmap continue; this modest change does not finish the performance objective.
 

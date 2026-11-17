@@ -3,7 +3,7 @@
 R491/B908,2026-11-17UTC. Committed runtime557381fe/frozend739132f versus stock
 CPython3.13.16; normal optional adapter0.4.0. Actual five-case frozen image and
 goldens verified versus CPython3.13.2 before staging. Full changed-source
-Windows/Ubuntu11/10/stress/installed-package delivery44116196658 is pending.
+[Windows/Ubuntu11/10/stress/installed-package delivery44116196658 passes](../2026-11-17-shared-allowance-lock/delivery/README.md).
 
 | Complete script | Compile ratio | Warm ratio | Compile-and-run ratio |
 | --- | ---: | ---: | ---: |
