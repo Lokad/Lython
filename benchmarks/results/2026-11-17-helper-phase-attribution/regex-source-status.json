@@ -1,0 +1,12 @@
+{
+  "readOnly": true,
+  "sourceRevision": "858229876f0a0667dd38b3e9817594693f128b83",
+  "pythonReChangeSincePrior": "diff --git a/src/Lokad.Utf8Regex.PythonRe/Utf8PythonRegex.Utf8.cs b/src/Lokad.Utf8Regex.PythonRe/Utf8PythonRegex.Utf8.cs\nindex 7d760349..7f94c367 100644\n--- a/src/Lokad.Utf8Regex.PythonRe/Utf8PythonRegex.Utf8.cs\n+++ b/src/Lokad.Utf8Regex.PythonRe/Utf8PythonRegex.Utf8.cs\n@@ -260,7 +260,9 @@ public sealed partial class Utf8PythonRegex\n             while (enumerator.MoveNext())\n             {\n                 var match = enumerator.Current;\n-                if (!match.TryGetByteRange(out var indexInBytes, out var lengthInBytes))\n+                var indexInBytes = match.StartOffsetInBytes;\n+                var lengthInBytes = (match.EndOffsetInBytes - match.StartOffsetInBytes);\n+                if (!match.Success)\n                 {\n                     ranges.Dispose();\n                     ranges = default;\n",
+  "interpretation": "Internal whole-match consumer now reads Core StartOffsetInBytes/EndOffsetInBytes/Success. No new facade creation-token lifetime, UTF-8 group-name or separately funded match-staging API; no adapter simplification justified by this change alone.",
+  "immutableDev105SHA256": {
+    "Lokad.Utf8Regex": "49c0d0c2309c29dda650760d889f84e4a2f661629eaa55d751eabcc19e4e2550",
+    "Lokad.Utf8Regex.PythonRe": "89ad65d76adea14c329e2e19d1f70ab90f39d4d8ab4c866f0cecf6c6dfe09f6a"
+  },
+  "normalAdapterChanged": false,
+  "requalificationRepeated": false
+}

@@ -1,0 +1,530 @@
+{
+  "source": "ccf20ba3/frozen7a599347, fully qualified runtime; no production changes",
+  "collection": "R467/B873",
+  "elapsedSeconds": 89.44264260400087,
+  "complete": true,
+  "rows": [
+    {
+      "case": "scripts.text-normalization.helper-list",
+      "instrumented": false,
+      "engines": {
+        "candidate": {
+          "warm": {
+            "guestMedianMs": 1.2548951828571429,
+            "allGuestMs": [
+              1.279039702857143,
+              1.2397672514285714,
+              1.2613095714285716,
+              1.2548951828571429,
+              1.25379572
+            ],
+            "processCpuMedianMs": 1.3714285714285714,
+            "allProcessCpuMs": [
+              1.4285714285714286,
+              1.3714285714285714,
+              1.3714285714285714,
+              1.3142857142857145,
+              1.3714285714285714
+            ],
+            "requestMedianMs": 1.323949338069984
+          },
+          "compile-run": {
+            "guestMedianMs": 1.3537208465909092,
+            "allGuestMs": [
+              1.3551823806818182,
+              1.3397149772727273,
+              1.3537208465909092,
+              1.3588677272727272,
+              1.350591681818182
+            ],
+            "processCpuMedianMs": 1.5340909090909092,
+            "allProcessCpuMs": [
+              1.6477272727272727,
+              1.3636363636363635,
+              1.6477272727272727,
+              1.5340909090909092,
+              1.4772727272727273
+            ],
+            "requestMedianMs": 1.437642516314306
+          },
+          "sameProcessFreshOverWarm": 1.078752126140735,
+          "sameProcessCpuFreshOverWarm": 1.1186079545454546
+        },
+        "CPython": {
+          "warm": {
+            "guestMedianMs": 0.7199851697416974,
+            "allGuestMs": [
+              0.8180990811808119,
+              0.7597368007380074,
+              0.7199851697416974,
+              0.6942239520295204,
+              0.702402180811808
+            ],
+            "processCpuMedianMs": 0.8118081180811808,
+            "allProcessCpuMs": [
+              0.8856088560885609,
+              0.8487084870848709,
+              0.8118081180811808,
+              0.7749077490774907,
+              0.7749077490774907
+            ],
+            "requestMedianMs": 0.8054281330609013
+          },
+          "compile-run": {
+            "guestMedianMs": 0.8330646258992807,
+            "allGuestMs": [
+              0.8744744676258993,
+              0.8330646258992807,
+              0.82822154676259,
+              0.8115313992805756,
+              0.8417857230215827
+            ],
+            "processCpuMedianMs": 0.9352517985611511,
+            "allProcessCpuMs": [
+              1.0431654676258992,
+              1.0071942446043167,
+              0.8992805755395684,
+              0.9352517985611511,
+              0.9352517985611511
+            ],
+            "requestMedianMs": 0.9421689616744038
+          },
+          "sameProcessFreshOverWarm": 1.1570580352344644,
+          "sameProcessCpuFreshOverWarm": 1.1520601700457815
+        },
+        "candidate-control": {
+          "warm": {
+            "guestMedianMs": 1.2647136741573033,
+            "allGuestMs": [
+              1.2720083258426966,
+              1.2514897471910114,
+              1.254224224719101,
+              1.2679436516853932,
+              1.2647136741573033
+            ],
+            "processCpuMedianMs": 1.348314606741573,
+            "allProcessCpuMs": [
+              1.4606741573033708,
+              1.348314606741573,
+              1.4606741573033708,
+              1.348314606741573,
+              1.348314606741573
+            ],
+            "requestMedianMs": 1.3303027535380607
+          },
+          "compile-run": {
+            "guestMedianMs": 1.352468846590909,
+            "allGuestMs": [
+              1.352468846590909,
+              1.358569994318182,
+              1.3642567556818181,
+              1.349582034090909,
+              1.3503483238636362
+            ],
+            "processCpuMedianMs": 1.4772727272727273,
+            "allProcessCpuMs": [
+              1.5340909090909092,
+              1.4772727272727273,
+              1.5340909090909092,
+              1.4204545454545454,
+              1.4772727272727273
+            ],
+            "requestMedianMs": 1.4363527324431662
+          },
+          "sameProcessFreshOverWarm": 1.0693873832684526,
+          "sameProcessCpuFreshOverWarm": 1.0956439393939394
+        },
+        "CPython-control": {
+          "warm": {
+            "guestMedianMs": 0.7150339861591696,
+            "allGuestMs": [
+              0.7265984429065744,
+              0.7150339861591696,
+              0.7660506297577855,
+              0.6924006124567474,
+              0.7002530899653979
+            ],
+            "processCpuMedianMs": 0.7958477508650519,
+            "allProcessCpuMs": [
+              0.8304498269896194,
+              0.7958477508650519,
+              0.8650519031141869,
+              0.7958477508650519,
+              0.7958477508650519
+            ],
+            "requestMedianMs": 0.8005111906870839
+          },
+          "compile-run": {
+            "guestMedianMs": 0.8395591402877698,
+            "allGuestMs": [
+              0.844128917266187,
+              0.8225389784172662,
+              0.8395591402877698,
+              0.8238118489208633,
+              0.8478802877697842
+            ],
+            "processCpuMedianMs": 0.9352517985611511,
+            "allProcessCpuMs": [
+              0.9352517985611511,
+              0.8992805755395684,
+              0.9352517985611511,
+              0.8992805755395684,
+              0.9352517985611511
+            ],
+            "requestMedianMs": 0.9405951337259021
+          },
+          "sameProcessFreshOverWarm": 1.17415277670575,
+          "sameProcessCpuFreshOverWarm": 1.1751642164529248
+        }
+      },
+      "controlMovementPercent": {
+        "candidate": {
+          "warm": 0.7824152514320559,
+          "compile-run": 0.09257144836689601
+        },
+        "CPython": {
+          "warm": 0.6924403144979552,
+          "compile-run": 0.7795931055742944
+        }
+      }
+    },
+    {
+      "case": "scripts.text-normalization.helper-list",
+      "instrumented": true,
+      "engines": {
+        "CPython": {
+          "warm": {
+            "guestMedianMs": 0.7171919558232932,
+            "allGuestMs": [
+              0.7293905582329318,
+              0.7149919759036144,
+              0.7240648473895583,
+              0.7156306867469879,
+              0.7171919558232932
+            ],
+            "processCpuMedianMs": 0.8032128514056225,
+            "allProcessCpuMs": [
+              0.8032128514056225,
+              0.8032128514056225,
+              0.8433734939759036,
+              0.8032128514056225,
+              0.8032128514056225
+            ],
+            "requestMedianMs": 0.8043378468109182,
+            "instrumentedComponentsMs": {
+              "compileNs": 0.0,
+              "invokeNs": 0.8016921807228916,
+              "execNs": 0.6744695301204819,
+              "resetNs": 0.08513535742971888,
+              "validationNs": 0.0343880562248996,
+              "gcNs": 0.07002204016064258
+            },
+            "naturalGcCollections": {
+              "gcCollections0": 8,
+              "gcCollections1": 2,
+              "gcCollections2": 0
+            }
+          },
+          "compile-run": {
+            "guestMedianMs": 0.8302247802197802,
+            "allGuestMs": [
+              0.8251343772893773,
+              0.8591021391941392,
+              0.8302247802197802,
+              0.8177403113553114,
+              0.8528951025641025
+            ],
+            "processCpuMedianMs": 0.9157509157509157,
+            "allProcessCpuMs": [
+              0.9523809523809523,
+              0.9157509157509157,
+              0.9157509157509157,
+              0.9157509157509157,
+              0.9523809523809523
+            ],
+            "requestMedianMs": 0.9310971331465375,
+            "instrumentedComponentsMs": {
+              "compileNs": 0.08944399633699633,
+              "invokeNs": 0.8394939523809525,
+              "execNs": 0.6919852454212455,
+              "resetNs": 0.09931225274725275,
+              "validationNs": 0.03885018681318681,
+              "gcNs": 0.06298939926739927
+            },
+            "naturalGcCollections": {
+              "gcCollections0": 10,
+              "gcCollections1": 0,
+              "gcCollections2": 0
+            }
+          },
+          "sameProcessFreshOverWarm": 1.1576047018914652,
+          "sameProcessCpuFreshOverWarm": 1.14010989010989
+        }
+      }
+    },
+    {
+      "case": "scripts.report-render.helper-list",
+      "instrumented": false,
+      "engines": {
+        "candidate": {
+          "warm": {
+            "guestMedianMs": 2.642053036144578,
+            "allGuestMs": [
+              2.6943139156626508,
+              2.594970096385542,
+              2.642053036144578,
+              2.643315590361446,
+              2.6375910120481927
+            ],
+            "processCpuMedianMs": 2.891566265060241,
+            "allProcessCpuMs": [
+              2.891566265060241,
+              2.7710843373493974,
+              2.891566265060241,
+              2.7710843373493974,
+              2.891566265060241
+            ],
+            "requestMedianMs": 2.7787646009440885
+          },
+          "compile-run": {
+            "guestMedianMs": 2.802478418604651,
+            "allGuestMs": [
+              2.8535433139534883,
+              2.8073501860465115,
+              2.802478418604651,
+              2.7840567441860467,
+              2.755043476744186
+            ],
+            "processCpuMedianMs": 3.023255813953489,
+            "allProcessCpuMs": [
+              3.1395348837209305,
+              2.9069767441860463,
+              3.3720930232558137,
+              3.023255813953489,
+              3.023255813953489
+            ],
+            "requestMedianMs": 2.9620667648783257
+          },
+          "sameProcessFreshOverWarm": 1.0607199705173875,
+          "sameProcessCpuFreshOverWarm": 1.0455426356589148
+        },
+        "CPython": {
+          "warm": {
+            "guestMedianMs": 2.203182528846154,
+            "allGuestMs": [
+              2.5956115192307694,
+              2.162433355769231,
+              2.203182528846154,
+              2.194591278846154,
+              2.2724192115384616
+            ],
+            "processCpuMedianMs": 2.3076923076923075,
+            "allProcessCpuMs": [
+              2.7884615384615383,
+              2.3076923076923075,
+              2.3076923076923075,
+              2.3076923076923075,
+              2.3076923076923075
+            ],
+            "requestMedianMs": 2.350698614743753
+          },
+          "compile-run": {
+            "guestMedianMs": 2.396373744897959,
+            "allGuestMs": [
+              2.712014051020408,
+              2.537658224489796,
+              2.3919155918367347,
+              2.387979204081633,
+              2.396373744897959
+            ],
+            "processCpuMedianMs": 2.653061224489796,
+            "allProcessCpuMs": [
+              2.9591836734693877,
+              2.653061224489796,
+              2.653061224489796,
+              2.5510204081632653,
+              2.653061224489796
+            ],
+            "requestMedianMs": 2.5623143241949835
+          },
+          "sameProcessFreshOverWarm": 1.0876873402554543,
+          "sameProcessCpuFreshOverWarm": 1.1496598639455784
+        },
+        "candidate-control": {
+          "warm": {
+            "guestMedianMs": 2.870764304878049,
+            "allGuestMs": [
+              3.108231609756098,
+              2.8850095609756097,
+              2.8167394756097566,
+              2.867587768292683,
+              2.870764304878049
+            ],
+            "processCpuMedianMs": 3.1707317073170733,
+            "allProcessCpuMs": [
+              3.414634146341464,
+              2.926829268292683,
+              2.926829268292683,
+              3.1707317073170733,
+              3.1707317073170733
+            ],
+            "requestMedianMs": 3.0152190692450214
+          },
+          "compile-run": {
+            "guestMedianMs": 3.001147569620253,
+            "allGuestMs": [
+              2.9127561139240505,
+              3.001147569620253,
+              3.008233253164557,
+              2.9827058734177214,
+              3.0236843670886073
+            ],
+            "processCpuMedianMs": 3.1645569620253164,
+            "allProcessCpuMs": [
+              3.291139240506329,
+              3.1645569620253164,
+              3.291139240506329,
+              3.1645569620253164,
+              3.1645569620253164
+            ],
+            "requestMedianMs": 3.1656265801078156
+          },
+          "sameProcessFreshOverWarm": 1.0454176138809637,
+          "sameProcessCpuFreshOverWarm": 0.9980525803310613
+        },
+        "CPython-control": {
+          "warm": {
+            "guestMedianMs": 2.252870451923077,
+            "allGuestMs": [
+              2.6546687692307693,
+              2.1651472307692305,
+              2.216776153846154,
+              2.2529362884615387,
+              2.252870451923077
+            ],
+            "processCpuMedianMs": 2.403846153846154,
+            "allProcessCpuMs": [
+              2.884615384615384,
+              2.3076923076923075,
+              2.403846153846154,
+              2.5,
+              2.3076923076923075
+            ],
+            "requestMedianMs": 2.3995654326147187
+          },
+          "compile-run": {
+            "guestMedianMs": 2.354987083333333,
+            "allGuestMs": [
+              2.3291215729166668,
+              2.354987083333333,
+              2.3513231458333337,
+              2.3846811458333335,
+              2.4673167291666664
+            ],
+            "processCpuMedianMs": 2.5,
+            "allProcessCpuMs": [
+              2.3958333333333335,
+              2.5,
+              2.5,
+              2.5,
+              2.7083333333333335
+            ],
+            "requestMedianMs": 2.52234878037901
+          },
+          "sameProcessFreshOverWarm": 1.0453273428674463,
+          "sameProcessCpuFreshOverWarm": 1.0399999999999998
+        }
+      },
+      "controlMovementPercent": {
+        "candidate": {
+          "warm": 8.656573717657778,
+          "compile-run": 7.0890519511839445
+        },
+        "CPython": {
+          "warm": 2.2552794617042293,
+          "compile-run": 1.7574050345127823
+        }
+      }
+    },
+    {
+      "case": "scripts.report-render.helper-list",
+      "instrumented": true,
+      "engines": {
+        "CPython": {
+          "warm": {
+            "guestMedianMs": 2.2714795631067957,
+            "allGuestMs": [
+              2.237581631067961,
+              2.2714795631067957,
+              2.321073631067961,
+              2.2806543203883494,
+              2.2383750485436895
+            ],
+            "processCpuMedianMs": 2.4271844660194173,
+            "allProcessCpuMs": [
+              2.3300970873786406,
+              2.3300970873786406,
+              2.4271844660194173,
+              2.4271844660194173,
+              2.4271844660194173
+            ],
+            "requestMedianMs": 2.42070981654004,
+            "instrumentedComponentsMs": {
+              "compileNs": 0.0,
+              "invokeNs": 2.4150659611650487,
+              "execNs": 2.2205361844660194,
+              "resetNs": 0.1442921650485437,
+              "validationNs": 0.040912582524271844,
+              "gcNs": 0.1470715339805825
+            },
+            "naturalGcCollections": {
+              "gcCollections0": 472,
+              "gcCollections1": 43,
+              "gcCollections2": 0
+            }
+          },
+          "compile-run": {
+            "guestMedianMs": 2.4445257448979594,
+            "allGuestMs": [
+              2.392315112244898,
+              2.4636741734693874,
+              2.4445257448979594,
+              2.7911869795918367,
+              2.366353653061225
+            ],
+            "processCpuMedianMs": 2.653061224489796,
+            "allProcessCpuMs": [
+              2.653061224489796,
+              2.7551020408163267,
+              2.653061224489796,
+              2.8571428571428577,
+              2.5510204081632653
+            ],
+            "requestMedianMs": 2.6131520922086677,
+            "instrumentedComponentsMs": {
+              "compileNs": 0.11316239795918367,
+              "invokeNs": 2.492985,
+              "execNs": 2.2710195918367346,
+              "resetNs": 0.16353338775510204,
+              "validationNs": 0.04640415306122449,
+              "gcNs": 0.15251560204081632
+            },
+            "naturalGcCollections": {
+              "gcCollections0": 449,
+              "gcCollections1": 40,
+              "gcCollections2": 1
+            }
+          },
+          "sameProcessFreshOverWarm": 1.076182143393129,
+          "sameProcessCpuFreshOverWarm": 1.0930612244897961
+        }
+      }
+    }
+  ],
+  "limits": [
+    "Same-process alternating phases differ from independently warmed published lanes; original B872 results remain unchanged.",
+    "Instrumented Python component clocks and GC callbacks add work; no overhead subtraction or source-performance claim.",
+    "Component clocks are inclusive and overlap natural GC; no sum/subtraction of separately warmed medians.",
+    "External CPU includes fixture reset/protocol; coarse process tick observations remain raw."
+  ]
+}

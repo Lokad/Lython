@@ -1,0 +1,115 @@
+{
+  "success": true,
+  "cases": 2,
+  "firstAttempt": "Wrong temporary fixture-directory prefix rejected explicitly before VM launch; corrected to existing required prefix.",
+  "diagnostics": [
+    {
+      "case": "scripts.text-normalization.helper-list",
+      "operation": "verify",
+      "lane": "warm",
+      "diagnostics": {
+        "compileNs": 158100,
+        "invokeNs": 23412500,
+        "execNs": 12513400,
+        "resetNs": 1790900,
+        "validationNs": 8830500,
+        "gcNs": 414800,
+        "gcCollections0": 3,
+        "gcCollections1": 0,
+        "gcCollections2": 0,
+        "invocations": 2,
+        "compilations": 1
+      }
+    },
+    {
+      "case": "scripts.text-normalization.helper-list",
+      "operation": "batch",
+      "lane": "warm",
+      "diagnostics": {
+        "compileNs": 0,
+        "invokeNs": 36434600,
+        "execNs": 16254400,
+        "resetNs": 3998600,
+        "validationNs": 15801100,
+        "gcNs": 0,
+        "gcCollections0": 0,
+        "gcCollections1": 0,
+        "gcCollections2": 0,
+        "invocations": 2,
+        "compilations": 0
+      }
+    },
+    {
+      "case": "scripts.text-normalization.helper-list",
+      "operation": "batch",
+      "lane": "compile-run",
+      "diagnostics": {
+        "compileNs": 430400,
+        "invokeNs": 27897000,
+        "execNs": 14233400,
+        "resetNs": 3317000,
+        "validationNs": 10020700,
+        "gcNs": 0,
+        "gcCollections0": 0,
+        "gcCollections1": 0,
+        "gcCollections2": 0,
+        "invocations": 2,
+        "compilations": 2
+      }
+    },
+    {
+      "case": "scripts.report-render.helper-list",
+      "operation": "verify",
+      "lane": "warm",
+      "diagnostics": {
+        "compileNs": 187300,
+        "invokeNs": 61707800,
+        "execNs": 23574700,
+        "resetNs": 2484900,
+        "validationNs": 35345300,
+        "gcNs": 670800,
+        "gcCollections0": 2,
+        "gcCollections1": 0,
+        "gcCollections2": 0,
+        "invocations": 2,
+        "compilations": 1
+      }
+    },
+    {
+      "case": "scripts.report-render.helper-list",
+      "operation": "batch",
+      "lane": "warm",
+      "diagnostics": {
+        "compileNs": 0,
+        "invokeNs": 47155400,
+        "execNs": 21014800,
+        "resetNs": 2364000,
+        "validationNs": 23498400,
+        "gcNs": 1691600,
+        "gcCollections0": 1,
+        "gcCollections1": 1,
+        "gcCollections2": 0,
+        "invocations": 2,
+        "compilations": 0
+      }
+    },
+    {
+      "case": "scripts.report-render.helper-list",
+      "operation": "batch",
+      "lane": "compile-run",
+      "diagnostics": {
+        "compileNs": 374300,
+        "invokeNs": 49621100,
+        "execNs": 18369200,
+        "resetNs": 2281600,
+        "validationNs": 28684600,
+        "gcNs": 94200,
+        "gcCollections0": 2,
+        "gcCollections1": 0,
+        "gcCollections2": 0,
+        "invocations": 2,
+        "compilations": 2
+      }
+    }
+  ]
+}

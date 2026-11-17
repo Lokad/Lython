@@ -87,6 +87,12 @@ effect remains unisolated. Earlier warm/fresh controls also move; the latest two
 helper cases do not explain those earlier conditions. Preserve the original
 observations rather than inferring recovery across collections.
 
+A [same-process phase diagnostic](../benchmarks/results/2026-11-17-helper-phase-attribution/README.md)
+does not reproduce the helper-text inversion: CPython warm 0.715–0.720 ms, fresh
+0.833–0.840 ms; Lython warm 1.255–1.265 ms, fresh 1.353–1.354 ms. Its alternating
+phase conditions differ from the table. The earlier cause remains unresolved;
+no Lython setup defect or performance gain is established. Report controls move.
+
 The historical report input label is corrected to3,072records: its archived size
 parameter1024generated three rows per unit. Timing values are unchanged.
 [Decoded fixture proof](../benchmarks/results/2026-11-17-receiver-cpython-checkpoint/historical-report-input-proof.json).
