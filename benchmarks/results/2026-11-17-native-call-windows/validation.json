@@ -13,6 +13,21 @@
   "copiedWorkerImageFiles": 32,
   "sourceInputs": 2382,
   "sharedBudgetBaselineRestored": true,
-  "fullDelivery": "Private prototype; retention/qualification pending.",
-  "publicationHeld": true
+  "fullDelivery": "Caller-window prototype withdrawn. Current585production match previously qualifiedd8611c85; new retained tests pass actual11/10 focused checks. Discarded prototype CI tracked independently.",
+  "publicationHeld": true,
+  "currentRuntimeValidation": {
+    "currentProduction": "All585production files text-identical to qualifiedd8611c85 via1390c110",
+    "cachedProductionQualification": 44050323147,
+    "unchangedQualificationRepeated": false,
+    "eachActualWindowsTarget": {
+      "publicFocused": 124,
+      "internalFocused": 88
+    },
+    "newIndependentPublicPrograms": 3,
+    "structuredIntegerPreflightAssertionRetained": true,
+    "allCallerWindowMachineryAndArchitectureFixtureRemoved": true,
+    "discardedPrototypeFullRun": 44072440304,
+    "discardedPrototypeQualificationStillPending": true,
+    "publicationHeld": true
+  }
 }

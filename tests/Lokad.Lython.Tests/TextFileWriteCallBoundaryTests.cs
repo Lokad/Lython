@@ -62,9 +62,9 @@ public sealed class TextFileWriteCallBoundaryTests
         using (var owner = budget.CreateScope())
         {
             var (context, handle, argument, _) = Prepare(owner);
-            var input = PyString.FromString(new string('x', 1024), context.MemoryGovernor, null);
+            var input = PyString.FromString(new string('x', 512), context.MemoryGovernor, null);
             argument.Value = input;
-            Assert.True(budget.TryReserve(limit - budget.ReservedBytes - 4096, out var padding));
+            Assert.True(budget.TryReserve(limit - budget.ReservedBytes - 256, out var padding));
             try
             {
                 using (padding)
@@ -72,10 +72,10 @@ public sealed class TextFileWriteCallBoundaryTests
                     var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Run(context, asynchronous));
                     Assert.Equal(LythonFailureReason.SharedMemoryAllowance, error.Attribution?.Reason);
                     Assert.Same(context.MemoryGovernor.AdmissionFailure, error);
-                    Assert.True(context.MemoryGovernor.LastDeniedReservationBytes >= 1024);
+                    Assert.True(context.MemoryGovernor.LastDeniedReservationBytes >= 512);
                     Assert.Equal(1, argument.Calls);
                     Assert.Equal(BigInteger.Zero, handle.Tell());
-                    Assert.Equal(new string('x', 1024), input.AsString());
+                    Assert.Equal(new string('x', 512), input.AsString());
                     AssertUnwound(context);
                 }
             }

@@ -1,0 +1,28 @@
+{
+  "source": "34d2e393; R481delivery44067803913active; CSV/dictionary files unchanged from qualifiedd8611c85",
+  "sourceBlobSHA256": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.CsvModule.cs": "096e798175d216d0e92d65d4ec4b7a1899c95f6872b7f120e0b591f8953f9217",
+    "src/Lokad.Lython/Runtime/LythonRuntime.CsvObjects.cs": "a51d65ad12fed4a3c0cd96daa75813ff484983ab81a832ab39da749aa9a6436a",
+    "src/Lokad.Lython/Runtime/PyDict.Records.cs": "c2df7bbc29e3415e33bc46e7b5cb0f83c290bb5643254a29d06af1259a52dfc7",
+    "src/Lokad.Lython/Runtime/PyDict.Storage.cs": "ae3b6025c1dc0666f886af8172e21218e78c0579d140a9c7b71124600e6c4e62",
+    "src/Lokad.Lython/Runtime/PyDict.cs": "6534b19c391a95128595dd9bef959464c3dec913149e45a90ed4aa8997c17d7d",
+    "src/Lokad.Lython/Runtime/PyDict.Accumulation.cs": "d0b22ceb0a2a08a2b3916760cdfd882f0a7d2ac9e01009e9f2ce4c4a8d99f7ed"
+  },
+  "demonstrated": [
+    "CSV parser already uses one governed UTF-8 record builder and compact field descriptors. FinishRecord admits payloads/shells/row backing once and uses shared immutable final windows for large fields; small fields are inline.",
+    "DictReader shares stable key layouts and can adopt the exclusively-owned funded object[] row without another value copy. Header identity is revalidated after reentrant admission.",
+    "Native dictionaries already keep unobserved exact integer updates in NativeKey.Integer with canonical object publication on read; there is no per-update integer box to remove in that path.",
+    "A final string remains eagerly allocated for each ordinary field, including columns a partial aggregate never reads."
+  ],
+  "designCosts": [
+    "Deferred strings need immutable field boundaries/row payload plus pending/deleted/published presence and canonical cache state. Existing null native values distinguish record deletion from private dictionary integers.",
+    "Current record adoption transfers object[] directly. Replacing it with generic native slots would also displace CSV-reader/list storage or add a new conversion/copy; wider arrays and shared-key/private-value semantics are material costs.",
+    "Mutation, dict copies, values/items/projection and generic storage promotion must publish canonical values or preserve their shared identity. A raw placeholder in object[] could escape through existing consumers.",
+    "All potential shells/capacity must stay admitted before publication. Deferred construction cannot skip admission or refund backing retained by another row/value."
+  ],
+  "decision": "Gate complete without runtime prototype: source identifies eager unused-field shells but does not justify the added representation/presence/cache machinery or predict a net whole-script gain. Do not replay the already-integrated6\u20138% bulk row work, add magic metadata slots, a universal lazy-container framework or a scalar identity ledger. Preserve as a candidate for a concrete lower-cost complete representation; not a permanent ban.",
+  "newMeasurements": false,
+  "newRuntimeTests": false,
+  "completedQualificationRepeated": false,
+  "publicationHeld": true
+}

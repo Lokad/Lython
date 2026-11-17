@@ -332,7 +332,7 @@ internal sealed partial class LythonRuntime
                             // A deferred prefix can write locals without ever
                             // creating a frame. Clear the compiler workspace,
                             // not only its parameter prefix, before caching it.
-                            if (bound.Values is not null) ReturnBoundArguments(bound, function.CodeObject.InvocationStorageCapacity);
+                            if (bound.Values is not null) ReturnBoundArguments(bound, function.CodeObject.ValueStorageCapacity);
                             frame?.DetachExecutableExecution();
                         }
                     }
@@ -394,7 +394,7 @@ internal sealed partial class LythonRuntime
                 try
                 {
                     LeaveFunctionCall();
-                    ReturnBoundArguments(_execution.Locals, _boundStorageOwner, _execution.Code.InvocationStorageCapacity);
+                    ReturnBoundArguments(_execution.Locals, _boundStorageOwner, _execution.Code.ValueStorageCapacity);
                 }
                 finally
                 {

@@ -40,16 +40,8 @@ internal sealed partial class LythonRuntime
                     scope.CheckExecution(call.CallSpan);
                     var arguments = execution.Stack.Slice(start + call.ArgumentOffset, call.ArgumentCount).Span;
                     var unpackedReturn = PrepareUnpackedCallReturn(ref execution, call, start, out var originalExtent);
-                    // Pattern captures and unpacked output can outlive this call.
-                    // Use the disjoint tail when the argument window is not free.
-                    var inPlace = borrow && unpackedReturn.IsEmpty && execution.Code.PatternStorageCount == 0
-                        && execution.Stack.CanRetireWithoutCleanup(start + call.ArgumentOffset);
-                    var storageStart = inPlace ? start + call.ArgumentOffset : execution.Code.ValueStorageCapacity;
-                    var values = execution.Stack.Values.AsSpan(storageStart);
-                    if (!inPlace) function.BindNativeCallArguments(call, arguments, values,
-                        functionReceiver, scope, call.CallSpan, borrow);
-                    function.StartInline(values, null, call.CallSpan,
-                        CallResultConsumedByIteration(in execution, call), unpackedReturn,
+                    function.StartNativeCall(call, arguments, functionReceiver, scope, call.CallSpan,
+                        CallResultConsumedByIteration(in execution, call), borrow, unpackedReturn,
                         out var unpacked, out var value, out var frame);
                     if (!unpacked) execution.Stack.RestoreNativeExtent(originalExtent);
                     if (frame is not null)
@@ -173,7 +165,7 @@ internal sealed partial class LythonRuntime
                 try { frame.LeaveFunctionCall(); }
                 finally
                 {
-                    try { ReturnBoundArguments(frame._execution.Locals, storageOwner, frame._execution.Code.InvocationStorageCapacity); }
+                    try { ReturnBoundArguments(frame._execution.Locals, storageOwner, frame._execution.Code.ValueStorageCapacity); }
                     finally { frame.DetachExecutableExecution(); }
                 }
             }

@@ -37,7 +37,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         ScopeDirectiveFacts scopeFacts,
         PythonCallableKind callableKind = PythonCallableKind.Function)
         : base(name, parameterLayout, closure, defaultValues, scopeFacts, callableKind,
-            storageCapacity: codeObject.InvocationStorageCapacity)
+            storageCapacity: codeObject.ValueStorageCapacity)
     {
         _codeObject = codeObject;
         _closureCells = closureCells;
@@ -80,23 +80,32 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         && BindingPlan.PositionalDefaults is null or PyTuple
         && (BindingPlan.KeywordDefaultStorage is null || BindingPlan.KeywordDefaultStorage.SupportsNativeStringReads);
 
-    // Disjoint windows still use ordinary native binding. An in-place positional
-    // call already has its final parameter prefix and needs no preparation/copy.
-    internal void BindNativeCallArguments(ExecutableCallSite call,
-        ReadOnlySpan<LythonRuntime.ExecutableSlot> arguments, Span<LythonRuntime.ExecutableSlot> values,
-        object? receiver, LythonRuntime.ExecutionContext context, LythonSourceSpan span, bool borrow)
+    [System.Runtime.CompilerServices.InlineArray(LythonRuntime.NativeValueCapacity)]
+    private struct NativeValues { private LythonRuntime.ExecutableSlot _first; }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    internal void StartNativeCall(ExecutableCallSite call, ReadOnlySpan<LythonRuntime.ExecutableSlot> arguments, object? receiver,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span, bool consumedByIteration,
+        bool borrow, Span<LythonRuntime.ExecutableSlot> unpackedReturn, out bool unpacked,
+        out LythonRuntime.ExecutableSlot result, out LythonRuntime.ExecutionContext? frame)
     {
-        if (borrow) arguments.CopyTo(values);
-        else
+        // Both executable callers select eligibility before entry. Starting a
+        // selected call completes or transfers its exact work; it never declines
+        // after binding and asks the caller to try another execution route.
+        NativeValues buffer = default;
+        Span<LythonRuntime.ExecutableSlot> values = buffer;
+        values = values[.._codeObject.ValueStorageCapacity];
+        // This span is private to the synchronous prefix and cannot escape. Its
+        // live values transfer before suspension; stack exit ends the remaining
+        // references. Owned callback arrays keep their ordinary full clear.
+        if (borrow)
         {
-            // A caught binding error can leave a partial prefix. The caller's
-            // window is reusable storage, not a fresh default-initialized buffer.
-            var parameters = values[..BindingPlan.ParameterCount];
-            parameters.Clear();
-            try { LythonRuntime.BindFunctionArgumentsInto(parameters, [], span, BindingPlan, context,
-                receiver: receiver, callSite: call, operands: arguments); }
-            catch { parameters.Clear(); throw; }
+            arguments.CopyTo(values!);
         }
+        else LythonRuntime.BindFunctionArgumentsInto(values[..BindingPlan.ParameterCount],
+            [], span, BindingPlan, context, receiver: receiver, callSite: call, operands: arguments);
+        StartInline(values, null, span, consumedByIteration, unpackedReturn,
+            out unpacked, out result, out frame);
     }
 
     internal override bool TryStartBoundInvocation(in BoundFunctionArguments bound, LythonSourceSpan span,
@@ -110,12 +119,12 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         result = LythonRuntime.ExecutableSlot.FromObject(PyNone.Instance);
         frame = null;
         if (!CanRunNativePrefix) return false;
-        StartInline(bound.Values,
+        StartInline(bound.Values.AsSpan(0, _codeObject.ValueStorageCapacity),
             bound, span, consumedByIteration, unpackedReturn, out unpacked, out result, out frame);
         return true;
     }
 
-    internal void StartInline(Span<LythonRuntime.ExecutableSlot> values, BoundFunctionArguments? existing,
+    private void StartInline(Span<LythonRuntime.ExecutableSlot> values, BoundFunctionArguments? existing,
         LythonSourceSpan span, bool consumedByIteration, Span<LythonRuntime.ExecutableSlot> unpackedReturn, out bool unpacked,
         out LythonRuntime.ExecutableSlot result, out LythonRuntime.ExecutionContext? frame)
     {
@@ -124,10 +133,9 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         frame = null;
         // Only this synchronous prefix can borrow primitive working storage.
         // Publication/transfer materializes stable guest objects before escape.
-        // The caller owns a pre-admitted window through completion/transfer.
-        // A recycled window must not expose stale unassigned locals. Bound
-        // storage is already cleared by its existing workspace owner.
-        if (existing is null) values[BindingPlan.ParameterCount.._codeObject.ValueStorageCapacity].Clear();
+        // The common fixed buffer has a bounded managed stack cost; larger
+        // bound calls borrow charged capacity until materialization and cleanup
+        // finish. An idle loan stays funded until execution cleanup or eviction.
         var state = new LythonRuntime.NativeExecution(this, values, consumedByIteration, unpackedReturn.Length);
         var entered = false;
         var transferred = false;
@@ -146,7 +154,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
             if (existing is null)
             {
                 owned = LythonRuntime.RentFunctionArgumentStorage(BindingPlan, span, Closure,
-                    _codeObject.InvocationStorageCapacity);
+                    _codeObject.ValueStorageCapacity);
                 rented = true;
                 values[..state.LiveExtent].CopyTo(owned.Values);
             }
@@ -168,8 +176,8 @@ internal sealed class PyExecutableFunction : PyFunctionBase
                 try { if (entered && !transferred) Closure.LeaveFunctionCall(); }
                 finally
                 {
-                    try { if (rented && !transferred) LythonRuntime.ReturnBoundArguments(owned, _codeObject.InvocationStorageCapacity); }
-                    finally { if (existing is null) values[.._codeObject.ValueStorageCapacity].Clear(); }
+                    if (rented && !transferred) LythonRuntime.ReturnBoundArguments(owned, _codeObject.ValueStorageCapacity);
+
                 }
             }
         }

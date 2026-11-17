@@ -26,7 +26,6 @@ public sealed class FormattedStringExecutableTests
             Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
             LythonRuntime.ExecuteExecutableCodeObject(ExecutableScript.Compile(LoweredScript.Lower(frontend.Script!)).EntryPoint, context);
             var function = Assert.IsType<PyExecutableFunction>(context.Variables["render"]);
-            using var window = new NativeCallWindow(budget, function.CodeObject);
             var span = new LythonSourceSpan(0, 1, 1, 1);
             var record = new PyDict(context.MemoryGovernor, span);
             record.SetItem(PyString.FromString("name"), PyString.FromString("é😀", context.MemoryGovernor, span));
@@ -39,8 +38,8 @@ public sealed class FormattedStringExecutableTests
             Assert.True(function.CodeObject.CanRunNativeInstructions);
             for (var pass = 0; pass < 2; pass++)
             {
-                function.BindNativeCallArguments(call, [Slot.FromObject(record)], window.Values, null, context, span, false);
-                    function.StartInline(window.Values, null, span, false, default, out _, out var value, out var frame);
+                function.StartNativeCall(call, [Slot.FromObject(record)], null, context, span, false,
+                    borrow: false, default, out _, out var value, out var frame);
                 Assert.Null(frame);
                 var text = Assert.IsType<PyString>(value.Object);
                 Assert.Equal(expected, text.AsString());

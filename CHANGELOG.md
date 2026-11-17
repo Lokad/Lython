@@ -2,11 +2,6 @@
 
 ## 0.11.0 - Unreleased
 
-- Native helpers borrow admitted caller operands instead of allocating fixed
-  stack buffers and copying ordinary positional arguments. Suspension transfers
-  live values into existing owned frames. Invocations containing calls reserve
-  extra working capacity, which can cause earlier supplied-budget rejection.
-
 - Share builtin receiver resolution and invocation across executable paths. Small
   helpers appending to exact lists avoid continuation frames and argument arrays,
   preserving aliases, evaluation order, cancellation and awaited cleanup.

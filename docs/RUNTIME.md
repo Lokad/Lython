@@ -499,12 +499,7 @@ index protocols, slices and arbitrary-width keys retain their general paths,
 including genuine suspension and retained input ownership.
 
 There is no separate native integer bank, loan or capacity fact. Small native
-prefixes borrow admitted caller operands; larger helpers use admitted final slots.
-Ordinary positional inputs already occupy their final parameter prefix. Live
-pattern state, temporary ownership and unpacked outputs use disjoint working space.
-Invocations containing calls admit a fixed 128-slot tail (3072 estimated bytes),
-covering the existing bounded native-prefix nesting. This can reject earlier under
-a supplied allowance; it introduces no independent limit or hidden allowance.
+prefixes use a fixed managed buffer; larger helpers use admitted final slots.
 Continuation transfers the live slots once into owned storage, without retaining a
 borrowed span. Private values may remain in this funded managed storage through
 suspension; observed values keep their stable identities. Wider reference-heavy
@@ -555,12 +550,10 @@ owned workspace. Wider or dynamic binding keeps admitted invocation storage.
 The sixteen-slot inline capacity is an optimization threshold, not a Python
 argument or expression limit. Caller and definition owners keep all inputs funded.
 Native instruction eligibility is independent of that private-buffer capacity.
-Already-bound calls can run eligible bodies over their admitted full locals array.
-Disjoint parameter windows clear before binding and after a binding failure.
-Borrowed working slots initialize unassigned locals before body entry and clear after
-their users and cleanup end. No per-call fixed stack buffer is allocated. The
-dead tail clears before transfer; surviving values move into the existing owned
-frame, and owned arrays clear on return.
+Already-bound calls can run eligible bodies over their admitted full locals array;
+the private stack buffer stays at sixteen slots. Dead operand references stay in
+their funded backing until the synchronous prefix ends; the dead tail clears
+before transfer and owned arrays clear on return.
 Private cursors retire deterministically, including cancellation before a return
 publishes its result. Call/function stack admission and exception context remain
 active. Native bodies, like ordinary bound bodies, reuse their call admission;

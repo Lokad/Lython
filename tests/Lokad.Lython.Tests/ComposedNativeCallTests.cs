@@ -29,14 +29,13 @@ public sealed class ComposedNativeCallTests
                     return net+round_amount(net)
                 """);
             var function = Assert.IsType<PyExecutableFunction>(context.Variables["price"]);
-            using var window = new NativeCallWindow(budget, function.CodeObject);
             var call = Assert.Single(Compile(named ? "price(amount=1250)" : "price(1250)").CallSites);
             var baseline = budget.ReservedBytes;
             hook.RefuseGrowth = _ => true;
             try
             {
-                function.BindNativeCallArguments(call, [Slot.FromObject(new BigInteger(1250))], window.Values, null, context, Span, !named);
-                    function.StartInline(window.Values, null, Span, false, default, out _, out var result, out var frame);
+                function.StartNativeCall(call, [Slot.FromObject(new BigInteger(1250))], null, context, Span,
+                    false, !named, default, out _, out var result, out var frame);
                 Assert.Null(frame);
                 Assert.Equal(new BigInteger(1350), result.Object);
                 Assert.Null(context.MemoryGovernor.AdmissionFailure);
@@ -82,7 +81,6 @@ public sealed class ComposedNativeCallTests
                     return middle(value)+a+b+c+d+e+f+g
                 """);
             var function = Assert.IsType<PyExecutableFunction>(context.Variables["outer"]);
-            using var window = new NativeCallWindow(budget, function.CodeObject);
             Assert.True(function.CanStartInline);
             Assert.True(Assert.IsType<PyExecutableFunction>(context.Variables["middle"]).CanStartInline);
             var call = Assert.Single(Compile("outer(7)").CallSites);
@@ -93,8 +91,8 @@ public sealed class ComposedNativeCallTests
             hook.AfterGrowth = _ => growths++;
             try
             {
-                var failure = Assert.Throws<LythonRuntimeException>(() => { function.BindNativeCallArguments(call, [Slot.FromObject(retained)], window.Values, null, context, Span, true);
-                    function.StartInline(window.Values, null, Span, false, default, out _, out _, out _); });
+                var failure = Assert.Throws<LythonRuntimeException>(() => function.StartNativeCall(call,
+                    [Slot.FromObject(retained)], null, context, Span, false, true, default, out _, out _, out _));
                 Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
                 Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
                 Assert.Equal(admittedWorkspaces, growths);

@@ -793,7 +793,6 @@ public sealed class SimpleFunctionExecutionBoundaryTests
                 LythonRuntime.ExecuteExecutableCodeObject(ExecutableScript.Compile(
                     LoweredScript.Lower(definition.Script.RequireNotNull())).EntryPoint, context);
                 var function = Assert.IsType<PyExecutableFunction>(context.Variables["f"]);
-                using var window = new NativeCallWindow(budget, function.CodeObject);
                 var code = function.CodeObject;
                 var callFrontend = LythonFrontend.Compile("f(value)",regexProvider:Utf8RegexProvider.Instance);
                 var call = Assert.Single(ExecutableScript.Compile(
@@ -805,8 +804,8 @@ public sealed class SimpleFunctionExecutionBoundaryTests
                 context.EnterInterpreterFrame(CallSpan);
                 try
                 {
-                    function.BindNativeCallArguments(call, [Slot.FromObject(line)], window.Values, null, context, CallSpan, false);
-                    function.StartInline(window.Values, null, CallSpan, false, default, out _, out var result, out var frame);
+                    function.StartNativeCall(call, [Slot.FromObject(line)], null, context, CallSpan, false,
+                        borrow: false, default, out _, out var result, out var frame);
                     Assert.Null(frame);
                     Assert.True(Assert.IsType<bool>(result.Object));
                     Assert.Null(context.MemoryGovernor.AdmissionFailure);
