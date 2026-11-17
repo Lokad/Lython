@@ -9071,3 +9071,12 @@ design, not immutable-tuple reuse alone. Two bounded captures/source gate comple
 no justified next runtime prototype yet, no permanent ban or repeated capture.
 All users joined/RAM traces archived+verified before unmount; qualified runtime
 unchanged. Continue structural call/record design; publication held.
+
+[R477/B889 closed unary result transport](results/2026-11-17-unary-result-transport/README.md):
+private7file0315de0a, one existing-slot result convention deletes Delegate/signature
+bridge and native integer repacking. Complete numericCSV allocation−5.26%,peak
+unchanged; warmmixed, fresh−11.02..−4.89%withsupportingCPUbut6.04%reference movement.
+Original integerCSVslightlyfavorable,textsmallmixed/adverse. All original evidence/
+sources/core/checks preserved; one bounded unchanged-image warm/fresh confirmation
+justified. Root production qualifiedabcbd9fd unchanged, no full qualification replay;
+all VM users joined/RAM removed. No permanent ban/automatic threshold/publication.

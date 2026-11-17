@@ -1,0 +1,9 @@
+{
+  "reference": "CPython3.13.2 isolated trusted script, unchanged127031B/4096record CSV fixture",
+  "source": "import csv\n\ndef reading(row):\n    return float(row['unit_cents']) * 0.01\n\ncount = 0\ntotal = 0.0\nenergy = 0.0\nwith open('input.csv', newline='') as stream:\n    for row in csv.DictReader(stream):\n        quantity = float(row['quantity'])\n        value = reading(row)\n        total += quantity * value\n        energy += value * value\n        count += 1\nwith open('quality.txt', 'w', newline='') as target:\n    target.write(f'records={count}\\ntotal={total:.3f}\\nenergy={energy:.3f}\\n')\nprint(count)\n",
+  "stdout": "4096\n",
+  "files": {
+    "quality.txt": "records=4096\ntotal=32174.080\nenergy=333209.805\n"
+  },
+  "case": "scripts.csv-numeric-quality.large"
+}

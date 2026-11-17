@@ -1,0 +1,191 @@
+{
+  "complete": true,
+  "elapsedSeconds": 191.4575564689003,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "archivalOnlyRecovery": null,
+  "rows": [
+    {
+      "case": "scripts.csv-numeric-quality.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 4.1832736386554625,
+        "reference": 4.212884461538462,
+        "candidate-control": 4.146207644067796,
+        "reference-control": 4.104486325
+      },
+      "cpuMilliseconds": {
+        "candidate": 4.285714285714286,
+        "reference": 4.358974358974359,
+        "candidate-control": 4.237288135593221,
+        "reference-control": 4.25
+      },
+      "elapsedIQRPercent": {
+        "candidate": 1.524738888955415,
+        "reference": 0.337998115435402,
+        "candidate-control": 0.4480236669285139,
+        "reference-control": 0.6017862255475602
+      },
+      "elapsedChangePercent": [
+        -1.5826880152872147,
+        -0.7028633980668553,
+        1.016480888574911,
+        1.9195413851321064
+      ],
+      "cpuChangePercent": [
+        -2.791625124626107,
+        -1.680672268907557,
+        -0.29910269192422456,
+        0.8403361344537785
+      ],
+      "referenceSpreadPercent": 2.640967174825759,
+      "candidateSpreadPercent": 0.893973427517536
+    },
+    {
+      "case": "scripts.csv-numeric-quality.large",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "candidate": 4.214233965517241,
+        "reference": 4.736344725490196,
+        "candidate-control": 4.248120857142857,
+        "reference-control": 4.4664357818181815
+      },
+      "cpuMilliseconds": {
+        "candidate": 4.310344827586206,
+        "reference": 4.901960784313726,
+        "candidate-control": 4.374999999999999,
+        "reference-control": 4.636363636363637
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.09713345457267687,
+        "reference": 0.8371045428633183,
+        "candidate-control": 0.8837983355733252,
+        "reference-control": 1.4446045911214105
+      },
+      "elapsedChangePercent": [
+        -11.023495759568425,
+        -10.308030699703963,
+        -5.646601196587109,
+        -4.8879002260378
+      ],
+      "cpuChangePercent": [
+        -12.068965517241391,
+        -10.750000000000027,
+        -7.031778228532815,
+        -5.637254901960809
+      ],
+      "referenceSpreadPercent": 6.043049913999665,
+      "candidateSpreadPercent": 0.8041056073984976
+    },
+    {
+      "case": "scripts.csv-invoice.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 7.032989676056339,
+        "candidate-control": 6.952315408450705,
+        "reference": 7.132268314285715,
+        "candidate": 7.013135591549296
+      },
+      "cpuMilliseconds": {
+        "reference-control": 7.183098591549296,
+        "candidate-control": 7.042253521126761,
+        "reference": 7.285714285714286,
+        "candidate": 7.042253521126761
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.7626047806603924,
+        "candidate-control": 0.5401483490775075,
+        "reference": 0.6333016291338948,
+        "candidate": 0.40245103279805267
+      },
+      "elapsedChangePercent": [
+        -2.5230809877773375,
+        -1.6703342819815004,
+        -1.1470835494084008,
+        -0.28229935520359684
+      ],
+      "cpuChangePercent": [
+        -3.341618337475827,
+        -3.341618337475827,
+        -1.9607843137254832,
+        -1.9607843137254832
+      ],
+      "referenceSpreadPercent": 1.4116135925432705,
+      "candidateSpreadPercent": 0.8748191001901606
+    },
+    {
+      "case": "scripts.text-normalization.helper-list",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 1.2511040261780104,
+        "candidate-control": 1.2699629002695418,
+        "reference": 1.2570343789473684,
+        "candidate": 1.254221347480106
+      },
+      "cpuMilliseconds": {
+        "reference-control": 1.361256544502618,
+        "candidate-control": 1.3746630727762803,
+        "reference": 1.3421052631578947,
+        "candidate": 1.3527851458885942
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.753984327032203,
+        "candidate-control": 1.323926231552617,
+        "reference": 0.055858288881886056,
+        "candidate": 0.6056751183961354
+      },
+      "elapsedChangePercent": [
+        -0.22378317684659255,
+        0.24916563585992701,
+        1.0284938533661858,
+        1.5073785789934124
+      ],
+      "cpuChangePercent": [
+        -0.6223219751071207,
+        0.7957559681697646,
+        0.9848641924113499,
+        2.42587601078168
+      ],
+      "referenceSpreadPercent": 0.47400956637271285,
+      "candidateSpreadPercent": 1.2550857008663208
+    },
+    {
+      "case": "scripts.csv-numeric-quality.large",
+      "lane": "compile",
+      "elapsedMilliseconds": {
+        "reference-control": 0.05593834914759982,
+        "candidate-control": 0.05641105052089168,
+        "reference": 0.05656319036852815,
+        "candidate": 0.05649057118624901
+      },
+      "cpuMilliseconds": {
+        "reference-control": 0.05607895917451772,
+        "candidate-control": 0.05600985773496135,
+        "reference": 0.05765317657698395,
+        "candidate": 0.056541897546081646
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.456292689124425,
+        "candidate-control": 0.7011443757554753,
+        "reference": 0.25355046699344874,
+        "candidate": 0.29003968584515505
+      },
+      "elapsedChangePercent": [
+        -0.2689732432792913,
+        -0.12838593757884542,
+        0.845039906423728,
+        0.987197597111944
+      ],
+      "cpuChangePercent": [
+        -2.8503526424572323,
+        -1.9275243739925063,
+        -0.12322168701690561,
+        0.8255117041727988
+      ],
+      "referenceSpreadPercent": 1.11701762824572,
+      "candidateSpreadPercent": 0.1409664677807676
+    }
+  ],
+  "retentionDecisionPending": true,
+  "CPythonRefreshed": false
+}
