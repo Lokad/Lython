@@ -37,3 +37,5 @@ no work; extra committed duplicate-catalog proof allowed staging without lowerin
 [Summary](summary.json),[allocation](allocation-summary.json),[raw](observations.tgz),
 [identity](identity.json),[sources](candidate-sources.tar.xz),[procedures/checks](procedures-and-checks.tar.xz).
 No publication; the broader performance roadmap continues.
+
+Subsequent [full delivery](../delivery/README.md) is GREEN44187816311 at4b975a44, all585production inputs matching this measured final source; no rebuilt-binary equality inferred.

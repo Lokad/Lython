@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Construct string-key dictionary displays with shared immutable record keys and
+  final value storage. Remove repeated key operands and per-record key tables;
+  preserve duplicate-key identity, mutation, suspended values and cache ownership.
+
 - Construct helper-returned dictionaries and sets from final executable slots.
   Remove the duplicate whole-code opcode eligibility scan; transfer at the actual
   operation needing a frame. Admit conservative display capacity before allocation,

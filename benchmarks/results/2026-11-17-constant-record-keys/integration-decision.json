@@ -1,0 +1,12 @@
+{
+  "retain": true,
+  "reference": "4b975a44/5d9633a8",
+  "measuredCandidate": "privateR499/cf847936 on4b975a44",
+  "productionSourceUnchangedSinceFrozen": true,
+  "additionalTestOnlyCorrections": "After frozen snapshot, warmed-cache refusal cases extend9to11class cases; all11passactual11and10.",
+  "cpuClaim": "record warm12-14percent lower; compile-to-result9-12percent lower with supporting process CPU",
+  "allocationReductionPercent": 14.665947207875874,
+  "unresolvedDebt": "Floating same-source candidate spread12.91percent; elapsed-6.82..+6.17percent, no recovery/source-gain inference.",
+  "fullQualification": "Batch next coherent delivery, R49844187816311 independent; no silent qualification inheritance",
+  "publicationHeld": true
+}

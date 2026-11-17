@@ -1,0 +1,91 @@
+{
+  "run": 44187816311,
+  "head": "4b975a44753eeef0a07d10c715bd046501605517",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "log": "0_tests (windows-latest).txt",
+      "summaries": [
+        {
+          "framework": "net11.0",
+          "passed": 4831
+        },
+        {
+          "framework": "net11.0",
+          "passed": 18032
+        },
+        {
+          "framework": "net10.0",
+          "passed": 4831
+        },
+        {
+          "framework": "net10.0",
+          "passed": 18032
+        },
+        {
+          "framework": "net11.0",
+          "passed": 14
+        },
+        {
+          "framework": "net11.0",
+          "passed": 406
+        },
+        {
+          "framework": "net10.0",
+          "passed": 14
+        },
+        {
+          "framework": "net10.0",
+          "passed": 406
+        }
+      ]
+    },
+    {
+      "log": "1_tests (ubuntu-latest).txt",
+      "summaries": [
+        {
+          "framework": "net11.0",
+          "passed": 4831
+        },
+        {
+          "framework": "net11.0",
+          "passed": 18032
+        },
+        {
+          "framework": "net10.0",
+          "passed": 4831
+        },
+        {
+          "framework": "net10.0",
+          "passed": 18032
+        },
+        {
+          "framework": "net11.0",
+          "passed": 14
+        },
+        {
+          "framework": "net11.0",
+          "passed": 406
+        },
+        {
+          "framework": "net10.0",
+          "passed": 14
+        },
+        {
+          "framework": "net10.0",
+          "passed": 406
+        }
+      ]
+    }
+  ],
+  "summaries": 16,
+  "sourceInputsVerified": 2385,
+  "production": 585,
+  "normalAdapterPin": "0.4.0",
+  "allMeaningfulStepsPassed": true,
+  "logsSHA256": "b40defdaac80299fa58fb11bc9f765093db5c2adcf8d7937491e9ba2c0f0e3ee",
+  "committedProductionMatchesQualifiedInputs": true,
+  "binaryEqualityInferred": false,
+  "publicationHeld": true,
+  "all585ProductionInputsMatchMeasuredFinal5d9633a8": true
+}

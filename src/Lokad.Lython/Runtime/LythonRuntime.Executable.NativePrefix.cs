@@ -228,7 +228,7 @@ internal sealed partial class LythonRuntime
                         Publish(instruction, list);
                         break;
                     }
-                    case ExecutableOpCode.MakeDict or ExecutableOpCode.MakeSet:
+                    case ExecutableOpCode.MakeDict or ExecutableOpCode.MakeSet or ExecutableOpCode.MakeRecord:
                         if (!ConstructContainer(instruction)) return false;
                         break;
                     case ExecutableOpCode.StartFormattedString or ExecutableOpCode.AppendFormattedText
@@ -257,6 +257,15 @@ internal sealed partial class LythonRuntime
         // traversing composites or invoking any Python callback.
         private bool ConstructContainer(in ExecutableInstruction instruction)
         {
+            if (instruction.OpCode == ExecutableOpCode.MakeRecord)
+            {
+                var keys = (PyTuple)Code.Constants[instruction.ConstantIndex]!;
+                var caches = _function.GetLookupCaches(instruction.Span);
+                var record = CreateSlotRecord(Values.Slice(instruction.InputStart, keys.Count), keys,
+                    ref caches[instruction.LookupCacheIndex], _scope, instruction.Span);
+                try { Trim(instruction.InputStart); Publish(instruction, record); return true; }
+                catch { record.DiscardUnpublishedStorage(); throw; }
+            }
             var dictionary = instruction.OpCode == ExecutableOpCode.MakeDict;
             var inputs = Values.Slice(instruction.InputStart,
                 dictionary ? checked(2 * instruction.PairCount) : instruction.ItemCount);

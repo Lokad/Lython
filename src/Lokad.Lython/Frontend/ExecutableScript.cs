@@ -45,6 +45,7 @@ internal enum ExecutableOpCode
     MakeTuple,
     MakeSet,
     MakeDict,
+    MakeRecord,
     ResolveContextManager,
     EnterContextManager,
     ExitContextManager,
@@ -171,7 +172,7 @@ internal readonly record struct ExecutableInstruction
     public int FunctionIndex => ReadPrimaryOperand(ExecutableOpCode.DefineFunction, nameof(FunctionIndex));
     public int StatementFallbackIndex => ReadPrimaryOperand(ExecutableOpCode.ExecuteFallbackStatement, nameof(StatementFallbackIndex));
     public int ConstantIndex => OpCode is ExecutableOpCode.LoadConst or ExecutableOpCode.ApplyOperation
-        or ExecutableOpCode.AppendFormattedText or ExecutableOpCode.FormatField
+        or ExecutableOpCode.AppendFormattedText or ExecutableOpCode.FormatField or ExecutableOpCode.MakeRecord
         ? _primaryOperand : throw InvalidOperand(nameof(ConstantIndex));
     public int LocalSlot => OpCode is ExecutableOpCode.LoadLocal or ExecutableOpCode.StoreLocal
             ? _primaryOperand : throw InvalidOperand(nameof(LocalSlot));
@@ -189,7 +190,7 @@ internal readonly record struct ExecutableInstruction
         or ExecutableOpCode.DeleteName or ExecutableOpCode.DeleteMember
         ? _primaryOperand : throw InvalidOperand(nameof(NameIndex));
     public int LookupCacheIndex => OpCode == ExecutableOpCode.Subscript ? _primaryOperand
-        : OpCode is ExecutableOpCode.LoadMember or ExecutableOpCode.LoadCallMember
+        : OpCode is ExecutableOpCode.LoadMember or ExecutableOpCode.LoadCallMember or ExecutableOpCode.MakeRecord
             ? _secondaryOperand : throw InvalidOperand(nameof(LookupCacheIndex));
     public bool DiscardIterator => OpCode == ExecutableOpCode.AbruptJump
         ? _secondaryOperand != 0 : throw InvalidOperand("ItemCount");
@@ -328,6 +329,9 @@ internal readonly record struct ExecutableInstruction
 
     public static ExecutableInstruction MakeDict(int pairCount, LythonSourceSpan span)
         => new(ExecutableOpCode.MakeDict, span, pairCount);
+
+    public static ExecutableInstruction MakeRecord(int keysIndex, int cacheIndex, LythonSourceSpan span)
+        => new(ExecutableOpCode.MakeRecord, span, keysIndex, cacheIndex);
 
     public static ExecutableInstruction ResolveContextManager(LythonSourceSpan span)
         => new(ExecutableOpCode.ResolveContextManager, span);

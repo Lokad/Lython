@@ -213,6 +213,28 @@ internal sealed partial class LythonRuntime
         catch { dictionary.DiscardUnpublishedStorage(); throw; }
     }
 
+    private static PyDict CreateSlotRecord(Span<ExecutableSlot> values, PyTuple keys,
+        ref ExecutableLookupCache cache, ExecutionContext context, LythonSourceSpan span)
+    {
+        var dictionary = cache.Target is PyDict.RecordKeys layout
+            ? layout.CreateRecord(context, span, values.Length)
+            : new PyDict(values.Length, context.MemoryGovernor, span);
+        using var ambient = PyStructuralGuard.PushAmbient(context, span);
+        try
+        {
+            for (var i = 0; i < values.Length; i++)
+            {
+                context.CheckExecution(span);
+                dictionary.SetRecordItem((PyString)keys[i], values[i].Object.RequireNotNull(), context, span);
+            }
+            if (cache.Target is not PyDict.RecordKeys && dictionary.ShareRecordKeys(context, span) is { } shared)
+                cache = new(shared, null);
+            context.CheckExecution(span);
+            return dictionary;
+        }
+        catch { dictionary.DiscardUnpublishedStorage(); throw; }
+    }
+
     private static PySet CreateSlotSet(Span<ExecutableSlot> values,
         ExecutionContext context, LythonSourceSpan span)
     {

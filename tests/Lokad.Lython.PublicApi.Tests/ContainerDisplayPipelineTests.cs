@@ -66,9 +66,11 @@ public sealed class ContainerDisplayPipelineTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task RefusedDisplayCannotBeSuppressedOrContinueEffects(bool asynchronous)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task RefusedDisplayCannotBeSuppressedOrContinueEffects(bool asynchronous, bool warmed)
     {
         const string source = """
             import time
@@ -81,7 +83,7 @@ public sealed class ContainerDisplayPipelineTests
             result=record()
             print('must not continue')
             """;
-        using var script = new LythonEngine().Compile(source);
+        using var script = new LythonEngine().Compile(warmed ? source.Replace("time.time()", "record()\ntime.time()") : source);
         Assert.True(script.IsValid);
         var budget = new AdmissionGateBudget();
         var host = new AdmissionGateHost(budget, 64);
@@ -97,6 +99,44 @@ public sealed class ContainerDisplayPipelineTests
 
     public static IEnumerable<object[]> Programs()
     {
+        yield return ["constant-record-mutation-and-duplicate-keys", """
+            events=[]
+            def value(n):
+                events.append(n)
+                return [n]
+            def record(n): return {'a':value(n), 'b':value(n+1), 'a':value(n+2)}
+            first=record(1)
+            first_key=next(iter(first))
+            second=record(10)
+            assert list(first) == ['a','b'] and list(second) == ['a','b']
+            assert next(iter(second)) is first_key
+            assert events == [1,2,3,10,11,12]
+            assert first == {'a':[3],'b':[2]}
+            del first['a']
+            first['other'] = first['b']
+            first['a'] = ['reinserted']
+            second['a'].append('second')
+            third=record(20)
+            assert list(first) == ['b','other','a']
+            assert first['b'] is first['other']
+            assert second == {'a':[12,'second'],'b':[11]}
+            assert third == {'a':[22],'b':[21]}
+            assert next(iter(third)) is first_key
+            def suspended(): return {'a':(yield 'first'), 'b':(yield 'second')}
+            def finish(marker):
+                iterator=suspended()
+                assert next(iterator) == 'first'
+                assert iterator.send(marker) == 'second'
+                try: iterator.send(marker)
+                except StopIteration as done: return done.value
+                assert False
+            marker=[]
+            final=finish(marker)
+            assert final['a'] is marker and final['b'] is marker
+            marker.append(final)
+            assert marker[0] is final
+            return 'ok'
+            """];
         yield return ["aliases-collisions-and-final-storage", """
             def make(key, value):
                 return {key: value, True: 'first', 1: 'last', False: value, 0: 'zero'}

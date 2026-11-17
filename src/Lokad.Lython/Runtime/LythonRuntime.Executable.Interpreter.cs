@@ -475,6 +475,11 @@ internal sealed partial class LythonRuntime
                         ExecuteExecutableMakeDict(ref _execution.Stack, instruction.InputStart, instruction.PairCount, instruction.Span, this));
                     break;
 
+                case ExecutableOpCode.MakeRecord:
+                    PublishInstructionResult(instruction,
+                        ExecuteExecutableMakeRecord(ref _execution.Stack, _execution.Code, instruction, this));
+                    break;
+
                 case ExecutableOpCode.ResolveContextManager:
                     var managerValue = _execution.Stack.TakeValue(instruction.InputStart, instruction.ResultSlot);
                     PublishInstructionResult(instruction, PyContextManagers.Resolve(managerValue, instruction.Span, this));

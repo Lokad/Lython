@@ -138,6 +138,22 @@ internal sealed partial class ExecutableScript
                     return currentBlock;
 
                 case LoweredDictLiteralExpression dict:
+                    if (dict.Items.Count != 0 && dict.Items.All(item => !item.IsUnpacking && item.Key is LoweredStringLiteralExpression))
+                    {
+                        // Immutable keys belong to compiled storage, as literal
+                        // tuples do. Preserve the constant pool's key identities;
+                        // repeated records evaluate and transport only values.
+                        var keys = new object[dict.Items.Count];
+                        for (var i = 0; i < keys.Length; i++)
+                        {
+                            var item = dict.Items[i];
+                            keys[i] = _constants[InternConstant(((LoweredStringLiteralExpression)item.Key).Value)]!;
+                            currentBlock = CompileExpression(item.Value, currentBlock);
+                        }
+                        AddInstruction(currentBlock, ExecutableInstruction.MakeRecord(
+                            InternConstant(PyTuple.FromOwnedArray(keys)), AllocateLookupCache(), dict.Span));
+                        return currentBlock;
+                    }
                     if (dict.Items.Any(item => item.IsUnpacking))
                     {
                         return CompileDictionaryDisplay(dict, currentBlock);

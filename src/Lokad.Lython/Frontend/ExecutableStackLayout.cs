@@ -224,7 +224,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
             ExecutableOpCode.LoadConst or ExecutableOpCode.LoadLocal or ExecutableOpCode.LoadClosure or
                 ExecutableOpCode.LoadGlobal or ExecutableOpCode.LoadName or ExecutableOpCode.LoadMember or
                 ExecutableOpCode.MakeList or ExecutableOpCode.MakeTuple or
-                ExecutableOpCode.MakeSet or ExecutableOpCode.MakeDict or ExecutableOpCode.MakeSlice or
+                ExecutableOpCode.MakeSet or ExecutableOpCode.MakeDict or ExecutableOpCode.MakeRecord or ExecutableOpCode.MakeSlice or
                 ExecutableOpCode.Binary or ExecutableOpCode.Augmented or ExecutableOpCode.Unary or
                 ExecutableOpCode.Subscript or ExecutableOpCode.Slice or ExecutableOpCode.Call or
                 ExecutableOpCode.ForNext or ExecutableOpCode.FinishFormattedString or ExecutableOpCode.ConvertFormattedValue => true,
@@ -256,6 +256,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
             ExecutableOpCode.CompareJumpIfFalse => (2, 0),
             ExecutableOpCode.MakeList or ExecutableOpCode.MakeTuple or ExecutableOpCode.MakeSet => (instruction.ItemCount, 1),
             ExecutableOpCode.MakeDict => (checked(2 * instruction.PairCount), 1),
+            ExecutableOpCode.MakeRecord => (((Lokad.Lython.Runtime.PyTuple)constants[instruction.ConstantIndex]!).Count, 1),
             ExecutableOpCode.Call => (checked(calls[instruction.CallSiteIndex].ArgumentCount + calls[instruction.CallSiteIndex].ArgumentOffset), 1),
             ExecutableOpCode.Slice => (1 + BitOperations.PopCount((uint)instruction.SliceParts), 1),
             ExecutableOpCode.MakeSlice => (BitOperations.PopCount((uint)instruction.SliceParts), 1),

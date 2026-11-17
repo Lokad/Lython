@@ -448,6 +448,14 @@ up front, including duplicate keys, so supplied-budget rejection can occur earli
 Unpublished backing refunds on construction or input-cleanup failure; retained
 values and aliases keep their existing owners. Large scans remain cancellable.
 
+String-literal dictionary displays evaluate and transport their values only.
+The existing execution/function lookup cache retains a key-only record layout;
+later records allocate final value storage, without rebuilding private key tables.
+Duplicates preserve insertion order and first-key identity. A new key or protocol
+mutation admits private backing before changing the record. Cache/layout storage
+remains funded for its existing execution/result lifetime, even if a constructed
+row is discarded. Dynamic keys and unpacking retain general dictionary semantics.
+
 Eligible `try`/`except` helpers use the same prefix through their normal body.
 Handler-only instructions do not require a lexical frame before that body runs.
 A catchable fault transfers its exact instruction and materialized live values
