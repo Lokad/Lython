@@ -18,30 +18,32 @@ internal static partial class PyStringOps
         return new NormalizedStringRange(normalizedStart, normalizedEnd);
     }
 
-    private static PyString SliceTrimmed(PyString value, bool trimStart, bool trimEnd)
-        => SliceTrimmed(value, trimStart, trimEnd, null);
+    private static PyString SliceTrimmed(PyString value, bool trimStart, bool trimEnd, PyString? chars)
+    {
+        if (chars is null) return TrimBoundaries(value, trimStart, trimEnd, null);
+        if (chars.ByteLength == 0) return value;
+
+        // Keep the character set funded through scanning and slice construction.
+        var governor = PyStructuralGuard.AmbientContext?.MemoryGovernor ?? value.OwnerMemoryGovernor;
+        using var working = governor?.ReserveTemporary(checked(256L + 64L * chars.ByteLength), PyStructuralGuard.AmbientSpan);
+        PyStructuralGuard.NoteWork();
+        var trimRunes = new HashSet<int>();
+        var characters = chars.Utf8Span;
+        for (var offset = 0; offset < characters.Length;)
+        {
+            PyStructuralGuard.NoteWork();
+            if (Rune.DecodeFromUtf8(characters[offset..], out var trimRune, out var consumed) != System.Buffers.OperationStatus.Done)
+                throw new DecoderFallbackException("Invalid UTF-8 in strip characters.");
+            trimRunes.Add(trimRune.Value);
+            offset += consumed;
+        }
+        return TrimBoundaries(value, trimStart, trimEnd, trimRunes);
+    }
 
     // Trim directly over UTF-8 and slice once. Default ASCII whitespace uses
     // the same bounded bulk scanner as split; custom sets keep scalar matching.
-    private static PyString SliceTrimmed(PyString value, bool trimStart, bool trimEnd, PyString? chars)
+    private static PyString TrimBoundaries(PyString value, bool trimStart, bool trimEnd, HashSet<int>? trimRunes)
     {
-        if (chars is not null && chars.Utf8Span.IsEmpty) return value;
-
-        HashSet<int>? trimRunes = null;
-        if (chars is not null)
-        {
-            trimRunes = new HashSet<int>();
-            var characters = chars.Utf8Span;
-            for (var offset = 0; offset < characters.Length;)
-            {
-                PyStructuralGuard.NoteWork();
-                if (Rune.DecodeFromUtf8(characters[offset..], out var trimRune, out var consumed) != System.Buffers.OperationStatus.Done)
-                    throw new DecoderFallbackException("Invalid UTF-8 in strip characters.");
-                trimRunes.Add(trimRune.Value);
-                offset += consumed;
-            }
-        }
-
         var source = value.Utf8Span;
         var startByte = 0;
         var endByte = source.Length;

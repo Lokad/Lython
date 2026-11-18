@@ -1,0 +1,121 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Segmentation.cs b/src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Segmentation.cs
+index 78d02d5ce..a6fa1a044 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Segmentation.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Segmentation.cs
+@@ -130,30 +130,16 @@ internal sealed partial class LythonRuntime
+ 
+         // These declarations are created once. Only a Python-visible attribute
+         // allocates a receiver wrapper; immediate calls borrow existing operands.
+-        private static ReceiverMethod CreateStripMethod(string methodName, Func<PyString, PyString> whitespaceOperation,
++        private static ReceiverMethod CreateStripMethod(string methodName, Func<PyString, PyString?, PyString> trim,
+             LythonCallableSignature signature)
+             => new(signature, (receiver, arguments, span, context) =>
+             {
+-                var text = (PyString)receiver;
+                 using var ambient = PyStructuralGuard.PushAmbient(context, span);
+-                PyString result;
+-                if (arguments.Length == 0 || arguments[0] is PyNone)
+-                    result = whitespaceOperation(text);
+-                else if (!PyStringOps.TryAsString(arguments[0]!, out var chars))
++                PyString? chars = null;
++                if (arguments.Length != 0 && arguments[0] is not PyNone &&
++                    !PyStringOps.TryAsString(arguments[0]!, out chars))
+                     throw RuntimeErrors.Type($"{methodName} arg must be None or str", span);
+-                else
+-                {
+-                    using var working = context.MemoryGovernor.ReserveTemporary(
+-                        chars.Utf8Span.IsEmpty ? 0 : checked(256L + 64L * chars.ByteLength), span);
+-                    result = methodName switch
+-                    {
+-                        "strip" => PyStringOps.Strip(text, chars),
+-                        "lstrip" => PyStringOps.LStrip(text, chars),
+-                        _ => PyStringOps.RStrip(text, chars),
+-                    };
+-                    return OwnMethodResult(result, text, context.MemoryGovernor, span);
+-                }
+-                return OwnMethodResult(result, text, context.MemoryGovernor, span);
++                return trim((PyString)receiver, chars);
+             });
+     }
+ }
+diff --git a/src/Lokad.Lython/Runtime/Text/PyStringOps.Helpers.cs b/src/Lokad.Lython/Runtime/Text/PyStringOps.Helpers.cs
+index 0ee23dede..cc1246bbc 100644
+--- a/src/Lokad.Lython/Runtime/Text/PyStringOps.Helpers.cs
++++ b/src/Lokad.Lython/Runtime/Text/PyStringOps.Helpers.cs
+@@ -18,30 +18,32 @@ internal static partial class PyStringOps
+         return new NormalizedStringRange(normalizedStart, normalizedEnd);
+     }
+ 
+-    private static PyString SliceTrimmed(PyString value, bool trimStart, bool trimEnd)
+-        => SliceTrimmed(value, trimStart, trimEnd, null);
+-
+-    // Trim directly over UTF-8 and slice once. Default ASCII whitespace uses
+-    // the same bounded bulk scanner as split; custom sets keep scalar matching.
+     private static PyString SliceTrimmed(PyString value, bool trimStart, bool trimEnd, PyString? chars)
+     {
+-        if (chars is not null && chars.Utf8Span.IsEmpty) return value;
+-
+-        HashSet<int>? trimRunes = null;
+-        if (chars is not null)
++        if (chars is null) return TrimBoundaries(value, trimStart, trimEnd, null);
++        if (chars.ByteLength == 0) return value;
++
++        // Keep the character set funded through scanning and slice construction.
++        var governor = PyStructuralGuard.AmbientContext?.MemoryGovernor ?? value.OwnerMemoryGovernor;
++        using var working = governor?.ReserveTemporary(checked(256L + 64L * chars.ByteLength), PyStructuralGuard.AmbientSpan);
++        PyStructuralGuard.NoteWork();
++        var trimRunes = new HashSet<int>();
++        var characters = chars.Utf8Span;
++        for (var offset = 0; offset < characters.Length;)
+         {
+-            trimRunes = new HashSet<int>();
+-            var characters = chars.Utf8Span;
+-            for (var offset = 0; offset < characters.Length;)
+-            {
+-                PyStructuralGuard.NoteWork();
+-                if (Rune.DecodeFromUtf8(characters[offset..], out var trimRune, out var consumed) != System.Buffers.OperationStatus.Done)
+-                    throw new DecoderFallbackException("Invalid UTF-8 in strip characters.");
+-                trimRunes.Add(trimRune.Value);
+-                offset += consumed;
+-            }
++            PyStructuralGuard.NoteWork();
++            if (Rune.DecodeFromUtf8(characters[offset..], out var trimRune, out var consumed) != System.Buffers.OperationStatus.Done)
++                throw new DecoderFallbackException("Invalid UTF-8 in strip characters.");
++            trimRunes.Add(trimRune.Value);
++            offset += consumed;
+         }
++        return TrimBoundaries(value, trimStart, trimEnd, trimRunes);
++    }
+ 
++    // Trim directly over UTF-8 and slice once. Default ASCII whitespace uses
++    // the same bounded bulk scanner as split; custom sets keep scalar matching.
++    private static PyString TrimBoundaries(PyString value, bool trimStart, bool trimEnd, HashSet<int>? trimRunes)
++    {
+         var source = value.Utf8Span;
+         var startByte = 0;
+         var endByte = source.Length;
+diff --git a/src/Lokad.Lython/Runtime/Text/PyStringOps.cs b/src/Lokad.Lython/Runtime/Text/PyStringOps.cs
+index d8d703c0e..cb026802b 100644
+--- a/src/Lokad.Lython/Runtime/Text/PyStringOps.cs
++++ b/src/Lokad.Lython/Runtime/Text/PyStringOps.cs
+@@ -135,17 +135,11 @@ internal static partial class PyStringOps
+         LythonRuntime.ExecutionContext? context = null)
+         => SplitCore(value, maxSplit, true, governor, span, context, separator: separator);
+ 
+-    public static PyString Strip(PyString value) => SliceTrimmed(value, trimStart: true, trimEnd: true);
++    public static PyString Strip(PyString value, PyString? chars = null) => SliceTrimmed(value, trimStart: true, trimEnd: true, chars);
+ 
+-    public static PyString LStrip(PyString value) => SliceTrimmed(value, trimStart: true, trimEnd: false);
++    public static PyString LStrip(PyString value, PyString? chars = null) => SliceTrimmed(value, trimStart: true, trimEnd: false, chars);
+ 
+-    public static PyString RStrip(PyString value) => SliceTrimmed(value, trimStart: false, trimEnd: true);
+-
+-    public static PyString Strip(PyString value, PyString chars) => SliceTrimmed(value, trimStart: true, trimEnd: true, chars);
+-
+-    public static PyString LStrip(PyString value, PyString chars) => SliceTrimmed(value, trimStart: true, trimEnd: false, chars);
+-
+-    public static PyString RStrip(PyString value, PyString chars) => SliceTrimmed(value, trimStart: false, trimEnd: true, chars);
++    public static PyString RStrip(PyString value, PyString? chars = null) => SliceTrimmed(value, trimStart: false, trimEnd: true, chars);
+ 
+     public static BigInteger Find(PyString value, PyString needle) => new(value.Find(needle));
+ 

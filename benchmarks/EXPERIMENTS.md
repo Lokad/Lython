@@ -9384,3 +9384,16 @@ remained inconclusive on confirmation. Helper text recovered to near flat
 on confirmation. Both targets passed 829 focused checks each. Accounted peaks,
 allowance reuse and allocation matched. Retain the simplification and preserve
 both sets of observations.
+
+[R537/B969 current runtime attribution](results/2026-11-18-current-runtime-shape/README.md)
+used the retained R536 image. Floating and helper captures still mix useful
+work with dispatch and did not justify a frame redesign. Source proof selected
+a shared trim entry and primitive-owned scratch for R538.
+
+[R538/B970 shared trim ownership](results/2026-11-18-shared-trim-ownership/README.md)
+keeps the previous custom-set preflight and removes separate dispatch and
+the post-slice ownership check. Helper elapsed fell 0.73–1.16% warm and
+1.16–1.74% compile-to-result with supporting process CPU. Other elapsed
+controls were mixed. Peaks matched and allowance balances restored. Both
+targets passed 1,817 focused checks, and independent probes matched CPython
+through both APIs. Retain the simplification.

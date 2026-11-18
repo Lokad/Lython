@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Use one bound trim entry per direction and hold custom character-set scratch
+  in the UTF-8 trimming primitive until the result slice is built.
+
 - Keep executable sequence indices native through bounds checks. Share negative
   index normalization with generic access and resolve diagnostic names on error.
 

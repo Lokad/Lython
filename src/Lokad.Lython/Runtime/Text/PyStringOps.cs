@@ -135,17 +135,11 @@ internal static partial class PyStringOps
         LythonRuntime.ExecutionContext? context = null)
         => SplitCore(value, maxSplit, true, governor, span, context, separator: separator);
 
-    public static PyString Strip(PyString value) => SliceTrimmed(value, trimStart: true, trimEnd: true);
+    public static PyString Strip(PyString value, PyString? chars = null) => SliceTrimmed(value, trimStart: true, trimEnd: true, chars);
 
-    public static PyString LStrip(PyString value) => SliceTrimmed(value, trimStart: true, trimEnd: false);
+    public static PyString LStrip(PyString value, PyString? chars = null) => SliceTrimmed(value, trimStart: true, trimEnd: false, chars);
 
-    public static PyString RStrip(PyString value) => SliceTrimmed(value, trimStart: false, trimEnd: true);
-
-    public static PyString Strip(PyString value, PyString chars) => SliceTrimmed(value, trimStart: true, trimEnd: true, chars);
-
-    public static PyString LStrip(PyString value, PyString chars) => SliceTrimmed(value, trimStart: true, trimEnd: false, chars);
-
-    public static PyString RStrip(PyString value, PyString chars) => SliceTrimmed(value, trimStart: false, trimEnd: true, chars);
+    public static PyString RStrip(PyString value, PyString? chars = null) => SliceTrimmed(value, trimStart: false, trimEnd: true, chars);
 
     public static BigInteger Find(PyString value, PyString needle) => new(value.Find(needle));
 

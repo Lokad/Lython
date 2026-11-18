@@ -130,30 +130,16 @@ internal sealed partial class LythonRuntime
 
         // These declarations are created once. Only a Python-visible attribute
         // allocates a receiver wrapper; immediate calls borrow existing operands.
-        private static ReceiverMethod CreateStripMethod(string methodName, Func<PyString, PyString> whitespaceOperation,
+        private static ReceiverMethod CreateStripMethod(string methodName, Func<PyString, PyString?, PyString> trim,
             LythonCallableSignature signature)
             => new(signature, (receiver, arguments, span, context) =>
             {
-                var text = (PyString)receiver;
                 using var ambient = PyStructuralGuard.PushAmbient(context, span);
-                PyString result;
-                if (arguments.Length == 0 || arguments[0] is PyNone)
-                    result = whitespaceOperation(text);
-                else if (!PyStringOps.TryAsString(arguments[0]!, out var chars))
+                PyString? chars = null;
+                if (arguments.Length != 0 && arguments[0] is not PyNone &&
+                    !PyStringOps.TryAsString(arguments[0]!, out chars))
                     throw RuntimeErrors.Type($"{methodName} arg must be None or str", span);
-                else
-                {
-                    using var working = context.MemoryGovernor.ReserveTemporary(
-                        chars.Utf8Span.IsEmpty ? 0 : checked(256L + 64L * chars.ByteLength), span);
-                    result = methodName switch
-                    {
-                        "strip" => PyStringOps.Strip(text, chars),
-                        "lstrip" => PyStringOps.LStrip(text, chars),
-                        _ => PyStringOps.RStrip(text, chars),
-                    };
-                    return OwnMethodResult(result, text, context.MemoryGovernor, span);
-                }
-                return OwnMethodResult(result, text, context.MemoryGovernor, span);
+                return trim((PyString)receiver, chars);
             });
     }
 }
