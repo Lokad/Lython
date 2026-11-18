@@ -1,0 +1,13 @@
+2026-11-18T22:48:01.7868750Z [31;1m[xUnit.net 00:04:28.93]     Lokad.Lython.PublicApi.Tests.JsonSeparatorOwnershipTests.BorrowedSeparatorOutputIsAdmittedBeforeSubstantialGrowth(asynchronous: False) [FAIL][0m
+2026-11-18T22:48:01.7872371Z   Failed Lokad.Lython.PublicApi.Tests.JsonSeparatorOwnershipTests.BorrowedSeparatorOutputIsAdmittedBeforeSubstantialGrowth(asynchronous: False) [1 ms]
+2026-11-18T22:48:01.7874030Z   Error Message:
+2026-11-18T22:48:01.7874595Z    Assert.InRange() Failure: Value not in range
+2026-11-18T22:48:01.7875715Z Range:  (0 - 131072)
+2026-11-18T22:48:01.7878530Z Actual: 131952
+2026-11-18T22:48:01.7880664Z   Stack Trace:
+2026-11-18T22:48:01.7884460Z      at Lokad.Lython.PublicApi.Tests.JsonSeparatorOwnershipTests.BorrowedSeparatorOutputIsAdmittedBeforeSubstantialGrowth(Boolean asynchronous) in D:\a\Lython\Lython\tests\Lokad.Lython.PublicApi.Tests\JsonSeparatorOwnershipTests.cs:line 99
+2026-11-18T22:48:01.7886183Z --- End of stack trace from previous location ---
+2026-11-18T22:48:29.5701615Z Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+2026-11-18T22:48:29.5703090Z
+2026-11-18T22:48:29.5907839Z Failed!  - Failed:     1, Passed: 18082, Skipped:     0, Total: 18083, Duration: 4 m 45 s - Lokad.Lython.PublicApi.Tests.dll (net10.0)
+2026-11-18T22:48:30.2798861Z ##[error]Process completed with exit code 1.

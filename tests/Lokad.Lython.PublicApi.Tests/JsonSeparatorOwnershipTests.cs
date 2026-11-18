@@ -96,7 +96,11 @@ public sealed class JsonSeparatorOwnershipTests
             Assert.False(result.Success);
             Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
             Assert.Empty(result.StandardOutput);
-            Assert.InRange(GC.GetTotalAllocatedBytes(true) - host.AllocatedAtGate, 0, 128 * 1024);
+            // Encoding has no host suspension between the gate and the output
+            // admission. Measure that worker up to the refusal, before unwind.
+            Assert.NotEqual(0, budget.ThreadAtFirstRefusal);
+            Assert.Equal(host.ThreadAtGate, budget.ThreadAtFirstRefusal);
+            Assert.InRange(budget.ThreadAllocatedAtFirstRefusal - host.ThreadAllocatedAtGate, 0, 128 * 1024);
         }
         Assert.Equal(0, budget.Root.ReservedBytes);
     }
