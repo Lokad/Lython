@@ -1,0 +1,29 @@
+{
+  "complete": false,
+  "archivalRecovery": true,
+  "sourceFailure": "configuration warmup exhausted128batches before8seconds",
+  "floatingProfileCompleted": true,
+  "configurationProfileMissing": true,
+  "allUsersJoined": true,
+  "archivedAndVerifiedUnderLease": true,
+  "allRamFilesVerifiedBeforeUnmount": true,
+  "guestFixturesRemoved": true,
+  "quietAtRecovery": true,
+  "originalEndGateMissing": true,
+  "firstRecoveryFloorGuardFailedAfterVerifiedRamTeardown": true,
+  "initialFreeBytes": 264171520,
+  "configurationTemporaryMaps": [
+    {
+      "pid": 3880763,
+      "path": "/tmp/perf-3880763.map",
+      "bytes": 1884160,
+      "sha256": "bd042788d268491305cd4ee4abaabfe75c7cc7c5c680933a948d4c28e3d04272",
+      "retained": "configuration-failed.perf.map.gz",
+      "retainedSHA256": "36e46381253b53cd9017f31b5613502235ca06073d5e2a88eea7917039862e08",
+      "ownedWorkerJoined": true,
+      "originalVerifiedBeforeTemporaryRetirement": true
+    }
+  ],
+  "archiveSHA256": "21da705ab866e1a0ad49ff7b1a6947a5779257e4e3516c1639ef31d4bdb59927",
+  "freeBytes": 265809920
+}
