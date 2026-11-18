@@ -1,0 +1,31 @@
+{
+  "qualified": "7fe127123ed1c5e8994e47e2c5fca77a3bae34a0",
+  "start": "604dc52db9155dfd265b5fc75dfcc330cb877bc5",
+  "reconstructedTree": "76447938492f58aca47e8b62ce7434b658c1c419",
+  "productionCoreFiles": 590,
+  "measurements": [
+    {
+      "archive": "benchmarks/results/2026-11-18-borrowed-format-packet/checks-and-procedures.tar.xz",
+      "archiveSHA256": "0de42c11e2bc2d8c456bf2be92e36e477921746c7f7de7cb77494b1fd1f08e97",
+      "patchSHA256": "cc4ecfca841742b9027b67d3ed9e473dfe1f431c3e5681ff01de7bf9542e9c9f"
+    },
+    {
+      "archive": "benchmarks/results/2026-11-18-direct-function-defaults/checks-and-procedures.tar.xz",
+      "archiveSHA256": "0b48dc341d16103e4d053b7e4824019b99a998ca4bfa215dc2601fad65c2e4e1",
+      "patchSHA256": "338f04d3b3b0b37873743e77410d5d2b9fb27488f4727ff1a4c6cfdefeaf4c25"
+    }
+  ],
+  "expectedTestsPerTarget": [
+    4889,
+    18081,
+    14,
+    406
+  ],
+  "measuredRuntimeCommit": "53df085650c7f3c9bd8c41a0f7d6915b18aa1938",
+  "runtimeSourceReconstructed": true,
+  "testOnlyChanges": [
+    "tests/Lokad.Lython.Tests/MethodBodyCompilationBoundaryTests.cs"
+  ],
+  "testPatchSHA256": "6efc6a4a7e19b417b5c15cc430a15b8ad68504394fb469e58ae256ec30588e8a",
+  "identicalRuntimeSource": true
+}

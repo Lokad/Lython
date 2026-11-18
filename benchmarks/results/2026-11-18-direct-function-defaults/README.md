@@ -47,6 +47,8 @@ public suites passed all 18,081 cases. The corrected test verifies live
 callback frames, the original default alias, governed tuple storage and the
 function seen by decorators. All 26 method-body cases pass on Windows and
 WSL .NET 10 and 11. The correction changes test code only.
+Full Windows and Ubuntu Release qualification passed after this correction.
+[Delivery](delivery/README.md).
 
 [Summary](summary.json) · [Raw observations](observations.tgz) ·
 [Source, tests and procedures](checks-and-procedures.tar.xz) ·
