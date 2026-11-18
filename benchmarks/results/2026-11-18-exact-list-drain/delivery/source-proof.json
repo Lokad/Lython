@@ -1,0 +1,19 @@
+{
+  "qualified": "6c7ee7bd5759f25039898f4ba74d71d269ea4662",
+  "start": "4ff69a9afd929cea09dd783e7ab9702cf93a59fb",
+  "reconstructedTree": "b48547d3c4ae3a55671e9182619f8e9fbe8be2f6",
+  "productionCoreFiles": 589,
+  "identicalSourceAndTests": true,
+  "measurements": [
+    {
+      "archive": "benchmarks/results/2026-11-18-syntax-validity-scratch/checks-and-procedures.tar.xz",
+      "archiveSHA256": "6830b1774e3941d86abd9e07f6dd90a077e18be178482323ffb75e68965e9b81",
+      "patchSHA256": "26d22f58423340d50d701086ae1f18e7da1bdcac7ccd5531e3105d974da20d5f"
+    },
+    {
+      "archive": "benchmarks/results/2026-11-18-exact-list-drain/checks-and-procedures.tar.xz",
+      "archiveSHA256": "521b4c9bcfd1685bdb032397e794186f70e22a4c35f490d261618bc6f9c5ab0d",
+      "patchSHA256": "151d702c084a96cc342145be5bcbdd42662584bfdcc06c1e3453af029b07f7eb"
+    }
+  ]
+}
