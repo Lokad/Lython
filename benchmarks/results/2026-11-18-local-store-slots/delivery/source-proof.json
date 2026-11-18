@@ -1,0 +1,19 @@
+{
+  "start": "e507b4667",
+  "qualified": "b810f660b",
+  "reconstructedTree": "a987fe20a6e0f0cbfb8f269a157053c51367a11e",
+  "measurements": [
+    {
+      "archive": "2026-11-18-csv-line-number/checks-and-procedures.tar.xz",
+      "archiveSHA256": "910e120510840e93ea19ca03491a39d0d53022aacb824f58a81f1d0f958b29ad",
+      "patchSHA256": "0954801f6354f85aaf0d20bc3a2286a30497c6d9968cf937196fd4763ca6e2ce"
+    },
+    {
+      "archive": "2026-11-18-local-store-slots/checks-and-procedures.tar.xz",
+      "archiveSHA256": "aaa2d71b9f653e322a1340889d22c107b23107b9c3f33fb1faee3a63c757a2cb",
+      "patchSHA256": "b49ae10a67b47aced5b61973e50dbc18e4f28635c1e5ded52e8402ac6e31ba2a"
+    }
+  ],
+  "identicalSourceAndTests": true,
+  "productionCoreFiles": 588
+}
