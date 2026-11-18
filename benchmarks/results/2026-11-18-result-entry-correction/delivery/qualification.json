@@ -1,0 +1,91 @@
+{
+  "run": 44250743374,
+  "head": "9e8eaba1a3e20dae5112d7ce2aac9882690b6734",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "log": "0_tests (ubuntu-latest).txt",
+      "summaries": [
+        {
+          "framework": "net11.0",
+          "passed": 4859
+        },
+        {
+          "framework": "net11.0",
+          "passed": 18048
+        },
+        {
+          "framework": "net10.0",
+          "passed": 4859
+        },
+        {
+          "framework": "net10.0",
+          "passed": 18048
+        },
+        {
+          "framework": "net11.0",
+          "passed": 14
+        },
+        {
+          "framework": "net11.0",
+          "passed": 406
+        },
+        {
+          "framework": "net10.0",
+          "passed": 14
+        },
+        {
+          "framework": "net10.0",
+          "passed": 406
+        }
+      ]
+    },
+    {
+      "log": "1_tests (windows-latest).txt",
+      "summaries": [
+        {
+          "framework": "net11.0",
+          "passed": 4859
+        },
+        {
+          "framework": "net11.0",
+          "passed": 18048
+        },
+        {
+          "framework": "net10.0",
+          "passed": 4859
+        },
+        {
+          "framework": "net10.0",
+          "passed": 18048
+        },
+        {
+          "framework": "net11.0",
+          "passed": 14
+        },
+        {
+          "framework": "net11.0",
+          "passed": 406
+        },
+        {
+          "framework": "net10.0",
+          "passed": 14
+        },
+        {
+          "framework": "net10.0",
+          "passed": 406
+        }
+      ]
+    }
+  ],
+  "summaries": 16,
+  "sourceInputsVerified": 2390,
+  "production": 587,
+  "normalAdapterPin": "0.4.0",
+  "allMeaningfulStepsPassed": true,
+  "logsSHA256": "27acb9bcfdd99dd0072cdb08be323d026f0b4349e458086c4428a54d5f7d9da5",
+  "committedProductionMatchesQualifiedInputs": true,
+  "binaryEqualityInferred": false,
+  "publicationHeld": true,
+  "all587ProductionInputsMatchMeasured84b1a159": true
+}

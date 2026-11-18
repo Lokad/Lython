@@ -12,7 +12,7 @@ Assigned-result cases now join the existing discarded-result regressions. Both
 actual .NET 11/10 pass 145 internal / 78 public focused Release checks, including
 24 routing cases per framework. Nonincremental solution build, 13 independent
 goldens/allocation/budget reuse and the exact four timed-case goldens pass.
-Full replacement delivery 44250743374 is pending. No public API change.
+[Full replacement delivery44250743374](delivery/README.md) passed both platforms/actual11/10, original stress and installed Release consumers; all16summaries/2390inputs/587production sources verified. No public API change.
 
 Short B947 changed-source comparison: four jobs / 187.83s, all image/golden/quiet/
 join/archive gates pass. Original text elapsed 0.81–1.97% higher, CPU straddles
