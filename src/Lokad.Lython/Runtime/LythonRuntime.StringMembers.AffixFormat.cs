@@ -38,7 +38,8 @@ internal sealed partial class LythonRuntime
                         }
 
                         return prefix.Length != 0 && text.StartsWith(prefix)
-                            ? OwnMethodResult(SliceByByteCount(text, prefix.ByteLength, text.ByteLength - prefix.ByteLength),text,context.MemoryGovernor,span)
+                            ? text.SliceByByteRange(prefix.ByteLength, text.ByteLength,
+                                text.OwnerMemoryGovernor ?? context.MemoryGovernor, span, context)
                             : text;
                     }, StrRemovePrefixSignature),
                     "removesuffix" => BoundCallable.Create((arguments, span, context) =>
@@ -55,7 +56,8 @@ internal sealed partial class LythonRuntime
                         }
 
                         return suffix.Length != 0 && text.EndsWith(suffix)
-                            ? OwnMethodResult(SliceByByteCount(text, 0, text.ByteLength - suffix.ByteLength),text,context.MemoryGovernor,span)
+                            ? text.SliceByByteRange(0, text.ByteLength - suffix.ByteLength,
+                                text.OwnerMemoryGovernor ?? context.MemoryGovernor, span, context)
                             : text;
                     }, StrRemoveSuffixSignature),
                     "partition" => CreatePartitionMethod("partition", PyStringOps.Partition, StrPartitionSignature),

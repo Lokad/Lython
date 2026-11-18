@@ -1121,7 +1121,10 @@ In-place repetition fills the admitted array in bounded, cancellation-checked co
 Immutable strings retain their independent UTF-8 backing. Their optional scalar
 offset table admits its capacity before allocation and refunds the reservation
 if construction fails. The retained table describes its own charge; no separate
-cache-charge accumulator is maintained. String truth and text-file EOF checks
+cache-charge accumulator is maintained. Native slicing admits the final UTF-8
+storage before construction. A cold unowned Unicode receiver can use a funded
+temporary offset table for its slice, which is released when construction ends.
+Contiguous affix results use the same admitted byte-range construction. String truth and text-file EOF checks
 use the logical byte extent; they do not count scalars. `readlines()` counts
 characters only for a positive hint. Lengths and indexed positions retain Python
 scalar semantics. Search and prefix/suffix operations prepare one borrowed UTF-8

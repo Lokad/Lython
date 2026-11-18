@@ -1,0 +1,15 @@
+{
+  "base": "98b9f87f7",
+  "productionPaths": [
+    "src/Lokad.Lython/Runtime/LythonRuntime.CsvObjects.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.AffixFormat.cs",
+    "src/Lokad.Lython/Runtime/PyIndexing.cs",
+    "src/Lokad.Lython/Runtime/Text/PyString.cs"
+  ],
+  "regressionTest": "tests/Lokad.Lython.Tests/StringSliceAccountingTests.cs",
+  "fullDeliveryPending": true,
+  "localCoreSHA256": {
+    "net11.0": "f2824fea08ecfff7d6aabf6e642a47ef5546ff156a402e10f6791df70a1d41ab",
+    "net10.0": "e72e8d731c3ca1a57d0b704d9553c785bda0212ad729eda6d577f21525a09fa6"
+  }
+}

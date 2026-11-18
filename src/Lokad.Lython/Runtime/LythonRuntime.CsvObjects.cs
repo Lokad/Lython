@@ -382,9 +382,6 @@ internal sealed partial class LythonRuntime
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
     }
 
-    private static PyString SliceByByteCount(PyString text, int start, int length)
-        => text.SliceByByteRange(start, start + length);
-
     private static int IndexOfBytes(ReadOnlySpan<byte> haystack, ReadOnlySpan<byte> needle)
     {
         if (needle.Length == 0)

@@ -216,24 +216,19 @@ internal static class PyIndexing
     internal static object ReadSliceCore(object target, object? start, object? end, object? step,
         LythonSourceSpan span, LythonRuntime.ExecutionContext? context)
     {
-        var result = target switch
+        return target switch
         {
             PyDeque => throw new LythonRuntimeException("TypeError", "sequence index must be integer, not 'slice'", span),
             PyBytes bytes when context is not null => bytes.Slice(NormalizeSliceBounds(bytes.Length, start, end, step, span), context, span),
             PyTuple tuple when context is not null => tuple.Slice(NormalizeSliceBounds(tuple.Length, start, end, step, span), context, span),
+            PyString text when context is not null => text.Slice(
+                NormalizeSliceBounds(text.GetCharacterCount(context.State.CancellationToken, span), start, end, step, span),
+                context, span),
             IPySliceableValue value => value.GetSlice(start, end, step, span),
             IPyIndexableValue value => value.GetSlice(SliceIndices(value.Length, start, end, step, span)),
             _ when PyStringOps.TryAsString(target, out var text) => text.Slice(NormalizeSliceBounds(text.Length, start, end, step, span)),
             _ => throw RuntimeErrors.NotSliceable(span)
         };
-
-        // String slices built from unowned receivers would escape accounting.
-        if (context is not null && result is PyString textResult && target is PyString receiver)
-        {
-            result = LythonRuntime.OwnMethodResult(textResult,receiver,context.MemoryGovernor,span);
-        }
-
-        return result;
     }
 
     internal static (object? Start, object? End, object? Step) CoerceSliceBounds(

@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Admit string slice and affix output before allocating it. Cold unowned
+  Unicode slices fund temporary scalar offsets without retaining them on the input.
+
 - Use one bound trim entry per direction and hold custom character-set scratch
   in the UTF-8 trimming primitive until the result slice is built.
 

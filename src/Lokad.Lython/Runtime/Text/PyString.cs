@@ -71,11 +71,12 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
     // command. Unowned/other-owner input and inline values retain independent
     // copies. Once shared, the source refunds only its shell; the full backing
     // stays with the command/result owner, without reference tracking.
-    internal PyString CopyOrBorrowUtf8Range(int start, int length, MemoryGovernor governor, LythonSourceSpan? span)
+    internal PyString CopyOrBorrowUtf8Range(int start, int length, MemoryGovernor governor, LythonSourceSpan? span,
+        LythonRuntime.ExecutionContext? context = null)
     {
         var content = Utf8Span.Slice(start, length);
         if (length <= InlineUtf8Capacity || !ReferenceEquals(OwnerMemoryGovernor, governor))
-            return CopyFromUtf8(content, governor, span);
+            return CopyFromUtf8(content, governor, span, context);
 
         // The ordinary string estimate includes array metadata in its shell.
         // Keep that header funded after the source shell can be relinquished.
@@ -85,7 +86,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         governor.Reserve(reserved, span);
         try
         {
-            PyStructuralGuard.AmbientContext?.CheckExecution(span);
+            (context ?? PyStructuralGuard.AmbientContext)?.CheckExecution(span);
             if (header != 0)
             {
                 governor.Commit(header);
@@ -415,26 +416,30 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         return CopyFromUtf8(utf8.Span, governor, allocationSpan);
     }
 
-    internal static PyString CopyFromUtf8(ReadOnlySpan<byte> utf8, MemoryGovernor? governor, LythonSourceSpan? allocationSpan)
+    internal static PyString CopyFromUtf8(ReadOnlySpan<byte> utf8, MemoryGovernor? governor,
+        LythonSourceSpan? allocationSpan, LythonRuntime.ExecutionContext? context = null)
     {
         if (utf8.IsEmpty) return Empty;
-        if (utf8.Length <= InlineUtf8Capacity)
+        context ??= PyStructuralGuard.AmbientContext;
+        var charge = EstimateApproximateBytes(utf8.Length);
+        governor?.Reserve(charge, allocationSpan);
+        try
         {
-            var charge = EstimateApproximateBytes(utf8.Length);
-            governor?.Reserve(charge, allocationSpan);
-            try
+            context?.CheckExecution(allocationSpan);
+            var result = CreateReservedUtf8(utf8.Length, governor);
+            var destination = result.UnpublishedUtf8;
+            for (var offset = 0; offset < utf8.Length;)
             {
-                PyStructuralGuard.AmbientContext?.CheckExecution(allocationSpan);
-                var result = new PyString(utf8, utf8.Length, governor);
-                governor?.Commit(charge);
-                return result;
+                var length = Math.Min(16384, utf8.Length - offset);
+                utf8.Slice(offset, length).CopyTo(destination[offset..]);
+                offset += length;
+                context?.CheckExecution(allocationSpan);
             }
-            catch { governor?.ReleaseReserved(charge); throw; }
+            result.CompleteUnpublishedUtf8(utf8.Length);
+            governor?.Commit(charge);
+            return result;
         }
-        var copy = governor is null ? new byte[utf8.Length]
-            : AllocateGovernedUtf8(utf8.Length, governor, allocationSpan);
-        utf8.CopyTo(copy);
-        return new PyString(copy, copy.Length, governor);
+        catch { governor?.ReleaseReserved(charge); throw; }
     }
 
     public PyString Concat(PyString other)
@@ -536,43 +541,68 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
             : new PyString(result, result.Length, OwnerMemoryGovernor);
     }
 
-    public PyString Slice(PyIndexing.SliceBounds bounds)
+    public PyString Slice(PyIndexing.SliceBounds bounds, LythonRuntime.ExecutionContext? context = null,
+        LythonSourceSpan? span = null)
     {
         var count = bounds.Count;
-        if (count == 0)
-        {
-            return Empty;
-        }
+        if (count == 0) return Empty;
+        context ??= PyStructuralGuard.AmbientContext;
+        span ??= PyStructuralGuard.AmbientSpan;
+        context?.CheckExecution(span);
+        var owner = OwnerMemoryGovernor;
+        var governor = owner ?? context?.MemoryGovernor;
+        var characters = GetCharacterCount(context?.State.CancellationToken ?? default, span);
 
+        if (bounds.Step == 1 && bounds.Start == 0 && bounds.End == characters)
+            return SliceByByteRange(0, _byteLength, governor, span, context);
+
+        // A compiled constant may be shared by independent executions. An
+        // execution can fund a temporary table without attaching it to the
+        // constant or retaining it beyond the operation.
+        var useOffsets = characters != _byteLength;
+        using var temporaryOffsets = useOffsets && owner is null && _metadata is not RuneIndexCache
+            ? governor?.ReserveTemporary(32L + 4L * ((long)characters + 1), span)
+            : null;
+        var offsets = !useOffsets ? null : temporaryOffsets is null
+            ? GetRuneByteOffsets(context, span)
+            : BuildRuneByteOffsets(characters, context, span);
         if (bounds.Step == 1)
+            return SliceByByteRange(offsets?[bounds.Start] ?? bounds.Start,
+                offsets?[bounds.End] ?? bounds.End, governor, span, context);
+
+        long totalBytes = count;
+        if (offsets is not null)
         {
-            return SliceByByteRange(
-                GetByteIndexForRuneBoundary(bounds.Start),
-                GetByteIndexForRuneBoundary(bounds.End));
+            totalBytes = 0;
+            for (var i = 0; i < count; i++)
+            {
+                if ((i & 1023) == 0) context?.CheckExecution(span);
+                var index = (int)(bounds.Start + (long)i * bounds.Step);
+                totalBytes += offsets[index + 1] - offsets[index];
+            }
         }
 
-        long totalBytes = 0;
-        for (long runeIndex = bounds.Start; bounds.Step > 0 ? runeIndex < bounds.End : runeIndex > bounds.End; runeIndex += bounds.Step)
+        var resultLength = CheckedByteLength(totalBytes, span);
+        var bytes = EstimateApproximateBytes(resultLength);
+        using var output = governor?.ReserveTemporary(bytes, span);
+        context?.CheckExecution(span);
+        var result = CreateReservedUtf8(resultLength, governor);
+        var source = Utf8Span;
+        var destination = result.UnpublishedUtf8;
+        var written = 0;
+        for (var i = 0; i < count; i++)
         {
-            totalBytes += GetRuneByteRange((int)runeIndex).Length;
+            if ((i & 1023) == 0) context?.CheckExecution(span);
+            var index = (int)(bounds.Start + (long)i * bounds.Step);
+            var offset = offsets?[index] ?? index;
+            var length = offsets is null ? 1 : offsets[index + 1] - offset;
+            source.Slice(offset, length).CopyTo(destination[written..]);
+            written += length;
         }
-
-        var resultLength = CheckedByteLength(totalBytes, PyStructuralGuard.AmbientSpan);
-        Span<byte> inline = stackalloc byte[InlineUtf8Capacity];
-        var result = resultLength <= InlineUtf8Capacity ? null : OwnerMemoryGovernor is null
-            ? new byte[resultLength]
-            : AllocateGovernedUtf8(resultLength, OwnerMemoryGovernor, PyStructuralGuard.AmbientSpan);
-        var destination = result is null ? inline[..resultLength] : result.AsSpan();
-        var offset = 0;
-        for (long runeIndex = bounds.Start; bounds.Step > 0 ? runeIndex < bounds.End : runeIndex > bounds.End; runeIndex += bounds.Step)
-        {
-            var (start, length) = GetRuneByteRange((int)runeIndex);
-            Utf8Span.Slice(start, length).CopyTo(destination[offset..]);
-            offset += length;
-        }
-
-        return result is null ? CopyFromUtf8(destination, OwnerMemoryGovernor, PyStructuralGuard.AmbientSpan)
-            : new PyString(result, result.Length, OwnerMemoryGovernor);
+        result.CompleteUnpublishedUtf8(written);
+        context?.CheckExecution(span);
+        output?.Commit(bytes);
+        return result;
     }
 
     public PyString Index(int runeIndex)
@@ -875,17 +905,19 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         return offsets[(int)targetRune];
     }
 
-    internal PyString SliceByByteRange(int startByte, int endByte)
+    internal PyString SliceByByteRange(int startByte, int endByte, MemoryGovernor? governor = null,
+        LythonSourceSpan? span = null, LythonRuntime.ExecutionContext? context = null)
     {
         if (startByte >= endByte)
         {
             return Empty;
         }
 
-        var governor = OwnerMemoryGovernor;
+        governor ??= OwnerMemoryGovernor;
+        span ??= PyStructuralGuard.AmbientSpan;
         return governor is null
-            ? CopyFromUtf8(Utf8Span[startByte..endByte], null, PyStructuralGuard.AmbientSpan)
-            : CopyOrBorrowUtf8Range(startByte, endByte - startByte, governor, PyStructuralGuard.AmbientSpan);
+            ? CopyFromUtf8(Utf8Span[startByte..endByte], null, span, context)
+            : CopyOrBorrowUtf8Range(startByte, endByte - startByte, governor, span, context);
     }
 
     public static int IndexOfBytes(ReadOnlySpan<byte> haystack, ReadOnlySpan<byte> needle)
@@ -913,7 +945,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         return new RuneByteRange(offsets[runeIndex], offsets[runeIndex + 1] - offsets[runeIndex]);
     }
 
-    private int[] GetRuneByteOffsets()
+    private int[] GetRuneByteOffsets(LythonRuntime.ExecutionContext? context = null, LythonSourceSpan? span = null)
     {
         if (Volatile.Read(ref _metadata) is RuneIndexCache cached)
         {
@@ -921,10 +953,10 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         }
 
         // Cache capacity describes its own charge; no separate accumulator.
-        var context = PyStructuralGuard.AmbientContext;
-        var span = PyStructuralGuard.AmbientSpan;
+        context ??= PyStructuralGuard.AmbientContext;
+        span ??= PyStructuralGuard.AmbientSpan;
         var governor = OwnerMemoryGovernor;
-        var count = Length;
+        var count = GetCharacterCount(context?.State.CancellationToken ?? default, span);
         var bytes = 32L + 4L * ((long)count + 1);
         governor?.Reserve(bytes, span);
         var unpublishedBytes = bytes;
@@ -934,15 +966,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
             // private and refund its reservation before allocating the cache.
             context?.CheckExecution(span);
             if (Volatile.Read(ref _metadata) is RuneIndexCache reentered) return reentered.Offsets;
-            var offsets = new int[count + 1];
-            var runeIndex = 0;
-            for (var byteIndex = 0; byteIndex < _byteLength;)
-            {
-                if ((runeIndex & 1023) == 0) context?.CheckExecution(span);
-                offsets[runeIndex++] = byteIndex;
-                byteIndex += GetRuneLengthAtByteIndex(byteIndex);
-            }
-            offsets[runeIndex] = _byteLength;
+            var offsets = BuildRuneByteOffsets(count, context, span);
             // Reuse the existing short publication lock; admission and scans
             // stay outside it. A reentrant cache keeps its original funding.
             lock (this)
@@ -962,6 +986,21 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         {
             governor?.ReleaseReserved(unpublishedBytes);
         }
+    }
+
+    private int[] BuildRuneByteOffsets(int count, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
+    {
+        context?.CheckExecution(span);
+        var offsets = new int[count + 1];
+        var runeIndex = 0;
+        for (var byteIndex = 0; byteIndex < _byteLength;)
+        {
+            if ((runeIndex & 1023) == 0) context?.CheckExecution(span);
+            offsets[runeIndex++] = byteIndex;
+            byteIndex += GetRuneLengthAtByteIndex(byteIndex);
+        }
+        offsets[runeIndex] = _byteLength;
+        return offsets;
     }
 
     private static PyString[] CreateAsciiCharacters()
