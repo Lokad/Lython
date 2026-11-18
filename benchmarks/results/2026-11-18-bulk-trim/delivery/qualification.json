@@ -1,0 +1,91 @@
+{
+  "run": 44211082563,
+  "head": "0691d64fb2e74ff693f405191dd502ef93a89238",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "log": "0_tests (ubuntu-latest).txt",
+      "summaries": [
+        {
+          "framework": "net11.0",
+          "passed": 4837
+        },
+        {
+          "framework": "net11.0",
+          "passed": 18039
+        },
+        {
+          "framework": "net10.0",
+          "passed": 4837
+        },
+        {
+          "framework": "net10.0",
+          "passed": 18039
+        },
+        {
+          "framework": "net11.0",
+          "passed": 14
+        },
+        {
+          "framework": "net11.0",
+          "passed": 406
+        },
+        {
+          "framework": "net10.0",
+          "passed": 14
+        },
+        {
+          "framework": "net10.0",
+          "passed": 406
+        }
+      ]
+    },
+    {
+      "log": "1_tests (windows-latest).txt",
+      "summaries": [
+        {
+          "framework": "net11.0",
+          "passed": 4837
+        },
+        {
+          "framework": "net11.0",
+          "passed": 18039
+        },
+        {
+          "framework": "net10.0",
+          "passed": 4837
+        },
+        {
+          "framework": "net10.0",
+          "passed": 18039
+        },
+        {
+          "framework": "net11.0",
+          "passed": 14
+        },
+        {
+          "framework": "net11.0",
+          "passed": 406
+        },
+        {
+          "framework": "net10.0",
+          "passed": 14
+        },
+        {
+          "framework": "net10.0",
+          "passed": 406
+        }
+      ]
+    }
+  ],
+  "summaries": 16,
+  "sourceInputsVerified": 2386,
+  "production": 585,
+  "normalAdapterPin": "0.4.0",
+  "allMeaningfulStepsPassed": true,
+  "logsSHA256": "e0c54dc45d44f2c97be40e250e97b59e155127cf1e443bdca3822f477e526df9",
+  "committedProductionMatchesQualifiedInputs": true,
+  "binaryEqualityInferred": false,
+  "publicationHeld": true,
+  "all585ProductionInputsMatchMeasured65fcf7d0": true
+}

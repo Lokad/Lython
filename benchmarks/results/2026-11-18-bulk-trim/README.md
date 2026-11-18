@@ -14,8 +14,8 @@ all-whitespace output, explicit characters and unchanged identity.
 Actual11/10 each429internal/29public focused checks, plus78public text/ownership/
 asynchronous cancellation regressions per target pass; six exact-worker goldens,
 allocation and shared-budget cleanup pass. Storage/admission/alias behavior is
-unchanged. Full platform/originalstress/installed Release consumers are batched
-for the next coherent retained delivery boundary, not inherited from62786960.
+unchanged. Full platform/originalstress/installed Release consumers are
+[qualified at0691d64f](delivery/README.md), not inherited from62786960.
 
 B930,2026-11-18 quiet F4as_v7/Ubuntu24.04.4/.NET11RC3, normalGC/tiering:
 two jobs80.34s, six-second full-request warmups/five rotated rounds/two processes
