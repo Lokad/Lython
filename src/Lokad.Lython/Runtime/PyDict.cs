@@ -211,6 +211,17 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
         finally { if (!mayEscape && Count == before) governor.RefundUnpublishedValue(key); }
     }
 
+    // The call binder's private dictionary has only native string keys.
+    internal bool TryAddNativeString(PyString key, object value, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        var before = _nativeCount;
+        var hash = MixNativeHash(LythonRuntime.ComputeStructuralHashCode(key, span, context));
+        SetNativeValue(key, value, hash, protocol: false, context, span, replaceExisting: false);
+        if (_nativeCount == before) return false;
+        _version++;
+        return true;
+    }
+
     public bool ContainsKey(object key) => TryGetValue(key, out _);
     public void SetItem(object key, object value)
     {

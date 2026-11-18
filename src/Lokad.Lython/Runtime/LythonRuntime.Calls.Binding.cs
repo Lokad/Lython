@@ -129,91 +129,99 @@ internal sealed partial class LythonRuntime
     {
         var firstExtraPositional = 0;
         var extraPositionalCount = 0;
-        // Keyword overflow likewise materializes only for **kwargs functions
-        // receiving unknown names; every other call skips the dictionary.
-        Dictionary<string, object>? extraKeywords = null;
-        var positionalIndex = 0;
-
-        // A flat operand call already supplies its argument shape. Copy its
-        // positional prefix directly into the final slots, then share the same
-        // live-default/variadic completion as every other call. No temporary
-        // CallArgumentValue or second positional binding implementation is needed.
-        var flatPositional = plan.VariadicListIndex < 0 &&
-            (callSite?.IsPositionalOnly ?? arguments.IsEmpty);
-        if (flatPositional)
+        PyDict? extraKeywords = null;
+        long syntheticKeyBytes = 0;
+        try
         {
-            var receiverCount = receiver is null ? 0 : 1;
-            if (operands.Length > plan.PositionalCount - receiverCount)
-                throw CallErrors.TooManyPositional(plan.CallableKind, plan.CallableName, span);
-            if (receiver is not null) values[positionalIndex++].Object = receiver;
-            for (var i = 0; i < operands.Length; i++)
+            var positionalIndex = 0;
+
+            // A flat operand call already supplies its argument shape. Copy its
+            // positional prefix directly into the final slots, then share the same
+            // live-default/variadic completion as every other call. No temporary
+            // CallArgumentValue or second positional binding implementation is needed.
+            var flatPositional = plan.VariadicListIndex < 0 &&
+                (callSite?.IsPositionalOnly ?? arguments.IsEmpty);
+            if (flatPositional)
             {
-                if (operands[i].IsUnassigned) _ = operands[i].Object.RequireNotNull();
-                values[positionalIndex++] = operands[i];
-            }
-        }
-        else BindSuppliedFunctionArguments(values, arguments, span, plan, context,
-            receiver, callSite, operands, out firstExtraPositional, out extraPositionalCount, out extraKeywords);
-
-        for (var i = 0; i < plan.PositionalCount; i++)
-        {
-            if (!values[i].IsUnassigned)
-            {
-                continue;
-            }
-
-            var parameterName = plan.NameAt(i);
-            if (plan.TryGetPositionalDefault(i, out var defaultValue))
-            {
-                values[i].Object = defaultValue;
-                continue;
-            }
-
-            throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, parameterName, span);
-        }
-
-        for (var k = 0; k < plan.KeywordOnlyCount; k++)
-        {
-            var i = plan.PositionalCount + k;
-            if (!values[i].IsUnassigned)
-            {
-                continue;
-            }
-
-            var parameterName = plan.NameAt(plan.PositionalCount + k);
-            var keywordDefaults = plan.KeywordDefaultStorage;
-            // Exact native dictionaries finish synchronously. A protocol lookup
-            // defers this and the remaining defaults in their original order.
-            if (deferProtocolDefaults && keywordDefaults is { HasProtocolKeys: true }) break;
-            if (keywordDefaults is not null && keywordDefaults.TryGetValue(plan.KeywordDefaultNames[k], out var defaultValue, context, span))
-            {
-                values[i].Object = defaultValue;
-                continue;
-            }
-
-            throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, parameterName, span);
-        }
-
-        if (plan.VariadicListIndex >= 0)
-        {
-            values[plan.VariadicListIndex].Object = extraPositionalCount == 0 ? PyTuple.Empty
-                : CreateVariadicPositionalTuple(arguments, operands, callSite, receiver,
-                    firstExtraPositional, extraPositionalCount, context, span);
-        }
-
-        if (plan.VariadicDictionaryIndex >= 0)
-        {
-            var keywordDict = new PyDict(context.MemoryGovernor, span);
-            if (extraKeywords is not null)
-            {
-                foreach (var pair in extraKeywords)
+                var receiverCount = receiver is null ? 0 : 1;
+                if (operands.Length > plan.PositionalCount - receiverCount)
+                    throw CallErrors.TooManyPositional(plan.CallableKind, plan.CallableName, span);
+                if (receiver is not null) values[positionalIndex++].Object = receiver;
+                for (var i = 0; i < operands.Length; i++)
                 {
-                    var keyword = PyString.FromString(pair.Key, context.MemoryGovernor, span);
-                    keywordDict.SetItem(keyword, pair.Value);
+                    if (operands[i].IsUnassigned) _ = operands[i].Object.RequireNotNull();
+                    values[positionalIndex++] = operands[i];
                 }
             }
-            var keywordDictIndex = plan.VariadicDictionaryIndex;
-            values[keywordDictIndex].Object = keywordDict;
+            else BindSuppliedFunctionArguments(values, arguments, span, plan, context,
+                receiver, callSite, operands, out firstExtraPositional, out extraPositionalCount, ref extraKeywords, ref syntheticKeyBytes);
+
+            for (var i = 0; i < plan.PositionalCount; i++)
+            {
+                if (!values[i].IsUnassigned)
+                {
+                    continue;
+                }
+
+                var parameterName = plan.NameAt(i);
+                if (plan.TryGetPositionalDefault(i, out var defaultValue))
+                {
+                    values[i].Object = defaultValue;
+                    continue;
+                }
+
+                throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, parameterName, span);
+            }
+
+            for (var k = 0; k < plan.KeywordOnlyCount; k++)
+            {
+                var i = plan.PositionalCount + k;
+                if (!values[i].IsUnassigned)
+                {
+                    continue;
+                }
+
+                var parameterName = plan.NameAt(plan.PositionalCount + k);
+                var keywordDefaults = plan.KeywordDefaultStorage;
+                // Exact native dictionaries finish synchronously. A protocol lookup
+                // defers this and the remaining defaults in their original order.
+                if (deferProtocolDefaults && keywordDefaults is { HasProtocolKeys: true }) break;
+                if (keywordDefaults is not null && keywordDefaults.TryGetValue(plan.KeywordDefaultNames[k], out var defaultValue, context, span))
+                {
+                    values[i].Object = defaultValue;
+                    continue;
+                }
+
+                throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, parameterName, span);
+            }
+
+            if (plan.VariadicDictionaryIndex >= 0)
+            {
+                extraKeywords ??= new PyDict(context.MemoryGovernor, span);
+                context.CheckExecution(span);
+            }
+            if (plan.VariadicListIndex >= 0)
+            {
+                values[plan.VariadicListIndex].Object = extraPositionalCount == 0 ? PyTuple.Empty
+                    : CreateVariadicPositionalTuple(arguments, operands, callSite, receiver,
+                        firstExtraPositional, extraPositionalCount, context, span);
+            }
+
+            if (extraKeywords is not null)
+            {
+                values[plan.VariadicDictionaryIndex].Object = extraKeywords;
+                extraKeywords = null;
+            }
+        }
+        finally
+        {
+            // Only the unexposed dictionary and labels created by this bind
+            // can be refunded here. Expanded keys have their original owners.
+            if (extraKeywords is not null)
+            {
+                try { extraKeywords.DiscardUnpublishedStorage(); }
+                finally { context.MemoryGovernor.Release(syntheticKeyBytes); }
+            }
         }
     }
 
@@ -224,11 +232,10 @@ internal sealed partial class LythonRuntime
         ReadOnlySpan<CallArgumentValue> arguments, LythonSourceSpan span, FunctionBindingPlan plan,
         ExecutionContext context, object? receiver, ExecutableCallSite? callSite,
         ReadOnlySpan<ExecutableSlot> operands, out int firstExtraPositional, out int extraPositionalCount,
-        out Dictionary<string, object>? extraKeywords)
+        ref PyDict? extraKeywords, ref long syntheticKeyBytes)
     {
         firstExtraPositional = 0;
         extraPositionalCount = 0;
-        extraKeywords = null;
         var positionalIndex = 0;
         // A bound receiver follows exactly the same positional/overflow rules,
         // before supplied arguments. All values are consumed before any await.
@@ -273,11 +280,17 @@ internal sealed partial class LythonRuntime
                     throw CallErrors.UnexpectedKeyword(plan.CallableKind, plan.CallableName, keywordName, span);
                 }
 
-                extraKeywords ??= new Dictionary<string, object>(StringComparer.Ordinal);
-                if (!extraKeywords.TryAdd(keywordName, argument.Value))
+                var governor = context.MemoryGovernor;
+                extraKeywords ??= new PyDict(governor, span);
+                var key = argument.OriginalKeyword;
+                if (key is null)
                 {
-                    throw CallErrors.MultipleValues(plan.CallableKind, plan.CallableName, keywordName, span);
+                    key = PyString.FromString(keywordName, governor, span);
+                    if (ReferenceEquals(key.OwnerMemoryGovernor, governor))
+                        syntheticKeyBytes = checked(syntheticKeyBytes + key.CommittedOwnedBytes);
                 }
+                if (!extraKeywords.TryAddNativeString(key, argument.Value, context, span))
+                    throw CallErrors.MultipleValues(plan.CallableKind, plan.CallableName, keywordName, span);
 
                 continue;
             }

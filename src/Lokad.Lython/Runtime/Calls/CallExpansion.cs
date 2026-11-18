@@ -263,10 +263,11 @@ internal static class CallExpansion
                 AppendMappingKey(snapshot, key, keyStorage, context, span);
             foreach (var key in snapshot)
             {
-                var name = key is PyString text ? DecodeKeywordName(text, context, span) : null;
+                var text = key as PyString;
+                var name = text is not null ? DecodeKeywordName(text, context, span) : null;
                 if (name is not null) expanded.CheckDuplicateKeyword(name, span);
                 var item = LythonRuntime.GetUserItem(instance, key, context, span);
-                AppendMappingArgument(ref expanded, name, item, span);
+                AppendMappingArgument(expanded, name, item, text, span);
             }
             return expanded;
         }
@@ -285,7 +286,7 @@ internal static class CallExpansion
                 throw new LythonRuntimeException("TypeError", "keywords must be strings", span);
             }
 
-            expanded.Add(CallArgumentValue.Keyword(DecodeKeywordName(key, context, span), pair.Value), span);
+            expanded.Add(CallArgumentValue.Keyword(DecodeKeywordName(key, context, span), pair.Value, key), span);
         }
 
         return expanded;
@@ -305,10 +306,11 @@ internal static class CallExpansion
             AppendMappingKey(snapshot, key, keyStorage, context, span);
         foreach (var key in snapshot)
         {
-            var name = key is PyString text ? DecodeKeywordName(text, context, span) : null;
+            var text = key as PyString;
+            var name = text is not null ? DecodeKeywordName(text, context, span) : null;
             if (name is not null) expanded.CheckDuplicateKeyword(name, span);
             var item = await LythonRuntime.GetUserItemAsync(instance, key, context, span).ConfigureAwait(false);
-            AppendMappingArgument(ref expanded, name, item, span);
+            AppendMappingArgument(expanded, name, item, text, span);
         }
         return expanded;
     }
@@ -340,10 +342,11 @@ internal static class CallExpansion
         return name;
     }
 
-    private static void AppendMappingArgument(ref CallArgumentAccumulator expanded, string? name, object value, LythonSourceSpan span)
+    private static void AppendMappingArgument(CallArgumentAccumulator expanded, string? name,
+        object value, PyString? key, LythonSourceSpan span)
     {
         if (name is null) throw new LythonRuntimeException("TypeError", "keywords must be strings", span);
-        expanded.Add(CallArgumentValue.Keyword(name, value), span);
+        expanded.Add(CallArgumentValue.Keyword(name, value, key), span);
     }
 
     private static LythonRuntimeException MappingUnpackingError(object value, object target,

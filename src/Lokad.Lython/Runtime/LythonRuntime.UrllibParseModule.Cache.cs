@@ -322,7 +322,7 @@ internal sealed partial class LythonRuntime
                     for (var i = 0; i < Arguments.Length; i++)
                     {
                         var left = Arguments[i]; var right = other.Arguments[i];
-                        if (left.Placement != right.Placement || left.IsKeyword && left.KeywordName != right.KeywordName) return false;
+                        if (left.IsKeyword != right.IsKeyword || left.IsKeyword && left.KeywordName != right.KeywordName) return false;
                         if (!await UrlKeyValueEqualsAsync(left.Value, right.Value, span, context, asynchronous).ConfigureAwait(false)) return false;
                     }
                     for (var i = 0; i < Types.Length; i++)

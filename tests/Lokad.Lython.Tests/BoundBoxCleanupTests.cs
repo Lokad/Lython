@@ -2,6 +2,7 @@ using Slot = Lokad.Lython.Runtime.LythonRuntime.ExecutableSlot;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Calls;
+using Lokad.Lython.Runtime.Text;
 using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
@@ -114,6 +115,92 @@ public sealed class BoundBoxCleanupTests
             context.State.CloseResources();
         }
         Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void KeywordBindingErrorRefundsPrivateStorageAndKeepsBorrowedKeys(bool duplicate)
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var owner = budget.CreateScope())
+        {
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+            var plan = FunctionBindingPlan.CreateDynamic("f", PythonCallableKind.Function,
+                [new("required", FunctionParameterKind.KeywordOnly, null, null),
+                    new("kw", FunctionParameterKind.VariadicDictionary, null, null)], new Dictionary<string, object>());
+            var borrowed = PyString.FromString("original", context.MemoryGovernor, Span);
+            var slots = new Slot[2];
+            var before = budget.ReservedBytes;
+            CallArgumentValue[] supplied =
+            [
+                CallArgumentValue.Keyword("original", PyNone.Instance, borrowed),
+                CallArgumentValue.Keyword("extra", PyNone.Instance)
+            ];
+            if (duplicate) supplied = [.. supplied, CallArgumentValue.Keyword("extra", PyNone.Instance)];
+
+            var error = Assert.Throws<LythonRuntimeException>(() =>
+                LythonRuntime.BindFunctionArgumentsInto(slots, supplied, Span, plan, context));
+            Assert.Equal("TypeError", error.ExceptionType);
+            Assert.Contains(duplicate ? "multiple values" : "missing argument", error.Message);
+            Assert.Null(slots[plan.VariadicDictionaryIndex].Object);
+            Assert.Equal(before, budget.ReservedBytes);
+            Assert.Equal("original", borrowed.AsString());
+            context.State.CloseResources();
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void InterruptedKeywordOverflowReturnsPrivateStorage(bool cancelOnAdmission)
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var owner = budget.CreateScope())
+        using (var cancellation = new CancellationTokenSource())
+        {
+            var hook = new AdmissionHookMemoryBudget(owner);
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
+                new LythonRunOptions { MemoryBudget = hook, CancellationToken = cancellation.Token });
+            var plan = FunctionBindingPlan.CreateDynamic("f", PythonCallableKind.Function,
+                [new("kw", FunctionParameterKind.VariadicDictionary, null, null)], new Dictionary<string, object>());
+            var slots = new Slot[1];
+            var before = budget.ReservedBytes;
+            if (cancelOnAdmission) hook.AfterGrowth = _ => cancellation.Cancel();
+            else hook.RefuseGrowth = _ => true;
+
+            var error = Assert.Throws<LythonRuntimeException>(() => LythonRuntime.BindFunctionArgumentsInto(slots,
+                [CallArgumentValue.Keyword("extra", PyNone.Instance)], Span, plan, context));
+            if (cancelOnAdmission) Assert.Equal("execution canceled", error.Message);
+            else
+            {
+                Assert.Equal(LythonFailureReason.SharedMemoryAllowance, error.Attribution?.Reason);
+                Assert.Same(error, context.MemoryGovernor.AdmissionFailure);
+            }
+            Assert.Null(slots[0].Object);
+            Assert.Equal(before, budget.ReservedBytes);
+            context.State.CloseResources();
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Fact]
+    public void CancelledNativeKeywordHashDoesNotInsertKey()
+    {
+        using var cancellation = new CancellationTokenSource();
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
+            new LythonRunOptions { CancellationToken = cancellation.Token });
+        var dictionary = new PyDict(context.MemoryGovernor, Span);
+        var key = PyString.FromString(new string('x', 8192), context.MemoryGovernor, Span);
+        cancellation.Cancel();
+
+        var error = Assert.Throws<LythonRuntimeException>(() =>
+            dictionary.TryAddNativeString(key, PyNone.Instance, context, Span));
+        Assert.Equal("execution canceled", error.Message);
+        Assert.Same(Span, error.Span);
+        Assert.Equal(0, dictionary.Count);
+        context.State.CloseResources();
     }
 
     [Fact]

@@ -38,6 +38,20 @@ public sealed class BindingPlanConstructionTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task KeywordOverflowRetainsForwardedKeysAndValues(bool asynchronous)
+        => await Check(asynchronous, "expanded keyword aliases", """
+            def collect(**fields):
+                return fields
+            key = ''.join(['café', '_', 'field'])
+            value = []
+            result = collect(first=None, **{key: value}, last=1)
+            print(list(result))
+            print(list(result)[1] is key, result[key] is value)
+            """, "['first', 'café_field', 'last']\nTrue True\n");
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task BodyLocalKeywordsRemainOverflowAndFactoryDefaultsStayIndependent(bool asynchronous)
         => await Check(asynchronous, "shared declaration, separate defaults", """
             def make(value):

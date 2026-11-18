@@ -115,6 +115,31 @@ public sealed class FunctionDefaultMetadataTests
     }
 
     [Fact]
+    public async Task KeywordOverflowKeepsOriginalAliasesWhileDefaultLookupSuspends()
+    {
+        var source = YieldingLookup
+            .Replace("def f(*,x,y): return x,y",
+                "def f(*,x,y,**extra): return x,y,next(iter(extra)) is name,extra[name] is retained")
+            .Replace("print(f())\nprint(f())",
+                "name=''.join(['café','_field'])\nretained=[]\nprint(f(**{name:retained}))\nprint(f(**{name:retained}))");
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
+        var baseline = budget.ReservedBytes;
+        var host = new DelayedLythonHost();
+        host.SeedFile("/events.txt", "");
+
+        using (var result = await script.RunAsync(host))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("(7, 100, True, True)\n(99, 100, True, True)\n", result.StandardOutput);
+            Assert.Equal("eq\n", host.ReadText("/events.txt"));
+            Assert.True(host.CompletedAsynchronously > 0);
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
+    [Fact]
     public async Task DeniedDefaultReplacementFailsBeforeGuestContinuation()
     {
         var budget = new LythonMemoryBudget(128 * 1024);
