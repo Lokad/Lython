@@ -4,17 +4,23 @@ namespace Lokad.Lython.Frontend;
 // uncalled bodies. Keep them independent of abstract-value/runtime analysis.
 internal static class SyntaxValidityDiagnostics
 {
-    public static IReadOnlyList<LythonDiagnostic> Analyze(ScriptSyntax script)
+    public static IReadOnlyList<LythonDiagnostic> Analyze(ScriptSyntax script, out bool hasScopeDirectives,
+        CancellationToken cancellationToken)
     {
         var diagnostics = new List<LythonDiagnostic>();
         var hasYield = false;
         var hasModernTypes = false;
         var hasFutureImport = false;
+        hasScopeDirectives = false;
         var statements = new Stack<(StatementSyntax Statement, int LoopDepth)>();
+        var expressions = new Stack<(ExpressionSyntax Expression, HashSet<string>? Targets, bool Iterable)>();
+        HashSet<string>? seenNames = null;
         foreach (var statement in script.Statements) statements.Push((statement, 0));
         while (statements.TryPop(out var work))
         {
             var (statement, loopDepth) = work;
+            PythonTokenization.CheckCancellation(cancellationToken, statement.Span.Start);
+            hasScopeDirectives |= statement is ScopeDirectiveStatementSyntax;
             if (statement is BreakStatementSyntax or ContinueStatementSyntax && loopDepth == 0)
                 Error("Loop control requires an enclosing loop in the same scope.", statement.Span);
             if (statement is FunctionDefinitionStatementSyntax function)
@@ -57,8 +63,17 @@ internal static class SyntaxValidityDiagnostics
 
         void Unique(IEnumerable<string> names, LythonSourceSpan span, string message)
         {
-            var seen = new HashSet<string>(StringComparer.Ordinal);
-            foreach (var name in names) if (!seen.Add(name)) Error(message, span);
+            using var entries = names.GetEnumerator();
+            if (!entries.MoveNext()) return;
+            var first = entries.Current;
+            if (!entries.MoveNext()) return;
+            var seen = seenNames ??= new HashSet<string>(StringComparer.Ordinal);
+            seen.Add(first);
+            do
+            {
+                if (!seen.Add(entries.Current)) Error(message, span);
+            } while (entries.MoveNext());
+            seen.Clear();
         }
 
         void Parameters(IReadOnlyList<FunctionParameterSyntax> parameters, LythonSourceSpan span)
@@ -66,11 +81,11 @@ internal static class SyntaxValidityDiagnostics
 
         void Expressions(ExpressionSyntax root)
         {
-            var pending = new Stack<(ExpressionSyntax Expression, HashSet<string>? Targets, bool Iterable)>();
-            pending.Push((root, null, false));
-            while (pending.TryPop(out var item))
+            expressions.Push((root, null, false));
+            while (expressions.TryPop(out var item))
             {
                 var (expression, targets, iterable) = item;
+                PythonTokenization.CheckCancellation(cancellationToken, expression.Span.Start);
                 hasYield |= expression is YieldExpressionSyntax;
                 if (expression is AssignmentExpressionSyntax assignment)
                 {
@@ -83,8 +98,8 @@ internal static class SyntaxValidityDiagnostics
                 {
                     Parameters(lambda.Parameters, lambda.Span);
                     foreach (var parameter in lambda.Parameters)
-                        if (parameter.DefaultValue is not null) pending.Push((parameter.DefaultValue, targets, iterable));
-                    pending.Push((lambda.Body, null, iterable));
+                        if (parameter.DefaultValue is not null) expressions.Push((parameter.DefaultValue, targets, iterable));
+                    expressions.Push((lambda.Body, null, iterable));
                     continue;
                 }
                 var clauses = expression switch
@@ -101,10 +116,10 @@ internal static class SyntaxValidityDiagnostics
                         : new HashSet<string>(targets, StringComparer.Ordinal);
                     foreach (var clause in clauses) AddTargetNames(clause.Target, nestedTargets);
                     foreach (var child in ExpressionSyntaxTraversal.EnumerateChildren(expression))
-                        pending.Push((child, nestedTargets, iterable || clauses.Any(c => ReferenceEquals(c.Iterable, child))));
+                        expressions.Push((child, nestedTargets, iterable || clauses.Any(c => ReferenceEquals(c.Iterable, child))));
                 }
                 else
-                    foreach (var child in ExpressionSyntaxTraversal.EnumerateChildren(expression)) pending.Push((child, targets, iterable));
+                    foreach (var child in ExpressionSyntaxTraversal.EnumerateChildren(expression)) expressions.Push((child, targets, iterable));
             }
         }
 

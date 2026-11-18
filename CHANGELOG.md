@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Reuse syntax validation scratch and skip the separate directive walk when
+  validation finds no scope directives. Check cancellation during syntax traversal.
+
 - Reuse the UTF-8 line count when builtin `len` immediately consumes an
   exact argument-free `str.splitlines()` call. Lists that can be observed
   by Python retain ordinary construction and memory admission.

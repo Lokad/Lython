@@ -44,7 +44,7 @@ internal static class LythonFrontend
             return parsed;
         }
 
-        var syntaxDiagnostics = SyntaxValidityDiagnostics.Analyze(parsed.Script);
+        var syntaxDiagnostics = SyntaxValidityDiagnostics.Analyze(parsed.Script, out var hasScopeDirectives, cancellationToken);
         governor?.ThrowIfAdmissionFailed();
         PythonTokenization.CheckCancellation(cancellationToken, 0);
         if (syntaxDiagnostics.Count > 0)
@@ -65,7 +65,7 @@ internal static class LythonFrontend
         {
             var diagnostics = parsed.Diagnostics
                 .Concat(AnnotationDiagnostics.Analyze(parsed.Script, analysis))
-                .Concat(StaticAnalyzer.Analyze(analysis))
+                .Concat(StaticAnalyzer.Analyze(analysis, hasScopeDirectives))
                 .ToArray();
             governor?.ThrowIfAdmissionFailed();
             PythonTokenization.CheckCancellation(cancellationToken, 0);

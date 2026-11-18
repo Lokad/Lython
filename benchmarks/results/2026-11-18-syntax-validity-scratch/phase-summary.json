@@ -1,0 +1,203 @@
+{
+  "referenceCore": "74d19a10f731b6628f99db685477e84f8986fb2284268dd5e5952d552ef62c79",
+  "candidateCore": "610d403da4b8475deaaf77269b6402fd39c1b4ba38dae68f572600b13e14b442",
+  "boundary": "Local phase allocation diagnostics. Timings are not a controlled speedup claim.",
+  "rows": [
+    {
+      "case": "scripts.csv-invoice.large",
+      "allocated": {
+        "tokenization": [
+          13464,
+          13464
+        ],
+        "parser": [
+          61384,
+          61384
+        ],
+        "syntax-validity": [
+          12272,
+          6136
+        ],
+        "annotation-text": [
+          88,
+          88
+        ],
+        "lexical-facts": [
+          16096,
+          16096
+        ],
+        "analysis-context": [
+          240,
+          240
+        ],
+        "annotation-diagnostics": [
+          0,
+          0
+        ],
+        "scope-directive-diagnostics": [
+          1560,
+          0
+        ],
+        "abstract-interpretation": [
+          52968,
+          52968
+        ],
+        "name-binding-diagnostics": [
+          1752,
+          1752
+        ],
+        "analysis-disposal": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "case": "scripts.text-normalization.helper-list",
+      "allocated": {
+        "tokenization": [
+          6776,
+          6776
+        ],
+        "parser": [
+          42968,
+          42968
+        ],
+        "syntax-validity": [
+          6152,
+          3320
+        ],
+        "annotation-text": [
+          88,
+          88
+        ],
+        "lexical-facts": [
+          7176,
+          7176
+        ],
+        "analysis-context": [
+          240,
+          240
+        ],
+        "annotation-diagnostics": [
+          0,
+          0
+        ],
+        "scope-directive-diagnostics": [
+          896,
+          0
+        ],
+        "abstract-interpretation": [
+          16808,
+          16808
+        ],
+        "name-binding-diagnostics": [
+          800,
+          800
+        ],
+        "analysis-disposal": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "case": "scripts.config-edit.small",
+      "allocated": {
+        "tokenization": [
+          3680,
+          3680
+        ],
+        "parser": [
+          43408,
+          43408
+        ],
+        "syntax-validity": [
+          5008,
+          2624
+        ],
+        "annotation-text": [
+          88,
+          88
+        ],
+        "lexical-facts": [
+          5104,
+          5104
+        ],
+        "analysis-context": [
+          240,
+          240
+        ],
+        "annotation-diagnostics": [
+          0,
+          0
+        ],
+        "scope-directive-diagnostics": [
+          176,
+          0
+        ],
+        "abstract-interpretation": [
+          10488,
+          10488
+        ],
+        "name-binding-diagnostics": [
+          120,
+          120
+        ],
+        "analysis-disposal": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "case": "calls.positional.large",
+      "allocated": {
+        "tokenization": [
+          2032,
+          2032
+        ],
+        "parser": [
+          7456,
+          7456
+        ],
+        "syntax-validity": [
+          2856,
+          1728
+        ],
+        "annotation-text": [
+          88,
+          88
+        ],
+        "lexical-facts": [
+          5344,
+          5344
+        ],
+        "analysis-context": [
+          240,
+          240
+        ],
+        "annotation-diagnostics": [
+          0,
+          0
+        ],
+        "scope-directive-diagnostics": [
+          816,
+          0
+        ],
+        "abstract-interpretation": [
+          8784,
+          8784
+        ],
+        "name-binding-diagnostics": [
+          720,
+          720
+        ],
+        "analysis-disposal": [
+          0,
+          0
+        ]
+      }
+    }
+  ]
+}
