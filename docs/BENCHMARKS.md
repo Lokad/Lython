@@ -9,7 +9,6 @@
 | Text normalization | 4,096 lines / 52,224 B | 0.803–0.804 ms | 0.501–0.503 ms | 1.60–1.60× | Diagnostic2e5/1bce; controls L/C 0.04/0.38%; IQR≤1.03% |
 | JSON-lines aggregation with a helper | 4,096 records / 110,592 B | 3.548–3.613 ms | 4.077–4.102 ms | 0.86–0.89× | Diagnostic; controls L/C 1.85/0.62%; IQR≤0.39% |
 | Floating JSON numeric report | 4,096 pairs / 56,495 B | 1.137–1.165 ms | 0.813–0.820 ms | 1.39–1.43× | Diagnostic3f/a503; controls L/C 2.52/0.78%; IQR≤0.79% |
-
 | Helper text normalization | 4,096 lines / 52,224 B | 1.130–1.137 ms | 0.856–0.907 ms | 1.25–1.33× | Diagnostic3f/a503; controls L/C 0.57/6.02%; IQR≤1.52% |
 | CSV field validation | 4,128 rows / 128,183 B | 2.975–3.003 ms | 4.311–4.327 ms | 0.69–0.70× | Diagnostic7db/c036; controls L/C 0.92/0.37%; IQR≤2.99% |
 
@@ -40,7 +39,7 @@ Original text normalization keeps its qualified **2e585229 / 1bce52ad** measurem
 of2026-11-18. [Sources and original controls](../benchmarks/results/2026-11-18-affected-cpython-checkpoint/README.md).
 
 Helper text/floating rows now use committed retained **3f873227 / a5038a28**,
-measured **2026-11-18** on the same machine/toolchains. Full44256409242 is pending.
+measured **2026-11-18** on the same machine/toolchains. [Full44256409242](../benchmarks/results/2026-11-18-prepared-module-bindings/delivery/README.md) passed Windows/Ubuntu actual11/10, original stress and installed Release consumers.
 Helper warm CPython control6.02% limits precision; helper fresh control3.48% and
 floating warm Lython2.52% remain visible. [Exact source, boundaries and raw data](../benchmarks/results/2026-11-18-bindings-cpython-checkpoint/README.md).
 
@@ -71,7 +70,6 @@ This is useful workload latency, not equivalent containment or cold startup.
 | JSON-lines aggregation with a helper | Compile and execute once | 3.642–3.707 ms | 4.192–4.194 ms | 0.87–0.88× | Diagnostic; controls L/C 1.78/0.05%; IQR≤0.45% |
 | Floating JSON numeric report | Compilation only | 0.056–0.056 ms | 0.061–0.061 ms | 0.91–0.92× | Diagnostic3f/a503; controls L/C 0.03/0.87%; IQR≤0.75% |
 | Floating JSON numeric report | Compile-to-result | 1.251–1.268 ms | 0.954–0.956 ms | 1.31–1.33× | Diagnostic3f/a503; controls L/C 1.37/0.19%; IQR≤1.00% |
-
 | Helper text normalization | Compilation only | 0.047–0.047 ms | 0.044–0.044 ms | 1.05–1.06× | Diagnostic3f/a503; controls L/C 0.47/0.39%; IQR≤0.97% |
 | Helper text normalization | Compile-to-result | 1.229–1.231 ms | 0.802–0.830 ms | 1.48–1.53× | Diagnostic3f/a503; controls L/C 0.13/3.48%; IQR≤3.43% |
 | CSV field validation | Compilation only | 0.026–0.026 ms | 0.027–0.027 ms | 0.96–0.98× | Diagnostic7db/c036; controls L/C 1.70/0.30%; IQR≤2.30% |
@@ -97,7 +95,7 @@ stress and installed Release consumers; the new2e5production inputs are also
 [fully qualified](../benchmarks/results/2026-11-18-buffered-yield-transport/delivery/README.md).
 Qualification does not imply rebuilt-binary equality or universal performance.
 Original adverse controls and failed conditions remain linked in the evidence.
-New3f/a503 full qualification is pending independently; diagnostic ratios are
+[New3f/a503 full qualification](../benchmarks/results/2026-11-18-prepared-module-bindings/delivery/README.md) passed independently; diagnostic ratios are
 specific to that frozen source/image.
 
 ## Improvements within Lython
@@ -107,7 +105,7 @@ for the CPython ratios above.
 
 | Change | Established outcome | Limits / evidence |
 | --- | --- | --- |
-| Prepared module bindings | Floating report warm11–14% lower / compile-to-result7% lower elapsed, supporting CPU; warm allocation/peaks flat | Separatea5038a28 versus84b1a159 pair; compile2%slower, helper elapsed0.2–2.2%higher/CPUuncertain. Retained source; full qualification pending. [Initial adversity](../benchmarks/results/2026-11-18-prepared-module-bindings/initial/README.md), [confirmation](../benchmarks/results/2026-11-18-prepared-module-bindings/confirmation/README.md). |
+| Prepared module bindings | Floating report warm11–14% lower / compile-to-result7% lower elapsed, supporting CPU; warm allocation/peaks flat | Separatea5038a28 versus84b1a159 pair; compile2%slower, helper elapsed0.2–2.2%higher/CPUuncertain. [Full qualification](../benchmarks/results/2026-11-18-prepared-module-bindings/delivery/README.md) passed; original controls remain. [Initial adversity](../benchmarks/results/2026-11-18-prepared-module-bindings/initial/README.md), [confirmation](../benchmarks/results/2026-11-18-prepared-module-bindings/confirmation/README.md). |
 | Discarded call results | CSV-validation allocation6.73% lower; named helper elapsed0.8–3.1% lower with supporting CPU | Separatec0367d98 versusa71abfed pair; positional calls0.9–2.6%slower, floating uncertain. Original c036 full delivery failed entry-error context; [corrected9e/84](../benchmarks/results/2026-11-18-result-entry-correction/delivery/README.md) is fully qualified. Separate correction timing adds1–2%helper elapsed debt; do not combine collections. [Evidence](../benchmarks/results/2026-11-18-discarded-call-results/refined/README.md). |
 | Known-size working drains | Helper-list text allocation7.11% lower; original/nontext effectively flat | Separatea71abfed versus2ede09fc pair; elapsed/CPU gains inconclusive, adverse first collection retained. [Containing corrected9e/84 delivery](../benchmarks/results/2026-11-18-result-entry-correction/delivery/README.md) fully passed; these earlier timings remain separate. [Evidence](../benchmarks/results/2026-11-18-known-drain-construction/confirmation/README.md). |
 | Direct split construction | Complete text allocation17.319% lower; warm elapsed1.8–2.3% lower with supporting CPU | Separate2ede09fc versus1bce52ad pair. Accounted peak1.12%higher from conservative preflight; positional calls inconclusive. [Evidence](../benchmarks/results/2026-11-18-direct-split-construction/refined/README.md); [full qualification](../benchmarks/results/2026-11-18-direct-split-construction/refined/delivery/README.md). |

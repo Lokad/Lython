@@ -4,8 +4,7 @@ R522/B952, measured2026-11-18UTC: committed **3f873227 / frozen a5038a28** versu
 stock **CPython3.13.16** (PGO/LTO,GIL,noJIT). Quiet AzureF4as_v7,4vCPU AMD EPYC9V45,
 16GiB/Ubuntu24.04.4/.NET11RC3/defaultGC/tiering. Two complete scripts, three phases,
 sixjobs226.44s; six-second full-request warmups/five rotated rounds/two processes
-per engine. Full retained delivery44256409242 independently pending; no inherited
-qualification. Existing workers/verified four-case catalog; no new framework.
+per engine. [Full retained delivery44256409242](../2026-11-18-prepared-module-bindings/delivery/README.md) subsequently passed both platforms/actual11/10, original stress and installed consumers; all16summaries/2390inputs/587production sources verified. No rebuilt-binary equality inferred. Existing workers/verified four-case catalog; no new framework.
 
 | Complete script | Phase | Lython | CPython | Lython / CPython | Status |
 | --- | --- | ---: | ---: | ---: | --- |

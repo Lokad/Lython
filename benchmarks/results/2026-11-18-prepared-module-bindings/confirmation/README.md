@@ -19,8 +19,7 @@ CPU; fresh controls now agree. Exact gain magnitude stays diagnostic. Compilatio
 allocation/accounted peaks stay flat in warm execution. Accept the small helper
 elapsed regression/uncertain CPU as explicit debt for the next common operand/
 iteration milestone. Do not add/subtract independent collection medians or claim a
-universal gain. No third unchanged campaign. Full platform/stress/package checks
-must qualify retained source independently; broader objective remains active.
+universal gain. No third unchanged campaign. [Full platform/stress/package checks44256409242](../delivery/README.md) subsequently passed for retained3f873227 production source. Broader objective remains active.
 
 The B950confirmation launcher had CRLF and /bin/sh rejected set before collector
 or guest work. No measurement exists. Under a fresh idle lease, no workers and
