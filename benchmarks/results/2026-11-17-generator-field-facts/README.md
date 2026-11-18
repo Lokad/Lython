@@ -29,7 +29,7 @@ mutation/rebinding, interleaved generators, actual delayed host I/O, protocol-ke
 fallback, errors/close, first terminal refusal/no guest continuation and reuse.
 
 Full Windows/Ubuntu/originalstress/installed Release package qualification is
-independent/pending at this writing. Frozen images copy and verify all32recorded
+[complete at62786960](delivery/README.md). Frozen images copy and verify all32recorded
 files; auxiliary worker/optional adapter remain reference files. Exact cfreference
 diagnostics are reused only after full hashes/catalog comparison. The unchanged
 six-case catalog was verified with actual images before staging. Sources and

@@ -1,0 +1,15 @@
+{
+  "revision": "627869602c4fbd581ba25267630923265c0f74e9",
+  "boundary": "Static source and executable IR, not runtime attribution or predicted removable time.",
+  "sources": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs": "a535f4f66518ff455e556fa8da5ed8d4691f4598c54ce0696974d0534269b779",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs": "6f73efb30a1d5e3c2859ce137b2a28ba3c96ea164bef835c7af745f374e845d9",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs": "6fbdab3d8bbf3f8b381feeb71aeab9d5a2e0b3781e6b384accd935f0800d80dd",
+    "src/Lokad.Lython/Runtime/PyExecutableFunction.cs": "efbae3c8a9dd406fb4db3df90b868fcba6d60e85192ff126d4cc70dc01df78d9",
+    "src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Advanced.cs": "6c59a24047d36ea6aec04f23aebee3bcf3cfd60622b32a2db92626737c928731",
+    "src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.Builtins.cs": "98a7ad47aa23228a5b3f25178bfa151d275e4c3126443af5f415e9e323691e6e",
+    "src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.cs": "eb4238efd823eaaa11b9a44dc154c085bcbc5b61a5afacc00482fce78f0a28ea",
+    "src/Lokad.Lython/Runtime/Text/PyStringOps.Helpers.cs": "b2b7f51180ea3baa0d5eef625001c8781629af919d4c6880dd9aa96b21f8d8b5",
+    "src/Lokad.Lython/Runtime/Text/PyStringOps.Whitespace.cs": "4ea5d777968da960f27bf6e75a6116846cb4b842b8832e273be2f1d462fbc453"
+  }
+}
