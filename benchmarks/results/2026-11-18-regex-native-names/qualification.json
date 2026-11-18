@@ -1,0 +1,17 @@
+{
+  "coreSource": "925397f65; full source platform delivery recorded separately",
+  "producer": "7be8240f31901e9fb96c278759b96d2ee4267df9",
+  "localPython": "Python 3.13.2",
+  "actualTargets": [
+    "net11.0",
+    "net10.0"
+  ],
+  "regexChecksPerTarget": 363,
+  "pythonProbeRuns": 4,
+  "developmentOnly": true,
+  "normalAdapterPin": "0.4.0",
+  "coreDependenciesUnchanged": true,
+  "noProducerSafetyCertification": true,
+  "noPerformanceClaim": true,
+  "publicationHeld": true
+}

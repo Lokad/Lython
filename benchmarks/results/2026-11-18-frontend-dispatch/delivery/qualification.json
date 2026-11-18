@@ -1,0 +1,91 @@
+{
+  "run": 44280333217,
+  "head": "925397f650b61c8a7578a3466d53d00a23bee846",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "log": "0_tests (windows-latest).txt",
+      "summaries": [
+        {
+          "framework": "net11.0",
+          "passed": 4863
+        },
+        {
+          "framework": "net11.0",
+          "passed": 18052
+        },
+        {
+          "framework": "net10.0",
+          "passed": 4863
+        },
+        {
+          "framework": "net10.0",
+          "passed": 18052
+        },
+        {
+          "framework": "net11.0",
+          "passed": 14
+        },
+        {
+          "framework": "net11.0",
+          "passed": 406
+        },
+        {
+          "framework": "net10.0",
+          "passed": 14
+        },
+        {
+          "framework": "net10.0",
+          "passed": 406
+        }
+      ]
+    },
+    {
+      "log": "1_tests (ubuntu-latest).txt",
+      "summaries": [
+        {
+          "framework": "net11.0",
+          "passed": 4863
+        },
+        {
+          "framework": "net11.0",
+          "passed": 18052
+        },
+        {
+          "framework": "net10.0",
+          "passed": 4863
+        },
+        {
+          "framework": "net10.0",
+          "passed": 18052
+        },
+        {
+          "framework": "net11.0",
+          "passed": 14
+        },
+        {
+          "framework": "net11.0",
+          "passed": 406
+        },
+        {
+          "framework": "net10.0",
+          "passed": 14
+        },
+        {
+          "framework": "net10.0",
+          "passed": 406
+        }
+      ]
+    }
+  ],
+  "summaries": 16,
+  "sourceInputsVerified": 2390,
+  "production": 587,
+  "normalAdapterPin": "0.4.0",
+  "allMeaningfulStepsPassed": true,
+  "logsSHA256": "8617e5d22ba4bb64ac98373b3d750cdbd72db3b465b92dd47678379e6dddb30b",
+  "committedProductionMatchesQualifiedInputs": true,
+  "binaryEqualityInferred": false,
+  "publicationHeld": true,
+  "all587ProductionInputsMatchMeasured2c6b304b": true
+}

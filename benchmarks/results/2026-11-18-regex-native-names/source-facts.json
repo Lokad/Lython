@@ -1,0 +1,18 @@
+{
+  "revision": "7be8240f31901e9fb96c278759b96d2ee4267df9",
+  "readOnlyCommittedBlobs": true,
+  "producerWorktreeNotModified": true,
+  "sourceArchiveSHA256": "8db7953bf2c8ad5bd5f8fbe349aac5a1b030898eec98858f32c37544683544b2",
+  "normalAdapterPin": "0.4.0",
+  "coreDependenciesUnchanged": true,
+  "developmentOnly": true,
+  "publicationHeld": true,
+  "policy": "Producer source retains Unsafe.SizeOf APIs; no safety certification or new production dependency. Disallow unsafe C# for this development build.",
+  "resolved": [
+    "Native per-slot UTF8 capture-name copying; GetGroupNames/name entries on results removed"
+  ],
+  "remaining": [
+    "creation/preparation token detached from later pulls",
+    "separate result-stage allowance"
+  ]
+}
