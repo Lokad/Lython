@@ -1,0 +1,120 @@
+{
+  "complete": true,
+  "elapsedSeconds": 141.03603395121172,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "archivalOnlyRecovery": null,
+  "rows": [
+    {
+      "case": "scripts.event-extraction.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 3.2453947350993375,
+        "reference": 3.301604308219178,
+        "candidate-control": 3.1264448012820516,
+        "reference-control": 3.3692772978723404
+      },
+      "cpuMilliseconds": {
+        "candidate": 3.3774834437086096,
+        "reference": 3.4246575342465753,
+        "candidate-control": 3.2692307692307696,
+        "reference-control": 3.5460992907801416
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.7535554124626604,
+        "reference": 0.6951209682663463,
+        "candidate-control": 0.13680751813393788,
+        "reference-control": 0.916460820914859
+      },
+      "elapsedChangePercent": [
+        -7.207257673437406,
+        -5.30528466118958,
+        -3.6768289404743637,
+        -1.7024927239133292
+      ],
+      "cpuChangePercent": [
+        -7.807692307692293,
+        -4.754966887417201,
+        -4.538461538461524,
+        -1.3774834437085937
+      ],
+      "referenceSpreadPercent": 2.0497001862002096,
+      "candidateSpreadPercent": 3.804638859080711
+    },
+    {
+      "case": "scripts.event-extraction.large",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "candidate": 3.2586991724137926,
+        "reference": 3.3970365177304966,
+        "candidate-control": 3.308263394557823,
+        "reference-control": 3.4134459084507047
+      },
+      "cpuMilliseconds": {
+        "candidate": 3.3793103448275863,
+        "reference": 3.617021276595745,
+        "candidate-control": 3.4693877551020407,
+        "reference-control": 3.591549295774648
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.45355648365549334,
+        "reference": 0.6618948131196325,
+        "candidate-control": 1.0453679071144866,
+        "reference-control": 1.305259204228351
+      },
+      "elapsedChangePercent": [
+        -4.533446264779062,
+        -4.072294913365393,
+        -3.081417333506886,
+        -2.613251953852458
+      ],
+      "cpuChangePercent": [
+        -6.572008113590266,
+        -5.909398242055442,
+        -4.081632653061229,
+        -3.401360544217691
+      ],
+      "referenceSpreadPercent": 0.48305017136438533,
+      "candidateSpreadPercent": 1.5209818250058627
+    },
+    {
+      "case": "calls.positional.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 2.050819648979592,
+        "candidate-control": 2.049771802469136,
+        "reference": 2.0493066844262295,
+        "candidate": 2.0895084083333337
+      },
+      "cpuMilliseconds": {
+        "reference-control": 2.0408163265306123,
+        "candidate-control": 2.016460905349794,
+        "reference": 2.0491803278688527,
+        "candidate": 2.0833333333333335
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.8263863614717699,
+        "candidate-control": 0.5496572911695582,
+        "reference": 1.43943964127281,
+        "candidate": 0.28135684817316325
+      },
+      "elapsedChangePercent": [
+        -0.05109403505947352,
+        0.022696360990814846,
+        1.8865022759554595,
+        1.9617231628930032
+      ],
+      "cpuChangePercent": [
+        -1.5967078189300543,
+        -1.1934156378600846,
+        1.6666666666666607,
+        2.083333333333348
+      ],
+      "referenceSpreadPercent": 0.07382811781468934,
+      "candidateSpreadPercent": 1.93858681324095
+    }
+  ],
+  "retentionDecisionPending": false,
+  "CPythonRefreshed": false,
+  "retention": "retain allocation admission with 1.63% local allocation debt; complete extraction CPU and elapsed favorable"
+}
