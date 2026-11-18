@@ -1,0 +1,91 @@
+{
+  "run": 44221878836,
+  "head": "cf052bd5e69253393e73b1579139c5d300d7df93",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "log": "0_tests (ubuntu-latest).txt",
+      "summaries": [
+        {
+          "framework": "net11.0",
+          "passed": 4837
+        },
+        {
+          "framework": "net11.0",
+          "passed": 18046
+        },
+        {
+          "framework": "net10.0",
+          "passed": 4837
+        },
+        {
+          "framework": "net10.0",
+          "passed": 18046
+        },
+        {
+          "framework": "net11.0",
+          "passed": 14
+        },
+        {
+          "framework": "net11.0",
+          "passed": 406
+        },
+        {
+          "framework": "net10.0",
+          "passed": 14
+        },
+        {
+          "framework": "net10.0",
+          "passed": 406
+        }
+      ]
+    },
+    {
+      "log": "1_tests (windows-latest).txt",
+      "summaries": [
+        {
+          "framework": "net11.0",
+          "passed": 4837
+        },
+        {
+          "framework": "net11.0",
+          "passed": 18046
+        },
+        {
+          "framework": "net10.0",
+          "passed": 4837
+        },
+        {
+          "framework": "net10.0",
+          "passed": 18046
+        },
+        {
+          "framework": "net11.0",
+          "passed": 14
+        },
+        {
+          "framework": "net11.0",
+          "passed": 406
+        },
+        {
+          "framework": "net10.0",
+          "passed": 14
+        },
+        {
+          "framework": "net10.0",
+          "passed": 406
+        }
+      ]
+    }
+  ],
+  "summaries": 16,
+  "sourceInputsVerified": 2388,
+  "production": 586,
+  "normalAdapterPin": "0.4.0",
+  "allMeaningfulStepsPassed": true,
+  "logsSHA256": "fe8e2bd8545631f84bb32ebc62dd368e8cb7a180f1c28fba4da17308ba7f66db",
+  "committedProductionMatchesQualifiedInputs": true,
+  "binaryEqualityInferred": false,
+  "publicationHeld": true,
+  "all586ProductionInputsMatchMeasuredAbab8760": true
+}
