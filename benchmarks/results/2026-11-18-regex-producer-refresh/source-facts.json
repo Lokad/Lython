@@ -1,0 +1,19 @@
+{
+  "revision": "7b194e55eb220f4e529405cda6e281916d4628fd",
+  "readOnlyCommittedBlobs": true,
+  "producerWorktreeNotModified": true,
+  "sourceArchiveSHA256": "7d10c387c6901e218faf2f598c8779e0d8b5ef2402bb0cabefdce25b9bbc9791",
+  "normalAdapterPin": "0.4.0",
+  "coreDependenciesUnchanged": true,
+  "developmentOnly": true,
+  "publicationHeld": true,
+  "policy": "Scoped Core/PythonRe source has Unsafe.SizeOf calls. No new production dependency/pin or safety certification; build disallows unsafe C#.",
+  "remaining": [
+    "UTF8 named-group enumeration",
+    "creation token detached from later pulls",
+    "separate result-stage allowance"
+  ],
+  "new": [
+    "Producer removed bulk byte materialization and detailed/collector APIs; bounded cursor adapter must remain source compatible"
+  ]
+}

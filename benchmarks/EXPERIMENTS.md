@@ -9281,3 +9281,6 @@ R518/B947 [entry-failure correction](results/2026-11-18-result-entry-correction/
 
 
 R519/B948 [current operand source gate](results/2026-11-18-operand-source-gate/README.md), exact9e8eaba1/84b1a159: one floating warm capture,1,069all-thread samples/4,096invocations/5.078guestsec/152unmapped leaves. Repeatedname72/sequenceindex61/dispatch124/JSONconstruction72/native68leafsamples guide source review, not removable percentages. All32file/goldens/quiet/join/SHAarchive pass, no retirement. R520 may reassess prepared live module locations with changed postR509operand facts/exactcode guard; R479adverse fresh/unstablecontrols retained, no unchanged replay. Full44250743374 pending independently; publication held.
+
+
+R521 [changed producer development compatibility](results/2026-11-18-regex-producer-refresh/README.md), frozen7b194e55/current9e8eaba1/84b1a159: removed producer bulk/detailed APIs need no restoration in R507cursor bridge. Old7arg Compile fails; adapter-local consolidated policy+explicitinfiniteMatchTimeout replaces it, originalfailure retained. Bothactual11/10 pass363regexchecks, parent/child hashes match, realcancellation/refusal/retention/reuse pass. NativeUTF8names/creation-vs-pulltokens/resultstaging gaps remain; no normal0.4pin/coredependency/sibling changes, releasedqualification/Unsafecompliance/performance claim. Publication held.
