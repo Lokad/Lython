@@ -1,0 +1,13 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "ramTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 266379264,
+  "archiveSHA256": "fbf23a9f783c8301f2e7da1c52445114784d8a7983e55a9fad33a8038cb96a85",
+  "source": "R529/B958 committed925397f65/frozen2c6b304b; floating/helper text attribution; no elapsed comparison",
+  "performanceComparison": false,
+  "failure": null
+}
