@@ -1,0 +1,13 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "ramTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 269287424,
+  "archiveSHA256": "d404317e14e27fb7ee82b35d81515b093784fd8ba9519b4c00b1e6fec92494f6",
+  "source": "R577/B1003 53df08565/6c4cb50a forwarding and rule-closure CPU attribution",
+  "performanceComparison": false,
+  "failure": null
+}
