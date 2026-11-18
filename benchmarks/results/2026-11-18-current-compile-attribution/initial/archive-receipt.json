@@ -1,0 +1,13 @@
+{
+  "complete": false,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "ramTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 268623872,
+  "archiveSHA256": "64db8b3792d204cfadb6b6f8139d6f5483752a29b882cd1b45371078a6f9c594",
+  "source": "R588/B1013 9c60eed7fbe5284cf91925c6221620f5918726ff/df78258f compilation CPU attribution",
+  "performanceComparison": false,
+  "failure": "Traceback (most recent call last):\n  File \"/home/lokad/lython-bench-checks/current-compile-attribution-b1013-20261118/collect.py\", line 13, in <module>\n    subprocess.run(['python3',str(root/'ops-profile.py'),str(root/'guest-fixtures/profiles')],check=True)\n  File \"/usr/lib/python3.12/subprocess.py\", line 571, in run\n    raise CalledProcessError(retcode, process.args,\nsubprocess.CalledProcessError: Command '['python3', '/home/lokad/lython-bench-checks/current-compile-attribution-b1013-20261118/ops-profile.py', '/home/lokad/lython-bench-checks/current-compile-attribution-b1013-20261118/guest-fixtures/profiles']' returned non-zero exit status 1.\n"
+}
