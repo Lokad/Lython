@@ -1,0 +1,192 @@
+{
+  "complete": true,
+  "elapsedSeconds": 232.90993736684322,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "archivalOnlyRecovery": null,
+  "rows": [
+    {
+      "case": "scripts.numeric-squared-error.floating.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 1.0368395864332605,
+        "reference": 1.024139405579399,
+        "candidate-control": 1.0369117039473685,
+        "reference-control": 1.0281477505422993
+      },
+      "cpuMilliseconds": {
+        "candidate": 1.1159737417943107,
+        "reference": 1.0944206008583692,
+        "candidate-control": 1.0964912280701753,
+        "reference-control": 1.0845986984815619
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.14459041668095446,
+        "reference": 0.8355875673217422,
+        "candidate-control": 0.2703511418481692,
+        "reference-control": 0.061614075475554336
+      },
+      "elapsedChangePercent": [
+        0.8453878235279433,
+        0.8524021377712021,
+        1.2400832137375195,
+        1.2471249810706686
+      ],
+      "cpuChangePercent": [
+        0.18919848641207881,
+        1.0964912280701622,
+        1.969365426695835,
+        2.892778993435452
+      ],
+      "referenceSpreadPercent": 0.39138665508458015,
+      "candidateSpreadPercent": 0.006955513181750028
+    },
+    {
+      "case": "scripts.text-normalization.helper-list",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 1.1685110320197043,
+        "reference": 1.1546287002457,
+        "candidate-control": 1.1572279292682925,
+        "reference-control": 1.1253064655581948
+      },
+      "cpuMilliseconds": {
+        "candidate": 1.2315270935960592,
+        "reference": 1.2285012285012284,
+        "candidate-control": 1.2195121951219512,
+        "reference-control": 1.187648456057007
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.18726539063874822,
+        "reference": 0.7725882611983746,
+        "candidate-control": 0.3914942228078951,
+        "reference-control": 0.19782966613001404
+      },
+      "elapsedChangePercent": [
+        0.22511384153531822,
+        1.2023199987190702,
+        2.836690687124377,
+        3.839360012925752
+      ],
+      "cpuChangePercent": [
+        -0.7317073170731714,
+        0.24630541871921707,
+        2.682926829268295,
+        3.6945812807881895
+      ],
+      "referenceSpreadPercent": 2.6057110293914665,
+      "candidateSpreadPercent": 0.9750112718542869
+    },
+    {
+      "case": "scripts.numeric-squared-error.floating.large",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "reference-control": 1.162632554187192,
+        "candidate-control": 1.1365841650485438,
+        "reference": 1.1528171333333332,
+        "candidate": 1.1368681678832118
+      },
+      "cpuMilliseconds": {
+        "reference-control": 1.2315270935960592,
+        "candidate-control": 1.2135922330097086,
+        "reference": 1.2592592592592593,
+        "candidate": 1.2165450121654502
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.7547232015709701,
+        "candidate-control": 0.3831519736163318,
+        "reference": 0.5234076731568275,
+        "candidate": 0.1630962879780893
+      },
+      "elapsedChangePercent": [
+        -2.240466176939193,
+        -2.2160386109257413,
+        -1.4081130315831136,
+        -1.3834774821576024
+      ],
+      "cpuChangePercent": [
+        -3.626499143346673,
+        -3.3920137398024908,
+        -1.456310679611661,
+        -1.2165450121654486
+      ],
+      "referenceSpreadPercent": 0.8514291269663632,
+      "candidateSpreadPercent": 0.02498740026488644
+    },
+    {
+      "case": "scripts.text-normalization.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 0.8359119483985765,
+        "candidate-control": 0.792134591141397,
+        "reference": 0.7973688818493151,
+        "candidate": 0.8127229363166952
+      },
+      "cpuMilliseconds": {
+        "reference-control": 0.889679715302491,
+        "candidate-control": 0.868824531516184,
+        "reference": 0.8561643835616438,
+        "candidate": 0.8777969018932874
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 1.52862138770746,
+        "candidate-control": 0.26924059299758396,
+        "reference": 0.8372456959133381,
+        "candidate": 1.24012047590147
+      },
+      "elapsedChangePercent": [
+        -5.237077582279737,
+        -2.7740974544395947,
+        -0.6564453199851994,
+        1.9255898765161206
+      ],
+      "cpuChangePercent": [
+        -2.344122657580905,
+        -1.3356282271944853,
+        1.4787052810902868,
+        2.526678141135963
+      ],
+      "referenceSpreadPercent": 4.833781130242953,
+      "candidateSpreadPercent": 2.599096846109483
+    },
+    {
+      "case": "calls.positional.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 2.1141460765957443,
+        "candidate-control": 2.0450827090163934,
+        "reference": 2.0982194416666666,
+        "candidate": 2.11860470995671
+      },
+      "cpuMilliseconds": {
+        "reference-control": 2.127659574468085,
+        "candidate-control": 2.0491803278688527,
+        "reference": 2.0833333333333335,
+        "candidate": 2.121212121212121
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.3892224859004829,
+        "candidate-control": 0.5782540988697364,
+        "reference": 0.5447948598544545,
+        "candidate": 1.032553508916463
+      },
+      "elapsedChangePercent": [
+        -3.266726379217777,
+        -2.5324678436906223,
+        0.21089523615818173,
+        0.9715508247245319
+      ],
+      "cpuChangePercent": [
+        -3.688524590163922,
+        -1.6393442622950727,
+        -0.303030303030305,
+        1.8181818181818077
+      ],
+      "referenceSpreadPercent": 0.7590547781993084,
+      "candidateSpreadPercent": 3.595062469413657
+    }
+  ],
+  "retentionDecisionPending": false,
+  "CPythonRefreshed": false,
+  "decision": "Retain the native index conversion deletion and repeated compile-to-result gain. Preserve the adverse first warm result and uncertainty."
+}

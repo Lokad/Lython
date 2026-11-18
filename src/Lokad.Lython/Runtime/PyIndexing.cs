@@ -131,7 +131,11 @@ internal static class PyIndexing
         context.CheckExecution(span);
         using var ambient = PyStructuralGuard.PushAmbient(context, span);
         var sequence = (IPyIndexableValue)target;
-        var position = ApplyIndexBounds(index, sequence.Length, span, TargetKind(target), IndexOperation.Read);
+        var length = sequence.Length;
+        if (index is < int.MinValue or > int.MaxValue)
+            throw IndexTooWide(span, TargetKind(target));
+        if (!TryGetIndexPosition((int)index, length, out var position))
+            throw OutOfRange(TargetKind(target), IndexOperation.Read, span);
         if (target is PyTuple tuple && tuple.TryBorrowInteger(position, out result)) return true;
         result.Object = sequence.GetIndex(position);
         return true;
@@ -291,28 +295,21 @@ internal static class PyIndexing
     private static int ApplyIndexBounds(BigInteger integer, int length, LythonSourceSpan span, IndexTargetName target, IndexOperation operation)
     {
         if (integer < int.MinValue || integer > int.MaxValue)
-        {
-            if (target == IndexTargetName.Unnamed)
-            {
-                throw new LythonRuntimeException("IndexError", "Index is out of range.", span);
-            }
-
-            throw new LythonRuntimeException("IndexError", "cannot fit 'int' into an index-sized integer", span);
-        }
-
-        var position = (int)integer;
-        if (position < 0)
-        {
-            position += length;
-        }
-
-        if (position < 0 || position >= length)
-        {
+            throw IndexTooWide(span, target);
+        if (!TryGetIndexPosition((int)integer, length, out var position))
             throw OutOfRange(target, operation, span);
-        }
-
         return position;
     }
+
+    private static bool TryGetIndexPosition(int index, int length, out int position)
+    {
+        position = index < 0 ? index + length : index;
+        return position >= 0 && position < length;
+    }
+
+    private static LythonRuntimeException IndexTooWide(LythonSourceSpan span, IndexTargetName target) =>
+        new("IndexError", target == IndexTargetName.Unnamed ? "Index is out of range."
+            : "cannot fit 'int' into an index-sized integer", span);
 
     private static LythonRuntimeException OutOfRange(IndexTargetName target, IndexOperation operation, LythonSourceSpan span)
     {

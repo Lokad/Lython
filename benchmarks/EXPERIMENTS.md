@@ -9375,3 +9375,12 @@ image predates the regex merge. Floating report compile 0.92–0.93×, warm
 with 4.69% Lython process spread. Four jobs took 187.31 seconds, with both
 quiet gates, output checks, joined workers and verified archive. Separate
 source-pair measurements establish the R534 gain. Publication is postponed.
+
+[R536 native sequence bounds](results/2026-11-18-native-sequence-bounds/README.md)
+removes ordinary machine-index conversion and eager diagnostic target selection.
+B967 and B968 confirm a floating compile-to-result reduction of 1.38–2.24%
+and 1.52–2.05%, respectively. Warm floating slowed 0.85–1.25% initially and
+remained inconclusive on confirmation. Helper text recovered to near flat
+on confirmation. Both targets passed 829 focused checks each. Accounted peaks,
+allowance reuse and allocation matched. Retain the simplification and preserve
+both sets of observations.

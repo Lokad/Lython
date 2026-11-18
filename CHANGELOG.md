@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Keep executable sequence indices native through bounds checks. Share negative
+  index normalization with generic access and resolve diagnostic names on error.
+
 - Reuse JSON numeric lexing for ordinary integer and short fixed-point scalar
   construction. Preserve exact rounding, signed zero and callback spelling.
 
