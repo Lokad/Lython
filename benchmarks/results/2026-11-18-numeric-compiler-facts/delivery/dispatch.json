@@ -1,0 +1,9 @@
+{
+  "committedSource": "dd4c5165c91107e1698c7255593426f6656bf23c",
+  "workflow": "ci.yml",
+  "stress": true,
+  "recordedAtUtc": "2026-11-18T11:56:18.175922+00:00",
+  "observeAfterUtc": "2026-11-18T12:00:18.175922+00:00",
+  "measuredCore": "29192b95b8d0ab729d55afa380e9ac0056e2f97f15bc70b485b15236319e948e",
+  "dispatchOutput": "https://github.com/Lokad/Lython/actions/runs/44299190817"
+}
