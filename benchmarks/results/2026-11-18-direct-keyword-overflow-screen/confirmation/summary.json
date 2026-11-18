@@ -1,0 +1,223 @@
+{
+  "complete": true,
+  "elapsedSeconds": 186.55546072497964,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "archivalOnlyRecovery": {
+    "retiredOnly": [
+      {
+        "canonical": "benchmarks/results/2026-11-18-syntax-validity-scratch/candidate-core.dll.gz",
+        "canonicalSHA256": "3b1abce90a6792c72f8773ee56d28ab92e8b24cc8b72c76779d21c0b445067d0",
+        "sha256": "610d403da4b8475deaaf77269b6402fd39c1b4ba38dae68f572600b13e14b442",
+        "bytes": 5765632,
+        "kind": "exact committed superseded core replica",
+        "committedBlobVerified": true,
+        "days": [
+          "20261116",
+          "20261117",
+          "20261118"
+        ],
+        "paths": [
+          "current-helper-phases-b986-20261118/candidate/Lokad.Lython.dll",
+          "exact-list-drain-b988-20261118/reference/Lokad.Lython.dll",
+          "helper-search-profile-b987-20261118/candidate/Lokad.Lython.dll",
+          "lexical-binding-order-b989-20261118/reference/Lokad.Lython.dll",
+          "syntax-validity-b985-20261118/candidate/Lokad.Lython.dll"
+        ],
+        "links": 5
+      },
+      {
+        "canonical": "benchmarks/results/2026-11-18-private-line-count/candidate-core.dll.gz",
+        "canonicalSHA256": "a737ba2fe79fcbf4eb44324917085ea38c941c41d4cc5256ec89a8e24592bcd3",
+        "sha256": "74d19a10f731b6628f99db685477e84f8986fb2284268dd5e5952d552ef62c79",
+        "bytes": 5765120,
+        "kind": "exact committed superseded core replica",
+        "committedBlobVerified": true,
+        "days": [
+          "20261116",
+          "20261117",
+          "20261118"
+        ],
+        "paths": [
+          "line-count-cpython-b984-20261118/candidate/Lokad.Lython.dll",
+          "split-line-count-b983-20261118/candidate/Lokad.Lython.dll",
+          "syntax-validity-b985-20261118/reference/Lokad.Lython.dll"
+        ],
+        "links": 3
+      },
+      {
+        "canonical": "benchmarks/results/2026-11-18-trimmed-split-join/candidate-core.dll.gz",
+        "canonicalSHA256": "3a23a7447367adba9850ac1f81e1b0aa0162f11c7b4abd8a5e7090a127f08ea4",
+        "sha256": "e4905aa51cc692a4a8427f4e9db84a15dd085e3938e27da8b61efd92f3204f25",
+        "bytes": 5764608,
+        "kind": "exact committed superseded core replica",
+        "committedBlobVerified": true,
+        "days": [
+          "20261116",
+          "20261117",
+          "20261118"
+        ],
+        "paths": [
+          "split-line-count-b983-20261118/reference/Lokad.Lython.dll",
+          "trimmed-split-cpython-b982-20261118/candidate/Lokad.Lython.dll",
+          "trimmed-split-join-b981-20261118/candidate/Lokad.Lython.dll"
+        ],
+        "links": 3
+      }
+    ],
+    "alreadyAbsent": [],
+    "freshIdleLease": true,
+    "allHashesPathsOwnershipLinksAndAliasesVerified": true,
+    "canonicalArchiveAndCurrentImagesPreserved": true,
+    "freeBeforeBytes": 265920512,
+    "freeAfterBytes": 271613952
+  },
+  "rows": [
+    {
+      "case": "scripts.report-forwarding.keywords",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 2.5828340952380953,
+        "reference": 2.7522669888268156,
+        "candidate-control": 2.5990876844919786,
+        "reference-control": 2.877421157894737
+      },
+      "cpuMilliseconds": {
+        "candidate": 2.6455026455026456,
+        "reference": 2.8491620111731844,
+        "candidate-control": 2.6737967914438503,
+        "reference-control": 2.923976608187134
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.5319848355578873,
+        "reference": 0.3543508534541876,
+        "candidate-control": 0.9101017402040017,
+        "reference-control": 0.9298748336254776
+      },
+      "elapsedChangePercent": [
+        -10.237884775691853,
+        -9.67301823853971,
+        -6.156121272992598,
+        -5.565568491599404
+      ],
+      "cpuChangePercent": [
+        -9.523809523809511,
+        -8.55614973262031,
+        -7.148044402946363,
+        -6.154975359127612
+      ],
+      "referenceSpreadPercent": 4.547312073138277,
+      "candidateSpreadPercent": 0.6292928099350004
+    },
+    {
+      "case": "calls.positional.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 2.1905435570175436,
+        "reference": 2.229728049107143,
+        "candidate-control": 2.171870652360515,
+        "reference-control": 2.212421248888889
+      },
+      "cpuMilliseconds": {
+        "candidate": 2.1929824561403506,
+        "reference": 2.232142857142857,
+        "candidate-control": 2.1459227467811157,
+        "reference-control": 2.2222222222222223
+      },
+      "elapsedIQRPercent": {
+        "candidate": 2.0050969445056857,
+        "reference": 0.27947454506497943,
+        "candidate-control": 1.1512308344890771,
+        "reference-control": 1.1150860177459243
+      },
+      "elapsedChangePercent": [
+        -2.5948185371662658,
+        -1.8328605616466098,
+        -1.7573664243623832,
+        -0.9888574285901841
+      ],
+      "cpuChangePercent": [
+        -3.86266094420602,
+        -3.4334763948497993,
+        -1.7543859649122973,
+        -1.3157894736842257
+      ],
+      "referenceSpreadPercent": 0.7822561018588026,
+      "candidateSpreadPercent": 0.8597613599471865
+    },
+    {
+      "case": "scripts.report-forwarding.keywords",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "reference-control": 2.8650217894736847,
+        "candidate-control": 2.671043386740332,
+        "reference": 2.927097527607362,
+        "candidate": 2.7118125944444444
+      },
+      "cpuMilliseconds": {
+        "reference-control": 2.982456140350877,
+        "candidate-control": 2.707182320441989,
+        "reference": 3.067484662576687,
+        "candidate": 2.7777777777777777
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 5.996115976183369,
+        "candidate-control": 4.719001184574448,
+        "reference": 5.023324713649785,
+        "candidate": 6.040313540430733
+      },
+      "elapsedChangePercent": [
+        -8.747714705506638,
+        -7.354894434928294,
+        -6.770573384329737,
+        -5.34757521189343
+      ],
+      "cpuChangePercent": [
+        -11.745856353591167,
+        -9.444444444444445,
+        -9.229769255768606,
+        -6.8627450980392135
+      ],
+      "referenceSpreadPercent": 2.16667595205553,
+      "candidateSpreadPercent": 1.5263401525598574
+    },
+    {
+      "case": "scripts.report-forwarding.keywords",
+      "lane": "compile",
+      "elapsedMilliseconds": {
+        "reference-control": 0.04809874418157338,
+        "candidate-control": 0.04693474329142428,
+        "reference": 0.047275991233031674,
+        "candidate": 0.047463348793005136
+      },
+      "cpuMilliseconds": {
+        "reference-control": 0.048086170417387955,
+        "candidate-control": 0.04691311690748733,
+        "reference": 0.0471342383107089,
+        "candidate": 0.047519482988025094
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.7628475275770871,
+        "candidate-control": 0.31283738571924724,
+        "reference": 0.5921140584172883,
+        "candidate": 0.19307988294877976
+      },
+      "elapsedChangePercent": [
+        -2.4200234537412824,
+        -1.3210228237344745,
+        -0.721820807363549,
+        0.3963059368759625
+      ],
+      "cpuChangePercent": [
+        -2.439482079189337,
+        -1.178483178103007,
+        -0.46913116907487673,
+        0.8173351073940349
+      ],
+      "referenceSpreadPercent": 1.740318768751381,
+      "candidateSpreadPercent": 1.1262562965321132
+    }
+  ],
+  "retentionDecisionPending": true,
+  "CPythonRefreshed": false
+}
