@@ -279,6 +279,9 @@ internal static class CallExpansion
             throw MappingUnpackingError(value, target, context, span);
         }
 
+        // An exact dictionary already enforces uniqueness among its string
+        // keys. Only another keyword source can require a separate index.
+        var uniqueKeywordSource = value is PyDict && expanded.CanDeferKeywordIndex;
         foreach (var pair in pairs)
         {
             if (pair.Key is not PyString key)
@@ -286,7 +289,8 @@ internal static class CallExpansion
                 throw new LythonRuntimeException("TypeError", "keywords must be strings", span);
             }
 
-            expanded.Add(CallArgumentValue.Keyword(DecodeKeywordName(key, context, span), pair.Value, key), span);
+            expanded.Add(CallArgumentValue.Keyword(DecodeKeywordName(key, context, span), pair.Value, key), span,
+                uniqueKeywordSource);
         }
 
         return expanded;
@@ -461,6 +465,9 @@ internal static class CallExpansion
         private LythonSourceSpan? _deferredSpan;
         private object? _target;
         private HashSet<string>? _keywordNames;
+        private int _unindexedKeywords;
+
+        public bool CanDeferKeywordIndex => _keywordNames is null && _unindexedKeywords == 0;
 
         public CallArgumentAccumulator(int sourceArgumentCount, LythonRuntime.ExecutionContext context, object target, bool retained = false, bool deferSingleStar = false)
         {
@@ -490,24 +497,23 @@ internal static class CallExpansion
             _retainedBytes = checked(_retainedBytes + bytes);
         }
 
-        public void Add(CallArgumentValue value, LythonSourceSpan? span)
+        public void Add(CallArgumentValue value, LythonSourceSpan? span, bool uniqueKeywordSource = false)
         {
             var context = Context;
             if (value.IsKeyword)
             {
-                // ** collisions are call-site errors even for constructors
-                // that accept arbitrary keywords. Fund the borrowed-name
-                // set before allocation, including its resize overlap.
-                if (_keywordNames is null)
+                if (uniqueKeywordSource)
                 {
-                    Grow(128, span);
-                    _keywordNames = new HashSet<string>(StringComparer.Ordinal);
+                    _unindexedKeywords++;
                 }
-                Grow(96, span);
-                if (!_keywordNames.Add(value.KeywordName))
-                    throw new LythonRuntimeException("TypeError",
-                        (CallsiteCallableName(_target!, context) ?? "call") +
-                        " got multiple values for keyword argument '" + value.KeywordName + "'", span);
+                else
+                {
+                    var names = EnsureKeywordIndex(context, span);
+                    // Fund the new entry, including resize overlap.
+                    Grow(96, span);
+                    if (!names.Add(value.KeywordName))
+                        throw DuplicateKeyword(value.KeywordName, context, span);
+                }
             }
             if (_count == _values.Length)
             {
@@ -536,10 +542,34 @@ internal static class CallExpansion
         public void CheckDuplicateKeyword(string name, LythonSourceSpan span)
         {
             var context = Context;
-            if (_keywordNames?.Contains(name) == true)
-                throw new LythonRuntimeException("TypeError", (CallsiteCallableName(_target!, context) ?? "call") +
-                    " got multiple values for keyword argument '" + name + "'", span);
+            if (CanDeferKeywordIndex) return;
+            if (EnsureKeywordIndex(context, span).Contains(name))
+                throw DuplicateKeyword(name, context, span);
         }
+
+        private HashSet<string> EnsureKeywordIndex(LythonRuntime.ExecutionContext context, LythonSourceSpan? span)
+        {
+            if (_keywordNames is not null) return _keywordNames;
+
+            Grow(128L + 96L * _unindexedKeywords, span);
+            context.CheckExecution(span);
+            var names = new HashSet<string>(_unindexedKeywords, StringComparer.Ordinal);
+            if (_unindexedKeywords != 0)
+            {
+                foreach (var value in _values.AsSpan(0, _count))
+                {
+                    context.CheckExecution(span);
+                    if (value.IsKeyword) names.Add(value.KeywordName);
+                }
+            }
+            _unindexedKeywords = 0;
+            return _keywordNames = names;
+        }
+
+        private LythonRuntimeException DuplicateKeyword(string name, LythonRuntime.ExecutionContext context,
+            LythonSourceSpan? span) =>
+            new("TypeError", (CallsiteCallableName(_target!, context) ?? "call") +
+                " got multiple values for keyword argument '" + name + "'", span);
 
         public CallArgumentValue[] ToArray()
         {
@@ -619,6 +649,7 @@ internal static class CallExpansion
             _deferredStar = null;
             _deferredSpan = null;
             _keywordNames = null;
+            _unindexedKeywords = 0;
             _context = null;
             _target = null;
             _reservation?.Dispose();

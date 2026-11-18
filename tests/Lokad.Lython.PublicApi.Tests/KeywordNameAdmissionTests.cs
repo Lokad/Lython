@@ -33,6 +33,45 @@ public sealed class KeywordNameAdmissionTests
     }
 
     [Fact]
+    public async Task RefusalWhileMergingKeywordSourcesStopsBeforeReadingLaterItems()
+    {
+        using var script = new LythonEngine().Compile("""
+            import time
+            class Mapping:
+                def keys(self):
+                    time.time()
+                    return ('later',)
+                def __getitem__(self, key):
+                    print('lookup')
+                    return 0
+
+            def target(**kwargs):
+                print('called')
+
+            prefix = {str(i): i for i in range(1024)}
+            try:
+                target(**prefix, **Mapping())
+            finally:
+                return 0
+            """);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
+        foreach (var asynchronous in new[] { false, true })
+        {
+            var budget = new AdmissionGateBudget();
+            var host = new AdmissionGateHost(budget, 32 * 1024);
+            using (var result = asynchronous
+                       ? await script.RunAsync(host, new LythonRunOptions { MemoryBudget = budget })
+                       : script.Run(host, new LythonRunOptions { MemoryBudget = budget }))
+            {
+                Assert.False(result.Success);
+                Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+                Assert.Empty(result.StandardOutput);
+            }
+            Assert.Equal(0, budget.Root.ReservedBytes);
+        }
+    }
+
+    [Fact]
     public async Task ReturnedKeywordStorageStaysFundedUntilItsResultIsDisposed()
     {
         using var script = new LythonEngine().Compile("name='x'*65536\ndef target(**kw):return kw\nreturn target(**{name:42})");
