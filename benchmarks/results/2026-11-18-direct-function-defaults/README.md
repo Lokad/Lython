@@ -40,5 +40,14 @@ failure and 94,901 bytes for escaping failure. An earlier version of
 the test mixed the old map's scratch cleanup into the measurement.
 Both reference results are archived.
 
+Combined CI `44399326106` failed `GenericMethodDefinitionsRetainDefaultsTypeScopesAndRealClassCells`
+in both modes on Windows and Ubuntu .NET 11. The test required the removed
+128-byte temporary defaults map to stay reserved through decoration. Both
+public suites passed all 18,081 cases. The corrected test verifies live
+callback frames, the original default alias, governed tuple storage and the
+function seen by decorators. All 26 method-body cases pass on Windows and
+WSL .NET 10 and 11. The correction changes test code only.
+
 [Summary](summary.json) · [Raw observations](observations.tgz) ·
-[Source, tests and procedures](checks-and-procedures.tar.xz)
+[Source, tests and procedures](checks-and-procedures.tar.xz) ·
+[Original CI failures and focused rechecks](method-boundary-checks.tar.xz)

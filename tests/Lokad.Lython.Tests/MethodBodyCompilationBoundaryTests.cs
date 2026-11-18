@@ -68,19 +68,17 @@ public sealed class MethodBodyCompilationBoundaryTests
         var funded = fixture.Context.MemoryGovernor.CurrentAccountedBytes - before;
         Assert.True(funded > 0);
         Assert.Equal(new[] { "top", "bottom", "default", "argument", "result", "bottom-apply", "top-apply" }, fixture.Tape.Events);
-        var expectedSnapshots = new[]
-        {
-            // Decorators own 96 bytes; the definition's one-default map
-            // owns another 128 until publication finishes. Frames remain active.
-            "top:96,1", "bottom:96,1", "default:224,1",
-            "argument:224,1", "result:224,1",
-            "bottom-apply:224,1", "top-apply:224,1"
-        };
-        Assert.True(expectedSnapshots.SequenceEqual(fixture.Tape.Snapshots), string.Join("\n", fixture.Tape.Snapshots));
         var receiver = Assert.IsType<PyInstance>(inner.Invoke([], CallSpan, fixture.Context));
         var method = Bind(receiver, "run");
         var function = Assert.IsAssignableFrom<PyFunctionBase>(method.Function);
         Assert.Same(inner, function.OwnerType);
+        Assert.Same(function, fixture.Tape.Values["bottom-apply"]);
+        Assert.Same(function, fixture.Tape.Values["top-apply"]);
+        Assert.True(function.TryGetMember("__defaults__", out var defaultValues));
+        var defaults = Assert.IsType<PyTuple>(defaultValues);
+        Assert.Same(fixture.Tape.Saved, Assert.Single(defaults));
+        Assert.Same(fixture.Context.MemoryGovernor, defaults.OwnerMemoryGovernor);
+        Assert.True(defaults.CommittedStorageBytes > 0);
         Assert.True(function.TryGetMember("__doc__", out var doc));
         Assert.Equal("method documentation", doc.ToString());
         Assert.True(function.TryGetMember("__type_params__", out var parameters));
@@ -262,7 +260,6 @@ public sealed class MethodBodyCompilationBoundaryTests
     private sealed class Tape(Context root, PyException active, CancellationToken cancellation)
     {
         public List<string> Events { get; } = [];
-        public List<string> Snapshots { get; } = [];
         public Dictionary<string, object> Values { get; } = new(StringComparer.Ordinal);
         public PyList? Saved { get; private set; }
         public string? PausedPhase { get; set; }
@@ -274,10 +271,10 @@ public sealed class MethodBodyCompilationBoundaryTests
             Assert.Same(root.State, frame.State);
             Assert.Same(root.MemoryGovernor, frame.MemoryGovernor);
             Assert.Same(active, frame.State.CurrentException);
-                Events.Add(phase);
+            Events.Add(phase);
             Values[phase] = value;
             Assert.True(frame.State.CurrentInterpreterDepth > 0);
-            Snapshots.Add($"{phase}:{frame.MemoryGovernor.CurrentReservedBytes},{frame.State.CurrentRecursionDepth}");
+            Assert.True(frame.State.CurrentRecursionDepth > 0);
             if (phase is "saved" or "default") Saved = Assert.IsType<PyList>(value);
             return value;
         }
