@@ -28,14 +28,33 @@ public sealed class ImmutableRepetitionTests
                 var gate = new AdmissionHookMemoryBudget(owner);
                 var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = gate });
                 var input = Input(kind, owned ? context.MemoryGovernor : null);
+                // Warm this dispatcher and the out-of-line storage path before
+                // counting allocations made by the refused operation.
+                _ = await Repeat(input, 128, context, asynchronous);
                 var baseline = budget.ReservedBytes;
+                const int count = 131072;
+                long before = 0;
                 long? beforeRefusal = null;
-                var before = GC.GetAllocatedBytesForCurrentThread();
-                gate.RefuseGrowth = _ => { beforeRefusal ??= GC.GetAllocatedBytesForCurrentThread() - before; return true; };
-                var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Repeat(input, 131072, context, asynchronous));
+                var measuredThread = 0;
+                int? refusalThread = null;
+                gate.RefuseGrowth = _ =>
+                {
+                    beforeRefusal ??= GC.GetAllocatedBytesForCurrentThread() - before;
+                    refusalThread ??= Environment.CurrentManagedThreadId;
+                    return true;
+                };
+                var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
+                {
+                    // Exclude the assertion harness and refusal delegate setup.
+                    measuredThread = Environment.CurrentManagedThreadId;
+                    before = GC.GetAllocatedBytesForCurrentThread();
+                    await Repeat(input, count, context, asynchronous);
+                });
                 Assert.Equal(LythonFailureReason.SharedMemoryAllowance, error.Attribution?.Reason);
+                Assert.True(error.Attribution?.Requested >= count);
                 Assert.Same(context.MemoryGovernor.AdmissionFailure, error);
                 Assert.Equal(Span, error.Span);
+                Assert.Equal(measuredThread, refusalThread);
                 Assert.NotNull(beforeRefusal);
                 Assert.True(beforeRefusal < 32768, $"Repeated storage allocated {beforeRefusal} bytes before refusal.");
                 Assert.Equal(baseline, budget.ReservedBytes);
