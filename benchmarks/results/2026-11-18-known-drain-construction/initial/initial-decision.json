@@ -1,0 +1,16 @@
+{
+  "retain": false,
+  "state": "Private; one bounded unchanged confirmation selected",
+  "reference": "Qualified10ee56c7/2ede09fc",
+  "candidate": "PrivateR515/a71abfed",
+  "hypothesis": "Existing known counts can remove initial working-list geometric growth/copy/repeated admission, without a new buffer or owner. Size is a hint, not a live iteration bound.",
+  "established": "Both targets74internal/73public focused pass;13goldens/allocation/budgetreuse and actual4casecatalog both-image goldens pass. Helper-list text allocation7.110percent lower, helperreport1.542percent lower; original text/nontext effectively flat, accounted peaksflat. Initial major allocation and lease wrapper now inside rollback boundary.",
+  "uncertainty": "FirstB942original elapsed+1.30..+4.84percent/CPU+1.09..+3.67 with1.20/2.26spreads; helper-5.20..-1.07elapsed/CPU-4.83..-0.73 with3.70/.63spreads. Floating+.24..+6.78elapsed/supportingCPU, candidate4.21spread. Callsnearflat/CPUuncertain. No universal CPU claim.",
+  "tradeoffs": [
+    "Conservative known-size admission can refuse sooner than incremental enumeration. Tiny-budget threshold equality is not a contract.",
+    "Live list changes after admission and underestimated/overestimated hints preserve actual iteration; growth still admits replacement overlap.",
+    "Generic/protocol drains still consume before item validation and await user cleanup."
+  ],
+  "next": "One unchanged original/helper/floating confirmation;8second rotated warmup/opposite preparation roles. Preserve original adverse results; decide retention/refinement/debt, no fixed-percent veto.",
+  "publicationHeld": true
+}

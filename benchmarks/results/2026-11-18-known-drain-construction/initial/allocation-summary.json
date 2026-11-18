@@ -1,0 +1,122 @@
+{
+  "boundary": "Complete warm runs including mediated I/O/reset, all output/file checks and result cleanup; compilation/startup/final cache teardown excluded. Process-wide CLR allocation counters, no forced GC. Compilation and first invocation clocks are local diagnostic observations, not a controlled CPU/source timing comparison.",
+  "rows": [
+    {
+      "case": "scripts.text-normalization.large",
+      "referenceBytes": 1255464,
+      "candidateBytes": 1255352,
+      "changePercent": -0.00892100450510247,
+      "referencePeak": 2355001,
+      "candidatePeak": 2355001,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "case": "scripts.numeric-squared-error.large",
+      "referenceBytes": 557584,
+      "candidateBytes": 557584,
+      "changePercent": 0.0,
+      "referencePeak": 906686,
+      "candidatePeak": 906686,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "case": "scripts.csv-invoice.large",
+      "referenceBytes": 4197286,
+      "candidateBytes": 4197286,
+      "changePercent": 0.0,
+      "referencePeak": 9432323,
+      "candidatePeak": 9432323,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "case": "scripts.report-render.large",
+      "referenceBytes": 2563388,
+      "candidateBytes": 2564110,
+      "changePercent": 0.02816584925886545,
+      "referencePeak": 3493303,
+      "candidatePeak": 3493303,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "case": "calls.positional.large",
+      "referenceBytes": 1060696,
+      "candidateBytes": 1060696,
+      "changePercent": 0.0,
+      "referencePeak": 1383,
+      "candidatePeak": 1383,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "case": "scripts.binary-normalization.large",
+      "referenceBytes": 536952,
+      "candidateBytes": 536952,
+      "changePercent": 0.0,
+      "referencePeak": 252246,
+      "candidatePeak": 252246,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "case": "generators.drain.large",
+      "referenceBytes": 3308992,
+      "candidateBytes": 3308992,
+      "changePercent": 0.0,
+      "referencePeak": 3781782,
+      "candidatePeak": 3781782,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "case": "scripts.report-render.tuple.sync",
+      "referenceBytes": 2654688,
+      "candidateBytes": 2654632,
+      "changePercent": -0.0021094757651329843,
+      "referencePeak": 4000049,
+      "candidatePeak": 4000049,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "case": "scripts.report-render.tuple.async",
+      "referenceBytes": 2656166,
+      "candidateBytes": 2655936,
+      "changePercent": -0.008659097360630419,
+      "referencePeak": 4000049,
+      "candidatePeak": 4000049,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "case": "scripts.text-normalization.helper-list",
+      "referenceBytes": 1385840,
+      "candidateBytes": 1287304,
+      "changePercent": -7.110200311724302,
+      "referencePeak": 3009731,
+      "candidatePeak": 3009731,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "case": "scripts.report-render.helper-list",
+      "referenceBytes": 2676364,
+      "candidateBytes": 2635102,
+      "changePercent": -1.5417185405273703,
+      "referencePeak": 3968180,
+      "candidatePeak": 3968148,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "referenceBytes": 1791328,
+      "candidateBytes": 1791272,
+      "changePercent": -0.0031261723146158715,
+      "referencePeak": 3954823,
+      "candidatePeak": 3954823,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "case": "scripts.numeric-squared-error.floating.large",
+      "referenceBytes": 491896,
+      "candidateBytes": 491896,
+      "changePercent": 0.0,
+      "referencePeak": 906686,
+      "candidatePeak": 906686,
+      "sharedBudgetBaselineRestored": true
+    }
+  ]
+}
