@@ -51,11 +51,13 @@ internal static partial class PyIteration
 
     internal static DrainLease DrainLeased(IEnumerable<object> items, LythonSourceSpan span, LythonRuntime.ExecutionContext context, int? maximumItems = null)
     {
-        var reservation = context.MemoryGovernor.ReserveTemporary(32, span);
-        var result = new List<object>();
-        var generator = (items as Cursor)?.GetBulkGenerator(context);
+        var initialCapacity = InitialDrainCapacity(items, maximumItems);
+        var reservation = context.MemoryGovernor.ReserveTemporary(checked(32L + 16L * initialCapacity), span);
         try
         {
+            context.CheckExecution(span);
+            var result = new List<object>(initialCapacity);
+            var generator = (items as Cursor)?.GetBulkGenerator(context);
             foreach (var item in items)
             {
                 if (result.Count == result.Capacity)
@@ -72,23 +74,24 @@ internal static partial class PyIteration
                 context.CheckExecution(span);
                 if (exhausted || result.Count == maximumItems) break;
             }
+            return new DrainLease(result, reservation);
         }
         catch
         {
             reservation.Dispose();
             throw;
         }
-
-        return new DrainLease(result, reservation);
     }
 
     internal static async ValueTask<DrainLease> DrainLeasedAsync(IAsyncEnumerable<object> items, LythonSourceSpan span, LythonRuntime.ExecutionContext context, int? maximumItems = null)
     {
-        var reservation = context.MemoryGovernor.ReserveTemporary(32, span);
-        var result = new List<object>();
-        var generator = (items as Cursor)?.GetBulkGenerator(context);
+        var initialCapacity = InitialDrainCapacity(items, maximumItems);
+        var reservation = context.MemoryGovernor.ReserveTemporary(checked(32L + 16L * initialCapacity), span);
         try
         {
+            context.CheckExecution(span);
+            var result = new List<object>(initialCapacity);
+            var generator = (items as Cursor)?.GetBulkGenerator(context);
             await foreach (var item in items.ConfigureAwait(false))
             {
                 if (result.Count == result.Capacity)
@@ -105,14 +108,23 @@ internal static partial class PyIteration
                 context.CheckExecution(span);
                 if (exhausted || result.Count == maximumItems) break;
             }
+            return new DrainLease(result, reservation);
         }
         catch
         {
             reservation.Dispose();
             throw;
         }
+    }
 
-        return new DrainLease(result, reservation);
+    // Capacity is a hint, never a snapshot or iteration bound. Admission may
+    // reenter and mutate a live list; the ordinary loop still observes those
+    // values and funds replacement overlap if the source outgrows this backing.
+    private static int InitialDrainCapacity(object items, int? maximumItems)
+    {
+        var count = items is Cursor cursor ? cursor.KnownCount.GetValueOrDefault()
+            : items is IReadOnlyCollection<object> known ? known.Count : 0;
+        return maximumItems is { } maximum ? Math.Min(count, Math.Max(0, maximum)) : count;
     }
 
     public static DrainLease MaterializeLeased(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context, int? maximumItems = null)

@@ -77,7 +77,10 @@ sizing precedes admission when that bound exceeds the array representation limit
 
 Joined text drains arbitrary iterables before item validation, preserving iteration
 effects and error precedence, then measures and writes final UTF-8 directly. Its
-private drain stays funded through output admission and completion. Join retains
+private drain stays funded through output admission and completion. Known sequence
+sizes admit initial working capacity once; iteration still observes mutations
+during host admission and funds replacement overlap on growth. Conservative size
+hints can refuse before enumeration. Join retains
 exact output capacity; neither operation needs a growing byte buffer or final
 payload copy. Actual retained results still fund their storage.
 

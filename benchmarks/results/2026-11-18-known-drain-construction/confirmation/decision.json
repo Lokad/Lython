@@ -1,0 +1,17 @@
+{
+  "retain": true,
+  "state": "Integrated, focused-qualified; full delivery batched with next runtime milestone",
+  "candidate": "a71abfed",
+  "reference": "Qualified2ede09fc",
+  "reasons": [
+    "One capacity-level preflight removes initial geometric growth/copy/admission for known-size private drains; no new buffer/owner/cache/policy.",
+    "Helper-list normalization allocation7.110percent lower; helperreport1.542percent lower; other diagnostics effectivelyflat/peaksflat.",
+    "Both actual targets74internal/73public focused,13goldens/reuse/actual4case32filechecks pass; live source mutation/hints/boundedconsumers/refusal/cleanup preserved."
+  ],
+  "CPUDecision": "No consistent CPU gain established. Original firstB942adversity retained; B943 original-1.24..+1.38elapsed/CPU-0.89..+1.19 with.017/2.63spreads. Helper-2.00..+2.11elapsed/CPU+.03..+1.75 with.51/3.67spreads. Floating-.83..+3.88elapsed/CPU-.79..+5.06 with.55/4.18spreads. Accept unresolved process variability/possible modest CPU debt for established allocation/capacity benefit. Revisit controls at next representative helper milestone, no further unchanged campaign now.",
+  "tradeoff": "Conservative known-size admission may reject earlier, including overestimated hints. Allocation before mutation remains admitted; live iteration/growth still funds replacement overlap. No tiny-budget threshold promise.",
+  "all587ProductionInputsMatchMeasuredSource": true,
+  "binaryEqualityInferred": false,
+  "fullDelivery": "Pending coherent R515/R516 boundary, not inherited from reference",
+  "publicationHeld": true
+}

@@ -32,7 +32,7 @@ public sealed class StringJoinCleanupTests
             var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null));
             // Drain shell/slots remain live through the one complete final
             // output admission. Leave one byte too little.
-            var available = 32 + 64 + PyString.EstimateApproximateBytes(9) - 1;
+            var available = 32 + 16L * parts.Count + PyString.EstimateApproximateBytes(9) - 1;
             ILythonMemoryReservation? blocker = null;
             if (shared) Assert.True(budget.TryReserve(limit - budget.ReservedBytes - available, out blocker));
             else

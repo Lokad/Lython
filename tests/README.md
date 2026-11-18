@@ -1,5 +1,10 @@
 # Testing Lython
 
+[Known-size drains](Lokad.Lython.Tests/KnownDrainOwnershipTests.cs) preserve live
+source changes during admission, aliases, underestimated hints, bounded consumers
+and refusal before enumeration. Scratch stays funded until cleanup; the shared
+allowance is reusable afterward. Existing asynchronous drain cleanup checks apply.
+
 [Container displays](Lokad.Lython.PublicApi.Tests/ContainerDisplayPipelineTests.cs)
 preserve guest aliases, duplicate-key identity, protocol order, partial effects
 and protected cleanup across helper handoff. Escaping results remain funded

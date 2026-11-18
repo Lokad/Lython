@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Admit known-size iterator working capacity once, preserving live iteration,
+  replacement overlap, cancellation and cleanup. Conservative hints can reject
+  earlier; initial backing and lease construction share rollback protection.
+
 - Construct ordinary text splits directly in admitted final storage, removing
   temporary range inventories and their growth/loan lifecycle. Common separators
   and line boundaries use bounded bulk sizing; conservative preflight headroom
