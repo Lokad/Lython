@@ -52,8 +52,11 @@ and .NET 11 RC3. The remaining direct normalization phases use the preceding
 0.501–0.503 ms to 0.733–0.737 ms across collections, with no established cause.
 The current CPython helper compile-to-result clock is lower than its
 separately warmed execution clock. The measured phase ratios retain that
-uncertainty. Use paired Lython comparisons to attribute code changes.
+uncertainty. In a separate same-process diagnostic on `bfe076110`, the
+inversion disappeared and the helper remained slower in both phases.
+Use paired Lython comparisons to attribute code changes.
 [Current text checkpoint](../benchmarks/results/2026-11-18-line-count-cpython-checkpoint/README.md) ·
+[Same-process diagnostic](../benchmarks/results/2026-11-18-current-helper-phases/README.md) ·
 [Preceding text checkpoint](../benchmarks/results/2026-11-18-normalization-cpython-checkpoint/README.md) ·
 [Earlier helper measurements](../benchmarks/results/2026-11-18-bindings-cpython-checkpoint/README.md).
 
