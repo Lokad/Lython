@@ -1,0 +1,48 @@
+[
+  {
+    "framework": "net11.0",
+    "exitCode": 0,
+    "coreSHA256": "65fcf7d0d4aff91f3466ac924e87a3c7b4759c3cf9eed4bf130ea4fa0034b6f5",
+    "counts": {
+      "total": "7",
+      "executed": "7",
+      "passed": "7",
+      "failed": "0",
+      "error": "0",
+      "timeout": "0",
+      "aborted": "0",
+      "inconclusive": "0",
+      "passedButRunAborted": "0",
+      "notRunnable": "0",
+      "notExecuted": "0",
+      "disconnected": "0",
+      "warning": "0",
+      "completed": "0",
+      "inProgress": "0",
+      "pending": "0"
+    }
+  },
+  {
+    "framework": "net10.0",
+    "exitCode": 0,
+    "coreSHA256": "9d4527ec18df1e7d240e89b5eae4ed5dc1e4288d65f2b175f07a69af9cbd22bc",
+    "counts": {
+      "total": "7",
+      "executed": "7",
+      "passed": "7",
+      "failed": "0",
+      "error": "0",
+      "timeout": "0",
+      "aborted": "0",
+      "inconclusive": "0",
+      "passedButRunAborted": "0",
+      "notRunnable": "0",
+      "notExecuted": "0",
+      "disconnected": "0",
+      "warning": "0",
+      "completed": "0",
+      "inProgress": "0",
+      "pending": "0"
+    }
+  }
+]
