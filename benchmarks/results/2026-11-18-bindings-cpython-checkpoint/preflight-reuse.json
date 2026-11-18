@@ -1,0 +1,6 @@
+{
+  "source": "R510 actual copied32-file candidate/same unchanged four-case catalog; completed local verification includes independent CPython goldens",
+  "all32HashesReverified": true,
+  "catalogSHA256": "ec3e50ff1abda84c8f9f70fa696930dab6bb4ff818b5e55daf9ea34ed2fab48d",
+  "unchangedVerificationNotRepeated": true
+}

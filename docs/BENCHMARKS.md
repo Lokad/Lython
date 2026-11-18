@@ -8,9 +8,9 @@
 | Numeric CSV quality report | 4,096 records / 127,031 B | 4.066–4.166 ms | 4.574–4.693 ms | 0.87–0.91× | Diagnostic; controls L/C 2.46/2.60%; IQR≤1.47% |
 | Text normalization | 4,096 lines / 52,224 B | 0.803–0.804 ms | 0.501–0.503 ms | 1.60–1.60× | Diagnostic2e5/1bce; controls L/C 0.04/0.38%; IQR≤1.03% |
 | JSON-lines aggregation with a helper | 4,096 records / 110,592 B | 3.548–3.613 ms | 4.077–4.102 ms | 0.86–0.89× | Diagnostic; controls L/C 1.85/0.62%; IQR≤0.39% |
-| Floating JSON numeric report | 4,096 pairs / 56,495 B | 1.320–1.346 ms | 0.813–0.818 ms | 1.61–1.66× | Diagnostic2e5/1bce; controls L/C 1.99/0.60%; IQR≤2.50% |
+| Floating JSON numeric report | 4,096 pairs / 56,495 B | 1.137–1.165 ms | 0.813–0.820 ms | 1.39–1.43× | Diagnostic3f/a503; controls L/C 2.52/0.78%; IQR≤0.79% |
 
-| Helper text normalization | 4,096 lines / 52,224 B | 1.117–1.124 ms | 0.854–0.876 ms | 1.28–1.32× | Diagnostic7db/c036; controls L/C 0.63/2.58%; IQR≤1.56% |
+| Helper text normalization | 4,096 lines / 52,224 B | 1.130–1.137 ms | 0.856–0.907 ms | 1.25–1.33× | Diagnostic3f/a503; controls L/C 0.57/6.02%; IQR≤1.52% |
 | CSV field validation | 4,128 rows / 128,183 B | 2.975–3.003 ms | 4.311–4.327 ms | 0.69–0.70× | Diagnostic7db/c036; controls L/C 0.92/0.37%; IQR≤2.99% |
 
 **Ratio = Lython elapsed / CPython elapsed; above one means slower.** Ranges cover
@@ -36,17 +36,17 @@ The configuration and formatted-report rows use qualified **62786960 / 5ae019db*
 measured2026-11-18 on the same machine/toolchains; report CPython IQR5.34%limits
 precision. [Sources and controls](../benchmarks/results/2026-11-18-agent-cpython-checkpoint/README.md).
 
-Text/floating rows use committed retained **2e585229 / frozen1bce52ad**, measured
-**2026-11-18**, six jobs226.36seconds. [Full platform/package qualification](../benchmarks/results/2026-11-18-buffered-yield-transport/delivery/README.md)
-passed for these production inputs; no rebuilt-binary equality is inferred. Textwarm controls are small; floating fresh CPython control
-4.91%limits precision. Compilation/warm/fresh are separately observed; gaps remain
-in execution. [Sources, controls and raw data](../benchmarks/results/2026-11-18-affected-cpython-checkpoint/README.md).
+Original text normalization keeps its qualified **2e585229 / 1bce52ad** measurement
+of2026-11-18. [Sources and original controls](../benchmarks/results/2026-11-18-affected-cpython-checkpoint/README.md).
 
-Helper text and CSV-validation rows use **7db1de02 / c0367d98**, measured
-**2026-11-18** on the same machine/toolchains. **Full qualification failed**:
-entry-error context after forwarded results needs correction. These successful
-scripts are diagnostic for that exact revision, not corrected HEAD. Helper fresh
-IQR reaches 4.89%. [Sources, controls and limitations](../benchmarks/results/2026-11-18-helper-validation-cpython/README.md).
+Helper text/floating rows now use committed retained **3f873227 / a5038a28**,
+measured **2026-11-18** on the same machine/toolchains. Full44256409242 is pending.
+Helper warm CPython control6.02% limits precision; helper fresh control3.48% and
+floating warm Lython2.52% remain visible. [Exact source, boundaries and raw data](../benchmarks/results/2026-11-18-bindings-cpython-checkpoint/README.md).
+
+CSV validation retains **7db1de02 / c0367d98**; its original full run failed entry-
+error-context regressions. Later corrected source qualified independently; these
+earlier timings are not relabelled. [Sources and limitation](../benchmarks/results/2026-11-18-helper-validation-cpython/README.md).
 
 Warm clocks include Run, mediated RAM-backed file I/O, stdout/file golden checks
 and previous-result cleanup. Lython's host supplies efficient range/append I/O;
@@ -69,23 +69,23 @@ This is useful workload latency, not equivalent containment or cold startup.
 | Text normalization | Compile-to-result | 0.873–0.878 ms | 0.593–0.595 ms | 1.47–1.48× | Diagnostic2e5/1bce; controls L/C 0.56/0.39%; IQR≤0.35% |
 | JSON-lines aggregation with a helper | Compilation only | 0.054–0.054 ms | 0.054–0.054 ms | 0.99–1.00× | Diagnostic; controls L/C 0.63/0.11%; IQR≤0.91% |
 | JSON-lines aggregation with a helper | Compile and execute once | 3.642–3.707 ms | 4.192–4.194 ms | 0.87–0.88× | Diagnostic; controls L/C 1.78/0.05%; IQR≤0.45% |
-| Floating JSON numeric report | Compilation only | 0.056–0.057 ms | 0.061–0.061 ms | 0.91–0.93× | Diagnostic2e5/1bce; controls L/C 1.97/0.43%; IQR≤0.86% |
-| Floating JSON numeric report | Compile-to-result | 1.371–1.397 ms | 0.948–0.995 ms | 1.38–1.47× | Diagnostic2e5/1bce; controls L/C 1.93/4.91%; IQR≤0.98% |
+| Floating JSON numeric report | Compilation only | 0.056–0.056 ms | 0.061–0.061 ms | 0.91–0.92× | Diagnostic3f/a503; controls L/C 0.03/0.87%; IQR≤0.75% |
+| Floating JSON numeric report | Compile-to-result | 1.251–1.268 ms | 0.954–0.956 ms | 1.31–1.33× | Diagnostic3f/a503; controls L/C 1.37/0.19%; IQR≤1.00% |
 
-| Helper text normalization | Compilation only | 0.046–0.047 ms | 0.044–0.044 ms | 1.03–1.05× | Diagnostic7db/c036; controls L/C 1.16/0.53%; IQR≤0.38% |
-| Helper text normalization | Compile-to-result | 1.223–1.244 ms | 0.809–0.810 ms | 1.51–1.54× | Diagnostic7db/c036; controls L/C 1.74/0.13%; IQR≤4.89% |
+| Helper text normalization | Compilation only | 0.047–0.047 ms | 0.044–0.044 ms | 1.05–1.06× | Diagnostic3f/a503; controls L/C 0.47/0.39%; IQR≤0.97% |
+| Helper text normalization | Compile-to-result | 1.229–1.231 ms | 0.802–0.830 ms | 1.48–1.53× | Diagnostic3f/a503; controls L/C 0.13/3.48%; IQR≤3.43% |
 | CSV field validation | Compilation only | 0.026–0.026 ms | 0.027–0.027 ms | 0.96–0.98× | Diagnostic7db/c036; controls L/C 1.70/0.30%; IQR≤2.30% |
 | CSV field validation | Compile-to-result | 2.976–3.039 ms | 4.384–4.402 ms | 0.68–0.69× | Diagnostic7db/c036; controls L/C 2.12/0.42%; IQR≤0.74% |
 
 Compilation includes compiled-owner disposal. Compile-to-result includes compilation,
 one execution and compiled-owner disposal. Separately warmed medians are not
 additive. Warm-only numbers do not describe single-use scripts; use compile-to-result.
-Floating fresh CPython's4.91%control movement limits precision; all medians remain
+Helper warm CPython's6.02%control movement limits precision; all medians remain
 visible. Process startup was not measured.
 
 ## Uncertainty and earlier measurements
 
-The floating fresh CPython control, report IQR and other distributions stay
+The helper warm/fresh controls, floating warm control, report IQR and distributions stay
 visible above. The [previous guide](../benchmarks/results/2026-11-17-current-cpython-checkpoint/prior-BENCHMARKS.md)
 preserves earlier helper-text/report, configuration, file-search and CSV invoice
 measurements with their named revisions, original adverse controls and unresolved
@@ -97,6 +97,8 @@ stress and installed Release consumers; the new2e5production inputs are also
 [fully qualified](../benchmarks/results/2026-11-18-buffered-yield-transport/delivery/README.md).
 Qualification does not imply rebuilt-binary equality or universal performance.
 Original adverse controls and failed conditions remain linked in the evidence.
+New3f/a503 full qualification is pending independently; diagnostic ratios are
+specific to that frozen source/image.
 
 ## Improvements within Lython
 
