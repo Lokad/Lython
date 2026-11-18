@@ -1,0 +1,12 @@
+{
+  "productionSource": "Qualified3f873227/a5038a28 unchanged",
+  "productionFilesChanged": 0,
+  "newNativeRegressionCases": 4,
+  "frameworks": {
+    "net11.0": 7,
+    "net10.0": 7
+  },
+  "nonincrementalBuildPassed": true,
+  "contextRestorationAsserted": true,
+  "fullUnchangedQualificationRepeated": false
+}
