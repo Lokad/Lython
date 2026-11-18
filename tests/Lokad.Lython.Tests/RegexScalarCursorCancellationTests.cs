@@ -25,7 +25,8 @@ public sealed class RegexScalarCursorCancellationTests
     {
         // A substantial nonallocating rewind, independent of provider entry or
         // interpreter exit checks. The subject's character count is warmed first.
-        const int characters = 8 * 1024 * 1024;
+        // Keep the rewind observable on the vectorized counter as well.
+        const int characters = 24 * 1024 * 1024;
         var budget = new LythonMemoryBudget(64 * 1024 * 1024);
         using (var owner = budget.CreateScope())
         using (var cancellation = new CancellationTokenSource())

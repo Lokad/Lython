@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Reuse bounded UTF-8 scalar counting for regex capture offsets on the
+  original subject. Keep byte-range validation and cooperative cancellation.
+
 - Parse numeric literals once for frontend analysis, annotations and execution.
   Carry inferred numeric facts as values and preserve spelling-sensitive
   diagnostics. Pack prefixed integer digits directly into magnitude storage.

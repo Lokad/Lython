@@ -179,7 +179,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
 
     internal int GetCharacterCount(CancellationToken cancellationToken, LythonSourceSpan? span)
         => _runeLength >= 0 ? _runeLength
-            : (_runeLength = CountUtf8Units(false, cancellationToken, span));
+            : (_runeLength = CountUtf8Units(Utf8Span, false, cancellationToken, span));
 
     /// <summary>
     /// Counts the UTF-16 code units the decoded CLR string needs. Astral runes
@@ -193,12 +193,11 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         span ??= PyStructuralGuard.AmbientSpan;
         context?.CheckExecution(span);
         if (!cancellationToken.CanBeCanceled) cancellationToken = context?.State.CancellationToken ?? default;
-        return CountUtf8Units(true, cancellationToken, span);
+        return CountUtf8Units(Utf8Span, true, cancellationToken, span);
     }
 
-    private int CountUtf8Units(bool utf16, CancellationToken cancellationToken, LythonSourceSpan? span)
+    internal static int CountUtf8Units(ReadOnlySpan<byte> source, bool utf16, CancellationToken cancellationToken, LythonSourceSpan? span)
     {
-        var source = Utf8Span;
         var units = 0;
         // Valid UTF-8 has one leading byte per scalar; astral leads add a second
         // UTF-16 unit. Byte counts compose even across scalar boundaries.

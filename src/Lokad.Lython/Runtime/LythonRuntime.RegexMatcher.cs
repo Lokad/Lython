@@ -189,21 +189,13 @@ internal sealed partial class LythonRuntime
                         SelectCloserBoundary(boundary, new(window.StartByte, window.Pos), ref nearest);
                     if (window.EndByte != input.Length)
                         SelectCloserBoundary(boundary, new(window.EndByte, window.EndPos), ref nearest);
-                    (offset, scalar) = nearest;
-                }
-                while (boundary >= 0 && offset > boundary)
-                {
-                    if ((scalar & 1023) == 0) context.CheckExecution(span);
-                    Rune.DecodeLastFromUtf8(input[..offset], out _, out var width);
-                    offset -= width;
-                    scalar--;
-                }
-                while (offset < boundary)
-                {
-                    if ((scalar & 1023) == 0) context.CheckExecution(span);
-                    Rune.DecodeFromUtf8(input[offset..], out _, out var width);
-                    offset += width;
-                    scalar++;
+                    // Both ends are known UTF-8 boundaries on the original
+                    // subject. Count leading bytes without decoding each rune.
+                    var token = context.State.CancellationToken;
+                    scalar = boundary >= nearest.ByteOffset
+                        ? nearest.ScalarOffset + PyString.CountUtf8Units(input[nearest.ByteOffset..boundary], false, token, span)
+                        : nearest.ScalarOffset - PyString.CountUtf8Units(input[boundary..nearest.ByteOffset], false, token, span);
+                    offset = boundary;
                 }
                 var value = boundary < 0 ? -1 : scalar;
                 var slot = endpoint / 2;

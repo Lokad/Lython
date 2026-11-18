@@ -2170,10 +2170,11 @@ are diagnostics, not separate allowances. See [memory controls](../tests/Lokad.L
 
 Regex preparation carries the original UTF-8 subject and independently clamped
 scalar/byte window bounds. Captures identify absolute byte ranges; they do not
-carry a second copy of their text. Lython projects Python scalar positions using
-sparse capture endpoints and an iteration checkpoint, and copies retained values from
-the original subject before a cursor can advance and checks capture bounds and
-UTF-8 boundaries before projection. Provider working/result borrows remain alive
+carry a second copy of their text. Lython checks capture bounds and UTF-8
+boundaries, then counts UTF-8 scalars from nearby known endpoints or the
+iteration checkpoint, checking cancellation during long scans. It copies retained
+values from the original subject before a cursor can advance. Provider
+working/result borrows remain alive
 through that copy and actual cleanup. Native providers need no dense coordinate
 map or UTF-16 capture snapshot; the optional adapter may use such bridges while
 its backend evolves. Contract/semantic validation is separate from backend

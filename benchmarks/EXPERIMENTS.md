@@ -9347,3 +9347,13 @@ facts to remove repeated parsing and the abstract numeric text representation.
 R532/B962 [shared numeric compiler values](results/2026-11-18-numeric-compiler-facts/comparison/README.md) removed re-parsing across abstract checks, annotations and execution. Both targets passed 52 white-box and 803 public tests and matched 26 probes through both APIs. The six quiet VM jobs took 278.71 seconds. Config and CSV compile elapsed improved slightly with mixed CPU, while fresh and warm results were inconclusive. Compile allocations and execution peaks were effectively unchanged. Retained for simpler compiler value transport. The first staging refusal and corrected archive proof remain visible.
 
 R533 [shared UTF-8 capture counting](results/2026-11-18-regex-capture-count/README.md) started independently of compiler delivery. The core uses its existing bounded byte counter for the distance between known capture boundaries. Both public suites passed 679 checks. An initial .NET 11 cancellation test finished before cancellation. The same assertions pass on both targets with a larger rewind within the original budget. Complete-script comparison is pending.
+
+[R533/B963 shared UTF-8 capture projection](results/2026-11-18-regex-capture-count/comparison/README.md)
+removed both directional rune loops in favor of the existing bounded UTF-8
+counter. The four-job quiet-VM comparison shows Unicode interior capture elapsed
+3.41–4.86% lower, CPU 4.81–6.60% lower. Unicode tail elapsed 0.33–2.57% and CPU
+1.72% higher are retained as regression debt. ASCII and short controls have mixed
+or small results. Peaks and owner balances match. Both actual local targets passed
+679 public checks and the refined 16-test cancellation/width set. The original
+.NET 11 short-fixture failure remains in the initial evidence. Retain the core
+simplification with the measured tradeoff. Adapter qualification is separate.
