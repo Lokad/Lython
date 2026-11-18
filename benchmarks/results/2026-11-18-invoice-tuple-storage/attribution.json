@@ -1,0 +1,201 @@
+{
+  "all": 9043,
+  "totalWeight": 965953344,
+  "unresolved": 52,
+  "totalTypes": [
+    {
+      "type": "Lokad.Lython.Runtime.Text.PyString",
+      "Count": 2942,
+      "Weight": 313577032
+    },
+    {
+      "type": "System.Numerics.BigInteger",
+      "Count": 2209,
+      "Weight": 235461840
+    },
+    {
+      "type": "Lokad.Lython.Runtime.PyDict",
+      "Count": 909,
+      "Weight": 96889400
+    },
+    {
+      "type": "TemporaryMemoryReservation",
+      "Count": 807,
+      "Weight": 86022728
+    },
+    {
+      "type": "ExecutableSlot[]",
+      "Count": 706,
+      "Weight": 75257456
+    },
+    {
+      "type": "System.Object[]",
+      "Count": 646,
+      "Weight": 68857680
+    },
+    {
+      "type": "Lokad.Lython.Runtime.PyTuple",
+      "Count": 455,
+      "Weight": 48496952
+    },
+    {
+      "type": "System.Byte[]",
+      "Count": 275,
+      "Weight": 31370096
+    },
+    {
+      "type": "Lokad.Lython.Runtime.Text.GovernedByteBuilder",
+      "Count": 21,
+      "Weight": 2242336
+    },
+    {
+      "type": "ExecutableLookupCache[]",
+      "Count": 12,
+      "Weight": 1279392
+    },
+    {
+      "type": "\u003CGetEnumerator\u003Ed__11",
+      "Count": 10,
+      "Weight": 1066000
+    },
+    {
+      "type": "System.String",
+      "Count": 9,
+      "Weight": 957912
+    },
+    {
+      "type": "System.Collections.Generic.Dictionary\u00602[System.String,System.Byte[]]",
+      "Count": 8,
+      "Weight": 852800
+    },
+    {
+      "type": "System.IO.FileInfo",
+      "Count": 5,
+      "Weight": 533000
+    },
+    {
+      "type": "Lokad.Lython.Runtime.PyList",
+      "Count": 3,
+      "Weight": 319816
+    },
+    {
+      "type": "Entry[System.String,System.Object][]",
+      "Count": 3,
+      "Weight": 319800
+    },
+    {
+      "type": "ByteFile",
+      "Count": 3,
+      "Weight": 319800
+    },
+    {
+      "type": "NativeKey[]",
+      "Count": 3,
+      "Weight": 319848
+    },
+    {
+      "type": "Cursor",
+      "Count": 3,
+      "Weight": 319800
+    },
+    {
+      "type": "Entry[]",
+      "Count": 2,
+      "Weight": 213200
+    },
+    {
+      "type": "Buffer",
+      "Count": 2,
+      "Weight": 213200
+    },
+    {
+      "type": "System.Collections.Immutable.ImmutableArray\u00601[System.String]",
+      "Count": 1,
+      "Weight": 106600
+    },
+    {
+      "type": "System.Func\u00603[System.Object,System.Object,System.Boolean]",
+      "Count": 1,
+      "Weight": 106600
+    },
+    {
+      "type": "RecordKeys",
+      "Count": 1,
+      "Weight": 106616
+    },
+    {
+      "type": "ExceptionTypeValue",
+      "Count": 1,
+      "Weight": 106600
+    },
+    {
+      "type": "Entry[System.Object,System.Runtime.CompilerServices.StrongBox\u00601[System.Int64]][]",
+      "Count": 1,
+      "Weight": 106600
+    },
+    {
+      "type": "System.Threading.Tasks.Task",
+      "Count": 1,
+      "Weight": 103840
+    },
+    {
+      "type": "Microsoft.Win32.SafeHandles.SafeFileHandle",
+      "Count": 1,
+      "Weight": 106600
+    },
+    {
+      "type": "Lokad.Lython.Runtime.CallArgumentValue[]",
+      "Count": 1,
+      "Weight": 106600
+    },
+    {
+      "type": "\u003C\u003Ec__DisplayClass102_0",
+      "Count": 1,
+      "Weight": 106600
+    },
+    {
+      "type": "System.Int32[]",
+      "Count": 1,
+      "Weight": 106600
+    }
+  ],
+  "tupleOrigins": [
+    {
+      "path": "ExecutableSlot[] / module path",
+      "Count": 512,
+      "Weight": 54579192,
+      "ObjectBytes": 45056
+    },
+    {
+      "path": "Lokad.Lython.Runtime.PyTuple / module path",
+      "Count": 345,
+      "Weight": 36773920,
+      "ObjectBytes": 16560
+    },
+    {
+      "path": "ExecutableSlot[] / initialized frame",
+      "Count": 194,
+      "Weight": 20678264,
+      "ObjectBytes": 17072
+    },
+    {
+      "path": "TemporaryMemoryReservation / module path",
+      "Count": 180,
+      "Weight": 19186528,
+      "ObjectBytes": 5760
+    },
+    {
+      "path": "Lokad.Lython.Runtime.PyTuple / initialized frame",
+      "Count": 110,
+      "Weight": 11723032,
+      "ObjectBytes": 5280
+    },
+    {
+      "path": "TemporaryMemoryReservation / initialized frame",
+      "Count": 86,
+      "Weight": 9167680,
+      "ObjectBytes": 2752
+    }
+  ],
+  "limits": "Sample types and inclusive stacks attribute trigger allocations approximately. Counters can miss allocations, including inlined ancestry. Weights are neither exact per-type bytes nor removable CPU."
+}
