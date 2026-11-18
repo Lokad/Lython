@@ -4,7 +4,10 @@ B977 compared `12643cec` with commit `e507b4667` / `4eb89711` on the
 quiet Azure F4as_v7 VM on 2026-11-18. Only the core differed between the
 verified 32-file worker images. All three scripts matched the existing
 CPython output and file goldens. Runtime was .NET 11 RC3 with normal GC
-and tiering.
+and tiering. The decoded fixtures contain 4,096 invoice records (127,031 B)
+and 5,120 validated records (68,625 B). The catalog nominal size is 1,024
+for each. The larger field-validation fixture measured against CPython is
+a separate script and input.
 
 The dictionary reader keeps its physical line number in an existing scalar
 slot and publishes a stable Python object when the attribute is read. Its

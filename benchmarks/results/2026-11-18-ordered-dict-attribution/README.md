@@ -4,7 +4,7 @@ R544 sampled exact d9234f876 / 33025cee on Windows on 2026-11-18. Each
 verified worker used ordinary GC and tiering, three seconds of warmup and six
 seconds of managed thread sampling. The scaled manifest has 256 declared
 targets and 192 emitted targets. The small manifest has four declared
-targets. The invoice is the existing 1,024-row CSV program.
+targets. The invoice fixture contains 4,096 data records. Its nominal catalog size is 1,024.
 
 | Complete script | Managed samples | Resolved Lython stacks | Native entry/version iterator samples |
 | --- | ---: | ---: | ---: |

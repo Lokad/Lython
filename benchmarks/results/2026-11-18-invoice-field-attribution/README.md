@@ -1,7 +1,7 @@
 # CSV invoice field and line-number allocation attribution
 
-R549 reuses the verified R545 allocation trace of the 1,024-row CSV
-invoice on `33025cee`. No workload was rerun. The three sampled types
+R549 reuses the verified R545 allocation trace of the CSV invoice on
+`33025cee`. Its input contains 4,096 data records under a nominal size of 1,024. No workload was rerun. The three sampled types
 below account for much of the observed allocation weight.
 
 - Of 2,942 `PyString` triggers, 2,940 have the parser's `FinishRecord`

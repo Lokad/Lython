@@ -1,8 +1,8 @@
 # CSV invoice tuple allocation attribution
 
 R545 used the unchanged d9234f876 / 33025cee image on Windows on
-2026-11-18. All 32 worker image files were verified. The existing 1,024-row
-invoice ran with normal GC and tiering. Fifteen warm batches passed the existing
+2026-11-18. All 32 worker image files were verified. The existing invoice with 4,096 data records ran with normal GC and tiering.
+Its nominal catalog size is 1,024. Fifteen warm batches passed the existing
 stdout and file checks during capture. The worker joined and its fixture closed.
 
 | Allocation triggered under `FromIntegerSlots` | Module path samples | Initialized frame samples | Trigger object bytes | Share of sampled weight |

@@ -7,13 +7,14 @@
 | Formatted report | 3,072 records / 189,441 B | 2.934–2.942 ms | 2.671–2.737 ms | 1.07–1.10× | Diagnostic627/5ae; controls L/C 0.27/2.47%; IQR≤5.34% |
 | JSON-lines record transform | 4,096 records / 110,592 B | 3.898–4.012 ms | 4.388–4.423 ms | 0.88–0.91× | Diagnostic ea8/cf; controls L/C 2.93/0.79%; IQR≤0.79% |
 | Numeric CSV quality report | 4,096 records / 127,031 B | 4.066–4.166 ms | 4.574–4.693 ms | 0.87–0.91× | Diagnostic; controls L/C 2.46/2.60%; IQR≤1.47% |
-| Text normalization | 52,224 B / 4,096 lines | 0.774–0.785 ms | 0.725–0.737 ms | 1.05–1.08× | Diagnostic bdab/7170. Controls L/C 1.38 / 1.53%. IQR ≤0.99%. |
+| CSV invoice | 4,096 data records / 127,031 B | 7.090–7.116 ms | 6.399–6.500 ms | 1.09–1.11× | Diagnostic c14c/1264. Controls L/C 0.37 / 1.57%. IQR ≤1.62%. |
+| Text normalization | 52,224 B / 4,096 lines | 0.794–0.804 ms | 0.508–0.511 ms | 1.55–1.58× | Diagnostic c14c/1264. Controls L/C 1.25 / 0.61%. CPython varies across collections. |
 | JSON-lines aggregation with a helper | 4,096 records / 110,592 B | 3.444–3.606 ms | 4.227–4.238 ms | 0.81–0.85× | Diagnostic R534/40db; Lython control 4.69%; IQR≤2.36% |
 | Floating JSON numeric report | 4,096 pairs / 56,495 B | 1.036–1.063 ms | 0.833–0.835 ms | 1.24–1.28× | Diagnostic R534/40db; controls L/C 2.56/0.33%; IQR≤1.64% |
 | Helper text normalization | 4,096 lines / 52,224 B | 1.130–1.137 ms | 0.856–0.907 ms | 1.25–1.33× | Diagnostic3f/a503; controls L/C 0.57/6.02%; IQR≤1.52% |
-| CSV field validation | 4,128 rows / 128,183 B | 2.975–3.003 ms | 4.311–4.327 ms | 0.69–0.70× | Diagnostic7db/c036; controls L/C 0.92/0.37%; IQR≤2.99% |
+| CSV field validation | 4,128 data records / 128,183 B | 2.821–2.860 ms | 4.313–4.348 ms | 0.65–0.66× | Diagnostic c14c/1264. Controls L/C 1.41 / 0.82%. IQR ≤0.59%. |
 
-**Ratio = Lython elapsed / CPython elapsed; above one means slower.** Ranges cover
+**Ratio = Lython elapsed / CPython elapsed. Above one means slower.** Ranges cover
 the combinations of two process medians per engine, not confidence intervals.
 Controls L/C report the difference between the two Lython/CPython medians. These
 complete scripts show substantial text/numeric gaps alongside faster CSV/JSON-lines.
@@ -36,11 +37,9 @@ The formatted-report row uses qualified **62786960 / 5ae019db**,
 measured2026-11-18 on the same machine/toolchains; report CPython IQR5.34%limits
 precision. [Sources and controls](../benchmarks/results/2026-11-18-agent-cpython-checkpoint/README.md).
 
-The configuration edit and manifest rows and the warm text control use
+The configuration edit and manifest rows use
 **bdab88c54 / 7170869d**, measured **2026-11-18** against stock **CPython 3.13.16**
-on the same quiet VM and toolchains. The text control's CPython time moved from
-0.501–0.503 ms in the earlier collection to 0.725–0.737 ms here with the same
-source and fixture. Cross-collection movement remains unexplained.
+on the same quiet VM and toolchains.
 [New observations](../benchmarks/results/2026-11-18-json-options-cpython/README.md) ·
 [Earlier configuration](../benchmarks/results/2026-11-18-agent-cpython-checkpoint/README.md) ·
 [Earlier text phases](../benchmarks/results/2026-11-18-affected-cpython-checkpoint/README.md).
@@ -62,9 +61,11 @@ JSON fixture has 1,024 blank lines in addition to its data records. Lython's
 4.69% control spread limits the precision of that row.
 [Source, timing boundaries and observations](../benchmarks/results/2026-11-18-json-numeric-cpython/README.md).
 
-CSV validation retains **7db1de02 / c0367d98**; its original full run failed entry-
-error-context regressions. Later corrected source qualified independently; these
-earlier timings are not relabelled. [Sources and limitation](../benchmarks/results/2026-11-18-helper-validation-cpython/README.md).
+The CSV invoice, field validation and warm text rows use **c14c7c92b / 12643cec**,
+measured **2026-11-18** against stock **CPython 3.13.16** on the same quiet VM.
+The text control's CPython elapsed was 0.501–0.503 ms in the earlier collection,
+0.725–0.737 ms in B973, and 0.508–0.511 ms here with the same source and fixture.
+The cross-collection movement remains unexplained. [Current CSV and text checkpoint](../benchmarks/results/2026-11-18-csv-cpython-checkpoint/README.md) · [Earlier validation source and failed-delivery limitation](../benchmarks/results/2026-11-18-helper-validation-cpython/README.md).
 
 Warm clocks include Run, mediated RAM-backed file I/O, stdout/file golden checks
 and previous-result cleanup. Lython's host supplies efficient range/append I/O;
@@ -93,8 +94,10 @@ This is useful workload latency, not equivalent containment or cold startup.
 | Floating JSON numeric report | Compile-to-result | 1.138–1.139 ms | 0.964–0.972 ms | 1.17–1.18× | Diagnostic R534/40db; controls L/C 0.14/0.86%; IQR≤1.26% |
 | Helper text normalization | Compilation only | 0.047–0.047 ms | 0.044–0.044 ms | 1.05–1.06× | Diagnostic3f/a503; controls L/C 0.47/0.39%; IQR≤0.97% |
 | Helper text normalization | Compile-to-result | 1.229–1.231 ms | 0.802–0.830 ms | 1.48–1.53× | Diagnostic3f/a503; controls L/C 0.13/3.48%; IQR≤3.43% |
-| CSV field validation | Compilation only | 0.026–0.026 ms | 0.027–0.027 ms | 0.96–0.98× | Diagnostic7db/c036; controls L/C 1.70/0.30%; IQR≤2.30% |
-| CSV field validation | Compile-to-result | 2.976–3.039 ms | 4.384–4.402 ms | 0.68–0.69× | Diagnostic7db/c036; controls L/C 2.12/0.42%; IQR≤0.74% |
+| CSV invoice | Compilation only | 0.0983–0.0994 ms | 0.0926 ms | 1.06–1.07× | Diagnostic c14c/1264. Controls L/C 1.17 / 0.09%. IQR ≤1.10%. |
+| CSV invoice | Compile-to-result | 7.071–7.089 ms | 6.265–6.278 ms | 1.13× | Diagnostic c14c/1264. Controls L/C 0.26 / 0.21%. IQR ≤0.78%. |
+| CSV field validation | Compilation only | 0.0250–0.0251 ms | 0.0265–0.0267 ms | 0.93–0.94× | Diagnostic c14c/1264. Controls L/C 0.29 / 0.72%. IQR ≤0.66%. |
+| CSV field validation | Compile-to-result | 3.146–3.147 ms | 4.663–4.669 ms | 0.67× | Diagnostic c14c/1264. Controls L/C 0.05 / 0.12%. IQR ≤1.11%. |
 
 Compilation includes compiled-owner disposal. Compile-to-result includes compilation,
 one execution and compiled-owner disposal. Separately warmed medians are not

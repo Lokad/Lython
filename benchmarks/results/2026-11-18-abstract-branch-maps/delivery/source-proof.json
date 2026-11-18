@@ -1,0 +1,19 @@
+{
+  "start": "c3d21ab45",
+  "qualified": "e507b4667",
+  "reconstructedTree": "84991527de9f761181e5bc2ccbf77b50e85f727a",
+  "measurements": [
+    {
+      "archive": "2026-11-18-directive-presence/checks-and-procedures.tar.xz",
+      "archiveSHA256": "32b82d8000cd5e4036318e2bff0f5fdb3defce0aefc1ca9d15ca9f03cab29930",
+      "patchSHA256": "ec5340d993640001a191c0d2f7334b0dbea7fa5ce676e974dcc78f84818305d5"
+    },
+    {
+      "archive": "2026-11-18-abstract-branch-maps/checks-and-procedures.tar.xz",
+      "archiveSHA256": "2a11221b02626a05e51d933dea5d830bb01713307791b2af76ea70cda660033f",
+      "patchSHA256": "0ab482e4a58815bf024f59cd1e49f776b07172878c370901d601b5c8a71981a3"
+    }
+  ],
+  "identicalSourceAndTests": true,
+  "productionCoreFiles": 588
+}

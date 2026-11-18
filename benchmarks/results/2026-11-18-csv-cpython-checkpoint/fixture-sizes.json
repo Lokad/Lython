@@ -1,0 +1,17 @@
+{
+  "scripts.csv-invoice.large": {
+    "bytes": 127031,
+    "records": 4096,
+    "nominalSize": 1024
+  },
+  "scripts.csv-field-validation.large": {
+    "bytes": 128183,
+    "records": 4128,
+    "nominalSize": 4128
+  },
+  "scripts.text-normalization.large": {
+    "bytes": 52224,
+    "records": 4096,
+    "nominalSize": 4096
+  }
+}
