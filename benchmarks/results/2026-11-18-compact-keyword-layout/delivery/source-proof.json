@@ -1,0 +1,20 @@
+{
+  "qualified": "604dc52db9155dfd265b5fc75dfcc330cb877bc5",
+  "start": "0f48fcbbf164a0f94f20b5edb22cf0f41bee5a28",
+  "reconstructedTree": "4a123387b6889347f6f9588019bf3807167da630",
+  "productionCoreFiles": 589,
+  "identicalSourceAndTests": true,
+  "measurements": [
+    {
+      "archive": "benchmarks/results/2026-11-18-compact-keyword-layout/checks-and-procedures.tar.xz",
+      "archiveSHA256": "0cd975c599daf8d850d5c3a231b1542d73053f0ad8608425addd8364bfad5e52",
+      "patchSHA256": "53f0e1f42f3184af345518b22ac03ee8c6e62f6f937552c4eda43269b6e41746"
+    }
+  ],
+  "expectedTestsPerTarget": [
+    4889,
+    18078,
+    14,
+    406
+  ]
+}
