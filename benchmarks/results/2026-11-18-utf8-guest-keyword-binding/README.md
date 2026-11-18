@@ -16,12 +16,12 @@ decision.
 | Ordinary named calls, warm | −0.28% to +0.69% | −2.56% to +1.50% |
 | Ordinary named calls, compile | +0.58% to +1.70% | −0.46% to +3.04% |
 | Positional calls, warm | −2.10% to +0.21% | −0.60% to +0.84% |
-| Native formatting, warm | +0.94% to +4.77% | 0.00% to +5.86% |
+| F-string report control, warm | +0.94% to +4.77% | 0.00% to +5.86% |
 
 Warm execution includes mediated RAM-backed I/O, golden checks and
 prior-result cleanup. Compile-to-result additionally includes compiled-owner
 disposal. Startup, fixture reset and final cache teardown are outside elapsed.
-Process CPU covers the wider request. The native-formatting control had an
+Process CPU covers the wider request. The f-string control had an
 elapsed IQR up to 5.62%, with same-source spread up to 2.21%. Its unfavorable
 direction warrants a check on the changed positional packet discriminator.
 

@@ -15,12 +15,12 @@ established name admission. [First prototype and original adverse observations](
 | Expanded forwarded report, compile | −1.08% to −0.34% | −1.26% to +1.45% |
 | Ordinary named calls, warm | −0.88% to +2.84% | −2.13% to +3.13% |
 | Ordinary named calls, compile | −2.40% to +0.43% | −0.85% to −0.71% |
-| Native formatting, warm | −3.87% to +0.62% | −3.50% to +1.26% |
+| F-string report control, warm | −3.87% to +0.62% | −3.50% to +1.26% |
 | Positional calls, warm | −0.73% to −0.19% | −0.41% to +1.62% |
 
 The 1,024-record report's compile-to-result spread was below 0.71% for
 each image. The warm candidate spread was 5.05%, so its gain has an
-uncertain magnitude. The native-formatting and ordinary named
+uncertain magnitude. The f-string and ordinary named
 compilation adversity from B997 did not recur consistently. Ordinary
 named warm remains mixed, with possible elapsed and CPU debt.
 
