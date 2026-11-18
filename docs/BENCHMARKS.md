@@ -151,6 +151,7 @@ for the CPython ratios above.
 
 | Change | Established outcome | Limits / evidence |
 | --- | --- | --- |
+| Shared function annotation inputs | Annotated rule closures improve 7.11–9.90% warm and 6.56–8.06% compile-to-result with supporting CPU. Allocation falls 11.99% at the same accounted peak. | Compilation, unannotated rules and positional warm timing span zero. [B1007](../benchmarks/results/2026-11-18-function-annotation-inputs/README.md). |
 | Direct trailing keyword dictionaries | File forwarding improves 16.36–17.89% warm and 16.33–16.96% compile-to-result with supporting CPU. Allocation falls 20.73% at the same accounted peak. | The mutable bound-method report improves 24.44–26.92% warm. Positional timing spans zero and compile CPU is mixed. [B1005](../benchmarks/results/2026-11-18-exact-keyword-transport/README.md). |
 | Executable function definition inputs | Rule closures improve 14.65–16.84% warm and 14.24–15.08% compile-to-result with supporting CPU. Allocation falls 9.52% at the same accounted peak. | Compilation alone rises 2.60–4.54%. Reused-default and positional warm controls span zero. [B1004](../benchmarks/results/2026-11-18-executable-definition-inputs/README.md). |
 | Direct function default construction | Rule-closure report warm elapsed 22.84–25.49% lower, compile-to-result 21.47–22.52% lower and allocation 32.66% lower. | Workload creates both functions and lambdas per rule. Reused-default calls were 0.12–1.65% slower with supporting process CPU. [B1001](../benchmarks/results/2026-11-18-direct-function-defaults/README.md). |

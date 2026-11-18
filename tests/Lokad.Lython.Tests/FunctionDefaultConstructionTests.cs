@@ -10,7 +10,7 @@ public sealed class FunctionDefaultConstructionTests
     public void DefaultContainerStorageAddsToTheSameParameterLayout()
     {
         var parameters = Enumerable.Range(0, 8)
-            .Select(i => new LoweredFunctionParameter("a" + i, FunctionParameterKind.Positional, null, null)).ToArray();
+            .Select(i => new LoweredFunctionParameter("a" + i, FunctionParameterKind.Positional, null)).ToArray();
         var requiredContext = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var defaultContext = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         _ = FunctionBindingPlan.CreateDynamic("f", PythonCallableKind.Function, parameters, new Dictionary<string, object>(), requiredContext);
@@ -40,7 +40,7 @@ public sealed class FunctionDefaultConstructionTests
             try
             {
                 plan = FunctionBindingPlan.CreateDynamic("f", PythonCallableKind.Function,
-                    [new("a", FunctionParameterKind.Positional, null, null), new("b", FunctionParameterKind.KeywordOnly, null, null)],
+                    [new("a", FunctionParameterKind.Positional, null), new("b", FunctionParameterKind.KeywordOnly, null)],
                     new Dictionary<string, object> { ["a"] = supplied, ["b"] = supplied }, context);
                 Assert.True(plan.TryGetPositionalDefault(0, out var positional));
                 Assert.Same(supplied, positional);

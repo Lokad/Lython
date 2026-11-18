@@ -57,6 +57,21 @@ public sealed class GeneratorDefinitionCompositionTests : LifetimeScenario
     }
 
     [Fact]
+    public async Task YieldingAnnotationsUsePythonParameterOrder()
+    {
+        await AssertOutput("""
+            def generate():
+             def run(a:(yield 'positional-only'),/,b:(yield 'positional'),
+                     *args:(yield 'starred'),flag:(yield 'keyword-only'),
+                     **kwargs:(yield 'double-starred'))->(yield 'return'):pass
+             yield list(run.__annotations__.items())
+            g=generate()
+            print(next(g),g.send(1),g.send(2),g.send(3),g.send(4),g.send(5))
+            print(g.send(6))
+            """, "positional positional-only starred keyword-only double-starred return\n[('b', 1), ('a', 2), ('args', 3), ('flag', 4), ('kwargs', 5), ('return', 6)]\n");
+    }
+
+    [Fact]
     public async Task LambdaDefaultsSuspendOutsideTheLambdaBody()
     {
         await AssertOutput("""

@@ -58,7 +58,7 @@ internal sealed partial class LythonRuntime
                 context, functionDefinition.Span, false).GetAwaiter().GetResult();
             var typeScope = CreateTypeScope(functionDefinition.TypeParameters, context, functionDefinition.Span);
             var function = CreateLoweredFunction(functionDefinition, typeScope.Closure, defaults?.Values ?? default);
-            AttachTypeMetadataAsync(function, functionDefinition.Parameters, functionDefinition.ReturnAnnotation,
+            AttachTypeMetadataAsync(function, functionDefinition.Annotations,
                 functionDefinition.TypeParameters is not null, functionDefinition.Span, typeScope, context, false).GetAwaiter().GetResult();
             defaults?.Publish();
             StoreName(syntax.Name, ApplyDecorators(function, decorators, functionDefinition.Span, context), context, functionDefinition.Span);

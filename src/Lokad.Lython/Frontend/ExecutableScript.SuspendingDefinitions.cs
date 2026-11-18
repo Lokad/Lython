@@ -1,10 +1,9 @@
 namespace Lokad.Lython.Frontend;
 
 internal sealed record ExecutableStartFunctionDefaults(FunctionParameterLayout Layout) : ExecutableOperation;
-internal readonly record struct ExecutableFunctionAnnotation(string Name, int Offset, LythonSourceSpan Span);
-internal sealed record ExecutableCreateFunction(ExecutableFunctionBinding Binding, IReadOnlyList<ExecutableFunctionAnnotation> AnnotationInputs) : ExecutableOperation
+internal sealed record ExecutableCreateFunction(ExecutableFunctionBinding Binding, bool AnnotationsOnStack = false) : ExecutableOperation
 {
-    internal int InputCount => checked(Binding.DecoratorCount + AnnotationInputs.Count + Binding.ParameterLayout.Defaults.Length +
+    internal int InputCount => checked(Binding.DecoratorCount + (AnnotationsOnStack ? Binding.Annotations.Length : 0) + Binding.ParameterLayout.Defaults.Length +
         (Binding.ParameterLayout.Defaults.Length == 0 ? 0 : 1));
 }
 internal sealed record ExecutableCreateLambda(LoweredLambdaExpression Expression) : ExecutableOperation
@@ -30,27 +29,19 @@ internal sealed partial class ExecutableScript
                 foreach (var slot in layout.Defaults)
                     block = CompileExpression(definition.Parameters[slot.ParameterIndex].DefaultValue.RequireNotNull(), block);
             }
-            if (!yielding || definition.TypeParameters is not null || !binding.HasAnnotations)
+            if (!yielding || definition.TypeParameters is not null || binding.Annotations.Length == 0)
             {
-                EmitOperation(new ExecutableCreateFunction(binding, []), definition.Span, block);
+                EmitOperation(new ExecutableCreateFunction(binding), definition.Span, block);
                 return block;
             }
-            var annotations = new List<(string Name, LoweredExpression Expression, int Order)>();
-            foreach (var parameter in definition.Parameters)
-                if (parameter.Annotation is { } annotation)
-                    annotations.Add((parameter.Name, annotation, FunctionParameterLayout.AnnotationOrder(parameter.Kind)));
-            if (definition.ReturnAnnotation is { } result)
-                annotations.Add(("return", result, int.MaxValue));
             var skipped = CreateBlock();
             var after = CreateBlock();
             EmitOperation(new ExecutableAnnotationsEnabled(), definition.Span, block);
             AddInstruction(block, ExecutableInstruction.JumpIfFalse(skipped, definition.Span));
-            foreach (var annotation in annotations) block = CompileExpression(annotation.Expression, block);
-            var sites = annotations.Select((input, i) => (input.Order, Site: new ExecutableFunctionAnnotation(input.Name, i, input.Expression.Span)))
-                .OrderBy(entry => entry.Order).Select(entry => entry.Site).ToArray();
-            EmitOperation(new ExecutableCreateFunction(binding, sites), definition.Span, block);
+            foreach (var annotation in binding.Annotations) block = CompileExpression(annotation.Expression, block);
+            EmitOperation(new ExecutableCreateFunction(binding, AnnotationsOnStack: true), definition.Span, block);
             AddInstruction(block, ExecutableInstruction.Jump(after, definition.Span));
-            EmitOperation(new ExecutableCreateFunction(binding, []), definition.Span, skipped);
+            EmitOperation(new ExecutableCreateFunction(binding), definition.Span, skipped);
             AddInstruction(skipped, ExecutableInstruction.Jump(after, definition.Span));
             return after;
         }

@@ -472,7 +472,7 @@ internal sealed partial class ExecutableScript
 
             var binding = new ExecutableFunctionBinding(
                 functionDefinition.Syntax.Name, functionDefinition.Syntax.DeclaredName, functionDefinition.Span,
-                functionDefinition.Decorators.Count, functionDefinition.Parameters, functionDefinition.ReturnAnnotation,
+                functionDefinition.Decorators.Count, functionDefinition.Annotations,
                 functionDefinition.TypeParameters, codeObject, functionDefinition.Syntax.IsGenerator,
                 functionDefinition.Docstring) { ParameterLayout = functionDefinition.ParameterLayout };
             _functions.Add(binding);

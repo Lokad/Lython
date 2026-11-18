@@ -321,7 +321,6 @@ internal sealed record LoweredLambdaExpression : LoweredExpression
         Lambda = lambda;
         Parameters = lambda.Parameters.Select(parameter => new LoweredFunctionParameter(
             parameter.Name, parameter.Kind,
-            parameter.Annotation is null ? null : LoweredScript.LowerStandaloneExpression(parameter.Annotation),
             parameter.DefaultValue is null ? null : LoweredScript.LowerStandaloneExpression(parameter.DefaultValue))).ToArray();
         ScopeFacts = ScopeDirectiveFactsCollector.ForLambda(lambda);
         IsGenerator = GeneratorSyntaxFacts.ContainsYield(lambda.Body);

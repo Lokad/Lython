@@ -46,6 +46,51 @@ internal sealed class LoweredScript
         => parameters?.Select(parameter => new LoweredTypeParameter(parameter, parameter.Bound is null ? null : LowerExpression(parameter.Bound),
             parameter.Default is null ? null : LowerExpression(parameter.Default))).ToArray();
 
+    private static LoweredFunctionDefinitionStatement LowerFunction(FunctionDefinitionStatementSyntax definition)
+    {
+        var decorators = definition.Decorators.Select(LowerExpression).ToArray();
+        var parameters = definition.Parameters.Select(parameter => new LoweredFunctionParameter(
+            parameter.Name, parameter.Kind,
+            parameter.DefaultValue is null ? null : LowerExpression(parameter.DefaultValue))).ToArray();
+        return new(definition, decorators, parameters, LowerFunctionAnnotations(definition),
+            LowerStatements(definition.Body), ScopeDirectiveFactsCollector.ForFunction(definition));
+    }
+
+    private static LoweredFunctionAnnotation[] LowerFunctionAnnotations(FunctionDefinitionStatementSyntax definition)
+    {
+        var count = definition.ReturnAnnotation is null ? 0 : 1;
+        var positionalCount = 0;
+        var positionalOnlyCount = 0;
+        foreach (var parameter in definition.Parameters)
+        {
+            if (parameter.Annotation is null) continue;
+            count++;
+            if (parameter.Kind == FunctionParameterKind.Positional) positionalCount++;
+            else if (parameter.Kind == FunctionParameterKind.PositionalOnly) positionalOnlyCount++;
+        }
+        if (count == 0) return [];
+
+        // Exchange the two positional groups for Python's annotation order.
+        // The remaining parameter kinds already appear in evaluation order.
+        var annotations = new LoweredFunctionAnnotation[count];
+        var nextPositional = 0;
+        var nextPositionalOnly = positionalCount;
+        var nextOther = positionalCount + positionalOnlyCount;
+        foreach (var parameter in definition.Parameters)
+        {
+            if (parameter.Annotation is not { } expression) continue;
+            var index = parameter.Kind switch
+            {
+                FunctionParameterKind.Positional => nextPositional++,
+                FunctionParameterKind.PositionalOnly => nextPositionalOnly++,
+                _ => nextOther++,
+            };
+            annotations[index] = new(parameter.Name, LowerExpression(expression));
+        }
+        if (definition.ReturnAnnotation is { } result) annotations[^1] = new("return", LowerExpression(result));
+        return annotations;
+    }
+
     private static LoweredStatement LowerStatement(StatementSyntax statement, bool classScope)
     {
         return statement switch
@@ -53,17 +98,7 @@ internal sealed class LoweredScript
             TypeAliasStatementSyntax alias => new LoweredTypeAliasStatement(alias, LowerExpression(alias.Value)),
             ImportStatementSyntax importStatement => new LoweredImportStatement(importStatement),
             ScopeDirectiveStatementSyntax scopeDirective => new LoweredScopeDirectiveStatement(scopeDirective),
-            FunctionDefinitionStatementSyntax functionDefinition => new LoweredFunctionDefinitionStatement(
-                functionDefinition,
-                functionDefinition.Decorators.Select(LowerExpression).ToArray(),
-                functionDefinition.Parameters.Select(parameter => new LoweredFunctionParameter(
-                    parameter.Name,
-                    parameter.Kind,
-                    parameter.Annotation is null ? null : LowerExpression(parameter.Annotation),
-                    parameter.DefaultValue is null ? null : LowerExpression(parameter.DefaultValue))).ToArray(),
-                functionDefinition.ReturnAnnotation is null ? null : LowerExpression(functionDefinition.ReturnAnnotation),
-                LowerStatements(functionDefinition.Body),
-                ScopeDirectiveFactsCollector.ForFunction(functionDefinition)),
+            FunctionDefinitionStatementSyntax functionDefinition => LowerFunction(functionDefinition),
             ClassDefinitionStatementSyntax classDefinition => new LoweredClassDefinitionStatement(
                 classDefinition,
                 classDefinition.Decorators.Select(LowerExpression).ToArray(),

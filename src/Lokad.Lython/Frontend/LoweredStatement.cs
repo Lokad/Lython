@@ -39,14 +39,15 @@ internal sealed record LoweredScopeDirectiveStatement(
 internal sealed record LoweredFunctionParameter(
     string Name,
     FunctionParameterKind Kind,
-    LoweredExpression? Annotation,
     LoweredExpression? DefaultValue);
+
+internal readonly record struct LoweredFunctionAnnotation(string Name, LoweredExpression Expression);
 
 internal sealed record LoweredFunctionDefinitionStatement(
     FunctionDefinitionStatementSyntax Syntax,
     IReadOnlyList<LoweredExpression> Decorators,
     IReadOnlyList<LoweredFunctionParameter> Parameters,
-    LoweredExpression? ReturnAnnotation,
+    LoweredFunctionAnnotation[] Annotations,
     IReadOnlyList<LoweredStatement> Body,
     ScopeDirectiveFacts ScopeFacts) : LoweredStatement(Syntax.Span)
 {

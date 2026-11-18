@@ -150,7 +150,7 @@ public sealed class FunctionClassCellBoundaryTests
             FunctionBindingPlan.CreateDynamic("f", PythonCallableKind.Function, parameters, new Dictionary<string, object>()),
             new BoundFunctionArguments(values.Select(LythonRuntime.ExecutableSlot.FromObject).ToArray(), default), mirror, owner, Span);
 
-    private static LoweredFunctionParameter Parameter(string name, FunctionParameterKind kind) => new(name, kind, null, null);
+    private static LoweredFunctionParameter Parameter(string name, FunctionParameterKind kind) => new(name, kind, null);
     private static Context Root() => new(new MockLythonHost(), new LythonRunOptions { SourcePath = "/root.py"},regexProvider:Utf8RegexProvider.Instance);
     private static Context ClassClosure()
     {

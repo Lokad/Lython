@@ -21,8 +21,8 @@ public sealed class BoundBoxCleanupTests
         "f",
         PythonCallableKind.Function,
         [
-            new LoweredFunctionParameter("a", FunctionParameterKind.Positional, null, null),
-            new LoweredFunctionParameter("b", FunctionParameterKind.Positional, null, null),
+            new LoweredFunctionParameter("a", FunctionParameterKind.Positional, null),
+            new LoweredFunctionParameter("b", FunctionParameterKind.Positional, null),
         ],
         new Dictionary<string, object>());
 
@@ -57,8 +57,8 @@ public sealed class BoundBoxCleanupTests
         {
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
             var plan = FunctionBindingPlan.CreateDynamic("f", PythonCallableKind.Function,
-                [new("items", FunctionParameterKind.VariadicList, null, null),
-                    new("key", FunctionParameterKind.KeywordOnly, null, null)], new Dictionary<string, object>());
+                [new("items", FunctionParameterKind.VariadicList, null),
+                    new("key", FunctionParameterKind.KeywordOnly, null)], new Dictionary<string, object>());
             var alias = new object();
             var slots = new Slot[2];
             var before = budget.ReservedBytes;
@@ -95,7 +95,7 @@ public sealed class BoundBoxCleanupTests
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
                 new LythonRunOptions { MemoryBudget = hook, CancellationToken = cancellation.Token });
             var plan = FunctionBindingPlan.CreateDynamic("f", PythonCallableKind.Function,
-                [new("items", FunctionParameterKind.VariadicList, null, null)], new Dictionary<string, object>());
+                [new("items", FunctionParameterKind.VariadicList, null)], new Dictionary<string, object>());
             var slots = new Slot[1];
             var before = budget.ReservedBytes;
             if (cancelOnAdmission) hook.AfterGrowth = _ => cancellation.Cancel();
@@ -127,8 +127,8 @@ public sealed class BoundBoxCleanupTests
         {
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
             var plan = FunctionBindingPlan.CreateDynamic("f", PythonCallableKind.Function,
-                [new("required", FunctionParameterKind.KeywordOnly, null, null),
-                    new("kw", FunctionParameterKind.VariadicDictionary, null, null)], new Dictionary<string, object>());
+                [new("required", FunctionParameterKind.KeywordOnly, null),
+                    new("kw", FunctionParameterKind.VariadicDictionary, null)], new Dictionary<string, object>());
             var borrowed = PyString.FromString("original", context.MemoryGovernor, Span);
             var slots = new Slot[2];
             var before = budget.ReservedBytes;
@@ -164,7 +164,7 @@ public sealed class BoundBoxCleanupTests
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
                 new LythonRunOptions { MemoryBudget = hook, CancellationToken = cancellation.Token });
             var plan = FunctionBindingPlan.CreateDynamic("f", PythonCallableKind.Function,
-                [new("kw", FunctionParameterKind.VariadicDictionary, null, null)], new Dictionary<string, object>());
+                [new("kw", FunctionParameterKind.VariadicDictionary, null)], new Dictionary<string, object>());
             var slots = new Slot[1];
             var before = budget.ReservedBytes;
             if (cancelOnAdmission) hook.AfterGrowth = _ => cancellation.Cancel();
@@ -246,8 +246,8 @@ public sealed class BoundBoxCleanupTests
         var closure = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxRecursionDepth = 0 },regexProvider:Utf8RegexProvider.Instance);
         var parameters = new List<LoweredFunctionParameter>
         {
-            new("a", FunctionParameterKind.Positional, null, null),
-            new("b", FunctionParameterKind.Positional, null, null),
+            new("a", FunctionParameterKind.Positional, null),
+            new("b", FunctionParameterKind.Positional, null),
         };
         var definition = Assert.IsType<LoweredFunctionDefinitionStatement>(Assert.Single(
             LoweredScript.Lower(LythonFrontend.Compile("def f(a,b):pass").Script!).Statements));
@@ -291,9 +291,9 @@ public sealed class BoundBoxCleanupTests
             "P.__init__",
             PythonCallableKind.Function,
             [
-                new LoweredFunctionParameter("self", FunctionParameterKind.Positional, null, null),
-                new LoweredFunctionParameter("x", FunctionParameterKind.Positional, null, null),
-                new LoweredFunctionParameter("y", FunctionParameterKind.Positional, null, null),
+                new LoweredFunctionParameter("self", FunctionParameterKind.Positional, null),
+                new LoweredFunctionParameter("x", FunctionParameterKind.Positional, null),
+                new LoweredFunctionParameter("y", FunctionParameterKind.Positional, null),
             ],
             new Dictionary<string, object>());
         var box = LythonRuntime.BindFunctionArguments(

@@ -123,18 +123,11 @@ internal sealed partial class LythonRuntime
                 storage.Commit(FunctionValueBytes);
                 ChargeClosureRetention(closure, MemoryGovernor, span);
                 PyFunctionBase.CaptureFunctionDocstring(function, binding.Docstring, this, span);
-                if (operation.AnnotationInputs.Count != 0)
+                if (binding.Annotations.Length != 0 || binding.TypeParameters is not null || HasTypeParameterScope(this))
                 {
-                    var annotations = new PyDict(MemoryGovernor, span);
-                    foreach (var site in operation.AnnotationInputs)
-                        await StoreAnnotationEntryAsync(annotations, site.Name, RuntimeValue(_execution.Stack[next + site.Offset]),
-                            this, site.Span, asynchronous).ConfigureAwait(false);
-                    function.TrySetMember("__annotations__", annotations);
-                }
-                else if (binding.HasAnnotations || binding.TypeParameters is not null || HasTypeParameterScope(this))
-                {
-                    await AttachTypeMetadataAsync(function, binding.Parameters, binding.ReturnAnnotation,
-                        binding.TypeParameters is not null, span, typeScope, this, asynchronous).ConfigureAwait(false);
+                    var evaluated = operation.AnnotationsOnStack ? _execution.Stack.Slice(next, binding.Annotations.Length) : default;
+                    await AttachTypeMetadataAsync(function, binding.Annotations, binding.TypeParameters is not null,
+                        span, typeScope, this, asynchronous, evaluated).ConfigureAwait(false);
                 }
 
                 // Decorator callbacks can publish the original definition even

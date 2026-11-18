@@ -9,8 +9,8 @@ internal static partial class PyDataclass
 {
     private static readonly LoweredFunctionParameter[] BinaryProtocolParameters =
     [
-        new("self", FunctionParameterKind.Positional, null, null),
-        new("other", FunctionParameterKind.Positional, null, null)
+        new("self", FunctionParameterKind.Positional, null),
+        new("other", FunctionParameterKind.Positional, null)
     ];
 
     private static readonly IReadOnlyDictionary<string, object> EmptyDefaultValues =
@@ -59,7 +59,7 @@ internal static partial class PyDataclass
 
             var parameters = new List<LoweredFunctionParameter>(fields.Count + 1)
             {
-                new("self", FunctionParameterKind.Positional, null, null)
+                new("self", FunctionParameterKind.Positional, null)
             };
             var defaultCount = fields.Count(static field => field.HasDefault || field.HasDefaultFactory);
             using var defaultStorage = defaultCount == 0 ? null
@@ -75,7 +75,6 @@ internal static partial class PyDataclass
                 parameters.Add(new LoweredFunctionParameter(
                     field.Name,
                     field.KwOnly ? FunctionParameterKind.KeywordOnly : FunctionParameterKind.Positional,
-                    null,
                     null));
                 if (field.HasDefaultFactory)
                 {

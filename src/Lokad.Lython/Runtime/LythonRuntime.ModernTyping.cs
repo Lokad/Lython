@@ -110,25 +110,22 @@ internal sealed partial class LythonRuntime
     }
 
     private static async ValueTask AttachTypeMetadataAsync(PyFunctionBase function,
-        IReadOnlyList<LoweredFunctionParameter> parameters, LoweredExpression? returnAnnotation,
-        bool hasTypeParameters, LythonSourceSpan span, TypeScope scope, ExecutionContext definingContext, bool asynchronous)
+        LoweredFunctionAnnotation[] inputs, bool hasTypeParameters, LythonSourceSpan span,
+        TypeScope scope, ExecutionContext definingContext, bool asynchronous, ReadOnlyMemory<ExecutableSlot> evaluated = default)
     {
         if (hasTypeParameters)
             function.TrySetMember("__type_params__", scope.Parameters);
-        if (!hasTypeParameters && !HasTypeParameterScope(definingContext) &&
-            returnAnnotation is null && parameters.All(p => p.Annotation is null)) return;
+        if (inputs.Length == 0 && !hasTypeParameters && !HasTypeParameterScope(definingContext)) return;
         var annotations = new PyDict(definingContext.MemoryGovernor, span);
-        foreach (var parameter in parameters.OrderBy(parameter => FunctionParameterLayout.AnnotationOrder(parameter.Kind)))
-            if (parameter.Annotation is not null)
-                await StoreAnnotationEntryAsync(annotations, parameter.Name,
-                    definingContext.PostponedAnnotations ? CreatePostponedAnnotationValue(parameter.Annotation.Syntax, definingContext)
-                        : await EvaluateTypeExpressionAsync(parameter.Annotation, scope.Annotations, asynchronous).ConfigureAwait(false),
-                    definingContext, parameter.Annotation.Span, asynchronous).ConfigureAwait(false);
-        if (returnAnnotation is not null)
-            await StoreAnnotationEntryAsync(annotations, "return",
-                definingContext.PostponedAnnotations ? CreatePostponedAnnotationValue(returnAnnotation.Syntax, definingContext)
-                    : await EvaluateTypeExpressionAsync(returnAnnotation, scope.Annotations, asynchronous).ConfigureAwait(false),
-                definingContext, returnAnnotation.Span, asynchronous).ConfigureAwait(false);
+        for (var i = 0; i < inputs.Length; i++)
+        {
+            var input = inputs[i];
+            var expression = input.Expression;
+            var value = !evaluated.IsEmpty ? RuntimeValue(evaluated.Span[i].Object.RequireNotNull())
+                : definingContext.PostponedAnnotations ? CreatePostponedAnnotationValue(expression.Syntax, definingContext)
+                    : await EvaluateTypeExpressionAsync(expression, scope.Annotations, asynchronous).ConfigureAwait(false);
+            await StoreAnnotationEntryAsync(annotations, input.Name, value, definingContext, expression.Span, asynchronous).ConfigureAwait(false);
+        }
         function.TrySetMember("__annotations__", annotations);
     }
 

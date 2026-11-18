@@ -464,8 +464,7 @@ internal sealed record ExecutableFunctionBinding(
     string DeclaredName,
     LythonSourceSpan Span,
     int DecoratorCount,
-    IReadOnlyList<LoweredFunctionParameter> Parameters,
-    LoweredExpression? ReturnAnnotation,
+    LoweredFunctionAnnotation[] Annotations,
     IReadOnlyList<LoweredTypeParameter>? TypeParameters,
     ExecutableCodeObject CodeObject,
     bool IsGenerator,
@@ -473,7 +472,6 @@ internal sealed record ExecutableFunctionBinding(
 {
     public required FunctionParameterLayout ParameterLayout { get; init; }
 
-    public bool HasAnnotations { get; } = ReturnAnnotation is not null || Parameters.Any(static parameter => parameter.Annotation is not null);
 }
 
 internal sealed record ExecutableMatchCaseBinding(
