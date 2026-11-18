@@ -1,0 +1,22 @@
+{
+  "images": {
+    "net11.0": {
+      "Lokad.Lython.dll": "65fcf7d0d4aff91f3466ac924e87a3c7b4759c3cf9eed4bf130ea4fa0034b6f5",
+      "Lokad.Lython.Utf8Regex.dll": "a3c46f7e5c0f8fd4f995e4c2d5d763648e0ac8d4b8a8c08d638b33152c0ceae8",
+      "Lokad.Utf8Regex.dll": "dace3b73a234c42969d9d0325be465c5a362c498679f6c8fdf105c7e2c57242c",
+      "Lokad.Utf8Regex.PythonRe.dll": "7238a1792ad0ee24a55503523139946616f9cf316fe9b1ad6fcb6318363aebeb",
+      "Lokad.Lython.PublicApi.Tests.dll": "b9bba6257e15ac403ef8c5110b726d37f1f28b5c3beb848b27cf36b352eb9164"
+    },
+    "net10.0": {
+      "Lokad.Lython.dll": "9d4527ec18df1e7d240e89b5eae4ed5dc1e4288d65f2b175f07a69af9cbd22bc",
+      "Lokad.Lython.Utf8Regex.dll": "d76e1862164663afef75b28320aad55ef553fccdb20b88f9790b53e54129af53",
+      "Lokad.Utf8Regex.dll": "476a86e25346bda59785bf01769691c37e31b406abc1bf95cddddad29b6bce7b",
+      "Lokad.Utf8Regex.PythonRe.dll": "952237aed03aba6a8c9614ba3db74584583857f3f3615efccf41196ec21d5c31",
+      "Lokad.Lython.PublicApi.Tests.dll": "3d40d1761bcdf5abe3d8646ed5bff9acc9fba38dbf6ea678965484455e933cbb"
+    }
+  },
+  "adapterSHA256": "74fedbcc8d8f07549649668ad6bf8f850e7d91e027fc5761b2ce1caaa86bb15b",
+  "parentAndChildImagesIdentical": true,
+  "normalPinUnchanged": true,
+  "coreDependenciesUnchanged": true
+}

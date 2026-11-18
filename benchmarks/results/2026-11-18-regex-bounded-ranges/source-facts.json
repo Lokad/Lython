@@ -1,0 +1,28 @@
+{
+  "revision": "7e683b2db8c5e2fb1e2a83b3fd4bfeea6e77ffa1",
+  "readOnlyCommittedBlobs": true,
+  "producerWorktreeNotModified": true,
+  "sourceArchiveSHA256": "05b552f1b0c2a897017e9adefd1ff0739eff7194ea6637174ce7f1ddf86818a3",
+  "normalAdapterPin": "0.4.0",
+  "coreDependenciesUnchanged": true,
+  "developmentOnly": true,
+  "publicationHeld": true,
+  "policy": "Scoped Core/PythonRe source has Unsafe.SizeOf calls. No new production dependency/pin or safety certification; build disallows unsafe C#.",
+  "remaining": [
+    "UTF8 named-group enumeration",
+    "creation token detached from later pulls",
+    "separate result-stage allowance"
+  ],
+  "new": [
+    "CaptureGroupCount metadata",
+    "bounded Search/Match/FullMatch cursor modes",
+    "caller capture slots on one-shot Match without completion-order lastindex"
+  ],
+  "committedFiles": {
+    "Utf8PythonRegex.Metadata.cs": "021ac85a07cb5e19b2780a7a8728adb4936f93c8b312149cc7103436f3212322",
+    "Utf8PythonRegex.Cursor.cs": "dcc1fc4c1ff2e8bc9f0c5737d609838df237d46a9de4aab274f090568a943e47",
+    "Utf8PythonMatchCursor.cs": "be643e15e5ab5bc2b4c7cf37d408f743e44be4e9798ff1a1ad82b57e2c521a35",
+    "PythonReCoreTypes.cs": "353c1f3845b2f1515ae7732168acb9bd35387ad1c086308802cb98af2d77e68c",
+    "Utf8PythonRegex.Value.cs": "63fa5d31281e1a4122ac76d359c90a453f2f8f2e30f285cbedf23048e4984ed4"
+  }
+}
