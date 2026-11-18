@@ -17,8 +17,10 @@ empty keyword dictionary and an async wrapper.
 | Positional calls control, warm | +0.96% to +2.56% | +1.24% to +2.51% |
 
 Retained for the measured positional formatting and forwarding gains and
-the removal of two scratch containers. The positional-call control's
-elapsed and CPU adversity remains open for focused confirmation.
+the removal of two scratch containers. The unchanged-image
+confirmation reproduced the positional formatting gain. The
+positional-call control spanned zero, leaving its earlier adversity
+unexplained. [Confirmation](confirmation/README.md)
 The named formatting result spans zero. The positional formatting
 reference spread was 2.96% and candidate spread was 1.38%.
 
