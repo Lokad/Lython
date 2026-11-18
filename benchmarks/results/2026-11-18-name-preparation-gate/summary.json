@@ -1,0 +1,442 @@
+{
+  "core": "a5038a280566316898258b4c3c3c8377bee5b8b5bcc6c7cf18ce99cdcf7b29f7",
+  "boundary": "Static source/IR facts, no dynamic count/removable share/CPU claim. Estimate uses deliberately rough array/field capacities, no Unsafe API.",
+  "workloads": [
+    {
+      "case": "scripts.text-normalization.large",
+      "codes": [
+        {
+          "name": "<module>",
+          "names": 11,
+          "memberSites": 9,
+          "hintableSites": 7,
+          "hintableNames": [
+            "replace",
+            "replace",
+            "expandtabs",
+            "join",
+            "split",
+            "strip",
+            "splitlines"
+          ],
+          "capacity": 13,
+          "nativeCapacity": true,
+          "currentNamePoolEstimate": 196,
+          "onePoolEstimate": 384
+        },
+        {
+          "name": "<genexpr>",
+          "names": 1,
+          "memberSites": 1,
+          "hintableSites": 1,
+          "hintableNames": [
+            "rstrip"
+          ],
+          "capacity": 6,
+          "nativeCapacity": true,
+          "currentNamePoolEstimate": 76,
+          "onePoolEstimate": 64
+        }
+      ]
+    },
+    {
+      "case": "scripts.numeric-squared-error.large",
+      "codes": [
+        {
+          "name": "<module>",
+          "names": 8,
+          "memberSites": 3,
+          "hintableSites": 0,
+          "hintableNames": [],
+          "capacity": 20,
+          "nativeCapacity": false,
+          "currentNamePoolEstimate": 160,
+          "onePoolEstimate": 288
+        },
+        {
+          "name": "squared_error",
+          "names": 0,
+          "memberSites": 0,
+          "hintableSites": 0,
+          "hintableNames": [],
+          "capacity": 7,
+          "nativeCapacity": true,
+          "currentNamePoolEstimate": 64,
+          "onePoolEstimate": 32
+        },
+        {
+          "name": "<genexpr>",
+          "names": 2,
+          "memberSites": 0,
+          "hintableSites": 0,
+          "hintableNames": [],
+          "capacity": 9,
+          "nativeCapacity": true,
+          "currentNamePoolEstimate": 88,
+          "onePoolEstimate": 96
+        }
+      ]
+    },
+    {
+      "case": "scripts.csv-invoice.large",
+      "codes": [
+        {
+          "name": "<module>",
+          "names": 7,
+          "memberSites": 5,
+          "hintableSites": 1,
+          "hintableNames": [
+            "get"
+          ],
+          "capacity": 28,
+          "nativeCapacity": false,
+          "currentNamePoolEstimate": 148,
+          "onePoolEstimate": 256
+        },
+        {
+          "name": "rounded_basis_points",
+          "names": 0,
+          "memberSites": 0,
+          "hintableSites": 0,
+          "hintableNames": [],
+          "capacity": 6,
+          "nativeCapacity": true,
+          "currentNamePoolEstimate": 64,
+          "onePoolEstimate": 32
+        },
+        {
+          "name": "price_line",
+          "names": 2,
+          "memberSites": 0,
+          "hintableSites": 0,
+          "hintableNames": [],
+          "capacity": 12,
+          "nativeCapacity": true,
+          "currentNamePoolEstimate": 88,
+          "onePoolEstimate": 96
+        }
+      ]
+    },
+    {
+      "case": "scripts.report-render.large",
+      "codes": [
+        {
+          "name": "<module>",
+          "names": 4,
+          "memberSites": 3,
+          "hintableSites": 0,
+          "hintableNames": [],
+          "capacity": 16,
+          "nativeCapacity": true,
+          "currentNamePoolEstimate": 112,
+          "onePoolEstimate": 160
+        },
+        {
+          "name": "render",
+          "names": 0,
+          "memberSites": 0,
+          "hintableSites": 0,
+          "hintableNames": [],
+          "capacity": 6,
+          "nativeCapacity": true,
+          "currentNamePoolEstimate": 64,
+          "onePoolEstimate": 32
+        }
+      ]
+    },
+    {
+      "case": "calls.positional.large",
+      "codes": [
+        {
+          "name": "<module>",
+          "names": 2,
+          "memberSites": 0,
+          "hintableSites": 0,
+          "hintableNames": [],
+          "capacity": 8,
+          "nativeCapacity": true,
+          "currentNamePoolEstimate": 88,
+          "onePoolEstimate": 96
+        },
+        {
+          "name": "add",
+          "names": 0,
+          "memberSites": 0,
+          "hintableSites": 0,
+          "hintableNames": [],
+          "capacity": 5,
+          "nativeCapacity": true,
+          "currentNamePoolEstimate": 64,
+          "onePoolEstimate": 32
+        }
+      ]
+    },
+    {
+      "case": "scripts.binary-normalization.large",
+      "codes": [
+        {
+          "name": "<module>",
+          "names": 6,
+          "memberSites": 4,
+          "hintableSites": 2,
+          "hintableNames": [
+            "replace",
+            "replace"
+          ],
+          "capacity": 11,
+          "nativeCapacity": true,
+          "currentNamePoolEstimate": 136,
+          "onePoolEstimate": 224
+        }
+      ]
+    },
+    {
+      "case": "generators.drain.large",
+      "codes": [
+        {
+          "name": "<module>",
+          "names": 2,
+          "memberSites": 0,
+          "hintableSites": 0,
+          "hintableNames": [],
+          "capacity": 6,
+          "nativeCapacity": true,
+          "currentNamePoolEstimate": 88,
+          "onePoolEstimate": 96
+        },
+        {
+          "name": "values",
+          "names": 2,
+          "memberSites": 0,
+          "hintableSites": 0,
+          "hintableNames": [],
+          "capacity": 5,
+          "nativeCapacity": true,
+          "currentNamePoolEstimate": 88,
+          "onePoolEstimate": 96
+        }
+      ]
+    },
+    {
+      "case": "scripts.report-render.tuple.sync",
+      "codes": [
+        {
+          "name": "<module>",
+          "names": 5,
+          "memberSites": 3,
+          "hintableSites": 0,
+          "hintableNames": [],
+          "capacity": 16,
+          "nativeCapacity": true,
+          "currentNamePoolEstimate": 124,
+          "onePoolEstimate": 192
+        },
+        {
+          "name": "render",
+          "names": 0,
+          "memberSites": 0,
+          "hintableSites": 0,
+          "hintableNames": [],
+          "capacity": 6,
+          "nativeCapacity": true,
+          "currentNamePoolEstimate": 64,
+          "onePoolEstimate": 32
+        },
+        {
+          "name": "<genexpr>",
+          "names": 1,
+          "memberSites": 0,
+          "hintableSites": 0,
+          "hintableNames": [],
+          "capacity": 6,
+          "nativeCapacity": true,
+          "currentNamePoolEstimate": 76,
+          "onePoolEstimate": 64
+        }
+      ]
+    },
+    {
+      "case": "scripts.report-render.tuple.async",
+      "codes": [
+        {
+          "name": "<module>",
+          "names": 5,
+          "memberSites": 3,
+          "hintableSites": 0,
+          "hintableNames": [],
+          "capacity": 16,
+          "nativeCapacity": true,
+          "currentNamePoolEstimate": 124,
+          "onePoolEstimate": 192
+        },
+        {
+          "name": "render",
+          "names": 0,
+          "memberSites": 0,
+          "hintableSites": 0,
+          "hintableNames": [],
+          "capacity": 6,
+          "nativeCapacity": true,
+          "currentNamePoolEstimate": 64,
+          "onePoolEstimate": 32
+        },
+        {
+          "name": "<genexpr>",
+          "names": 1,
+          "memberSites": 0,
+          "hintableSites": 0,
+          "hintableNames": [],
+          "capacity": 6,
+          "nativeCapacity": true,
+          "currentNamePoolEstimate": 76,
+          "onePoolEstimate": 64
+        }
+      ]
+    },
+    {
+      "case": "scripts.text-normalization.helper-list",
+      "codes": [
+        {
+          "name": "<module>",
+          "names": 11,
+          "memberSites": 9,
+          "hintableSites": 7,
+          "hintableNames": [
+            "replace",
+            "replace",
+            "expandtabs",
+            "split",
+            "join",
+            "strip",
+            "splitlines"
+          ],
+          "capacity": 16,
+          "nativeCapacity": true,
+          "currentNamePoolEstimate": 196,
+          "onePoolEstimate": 384
+        },
+        {
+          "name": "append_cleaned",
+          "names": 2,
+          "memberSites": 2,
+          "hintableSites": 1,
+          "hintableNames": [
+            "rstrip"
+          ],
+          "capacity": 6,
+          "nativeCapacity": true,
+          "currentNamePoolEstimate": 88,
+          "onePoolEstimate": 96
+        }
+      ]
+    },
+    {
+      "case": "scripts.report-render.helper-list",
+      "codes": [
+        {
+          "name": "<module>",
+          "names": 6,
+          "memberSites": 4,
+          "hintableSites": 1,
+          "hintableNames": [
+            "join"
+          ],
+          "capacity": 18,
+          "nativeCapacity": false,
+          "currentNamePoolEstimate": 136,
+          "onePoolEstimate": 224
+        },
+        {
+          "name": "render",
+          "names": 0,
+          "memberSites": 0,
+          "hintableSites": 0,
+          "hintableNames": [],
+          "capacity": 6,
+          "nativeCapacity": true,
+          "currentNamePoolEstimate": 64,
+          "onePoolEstimate": 32
+        },
+        {
+          "name": "append_line",
+          "names": 1,
+          "memberSites": 1,
+          "hintableSites": 0,
+          "hintableNames": [],
+          "capacity": 6,
+          "nativeCapacity": true,
+          "currentNamePoolEstimate": 76,
+          "onePoolEstimate": 64
+        }
+      ]
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "codes": [
+        {
+          "name": "<module>",
+          "names": 7,
+          "memberSites": 5,
+          "hintableSites": 2,
+          "hintableNames": [
+            "strip",
+            "get"
+          ],
+          "capacity": 21,
+          "nativeCapacity": false,
+          "currentNamePoolEstimate": 148,
+          "onePoolEstimate": 256
+        },
+        {
+          "name": "record_amount",
+          "names": 0,
+          "memberSites": 0,
+          "hintableSites": 0,
+          "hintableNames": [],
+          "capacity": 5,
+          "nativeCapacity": true,
+          "currentNamePoolEstimate": 64,
+          "onePoolEstimate": 32
+        }
+      ]
+    },
+    {
+      "case": "scripts.numeric-squared-error.floating.large",
+      "codes": [
+        {
+          "name": "<module>",
+          "names": 8,
+          "memberSites": 3,
+          "hintableSites": 0,
+          "hintableNames": [],
+          "capacity": 20,
+          "nativeCapacity": false,
+          "currentNamePoolEstimate": 160,
+          "onePoolEstimate": 288
+        },
+        {
+          "name": "squared_error",
+          "names": 0,
+          "memberSites": 0,
+          "hintableSites": 0,
+          "hintableNames": [],
+          "capacity": 7,
+          "nativeCapacity": true,
+          "currentNamePoolEstimate": 64,
+          "onePoolEstimate": 32
+        },
+        {
+          "name": "<genexpr>",
+          "names": 2,
+          "memberSites": 0,
+          "hintableSites": 0,
+          "hintableNames": [],
+          "capacity": 9,
+          "nativeCapacity": true,
+          "currentNamePoolEstimate": 88,
+          "onePoolEstimate": 96
+        }
+      ]
+    }
+  ]
+}
