@@ -9461,3 +9461,10 @@ found host file work surrounding the guest outweighed any individual runtime
 path in the local managed samples. Drain and split construction are next
 candidates for a narrower RAM-backed source gate. No CPU portion or source
 gain is inferred.
+
+[R554/B980 RAM-backed normalization attribution](results/2026-11-18-normalization-guest-attribution/README.md)
+on the retained 93739eed worker found 890 samples with runtime ancestry.
+Join/drain and generator groups had 447 and 416 overlapping samples.
+The profile supports a whole private split/trim/join candidate. Keep the
+iterator error/ownership contract for the general path. No timing change
+or removable CPU percentage follows from the capture.

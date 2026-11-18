@@ -1,0 +1,13 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "ramTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 271212544,
+  "archiveSHA256": "3818a075deb2247b3b4ffb58a5183588747932dc0c4b816556ec9acd2dae8617",
+  "source": "R554/B980 retained production b810f660b/frozen93739eed; normalization attribution; no elapsed comparison",
+  "performanceComparison": false,
+  "failure": null
+}
