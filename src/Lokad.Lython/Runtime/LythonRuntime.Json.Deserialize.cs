@@ -142,14 +142,14 @@ internal sealed partial class LythonRuntime
                 }
                 argument = CreateString(constant, context, span);
             }
-            else if (TryMatchJsonNumber(bytes, position, context, span, out end))
+            else if (TryMatchJsonNumber(bytes, position, context, span, out end,
+                         out var significand, out var fractionDigits))
             {
-                var raw = bytes.Slice(position, end - position);
-                var isFloat = raw.IndexOfAny((byte)'.', (byte)'e', (byte)'E') >= 0;
-                callback = isFloat ? options.ParseFloat : options.ParseInt;
+                callback = fractionDigits == 0 ? options.ParseInt : options.ParseFloat;
                 if (callback is null)
                 {
-                    result = (ConvertJsonNumberText(raw, isFloat, context, span), end);
+                    var raw = bytes.Slice(position, end - position);
+                    result = (ConvertJsonNumber(raw, significand, fractionDigits, context, span), end);
                     return true;
                 }
                 // Callback text remains execution/result-owned even on failure:
@@ -420,9 +420,15 @@ internal sealed partial class LythonRuntime
         // Matches CPython NUMBER_RE (-?(?:0|[1-9]\d*))(\.\d+)?([eE][-+]?\d+)?
         // as a prefix: a fraction or exponent without digits does not extend
         // the match, so "1e" ends after "1".
-        private static bool TryMatchJsonNumber(ReadOnlySpan<byte> bytes, int position, ExecutionContext context, LythonSourceSpan span, out int end)
+        // A negative fraction width denotes a floating token with an exponent.
+        // The significand is used only when at most 19 digits were accumulated.
+        private static bool TryMatchJsonNumber(ReadOnlySpan<byte> bytes, int position,
+            ExecutionContext context, LythonSourceSpan span, out int end,
+            out ulong significand, out int fractionDigits)
         {
             end = position;
+            significand = 0;
+            fractionDigits = 0;
             var cursor = position;
             if (cursor < bytes.Length && bytes[cursor] == (byte)'-')
             {
@@ -440,12 +446,7 @@ internal sealed partial class LythonRuntime
             }
             else if (bytes[cursor] is >= (byte)'1' and <= (byte)'9')
             {
-                do
-                {
-                    if ((cursor & 1023) == 0) context.CheckExecution(span);
-                    cursor++;
-                }
-                while (cursor < bytes.Length && bytes[cursor] is >= (byte)'0' and <= (byte)'9');
+                cursor = ReadJsonSignificandDigits(bytes, cursor, ref significand, context, span);
             }
             else
             {
@@ -461,13 +462,8 @@ internal sealed partial class LythonRuntime
                     return true;
                 }
 
-                do
-                {
-                    if ((fraction & 1023) == 0) context.CheckExecution(span);
-                    fraction++;
-                }
-                while (fraction < bytes.Length && bytes[fraction] is >= (byte)'0' and <= (byte)'9');
-                cursor = fraction;
+                cursor = ReadJsonSignificandDigits(bytes, fraction, ref significand, context, span);
+                fractionDigits = cursor - fraction;
             }
 
             if (cursor < bytes.Length && bytes[cursor] is (byte)'e' or (byte)'E')
@@ -491,10 +487,26 @@ internal sealed partial class LythonRuntime
                 }
                 while (exponent < bytes.Length && bytes[exponent] is >= (byte)'0' and <= (byte)'9');
                 cursor = exponent;
+                fractionDigits = -1;
             }
 
             end = cursor;
             return true;
+        }
+
+        private static int ReadJsonSignificandDigits(ReadOnlySpan<byte> bytes, int cursor, ref ulong significand,
+            ExecutionContext context, LythonSourceSpan span)
+        {
+            var value = significand;
+            do
+            {
+                if ((cursor & 1023) == 0) context.CheckExecution(span);
+                value = unchecked(value * 10 + (uint)(bytes[cursor] - (byte)'0'));
+                cursor++;
+            }
+            while (cursor < bytes.Length && bytes[cursor] is >= (byte)'0' and <= (byte)'9');
+            significand = value;
+            return cursor;
         }
 
         private static int SkipJsonWhitespace(ReadOnlySpan<byte> bytes, int position, ExecutionContext context, LythonSourceSpan span)
@@ -510,18 +522,21 @@ internal sealed partial class LythonRuntime
 
         // Default conversion of a validated native NUMBER_RE token. Hook
         // dispatch lives at the scalar boundary; this path cannot suspend.
-        private static object ConvertJsonNumberText(ReadOnlySpan<byte> raw, bool isFloat,
+        private static ReadOnlySpan<double> ExactDecimalDivisors =>
+        [
+            1e0, 1e1, 1e2, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9, 1e10, 1e11,
+            1e12, 1e13, 1e14, 1e15, 1e16, 1e17, 1e18,
+        ];
+
+        private static object ConvertJsonNumber(ReadOnlySpan<byte> raw, ulong significand, int fractionDigits,
             ExecutionContext context, LythonSourceSpan span)
         {
-            if (!isFloat)
+            var negative = raw[0] == (byte)'-';
+            var unsignedLength = raw.Length - (negative ? 1 : 0);
+            if (fractionDigits == 0)
             {
-                // A signed Int64 decimal token needs at most 20 ASCII bytes.
-                // Its bounded span parse allocates no limbs; the resulting small
-                // scalar uses the existing execution/container headroom.
-                if (raw.Length <= 20 && long.TryParse(raw, NumberStyles.Integer, CultureInfo.InvariantCulture, out var integer))
-                {
-                    return new BigInteger(integer);
-                }
+                if (unsignedLength <= 19 && significand <= (negative ? 1UL << 63 : long.MaxValue))
+                    return new BigInteger(negative ? unchecked(-(long)significand) : (long)significand);
 
                 // Admit large-magnitude construction before any limb/text allocation.
                 // Larger tokens keep exact parsing, not a numeric input ceiling.
@@ -531,6 +546,16 @@ internal sealed partial class LythonRuntime
                 // its funding before invocation, including retained aliases.
                 using var numberScratch = context.MemoryGovernor.ReserveTemporary(checked(4L * raw.Length), span);
                 return OwnFreshInteger(BigInteger.Parse(Encoding.UTF8.GetString(raw), CultureInfo.InvariantCulture), context.MemoryGovernor, span);
+            }
+
+            // Up to 19 digits including the integer part leaves at most 18
+            // fractional digits. Binary64 represents the divisor and integers
+            // through 2^53 exactly. A single division rounds the exact decimal
+            // quotient, and applying the sign preserves negative zero.
+            if (fractionDigits > 0 && unsignedLength <= 20 && significand <= 1UL << 53)
+            {
+                var number = (double)significand / ExactDecimalDivisors[fractionDigits];
+                return negative ? -number : number;
             }
 
             // The prefix lexer has validated the complete native token. A

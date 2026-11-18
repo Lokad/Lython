@@ -1641,14 +1641,13 @@ Scanning, filling and error-coordinate walks check cancellation across bounded i
 escapes that advance several bytes. Bulk UTF-8 validity checks remain atomic.
 Input aliases and results stay funded across callbacks and source reuse.
 
-Callback-free JSON integers use a bounded, non-allocating signed-64-bit parse
-before reserving large-magnitude working storage. Small results use the existing
-scalar/container headroom. Larger integers retain magnitude and text-workspace
-preflights, exact parsing and retained-payload funding; there is no digit ceiling.
-Parse hooks still receive independently funded text before invocation.
-Default floating tokens use native UTF-8 conversion after the prefix lexer has
-validated their grammar, preserving binary64 rounding and signed zero. Conversion
-is atomic; token scanning and surrounding operations check cooperative cancellation.
+The JSON lexer passes the numeric kind and significand directly to conversion.
+Ordinary integers reuse those digits. Short fixed-point tokens use one division
+with exact binary64 operands, preserving rounding and signed zero. Other floating
+tokens use native UTF-8 conversion. Larger integers use admitted magnitude and
+text workspace and keep their retained payload funded. Parse hooks receive the
+original token text with independent funding. Token scanning and surrounding
+operations check cooperative cancellation.
 
 Arrays, dictionaries and pairs-hook output share one iterative construction loop.
 Default scalar values pass directly into that loop; only callbacks that suspend

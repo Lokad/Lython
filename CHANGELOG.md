@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Reuse JSON numeric lexing for ordinary integer and short fixed-point scalar
+  construction. Preserve exact rounding, signed zero and callback spelling.
+
 - Reuse bounded UTF-8 scalar counting for regex capture offsets on the
   original subject. Keep byte-range validation and cooperative cancellation.
 
