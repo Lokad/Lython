@@ -1,0 +1,143 @@
+{
+  "boundary": "Complete warm runs including mediated I/O/reset, all output/file checks and result cleanup; compilation/startup/final cache teardown excluded. Process-wide CLR allocation counters, no forced GC. Compilation and first invocation clocks are local diagnostic observations, not a controlled CPU/source timing comparison.",
+  "rows": [
+    {
+      "case": "scripts.csv-invoice.large",
+      "referenceBytes": 4197286,
+      "candidateBytes": 4197286,
+      "changePercent": 0.0,
+      "referencePeak": 9432323,
+      "candidatePeak": 9432323,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "case": "scripts.text-normalization.helper-list",
+      "referenceBytes": 1288040,
+      "candidateBytes": 1288040,
+      "changePercent": 0.0,
+      "referencePeak": 3009731,
+      "candidatePeak": 3009731,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "case": "scripts.config-edit.small",
+      "referenceBytes": 35136,
+      "candidateBytes": 35136,
+      "changePercent": 0.0,
+      "referencePeak": 15184,
+      "candidatePeak": 15184,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "case": "calls.positional.large",
+      "referenceBytes": 1060696,
+      "candidateBytes": 1060696,
+      "changePercent": 0.0,
+      "referencePeak": 1383,
+      "candidatePeak": 1383,
+      "sharedBudgetBaselineRestored": true
+    }
+  ],
+  "compile": {
+    "reference": {
+      "coreSha256": "33025ceeed7811960fc19b0ae5ef695636414dffc254679cd8fdcb5eafbc9d21",
+      "boundary": "Synchronous Compile(source, borrowed budget) plus compiled-owner disposal on the current thread; 20 warmups, 5x20 compilations; no execution, elapsed measurement, forced GC or runtime overrides.",
+      "rows": [
+        {
+          "id": "scripts.csv-invoice.large",
+          "allocatedBytesPerCompilation": [
+            229752,
+            229752,
+            229778.8,
+            229752,
+            229752
+          ],
+          "allowanceBaselineRestored": true
+        },
+        {
+          "id": "scripts.text-normalization.helper-list",
+          "allocatedBytesPerCompilation": [
+            121178.8,
+            121152,
+            121152,
+            121152,
+            121152
+          ],
+          "allowanceBaselineRestored": true
+        },
+        {
+          "id": "scripts.config-edit.small",
+          "allocatedBytesPerCompilation": [
+            94768,
+            94768,
+            94768,
+            94768,
+            94768
+          ],
+          "allowanceBaselineRestored": true
+        },
+        {
+          "id": "calls.positional.large",
+          "allocatedBytesPerCompilation": [
+            44808,
+            44808,
+            44808,
+            44808,
+            44808
+          ],
+          "allowanceBaselineRestored": true
+        }
+      ]
+    },
+    "candidate": {
+      "coreSha256": "643f3980c9f1f0af99437b234ba9d3695682a1fc389b8d1e4ccd02fe2d11f23d",
+      "boundary": "Synchronous Compile(source, borrowed budget) plus compiled-owner disposal on the current thread; 20 warmups, 5x20 compilations; no execution, elapsed measurement, forced GC or runtime overrides.",
+      "rows": [
+        {
+          "id": "scripts.csv-invoice.large",
+          "allocatedBytesPerCompilation": [
+            229592,
+            229592,
+            229618.8,
+            229592,
+            229592
+          ],
+          "allowanceBaselineRestored": true
+        },
+        {
+          "id": "scripts.text-normalization.helper-list",
+          "allocatedBytesPerCompilation": [
+            121098.8,
+            121072,
+            121072,
+            121072,
+            121072
+          ],
+          "allowanceBaselineRestored": true
+        },
+        {
+          "id": "scripts.config-edit.small",
+          "allocatedBytesPerCompilation": [
+            94768,
+            94768,
+            94768,
+            94768,
+            94768
+          ],
+          "allowanceBaselineRestored": true
+        },
+        {
+          "id": "calls.positional.large",
+          "allocatedBytesPerCompilation": [
+            44728,
+            44728,
+            44728,
+            44728,
+            44728
+          ],
+          "allowanceBaselineRestored": true
+        }
+      ]
+    }
+  }
+}

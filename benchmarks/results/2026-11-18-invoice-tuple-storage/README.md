@@ -9,7 +9,7 @@ stdout and file checks during capture. The worker joined and its fixture closed.
 | --- | ---: | ---: | ---: | ---: |
 | `ExecutableSlot[]` | 512 | 194 | 88 | 7.79% |
 | `PyTuple` | 345 | 110 | 48 | 5.02% |
-| Temporary reservation | 180 | 86 | 32 | 2.93% |
+| Temporary reservation | 180 | 86 | 32 | 2.94% |
 
 The trace has 9,043 allocation samples with 52 unresolved. The three rows
 cover 15.75% of its total allocation weight. These weights estimate the volume
@@ -24,7 +24,7 @@ with raw integers would need a new home for the identity of each lazily boxed
 element. A managed subtype could place those slots inline, but would change
 exact-type member resolution and initial-global normalization. Growing the
 shared tuple header would revive the earlier size and adoption tradeoffs. The
-temporary reservation accounts for 2.93% of sampled weight on its own. These
+temporary reservation accounts for 2.94% of sampled weight on its own. These
 observations support investigating a replacement for the complete construction
 stage if an identity-preserving layout emerges. [Earlier inline prototype](../2026-11-12-inline-tuple-prototype/README.md)
 

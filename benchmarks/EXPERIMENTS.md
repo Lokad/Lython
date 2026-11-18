@@ -9397,3 +9397,16 @@ the post-slice ownership check. Helper elapsed fell 0.73–1.16% warm and
 controls were mixed. Peaks matched and allowance balances restored. Both
 targets passed 1,817 focused checks, and independent probes matched CPython
 through both APIs. Retain the simplification.
+
+[R545 invoice allocation attribution](results/2026-11-18-invoice-tuple-storage/README.md)
+places 15.75% of sampled allocation weight under integer tuple construction.
+Exact dispatch, lazy scalar identity and the earlier shared-header regression
+argue for keeping the representation at this checkpoint. No CPU share or
+recoverable allocation percentage is inferred.
+
+[R547/B975 directive presence](results/2026-11-18-directive-presence/README.md)
+retains the scope-pass consolidation. CSV compile and complete text elapsed
+lean adverse, with mixed CPU. Compilation allocation changed by at most
+160 bytes, complete-script execution allocation and accounted peaks matched,
+and all focused Release checks passed. This advances frontend simplification.
+Whole-script performance and full delivery are separate.

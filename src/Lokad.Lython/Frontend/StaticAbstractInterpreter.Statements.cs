@@ -185,7 +185,7 @@ internal static partial class StaticAbstractInterpreter
                     AnalyzeExpressionIfPresent(parameter.DefaultValue, diagnostics, bindings);
                 }
 
-                if (ScopeDirectiveFactsCollector.ContainsScopeDirective(functionDefinition.Body))
+                if (ScopeDirectiveFactsCollector.ForFunction(functionDefinition).ContainsDirectivesInBody)
                 {
                     InvalidateDirectiveBindings(functionDefinition.Body, bindings);
                     bindings.InvalidateMutableSequenceFacts();
@@ -220,7 +220,8 @@ internal static partial class StaticAbstractInterpreter
 
                 // Methods can later rebind outer names through global/nonlocal.
                 // The class-local clone must not hide those effects from its parent.
-                InvalidateDirectiveBindings(classDefinition.Body, bindings);
+                if (classFacts.ContainsDirectivesInBody)
+                    InvalidateDirectiveBindings(classDefinition.Body, bindings);
                 AnalyzeStatements(classDefinition.Body, diagnostics, bindings.Clone());
                 return;
             }

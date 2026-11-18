@@ -12,7 +12,6 @@ internal static partial class StaticBindingEngine
         if (functionDefinition.Decorators.Count != 0 ||
             functionDefinition.ParameterLayout.VariadicListIndex >= 0 ||
             functionDefinition.ParameterLayout.VariadicDictionaryIndex >= 0 ||
-            ScopeDirectiveFactsCollector.ContainsScopeDirective(functionDefinition.Body) ||
             !IsStraightLineSummaryBody(functionDefinition.Body))
         {
             summary = default;

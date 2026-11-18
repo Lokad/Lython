@@ -1,0 +1,191 @@
+{
+  "complete": true,
+  "elapsedSeconds": 232.5812867647037,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "archivalOnlyRecovery": null,
+  "rows": [
+    {
+      "case": "scripts.csv-invoice.large",
+      "lane": "compile",
+      "elapsedMilliseconds": {
+        "candidate": 0.10064776136363636,
+        "reference": 0.09878491450259688,
+        "candidate-control": 0.10024860595671738,
+        "reference-control": 0.1002276463022508
+      },
+      "cpuMilliseconds": {
+        "candidate": 0.09943181818181819,
+        "reference": 0.0998801438274071,
+        "candidate-control": 0.10070709235054638,
+        "reference-control": 0.10048231511254019
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.14731280998774882,
+        "reference": 0.6456124216908685,
+        "candidate-control": 0.4025753468379839,
+        "reference-control": 1.3959724418989816
+      },
+      "elapsedChangePercent": [
+        0.020912048960397556,
+        0.4191608571936678,
+        1.4816953190580628,
+        1.8857604629404223
+      ],
+      "cpuChangePercent": [
+        -1.0454545454545272,
+        -0.4488636363636167,
+        0.22369830726376438,
+        0.827940861367038
+      ],
+      "referenceSpreadPercent": 1.4604778542537389,
+      "candidateSpreadPercent": 0.39816554365985635
+    },
+    {
+      "case": "scripts.text-normalization.helper-list",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "candidate": 1.2616403530997304,
+        "reference": 1.2366144417989418,
+        "candidate-control": 1.2372902089947089,
+        "reference-control": 1.2308805651041665
+      },
+      "cpuMilliseconds": {
+        "candidate": 1.3477088948787064,
+        "reference": 1.3227513227513228,
+        "candidate-control": 1.3227513227513228,
+        "reference-control": 1.328125
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.6780222378998443,
+        "reference": 0.0271221824733687,
+        "candidate-control": 0.47937558647506767,
+        "reference-control": 0.89107299130236
+      },
+      "elapsedChangePercent": [
+        0.05464655537938956,
+        0.5207364607304532,
+        2.0237440591735822,
+        2.4990067166232866
+      ],
+      "cpuChangePercent": [
+        -0.4046062869592304,
+        0.0,
+        1.474552084984948,
+        1.8867924528301883
+      ],
+      "referenceSpreadPercent": 0.4658353423827144,
+      "candidateSpreadPercent": 1.968022047536122
+    },
+    {
+      "case": "scripts.config-edit.small",
+      "lane": "compile",
+      "elapsedMilliseconds": {
+        "reference-control": 0.03661569161347127,
+        "candidate-control": 0.03646000643415953,
+        "reference": 0.036436807870370375,
+        "candidate": 0.036864670036900374
+      },
+      "cpuMilliseconds": {
+        "reference-control": 0.036686477364443464,
+        "candidate-control": 0.03655772464721796,
+        "reference": 0.03658900836320191,
+        "candidate": 0.03690036900369004
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.8517159672210062,
+        "candidate-control": 0.24459098779693864,
+        "reference": 0.9757400422042549,
+        "candidate": 1.5388891860319176
+      },
+      "elapsedChangePercent": [
+        -0.4251870508284017,
+        0.06366793675145477,
+        0.6799773879936799,
+        1.174258096516545
+      ],
+      "cpuChangePercent": [
+        -0.3509541566132812,
+        -0.08550031111369538,
+        0.5830258302583102,
+        0.8509676933504018
+      ],
+      "referenceSpreadPercent": 0.49094241113905035,
+      "candidateSpreadPercent": 1.109883519827659
+    },
+    {
+      "case": "scripts.config-edit.small",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "reference-control": 0.13678389696312365,
+        "candidate-control": 0.13492739357142855,
+        "reference": 0.13674943043154764,
+        "candidate": 0.13673018379160637
+      },
+      "cpuMilliseconds": {
+        "reference-control": 0.18076644974692696,
+        "candidate-control": 0.175,
+        "reference": 0.17857142857142858,
+        "candidate": 0.1808972503617945
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.44775464664839515,
+        "candidate-control": 0.41804414692851966,
+        "reference": 0.856987551275197,
+        "candidate": 0.5965751239167878
+      },
+      "elapsedChangePercent": [
+        -1.3572528878860735,
+        -1.3323908219355585,
+        -0.03926863666690039,
+        -0.014074383988682548
+      ],
+      "cpuChangePercent": [
+        -3.190000000000004,
+        -2.000000000000013,
+        0.07235890014472002,
+        1.302460202604916
+      ],
+      "referenceSpreadPercent": 0.025204150004309867,
+      "candidateSpreadPercent": 1.336118761697902
+    },
+    {
+      "case": "calls.positional.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 2.0478605165289254,
+        "candidate-control": 2.0545551694915254,
+        "reference": 2.090137234782609,
+        "candidate": 2.0861758061674007
+      },
+      "cpuMilliseconds": {
+        "reference-control": 2.066115702479339,
+        "candidate-control": 2.0338983050847457,
+        "reference": 2.0869565217391304,
+        "candidate": 2.0704845814977975
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 1.2729546031254704,
+        "candidate-control": 0.30803814145758673,
+        "reference": 0.021439199694420524,
+        "candidate": 0.41818439501686777
+      },
+      "elapsedChangePercent": [
+        -1.7023793796383968,
+        -0.18952959400391212,
+        0.32690961657619866,
+        1.8709911797810674
+      ],
+      "cpuChangePercent": [
+        -2.5423728813559365,
+        -1.559322033898325,
+        -0.7892804698972022,
+        0.21145374449338394
+      ],
+      "referenceSpreadPercent": 2.0644334861898317,
+      "candidateSpreadPercent": 1.5390502599013312
+    }
+  ],
+  "CPythonRefreshed": false,
+  "decision": "Retained for simpler traversal; performance improvement not established."
+}

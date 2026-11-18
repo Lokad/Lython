@@ -22,25 +22,26 @@ internal static class StaticScopeDirectiveDiagnostics
 
         public void Enter(ScopeDirectiveFacts facts) => _scopes.Add(facts);
 
-        public void Leave(ScopeDirectiveFacts facts) => _scopes.RemoveAt(_scopes.Count - 1);
+        public void Leave() => _scopes.RemoveAt(_scopes.Count - 1);
     }
 
     public static void Analyze(StaticAnalysisContext context)
     {
-        AnalyzeStatements(context.Script.Statements, context, new EnclosingFunctionBindings(), inClassBody: false);
+        AnalyzeStatements(context.Script.Statements, context, new EnclosingFunctionBindings());
     }
 
-    private static void AnalyzeStatements(
+    private static bool AnalyzeStatements(
         IReadOnlyList<StatementSyntax> statements,
         StaticAnalysisContext context,
-        EnclosingFunctionBindings enclosingFunctions,
-        bool inClassBody)
+        EnclosingFunctionBindings enclosingFunctions)
     {
+        var containsDirectives = false;
         foreach (var statement in statements)
         {
             switch (statement)
             {
                 case ScopeDirectiveStatementSyntax directive:
+                    containsDirectives = true;
                     if (directive.Kind == ScopeDirectiveKind.Nonlocal && enclosingFunctions.Depth == 0 &&
                         !directive.Names.All(enclosingFunctions.Contains))
                     {
@@ -50,63 +51,43 @@ internal static class StaticScopeDirectiveDiagnostics
                     break;
 
                 case FunctionDefinitionStatementSyntax functionDefinition:
-                    AnalyzeFunction(functionDefinition, context, enclosingFunctions);
+                    containsDirectives |= AnalyzeFunction(functionDefinition, context, enclosingFunctions);
                     break;
 
                 case ClassDefinitionStatementSyntax classDefinition:
                     var classFacts = ScopeDirectiveFactsCollector.ForClass(classDefinition);
                     AnalyzeDirectiveBindings(classFacts, classDefinition.Span, context, enclosingFunctions);
-                    AnalyzeUseBeforeDirective(classDefinition.Body,
-                        new HashSet<string>(classFacts.GlobalNames.Concat(classFacts.NonlocalNames), StringComparer.Ordinal),
-                        new HashSet<string>(StringComparer.Ordinal), context);
+                    if (classFacts.GlobalNames.Count != 0 || classFacts.NonlocalNames.Count != 0)
+                    {
+                        AnalyzeUseBeforeDirective(classDefinition.Body,
+                            new HashSet<string>(classFacts.GlobalNames.Concat(classFacts.NonlocalNames), StringComparer.Ordinal),
+                            new HashSet<string>(StringComparer.Ordinal), context);
+                    }
+
                     enclosingFunctions.Enter(ClassCellSyntaxFacts.Scope);
                     try
                     {
-                        AnalyzeStatements(classDefinition.Body, context, enclosingFunctions, inClassBody: true);
+                        classFacts.ContainsDirectivesInBody = AnalyzeStatements(classDefinition.Body, context, enclosingFunctions);
+                        containsDirectives |= classFacts.ContainsDirectivesInBody;
                     }
                     finally
                     {
-                        enclosingFunctions.Leave(ClassCellSyntaxFacts.Scope);
+                        enclosingFunctions.Leave();
                     }
+
                     break;
 
-                case IfStatementSyntax ifStatement:
-                    AnalyzeStatements(ifStatement.ThenStatements, context, enclosingFunctions, inClassBody);
-                    if (ifStatement.ElseStatements is not null) AnalyzeStatements(ifStatement.ElseStatements, context, enclosingFunctions, inClassBody);
-                    break;
-
-                case ForStatementSyntax forStatement:
-                    AnalyzeStatements(forStatement.Body, context, enclosingFunctions, inClassBody);
-                    if (forStatement.ElseStatements is not null) AnalyzeStatements(forStatement.ElseStatements, context, enclosingFunctions, inClassBody);
-                    break;
-
-                case WhileStatementSyntax whileStatement:
-                    AnalyzeStatements(whileStatement.Body, context, enclosingFunctions, inClassBody);
-                    if (whileStatement.ElseStatements is not null) AnalyzeStatements(whileStatement.ElseStatements, context, enclosingFunctions, inClassBody);
-                    break;
-
-                case WithStatementSyntax withStatement:
-                    AnalyzeStatements(withStatement.Body, context, enclosingFunctions, inClassBody);
-                    break;
-
-                case TryStatementSyntax tryStatement:
-                    AnalyzeStatements(tryStatement.TryBody, context, enclosingFunctions, inClassBody);
-                    foreach (var exceptClause in tryStatement.ExceptClauses) AnalyzeStatements(exceptClause.Body, context, enclosingFunctions, inClassBody);
-                    if (tryStatement.ElseBody is not null) AnalyzeStatements(tryStatement.ElseBody, context, enclosingFunctions, inClassBody);
-                    if (tryStatement.FinallyBody is not null) AnalyzeStatements(tryStatement.FinallyBody, context, enclosingFunctions, inClassBody);
-                    break;
-
-                case MatchStatementSyntax matchStatement:
-                    foreach (var matchCase in matchStatement.Cases)
-                    {
-                        AnalyzeStatements(matchCase.Body, context, enclosingFunctions, inClassBody);
-                    }
+                default:
+                    foreach (var body in StatementSyntaxTraversal.EnumerateChildBodies(statement))
+                        containsDirectives |= AnalyzeStatements(body, context, enclosingFunctions);
                     break;
             }
         }
+
+        return containsDirectives;
     }
 
-    private static void AnalyzeFunction(
+    private static bool AnalyzeFunction(
         FunctionDefinitionStatementSyntax functionDefinition,
         StaticAnalysisContext context,
         EnclosingFunctionBindings enclosingFunctions)
@@ -130,11 +111,12 @@ internal static class StaticScopeDirectiveDiagnostics
         enclosingFunctions.Enter(facts);
         try
         {
-            AnalyzeStatements(functionDefinition.Body, context, enclosingFunctions, inClassBody: false);
+            facts.ContainsDirectivesInBody = AnalyzeStatements(functionDefinition.Body, context, enclosingFunctions);
+            return facts.ContainsDirectivesInBody;
         }
         finally
         {
-            enclosingFunctions.Leave(facts);
+            enclosingFunctions.Leave();
         }
     }
 

@@ -21,6 +21,9 @@ internal sealed record ScopeDirectiveFacts(
     // Such cells can change through callbacks; local flow cannot prove them unbound.
     public HashSet<string>? NestedNonlocalNames { get; set; }
 
+    // Scope validation visits child suites and records their directive effects.
+    public bool ContainsDirectivesInBody { get; set; }
+
     public static ScopeDirectiveFacts Empty { get; } = new(
         new HashSet<string>(StringComparer.Ordinal),
         new HashSet<string>(StringComparer.Ordinal),
@@ -35,24 +38,6 @@ internal static class ScopeDirectiveFactsCollector
 {
     public static ScopeDirectiveFacts ForModule(ScriptSyntax script)
         => script.PreparedScopeFacts ??= ForFunction([], script.Statements, includeClassCellRequirement: false);
-
-    public static bool ContainsScopeDirective(IReadOnlyList<StatementSyntax> statements)
-    {
-        foreach (var statement in statements)
-        {
-            if (statement is ScopeDirectiveStatementSyntax)
-            {
-                return true;
-            }
-
-            foreach (var body in StatementSyntaxTraversal.EnumerateChildBodies(statement))
-            {
-                if (ContainsScopeDirective(body)) return true;
-            }
-        }
-
-        return false;
-    }
 
     public static ScopeDirectiveFacts ForFunction(
         IReadOnlyList<LoweredFunctionParameter> parameters,
