@@ -1,0 +1,40 @@
+{
+  "boundary": "Synchronous Compile(source, borrowed budget) plus compiled-owner disposal on the current thread; 20 warmups, 5x20 compilations; no execution, elapsed measurement, forced GC or runtime overrides.",
+  "rows": [
+    {
+      "case": "scripts.csv-invoice.large",
+      "referenceBytes": 229904,
+      "candidateBytes": 229904,
+      "changePercent": 0.0,
+      "allowanceBaselineRestored": true
+    },
+    {
+      "case": "calls.positional.large",
+      "referenceBytes": 44792,
+      "candidateBytes": 44792,
+      "changePercent": 0.0,
+      "allowanceBaselineRestored": true
+    },
+    {
+      "case": "scripts.text-normalization.helper-list",
+      "referenceBytes": 121144,
+      "candidateBytes": 121144,
+      "changePercent": 0.0,
+      "allowanceBaselineRestored": true
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "referenceBytes": 129000,
+      "candidateBytes": 129000,
+      "changePercent": 0.0,
+      "allowanceBaselineRestored": true
+    },
+    {
+      "case": "scripts.numeric-squared-error.floating.large",
+      "referenceBytes": 138832,
+      "candidateBytes": 138832,
+      "changePercent": 0.0,
+      "allowanceBaselineRestored": true
+    }
+  ]
+}

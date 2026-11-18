@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "originalFamilies": 7,
+  "originalInterfaces": 2,
+  "dispatchInvocationsRemoved": 2,
+  "allOtherInvocationTargetsAndCountsPreserved": true,
+  "diagnosticStringsAndInterpolatedTextPreserved": true,
+  "noDroppedSemanticTailStatements": true,
+  "boundary": "One-off source audit, not behavioral proof or a permanent architecture test. Runtime semantic/cancellation/ownership tests remain required."
+}

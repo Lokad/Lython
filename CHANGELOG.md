@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Simplify frontend abstract validation with direct syntax selection, removing
+  closed analyzer interfaces, singleton families and repeated family dispatch.
+  Preserve state-sensitive checks, diagnostics, cancellation and memory admission.
+
 - Prepare live module-binding locations with executable code, avoiding repeated
   name-to-slot discovery while preserving rebinding, deletion, closures, imports,
   cancellation and ownership. Independent namespaces keep ordinary resolution.

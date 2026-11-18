@@ -2,27 +2,6 @@ namespace Lokad.Lython.Frontend;
 
 internal static partial class StaticAbstractInterpreter
 {
-    private static readonly IExpressionAnalyzer[] ExpressionAnalyzers =
-    [
-        CollectionExpressionAnalyzer.Instance,
-        AccessCallExpressionAnalyzer.Instance,
-        OperatorFlowExpressionAnalyzer.Instance,
-    ];
-
-    private static void AnalyzeExpression(
-        ExpressionSyntax expression,
-        List<LythonDiagnostic> diagnostics,
-        AbstractState bindings)
-    {
-        foreach (var analyzer in ExpressionAnalyzers)
-        {
-            if (analyzer.TryAnalyze(expression, diagnostics, bindings))
-            {
-                return;
-            }
-        }
-    }
-
     private static void AnalyzeExpressions(
         IReadOnlyList<ExpressionSyntax> expressions,
         List<LythonDiagnostic> diagnostics,
@@ -51,13 +30,14 @@ internal static partial class StaticAbstractInterpreter
                 // Even a lazy generator evaluates its outer iterable now.
                 bindings.ApplyContainerInvalidation(comprehensionBindings);
             }
+
             StaticIterationDiagnostics.AnalyzeLoopTarget(clause.Target, clause.Iterable, clause.Span, diagnostics, comprehensionBindings);
-            if (StaticAbstractValueResolver.TryResolve(clause.Iterable, comprehensionBindings, out var iterable) &&
-                StaticAbstractFacts.TryGetTruthiness(iterable, out var hasItems) && !hasItems)
+            if (StaticAbstractValueResolver.TryResolve(clause.Iterable, comprehensionBindings, out var iterable) && StaticAbstractFacts.TryGetTruthiness(iterable, out var hasItems) && !hasItems)
             {
                 reachable = false;
                 return comprehensionBindings;
             }
+
             StaticBindingEngine.BindLoopTargetFromIterable(clause.Target, clause.Iterable, comprehensionBindings);
             if (clause.Condition is not null)
             {
@@ -75,26 +55,23 @@ internal static partial class StaticAbstractInterpreter
         return comprehensionBindings;
     }
 
-    private static bool TryResolveConditionTruth(ExpressionSyntax condition, AbstractState bindings, out bool truth)
+    private static bool TryResolveConditionTruth(
+        ExpressionSyntax condition,
+        AbstractState bindings,
+        out bool truth)
     {
         while (condition is ParenthesizedExpressionSyntax parenthesized)
         {
             condition = parenthesized.Inner;
         }
 
-        if (condition is UnaryExpressionSyntax { Operator: UnaryOperatorSyntax.Not, Operand: var operand } &&
-            TryResolveConditionTruth(operand, bindings, out var operandTruth))
+        if (condition is UnaryExpressionSyntax { Operator: UnaryOperatorSyntax.Not, Operand: var operand } && TryResolveConditionTruth(operand, bindings, out var operandTruth))
         {
             truth = !operandTruth;
             return true;
         }
 
-        if (condition is BinaryExpressionSyntax
-            {
-                Operator: BinaryOperatorSyntax.Or or BinaryOperatorSyntax.And,
-                Left: var logicalLeft,
-                Right: var logicalRight
-            } logical)
+        if (condition is BinaryExpressionSyntax { Operator: BinaryOperatorSyntax.Or or BinaryOperatorSyntax.And, Left: var logicalLeft, Right: var logicalRight } logical)
         {
             var continueTruth = logical.Operator == BinaryOperatorSyntax.And;
             if (TryResolveConditionTruth(logicalLeft, bindings, out var leftTruth))
@@ -112,8 +89,7 @@ internal static partial class StaticAbstractInterpreter
 
             var conditionalRightBindings = bindings.Clone();
             StaticConditionRefinements.Apply(logicalLeft, continueTruth, conditionalRightBindings);
-            if (TryResolveConditionTruth(logicalRight, conditionalRightBindings, out var rightTruth) &&
-                rightTruth != continueTruth)
+            if (TryResolveConditionTruth(logicalRight, conditionalRightBindings, out var rightTruth) && rightTruth != continueTruth)
             {
                 truth = rightTruth;
                 return true;
@@ -131,9 +107,7 @@ internal static partial class StaticAbstractInterpreter
             }
         }
 
-        if (condition is BinaryExpressionSyntax { Operator: var op, Left: var left, Right: var right } &&
-            op is BinaryOperatorSyntax.Is or BinaryOperatorSyntax.IsNot &&
-            TryResolveNoneComparison(left, right, bindings, out var isNone))
+        if (condition is BinaryExpressionSyntax { Operator: var op, Left: var left, Right: var right } && op is BinaryOperatorSyntax.Is or BinaryOperatorSyntax.IsNot && TryResolveNoneComparison(left, right, bindings, out var isNone))
         {
             truth = op == BinaryOperatorSyntax.Is ? isNone : !isNone;
             return true;
@@ -141,15 +115,9 @@ internal static partial class StaticAbstractInterpreter
 
         truth = false;
         return false;
-
-        static bool TryResolveNoneComparison(
-            ExpressionSyntax left,
-            ExpressionSyntax right,
-            AbstractState bindings,
-            out bool isNone)
+        static bool TryResolveNoneComparison(ExpressionSyntax left, ExpressionSyntax right, AbstractState bindings, out bool isNone)
         {
-            if (right is NoneLiteralExpressionSyntax &&
-                StaticAbstractValueResolver.TryResolve(left, bindings, out var leftValue))
+            if (right is NoneLiteralExpressionSyntax && StaticAbstractValueResolver.TryResolve(left, bindings, out var leftValue))
             {
                 if (leftValue.Kind == AbstractValueKind.None)
                 {
@@ -164,8 +132,7 @@ internal static partial class StaticAbstractInterpreter
                 }
             }
 
-            if (left is NoneLiteralExpressionSyntax &&
-                StaticAbstractValueResolver.TryResolve(right, bindings, out var rightValue))
+            if (left is NoneLiteralExpressionSyntax && StaticAbstractValueResolver.TryResolve(right, bindings, out var rightValue))
             {
                 if (rightValue.Kind == AbstractValueKind.None)
                 {
@@ -194,20 +161,11 @@ internal static partial class StaticAbstractInterpreter
                 case ReturnStatementSyntax:
                 case RaiseStatementSyntax:
                     return true;
-
-                case IfStatementSyntax { ElseStatements: not null } ifStatement
-                    when StatementsAlwaysExit(ifStatement.ThenStatements) &&
-                         StatementsAlwaysExit(ifStatement.ElseStatements):
+                case IfStatementSyntax { ElseStatements: not null } ifStatement when StatementsAlwaysExit(ifStatement.ThenStatements) && StatementsAlwaysExit(ifStatement.ElseStatements):
                     return true;
             }
         }
 
         return false;
-    }
-
-    private interface IExpressionAnalyzer
-    {
-        /// <summary>Analyzes the expression when it belongs to this analyzer's syntax family.</summary>
-        bool TryAnalyze(ExpressionSyntax expression, List<LythonDiagnostic> diagnostics, AbstractState bindings);
     }
 }

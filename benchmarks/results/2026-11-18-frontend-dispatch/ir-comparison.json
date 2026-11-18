@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "cases": 13,
+  "changedWorkloads": [],
+  "coreSHA256": {
+    "reference": "a5038a280566316898258b4c3c3c8377bee5b8b5bcc6c7cf18ce99cdcf7b29f7",
+    "candidate": "2c6b304be4c81e2c70d4b0e0e89b71fb26e33521a561405255b939c2716d8226"
+  },
+  "boundary": "Existing exact-IR diagnostic: compared emitted code/instructions/storage/name/global-location and receiver-definition facts from each actual frozen core. No guest execution, CPU measurement or proof beyond these representative valid scripts."
+}
