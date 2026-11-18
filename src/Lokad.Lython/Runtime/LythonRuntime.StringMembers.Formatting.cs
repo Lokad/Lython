@@ -10,7 +10,8 @@ internal sealed partial class LythonRuntime
     {
         // One invocation owns its arguments, numbering and expanded-spec scratch.
         // Cached layouts retain none of these values or the execution token.
-        private sealed class MethodFormatOperation(object[] positional, Dictionary<string, object>? keywords,
+        private sealed class MethodFormatOperation(CallArgumentValue[] arguments, int positionalCount,
+            int[]? positionalIndices, Dictionary<string, int>? keywords,
             object? mapping, LythonSourceSpan span, ExecutionContext context, bool asynchronous, int templateBytes)
         {
             private int _autoIndex;
@@ -19,11 +20,13 @@ internal sealed partial class LythonRuntime
             private MemoryGovernor.TemporaryMemoryReservation? _metadata;
             private long _metadataBytes;
 
-            internal async ValueTask<object> RunAsync(PyString text, PyStringOps.FormatTemplate template)
+            internal async ValueTask<object> RunAsync(PyString text, PyStringOps.FormatTemplate template,
+                MemoryGovernor.TemporaryMemoryReservation? indexStorage = null)
             {
+                using var indices = indexStorage;
                 context.CheckExecution(span);
                 var output = new GovernedByteBuilder(context.MemoryGovernor, span,
-                    checked(text.ByteLength + positional.Length * 8));
+                    checked(text.ByteLength + positionalCount * 8));
                 try
                 {
                     await AppendTemplateAsync(template, output).ConfigureAwait(false);
@@ -44,6 +47,8 @@ internal sealed partial class LythonRuntime
                 }
             }
 
+            private object PositionalValue(int index) => arguments[positionalIndices?[index] ?? index].Value;
+
             private async ValueTask AppendTemplateAsync(PyStringOps.FormatTemplate template, GovernedByteBuilder output)
             {
                 foreach (var part in template.Parts)
@@ -63,18 +68,18 @@ internal sealed partial class LythonRuntime
                         if (mapping is not null) throw new InvalidOperationException("Format string contains positional fields");
                         if (_sawManual) throw new InvalidOperationException("cannot switch from manual field specification to automatic field numbering");
                         _sawAuto = true;
-                        if (_autoIndex >= positional.Length)
+                        if (_autoIndex >= positionalCount)
                             throw new IndexOutOfRangeException($"Replacement index {_autoIndex} out of range for positional args tuple");
-                        selected = positional[_autoIndex++];
+                        selected = PositionalValue(_autoIndex++);
                     }
                     else if (PyStringOps.TryParseFormatIndex(root, out var slot, context.State.CancellationToken))
                     {
                         if (mapping is not null) throw new InvalidOperationException("Format string contains positional fields");
                         if (_sawAuto) throw new InvalidOperationException("cannot switch from automatic field numbering to manual field specification");
                         _sawManual = true;
-                        if (slot >= positional.Length)
+                        if (slot >= positionalCount)
                             throw new IndexOutOfRangeException($"Replacement index {slot} out of range for positional args tuple");
-                        selected = positional[(int)slot];
+                        selected = PositionalValue((int)slot);
                     }
                     else if (mapping is not null)
                     {
@@ -83,7 +88,7 @@ internal sealed partial class LythonRuntime
                             ? await ReadLoweredSubscriptAsync(mapping, key, span, context).ConfigureAwait(false)
                             : ReadSubscriptValue(mapping, key, span, context);
                     }
-                    else if (keywords is not null && keywords.TryGetValue(root, out var keyword)) selected = keyword;
+                    else if (keywords is not null && keywords.TryGetValue(root, out var keyword)) selected = arguments[keyword].Value;
                     else throw new KeyNotFoundException(root);
                     context.CheckExecution(span);
 

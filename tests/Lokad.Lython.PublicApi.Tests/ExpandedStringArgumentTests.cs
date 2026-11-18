@@ -35,6 +35,7 @@ public sealed class ExpandedStringArgumentTests
         { "join_tuple", "args=(('a','b'),)\nprint(':'.join(*args))", "a:b\n" },
         { "join_string", "args=('ab',)\nprint(':'.join(*args))", "a:b\n" },
         { "format_map", "args=({'x':'value'},)\nprint('{x}'.format_map(*args))", "value\n" },
+        { "format_interleaved", "args=['second','third']\nprint('{2}:{label}:{0}:{1}'.format('first', label='named', *args))", "third:named:first:second\n" },
         { "literal_expansion", "print(\"aa\".replace(*(\"a\",\"b\")))", "bb\n" },
         { "literal_keyword_expansion", "print(\"aa\".replace(\"a\",\"b\",**{\"count\":1}))", "ba\n" },
         { "none_bound_alias", "start=None\nprint(\"abc\".find(\"b\",start))", "1\n" },

@@ -117,34 +117,56 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private static async ValueTask<object> FormatStringAsync(PyString text, CallArgumentValue[] arguments,
+        private static ValueTask<object> FormatStringAsync(PyString text, CallArgumentValue[] arguments,
             LythonSourceSpan span, ExecutionContext context, bool asynchronous, PyStringOps.FormatTemplate prepared)
         {
             var positionalCount = 0;
-            foreach (var argument in arguments)
-                if (argument.IsPositional) positionalCount++;
-            var keywordCount = arguments.Length - positionalCount;
-            // Copies remain private through actual callback suspension.
-            // Admit their capacity/metadata before constructing either one.
-            using var argumentStorage = context.MemoryGovernor.ReserveTemporary(
-                checked(EstimateObjectArrayBytes(positionalCount) + 64L + 64L * keywordCount), span);
-            context.CheckExecution(span);
-            var positional = new object[positionalCount];
-            var keywords = new Dictionary<string, object>(keywordCount, StringComparer.Ordinal);
-            var index = 0;
-            foreach (var argument in arguments)
+            var firstKeyword = arguments.Length;
+            for (var i = 0; i < arguments.Length; i++)
             {
-                if (argument.IsPositional) positional[index++] = argument.Value;
-                else if (!keywords.TryAdd(argument.KeywordName, argument.Value))
-                    throw CallErrors.MultipleValues(PythonCallableKind.Method, "str.format", argument.KeywordName, span);
+                if ((i & 1023) == 0) context.CheckExecution(span);
+                if (arguments[i].IsPositional) positionalCount++;
+                else if (firstKeyword == arguments.Length) firstKeyword = i;
             }
-            return await new MethodFormatOperation(positional, keywords, null, span, context,
-                asynchronous, text.ByteLength).RunAsync(text, prepared).ConfigureAwait(false);
+
+            var keywordCount = arguments.Length - positionalCount;
+            var interleaved = firstKeyword < positionalCount;
+            var indexBytes = (interleaved ? 32L + 4L * positionalCount : 0) +
+                (keywordCount != 0 ? 64L + 64L * keywordCount : 0);
+            var indexStorage = indexBytes == 0 ? null : context.MemoryGovernor.ReserveTemporary(indexBytes, span);
+            try
+            {
+                context.CheckExecution(span);
+                var positionalIndices = interleaved ? new int[positionalCount] : null;
+                Dictionary<string, int>? keywords = null;
+                if (keywordCount != 0)
+                {
+                    keywords = new Dictionary<string, int>(keywordCount, StringComparer.Ordinal);
+                    var positionalIndex = 0;
+                    for (var i = 0; i < arguments.Length; i++)
+                    {
+                        if ((i & 1023) == 0) context.CheckExecution(span);
+                        var argument = arguments[i];
+                        if (argument.IsPositional)
+                        {
+                            if (positionalIndices is not null) positionalIndices[positionalIndex++] = i;
+                        }
+                        else if (!keywords.TryAdd(argument.KeywordName, i))
+                            throw CallErrors.MultipleValues(PythonCallableKind.Method, "str.format", argument.KeywordName, span);
+                    }
+                }
+
+                // The invocation owns the original packet until formatting and
+                // all its callbacks complete. Only the indices need a new lease.
+                return new MethodFormatOperation(arguments, positionalCount, positionalIndices, keywords, null,
+                    span, context, asynchronous, text.ByteLength).RunAsync(text, prepared, indexStorage);
+            }
+            catch { indexStorage?.Dispose(); throw; }
         }
 
         private static ValueTask<object> FormatMappingAsync(PyString text, object mapping,
             LythonSourceSpan span, ExecutionContext context, bool asynchronous, PyStringOps.FormatTemplate prepared)
-            => new MethodFormatOperation([], null, mapping, span, context, asynchronous, text.ByteLength)
+            => new MethodFormatOperation([], 0, null, null, mapping, span, context, asynchronous, text.ByteLength)
                 .RunAsync(text, prepared);
 
         private sealed class StringTranslateMemberProvider : IStringMemberProvider

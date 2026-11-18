@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Read method-format arguments from their existing invocation packet
+  through callback completion. Allocate indices for named or interleaved
+  arguments and preserve lookup order.
+
 - Bind expanded keyword keys directly in UTF-8 for guest functions and
   bound methods. Share prepared parameter and default-name metadata.
 
