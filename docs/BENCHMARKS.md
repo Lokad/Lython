@@ -7,8 +7,8 @@
 | JSON-lines record transform | 4,096 records / 110,592 B | 3.898–4.012 ms | 4.388–4.423 ms | 0.88–0.91× | Diagnostic ea8/cf; controls L/C 2.93/0.79%; IQR≤0.79% |
 | Numeric CSV quality report | 4,096 records / 127,031 B | 4.066–4.166 ms | 4.574–4.693 ms | 0.87–0.91× | Diagnostic; controls L/C 2.46/2.60%; IQR≤1.47% |
 | Text normalization | 4,096 lines / 52,224 B | 0.803–0.804 ms | 0.501–0.503 ms | 1.60–1.60× | Diagnostic2e5/1bce; controls L/C 0.04/0.38%; IQR≤1.03% |
-| JSON-lines aggregation with a helper | 4,096 records / 110,592 B | 3.548–3.613 ms | 4.077–4.102 ms | 0.86–0.89× | Diagnostic; controls L/C 1.85/0.62%; IQR≤0.39% |
-| Floating JSON numeric report | 4,096 pairs / 56,495 B | 1.137–1.165 ms | 0.813–0.820 ms | 1.39–1.43× | Diagnostic3f/a503; controls L/C 2.52/0.78%; IQR≤0.79% |
+| JSON-lines aggregation with a helper | 4,096 records / 110,592 B | 3.444–3.606 ms | 4.227–4.238 ms | 0.81–0.85× | Diagnostic R534/40db; Lython control 4.69%; IQR≤2.36% |
+| Floating JSON numeric report | 4,096 pairs / 56,495 B | 1.036–1.063 ms | 0.833–0.835 ms | 1.24–1.28× | Diagnostic R534/40db; controls L/C 2.56/0.33%; IQR≤1.64% |
 | Helper text normalization | 4,096 lines / 52,224 B | 1.130–1.137 ms | 0.856–0.907 ms | 1.25–1.33× | Diagnostic3f/a503; controls L/C 0.57/6.02%; IQR≤1.52% |
 | CSV field validation | 4,128 rows / 128,183 B | 2.975–3.003 ms | 4.311–4.327 ms | 0.69–0.70× | Diagnostic7db/c036; controls L/C 0.92/0.37%; IQR≤2.99% |
 
@@ -17,7 +17,7 @@ the combinations of two process medians per engine, not confidence intervals.
 Controls L/C report the difference between the two Lython/CPython medians. These
 complete scripts show substantial text/numeric gaps alongside faster CSV/JSON-lines.
 
-The CSV and JSON-lines aggregation rows were measured **2026-11-17 UTC**, committed
+The numeric CSV and earlier JSON-lines compilation and compile-to-result rows were measured **2026-11-17 UTC**, committed
 **0d2a6ab7 / frozen8d26963c**, stock
 **CPython3.13.16** (PGO/LTO, GIL enabled, no JIT), quiet **AzureF4as_v7**,4vCPU
 AMD EPYC9V45/16GiB, Ubuntu24.04.4, .NET11RC3. Existing workers/catalog;12jobs,
@@ -38,10 +38,19 @@ precision. [Sources and controls](../benchmarks/results/2026-11-18-agent-cpython
 Original text normalization keeps its qualified **2e585229 / 1bce52ad** measurement
 of2026-11-18. [Sources and original controls](../benchmarks/results/2026-11-18-affected-cpython-checkpoint/README.md).
 
-Helper text/floating rows now use committed retained **3f873227 / a5038a28**,
+Helper text rows use committed **3f873227 / a5038a28**,
 measured **2026-11-18** on the same machine/toolchains. [Full44256409242](../benchmarks/results/2026-11-18-prepared-module-bindings/delivery/README.md) passed Windows/Ubuntu actual11/10, original stress and installed Release consumers.
-Helper warm CPython control6.02% limits precision; helper fresh control3.48% and
-floating warm Lython2.52% remain visible. [Exact source, boundaries and raw data](../benchmarks/results/2026-11-18-bindings-cpython-checkpoint/README.md).
+Helper warm CPython control movement of 6.02% and compile-to-result movement of
+3.48% limit precision. That checkpoint also preserves the previous floating
+report measurements. [Exact source and raw data](../benchmarks/results/2026-11-18-bindings-cpython-checkpoint/README.md).
+
+The floating report and warm JSON-lines aggregation were measured **2026-11-18**
+using frozen **40db9318**, with the numeric JSON change on **dd4c5165c**, and stock
+**CPython 3.13.16** on the same VM and toolchains. The JSON change is retained in
+**55fe3da03**. The measured image predates the merged regex change. The integer
+JSON fixture has 1,024 blank lines in addition to its data records. Lython's
+4.69% control spread limits the precision of that row.
+[Source, timing boundaries and observations](../benchmarks/results/2026-11-18-json-numeric-cpython/README.md).
 
 CSV validation retains **7db1de02 / c0367d98**; its original full run failed entry-
 error-context regressions. Later corrected source qualified independently; these
@@ -68,8 +77,8 @@ This is useful workload latency, not equivalent containment or cold startup.
 | Text normalization | Compile-to-result | 0.873–0.878 ms | 0.593–0.595 ms | 1.47–1.48× | Diagnostic2e5/1bce; controls L/C 0.56/0.39%; IQR≤0.35% |
 | JSON-lines aggregation with a helper | Compilation only | 0.054–0.054 ms | 0.054–0.054 ms | 0.99–1.00× | Diagnostic; controls L/C 0.63/0.11%; IQR≤0.91% |
 | JSON-lines aggregation with a helper | Compile and execute once | 3.642–3.707 ms | 4.192–4.194 ms | 0.87–0.88× | Diagnostic; controls L/C 1.78/0.05%; IQR≤0.45% |
-| Floating JSON numeric report | Compilation only | 0.056–0.056 ms | 0.061–0.061 ms | 0.91–0.92× | Diagnostic3f/a503; controls L/C 0.03/0.87%; IQR≤0.75% |
-| Floating JSON numeric report | Compile-to-result | 1.251–1.268 ms | 0.954–0.956 ms | 1.31–1.33× | Diagnostic3f/a503; controls L/C 1.37/0.19%; IQR≤1.00% |
+| Floating JSON numeric report | Compilation only | 0.0557–0.0560 ms | 0.0604–0.0606 ms | 0.92–0.93× | Diagnostic R534/40db; controls L/C 0.38/0.17%; IQR≤1.24% |
+| Floating JSON numeric report | Compile-to-result | 1.138–1.139 ms | 0.964–0.972 ms | 1.17–1.18× | Diagnostic R534/40db; controls L/C 0.14/0.86%; IQR≤1.26% |
 | Helper text normalization | Compilation only | 0.047–0.047 ms | 0.044–0.044 ms | 1.05–1.06× | Diagnostic3f/a503; controls L/C 0.47/0.39%; IQR≤0.97% |
 | Helper text normalization | Compile-to-result | 1.229–1.231 ms | 0.802–0.830 ms | 1.48–1.53× | Diagnostic3f/a503; controls L/C 0.13/3.48%; IQR≤3.43% |
 | CSV field validation | Compilation only | 0.026–0.026 ms | 0.027–0.027 ms | 0.96–0.98× | Diagnostic7db/c036; controls L/C 1.70/0.30%; IQR≤2.30% |
@@ -105,6 +114,7 @@ for the CPython ratios above.
 
 | Change | Established outcome | Limits / evidence |
 | --- | --- | --- |
+| Shared JSON numeric lexing | Floating report warm 9.90–10.17% lower and initial compile-to-result 6.29–7.99% lower elapsed, with supporting CPU | 40db9318 versus 29192b95. Accounted peaks matched. Integer JSON remained mixed on confirmation. [Both comparisons](../benchmarks/results/2026-11-18-json-number-lexing/README.md). |
 | Prepared module bindings | Floating report warm11–14% lower / compile-to-result7% lower elapsed, supporting CPU; warm allocation/peaks flat | Separatea5038a28 versus84b1a159 pair; compile2%slower, helper elapsed0.2–2.2%higher/CPUuncertain. [Full qualification](../benchmarks/results/2026-11-18-prepared-module-bindings/delivery/README.md) passed; original controls remain. [Initial adversity](../benchmarks/results/2026-11-18-prepared-module-bindings/initial/README.md), [confirmation](../benchmarks/results/2026-11-18-prepared-module-bindings/confirmation/README.md). |
 | Discarded call results | CSV-validation allocation6.73% lower; named helper elapsed0.8–3.1% lower with supporting CPU | Separatec0367d98 versusa71abfed pair; positional calls0.9–2.6%slower, floating uncertain. Original c036 full delivery failed entry-error context; [corrected9e/84](../benchmarks/results/2026-11-18-result-entry-correction/delivery/README.md) is fully qualified. Separate correction timing adds1–2%helper elapsed debt; do not combine collections. [Evidence](../benchmarks/results/2026-11-18-discarded-call-results/refined/README.md). |
 | Known-size working drains | Helper-list text allocation7.11% lower; original/nontext effectively flat | Separatea71abfed versus2ede09fc pair; elapsed/CPU gains inconclusive, adverse first collection retained. [Containing corrected9e/84 delivery](../benchmarks/results/2026-11-18-result-entry-correction/delivery/README.md) fully passed; these earlier timings remain separate. [Evidence](../benchmarks/results/2026-11-18-known-drain-construction/confirmation/README.md). |

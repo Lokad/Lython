@@ -9357,3 +9357,21 @@ or small results. Peaks and owner balances match. Both actual local targets pass
 679 public checks and the refined 16-test cancellation/width set. The original
 .NET 11 short-fixture failure remains in the initial evidence. Retain the core
 simplification with the measured tradeoff. Adapter qualification is separate.
+
+[R534 JSON numeric lexing](results/2026-11-18-json-number-lexing/README.md)
+retains one lexical pass for numeric kind and ordinary integer digits, with
+exact-operand division for short fixed-point values. R534/B964 showed floating
+warm elapsed 7.30–10.80% lower and fresh 6.29–7.99% lower, with supporting
+process CPU. B965 confirmed 9.90–10.17% lower floating warm elapsed. Integer
+warm remained mixed and the original adverse comparison stays archived.
+Allowance balances and accounted peaks matched. Both actual targets passed
+the independent and combined focused suites. [Combined CI](https://github.com/Lokad/Lython/actions/runs/44304492242)
+qualifies commit 55fe3da03 separately.
+
+[R535/B966 numeric JSON versus CPython](results/2026-11-18-json-numeric-cpython/README.md)
+measured R534/40db9318 on dd4c5165c against stock CPython 3.13.16. The frozen
+image predates the regex merge. Floating report compile 0.92–0.93×, warm
+1.24–1.28× and compile-to-result 1.17–1.18×. Integer JSON warm 0.81–0.85×
+with 4.69% Lython process spread. Four jobs took 187.31 seconds, with both
+quiet gates, output checks, joined workers and verified archive. Separate
+source-pair measurements establish the R534 gain. Publication is postponed.
