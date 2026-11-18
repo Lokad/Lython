@@ -127,10 +127,6 @@ internal sealed partial class LythonRuntime
                     // Import stores update their bound slots directly. Copying
                     // the whole namespace would erase unrelated unmirrored locals.
                     return;
-                case ExecutableOpCode.DefineFunction:
-                    await ExecuteExecutableFunctionDefinitionAsync(_execution.Code, _execution.Code.Functions[instruction.FunctionIndex],
-                        _execution.Locals, this, true).ConfigureAwait(false);
-                    return;
                 default:
                     await DispatchLoweredStatementAsync(_execution.Code.StatementFallbacks[instruction.StatementFallbackIndex],
                         this, AsynchronousLoweredStatementExecution.Instance).ConfigureAwait(false);

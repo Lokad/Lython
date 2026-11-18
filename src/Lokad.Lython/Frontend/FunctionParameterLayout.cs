@@ -9,6 +9,16 @@ internal sealed class FunctionParameterLayout
 {
     internal readonly record struct DefaultSlot(int ParameterIndex, int KeywordIndex);
 
+    // CPython inserts regular argument annotations before positional-only ones.
+    internal static int AnnotationOrder(FunctionParameterKind kind) => kind switch
+    {
+        FunctionParameterKind.Positional => 0,
+        FunctionParameterKind.PositionalOnly => 1,
+        FunctionParameterKind.VariadicList => 2,
+        FunctionParameterKind.KeywordOnly => 3,
+        _ => 4,
+    };
+
     private readonly string[] _names;
     private readonly record struct NativeKeyword(PyString Key, int Slot);
     private readonly NativeKeyword[] _nativeKeywords;

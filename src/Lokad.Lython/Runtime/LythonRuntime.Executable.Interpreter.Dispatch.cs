@@ -147,7 +147,7 @@ internal sealed partial class LythonRuntime
                                 return InstructionPause.Boundary;
                             }
                             break;
-                        case ExecutableOpCode.Import or ExecutableOpCode.DefineFunction or ExecutableOpCode.ExecuteFallbackStatement:
+                        case ExecutableOpCode.Import or ExecutableOpCode.ExecuteFallbackStatement:
                             if (invocation is null) return InstructionPause.ContextRequired;
                             if (!asynchronous) invocation!.ExecuteDefinitionOrFallback(instruction);
                             else

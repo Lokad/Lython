@@ -30,7 +30,7 @@ public sealed class EagerComprehensionExecutableTests
     {
         var syntax = LythonFrontend.Compile("def collect(values,convert):\n    return " + expression,regexProvider:Utf8RegexProvider.Instance).Script!;
         var module = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
-        var body = Assert.Single(module.Functions).CodeObject!;
+        var body = Assert.Single(module.FunctionBindings()).CodeObject!;
         Assert.Empty(body.StatementFallbacks);
         Assert.False(body.RequiresLocalVariableMirroring);
         Assert.DoesNotContain(body.Constants, value => value is ExecutableCreateGeneratorExpression);

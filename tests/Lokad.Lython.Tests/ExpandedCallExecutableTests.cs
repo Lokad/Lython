@@ -13,7 +13,7 @@ public sealed class ExpandedCallExecutableTests
     {
         var syntax = LythonFrontend.Compile($"def invoke(target,values,keywords,marker):\n    return {expression}",regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax));
-        var body = Assert.Single(code.EntryPoint.Functions).CodeObject;
+        var body = Assert.Single(code.EntryPoint.FunctionBindings()).CodeObject;
         Assert.NotNull(body);
         Assert.Empty(body.StatementFallbacks);
         Assert.False(body.RequiresLocalVariableMirroring);

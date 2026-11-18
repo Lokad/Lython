@@ -51,7 +51,7 @@ public sealed class SequenceConstructionOwnershipTests
         var probe = new Probe(cancellation);
         source.Variables["inspect"] = probe;
         var script = LythonFrontend.Compile("def values():\n yield inspect('before')\n yield inspect('cancel')\n yield inspect('after')").Script!;
-        var code = Assert.Single(ExecutableScript.Compile(LoweredScript.Lower(script)).EntryPoint.Functions).CodeObject!;
+        var code = Assert.Single(ExecutableScript.Compile(LoweredScript.Lower(script)).EntryPoint.FunctionBindings()).CodeObject!;
         var span = new LythonSourceSpan(1, 1, 1, 1);
         var generator = LythonRuntime.PyGenerator.Create(code, source, span);
         var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>

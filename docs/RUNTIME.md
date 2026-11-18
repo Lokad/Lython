@@ -838,6 +838,10 @@ Executable function bindings retain declaration inputs and prepared code without
 the original function body tree. A definition evaluates its defaults in the
 defining scope and fills the final Python tuple and keyword dictionary directly.
 Those containers remain distinct per function and reflect later mutation.
+Executable declarations evaluate decorators and defaults in the surrounding
+instruction stream. The same construction step handles yielding definitions,
+with private default storage owned by the operand stack until publication or
+cleanup. Type-scope annotations keep their defining namespace.
 Private default storage stays admitted through suspension and is released if
 default evaluation or annotation setup fails. Once a decorator can observe the
 function, the defaults stay funded even if decoration raises.

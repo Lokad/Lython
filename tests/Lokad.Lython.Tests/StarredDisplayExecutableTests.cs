@@ -15,7 +15,7 @@ public sealed class StarredDisplayExecutableTests
     {
         var syntax = LythonFrontend.Compile($"def combine(left,right,marker):\n    before=marker+1\n    return {expression}",regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax));
-        var body = Assert.Single(code.EntryPoint.Functions).CodeObject;
+        var body = Assert.Single(code.EntryPoint.FunctionBindings()).CodeObject;
         Assert.NotNull(body);
         Assert.Empty(body.StatementFallbacks);
         Assert.False(body.RequiresLocalVariableMirroring);
@@ -112,7 +112,7 @@ print(combine([1], [2], 3))
 """,regexProvider:Utf8RegexProvider.Instance);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
         var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script!));
-        var body = Assert.Single(code.EntryPoint.Functions).CodeObject;
+        var body = Assert.Single(code.EntryPoint.FunctionBindings()).CodeObject;
         Assert.NotNull(body);
         Assert.Empty(body.StatementFallbacks);
         Assert.False(body.RequiresLocalVariableMirroring);

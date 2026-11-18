@@ -52,7 +52,7 @@ public sealed class ProtectedLoopCompilationTests
     private static IEnumerable<ExecutableCodeObject> Bodies(ExecutableCodeObject code)
     {
         yield return code;
-        foreach (var function in code.Functions)
+        foreach (var function in code.FunctionBindings())
         {
             foreach (var body in Bodies(function.CodeObject)) yield return body;
         }

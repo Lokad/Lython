@@ -12,7 +12,7 @@ public sealed class ExecutableUnpackingTests
     public void OrdinaryNestedGroupsAndLeavesUseExecutableOperations()
     {
         var syntax = LythonFrontend.Compile("def run(values,box):\n first,(second,*rest),box.value=values\n return first,second,rest,box.value",regexProvider:Utf8RegexProvider.Instance).Script!;
-        var code = Assert.Single(ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint.Functions).CodeObject!;
+        var code = Assert.Single(ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint.FunctionBindings()).CodeObject!;
         Assert.Empty(code.StatementFallbacks);
         Assert.Equal(2, code.Instructions.Where(i => i.OpCode == ExecutableOpCode.UnpackValues).Count());
         Assert.Single(code.Instructions, i => i.OpCode is ExecutableOpCode.StoreMember or ExecutableOpCode.StoreMemberLast);

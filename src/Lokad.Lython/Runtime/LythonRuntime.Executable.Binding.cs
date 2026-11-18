@@ -327,66 +327,6 @@ internal sealed partial class LythonRuntime
     private const long ExecutableCellsArrayBaseBytes = 32;
     private const long ExecutableCellsArraySlotBytes = 8;
 
-    private static async ValueTask ExecuteExecutableFunctionDefinitionAsync(
-        ExecutableCodeObject codeObject,
-        ExecutableFunctionBinding functionBinding,
-        ExecutableSlot[] locals,
-        ExecutionContext context,
-        bool asynchronous)
-    {
-        var needsTypeMetadata = functionBinding.HasAnnotations || functionBinding.TypeParameters is not null || HasTypeParameterScope(context);
-        context.EnterInterpreterFrame(functionBinding.Span);
-        try
-        {
-            using var decoratorStorage = context.MemoryGovernor.ReserveTemporary(EstimateObjectArrayBytes(functionBinding.Decorators.Count), functionBinding.Span);
-            var decorators = asynchronous
-                ? await EvaluateDecoratorsAsync(functionBinding.Decorators, context).ConfigureAwait(false)
-                : EvaluateDecorators(functionBinding.Decorators, context);
-            var closureCells = CaptureExecutableClosures(functionBinding.CodeObject, context, functionBinding.Span);
-            using var pendingDefaults = await EvaluateFunctionDefaults(functionBinding.Parameters, functionBinding.ParameterLayout,
-                context, functionBinding.Span, asynchronous).ConfigureAwait(false);
-            var defaults = pendingDefaults?.Values ?? default;
-            var typeScope = CreateTypeScope(functionBinding.TypeParameters, context, functionBinding.Span);
-            var closure = typeScope.Closure.FunctionClosureContext;
-            var function = functionBinding.IsGenerator
-                ? (object)new PyGeneratorFunction(functionBinding.DeclaredName, functionBinding.ParameterLayout,
-                    functionBinding.CodeObject, closure, defaults, functionBinding.CodeObject.ScopeFacts, closureCells)
-                : new PyExecutableFunction(
-                    functionBinding.DeclaredName,
-                    functionBinding.ParameterLayout,
-                    functionBinding.CodeObject,
-                    closure,
-                    closureCells,
-                    defaults,
-                    functionBinding.CodeObject.ScopeFacts);
-            ChargeFunctionValue(context, functionBinding.Span);
-            ChargeClosureRetention(
-                closure,
-                context.MemoryGovernor,
-                functionBinding.Span);
-            if (function is PyFunctionBase defined)
-            {
-                PyFunctionBase.CaptureFunctionDocstring(defined, functionBinding.Docstring, context, functionBinding.Span);
-                if (needsTypeMetadata)
-                {
-                    // Metadata does not require interpreting an otherwise compiled body.
-                    // Keep its existing scope, evaluation order and ownership before publication.
-                    await AttachTypeMetadataAsync(defined, functionBinding.Parameters, functionBinding.ReturnAnnotation,
-                        functionBinding.TypeParameters is not null, functionBinding.Span, typeScope, context, asynchronous).ConfigureAwait(false);
-                }
-            }
-            pendingDefaults?.Publish();
-            var decorated = asynchronous
-                ? await ApplyDecoratorsAsync(function, decorators, functionBinding.Span, context).ConfigureAwait(false)
-                : ApplyDecorators(function, decorators, functionBinding.Span, context);
-            AssignExecutableBoundName(codeObject, locals, functionBinding.Name, decorated, context, functionBinding.Span);
-        }
-        finally
-        {
-            context.LeaveInterpreterFrame();
-        }
-    }
-
     private static void PrepareExecutableCallArguments(
         ExecutableCallSite callSite, ref ExecutableValueStorage stack, int start,
         Span<CallArgumentValue> arguments, ExecutionContext context)

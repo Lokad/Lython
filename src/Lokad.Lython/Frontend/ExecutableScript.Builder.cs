@@ -191,7 +191,6 @@ internal sealed partial class ExecutableScript
                 _imports.ToArray(),
                 _callSites.ToArray(),
                 _lookupCacheCount,
-                _functions.ToArray(),
                 _matchCases.ToArray(),
                 _statementFallbacks.ToArray(),
                 requiresLocalVariableMirroring,

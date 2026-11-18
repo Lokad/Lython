@@ -19,7 +19,7 @@ public sealed class AssertionExecutionTests
     public void OrdinaryHelperAssertionsStayExecutableWithoutMirroring()
     {
         var code = Compile("def validate(value):\n assert value,'required'\n return value\nreturn validate(7)");
-        var helper = Assert.IsType<ExecutableCodeObject>(Assert.Single(code.Functions).CodeObject);
+        var helper = Assert.IsType<ExecutableCodeObject>(Assert.Single(code.FunctionBindings()).CodeObject);
         Assert.Empty(helper.StatementFallbacks);
         Assert.False(helper.RequiresLocalVariableMirroring);
     }

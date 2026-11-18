@@ -23,29 +23,13 @@ internal sealed partial class LythonRuntime
                     await StoreAnnotationEntryAsync(ResolveName("__annotations__", span, this),
                         annotation.Name, value, this, span, asynchronous).ConfigureAwait(false);
                     break;
+                case ExecutableStartFunctionDefaults start:
+                    var owner = new PendingFunctionDefaults(start.Layout, this, span);
+                    try { PublishInstructionResult(instruction, owner); }
+                    catch { owner.Dispose(); throw; }
+                    break;
                 case ExecutableCreateFunction function:
-                    using (var storage = MemoryGovernor.ReserveTemporary(320L + 160L * function.Inputs.Count
-                        + 128L * function.Binding.Parameters.Count, span))
-                    {
-                        var captured = CaptureDefinitionInputs(function.Inputs, instruction.InputStart);
-                        var template = function.Binding;
-                        var definition = template with
-                        {
-                            Decorators = template.Decorators.Select(Capture).ToArray(),
-                            Parameters = template.Parameters.Select(p => p with
-                            {
-                                DefaultValue = p.DefaultValue is null ? null : Capture(p.DefaultValue),
-                                Annotation = p.Annotation is null ? null : Capture(p.Annotation),
-                            }).ToArray(),
-                            ReturnAnnotation = template.ReturnAnnotation is null ? null : Capture(template.ReturnAnnotation),
-                        };
-                        AdmitPreparedDefinitionStorage(64L + 160L * definition.Parameters.Count, span);
-                        AdmitPreparedDefinitionStorage(128L + 64L * definition.Decorators.Count, span);
-                        await ExecuteExecutableFunctionDefinitionAsync(_execution.Code,
-                            definition,
-                            _execution.Locals, this, asynchronous).ConfigureAwait(false);
-                        LoweredExpression Capture(LoweredExpression input) => captured.TryGetValue(input, out var value) ? value : input;
-                    }
+                    await CreateExecutableFunctionAsync(function, instruction.InputStart, asynchronous).ConfigureAwait(false);
                     break;
                 case ExecutableCreateLambda lambda:
                     {
@@ -109,12 +93,68 @@ internal sealed partial class LythonRuntime
             MemoryGovernor.Commit(bytes);
         }
 
-        private Dictionary<LoweredExpression, LoweredExpression> CaptureDefinitionInputs(IReadOnlyList<LoweredExpression> inputs, int first)
+        private async ValueTask CreateExecutableFunctionAsync(ExecutableCreateFunction operation, int first, bool asynchronous)
         {
-            var result = new Dictionary<LoweredExpression, LoweredExpression>(inputs.Count);
-            for (var i = inputs.Count - 1; i >= 0; i--)
-                result[inputs[i]] = new LoweredCapturedExpression(inputs[i].Syntax, _execution.Stack.TakeValue(first + i, first + i));
-            return result;
+            var binding = operation.Binding;
+            var span = binding.Span;
+            EnterInterpreterFrame(span);
+            try
+            {
+                var layout = binding.ParameterLayout;
+                var endDecorators = first + binding.DecoratorCount;
+                var next = endDecorators;
+                PendingFunctionDefaults? defaults = null;
+                if (layout.Defaults.Length != 0)
+                {
+                    defaults = (PendingFunctionDefaults)_execution.Stack[next++];
+                    foreach (var slot in layout.Defaults)
+                        defaults.Add(slot, RuntimeValue(_execution.Stack[next++]), span);
+                    defaults.Complete();
+                }
+
+                var cells = CaptureExecutableClosures(binding.CodeObject, this, span);
+                var typeScope = CreateTypeScope(binding.TypeParameters, this, span);
+                var closure = typeScope.Closure.FunctionClosureContext;
+                var values = defaults?.Values ?? default;
+                using var storage = MemoryGovernor.ReserveTemporary(FunctionValueBytes, span);
+                PyFunctionBase function = binding.IsGenerator
+                    ? new PyGeneratorFunction(binding.DeclaredName, layout, binding.CodeObject, closure, values, binding.CodeObject.ScopeFacts, cells)
+                    : new PyExecutableFunction(binding.DeclaredName, layout, binding.CodeObject, closure, cells, values, binding.CodeObject.ScopeFacts);
+                storage.Commit(FunctionValueBytes);
+                ChargeClosureRetention(closure, MemoryGovernor, span);
+                PyFunctionBase.CaptureFunctionDocstring(function, binding.Docstring, this, span);
+                if (operation.AnnotationInputs.Count != 0)
+                {
+                    var annotations = new PyDict(MemoryGovernor, span);
+                    foreach (var site in operation.AnnotationInputs)
+                        await StoreAnnotationEntryAsync(annotations, site.Name, RuntimeValue(_execution.Stack[next + site.Offset]),
+                            this, site.Span, asynchronous).ConfigureAwait(false);
+                    function.TrySetMember("__annotations__", annotations);
+                }
+                else if (binding.HasAnnotations || binding.TypeParameters is not null || HasTypeParameterScope(this))
+                {
+                    await AttachTypeMetadataAsync(function, binding.Parameters, binding.ReturnAnnotation,
+                        binding.TypeParameters is not null, span, typeScope, this, asynchronous).ConfigureAwait(false);
+                }
+
+                // Decorator callbacks can publish the original definition even
+                // when they replace it or raise. Transfer the default owner first.
+                defaults?.Publish();
+                object decorated = function;
+                for (var i = endDecorators - 1; i >= first; i--)
+                {
+                    if (_execution.Stack[i] is not ICallable decorator)
+                        throw new LythonRuntimeException("TypeError", "Decorator expression must evaluate to a callable.", span);
+                    decorated = asynchronous ? await CallableInvocation.InvokeUnaryAsync(decorator, decorated, span, this).ConfigureAwait(false)
+                        : CallableInvocation.InvokeUnary(decorator, decorated, span, this);
+                }
+                AssignExecutableBoundName(_execution.Code, _execution.Locals, binding.Name, decorated, this, span);
+            }
+            finally
+            {
+                try { _execution.Stack.RetireTo(first); }
+                finally { LeaveInterpreterFrame(); }
+            }
         }
     }
 }

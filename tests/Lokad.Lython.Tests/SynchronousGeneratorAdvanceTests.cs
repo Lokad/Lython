@@ -41,6 +41,52 @@ public sealed class SynchronousGeneratorAdvanceTests
     }
 
     [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task SuspendedDefinitionRetainsAndReleasesPrivateDefaultStorage(bool asynchronous, bool cancel)
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var owner = budget.CreateScope();
+        using var cancellation = new CancellationTokenSource();
+        var context = new Context(new MockLythonHost(), new LythonRunOptions
+        {
+            MemoryBudget = owner,
+            CancellationToken = cancellation.Token,
+        }, regexProvider: Utf8RegexProvider.Instance);
+        var span = new LythonSourceSpan(1, 1, 1, 1);
+        var code = GeneratorCode(" def inner(value=(yield 17)):return value\n yield inner()");
+        var generator = LythonRuntime.PyGenerator.Create(code, context, span);
+        var yielded = await Move(generator, asynchronous);
+        Assert.True(yielded.HasValue);
+        Assert.Equal(new BigInteger(17), yielded.Value);
+        Assert.True(context.MemoryGovernor.CurrentReservedBytes > 0);
+
+        if (cancel)
+        {
+            cancellation.Cancel();
+            var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Move(generator, asynchronous));
+            Assert.Equal(LythonFailureReason.Cancelled, failure.Attribution?.Reason);
+        }
+        else
+        {
+            Assert.True(generator.TryGetMember("close", out var member));
+            var close = Assert.IsAssignableFrom<ICallable>(member);
+            var result = asynchronous ? await close.InvokeAsync([], span, context) : close.Invoke([], span, context);
+            Assert.Same(PyNone.Instance, result);
+        }
+
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        Assert.Null(context.CurrentExecutableFrame);
+        Assert.Equal(0, context.State.CurrentRecursionDepth);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
+        Assert.False((await Move(generator, asynchronous)).HasValue);
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
     [InlineData(false, "admission")]
     [InlineData(true, "admission")]
     [InlineData(false, "cancel")]
@@ -108,7 +154,7 @@ public sealed class SynchronousGeneratorAdvanceTests
     private static ExecutableCodeObject GeneratorCode(string body)
     {
         var script = LythonFrontend.Compile("def values():\n" + body,regexProvider:Utf8RegexProvider.Instance).Script!;
-        return Assert.Single(ExecutableScript.Compile(LoweredScript.Lower(script)).EntryPoint.Functions).CodeObject!;
+        return Assert.Single(ExecutableScript.Compile(LoweredScript.Lower(script)).EntryPoint.FunctionBindings()).CodeObject!;
     }
 
     private sealed class Probe : ICallable

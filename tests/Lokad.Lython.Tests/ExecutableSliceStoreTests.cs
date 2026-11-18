@@ -14,7 +14,7 @@ public sealed class ExecutableSliceStoreTests
     public void SliceHeadersUseExecutableStores(string source)
     {
         var syntax = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!;
-        var code = Assert.Single(ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint.Functions).CodeObject!;
+        var code = Assert.Single(ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint.FunctionBindings()).CodeObject!;
         Assert.Empty(code.StatementFallbacks);
         Assert.Single(code.Instructions, i => i.OpCode is ExecutableOpCode.StoreSlice or ExecutableOpCode.StoreSliceLast);
     }

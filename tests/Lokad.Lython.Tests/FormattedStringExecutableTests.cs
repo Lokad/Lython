@@ -101,7 +101,7 @@ public sealed class FormattedStringExecutableTests
     {
         var syntax = LythonFrontend.Compile($"def render(value,width):\n    return {expression}",regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax));
-        var body = Assert.Single(code.EntryPoint.Functions).CodeObject;
+        var body = Assert.Single(code.EntryPoint.FunctionBindings()).CodeObject;
         Assert.NotNull(body);
         Assert.Empty(body.StatementFallbacks);
         Assert.False(body.RequiresLocalVariableMirroring);

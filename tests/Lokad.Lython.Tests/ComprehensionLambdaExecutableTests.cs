@@ -27,7 +27,7 @@ public sealed class ComprehensionLambdaExecutableTests
         {
             Assert.Empty(code.StatementFallbacks);
             Assert.False(code.RequiresLocalVariableMirroring);
-            foreach (var function in code.Functions) Check(Assert.IsType<ExecutableCodeObject>(function.CodeObject));
+            foreach (var function in code.FunctionBindings()) Check(Assert.IsType<ExecutableCodeObject>(function.CodeObject));
             foreach (var lambda in code.Constants.OfType<ExecutableCreateLambda>())
                 Check(Assert.IsType<ExecutableCodeObject>(lambda.CodeObject));
         }
@@ -66,7 +66,7 @@ public sealed class ComprehensionLambdaExecutableTests
         const long cap = 1024 * 1024;
         var syntax = LythonFrontend.Compile("def make(offset):return [lambda:(offset,value) for value in range(2)]",regexProvider:Utf8RegexProvider.Instance).Script.RequireNotNull();
         var module = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
-        var outer = Assert.Single(module.Functions).CodeObject.RequireNotNull();
+        var outer = Assert.Single(module.FunctionBindings()).CodeObject.RequireNotNull();
         var lambda = Assert.Single(outer.Constants.OfType<ExecutableCreateLambda>()).CodeObject.RequireNotNull();
         var facts = Assert.Single(outer.Constants.OfType<ExecutableStartComprehension>()).ScopeFacts;
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) },regexProvider:Utf8RegexProvider.Instance);

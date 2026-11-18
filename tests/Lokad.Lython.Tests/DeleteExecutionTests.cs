@@ -24,7 +24,7 @@ public sealed class DeleteExecutionTests
     public void HelperDeletionStaysExecutableWithoutMirroring()
     {
         var code = Compile("def clear(values):\n del values[0]\n return values\nreturn clear([7])");
-        var helper = Assert.IsType<ExecutableCodeObject>(Assert.Single(code.Functions).CodeObject);
+        var helper = Assert.IsType<ExecutableCodeObject>(Assert.Single(code.FunctionBindings()).CodeObject);
         Assert.Empty(helper.StatementFallbacks);
         Assert.False(helper.RequiresLocalVariableMirroring);
     }

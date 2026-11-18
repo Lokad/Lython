@@ -6,7 +6,7 @@ internal sealed partial class LythonRuntime
 {
     // Build the final default containers privately. The defining operation
     // owns them until a decorator or a binding can expose the function.
-    private sealed class PendingFunctionDefaults : IDisposable
+    private sealed class PendingFunctionDefaults : ExecutableTemporaryValue
     {
         private readonly FunctionParameterLayout _layout;
         private readonly ExecutionContext _context;
@@ -58,7 +58,7 @@ internal sealed partial class LythonRuntime
             _keywords = null;
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             var unpublished = Values;
             Publish();

@@ -13,7 +13,7 @@ public sealed class CompiledGeneratorExpressionTests
     public void OrdinaryBodiesHaveInstructionsAndLiveCellsWithoutParentMirroring()
     {
         var module = Compile("def make(offset):\n return (i+offset for i in range(3) if i)\nresult=make(7)");
-        var parent = Assert.Single(module.Functions).CodeObject!;
+        var parent = Assert.Single(module.FunctionBindings()).CodeObject!;
         var operation = Assert.Single(parent.Constants.OfType<ExecutableCreateGeneratorExpression>());
         var child = operation.CodeObject;
         Assert.Equal("<genexpr>", child.Name);

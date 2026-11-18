@@ -15,7 +15,7 @@ public sealed class LambdaExecutableTests
     {
         var syntax = LythonFrontend.Compile("def outer(value):\n    return lambda:value",regexProvider:Utf8RegexProvider.Instance).Script!;
         var module = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
-        var outer = Assert.Single(module.Functions).CodeObject!;
+        var outer = Assert.Single(module.FunctionBindings()).CodeObject!;
         var lambda = Assert.Single(outer.Constants.OfType<ExecutableCreateLambda>()).CodeObject!;
         var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024 * 1024) },regexProvider:Utf8RegexProvider.Instance);
         var values = new Slot[outer.LocalNames.Count];

@@ -118,13 +118,7 @@ internal sealed partial class LythonRuntime
         if (!hasTypeParameters && !HasTypeParameterScope(definingContext) &&
             returnAnnotation is null && parameters.All(p => p.Annotation is null)) return;
         var annotations = new PyDict(definingContext.MemoryGovernor, span);
-        // CPython's annotation table visits regular arguments before positional-only
-        // arguments, followed by *args, keyword-only arguments and **kwargs.
-        foreach (var parameter in parameters.OrderBy(parameter => parameter.Kind switch
-        {
-            FunctionParameterKind.Positional => 0, FunctionParameterKind.PositionalOnly => 1,
-            FunctionParameterKind.VariadicList => 2, FunctionParameterKind.KeywordOnly => 3, _ => 4
-        }))
+        foreach (var parameter in parameters.OrderBy(parameter => FunctionParameterLayout.AnnotationOrder(parameter.Kind)))
             if (parameter.Annotation is not null)
                 await StoreAnnotationEntryAsync(annotations, parameter.Name,
                     definingContext.PostponedAnnotations ? CreatePostponedAnnotationValue(parameter.Annotation.Syntax, definingContext)

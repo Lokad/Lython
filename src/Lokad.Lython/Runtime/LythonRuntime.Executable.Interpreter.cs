@@ -350,11 +350,6 @@ internal sealed partial class LythonRuntime
                     ExecuteExecutableImport(_execution.Code, _execution.Code.Imports[instruction.ImportIndex], _execution.Locals, this);
                     break;
 
-                case ExecutableOpCode.DefineFunction:
-                    ExecuteExecutableFunctionDefinitionAsync(_execution.Code, _execution.Code.Functions[instruction.FunctionIndex],
-                        _execution.Locals, this, false).GetAwaiter().GetResult();
-                    break;
-
                 case ExecutableOpCode.ExecuteFallbackStatement:
                     DispatchLoweredStatementAsync(
                         _execution.Code.StatementFallbacks[instruction.StatementFallbackIndex],

@@ -9,7 +9,6 @@ namespace Lokad.Lython.Frontend;
 internal enum ExecutableOpCode
 {
     Import,
-    DefineFunction,
     ExecuteFallbackStatement,
     LoadConst,
     LoadLocal,
@@ -169,7 +168,6 @@ internal readonly record struct ExecutableInstruction
             _inputStart, _resultSlot, ~_liveExtent);
 
     public int ImportIndex => ReadPrimaryOperand(ExecutableOpCode.Import, nameof(ImportIndex));
-    public int FunctionIndex => ReadPrimaryOperand(ExecutableOpCode.DefineFunction, nameof(FunctionIndex));
     public int StatementFallbackIndex => ReadPrimaryOperand(ExecutableOpCode.ExecuteFallbackStatement, nameof(StatementFallbackIndex));
     public int ConstantIndex => OpCode is ExecutableOpCode.LoadConst or ExecutableOpCode.ApplyOperation
         or ExecutableOpCode.AppendFormattedText or ExecutableOpCode.FormatField or ExecutableOpCode.MakeRecord
@@ -228,9 +226,6 @@ internal readonly record struct ExecutableInstruction
 
     public static ExecutableInstruction Import(int importIndex, LythonSourceSpan span)
         => new(ExecutableOpCode.Import, span, importIndex);
-
-    public static ExecutableInstruction DefineFunction(int functionIndex, LythonSourceSpan span)
-        => new(ExecutableOpCode.DefineFunction, span, functionIndex);
 
     public static ExecutableInstruction ExecuteFallbackStatement(int statementIndex, LythonSourceSpan span)
         => new(ExecutableOpCode.ExecuteFallbackStatement, span, statementIndex);
@@ -468,7 +463,7 @@ internal sealed record ExecutableFunctionBinding(
     string Name,
     string DeclaredName,
     LythonSourceSpan Span,
-    IReadOnlyList<LoweredExpression> Decorators,
+    int DecoratorCount,
     IReadOnlyList<LoweredFunctionParameter> Parameters,
     LoweredExpression? ReturnAnnotation,
     IReadOnlyList<LoweredTypeParameter>? TypeParameters,
@@ -504,7 +499,6 @@ internal sealed partial class ExecutableCodeObject
         IReadOnlyList<ImportStatementSyntax> imports,
         ExecutableCallSite[] callSites,
         int lookupCacheCount,
-        IReadOnlyList<ExecutableFunctionBinding> functions,
         IReadOnlyList<ExecutableMatchCaseBinding> matchCases,
         IReadOnlyList<LoweredStatement> statementFallbacks,
         bool requiresLocalVariableMirroring,
@@ -524,7 +518,6 @@ internal sealed partial class ExecutableCodeObject
         Imports = imports;
         CallSites = callSites;
         LookupCacheCount = lookupCacheCount;
-        Functions = functions;
         MatchCases = matchCases;
         PatternStorageCount = matchCases.Select(item => item.Pattern.StorageCount).DefaultIfEmpty(0).Max();
         StatementFallbacks = statementFallbacks;
@@ -616,7 +609,6 @@ internal sealed partial class ExecutableCodeObject
 
     public int LookupCacheCount { get; }
 
-    public IReadOnlyList<ExecutableFunctionBinding> Functions { get; }
 
     public IReadOnlyList<ExecutableMatchCaseBinding> MatchCases { get; }
 

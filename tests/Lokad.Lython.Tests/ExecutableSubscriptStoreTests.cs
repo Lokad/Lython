@@ -12,7 +12,7 @@ public sealed class ExecutableSubscriptStoreTests
     {
         var syntax = LythonFrontend.Compile("def run(container,key,value):\n container[key]=value",regexProvider:Utf8RegexProvider.Instance).Script!;
         var module = ExecutableScript.Compile(LoweredScript.Lower(syntax));
-        var code = Assert.Single(module.EntryPoint.Functions).CodeObject!;
+        var code = Assert.Single(module.EntryPoint.FunctionBindings()).CodeObject!;
         Assert.Empty(code.StatementFallbacks);
         Assert.Single(code.Instructions, i => i.OpCode is ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast);
     }

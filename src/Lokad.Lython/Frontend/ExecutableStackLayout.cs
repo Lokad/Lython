@@ -110,7 +110,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
                     ExecutableOpCode.Dup => resultSlot + 1,
                     ExecutableOpCode.ApplyOperation when constants[instruction.ConstantIndex] is
                         ExecutableStartComprehension or ExecutableStartCall or
-                        ExecutableStartClassHeader => resultSlot,
+                        ExecutableStartClassHeader or ExecutableStartFunctionDefaults => resultSlot,
                     _ => -1
                 };
                 if (ownedSlot >= 0)
@@ -272,7 +272,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
             ExecutableOpCode.Slice => (1 + BitOperations.PopCount((uint)instruction.SliceParts), 1),
             ExecutableOpCode.MakeSlice => (BitOperations.PopCount((uint)instruction.SliceParts), 1),
             ExecutableOpCode.ForNext => (0, 1),
-            ExecutableOpCode.Import or ExecutableOpCode.DefineFunction or ExecutableOpCode.ExecuteFallbackStatement or
+            ExecutableOpCode.Import or ExecutableOpCode.ExecuteFallbackStatement or
                 ExecutableOpCode.PreloadImplicitSuperArguments or ExecutableOpCode.Jump or ExecutableOpCode.AbruptJump or
                 ExecutableOpCode.BindException or ExecutableOpCode.ReraiseException or ExecutableOpCode.ClearException or
                 ExecutableOpCode.EndFinally or ExecutableOpCode.ReturnNone => (0, 0),
@@ -325,13 +325,13 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
 
     private static (int Pop, int Push) OperationEffect(ExecutableOperation operation) => operation switch
     {
-        ExecutableStartDisplay or ExecutableStartClassHeader or ExecutablePostponedAnnotation or ExecutableAnnotationsEnabled => (0, 1),
+        ExecutableStartDisplay or ExecutableStartClassHeader or ExecutableStartFunctionDefaults or ExecutablePostponedAnnotation or ExecutableAnnotationsEnabled => (0, 1),
         ExecutableStartComprehension => (1, 3),
         ExecutableFinishComprehension => (2, 1),
         ExecutableFinishTuple or ExecutableStartCall or ExecutableFinishCall or ExecutableCreateGeneratorExpression => (1, 1),
         ExecutableAppendDisplay or ExecutableAppendCall or ExecutableStoreModuleAnnotation => (1, 0),
         ExecutableStoreDictionaryItem item => (item.Unpacking ? 1 : 2, 0),
-        ExecutableCreateFunction function => (function.Inputs.Count, 0),
+        ExecutableCreateFunction function => (function.InputCount, 0),
         ExecutableCreateLambda lambda => (lambda.Expression.ParameterLayout.Defaults.Length, 1),
         ExecutableCreateClass type => (checked(type.Definition.Decorators.Count + (type.ExpandedHeader ? 1 : 0)), 0),
         _ => throw new InvalidOperationException($"Unknown prepared operand effect: {operation.GetType().Name}.")

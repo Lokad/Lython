@@ -645,8 +645,8 @@ return helper(2)
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
-        Assert.Single(executable.EntryPoint.Functions);
-        Assert.NotNull(executable.EntryPoint.Functions[0].CodeObject);
+        Assert.Single(executable.EntryPoint.FunctionBindings());
+        Assert.NotNull(executable.EntryPoint.FunctionBindings()[0].CodeObject);
         var result = new LythonRuntime().Run(executable, new MockLythonHost(), null);
 
         Assert.True(result.Success, result.Failure?.Message);
@@ -667,8 +667,8 @@ return outer(3)
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
-        Assert.Single(executable.EntryPoint.Functions);
-        Assert.NotNull(executable.EntryPoint.Functions[0].CodeObject);
+        Assert.Single(executable.EntryPoint.FunctionBindings());
+        Assert.NotNull(executable.EntryPoint.FunctionBindings()[0].CodeObject);
         var result = new LythonRuntime().Run(executable, new MockLythonHost(), null);
 
         Assert.True(result.Success, result.Failure?.Message);
@@ -690,8 +690,8 @@ return outer(3)
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
-        var outer = Assert.Single(executable.EntryPoint.Functions);
-        var inner = Assert.Single(outer.CodeObject.RequireNotNull().Functions);
+        var outer = Assert.Single(executable.EntryPoint.FunctionBindings());
+        var inner = Assert.Single(outer.CodeObject.RequireNotNull().FunctionBindings());
         var innerCode = inner.CodeObject.RequireNotNull();
 
         Assert.Equal(["value"], innerCode.ClosureNames);

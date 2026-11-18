@@ -244,7 +244,7 @@ public sealed class ExecutableAsyncIteratorCleanupTests
         Assert.NotNull(frontend.Script);
         var lowered = LoweredScript.Lower(frontend.Script);
         var definition = Assert.Single(lowered.Statements.OfType<LoweredFunctionDefinitionStatement>());
-        var code = Assert.Single(ExecutableScript.Compile(lowered).EntryPoint.Functions).CodeObject;
+        var code = Assert.Single(ExecutableScript.Compile(lowered).EntryPoint.FunctionBindings()).CodeObject;
         var frame = new Context(context, ScopeDirectiveFactsCollector.ForFunction(definition.Syntax))
         { FunctionName = "scan", FirstPositionalParameterName = "source" };
         frame.Variables["source"] = sources[0];

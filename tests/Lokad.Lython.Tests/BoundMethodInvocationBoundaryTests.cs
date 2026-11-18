@@ -146,7 +146,7 @@ public sealed class BoundMethodInvocationBoundaryTests
         var frontend = LythonFrontend.Compile($"def f(self{parameters}):\n    return self\n",regexProvider:Utf8RegexProvider.Instance);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
         var executable = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull()));
-        var binding = Assert.Single(executable.EntryPoint.Functions);
+        var binding = Assert.Single(executable.EntryPoint.FunctionBindings());
         var code = binding.CodeObject.RequireNotNull();
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options,regexProvider:Utf8RegexProvider.Instance);
         var closure = LythonRuntime.ExecutionContext.CreateModule(context, "/callee.py", "callee");

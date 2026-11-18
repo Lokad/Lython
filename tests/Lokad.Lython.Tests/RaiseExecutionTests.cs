@@ -21,7 +21,7 @@ public sealed class RaiseExecutionTests
     public void HelperRaiseStaysExecutableWithoutMirroring()
     {
         var code = Compile("def fail(value):\n raise value\nreturn fail(error)");
-        var helper = Assert.IsType<ExecutableCodeObject>(Assert.Single(code.Functions).CodeObject);
+        var helper = Assert.IsType<ExecutableCodeObject>(Assert.Single(code.FunctionBindings()).CodeObject);
         Assert.Empty(helper.StatementFallbacks);
         Assert.False(helper.RequiresLocalVariableMirroring);
     }
