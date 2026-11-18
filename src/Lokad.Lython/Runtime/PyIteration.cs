@@ -57,6 +57,8 @@ internal static partial class PyIteration
         {
             context.CheckExecution(span);
             var result = new List<object>(initialCapacity);
+            if (items is Cursor cursor && cursor.TryCopyAdmittedList(result, maximumItems, span, context))
+                return new DrainLease(result, reservation);
             var generator = (items as Cursor)?.GetBulkGenerator(context);
             foreach (var item in items)
             {
@@ -91,6 +93,8 @@ internal static partial class PyIteration
         {
             context.CheckExecution(span);
             var result = new List<object>(initialCapacity);
+            if (items is Cursor cursor && cursor.TryCopyAdmittedList(result, maximumItems, span, context))
+                return new DrainLease(result, reservation);
             var generator = (items as Cursor)?.GetBulkGenerator(context);
             await foreach (var item in items.ConfigureAwait(false))
             {
@@ -237,7 +241,23 @@ internal static partial class PyIteration
         // use TryMoveNext directly. Source identity preserves their capacity hints
         // and self-extension snapshots without a second enumerable wrapper.
         internal PyList? UnstartedListSource => !_disposed && _iterator is null
-            && _sequencePosition == 0 && _syncEnumerator is null ? _value as PyList : null;
+            && _sequencePosition == 0 && _syncEnumerator is null && _asyncEnumerator is null
+                ? _value as PyList : null;
+
+        internal bool TryCopyAdmittedList(List<object> result, int? maximumItems, LythonSourceSpan span,
+            LythonRuntime.ExecutionContext context)
+        {
+            if (maximumItems is <= 0 || UnstartedListSource is not { } list
+                || _context is not null && !ReferenceEquals(_context, context)) return false;
+            // Observe the live list after admission. If reentry grew it beyond
+            // the funded capacity, the original cursor still owns advancement.
+            var count = maximumItems is { } maximum ? Math.Min(list.Count, maximum) : list.Count;
+            if (count > result.Capacity) return false;
+            using (this)
+                list.CopyAdmittedPrefixTo(result, count, context, span);
+            return true;
+        }
+
         internal int? KnownCount => _iterator is null && (_syncSource ?? _value) is IReadOnlyCollection<object> known
             ? known.Count : null;
         internal LythonRuntime.PyGenerator? GetBulkGenerator(LythonRuntime.ExecutionContext? context)

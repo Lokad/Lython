@@ -76,9 +76,11 @@ public sealed class KnownDrainOwnershipTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task AdmissionReentryDoesNotFreezeTheMutableSource(bool asynchronous)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task AdmissionReentryDoesNotFreezeTheMutableSource(bool asynchronous, bool grows)
     {
         var budget = new LythonMemoryBudget(4096);
         using var owner = budget.CreateScope();
@@ -86,6 +88,7 @@ public sealed class KnownDrainOwnershipTests
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = hook });
         var source = new PyList(8, context.MemoryGovernor, new(0, 0, 0, 0));
         var alias = new object();
+        var replacement = new object();
         source.Add(alias);
         source.Add(alias);
         var baseline = budget.ReservedBytes;
@@ -94,15 +97,18 @@ public sealed class KnownDrainOwnershipTests
         {
             hook.AfterGrowth = null;
             changed = true;
-            source.Add(alias);
+            source[0] = replacement;
+            if (grows) source.Add(alias);
         };
         using (var lease = asynchronous
             ? await PyIteration.MaterializeLeasedAsync(source, new(0, 0, 0, 0), context)
             : PyIteration.MaterializeLeased(source, new(0, 0, 0, 0), context))
         {
             Assert.True(changed);
-            Assert.Equal(3, lease.Items.Count);
-            Assert.All(lease.Items, value => Assert.Same(alias, value));
+            Assert.Equal(grows ? 3 : 2, lease.Items.Count);
+            source[0] = alias;
+            Assert.Same(replacement, lease.Items[0]);
+            for (var i = 1; i < lease.Items.Count; i++) Assert.Same(alias, lease.Items[i]);
             Assert.True(budget.ReservedBytes > baseline);
         }
         Assert.Equal(baseline, budget.ReservedBytes);

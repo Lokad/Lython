@@ -97,6 +97,22 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
         _items[_count++] = value;
     }
 
+    // The caller has funded a private destination for the entire prefix.
+    // No host call or guest protocol runs between copying its chunks.
+    internal void CopyAdmittedPrefixTo(List<object> target, int count,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        const int chunkSize = 256;
+        for (var offset = 0; offset < count;)
+        {
+            context.CheckExecution(span);
+            var length = Math.Min(chunkSize, count - offset);
+            target.AddRange((ReadOnlySpan<object>)_items.AsSpan(offset, length));
+            offset += length;
+        }
+        context.CheckExecution(span);
+    }
+
     // Source preparation belongs to each caller (including self-extension).
     // Once prepared, constructors and extension share native append/cleanup.
     internal void AppendItems(IEnumerable<object> values, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)

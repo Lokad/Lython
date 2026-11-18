@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Copy admitted exact-list drain snapshots in bounded chunks, preserving live
+  resize behavior after host admission and ordinary cleanup for other iterators.
+
 - Reuse syntax validation scratch and skip the separate directive walk when
   validation finds no scope directives. Check cancellation during syntax traversal.
 
