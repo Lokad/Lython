@@ -1,0 +1,81 @@
+{
+  "rows": [
+    {
+      "file": "micro-0-warm.json",
+      "reference": {
+        "engine": "baseline",
+        "medianMicroseconds": 18703.600000000002,
+        "iqrFraction": 0.1017798712547316
+      },
+      "candidate": {
+        "engine": "candidate",
+        "medianMicroseconds": 17475.2,
+        "iqrFraction": 0.10813037905145588
+      },
+      "CPython": {
+        "engine": "CPython",
+        "medianMicroseconds": 12377.766666666666,
+        "iqrFraction": 0.09241839534864929
+      },
+      "elapsedDeltaPercent": -6.567719583395714
+    },
+    {
+      "file": "micro-1-warm.json",
+      "reference": {
+        "engine": "baseline",
+        "medianMicroseconds": 3194.35,
+        "iqrFraction": 0.3853913941803497
+      },
+      "candidate": {
+        "engine": "candidate",
+        "medianMicroseconds": 2239,
+        "iqrFraction": 0.5254801250558286
+      },
+      "CPython": {
+        "engine": "CPython",
+        "medianMicroseconds": 1431.8375,
+        "iqrFraction": 0.30011043501794016
+      },
+      "elapsedDeltaPercent": -29.907492917181898
+    },
+    {
+      "file": "micro-2-warm.json",
+      "reference": {
+        "engine": "candidate",
+        "medianMicroseconds": 3040.9285714285716,
+        "iqrFraction": 0.3372207737298287
+      },
+      "candidate": {
+        "engine": "baseline",
+        "medianMicroseconds": 3065.2000000000003,
+        "iqrFraction": 0.40491104441254505
+      },
+      "CPython": {
+        "engine": "CPython",
+        "medianMicroseconds": 1744.9133333333334,
+        "iqrFraction": 0.5819295705230825
+      },
+      "elapsedDeltaPercent": 0.7981584572381628
+    },
+    {
+      "file": "micro-3-warm.json",
+      "reference": {
+        "engine": "candidate",
+        "medianMicroseconds": 24874,
+        "iqrFraction": 0.18026654337862816
+      },
+      "candidate": {
+        "engine": "baseline",
+        "medianMicroseconds": 24695.100000000002,
+        "iqrFraction": 0.5912023032909363
+      },
+      "CPython": {
+        "engine": "CPython",
+        "medianMicroseconds": 16771.149999999998,
+        "iqrFraction": 0.09513957003544773
+      },
+      "elapsedDeltaPercent": -0.7192248934630441
+    }
+  ],
+  "sourcePatchSHA256": "a26457c6a31bd8102611936f8d34ebe1a3fd20361d4917ba6f40d65bfae1191d"
+}

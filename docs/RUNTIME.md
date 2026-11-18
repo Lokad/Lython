@@ -403,10 +403,11 @@ from the instruction's guard/routing span. A shared synchronous prefix completes
 ordinary work; incomplete protocols retain their operands until awaited completion
 and retirement. Deletion keeps only its executable shape and name/bounds metadata.
 Unpacking borrows exact builtin tuples' immutable storage, retaining the tuple
-through its users. Mutable inputs and user iterators still take an owned snapshot
-before assignment; starred remainder lists admit their own storage before target
-effects. The same rule serves synchronous and asynchronous assignments, loops and
-annotation unpacking. Cancellation and refused admission still stop publication.
+through its users. Fixed executable unpacking of an exact list checks arity and
+copies its items straight into admitted operand slots before running any target.
+Starred unpacking and general iterators take an owned snapshot before assignment.
+Starred remainder lists admit their own storage before target effects.
+Cancellation and refused admission still stop publication.
 Completed tuple values copy directly from managed spans into their final backing,
 with capacity and scalar headroom admitted together. Inputs stay funded until the
 copy succeeds; owned arrays and suspending materializers retain their distinct

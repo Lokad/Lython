@@ -85,6 +85,13 @@ internal sealed partial class LythonRuntime
                     case ExecutableOpCode.UnpackValues:
                     {
                         var value = _execution.Stack.TakeValue(first, instruction.ResultSlot);
+                        if (value is PyList list && !instruction.UnpackLayout.HasStarredTarget)
+                        {
+                            // Fill all final slots before any target can mutate the list.
+                            // Fixed unpacking does not allocate or reenter while reading.
+                            PublishUnpackedTarget(list, instruction);
+                            return default;
+                        }
                         if (asynchronous)
                             return CompleteTargetUnpack(MaterializeHeaderSequenceAsync(value, span, this,
                                 instruction.UnpackLayout.MaximumReadCount), instruction);

@@ -4,6 +4,44 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class AssignmentTargetCompatibilityTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FixedListUnpackingKeepsAliasesBeforeTargetMutation(bool asynchronous)
+    {
+        const string source = """
+            def exercise():
+                first = []
+                second = []
+                items = [first, second]
+                class Replace:
+                    def __setitem__(self, key, value):
+                        with open('/assignment.txt') as reader:
+                            print(reader.read())
+                        items[key] = value
+                target = Replace()
+                target[1], kept = items
+                print(items[1] is first, kept is second)
+                for bad in ([first], [first, second, []]):
+                    try:
+                        target[1], kept = bad
+                    except ValueError:
+                        print('wrong arity')
+                print(kept is second)
+            exercise()
+            """;
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
+        var delayed = asynchronous ? new DelayedLythonHost() : null;
+        var mock = asynchronous ? null : new MockLythonHost();
+        if (delayed is not null) delayed.SeedFile("/assignment.txt", "setting");
+        else mock!.SeedFile("/assignment.txt", "setting");
+        using var result = asynchronous ? await script.RunAsync(delayed!) : script.Run(mock!);
+        Assert.True(result.Success, DescribeFailure(result));
+        Assert.Equal("setting\nTrue True\nwrong arity\nwrong arity\nTrue\n", result.StandardOutput);
+        if (delayed is not null) Assert.True(delayed.CompletedAsynchronously > 0);
+    }
+
     [Fact]
     public void AugmentedAssignment_TargetsAndOperators_RunLikePython()
     {
