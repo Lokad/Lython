@@ -9,7 +9,7 @@ internal sealed partial class ExecutableScript
             if (expression.PreparedCode is null)
             {
                 var builder = new Builder(FunctionParameterLayout.Create([]), ChildClosureCandidates(), GeneratorFacts(expression),
-                    completeLexicalParent: _completeLexicalParent) { _generator = true };
+                    completeLexicalParent: _completeLexicalParent, moduleCode: _moduleCode) { _generator = true };
                 expression.CompleteCompilation(builder.CompileCodeObject("<genexpr>", [], expression));
             }
             var code = expression.Code;

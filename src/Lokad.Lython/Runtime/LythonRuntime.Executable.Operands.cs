@@ -12,7 +12,7 @@ internal sealed partial class LythonRuntime
             var immediate = ~source;
             if (immediate < code.Constants.Length) return RuntimeValue(code.Constants[immediate]);
             var name = code.Names[immediate - code.Constants.Length];
-            return TryResolveExecutableGlobal(name, scope, out var global)
+            return TryResolveExecutableGlobal(code, immediate - code.Constants.Length, scope, out var global)
                 ? global : throw RuntimeErrors.NameNotDefined(name, code.OperandReadSpan(index, input));
         }
         var value = values[source].Object;
@@ -32,7 +32,7 @@ internal sealed partial class LythonRuntime
         if (index < code.Constants.Length) return TryMachineInteger(code.Constants[index], out value);
         // Missing-name diagnostics belong to the ordered ordinary reads. This
         // probe never raises a later operand's failure ahead of an earlier one.
-        TryResolveExecutableGlobal(code.Names[index - code.Constants.Length], scope, out var item);
+        TryResolveExecutableGlobal(code, index - code.Constants.Length, scope, out var item);
         return TryMachineInteger(item, out value);
     }
 
@@ -43,7 +43,7 @@ internal sealed partial class LythonRuntime
         var index = ~source;
         object? item;
         if (index < code.Constants.Length) item = code.Constants[index];
-        else TryResolveExecutableGlobal(code.Names[index - code.Constants.Length], scope, out item);
+        else TryResolveExecutableGlobal(code, index - code.Constants.Length, scope, out item);
         if (item is double floating)
         { value = floating; return true; }
         value = 0;

@@ -71,17 +71,24 @@ internal sealed partial class LythonRuntime
         return true;
     }
 
-    private static object ResolveExecutableGlobal(string name, LythonSourceSpan span, ExecutionContext context)
-        => TryResolveExecutableGlobal(name, context, out var value)
-            ? value : throw RuntimeErrors.NameNotDefined(name, span);
+    private static object ResolveExecutableGlobal(ExecutableCodeObject code, int nameIndex, LythonSourceSpan span, ExecutionContext context)
+        => TryResolveExecutableGlobal(code, nameIndex, context, out var value)
+            ? value : throw RuntimeErrors.NameNotDefined(code.Names[nameIndex], span);
 
-    private static bool TryResolveExecutableGlobal(string name, ExecutionContext context, [MaybeNullWhen(false)] out object value)
+    private static bool TryResolveExecutableGlobal(ExecutableCodeObject code, int nameIndex, ExecutionContext context,
+        [MaybeNullWhen(false)] out object value)
     {
+        var name = code.Names[nameIndex];
         var globalContext = GetGlobalContext(context);
-        if (globalContext.CurrentExecutableFrame is not null &&
-            globalContext.CurrentExecutableFrame.TryResolveLocalOrClosure(name, out value))
+        if (globalContext.CurrentExecutableFrame is { } frame)
         {
-            return true;
+            if (ReferenceEquals(frame._execution.Code, code.GlobalModule))
+            {
+                var slot = code.ModuleGlobalSlots[nameIndex];
+                if (slot >= 0 && ReadLocalValue(frame._execution.Locals, slot) is { } current)
+                { value = current; return true; }
+            }
+            else if (frame.TryResolveLocalOrClosure(name, out value)) return true;
         }
 
         if (globalContext.Variables.TryGetValue(name, out value))

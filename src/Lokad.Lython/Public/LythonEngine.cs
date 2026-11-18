@@ -112,7 +112,7 @@ public sealed class LythonEngine
                 PythonTokenization.CheckCancellation(cancellationToken, 0);
                 // Invalid source never executes. Other compiler defects surface
                 // rather than selecting an alternate execution engine.
-                executableScript = ExecutableScript.Compile(loweredScript);
+                executableScript = ExecutableScript.Compile(loweredScript, cancellationToken);
             }
         }
         catch (GeneratorLoweringException exception)

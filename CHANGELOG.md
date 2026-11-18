@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Prepare live module-binding locations with executable code, avoiding repeated
+  name-to-slot discovery while preserving rebinding, deletion, closures, imports,
+  cancellation and ownership. Independent namespaces keep ordinary resolution.
+
 - Reuse executable result forwarding for immediately discarded call results,
   avoiding unused publication and scalar materialization while preserving eager
   operations, admission, source checkpoints and pending cleanup. Interrupted

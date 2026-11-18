@@ -399,7 +399,7 @@ internal sealed partial class LythonRuntime
                     break;
 
                 case ExecutableOpCode.LoadGlobal:
-                    PublishInstructionResult(ref execution, invocation, instruction, ResolveExecutableGlobal(execution.Code.Names[instruction.NameIndex], instruction.Span, scope));
+                    PublishInstructionResult(ref execution, invocation, instruction, ResolveExecutableGlobal(execution.Code, instruction.NameIndex, instruction.Span, scope));
                     break;
 
                 case ExecutableOpCode.LoadName:

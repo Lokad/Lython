@@ -413,6 +413,12 @@ Eligible ordinary operations bypass generic asynchronous input handling; operand
 retirement and publication retain their existing cleanup and admission order.
 Other values and guest protocols keep the general path, including actual suspension.
 Both forms share operand reads and Python-shaped missing-local diagnostics.
+Linked executable code prepares module-name slot locations during compilation.
+An exact module-code identity check reads the current slot without repeating
+name-to-slot discovery. Rebinding, deletion and builtin fallback remain live;
+independent code and detached module frames keep ordinary namespace resolution.
+These immutable facts use the compiled owner's coarse admission and retain no
+guest values, execution context or prior cancellation token.
 Double addition, subtraction, multiplication and negation carry fresh results in
 the existing managed slots through local bindings, helper returns and generator
 iteration. Compensated `sum` consumes those values directly. Object observation

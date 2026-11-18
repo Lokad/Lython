@@ -576,6 +576,23 @@ internal sealed partial class ExecutableCodeObject
 
     public string[] Names { get; }
 
+    // A location fact, never a cached guest value. Independently compiled code
+    // keeps ordinary namespace resolution; active modules prove exact identity.
+    internal ExecutableCodeObject? GlobalModule { get; private set; }
+    internal int[] ModuleGlobalSlots { get; private set; } = [];
+
+    internal void PrepareModuleGlobals(ExecutableCodeObject module, CancellationToken cancellationToken)
+    {
+        var slots = new int[Names.Length];
+        for (var i = 0; i < slots.Length; i++)
+        {
+            if ((i & 1023) == 0) PythonTokenization.CheckCancellation(cancellationToken, 0);
+            slots[i] = module.LocalNameToSlot.TryGetValue(Names[i], out var slot) ? slot : -1;
+        }
+        ModuleGlobalSlots = slots;
+        GlobalModule = module;
+    }
+
     public IReadOnlyList<string> LocalNames { get; }
 
     public IReadOnlyDictionary<string, int> LocalNameToSlot { get; }

@@ -492,7 +492,8 @@ internal sealed partial class ExecutableScript
             if (candidates is not null && typeParameters is not null)
                 candidates = candidates.Except(typeParameters.Select(static parameter => parameter.Syntax.Name), StringComparer.Ordinal);
             return new Builder(parameterLayout, candidates, scopeFacts,
-                completeLexicalParent: _completeLexicalParent && typeParameters is not { Count: > 0 })
+                completeLexicalParent: _completeLexicalParent && typeParameters is not { Count: > 0 },
+                moduleCode: _moduleCode)
                 { _generator = generator }
                 .CompileCodeObject(name, body);
         }

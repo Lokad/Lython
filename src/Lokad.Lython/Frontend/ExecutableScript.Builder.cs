@@ -16,9 +16,11 @@ internal sealed partial class ExecutableScript
 
     public ExecutableCodeObject EntryPoint { get; }
 
-    public static ExecutableScript Compile(LoweredScript lowered)
+    public static ExecutableScript Compile(LoweredScript lowered, CancellationToken cancellationToken = default)
     {
-        var entryPoint = new Builder(null, null, ScopeDirectiveFactsCollector.ForModule(lowered.Syntax), completeLexicalParent: true)
+        List<ExecutableCodeObject> moduleCode = [];
+        var entryPoint = new Builder(null, null, ScopeDirectiveFactsCollector.ForModule(lowered.Syntax), completeLexicalParent: true,
+            moduleCode: moduleCode)
             .CompileCodeObject("<module>", lowered.Statements);
         // Actual executable sites have supplied their lexical capture facts.
         // Remaining callables belong to retained lowered consumers or lazy
@@ -40,6 +42,7 @@ internal sealed partial class ExecutableScript
                 default: throw new InvalidOperationException("Unexpected prepared callable syntax.");
             }
         }
+        foreach (var code in moduleCode) code.PrepareModuleGlobals(entryPoint, cancellationToken);
         return new ExecutableScript(entryPoint.ScopeFacts.ContainsVariableAnnotations
             ? lowered.Syntax.Statements[0].Span : null, entryPoint);
     }
@@ -86,6 +89,7 @@ internal sealed partial class ExecutableScript
         private readonly HashSet<string> _parentClosureCandidates;
         private readonly bool _completeLexicalParent;
         private readonly ScopeDirectiveFacts _scopeFacts;
+        private readonly List<ExecutableCodeObject>? _moduleCode;
 
         internal Builder(FunctionParameterLayout parameterLayout, bool generator, ScopeDirectiveFacts scopeFacts)
             : this(parameterLayout, null, scopeFacts) { _generator = generator; }
@@ -94,8 +98,10 @@ internal sealed partial class ExecutableScript
             FunctionParameterLayout? parameterLayout,
             IEnumerable<string>? parentClosureCandidates,
             ScopeDirectiveFacts scopeFacts,
-            bool completeLexicalParent = false)
+            bool completeLexicalParent = false,
+            List<ExecutableCodeObject>? moduleCode = null)
         {
+            _moduleCode = moduleCode;
             _scopeFacts = scopeFacts;
             _parameterLayout = parameterLayout;
             // Only enclosing executable compilation supplies complete lexical
@@ -169,7 +175,7 @@ internal sealed partial class ExecutableScript
             var capturedLocalSlots = CollectCapturedLocalSlots();
 
             // This builder is single-use; its completed slot maps become code metadata.
-            return new ExecutableCodeObject(
+            var code = new ExecutableCodeObject(
                 name,
                 _constants.ToArray(),
                 _names.ToArray(),
@@ -191,6 +197,8 @@ internal sealed partial class ExecutableScript
                 requiresLocalVariableMirroring,
                 isFunctionScope: _parameterLayout is not null,
                 initialOperandDepth: generatorExpression is null ? 0 : 1);
+            _moduleCode?.Add(code);
+            return code;
 
             int[] CollectCapturedLocalSlots()
             {

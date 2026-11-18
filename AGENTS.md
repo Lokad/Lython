@@ -42,6 +42,8 @@ relative references describe the source revision recorded in each artifact.
 Read and write text explicitly as UTF-8. On Windows, use Python `-X utf8` or an
 explicit encoding and PowerShell `-Encoding utf8`; default code pages can corrupt
 documentation and benchmark sources.
+Write POSIX shell launchers with explicit LF line endings on Windows. Verify the
+emitted bytes; `sh -n` alone does not catch CRLF interpreted as option characters.
 
 ## CI
 
