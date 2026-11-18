@@ -1,0 +1,10 @@
+{
+  "build": "Release actual11/10 succeeds",
+  "focusedInternal11": {
+    "passed": 117,
+    "failed": 2
+  },
+  "failure": "Only the old assertion requiring idle ordinary split inventory funding; that inventory is deliberately removed",
+  "correction": "Preserve aliases/refusal/cleanup assertions; require exactly retained storage, with no obsolete idle-cache contract",
+  "runtimeCorrection": false
+}
