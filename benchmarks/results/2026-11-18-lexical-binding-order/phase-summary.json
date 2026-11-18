@@ -1,0 +1,202 @@
+{
+  "referenceCore": "610d403da4b8475deaaf77269b6402fd39c1b4ba38dae68f572600b13e14b442",
+  "candidateCore": "f4268303647f2e525fb497893b260feb7955f7aee10955183c25653e366bf759",
+  "rows": [
+    {
+      "case": "scripts.csv-invoice.large",
+      "allocated": {
+        "tokenization": [
+          13464,
+          13464
+        ],
+        "parser": [
+          61384,
+          61384
+        ],
+        "syntax-validity": [
+          6136,
+          6136
+        ],
+        "annotation-text": [
+          88,
+          88
+        ],
+        "lexical-facts": [
+          16096,
+          14392
+        ],
+        "analysis-context": [
+          240,
+          240
+        ],
+        "annotation-diagnostics": [
+          0,
+          0
+        ],
+        "scope-directive-diagnostics": [
+          0,
+          0
+        ],
+        "abstract-interpretation": [
+          52968,
+          52968
+        ],
+        "name-binding-diagnostics": [
+          1752,
+          1752
+        ],
+        "analysis-disposal": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "case": "scripts.text-normalization.helper-list",
+      "allocated": {
+        "tokenization": [
+          6776,
+          6776
+        ],
+        "parser": [
+          42968,
+          42968
+        ],
+        "syntax-validity": [
+          3320,
+          3320
+        ],
+        "annotation-text": [
+          88,
+          88
+        ],
+        "lexical-facts": [
+          7176,
+          6200
+        ],
+        "analysis-context": [
+          240,
+          240
+        ],
+        "annotation-diagnostics": [
+          0,
+          0
+        ],
+        "scope-directive-diagnostics": [
+          0,
+          0
+        ],
+        "abstract-interpretation": [
+          16808,
+          16808
+        ],
+        "name-binding-diagnostics": [
+          800,
+          800
+        ],
+        "analysis-disposal": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "case": "scripts.config-edit.small",
+      "allocated": {
+        "tokenization": [
+          3680,
+          3680
+        ],
+        "parser": [
+          43408,
+          43408
+        ],
+        "syntax-validity": [
+          2624,
+          2624
+        ],
+        "annotation-text": [
+          88,
+          88
+        ],
+        "lexical-facts": [
+          5104,
+          4616
+        ],
+        "analysis-context": [
+          240,
+          240
+        ],
+        "annotation-diagnostics": [
+          0,
+          0
+        ],
+        "scope-directive-diagnostics": [
+          0,
+          0
+        ],
+        "abstract-interpretation": [
+          10488,
+          10488
+        ],
+        "name-binding-diagnostics": [
+          120,
+          120
+        ],
+        "analysis-disposal": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "case": "calls.positional.large",
+      "allocated": {
+        "tokenization": [
+          2032,
+          2032
+        ],
+        "parser": [
+          7456,
+          7456
+        ],
+        "syntax-validity": [
+          1728,
+          1728
+        ],
+        "annotation-text": [
+          88,
+          88
+        ],
+        "lexical-facts": [
+          5344,
+          4448
+        ],
+        "analysis-context": [
+          240,
+          240
+        ],
+        "annotation-diagnostics": [
+          0,
+          0
+        ],
+        "scope-directive-diagnostics": [
+          0,
+          0
+        ],
+        "abstract-interpretation": [
+          8784,
+          8784
+        ],
+        "name-binding-diagnostics": [
+          720,
+          720
+        ],
+        "analysis-disposal": [
+          0,
+          0
+        ]
+      }
+    }
+  ]
+}

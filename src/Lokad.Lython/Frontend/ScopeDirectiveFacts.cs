@@ -58,12 +58,9 @@ internal static class ScopeDirectiveFactsCollector
         }
 
         var containsAnnotations = CollectScopeBindings(body, bindings, globalNames, nonlocalNames);
-        var localNames = new HashSet<string>(bindings, StringComparer.Ordinal);
-        localNames.ExceptWith(globalNames);
-        localNames.ExceptWith(nonlocalNames);
+        var localNames = CompactLocalBindings(bindings, globalNames, nonlocalNames);
 
-        return new ScopeDirectiveFacts(globalNames, nonlocalNames, localNames,
-            bindings.Where(localNames.Contains).Distinct(StringComparer.Ordinal).ToArray())
+        return new ScopeDirectiveFacts(globalNames, nonlocalNames, localNames, bindings.ToArray())
         {
             ContainsVariableAnnotations = containsAnnotations,
             RequiresClassCell = includeClassCellRequirement && !globalNames.Contains("__class__") && !localNames.Contains("__class__") &&
@@ -102,9 +99,8 @@ internal static class ScopeDirectiveFactsCollector
     {
         var bindings = parameterNames.ToList();
         CollectExpressionBindings(body, bindings);
-        var locals = new HashSet<string>(bindings, StringComparer.Ordinal);
-        return new ScopeDirectiveFacts(EmptyNames, EmptyNames, locals,
-            bindings.Distinct(StringComparer.Ordinal).ToArray())
+        var locals = CompactLocalBindings(bindings, EmptyNames, EmptyNames);
+        return new ScopeDirectiveFacts(EmptyNames, EmptyNames, locals, bindings.ToArray())
         {
             RequiresClassCell = !locals.Contains("__class__") && ClassCellSyntaxFacts.ReferencesFromExpression(body)
         };
@@ -117,6 +113,23 @@ internal static class ScopeDirectiveFactsCollector
     }
 
     private static readonly IReadOnlySet<string> EmptyNames = new HashSet<string>(StringComparer.Ordinal);
+
+    private static HashSet<string> CompactLocalBindings(List<string> bindings,
+        IReadOnlySet<string> globalNames, IReadOnlySet<string> nonlocalNames)
+    {
+        var locals = new HashSet<string>(StringComparer.Ordinal);
+        var written = 0;
+        for (var scan = 0; scan < bindings.Count; scan++)
+        {
+            var name = bindings[scan];
+            if (globalNames.Contains(name) || nonlocalNames.Contains(name) || !locals.Add(name)) continue;
+            bindings[written++] = name;
+        }
+        // Compaction preserves the first source occurrence. The one set is
+        // also the membership data used by the prepared scope.
+        bindings.RemoveRange(written, bindings.Count - written);
+        return locals;
+    }
 
     private static bool CollectScopeBindings(IReadOnlyList<StatementSyntax> statements, ICollection<string> names,
         HashSet<string> globalNames, HashSet<string> nonlocalNames)

@@ -39,10 +39,7 @@ internal static class ClassCellSyntaxFacts
             if (statement is ScopeDirectiveStatementSyntax { Kind: ScopeDirectiveKind.Nonlocal } directive &&
                 directive.Names.Contains("__class__", StringComparer.Ordinal)) return true;
             // Bare deleted names are stores, not lexical class/super reads.
-            var expressions = statement is DeleteStatementSyntax deleted
-                ? ReadDeletedTarget(deleted.Target)
-                : LexicalScopePreparation.ReadExpressions(statement, postponedAnnotations);
-            foreach (var expression in expressions)
+            foreach (var expression in LexicalScopePreparation.ReadExpressions(statement, postponedAnnotations))
                 if (ReferencesFromExpression(expression)) return true;
             if (statement is FunctionDefinitionStatementSyntax function)
             {
@@ -60,26 +57,6 @@ internal static class ClassCellSyntaxFacts
                 foreach (var statementChild in child) pending.Push(statementChild);
         }
         return false;
-    }
-
-    private static IEnumerable<ExpressionSyntax> ReadDeletedTarget(ExpressionSyntax target)
-    {
-        if (target is IdentifierExpressionSyntax) yield break;
-        if (target is ParenthesizedExpressionSyntax parenthesized)
-        {
-            foreach (var read in ReadDeletedTarget(parenthesized.Inner)) yield return read;
-        }
-        else if (target is TupleLiteralExpressionSyntax tuple)
-        {
-            foreach (var item in tuple.Items)
-                foreach (var read in ReadDeletedTarget(item.Expression)) yield return read;
-        }
-        else if (target is ListLiteralExpressionSyntax list)
-        {
-            foreach (var item in list.Items)
-                foreach (var read in ReadDeletedTarget(item.Expression)) yield return read;
-        }
-        else foreach (var read in ExpressionSyntaxTraversal.EnumerateChildren(target)) yield return read;
     }
 
     internal static bool ReferencesFromExpression(ExpressionSyntax expression)

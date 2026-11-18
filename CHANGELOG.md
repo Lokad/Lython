@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Collect lexical membership and first binding order together and reuse lexical
+  expression traversal for class-cell analysis of deleted targets.
+
 - Copy admitted exact-list drain snapshots in bounded chunks, preserving live
   resize behavior after host admission and ordinary cleanup for other iterators.
 
