@@ -1,0 +1,13 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "ramTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 269692928,
+  "archiveSHA256": "2fbd69f55aa24827bc5c7c5aa60e5203a8ba888f8aa4b72e359d3801158d4921",
+  "source": "R586/B1011 2215ec04019af519d98761ddc18db906e43723d1/d1b9f71b forwarding CPU attribution",
+  "performanceComparison": false,
+  "failure": null
+}
