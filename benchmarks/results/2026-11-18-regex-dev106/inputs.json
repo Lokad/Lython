@@ -1,0 +1,28 @@
+{
+  "producerSourceRevision": "fdbb1a2bb2dd0144ad9d4fd66fb8241f8b42abc8",
+  "producerReceiptSha256": "64bdf9eb6f7f8c6df64abbf70ade381311977f44d2681265a2b251770fb8ffe4",
+  "published": false,
+  "qualification": "immutable development input inspection only",
+  "packages": [
+    {
+      "id": "Lokad.Utf8Regex",
+      "version": "0.5.0-dev.106",
+      "filename": "Lokad.Utf8Regex.0.5.0-dev.106.nupkg",
+      "packageSha256": "8a1d4db2f403505efdd59fa062d661bd52028305956499db8f41c68d67df6003",
+      "targetAssemblyHashes": {
+        "net10.0": "7150c7ecb178306a328b0c09a6250676cedc5760fff5bcfc5a6acbc7fcc26673",
+        "net11.0": "53600f462450d50537eab2dc72a36038abb5adf590b2400cf2d22c21fa8a6922"
+      }
+    },
+    {
+      "id": "Lokad.Utf8Regex.PythonRe",
+      "version": "0.5.0-dev.106",
+      "filename": "Lokad.Utf8Regex.PythonRe.0.5.0-dev.106.nupkg",
+      "packageSha256": "d4401a99bb6b3eba68036ba6790e1ea568f8e4bfca70fec149e02f347f75879a",
+      "targetAssemblyHashes": {
+        "net10.0": "abed2ff2fcc7c8603c4d03fb78f847651b5ba1b5ed6a21d14ebb8a9fb2df628d",
+        "net11.0": "b662d9af106539fe3f558a75b7d77b3bd5f42b5d7a752defe46b80527f211c11"
+      }
+    }
+  ]
+}
