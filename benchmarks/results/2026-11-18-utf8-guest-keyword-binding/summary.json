@@ -1,0 +1,430 @@
+{
+  "complete": true,
+  "elapsedSeconds": 323.02442909264937,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "archivalOnlyRecovery": {
+    "retiredOnly": [
+      {
+        "paths": [
+          "lazy-keyword-index-b996-20261118/candidate/Lokad.Lython.dll"
+        ],
+        "canonical": "benchmarks/results/2026-11-18-lazy-keyword-index/candidate-core.dll.gz",
+        "canonicalSHA256": "41b5ce7367c84b9ea4bee75b2d1869c892ec9c2ef7b1f3b412bf3e32e99fe4bc",
+        "sha256": "5ebed8b3f3cc286c0a0caf76785faa97bb7f1829feede9c14f9b89b3cb2b1ec2",
+        "bytes": 5765632,
+        "links": 1,
+        "kind": "exact archived measured core replica",
+        "committedBlobVerified": true
+      },
+      {
+        "paths": [
+          "fixed-list-unpack-b994-20261118/candidate/Lokad.Lython.dll",
+          "expanded-report-cpu-b995-20261118/candidate/Lokad.Lython.dll",
+          "lazy-keyword-index-b996-20261118/reference/Lokad.Lython.dll"
+        ],
+        "canonical": "benchmarks/results/2026-11-18-fixed-list-unpack/candidate-core.dll.gz",
+        "canonicalSHA256": "40bdbf8c39899d90faf41a0ec105ac04652ee9fd1e3f5b905a7ea81b714a9961",
+        "sha256": "b62bfd523c536477abd4062d89231e0a471a74583f4a412d8e8d5224e931b16d",
+        "bytes": 5765120,
+        "links": 3,
+        "kind": "exact archived measured core replica",
+        "committedBlobVerified": true
+      },
+      {
+        "paths": [
+          "lazy-keyword-index-b996-20261118/confirmation/confirmation.json"
+        ],
+        "canonical": "benchmarks/results/2026-11-18-lazy-keyword-index/observations.tgz",
+        "canonicalSHA256": "ef215bc339f7113cf8b47c8acd8900361fcdd2dc58cd746e39b4d3074373508a",
+        "member": "confirmation/confirmation.json",
+        "sha256": "b8a9b3229a8f756a4de14e0f4e28c26bd6fce48553574d9b9174907886259a80",
+        "bytes": 185195,
+        "links": 1,
+        "kind": "exact archived observation replica",
+        "committedBlobVerified": true
+      },
+      {
+        "paths": [
+          "fixed-list-unpack-b994-20261118/confirmation/confirmation.json"
+        ],
+        "canonical": "benchmarks/results/2026-11-18-fixed-list-unpack/observations.tgz",
+        "canonicalSHA256": "0240644fd0c9ef4c68984e46b06cbb505807522e17f1e209700c2f0ffb82f027",
+        "member": "confirmation/confirmation.json",
+        "sha256": "374d7bc0bf6909539dab75b150e481924ffc787db4d46f87fea0bdbe81c273a6",
+        "bytes": 184335,
+        "links": 1,
+        "kind": "exact archived observation replica",
+        "committedBlobVerified": true
+      },
+      {
+        "paths": [
+          "lazy-keyword-index-b996-20261118/observations.tgz"
+        ],
+        "canonical": "benchmarks/results/2026-11-18-lazy-keyword-index/observations.tgz",
+        "canonicalSHA256": "ef215bc339f7113cf8b47c8acd8900361fcdd2dc58cd746e39b4d3074373508a",
+        "member": null,
+        "sha256": "ef215bc339f7113cf8b47c8acd8900361fcdd2dc58cd746e39b4d3074373508a",
+        "bytes": 43266,
+        "links": 1,
+        "kind": "exact archived observation replica",
+        "committedBlobVerified": true
+      },
+      {
+        "canonical": "benchmarks/results/2026-11-16-regex-dev105/observations.tgz",
+        "canonicalSHA256": "f9c13046ef7eb5616658d10e3195abca483ffb6893279105bf82b6f42b7b9b03",
+        "sha256": "f9c13046ef7eb5616658d10e3195abca483ffb6893279105bf82b6f42b7b9b03",
+        "bytes": 40398,
+        "kind": "exact committed observations archive replica",
+        "committedBlobVerified": true,
+        "days": [
+          "20261116",
+          "20261117"
+        ],
+        "paths": [
+          "regex-dev105-corrected-b846-20261116/observations.tgz"
+        ],
+        "links": 1
+      }
+    ],
+    "alreadyAbsent": [],
+    "freshIdleLease": true,
+    "allHashesPathsOwnershipLinksAndAliasesVerified": true,
+    "canonicalArchiveAndCurrentImagesPreserved": true,
+    "freeBeforeBytes": 266514432,
+    "freeAfterBytes": 266866688
+  },
+  "rows": [
+    {
+      "case": "scripts.report-forwarding.expanded",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 2.798773287356322,
+        "reference": 3.031362768292683,
+        "candidate-control": 2.8084022215909092,
+        "reference-control": 2.9876233696969696
+      },
+      "cpuMilliseconds": {
+        "candidate": 2.8735632183908044,
+        "reference": 3.1097560975609757,
+        "candidate-control": 2.897727272727273,
+        "reference-control": 3.0303030303030303
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.3577714811311787,
+        "reference": 0.5440043031117094,
+        "candidate-control": 1.9954754643720818,
+        "reference-control": 0.5335750243120253
+      },
+      "elapsedChangePercent": [
+        -7.6727695995078555,
+        -7.355125854084066,
+        -6.321080637409871,
+        -5.998786524562449
+      ],
+      "cpuChangePercent": [
+        -7.595221996844725,
+        -6.818181818181812,
+        -5.172413793103459,
+        -4.374999999999996
+      ],
+      "referenceSpreadPercent": 1.4640198305902796,
+      "candidateSpreadPercent": 0.3440412368549639
+    },
+    {
+      "case": "calls.keyword.medium",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 0.3227270166777852,
+        "reference": 0.32364720724346074,
+        "candidate-control": 0.3256067887788779,
+        "reference-control": 0.32336038983050847
+      },
+      "cpuMilliseconds": {
+        "candidate": 0.3202134756504336,
+        "reference": 0.32863849765258213,
+        "candidate-control": 0.3234323432343234,
+        "reference-control": 0.31864406779661014
+      },
+      "elapsedIQRPercent": {
+        "candidate": 1.366455978948811,
+        "reference": 2.5202473801770133,
+        "candidate-control": 0.8396332830006301,
+        "reference-control": 0.7090368761558522
+      },
+      "elapsedChangePercent": [
+        -0.28431901931517123,
+        -0.1958722133701185,
+        0.6054683901360214,
+        0.6947044285624759
+      ],
+      "cpuChangePercent": [
+        -2.563613837796619,
+        -1.5841584158415856,
+        0.49252693284884685,
+        1.5027034618355417
+      ],
+      "referenceSpreadPercent": 0.08869899405508086,
+      "candidateSpreadPercent": 0.892324457598126
+    },
+    {
+      "case": "strings.formatted-report.medium",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 1.0079004574898787,
+        "candidate-control": 1.033181818556701,
+        "reference": 1.0236106742268043,
+        "candidate": 1.0559715147058824
+      },
+      "cpuMilliseconds": {
+        "reference-control": 1.0121457489878543,
+        "candidate-control": 1.0309278350515465,
+        "reference": 1.0309278350515465,
+        "candidate": 1.0714285714285714
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.341113548931711,
+        "candidate-control": 0.07044059122720275,
+        "reference": 0.24879103066363867,
+        "candidate": 5.622693926078549
+      },
+      "elapsedChangePercent": [
+        0.9350375656375753,
+        2.5083192371778695,
+        3.161440310645669,
+        4.769425081492873
+      ],
+      "cpuChangePercent": [
+        0.0,
+        1.8556701030927991,
+        3.9285714285714146,
+        5.85714285714285
+      ],
+      "referenceSpreadPercent": 1.5587071739257885,
+      "candidateSpreadPercent": 2.2057778930931304
+    },
+    {
+      "case": "calls.positional.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 2.0986148888888887,
+        "candidate-control": 2.0798575966386554,
+        "reference": 2.0753959875,
+        "candidate": 2.054560648305085
+      },
+      "cpuMilliseconds": {
+        "reference-control": 2.088888888888889,
+        "candidate-control": 2.100840336134454,
+        "reference": 2.0833333333333335,
+        "candidate": 2.0762711864406778
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.8744798553374031,
+        "candidate-control": 2.19415959206711,
+        "reference": 1.5355810501681437,
+        "candidate": 0.9724616100188757
+      },
+      "elapsedChangePercent": [
+        -2.0992055673029197,
+        -1.0039211466344233,
+        -0.8937939185290067,
+        0.21497628238309474
+      ],
+      "cpuChangePercent": [
+        -0.6040389469888385,
+        -0.3389830508474745,
+        0.572143751117471,
+        0.8403361344537785
+      ],
+      "referenceSpreadPercent": 1.1187696964210625,
+      "candidateSpreadPercent": 1.2312582913743153
+    },
+    {
+      "case": "scripts.report-forwarding.expanded",
+      "lane": "compile",
+      "elapsedMilliseconds": {
+        "reference-control": 0.05454627602540639,
+        "candidate-control": 0.05376619759694156,
+        "reference": 0.05469219026071967,
+        "candidate": 0.053427110837701935
+      },
+      "cpuMilliseconds": {
+        "reference-control": 0.054903649477877056,
+        "candidate-control": 0.054614964500273075,
+        "reference": 0.054945054945054944,
+        "candidate": 0.054562961377982236
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 1.2507723853783428,
+        "candidate-control": 0.3271455433721979,
+        "reference": 1.4925546275308423,
+        "candidate": 1.582187370518377
+      },
+      "elapsedChangePercent": [
+        -2.3130897062031197,
+        -2.0517719434836823,
+        -1.6930985198505777,
+        -1.4301222472116848
+      ],
+      "cpuChangePercent": [
+        -0.6954102920723293,
+        -0.6205199529260796,
+        -0.6007646095030017,
+        -0.5258028935222314
+      ],
+      "referenceSpreadPercent": 0.2675054026517243,
+      "candidateSpreadPercent": 0.6346717124002588
+    },
+    {
+      "case": "calls.keyword.medium",
+      "lane": "compile",
+      "elapsedMilliseconds": {
+        "reference-control": 0.015594977152095662,
+        "candidate-control": 0.01579366613003096,
+        "reference": 0.015702924359215394,
+        "candidate": 0.015860744928419133
+      },
+      "cpuMilliseconds": {
+        "reference-control": 0.015862363492160334,
+        "candidate-control": 0.015789473684210527,
+        "reference": 0.01566710534561634,
+        "candidate": 0.016143770941212304
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.42051325323106997,
+        "candidate-control": 0.4703070841095868,
+        "reference": 0.9698235351239056,
+        "candidate": 0.42307817758129224
+      },
+      "elapsedChangePercent": [
+        0.5778654264631422,
+        1.005039351865178,
+        1.2740575122201836,
+        1.7041883019864201
+      ],
+      "cpuChangePercent": [
+        -0.4595141700404981,
+        0.7810526315789712,
+        1.7740574990041669,
+        3.0424611635699206
+      ],
+      "referenceSpreadPercent": 0.6921921466568115,
+      "candidateSpreadPercent": 0.4247196175726886
+    },
+    {
+      "case": "scripts.report-forwarding.expanded",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "reference-control": 3.1560348516129033,
+        "candidate-control": 2.956971454545455,
+        "reference": 3.168991670967742,
+        "candidate": 3.0145305185185185
+      },
+      "cpuMilliseconds": {
+        "reference-control": 3.225806451612903,
+        "candidate-control": 3.0303030303030303,
+        "reference": 3.2903225806451615,
+        "candidate": 3.0864197530864197
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.25483855301144115,
+        "candidate-control": 0.09654165198385592,
+        "reference": 1.409183561021546,
+        "candidate": 0.2584819914958909
+      },
+      "elapsedChangePercent": [
+        -6.6904630379650225,
+        -6.307389063391245,
+        -4.874141950712485,
+        -4.483611232051777
+      ],
+      "cpuChangePercent": [
+        -7.902554961378494,
+        -6.197046719922539,
+        -6.060606060606055,
+        -4.320987654320985
+      ],
+      "referenceSpreadPercent": 0.4105410733413528,
+      "candidateSpreadPercent": 1.946554603514472
+    }
+  ],
+  "retentionDecisionPending": true,
+  "CPythonRefreshed": false,
+  "retention": "Prototype pending compact follow-up. Local native-formatting adversity retained.",
+  "images": {
+    "referenceCommit": "0f48fcbbf",
+    "candidateBase": "0f48fcbbf",
+    "casesSHA256": "eb77dc6f75bd03e924a438c8a500bec574e0a6e26599f035311b83b2507554de",
+    "images": {
+      "reference": {
+        "Azure.Core.dll": "1d6df436afdc73c30d476be938f6513c90ef8fc884a7bae280091a9bed0a5490",
+        "Azure.Identity.dll": "31574a3d35ffeb0e25a00ebb317937222fe5283b91af608613f2e3bf0f26c50a",
+        "BenchmarkDotNet.Annotations.dll": "97974c60500f53a3c7d142088b22d815aae7aac729de69f4b497132cc436594f",
+        "BenchmarkDotNet.dll": "599ded314fe77dbc17318557e787cf660c1fcb0d69be39994ea462ca95745896",
+        "CommandLine.dll": "8a55501cd1a1590a4bd93a17c6fdd2c01a0ed5bff1aea9036bdc78d98c9a3fad",
+        "deniszykov.WebSocketListener.dll": "c86cfb93e32192ae12fb1a132b4ae785a7d2f325e8583c03c99abf8e832d25d6",
+        "Dia2Lib.dll": "6c4cac68010fe032218efe5e9fcf46eef9f77bfaa5f3bd33f03c5ff77d5a8fac",
+        "Gee.External.Capstone.dll": "6dfda67784598de9677173b89d0692593935f1a4024d36040c95dea48c1b5965",
+        "Iced.dll": "f058c01321b4cdfc9b9151879e88e59571c8d0ba176fbcf95bc936a8f3d073ed",
+        "Lokad.Lython.Benchmarks.deps.json": "b47f293f779ce46eefa92c6eb775842efe363be212c35bf7d155d0b89734d450",
+        "Lokad.Lython.Benchmarks.dll": "b0e01ce576e7e29016a65e9d361bf0118e89f99f5cba0042da7d7ac44bd4eed8",
+        "Lokad.Lython.Benchmarks.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0",
+        "Lokad.Lython.dll": "bde27322db4d109914f956ff48a73ddea6a6f5a788cf8cf94ded7d76aa2dd289",
+        "Lokad.Lython.Utf8Regex.dll": "e722e264e91a1cacea92a57d1d0bd734ad927da2b2b737824562f5faf042fa8f",
+        "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+        "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe",
+        "Microsoft.Bcl.AsyncInterfaces.dll": "bf58b47923b2f520c766ca905f68a1a65d217c4d828f05db538c41129cacf9d9",
+        "Microsoft.CodeAnalysis.CSharp.dll": "1af1de8a162d2312eb2f6b781f5edbe8cec7d5cd268c7e4de24396225e54260f",
+        "Microsoft.CodeAnalysis.dll": "42c9ce7891470f430267e2dc02d03571f9d046a7e7e121107754bee58d344613",
+        "Microsoft.Diagnostics.FastSerialization.dll": "e5bdad179ce97180646f37f357cb7b449f5baaf76f185eb09510eeafc5b773e1",
+        "Microsoft.Diagnostics.NETCore.Client.dll": "e2cc9e1f6c97b3c4ee45ebabaa92408eb9b2fc81cb08ceeb342fe48bf79db15f",
+        "Microsoft.Diagnostics.Runtime.dll": "52d5f113180bb0f70b1a9b10608aef93b187364ac689885d2d3c734102d850a2",
+        "Microsoft.Diagnostics.Tracing.TraceEvent.dll": "92401392ce1887c3483a3c0085e6cc3656ee39da1be539943096ebabbad6ea21",
+        "Microsoft.Identity.Client.dll": "5795027e9ae95eececb310a4fed3c502bb368039d186ab0884f64b7792b84717",
+        "Microsoft.Identity.Client.Extensions.Msal.dll": "07109a2f30df782300077a567ade47cbd0a0502c75cd7c8a62192f7d64bb004e",
+        "Microsoft.IdentityModel.Abstractions.dll": "24e97b54b6b5c234a124a336757e3116617ac6c30b655cdae74517dc2ecb5746",
+        "Perfolizer.dll": "4a5508174e2b90a651a29e1de0d2ad88236daaaae01070cd6fc8ca3c36beaa36",
+        "Pragmastat.dll": "7217e206e47de8a0335f58513019d5805a6e52ca2e8f127e2cc3944f1742bb2e",
+        "System.ClientModel.dll": "dec5e22b71a1685c5e6e97cd28b629f0aa6703fb87b6950df28e79fc1804290c",
+        "System.Memory.Data.dll": "2c1035b0106dbb2de7913d151e06071ed617bb58bbb3d6cd46a2dd0f6a03617b",
+        "System.Security.Cryptography.ProtectedData.dll": "80566f0839ece5946e66bf9f00d723e59e371ba1341a18e00c7c7a7c49298e1d",
+        "TraceReloggerLib.dll": "6830c0f1d3f3c17719181e73dd5cfa8ccbb3f3c575329d2120576545103467b5"
+      },
+      "candidate": {
+        "Azure.Core.dll": "1d6df436afdc73c30d476be938f6513c90ef8fc884a7bae280091a9bed0a5490",
+        "Azure.Identity.dll": "31574a3d35ffeb0e25a00ebb317937222fe5283b91af608613f2e3bf0f26c50a",
+        "BenchmarkDotNet.Annotations.dll": "97974c60500f53a3c7d142088b22d815aae7aac729de69f4b497132cc436594f",
+        "BenchmarkDotNet.dll": "599ded314fe77dbc17318557e787cf660c1fcb0d69be39994ea462ca95745896",
+        "CommandLine.dll": "8a55501cd1a1590a4bd93a17c6fdd2c01a0ed5bff1aea9036bdc78d98c9a3fad",
+        "deniszykov.WebSocketListener.dll": "c86cfb93e32192ae12fb1a132b4ae785a7d2f325e8583c03c99abf8e832d25d6",
+        "Dia2Lib.dll": "6c4cac68010fe032218efe5e9fcf46eef9f77bfaa5f3bd33f03c5ff77d5a8fac",
+        "Gee.External.Capstone.dll": "6dfda67784598de9677173b89d0692593935f1a4024d36040c95dea48c1b5965",
+        "Iced.dll": "f058c01321b4cdfc9b9151879e88e59571c8d0ba176fbcf95bc936a8f3d073ed",
+        "Lokad.Lython.Benchmarks.deps.json": "b47f293f779ce46eefa92c6eb775842efe363be212c35bf7d155d0b89734d450",
+        "Lokad.Lython.Benchmarks.dll": "b0e01ce576e7e29016a65e9d361bf0118e89f99f5cba0042da7d7ac44bd4eed8",
+        "Lokad.Lython.Benchmarks.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0",
+        "Lokad.Lython.dll": "e70bbfa08c3e33fd61c539e84ec12a3774c3d7aec7efdf19dba24ca283d21911",
+        "Lokad.Lython.Utf8Regex.dll": "e722e264e91a1cacea92a57d1d0bd734ad927da2b2b737824562f5faf042fa8f",
+        "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+        "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe",
+        "Microsoft.Bcl.AsyncInterfaces.dll": "bf58b47923b2f520c766ca905f68a1a65d217c4d828f05db538c41129cacf9d9",
+        "Microsoft.CodeAnalysis.CSharp.dll": "1af1de8a162d2312eb2f6b781f5edbe8cec7d5cd268c7e4de24396225e54260f",
+        "Microsoft.CodeAnalysis.dll": "42c9ce7891470f430267e2dc02d03571f9d046a7e7e121107754bee58d344613",
+        "Microsoft.Diagnostics.FastSerialization.dll": "e5bdad179ce97180646f37f357cb7b449f5baaf76f185eb09510eeafc5b773e1",
+        "Microsoft.Diagnostics.NETCore.Client.dll": "e2cc9e1f6c97b3c4ee45ebabaa92408eb9b2fc81cb08ceeb342fe48bf79db15f",
+        "Microsoft.Diagnostics.Runtime.dll": "52d5f113180bb0f70b1a9b10608aef93b187364ac689885d2d3c734102d850a2",
+        "Microsoft.Diagnostics.Tracing.TraceEvent.dll": "92401392ce1887c3483a3c0085e6cc3656ee39da1be539943096ebabbad6ea21",
+        "Microsoft.Identity.Client.dll": "5795027e9ae95eececb310a4fed3c502bb368039d186ab0884f64b7792b84717",
+        "Microsoft.Identity.Client.Extensions.Msal.dll": "07109a2f30df782300077a567ade47cbd0a0502c75cd7c8a62192f7d64bb004e",
+        "Microsoft.IdentityModel.Abstractions.dll": "24e97b54b6b5c234a124a336757e3116617ac6c30b655cdae74517dc2ecb5746",
+        "Perfolizer.dll": "4a5508174e2b90a651a29e1de0d2ad88236daaaae01070cd6fc8ca3c36beaa36",
+        "Pragmastat.dll": "7217e206e47de8a0335f58513019d5805a6e52ca2e8f127e2cc3944f1742bb2e",
+        "System.ClientModel.dll": "dec5e22b71a1685c5e6e97cd28b629f0aa6703fb87b6950df28e79fc1804290c",
+        "System.Memory.Data.dll": "2c1035b0106dbb2de7913d151e06071ed617bb58bbb3d6cd46a2dd0f6a03617b",
+        "System.Security.Cryptography.ProtectedData.dll": "80566f0839ece5946e66bf9f00d723e59e371ba1341a18e00c7c7a7c49298e1d",
+        "TraceReloggerLib.dll": "6830c0f1d3f3c17719181e73dd5cfa8ccbb3f3c575329d2120576545103467b5"
+      }
+    }
+  },
+  "sourcePatchSHA256": "8d350e32eb8a51db85a1e49e869533485aef7d9269f17c0fb881bf23bc5aa05d"
+}

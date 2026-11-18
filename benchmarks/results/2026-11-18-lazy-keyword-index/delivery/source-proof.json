@@ -1,0 +1,21 @@
+{
+  "qualified": "0f48fcbbf164a0f94f20b5edb22cf0f41bee5a28",
+  "start": "98da93f7dfe67a65920d0cb91435f7d23d313b0f",
+  "reconstructedTree": "b10ff80de430937f02963df743f75098023bbafe",
+  "productionCoreFiles": 589,
+  "identicalSourceAndTests": true,
+  "measurements": [
+    {
+      "archive": "benchmarks/results/2026-11-18-lazy-keyword-index/checks-and-procedures.tar.xz",
+      "archiveSHA256": "dfef8a813856b739e3d492d7fe5ed1aeea0582c2ef4b7d308af79d8635e5e131",
+      "patchSHA256": "000907e91d27af7b57ab0025f16a2782550a51d11be14ea7ec2dede9e322cd1e"
+    }
+  ],
+  "loweredOwnershipPatchSHA256": "292b34fd4d33d0a4ae90e908d8d2d2d034d6776a941520276a3ca873a4a6cfcf",
+  "expectedTestsPerTarget": [
+    4889,
+    18076,
+    14,
+    406
+  ]
+}
