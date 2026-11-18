@@ -8,10 +8,10 @@
 | JSON-lines record transform | 4,096 records / 110,592 B | 3.898–4.012 ms | 4.388–4.423 ms | 0.88–0.91× | Diagnostic ea8/cf; controls L/C 2.93/0.79%; IQR≤0.79% |
 | Numeric CSV quality report | 4,096 records / 127,031 B | 4.066–4.166 ms | 4.574–4.693 ms | 0.87–0.91× | Diagnostic; controls L/C 2.46/2.60%; IQR≤1.47% |
 | CSV invoice | 4,096 data records / 127,031 B | 7.090–7.116 ms | 6.399–6.500 ms | 1.09–1.11× | Diagnostic c14c/1264. Controls L/C 0.37 / 1.57%. IQR ≤1.62%. |
-| Text normalization | 52,224 B / 4,096 lines | 0.445–0.454 ms | 0.733–0.737 ms | 0.60–0.62× | Diagnostic 6f494/e490. Controls L/C 2.06 / 0.55%. CPython varies across collections. |
+| Text normalization | 52,224 B / 4,096 lines | 0.377–0.382 ms | 0.676–0.679 ms | 0.56–0.57× | Diagnostic 4ff69/74d1. Controls L/C 1.36 / 0.53%. CPython varies across collections. |
 | JSON-lines aggregation with a helper | 4,096 records / 110,592 B | 3.444–3.606 ms | 4.227–4.238 ms | 0.81–0.85× | Diagnostic R534/40db; Lython control 4.69%; IQR≤2.36% |
 | Floating JSON numeric report | 4,096 pairs / 56,495 B | 1.036–1.063 ms | 0.833–0.835 ms | 1.24–1.28× | Diagnostic R534/40db; controls L/C 2.56/0.33%; IQR≤1.64% |
-| Helper text normalization | 52,224 B / 4,096 lines | 1.130–1.153 ms | 0.848–0.902 ms | 1.25–1.36× | Diagnostic 6f494/e490. CPython control spread 6.42%. |
+| Helper text normalization | 52,224 B / 4,096 lines | 1.052–1.064 ms | 0.880–0.900 ms | 1.17–1.21× | Diagnostic 4ff69/74d1. Controls L/C 1.20 / 2.30%. |
 | CSV field validation | 4,128 data records / 128,183 B | 2.821–2.860 ms | 4.313–4.348 ms | 0.65–0.66× | Diagnostic c14c/1264. Controls L/C 1.41 / 0.82%. IQR ≤0.59%. |
 
 **Ratio = Lython elapsed / CPython elapsed. Above one means slower.** Ranges cover
@@ -45,20 +45,17 @@ on the same quiet VM and toolchains.
 [Earlier configuration](../benchmarks/results/2026-11-18-agent-cpython-checkpoint/README.md) ·
 [Earlier text phases](../benchmarks/results/2026-11-18-affected-cpython-checkpoint/README.md).
 
-Text normalization and warm helper text use **6f494109f / e4905aa5**, measured
-**2026-11-18** against stock **CPython 3.13.16** on the same quiet VM and .NET
-11 RC3. CPython warm normalization has ranged from 0.501–0.503 ms to
-0.733–0.737 ms across collections. The cause remains unresolved. The helper
-CPython process medians in this collection differ by 6.42%. Attribute the
-normalization change using the separate Lython source pair.
-[Current text checkpoint](../benchmarks/results/2026-11-18-normalization-cpython-checkpoint/README.md) ·
-[Paired Lython comparison](../benchmarks/results/2026-11-18-trimmed-split-join/README.md).
-
-Helper text compilation and compile-to-result use committed **3f873227 / a5038a28**,
-measured **2026-11-18** on the same machine/toolchains. [Full44256409242](../benchmarks/results/2026-11-18-prepared-module-bindings/delivery/README.md) passed Windows/Ubuntu actual11/10, original stress and installed Release consumers.
-Helper warm CPython control movement of 6.02% and compile-to-result movement of
-3.48% limit precision. That checkpoint also preserves the previous floating
-report measurements. [Exact source and raw data](../benchmarks/results/2026-11-18-bindings-cpython-checkpoint/README.md).
+Warm text normalization and all helper text phases use **4ff69a9af / 74d19a10**,
+measured **2026-11-18** against stock **CPython 3.13.16** on the same quiet VM
+and .NET 11 RC3. The remaining direct normalization phases use the preceding
+**6f494109f / e4905aa5** image. CPython warm normalization has ranged from
+0.501–0.503 ms to 0.733–0.737 ms across collections, with no established cause.
+The current CPython helper compile-to-result clock is lower than its
+separately warmed execution clock. The measured phase ratios retain that
+uncertainty. Use paired Lython comparisons to attribute code changes.
+[Current text checkpoint](../benchmarks/results/2026-11-18-line-count-cpython-checkpoint/README.md) ·
+[Preceding text checkpoint](../benchmarks/results/2026-11-18-normalization-cpython-checkpoint/README.md) ·
+[Earlier helper measurements](../benchmarks/results/2026-11-18-bindings-cpython-checkpoint/README.md).
 
 The floating report and warm JSON-lines aggregation were measured **2026-11-18**
 using frozen **40db9318**, with the numeric JSON change on **dd4c5165c**, and stock
@@ -98,8 +95,8 @@ This is useful workload latency, not equivalent containment or cold startup.
 | JSON-lines aggregation with a helper | Compile and execute once | 3.642–3.707 ms | 4.192–4.194 ms | 0.87–0.88× | Diagnostic; controls L/C 1.78/0.05%; IQR≤0.45% |
 | Floating JSON numeric report | Compilation only | 0.0557–0.0560 ms | 0.0604–0.0606 ms | 0.92–0.93× | Diagnostic R534/40db; controls L/C 0.38/0.17%; IQR≤1.24% |
 | Floating JSON numeric report | Compile-to-result | 1.138–1.139 ms | 0.964–0.972 ms | 1.17–1.18× | Diagnostic R534/40db; controls L/C 0.14/0.86%; IQR≤1.26% |
-| Helper text normalization | Compilation only | 0.047–0.047 ms | 0.044–0.044 ms | 1.05–1.06× | Diagnostic3f/a503; controls L/C 0.47/0.39%; IQR≤0.97% |
-| Helper text normalization | Compile-to-result | 1.229–1.231 ms | 0.802–0.830 ms | 1.48–1.53× | Diagnostic3f/a503; controls L/C 0.13/3.48%; IQR≤3.43% |
+| Helper text normalization | Compilation only | 0.04561–0.04588 ms | 0.04372–0.04377 ms | 1.04–1.05× | Diagnostic 4ff69/74d1. Controls L/C 0.58 / 0.11%. |
+| Helper text normalization | Compile-to-result | 1.165–1.180 ms | 0.816–0.825 ms | 1.41–1.45× | Diagnostic 4ff69/74d1. CPython phase inversion. Max IQR 4.44%. |
 | CSV invoice | Compilation only | 0.0983–0.0994 ms | 0.0926 ms | 1.06–1.07× | Diagnostic c14c/1264. Controls L/C 1.17 / 0.09%. IQR ≤1.10%. |
 | CSV invoice | Compile-to-result | 7.071–7.089 ms | 6.265–6.278 ms | 1.13× | Diagnostic c14c/1264. Controls L/C 0.26 / 0.21%. IQR ≤0.78%. |
 | CSV field validation | Compilation only | 0.0250–0.0251 ms | 0.0265–0.0267 ms | 0.93–0.94× | Diagnostic c14c/1264. Controls L/C 0.29 / 0.72%. IQR ≤0.66%. |
@@ -108,8 +105,8 @@ This is useful workload latency, not equivalent containment or cold startup.
 Compilation includes compiled-owner disposal. Compile-to-result includes compilation,
 one execution and compiled-owner disposal. Separately warmed medians are not
 additive. Warm-only numbers do not describe single-use scripts; use compile-to-result.
-The helper warm CPython control spread limits precision. This checkpoint
-did not measure process startup.
+The helper CPython phase inversion limits cross-phase interpretation. This
+checkpoint did not measure process startup.
 
 ## Uncertainty and earlier measurements
 
@@ -135,8 +132,8 @@ for the CPython ratios above.
 
 | Change | Established outcome | Limits / evidence |
 | --- | --- | --- |
-| Private split-line counts | Normalization warm elapsed 15.01–15.56% lower. Helper text elapsed 6.27–8.03% lower warm and 5.45–7.27% lower compile-to-result. Process CPU supports both. | 74d19a10 versus e4905aa5. Local allocation 27.47% and 15.91% lower, respectively. Validated CSV movement remains inconclusive. The CPython table uses the earlier source. [Comparison](../benchmarks/results/2026-11-18-private-line-count/README.md). |
-| Direct trimmed split joins | Normalization elapsed 42.38–43.42% lower warm and 39.52–40.36% lower compile-to-result, with supporting process CPU. Local allocation and accounted peak fell 40.59% and 47.79%. | e4905aa5 versus 93739eed. The change removes the private split list, slices, generator and drain for the exact builtin call sequence. Helper text and validated CSV elapsed controls span zero. [Comparison](../benchmarks/results/2026-11-18-trimmed-split-join/README.md). |
+| Private split-line counts | Normalization warm elapsed 15.01–15.56% lower. Helper text elapsed 6.27–8.03% lower warm and 5.45–7.27% lower compile-to-result. Process CPU supports both. | 74d19a10 versus e4905aa5. Local allocation 27.47% and 15.91% lower, respectively. Validated CSV movement remains inconclusive. [Comparison](../benchmarks/results/2026-11-18-private-line-count/README.md). |
+| Direct trimmed split joins | Normalization elapsed 42.38–43.42% lower warm and 39.52–40.36% lower compile-to-result, with supporting process CPU. Local allocation and accounted peak fell 40.59% and 47.79%. | e4905aa5 versus 93739eed. The change removes the private split list, slices, generator and drain for the exact builtin call sequence. Helper text and validated CSV elapsed controls span zero. [Comparison](../benchmarks/results/2026-11-18-trimmed-split-join/README.md) · [Release qualification](../benchmarks/results/2026-11-18-trimmed-split-join/delivery/README.md). |
 | CSV dictionary reader line numbers | Validated records allocation 16.53% lower, warm elapsed 3.63–6.34% lower and compile-to-result elapsed 5.07–5.50% lower, with supporting CPU | 12643cec versus 4eb89711. Invoice allocation 9.37% lower. Invoice timing overlaps positional control movement. Accounted peaks match. [Comparison](../benchmarks/results/2026-11-18-csv-line-number/README.md). |
 | Governed JSON encoder frames | Scaled manifest allocation 4.15% lower and compile-to-result elapsed 1.00–1.36% lower with supporting CPU | 33025cee versus 7170869d. Small manifest allocation 1.96% lower. Accounted peaks rose 608 bytes and warm timings were mixed. [Comparison](../benchmarks/results/2026-11-18-json-encoder-allocation/comparison/README.md). |
 | Direct JSON output options | Config edit warm allocation 4.0% lower and elapsed 0.82–1.34% lower with supporting CPU. Manifest allocation 1.71% lower | 7170869d versus f2824fea0. Fresh elapsed mixed, accounted peaks matched and positional control elapsed rose 0.22–2.79%. [Evidence](../benchmarks/results/2026-11-18-native-json-encoding-options/README.md). |
