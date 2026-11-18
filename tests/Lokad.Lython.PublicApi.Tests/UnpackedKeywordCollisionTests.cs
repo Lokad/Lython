@@ -5,6 +5,31 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class UnpackedKeywordCollisionTests
 {
     [Fact]
+    public async Task ExpandedNamesMatchExactUnicodeAndPreserveOverflowKeyIdentity()
+    {
+        using var script = new LythonEngine().Compile("""
+            class Receiver:
+                def f(self, name, /, *, ζ='last', café='default', a='first', **kw):
+                    print(name, a, café, ζ, list(kw.values()), next(iter(kw)) is unmatched)
+
+            unmatched = ''.join(['cafe', '\u0301'])
+            values = {'café': 'matched', unmatched: 42, 'name': 5, 'a': 'start', 'ζ': 'end'}
+            Receiver().f('bound', **values)
+            Receiver().f('bound', **{unmatched: 1})
+            """);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
+        foreach (var asynchronous in new[] { false, true })
+        {
+            using var result = asynchronous
+                ? await script.RunAsync(new MockLythonHost())
+                : script.Run(new MockLythonHost());
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("bound start matched end [42, 5] True\nbound first default last [1] True\n",
+                result.StandardOutput);
+        }
+    }
+
+    [Fact]
     public async Task ConstructorsRejectCollidingKeywordsButAllowSourceOverrides()
     {
         var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("""

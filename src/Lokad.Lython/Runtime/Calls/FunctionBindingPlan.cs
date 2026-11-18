@@ -18,18 +18,8 @@ internal sealed class FunctionBindingPlan
         CallableName = callableName;
         CallableKind = callableKind;
         var governor = context?.MemoryGovernor;
-        var nameStorageBytes = KeywordOnlyCount == 0 ? 0 : 32L + 8L * KeywordOnlyCount;
-        governor?.Reserve(nameStorageBytes, null);
-        try { KeywordDefaultNames = KeywordOnlyCount == 0 ? [] : new PyString[KeywordOnlyCount]; }
-        catch { governor?.ReleaseReserved(nameStorageBytes); throw; }
-        governor?.Commit(nameStorageBytes);
         try
         {
-            for (var i = 0; i < KeywordDefaultNames.Length; i++)
-                KeywordDefaultNames[i] = context is null
-                    ? PyString.FromString(NameAt(PositionalCount + i))
-                    : PyString.FromString(NameAt(PositionalCount + i), context.MemoryGovernor, null);
-
             var firstDefault = PositionalCount;
             while (firstDefault > 0 && defaultValues.ContainsKey(NameAt(firstDefault - 1))) firstDefault--;
             var count = PositionalCount - firstDefault;
@@ -47,7 +37,7 @@ internal sealed class FunctionBindingPlan
                     dictionary = context is null ? new PyDict() : new PyDict(context.MemoryGovernor);
                     KeywordDefaults = dictionary;
                 }
-                dictionary.SetItem(KeywordDefaultNames[i], value);
+                dictionary.SetItem(KeywordDefaultName(i), value);
             }
         }
         catch
@@ -58,9 +48,6 @@ internal sealed class FunctionBindingPlan
             {
                 if (PositionalDefaults is { } positionalDefaults) governor.RefundUnpublishedValue(positionalDefaults);
                 if (KeywordDefaults is { } keywordDefaults) governor.RefundUnpublishedValue(keywordDefaults);
-                foreach (var name in KeywordDefaultNames)
-                    if (name is not null) governor.RefundUnpublishedValue(name);
-                governor.Release(nameStorageBytes);
             }
             throw;
         }
@@ -72,10 +59,10 @@ internal sealed class FunctionBindingPlan
         IReadOnlyList<LoweredFunctionParameter> parameters, IReadOnlyDictionary<string, object> defaultValues,
         LythonRuntime.ExecutionContext? context = null)
     {
-        var bytes = FunctionParameterLayout.EstimateBytes(parameters.Count);
+        var bytes = FunctionParameterLayout.EstimateBytes(parameters);
         using var storage = context?.MemoryGovernor.ReserveTemporary(bytes, null);
         var result = new FunctionBindingPlan(callableName, callableKind,
-            FunctionParameterLayout.Create(parameters), defaultValues, context);
+            FunctionParameterLayout.Create(parameters, context?.State.CancellationToken ?? default), defaultValues, context);
         storage?.Commit(bytes);
         return result;
     }
@@ -114,7 +101,16 @@ internal sealed class FunctionBindingPlan
 
     public object? PositionalDefaults { get; private set; }
     public object? KeywordDefaults { get; private set; }
-    public PyString[] KeywordDefaultNames { get; }
+    public PyString KeywordDefaultName(int index) => _layout.KeywordDefaultName(index);
+
+    internal bool TryGetKeywordIndex(CallArgumentValue argument, LythonRuntime.ExecutionContext context,
+        LythonSourceSpan span, out int index)
+    {
+        if (argument.NativeKeyword is { } key)
+            return _layout.TryGetNativeKeywordIndex(key, context, span, out index);
+        return LayoutParameterIndex.TryGetValue(argument.KeywordName, out index) &&
+            index >= PositionalOnlyCount && index < NamedLayoutCount;
+    }
 
     public PyDict? KeywordDefaultStorage => KeywordDefaults switch
     {

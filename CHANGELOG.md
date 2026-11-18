@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Bind expanded keyword keys directly in UTF-8 for guest functions and
+  bound methods. Share prepared parameter and default-name metadata.
+
 - Keep wide lowered-call argument packets funded through invocation and
   async completion. Admit ordinary packets before evaluating their arguments.
 

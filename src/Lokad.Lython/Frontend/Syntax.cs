@@ -349,7 +349,9 @@ internal sealed record FunctionDefinitionStatementSyntax(
     // Flow-dependent captured values remain with each abstract/runtime function.
     private FunctionParameterLayout? _parameterLayout;
     private bool? _isGenerator;
-    internal FunctionParameterLayout ParameterLayout => _parameterLayout ??= FunctionParameterLayout.FromSyntax(Parameters);
+    internal FunctionParameterLayout ParameterLayout => PrepareParameterLayout(default);
+    internal FunctionParameterLayout PrepareParameterLayout(CancellationToken cancellationToken)
+        => _parameterLayout ??= FunctionParameterLayout.FromSyntax(Parameters, cancellationToken);
     internal bool IsGenerator => _isGenerator ??= GeneratorSyntaxFacts.IsGenerator(Body);
 }
 
@@ -826,6 +828,10 @@ internal sealed record LambdaExpressionSyntax(
 {
     internal ScopeDirectiveFacts? PreparedScopeFacts { get; set; }
     internal LoweredLambdaExpression? PreparedCallable { get; set; }
+    private FunctionParameterLayout? _parameterLayout;
+    internal FunctionParameterLayout ParameterLayout => PrepareParameterLayout(default);
+    internal FunctionParameterLayout PrepareParameterLayout(CancellationToken cancellationToken)
+        => _parameterLayout ??= FunctionParameterLayout.FromSyntax(Parameters, cancellationToken);
 
     // The prepared callable points back to this syntax. It is compilation
     // metadata, not part of structural syntax equality or constant interning.

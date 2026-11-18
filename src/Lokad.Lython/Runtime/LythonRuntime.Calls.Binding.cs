@@ -99,7 +99,7 @@ internal sealed partial class LythonRuntime
                 var defaults = plan.KeywordDefaultStorage;
                 if (defaults is null)
                     throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, plan.NameAt(plan.PositionalCount + k), span);
-                var value = await defaults.TryGetKeyAsync(plan.KeywordDefaultNames[k], context, span).ConfigureAwait(false);
+                var value = await defaults.TryGetKeyAsync(plan.KeywordDefaultName(k), context, span).ConfigureAwait(false);
                 if (!value.Found)
                     throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, plan.NameAt(plan.PositionalCount + k), span);
                 values[index].Object = value.Value;
@@ -186,7 +186,7 @@ internal sealed partial class LythonRuntime
                 // Exact native dictionaries finish synchronously. A protocol lookup
                 // defers this and the remaining defaults in their original order.
                 if (deferProtocolDefaults && keywordDefaults is { HasProtocolKeys: true }) break;
-                if (keywordDefaults is not null && keywordDefaults.TryGetValue(plan.KeywordDefaultNames[k], out var defaultValue, context, span))
+                if (keywordDefaults is not null && keywordDefaults.TryGetValue(plan.KeywordDefaultName(k), out var defaultValue, context, span))
                 {
                     values[i].Object = defaultValue;
                     continue;
@@ -271,13 +271,11 @@ internal sealed partial class LythonRuntime
                 continue;
             }
 
-            var keywordName = argument.KeywordName;
-            if (!plan.LayoutParameterIndex.TryGetValue(keywordName, out var keywordIndex) ||
-                keywordIndex >= plan.NamedLayoutCount || keywordIndex < plan.PositionalOnlyCount)
+            if (!plan.TryGetKeywordIndex(argument, context, span, out var keywordIndex))
             {
                 if (plan.VariadicDictionaryIndex < 0)
                 {
-                    throw CallErrors.UnexpectedKeyword(plan.CallableKind, plan.CallableName, keywordName, span);
+                    throw CallErrors.UnexpectedKeyword(plan.CallableKind, plan.CallableName, argument.GetKeywordName(context, span), span);
                 }
 
                 var governor = context.MemoryGovernor;
@@ -285,19 +283,19 @@ internal sealed partial class LythonRuntime
                 var key = argument.OriginalKeyword;
                 if (key is null)
                 {
-                    key = PyString.FromString(keywordName, governor, span);
+                    key = PyString.FromString(argument.KeywordName, governor, span);
                     if (ReferenceEquals(key.OwnerMemoryGovernor, governor))
                         syntheticKeyBytes = checked(syntheticKeyBytes + key.CommittedOwnedBytes);
                 }
                 if (!extraKeywords.TryAddNativeString(key, argument.Value, context, span))
-                    throw CallErrors.MultipleValues(plan.CallableKind, plan.CallableName, keywordName, span);
+                    throw CallErrors.MultipleValues(plan.CallableKind, plan.CallableName, argument.GetKeywordName(context, span), span);
 
                 continue;
             }
 
             if (!values[keywordIndex].IsUnassigned)
             {
-                throw CallErrors.MultipleValues(plan.CallableKind, plan.CallableName, keywordName, span);
+                throw CallErrors.MultipleValues(plan.CallableKind, plan.CallableName, argument.GetKeywordName(context, span), span);
             }
 
             values[keywordIndex].Object = argument.Value;

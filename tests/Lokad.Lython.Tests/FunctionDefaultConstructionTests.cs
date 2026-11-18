@@ -44,7 +44,7 @@ public sealed class FunctionDefaultConstructionTests
                     new Dictionary<string, object> { ["a"] = supplied, ["b"] = supplied }, context);
                 Assert.True(plan.TryGetPositionalDefault(0, out var positional));
                 Assert.Same(supplied, positional);
-                Assert.True(plan.KeywordDefaultStorage!.TryGetValue(plan.KeywordDefaultNames[0], out var keyword));
+                Assert.True(plan.KeywordDefaultStorage!.TryGetValue(plan.KeywordDefaultName(0), out var keyword));
                 Assert.Same(supplied, keyword);
                 completed++;
             }

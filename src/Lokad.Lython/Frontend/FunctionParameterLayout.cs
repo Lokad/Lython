@@ -1,3 +1,6 @@
+using Lokad.Lython.Runtime;
+using Lokad.Lython.Runtime.Text;
+
 namespace Lokad.Lython.Frontend;
 
 // One definition-owned names/index table describes binding order. Defaults and
@@ -5,10 +8,13 @@ namespace Lokad.Lython.Frontend;
 internal sealed class FunctionParameterLayout
 {
     private readonly string[] _names;
+    private readonly record struct NativeKeyword(PyString Key, int Slot);
+    private readonly NativeKeyword[] _nativeKeywords;
+    private readonly PyString[] _keywordDefaultNames;
 
     private FunctionParameterLayout(string[] names, Dictionary<string, int> indices,
         int positionalCount, int keywordOnlyCount, int positionalOnlyCount,
-        int variadicListIndex, int variadicDictionaryIndex)
+        int variadicListIndex, int variadicDictionaryIndex, CancellationToken cancellationToken)
     {
         _names = names;
         LayoutParameterIndex = indices;
@@ -18,16 +24,32 @@ internal sealed class FunctionParameterLayout
         NamedLayoutCount = positionalCount + keywordOnlyCount;
         VariadicListIndex = variadicListIndex;
         VariadicDictionaryIndex = variadicDictionaryIndex;
+
+        var keywordCount = NamedLayoutCount - positionalOnlyCount;
+        _keywordDefaultNames = keywordOnlyCount == 0 ? [] : new PyString[keywordOnlyCount];
+        _nativeKeywords = keywordCount == 0 ? [] : new NativeKeyword[keywordCount];
+        for (var i = positionalOnlyCount; i < NamedLayoutCount; i++)
+        {
+            PythonTokenization.CheckCancellation(cancellationToken, i - positionalOnlyCount);
+            var key = PyString.FromString(names[i]);
+            _nativeKeywords[i - positionalOnlyCount] = new(key, i);
+            if (i >= positionalCount) _keywordDefaultNames[i - positionalCount] = key;
+        }
+        if (keywordCount > 1)
+            Array.Sort(_nativeKeywords, static (left, right) => PyString.CompareOrdinal(left.Key, right.Key));
+        PythonTokenization.CheckCancellation(cancellationToken, 0);
     }
 
-    public static FunctionParameterLayout Create(IReadOnlyList<LoweredFunctionParameter> parameters)
-        => Create(parameters, static parameter => (parameter.Name, parameter.Kind));
+    public static FunctionParameterLayout Create(IReadOnlyList<LoweredFunctionParameter> parameters,
+        CancellationToken cancellationToken = default)
+        => Create(parameters, static parameter => (parameter.Name, parameter.Kind), cancellationToken);
 
-    internal static FunctionParameterLayout FromSyntax(IReadOnlyList<FunctionParameterSyntax> parameters)
-        => Create(parameters, static parameter => (parameter.Name, parameter.Kind));
+    internal static FunctionParameterLayout FromSyntax(IReadOnlyList<FunctionParameterSyntax> parameters,
+        CancellationToken cancellationToken)
+        => Create(parameters, static parameter => (parameter.Name, parameter.Kind), cancellationToken);
 
     private static FunctionParameterLayout Create<T>(IReadOnlyList<T> parameters,
-        Func<T, (string Name, FunctionParameterKind Kind)> shape)
+        Func<T, (string Name, FunctionParameterKind Kind)> shape, CancellationToken cancellationToken)
     {
         var positionalCount = 0;
         var keywordOnlyCount = 0;
@@ -73,12 +95,44 @@ internal sealed class FunctionParameterLayout
             indices[parameter.Name] = slot;
         }
         return new(names, indices, positionalCount, keywordOnlyCount, positionalOnlyCount,
-            variadicListIndex, variadicDictionaryIndex);
+            variadicListIndex, variadicDictionaryIndex, cancellationToken);
     }
 
     // Compiled metadata uses the coarse source estimate. Generated definitions
     // still admit this conservative estimate before constructing their tables.
-    public static long EstimateBytes(int parameterCount) => parameterCount == 0 ? 0 : 128L + 128L * parameterCount;
+    public static long EstimateBytes(IReadOnlyList<LoweredFunctionParameter> parameters)
+    {
+        if (parameters.Count == 0) return 0;
+        var bytes = 256L + 256L * parameters.Count;
+        foreach (var parameter in parameters)
+            if (parameter.Kind is FunctionParameterKind.Positional or FunctionParameterKind.KeywordOnly)
+                bytes = checked(bytes + 3L * parameter.Name.Length);
+        return bytes;
+    }
+
+    internal bool TryGetNativeKeywordIndex(PyString key, LythonRuntime.ExecutionContext context, LythonSourceSpan span,
+        out int index)
+    {
+        var lower = 0;
+        var upper = _nativeKeywords.Length;
+        while (lower < upper)
+        {
+            var middle = lower + (upper - lower) / 2;
+            var entry = _nativeKeywords[middle];
+            var order = PyString.CompareOrdinal(key, entry.Key, context, span);
+            if (order == 0)
+            {
+                index = entry.Slot;
+                return true;
+            }
+            if (order < 0) upper = middle;
+            else lower = middle + 1;
+        }
+        index = -1;
+        return false;
+    }
+
+    internal PyString KeywordDefaultName(int index) => _keywordDefaultNames[index];
 
     public int PositionalCount { get; }
     public int KeywordOnlyCount { get; }

@@ -279,11 +279,9 @@ internal static class CallExpansion
                 AppendMappingKey(snapshot, key, keyStorage, context, span);
             foreach (var key in snapshot)
             {
-                var text = key as PyString;
-                var name = text is not null ? DecodeKeywordName(text, context, span) : null;
-                if (name is not null) expanded.CheckDuplicateKeyword(name, span);
+                var argument = PrepareMappingKeyword(expanded, key, span);
                 var item = LythonRuntime.GetUserItem(instance, key, context, span);
-                AppendMappingArgument(expanded, name, item, text, span);
+                AppendMappingArgument(expanded, argument, item, span);
             }
             return expanded;
         }
@@ -305,8 +303,7 @@ internal static class CallExpansion
                 throw new LythonRuntimeException("TypeError", "keywords must be strings", span);
             }
 
-            expanded.Add(CallArgumentValue.Keyword(DecodeKeywordName(key, context, span), pair.Value, key), span,
-                uniqueKeywordSource);
+            expanded.Add(expanded.PrepareKeyword(key, pair.Value, span), span, uniqueKeywordSource);
         }
 
         return expanded;
@@ -326,11 +323,9 @@ internal static class CallExpansion
             AppendMappingKey(snapshot, key, keyStorage, context, span);
         foreach (var key in snapshot)
         {
-            var text = key as PyString;
-            var name = text is not null ? DecodeKeywordName(text, context, span) : null;
-            if (name is not null) expanded.CheckDuplicateKeyword(name, span);
+            var argument = PrepareMappingKeyword(expanded, key, span);
             var item = await LythonRuntime.GetUserItemAsync(instance, key, context, span).ConfigureAwait(false);
-            AppendMappingArgument(expanded, name, item, text, span);
+            AppendMappingArgument(expanded, argument, item, span);
         }
         return expanded;
     }
@@ -349,24 +344,19 @@ internal static class CallExpansion
         context.CheckExecution(span);
     }
 
-    // Native callees may retain keyword labels. Own their decoded storage for
-    // the execution, independently of the argument accumulator's scratch lease.
-    private static string DecodeKeywordName(PyString text, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    private static CallArgumentValue PrepareMappingKeyword(CallArgumentAccumulator expanded, object key, LythonSourceSpan span)
     {
-        context.CheckExecution(span);
-        if (text.Utf8Span.IsEmpty) return string.Empty;
-        var bytes = checked(32L + 2L * text.GetUtf16CodeUnitCount());
-        using var storage = context.MemoryGovernor.ReserveTemporary(bytes, span);
-        var name = text.AsString();
-        storage.Commit(bytes);
-        return name;
+        if (key is not PyString text) return default;
+        var argument = expanded.PrepareKeyword(text, PyNone.Instance, span);
+        expanded.CheckDuplicateKeyword(argument, span);
+        return argument;
     }
 
-    private static void AppendMappingArgument(CallArgumentAccumulator expanded, string? name,
-        object value, PyString? key, LythonSourceSpan span)
+    private static void AppendMappingArgument(CallArgumentAccumulator expanded, CallArgumentValue argument, object value,
+        LythonSourceSpan span)
     {
-        if (name is null) throw new LythonRuntimeException("TypeError", "keywords must be strings", span);
-        expanded.Add(CallArgumentValue.Keyword(name, value, key), span);
+        if (!argument.IsKeyword) throw new LythonRuntimeException("TypeError", "keywords must be strings", span);
+        expanded.Add(argument.WithValue(value), span);
     }
 
     private static LythonRuntimeException MappingUnpackingError(object value, object target,
@@ -477,10 +467,11 @@ internal static class CallExpansion
         private readonly MemoryGovernor.TemporaryMemoryReservation? _reservation;
         private long _retainedBytes;
         private readonly bool _deferSingleStar;
+        private readonly bool _bindsNativeKeywords;
         private object? _deferredStar;
         private LythonSourceSpan? _deferredSpan;
         private object? _target;
-        private HashSet<string>? _keywordNames;
+        private PyDict? _keywordNames;
         private int _unindexedKeywords;
 
         public bool CanDeferKeywordIndex => _keywordNames is null && _unindexedKeywords == 0;
@@ -495,6 +486,7 @@ internal static class CallExpansion
             _span = null;
             _context = context;
             _deferSingleStar = deferSingleStar;
+            _bindsNativeKeywords = target is PyFunctionBase or PyBoundMethod { Function: PyFunctionBase };
             _target = target;
             _keywordNames = null;
             _governor = context.MemoryGovernor;
@@ -522,11 +514,15 @@ internal static class CallExpansion
                 }
                 else
                 {
-                    var names = EnsureKeywordIndex(context, span);
-                    // Fund the new entry, including resize overlap.
-                    Grow(96, span);
-                    if (!names.Add(value.KeywordName))
-                        throw DuplicateKeyword(value.KeywordName, context, span);
+                    var keywordSpan = span ?? PyDict.UnknownKeySpan;
+                    var names = EnsureKeywordIndex(context, keywordSpan);
+                    var key = value.GetKeywordKey(context, span);
+                    if (!names.TryAddNativeString(key, PyNone.Instance, context, keywordSpan))
+                        throw DuplicateKeyword(value.GetKeywordName(context, span), context, span);
+                    if (value.OriginalKeyword is null)
+                        value = _bindsNativeKeywords
+                            ? CallArgumentValue.Keyword(key, value.Value)
+                            : CallArgumentValue.Keyword(value.KeywordName, value.Value, key);
                 }
             }
             if (_count == _values.Length)
@@ -553,31 +549,40 @@ internal static class CallExpansion
             context.CheckExecution(span);
         }
 
-        public void CheckDuplicateKeyword(string name, LythonSourceSpan span)
+        public CallArgumentValue PrepareKeyword(PyString key, object value, LythonSourceSpan span)
+        {
+            var argument = CallArgumentValue.Keyword(key, value);
+            return _bindsNativeKeywords
+                ? argument
+                : CallArgumentValue.Keyword(argument.GetKeywordName(Context, span), value, key);
+        }
+
+        public void CheckDuplicateKeyword(CallArgumentValue argument, LythonSourceSpan span)
         {
             var context = Context;
             if (CanDeferKeywordIndex) return;
-            if (EnsureKeywordIndex(context, span).Contains(name))
-                throw DuplicateKeyword(name, context, span);
+            if (EnsureKeywordIndex(context, span).TryReadNativeStringValue(argument.OriginalKeyword!, context, span, out _))
+                throw DuplicateKeyword(argument.GetKeywordName(context, span), context, span);
         }
 
-        private HashSet<string> EnsureKeywordIndex(LythonRuntime.ExecutionContext context, LythonSourceSpan? span)
+        private PyDict EnsureKeywordIndex(LythonRuntime.ExecutionContext context, LythonSourceSpan span)
         {
             if (_keywordNames is not null) return _keywordNames;
 
-            Grow(128L + 96L * _unindexedKeywords, span);
             context.CheckExecution(span);
-            var names = new HashSet<string>(_unindexedKeywords, StringComparer.Ordinal);
+            var names = new PyDict(_unindexedKeywords, _governor, span, keysOnly: true);
+            _keywordNames = names;
             if (_unindexedKeywords != 0)
             {
                 foreach (var value in _values.AsSpan(0, _count))
                 {
                     context.CheckExecution(span);
-                    if (value.IsKeyword) names.Add(value.KeywordName);
+                    if (value.OriginalKeyword is { } key)
+                        names.TryAddNativeString(key, PyNone.Instance, context, span);
                 }
             }
             _unindexedKeywords = 0;
-            return _keywordNames = names;
+            return names;
         }
 
         private LythonRuntimeException DuplicateKeyword(string name, LythonRuntime.ExecutionContext context,
@@ -662,7 +667,11 @@ internal static class CallExpansion
             _count = 0;
             _deferredStar = null;
             _deferredSpan = null;
-            _keywordNames = null;
+            if (_keywordNames is { } names)
+            {
+                _keywordNames = null;
+                _governor.RefundUnpublishedValue(names);
+            }
             _unindexedKeywords = 0;
             _context = null;
             _target = null;

@@ -109,8 +109,9 @@ internal static class LexicalScopePreparation
                     var enclosing = TypeParameterScope(scope, function.TypeParameters);
                     PushTypeParameters(function.TypeParameters, enclosing);
                     var facts = ScopeDirectiveFactsCollector.ForFunctionBindings(function);
+                    var parameters = function.PrepareParameterLayout(cancellationToken);
                     var functionScope = new Scope(enclosing, facts,
-                        Function: true, Positional: function.Parameters.Any(p => p.Kind is FunctionParameterKind.Positional or FunctionParameterKind.PositionalOnly));
+                        Function: true, Positional: parameters.PositionalCount != 0);
                     function.PreparedScopeFacts = facts with { RequiresClassCell =
                         !facts.IsGlobal("__class__") && !facts.LocalNames.Contains("__class__") &&
                         functionScope.HasEnclosingClassBinding() && ClassCellSyntaxFacts.ReferencesFromFunction(function.Body, postponed) };
@@ -139,8 +140,9 @@ internal static class LexicalScopePreparation
                 foreach (var parameter in lambda.Parameters)
                     if (parameter.DefaultValue is { } value) pending.Push((value, scope));
                 var facts = ScopeDirectiveFactsCollector.ForLambda(lambda);
+                var parameters = lambda.PrepareParameterLayout(cancellationToken);
                 var lambdaScope = new Scope(scope, facts, Function: true,
-                    Positional: lambda.Parameters.Any(p => p.Kind is FunctionParameterKind.Positional or FunctionParameterKind.PositionalOnly));
+                    Positional: parameters.PositionalCount != 0);
                 lambda.PreparedScopeFacts = facts with { RequiresClassCell = facts.RequiresClassCell && lambdaScope.HasEnclosingClassBinding() };
                 pending.Push((lambda.Body, lambdaScope));
             }
