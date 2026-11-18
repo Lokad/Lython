@@ -1,0 +1,13 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "ramTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 271663104,
+  "archiveSHA256": "b0314b7b8120e78fed134b64e5731cc3ea1dd526a62cacf9423115aadad6072d",
+  "source": "R582/B1008 0547e5489d8b961fb968169aa3cce40783987d68/62665014 closure CPU attribution",
+  "performanceComparison": false,
+  "failure": null
+}
