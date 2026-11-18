@@ -544,6 +544,8 @@ persistent and asynchronous execution. Observing an item still establishes its
 stable Python identity; custom iterators and wider bounds keep the general path.
 Function binding uses these cleared slots to distinguish omitted arguments from
 Python `None`; only the logical parameter count travels with completed arguments.
+Positional overflow is copied from the caller's operands into the admitted
+`*args` tuple after argument checks. There is no intermediate list to fund.
 Live defaults and genuinely suspending default protocols use the same slots.
 Async binding checks the live default dictionary at lookup, after storage admission
 can reenter; it does not save an earlier decision about whether lookup may suspend.

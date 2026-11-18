@@ -49,6 +49,74 @@ public sealed class BoundBoxCleanupTests
     }
 
     [Fact]
+    public void PositionalOverflowKeepsOnlyTheFinalTupleCharged()
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var owner = budget.CreateScope())
+        {
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+            var plan = FunctionBindingPlan.CreateDynamic("f", PythonCallableKind.Function,
+                [new("items", FunctionParameterKind.VariadicList, null, null),
+                    new("key", FunctionParameterKind.KeywordOnly, null, null)], new Dictionary<string, object>());
+            var alias = new object();
+            var slots = new Slot[2];
+            var before = budget.ReservedBytes;
+
+            var error = Assert.Throws<LythonRuntimeException>(() => LythonRuntime.BindFunctionArgumentsInto(slots,
+                [CallArgumentValue.Positional(alias), CallArgumentValue.Positional(alias)], Span, plan, context));
+            Assert.Equal("TypeError", error.ExceptionType);
+            Assert.Equal(before, budget.ReservedBytes);
+
+            // The receiver is the first spill and a keyword can sit between
+            // expanded positionals. All tuple items retain the original alias.
+            LythonRuntime.BindFunctionArgumentsInto(slots,
+                [CallArgumentValue.Positional(alias), CallArgumentValue.Keyword("key", PyNone.Instance),
+                    CallArgumentValue.Positional(alias)], Span, plan, context, receiver: alias);
+            var tuple = Assert.IsType<PyTuple>(slots[plan.VariadicListIndex].Object);
+            Assert.Equal(3, tuple.Count);
+            for (var i = 0; i < tuple.Count; i++) Assert.Same(alias, tuple[i]);
+            Assert.Equal(before + tuple.CommittedStorageBytes, budget.ReservedBytes);
+            context.State.CloseResources();
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void InterruptedPositionalOverflowReturnsUnpublishedStorage(bool cancelOnAdmission)
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var owner = budget.CreateScope())
+        using (var cancellation = new CancellationTokenSource())
+        {
+            var hook = new AdmissionHookMemoryBudget(owner);
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
+                new LythonRunOptions { MemoryBudget = hook, CancellationToken = cancellation.Token });
+            var plan = FunctionBindingPlan.CreateDynamic("f", PythonCallableKind.Function,
+                [new("items", FunctionParameterKind.VariadicList, null, null)], new Dictionary<string, object>());
+            var slots = new Slot[1];
+            var before = budget.ReservedBytes;
+            if (cancelOnAdmission) hook.AfterGrowth = _ => cancellation.Cancel();
+            else hook.RefuseGrowth = _ => true;
+
+            var error = Assert.Throws<LythonRuntimeException>(() => LythonRuntime.BindFunctionArgumentsInto(slots,
+                [CallArgumentValue.Positional(PyNone.Instance)], Span, plan, context));
+            if (cancelOnAdmission) Assert.Equal("execution canceled", error.Message);
+            else
+            {
+                Assert.Equal(LythonFailureReason.SharedMemoryAllowance, error.Attribution?.Reason);
+                Assert.Same(error, context.MemoryGovernor.AdmissionFailure);
+            }
+            Assert.Same(Span, error.Span);
+            Assert.Null(slots[0].Object);
+            Assert.Equal(before, budget.ReservedBytes);
+            context.State.CloseResources();
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Fact]
     public void FrameEntryFailuresReturnRentedBox()
     {
         var host = new MockLythonHost();

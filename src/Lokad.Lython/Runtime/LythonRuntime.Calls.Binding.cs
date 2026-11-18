@@ -127,9 +127,8 @@ internal sealed partial class LythonRuntime
         ExecutableCallSite? callSite = null,
         ReadOnlySpan<ExecutableSlot> operands = default)
     {
-        // The overflow list is scratch: most calls never spill positionals,
-        // so materialize it only on the first spill under existing ownership.
-        PyList? extraPositional = null;
+        var firstExtraPositional = 0;
+        var extraPositionalCount = 0;
         // Keyword overflow likewise materializes only for **kwargs functions
         // receiving unknown names; every other call skips the dictionary.
         Dictionary<string, object>? extraKeywords = null;
@@ -154,7 +153,7 @@ internal sealed partial class LythonRuntime
             }
         }
         else BindSuppliedFunctionArguments(values, arguments, span, plan, context,
-            receiver, callSite, operands, out extraPositional, out extraKeywords);
+            receiver, callSite, operands, out firstExtraPositional, out extraPositionalCount, out extraKeywords);
 
         for (var i = 0; i < plan.PositionalCount; i++)
         {
@@ -197,17 +196,9 @@ internal sealed partial class LythonRuntime
 
         if (plan.VariadicListIndex >= 0)
         {
-            var variadicIndex = plan.VariadicListIndex;
-            var overflow = extraPositional;
-            if (overflow is null || overflow.Count == 0)
-            {
-                values[variadicIndex].Object = CreateTuple(0, _ => PyNone.Instance, context, span);
-            }
-            else
-            {
-                var overflowTuple = CreateTuple(overflow.Count, i => overflow[i], context, span);
-                values[variadicIndex].Object = overflowTuple;
-            }
+            values[plan.VariadicListIndex].Object = extraPositionalCount == 0 ? PyTuple.Empty
+                : CreateVariadicPositionalTuple(arguments, operands, callSite, receiver,
+                    firstExtraPositional, extraPositionalCount, context, span);
         }
 
         if (plan.VariadicDictionaryIndex >= 0)
@@ -232,10 +223,11 @@ internal sealed partial class LythonRuntime
     private static void BindSuppliedFunctionArguments(Span<ExecutableSlot> values,
         ReadOnlySpan<CallArgumentValue> arguments, LythonSourceSpan span, FunctionBindingPlan plan,
         ExecutionContext context, object? receiver, ExecutableCallSite? callSite,
-        ReadOnlySpan<ExecutableSlot> operands, out PyList? extraPositional,
+        ReadOnlySpan<ExecutableSlot> operands, out int firstExtraPositional, out int extraPositionalCount,
         out Dictionary<string, object>? extraKeywords)
     {
-        extraPositional = null;
+        firstExtraPositional = 0;
+        extraPositionalCount = 0;
         extraKeywords = null;
         var positionalIndex = 0;
         // A bound receiver follows exactly the same positional/overflow rules,
@@ -243,6 +235,17 @@ internal sealed partial class LythonRuntime
         var argumentCount = callSite?.ArgumentCount ?? (arguments.IsEmpty ? operands.Length : arguments.Length);
         for (var argumentIndex = receiver is null ? 0 : -1; argumentIndex < argumentCount; argumentIndex++)
         {
+            if ((argumentIndex & 1023) == 0) context.CheckExecution(span);
+            // The supplied operands stay owned through binding. Remember only
+            // the extent of the spill until argument and default checks pass.
+            if (plan.VariadicListIndex >= 0 && positionalIndex == plan.PositionalCount &&
+                IsSuppliedPositional(argumentIndex, arguments, callSite))
+            {
+                if (extraPositionalCount == 0) firstExtraPositional = argumentIndex;
+                extraPositionalCount++;
+                continue;
+            }
+
             var argument = argumentIndex < 0 ? CallArgumentValue.Positional(receiver!)
                 : callSite is null ? arguments.IsEmpty
                     ? CallArgumentValue.Positional(operands[argumentIndex].Object.RequireNotNull()) : arguments[argumentIndex]
@@ -250,20 +253,7 @@ internal sealed partial class LythonRuntime
             if (argument.IsPositional)
             {
                 if (positionalIndex >= plan.PositionalCount)
-                {
-                    if (plan.VariadicListIndex < 0)
-                    {
-                        throw CallErrors.TooManyPositional(plan.CallableKind, plan.CallableName, span);
-                    }
-
-                    if (extraPositional is null)
-                    {
-                        extraPositional = new PyList([], context.MemoryGovernor, span);
-                    }
-
-                    extraPositional.Add(argument.Value);
-                    continue;
-                }
+                    throw CallErrors.TooManyPositional(plan.CallableKind, plan.CallableName, span);
 
                 // Expanded calls can supply a keyword before its starred
                 // positional value. Neither order may overwrite a prior binding.
@@ -300,6 +290,30 @@ internal sealed partial class LythonRuntime
             values[keywordIndex].Object = argument.Value;
         }
 
+    }
+
+    private static bool IsSuppliedPositional(int index, ReadOnlySpan<CallArgumentValue> arguments, ExecutableCallSite? callSite)
+        => index < 0 || (callSite is null
+            ? arguments.IsEmpty || arguments[index].IsPositional
+            : callSite.Arguments[index].Kind == CallArgumentKind.Positional);
+
+    private static PyTuple CreateVariadicPositionalTuple(ReadOnlySpan<CallArgumentValue> arguments,
+        ReadOnlySpan<ExecutableSlot> operands, ExecutableCallSite? callSite, object? receiver,
+        int first, int count, ExecutionContext context, LythonSourceSpan span)
+    {
+        var governor = context.MemoryGovernor;
+        using var storage = governor.ReserveTemporary(PyTuple.EstimateApproximateBytes(count), span);
+        context.CheckExecution(span);
+        var items = new object[count];
+        var written = 0;
+        for (var index = first; written < items.Length; index++)
+        {
+            if ((index & 1023) == 0) context.CheckExecution(span);
+            if (!IsSuppliedPositional(index, arguments, callSite)) continue;
+            items[written++] = index < 0 ? receiver.RequireNotNull()
+                : (callSite is not null || arguments.IsEmpty ? operands[index].Object.RequireNotNull() : arguments[index].Value);
+        }
+        return PyTuple.FromReservedOwnedArray(items, governor, span, storage);
     }
 
     // Constructed function objects retain a wrapper plus binding plan and
