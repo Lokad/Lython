@@ -84,7 +84,7 @@ internal sealed partial class LythonRuntime
                         return true;
                     case ExecutableOpCode.Return:
                         if (Code.NativePrefixEnd != Code.Instructions.Length) return false;
-                        result = ReadReturnSlot(instruction.InputStart);
+                        result = ReadSlotForTransfer(instruction.InputStart);
                         if (instruction.InputStart >= Code.FirstTemporarySlot) Values[instruction.InputStart].Object = null!;
                         Trim(Code.FirstTemporarySlot);
                         return true;
@@ -109,7 +109,7 @@ internal sealed partial class LythonRuntime
                         writeCell.Value = stored;
                         break;
                     case ExecutableOpCode.StoreLocal:
-                        Values[instruction.LocalSlot].Object = Take(instruction);
+                        StoreLocal(instruction);
                         break;
                     case ExecutableOpCode.LoadCallMember:
                     {
@@ -452,7 +452,23 @@ internal sealed partial class LythonRuntime
             return cell is not null;
         }
 
-        private ExecutableSlot ReadReturnSlot(int source)
+        private void StoreLocal(in ExecutableInstruction instruction)
+        {
+            var source = instruction.InputStart;
+            if (source < Code.FirstTemporarySlot)
+            {
+                // The input can still be read through its original binding.
+                Values[instruction.LocalSlot].Object = Take(instruction);
+                return;
+            }
+
+            var value = ReadSlotForTransfer(source);
+            Values[source] = default;
+            Trim(instruction.LiveExtent);
+            Values[instruction.LocalSlot] = value;
+        }
+
+        private ExecutableSlot ReadSlotForTransfer(int source)
         {
             if (source < 0) return ExecutableSlot.FromObject(Read(source, 0));
             var value = Values[source];

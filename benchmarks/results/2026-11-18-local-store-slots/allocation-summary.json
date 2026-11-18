@@ -1,0 +1,32 @@
+{
+  "boundary": "Complete warm runs including mediated I/O/reset, all output/file checks and result cleanup; compilation/startup/final cache teardown excluded. Process-wide CLR allocation counters, no forced GC. Compilation and first invocation clocks are local diagnostic observations, not a controlled CPU/source timing comparison.",
+  "rows": [
+    {
+      "case": "scripts.csv-invoice.large",
+      "referenceBytes": 3803982,
+      "candidateBytes": 3672910,
+      "changePercent": -3.44565247679931,
+      "referencePeak": 9432323,
+      "candidatePeak": 9432323,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "case": "scripts.csv-validated-records.large",
+      "referenceBytes": 2482400,
+      "candidateBytes": 2482574,
+      "changePercent": 0.007009345794384281,
+      "referencePeak": 4975988,
+      "candidatePeak": 4975988,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "case": "calls.positional.large",
+      "referenceBytes": 1060696,
+      "candidateBytes": 1060696,
+      "changePercent": 0.0,
+      "referencePeak": 1383,
+      "candidatePeak": 1383,
+      "sharedBudgetBaselineRestored": true
+    }
+  ]
+}

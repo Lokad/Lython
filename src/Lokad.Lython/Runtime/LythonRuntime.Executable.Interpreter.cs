@@ -309,7 +309,9 @@ internal sealed partial class LythonRuntime
 
         private static void StoreExecutableLocal(ref ExecutableWorkState execution, ExecutionContext scope, ExecutionContext? invocation, in ExecutableInstruction instruction)
             => StoreLocalValue(execution.Code, execution.Locals, invocation, instruction.LocalSlot,
-                TakeOperand(ref execution, instruction, scope), instruction.Span);
+                instruction.InputStart >= execution.Code.FirstTemporarySlot
+                    ? execution.Stack.TakeSlotValue(instruction.InputStart, instruction.LiveExtent)
+                    : ExecutableSlot.FromObject(TakeOperand(ref execution, instruction, scope)), instruction.Span);
 
         private static object ReadOperand(ref ExecutableWorkState execution, int source, ExecutionContext scope, int input)
             => ReadExecutableOperand(execution.Code, execution.Stack.Values, source, execution.InstructionIndex, input, scope);

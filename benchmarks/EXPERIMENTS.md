@@ -9448,3 +9448,10 @@ measures c14c7c92b / 12643cec against stock CPython 3.13.16. Invoice
 compile-to-result is 1.13×, while field validation is 0.67×. The unchanged
 text control again moves across collections. Decoding the frozen catalog
 corrected the invoice's nominal 1,024 label to its actual 4,096 records.
+
+[R552/B979 local-store slot transfer](results/2026-11-18-local-store-slots/README.md)
+keeps consumed temporaries in their existing scalar slots until the local's
+visibility requires publication. Invoice allocation fell 3.45% and
+compile-to-result elapsed fell 3.08–4.67% with supporting CPU. Invoice warm
+is mixed. Validated-record warm rose 0.67–2.30% with mixed CPU. Keep both
+outcomes with the positional control and unchanged memory balances.
