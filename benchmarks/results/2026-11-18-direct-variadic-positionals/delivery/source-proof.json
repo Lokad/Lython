@@ -1,0 +1,19 @@
+{
+  "qualified": "2f98d36dbbb98d3bfc0e516dcff5a11bbcc1b882",
+  "start": "6c7ee7bd5759f25039898f4ba74d71d269ea4662",
+  "reconstructedTree": "dac74bab3d58fd108d33691c6810a88b12792409",
+  "productionCoreFiles": 589,
+  "identicalSourceAndTests": true,
+  "measurements": [
+    {
+      "archive": "benchmarks/results/2026-11-18-lexical-binding-order/checks-and-procedures.tar.xz",
+      "archiveSHA256": "c3a7d74b67bd78de7a039bc36e2149b92aa5f1cfd5795d3dded94bef9038a3ea",
+      "patchSHA256": "93414e96872cd9f90eec6f721a1ee2ec2abc3d149aa787f678a39f15f4457b12"
+    },
+    {
+      "archive": "benchmarks/results/2026-11-18-direct-variadic-positionals/evidence.tar.xz",
+      "archiveSHA256": "bf41bef38fa5218254fce1477b5be8b4413c707b1f8bc58e07d92cb659d6b916",
+      "patchSHA256": "046f91a5f09c14d1b3167aaad122223f6dfbc7e7e1af21376113fd611fb41a1d"
+    }
+  ]
+}
