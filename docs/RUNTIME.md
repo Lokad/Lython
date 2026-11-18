@@ -835,11 +835,12 @@ cell slots use the shared namespace lookup. Unused lowered method bodies are
 discarded. Other real lowered consumers remain.
 
 Executable function bindings retain declaration inputs and prepared code without
-the original function body tree. Defaults use one evaluator across both APIs and
-lowered definitions; a continuation handles actual suspension. Empty construction
-maps are immutable shared metadata. Python default tuples/dictionaries remain
-distinct per function and reflect later mutation. Private default storage stays
-admitted through awaited evaluation and construction.
+the original function body tree. A definition evaluates its defaults in the
+defining scope and fills the final Python tuple and keyword dictionary directly.
+Those containers remain distinct per function and reflect later mutation.
+Private default storage stays admitted through suspension and is released if
+default evaluation or annotation setup fails. Once a decorator can observe the
+function, the defaults stay funded even if decoration raises.
 
 Plain builtin functions, constructor parameter layouts and the immutable `object`
 and `type` definitions are shared fixed metadata. Every execution keeps its mutable
