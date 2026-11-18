@@ -1,0 +1,159 @@
+{
+  "rows": [
+    {
+      "file": "micro-0-warm.json",
+      "lane": "warm",
+      "state": "Completed",
+      "reference": {
+        "engine": "baseline",
+        "medianMicroseconds": 26584.7,
+        "iqrFraction": 0.2803003231181844
+      },
+      "candidate": {
+        "engine": "candidate",
+        "medianMicroseconds": 24259.5,
+        "iqrFraction": 0.19699911374925286
+      },
+      "CPython": {
+        "engine": "CPython",
+        "medianMicroseconds": 17691.633333333335,
+        "iqrFraction": 0.03793318498951486
+      },
+      "elapsedDeltaPercent": -8.746384198429924
+    },
+    {
+      "file": "micro-1-warm.json",
+      "lane": "warm",
+      "state": "Completed",
+      "reference": {
+        "engine": "baseline",
+        "medianMicroseconds": 4563,
+        "iqrFraction": 0.4121904448827526
+      },
+      "candidate": {
+        "engine": "candidate",
+        "medianMicroseconds": 4151.666666666667,
+        "iqrFraction": 0.03344841429144904
+      },
+      "CPython": {
+        "engine": "CPython",
+        "medianMicroseconds": 3214.1428571428573,
+        "iqrFraction": 0.33406151384505967
+      },
+      "elapsedDeltaPercent": -9.014537219665419
+    },
+    {
+      "file": "micro-2-compile-run.json",
+      "lane": "compile-run",
+      "state": "Interrupted",
+      "error": "OperationCanceledException: The operation was canceled.",
+      "log": "Microbenchmark failed: OperationCanceledException: The operation was canceled."
+    },
+    {
+      "file": "micro-3-compile.json",
+      "lane": "compile",
+      "state": "Completed",
+      "reference": {
+        "engine": "baseline",
+        "medianMicroseconds": 255.42647058823528,
+        "iqrFraction": 0.08469111635672752
+      },
+      "candidate": {
+        "engine": "candidate",
+        "medianMicroseconds": 176.31515151515148,
+        "iqrFraction": 0.10159150281864435
+      },
+      "CPython": {
+        "engine": "CPython",
+        "medianMicroseconds": 175.88651685393256,
+        "iqrFraction": 0.06991867841240842
+      },
+      "elapsedDeltaPercent": -30.97224766520639
+    },
+    {
+      "file": "micro-4-compile.json",
+      "lane": "compile",
+      "state": "Completed",
+      "reference": {
+        "engine": "candidate",
+        "medianMicroseconds": 500.2666666666667,
+        "iqrFraction": 0.2315431769722814
+      },
+      "candidate": {
+        "engine": "baseline",
+        "medianMicroseconds": 184.49999999999997,
+        "iqrFraction": 0.10026226068712313
+      },
+      "CPython": {
+        "engine": "CPython",
+        "medianMicroseconds": 165.77955801104974,
+        "iqrFraction": 0.4606729964907136
+      },
+      "elapsedDeltaPercent": -63.119669509594885
+    },
+    {
+      "file": "micro-5-compile-run.json",
+      "lane": "compile-run",
+      "state": "Completed",
+      "reference": {
+        "engine": "candidate",
+        "medianMicroseconds": 23703.3,
+        "iqrFraction": 0.04899739698691743
+      },
+      "candidate": {
+        "engine": "baseline",
+        "medianMicroseconds": 22617.2,
+        "iqrFraction": 0.09096395663477351
+      },
+      "CPython": {
+        "engine": "CPython",
+        "medianMicroseconds": 16772.05,
+        "iqrFraction": 0.1973133874511463
+      },
+      "elapsedDeltaPercent": -4.5820624132504655
+    },
+    {
+      "file": "micro-6-warm.json",
+      "lane": "warm",
+      "state": "Completed",
+      "reference": {
+        "engine": "candidate",
+        "medianMicroseconds": 2358.05,
+        "iqrFraction": 0.268041920230699
+      },
+      "candidate": {
+        "engine": "baseline",
+        "medianMicroseconds": 2664.5499999999997,
+        "iqrFraction": 0.4373533992606632
+      },
+      "CPython": {
+        "engine": "CPython",
+        "medianMicroseconds": 1268.5310344827585,
+        "iqrFraction": 0.35181882927306635
+      },
+      "elapsedDeltaPercent": 12.998028031636299
+    },
+    {
+      "file": "micro-7-warm.json",
+      "lane": "warm",
+      "state": "Completed",
+      "reference": {
+        "engine": "candidate",
+        "medianMicroseconds": 18974.3,
+        "iqrFraction": 0.19907453766410352
+      },
+      "candidate": {
+        "engine": "baseline",
+        "medianMicroseconds": 20367.1,
+        "iqrFraction": 0.2706988231019636
+      },
+      "CPython": {
+        "engine": "CPython",
+        "medianMicroseconds": 11748.800000000001,
+        "iqrFraction": 0.09595448045757865
+      },
+      "elapsedDeltaPercent": 7.340455247360911
+    }
+  ],
+  "sourcePatchSHA256": "6b6eae3471f91bca701d7519bac2da83679513ac03d4133515cddc5df710dfbf"
+}

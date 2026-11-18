@@ -249,8 +249,8 @@ internal sealed partial class LythonRuntime
             CallableInvocation.Arguments arguments = default;
             PrepareExecutableCallArguments(call, ref _execution.Stack, start, arguments[..call.ArgumentCount], this);
             return asynchronous
-                ? InvokeBorrowedCallableTargetAsync(target, call, arguments[..call.ArgumentCount], this)
-                : new(InvokeBorrowedCallableTarget(target, call, arguments[..call.ArgumentCount], this));
+                ? InvokeBorrowedCallableTargetAsync(target, call.TargetSpan, call.CallSpan, arguments[..call.ArgumentCount], this)
+                : new(InvokeBorrowedCallableTarget(target, call.TargetSpan, call.CallSpan, arguments[..call.ArgumentCount], this));
         }
 
         private async ValueTask<object> InvokeOwnedExecutableTargetAsync(ExecutableCallSite call, int start, object target, bool asynchronous)

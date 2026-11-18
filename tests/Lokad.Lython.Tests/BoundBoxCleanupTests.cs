@@ -203,6 +203,39 @@ public sealed class BoundBoxCleanupTests
         context.State.CloseResources();
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ExpandedArgumentsAdmitOldAndNewBuffersDuringGrowth(bool retained)
+    {
+        const long limit = 1024 * 1024;
+        var budget = new LythonMemoryBudget(limit);
+        using var owner = budget.CreateScope();
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var baseline = budget.ReservedBytes;
+        using (var accumulator = new CallExpansion.CallArgumentAccumulator(4, context, PyNone.Instance, retained))
+        {
+            for (var i = 0; i < 4; i++) accumulator.Add(CallArgumentValue.Positional(PyNone.Instance), Span);
+            var before = budget.ReservedBytes;
+            // Capacity for four additional slots is available only once the old
+            // buffer is gone. It cannot cover simultaneous backing arrays.
+            Assert.True(owner.TryReserve(limit - before - 4 * 32, out var occupied));
+            using (occupied)
+            {
+                var beforeGrowth = budget.ReservedBytes;
+
+                var error = Assert.Throws<LythonRuntimeException>(() =>
+                    accumulator.Add(CallArgumentValue.Positional(PyNone.Instance), Span));
+                Assert.Same(error, context.MemoryGovernor.AdmissionFailure);
+                Assert.Equal(LythonFailureReason.SharedMemoryAllowance, error.Attribution?.Reason);
+                Assert.Equal(beforeGrowth, budget.ReservedBytes);
+            }
+            Assert.Equal(before, budget.ReservedBytes);
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+        context.State.CloseResources();
+    }
+
     [Fact]
     public void FrameEntryFailuresReturnRentedBox()
     {

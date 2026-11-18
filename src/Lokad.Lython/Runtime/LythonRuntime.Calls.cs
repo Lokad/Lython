@@ -410,32 +410,32 @@ internal sealed partial class LythonRuntime
         finally { context.LeaveInterpreterFrame(); }
     }
 
-    private static object InvokeBorrowedCallableTarget(object target, ExecutableCallSite call,
+    internal static object InvokeBorrowedCallableTarget(object target, LythonSourceSpan targetSpan, LythonSourceSpan callSpan,
         ReadOnlySpan<CallArgumentValue> arguments, ExecutionContext context)
     {
-        if (target is not ICallable callable) throw RuntimeErrors.NotCallable(call.TargetSpan);
-        context.EnterInterpreterFrame(call.CallSpan);
-        try { return RuntimeValue(callable.InvokeBorrowed(arguments, call.CallSpan, context)); }
-        catch (Exception error) when (TryTranslateCallableException(error, call.CallSpan, out var translated)) { throw translated; }
+        if (target is not ICallable callable) throw RuntimeErrors.NotCallable(targetSpan);
+        context.EnterInterpreterFrame(callSpan);
+        try { return RuntimeValue(callable.InvokeBorrowed(arguments, callSpan, context)); }
+        catch (Exception error) when (TryTranslateCallableException(error, callSpan, out var translated)) { throw translated; }
         finally { context.LeaveInterpreterFrame(); }
     }
 
-    private static ValueTask<object> InvokeBorrowedCallableTargetAsync(object target, ExecutableCallSite call,
+    internal static ValueTask<object> InvokeBorrowedCallableTargetAsync(object target, LythonSourceSpan targetSpan, LythonSourceSpan callSpan,
         ReadOnlySpan<CallArgumentValue> arguments, ExecutionContext context)
     {
         try
         {
-            if (target is not ICallable callable) throw RuntimeErrors.NotCallable(call.TargetSpan);
-            context.EnterInterpreterFrame(call.CallSpan);
+            if (target is not ICallable callable) throw RuntimeErrors.NotCallable(targetSpan);
+            context.EnterInterpreterFrame(callSpan);
             var pendingFrame = false;
             try
             {
-                var pending = callable.InvokeBorrowedAsync(arguments, call.CallSpan, context);
+                var pending = callable.InvokeBorrowedAsync(arguments, callSpan, context);
                 if (pending.IsCompletedSuccessfully) return new(RuntimeValue(pending.Result));
                 pendingFrame = true;
-                return AwaitBorrowedCall(pending, call.CallSpan, context);
+                return AwaitBorrowedCall(pending, callSpan, context);
             }
-            catch (Exception error) when (TryTranslateCallableException(error, call.CallSpan, out var translated)) { throw translated; }
+            catch (Exception error) when (TryTranslateCallableException(error, callSpan, out var translated)) { throw translated; }
             finally { if (!pendingFrame) context.LeaveInterpreterFrame(); }
         }
         catch (Exception error) { return ValueTask.FromException<object>(error); }

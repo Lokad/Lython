@@ -513,8 +513,19 @@ internal static class CallExpansion
             {
                 var previousCapacity = _values.Length;
                 var newCapacity = checked(previousCapacity * 2);
+                // The old buffer stays live until every reference is copied.
+                using var overlap = _governor.ReserveTemporary(32L + 32L * previousCapacity, span);
                 Grow(EstimateArgumentBytes(newCapacity) - EstimateArgumentBytes(previousCapacity), span);
-                Array.Resize(ref _values, newCapacity);
+                context.CheckExecution(span);
+                var expanded = new CallArgumentValue[newCapacity];
+                for (var offset = 0; offset < previousCapacity;)
+                {
+                    context.CheckExecution(span);
+                    var length = Math.Min(1024, previousCapacity - offset);
+                    _values.AsSpan(offset, length).CopyTo(expanded.AsSpan(offset));
+                    offset += length;
+                }
+                _values = expanded;
             }
 
             _values[_count++] = value;
@@ -583,6 +594,16 @@ internal static class CallExpansion
             try
             {
                 await FinishDeferredStarAsync(asynchronous).ConfigureAwait(false);
+                if (_target is PyFunctionBase function)
+                {
+                    // Binding consumes the live prefix into owned slots before
+                    // suspension. Keep this accumulator alive through cleanup.
+                    return asynchronous
+                        ? await LythonRuntime.InvokeBorrowedCallableTargetAsync(function, targetSpan, callSpan,
+                            _values.AsSpan(0, _count), Context).ConfigureAwait(false)
+                        : LythonRuntime.InvokeBorrowedCallableTarget(function, targetSpan, callSpan,
+                            _values.AsSpan(0, _count), Context);
+                }
                 return asynchronous
                     ? await LythonRuntime.InvokeCallableTargetAsync(_target!, targetSpan, callSpan, Context,
                         () => new ValueTask<CallArgumentValue[]>(ToArray())).ConfigureAwait(false)
