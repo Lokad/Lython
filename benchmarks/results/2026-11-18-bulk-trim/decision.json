@@ -1,0 +1,10 @@
+{
+  "retain": true,
+  "reference": "Qualified62786960/5ae019db",
+  "candidate": "PrivateR506 on9bf3a63d/65fcf7d0",
+  "reason": "Reuse an existing managed bounded bulk whitespace kernel for all default trim variants, with no new policy/owner/cache. Stable named text improvement and semantic passes; modest magnitude does not complete the broader performance objective.",
+  "allocation": "Unchanged text/call allocation and all peaks; tiny other CLR diagnostic variations retained.",
+  "debt": "Floating elapsed+0.52..+5.25%,CPU0..+5.42%,reference process spread4.04%; cannot establish universal neutrality or recovery. Preserve original condition; no automatic veto or unchanged broad replay.",
+  "fullQualification": "Focused both targets only; batch full platform/stress/package at next coherent retained boundary.",
+  "publicationHeld": true
+}

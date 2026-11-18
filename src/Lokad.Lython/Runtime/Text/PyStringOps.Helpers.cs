@@ -21,9 +21,8 @@ internal static partial class PyStringOps
     private static PyString SliceTrimmed(PyString value, bool trimStart, bool trimEnd)
         => SliceTrimmed(value, trimStart, trimEnd, null);
 
-    // MG06: trimming compares runes directly over the UTF-8 span and slices
-    // once. Slicing a governed rune string per boundary character committed
-    // durable scratch beside the result on padding-heavy inputs.
+    // Trim directly over UTF-8 and slice once. Default ASCII whitespace uses
+    // the same bounded bulk scanner as split; custom sets keep scalar matching.
     private static PyString SliceTrimmed(PyString value, bool trimStart, bool trimEnd, PyString? chars)
     {
         if (chars is not null && chars.Utf8Span.IsEmpty) return value;
@@ -52,6 +51,13 @@ internal static partial class PyStringOps
             while (startByte < endByte)
             {
                 PyStructuralGuard.NoteWork();
+                if (trimRunes is null && source[startByte] < 0x80)
+                {
+                    if (!IsAsciiWhitespace(source[startByte])) break;
+                    startByte += AsciiWhitespaceRunLength(
+                        source.Slice(startByte, Math.Min(64, endByte - startByte)), whitespace: true);
+                    continue;
+                }
                 Rune.DecodeFromUtf8(source[startByte..], out var rune, out var runeLength);
                 if (!ShouldTrim(rune, trimRunes))
                 {
@@ -67,6 +73,13 @@ internal static partial class PyStringOps
             while (endByte > startByte)
             {
                 PyStructuralGuard.NoteWork();
+                if (trimRunes is null && source[endByte - 1] < 0x80)
+                {
+                    if (!IsAsciiWhitespace(source[endByte - 1])) break;
+                    var chunkStart = Math.Max(startByte, endByte - 64);
+                    endByte -= AsciiWhitespaceRunLength(source[chunkStart..endByte], whitespace: true, reverse: true);
+                    continue;
+                }
                 var runeStart = GetPreviousRuneStart(source, endByte);
                 Rune.DecodeFromUtf8(source[runeStart..endByte], out var rune, out var _);
                 if (!ShouldTrim(rune, trimRunes))

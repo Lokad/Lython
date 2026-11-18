@@ -11,6 +11,33 @@ public sealed class StringStripStorageTests
     private static readonly LythonSourceSpan Span = new(2, 3, 4, 5);
 
     [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(63)]
+    [InlineData(64)]
+    [InlineData(65)]
+    [InlineData(129)]
+    public void DefaultTrimPreservesScalarAndChunkBoundaries(int paddingLength)
+    {
+        var padding = new string(' ', paddingLength);
+        // Include Python's C0 whitespace and multibyte scalars beside both
+        // chunk edges; U+200B is deliberately not Python whitespace.
+        var left = padding + "\u001c\u2003" + padding;
+        var right = padding + "\u3000\u001f" + padding;
+        const string word = "é😀\u200B";
+        var source = PyString.FromString(left + word + right);
+        Assert.Equal(word, PyStringOps.Strip(source).AsString());
+        Assert.Equal(word + right, PyStringOps.LStrip(source).AsString());
+        Assert.Equal(left + word, PyStringOps.RStrip(source).AsString());
+        Assert.Same(source, PyStringOps.Strip(source, PyString.Empty));
+        Assert.Equal(string.Empty, PyStringOps.Strip(PyString.FromString(left + right)).AsString());
+        var unchanged = PyString.FromString(word);
+        Assert.Same(unchanged, PyStringOps.Strip(unchanged));
+        // Explicit character sets do not acquire default whitespace semantics.
+        Assert.Equal("\tword\t", PyStringOps.Strip(PyString.FromString(padding + "\tword\t" + padding), PyString.FromString(" ")).AsString());
+    }
+
+    [Theory]
     [InlineData("strip")]
     [InlineData("lstrip")]
     [InlineData("rstrip")]
@@ -132,7 +159,9 @@ public sealed class StringStripStorageTests
     {
         using var cancellation = new CancellationTokenSource();
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { CancellationToken = cancellation.Token });
-        var padding = new string(phase.StartsWith("whitespace", StringComparison.Ordinal) ? ' ' : 'x', 256);
+        // Exercise an actual scan beyond a bounded bulk chunk, independently
+        // of whether the scanner handles bytes or decoded scalars per step.
+        var padding = new string(phase.StartsWith("whitespace", StringComparison.Ordinal) ? ' ' : 'x', 8192);
         var source = PyString.FromString(phase == "set" ? "word" : phase.EndsWith("right", StringComparison.Ordinal) ? "word" + padding : padding + "word");
         var chars = PyString.FromString(phase == "set" ? padding : "x");
         using var ambient = PyStructuralGuard.PushAmbient(context, Span);

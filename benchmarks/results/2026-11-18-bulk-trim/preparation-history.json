@@ -1,0 +1,6 @@
+{
+  "absentReplica": "Initial read-only proof named already absent B925 profile replicas. No staging/mutation; failure retained.",
+  "timeout": "Original proof performed one full filesystem walk per subject and exceeded60s. No mutation. Consolidated into one walk under the same idle lease, preserving UID/path/hash/link/all-alias checks; passed6.7s.",
+  "incompletePreparation": "Preparation attempted before asynchronous proof completion; missing retirement-candidates.json failed locally. Partial files preserved; corrected dependency order before staging.",
+  "guard": "254MiB staging/252MiB final unchanged; only exact committed B928/B929 raw/archive/metadata/cache replicas retired, current5ae image and both catalogs preserved."
+}

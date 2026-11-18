@@ -62,7 +62,8 @@ This is useful workload latency, not equivalent containment or cold startup.
 
 Compilation includes compiled-owner disposal. Compile-to-result includes compilation,
 one execution and compiled-owner disposal. Separately warmed medians are not
-additive. Compilation is a small part of these scripts' elapsed costs. Floating
+additive. Warm-only numbers do not describe single-use scripts; use the separate
+compile-to-result observations. Floating
 compile-to-result's8.33%Lython control movement limits precision; the original4.78%
 condition remains in the earlier checkpoint. No broad unchanged retiming is needed
 to establish the remaining gap. Process startup was not measured.
@@ -76,11 +77,12 @@ measurements with their named revisions, original adverse controls and unresolve
 phase inversions. Those results are historical, not this checkpoint or today's HEAD.
 The new ratios do not establish a source-change gain across collections.
 
-The same production source is [fully qualified at242ca284](../benchmarks/results/2026-11-17-returned-loan-cleanup/delivery/README.md)
-on Windows/Ubuntu actual11/10, originalstress and installed Release consumers.
-The earlier Windows10 fixture failure and correction remain linked there. This
-does not imply binary equality with measured8d26963c or turn diagnostic ratios
-into universal performance claims.
+The older0d production source is [fully qualified at242ca284](../benchmarks/results/2026-11-17-returned-loan-cleanup/delivery/README.md);
+the latest execution rows use [qualified62786960](../benchmarks/results/2026-11-17-generator-field-facts/delivery/README.md).
+Both passed Windows/Ubuntu actual11/10, originalstress and installed Release
+consumers. Qualification does not imply rebuilt-binary equality or turn these
+diagnostic ratios into universal performance claims. The earlier Windows10 fixture
+failure and correction remain linked in the older receipt.
 
 ## Improvements within Lython
 
