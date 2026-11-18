@@ -1,0 +1,8 @@
+{
+  "stage": "before warmup/trace",
+  "cause": "worker correctly rejects a fixture directory with an unsupported supervisor prefix",
+  "runtimeBug": false,
+  "traceCreated": false,
+  "workerJoined": true,
+  "ownedEmptyFixtureRemoved": true
+}

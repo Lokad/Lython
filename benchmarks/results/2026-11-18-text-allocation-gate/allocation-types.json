@@ -1,0 +1,67 @@
+﻿{
+  "Boundary": "One local warmed complete-worker EventPipe GC allocation sample. Tick weight is approximate attribution to the sampled type, not exact allocated bytes, object counts or removable CPU. Includes reset, I/O, validation and protocol.",
+  "Samples": 5914,
+  "TotalSampleWeight": 691726440,
+  "Rows": [
+    {
+      "Type": "Lokad.Lython.Runtime.Text.PyString",
+      "Samples": 2296,
+      "SampleWeightBytes": 243347656,
+      "SampleWeightPercent": 35.17975342969397
+    },
+    {
+      "Type": "System.Byte[]",
+      "Samples": 1828,
+      "SampleWeightBytes": 215545160,
+      "SampleWeightPercent": 31.160462797981236
+    },
+    {
+      "Type": "System.ValueTuple\u00603[System.Int32,System.Int32,System.Int32][]",
+      "Samples": 909,
+      "SampleWeightBytes": 117823000,
+      "SampleWeightPercent": 17.033178607427526
+    },
+    {
+      "Type": "System.Object[]",
+      "Samples": 873,
+      "SampleWeightBytes": 114157952,
+      "SampleWeightPercent": 16.50333793804383
+    },
+    {
+      "Type": "CasedWhitespaceIteration",
+      "Samples": 2,
+      "SampleWeightBytes": 213168,
+      "SampleWeightPercent": 0.030816806713359114
+    },
+    {
+      "Type": "TemporaryMemoryReservation",
+      "Samples": 2,
+      "SampleWeightBytes": 213104,
+      "SampleWeightPercent": 0.030807554500880435
+    },
+    {
+      "Type": "Lokad.Lython.LythonExecutionResult",
+      "Samples": 1,
+      "SampleWeightBytes": 106600,
+      "SampleWeightPercent": 0.015410716409799227
+    },
+    {
+      "Type": "System.Collections.Generic.Dictionary\u00602[System.String,System.Byte[]]",
+      "Samples": 1,
+      "SampleWeightBytes": 106600,
+      "SampleWeightPercent": 0.015410716409799227
+    },
+    {
+      "Type": "Lokad.Lython.Runtime.CallArgumentValue[]",
+      "Samples": 1,
+      "SampleWeightBytes": 106600,
+      "SampleWeightPercent": 0.015410716409799227
+    },
+    {
+      "Type": "System.String",
+      "Samples": 1,
+      "SampleWeightBytes": 106600,
+      "SampleWeightPercent": 0.015410716409799227
+    }
+  ]
+}

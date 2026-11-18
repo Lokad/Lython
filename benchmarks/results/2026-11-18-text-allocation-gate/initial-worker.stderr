@@ -1,0 +1,1 @@
+Comparison worker error: InvalidDataException: File jobs require a supervisor-owned temporary directory.
