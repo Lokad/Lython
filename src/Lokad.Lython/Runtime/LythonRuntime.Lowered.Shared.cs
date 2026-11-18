@@ -382,7 +382,7 @@ internal sealed partial class LythonRuntime
     private static PyFunctionBase CreateLoweredFunction(
         LoweredFunctionDefinitionStatement functionDefinition,
         ExecutionContext context,
-        IReadOnlyDictionary<string, object> defaults)
+        FunctionDefaults defaults)
     {
         var code = functionDefinition.PreparedCode.RequireNotNull();
         var cells = code.ClosureNames.Count > 0
@@ -745,7 +745,7 @@ internal sealed partial class LythonRuntime
     }
 
     private static PyFunctionBase CreateLambdaFunction(LoweredLambdaExpression lambda,
-        IReadOnlyDictionary<string, object> defaults, ExecutionContext context)
+        FunctionDefaults defaults, ExecutionContext context)
     {
         var code = lambda.Code;
         var cells = CaptureExecutableClosures(code,

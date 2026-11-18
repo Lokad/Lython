@@ -3,6 +3,15 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
+internal readonly record struct FunctionDefaults(PyTuple? Positional, PyDict? Keywords)
+{
+    internal void RefundUnpublished(MemoryGovernor governor)
+    {
+        if (Positional is not null) governor.RefundUnpublishedValue(Positional);
+        if (Keywords is not null) governor.RefundUnpublishedValue(Keywords);
+    }
+}
+
 internal sealed class FunctionBindingPlan
 {
     private readonly FunctionParameterLayout _layout;
@@ -11,44 +20,45 @@ internal sealed class FunctionBindingPlan
         string callableName,
         PythonCallableKind callableKind,
         FunctionParameterLayout layout,
-        IReadOnlyDictionary<string, object> defaultValues,
-        LythonRuntime.ExecutionContext? context = null)
+        FunctionDefaults defaults)
     {
         _layout = layout;
         CallableName = callableName;
         CallableKind = callableKind;
+        PositionalDefaults = defaults.Positional;
+        KeywordDefaults = defaults.Keywords;
+    }
+
+    private static FunctionDefaults CreateGeneratedDefaults(FunctionParameterLayout layout,
+        IReadOnlyDictionary<string, object> defaultValues, LythonRuntime.ExecutionContext? context)
+    {
         var governor = context?.MemoryGovernor;
+        PyTuple? positional = null;
+        PyDict? keywords = null;
         try
         {
-            var firstDefault = PositionalCount;
-            while (firstDefault > 0 && defaultValues.ContainsKey(NameAt(firstDefault - 1))) firstDefault--;
-            var count = PositionalCount - firstDefault;
+            var firstDefault = layout.PositionalCount;
+            while (firstDefault > 0 && defaultValues.ContainsKey(layout.NameAt(firstDefault - 1))) firstDefault--;
+            var count = layout.PositionalCount - firstDefault;
             if (count != 0)
-                PositionalDefaults = context is null
-                    ? new PyTuple(Enumerable.Range(firstDefault, count).Select(i => defaultValues[NameAt(i)]))
-                    : new PyTuple(Enumerable.Range(firstDefault, count).Select(i => defaultValues[NameAt(i)]), context.MemoryGovernor);
-
-            for (var i = 0; i < KeywordOnlyCount; i++)
             {
-                if (!defaultValues.TryGetValue(NameAt(PositionalCount + i), out var value)) continue;
-                var dictionary = KeywordDefaultStorage;
-                if (dictionary is null)
-                {
-                    dictionary = context is null ? new PyDict() : new PyDict(context.MemoryGovernor);
-                    KeywordDefaults = dictionary;
-                }
-                dictionary.SetItem(KeywordDefaultName(i), value);
+                var items = Enumerable.Range(firstDefault, count).Select(i => defaultValues[layout.NameAt(i)]);
+                positional = governor is null ? new PyTuple(items) : new PyTuple(items, governor);
             }
+
+            for (var i = 0; i < layout.KeywordOnlyCount; i++)
+            {
+                if (!defaultValues.TryGetValue(layout.NameAt(layout.PositionalCount + i), out var value)) continue;
+                keywords ??= governor is null ? new PyDict() : new PyDict(governor);
+                keywords.SetItem(layout.KeywordDefaultName(i), value);
+            }
+            return new(positional, keywords);
         }
         catch
         {
             // These values have not escaped the constructor. Refunding only
             // their new storage preserves funding for the supplied default values.
-            if (governor is not null)
-            {
-                if (PositionalDefaults is { } positionalDefaults) governor.RefundUnpublishedValue(positionalDefaults);
-                if (KeywordDefaults is { } keywordDefaults) governor.RefundUnpublishedValue(keywordDefaults);
-            }
+            if (governor is not null) new FunctionDefaults(positional, keywords).RefundUnpublished(governor);
             throw;
         }
     }
@@ -61,8 +71,8 @@ internal sealed class FunctionBindingPlan
     {
         var bytes = FunctionParameterLayout.EstimateBytes(parameters);
         using var storage = context?.MemoryGovernor.ReserveTemporary(bytes, null);
-        var result = new FunctionBindingPlan(callableName, callableKind,
-            FunctionParameterLayout.Create(parameters, context?.State.CancellationToken ?? default), defaultValues, context);
+        var layout = FunctionParameterLayout.Create(parameters, context?.State.CancellationToken ?? default);
+        var result = new FunctionBindingPlan(callableName, callableKind, layout, CreateGeneratedDefaults(layout, defaultValues, context));
         storage?.Commit(bytes);
         return result;
     }

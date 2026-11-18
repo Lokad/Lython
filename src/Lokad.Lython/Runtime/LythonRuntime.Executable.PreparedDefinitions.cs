@@ -49,28 +49,22 @@ internal sealed partial class LythonRuntime
                     break;
                 case ExecutableCreateLambda lambda:
                     {
-                        var parameters = lambda.Expression.Parameters;
-                        var count = parameters.Count(parameter => parameter.DefaultValue is not null);
-                        using var storage = ReserveDefaultArgumentsWorkingStorage(count, MemoryGovernor, span);
+                        var layout = lambda.Expression.ParameterLayout;
+                        using var defaults = layout.Defaults.Length == 0 ? null : new PendingFunctionDefaults(layout, this, span);
                         var first = instruction.InputStart;
                         PyFunctionBase function;
                         try
                         {
-                            IReadOnlyDictionary<string, object> defaults = System.Collections.Frozen.FrozenDictionary<string, object>.Empty;
-                            if (count != 0)
+                            if (defaults is not null)
                             {
-                                var values = new Dictionary<string, object>(count, StringComparer.Ordinal);
-                                var slot = first;
-                                foreach (var parameter in parameters)
-                                {
-                                    if (parameter.DefaultValue is not null)
-                                        values.Add(parameter.Name, RuntimeValue(_execution.Stack[slot++]));
-                                }
-                                defaults = values;
+                                for (var i = 0; i < layout.Defaults.Length; i++)
+                                    defaults.Add(layout.Defaults[i], RuntimeValue(_execution.Stack[first + i]), span);
+                                defaults.Complete();
                             }
-                            function = CreateLambdaFunction(lambda.Expression, defaults, this);
+                            function = CreateLambdaFunction(lambda.Expression, defaults?.Values ?? default, this);
                         }
                         finally { _execution.Stack.RetireTo(instruction.ResultSlot); }
+                        defaults?.Publish();
                         PublishInstructionResult(instruction, function);
                     }
                     break;

@@ -7,16 +7,21 @@ namespace Lokad.Lython.Frontend;
 // annotations remain with their own consumers, never this immutable signature.
 internal sealed class FunctionParameterLayout
 {
+    internal readonly record struct DefaultSlot(int ParameterIndex, int KeywordIndex);
+
     private readonly string[] _names;
     private readonly record struct NativeKeyword(PyString Key, int Slot);
     private readonly NativeKeyword[] _nativeKeywords;
     private readonly PyString[] _keywordDefaultNames;
 
-    private FunctionParameterLayout(string[] names, Dictionary<string, int> indices,
+    private FunctionParameterLayout(string[] names, Dictionary<string, int> indices, DefaultSlot[] defaults,
+        int positionalDefaultCount,
         int positionalCount, int keywordOnlyCount, int positionalOnlyCount,
         int variadicListIndex, int variadicDictionaryIndex, CancellationToken cancellationToken)
     {
         _names = names;
+        Defaults = defaults;
+        PositionalDefaultCount = positionalDefaultCount;
         LayoutParameterIndex = indices;
         PositionalCount = positionalCount;
         KeywordOnlyCount = keywordOnlyCount;
@@ -42,30 +47,42 @@ internal sealed class FunctionParameterLayout
 
     public static FunctionParameterLayout Create(IReadOnlyList<LoweredFunctionParameter> parameters,
         CancellationToken cancellationToken = default)
-        => Create(parameters, static parameter => (parameter.Name, parameter.Kind), cancellationToken);
+        => Create(parameters, static parameter => (parameter.Name, parameter.Kind, parameter.DefaultValue is not null),
+            cancellationToken);
 
     internal static FunctionParameterLayout FromSyntax(IReadOnlyList<FunctionParameterSyntax> parameters,
         CancellationToken cancellationToken)
-        => Create(parameters, static parameter => (parameter.Name, parameter.Kind), cancellationToken);
+        => Create(parameters, static parameter => (parameter.Name, parameter.Kind, parameter.DefaultValue is not null),
+            cancellationToken);
 
     private static FunctionParameterLayout Create<T>(IReadOnlyList<T> parameters,
-        Func<T, (string Name, FunctionParameterKind Kind)> shape, CancellationToken cancellationToken)
+        Func<T, (string Name, FunctionParameterKind Kind, bool HasDefault)> shape, CancellationToken cancellationToken)
     {
         var positionalCount = 0;
         var keywordOnlyCount = 0;
         var positionalOnlyCount = 0;
         var hasVariadicList = false;
         var hasVariadicDictionary = false;
+        var positionalDefaults = 0;
+        var keywordDefaults = 0;
         foreach (var item in parameters)
         {
-            switch (shape(item).Kind)
+            var parameter = shape(item);
+            switch (parameter.Kind)
             {
                 case FunctionParameterKind.PositionalOnly:
                     positionalCount++;
                     positionalOnlyCount++;
+                    if (parameter.HasDefault) positionalDefaults++;
                     break;
-                case FunctionParameterKind.Positional: positionalCount++; break;
-                case FunctionParameterKind.KeywordOnly: keywordOnlyCount++; break;
+                case FunctionParameterKind.Positional:
+                    positionalCount++;
+                    if (parameter.HasDefault) positionalDefaults++;
+                    break;
+                case FunctionParameterKind.KeywordOnly:
+                    keywordOnlyCount++;
+                    if (parameter.HasDefault) keywordDefaults++;
+                    break;
                 case FunctionParameterKind.VariadicList: hasVariadicList = true; break;
                 case FunctionParameterKind.VariadicDictionary: hasVariadicDictionary = true; break;
                 default: throw new InvalidOperationException("Unknown function parameter kind.");
@@ -78,11 +95,14 @@ internal sealed class FunctionParameterLayout
         var layoutCount = namedCount + (hasVariadicList ? 1 : 0) + (hasVariadicDictionary ? 1 : 0);
         var names = layoutCount == 0 ? [] : new string[layoutCount];
         var indices = new Dictionary<string, int>(parameters.Count, StringComparer.Ordinal);
+        var defaults = positionalDefaults + keywordDefaults == 0 ? [] : new DefaultSlot[positionalDefaults + keywordDefaults];
         var positionalIndex = 0;
         var keywordOnlyIndex = positionalCount;
-        foreach (var item in parameters)
+        var defaultIndex = 0;
+        for (var i = 0; i < parameters.Count; i++)
         {
-            var parameter = shape(item);
+            PythonTokenization.CheckCancellation(cancellationToken, i);
+            var parameter = shape(parameters[i]);
             var slot = parameter.Kind switch
             {
                 FunctionParameterKind.PositionalOnly or FunctionParameterKind.Positional => positionalIndex++,
@@ -93,8 +113,11 @@ internal sealed class FunctionParameterLayout
             };
             names[slot] = parameter.Name;
             indices[parameter.Name] = slot;
+            if (parameter.HasDefault)
+                defaults[defaultIndex++] = new(i, parameter.Kind == FunctionParameterKind.KeywordOnly
+                    ? slot - positionalCount : -1);
         }
-        return new(names, indices, positionalCount, keywordOnlyCount, positionalOnlyCount,
+        return new(names, indices, defaults, positionalDefaults, positionalCount, keywordOnlyCount, positionalOnlyCount,
             variadicListIndex, variadicDictionaryIndex, cancellationToken);
     }
 
@@ -133,6 +156,8 @@ internal sealed class FunctionParameterLayout
     }
 
     internal PyString KeywordDefaultName(int index) => _keywordDefaultNames[index];
+    internal DefaultSlot[] Defaults { get; }
+    internal int PositionalDefaultCount { get; }
 
     public int PositionalCount { get; }
     public int KeywordOnlyCount { get; }

@@ -33,10 +33,10 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         ExecutableCodeObject codeObject,
         LythonRuntime.ExecutionContext closure,
         IReadOnlyList<LythonRuntime.ExecutableCell> closureCells,
-        IReadOnlyDictionary<string, object> defaultValues,
+        FunctionDefaults defaults,
         ScopeDirectiveFacts scopeFacts,
         PythonCallableKind callableKind = PythonCallableKind.Function)
-        : base(name, parameterLayout, closure, defaultValues, scopeFacts, callableKind,
+        : base(name, parameterLayout, closure, defaults, scopeFacts, callableKind,
             storageCapacity: codeObject.ValueStorageCapacity)
     {
         _codeObject = codeObject;

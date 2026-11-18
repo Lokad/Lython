@@ -16,7 +16,8 @@ internal sealed partial class ExecutableScript
         private int CompileSuspendingFunction(LoweredFunctionDefinitionStatement definition, int block)
         {
             var binding = _functions[InternFunction(definition)];
-            var inputs = definition.Decorators.Concat(definition.Parameters.Where(p => p.DefaultValue is not null).Select(p => p.DefaultValue!)).ToArray();
+            var inputs = definition.Decorators.Concat(binding.ParameterLayout.Defaults
+                .Select(slot => definition.Parameters[slot.ParameterIndex].DefaultValue.RequireNotNull())).ToArray();
             foreach (var input in inputs) block = CompileExpression(input, block);
             var annotations = definition.TypeParameters is not null ? [] :
                 definition.Parameters.Where(p => p.Annotation is not null).Select(p => p.Annotation!)
@@ -40,8 +41,8 @@ internal sealed partial class ExecutableScript
 
         private int CompileLambda(LoweredLambdaExpression lambda, int block)
         {
-            foreach (var parameter in lambda.Parameters)
-                if (parameter.DefaultValue is not null) block = CompileExpression(parameter.DefaultValue, block);
+            foreach (var slot in lambda.ParameterLayout.Defaults)
+                block = CompileExpression(lambda.Parameters[slot.ParameterIndex].DefaultValue.RequireNotNull(), block);
             if (lambda.PreparedCode is null)
                 lambda.CompleteCompilation(CompileFunctionCode("<lambda>", lambda.ParameterLayout,
                     lambda.FunctionBody, lambda.ScopeFacts, generator: lambda.IsGenerator));

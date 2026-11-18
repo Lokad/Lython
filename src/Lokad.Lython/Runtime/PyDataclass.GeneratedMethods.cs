@@ -61,8 +61,10 @@ internal static partial class PyDataclass
             {
                 new("self", FunctionParameterKind.Positional, null, null)
             };
-            using var defaultStorage = LythonRuntime.ReserveDefaultArgumentsWorkingStorage(fields.Count(static field => field.HasDefault || field.HasDefaultFactory), context.MemoryGovernor, null);
-            var defaults = new Dictionary<string, object>(StringComparer.Ordinal);
+            var defaultCount = fields.Count(static field => field.HasDefault || field.HasDefaultFactory);
+            using var defaultStorage = defaultCount == 0 ? null
+                : context.MemoryGovernor.ReserveTemporary(64L + 64L * defaultCount, null);
+            var defaults = new Dictionary<string, object>(defaultCount, StringComparer.Ordinal);
             foreach (var field in fields)
             {
                 if (field.Kind == DataclassFieldKind.ClassVar || !field.Init)

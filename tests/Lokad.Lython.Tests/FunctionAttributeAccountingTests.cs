@@ -84,6 +84,6 @@ public sealed class FunctionAttributeAccountingTests
             LoweredScript.Lower(LythonFrontend.Compile("def f():pass").Script!).Statements));
         return new PyExecutableFunction("f", definition.ParameterLayout,
             ExecutableScript.CompileClassFunction(definition), context, [],
-            new Dictionary<string, object>(), definition.ScopeFacts);
+            default, definition.ScopeFacts);
     }
 }

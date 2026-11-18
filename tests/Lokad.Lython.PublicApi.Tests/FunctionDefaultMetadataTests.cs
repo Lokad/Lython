@@ -218,6 +218,58 @@ finally:
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task FailedDefinitionRefundsDefaultStorageOnlyWhilePrivate(bool asynchronous)
+    {
+        const int keywordCount = 512;
+        var parameters = string.Join(", ", Enumerable.Range(0, keywordCount).Select(i => "key" + i + "=shared"));
+        var afterPrivateFailure = await Run(escapesThroughDecorator: false);
+        var afterEscapingFailure = await Run(escapesThroughDecorator: true);
+        // Both definition operations have unwound. Their difference should
+        // cover the still-live keyword table, apart from minor scratch.
+        Assert.True(afterEscapingFailure - afterPrivateFailure >= keywordCount * IntPtr.Size,
+            $"Private failure held {afterPrivateFailure} bytes, escaping failure held {afterEscapingFailure} bytes.");
+
+        async Task<long> Run(bool escapesThroughDecorator)
+        {
+            var declaration = escapesThroughDecorator
+                ? $"    @capture\n    def target(first=shared, /, *, {parameters}): return first"
+                : $"    def target(first=shared, /, *, {parameters}) -> fail(): return first";
+            var source = """
+                import time
+                shared = []
+                escaped = []
+                def fail():
+                    time.time()
+                    raise ValueError('stop')
+                def capture(function):
+                    escaped.append(function)
+                    fail()
+                try:
+                """ + "\n" + declaration + "\n" + """
+                except ValueError:
+                    pass
+                time.time()
+                """ + (escapesThroughDecorator
+                    ? $"\nreturn len(escaped[0].__kwdefaults__) == {keywordCount} and escaped[0]() is shared"
+                    : "\nreturn not escaped");
+            using var script = new LythonEngine().Compile(source);
+            Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
+            var budget = new AdmissionGateBudget();
+            var host = new AdmissionGateHost(budget, 64 * 1024);
+            var options = new LythonRunOptions { MemoryBudget = budget };
+            using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal(true, result.ReturnValue);
+            }
+            Assert.Equal(0, budget.Root.ReservedBytes);
+            return host.AtSecondGate;
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task EscapedDefaultsRemainFundedAfterMetadataIsCleared(bool callFirst)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);

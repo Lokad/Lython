@@ -54,13 +54,13 @@ internal sealed partial class LythonRuntime
             using var decoratorStorage = context.MemoryGovernor.ReserveTemporary(EstimateObjectArrayBytes(functionDefinition.Decorators.Count), functionDefinition.Span);
             var decorators = EvaluateDecorators(functionDefinition.Decorators, context);
             var syntax = functionDefinition.Syntax;
-            var defaultCount = functionDefinition.Parameters.Count(static p => p.DefaultValue is not null);
-            using var defaultStorage = ReserveDefaultArgumentsWorkingStorage(defaultCount, context.MemoryGovernor, functionDefinition.Span);
-            var defaults = EvaluateFunctionDefaults(functionDefinition.Parameters, defaultCount, context, false).GetAwaiter().GetResult();
+            using var defaults = EvaluateFunctionDefaults(functionDefinition.Parameters, functionDefinition.ParameterLayout,
+                context, functionDefinition.Span, false).GetAwaiter().GetResult();
             var typeScope = CreateTypeScope(functionDefinition.TypeParameters, context, functionDefinition.Span);
-            var function = CreateLoweredFunction(functionDefinition, typeScope.Closure, defaults);
+            var function = CreateLoweredFunction(functionDefinition, typeScope.Closure, defaults?.Values ?? default);
             AttachTypeMetadataAsync(function, functionDefinition.Parameters, functionDefinition.ReturnAnnotation,
                 functionDefinition.TypeParameters is not null, functionDefinition.Span, typeScope, context, false).GetAwaiter().GetResult();
+            defaults?.Publish();
             StoreName(syntax.Name, ApplyDecorators(function, decorators, functionDefinition.Span, context), context, functionDefinition.Span);
         }
         finally

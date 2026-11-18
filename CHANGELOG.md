@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Build function and lambda defaults directly in their Python containers.
+  Refund defaults on private definition failure and retain funding when
+  a decorator can expose the function.
+
 - Read method-format arguments from their existing invocation packet
   through callback completion. Allocate indices for named or interleaved
   arguments and preserve lookup order.

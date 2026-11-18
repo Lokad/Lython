@@ -257,7 +257,7 @@ public sealed class BoundBoxCleanupTests
             ExecutableScript.CompileClassFunction(definition),
             closure,
             [],
-            new Dictionary<string, object>(),
+            default,
             ScopeDirectiveFacts.Empty);
         var box = fun.BindCallOperands([Slot.FromObject(1), Slot.FromObject(2)], Span, closure, receiver: null, callSite: null);
         LythonRuntime.ReturnBoundArguments(box);

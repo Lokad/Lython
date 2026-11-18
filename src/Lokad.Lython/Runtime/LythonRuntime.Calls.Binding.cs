@@ -351,13 +351,6 @@ internal sealed partial class LythonRuntime
         context?.MemoryGovernor.Commit(FunctionValueBytes);
     }
 
-    // The definition-time name map is scratch; only the Python default
-    // containers survive with the function. Cover replacement overlap while
-    // constructing them, then return the scratch allowance deterministically.
-    internal static MemoryGovernor.TemporaryMemoryReservation? ReserveDefaultArgumentsWorkingStorage(
-        int defaultCount, MemoryGovernor? governor, LythonSourceSpan? span)
-        => defaultCount <= 0 ? null : governor?.ReserveTemporary(64L + 64L * defaultCount, span);
-
     private const long ClosureContextBaseBytes = 512;
     private const long ClosureCellSlotBytes = 32;
 
@@ -415,46 +408,6 @@ internal sealed partial class LythonRuntime
             owned = checked(owned + frame.LocalCapacity);
 
         return owned;
-    }
-
-    // The caller admits the private map capacity and holds it through completion.
-    // Functions copy values into their own live default containers; this map never
-    // escapes construction. No-default definitions share immutable empty metadata.
-    private static ValueTask<IReadOnlyDictionary<string, object>> EvaluateFunctionDefaults(
-        IReadOnlyList<LoweredFunctionParameter> parameters, int defaultCount,
-        ExecutionContext context, bool asynchronous)
-    {
-        context.CheckExecution(null);
-        if (defaultCount == 0)
-            return new(System.Collections.Frozen.FrozenDictionary<string, object>.Empty);
-        var defaults = new Dictionary<string, object>(defaultCount, StringComparer.Ordinal);
-        for (var i = 0; i < parameters.Count; i++)
-        {
-            var parameter = parameters[i];
-            context.CheckExecution(parameter.DefaultValue?.Span);
-            if (parameter.DefaultValue is not { } expression) continue;
-            var value = asynchronous ? EvaluateLoweredExpressionAsync(expression, context)
-                : new ValueTask<object>(EvaluateLoweredExpression(expression, context));
-            if (!value.IsCompletedSuccessfully)
-                return CompleteFunctionDefaultsAsync(parameters, defaults, i, value, context);
-            defaults.Add(parameter.Name, RuntimeValue(value.Result));
-        }
-        return new(defaults);
-    }
-
-    private static async ValueTask<IReadOnlyDictionary<string, object>> CompleteFunctionDefaultsAsync(
-        IReadOnlyList<LoweredFunctionParameter> parameters, Dictionary<string, object> defaults,
-        int index, ValueTask<object> pending, ExecutionContext context)
-    {
-        defaults.Add(parameters[index].Name, RuntimeValue(await pending.ConfigureAwait(false)));
-        for (var i = index + 1; i < parameters.Count; i++)
-        {
-            var parameter = parameters[i];
-            context.CheckExecution(parameter.DefaultValue?.Span);
-            if (parameter.DefaultValue is { } expression)
-                defaults.Add(parameter.Name, RuntimeValue(await EvaluateLoweredExpressionAsync(expression, context).ConfigureAwait(false)));
-        }
-        return defaults;
     }
 
     internal sealed class ExceptionTypeValue : ICallable, IPyDynamicAttributes, IPyContextualDynamicAttributes, IPyRenderableValue, IPythonExceptionType, IPyHashableValue, IEquatable<ExceptionTypeValue>

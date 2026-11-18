@@ -26,7 +26,7 @@ public sealed class NativeFunctionRefundTests
             var code = ExecutableScript.CompileClassFunction(definition);
             Assert.True(code.CanRunNativeInstructions);
             var function = new PyExecutableFunction("f", definition.ParameterLayout, code, context, [],
-                new Dictionary<string, object>(), definition.ScopeFacts);
+                default, definition.ScopeFacts);
             var retained = PyString.FromString(new string('A', 4096), governor, span);
             var bound = function.BindCallOperands([Slot.FromObject(retained), Slot.FromObject(PyNone.Instance)], span, context, receiver: null, callSite: null);
             LythonRuntime.ReturnBoundArguments(bound, code.ValueStorageCapacity);

@@ -32,7 +32,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         string name,
         FunctionParameterLayout parameterLayout,
         LythonRuntime.ExecutionContext closure,
-        IReadOnlyDictionary<string, object> defaultValues,
+        FunctionDefaults defaults,
         ScopeDirectiveFacts scopeFacts,
         PythonCallableKind callableKind = PythonCallableKind.Function,
         int? storageCapacity = null)
@@ -43,7 +43,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         _memoryGovernor = closure.MemoryGovernor;
         _nameValue = callableKind == PythonCallableKind.Lambda
             ? LambdaName : PyString.FromString(name, closure.MemoryGovernor, null);
-        _bindingPlan = new FunctionBindingPlan(name, callableKind, parameterLayout, defaultValues, closure);
+        _bindingPlan = new FunctionBindingPlan(name, callableKind, parameterLayout, defaults);
         SupportsPositionalBinding = _bindingPlan.KeywordOnlyCount == 0 &&
             _bindingPlan.VariadicListIndex < 0 && _bindingPlan.VariadicDictionaryIndex < 0;
         _scopeFacts = scopeFacts;

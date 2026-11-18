@@ -343,9 +343,9 @@ internal sealed partial class LythonRuntime
                 ? await EvaluateDecoratorsAsync(functionBinding.Decorators, context).ConfigureAwait(false)
                 : EvaluateDecorators(functionBinding.Decorators, context);
             var closureCells = CaptureExecutableClosures(functionBinding.CodeObject, context, functionBinding.Span);
-            using var defaultStorage = ReserveDefaultArgumentsWorkingStorage(functionBinding.DefaultCount, context.MemoryGovernor, functionBinding.Span);
-            var defaults = await EvaluateFunctionDefaults(functionBinding.Parameters, functionBinding.DefaultCount,
-                context, asynchronous).ConfigureAwait(false);
+            using var pendingDefaults = await EvaluateFunctionDefaults(functionBinding.Parameters, functionBinding.ParameterLayout,
+                context, functionBinding.Span, asynchronous).ConfigureAwait(false);
+            var defaults = pendingDefaults?.Values ?? default;
             var typeScope = CreateTypeScope(functionBinding.TypeParameters, context, functionBinding.Span);
             var closure = typeScope.Closure.FunctionClosureContext;
             var function = functionBinding.IsGenerator
@@ -375,6 +375,7 @@ internal sealed partial class LythonRuntime
                         functionBinding.TypeParameters is not null, functionBinding.Span, typeScope, context, asynchronous).ConfigureAwait(false);
                 }
             }
+            pendingDefaults?.Publish();
             var decorated = asynchronous
                 ? await ApplyDecoratorsAsync(function, decorators, functionBinding.Span, context).ConfigureAwait(false)
                 : ApplyDecorators(function, decorators, functionBinding.Span, context);

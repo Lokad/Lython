@@ -28,7 +28,7 @@ public sealed class ManagedStackGuardTests
             LoweredScript.Lower(LythonFrontend.Compile("def value():return 1").Script!).Statements));
         var function = new PyExecutableFunction("value", definition.ParameterLayout,
             ExecutableScript.CompileClassFunction(definition), context, [],
-            new Dictionary<string, object>(), definition.ScopeFacts);
+            default, definition.ScopeFacts);
         Action enter = entry switch
         {
             "function" => () => context.EnterFunctionCall(span),
