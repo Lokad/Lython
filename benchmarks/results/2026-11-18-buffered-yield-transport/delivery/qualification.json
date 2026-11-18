@@ -1,0 +1,91 @@
+{
+  "run": 44225923745,
+  "head": "2e5852298b2cb4b6efe13197b95d6f7303b1cfe7",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "log": "0_tests (ubuntu-latest).txt",
+      "summaries": [
+        {
+          "framework": "net11.0",
+          "passed": 4837
+        },
+        {
+          "framework": "net11.0",
+          "passed": 18048
+        },
+        {
+          "framework": "net10.0",
+          "passed": 4837
+        },
+        {
+          "framework": "net10.0",
+          "passed": 18048
+        },
+        {
+          "framework": "net11.0",
+          "passed": 14
+        },
+        {
+          "framework": "net11.0",
+          "passed": 406
+        },
+        {
+          "framework": "net10.0",
+          "passed": 14
+        },
+        {
+          "framework": "net10.0",
+          "passed": 406
+        }
+      ]
+    },
+    {
+      "log": "1_tests (windows-latest).txt",
+      "summaries": [
+        {
+          "framework": "net11.0",
+          "passed": 4837
+        },
+        {
+          "framework": "net11.0",
+          "passed": 18048
+        },
+        {
+          "framework": "net10.0",
+          "passed": 4837
+        },
+        {
+          "framework": "net10.0",
+          "passed": 18048
+        },
+        {
+          "framework": "net11.0",
+          "passed": 14
+        },
+        {
+          "framework": "net11.0",
+          "passed": 406
+        },
+        {
+          "framework": "net10.0",
+          "passed": 14
+        },
+        {
+          "framework": "net10.0",
+          "passed": 406
+        }
+      ]
+    }
+  ],
+  "summaries": 16,
+  "sourceInputsVerified": 2388,
+  "production": 586,
+  "normalAdapterPin": "0.4.0",
+  "allMeaningfulStepsPassed": true,
+  "logsSHA256": "ca1f7d8c0eb875d99a129e4df1637ac3944e55c0ae098116258aab4413030bd2",
+  "committedProductionMatchesQualifiedInputs": true,
+  "binaryEqualityInferred": false,
+  "publicationHeld": true,
+  "all586ProductionInputsMatchMeasured1bce52ad": true
+}

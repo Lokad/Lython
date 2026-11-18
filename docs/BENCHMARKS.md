@@ -34,8 +34,8 @@ measured2026-11-18 on the same machine/toolchains; report CPython IQR5.34%limits
 precision. [Sources and controls](../benchmarks/results/2026-11-18-agent-cpython-checkpoint/README.md).
 
 Text/floating rows use committed retained **2e585229 / frozen1bce52ad**, measured
-**2026-11-18**, six jobs226.36seconds. Full platform/package qualification is
-independently pending. Textwarm controls are small; floating fresh CPython control
+**2026-11-18**, six jobs226.36seconds. [Full platform/package qualification](../benchmarks/results/2026-11-18-buffered-yield-transport/delivery/README.md)
+passed for these production inputs; no rebuilt-binary equality is inferred. Textwarm controls are small; floating fresh CPython control
 4.91%limits precision. Compilation/warm/fresh are separately observed; gaps remain
 in execution. [Sources, controls and raw data](../benchmarks/results/2026-11-18-affected-cpython-checkpoint/README.md).
 
@@ -79,7 +79,8 @@ phase inversions. Those results are historical, not this checkpoint or today's H
 The new ratios do not establish a source-change gain across collections.
 
 The older0d and627production inputs passed Windows/Ubuntu actual11/10, original
-stress and installed Release consumers; the new2e5full delivery remains pending.
+stress and installed Release consumers; the new2e5production inputs are also
+[fully qualified](../benchmarks/results/2026-11-18-buffered-yield-transport/delivery/README.md).
 Qualification does not imply rebuilt-binary equality or universal performance.
 Original adverse controls and failed conditions remain linked in the evidence.
 
@@ -90,7 +91,7 @@ for the CPython ratios above.
 
 | Change | Established outcome | Limits / evidence |
 | --- | --- | --- |
-| Buffered yield transport | Complete text normalization warm elapsed8–11% lower/fresh8–11% lower, supporting CPU; allocation/peaks flat | Separate1bce52ad versusabab8760 pair. Positional-call CPU remains uncertain/possibly adverse. [Evidence](../benchmarks/results/2026-11-18-buffered-yield-transport/README.md). Full delivery pending. |
+| Buffered yield transport | Complete text normalization warm elapsed8–11% lower/fresh8–11% lower, supporting CPU; allocation/peaks flat | Separate1bce52ad versusabab8760 pair. Positional-call CPU remains uncertain/possibly adverse. [Evidence](../benchmarks/results/2026-11-18-buffered-yield-transport/README.md); [full qualification](../benchmarks/results/2026-11-18-buffered-yield-transport/delivery/README.md). |
 | Direct global operand transport | Floating warm elapsed7–9% lower with supporting CPU; allocation/peaks flat | Separateabab8760 versus65fcf7d0 pair. Fresh CPU/text/call controls uncertain; original adverse source retained. [Evidence](../benchmarks/results/2026-11-18-direct-global-operands/refined/README.md); [full qualification](../benchmarks/results/2026-11-18-direct-global-operands/refined/delivery/README.md). |
 | Generator field facts | Floating report warm9–10% lower/fresh12–14% lower elapsed with supporting CPU; allocation/peaks flat | Separate5ae019db versuscf847936 pair; text/call controls remain uncertain. [Evidence](../benchmarks/results/2026-11-17-generator-field-facts/README.md), [full qualification](../benchmarks/results/2026-11-17-generator-field-facts/delivery/README.md). |
 | Reuse constant record keys | JSON record-transform allocation14.67% lower; warm elapsed12–14% lower/fresh9–12% lower with supporting CPU | Separate R499/cf847936 versus4b975a44/5d9633a8 pair; do not add independent medians. Text/JSON controls broadly flat; floating uncertain. [Evidence](../benchmarks/results/2026-11-17-constant-record-keys/README.md), [full qualification](../benchmarks/results/2026-11-17-constant-record-keys/delivery/README.md). |
