@@ -1,0 +1,19 @@
+{
+  "qualified": "98da93f7dfe67a65920d0cb91435f7d23d313b0f",
+  "start": "045eb7f4428a302caf39016d99f4a833f45cb85b",
+  "reconstructedTree": "98223158ba27f42311644326a0d96006acabcc22",
+  "productionCoreFiles": 589,
+  "identicalSourceAndTests": true,
+  "measurements": [
+    {
+      "archive": "benchmarks/results/2026-11-18-borrowed-expanded-call/checks-and-procedures.tar.xz",
+      "archiveSHA256": "34ec3ef5b20fd63cd250a2353c3e95071760b18b16c657d3264dbbb713abcb37",
+      "patchSHA256": "6b6eae3471f91bca701d7519bac2da83679513ac03d4133515cddc5df710dfbf"
+    },
+    {
+      "archive": "benchmarks/results/2026-11-18-fixed-list-unpack/checks-and-procedures.tar.xz",
+      "archiveSHA256": "7b749e51b063fe059a68d7594fb96e82bb8e040da82096228b5e417140b162b2",
+      "patchSHA256": "a26457c6a31bd8102611936f8d34ebe1a3fd20361d4917ba6f40d65bfae1191d"
+    }
+  ]
+}
