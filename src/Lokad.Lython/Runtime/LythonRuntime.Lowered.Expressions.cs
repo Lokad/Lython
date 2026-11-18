@@ -501,12 +501,13 @@ internal sealed partial class LythonRuntime
             context.CheckExecution(call.Span);
             PreloadImplicitSuperArguments(context, call.Span);
         }
+        using var storage = context.MemoryGovernor.ReserveTemporary(0, call.Span);
         return InvokeCallableTarget(
             target,
             call.Call.Target.Span,
             call.Span,
             context,
-            () => CallExpansion.ExpandLoweredArguments(call.Arguments, context, EvaluateLoweredExpression, target));
+            () => CallExpansion.ExpandLoweredArguments(call.Arguments, context, EvaluateLoweredExpression, target, storage));
     }
 
     private static void InvokeInitSubclass(PyType type, CallArgumentValue[] keywordArguments, LythonSourceSpan span, ExecutionContext context)

@@ -213,7 +213,8 @@ public sealed class BoundBoxCleanupTests
         using var owner = budget.CreateScope();
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
         var baseline = budget.ReservedBytes;
-        using (var accumulator = new CallExpansion.CallArgumentAccumulator(4, context, PyNone.Instance, retained))
+        using (var storage = retained ? null : context.MemoryGovernor.ReserveTemporary(0, Span))
+        using (var accumulator = new CallExpansion.CallArgumentAccumulator(4, context, PyNone.Instance, storage: storage))
         {
             for (var i = 0; i < 4; i++) accumulator.Add(CallArgumentValue.Positional(PyNone.Instance), Span);
             var before = budget.ReservedBytes;

@@ -9,7 +9,7 @@ internal static class CallExpansion
         IReadOnlyList<CallArgumentSyntax> arguments,
         LythonRuntime.ExecutionContext context,
         Func<ExpressionSyntax, LythonRuntime.ExecutionContext, object> evaluateExpression,
-        object target)
+        object target, MemoryGovernor.TemporaryMemoryReservation storage)
     {
         return ExpandArguments(
             arguments,
@@ -17,7 +17,7 @@ internal static class CallExpansion
             argument => argument.Expression.Span,
             argument => evaluateExpression(argument.Expression, context),
             context,
-            target);
+            target, storage);
     }
 
     public static CallArgumentValue[] ExpandLoweredArguments(
@@ -25,6 +25,7 @@ internal static class CallExpansion
         LythonRuntime.ExecutionContext context,
         Func<LoweredExpression, LythonRuntime.ExecutionContext, object> evaluateExpression,
         object target,
+        MemoryGovernor.TemporaryMemoryReservation storage,
         bool deferSingleStar = true)
     {
         return ExpandArguments(
@@ -33,7 +34,7 @@ internal static class CallExpansion
             argument => argument.Expression.Span,
             argument => evaluateExpression(argument.Expression, context),
             context,
-            target, deferSingleStar);
+            target, storage, deferSingleStar);
     }
 
     public static ValueTask<CallArgumentValue[]> ExpandLoweredArgumentsAsync(
@@ -41,6 +42,7 @@ internal static class CallExpansion
         LythonRuntime.ExecutionContext context,
         Func<LoweredExpression, LythonRuntime.ExecutionContext, ValueTask<object>> evaluateExpression,
         object target,
+        MemoryGovernor.TemporaryMemoryReservation storage,
         bool deferSingleStar = true)
     {
         return ExpandArgumentsAsync(
@@ -49,7 +51,7 @@ internal static class CallExpansion
             argument => argument.Expression.Span,
             argument => evaluateExpression(argument.Expression, context),
             context,
-            target, deferSingleStar);
+            target, storage, deferSingleStar);
     }
 
     private static CallArgumentValue[] ExpandArguments<TArgument>(
@@ -59,11 +61,13 @@ internal static class CallExpansion
         Func<TArgument, object> evaluateValue,
         LythonRuntime.ExecutionContext context,
         object target,
+        MemoryGovernor.TemporaryMemoryReservation storage,
         bool deferSingleStar = true)
     {
         if (!HasStarExpansion(arguments, getForm))
         {
-            var direct = new CallArgumentValue[arguments.Count];
+            if (arguments.Count == 0) return [];
+            var direct = AllocateDirectArguments(arguments.Count, context, getSpan(arguments[0]), storage);
             for (var i = 0; i < arguments.Count; i++)
             {
                 var argument = arguments[i];
@@ -74,7 +78,8 @@ internal static class CallExpansion
             return direct;
         }
 
-        var expanded = new CallArgumentAccumulator(arguments.Count, context, target, deferSingleStar: deferSingleStar && HasSingleStarArgument(arguments, getForm));
+        var expanded = new CallArgumentAccumulator(arguments.Count, context, target,
+            deferSingleStar: deferSingleStar && HasSingleStarArgument(arguments, getForm), storage: storage);
         try
         {
             foreach (var argument in arguments)
@@ -116,11 +121,13 @@ internal static class CallExpansion
         Func<TArgument, ValueTask<object>> evaluateValue,
         LythonRuntime.ExecutionContext context,
         object target,
+        MemoryGovernor.TemporaryMemoryReservation storage,
         bool deferSingleStar = true)
     {
         if (!HasStarExpansion(arguments, getForm))
         {
-            var direct = new CallArgumentValue[arguments.Count];
+            if (arguments.Count == 0) return [];
+            var direct = AllocateDirectArguments(arguments.Count, context, getSpan(arguments[0]), storage);
             for (var i = 0; i < arguments.Count; i++)
             {
                 var argument = arguments[i];
@@ -133,7 +140,8 @@ internal static class CallExpansion
             return direct;
         }
 
-        var expanded = new CallArgumentAccumulator(arguments.Count, context, target, deferSingleStar: deferSingleStar && HasSingleStarArgument(arguments, getForm));
+        var expanded = new CallArgumentAccumulator(arguments.Count, context, target,
+            deferSingleStar: deferSingleStar && HasSingleStarArgument(arguments, getForm), storage: storage);
         try
         {
             foreach (var argument in arguments)
@@ -166,6 +174,14 @@ internal static class CallExpansion
         {
             expanded.Dispose();
         }
+    }
+
+    private static CallArgumentValue[] AllocateDirectArguments(int count, LythonRuntime.ExecutionContext context,
+        LythonSourceSpan span, MemoryGovernor.TemporaryMemoryReservation storage)
+    {
+        if (count > 3) storage.Grow(32L + 32L * count, span);
+        context.CheckExecution(span);
+        return new CallArgumentValue[count];
     }
 
     private static bool HasSingleStarArgument<TArgument>(IReadOnlyList<TArgument> arguments, Func<TArgument, CallArgumentForm> getForm)
@@ -469,7 +485,10 @@ internal static class CallExpansion
 
         public bool CanDeferKeywordIndex => _keywordNames is null && _unindexedKeywords == 0;
 
-        public CallArgumentAccumulator(int sourceArgumentCount, LythonRuntime.ExecutionContext context, object target, bool retained = false, bool deferSingleStar = false)
+        // Lowered callers keep their borrowed storage through invocation.
+        // Executable callers keep funding on this temporary stack value.
+        public CallArgumentAccumulator(int sourceArgumentCount, LythonRuntime.ExecutionContext context, object target,
+            bool deferSingleStar = false, MemoryGovernor.TemporaryMemoryReservation? storage = null)
         {
             var capacity = Math.Max(sourceArgumentCount, 4);
             _count = 0;
@@ -479,13 +498,8 @@ internal static class CallExpansion
             _target = target;
             _keywordNames = null;
             _governor = context.MemoryGovernor;
-            if (retained)
-            {
-                _retainedBytes = EstimateArgumentBytes(capacity);
-                _governor.Reserve(_retainedBytes, null);
-                _governor.Commit(_retainedBytes);
-            }
-            else _reservation = _governor.ReserveTemporary(EstimateArgumentBytes(capacity), null);
+            _reservation = storage;
+            Grow(EstimateArgumentBytes(capacity), null);
             _values = new CallArgumentValue[capacity];
         }
 
@@ -652,7 +666,6 @@ internal static class CallExpansion
             _unindexedKeywords = 0;
             _context = null;
             _target = null;
-            _reservation?.Dispose();
             if (_retainedBytes == 0) return;
             _governor.Release(_retainedBytes);
             _retainedBytes = 0;

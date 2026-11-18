@@ -125,7 +125,7 @@ internal sealed partial class LythonRuntime
                     break;
                 case ExecutableStartCall call:
                     var targetSlot = instruction.InputStart;
-                    try { _execution.Stack[targetSlot] = new CallExpansion.CallArgumentAccumulator(call.ArgumentCount, this, _execution.Stack[targetSlot], retained: true, deferSingleStar: call.DeferSingleStar); }
+                    try { _execution.Stack[targetSlot] = new CallExpansion.CallArgumentAccumulator(call.ArgumentCount, this, _execution.Stack[targetSlot], deferSingleStar: call.DeferSingleStar); }
                     catch { _execution.Stack.RetireTo(targetSlot); throw; }
                     break;
                 // Display/call and definition operations retain their own

@@ -498,12 +498,13 @@ internal sealed partial class LythonRuntime
             context.CheckExecution(call.Span);
             PreloadImplicitSuperArguments(context, call.Span);
         }
+        using var storage = context.MemoryGovernor.ReserveTemporary(0, call.Span);
         return await InvokeCallableTargetAsync(
                 target,
                 call.Call.Target.Span,
                 call.Span,
                 context,
-                () => CallExpansion.ExpandLoweredArgumentsAsync(call.Arguments, context, EvaluateLoweredExpressionAsync, target))
+                () => CallExpansion.ExpandLoweredArgumentsAsync(call.Arguments, context, EvaluateLoweredExpressionAsync, target, storage))
             .ConfigureAwait(false);
     }
 

@@ -27,12 +27,13 @@ internal sealed partial class LythonRuntime
             context.CheckExecution(call.Span);
             PreloadImplicitSuperArguments(context, call.Span);
         }
+        using var storage = context.MemoryGovernor.ReserveTemporary(0, call.Span);
         return InvokeCallableTarget(
             target,
             call.Target.Span,
             call.Span,
             context,
-            () => CallExpansion.ExpandRawArguments(call.Arguments, context, EvaluateExpression, target));
+            () => CallExpansion.ExpandRawArguments(call.Arguments, context, EvaluateExpression, target, storage));
     }
 
     internal static object InvokeCallableTarget(

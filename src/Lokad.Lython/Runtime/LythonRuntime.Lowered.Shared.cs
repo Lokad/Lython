@@ -782,15 +782,11 @@ internal sealed partial class LythonRuntime
         LoweredClassDefinitionStatement definition, ExecutionContext context,
         MemoryGovernor.TemporaryMemoryReservation storage, bool asynchronous)
     {
-        var sourceCount = definition.HeaderArguments.Count;
-        if (sourceCount > 0) storage.Grow(64L + 32L * sourceCount, definition.Span);
         var arguments = asynchronous
             ? await CallExpansion.ExpandLoweredArgumentsAsync(definition.HeaderArguments, context,
-                EvaluateLoweredExpressionAsync, ClassHeaderExpansionTarget, deferSingleStar: false).ConfigureAwait(false)
+                EvaluateLoweredExpressionAsync, ClassHeaderExpansionTarget, storage, deferSingleStar: false).ConfigureAwait(false)
             : CallExpansion.ExpandLoweredArguments(definition.HeaderArguments, context,
-                EvaluateLoweredExpression, ClassHeaderExpansionTarget, deferSingleStar: false);
-        if (arguments.Length > sourceCount)
-            storage.Grow(32L * (arguments.Length - sourceCount), definition.Span);
+                EvaluateLoweredExpression, ClassHeaderExpansionTarget, storage, deferSingleStar: false);
 
         var positionalCount = arguments.Count(argument => argument.IsPositional);
         var keywordCount = arguments.Length - positionalCount;

@@ -2,6 +2,13 @@
 
 ## 0.11.0 - Unreleased
 
+- Keep wide lowered-call argument packets funded through invocation and
+  async completion. Admit ordinary packets before evaluating their arguments.
+
+- Skip the duplicate-key index for a single exact keyword dictionary and
+  fill fixed list-unpack slots directly. Preserve duplicate checks across
+  keyword sources and the unpacked values observed by assignment targets.
+
 - Collect lexical membership and first binding order together and reuse lexical
   expression traversal for class-cell analysis of deleted targets.
 

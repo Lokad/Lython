@@ -75,7 +75,7 @@ internal sealed partial class LythonRuntime
                     }
                     break;
                 case ExecutableStartClassHeader header:
-                    PublishInstructionResult(instruction, new CallExpansion.CallArgumentAccumulator(header.Count, this, ClassHeaderExpansionTarget, retained: true, deferSingleStar: false));
+                    PublishInstructionResult(instruction, new CallExpansion.CallArgumentAccumulator(header.Count, this, ClassHeaderExpansionTarget));
                     break;
                 case ExecutableCreateClass create:
                     using (var accumulator = create.ExpandedHeader ? (CallExpansion.CallArgumentAccumulator)_execution.Stack.TakeValue(instruction.InputStart + create.Definition.Decorators.Count, instruction.InputStart + create.Definition.Decorators.Count) : null)
