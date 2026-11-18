@@ -1,0 +1,301 @@
+﻿{
+  "Boundary": "One local warmed complete-worker EventPipe GC allocation sample. Tick weight is approximate attribution to the sampled type, not exact allocated bytes, object counts or removable CPU. Includes reset, I/O, validation and protocol.",
+  "Samples": 4031,
+  "TotalSampleWeight": 435893600,
+  "Rows": [
+    {
+      "Type": "System.Byte[]",
+      "Samples": 856,
+      "SampleWeightBytes": 96716696,
+      "SampleWeightPercent": 22.188143161542175
+    },
+    {
+      "Type": "ExecutionContext",
+      "Samples": 507,
+      "SampleWeightBytes": 54051072,
+      "SampleWeightPercent": 12.40006093230091
+    },
+    {
+      "Type": "Lokad.Lython.Runtime.Text.PyString",
+      "Samples": 462,
+      "SampleWeightBytes": 49230728,
+      "SampleWeightPercent": 11.294207577261973
+    },
+    {
+      "Type": "NativeKey[]",
+      "Samples": 341,
+      "SampleWeightBytes": 36351552,
+      "SampleWeightPercent": 8.33954708213197
+    },
+    {
+      "Type": "System.Object[]",
+      "Samples": 255,
+      "SampleWeightBytes": 27193464,
+      "SampleWeightPercent": 6.238555463993966
+    },
+    {
+      "Type": "System.Numerics.BigInteger",
+      "Samples": 244,
+      "SampleWeightBytes": 26142000,
+      "SampleWeightPercent": 5.997335129490316
+    },
+    {
+      "Type": "Lokad.Lython.Runtime.PyDict",
+      "Samples": 196,
+      "SampleWeightBytes": 20894096,
+      "SampleWeightPercent": 4.793393617157949
+    },
+    {
+      "Type": "EmitFrame",
+      "Samples": 165,
+      "SampleWeightBytes": 17735648,
+      "SampleWeightPercent": 4.068802111340933
+    },
+    {
+      "Type": "TemporaryMemoryReservation",
+      "Samples": 162,
+      "SampleWeightBytes": 17262672,
+      "SampleWeightPercent": 3.960294897653923
+    },
+    {
+      "Type": "\u003CNativeEntries\u003Ed__157",
+      "Samples": 95,
+      "SampleWeightBytes": 10293136,
+      "SampleWeightPercent": 2.361387274325661
+    },
+    {
+      "Type": "\u003C\u003Ec__DisplayClass12_0",
+      "Samples": 80,
+      "SampleWeightBytes": 8791680,
+      "SampleWeightPercent": 2.0169325725360503
+    },
+    {
+      "Type": "System.Comparison\u00601[System.ValueTuple\u00602[System.Object,System.Object]]",
+      "Samples": 73,
+      "SampleWeightBytes": 7819448,
+      "SampleWeightPercent": 1.7938891509304105
+    },
+    {
+      "Type": "Lokad.Lython.Runtime.PyList",
+      "Samples": 62,
+      "SampleWeightBytes": 6610136,
+      "SampleWeightPercent": 1.516456309521406
+    },
+    {
+      "Type": "\u003C\u003Ec__DisplayClass63_0",
+      "Samples": 61,
+      "SampleWeightBytes": 6359176,
+      "SampleWeightPercent": 1.4588826264024064
+    },
+    {
+      "Type": "System.Int32[]",
+      "Samples": 46,
+      "SampleWeightBytes": 4906880,
+      "SampleWeightPercent": 1.1257059062119747
+    },
+    {
+      "Type": "Entry[]",
+      "Samples": 38,
+      "SampleWeightBytes": 4050800,
+      "SampleWeightPercent": 0.9293093543929069
+    },
+    {
+      "Type": "Entry[System.String,System.Object][]",
+      "Samples": 36,
+      "SampleWeightBytes": 3828544,
+      "SampleWeightPercent": 0.8783207645168454
+    },
+    {
+      "Type": "\u003C\u003Ec__DisplayClass0_0\u00601[System.ValueTuple\u00602[System.Object,System.Object]]",
+      "Samples": 30,
+      "SampleWeightBytes": 3235112,
+      "SampleWeightPercent": 0.7421792841188767
+    },
+    {
+      "Type": "\u003CEnumerateItems\u003Ed__78",
+      "Samples": 29,
+      "SampleWeightBytes": 3114808,
+      "SampleWeightPercent": 0.7145798883030171
+    },
+    {
+      "Type": "System.Collections.Generic.Dictionary\u00602[System.String,System.Object]",
+      "Samples": 26,
+      "SampleWeightBytes": 2768816,
+      "SampleWeightPercent": 0.635204554505962
+    },
+    {
+      "Type": "\u003CGetEnumerator\u003Ed__63",
+      "Samples": 24,
+      "SampleWeightBytes": 2557352,
+      "SampleWeightPercent": 0.5866917981819416
+    },
+    {
+      "Type": "System.ValueTuple\u00602[System.Object,System.Object][]",
+      "Samples": 22,
+      "SampleWeightBytes": 2366080,
+      "SampleWeightPercent": 0.5428113649753059
+    },
+    {
+      "Type": "Enumerator[System.Object]",
+      "Samples": 22,
+      "SampleWeightBytes": 2345200,
+      "SampleWeightPercent": 0.5380212051748409
+    },
+    {
+      "Type": "RecordKeys",
+      "Samples": 22,
+      "SampleWeightBytes": 2344672,
+      "SampleWeightPercent": 0.537900074697128
+    },
+    {
+      "Type": "InlinedComprehensionScope",
+      "Samples": 19,
+      "SampleWeightBytes": 2024880,
+      "SampleWeightPercent": 0.4645353820290089
+    },
+    {
+      "Type": "\u003CGetEnumerator\u003Ed__11",
+      "Samples": 16,
+      "SampleWeightBytes": 1705600,
+      "SampleWeightPercent": 0.39128814921806604
+    },
+    {
+      "Type": "System.Func\u00603[System.Object,System.Object,System.Boolean]",
+      "Samples": 15,
+      "SampleWeightBytes": 1599000,
+      "SampleWeightPercent": 0.36683263989193693
+    },
+    {
+      "Type": "Cursor",
+      "Samples": 14,
+      "SampleWeightBytes": 1492400,
+      "SampleWeightPercent": 0.3423771305658078
+    },
+    {
+      "Type": "System.Collections.Generic.List\u00601[System.ValueTuple\u00602[System.Object,System.Object]]",
+      "Samples": 14,
+      "SampleWeightBytes": 1461712,
+      "SampleWeightPercent": 0.33533688037631204
+    },
+    {
+      "Type": "System.Collections.Generic.List\u00601[Lokad.Lython.Runtime.PyStableSort\u002BEntry]",
+      "Samples": 12,
+      "SampleWeightBytes": 1279200,
+      "SampleWeightPercent": 0.29346611191354954
+    },
+    {
+      "Type": "System.String",
+      "Samples": 10,
+      "SampleWeightBytes": 1087200,
+      "SampleWeightPercent": 0.24941866547249145
+    },
+    {
+      "Type": "Buffer",
+      "Samples": 10,
+      "SampleWeightBytes": 1066000,
+      "SampleWeightPercent": 0.2445550932612913
+    },
+    {
+      "Type": "\u003C\u003Ec__DisplayClass102_0",
+      "Samples": 10,
+      "SampleWeightBytes": 1066000,
+      "SampleWeightPercent": 0.2445550932612913
+    },
+    {
+      "Type": "\u003CGetEnumerator\u003Ed__51",
+      "Samples": 10,
+      "SampleWeightBytes": 1066000,
+      "SampleWeightPercent": 0.2445550932612913
+    },
+    {
+      "Type": "FindPredicate[System.String]",
+      "Samples": 9,
+      "SampleWeightBytes": 977688,
+      "SampleWeightPercent": 0.22429510320867294
+    },
+    {
+      "Type": "Lokad.Lython.Runtime.PySet",
+      "Samples": 9,
+      "SampleWeightBytes": 959400,
+      "SampleWeightPercent": 0.22009958393516216
+    },
+    {
+      "Type": "Lokad.Lython.Runtime.ProjectionBudget",
+      "Samples": 5,
+      "SampleWeightBytes": 543160,
+      "SampleWeightPercent": 0.12460839067148496
+    },
+    {
+      "Type": "Lokad.Lython.Runtime.Text.GovernedByteBuilder",
+      "Samples": 4,
+      "SampleWeightBytes": 438272,
+      "SampleWeightPercent": 0.1005456377427886
+    },
+    {
+      "Type": "System.Collections.Generic.LinkedListNode\u00601[Lokad.Lython.Runtime.ExecutionThreads\u002BWorker]",
+      "Samples": 4,
+      "SampleWeightBytes": 434528,
+      "SampleWeightPercent": 0.09968671253718797
+    },
+    {
+      "Type": "ReadWriteTask",
+      "Samples": 3,
+      "SampleWeightBytes": 321056,
+      "SampleWeightPercent": 0.07365467169052264
+    },
+    {
+      "Type": "System.Collections.Generic.List\u00601[System.Object]",
+      "Samples": 3,
+      "SampleWeightBytes": 319800,
+      "SampleWeightPercent": 0.07336652797838739
+    },
+    {
+      "Type": "System.Boolean",
+      "Samples": 2,
+      "SampleWeightBytes": 213200,
+      "SampleWeightPercent": 0.048911018652258255
+    },
+    {
+      "Type": "DrainLease",
+      "Samples": 2,
+      "SampleWeightBytes": 213200,
+      "SampleWeightPercent": 0.048911018652258255
+    },
+    {
+      "Type": "System.Func\u00604[System.Object[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext,System.Threading.Tasks.ValueTask\u00601[System.Object]]",
+      "Samples": 1,
+      "SampleWeightBytes": 109880,
+      "SampleWeightPercent": 0.025207986536163872
+    },
+    {
+      "Type": "Entry[System.Object,System.Runtime.CompilerServices.StrongBox\u00601[System.Int64]][]",
+      "Samples": 1,
+      "SampleWeightBytes": 109880,
+      "SampleWeightPercent": 0.025207986536163872
+    },
+    {
+      "Type": "ExecutableSlot[]",
+      "Samples": 1,
+      "SampleWeightBytes": 109880,
+      "SampleWeightPercent": 0.025207986536163872
+    },
+    {
+      "Type": "PendingReturn",
+      "Samples": 1,
+      "SampleWeightBytes": 108632,
+      "SampleWeightPercent": 0.024921678134296993
+    },
+    {
+      "Type": "Lokad.Lython.Runtime.CallArgumentValue[]",
+      "Samples": 1,
+      "SampleWeightBytes": 108632,
+      "SampleWeightPercent": 0.024921678134296993
+    },
+    {
+      "Type": "Reservation",
+      "Samples": 1,
+      "SampleWeightBytes": 108632,
+      "SampleWeightPercent": 0.024921678134296993
+    }
+  ]
+}

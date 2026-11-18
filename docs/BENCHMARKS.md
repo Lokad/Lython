@@ -2,11 +2,12 @@
 
 | Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| Configuration edit | 181 B / 16 paths | 0.077–0.078 ms | 0.061–0.062 ms | 1.25–1.26× | Diagnostic627/5ae; controls L/C 0.78/0.75%; IQR≤0.99% |
+| Configuration edit | 181 B / 16 paths | 0.0765–0.0773 ms | 0.0616–0.0623 ms | 1.23–1.25× | Diagnostic bdab/7170. Controls L/C 1.08 / 1.09%. IQR ≤0.58%. |
+| Configuration manifest | 833 B / 4 declared targets | 0.189–0.192 ms | 0.154–0.156 ms | 1.21–1.24× | Diagnostic bdab/7170. Controls L/C 1.42 / 1.22%. IQR ≤1.46%. |
 | Formatted report | 3,072 records / 189,441 B | 2.934–2.942 ms | 2.671–2.737 ms | 1.07–1.10× | Diagnostic627/5ae; controls L/C 0.27/2.47%; IQR≤5.34% |
 | JSON-lines record transform | 4,096 records / 110,592 B | 3.898–4.012 ms | 4.388–4.423 ms | 0.88–0.91× | Diagnostic ea8/cf; controls L/C 2.93/0.79%; IQR≤0.79% |
 | Numeric CSV quality report | 4,096 records / 127,031 B | 4.066–4.166 ms | 4.574–4.693 ms | 0.87–0.91× | Diagnostic; controls L/C 2.46/2.60%; IQR≤1.47% |
-| Text normalization | 4,096 lines / 52,224 B | 0.803–0.804 ms | 0.501–0.503 ms | 1.60–1.60× | Diagnostic2e5/1bce; controls L/C 0.04/0.38%; IQR≤1.03% |
+| Text normalization | 52,224 B / 4,096 lines | 0.774–0.785 ms | 0.725–0.737 ms | 1.05–1.08× | Diagnostic bdab/7170. Controls L/C 1.38 / 1.53%. IQR ≤0.99%. |
 | JSON-lines aggregation with a helper | 4,096 records / 110,592 B | 3.444–3.606 ms | 4.227–4.238 ms | 0.81–0.85× | Diagnostic R534/40db; Lython control 4.69%; IQR≤2.36% |
 | Floating JSON numeric report | 4,096 pairs / 56,495 B | 1.036–1.063 ms | 0.833–0.835 ms | 1.24–1.28× | Diagnostic R534/40db; controls L/C 2.56/0.33%; IQR≤1.64% |
 | Helper text normalization | 4,096 lines / 52,224 B | 1.130–1.137 ms | 0.856–0.907 ms | 1.25–1.33× | Diagnostic3f/a503; controls L/C 0.57/6.02%; IQR≤1.52% |
@@ -31,12 +32,21 @@ The record-transform row is a separate **2026-11-17** checkpoint of qualified
 three jobs116.40s. Its2.93%warm/3.31%fresh Lython control spread limits precision.
 [Source, controls and raw data](../benchmarks/results/2026-11-17-record-cpython-baseline/README.md).
 
-The configuration and formatted-report rows use qualified **62786960 / 5ae019db**,
+The formatted-report row uses qualified **62786960 / 5ae019db**,
 measured2026-11-18 on the same machine/toolchains; report CPython IQR5.34%limits
 precision. [Sources and controls](../benchmarks/results/2026-11-18-agent-cpython-checkpoint/README.md).
 
-Original text normalization keeps its qualified **2e585229 / 1bce52ad** measurement
-of2026-11-18. [Sources and original controls](../benchmarks/results/2026-11-18-affected-cpython-checkpoint/README.md).
+The configuration edit and manifest rows and the warm text control use
+**bdab88c54 / 7170869d**, measured **2026-11-18** against stock **CPython 3.13.16**
+on the same quiet VM and toolchains. The text control's CPython time moved from
+0.501–0.503 ms in the earlier collection to 0.725–0.737 ms here with the same
+source and fixture. Cross-collection movement remains unexplained.
+[New observations](../benchmarks/results/2026-11-18-json-options-cpython/README.md) ·
+[Earlier configuration](../benchmarks/results/2026-11-18-agent-cpython-checkpoint/README.md) ·
+[Earlier text phases](../benchmarks/results/2026-11-18-affected-cpython-checkpoint/README.md).
+
+Text normalization compilation and compile-to-result still describe
+**2e585229 / 1bce52ad**. The new checkpoint refreshed only warm execution.
 
 Helper text rows use committed **3f873227 / a5038a28**,
 measured **2026-11-18** on the same machine/toolchains. [Full44256409242](../benchmarks/results/2026-11-18-prepared-module-bindings/delivery/README.md) passed Windows/Ubuntu actual11/10, original stress and installed Release consumers.
@@ -67,8 +77,10 @@ This is useful workload latency, not equivalent containment or cold startup.
 
 | Workload | Phase | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| Configuration edit | Compilation only | 0.036–0.037 ms | 0.035–0.035 ms | 1.05–1.08× | Diagnostic627/5ae; controls L/C 3.34/0.05%; IQR≤0.70% |
-| Configuration edit | Compile-to-result | 0.145–0.145 ms | 0.134–0.135 ms | 1.08–1.08× | Diagnostic627/5ae; controls L/C 0.09/0.32%; IQR≤0.85% |
+| Configuration edit | Compilation only | 0.0362–0.0368 ms | 0.0341–0.0344 ms | 1.05–1.08× | Diagnostic bdab/7170. Controls L/C 1.56 / 0.97%. IQR ≤1.20%. |
+| Configuration edit | Compile-to-result | 0.135–0.136 ms | 0.124–0.124 ms | 1.09–1.10× | Diagnostic bdab/7170. Controls L/C 0.34 / 0.17%. IQR ≤1.33%. |
+| Configuration manifest | Compilation only | 0.198–0.198 ms | 0.157–0.157 ms | 1.26–1.26× | Diagnostic bdab/7170. Controls L/C 0.36 / 0.00%. IQR ≤1.16%. |
+| Configuration manifest | Compile-to-result | 0.489–0.496 ms | 0.462–0.473 ms | 1.03–1.07× | Diagnostic bdab/7170. Controls L/C 1.41 / 2.39%. IQR ≤1.65%. |
 | JSON-lines record transform | Compilation only | 0.057–0.058 ms | 0.056–0.056 ms | 1.01–1.02× | Diagnostic; controls L/C 1.68/0.08%; IQR≤1.81% |
 | JSON-lines record transform | Compile-to-result | 4.085–4.220 ms | 4.517–4.546 ms | 0.90–0.93× | Diagnostic; controls L/C 3.31/0.63%; IQR≤1.11% |
 | Numeric CSV quality report | Compilation only | 0.056–0.056 ms | 0.044–0.045 ms | 1.26–1.26× | Diagnostic; controls L/C 0.41/0.23%; IQR≤1.26% |
