@@ -552,10 +552,10 @@
   semantics and selected return spans. Share fresh empty-list admission and keep
   custom protocols, loops and shared joins on the existing executable path.
 
-- Share JSON encoder initialization and consume bound native options directly,
-  removing temporary constructor dictionaries and keyword forwarding collections.
-  Native eager calls borrow their value with the existing managed call protection;
-  preserve mutable attributes, guest classes and awaited callbacks.
+- Bind exact builtin JSON output options directly for `dump` and `dumps`.
+  Remove the temporary encoder, its attribute dictionary and the bound iterator
+  call. Preserve managed call protection, option effects, mutable explicit
+  encoders, guest subclasses and awaited callbacks.
 
 - Share one iterative JSON traversal for eager and incremental encoding, removing
   the separate recursive renderer. Complete native steps directly and await actual

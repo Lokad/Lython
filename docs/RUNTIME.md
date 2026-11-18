@@ -57,6 +57,11 @@ is admitted separately. Source capacity stays funded even after private input
 cleanup, conservatively until its owner ends. Other owners and codecs retain
 their existing independent funding and conversion behavior.
 
+Module `json.dump` and `json.dumps` pass bound options directly to the exact
+builtin serializer. Explicit encoder objects and guest subclasses retain their
+mutable attributes and method dispatch. Separator iteration and option callbacks
+retain their evaluation order and finish before their owners are released.
+
 Terminal JSON serialization adopts its completed UTF-8 buffer. The full backing
 capacity remains charged, including its unused tail; avoiding a final copy can
 reduce construction overlap while retaining more spare capacity. Reused

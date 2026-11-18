@@ -159,19 +159,6 @@ internal sealed partial class LythonRuntime
                 skip, ascii, circular, nan, sort, indent, separators, callback, span, context, asynchronous);
         }
 
-        // Module binding has already checked names and evaluated arguments.
-        // Consume that storage directly rather than forwarding eight keywords.
-        internal static ValueTask<object> ConstructBoundAsync(BoundBuiltinArguments bound, int offset,
-            LythonSourceSpan span, ExecutionContext context, bool asynchronous)
-        {
-            context.CheckExecution(span);
-            object Flag(int index, bool fallback) => bound.Assigned[offset + index] ? bound.Values[offset + index] : fallback;
-            object Option(int index) => offset + index < bound.Values.Length ? bound.Values[offset + index] : PyNone.Instance;
-            return InitializeAsync(new JsonEncoderObject(), Flag(1, false), Flag(2, true),
-                Flag(3, true), Flag(4, true), Flag(9, false), Option(6), Option(7), Option(8),
-                span, context, asynchronous);
-        }
-
         private static async ValueTask<object> InitializeAsync(object instance, object skip, object ascii,
             object circular, object nan, object sort, object indent, object separatorValue, object callback,
             LythonSourceSpan span, ExecutionContext context, bool asynchronous)
