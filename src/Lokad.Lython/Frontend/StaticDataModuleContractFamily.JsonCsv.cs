@@ -275,7 +275,7 @@ internal static partial class StaticDataModuleContractFamily
             return;
         }
 
-        if (StaticKnownCallArgumentChecks.TryGetInt32(value, out var integer) && (integer < 0 || integer > 3))
+        if (value.TryGetInt32(out var integer) && (integer < 0 || integer > 3))
         {
             AddDiagnostic(diagnostics, "LA3067", "csv quoting must be one of the QUOTE_* constants.", expression.Span);
         }

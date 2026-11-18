@@ -293,6 +293,9 @@ Compilation tokenizes/parses source, validates the subset, computes scope facts,
 lowers constructs, and builds executable instructions. Abstract statement and
 expression checks select syntax directly and share the existing binding state;
 their branch, short-circuit and diagnostic order remains explicit.
+Numeric syntax carries the parsed value for analysis, annotations and execution.
+Inferred numbers stay typed. The analyzer retains literal spelling where branch
+joins or diagnostics distinguish it.
 String-literal decoding borrows
 source spans; unescaped bodies need no decoding builder, while adjacent pieces
 create concatenation storage only when needed. Already-parsed f-string text uses

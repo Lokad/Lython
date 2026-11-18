@@ -9343,3 +9343,7 @@ did not justify the longer borrow invariant. The VM inventory timeout, local
 fixture-prefix rejection and diagnostic time limit are preserved. All output,
 ownership, quiet and archive checks pass. Next pursue shared numeric compiler
 facts to remove repeated parsing and the abstract numeric text representation.
+
+R532/B962 [shared numeric compiler values](results/2026-11-18-numeric-compiler-facts/comparison/README.md) removed re-parsing across abstract checks, annotations and execution. Both targets passed 52 white-box and 803 public tests and matched 26 probes through both APIs. The six quiet VM jobs took 278.71 seconds. Config and CSV compile elapsed improved slightly with mixed CPU, while fresh and warm results were inconclusive. Compile allocations and execution peaks were effectively unchanged. Retained for simpler compiler value transport. The first staging refusal and corrected archive proof remain visible.
+
+R533 [shared UTF-8 capture counting](results/2026-11-18-regex-capture-count/README.md) started independently of compiler delivery. The core uses its existing bounded byte counter for the distance between known capture boundaries. Both public suites passed 679 checks. An initial .NET 11 cancellation test finished before cancellation. The same assertions pass on both targets with a larger rewind within the original budget. Complete-script comparison is pending.

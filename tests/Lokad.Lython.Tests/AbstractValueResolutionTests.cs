@@ -18,7 +18,7 @@ public sealed class AbstractValueResolutionTests
     [Fact]
     public void Resolved_ExposesTheTypedAbstractValue()
     {
-        var expected = AbstractValue.Integer("1", Span);
+        var expected = AbstractValue.Integer(1, Span);
         var resolution = AbstractValueResolution.Resolved(expected);
 
         Assert.True(resolution.IsResolved);

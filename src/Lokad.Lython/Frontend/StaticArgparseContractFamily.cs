@@ -200,7 +200,7 @@ internal static class StaticArgparseContractFamily
         }
 
         return value.Kind != AbstractValueKind.Integer ||
-               !int.TryParse(value.RequireText(), System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var literal) ||
+               !value.TryGetInt32(out var literal, allowSeparators: false) ||
                literal > 0;
     }
 

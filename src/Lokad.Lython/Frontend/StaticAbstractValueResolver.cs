@@ -123,10 +123,10 @@ internal static partial class StaticAbstractValueResolver
                 value = AbstractValue.Bytes(bytes.Value, bytes.Span);
                 return true;
             case IntegerLiteralExpressionSyntax integer:
-                value = AbstractValue.Integer(integer.ValueText, integer.Span);
+                value = AbstractValue.Integer(integer);
                 return true;
             case FloatLiteralExpressionSyntax floating:
-                value = AbstractValue.Float(floating.ValueText, floating.Span);
+                value = AbstractValue.Float(floating);
                 return true;
             case BooleanLiteralExpressionSyntax boolean:
                 value = AbstractValue.Boolean(boolean.Value, boolean.Span);

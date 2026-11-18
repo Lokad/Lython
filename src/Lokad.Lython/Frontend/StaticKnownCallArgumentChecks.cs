@@ -1,4 +1,3 @@
-using System.Globalization;
 
 namespace Lokad.Lython.Frontend;
 
@@ -365,20 +364,5 @@ internal static class StaticKnownCallArgumentChecks
 
     internal static LythonSourceSpan DiagnosticSpan(ExpressionSyntax expression, AbstractValue value)
         => value.Span.Length != 0 ? value.Span : expression.Span;
-
-    internal static bool TryGetInt32(AbstractValue value, out int integer)
-    {
-        if (value.Kind == AbstractValueKind.Integer)
-        {
-            return int.TryParse(
-                (value.RequireText()).Replace("_", string.Empty, StringComparison.Ordinal),
-                NumberStyles.Integer,
-                CultureInfo.InvariantCulture,
-                out integer);
-        }
-
-        integer = 0;
-        return false;
-    }
 
 }

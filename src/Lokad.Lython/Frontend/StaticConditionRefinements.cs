@@ -350,7 +350,7 @@ internal static class StaticConditionRefinements
                 Operand: var operand
             } &&
             StaticAbstractValueResolver.TryResolve(operand, bindings, out var unsignedValue) &&
-            StaticAbstractFacts.TryGetInt32(unsignedValue, out var unsignedInteger) &&
+            unsignedValue.TryGetInt32(out var unsignedInteger) &&
             unsignedInteger != int.MinValue)
         {
             integer = -unsignedInteger;
@@ -358,7 +358,7 @@ internal static class StaticConditionRefinements
         }
 
         if (StaticAbstractValueResolver.TryResolve(expression, bindings, out var value) &&
-            StaticAbstractFacts.TryGetInt32(value, out integer))
+            value.TryGetInt32(out integer))
         {
             return true;
         }

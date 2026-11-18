@@ -46,8 +46,8 @@ internal static partial class StaticAbstractValueResolver
         if (binary.Operator is BinaryOperatorSyntax.BitwiseOr or BinaryOperatorSyntax.BitwiseAnd or BinaryOperatorSyntax.BitwiseXor &&
             TryResolve(binary.Left, bindings, out var bitsLeft) &&
             TryResolve(binary.Right, bindings, out var bitsRight) &&
-            StaticAbstractFacts.TryGetInt32(bitsLeft, out var leftBits) &&
-            StaticAbstractFacts.TryGetInt32(bitsRight, out var rightBits))
+            bitsLeft.TryGetInt32(out var leftBits) &&
+            bitsRight.TryGetInt32(out var rightBits))
         {
             var bits = binary.Operator switch
             {
@@ -55,7 +55,7 @@ internal static partial class StaticAbstractValueResolver
                 BinaryOperatorSyntax.BitwiseAnd => leftBits & rightBits,
                 _ => leftBits ^ rightBits,
             };
-            value = AbstractValue.Integer(bits.ToString(System.Globalization.CultureInfo.InvariantCulture), binary.Span);
+            value = AbstractValue.Integer(bits, binary.Span);
             return true;
         }
 

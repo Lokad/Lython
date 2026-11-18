@@ -12,10 +12,10 @@ public sealed class AbstractStateResolutionLifetimeTests
     {
         var state = new AbstractState();
         Assert.False(StaticAbstractValueResolver.TryResolve(Read, state, out _));
-        state.Set("value", AbstractValue.Integer("1", Span));
-        AssertInteger(state, "1");
-        state.Set("value", AbstractValue.Integer("2", Span));
-        AssertInteger(state, "2");
+        state.Set("value", AbstractValue.Integer(1, Span));
+        AssertInteger(state, 1);
+        state.Set("value", AbstractValue.Integer(2, Span));
+        AssertInteger(state, 2);
         state.Remove("value");
         Assert.False(StaticAbstractValueResolver.TryResolve(Read, state, out _));
     }
@@ -24,34 +24,34 @@ public sealed class AbstractStateResolutionLifetimeTests
     public void ClonedBindingsAndReplacementResolveIndependently()
     {
         var original = new AbstractState();
-        original.Set("value", AbstractValue.Integer("1", Span));
-        AssertInteger(original, "1");
+        original.Set("value", AbstractValue.Integer(1, Span));
+        AssertInteger(original, 1);
         var clone = original.Clone();
-        clone.Set("value", AbstractValue.Integer("2", Span));
-        AssertInteger(clone, "2");
-        AssertInteger(original, "1");
+        clone.Set("value", AbstractValue.Integer(2, Span));
+        AssertInteger(clone, 2);
+        AssertInteger(original, 1);
         original.ReplaceWith(clone);
-        AssertInteger(original, "2");
+        AssertInteger(original, 2);
     }
 
     [Fact]
     public void BranchJoinDiscardsEarlierLiteralResolution()
     {
         var state = new AbstractState();
-        state.Set("value", AbstractValue.Integer("1", Span));
-        AssertInteger(state, "1");
+        state.Set("value", AbstractValue.Integer(1, Span));
+        AssertInteger(state, 1);
         var left = state.Clone();
         var right = state.Clone();
-        right.Set("value", AbstractValue.Integer("2", Span));
+        right.Set("value", AbstractValue.Integer(2, Span));
         state.MergeFrom(left, right);
         Assert.True(StaticAbstractValueResolver.TryResolve(Read, state, out var joined));
         Assert.Equal(AbstractValueKind.IntegerType, joined.Kind);
     }
 
-    private static void AssertInteger(AbstractState state, string expected)
+    private static void AssertInteger(AbstractState state, int expected)
     {
         Assert.True(StaticAbstractValueResolver.TryResolve(Read, state, out var value));
         Assert.Equal(AbstractValueKind.Integer, value.Kind);
-        Assert.Equal(expected, value.RequireText());
+        Assert.Equal(new System.Numerics.BigInteger(expected), value.RequireInteger());
     }
 }

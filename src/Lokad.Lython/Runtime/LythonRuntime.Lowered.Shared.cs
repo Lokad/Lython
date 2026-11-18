@@ -110,9 +110,9 @@ internal sealed partial class LythonRuntime
             case LoweredIntegerLiteralExpression integer:
                 return integer.Value;
             case LoweredImaginaryLiteralExpression imaginary:
-                return PyComplex.Create(0, Numbers.PyNumberOps.ParseFloat(imaginary.Literal.ValueText[..^1]), context, imaginary.Span);
+                return PyComplex.Create(0, imaginary.ImaginaryPart, context, imaginary.Span);
             case LoweredFloatLiteralExpression floating:
-                return ParseFloat(floating.Literal);
+                return floating.Value;
             case LoweredBooleanLiteralExpression boolean:
                 return boolean.Literal.Value;
             case LoweredNoneLiteralExpression:

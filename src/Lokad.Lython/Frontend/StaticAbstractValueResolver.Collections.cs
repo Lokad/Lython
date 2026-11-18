@@ -31,7 +31,7 @@ internal static partial class StaticAbstractValueResolver
                     break;
                 case AbstractValueKind.Bytes:
                     items.AddRange((resolved.RequireBytes()).Select(value =>
-                        AbstractValue.Integer(value.ToString(System.Globalization.CultureInfo.InvariantCulture), expressions[i].Span)));
+                        AbstractValue.Integer(value, expressions[i].Span)));
                     break;
                 case AbstractValueKind.Dict:
                     items.AddRange((resolved.RequireDictionaryItems()).Select(pair => pair.Key));

@@ -150,7 +150,7 @@ internal static class StaticRegexArgumentContracts
     // called re, or a shadowed flag member, does not identify the regex module.
     private static bool AnalyzeUnsupportedFlags(ExpressionSyntax expression, AbstractValue value, List<LythonDiagnostic> diagnostics)
     {
-        if (!TryGetInt32(value, out var flags)) return false;
+        if (!value.TryGetInt32(out var flags)) return false;
         var emitted = false;
         if ((flags & 4) != 0)
         {
@@ -169,7 +169,7 @@ internal static class StaticRegexArgumentContracts
         => value.Kind switch
         {
             AbstractValueKind.Boolean => value.RequireBoolean(),
-            AbstractValueKind.Integer => TryGetInt32(value, out var integer) && integer != 0,
+            AbstractValueKind.Integer => value.TryGetInt32(out var integer) && integer != 0,
             _ => false,
         };
 
@@ -345,6 +345,6 @@ internal static class StaticRegexArgumentContracts
             index = value.RequireBoolean() ? 1 : 0;
             return true;
         }
-        return TryGetInt32(value, out index);
+        return value.TryGetInt32(out index);
     }
 }

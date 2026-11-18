@@ -26,16 +26,6 @@ internal sealed partial class LythonRuntime
         return EvaluateUnaryOperator(unary.Operator, operand, context, unary.Span);
     }
 
-    private static BigInteger ParseInteger(IntegerLiteralExpressionSyntax integer)
-    {
-        return PyNumberOps.ParseInteger(integer.ValueText);
-    }
-
-    private static double ParseFloat(FloatLiteralExpressionSyntax floating)
-    {
-        return PyNumberOps.ParseFloat(floating.ValueText);
-    }
-
     private static object EvaluateAdd(object left, object right, ExecutionContext context, LythonSourceSpan span, string? operation = null)
     {
         if (left is BigInteger leftInteger && right is BigInteger rightInteger)

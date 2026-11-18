@@ -1,0 +1,34 @@
+[
+  {
+    "framework": "net11.0",
+    "project": "Lokad.Lython.Tests",
+    "filter": "(FullyQualifiedName~Static|FullyQualifiedName~Abstract|FullyQualifiedName~ParserCancellation|FullyQualifiedName~PostponedAnnotation|FullyQualifiedName~CallBindingSubsystem|FullyQualifiedName~ExecutableLocalImportBinding)&Category!=Stress",
+    "exitCode": 0,
+    "summary": "Passed!  - Failed:     0, Passed:    52, Skipped:     0, Total:    52, Duration: 577 ms - Lokad.Lython.WhiteBox.Tests.dll (net11.0)",
+    "log": "Lokad.Lython.Tests-net11.0.log"
+  },
+  {
+    "framework": "net11.0",
+    "project": "Lokad.Lython.PublicApi.Tests",
+    "filter": "(FullyQualifiedName~StaticErrorDiagnostics|FullyQualifiedName~StaticRuntimeArityAgreement|FullyQualifiedName~Diagnostic|FullyQualifiedName~ScopeDirective|FullyQualifiedName~ShortCircuit|FullyQualifiedName~ComprehensionEffect|FullyQualifiedName~SharedCompilerFact|FullyQualifiedName~CompilerCancellation|FullyQualifiedName~GovernedMemoryContract|FullyQualifiedName~MemoryDenialAttribution|FullyQualifiedName~ClassAnnotationExecution|FullyQualifiedName~RegexAnalysisBinding|FullyQualifiedName~AnnotationCompatibility|FullyQualifiedName~ParserCompatibility|FullyQualifiedName~FloatArithmeticPipeline|FullyQualifiedName~Complex|FullyQualifiedName~PostponedAnnotation|FullyQualifiedName~ClassMethod|FullyQualifiedName~PatternMatching|FullyQualifiedName~LocalImport)&Category!=Stress",
+    "exitCode": 0,
+    "summary": "Passed!  - Failed:     0, Passed:   803, Skipped:     0, Total:   803, Duration: 5 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)",
+    "log": "Lokad.Lython.PublicApi.Tests-net11.0.log"
+  },
+  {
+    "framework": "net10.0",
+    "project": "Lokad.Lython.Tests",
+    "filter": "(FullyQualifiedName~Static|FullyQualifiedName~Abstract|FullyQualifiedName~ParserCancellation|FullyQualifiedName~PostponedAnnotation|FullyQualifiedName~CallBindingSubsystem|FullyQualifiedName~ExecutableLocalImportBinding)&Category!=Stress",
+    "exitCode": 0,
+    "summary": "Passed!  - Failed:     0, Passed:    52, Skipped:     0, Total:    52, Duration: 539 ms - Lokad.Lython.WhiteBox.Tests.dll (net10.0)",
+    "log": "Lokad.Lython.Tests-net10.0.log"
+  },
+  {
+    "framework": "net10.0",
+    "project": "Lokad.Lython.PublicApi.Tests",
+    "filter": "(FullyQualifiedName~StaticErrorDiagnostics|FullyQualifiedName~StaticRuntimeArityAgreement|FullyQualifiedName~Diagnostic|FullyQualifiedName~ScopeDirective|FullyQualifiedName~ShortCircuit|FullyQualifiedName~ComprehensionEffect|FullyQualifiedName~SharedCompilerFact|FullyQualifiedName~CompilerCancellation|FullyQualifiedName~GovernedMemoryContract|FullyQualifiedName~MemoryDenialAttribution|FullyQualifiedName~ClassAnnotationExecution|FullyQualifiedName~RegexAnalysisBinding|FullyQualifiedName~AnnotationCompatibility|FullyQualifiedName~ParserCompatibility|FullyQualifiedName~FloatArithmeticPipeline|FullyQualifiedName~Complex|FullyQualifiedName~PostponedAnnotation|FullyQualifiedName~ClassMethod|FullyQualifiedName~PatternMatching|FullyQualifiedName~LocalImport)&Category!=Stress",
+    "exitCode": 0,
+    "summary": "Passed!  - Failed:     0, Passed:   803, Skipped:     0, Total:   803, Duration: 6 s - Lokad.Lython.PublicApi.Tests.dll (net10.0)",
+    "log": "Lokad.Lython.PublicApi.Tests-net10.0.log"
+  }
+]

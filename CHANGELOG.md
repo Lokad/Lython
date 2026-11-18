@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Parse numeric literals once for frontend analysis, annotations and execution.
+  Carry inferred numeric facts as values and preserve spelling-sensitive
+  diagnostics. Pack prefixed integer digits directly into magnitude storage.
+
 - Simplify frontend abstract validation with direct syntax selection, removing
   closed analyzer interfaces, singleton families and repeated family dispatch.
   Preserve state-sensitive checks, diagnostics, cancellation and memory admission.

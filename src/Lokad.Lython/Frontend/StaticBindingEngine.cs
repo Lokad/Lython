@@ -1,4 +1,3 @@
-using System.Globalization;
 
 namespace Lokad.Lython.Frontend;
 
@@ -385,7 +384,7 @@ internal static partial class StaticBindingEngine
                     var integers = new List<AbstractValue>(bytes.Length);
                     foreach (var item in bytes)
                     {
-                        integers.Add(AbstractValue.Integer(item.ToString(CultureInfo.InvariantCulture), expression.Span));
+                        integers.Add(AbstractValue.Integer(item, expression.Span));
                     }
 
                     items = integers;

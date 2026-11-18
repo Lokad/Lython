@@ -1,0 +1,8 @@
+{
+  "base": "925397f650b61c8a7578a3466d53d00a23bee846",
+  "cores": {
+    "net11.0": "56a28440d7f370578f65c253990a166a008fff96c7adad6d81d22dbcd99815ac",
+    "net10.0": "c73c2a00951e7ae0e5424482f423d65dad6d4f91a96eef43ea68fc3994beaa59"
+  },
+  "note": "Private development prototype. Complete-image timing and Linux qualification are pending."
+}

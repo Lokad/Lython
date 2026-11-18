@@ -1,3 +1,4 @@
+using System.Numerics;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Frontend;
@@ -190,6 +191,8 @@ internal readonly record struct AbstractValue
     internal object PayloadIdentity => _payload;
 
     public string RequireText() => _payload is TextPayload payload ? payload.Value : ThrowPayloadMismatch<string>();
+    public BigInteger RequireInteger() => _payload is IntegerPayload payload ? payload.Value : ThrowPayloadMismatch<BigInteger>();
+    public double RequireFloat() => _payload is FloatPayload payload ? payload.Value : ThrowPayloadMismatch<double>();
     public byte[] RequireBytes() => _payload is BytesPayload payload ? payload.Value : ThrowPayloadMismatch<byte[]>();
     public bool RequireBoolean() => _payload is BooleanPayload payload ? payload.Value : ThrowPayloadMismatch<bool>();
     public AbstractValue RequireNestedValue() => _payload is NestedValuePayload payload ? payload.Value : ThrowPayloadMismatch<AbstractValue>();
@@ -204,6 +207,33 @@ internal readonly record struct AbstractValue
     public AbstractInstanceSummary RequireInstanceSummary() => _payload is InstancePayload payload ? payload.Summary : ThrowPayloadMismatch<AbstractInstanceSummary>();
 
     public bool HasSamePayload(AbstractValue other) => Equals(_payload, other._payload);
+    internal int GetPayloadHashCode() => _payload.GetHashCode();
+
+    // Keep the existing diagnostic boundary for checks that only interpreted
+    // decimal source. Numeric spelling still participates in branch joins.
+    public bool TryGetDecimalInteger(out BigInteger value, bool allowSeparators = true)
+    {
+        if (_payload is IntegerPayload { IsDecimal: true } integer && (allowSeparators || !integer.HasSeparators))
+        {
+            value = integer.Value;
+            return true;
+        }
+
+        value = default;
+        return false;
+    }
+
+    public bool TryGetInt32(out int value, bool allowSeparators = true)
+    {
+        if (TryGetDecimalInteger(out var integer, allowSeparators) && integer >= int.MinValue && integer <= int.MaxValue)
+        {
+            value = (int)integer;
+            return true;
+        }
+
+        value = default;
+        return false;
+    }
 
     public static AbstractValue Unknown() => Unknown(SyntheticSpan);
     public static AbstractValue Unknown(LythonSourceSpan span) => Marker(AbstractValueKind.Unknown, span);
@@ -213,9 +243,14 @@ internal readonly record struct AbstractValue
     public static AbstractValue StringType(LythonSourceSpan span) => Marker(AbstractValueKind.StringType, span);
     public static AbstractValue Bytes(byte[] value, LythonSourceSpan span) => new(AbstractValueKind.Bytes, new BytesPayload(value), span);
     public static AbstractValue BytesType(LythonSourceSpan span) => Marker(AbstractValueKind.BytesType, span);
-    public static AbstractValue Integer(string valueText, LythonSourceSpan span) => new(AbstractValueKind.Integer, new TextPayload(valueText), span);
+    public static AbstractValue Integer(BigInteger value, LythonSourceSpan span)
+        => new(AbstractValueKind.Integer, new IntegerPayload(value, null, true, false), span);
+    public static AbstractValue Integer(IntegerLiteralExpressionSyntax literal)
+        => new(AbstractValueKind.Integer, new IntegerPayload(literal.Value, literal.NoncanonicalSpelling,
+            literal.IsDecimal, literal.HasSeparators), literal.Span);
     public static AbstractValue IntegerType(LythonSourceSpan span) => Marker(AbstractValueKind.IntegerType, span);
-    public static AbstractValue Float(string valueText, LythonSourceSpan span) => new(AbstractValueKind.Float, new TextPayload(valueText), span);
+    public static AbstractValue Float(FloatLiteralExpressionSyntax literal)
+        => new(AbstractValueKind.Float, new FloatPayload(literal.Value, literal.ValueText), literal.Span);
     public static AbstractValue FloatType(LythonSourceSpan span) => Marker(AbstractValueKind.FloatType, span);
     public static AbstractValue Boolean(bool value, LythonSourceSpan span) => new(AbstractValueKind.Boolean, new BooleanPayload(value), span);
     public static AbstractValue BooleanType(LythonSourceSpan span) => Marker(AbstractValueKind.BooleanType, span);
@@ -403,6 +438,8 @@ internal readonly record struct AbstractValue
     }
 
     private sealed record TextPayload(string Value) : AbstractPayload;
+    private sealed record IntegerPayload(BigInteger Value, string? NoncanonicalSpelling, bool IsDecimal, bool HasSeparators) : AbstractPayload;
+    private sealed record FloatPayload(double Value, string Spelling) : AbstractPayload;
     private sealed record BytesPayload(byte[] Value) : AbstractPayload;
     private sealed record BooleanPayload(bool Value) : AbstractPayload;
     private sealed record NestedValuePayload(AbstractValue Value) : AbstractPayload;

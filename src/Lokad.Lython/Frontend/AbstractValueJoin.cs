@@ -341,9 +341,11 @@ internal static class AbstractValueJoin
                     hash.AddBytes(value.RequireBytes());
                     break;
                 case AbstractValueKind.String:
+                    hash.Add(value.RequireText());
+                    break;
                 case AbstractValueKind.Integer:
                 case AbstractValueKind.Float:
-                    hash.Add(value.RequireText());
+                    hash.Add(value.GetPayloadHashCode());
                     break;
                 case AbstractValueKind.Boolean:
                     hash.Add(value.RequireBoolean());

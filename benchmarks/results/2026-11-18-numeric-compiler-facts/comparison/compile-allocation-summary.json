@@ -1,0 +1,26 @@
+[
+  {
+    "case": "scripts.csv-invoice.large",
+    "referenceBytes": 229904,
+    "candidateBytes": 229752,
+    "changeBytes": -152
+  },
+  {
+    "case": "scripts.report-render.large",
+    "referenceBytes": 106832,
+    "candidateBytes": 106824,
+    "changeBytes": -8
+  },
+  {
+    "case": "scripts.text-normalization.helper-list",
+    "referenceBytes": 121144,
+    "candidateBytes": 121152,
+    "changeBytes": 8
+  },
+  {
+    "case": "scripts.config-edit.small",
+    "referenceBytes": 94784,
+    "candidateBytes": 94768,
+    "changeBytes": -16
+  }
+]

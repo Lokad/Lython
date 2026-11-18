@@ -129,7 +129,7 @@ internal static class StaticRegexReturnResolver
         // Group zero is always text on a successful match; other captures can
         // be absent. Retain the conservative group() fact for those keys.
         var isZero = StaticAbstractValueResolver.TryResolve(key, bindings, out var index) &&
-            (TryGetInt32(index, out var integer) && integer == 0 ||
+            (index.TryGetInt32(out var integer) && integer == 0 ||
              index.Kind == AbstractValueKind.Boolean && !index.RequireBoolean());
         value = isZero ? AbstractValue.StringType(span) : AbstractValue.Unknown(span);
         return true;
@@ -273,7 +273,7 @@ internal static class StaticRegexReturnResolver
             return true;
         }
 
-        if (TryGetInt32(flagsValue, out var flags) && flags >= 0)
+        if (flagsValue.TryGetInt32(out var flags) && flags >= 0)
         {
             return TryTranslatePythonRegexFlags(flags, out options);
         }
@@ -377,7 +377,7 @@ internal static class StaticRegexReturnResolver
             { bound = fallback; return true; }
             if (value.Kind == AbstractValueKind.Boolean)
             { bound = value.RequireBoolean() ? 1 : 0; return true; }
-            return TryGetInt32(value, out bound);
+            return value.TryGetInt32(out bound);
         }
     }
 

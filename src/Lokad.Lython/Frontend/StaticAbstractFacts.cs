@@ -1,5 +1,3 @@
-using System.Globalization;
-
 namespace Lokad.Lython.Frontend;
 
 internal static class StaticAbstractFacts
@@ -197,19 +195,11 @@ internal static class StaticAbstractFacts
             case AbstractValueKind.Bytes:
                 truth = (value.RequireBytes()).Length != 0;
                 return true;
-            case AbstractValueKind.Integer when System.Numerics.BigInteger.TryParse(
-                (value.RequireText()).Replace("_", string.Empty, StringComparison.Ordinal),
-                NumberStyles.Integer,
-                CultureInfo.InvariantCulture,
-                out var integer):
+            case AbstractValueKind.Integer when value.TryGetDecimalInteger(out var integer):
                 truth = !integer.IsZero;
                 return true;
-            case AbstractValueKind.Float when double.TryParse(
-                (value.RequireText()).Replace("_", string.Empty, StringComparison.Ordinal),
-                NumberStyles.Float,
-                CultureInfo.InvariantCulture,
-                out var floating):
-                truth = floating != 0.0;
+            case AbstractValueKind.Float:
+                truth = value.RequireFloat() != 0.0;
                 return true;
             case AbstractValueKind.List:
             case AbstractValueKind.Tuple:
@@ -233,23 +223,7 @@ internal static class StaticAbstractFacts
 
     public static bool TryGetNonNegativeInt32(AbstractValue value, out int integer)
     {
-        if (TryGetInt32(value, out integer) && integer >= 0)
-        {
-            return true;
-        }
-
-        integer = 0;
-        return false;
-    }
-
-    public static bool TryGetInt32(AbstractValue value, out int integer)
-    {
-        if (value.Kind == AbstractValueKind.Integer &&
-            int.TryParse(
-                (value.RequireText()).Replace("_", string.Empty, StringComparison.Ordinal),
-                NumberStyles.Integer,
-                CultureInfo.InvariantCulture,
-                out integer))
+        if (value.TryGetInt32(out integer) && integer >= 0)
         {
             return true;
         }

@@ -23,24 +23,21 @@ internal sealed partial class Parser
 
         if (CurrentToken == Token.Integer)
         {
-            var tokenIndex = ReadToken();
-            return new IntegerLiteralExpressionSyntax(
-                _tokens.GetString(tokenIndex),
-                SpanOf(tokenIndex));
+            return ParseIntegerLiteral(ReadToken());
         }
 
         if (CurrentToken == Token.Imaginary)
         {
             var imaginaryToken = ReadToken();
-            return new ImaginaryLiteralExpressionSyntax(_tokens.GetString(imaginaryToken), SpanOf(imaginaryToken));
+            var spelling = _tokens.GetString(imaginaryToken);
+            return new ImaginaryLiteralExpressionSyntax(ParseFloatingLiteral(spelling, imaginary: true), SpanOf(imaginaryToken));
         }
 
         if (CurrentToken == Token.Float)
         {
             var tokenIndex = ReadToken();
-            return new FloatLiteralExpressionSyntax(
-                _tokens.GetString(tokenIndex),
-                SpanOf(tokenIndex));
+            var spelling = _tokens.GetString(tokenIndex);
+            return new FloatLiteralExpressionSyntax(ParseFloatingLiteral(spelling, imaginary: false), spelling, SpanOf(tokenIndex));
         }
 
         if (CurrentToken == Token.True)

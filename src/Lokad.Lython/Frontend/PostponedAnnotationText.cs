@@ -175,9 +175,9 @@ internal static class PostponedAnnotationText
                 case IdentifierExpressionSyntax identifier: Queue(T(OriginalName(identifier.Span))); break;
                 case StringLiteralExpressionSyntax text: Queue(T(Quote(text.Value))); break;
                 case BytesLiteralExpressionSyntax bytes: Queue(T(Bytes(bytes.Value))); break;
-                case IntegerLiteralExpressionSyntax integer: Queue(T(PyNumberOps.ParseInteger(integer.ValueText).ToString(CultureInfo.InvariantCulture))); break;
-                case FloatLiteralExpressionSyntax number: Queue(T(Float(number.ValueText))); break;
-                case ImaginaryLiteralExpressionSyntax imaginary: Queue(T(Imaginary(imaginary.ValueText))); break;
+                case IntegerLiteralExpressionSyntax integer: Queue(T(integer.Value.ToString(CultureInfo.InvariantCulture))); break;
+                case FloatLiteralExpressionSyntax number: Queue(T(Float(number.Value))); break;
+                case ImaginaryLiteralExpressionSyntax imaginary: Queue(T(Imaginary(imaginary.Value))); break;
                 case BooleanLiteralExpressionSyntax boolean: Queue(T(boolean.Value ? "True" : "False")); break;
                 case NoneLiteralExpressionSyntax: Queue(T("None")); break;
                 case EllipsisLiteralExpressionSyntax: Queue(T("...")); break;
@@ -457,12 +457,11 @@ internal static class PostponedAnnotationText
             return result;
         }
 
-        private static string Float(string source)
-            => PyNumberOps.RenderFloat(double.Parse(source.Replace("_", "", StringComparison.Ordinal), CultureInfo.InvariantCulture)).Replace("inf", "1e309", StringComparison.Ordinal);
-        private static string Imaginary(string source)
+        private static string Float(double value)
+            => PyNumberOps.RenderFloat(value).Replace("inf", "1e309", StringComparison.Ordinal);
+        private static string Imaginary(double value)
         {
-            var value = double.Parse(source[..^1].Replace("_", "", StringComparison.Ordinal), CultureInfo.InvariantCulture);
-            var text = PyNumberOps.RenderFloat(value).Replace("inf", "1e309", StringComparison.Ordinal);
+            var text = Float(value);
             return (text.EndsWith(".0", StringComparison.Ordinal) ? text[..^2] : text) + "j";
         }
         private string Bytes(byte[] bytes)

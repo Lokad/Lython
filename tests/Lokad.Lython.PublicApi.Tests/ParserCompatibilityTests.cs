@@ -252,6 +252,19 @@ return [
     }
 
     [Fact]
+    public void Run_ParsesUnsignedPrefixedMagnitudesAcrossByteBoundaries()
+    {
+        var source = $"return [0b1_{new string('0', 320)}, 0o_{new string('7', 101)}, 0x_{new string('F', 80)}]";
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(FormatDiagnostic)));
+        var one = System.Numerics.BigInteger.One;
+        Assert.Equal(
+            new object?[] { one << 320, (one << 303) - one, (one << 320) - one },
+            Assert.IsType<List<object?>>(result.ReturnValue));
+    }
+
+    [Fact]
     public void Compile_AcceptsOrdinarySoftKeywordContinuationAndPostfixShapes()
     {
         var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(

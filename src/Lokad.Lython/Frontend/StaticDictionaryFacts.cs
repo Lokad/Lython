@@ -1,6 +1,3 @@
-using System.Globalization;
-using System.Numerics;
-
 namespace Lokad.Lython.Frontend;
 
 internal static class StaticDictionaryFacts
@@ -53,21 +50,15 @@ internal static class StaticDictionaryFacts
                 equal = left.HasSamePayload(right);
                 return true;
             case AbstractValueKind.Integer:
-                if (BigInteger.TryParse(left.RequireText().Replace("_", ""), NumberStyles.Integer, CultureInfo.InvariantCulture, out var leftInteger) &&
-                    BigInteger.TryParse(right.RequireText().Replace("_", ""), NumberStyles.Integer, CultureInfo.InvariantCulture, out var rightInteger))
+                if (left.TryGetDecimalInteger(out var leftInteger) && right.TryGetDecimalInteger(out var rightInteger))
                 {
                     equal = leftInteger == rightInteger;
                     return true;
                 }
                 return false;
             case AbstractValueKind.Float:
-                if (double.TryParse(left.RequireText().Replace("_", ""), NumberStyles.Float, CultureInfo.InvariantCulture, out var leftFloat) &&
-                    double.TryParse(right.RequireText().Replace("_", ""), NumberStyles.Float, CultureInfo.InvariantCulture, out var rightFloat))
-                {
-                    equal = leftFloat == rightFloat;
-                    return true;
-                }
-                return false;
+                equal = left.RequireFloat() == right.RequireFloat();
+                return true;
             case AbstractValueKind.Bytes:
                 equal = left.RequireBytes().AsSpan().SequenceEqual(right.RequireBytes());
                 return true;

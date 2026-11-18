@@ -1,3 +1,5 @@
+using System.Numerics;
+
 namespace Lokad.Lython.Frontend;
 
 internal sealed record FrontendResult(
@@ -464,12 +466,16 @@ internal sealed record BytesLiteralExpressionSyntax(
     LythonSourceSpan Span) : ExpressionSyntax(Span);
 
 internal sealed record IntegerLiteralExpressionSyntax(
-    string ValueText,
+    BigInteger Value,
+    string? NoncanonicalSpelling,
+    bool IsDecimal,
+    bool HasSeparators,
     LythonSourceSpan Span) : ExpressionSyntax(Span);
 
-internal sealed record ImaginaryLiteralExpressionSyntax(string ValueText, LythonSourceSpan Span) : ExpressionSyntax(Span);
+internal sealed record ImaginaryLiteralExpressionSyntax(double Value, LythonSourceSpan Span) : ExpressionSyntax(Span);
 
 internal sealed record FloatLiteralExpressionSyntax(
+    double Value,
     string ValueText,
     LythonSourceSpan Span) : ExpressionSyntax(Span);
 

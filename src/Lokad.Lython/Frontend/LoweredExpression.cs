@@ -1,6 +1,5 @@
 using System.Numerics;
 using Lokad.Lython.Runtime;
-using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Frontend;
@@ -55,18 +54,20 @@ internal sealed record LoweredIntegerLiteralExpression(
     public override ExpressionSyntax Syntax => Literal;
     // The immutable magnitude belongs to the compiled program. Lowered consumers
     // still box the value independently when Python observes an integer object.
-    public BigInteger Value { get; } = PyNumberOps.ParseInteger(Literal.ValueText);
+    public BigInteger Value => Literal.Value;
 }
 
 internal sealed record LoweredImaginaryLiteralExpression(ImaginaryLiteralExpressionSyntax Literal) : LoweredExpression
 {
     public override ExpressionSyntax Syntax => Literal;
+    public double ImaginaryPart => Literal.Value;
 }
 
 internal sealed record LoweredFloatLiteralExpression(
     FloatLiteralExpressionSyntax Literal) : LoweredExpression
 {
     public override ExpressionSyntax Syntax => Literal;
+    public double Value => Literal.Value;
 }
 
 internal sealed record LoweredBooleanLiteralExpression(

@@ -1,4 +1,3 @@
-using System.Globalization;
 using Lokad.Lython.Runtime;
 using static Lokad.Lython.Frontend.StaticKnownCallArgumentChecks;
 
@@ -264,7 +263,7 @@ internal static partial class StaticDataModuleContractFamily
             return false;
         }
 
-        if (TryGetInt32(value, out var which) && which is 1 or 2)
+        if (value.TryGetInt32(out var which) && which is 1 or 2)
         {
             return false;
         }
@@ -340,7 +339,7 @@ internal static partial class StaticDataModuleContractFamily
             return true;
         }
 
-        if (TryGetInt32(value, out var integer))
+        if (value.TryGetInt32(out var integer))
         {
             if (integer > 0)
             {
@@ -400,25 +399,15 @@ internal static partial class StaticDataModuleContractFamily
 
     private static bool TryGetDouble(AbstractValue value, out double number)
     {
-        if (value.Kind == AbstractValueKind.Integer &&
-            int.TryParse(
-                (value.RequireText()).Replace("_", string.Empty, StringComparison.Ordinal),
-                NumberStyles.Integer,
-                CultureInfo.InvariantCulture,
-                out var integer))
+        if (value.TryGetInt32(out var integer))
         {
             number = integer;
             return true;
         }
 
-        if (value.Kind == AbstractValueKind.Float &&
-            double.TryParse(
-                (value.RequireText()).Replace("_", string.Empty, StringComparison.Ordinal),
-                NumberStyles.Float,
-                CultureInfo.InvariantCulture,
-                out var floating))
+        if (value.Kind == AbstractValueKind.Float)
         {
-            number = floating;
+            number = value.RequireFloat();
             return true;
         }
 

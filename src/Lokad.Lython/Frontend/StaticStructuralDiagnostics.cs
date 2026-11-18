@@ -290,9 +290,7 @@ internal static partial class StaticStructuralDiagnostics
                 value = resolved.RequireBoolean() ? System.Numerics.BigInteger.One : System.Numerics.BigInteger.Zero;
                 return true;
             case AbstractValueKind.Integer:
-                if (System.Numerics.BigInteger.TryParse(
-                    (resolved.RequireText()).Replace("_", string.Empty, StringComparison.Ordinal),
-                    out var integer))
+                if (resolved.TryGetDecimalInteger(out var integer))
                 {
                     value = integer;
                     return true;
@@ -332,7 +330,7 @@ internal static partial class StaticStructuralDiagnostics
             expression = parenthesized.Inner;
         }
 
-        if (StaticAbstractFacts.TryGetInt32(value, out index))
+        if (value.TryGetInt32(out index))
         {
             return true;
         }
@@ -343,7 +341,7 @@ internal static partial class StaticStructuralDiagnostics
                 Operand: var operand
             } &&
             StaticAbstractValueResolver.TryResolve(operand, bindings, out var unsignedValue) &&
-            StaticAbstractFacts.TryGetInt32(unsignedValue, out var unsignedIndex) &&
+            unsignedValue.TryGetInt32(out var unsignedIndex) &&
             unsignedIndex != int.MinValue)
         {
             index = -unsignedIndex;

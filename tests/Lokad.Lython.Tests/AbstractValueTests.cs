@@ -11,13 +11,13 @@ public sealed class AbstractValueTests
     {
         var left = AbstractValue.Dict(
         [
-            Pair(AbstractValue.String("alpha", Span), AbstractValue.Integer("1", Span)),
+            Pair(AbstractValue.String("alpha", Span), AbstractValue.Integer(1, Span)),
             Pair(AbstractValue.Bytes([1, 2, 3], Span), AbstractValue.String("left", Span)),
         ], Span);
         var right = AbstractValue.Dict(
         [
             Pair(AbstractValue.Bytes([1, 2, 3], Span), AbstractValue.String("right", Span)),
-            Pair(AbstractValue.String("alpha", Span), AbstractValue.Integer("1", Span)),
+            Pair(AbstractValue.String("alpha", Span), AbstractValue.Integer(1, Span)),
         ], Span);
 
         var joined = AbstractValue.Join(left, right, Span);
@@ -51,11 +51,11 @@ public sealed class AbstractValueTests
     [Fact]
     public void Factories_ExposeOnlyTheirTypedPayloads()
     {
-        var value = AbstractValue.List([AbstractValue.Integer("1", Span)], Span);
+        var value = AbstractValue.List([AbstractValue.Integer(1, Span)], Span);
 
         var items = value.RequireSequenceItems();
         Assert.Single(items);
-        Assert.Equal("1", items[0].RequireText());
+        Assert.Equal(System.Numerics.BigInteger.One, items[0].RequireInteger());
         Assert.Throws<InvalidOperationException>(() => value.RequireText());
     }
 
