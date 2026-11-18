@@ -9455,3 +9455,9 @@ visibility requires publication. Invoice allocation fell 3.45% and
 compile-to-result elapsed fell 3.08–4.67% with supporting CPU. Invoice warm
 is mixed. Validated-record warm rose 0.67–2.30% with mixed CPU. Keep both
 outcomes with the positional control and unchanged memory balances.
+
+[R553 text normalization attribution](results/2026-11-18-normalization-attribution/README.md)
+found host file work surrounding the guest outweighed any individual runtime
+path in the local managed samples. Drain and split construction are next
+candidates for a narrower RAM-backed source gate. No CPU portion or source
+gain is inferred.
