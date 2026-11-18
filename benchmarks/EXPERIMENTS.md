@@ -9410,3 +9410,9 @@ lean adverse, with mixed CPU. Compilation allocation changed by at most
 160 bytes, complete-script execution allocation and accounted peaks matched,
 and all focused Release checks passed. This advances frontend simplification.
 Whole-script performance and full delivery are separate.
+
+[R540/R542 combined delivery](results/2026-11-18-json-encoder-allocation/delivery/README.md)
+passed corrected run 44332004310 at c3d21ab45. Both platforms and targets passed
+ordinary Release, original stress and the installed package consumer. The
+original Ubuntu measurement failure and its correction remain archived.
+The 588 verified core inputs match the measured encoder source.
