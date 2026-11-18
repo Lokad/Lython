@@ -81,16 +81,18 @@ private drain stays funded through output admission and completion. Join retains
 exact output capacity; neither operation needs a growing byte buffer or final
 payload copy. Actual retained results still fund their storage.
 
-Line splitting and ordinary text split share range-based final construction. A
-bounded UTF-8 scan identifies Python line breaks, including CRLF and Unicode
-separators, using the active execution context. Final list capacity, fragment shells
-and any shared-backing header are admitted together before allocation. Ordinary
+Line splitting and ordinary text split count and admit final storage, then write
+directly without temporary range inventories. Common single-byte separators and
+Python line boundaries use bounded bulk counts; general and cased forms reuse
+their semantic scanners. Conservative fragment, capacity and shared-header bounds
+are admitted together before allocation. Construction commits retained estimates
+and releases unused reservation headroom. Ordinary
 long fragments and slices share immutable UTF-8 backing already funded by the same
 owner. Short inline values, transformed output and foreign/unowned input retain
 independent construction. A whole unchanged same-owner input can remain an alias.
 Relinquishing a private source shell never refunds its shared backing: a small view
 can keep the entire capacity charged until owner cleanup. This conservative sibling
-retention, cached range capacity and replacement overlap can cause earlier rejection;
+retention, conservative preflight headroom and replacement overlap can cause earlier rejection;
 exact tiny-budget thresholds are not a compatibility contract.
 
 Default trimming and whitespace splitting share a bounded managed ASCII scanner;
@@ -891,9 +893,9 @@ The entire compiled capacity is admitted before binding, including for mirrored
 functions; it can remain idle in this cache after the call. Idle retention and
 earlier capacity admission can reject tight shared allowances sooner. No workspace crosses
 executions or retains a prior token or guest argument.
-The same lifetime policy retains one word-buffer loan per execution, shared by
-larger ordinary splits and private cased-word iteration. One admitted object owns
-the range array and private cursor state; repeated lines reuse that storage.
+The same lifetime policy retains one word-buffer loan per execution for private
+cased-word iteration. One admitted object owns its range array and private cursor
+state; repeated lines reuse that storage.
 Returned loans clear guest/source references. Growth admits replacement capacity
 while the previous loan stays funded. Active and nested loans survive idle-cache
 shutdown; later returns relinquish their capacity. All backing remains charged,
@@ -1225,16 +1227,12 @@ Builder growth commits and publishes its surviving backing before refunding the
 old one. Release publishes an empty owner before refund callbacks. A failing or
 reentrant refund therefore cannot make later cleanup refund retained input storage.
 
-Whitespace and explicit-separator splitting collect UTF-8 ranges, then admit the complete string
-output and final list capacity together. It fills and adopts the final element
-array, as do fixed-count executable list displays, without an intermediate list
-copy or per-element growth. Reverse splitting fills that same array in final order.
-An unchanged whole string may retain its existing owner; a different output owner
-receives independent storage. Larger range inventories borrow admitted execution
-buffers and return them after materialization. Idle capacity stays charged until
-execution cleanup; result strings and aliases independently keep their batch owner.
-This can reject earlier than incremental fragment admission. Scans and bounded
-copies observe cancellation; an individual CLR allocation cannot be interrupted.
+Ordinary splitting admits complete output capacity before filling and adopting
+the final element array, including reverse order. It retains no temporary range
+inventory. Shared source backing and result aliases keep their owner; foreign
+output receives independent storage. Conservative preflight can reject earlier
+than incremental fragment admission. Scans and bounded copies observe cancellation;
+an individual CLR allocation cannot be interrupted.
 
 Native comparison, truth and Boolean bitwise results reuse immutable CLR Boolean
 boxes. Custom comparison methods still return their original objects. Boolean
@@ -1965,8 +1963,8 @@ construction returns only private output funding and preserves input aliases.
 
 Eligible native helper returns combining `lower()` or `upper()` with a default
 whitespace `split()` or `rsplit()` write independently owned words directly. One forward
-word-range planner handles ordinary splitting and conservative case-output
-capacity. Forward/reverse discovery use managed bulk searches over fixed ASCII
+whitespace scanner serves direct construction and private iteration with conservative
+case-output capacity. Forward/reverse discovery use managed bulk searches over fixed ASCII
 inventories derived from the same whitespace classifier, decoding
 Unicode scalars at non-ASCII boundaries. The shared casing writer preserves Unicode expansions
 and final-sigma context. Final word capacities are admitted together;

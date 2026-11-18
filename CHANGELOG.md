@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Construct ordinary text splits directly in admitted final storage, removing
+  temporary range inventories and their growth/loan lifecycle. Common separators
+  and line boundaries use bounded bulk sizing; conservative preflight headroom
+  can reject tight allowances earlier. Retained aliases and cleanup stay funded.
+
 - Complete buffered generator yields inside the executable instruction loop,
   avoiding redundant suspension and unused send-result transport. Preserve Python
   iteration order, external sends, cancellation, admission and awaited cleanup.

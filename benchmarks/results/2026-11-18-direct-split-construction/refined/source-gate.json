@@ -1,0 +1,35 @@
+{
+  "base": "462aea0a9b11078aa364bf06b41308c222fbb337",
+  "state": "Refined private2ede09fc; both targets119internal/298public plus334independent assertions perAPI/sixgoldens/reuse pass; B939 timing in progress, no promotion",
+  "evidence": "R512 current1bce text allocation sample; range inventories17.03percent approximate tick weight, not exact bytes/CPU/saving.",
+  "hypothesis": "Ordinary deterministic split scanners can count/admit final capacity and then write it directly, removing eager range inventory and its pool growth/copy/clear lifecycle without introducing new escaping representations.",
+  "remove": [
+    "ordinary SplitCore and SplitLineRanges range arrays/loan lifecycle",
+    "CollectSeparatedRanges inventory writer",
+    "CollectWhitespaceReverse inventory writer",
+    "ordinary BuildSplitResult inventory walk; preserve final reservation, UTF8 sharing and final-array adoption"
+  ],
+  "retain": [
+    "existing TryReadWhitespaceRange scanner and managed bounded cancellation",
+    "range inventory genuinely retained by private cased whitespace iteration",
+    "whole-source reuse, stable aliases, inline UTF8 and same-owner backing funding",
+    "terminal first refusal and output construction overlap/rollback"
+  ],
+  "design": "Reuse existing forward whitespace state; expose equivalent deterministic separated/reverse/line range progression through a small private scanner state. Two bounded passes: count/major estimates, then exact final construction. No public option, universal buffer/tagged value, new owner/cache or tracing.",
+  "tradeoffs": [
+    "additional scan may cost CPU; measured decision required",
+    "removed scratch funding changes tiny-budget thresholds conservatively; final storage still admitted before allocation",
+    "snapshot source/arguments through admission reentry; no guest operation occurs during scans"
+  ],
+  "acceptance": [
+    "existing Unicode29whitespace/custom separators/maxsplit/reverse/linebreak/casing/identity regressions",
+    "focused both-target cancellation/refusal/retained aliases/budget cleanup",
+    "actual copied32file worker six goldens/allocation/reuse",
+    "one bounded whole-text warm/fresh plus floating/positional control source pair; document regression debt; full qualification at retained boundary"
+  ],
+  "publicationHeld": true,
+  "initialCondition": "Two obsolete idle-inventory assertions failed; renamed to retained-funding assertions and strengthened to exact retained balance. No runtime correction; originals preserved.",
+  "firstSourceDecision": "Initialf572 saved in measured-first/canonical initial; unchangedB938 warm+5.8..+8.4percent/CPU+2.5..+3.2percent means no unchanged promotion; preserve all adversity.",
+  "refinement": "Bulk count common single-byte delimiters/Python lines for conservative preflight; direct final scan commits retained estimates and refunds only unused headroom. No new owner/cache/policy or range-inventory restoration.",
+  "refinedMemory": "Allocation-17.319percent; accounted peak+1.12percent from conservative preflight. Earlier denial allowed/documented; initial lower peak not relabelled."
+}

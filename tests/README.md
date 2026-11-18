@@ -307,8 +307,8 @@ callback's explicit admission despite attempted suppression and finally returns.
 Prepared-range cleanup checks model cancellation before a helper return publishes
 its private cursor, checking that cache shutdown keeps the loan funded until
 actual retirement. They use no timer race or test-only checkpoint counter.
-Range-growth refusal/cancellation checks preserve the input and return capacity
-at cleanup. Ordinary split aliases remain funded after the inventory cache ends;
+Private cased-range growth/refusal checks preserve input and return capacity
+at cleanup. Ordinary split results keep exact retained funding through cleanup;
 refund-reentry fixtures observe completed Python bindings without requiring an
 exact internal refund size.
 

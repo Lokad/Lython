@@ -1,0 +1,8 @@
+{
+  "beforeCollection": true,
+  "observedFreeBytes": 265809920,
+  "guardUnchanged": "254MiB plus payload and margin",
+  "guardRejectedBeforeRetirementOrRootCreation": true,
+  "serviceNotLaunched": true,
+  "correction": "Add exact committed initial/confirmation raw JSON replicas to fresh proof; preserve current1bce and all catalogs/images/unmatched files"
+}

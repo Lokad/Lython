@@ -236,122 +236,96 @@ internal static partial class PyStringOps
         MemoryGovernor? governor, LythonSourceSpan? span, LythonRuntime.ExecutionContext? context,
         CaseMapping? casing = null, PyString? separator = null)
     {
-        governor ??= value.OwnerMemoryGovernor;
-        span ??= PyStructuralGuard.AmbientSpan;
-        context ??= PyStructuralGuard.AmbientContext;
-        governor?.ThrowIfAdmissionFailed();
-        context?.CheckExecution(span);
-        var source = value.Utf8Span;
-        // Small splits use fixed stack storage. Larger inventories grow directly
-        // in admitted execution-owned buffers shared with private iteration.
-        Span<(int Start, int End, int Capacity)> ranges = stackalloc (int, int, int)[8];
-        var count = 0;
-        long outputBytes = 0;
-        CasedWhitespaceIteration? prepared = null;
-        try
-        {
-            if (separator is not null)
-            {
-                if (separator.ByteLength == 0) throw new InvalidOperationException("empty separator");
-                CollectSeparatedRanges(source, separator.Utf8Span, maxSplit, reverse,
-                    ref ranges, ref count, ref outputBytes, ref prepared, governor, span, context);
-            }
-            else if (reverse)
-                CollectWhitespaceReverse(source, maxSplit, ref ranges, ref count, ref outputBytes,
-                    ref prepared, governor, span, context);
-            else
-                CollectWhitespaceForward(source, maxSplit, ref ranges, ref count, ref outputBytes,
-                    ref prepared, governor, span, context, casing);
-
-            return BuildSplitResult(value, ranges[..count], outputBytes, reverse, casing, governor, span, context);
-        }
-        finally { if (prepared is not null) governor?.ReturnWordRanges(prepared, count); }
+        return BuildSplitResult(value, separator, new(value.ByteLength, maxSplit, reverse, false, false, casing),
+            casing, governor, span, context);
     }
 
     private static PyList SplitLineRanges(PyString value, bool keepEnds, MemoryGovernor? governor,
         LythonSourceSpan? span, LythonRuntime.ExecutionContext? context)
+        => BuildSplitResult(value, null, new(value.ByteLength, -1, false, true, keepEnds, null),
+            null, governor, span, context);
+
+    private static PyList BuildSplitResult(PyString value, PyString? separator, SplitScanState scan,
+        CaseMapping? casing, MemoryGovernor? governor, LythonSourceSpan? span,
+        LythonRuntime.ExecutionContext? context)
     {
         governor ??= value.OwnerMemoryGovernor;
         span ??= PyStructuralGuard.AmbientSpan;
         context ??= PyStructuralGuard.AmbientContext;
         governor?.ThrowIfAdmissionFailed();
         context?.CheckExecution(span);
-        Span<(int Start, int End, int Capacity)> ranges = stackalloc (int, int, int)[8];
-        var count = 0;
-        long outputBytes = 0;
-        CasedWhitespaceIteration? prepared = null;
-        try
-        {
-            var source = value.Utf8Span;
-            var start = 0;
-            for (var offset = 0; offset < source.Length;)
-            {
-                context?.CheckExecution(span);
-                var end = offset + Math.Min(4096, source.Length - offset);
-                while (offset < end)
-                {
-                    var candidate = source[offset..end].IndexOfAny(LineBreakCandidates);
-                    if (candidate < 0) { offset = end; break; }
-                    offset += candidate;
-                    if (TryGetLineBreakByteLength(source, offset, out var width))
-                    {
-                        var after = offset + width;
-                        AppendSplitRange(ref ranges, ref count, start, keepEnds ? after : offset,
-                            ref outputBytes, ref prepared, governor, span, context);
-                        start = offset = after;
-                    }
-                    else offset++;
-                }
-            }
-            if (start < source.Length)
-                AppendSplitRange(ref ranges, ref count, start, source.Length,
-                    ref outputBytes, ref prepared, governor, span, context);
-            return BuildSplitResult(value, ranges[..count], outputBytes, false, null, governor, span, context);
-        }
-        finally { if (prepared is not null) governor?.ReturnWordRanges(prepared, count); }
-    }
-
-    private static PyList BuildSplitResult(PyString value, ReadOnlySpan<(int Start, int End, int Capacity)> ranges,
-        long outputBytes, bool reverse, CaseMapping? casing, MemoryGovernor? governor,
-        LythonSourceSpan? span, LythonRuntime.ExecutionContext? context)
-    {
-        // All split forms admit final backing/fragments together, then adopt the
-        // completed array. Immutable same-owner ranges share their existing
-        // backing; transformed, foreign and small inline fragments are copied.
+        if (separator is { ByteLength: 0 }) throw new InvalidOperationException("empty separator");
         var source = value.Utf8Span;
-        var reuseWhole = casing is null && ranges.Length == 1 && ranges[0].Start == 0 &&
-            ranges[0].End == source.Length && ReferenceEquals(governor, value.OwnerMemoryGovernor);
-        if (reuseWhole && ranges[0].Capacity != 0)
-            outputBytes -= PyString.EstimateApproximateBytes(ranges[0].Capacity);
-        var borrow = !reuseWhole && casing is null && value.CanBorrowUtf8Ranges(governor);
-        var sharedHeader = 0;
-        if (borrow)
+        var delimiter = separator is null ? default : separator.Utf8Span;
+        var sizing = scan;
+        long outputBytes = 0, sharedPayload = 0;
+        (int Start, int End, int Capacity) first = default;
+        var bulkCount = TryCountBulkSplit(source, delimiter, scan, context, span, out var count,
+            out var payloadBytes, out var wholeSource);
+        if (!bulkCount)
         {
-            var sharesBacking = false;
-            foreach (var range in ranges)
+            while (TryReadSplitRange(source, delimiter, ref sizing, context, span, out var range))
             {
                 context?.CheckExecution(span);
-                if (range.Capacity <= PyString.InlineUtf8Capacity) continue;
-                outputBytes -= range.Capacity;
-                sharesBacking = true;
+                if (count == 0) first = range;
+                count = checked(count + 1);
+                if (range.Capacity != 0)
+                    outputBytes = checked(outputBytes + PyString.EstimateApproximateBytes(range.Capacity));
+                if (range.Capacity > PyString.InlineUtf8Capacity)
+                    sharedPayload = checked(sharedPayload + range.Capacity);
             }
-            if (sharesBacking) sharedHeader = value.Utf8SharingHeaderBytes;
+            wholeSource = count == 1 && first.Start == 0 && first.End == source.Length;
         }
-        var resultBytes = checked(outputBytes + PyList.EstimateCapacityBytes(ranges.Length));
-        using var output = governor?.ReserveTemporary(checked(resultBytes + sharedHeader), span);
+
+        // Deterministic scanning establishes exact final capacity before any
+        // allocation. Replay directly into it; no temporary range table or loan.
+        var reuseWhole = casing is null && wholeSource && ReferenceEquals(governor, value.OwnerMemoryGovernor);
+        var borrow = !reuseWhole && casing is null && value.CanBorrowUtf8Ranges(governor);
+        var sharedHeader = borrow && (bulkCount ? source.Length > PyString.InlineUtf8Capacity : sharedPayload != 0)
+            ? value.Utf8SharingHeaderBytes : 0;
+        if (bulkCount)
+        {
+            // Every nonempty part needs at most one shell. Shared large parts
+            // copy no payload; short parts copy at most their inline capacity.
+            // Empty/whole-source parts and unused headroom are refunded after
+            // exact final construction, without relinquishing retained storage.
+            outputBytes = reuseWhole ? 0 : checked(Math.Min(count, payloadBytes) * PyString.EstimateApproximateBytes(0)
+                + (borrow ? Math.Min(payloadBytes, (long)count * PyString.InlineUtf8Capacity) : payloadBytes));
+        }
+        else if (reuseWhole && first.Capacity != 0)
+            outputBytes -= PyString.EstimateApproximateBytes(first.Capacity);
+        else if (borrow) outputBytes -= sharedPayload;
+        var resultBytes = PyList.EstimateCapacityBytes(count);
+        using var output = governor?.ReserveTemporary(checked(resultBytes + outputBytes + sharedHeader), span);
         context?.CheckExecution(span);
-        // This part belongs to the surviving source backing, even when later
-        // construction fails and private output reservations are rolled back.
-        output?.Commit(sharedHeader);
-        var parts = ranges.IsEmpty ? Array.Empty<object>() : new object[ranges.Length];
-        for (var index = 0; index < parts.Length; index++)
+        var parts = count == 0 ? Array.Empty<object>() : new object[count];
+        var index = 0;
+        var headerCommitted = false;
+        while (TryReadSplitRange(source, delimiter, ref scan, context, span, out var range))
         {
             context?.CheckExecution(span);
-            var range = ranges[reverse ? parts.Length - index - 1 : index];
-            parts[index] = reuseWhole ? value
-                : borrow && range.Capacity > PyString.InlineUtf8Capacity
-                    ? value.CreateReservedUtf8Range(range.Start, range.Capacity, governor!)
-                    : CreateSplitFragment(source, range, casing, governor, span, context);
+            object fragment;
+            if (reuseWhole) fragment = value;
+            else
+            {
+                var bytes = range.Capacity == 0 ? 0 : PyString.EstimateApproximateBytes(range.Capacity);
+                if (borrow && range.Capacity > PyString.InlineUtf8Capacity)
+                {
+                    if (!headerCommitted)
+                    {
+                        // Fund surviving source backing before its first view;
+                        // admission reentry may already have established it.
+                        output?.Commit(value.Utf8SharingHeaderBytes);
+                        headerCommitted = true;
+                    }
+                    fragment = value.CreateReservedUtf8Range(range.Start, range.Capacity, governor!);
+                    bytes -= range.Capacity;
+                }
+                else fragment = CreateSplitFragment(source, range, casing, governor, span, context);
+                resultBytes = checked(resultBytes + bytes);
+            }
+            parts[scan.Reverse ? parts.Length - index - 1 : index] = fragment;
+            index++;
         }
         var result = PyList.FromTransferredArray(parts, governor, span);
         context?.CheckExecution(span);
@@ -384,29 +358,6 @@ internal static partial class PyStringOps
         return fragment;
     }
 
-
-    private static void CollectSeparatedRanges(ReadOnlySpan<byte> source, ReadOnlySpan<byte> separator,
-        int maxSplit, bool reverse, scoped ref Span<(int Start, int End, int Capacity)> ranges,
-        ref int count, ref long outputBytes,
-        ref CasedWhitespaceIteration? prepared, MemoryGovernor? governor, LythonSourceSpan? span,
-        LythonRuntime.ExecutionContext? context)
-    {
-        var offset = reverse ? source.Length : 0;
-        var splits = 0;
-        while (maxSplit < 0 || splits < maxSplit)
-        {
-            var remaining = reverse ? source[..offset] : source[offset..];
-            var found = LythonRuntime.FindBytes(remaining, separator, context, span, reverse);
-            if (found < 0) break;
-            if (!reverse) found += offset;
-            AppendSplitRange(ref ranges, ref count, reverse ? found + separator.Length : offset,
-                reverse ? offset : found, ref outputBytes, ref prepared, governor, span, context);
-            offset = reverse ? found : found + separator.Length;
-            splits++;
-        }
-        AppendSplitRange(ref ranges, ref count, reverse ? 0 : offset, reverse ? offset : source.Length,
-            ref outputBytes, ref prepared, governor, span, context);
-    }
 
     private struct WhitespaceRangeState(int maxSplit, CaseMapping? casing)
     {
@@ -519,58 +470,6 @@ internal static partial class PyStringOps
         }
         range = default;
         return false;
-    }
-
-    private static void CollectWhitespaceReverse(ReadOnlySpan<byte> source, int remaining,
-        scoped ref Span<(int Start, int End, int Capacity)> ranges, ref int count, ref long outputBytes,
-        ref CasedWhitespaceIteration? prepared, MemoryGovernor? governor,
-        LythonSourceSpan? span, LythonRuntime.ExecutionContext? context)
-    {
-        var end = -1;
-        for (var position = source.Length; position > 0;)
-        {
-            context?.CheckExecution(span);
-            var chunkStart = Math.Max(0, position - 64);
-            do
-            {
-                int width;
-                bool whitespace;
-                if (source[position - 1] < 0x80)
-                {
-                    whitespace = IsAsciiWhitespace(source[position - 1]);
-                    width = AsciiWhitespaceRunLength(source[chunkStart..position], whitespace, reverse: true);
-                }
-                else
-                {
-                    Rune.DecodeLastFromUtf8(source[..position], out var rune, out width);
-                    whitespace = IsPythonWhitespace(rune);
-                }
-                if (whitespace)
-                {
-                    if (end >= 0)
-                    {
-                        AppendSplitRange(ref ranges, ref count, position, end, ref outputBytes,
-                            ref prepared, governor, span, context);
-                        end = -1;
-                        remaining--;
-                    }
-                }
-                else if (end < 0)
-                {
-                    end = position;
-                    if (remaining == 0)
-                    {
-                        AppendSplitRange(ref ranges, ref count, 0, end, ref outputBytes,
-                            ref prepared, governor, span, context);
-                        return;
-                    }
-                }
-                position -= width;
-            } while (position > chunkStart);
-        }
-        if (end >= 0)
-            AppendSplitRange(ref ranges, ref count, 0, end, ref outputBytes,
-                ref prepared, governor, span, context);
     }
 
     private static void AppendSplitRange(scoped ref Span<(int Start, int End, int Capacity)> ranges,

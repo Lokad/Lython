@@ -78,7 +78,7 @@ public sealed class WhitespaceStorageOwnershipTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void SpilledRangeCacheRetiresWhileResultAliasesRemainFunded(bool reverse)
+    public void CompletedSplitKeepsResultAliasesFundedThroughCleanup(bool reverse)
     {
         var budget = new LythonMemoryBudget(1024 * 1024);
         for (var execution = 0; execution < 2; execution++)
@@ -95,7 +95,7 @@ public sealed class WhitespaceStorageOwnershipTests
                 var fragments = result.Cast<PyString>().ToArray();
                 Assert.All(fragments, value => Assert.Equal("α", value.AsString()));
                 var retained = checked(baseline + result.CommittedStorageBytes + fragments.Sum(value => value.CommittedOwnedBytes));
-                Assert.True(governor.CurrentCommittedBytes > retained); // idle inventory remains owned
+                Assert.Equal(retained, governor.CurrentCommittedBytes);
                 context.State.CloseResources();
                 Assert.Equal(retained, governor.CurrentCommittedBytes);
                 Assert.Equal(0, governor.CurrentReservedBytes);
