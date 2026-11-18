@@ -1,0 +1,87 @@
+{
+  "all": 9043,
+  "totalWeight": 965953344,
+  "result": [
+    {
+      "type": "Lokad.Lython.Runtime.Text.PyString",
+      "count": 2942,
+      "weight": 313577032,
+      "origins": [
+        {
+          "frames": "LythonRuntime\u002BCsvRecordParser.FinishRecord \u003C- LythonRuntime\u002BCsvRecordParser.Feed \u003C- LythonRuntime\u002BCsvRecordSource.FeedNativeLine \u003C- LythonRuntime\u002BCsvRecordSource.Pull",
+          "Count": 2940,
+          "Weight": 313363832
+        },
+        {
+          "frames": "Text.PyString.CopyFromUtf8 \u003C- PyRendering.RenderInteger \u003C- PyRendering.ToInterpolatedPyString \u003C- LythonRuntime\u002BCsvWriterMembers\u002B\u003C\u003Ec__DisplayClass5_0\u002B\u003C\u003CWriteRowCoreAsync\u003Eg__AppendAsync|0\u003Ed.MoveNext",
+          "Count": 1,
+          "Weight": 106600
+        },
+        {
+          "frames": "Text.PyString.CopyFromUtf8 \u003C- PyRendering.RenderInteger \u003C- PyRendering.ToInterpolatedPyString \u003C- LythonRuntime\u002BPrintCallable.Invoke",
+          "Count": 1,
+          "Weight": 106600
+        }
+      ]
+    },
+    {
+      "type": "System.Numerics.BigInteger",
+      "count": 2209,
+      "weight": 235461840,
+      "origins": [
+        {
+          "frames": "LythonRuntime\u002BExecutableSlot.PublishInteger \u003C- LythonRuntime\u002BNativeExecution.RunCore \u003C- LythonRuntime\u002BNativeExecution.Run \u003C- PyExecutableFunction.StartInline",
+          "Count": 1139,
+          "Weight": 121409368
+        },
+        {
+          "frames": "LythonRuntime\u002BCsvDictReaderObject\u002B\u003CNextAsync\u003Ed__22.MoveNext \u003C- LythonRuntime\u002BExecutionContext.ExecuteForNext \u003C- LythonRuntime\u002BExecutionContext.ExecuteInstructionPrefix \u003C- LythonRuntime\u002BExecutionContext.Execute",
+          "Count": 412,
+          "Weight": 43917128
+        },
+        {
+          "frames": "LythonRuntime\u002BCsvDictReaderObject\u002B\u003CGetFieldNamesAsync\u003Ed__19.MoveNext \u003C- LythonRuntime\u002BCsvDictReaderObject\u002B\u003CNextAsync\u003Ed__22.MoveNext \u003C- LythonRuntime\u002BExecutionContext.ExecuteForNext \u003C- LythonRuntime\u002BExecutionContext.ExecuteInstructionPrefix",
+          "Count": 252,
+          "Weight": 26856560
+        },
+        {
+          "frames": "LythonRuntime\u002BExecutionContext.ExecuteInstructionPrefix \u003C- LythonRuntime\u002BExecutionContext.Execute \u003C- LythonRuntime\u002B\u003C\u003Ec__DisplayClass739_0.\u003CRun\u003Eb__0 \u003C- ExecutionThreads\u002BWorkItem.Execute",
+          "Count": 183,
+          "Weight": 19506936
+        },
+        {
+          "frames": "LythonRuntime\u002BCsvDictReaderObject\u002B\u003CNextAsync\u003Ed__22.MoveNext \u003C- LythonRuntime\u002BExecutionContext.ExecuteForNext \u003C- LythonRuntime\u002BExecutionContext.ExecuteInstructionPrefix \u003C- LythonRuntime\u002BExecutionContext.ExecuteUntilCall",
+          "Count": 145,
+          "Weight": 15457032
+        },
+        {
+          "frames": "LythonRuntime\u002BExecutionContext.ExecuteInstructionPrefix \u003C- LythonRuntime\u002BExecutionContext.ExecuteUntilCall \u003C- LythonRuntime\u002BExecutionContext.Execute \u003C- LythonRuntime.ExecuteInitializedFrame",
+          "Count": 76,
+          "Weight": 8101616
+        },
+        {
+          "frames": "LythonRuntime\u002BExecutionContext.ExecuteInstructionPrefix \u003C- LythonRuntime\u002BExecutionContext.ExecuteUntilCall \u003C- LythonRuntime\u002BExecutionContext.Execute \u003C- LythonRuntime\u002B\u003C\u003Ec__DisplayClass739_0.\u003CRun\u003Eb__0",
+          "Count": 1,
+          "Weight": 106600
+        },
+        {
+          "frames": "LythonRuntime\u002BExecutableSlot.PublishSharedInteger \u003C- PyIteration.AdvanceBuiltinSequence \u003C- PyIteration\u002BCursor.MoveNext \u003C- LythonRuntime\u002BExecutionContext\u002B\u003CExecutePreparedSuspendingOperationAsync\u003Ed__175.MoveNext",
+          "Count": 1,
+          "Weight": 106600
+        }
+      ]
+    },
+    {
+      "type": "Lokad.Lython.Runtime.PyDict",
+      "count": 909,
+      "weight": 96889400,
+      "origins": [
+        {
+          "frames": "PyDict\u002BRecordKeys.TryAdoptRecord \u003C- LythonRuntime\u002BCsvDictReaderObject\u002B\u003CNextAsync\u003Ed__22.MoveNext \u003C- LythonRuntime\u002BExecutionContext.ExecuteForNext \u003C- LythonRuntime\u002BExecutionContext.ExecuteInstructionPrefix",
+          "Count": 909,
+          "Weight": 96889400
+        }
+      ]
+    }
+  ]
+}

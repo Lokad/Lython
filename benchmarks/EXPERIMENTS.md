@@ -9416,3 +9416,15 @@ passed corrected run 44332004310 at c3d21ab45. Both platforms and targets passed
 ordinary Release, original stress and the installed package consumer. The
 original Ubuntu measurement failure and its correction remain archived.
 The 588 verified core inputs match the measured encoder source.
+
+[R548/B976 abstract branch maps](results/2026-11-18-abstract-branch-maps/README.md)
+removes map refill and temporary set joins. CSV compile elapsed fell
+2.05–2.29% and complete helper text fell 0.89–2.07% with supporting CPU.
+Complete invoice elapsed remains mixed and leans adverse. Keep its observation,
+the unchanged controls and exact checks separate from the earlier scope pair.
+
+[R549 invoice field and line-number attribution](results/2026-11-18-invoice-field-attribution/README.md)
+uses the original R545 trace. CSV final strings and record adoption already
+own their final storage. Reader line-number and header methods account for
+809 integer allocation triggers by nearest frame. Preserve observable member
+values and protocols while investigating removal of the routine boxed state.

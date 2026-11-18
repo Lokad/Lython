@@ -114,7 +114,7 @@ internal static class AnnotationDiagnostics
                 merged = AbstractState.Merge(merged, elseBindings);
             }
 
-            bindings.ReplaceWith(merged);
+            bindings.TakeBranchResult(merged);
         }
 
         switch (statement)
@@ -187,7 +187,7 @@ internal static class AnnotationDiagnostics
                     }
 
                     AnalyzeStatements(withStatement.Body, diagnostics, withBindings, returnAnnotation, lastChecks, exportBindings: true);
-                    bindings.ReplaceWith(withBindings);
+                    bindings.TakeBranchResult(withBindings);
                     foreach (var name in withStatement.BoundNames) bindings.Remove(name);
                     break;
                 }
@@ -206,7 +206,7 @@ internal static class AnnotationDiagnostics
 
                     if (hasCase)
                     {
-                        bindings.ReplaceWith(AbstractState.Merge(bindings, merged));
+                        bindings.TakeBranchResult(AbstractState.Merge(bindings, merged));
                     }
                     break;
                 }
@@ -238,7 +238,7 @@ internal static class AnnotationDiagnostics
                         AnalyzeStatements(tryStatement.FinallyBody, diagnostics, merged, returnAnnotation, lastChecks, exportBindings: true);
                     }
 
-                    bindings.ReplaceWith(merged);
+                    bindings.TakeBranchResult(merged);
                     break;
                 }
 

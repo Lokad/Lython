@@ -67,8 +67,8 @@ internal sealed class AbstractState
     // node. Every mutation clears the cache; no version or structural hash is
     // needed, including for recursively nested syntax records.
     private readonly Dictionary<ExpressionSyntax, AbstractValueResolution> _abstractValueCache;
-    private readonly Dictionary<string, AbstractSequenceLengthBounds> _sequenceLengths;
-    private readonly Dictionary<string, AbstractValue> _values;
+    private Dictionary<string, AbstractSequenceLengthBounds> _sequenceLengths;
+    private Dictionary<string, AbstractValue> _values;
     private bool _containerFactsInvalidated;
 
     internal StaticAnalysisContext? AnalysisContext { get; }
@@ -353,43 +353,39 @@ internal sealed class AbstractState
         new Dictionary<string, AbstractValue>(_values, StringComparer.Ordinal),
         new Dictionary<string, AbstractSequenceLengthBounds>(_sequenceLengths, StringComparer.Ordinal), AnalysisContext);
 
-    public void ReplaceWith(AbstractState other)
+    // The caller relinquishes this branch. Exchange maps so the two states
+    // retain independent mutable bindings.
+    public void TakeBranchResult(AbstractState branch)
     {
-        _containerFactsInvalidated |= other._containerFactsInvalidated;
-        _values.Clear();
-        foreach (var (name, value) in other._values)
-        {
-            _values[name] = value;
-        }
+        var priorInvalidation = _containerFactsInvalidated;
+        _containerFactsInvalidated |= branch._containerFactsInvalidated;
+        branch._containerFactsInvalidated = priorInvalidation;
 
-        _sequenceLengths.Clear();
-        foreach (var (name, bounds) in other._sequenceLengths)
-        {
-            _sequenceLengths[name] = bounds;
-        }
-
+        (_values, branch._values) = (branch._values, _values);
+        (_sequenceLengths, branch._sequenceLengths) = (branch._sequenceLengths, _sequenceLengths);
         InvalidateCachedFacts();
+        branch.InvalidateCachedFacts();
     }
 
     public void MergeFrom(AbstractState left, AbstractState right)
     {
         _containerFactsInvalidated |= left._containerFactsInvalidated || right._containerFactsInvalidated;
         _values.Clear();
-        foreach (var name in left._values.Keys.Concat(right._values.Keys).Distinct(StringComparer.Ordinal))
+        foreach (var (name, leftValue) in left._values)
         {
-            if (left._values.TryGetValue(name, out var leftValue) &&
-                right._values.TryGetValue(name, out var rightValue))
+            if (right._values.TryGetValue(name, out var rightValue))
             {
                 _values[name] = AbstractValue.Join(leftValue, rightValue);
             }
         }
 
         _sequenceLengths.Clear();
-        foreach (var name in left._sequenceLengths.Keys.Intersect(right._sequenceLengths.Keys, StringComparer.Ordinal))
+        foreach (var (name, leftBounds) in left._sequenceLengths)
         {
-            _sequenceLengths[name] = AbstractSequenceLengthBounds.Union(
-                left._sequenceLengths[name],
-                right._sequenceLengths[name]);
+            if (right._sequenceLengths.TryGetValue(name, out var rightBounds))
+            {
+                _sequenceLengths[name] = AbstractSequenceLengthBounds.Union(leftBounds, rightBounds);
+            }
         }
 
         InvalidateCachedFacts();

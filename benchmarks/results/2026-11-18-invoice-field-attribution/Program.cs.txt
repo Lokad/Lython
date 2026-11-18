@@ -1,0 +1,39 @@
+using Microsoft.Diagnostics.Tracing.Etlx;
+using System.Text.Json;
+
+var tracePath = Path.ChangeExtension(args[0], ".etlx");
+TraceLog.CreateFromEventPipeDataFile(args[0], tracePath, new TraceLogOptions());
+using var trace = new TraceLog(tracePath);
+var origins = new Dictionary<(string Type, string Frames), (int Count, long Weight)>();
+var all = 0;
+long totalWeight = 0;
+foreach (var e in trace.Events)
+{
+    if (!e.EventName.Contains("AllocationTick", StringComparison.Ordinal)) continue;
+    all++;
+    var type = e.PayloadByName("TypeName")?.ToString() ?? "<unknown>";
+    var weight = Convert.ToInt64(e.PayloadByName("AllocationAmount64"));
+    totalWeight += weight;
+    if (type is not ("Lokad.Lython.Runtime.Text.PyString" or "System.Numerics.BigInteger" or "Lokad.Lython.Runtime.PyDict")) continue;
+    var frames = new List<string>();
+    for (var site = e.CallStack(); site is not null && frames.Count < 4; site = site.Caller)
+    {
+        var name = site.CodeAddress.FullMethodName;
+        if (!name.StartsWith("Lokad.Lython.", StringComparison.Ordinal)) continue;
+        var end = name.IndexOf('(');
+        if (end >= 0) name = name[..end];
+        frames.Add(name.Replace("Lokad.Lython.Runtime.", ""));
+    }
+    var key = (type, string.Join(" <- ", frames));
+    var tally = origins.GetValueOrDefault(key);
+    origins[key] = (tally.Count + 1, tally.Weight + weight);
+}
+var result = origins.GroupBy(pair => pair.Key.Type).Select(group => new
+{
+    type = group.Key,
+    count = group.Sum(pair => pair.Value.Count),
+    weight = group.Sum(pair => pair.Value.Weight),
+    origins = group.OrderByDescending(pair => pair.Value.Count).Select(pair => new { frames = pair.Key.Frames, pair.Value.Count, pair.Value.Weight })
+});
+File.WriteAllText(args[1], JsonSerializer.Serialize(new { all, totalWeight, result },
+    new JsonSerializerOptions { WriteIndented = true }) + "\n");

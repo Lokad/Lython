@@ -312,7 +312,7 @@ internal static partial class StaticBindingEngine
                             return true;
                         }
 
-                        bindings.ReplaceWith(withBindings);
+                        bindings.TakeBranchResult(withBindings);
                         foreach (var name in withStatement.BoundNames) bindings.Remove(name);
 
                         break;
@@ -337,11 +337,11 @@ internal static partial class StaticBindingEngine
 
                         if (thenReturned)
                         {
-                            bindings.ReplaceWith(elseBindings);
+                            bindings.TakeBranchResult(elseBindings);
                         }
                         else if (elseReturned)
                         {
-                            bindings.ReplaceWith(thenBindings);
+                            bindings.TakeBranchResult(thenBindings);
                         }
                         else
                         {

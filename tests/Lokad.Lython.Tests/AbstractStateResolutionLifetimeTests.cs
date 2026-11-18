@@ -21,7 +21,7 @@ public sealed class AbstractStateResolutionLifetimeTests
     }
 
     [Fact]
-    public void ClonedBindingsAndReplacementResolveIndependently()
+    public void SelectedBranchUsesItsBindingsAndClearsPriorResolution()
     {
         var original = new AbstractState();
         original.Set("value", AbstractValue.Integer(1, Span));
@@ -30,8 +30,10 @@ public sealed class AbstractStateResolutionLifetimeTests
         clone.Set("value", AbstractValue.Integer(2, Span));
         AssertInteger(clone, 2);
         AssertInteger(original, 1);
-        original.ReplaceWith(clone);
+        original.TakeBranchResult(clone);
         AssertInteger(original, 2);
+        clone.Remove("value");
+        Assert.True(original.TryGet("value", out _));
     }
 
     [Fact]

@@ -227,7 +227,7 @@ internal static class StaticConditionRefinements
 
         if (recognizedFailure)
         {
-            bindings.ReplaceWith(failedPaths.RequireNotNull());
+            bindings.TakeBranchResult(failedPaths.RequireNotNull());
         }
 
         return recognizedFailure;

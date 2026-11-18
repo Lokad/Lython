@@ -161,7 +161,7 @@ internal static partial class StaticAbstractInterpreter
                         AnalyzeExpression(binary.Right, diagnostics, rightBindings);
                         if (TryResolveConditionTruth(binary.Left, bindings, out _))
                         {
-                            bindings.ReplaceWith(rightBindings);
+                            bindings.TakeBranchResult(rightBindings);
                         }
                         else
                         {
@@ -200,7 +200,7 @@ internal static partial class StaticAbstractInterpreter
                     var selectedBindings = bindings.Clone();
                     StaticConditionRefinements.Apply(conditional.Condition, conditionalTruth, selectedBindings);
                     AnalyzeExpression(conditionalTruth ? conditional.Consequent : conditional.Alternative, diagnostics, selectedBindings);
-                    bindings.ReplaceWith(selectedBindings);
+                    bindings.TakeBranchResult(selectedBindings);
                 }
                 else
                 {

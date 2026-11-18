@@ -1,0 +1,191 @@
+{
+  "complete": true,
+  "elapsedSeconds": 233.06574478698894,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "archivalOnlyRecovery": null,
+  "rows": [
+    {
+      "case": "scripts.csv-invoice.large",
+      "lane": "compile",
+      "elapsedMilliseconds": {
+        "candidate": 0.09901291727541954,
+        "reference": 0.1013322391965916,
+        "candidate-control": 0.09904172025594882,
+        "reference-control": 0.10111561358597056
+      },
+      "cpuMilliseconds": {
+        "candidate": 0.10069101678183613,
+        "reference": 0.10144045445323595,
+        "candidate-control": 0.09998000399920015,
+        "reference-control": 0.10280185446482565
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.7761449040124915,
+        "reference": 0.6585461277894681,
+        "candidate-control": 0.39700518007148705,
+        "reference-control": 0.40427617348429107
+      },
+      "elapsedChangePercent": [
+        -2.2888292408819733,
+        -2.260404940030003,
+        -2.0794971577394072,
+        -2.0510119619246314
+      ],
+      "cpuChangePercent": [
+        -2.744941207836882,
+        -2.0533070088845085,
+        -1.4397120575884936,
+        -0.7387956564659404
+      ],
+      "referenceSpreadPercent": 0.2142355695016862,
+      "candidateSpreadPercent": 0.029090124119024452
+    },
+    {
+      "case": "scripts.text-normalization.helper-list",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "candidate": 1.214902607235142,
+        "reference": 1.2344353595800526,
+        "candidate-control": 1.2234429711286088,
+        "reference-control": 1.2406409765625
+      },
+      "cpuMilliseconds": {
+        "candidate": 1.2919896640826873,
+        "reference": 1.3123359580052494,
+        "candidate-control": 1.2860892388451444,
+        "reference-control": 1.3020833333333333
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.3234727236214345,
+        "reference": 0.13782853725560676,
+        "candidate-control": 0.4659249015962767,
+        "reference-control": 0.6327122550594207
+      },
+      "elapsedChangePercent": [
+        -2.074602549294502,
+        -1.5823228161218061,
+        -1.386219362312413,
+        -0.8904790652775274
+      ],
+      "cpuChangePercent": [
+        -2.0000000000000018,
+        -1.5503875968992276,
+        -1.228346456692908,
+        -0.7751937984496027
+      ],
+      "referenceSpreadPercent": 0.5027089457773304,
+      "candidateSpreadPercent": 0.7029669574010411
+    },
+    {
+      "case": "scripts.config-edit.small",
+      "lane": "compile",
+      "elapsedMilliseconds": {
+        "reference-control": 0.03650138647519965,
+        "candidate-control": 0.03649773590783944,
+        "reference": 0.03661904497586661,
+        "candidate": 0.03636245294465818
+      },
+      "cpuMilliseconds": {
+        "reference-control": 0.03663272034581288,
+        "candidate-control": 0.036226633821185336,
+        "reference": 0.036565745209887375,
+        "candidate": 0.036993193252441554
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 1.5439920461723151,
+        "candidate-control": 0.8220597144825514,
+        "reference": 0.7735789987611071,
+        "candidate": 0.6884298473064976
+      },
+      "elapsedChangePercent": [
+        -0.7007065077135,
+        -0.3806253514119562,
+        -0.3312731615669473,
+        -0.010001174510698707
+      ],
+      "cpuChangePercent": [
+        -1.1085349949282675,
+        -0.9274018258223382,
+        0.9840189405149635,
+        1.1689849067771707
+      ],
+      "referenceSpreadPercent": 0.3223398123435972,
+      "candidateSpreadPercent": 0.3720402564347136
+    },
+    {
+      "case": "scripts.csv-invoice.large",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "reference-control": 7.046336142857143,
+        "candidate-control": 7.135375728571429,
+        "reference": 7.080741114285714,
+        "candidate": 7.079369528571428
+      },
+      "cpuMilliseconds": {
+        "reference-control": 7.285714285714286,
+        "candidate-control": 7.285714285714286,
+        "reference": 7.285714285714286,
+        "candidate": 7.142857142857142
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.526661545869644,
+        "candidate-control": 0.3344969514379373,
+        "reference": 0.7901680945512415,
+        "candidate": 0.13040406602633164
+      },
+      "elapsedChangePercent": [
+        -0.019370651915495696,
+        0.46880229731547374,
+        0.7715945746906039,
+        1.2636295502953754
+      ],
+      "cpuChangePercent": [
+        -1.9607843137254943,
+        -1.9607843137254943,
+        0.0,
+        0.0
+      ],
+      "referenceSpreadPercent": 0.4882675298345962,
+      "candidateSpreadPercent": 0.7911184714114228
+    },
+    {
+      "case": "calls.positional.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 2.042419367346939,
+        "candidate-control": 2.0524804285714287,
+        "reference": 2.0952446008403363,
+        "candidate": 2.064916767634855
+      },
+      "cpuMilliseconds": {
+        "reference-control": 2.0408163265306123,
+        "candidate-control": 2.0408163265306123,
+        "reference": 2.100840336134454,
+        "candidate": 2.074688796680498
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.3671997682540092,
+        "candidate-control": 0.13524780335224504,
+        "reference": 0.5885582661409469,
+        "candidate": 1.5434606819402932
+      },
+      "elapsedChangePercent": [
+        -2.041010975604296,
+        -1.4474602723384966,
+        0.4926050636485657,
+        1.1015073910672912
+      ],
+      "cpuChangePercent": [
+        -2.857142857142858,
+        -1.2448132780082943,
+        0.0,
+        1.6597510373444146
+      ],
+      "referenceSpreadPercent": 2.586404846033963,
+      "candidateSpreadPercent": 0.605917546901158
+    }
+  ],
+  "CPythonRefreshed": false,
+  "decision": "Retained for simpler ownership and the measured compile and text-helper gains."
+}

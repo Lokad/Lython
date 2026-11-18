@@ -85,7 +85,7 @@ internal static partial class StaticAbstractInterpreter
                 }
 
                 AnalyzeStatements(withStatement.Body, diagnostics, withBindings);
-                bindings.ReplaceWith(withBindings);
+                bindings.TakeBranchResult(withBindings);
                 foreach (var name in withStatement.BoundNames)
                     bindings.Remove(name);
                 return;
@@ -112,7 +112,7 @@ internal static partial class StaticAbstractInterpreter
                     forMergedBindings = AbstractState.Merge(forMergedBindings, forElseBindings);
                 }
 
-                bindings.ReplaceWith(forMergedBindings);
+                bindings.TakeBranchResult(forMergedBindings);
                 return;
             }
 
@@ -135,7 +135,7 @@ internal static partial class StaticAbstractInterpreter
                     whileMergedBindings = AbstractState.Merge(whileMergedBindings, whileElseBindings);
                 }
 
-                bindings.ReplaceWith(whileMergedBindings);
+                bindings.TakeBranchResult(whileMergedBindings);
                 return;
             }
 
@@ -150,7 +150,7 @@ internal static partial class StaticAbstractInterpreter
                     if (matchCase.Guard is not null)
                     {
                         AnalyzeExpression(matchCase.Guard, diagnostics, caseBindings);
-                        bindings.ReplaceWith(AbstractState.Merge(bindings, caseBindings));
+                        bindings.TakeBranchResult(AbstractState.Merge(bindings, caseBindings));
                         StaticConditionRefinements.Apply(matchCase.Guard, assumedTruth: true, caseBindings);
                     }
 
@@ -161,7 +161,7 @@ internal static partial class StaticAbstractInterpreter
 
                 if (hasMatchCase)
                 {
-                    bindings.ReplaceWith(AbstractState.Merge(bindings, mergedMatchBindings));
+                    bindings.TakeBranchResult(AbstractState.Merge(bindings, mergedMatchBindings));
                 }
 
                 return;
@@ -301,14 +301,14 @@ internal static partial class StaticAbstractInterpreter
                 var reachableBindings = bindings.Clone();
                 StaticConditionRefinements.Apply(ifStatement.Condition, assumedTruth: true, reachableBindings);
                 AnalyzeStatements(ifStatement.ThenStatements, diagnostics, reachableBindings);
-                bindings.ReplaceWith(reachableBindings);
+                bindings.TakeBranchResult(reachableBindings);
             }
             else if (ifStatement.ElseStatements is not null)
             {
                 var reachableBindings = bindings.Clone();
                 StaticConditionRefinements.Apply(ifStatement.Condition, assumedTruth: false, reachableBindings);
                 AnalyzeStatements(ifStatement.ElseStatements, diagnostics, reachableBindings);
-                bindings.ReplaceWith(reachableBindings);
+                bindings.TakeBranchResult(reachableBindings);
             }
 
             return;
@@ -328,11 +328,11 @@ internal static partial class StaticAbstractInterpreter
         var elseExits = ifStatement.ElseStatements is not null && StatementsAlwaysExit(ifStatement.ElseStatements);
         if (thenExits && !elseExits)
         {
-            bindings.ReplaceWith(elseBindings);
+            bindings.TakeBranchResult(elseBindings);
         }
         else if (!thenExits && elseExits)
         {
-            bindings.ReplaceWith(thenBindings);
+            bindings.TakeBranchResult(thenBindings);
         }
         else
         {
@@ -383,7 +383,7 @@ internal static partial class StaticAbstractInterpreter
             AnalyzeStatements(tryStatement.FinallyBody, diagnostics, continuationBindings);
         }
 
-        bindings.ReplaceWith(continuationBindings);
+        bindings.TakeBranchResult(continuationBindings);
     }
 
     private static void InvalidateDirectiveBindings(
