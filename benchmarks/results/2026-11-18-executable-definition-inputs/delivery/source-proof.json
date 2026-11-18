@@ -1,0 +1,15 @@
+{
+  "qualified": "2783d3d7f08bff4d83d51fa7b1898266b43f01ff",
+  "candidate": "add5e4fe34b775e571e9453993fa7e21f42b6efe",
+  "baseline": "7fe127123ed1c5e8994e47e2c5fca77a3bae34a0",
+  "identicalSourceAndTests": true,
+  "productionCoreFiles": 590,
+  "measuredPatchSHA256": "2bcfad9579d6d6c6faa367ce70c2704fb18ec6641e05c97a69aefc9a08626396",
+  "measurementArchiveSHA256": "6e2e73ec52ce1a96799dbeb9782ffc1ce20febdd31e9802354c4e52490b23dd6",
+  "expectedTestsPerTarget": [
+    4893,
+    18081,
+    14,
+    406
+  ]
+}

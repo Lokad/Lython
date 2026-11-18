@@ -43,4 +43,5 @@ out before the run. The narrowed inventory found two verified aliases of an
 already archived earlier core, which the launcher retired after a fresh check.
 
 [Measurements](summary.json) · [Raw observations](observations.tgz) ·
-[Source, tests and procedures](checks-and-procedures.tar.xz)
+[Source, tests and procedures](checks-and-procedures.tar.xz) ·
+[Full Release qualification](delivery/README.md)
