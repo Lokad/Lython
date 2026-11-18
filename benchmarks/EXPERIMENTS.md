@@ -9331,3 +9331,15 @@ R529/B958 [current runtime source gate](results/2026-11-18-runtime-source-gate/R
 R530/B959-B960 [native Call assembly source gate](results/2026-11-18-native-call-body/corrected/README.md), exact qualified925397f65/2c6b304b. Original tuple-environment-key launcher failure before worker start preserved; one correction reuses identical image/catalog/goldens. Helper6656invocations/7.622guestseconds,1609all-thread samples289unknown;157Call leaves uniquely match same-process3574-byteTier1, hottest16-byte result shuttle53samples. Skid/inlining prevent removable-share or speedup claims. Select isolatedR531 stable result transport, preserving snapshots at ownership/retirement/reentry/suspension boundaries; source-pair CPU/assembly evidence still required. No new framework/controller or production promotion; broader objective/publicationheld. Quiet/Closed/join/SHAarchive/floors pass.
 
 R531 [stable result transport focused prototype](results/2026-11-18-result-transport/focused/README.md), private76555c49net11/4124f5c2net10 versus qualified925397f65/2c6b304b. Two files/five private readonly-reference result parameters remove intermediary by-value transport, preserve authoritative storage/retirement/reentry/suspension snapshots. Settled nonincremental Release solution build zero warnings/errors;151internal/84public each actualtarget. One-off81caller audit no direct backing/ref-local arguments, not semantic proof. No new metadata/framework/runner/policy/layout/public API. Isolated/unpromoted; full-image goldens/allocation/source-pair CPU+elapsed/actual assembly and retained qualification pending. No speedup/allocation claim; wider objective and independent regex active, normal0.4pin/publicationheld.
+
+R531/B961 [result transport comparison](results/2026-11-18-result-transport/comparison/README.md)
+compared the qualified `2c6b304b` image with the private `76555c49` prototype.
+All five quiet VM jobs completed in 233.28 seconds. Helper warm measurements
+cross zero and the prototype controls differ by 4.23%. Fresh and floating CPU
+are mixed. Execution allocations and accounted peaks are effectively flat, and
+compile allocations match. Windows Tier1 assembly shows the result copy gone and
+the call body 60 bytes smaller. The private patch was withdrawn because the gain
+did not justify the longer borrow invariant. The VM inventory timeout, local
+fixture-prefix rejection and diagnostic time limit are preserved. All output,
+ownership, quiet and archive checks pass. Next pursue shared numeric compiler
+facts to remove repeated parsing and the abstract numeric text representation.

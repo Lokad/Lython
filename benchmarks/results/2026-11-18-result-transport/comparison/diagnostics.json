@@ -1,0 +1,23 @@
+{
+  "boundary": "Actual frozen images on Windows x64, .NET 11 RC3. JIT diagnostics only, no timing inference.",
+  "rows": {
+    "reference": {
+      "core": "2c6b304be4c81e2c70d4b0e0e89b71fb26e33521a561405255b939c2716d8226",
+      "compileAllocatedBytes": {
+        "scripts.text-normalization.helper-list": 121144,
+        "scripts.numeric-squared-error.floating.large": 138832,
+        "calls.positional.large": 44792
+      },
+      "completeTier1NativeCallBytes": 3488
+    },
+    "candidate": {
+      "core": "76555c495e0505257cc5db0ce2501833bec30d98894206df3e8477fa62e2264c",
+      "compileAllocatedBytes": {
+        "scripts.text-normalization.helper-list": 121144,
+        "scripts.numeric-squared-error.floating.large": 138832,
+        "calls.positional.large": 44792
+      },
+      "completeTier1NativeCallBytes": 3428
+    }
+  }
+}
