@@ -1,0 +1,574 @@
+{
+  "purpose": "One-off caller-shape audit. Element/ref-local aliases require review; other expressions still require ownership reasoning and behavioral checks. Not a semantic proof or permanent architecture test.",
+  "calls": 81,
+  "directBackingOrRefLocalArguments": [],
+  "rows": [
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Arithmetic.cs:96",
+      "name": "PublishInstructionResult",
+      "expression": "value",
+      "kind": "IdentifierName",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs:473",
+      "name": "PublishInstructionResult",
+      "expression": "value.IsUnassigned ? ExecutableSlot.FromObject(PyNone.Instance) : value",
+      "kind": "ConditionalExpression",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs:69",
+      "name": "PublishInstructionResult",
+      "expression": "value",
+      "kind": "IdentifierName",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs:97",
+      "name": "PublishInstructionResult",
+      "expression": "result",
+      "kind": "IdentifierName",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs:111",
+      "name": "PublishInstructionResult",
+      "expression": "result",
+      "kind": "IdentifierName",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs:209",
+      "name": "PublishInstructionResult",
+      "expression": "result",
+      "kind": "IdentifierName",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs:224",
+      "name": "PublishInstructionResult",
+      "expression": "pending.GetAwaiter().GetResult()",
+      "kind": "InvocationExpression",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs:230",
+      "name": "PublishInstructionResult",
+      "expression": "await pending.ConfigureAwait(false)",
+      "kind": "AwaitExpression",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.CasedSplits.cs:44",
+      "name": "PublishInstructionResult",
+      "expression": "result",
+      "kind": "IdentifierName",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.DictionaryAccumulation.cs:67",
+      "name": "PublishInstructionResult",
+      "expression": "word.Value!",
+      "kind": "SuppressNullableWarningExpression",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.DictionaryAccumulation.cs:147",
+      "name": "PublishInstructionResult",
+      "expression": "value",
+      "kind": "IdentifierName",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Inputs.cs:25",
+      "name": "PublishInstructionResult",
+      "expression": "value",
+      "kind": "IdentifierName",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Inputs.cs:95",
+      "name": "PublishInstructionResult",
+      "expression": "fieldValue",
+      "kind": "IdentifierName",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Inputs.cs:133",
+      "name": "PublishInstructionResult",
+      "expression": "result",
+      "kind": "IdentifierName",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Inputs.cs:173",
+      "name": "PublishInstructionResult",
+      "expression": "result",
+      "kind": "IdentifierName",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs:20",
+      "name": "PublishInstructionResult",
+      "expression": "cached",
+      "kind": "IdentifierName",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs:46",
+      "name": "PublishInstructionResult",
+      "expression": "member.Value",
+      "kind": "SimpleMemberAccessExpression",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs:66",
+      "name": "PublishInstructionResult",
+      "expression": "next.TakeSlotValue()",
+      "kind": "InvocationExpression",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs:115",
+      "name": "PublishInstructionResult",
+      "expression": "_delegation!.ReturnValue",
+      "kind": "SimpleMemberAccessExpression",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs:147",
+      "name": "PublishInstructionResult",
+      "expression": "await PyContextManagers.ResolveAsync(target, instruction.Span, this).ConfigureAwait(false)",
+      "kind": "AwaitExpression",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs:153",
+      "name": "PublishInstructionResult",
+      "expression": "enteredContext",
+      "kind": "IdentifierName",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs:201",
+      "name": "PublishInstructionResult",
+      "expression": "result",
+      "kind": "IdentifierName",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs:398",
+      "name": "PublishInstructionResult",
+      "expression": "constant",
+      "kind": "IdentifierName",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs:402",
+      "name": "PublishInstructionResult",
+      "expression": "ResolveExecutableGlobal(execution.Code, instruction.NameIndex, instruction.Span, scope)",
+      "kind": "InvocationExpression",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs:406",
+      "name": "PublishInstructionResult",
+      "expression": "ResolveExecutableName(execution.Code.Names[instruction.NameIndex], instruction.Span, invocation!)",
+      "kind": "InvocationExpression",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs:432",
+      "name": "PublishInstructionResult",
+      "expression": "memberValue",
+      "kind": "IdentifierName",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs:473",
+      "name": "PublishInstructionResult",
+      "expression": "ExecuteExecutableMakeSet(ref _execution.Stack, instruction.InputStart, instruction.ItemCount, instruction.Span, this)",
+      "kind": "InvocationExpression",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs:478",
+      "name": "PublishInstructionResult",
+      "expression": "ExecuteExecutableMakeDict(ref _execution.Stack, instruction.InputStart, instruction.PairCount, instruction.Span, this)",
+      "kind": "InvocationExpression",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs:483",
+      "name": "PublishInstructionResult",
+      "expression": "ExecuteExecutableMakeRecord(ref _execution.Stack, _execution.Code, instruction, this)",
+      "kind": "InvocationExpression",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs:489",
+      "name": "PublishInstructionResult",
+      "expression": "PyContextManagers.Resolve(managerValue, instruction.Span, this)",
+      "kind": "InvocationExpression",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs:494",
+      "name": "PublishInstructionResult",
+      "expression": "enteringManager.Enter()",
+      "kind": "InvocationExpression",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs:548",
+      "name": "PublishInstructionResult",
+      "expression": "next.TakeSlotValue()",
+      "kind": "InvocationExpression",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs:573",
+      "name": "PublishInstructionResult",
+      "expression": "CreateSliceValue(start, stop, step, instruction.Span, this)",
+      "kind": "InvocationExpression",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs:586",
+      "name": "PublishInstructionResult",
+      "expression": "result",
+      "kind": "IdentifierName",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs:663",
+      "name": "PublishInstructionResult",
+      "expression": "MatchesCaughtExceptionValue(execution.Stack.TakeValue(instruction.InputStart, instruction.ResultSlot), active.Identity, invocation!, instruction.Span)",
+      "kind": "InvocationExpression",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs:36",
+      "name": "PublishInstructionResult",
+      "expression": "LoadLocal(execution.Code, execution.Locals, instruction.LocalSlot, instruction.Span, scope)",
+      "kind": "InvocationExpression",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs:45",
+      "name": "PublishInstructionResult",
+      "expression": "captured",
+      "kind": "IdentifierName",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs:183",
+      "name": "PublishInstructionResult",
+      "expression": "CreateListFromStack(ref execution.Stack, instruction.InputStart, instruction.ItemCount, instruction.Span, scope)",
+      "kind": "InvocationExpression",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs:187",
+      "name": "PublishInstructionResult",
+      "expression": "CreateTupleFromStack(ref execution.Stack, instruction.InputStart, instruction.ItemCount, instruction.Span, scope)",
+      "kind": "InvocationExpression",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs:232",
+      "name": "PublishInstructionResult",
+      "expression": "nativeNext",
+      "kind": "IdentifierName",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativePrefix.cs:92",
+      "name": "Publish",
+      "expression": "RuntimeValue(Code.Constants[instruction.ConstantIndex])",
+      "kind": "InvocationExpression",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativePrefix.cs:95",
+      "name": "Publish",
+      "expression": "Read(instruction.LocalSlot, 0)",
+      "kind": "InvocationExpression",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativePrefix.cs:98",
+      "name": "Publish",
+      "expression": "ResolveExecutableGlobal(Code, instruction.NameIndex, instruction.Span, _scope)",
+      "kind": "InvocationExpression",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativePrefix.cs:104",
+      "name": "Publish",
+      "expression": "captured",
+      "kind": "IdentifierName",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativePrefix.cs:120",
+      "name": "Put",
+      "expression": "receiver",
+      "kind": "IdentifierName",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativePrefix.cs:121",
+      "name": "Put",
+      "expression": "method",
+      "kind": "IdentifierName",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativePrefix.cs:133",
+      "name": "Publish",
+      "expression": "item",
+      "kind": "IdentifierName",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativePrefix.cs:145",
+      "name": "Publish",
+      "expression": "cached",
+      "kind": "IdentifierName",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativePrefix.cs:148",
+      "name": "Publish",
+      "expression": "ReadSubscriptValue(dictionary, field, instruction.Span, _scope)",
+      "kind": "InvocationExpression",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativePrefix.cs:157",
+      "name": "Publish",
+      "expression": "arithmetic",
+      "kind": "IdentifierName",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativePrefix.cs:195",
+      "name": "Publish",
+      "expression": "source",
+      "kind": "IdentifierName",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativePrefix.cs:197",
+      "name": "Publish",
+      "expression": "PyIteration.Cursor.Create(source, instruction.Span, _scope)",
+      "kind": "InvocationExpression",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativePrefix.cs:212",
+      "name": "Publish",
+      "expression": "next.TakeSlotValue()",
+      "kind": "InvocationExpression",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativePrefix.cs:221",
+      "name": "Publish",
+      "expression": "tuple",
+      "kind": "IdentifierName",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativePrefix.cs:228",
+      "name": "Publish",
+      "expression": "list",
+      "kind": "IdentifierName",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativePrefix.cs:239",
+      "name": "Put",
+      "expression": "Read(instruction.InputStart, 0)",
+      "kind": "InvocationExpression",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativePrefix.cs:266",
+      "name": "Publish",
+      "expression": "record",
+      "kind": "IdentifierName",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativePrefix.cs:278",
+      "name": "Publish",
+      "expression": "value",
+      "kind": "IdentifierName",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativePrefix.cs:315",
+      "name": "Publish",
+      "expression": "result",
+      "kind": "IdentifierName",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativePrefix.cs:360",
+      "name": "Publish",
+      "expression": "result",
+      "kind": "IdentifierName",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativePrefix.cs:383",
+      "name": "Publish",
+      "expression": "result",
+      "kind": "IdentifierName",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativePrefix.cs:475",
+      "name": "Publish",
+      "expression": "ExecutableSlot.FromObject(value)",
+      "kind": "InvocationExpression",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativePrefix.cs:481",
+      "name": "Put",
+      "expression": "value",
+      "kind": "IdentifierName",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativePrefix.cs:485",
+      "name": "Put",
+      "expression": "value",
+      "kind": "IdentifierName",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativePrefix.cs:500",
+      "name": "Put",
+      "expression": "ExecutableSlot.FromObject(value)",
+      "kind": "InvocationExpression",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedDefinitions.cs:16",
+      "name": "PublishInstructionResult",
+      "expression": "!PostponedAnnotations",
+      "kind": "LogicalNotExpression",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedDefinitions.cs:19",
+      "name": "PublishInstructionResult",
+      "expression": "CreatePostponedAnnotationValue(postponed.Annotation, this)",
+      "kind": "InvocationExpression",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedDefinitions.cs:74",
+      "name": "PublishInstructionResult",
+      "expression": "function",
+      "kind": "IdentifierName",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedDefinitions.cs:78",
+      "name": "PublishInstructionResult",
+      "expression": "new CallExpansion.CallArgumentAccumulator(header.Count, this, ClassHeaderExpansionTarget, retained: true, deferSingleStar: false)",
+      "kind": "ObjectCreationExpression",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs:45",
+      "name": "PublishInstructionResult",
+      "expression": "result",
+      "kind": "IdentifierName",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs:61",
+      "name": "PublishInstructionResult",
+      "expression": "converted",
+      "kind": "IdentifierName",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs:76",
+      "name": "PublishInstructionResult",
+      "expression": "await FormatSuspendedFieldAsync(value, null, specifier, this, span, asynchronous, field.PreparedFormat).ConfigureAwait(false)",
+      "kind": "AwaitExpression",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs:110",
+      "name": "PublishInstructionResult",
+      "expression": "completed",
+      "kind": "IdentifierName",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs:119",
+      "name": "PublishInstructionResult",
+      "expression": "collection",
+      "kind": "IdentifierName",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs:124",
+      "name": "PublishInstructionResult",
+      "expression": "tuple",
+      "kind": "IdentifierName",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs:225",
+      "name": "PublishInstructionResult",
+      "expression": "result",
+      "kind": "IdentifierName",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs:233",
+      "name": "PublishInstructionResult",
+      "expression": "generatorExpression",
+      "kind": "IdentifierName",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Results.cs:10",
+      "name": "PublishInstructionResult",
+      "expression": "value",
+      "kind": "IdentifierName",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Results.cs:13",
+      "name": "PublishInstructionResult",
+      "expression": "value",
+      "kind": "IdentifierName",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Results.cs:17",
+      "name": "PublishInstructionResult",
+      "expression": "ExecutableSlot.FromObject(value)",
+      "kind": "InvocationExpression",
+      "refLocal": false
+    },
+    {
+      "location": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Results.cs:26",
+      "name": "CompleteResultConsumer",
+      "expression": "value",
+      "kind": "IdentifierName",
+      "refLocal": false
+    }
+  ]
+}

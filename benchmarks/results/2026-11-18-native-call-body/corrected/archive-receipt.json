@@ -1,0 +1,13 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "ramTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 266084352,
+  "archiveSHA256": "d28c88ef11889bc81fc5900b427b8a19cee7d629364f5a611e71e68e642dc2c4",
+  "source": "R530/B960 committed925397f65/frozen2c6b304b; helper native Call assembly attribution; no elapsed comparison",
+  "performanceComparison": false,
+  "failure": null
+}

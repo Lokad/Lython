@@ -1,0 +1,253 @@
+{
+  "kind": "Same-process native Call leaf offsets. Require unique managed map range, version and exact assembly size. Block samples include skid/inlined useful work, not removable cost or a controlled speedup.",
+  "allThreadLeafSamples": 1609,
+  "assemblyVersions": [
+    {
+      "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Call(byref):bool:this (Tier0)",
+      "bytes": 2326,
+      "blockCount": 43
+    },
+    {
+      "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Call(byref):bool:this (Instrumented Tier0)",
+      "bytes": 2836,
+      "blockCount": 51
+    },
+    {
+      "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Call(byref):bool:this (Tier1)",
+      "bytes": 3574,
+      "blockCount": 162
+    }
+  ],
+  "ranges": [
+    {
+      "start": "0x7f3298e8bae0",
+      "bytes": 2326,
+      "name": "instance bool [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+NativeExecution::Call(valuetype Lokad.Lython.Frontend.ExecutableInstruction&)[QuickJitted]",
+      "matchingAssemblyBodies": 1
+    },
+    {
+      "start": "0x7f3298eca690",
+      "bytes": 2836,
+      "name": "instance bool [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+NativeExecution::Call(valuetype Lokad.Lython.Frontend.ExecutableInstruction&)[InstrumentedTier]",
+      "matchingAssemblyBodies": 1
+    },
+    {
+      "start": "0x7f3298ee7b00",
+      "bytes": 3574,
+      "name": "instance bool [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+NativeExecution::Call(valuetype Lokad.Lython.Frontend.ExecutableInstruction&)[OptimizedTier1]",
+      "matchingAssemblyBodies": 1
+    }
+  ],
+  "unmatchedLeaves": [],
+  "matchedCallLeafSamples": 157,
+  "blocks": [
+    {
+      "samples": 53,
+      "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Call(byref):bool:this (Tier1)",
+      "bytes": 3574,
+      "label": "G_M000_IG98",
+      "offset": "0x929",
+      "assembly": "G_M000_IG98:                ;; offset=0x0929\n       vmovdqu  xmm0, xmmword ptr [rbp-0x38]\n       vmovdqu32 xmmword ptr [rbp-0x90], xmm0\n \n"
+    },
+    {
+      "samples": 16,
+      "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Call(byref):bool:this (Tier1)",
+      "bytes": 3574,
+      "label": "G_M000_IG03",
+      "offset": "0x82",
+      "assembly": "G_M000_IG03:                ;; offset=0x0082\n       mov      gword ptr [rbp-0xA0], r15\n       mov      r14d, dword ptr [rbx+0x10]\n       mov      rdi, bword ptr [rbp-0x98]\n       lea      rax, bword ptr [rdi+0x50]\n       cmp      byte  ptr [r15+0x30], 0\n       setne    cl\n       movzx    rcx, cl\n       add      ecx, r14d\n       cmp      ecx, dword ptr [rax+0x08]\n       jae      G_M000_IG141\n       shl      rcx, 4\n       add      rcx, bword ptr [rax]\n       mov      r13, gword ptr [rcx]\n       mov      rax, 0x7F2AB9803DF8\n       mov      r12, gword ptr [rax]\n       cmp      r13, r12\n       je       G_M000_IG127\n \n"
+    },
+    {
+      "samples": 14,
+      "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Call(byref):bool:this (Tier1)",
+      "bytes": 3574,
+      "label": "G_M000_IG01",
+      "offset": "0x0",
+      "assembly": "G_M000_IG01:                ;; offset=0x0000\n       push     rbp\n       push     r15\n       push     r14\n       push     r13\n       push     r12\n       push     rbx\n       sub      rsp, 184\n       lea      rbp, [rsp+0xE0]\n       xor      eax, eax\n       mov      qword ptr [rbp-0xC8], rax\n       vxorps   xmm8, xmm8, xmm8\n       vmovdqu32 zmmword ptr [rbp-0xC0], zmm8\n       vmovdqu32 zmmword ptr [rbp-0x80], zmm8\n       vmovdqa  xmmword ptr [rbp-0x40], xmm8\n       mov      qword ptr [rbp-0x30], rax\n       mov      bword ptr [rbp-0x98], rdi\n       mov      rbx, rsi\n \n"
+    },
+    {
+      "samples": 8,
+      "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Call(byref):bool:this (Tier1)",
+      "bytes": 3574,
+      "label": "G_M000_IG59",
+      "offset": "0x540",
+      "assembly": "G_M000_IG59:                ;; offset=0x0540\n       mov      rsi, gword ptr [r13+0x20]\n       mov      rsi, gword ptr [rsi+0x10]\n       cmp      dword ptr [rsi+0x08], 0\n       jg       G_M000_IG16\n       mov      rdx, rsi\n       movzx    rcx, byte  ptr [rdx+0x0C]\n       mov      edx, dword ptr [rdx+0x10]\n       test     ecx, ecx\n       je       SHORT G_M000_IG60\n       test     edx, edx\n       jl       G_M000_IG16\n \n"
+    },
+    {
+      "samples": 8,
+      "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Call(byref):bool:this (Tier1)",
+      "bytes": 3574,
+      "label": "G_M000_IG61",
+      "offset": "0x56d",
+      "assembly": "G_M000_IG61:                ;; offset=0x056D\n       mov      rcx, 0x7F32989A9298\n       cmp      qword ptr [rsi], rcx\n       jne      SHORT G_M000_IG64\n \n"
+    },
+    {
+      "samples": 7,
+      "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Call(byref):bool:this (Tier1)",
+      "bytes": 3574,
+      "label": "G_M000_IG15",
+      "offset": "0x1b7",
+      "assembly": "G_M000_IG15:                ;; offset=0x01B7\n       mov      rdi, bword ptr [rbp-0x98]\n       lea      rsi, bword ptr [rdi+0x50]\n       cmp      byte  ptr [r15+0x30], 0\n       setne    dl\n       movzx    rdx, dl\n       lea      edx, [r14+rdx+0x01]\n       mov      r14d, ecx\n       mov      r8d, edx\n       mov      edx, r14d\n       add      rdx, r8\n       mov      ecx, dword ptr [rsi+0x08]\n       cmp      rdx, rcx\n       ja       G_M000_IG77\n       shl      r8, 4\n       add      r8, bword ptr [rsi]\n       mov      bword ptr [rbp-0xD8], r8\n       mov      rsi, gword ptr [r15+0x18]\n       mov      gword ptr [rbp-0xC0], rsi\n       mov      rcx, gword ptr [rdi+0x18]\n       mov      gword ptr [rbp-0xC8], rcx\n       test     r14d, r14d\n       je       G_M000_IG54\n \n"
+    },
+    {
+      "samples": 6,
+      "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Call(byref):bool:this (Tier1)",
+      "bytes": 3574,
+      "label": "G_M000_IG119",
+      "offset": "0xa8e",
+      "assembly": "G_M000_IG119:                ;; offset=0x0A8E\n       mov      r14, gword ptr [rbp-0x90]\n       mov      r13, qword ptr [rbp-0x88]\n       mov      r12, bword ptr [rbp-0x98]\n       cmp      ebx, dword ptr [r12+0x44]\n       jl       SHORT G_M000_IG122\n \n"
+    },
+    {
+      "samples": 5,
+      "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Call(byref):bool:this (Tier1)",
+      "bytes": 3574,
+      "label": "G_M000_IG117",
+      "offset": "0xa85",
+      "assembly": "G_M000_IG117:                ;; offset=0x0A85\n       mov      ebx, dword ptr [rbx+0x18]\n       test     ebx, ebx\n       jge      SHORT G_M000_IG121\n \n"
+    },
+    {
+      "samples": 5,
+      "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Call(byref):bool:this (Tier1)",
+      "bytes": 3574,
+      "label": "G_M000_IG112",
+      "offset": "0xa4b",
+      "assembly": "G_M000_IG112:                ;; offset=0x0A4B\n       mov      eax, 1\n \n"
+    },
+    {
+      "samples": 4,
+      "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Call(byref):bool:this (Tier1)",
+      "bytes": 3574,
+      "label": "G_M000_IG05",
+      "offset": "0xed",
+      "assembly": "G_M000_IG05:                ;; offset=0x00ED\n       test     r13, r13\n       je       G_M000_IG130\n       vxorps   xmm0, xmm0, xmm0\n       vmovdqu  xmmword ptr [rbp-0x38], xmm0\n \n"
+    },
+    {
+      "samples": 4,
+      "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Call(byref):bool:this (Tier1)",
+      "bytes": 3574,
+      "label": "G_M000_IG113",
+      "offset": "0xa50",
+      "assembly": "G_M000_IG113:                ;; offset=0x0A50\n       vzeroupper \n       add      rsp, 184\n       pop      rbx\n       pop      r12\n       pop      r13\n       pop      r14\n       pop      r15\n       pop      rbp\n       ret      \n \n"
+    },
+    {
+      "samples": 3,
+      "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Call(byref):bool:this (Tier1)",
+      "bytes": 3574,
+      "label": "G_M000_IG109",
+      "offset": "0x9fc",
+      "assembly": "G_M000_IG109:                ;; offset=0x09FC\n       mov      dword ptr [r12+0x44], eax\n       mov      rdi, gword ptr [r12+0x08]\n       mov      rdi, gword ptr [rdi+0x60]\n       mov      eax, dword ptr [r12+0x40]\n       inc      eax\n       cmp      eax, dword ptr [rdi+0x08]\n       jae      G_M000_IG141\n       shl      rax, 5\n       lea      rdi, bword ptr [rdi+rax+0x10]\n       mov      eax, dword ptr [rdi+0x1C]\n       cmp      eax, 27\n       je       G_M000_IG138\n \n"
+    },
+    {
+      "samples": 3,
+      "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Call(byref):bool:this (Tier1)",
+      "bytes": 3574,
+      "label": "G_M000_IG103",
+      "offset": "0x97f",
+      "assembly": "G_M000_IG103:                ;; offset=0x097F\n       mov      rdi, gword ptr [r12+0x18]\n       mov      rdi, gword ptr [rdi+0x98]\n       cmp      dword ptr [rdi], edi\n       call     [Lokad.Lython.Runtime.ExecutionState:get_CanContinue():bool:this]\n       test     eax, eax\n       je       G_M000_IG135\n       lea      r15, bword ptr [r12+0x50]\n       mov      edi, dword ptr [rbx+0x1C]\n       cmp      edi, 53\n       ja       SHORT G_M000_IG105\n \n"
+    },
+    {
+      "samples": 3,
+      "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Call(byref):bool:this (Tier1)",
+      "bytes": 3574,
+      "label": "G_M000_IG08",
+      "offset": "0x115",
+      "assembly": "G_M000_IG08:                ;; offset=0x0115\n       cmp      byte  ptr [r15+0x30], 0\n       je       G_M000_IG43\n       mov      rax, 0x7F3298DBE118\n       cmp      qword ptr [r13], rax\n       jne      G_M000_IG43\n \n"
+    },
+    {
+      "samples": 3,
+      "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Call(byref):bool:this (Tier1)",
+      "bytes": 3574,
+      "label": "G_M000_IG21",
+      "offset": "0x281",
+      "assembly": "G_M000_IG21:                ;; offset=0x0281\n       mov      rcx, gword ptr [rbp-0xC8]\n       mov      rdi, gword ptr [rcx+0x98]\n       mov      rsi, gword ptr [rbp-0xC0]\n       cmp      dword ptr [rdi], edi\n       call     [Lokad.Lython.Runtime.ExecutionState:EnterInterpreterFrame(Lokad.Lython.LythonSourceSpan):this]\n       nop      \n \n"
+    },
+    {
+      "samples": 2,
+      "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Call(byref):bool:this (Tier1)",
+      "bytes": 3574,
+      "label": "G_M000_IG23",
+      "offset": "0x2c7",
+      "assembly": "G_M000_IG23:                ;; offset=0x02C7\n       mov      r13, gword ptr [r13+0x08]\n       mov      rdi, 0x7F3298DEBF18\n       cmp      qword ptr [r13+0x18], rdi\n       jne      SHORT G_M000_IG27\n \n"
+    },
+    {
+      "samples": 2,
+      "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Call(byref):bool:this (Tier1)",
+      "bytes": 3574,
+      "label": "G_M000_IG66",
+      "offset": "0x5b8",
+      "assembly": "G_M000_IG66:                ;; offset=0x05B8\n       xor      eax, eax\n       mov      qword ptr [rbp-0x30], rax\n       jmp      G_M000_IG98\n \n"
+    },
+    {
+      "samples": 2,
+      "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Call(byref):bool:this (Tier1)",
+      "bytes": 3574,
+      "label": "G_M000_IG10",
+      "offset": "0x15c",
+      "assembly": "G_M000_IG10:                ;; offset=0x015C\n       mov      rax, gword ptr [rcx]\n       mov      rdx, 0x7F2AB9803E00\n       cmp      rax, gword ptr [rdx]\n       je       G_M000_IG80\n       cmp      qword ptr [rcx+0x08], 0\n       jne      G_M000_IG81\n       mov      rax, gword ptr [rcx]\n \n"
+    },
+    {
+      "samples": 2,
+      "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Call(byref):bool:this (Tier1)",
+      "bytes": 3574,
+      "label": "G_M000_IG106",
+      "offset": "0x9bf",
+      "assembly": "G_M000_IG106:                ;; offset=0x09BF\n       cmp      eax, dword ptr [r15+0x08]\n       jae      G_M000_IG141\n       mov      rdi, bword ptr [r15]\n       mov      eax, eax\n       shl      rax, 4\n       xor      ecx, ecx\n       mov      qword ptr [rdi+rax], rcx\n       mov      qword ptr [rdi+rax+0x08], rcx\n       mov      edi, dword ptr [rbx+0x1C]\n       cmp      edi, 53\n       ja       SHORT G_M000_IG108\n \n"
+    },
+    {
+      "samples": 1,
+      "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Call(byref):bool:this (Tier1)",
+      "bytes": 3574,
+      "label": "G_M000_IG120",
+      "offset": "0xaaa",
+      "assembly": "G_M000_IG120:                ;; offset=0x0AAA\n       lea      rdi, bword ptr [r12+0x50]\n       cmp      r15d, dword ptr [rdi+0x08]\n       jae      G_M000_IG141\n       mov      r15d, r15d\n       shl      r15, 4\n       add      r15, bword ptr [rdi]\n       mov      rdi, r15\n       mov      rsi, r14\n       call     CORINFO_HELP_CHECKED_ASSIGN_REF\n       mov      qword ptr [r15+0x08], r13\n       mov      dword ptr [r12+0x44], ebx\n       jmp      G_M000_IG112\n \n"
+    },
+    {
+      "samples": 1,
+      "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Call(byref):bool:this (Tier1)",
+      "bytes": 3574,
+      "label": "G_M000_IG13",
+      "offset": "0x18d",
+      "assembly": "G_M000_IG13:                ;; offset=0x018D\n       mov      rsi, 0x7F3298AB0CC0\n       cmp      qword ptr [rax], rsi\n       jne      SHORT G_M000_IG15\n \n"
+    },
+    {
+      "samples": 1,
+      "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Call(byref):bool:this (Tier1)",
+      "bytes": 3574,
+      "label": "G_M000_IG28",
+      "offset": "0x348",
+      "assembly": "G_M000_IG28:                ;; offset=0x0348\n       mov      r9, gword ptr [rbp-0xC8]\n       mov      r14, gword ptr [r9+0x98]\n       mov      rdi, qword ptr [r14+0x168]\n       test     rdi, rdi\n       jle      SHORT G_M000_IG30\n \n"
+    },
+    {
+      "samples": 1,
+      "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Call(byref):bool:this (Tier1)",
+      "bytes": 3574,
+      "label": "G_M000_IG09",
+      "offset": "0x134",
+      "assembly": "G_M000_IG09:                ;; offset=0x0134\n       mov      rdi, bword ptr [rbp-0x98]\n       lea      rax, bword ptr [rdi+0x50]\n       cmp      r14d, dword ptr [rax+0x08]\n       jae      G_M000_IG95\n       mov      ecx, r14d\n       shl      rcx, 4\n       add      rcx, bword ptr [rax]\n       cmp      gword ptr [rcx], r12\n       je       G_M000_IG79\n \n"
+    },
+    {
+      "samples": 1,
+      "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Call(byref):bool:this (Tier1)",
+      "bytes": 3574,
+      "label": "G_M000_IG18",
+      "offset": "0x22a",
+      "assembly": "G_M000_IG18:                ;; offset=0x022A\n       mov      rcx, 0x7F3298DDDAB0\n       mov      gword ptr [rbp-0xB8], rax\n       cmp      qword ptr [rax], rcx\n       jne      G_M000_IG31\n \n"
+    },
+    {
+      "samples": 1,
+      "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Call(byref):bool:this (Tier1)",
+      "bytes": 3574,
+      "label": "G_M000_IG02",
+      "offset": "0x48",
+      "assembly": "G_M000_IG02:                ;; offset=0x0048\n       mov      rax, gword ptr [rdi+0x08]\n       mov      rax, gword ptr [rax+0x78]\n       cmp      dword ptr [rbx+0x1C], 44\n       jne      G_M000_IG124\n       mov      esi, dword ptr [rbx+0x08]\n       mov      rcx, 0x7F3298D60468\n       cmp      qword ptr [rax], rcx\n       jne      G_M000_IG126\n       mov      ecx, dword ptr [rax+0x08]\n       cmp      ecx, esi\n       jbe      G_M000_IG125\n       mov      ecx, esi\n       mov      r15, gword ptr [rax+8*rcx+0x10]\n \n"
+    },
+    {
+      "samples": 1,
+      "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Call(byref):bool:this (Tier1)",
+      "bytes": 3574,
+      "label": "G_M000_IG99",
+      "offset": "0x935",
+      "assembly": "G_M000_IG99:                ;; offset=0x0935\n       cmp      dword ptr [rbx+0x18], 0\n       jge      G_M000_IG114\n \n"
+    }
+  ]
+}

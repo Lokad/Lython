@@ -1,0 +1,59 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativePrefix.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativePrefix.cs
+index 9dbda91ba..e3fb23f10 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativePrefix.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativePrefix.cs
+@@ -474,7 +474,9 @@ internal sealed partial class LythonRuntime
+         private void Publish(in ExecutableInstruction instruction, object value)
+             => Publish(instruction, ExecutableSlot.FromObject(value));
+ 
+-        private void Publish(in ExecutableInstruction instruction, ExecutableSlot value)
++        // Borrow a stable result local through synchronous publication. Callers
++        // snapshot operands before retirement; this never borrows Values backing.
++        private void Publish(in ExecutableInstruction instruction, in ExecutableSlot value)
+         {
+             if (!instruction.HasResultConsumer) { Put(instruction.ResultSlot, instruction.LiveExtent, value); return; }
+             if (instruction.LiveExtent < LiveExtent) Trim(instruction.LiveExtent);
+@@ -497,7 +499,7 @@ internal sealed partial class LythonRuntime
+         private void Put(int slot, int liveExtent, object value)
+             => Put(slot, liveExtent, ExecutableSlot.FromObject(value));
+ 
+-        private void Put(int slot, int liveExtent, ExecutableSlot value)
++        private void Put(int slot, int liveExtent, in ExecutableSlot value)
+         {
+             if (liveExtent < LiveExtent) Trim(liveExtent);
+             Values[slot] = value;
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Results.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Results.cs
+index 28c332d24..2e8cb58c1 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Results.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Results.cs
+@@ -9,7 +9,7 @@ internal sealed partial class LythonRuntime
+         private void PublishInstructionResult(in ExecutableInstruction instruction, object value)
+             => PublishInstructionResult(ref _execution, this, instruction, value);
+ 
+-        private void PublishInstructionResult(in ExecutableInstruction instruction, ExecutableSlot value)
++        private void PublishInstructionResult(in ExecutableInstruction instruction, in ExecutableSlot value)
+             => PublishInstructionResult(ref _execution, this, instruction, value);
+ 
+         private static void PublishInstructionResult(ref ExecutableWorkState execution,
+@@ -17,7 +17,7 @@ internal sealed partial class LythonRuntime
+             => PublishInstructionResult(ref execution, invocation, instruction, ExecutableSlot.FromObject(value));
+ 
+         private static void PublishInstructionResult(ref ExecutableWorkState execution,
+-            ExecutionContext? invocation, in ExecutableInstruction instruction, ExecutableSlot value)
++            ExecutionContext? invocation, in ExecutableInstruction instruction, in ExecutableSlot value)
+         {
+             if (!instruction.HasResultConsumer)
+             {
+@@ -27,8 +27,11 @@ internal sealed partial class LythonRuntime
+         }
+ 
+         private static void CompleteResultConsumer(ref ExecutableWorkState execution,
+-            ExecutionContext? invocation, in ExecutableInstruction instruction, ExecutableSlot value)
++            ExecutionContext? invocation, in ExecutableInstruction instruction, in ExecutableSlot value)
+         {
++            // Result locals are stable while input retirement runs. The final
++            // stack/local owner still takes its own value snapshot; no caller
++            // backing is borrowed across disposal, reentry or suspension.
+             // Preserve the original input retirement and its disposal order.
+             // Pending cleanup must finish before the consumer becomes visible;
+             // the unchanged driver and following consumer already implement that.

@@ -1,0 +1,24 @@
+{
+  "status": "Isolated active prototype, not promoted or full-platform qualified; no performance claim.",
+  "baseRevision": "925397f650b61c8a7578a3466d53d00a23bee846",
+  "referenceCore": "2c6b304be4c81e2c70d4b0e0e89b71fb26e33521a561405255b939c2716d8226",
+  "changedFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativePrefix.cs": "f1a21ebab401a3fe74d5ebbb0f18423f15ab5c2d8aa7000d7a2290154ffaa782",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Results.cs": "dd3a4f27132da483b9d75f57f7707b7bca900ccabfa603d0cb3e6f3c9e76cc73"
+  },
+  "candidateCores": {
+    "net11.0": "76555c495e0505257cc5db0ce2501833bec30d98894206df3e8477fa62e2264c",
+    "net10.0": "4124f5c2af1f99a7e474e034fc96950f3a17bce79b8676735d09ac185d652ec9"
+  },
+  "sdk": {
+    "sdk": {
+      "version": "11.0.100-rc.3.26522.148",
+      "rollForward": "disable",
+      "allowPrerelease": true
+    }
+  },
+  "checks": "151internal/84public per actual11/10 after settled nonincremental Release solution build, zero warnings/errors.",
+  "limits": "Caller shape audit is not proof. Frozen complete images/goldens/allocation and source-pair CPU/assembly still pending. Borrow stable local results only; snapshots at storage/retirement/reentry/suspension boundaries remain.",
+  "normalAdapterPin": "0.4.0",
+  "publicationHeld": true
+}

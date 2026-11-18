@@ -1,0 +1,13 @@
+{
+  "complete": false,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "ramTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 266645504,
+  "archiveSHA256": "dc94ab86b820f99c25c2f5fb5e1e33e64c05e0d18341293b721bc310eb665f93",
+  "source": "R530/B959 committed925397f65/frozen2c6b304b; helper native Call assembly attribution; no elapsed comparison",
+  "performanceComparison": false,
+  "failure": "Traceback (most recent call last):\n  File \"/home/lokad/lython-bench-checks/call-body-b959-20261118/collect.py\", line 13, in <module>\n    subprocess.run(['python3',str(root/'ops-profile.py'),str(root/'guest-fixtures/profiles')],check=True)\n  File \"/usr/lib/python3.12/subprocess.py\", line 571, in run\n    raise CalledProcessError(retcode, process.args,\nsubprocess.CalledProcessError: Command '['python3', '/home/lokad/lython-bench-checks/call-body-b959-20261118/ops-profile.py', '/home/lokad/lython-bench-checks/call-body-b959-20261118/guest-fixtures/profiles']' returned non-zero exit status 1.\n"
+}
