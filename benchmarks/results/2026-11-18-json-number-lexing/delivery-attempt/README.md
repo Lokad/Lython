@@ -19,4 +19,9 @@ On Ubuntu under WSL, 79 focused regex and scalar-width checks passed on each
 target using the same built test assemblies. Full GitHub delivery needs a
 separate successful run of the corrected source.
 
-[Ubuntu job](ubuntu-job.json) · [Original and focused logs](failed-and-focused-logs.tar.xz)
+The original run's Windows job passed both ordinary and original-scale
+stress suites and installed Release package verification. The overall
+original run failed at the recorded Ubuntu checkpoint.
+
+[Terminal jobs](terminal.json) · [Complete CI logs](run-logs.zip) ·
+[Original and focused logs](failed-and-focused-logs.tar.xz)

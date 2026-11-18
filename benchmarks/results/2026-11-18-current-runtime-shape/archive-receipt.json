@@ -1,0 +1,13 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "ramTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 266235904,
+  "archiveSHA256": "29ee26eb352b340c02a377d079a8761cfd3e4744b4eb22fd99c418a9d34b0970",
+  "source": "R537/B969 retained production f7b1c056d/frozen9eed03c9; floating/helper text attribution; no elapsed comparison",
+  "performanceComparison": false,
+  "failure": null
+}
