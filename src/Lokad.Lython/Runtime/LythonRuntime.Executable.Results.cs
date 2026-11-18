@@ -33,15 +33,16 @@ internal sealed partial class LythonRuntime
             // Pending cleanup must finish before the consumer becomes visible;
             // the unchanged driver and following consumer already implement that.
             if (instruction.LiveExtent < execution.Stack.LiveExtent) execution.Stack.RetireTo(instruction.LiveExtent);
-            if (execution.Stack.HasPendingDisposals)
+            if (execution.Stack.HasPendingDisposals || !execution.Stack.CanContinue)
             {
+                // An interrupted execution reaches the unchanged consumer entry
+                // check, outside the producer's operation-exception handling.
                 execution.Stack.PublishSlot(instruction.ResultSlot, instruction.LiveExtent, value);
                 return;
             }
 
             execution.Stack.ForgetResultInput(instruction.ResultSlot);
             ref readonly var consumer = ref execution.Code.Instructions[execution.InstructionIndex + 1];
-            execution.Stack.CheckExecution(consumer.Span);
             if (consumer.OpCode == ExecutableOpCode.StoreLocal)
                 StoreLocalValue(execution.Code, execution.Locals, invocation, consumer.LocalSlot, value, consumer.Span);
             else if (consumer.OpCode != ExecutableOpCode.PopTop)

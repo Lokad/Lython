@@ -326,6 +326,8 @@ internal sealed partial class LythonRuntime
 
         internal readonly void CheckExecution(LythonSourceSpan span) => _state.CheckExecution(span);
 
+        internal readonly bool CanContinue => _state.CanContinue;
+
         internal void ReleaseStorage()
         {
             _items = [];

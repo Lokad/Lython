@@ -4,7 +4,8 @@
 
 - Reuse executable result forwarding for immediately discarded call results,
   avoiding unused publication and scalar materialization while preserving eager
-  operations, admission, source checkpoints and pending cleanup.
+  operations, admission, source checkpoints and pending cleanup. Interrupted
+  consumers retain their normal entry-failure context before assignment/effects.
 
 - Admit known-size iterator working capacity once, preserving live iteration,
   replacement overlap, cancellation and cleanup. Conservative hints can reject

@@ -10,6 +10,9 @@
 | JSON-lines aggregation with a helper | 4,096 records / 110,592 B | 3.548–3.613 ms | 4.077–4.102 ms | 0.86–0.89× | Diagnostic; controls L/C 1.85/0.62%; IQR≤0.39% |
 | Floating JSON numeric report | 4,096 pairs / 56,495 B | 1.320–1.346 ms | 0.813–0.818 ms | 1.61–1.66× | Diagnostic2e5/1bce; controls L/C 1.99/0.60%; IQR≤2.50% |
 
+| Helper text normalization | 4,096 lines / 52,224 B | 1.117–1.124 ms | 0.854–0.876 ms | 1.28–1.32× | Diagnostic7db/c036; controls L/C 0.63/2.58%; IQR≤1.56% |
+| CSV field validation | 4,128 rows / 128,183 B | 2.975–3.003 ms | 4.311–4.327 ms | 0.69–0.70× | Diagnostic7db/c036; controls L/C 0.92/0.37%; IQR≤2.99% |
+
 **Ratio = Lython elapsed / CPython elapsed; above one means slower.** Ranges cover
 the combinations of two process medians per engine, not confidence intervals.
 Controls L/C report the difference between the two Lython/CPython medians. These
@@ -39,6 +42,12 @@ passed for these production inputs; no rebuilt-binary equality is inferred. Text
 4.91%limits precision. Compilation/warm/fresh are separately observed; gaps remain
 in execution. [Sources, controls and raw data](../benchmarks/results/2026-11-18-affected-cpython-checkpoint/README.md).
 
+Helper text and CSV-validation rows use **7db1de02 / c0367d98**, measured
+**2026-11-18** on the same machine/toolchains. **Full qualification failed**:
+entry-error context after forwarded results needs correction. These successful
+scripts are diagnostic for that exact revision, not corrected HEAD. Helper fresh
+IQR reaches 4.89%. [Sources, controls and limitations](../benchmarks/results/2026-11-18-helper-validation-cpython/README.md).
+
 Warm clocks include Run, mediated RAM-backed file I/O, stdout/file golden checks
 and previous-result cleanup. Lython's host supplies efficient range/append I/O;
 CPython uses its native file APIs without Lython's containment/ownership checks.
@@ -62,6 +71,11 @@ This is useful workload latency, not equivalent containment or cold startup.
 | JSON-lines aggregation with a helper | Compile and execute once | 3.642–3.707 ms | 4.192–4.194 ms | 0.87–0.88× | Diagnostic; controls L/C 1.78/0.05%; IQR≤0.45% |
 | Floating JSON numeric report | Compilation only | 0.056–0.057 ms | 0.061–0.061 ms | 0.91–0.93× | Diagnostic2e5/1bce; controls L/C 1.97/0.43%; IQR≤0.86% |
 | Floating JSON numeric report | Compile-to-result | 1.371–1.397 ms | 0.948–0.995 ms | 1.38–1.47× | Diagnostic2e5/1bce; controls L/C 1.93/4.91%; IQR≤0.98% |
+
+| Helper text normalization | Compilation only | 0.046–0.047 ms | 0.044–0.044 ms | 1.03–1.05× | Diagnostic7db/c036; controls L/C 1.16/0.53%; IQR≤0.38% |
+| Helper text normalization | Compile-to-result | 1.223–1.244 ms | 0.809–0.810 ms | 1.51–1.54× | Diagnostic7db/c036; controls L/C 1.74/0.13%; IQR≤4.89% |
+| CSV field validation | Compilation only | 0.026–0.026 ms | 0.027–0.027 ms | 0.96–0.98× | Diagnostic7db/c036; controls L/C 1.70/0.30%; IQR≤2.30% |
+| CSV field validation | Compile-to-result | 2.976–3.039 ms | 4.384–4.402 ms | 0.68–0.69× | Diagnostic7db/c036; controls L/C 2.12/0.42%; IQR≤0.74% |
 
 Compilation includes compiled-owner disposal. Compile-to-result includes compilation,
 one execution and compiled-owner disposal. Separately warmed medians are not
@@ -91,8 +105,8 @@ for the CPython ratios above.
 
 | Change | Established outcome | Limits / evidence |
 | --- | --- | --- |
-| Discarded call results | CSV-validation allocation6.73% lower; named helper elapsed0.8–3.1% lower with supporting CPU | Separatec0367d98 versusa71abfed pair; positional calls0.9–2.6%slower, floating uncertain. Focused checks pass; joint full delivery pending. [Evidence](../benchmarks/results/2026-11-18-discarded-call-results/refined/README.md). |
-| Known-size working drains | Helper-list text allocation7.11% lower; original/nontext effectively flat | Separatea71abfed versus2ede09fc pair; elapsed/CPU gains inconclusive, adverse first collection retained. Focused checks pass; full delivery pending. [Evidence](../benchmarks/results/2026-11-18-known-drain-construction/confirmation/README.md). |
+| Discarded call results | CSV-validation allocation6.73% lower; named helper elapsed0.8–3.1% lower with supporting CPU | Separatec0367d98 versusa71abfed pair; positional calls0.9–2.6%slower, floating uncertain. Full delivery exposed an entry-error-context regression; correction/qualification pending. [Evidence](../benchmarks/results/2026-11-18-discarded-call-results/refined/README.md). |
+| Known-size working drains | Helper-list text allocation7.11% lower; original/nontext effectively flat | Separatea71abfed versus2ede09fc pair; elapsed/CPU gains inconclusive, adverse first collection retained. Focused checks pass; joint full delivery needs the result-routing correction. [Evidence](../benchmarks/results/2026-11-18-known-drain-construction/confirmation/README.md). |
 | Direct split construction | Complete text allocation17.319% lower; warm elapsed1.8–2.3% lower with supporting CPU | Separate2ede09fc versus1bce52ad pair. Accounted peak1.12%higher from conservative preflight; positional calls inconclusive. [Evidence](../benchmarks/results/2026-11-18-direct-split-construction/refined/README.md); [full qualification](../benchmarks/results/2026-11-18-direct-split-construction/refined/delivery/README.md). |
 | Buffered yield transport | Complete text normalization warm elapsed8–11% lower/fresh8–11% lower, supporting CPU; allocation/peaks flat | Separate1bce52ad versusabab8760 pair. Positional-call CPU remains uncertain/possibly adverse. [Evidence](../benchmarks/results/2026-11-18-buffered-yield-transport/README.md); [full qualification](../benchmarks/results/2026-11-18-buffered-yield-transport/delivery/README.md). |
 | Direct global operand transport | Floating warm elapsed7–9% lower with supporting CPU; allocation/peaks flat | Separateabab8760 versus65fcf7d0 pair. Fresh CPU/text/call controls uncertain; original adverse source retained. [Evidence](../benchmarks/results/2026-11-18-direct-global-operands/refined/README.md); [full qualification](../benchmarks/results/2026-11-18-direct-global-operands/refined/delivery/README.md). |

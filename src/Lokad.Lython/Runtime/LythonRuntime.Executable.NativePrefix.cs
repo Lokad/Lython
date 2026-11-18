@@ -478,10 +478,14 @@ internal sealed partial class LythonRuntime
         {
             if (!instruction.HasResultConsumer) { Put(instruction.ResultSlot, instruction.LiveExtent, value); return; }
             if (instruction.LiveExtent < LiveExtent) Trim(instruction.LiveExtent);
+            if (!_scope.State.CanContinue)
+            {
+                Put(instruction.ResultSlot, instruction.LiveExtent, value);
+                return;
+            }
             Values[instruction.ResultSlot] = default;
             LiveExtent = instruction.ResultSlot;
             ref readonly var consumer = ref Code.Instructions[Index + 1];
-            _scope.CheckExecution(consumer.Span);
             if (consumer.OpCode == ExecutableOpCode.StoreLocal)
                 Values[consumer.LocalSlot] = value;
             else if (consumer.OpCode != ExecutableOpCode.PopTop)

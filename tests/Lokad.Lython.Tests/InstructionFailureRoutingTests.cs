@@ -14,12 +14,19 @@ public sealed class InstructionFailureRoutingTests
     [InlineData(false, 0, true), InlineData(true, 0, true)]
     [InlineData(false, 1, true), InlineData(true, 1, true)]
     [InlineData(false, 2, true), InlineData(true, 2, true)]
+    [InlineData(false, 0, false, true), InlineData(true, 0, false, true)]
+    [InlineData(false, 1, false, true), InlineData(true, 1, false, true)]
+    [InlineData(false, 2, false, true), InlineData(true, 2, false, true)]
+    [InlineData(false, 0, true, true), InlineData(true, 0, true, true)]
+    [InlineData(false, 1, true, true), InlineData(true, 1, true, true)]
+    [InlineData(false, 2, true, true), InlineData(true, 2, true, true)]
     public async Task EntryFailureKeepsItsOriginWhileOperationFailureAcquiresPythonContext(bool asynchronous, int failureKind,
-        bool insideHandler = false)
+        bool insideHandler = false, bool assigned = false)
     {
+        var call = assigned ? "destination = arm()" : "arm()";
         var frontend = LythonFrontend.Compile(insideHandler
-            ? "namespace = globals()\ntry:\n raise KeyError('inner')\nexcept KeyError as caught:\n arm()\n effects.append(1)\n"
-            : "arm()\neffects.append(1)\n");
+            ? "namespace = globals()\ntry:\n raise KeyError('inner')\nexcept KeyError as caught:\n " + call + "\n effects.append(1)\n"
+            : call + "\neffects.append(1)\n");
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
         var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull())).EntryPoint;
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
@@ -30,6 +37,8 @@ public sealed class InstructionFailureRoutingTests
             { MemoryBudget = owner, CancellationToken = cancellation.Token });
             var effects = new PyList(0, context.MemoryGovernor, null);
             context.Variables["effects"] = effects;
+            var destination = new PyList(0, context.MemoryGovernor, null);
+            if (assigned) context.Variables["destination"] = destination;
             var active = new PyException("ValueError", "outer", PyNone.Instance);
             context.State.SetCurrentException(active);
             var origin = new LythonSourceSpan(120, 5, 12, 3);
@@ -68,6 +77,7 @@ public sealed class InstructionFailureRoutingTests
                 Assert.Same(active, context.State.CurrentException);
                 Assert.False(context.Variables.ContainsKey("caught"));
                 Assert.Empty(effects);
+                if (assigned) Assert.Same(destination, context.Variables["destination"]);
                 Assert.Null(context.CurrentExecutableFrame);
                 Assert.Equal(0, context.State.CurrentInterpreterDepth);
                 Assert.Equal(0, context.State.CurrentRecursionDepth);

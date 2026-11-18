@@ -423,6 +423,10 @@ Completed unary builtin calls share the executable-slot result convention in
 ordinary and native helper execution. Fresh small integer, length and float-text
 results stay private until observation publishes a stable object. Other result
 objects retain their existing identity and ownership behavior.
+Immediately discarded call results reuse adjacent-consumer forwarding without
+publishing unused values. Pending cleanup or interruption keeps the original
+consumer continuation: its normal entry check reports cancellation or refused
+admission before assignment or later effects, with the original failure context.
 For a same-command generator, native integer and floating `sum` prefixes reuse
 the existing yield buffer lifetime, avoiding frame entry and exit for every value.
 The accumulator has an admitted 64-byte command-local lifetime; no batch is

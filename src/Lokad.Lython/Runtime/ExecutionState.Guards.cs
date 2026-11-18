@@ -12,19 +12,22 @@ internal sealed partial class ExecutionState
     public long CurrentRecursionDepth { get; set; }
     public long CurrentInterpreterDepth { get; set; }
 
+    // The same predicate serves ordinary entry checks and prepared consumers.
+    // A consumer cannot throw an entry failure inside its producer's handler.
+    internal bool CanContinue => MemoryGovernor.AdmissionFailure is null && !CancellationToken.IsCancellationRequested;
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void CheckExecution(LythonSourceSpan? span)
     {
-        MemoryGovernor.ThrowIfAdmissionFailed();
-        if (CancellationToken.IsCancellationRequested)
-        {
-            ThrowExecutionCanceled(span);
-        }
+        if (!CanContinue) ThrowExecutionFailure(span);
     }
 
     [DoesNotReturn, MethodImpl(MethodImplOptions.NoInlining)]
-    private static void ThrowExecutionCanceled(LythonSourceSpan? span)
-        => throw RuntimeErrors.Cancelled(span);
+    private void ThrowExecutionFailure(LythonSourceSpan? span)
+    {
+        MemoryGovernor.ThrowIfAdmissionFailed();
+        throw RuntimeErrors.Cancelled(span);
+    }
 
     public void EnterFunctionCall(LythonSourceSpan? span)
     {
