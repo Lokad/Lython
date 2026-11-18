@@ -1,0 +1,70 @@
+2026-11-18T23:07:39.6181375Z [31;1m[xUnit.net 00:00:07.62]     Lokad.Lython.Tests.FunctionAttributeAccountingTests.DeniedReservedResetDoesNotPublishMetadata(name: "__module__") [FAIL][0m
+2026-11-18T23:07:39.6202681Z [31;1m[xUnit.net 00:00:07.63]     Lokad.Lython.Tests.FunctionAttributeAccountingTests.DeniedReservedResetDoesNotPublishMetadata(name: "__doc__") [FAIL][0m
+2026-11-18T23:07:39.6205162Z   Failed Lokad.Lython.Tests.FunctionAttributeAccountingTests.DeniedReservedResetDoesNotPublishMetadata(name: "__module__") [4 ms]
+2026-11-18T23:07:39.6260954Z   Error Message:
+2026-11-18T23:07:39.6285614Z    Assert.Throws() Failure: No exception was thrown
+2026-11-18T23:07:39.6295476Z Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+2026-11-18T23:07:39.6306605Z   Stack Trace:
+2026-11-18T23:07:39.6308147Z      at Lokad.Lython.Tests.FunctionAttributeAccountingTests.DeniedReservedResetDoesNotPublishMetadata(String name) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/FunctionAttributeAccountingTests.cs:line 56
+2026-11-18T23:07:39.6309932Z    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+2026-11-18T23:07:39.6311200Z    at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+2026-11-18T23:07:39.6312690Z   Failed Lokad.Lython.Tests.FunctionAttributeAccountingTests.DeniedReservedResetDoesNotPublishMetadata(name: "__doc__") [< 1 ms]
+2026-11-18T23:07:39.6313709Z   Error Message:
+2026-11-18T23:07:39.6314185Z    Assert.Throws() Failure: No exception was thrown
+2026-11-18T23:07:39.6315057Z Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+2026-11-18T23:07:39.6315682Z   Stack Trace:
+2026-11-18T23:07:39.6317584Z      at Lokad.Lython.Tests.FunctionAttributeAccountingTests.DeniedReservedResetDoesNotPublishMetadata(String name) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/FunctionAttributeAccountingTests.cs:line 56
+2026-11-18T23:07:39.6319428Z    at InvokeStub_FunctionAttributeAccountingTests.DeniedReservedResetDoesNotPublishMetadata(Object, Span`1)
+2026-11-18T23:07:39.6320845Z    at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+2026-11-18T23:07:42.2880907Z [31;1m[xUnit.net 00:00:10.48]     Lokad.Lython.Tests.AnnotatedHelperExecutionTests.OrdinaryAnnotatedBodiesRemainExecutable(source: "def helper(value:int)->int:return value+1\nreturn "···) [FAIL][0m
+2026-11-18T23:07:42.2941017Z   Failed Lokad.Lython.Tests.AnnotatedHelperExecutionTests.OrdinaryAnnotatedBodiesRemainExecutable(source: "def helper(value:int)->int:return value+1\nreturn "···) [1 ms]
+2026-11-18T23:07:42.2943368Z   Error Message:
+2026-11-18T23:07:42.2943937Z    Assert.False() Failure
+2026-11-18T23:07:42.2944410Z Expected: False
+2026-11-18T23:07:42.2945071Z Actual:   True
+2026-11-18T23:07:42.2945311Z   Stack Trace:
+2026-11-18T23:07:42.2946521Z      at Lokad.Lython.Tests.AnnotatedHelperExecutionTests.OrdinaryAnnotatedBodiesRemainExecutable(String source) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/AnnotatedHelperExecutionTests.cs:line 24
+2026-11-18T23:07:42.2947811Z --- End of stack trace from previous location ---
+2026-11-18T23:07:42.2997260Z [31;1m[xUnit.net 00:00:10.49]     Lokad.Lython.Tests.AnnotatedHelperExecutionTests.OrdinaryAnnotatedBodiesRemainExecutable(source: "def helper(value:int):return value\nreturn helper") [FAIL][0m
+2026-11-18T23:07:42.3028509Z [31;1m[xUnit.net 00:00:10.49]     Lokad.Lython.Tests.AnnotatedHelperExecutionTests.OrdinaryAnnotatedBodiesRemainExecutable(source: "from __future__ import annotations\ndef helper(val"···) [FAIL][0m
+2026-11-18T23:07:42.3058284Z [31;1m[xUnit.net 00:00:10.50]     Lokad.Lython.Tests.AnnotatedHelperExecutionTests.OrdinaryAnnotatedBodiesRemainExecutable(source: "def helper(value)->int:return value\nreturn helper") [FAIL][0m
+2026-11-18T23:07:42.3062957Z   Failed Lokad.Lython.Tests.AnnotatedHelperExecutionTests.OrdinaryAnnotatedBodiesRemainExecutable(source: "def helper(value:int):return value\nreturn helper") [< 1 ms]
+2026-11-18T23:07:42.3069787Z   Error Message:
+2026-11-18T23:07:42.3085426Z    Assert.False() Failure
+2026-11-18T23:07:42.3087360Z Expected: False
+2026-11-18T23:07:42.3088453Z Actual:   True
+2026-11-18T23:07:42.3089369Z   Stack Trace:
+2026-11-18T23:07:42.3090836Z      at Lokad.Lython.Tests.AnnotatedHelperExecutionTests.OrdinaryAnnotatedBodiesRemainExecutable(String source) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/AnnotatedHelperExecutionTests.cs:line 24
+2026-11-18T23:07:42.3092926Z --- End of stack trace from previous location ---
+2026-11-18T23:07:42.3095379Z   Failed Lokad.Lython.Tests.AnnotatedHelperExecutionTests.OrdinaryAnnotatedBodiesRemainExecutable(source: "from __future__ import annotations\ndef helper(val"···) [< 1 ms]
+2026-11-18T23:07:42.3097486Z   Error Message:
+2026-11-18T23:07:42.3098022Z    Assert.False() Failure
+2026-11-18T23:07:42.3099223Z Expected: False
+2026-11-18T23:07:42.3100220Z Actual:   True
+2026-11-18T23:07:42.3100729Z   Stack Trace:
+2026-11-18T23:07:42.3102036Z      at Lokad.Lython.Tests.AnnotatedHelperExecutionTests.OrdinaryAnnotatedBodiesRemainExecutable(String source) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/AnnotatedHelperExecutionTests.cs:line 24
+2026-11-18T23:07:42.3103599Z --- End of stack trace from previous location ---
+2026-11-18T23:07:42.3105075Z   Failed Lokad.Lython.Tests.AnnotatedHelperExecutionTests.OrdinaryAnnotatedBodiesRemainExecutable(source: "def helper(value)->int:return value\nreturn helper") [< 1 ms]
+2026-11-18T23:07:42.3106979Z   Error Message:
+2026-11-18T23:07:42.3107488Z    Assert.False() Failure
+2026-11-18T23:07:42.3108010Z Expected: False
+2026-11-18T23:07:42.3108479Z Actual:   True
+2026-11-18T23:07:42.3109294Z   Stack Trace:
+2026-11-18T23:07:42.3110696Z      at Lokad.Lython.Tests.AnnotatedHelperExecutionTests.OrdinaryAnnotatedBodiesRemainExecutable(String source) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/AnnotatedHelperExecutionTests.cs:line 24
+2026-11-18T23:07:42.3112854Z --- End of stack trace from previous location ---
+2026-11-18T23:07:42.3114946Z [31;1m[xUnit.net 00:00:10.50]     Lokad.Lython.Tests.AnnotatedHelperExecutionTests.OrdinaryAnnotatedBodiesRemainExecutable(source: "def helper(value:'int')->'int':return value+1\nret"···) [FAIL][0m
+2026-11-18T23:07:42.3217433Z   Failed Lokad.Lython.Tests.AnnotatedHelperExecutionTests.OrdinaryAnnotatedBodiesRemainExecutable(source: "def helper(value:'int')->'int':return value+1\nret"···) [< 1 ms]
+2026-11-18T23:07:42.3235406Z   Error Message:
+2026-11-18T23:07:42.3271481Z    Assert.False() Failure
+2026-11-18T23:07:42.3295838Z Expected: False
+2026-11-18T23:07:42.3296511Z Actual:   True
+2026-11-18T23:07:42.3296947Z   Stack Trace:
+2026-11-18T23:07:42.3305777Z      at Lokad.Lython.Tests.AnnotatedHelperExecutionTests.OrdinaryAnnotatedBodiesRemainExecutable(String source) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/AnnotatedHelperExecutionTests.cs:line 24
+2026-11-18T23:07:42.3307649Z --- End of stack trace from previous location ---
+2026-11-18T23:08:02.9456364Z Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+2026-11-18T23:08:02.9610331Z
+2026-11-18T23:08:02.9701499Z Failed!  - Failed:     7, Passed:  4890, Skipped:     0, Total:  4897, Duration: 29 s - Lokad.Lython.WhiteBox.Tests.dll (net11.0)
+2026-11-18T23:11:53.9268740Z Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+2026-11-18T23:11:53.9414533Z
+2026-11-18T23:11:53.9628857Z Passed!  - Failed:     0, Passed: 18088, Skipped:     0, Total: 18088, Duration: 4 m 11 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)
+2026-11-18T23:11:54.4477563Z ##[error]Process completed with exit code 1.

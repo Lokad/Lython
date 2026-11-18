@@ -163,7 +163,7 @@ internal sealed partial class ExecutableScript
             // module slots leave. Keep their existing global namespace lifetime
             // conservatively; scalar-only declarations need no such mirror.
             var moduleAnnotationNamespace = _parameterLayout is null &&
-                _constants.Any(value => value is ExecutableAnnotationsEnabled) &&
+                _scopeFacts.ContainsVariableAnnotations &&
                 (_functions.Count != 0 || _constants.Any(value => value is ExecutableCreateLambda or ExecutableCreateGeneratorExpression));
             var requiresLocalVariableMirroring =
                 moduleAnnotationNamespace || (_generator && generatorExpression is null && !_completeLexicalParent) ||

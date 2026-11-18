@@ -1,5 +1,6 @@
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
+using Lokad.Lython.Runtime.Text;
 using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
@@ -43,19 +44,23 @@ public sealed class FunctionAttributeAccountingTests
     [Theory]
     [InlineData("__doc__")]
     [InlineData("__module__")]
-    public void DeniedReservedResetDoesNotPublishMetadata(string name)
+    public void StandardMetadataResetUsesStorageFundedAtDefinition(string name)
     {
         const long limit = 1024 * 1024;
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) },regexProvider:Utf8RegexProvider.Instance);
+        var moduleName = PyString.FromString("original");
+        context.Variables["__name__"] = moduleName;
         var function = Function(context);
-        var beforeFound = function.TryGetMember(name, out var before);
+        Assert.True(function.TryGetMember(name, out var before));
+        Assert.Same(name == "__module__" ? (object)moduleName : PyNone.Instance, before);
         var padding = limit - context.MemoryGovernor.CurrentAccountedBytes;
         context.MemoryGovernor.Reserve(padding, null);
         context.MemoryGovernor.Commit(padding);
-        Assert.Equal("MemoryError", Assert.Throws<LythonRuntimeException>(() => function.TryDeleteMember(name, null)).ExceptionType);
-        Assert.Equal(beforeFound, function.TryGetMember(name, out var after));
-        Assert.Same(before, after);
+        Assert.True(function.TryDeleteMember(name, null));
+        Assert.True(function.TryGetMember(name, out var after));
+        Assert.Same(PyNone.Instance, after);
+        Assert.Null(context.MemoryGovernor.AdmissionFailure);
         Assert.Equal(limit, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
@@ -80,10 +85,9 @@ public sealed class FunctionAttributeAccountingTests
 
     private static PyExecutableFunction Function(LythonRuntime.ExecutionContext context)
     {
-        var definition = Assert.IsType<LoweredFunctionDefinitionStatement>(Assert.Single(
-            LoweredScript.Lower(LythonFrontend.Compile("def f():pass").Script!).Statements));
-        return new PyExecutableFunction("f", definition.ParameterLayout,
-            ExecutableScript.CompileClassFunction(definition), context, [],
-            default, definition.ScopeFacts);
+        var syntax = LythonFrontend.Compile("def f():pass\nreturn f").Script!;
+        var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
+        return Assert.IsType<PyExecutableFunction>(
+            LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null));
     }
 }
