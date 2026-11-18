@@ -1,0 +1,10 @@
+{
+  "retain": false,
+  "state": "Private; one changed-source result-consumer refinement selected",
+  "reference": "Committedc2bd735b/focuseda71abfed; full delivery pending",
+  "candidate": "PrivateR516/70f1ddf9",
+  "established": "Same physical instructions/slots/extent field; ten new prepared discard consumers in fourcatalog. Ordinary discards avoid result publication/materialization and PopTop hot dispatch; pending input cleanup keeps original continuation. Both targets121internal/78public,13goldens/reuse,actual4case32filechecks pass; allocation/peaksflat.",
+  "uncertainty": "B944helperelapsed-4.20..+1.14percent/CPU-3.69..+1.01 with4.16candidate spread; floatingref12.79percent/controlcandidate4.05percent differences, samples individuallystable. Originalnearparity; positional+0.04..+2.36elapsed/CPUstraddleszero. No consistent CPU improvement or regression established.",
+  "next": "One source refinement puts validated StoreLocal consumer first, removing duplicated discard branch/return and allowing LocalSlot getter validation to follow an explicit opcode fact. This may improve code shape, not a demonstrated JIT/CPU cause. Rebuild/focus/freeze and one four-case source pair; no source-condition subtraction, repeated unchanged campaign or permanent design ban. Retain/refine/withdraw with explicit debt decision; broader objective continues.",
+  "publicationHeld": true
+}

@@ -1,0 +1,27 @@
+{
+  "base": "c2bd735b95b90dd720b92797be89253732af1170",
+  "state": "Selected, private; no prototype measurement",
+  "evidence": "R514current original/helper whole-worker CPU plus current2ede IR; append_cleaned6instructions/2calls/1PopTop. Inclusive341entry samples include useful body; no predicted removable share.",
+  "hypothesis": "Generalize the existing adjacent local-result consumer into adjacent local-or-discarded call results. Remove ordinary unused publication and PopTop hot dispatch, preserving the original following instruction as a real pending-cleanup continuation.",
+  "remove": [
+    "normal call result temporary publication immediately discarded",
+    "separate hot PopTop dispatch for these completed calls",
+    "local-store-only naming of the existing prepared consumer fact"
+  ],
+  "retain": [
+    "same complemented extent field, instruction size and source continuations; no new opcode/table/cache/owner/policy",
+    "all eager operations/major preflights even when return value unused",
+    "input cleanup before consumer checkpoint; discarded calls have neither consumed/direct-return facts and cannot yield private iteration loans; consumed/returned calls keep owned-result staging",
+    "native/resumable/async/protected execution and original exception spans/order",
+    "managed stack/recursion, current cancellation, first refused admission and retained aliases"
+  ],
+  "acceptance": [
+    "focused both-target local/call/result/owned-temporary/exception/realIO/cancellation/refusal tests",
+    "current32file images, actual fourcasecatalog goldens, allocation/sharedbudget reuse",
+    "one bounded original/helper textwarm plus floating/call controls; measured debt decision, no gain from instruction counts",
+    "batch full Windows/Ubuntu11/10/stress/installedRelease qualification with retainedR515 at delivery"
+  ],
+  "stopping": "Retain/refine/withdraw the bounded result-consumer design using source deletion and usable controlled observations; preserve adverse conditions. No generic call controller or permanent design ban.",
+  "publicationHeld": true,
+  "ownershipFact": "ExecutableStackLayout includes private call-result storage only for ConsumedByIteration/ReturnedDirectly. Immediately discarded calls have neither fact; preserve the invariant rather than adding a new result-owner path."
+}

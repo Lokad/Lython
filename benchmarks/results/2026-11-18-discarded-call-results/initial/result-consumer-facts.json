@@ -1,0 +1,80 @@
+{
+  "referenceCore": "a71abfedf1b46df2326ca72237a02b331fed97bfb528124bf0308bba869730fb",
+  "candidateCore": "70f1ddf9598807b9757086418abd49d80257a1b98e74c42e7ba586c5f72ea69f",
+  "samePhysicalInstructionsSlotsAndContinuations": true,
+  "onlyChangesToPreparedConsumerMarks": true,
+  "newDiscardConsumers": [
+    {
+      "workload": "scripts.text-normalization.large",
+      "code": "<module>",
+      "callPosition": 54,
+      "consumerPosition": 55,
+      "resultSlot": 8
+    },
+    {
+      "workload": "scripts.text-normalization.large",
+      "code": "<module>",
+      "callPosition": 68,
+      "consumerPosition": 69,
+      "resultSlot": 8
+    },
+    {
+      "workload": "scripts.text-normalization.helper-list",
+      "code": "<module>",
+      "callPosition": 43,
+      "consumerPosition": 44,
+      "resultSlot": 12
+    },
+    {
+      "workload": "scripts.text-normalization.helper-list",
+      "code": "<module>",
+      "callPosition": 67,
+      "consumerPosition": 68,
+      "resultSlot": 11
+    },
+    {
+      "workload": "scripts.text-normalization.helper-list",
+      "code": "<module>",
+      "callPosition": 81,
+      "consumerPosition": 82,
+      "resultSlot": 11
+    },
+    {
+      "workload": "scripts.text-normalization.helper-list",
+      "code": "append_cleaned",
+      "callPosition": 3,
+      "consumerPosition": 4,
+      "resultSlot": 2
+    },
+    {
+      "workload": "scripts.numeric-squared-error.floating.large",
+      "code": "<module>",
+      "callPosition": 63,
+      "consumerPosition": 64,
+      "resultSlot": 14
+    },
+    {
+      "workload": "scripts.numeric-squared-error.floating.large",
+      "code": "<module>",
+      "callPosition": 67,
+      "consumerPosition": 68,
+      "resultSlot": 14
+    },
+    {
+      "workload": "scripts.numeric-squared-error.floating.large",
+      "code": "<module>",
+      "callPosition": 75,
+      "consumerPosition": 76,
+      "resultSlot": 14
+    },
+    {
+      "workload": "calls.positional.large",
+      "code": "<module>",
+      "callPosition": 19,
+      "consumerPosition": 20,
+      "resultSlot": 4
+    }
+  ],
+  "ownedResultFact": "All newly marked discarded calls have neither returned/direct-iteration consumption; existing private iteration loan ownership invariant remains. Original next instruction stays cleanup continuation.",
+  "runtimeCostMeasured": false
+}
