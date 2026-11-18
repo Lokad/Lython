@@ -23,21 +23,15 @@ public sealed class RegexScalarCursorCancellationTests
     [Fact]
     public async Task ActiveBackwardProjectionCancelsBeforePublishingTheCursor()
     {
-        // A substantial nonallocating rewind, independent of provider entry or
-        // interpreter exit checks. The subject's character count is warmed first.
-        // Keep the rewind observable on the vectorized counter as well.
-        const int characters = 24 * 1024 * 1024;
-        var budget = new LythonMemoryBudget(64 * 1024 * 1024);
+        // Exercise nonallocating rewinds without depending on any particular
+        // rewind taking longer than the scheduler needs to deliver cancellation.
+        const int characters = 512 * 1024;
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using (var owner = budget.CreateScope())
         using (var cancellation = new CancellationTokenSource())
         {
             var context = new Context(new MockLythonHost(), new LythonRunOptions
                 { MemoryBudget = owner, CancellationToken = cancellation.Token });
-            var small = PyString.FromString("ααα", context.MemoryGovernor, Span);
-            var warm = new Position(4, 2);
-            ProjectCaptures(new(small, 0, 3), new(0, 3, 0, 6), [new(4, 6, -1, -1), new(2, 4, -1, -1)],
-                ref warm, new long[4], context, Span);
-
             var byteLength = checked(2 * (characters + 2));
             using var inputStorage = context.MemoryGovernor.ReserveTemporary(
                 PyString.EstimateApproximateBytes(byteLength), Span);
@@ -59,16 +53,22 @@ public sealed class RegexScalarCursorCancellationTests
             var original = previous;
             var baseline = budget.ReservedBytes;
             using var started = new ManualResetEventSlim();
+            var stop = false;
             var run = Task.Factory.StartNew(() =>
             {
-                started.Set();
-                ProjectCaptures(new(text, 0, characters + 2), new(0, characters + 2, 0, byteLength),
-                    captures, ref previous, coordinates, context, Span);
+                while (!Volatile.Read(ref stop))
+                {
+                    previous = original;
+                    ProjectCaptures(new(text, 0, characters + 2), new(0, characters + 2, 0, byteLength),
+                        captures, ref previous, coordinates, context, Span);
+                    // Signal only after an actual rewind completes. A later
+                    // attempt must observe cancellation before updating its cursor.
+                    started.Set();
+                }
             }, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
             try
             {
                 Assert.True(started.Wait(TimeSpan.FromSeconds(10)));
-                Thread.SpinWait(10_000);
                 Assert.False(run.IsCompleted);
                 Assert.Equal(baseline, budget.ReservedBytes);
                 cancellation.Cancel();
@@ -84,6 +84,7 @@ public sealed class RegexScalarCursorCancellationTests
             finally
             {
                 cancellation.Cancel();
+                Volatile.Write(ref stop, true);
                 // Keep subject/capture funding until this user actually ends,
                 // including when an assertion fails or cancellation is broken.
                 try { await run; }
