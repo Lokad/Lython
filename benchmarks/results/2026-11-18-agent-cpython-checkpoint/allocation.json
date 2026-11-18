@@ -1,0 +1,51 @@
+{
+  "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+  "rows": [
+    {
+      "id": "scripts.config-edit.small",
+      "asynchronous": false,
+      "allocatedBytesPerInvocation": [
+        36616,
+        36616,
+        36616
+      ],
+      "peakExecutionMemoryBytes": 15184,
+      "compiledReservedBytes": 67040,
+      "compilationMillisecondsDiagnostic": 160.8281,
+      "compilationAllocatedBytesDiagnostic": 1413776,
+      "firstInvocationMillisecondsDiagnostic": 93.1909,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "id": "scripts.report-render.large",
+      "asynchronous": false,
+      "allocatedBytesPerInvocation": [
+        2566348,
+        2565024,
+        2563880
+      ],
+      "peakExecutionMemoryBytes": 3493303,
+      "compiledReservedBytes": 76352,
+      "compilationMillisecondsDiagnostic": 21.676,
+      "compilationAllocatedBytesDiagnostic": 108952,
+      "firstInvocationMillisecondsDiagnostic": 89.1113,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "id": "scripts.numeric-squared-error.floating.large",
+      "asynchronous": false,
+      "allocatedBytesPerInvocation": [
+        492632,
+        492632,
+        492806
+      ],
+      "peakExecutionMemoryBytes": 906686,
+      "compiledReservedBytes": 97280,
+      "compilationMillisecondsDiagnostic": 7.6096,
+      "compilationAllocatedBytesDiagnostic": 139776,
+      "firstInvocationMillisecondsDiagnostic": 31.8902,
+      "sharedBudgetBaselineRestored": true
+    }
+  ],
+  "boundary": "Complete warm runs including mediated I/O/reset, all output/file checks and result cleanup; compilation/startup/final cache teardown excluded. Process-wide CLR allocation counters, no forced GC. Compilation and first invocation clocks are local diagnostic observations, not a controlled CPU/source timing comparison."
+}

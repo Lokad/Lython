@@ -2,18 +2,20 @@
 
 | Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| Configuration edit | 181 B / 16 paths | 0.077–0.078 ms | 0.061–0.062 ms | 1.25–1.26× | Diagnostic627/5ae; controls L/C 0.78/0.75%; IQR≤0.99% |
+| Formatted report | 3,072 records / 189,441 B | 2.934–2.942 ms | 2.671–2.737 ms | 1.07–1.10× | Diagnostic627/5ae; controls L/C 0.27/2.47%; IQR≤5.34% |
 | JSON-lines record transform | 4,096 records / 110,592 B | 3.898–4.012 ms | 4.388–4.423 ms | 0.88–0.91× | Diagnostic ea8/cf; controls L/C 2.93/0.79%; IQR≤0.79% |
 | Numeric CSV quality report | 4,096 records / 127,031 B | 4.066–4.166 ms | 4.574–4.693 ms | 0.87–0.91× | Diagnostic; controls L/C 2.46/2.60%; IQR≤1.47% |
 | Text normalization | 4,096 lines / 52,224 B | 0.916–0.925 ms | 0.503–0.520 ms | 1.76–1.84× | Diagnostic; controls L/C 0.99/3.37%; IQR≤0.98% |
 | JSON-lines aggregation with a helper | 4,096 records / 110,592 B | 3.548–3.613 ms | 4.077–4.102 ms | 0.86–0.89× | Diagnostic; controls L/C 1.85/0.62%; IQR≤0.39% |
-| Floating JSON numeric report | 4,096 pairs / 56,495 B | 1.582–1.621 ms | 0.820–0.821 ms | 1.93–1.98× | Diagnostic; controls L/C 2.48/0.14%; IQR≤1.09% |
+| Floating JSON numeric report | 4,096 pairs / 56,495 B | 1.450–1.530 ms | 0.872–0.874 ms | 1.66–1.75× | Diagnostic627/5ae; controls L/C 5.49/0.29%; IQR≤0.90% |
 
 **Ratio = Lython elapsed / CPython elapsed; above one means slower.** Ranges cover
 the combinations of two process medians per engine, not confidence intervals.
 Controls L/C report the difference between the two Lython/CPython medians. These
 complete scripts show substantial text/numeric gaps alongside faster CSV/JSON-lines.
 
-The CSV/text/aggregation/floating rows were measured **2026-11-17 UTC**, committed
+The CSV/text/aggregation rows and floating compilation-only row were measured **2026-11-17 UTC**, committed
 **0d2a6ab7 / frozen8d26963c**, stock
 **CPython3.13.16** (PGO/LTO, GIL enabled, no JIT), quiet **AzureF4as_v7**,4vCPU
 AMD EPYC9V45/16GiB, Ubuntu24.04.4, .NET11RC3. Existing workers/catalog;12jobs,
@@ -27,6 +29,13 @@ The record-transform row is a separate **2026-11-17** checkpoint of qualified
 three jobs116.40s. Its2.93%warm/3.31%fresh Lython control spread limits precision.
 [Source, controls and raw data](../benchmarks/results/2026-11-17-record-cpython-baseline/README.md).
 
+The configuration/report/floating execution rows are a **2026-11-18** checkpoint
+of qualified **62786960 production / frozen5ae019db**, same machine/toolchains:
+six jobs226.58s. Config controls are small; report CPython IQR5.34% and floating
+Lython control spread5.49%warm/8.33%fresh limit precision. The remaining floating
+gap is clear; exact source gains are not inferred across collections.
+[Sources, controls and raw data](../benchmarks/results/2026-11-18-agent-cpython-checkpoint/README.md).
+
 Warm clocks include Run, mediated RAM-backed file I/O, stdout/file golden checks
 and previous-result cleanup. Lython's host supplies efficient range/append I/O;
 CPython uses its native file APIs without Lython's containment/ownership checks.
@@ -38,6 +47,8 @@ This is useful workload latency, not equivalent containment or cold startup.
 
 | Workload | Phase | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| Configuration edit | Compilation only | 0.036–0.037 ms | 0.035–0.035 ms | 1.05–1.08× | Diagnostic627/5ae; controls L/C 3.34/0.05%; IQR≤0.70% |
+| Configuration edit | Compile-to-result | 0.145–0.145 ms | 0.134–0.135 ms | 1.08–1.08× | Diagnostic627/5ae; controls L/C 0.09/0.32%; IQR≤0.85% |
 | JSON-lines record transform | Compilation only | 0.057–0.058 ms | 0.056–0.056 ms | 1.01–1.02× | Diagnostic; controls L/C 1.68/0.08%; IQR≤1.81% |
 | JSON-lines record transform | Compile-to-result | 4.085–4.220 ms | 4.517–4.546 ms | 0.90–0.93× | Diagnostic; controls L/C 3.31/0.63%; IQR≤1.11% |
 | Numeric CSV quality report | Compilation only | 0.056–0.056 ms | 0.044–0.045 ms | 1.26–1.26× | Diagnostic; controls L/C 0.41/0.23%; IQR≤1.26% |
@@ -47,17 +58,18 @@ This is useful workload latency, not equivalent containment or cold startup.
 | JSON-lines aggregation with a helper | Compilation only | 0.054–0.054 ms | 0.054–0.054 ms | 0.99–1.00× | Diagnostic; controls L/C 0.63/0.11%; IQR≤0.91% |
 | JSON-lines aggregation with a helper | Compile and execute once | 3.642–3.707 ms | 4.192–4.194 ms | 0.87–0.88× | Diagnostic; controls L/C 1.78/0.05%; IQR≤0.45% |
 | Floating JSON numeric report | Compilation only | 0.057–0.059 ms | 0.062–0.062 ms | 0.92–0.95× | Diagnostic; controls L/C 2.25/0.36%; IQR≤3.26% |
-| Floating JSON numeric report | Compile and execute once | 1.718–1.800 ms | 1.012–1.019 ms | 1.69–1.78× | Diagnostic; controls L/C 4.78/0.68%; IQR≤0.34% |
+| Floating JSON numeric report | Compile-to-result | 1.518–1.645 ms | 1.027–1.030 ms | 1.47–1.60× | Diagnostic627/5ae; controls L/C 8.33/0.28%; IQR≤1.08% |
 
 Compilation includes compiled-owner disposal. Compile-to-result includes compilation,
 one execution and compiled-owner disposal. Separately warmed medians are not
 additive. Compilation is a small part of these scripts' elapsed costs. Floating
-compile-to-result's4.78%Lython control movement limits precision; no unchanged retiming
-is needed to establish the remaining large gap. Process startup was not measured.
+compile-to-result's8.33%Lython control movement limits precision; the original4.78%
+condition remains in the earlier checkpoint. No broad unchanged retiming is needed
+to establish the remaining gap. Process startup was not measured.
 
 ## Uncertainty and earlier measurements
 
-The floating fresh control, text warm CPython control and other distributions stay
+The floating process controls, report IQR, text warm CPython control and other distributions stay
 visible above. The [previous guide](../benchmarks/results/2026-11-17-current-cpython-checkpoint/prior-BENCHMARKS.md)
 preserves earlier helper-text/report, configuration, file-search and CSV invoice
 measurements with their named revisions, original adverse controls and unresolved
