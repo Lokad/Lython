@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Read adjacent global operands directly from the executable constant/name pools.
+  Remove redundant producer instructions and intermediate publication, preserving
+  live bindings, evaluation order, original error spans and suspended aliases.
+
 - Let generator expressions reuse the existing admitted field-lookup caches.
   Preserve current values after mutation, suspension and rebinding; cache storage
   follows its generator frame and can reject tighter allowances earlier.

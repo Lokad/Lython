@@ -6,7 +6,7 @@ internal sealed partial class ExecutableCodeObject
 {
     private readonly ExecutableOperandSpan[] _operandReadSpans;
 
-    // Only an unbound direct local needs this metadata. Hot reads retain the
+    // Only a missing direct local/global needs this metadata. Hot reads retain the
     // existing integer index; they do not fetch a second plan or span object.
     internal LythonSourceSpan OperandReadSpan(int instruction, int input)
     {

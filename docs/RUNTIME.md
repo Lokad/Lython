@@ -337,6 +337,10 @@ names. Generator definitions use that same enclosing compilation; they do not
 first build a separate code object without its capture facts. Independently
 compiled class methods and namespace-backed class/type-scope lambdas
 retain general lexical resolution. No global value is frozen or cached by this choice.
+Adjacent operands can read immutable constants or live global names directly,
+without temporary producer slots. Reads crossing calls or other effects keep
+their evaluated values. Missing-name diagnostics retain their original spans;
+the compiled program owns its immutable constant and name arrays.
 Lambda and generator-expression code is prepared once during compilation, including
 callables in lazy type metadata. Values and defaults still evaluate at the Python
 definition point; generator expressions acquire their outer iterator immediately.

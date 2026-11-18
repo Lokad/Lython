@@ -342,7 +342,7 @@ y
 
         Assert.Equal(["x", "y"], entry.LocalNames);
         Assert.Empty(entry.Names);
-        Assert.Equal(2, entry.Constants.Count);
+        Assert.Equal(2, entry.Constants.Length);
         Assert.Contains(new System.Numerics.BigInteger(1), entry.Constants);
         Assert.Contains(new System.Numerics.BigInteger(2), entry.Constants);
 
@@ -409,7 +409,7 @@ values[1:4:2]
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
 
-        Assert.Equal(4_000, executable.EntryPoint.Constants.Count);
+        Assert.Equal(4_000, executable.EntryPoint.Constants.Length);
         Assert.Equal(PyString.FromString("constant-0"), executable.EntryPoint.Constants[0]);
         Assert.Equal(PyString.FromString("constant-3999"), executable.EntryPoint.Constants[^1]);
     }

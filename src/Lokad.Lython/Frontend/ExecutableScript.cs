@@ -491,8 +491,8 @@ internal sealed partial class ExecutableCodeObject
 {
     public ExecutableCodeObject(
         string name,
-        IReadOnlyList<object?> constants,
-        IReadOnlyList<string> names,
+        object?[] constants,
+        string[] names,
         IReadOnlyList<string> localNames,
         IReadOnlyDictionary<string, int> localNameToSlot,
         IReadOnlyList<int> capturedLocalSlots,
@@ -570,9 +570,11 @@ internal sealed partial class ExecutableCodeObject
 
     public string Name { get; }
 
-    public IReadOnlyList<object?> Constants { get; }
+    // Builder-owned arrays are immutable after preparation. Operand reads use
+    // their physical bounds directly, without another collection interface.
+    public object?[] Constants { get; }
 
-    public IReadOnlyList<string> Names { get; }
+    public string[] Names { get; }
 
     public IReadOnlyList<string> LocalNames { get; }
 

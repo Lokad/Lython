@@ -4,10 +4,6 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private static bool TryReadMachineOperand(ExecutableCodeObject code, ReadOnlySpan<ExecutableSlot> values,
-        int source, out long value)
-        => source < 0 ? TryMachineInteger(code.Constants[~source], out value) : values[source].TryGetInteger(out value);
-
     private static bool TryEvaluateIntegerInstruction(ExecutableCodeObject code, ReadOnlySpan<ExecutableSlot> values,
         int index, ExecutionContext context, out int end, out ExecutableSlot value)
     {
@@ -15,8 +11,8 @@ internal sealed partial class LythonRuntime
         value = default;
         ref readonly var instruction = ref code.Instructions[index];
         if (instruction.OpCode is not (ExecutableOpCode.Binary or ExecutableOpCode.Augmented)
-            || !TryReadMachineOperand(code, values, instruction.InputStart, out var left)
-            || !TryReadMachineOperand(code, values, instruction.SecondInput, out var right)) return false;
+            || !TryReadMachineOperand(code, values, instruction.InputStart, context, out var left)
+            || !TryReadMachineOperand(code, values, instruction.SecondInput, context, out var right)) return false;
         if (instruction.OpCode == ExecutableOpCode.Binary)
         {
             if (IsScalarComparison(instruction.BinaryOperator))
@@ -56,8 +52,8 @@ internal sealed partial class LythonRuntime
         private bool TryIntegerComparison(in ExecutableInstruction instruction, out bool result)
         {
             result = false;
-            return TryReadMachineOperand(Code, Values, instruction.InputStart, out var left)
-                && TryReadMachineOperand(Code, Values, instruction.SecondInput, out var right)
+            return TryReadMachineOperand(Code, Values, instruction.InputStart, _scope, out var left)
+                && TryReadMachineOperand(Code, Values, instruction.SecondInput, _scope, out var right)
                 && TryIntegerComparison(instruction.BinaryOperator, left, right, instruction.Span, out result);
         }
 

@@ -14,9 +14,11 @@ internal sealed partial class LythonRuntime
             // A prepared user descriptor owns the original receiver/key until
             // resumption. It must finish through the ordinary protocol path.
             if (invocation?._preparedCallValue is not null) return false;
-            var receiver = ReadOperand(ref execution, instruction.InputStart, scope, 0);
-            if (!TryReadMachineOperand(execution.Code, execution.Stack.Values, instruction.SecondInput, out var index))
+            // A nonnumeric key cannot use this path. Probe it without raising
+            // missing-name errors, before resolving an otherwise unused receiver.
+            if (!TryReadMachineOperand(execution.Code, execution.Stack.Values, instruction.SecondInput, scope, out var index))
                 return false;
+            var receiver = ReadOperand(ref execution, instruction.InputStart, scope, 0);
             try
             {
                 if (!PyIndexing.TryReadSequenceIndex(receiver, index, instruction.Span, scope, out var value)) return false;

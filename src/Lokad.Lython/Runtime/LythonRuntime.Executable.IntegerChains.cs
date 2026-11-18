@@ -40,7 +40,7 @@ internal sealed partial class LythonRuntime
             // Look ahead without raising an unbound-local error ahead of
             // an earlier arithmetic error. No guest work has been published.
             var otherSlot = next.InputStart == first.ResultSlot ? next.SecondInput : next.InputStart;
-            if (!TryReadMachineOperand(code, values, otherSlot, out var operand)) return false;
+            if (!TryReadMachineOperand(code, values, otherSlot, scope, out var operand)) return false;
             var a = next.InputStart == first.ResultSlot ? accumulator : operand;
             var b = next.SecondInput == first.ResultSlot ? accumulator : operand;
             if (!TryMachineBinary(next.BinaryOperator, a, b, out accumulator)) return false;

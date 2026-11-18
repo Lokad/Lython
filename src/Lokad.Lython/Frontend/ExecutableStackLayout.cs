@@ -189,6 +189,14 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
                     int source;
                     LythonSourceSpan? span = null;
                     if (leaf.OpCode == ExecutableOpCode.LoadConst) source = ~leaf.ConstantIndex;
+                    else if (leaf.OpCode == ExecutableOpCode.LoadGlobal)
+                    {
+                        // Negative sources address immutable constants followed
+                        // by names. Resolve the name at consumption; never retain
+                        // its value or move a read across an intervening effect.
+                        source = ~checked(code.Constants.Length + leaf.NameIndex);
+                        span = leaf.Span;
+                    }
                     else if (leaf.OpCode == ExecutableOpCode.LoadLocal && !code.RequiresLocalVariableMirroring
                         && !code.CapturedLocalSlots.Contains(leaf.LocalSlot))
                     {

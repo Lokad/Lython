@@ -62,7 +62,8 @@ internal sealed partial class ExecutableCodeObject
                 || fallback.OpCode != ExecutableOpCode.LoadConst
                 || fallback.ResultSlot != key.ResultSlot + 1
                 || Constants[fallback.ConstantIndex] is not BigInteger
-                || add.SecondInput >= 0 || Constants[~add.SecondInput] is not BigInteger increment
+                || add.SecondInput >= 0 || (uint)~add.SecondInput >= (uint)Constants.Length
+                || Constants[~add.SecondInput] is not BigInteger increment
                 || increment.GetByteCount() >= 8 || store.LiveExtent != head.ResultSlot) return;
 
             var tailIndex = callIndex + 3;
@@ -73,6 +74,7 @@ internal sealed partial class ExecutableCodeObject
                 if (total.AugmentedOperator != AugmentedAssignmentOperatorSyntax.Add || !total.HasLocalResult
                     || !IsUncapturedLocal(total.InputStart) || total.SecondInput >= 0
                     || total.InputStart == store.ThirdInput || total.InputStart == store.SecondInput
+                    || (uint)~total.SecondInput >= (uint)Constants.Length
                     || Constants[~total.SecondInput] is not BigInteger totalIncrement || totalIncrement.GetByteCount() >= 8
                     || totalStore.OpCode != ExecutableOpCode.StoreLocal || totalStore.LocalSlot != total.InputStart
                     || total.ResultSlot != head.ResultSlot || totalStore.LiveExtent != head.ResultSlot) return;
@@ -96,6 +98,7 @@ internal sealed partial class ExecutableCodeObject
                 or AugmentedAssignmentOperatorSyntax.FloorDivide or AugmentedAssignmentOperatorSyntax.Modulo
             && arithmetic.InputStart == load.ResultSlot && arithmetic.ResultSlot == load.ResultSlot
             && arithmetic.LiveExtent == load.LiveExtent && arithmetic.SecondInput < 0
+            && (uint)~arithmetic.SecondInput < (uint)Constants.Length
             && Constants[~arithmetic.SecondInput] is BigInteger operand && operand.GetByteCount() <= sizeof(long)
             && store.OpCode == ExecutableOpCode.StoreClosure && store.ClosureSlot == load.ClosureSlot
             && store.InputStart == load.ResultSlot && store.LiveExtent == load.ResultSlot

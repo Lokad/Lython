@@ -127,7 +127,7 @@ internal sealed partial class LythonRuntime
                     case ExecutableOpCode.Subscript:
                     {
                         var target = Read(instruction.InputStart, 0);
-                        if (TryReadMachineOperand(Code, Values, instruction.SecondInput, out var index)
+                        if (TryReadMachineOperand(Code, Values, instruction.SecondInput, _scope, out var index)
                             && PyIndexing.TryReadSequenceIndex(target, index, instruction.Span, _scope, out var item))
                         {
                             Publish(instruction, item);
@@ -454,7 +454,7 @@ internal sealed partial class LythonRuntime
 
         private ExecutableSlot ReadReturnSlot(int source)
         {
-            if (source < 0) return ExecutableSlot.FromObject(RuntimeValue(Code.Constants[~source]));
+            if (source < 0) return ExecutableSlot.FromObject(Read(source, 0));
             var value = Values[source];
             if (value.IsUnassigned) _ = Read(source, 0);
             return value;

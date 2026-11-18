@@ -201,6 +201,7 @@ internal sealed partial class LythonRuntime
             if (!ReferenceEquals(execution.Locals[store.SecondInput].Object, dictionary)
                 || !ReferenceEquals(execution.Locals[store.ThirdInput].Object, key)) return false;
             var source = add.SecondInput;
+            if (source < 0 && (uint)~source >= (uint)execution.Code.Constants.Length) return false;
             var increment = source < 0 ? execution.Code.Constants[~source] : execution.Locals[source].Object;
             if (increment is not BigInteger integer || integer.GetByteCount() >= 8) return false;
             var fallback = call.ArgumentCount == 2 ? execution.Stack[start + call.ArgumentOffset + 1] : PyNone.Instance;
