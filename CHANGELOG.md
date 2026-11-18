@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Reuse admitted JSON encoder frame capacity across nested containers.
+  Builtin sequences keep a live position without allocating an enumerator.
+  Preserve cycle checks, pending writes and deterministic cleanup.
+
 - Admit string slice and affix output before allocating it. Cold unowned
   Unicode slices fund temporary scalar offsets without retaining them on the input.
 

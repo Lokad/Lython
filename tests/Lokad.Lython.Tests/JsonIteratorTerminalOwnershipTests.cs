@@ -35,7 +35,7 @@ public sealed class JsonIteratorTerminalOwnershipTests
         Assert.InRange(budget.ReservedBytes, inputCharge, activeCharge - 32 * 32);
         // A live failed iterator must not retain the private copied entries
         // whose charge has just been returned. Input aliases remain funded.
-        var frames = (ICollection)iterator.GetType().GetField("_stack", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(iterator)!;
+        var frames = (ICollection)iterator.GetType().GetField("_frames", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(iterator)!;
         Assert.Empty(frames);
         Assert.Null(iterator.GetType().GetField("_rootValue", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(iterator));
         Assert.Equal(32, input.Count);

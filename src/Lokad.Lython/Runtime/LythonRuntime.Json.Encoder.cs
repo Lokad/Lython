@@ -211,17 +211,16 @@ internal sealed partial class LythonRuntime
     // are independent. Sort scratch ends when its frame is relinquished.
     internal sealed class JsonEncodeIterator : PyIteratorBase
     {
-        private sealed class EmitFrame
+        private struct EmitFrame(object container, int depth)
         {
-            public bool IsList;
             public bool IsDefault;
-            public object Container = null!;
-            public IEnumerator<object>? ListItems;
+            public readonly object Container = container;
+            public IReadOnlyList<object>? Sequence;
             public IEnumerator<KeyValuePair<object, object>>? DictPairs;
             public List<(object OriginalKey, object Value)>? SortedEntries;
             public int SortedIndex;
             public int Index;
-            public int Depth;
+            public readonly int Depth = depth;
             public long ScratchBytes;
             public bool Opened;
         }
@@ -229,11 +228,11 @@ internal sealed partial class LythonRuntime
         private readonly JsonDumpOptions _options;
         private readonly ExecutionContext _context;
         private readonly LythonSourceSpan _span;
-        private readonly Stack<EmitFrame> _stack = new();
-        private readonly HashSet<object>? _markers;
+        private EmitFrame[] _frames = [];
+        private int _frameCount;
+        private HashSet<object>? _markers;
         private object? _rootValue;
         private bool _hasRoot;
-        private long _scratchBytes;
         private bool _finished;
         private GovernedByteBuilder? _builder;
         private int _advancing;
@@ -345,28 +344,43 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private void GrowScratch(long bytes)
+        private void PushFrame(EmitFrame frame)
         {
-            if (bytes <= 0)
-            {
-                return;
-            }
-
-            _context.MemoryGovernor.Reserve(bytes, _span);
-
-            _context.MemoryGovernor.Commit(bytes);
-            _scratchBytes += bytes;
+            if (_frameCount == _frames.Length) GrowFrameStorage();
+            _frames[_frameCount++] = frame;
         }
 
-        private void ReleaseScratch(long bytes)
-        {
-            if (bytes <= 0)
-            {
-                return;
-            }
+        private static long EstimateFrameStorage(int capacity) => capacity == 0 ? 0 : 96L + 128L * capacity;
 
-            _context.MemoryGovernor.Release(bytes);
-            _scratchBytes -= bytes;
+        private void GrowFrameStorage()
+        {
+            var capacity = _frames.Length == 0 ? 4 : checked(_frames.Length * 2);
+            // Admit the replacement array and its cycle markers while the current
+            // backing is live. At most one marker is retained for each frame.
+            var bytes = EstimateFrameStorage(capacity);
+            var governor = _context.MemoryGovernor;
+            governor.Reserve(bytes, _span);
+            EmitFrame[] expanded;
+            try
+            {
+                _context.CheckExecution(_span);
+                expanded = new EmitFrame[capacity];
+                for (var offset = 0; offset < _frameCount; offset += 256)
+                {
+                    _context.CheckExecution(_span);
+                    Array.Copy(_frames, offset, expanded, offset, Math.Min(256, _frameCount - offset));
+                }
+                _markers?.EnsureCapacity(capacity);
+            }
+            catch
+            {
+                governor.ReleaseReserved(bytes);
+                throw;
+            }
+            var priorBytes = EstimateFrameStorage(_frames.Length);
+            governor.Commit(bytes);
+            _frames = expanded;
+            governor.Release(priorBytes);
         }
 
         private void Finish()
@@ -376,8 +390,11 @@ internal sealed partial class LythonRuntime
             _rootValue = null;
             _builder?.Release();
             _builder = null;
-            while (_stack.TryPeek(out var frame)) CloseFrame(frame);
-            _markers?.Clear();
+            while (_frameCount != 0) CloseFrame();
+            var bytes = EstimateFrameStorage(_frames.Length);
+            _frames = [];
+            _markers = null;
+            _context.MemoryGovernor.Release(bytes);
         }
 
         // Advances the machine; true means more work remains (with a complete
@@ -392,85 +409,88 @@ internal sealed partial class LythonRuntime
                 return AdvanceValueAsync(_rootValue!, 0, builder, asynchronous);
             }
 
-            while (_stack.Count > 0)
+            while (_frameCount != 0)
             {
-                var frame = _stack.Peek();
-                if (frame.IsDefault) { CloseFrame(frame); continue; }
+                var frameIndex = _frameCount - 1;
+                ref var frame = ref _frames[frameIndex];
+                if (frame.IsDefault) { CloseFrame(); continue; }
                 if (!frame.Opened)
                 {
                     frame.Opened = true;
                     if (_markers is not null && !_markers.Add(frame.Container))
                         throw new LythonRuntimeException("ValueError", "Circular reference detected.", _span);
-                    builder.Append(frame.IsList ? (byte)'[' : (byte)'{');
+                    builder.Append(frame.Sequence is not null ? (byte)'[' : (byte)'{');
                     return new((true, true));
                 }
 
-                if (frame.IsList)
+                if (frame.Sequence is { } sequence)
                 {
-                    if (frame.ListItems is null || !frame.ListItems.MoveNext())
+                    var depth = frame.Depth;
+                    var index = frame.Index;
+                    if (index >= sequence.Count)
                     {
-                        CloseFrame(frame);
-                        if (frame.Index > 0)
-                            JsonModule.AppendJsonContainerSuffix(builder, _options, frame.Depth, _context, _span);
+                        CloseFrame();
+                        if (index > 0)
+                            JsonModule.AppendJsonContainerSuffix(builder, _options, depth, _context, _span);
                         builder.Append((byte)']');
                         return new((true, true));
                     }
 
-                    var element = frame.ListItems.Current;
-                    if (frame.Index > 0)
-                        JsonModule.AppendSeparator(builder, _options.ItemSeparator, _context, _span);
-                    AppendPrettyPrefix(builder, frame.Depth + 1);
+                    var element = sequence[index];
+                    if (index > 0) JsonModule.AppendSeparator(builder, _options.ItemSeparator, _context, _span);
+                    AppendPrettyPrefix(builder, depth + 1);
                     frame.Index++;
-                    return AdvanceValueAsync(element, frame.Depth + 1, builder, asynchronous);
+                    return AdvanceValueAsync(element, depth + 1, builder, asynchronous);
                 }
 
-                var pending = TryTakePairAsync(frame, asynchronous);
+                var pending = TryTakePairAsync(frameIndex, asynchronous);
                 return pending.IsCompleted
-                    ? AdvancePairAsync(frame, pending.GetAwaiter().GetResult(), builder, asynchronous)
-                    : CompletePairAsync(pending, frame, builder, asynchronous);
+                    ? AdvancePairAsync(frameIndex, pending.GetAwaiter().GetResult(), builder, asynchronous)
+                    : CompletePairAsync(pending, frameIndex, builder, asynchronous);
             }
             return new((false, false));
         }
 
-        private ValueTask<(bool Advanced, bool ChunkReady)> AdvancePairAsync(EmitFrame frame,
+        private ValueTask<(bool Advanced, bool ChunkReady)> AdvancePairAsync(int frameIndex,
             (bool Found, object Key, object Value) pair, GovernedByteBuilder builder, bool asynchronous)
         {
+            var depth = _frames[frameIndex].Depth;
+            var index = _frames[frameIndex].Index;
             if (!pair.Found)
             {
-                CloseFrame(frame);
-                if (frame.Index > 0)
-                    JsonModule.AppendJsonContainerSuffix(builder, _options, frame.Depth, _context, _span);
+                CloseFrame();
+                if (index > 0)
+                    JsonModule.AppendJsonContainerSuffix(builder, _options, depth, _context, _span);
                 builder.Append((byte)'}');
                 return new((true, true));
             }
 
-            if (frame.Index > 0)
-                JsonModule.AppendSeparator(builder, _options.ItemSeparator, _context, _span);
-            AppendPrettyPrefix(builder, frame.Depth + 1);
+            if (index > 0) JsonModule.AppendSeparator(builder, _options.ItemSeparator, _context, _span);
+            AppendPrettyPrefix(builder, depth + 1);
             var pending = JsonModule.AppendJsonObjectKeyAsync(builder, pair.Key, _options, _context, _span, asynchronous);
-            if (!pending.IsCompleted) return CompleteKeyAsync(pending, frame, pair.Value, builder, asynchronous);
+            if (!pending.IsCompleted) return CompleteKeyAsync(pending, frameIndex, pair.Value, builder, asynchronous);
             pending.GetAwaiter().GetResult();
-            return AdvancePairValueAsync(frame, pair.Value, builder, asynchronous);
+            return AdvancePairValueAsync(frameIndex, pair.Value, builder, asynchronous);
         }
 
-        private ValueTask<(bool Advanced, bool ChunkReady)> AdvancePairValueAsync(EmitFrame frame,
+        private ValueTask<(bool Advanced, bool ChunkReady)> AdvancePairValueAsync(int frameIndex,
             object value, GovernedByteBuilder builder, bool asynchronous)
         {
             JsonModule.AppendSeparator(builder, _options.KeySeparator, _context, _span);
-            frame.Index++;
-            return AdvanceValueAsync(value, frame.Depth + 1, builder, asynchronous);
+            _frames[frameIndex].Index++;
+            return AdvanceValueAsync(value, _frames[frameIndex].Depth + 1, builder, asynchronous);
         }
 
         private async ValueTask<(bool Advanced, bool ChunkReady)> CompletePairAsync(
-            ValueTask<(bool Found, object Key, object Value)> pending, EmitFrame frame,
+            ValueTask<(bool Found, object Key, object Value)> pending, int frameIndex,
             GovernedByteBuilder builder, bool asynchronous)
-            => await AdvancePairAsync(frame, await pending.ConfigureAwait(false), builder, asynchronous).ConfigureAwait(false);
+            => await AdvancePairAsync(frameIndex, await pending.ConfigureAwait(false), builder, asynchronous).ConfigureAwait(false);
 
         private async ValueTask<(bool Advanced, bool ChunkReady)> CompleteKeyAsync(ValueTask pending,
-            EmitFrame frame, object value, GovernedByteBuilder builder, bool asynchronous)
+            int frameIndex, object value, GovernedByteBuilder builder, bool asynchronous)
         {
             await pending.ConfigureAwait(false);
-            return await AdvancePairValueAsync(frame, value, builder, asynchronous).ConfigureAwait(false);
+            return await AdvancePairValueAsync(frameIndex, value, builder, asynchronous).ConfigureAwait(false);
         }
 
         private ValueTask<(bool Advanced, bool ChunkReady)> AdvanceValueAsync(object value, int depth,
@@ -505,10 +525,10 @@ internal sealed partial class LythonRuntime
                         return CompleteValue(JsonModule.AppendJsonDoubleAsync(builder, floating, _options,
                             _context, _span, asynchronous), chunkReady: true);
                     case PyList list:
-                        PushListFrame(list, list.GetEnumerator(), depth);
+                        PushFrame(new EmitFrame(list, depth) { Sequence = list });
                         return new((true, false));
                     case object tupleLike when PyTupleLike.TryGetItems(tupleLike, out var tuple):
-                        PushListFrame(tupleLike, tuple.GetEnumerator(), depth);
+                        PushFrame(new EmitFrame(tupleLike, depth) { Sequence = tuple });
                         return new((true, false));
                     case PyDict dict:
                         return CompleteValue(PushDictFrameAsync(dict, depth, asynchronous), chunkReady: false);
@@ -521,9 +541,9 @@ internal sealed partial class LythonRuntime
                             throw new InvalidOperationException($"Unsupported json.dumps value type: {JsonModule.JsonValueTypeName(value)}");
                         if (_markers is not null)
                         {
+                            PushFrame(new EmitFrame(value, depth) { IsDefault = true, Opened = true });
                             if (!_markers.Add(value))
                                 throw new LythonRuntimeException("ValueError", "Circular reference detected.", _span);
-                            _stack.Push(new EmitFrame { IsDefault = true, Opened = true, Container = value });
                         }
                         var replacement = JsonModule.InvokeJsonCallbackCoreAsync(_options.DefaultCallable, value,
                             _context, _span, asynchronous);
@@ -563,63 +583,54 @@ internal sealed partial class LythonRuntime
             JsonModule.AppendJsonValuePrefix(builder, _options, depth, 0, _context, _span);
         }
 
-        private void PushListFrame(object container, IEnumerator<object> items, int depth)
-        {
-            _stack.Push(new EmitFrame
-            {
-                IsList = true,
-                Container = container,
-                ListItems = items,
-                Depth = depth,
-            });
-        }
-
         private ValueTask PushDictFrameAsync(PyDict dict, int depth, bool asynchronous)
         {
-            var frame = new EmitFrame { IsList = false, Container = dict, Depth = depth };
             if (dict.Count == 0)
             {
-                PrepareDictFrame(frame, sorted: false);
+                PrepareDictFrame(dict, depth, sorted: false);
                 return ValueTask.CompletedTask;
             }
             var pending = JsonOptionTruthAsync(_options.SortKeys, _context, _span, asynchronous);
-            if (!pending.IsCompleted) return CompleteDictFrameAsync(pending, frame);
-            PrepareDictFrame(frame, pending.GetAwaiter().GetResult());
+            if (!pending.IsCompleted) return CompleteDictFrameAsync(pending, dict, depth);
+            PrepareDictFrame(dict, depth, pending.GetAwaiter().GetResult());
             return ValueTask.CompletedTask;
         }
 
-        private void PrepareDictFrame(EmitFrame frame, bool sorted)
+        private void PrepareDictFrame(PyDict dict, int depth, bool sorted)
         {
-            var dict = (PyDict)frame.Container;
+            // Reserve the frame slot before retaining any enumerator or sorted pairs.
+            if (_frameCount == _frames.Length) GrowFrameStorage();
+            var frame = new EmitFrame(dict, depth);
             if (!sorted)
             {
                 frame.DictPairs = dict.GetEnumerator();
-                _stack.Push(frame);
+                PushFrame(frame);
                 return;
             }
 
-            // Sorting retains one reference pair per entry beside the live
-            // dict; fund that scratch before building it like the eager path.
-            var estimate = checked(32L * dict.Count);
-            GrowScratch(estimate);
+            var bytes = checked(32L * dict.Count);
+            var governor = _context.MemoryGovernor;
+            governor.Reserve(bytes, _span);
             try
             {
                 frame.SortedEntries = JsonModule.CollectSortedJsonEntries(dict, _context, _span);
-                frame.ScratchBytes = estimate;
-                _stack.Push(frame);
             }
             catch
             {
-                ReleaseScratch(estimate);
+                governor.ReleaseReserved(bytes);
                 throw;
             }
+            governor.Commit(bytes);
+            frame.ScratchBytes = bytes;
+            PushFrame(frame);
         }
 
-        private async ValueTask CompleteDictFrameAsync(ValueTask<bool> pending, EmitFrame frame)
-            => PrepareDictFrame(frame, await pending.ConfigureAwait(false));
+        private async ValueTask CompleteDictFrameAsync(ValueTask<bool> pending, PyDict dict, int depth)
+            => PrepareDictFrame(dict, depth, await pending.ConfigureAwait(false));
 
-        private ValueTask<(bool Found, object Key, object Value)> TryTakePairAsync(EmitFrame frame, bool asynchronous)
+        private ValueTask<(bool Found, object Key, object Value)> TryTakePairAsync(int frameIndex, bool asynchronous)
         {
+            ref var frame = ref _frames[frameIndex];
             while (true)
             {
                 _context.CheckExecution(_span);
@@ -637,39 +648,29 @@ internal sealed partial class LythonRuntime
                 }
                 if (JsonModule.IsSupportedJsonObjectKey(key)) return new((true, key, value));
                 var pending = JsonOptionTruthAsync(_options.SkipKeys, _context, _span, asynchronous);
-                if (!pending.IsCompleted) return CompleteSkippedPairAsync(pending, frame, asynchronous);
+                if (!pending.IsCompleted) return CompleteSkippedPairAsync(pending, frameIndex, asynchronous);
                 if (!pending.GetAwaiter().GetResult())
                     throw new InvalidOperationException("json.dumps() requires dictionary keys to be strings, numbers, booleans, or None.");
             }
         }
 
         private async ValueTask<(bool Found, object Key, object Value)> CompleteSkippedPairAsync(
-            ValueTask<bool> pending, EmitFrame frame, bool asynchronous)
+            ValueTask<bool> pending, int frameIndex, bool asynchronous)
         {
             if (!await pending.ConfigureAwait(false))
                 throw new InvalidOperationException("json.dumps() requires dictionary keys to be strings, numbers, booleans, or None.");
-            return await TryTakePairAsync(frame, asynchronous).ConfigureAwait(false);
+            return await TryTakePairAsync(frameIndex, asynchronous).ConfigureAwait(false);
         }
 
-        private void CloseFrame(EmitFrame frame)
+        private void CloseFrame()
         {
-            _ = _stack.Pop();
-            if (_markers is not null)
-            {
-                _ = _markers.Remove(frame.Container);
-            }
-
-            frame.Container = null!;
-            frame.SortedEntries = null;
-            frame.ListItems?.Dispose();
-            frame.DictPairs?.Dispose();
-            frame.ListItems = null;
-            frame.DictPairs = null;
-            if (frame.ScratchBytes > 0)
-            {
-                ReleaseScratch(frame.ScratchBytes);
-                frame.ScratchBytes = 0;
-            }
+            ref var frame = ref _frames[--_frameCount];
+            var bytes = frame.ScratchBytes;
+            var pairs = frame.DictPairs;
+            _markers?.Remove(frame.Container);
+            frame = default;
+            pairs?.Dispose();
+            _context.MemoryGovernor.Release(bytes);
         }
     }
 }

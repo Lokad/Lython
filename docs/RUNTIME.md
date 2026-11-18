@@ -62,6 +62,13 @@ builtin serializer. Explicit encoder objects and guest subclasses retain their
 mutable attributes and method dispatch. Separator iteration and option callbacks
 retain their evaluation order and finish before their owners are released.
 
+JSON serialization admits traversal-frame and cycle-marker capacity before
+growth, including replacement overlap. It reuses frame slots across containers
+and returns the capacity when the traversal completes or fails. Builtin
+sequences use live indexed traversal. Retained chunks and pending writes keep
+their existing funding. Keeping reusable capacity charged can cause earlier
+refusal under a tight allowance.
+
 Terminal JSON serialization adopts its completed UTF-8 buffer. The full backing
 capacity remains charged, including its unused tail; avoiding a final copy can
 reduce construction overlap while retaining more spare capacity. Reused
