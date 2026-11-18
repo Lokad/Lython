@@ -14,6 +14,7 @@ public sealed class ExpandedCallExecutionTests
         { "def outer(value):\n def invoke(target,values):\n  local=value+1\n  result=target(*values,key=local)\n  return result,locals()['local']\n return invoke\ndef sink(*args,**kw): return args,kw\nprint(outer(3)(sink,[1,2]))", "(((1, 2), {'key': 4}), 4)\n" },
         { "def sink(*args,**kw): return args,kw\ndef run():\n yield sink(*(yield 'values'),**(yield 'keywords'))\ng=run()\nprint(next(g),g.send([1,2]),g.send({'end':3}))", "values keywords ((1, 2), {'end': 3})\n" },
         { "events=[]\nclass Values:\n def __iter__(self):\n  events.append('iterate')\n  return iter([1])\nclass Mapping:\n def keys(self):\n  events.append('keys')\n  return ['end']\n def __getitem__(self,key):\n  events.append('get:'+key)\n  return 2\ndef sink(*args,**kw):\n events.append('call')\n return args,kw\nprint(sink(*Values(),**Mapping()),events)", "((1,), {'end': 2}) ['keys', 'get:end', 'iterate', 'call']\n" },
+        { "def sink(value,/,**kw): return value,value,kw\ndef run():\n yield sink((yield 'value')+1,**(yield 'mapping'))\ng=run()\nprint(next(g),g.send(1000))\na,b,kw=g.send({'end':3})\nprint(a,b,a is b,kw)", "value mapping\n1001 1001 True {'end': 3}\n" },
         { "def inspect():\n value=7\n return locals(*[])['value']\nprint(inspect())", "7\n" },
         { "class Base:\n def value(self): return 3\nclass Child(Base):\n def value(self): return super(*[]).value()+1\nprint(Child().value())", "4\n" },
     };
@@ -38,9 +39,10 @@ public sealed class ExpandedCallExecutionTests
     [InlineData("/keys.txt")]
     [InlineData("/items.txt")]
     [InlineData("/call.txt")]
-    public async Task IterationMappingAndCallableCanSuspendWithoutReplay(string? pausedPath)
+    [InlineData("/items.txt", false)]
+    public async Task IterationMappingAndCallableCanSuspendWithoutReplay(string? pausedPath, bool starred = true)
     {
-        const string source = """
+        var source = $$"""
 class Values:
     def __iter__(self):
         with open('iterate.txt','a') as target: target.write('iterate')
@@ -56,7 +58,7 @@ class Target:
     def __call__(self,*args,**kw):
         with open('call.txt','a') as target: target.write('called')
         return args,kw
-print(Target()(*Values(),**Mapping()))
+print(Target()({{(starred ? "*Values()" : "1,2")}},**Mapping()))
 """;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
@@ -66,7 +68,8 @@ print(Target()(*Values(),**Mapping()))
         var effects = new[] { "iterate", "keys", "end", "called" };
         // A sole * is expanded after ** expressions, but ** mapping expansion
         // precedes its deferred iteration, as in the existing accumulator.
-        var order = new[] { "/keys.txt", "/items.txt", "/iterate.txt", "/call.txt" };
+        var order = starred ? new[] { "/keys.txt", "/items.txt", "/iterate.txt", "/call.txt" }
+            : ["/keys.txt", "/items.txt", "/call.txt"];
         var host = new DelayedLythonHost();
         foreach (var path in paths) host.SeedFile(path, "before");
         var entered = pausedPath is null ? null : host.PauseWriteUntilCancellation(pausedPath);
@@ -94,7 +97,8 @@ print(Target()(*Values(),**Mapping()))
             }
             for (var i = 0; i < paths.Length; i++)
             {
-                var completed = pausedPath is null || Array.IndexOf(order, paths[i]) < Array.IndexOf(order, pausedPath);
+                var stage = Array.IndexOf(order, paths[i]);
+                var completed = stage >= 0 && (pausedPath is null || stage < Array.IndexOf(order, pausedPath));
                 Assert.Equal("before" + (completed ? effects[i] : ""), host.ReadText(paths[i]));
             }
             Assert.True(host.CompletedAsynchronously > 0);

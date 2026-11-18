@@ -131,7 +131,7 @@ internal sealed partial class LythonRuntime
                 // Display/call and definition operations retain their own
                 // suspension paths. Targets use ordinary opcodes instead.
                 case ExecutableAppendDisplay or ExecutableStoreDictionaryItem or ExecutableAppendCall
-                    or ExecutableFinishCall
+                    or ExecutableFinishCall or ExecutableCallWithKeywordMapping
                     or ExecutableCreateGeneratorExpression:
                     return ExecutePreparedSuspendingOperationAsync(operation, instruction, asynchronous);
                 case ExecutableAnnotationsEnabled or ExecutablePostponedAnnotation or ExecutableStoreModuleAnnotation
@@ -218,18 +218,29 @@ internal sealed partial class LythonRuntime
                     finally { _execution.Stack.RetireTo(argumentSlot); }
                     break;
                 case ExecutableFinishCall call:
-                    var accumulatorSlot = instruction.InputStart;
+                {
+                    object result;
+                    using (var accumulator = (CallExpansion.CallArgumentAccumulator)_execution.Stack.TakeValue(
+                        instruction.InputStart, instruction.ResultSlot))
+                        result = await accumulator.InvokeAsync(call.TargetSpan, span, asynchronous).ConfigureAwait(false);
+                    PublishInstructionResult(instruction, result);
+                    break;
+                }
+                case ExecutableCallWithKeywordMapping call:
+                {
+                    var first = instruction.InputStart;
                     try
                     {
-                        var accumulator = (CallExpansion.CallArgumentAccumulator)_execution.Stack[accumulatorSlot];
-                        var mapping = call.KeywordMappingSpan is null ? null
-                            : _execution.Stack.TakeValue(accumulatorSlot + 1, accumulatorSlot + 1);
-                        var result = await accumulator.InvokeAsync(call.TargetSpan, span, asynchronous, mapping,
-                            call.KeywordMappingSpan).ConfigureAwait(false);
+                        var target = _execution.Stack[first];
+                        var positional = _execution.Stack.Slice(first + 1, call.PositionalCount);
+                        var mapping = _execution.Stack[first + call.PositionalCount + 1];
+                        var result = await InvokeWithKeywordMapping(target, positional, mapping, call,
+                            span, asynchronous).ConfigureAwait(false);
                         PublishInstructionResult(instruction, result);
                     }
-                    catch { _execution.Stack.RetireTo(accumulatorSlot); throw; }
+                    catch { _execution.Stack.RetireTo(first); throw; }
                     break;
+                }
                 case ExecutableCreateGeneratorExpression comprehension:
                     var outer = _execution.Stack.TakeValue(instruction.InputStart, instruction.ResultSlot);
                     var generatorExpression = await PyGenerator.CreateExpressionAsync(comprehension.CodeObject, this,
@@ -238,6 +249,33 @@ internal sealed partial class LythonRuntime
                     break;
                 default: throw new InvalidOperationException("Unknown prepared suspension operation.");
             }
+        }
+
+        private ValueTask<object> InvokeWithKeywordMapping(object target, Memory<ExecutableSlot> positional, object mapping,
+            ExecutableCallWithKeywordMapping call, LythonSourceSpan span, bool asynchronous)
+        {
+            var method = target as PyBoundMethod;
+            if (mapping is PyDict dictionary && (method?.Function ?? target) is PyFunctionBase function &&
+                function.CanTakeExpandedKeywords(positional.Length, method?.Receiver) &&
+                function.CopyExpandedKeywords(dictionary, this, call.MappingSpan, span) is { } keywords)
+                return InvokeWithPreparedKeywords(function, positional.Span, method?.Receiver, keywords, span, this, asynchronous);
+
+            // Operand storage belongs to the caller and remains live through
+            // mapping callbacks. Only the general route needs an argument packet.
+            return ExpandKeywordMappingAndInvokeAsync(target, positional, mapping, call, span, asynchronous);
+        }
+
+        private async ValueTask<object> ExpandKeywordMappingAndInvokeAsync(object target, Memory<ExecutableSlot> positional,
+            object mapping, ExecutableCallWithKeywordMapping call, LythonSourceSpan span, bool asynchronous)
+        {
+            using var accumulator = new CallExpansion.CallArgumentAccumulator(checked(positional.Length + 1), this, target);
+            for (var i = 0; i < positional.Length; i++)
+            {
+                var value = positional.Span[i].Object.RequireNotNull();
+                accumulator.Add(CallArgumentValue.Positional(value), span);
+            }
+            await accumulator.AppendAsync(CallArgumentForm.StarredDictionary, mapping, call.MappingSpan, asynchronous).ConfigureAwait(false);
+            return await accumulator.InvokeAsync(call.TargetSpan, span, asynchronous).ConfigureAwait(false);
         }
     }
 

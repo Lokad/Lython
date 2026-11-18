@@ -452,7 +452,7 @@ internal sealed partial class LythonRuntime
     // The expansion has validated the keys and supplied every positional slot.
     // Transfer the final dictionary to the invocation before any body can see it.
     internal static ValueTask<object> InvokeWithPreparedKeywords(PyFunctionBase function,
-        ReadOnlySpan<CallArgumentValue> positional, object? receiver, PyDict keywords,
+        ReadOnlySpan<ExecutableSlot> positional, object? receiver, PyDict keywords,
         LythonSourceSpan callSpan, ExecutionContext context, bool asynchronous)
     {
         var entered = false;

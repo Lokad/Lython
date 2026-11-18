@@ -242,7 +242,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
             ExecutableOpCode.FormatField => constants[instruction.ConstantIndex] is ExecutableFormatField { Append: false },
             ExecutableOpCode.ApplyOperation => constants[instruction.ConstantIndex] is
                 ExecutableStartDisplay or ExecutableFinishComprehension or ExecutableFinishTuple or
-                ExecutableFinishCall or ExecutableCreateGeneratorExpression or
+                ExecutableFinishCall or ExecutableCallWithKeywordMapping or ExecutableCreateGeneratorExpression or
                 ExecutableCreateLambda or ExecutablePostponedAnnotation or ExecutableAnnotationsEnabled,
             _ => false,
         };
@@ -328,7 +328,8 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
         ExecutableStartDisplay or ExecutableStartClassHeader or ExecutableStartFunctionDefaults or ExecutablePostponedAnnotation or ExecutableAnnotationsEnabled => (0, 1),
         ExecutableStartComprehension => (1, 3),
         ExecutableFinishComprehension => (2, 1),
-        ExecutableFinishCall call => (call.KeywordMappingSpan is null ? 1 : 2, 1),
+        ExecutableFinishCall => (1, 1),
+        ExecutableCallWithKeywordMapping call => (checked(call.PositionalCount + 2), 1),
         ExecutableFinishTuple or ExecutableStartCall or ExecutableCreateGeneratorExpression => (1, 1),
         ExecutableAppendDisplay or ExecutableAppendCall or ExecutableStoreModuleAnnotation => (1, 0),
         ExecutableStoreDictionaryItem item => (item.Unpacking ? 1 : 2, 0),

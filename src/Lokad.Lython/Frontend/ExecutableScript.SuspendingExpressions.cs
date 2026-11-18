@@ -13,7 +13,9 @@ internal sealed record ExecutableFinishComprehension : ExecutableOperation;
 internal sealed record ExecutableFinishTuple : ExecutableOperation;
 internal sealed record ExecutableStartCall(int ArgumentCount, bool DeferSingleStar) : ExecutableOperation;
 internal sealed record ExecutableAppendCall(CallArgumentForm Form) : ExecutableOperation;
-internal sealed record ExecutableFinishCall(LythonSourceSpan TargetSpan, LythonSourceSpan? KeywordMappingSpan = null) : ExecutableOperation;
+internal sealed record ExecutableFinishCall(LythonSourceSpan TargetSpan) : ExecutableOperation;
+internal sealed record ExecutableCallWithKeywordMapping(int PositionalCount, LythonSourceSpan TargetSpan,
+    LythonSourceSpan MappingSpan) : ExecutableOperation;
 internal sealed record ExecutableFormatField(string? FormatSpecifier, bool DynamicSpecifier, bool Append,
     LythonRuntime.InterpolatedFormatSpecifier? PreparedFormat);
 internal sealed record ExecutableCreateGeneratorExpression(ExecutableCodeObject CodeObject, LythonSourceSpan OuterSpan,
@@ -29,23 +31,28 @@ internal sealed partial class ExecutableScript
         private int CompileExpandedCall(LoweredCallExpression call, int block)
         {
             block = CompileExpression(call.Target, block);
+            var positionalCount = call.Arguments.Count - 1;
+            var mapping = call.Arguments[positionalCount];
+            var soleTrailingMapping = mapping.Form.Kind == CallArgumentKind.StarredDictionary;
+            for (var i = 0; soleTrailingMapping && i < positionalCount; i++)
+                soleTrailingMapping = call.Arguments[i].Form.Kind == CallArgumentKind.Positional;
+            if (soleTrailingMapping)
+            {
+                foreach (var argument in call.Arguments)
+                    block = CompileExpression(argument.Expression, block);
+                EmitOperation(new ExecutableCallWithKeywordMapping(positionalCount, call.Target.Span, mapping.Expression.Span),
+                    call.Span, block);
+                return block;
+            }
+
             EmitOperation(new ExecutableStartCall(call.Arguments.Count,
                 call.Arguments.Count(a => a.Form.Kind is CallArgumentKind.Positional or CallArgumentKind.StarredList) == 1), call.Span, block);
-            // Keep a sole trailing keyword mapping in its operand slot. This
-            // leaves the existing earlier-argument snapshot boundaries intact.
-            var mergeTrailingMapping = call.Arguments[^1].Form.Kind == CallArgumentKind.StarredDictionary;
-            for (var i = 0; mergeTrailingMapping && i < call.Arguments.Count - 1; i++)
-                mergeTrailingMapping = call.Arguments[i].Form.Kind == CallArgumentKind.Positional;
-            LythonSourceSpan? mappingSpan = null;
-            for (var i = 0; i < call.Arguments.Count; i++)
+            foreach (var argument in call.Arguments)
             {
-                var argument = call.Arguments[i];
                 block = CompileExpression(argument.Expression, block);
-                if (mergeTrailingMapping && i == call.Arguments.Count - 1)
-                    mappingSpan = argument.Expression.Span;
-                else EmitOperation(new ExecutableAppendCall(argument.Form), argument.Expression.Span, block);
+                EmitOperation(new ExecutableAppendCall(argument.Form), argument.Expression.Span, block);
             }
-            EmitOperation(new ExecutableFinishCall(call.Target.Span, mappingSpan), call.Span, block);
+            EmitOperation(new ExecutableFinishCall(call.Target.Span), call.Span, block);
             return block;
         }
 

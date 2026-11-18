@@ -96,7 +96,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         LythonSourceSpan mappingSpan, LythonSourceSpan callSpan)
         => source.CopyExpandedKeywords(_bindingPlan, context, mappingSpan, callSpan);
 
-    internal BoundFunctionArguments BindPreparedKeywords(ReadOnlySpan<CallArgumentValue> positional, object? receiver,
+    internal BoundFunctionArguments BindPreparedKeywords(ReadOnlySpan<LythonRuntime.ExecutableSlot> positional, object? receiver,
         PyDict keywords, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         context.CheckExecution(span);
@@ -105,10 +105,12 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         {
             var slot = 0;
             if (receiver is not null) storage.Values[slot++].Object = receiver;
-            for (var i = 0; i < positional.Length; i++)
+            for (var offset = 0; offset < positional.Length;)
             {
-                if ((i & 1023) == 0) context.CheckExecution(span);
-                storage.Values[slot++].Object = positional[i].Value;
+                context.CheckExecution(span);
+                var length = Math.Min(1024, positional.Length - offset);
+                positional.Slice(offset, length).CopyTo(storage.Values.AsSpan(slot + offset, length));
+                offset += length;
             }
             storage.Values[_bindingPlan.VariadicDictionaryIndex].Object = keywords;
             return storage;
