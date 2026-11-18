@@ -116,17 +116,27 @@ internal sealed partial class LythonRuntime
         if (hasTypeParameters)
             function.TrySetMember("__type_params__", scope.Parameters);
         if (inputs.Length == 0 && !hasTypeParameters && !HasTypeParameterScope(definingContext)) return;
-        var annotations = new PyDict(definingContext.MemoryGovernor, span);
-        for (var i = 0; i < inputs.Length; i++)
+        var annotations = new PyDict(inputs.Length, definingContext.MemoryGovernor, span);
+        var published = false;
+        try
         {
-            var input = inputs[i];
-            var expression = input.Expression;
-            var value = !evaluated.IsEmpty ? RuntimeValue(evaluated.Span[i].Object.RequireNotNull())
-                : definingContext.PostponedAnnotations ? CreatePostponedAnnotationValue(expression.Syntax, definingContext)
-                    : await EvaluateTypeExpressionAsync(expression, scope.Annotations, asynchronous).ConfigureAwait(false);
-            await StoreAnnotationEntryAsync(annotations, input.Name, value, definingContext, expression.Span, asynchronous).ConfigureAwait(false);
+            for (var i = 0; i < inputs.Length; i++)
+            {
+                var input = inputs[i];
+                var expression = input.Expression;
+                var value = !evaluated.IsEmpty ? RuntimeValue(evaluated.Span[i].Object.RequireNotNull())
+                    : definingContext.PostponedAnnotations ? CreatePostponedAnnotationValue(expression.Syntax, definingContext)
+                        : await EvaluateTypeExpressionAsync(expression, scope.Annotations, asynchronous).ConfigureAwait(false);
+                definingContext.CheckExecution(expression.Span);
+                annotations.TryAddNativeString(input.Key, value, definingContext, expression.Span);
+            }
+            function.TrySetMember("__annotations__", annotations);
+            published = true;
         }
-        function.TrySetMember("__annotations__", annotations);
+        finally
+        {
+            if (!published) annotations.DiscardUnpublishedStorage();
+        }
     }
 
     private static async ValueTask AttachGenericClassMetadataAsync(LoweredClassDefinitionStatement definition, TypeScope scope,

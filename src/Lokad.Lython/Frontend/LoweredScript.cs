@@ -1,3 +1,5 @@
+using Lokad.Lython.Runtime.Text;
+
 namespace Lokad.Lython.Frontend;
 
 internal sealed class LoweredScript
@@ -85,9 +87,9 @@ internal sealed class LoweredScript
                 FunctionParameterKind.PositionalOnly => nextPositionalOnly++,
                 _ => nextOther++,
             };
-            annotations[index] = new(parameter.Name, LowerExpression(expression));
+            annotations[index] = new(PyString.FromString(parameter.Name), LowerExpression(expression));
         }
-        if (definition.ReturnAnnotation is { } result) annotations[^1] = new("return", LowerExpression(result));
+        if (definition.ReturnAnnotation is { } result) annotations[^1] = new(PyString.FromString("return"), LowerExpression(result));
         return annotations;
     }
 

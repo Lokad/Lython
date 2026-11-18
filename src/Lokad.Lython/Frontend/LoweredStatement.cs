@@ -1,3 +1,5 @@
+using Lokad.Lython.Runtime.Text;
+
 namespace Lokad.Lython.Frontend;
 
 internal enum LoweredStatementKind
@@ -41,7 +43,7 @@ internal sealed record LoweredFunctionParameter(
     FunctionParameterKind Kind,
     LoweredExpression? DefaultValue);
 
-internal readonly record struct LoweredFunctionAnnotation(string Name, LoweredExpression Expression);
+internal readonly record struct LoweredFunctionAnnotation(PyString Key, LoweredExpression Expression);
 
 internal sealed record LoweredFunctionDefinitionStatement(
     FunctionDefinitionStatementSyntax Syntax,

@@ -7,6 +7,7 @@ public sealed class GeneratorDefinitionMetadataTests
     public static TheoryData<string, string> Programs => new()
     {
         { "def values(x:int=3)->int:\n 'numbers'\n yield x\nprint(next(values()),values.__annotations__=={'x':int,'return':int},values.__doc__)", "3 True numbers\n" },
+        { "def make(annotation):\n def f(arg:annotation)->annotation:\n  return arg\n return f\nvalue=[]\nfirst,second=make(value),make(value)\na,b=first.__annotations__,second.__annotations__\na['extra']=int\nprint(a is b,list(b),b['arg'] is value,b['return'] is value)", "False ['arg', 'return'] True True\n" },
         { "events=[]\ndef decorate():\n events.append('decorator')\n def apply(f):\n  events.append('apply')\n  assert f.__annotations__=={'x':int,'return':int}\n  return f\n return apply\ndef value(name):\n events.append(name)\n return 3 if name=='default' else int\n@decorate()\ndef values(x:value('annotation')=value('default'))->value('return'):\n yield x\nprint(next(values()),events)", "3 ['decorator', 'default', 'annotation', 'return', 'apply']\n" },
         { "from __future__ import annotations\ndef values(x:missing())->Result:\n yield x\nprint(next(values(7)),values.__annotations__=={'x':'missing()','return':'Result'})", "7 True\n" },
         { "def make():\n T=17\n def values[T](x:T=T)->T:\n  yield x,T\n T=20\n return values\nf=make()\nx,t=next(f())\nprint(x,t is f.__type_params__[0],f.__annotations__['x'] is t,f.__annotations__['return'] is t)", "17 True True True\n" },
@@ -38,13 +39,17 @@ public sealed class GeneratorDefinitionMetadataTests
     }
 
     [Theory]
-    [InlineData("ok")]
-    [InlineData("cancel")]
-    [InlineData("error")]
-    [InlineData("memory")]
-    public async Task SuspendedMetadataKeepsOwnersUntilCleanup(string mode)
+    [InlineData("ok", true)]
+    [InlineData("cancel", true)]
+    [InlineData("error", true)]
+    [InlineData("memory", true)]
+    [InlineData("ok", false)]
+    [InlineData("cancel", false)]
+    [InlineData("error", false)]
+    [InlineData("memory", false)]
+    public async Task SuspendedMetadataKeepsOwnersUntilCleanup(string mode, bool generic)
     {
-        const string source = """
+        var source = $$"""
             def make():
                 payload='held'*1024
                 def annotate():
@@ -55,15 +60,15 @@ public sealed class GeneratorDefinitionMetadataTests
                     if mode=='memory':
                         return 'x'*8388608
                     return str
-                def values[T](value:annotate())->T:
-                    yield value,payload,T
+                def values{{(generic ? "[T]" : "")}}(value:annotate())->{{(generic ? "T" : "str")}}:
+                    yield value,payload,{{(generic ? "T" : "str")}}
                 return values
             try:
                 values=make()
             except MemoryError:
                 print('suppressed')
             value,payload,parameter=next(values('argument'))
-            print(value,parameter is values.__type_params__[0])
+            print(value,parameter is {{(generic ? "values.__type_params__[0]" : "values.__annotations__['return']")}})
             return payload
             """;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);

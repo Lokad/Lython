@@ -29,7 +29,7 @@ internal sealed partial class ExecutableScript
                 foreach (var slot in layout.Defaults)
                     block = CompileExpression(definition.Parameters[slot.ParameterIndex].DefaultValue.RequireNotNull(), block);
             }
-            if (!yielding || definition.TypeParameters is not null || binding.Annotations.Length == 0)
+            if ((!_completeLexicalParent && !yielding) || definition.TypeParameters is not null || binding.Annotations.Length == 0)
             {
                 EmitOperation(new ExecutableCreateFunction(binding), definition.Span, block);
                 return block;
