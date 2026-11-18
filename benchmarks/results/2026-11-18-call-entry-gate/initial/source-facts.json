@@ -1,0 +1,24 @@
+{
+  "state": "Bounded source gate started; no prototype or current CPU capture yet",
+  "source": "Committed10ee56c7/measured2ede09fc; full44234151651pending. Latest fully qualified reference2e585229/1bce52ad.",
+  "purpose": "Choose a coherent complete call-entry simplification from current representative cost, not another arena or narrow signature tweak.",
+  "established": [
+    "Ordinary helpers already use final slots, borrowed arguments and deferred frames; do not revive old repackaging assumptions.",
+    "TryInvokeClosedReceiver zero-argument calls use InvokeReceiverMethod: interpreter admission, CheckExecution, method.Invoke, exception translation, deterministic leave.",
+    "Async receiver entry retains its guard only through actual suspension; completed work uses synchronous cleanup.",
+    "Dictionary direct receiver descriptors include get/setdefault/views, not popitem/copy/clear. The broad PyDict no-argument check does not by itself establish a protocol-suspension bug.",
+    "R480 original/helper-list normalization sources are retained in .git/agent-notes/review-20261031/private-construction-r480/catalog.json; original source equals the current maintained normalization workload.",
+    "Saved R480/R500/R508 profiles predate later operand/yield/construction changes; inclusive frame samples contain useful operation work and are not removable shares."
+  ],
+  "missingFact": "Current attribution of complete builtin/helper entry, guard/dispatch/publication and actual UTF8 work in original and helper-list normalization; source alone does not establish a dominant removable stage.",
+  "next": "Reuse existing bounded CPU-profile tooling for at most one current original/helper capture if necessary. Verify actual frozen32-file images and the custom catalog/goldens first. Preserve all native maps/failures, join users and SHA-archive before RAM teardown. No new benchmark framework or runtime instrumentation.",
+  "acceptanceForSelection": [
+    "Name an entire redundant work/storage stage and displaced implementation before prototyping.",
+    "Prove managed stack/recursion safety and host memory-admission/refund reentry; do not remove guards merely because builtins look pure.",
+    "Preserve Python-shaped errors, defaults/keywords, callbacks, aliases, genuine async suspension, current cancellation and awaited cleanup.",
+    "Use one bounded representative whole-script/control source pair; retain adverse results and decide regression debt."
+  ],
+  "stopping": "End this source gate with a concrete deletion/replacement map or a precise remaining attribution. Do not turn it into an unchanged profiling or qualification campaign.",
+  "regexIndependent": true,
+  "publicationHeld": true
+}

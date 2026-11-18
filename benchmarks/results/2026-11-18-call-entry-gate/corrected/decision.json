@@ -1,0 +1,31 @@
+{
+  "source": "Committed10ee56c7/frozen2ede09fc, fully qualified R513",
+  "state": "Source gate complete; no whole redundant call-entry stage established",
+  "cases": [
+    {
+      "label": "text-original",
+      "samples": 988,
+      "unknownLeaves": 206,
+      "invocations": 5888,
+      "guestSeconds": 4.641201673
+    },
+    {
+      "label": "text-helper",
+      "samples": 1016,
+      "unknownLeaves": 186,
+      "invocations": 4096,
+      "guestSeconds": 4.820748938
+    }
+  ],
+  "conclusions": [
+    "Current calls use final local slots and borrowed operands, not old argument packaging.",
+    "341helper inclusive entry samples include NativeExecution body/receiver work, not a removable entry share.",
+    "Hot StringMembers .cctor b__81_7 is ExpandTabs, confirmed against exact measured IL; useful inlined text work, not strip-dispatch overhead.",
+    "Raw map/stack samples include reset, host I/O/protocol/goldens/cleanup;20percent unknown leaves and sampling/inlining constrain attribution.",
+    "No whole call-entry replacement justified by these samples. Do not remove stack/reentry guards or revive slower arenas/controllers."
+  ],
+  "next": "R515 bounded known-size working-drain construction: reuse existing Cursor.KnownCount to admit initial capacity once; retain generic live iteration/growth and protocol cleanup. Eliminates initial geometric growth/copy/admission lifecycle without new storage framework. Measure original/helper text plus nontext controls; allocation benefit is a hypothesis until measured.",
+  "regexProducerObservation": "Read-only sibling16dc3122. Metadata/cursor interfaces unchanged from7e683b2d; group-name enumeration, retained creation token, result-staging bridges remain. No normal pin promotion or repeated qualification.",
+  "performanceComparison": false,
+  "publicationHeld": true
+}

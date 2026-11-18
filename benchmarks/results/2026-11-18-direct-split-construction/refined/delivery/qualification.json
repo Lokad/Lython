@@ -1,0 +1,91 @@
+{
+  "run": 44234151651,
+  "head": "10ee56c7f53ca6dc1d7a7f688bb5c2437b9592fd",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "log": "0_tests (windows-latest).txt",
+      "summaries": [
+        {
+          "framework": "net11.0",
+          "passed": 4837
+        },
+        {
+          "framework": "net11.0",
+          "passed": 18048
+        },
+        {
+          "framework": "net10.0",
+          "passed": 4837
+        },
+        {
+          "framework": "net10.0",
+          "passed": 18048
+        },
+        {
+          "framework": "net11.0",
+          "passed": 14
+        },
+        {
+          "framework": "net11.0",
+          "passed": 406
+        },
+        {
+          "framework": "net10.0",
+          "passed": 14
+        },
+        {
+          "framework": "net10.0",
+          "passed": 406
+        }
+      ]
+    },
+    {
+      "log": "1_tests (ubuntu-latest).txt",
+      "summaries": [
+        {
+          "framework": "net11.0",
+          "passed": 4837
+        },
+        {
+          "framework": "net11.0",
+          "passed": 18048
+        },
+        {
+          "framework": "net10.0",
+          "passed": 4837
+        },
+        {
+          "framework": "net10.0",
+          "passed": 18048
+        },
+        {
+          "framework": "net11.0",
+          "passed": 14
+        },
+        {
+          "framework": "net11.0",
+          "passed": 406
+        },
+        {
+          "framework": "net10.0",
+          "passed": 14
+        },
+        {
+          "framework": "net10.0",
+          "passed": 406
+        }
+      ]
+    }
+  ],
+  "summaries": 16,
+  "sourceInputsVerified": 2389,
+  "production": 587,
+  "normalAdapterPin": "0.4.0",
+  "allMeaningfulStepsPassed": true,
+  "logsSHA256": "35da126f2976884f667c046e6db726caaca757a86cfd034d05bab720f9e3b6ba",
+  "committedProductionMatchesQualifiedInputs": true,
+  "binaryEqualityInferred": false,
+  "publicationHeld": true,
+  "all587ProductionInputsMatchMeasured2ede09fc": true
+}
