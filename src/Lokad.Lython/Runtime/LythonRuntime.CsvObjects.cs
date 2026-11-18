@@ -66,7 +66,7 @@ internal sealed partial class LythonRuntime
         public CsvRecordSource Rows { get; }
         private readonly CsvReaderObject _reader;
         private PyDict.RecordKeys? _recordKeys;
-        public object LineNum { get; private set; } = BigInteger.Zero;
+        private ExecutableSlot _lineNumber = ExecutableSlot.FromInteger(0);
 
         public CsvDictReaderObject(CsvRecordSource rows, object fieldNames, object restKey, object restValue,
             ExecutionContext context, LythonSourceSpan span)
@@ -80,7 +80,8 @@ internal sealed partial class LythonRuntime
             value = name switch
             {
                 "fieldnames" => GetFieldNamesAsync(false).GetAwaiter().GetResult(),
-                "restkey" => _restKey, "restval" => _restValue, "line_num" => LineNum, "reader" => _reader,
+                "restkey" => _restKey, "restval" => _restValue,
+                "line_num" => _lineNumber.Object.RequireNotNull(), "reader" => _reader,
                 _ => MissingMemberValue.Instance,
             };
             return !ReferenceEquals(value, MissingMemberValue.Instance) || IteratorMembers.TryGetMember(this, name, out value);
@@ -95,7 +96,7 @@ internal sealed partial class LythonRuntime
                 case "fieldnames": _fieldNames = value; return true;
                 case "restkey": _restKey = value; return true;
                 case "restval": _restValue = value; return true;
-                case "line_num": LineNum = value; return true;
+                case "line_num": _lineNumber.Object = value; return true;
                 default: return false;
             }
         }
@@ -106,7 +107,7 @@ internal sealed partial class LythonRuntime
                 var row = asynchronous ? await Rows.TryMoveNextAsync().ConfigureAwait(false) : Rows.TryMoveNext(out var next) ? next : null;
                 if (row is not null) _fieldNames = Rows.AdoptRecord(row);
             }
-            LineNum = new BigInteger(Rows.PhysicalLineCount);
+            _lineNumber.SetInteger(Rows.PhysicalLineCount);
             return _fieldNames;
         }
         public PyIterationResult TryMoveNext()
@@ -116,16 +117,30 @@ internal sealed partial class LythonRuntime
         public ValueTask<PyIterationResult> TryMoveNextAsync() => NextAsync(true);
         private async ValueTask<PyIterationResult> NextAsync(bool asynchronous)
         {
-            var zero = asynchronous ? await EvaluateBinaryOperatorAsync(BinaryOperatorSyntax.Equal, LineNum, BigInteger.Zero, _context, _span).ConfigureAwait(false)
-                : EvaluateBinaryOperator(BinaryOperatorSyntax.Equal, LineNum, BigInteger.Zero, _context, _span);
-            if (asynchronous ? await IsTruthyAsync(zero, _context, _span).ConfigureAwait(false) : LythonRuntime.IsTruthy(zero, _context, _span))
+            _context.CheckExecution(_span);
+            bool needsHeader;
+            if (_lineNumber.TryGetInteger(out var count))
+            {
+                needsHeader = count == 0;
+            }
+            else
+            {
+                // DictReader allows guest-assigned values and honors their protocols.
+                var lineNumber = _lineNumber.Object.RequireNotNull();
+                var zero = asynchronous
+                    ? await EvaluateBinaryOperatorAsync(BinaryOperatorSyntax.Equal, lineNumber, BigInteger.Zero, _context, _span).ConfigureAwait(false)
+                    : EvaluateBinaryOperator(BinaryOperatorSyntax.Equal, lineNumber, BigInteger.Zero, _context, _span);
+                needsHeader = asynchronous ? await IsTruthyAsync(zero, _context, _span).ConfigureAwait(false)
+                    : LythonRuntime.IsTruthy(zero, _context, _span);
+            }
+            if (needsHeader)
                 _ = await GetFieldNamesAsync(asynchronous).ConfigureAwait(false);
             object[]? row = null;
             try
             {
                 row = asynchronous ? await Rows.TryMoveNextAsync().ConfigureAwait(false) : Rows.TryMoveNext(out var next) ? next : null;
                 if (row is null) return PyIterationResult.End;
-                LineNum = new BigInteger(Rows.PhysicalLineCount);
+                _lineNumber.SetInteger(Rows.PhysicalLineCount);
                 while (row.Length == 0)
                 {
                     Rows.ReleaseRecord(row);

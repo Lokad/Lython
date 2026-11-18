@@ -9428,3 +9428,12 @@ uses the original R545 trace. CSV final strings and record adoption already
 own their final storage. Reader line-number and header methods account for
 809 integer allocation triggers by nearest frame. Preserve observable member
 values and protocols while investigating removal of the routine boxed state.
+
+[R550/B977 CSV line numbers](results/2026-11-18-csv-line-number/README.md)
+removes routine boxing and generic zero comparison from the dictionary
+reader. Local invoice allocation fell 9.37%, and validated-record allocation
+fell 16.53% at matching accounted peaks. Validated records improved warm
+3.63–6.34% and compile-to-result 5.07–5.50% with supporting CPU. The smaller
+invoice timing still overlaps movement in the positional control. Both actual
+targets passed the focused Windows and WSL checks with the new assigned-value
+and line-number identity regression.

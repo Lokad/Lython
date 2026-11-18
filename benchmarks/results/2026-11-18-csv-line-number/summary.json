@@ -1,0 +1,191 @@
+{
+  "complete": true,
+  "elapsedSeconds": 232.20656855311245,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "archivalOnlyRecovery": null,
+  "rows": [
+    {
+      "case": "scripts.csv-invoice.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 6.7425266142857145,
+        "reference": 6.8896128999999995,
+        "candidate-control": 6.725280070422535,
+        "reference-control": 6.860512585714285
+      },
+      "cpuMilliseconds": {
+        "candidate": 6.857142857142857,
+        "reference": 7.0,
+        "candidate-control": 6.901408450704225,
+        "reference-control": 7.0
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.6701336967867217,
+        "reference": 0.6242635614134896,
+        "candidate-control": 0.2491972243849267,
+        "reference-control": 0.7157055805249224
+      },
+      "elapsedChangePercent": [
+        -2.3852258749902266,
+        -2.134899127849188,
+        -1.9711721770374169,
+        -1.719783616085102
+      ],
+      "cpuChangePercent": [
+        -2.0408163265306145,
+        -2.0408163265306145,
+        -1.4084507042253613,
+        -1.4084507042253613
+      ],
+      "referenceSpreadPercent": 0.42417113768307146,
+      "candidateSpreadPercent": 0.25644350395204185
+    },
+    {
+      "case": "scripts.csv-invoice.large",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "candidate": 6.965377098591549,
+        "reference": 7.1159856999999995,
+        "candidate-control": 6.986107957746478,
+        "reference-control": 7.104822885714286
+      },
+      "cpuMilliseconds": {
+        "candidate": 7.183098591549296,
+        "reference": 7.285714285714286,
+        "candidate-control": 7.183098591549296,
+        "reference-control": 7.142857142857142
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.24533155009066385,
+        "reference": 0.8355834666727973,
+        "candidate-control": 1.0608066614454916,
+        "reference-control": 0.2922773170889361
+      },
+      "elapsedChangePercent": [
+        -2.116482631611394,
+        -1.9626919539841303,
+        -1.8251546269060337,
+        -1.6709062263397079
+      ],
+      "cpuChangePercent": [
+        -1.4084507042253502,
+        -1.4084507042253502,
+        0.5633802816901401,
+        0.5633802816901401
+      ],
+      "referenceSpreadPercent": 0.157116010705316,
+      "candidateSpreadPercent": 0.2976272334073826
+    },
+    {
+      "case": "scripts.csv-validated-records.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 4.382761681415929,
+        "candidate-control": 4.10488018487395,
+        "reference": 4.331559307017544,
+        "candidate": 4.174306882352941
+      },
+      "cpuMilliseconds": {
+        "reference-control": 4.513274336283185,
+        "candidate-control": 4.11764705882353,
+        "reference": 4.473684210526315,
+        "candidate": 4.285714285714286
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.28037237683834215,
+        "candidate-control": 0.09442746874964748,
+        "reference": 0.4655934436284381,
+        "candidate": 0.34795229598616534
+      },
+      "elapsedChangePercent": [
+        -6.340328695495145,
+        -5.2331990878285435,
+        -4.7562430772107085,
+        -3.630388354831937
+      ],
+      "cpuChangePercent": [
+        -8.765859284890409,
+        -7.958477508650496,
+        -5.042016806722682,
+        -4.201680672268893
+      ],
+      "referenceSpreadPercent": 1.1820771867404156,
+      "candidateSpreadPercent": 1.691320924172679
+    },
+    {
+      "case": "scripts.csv-validated-records.large",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "reference-control": 4.4946411100917425,
+        "candidate-control": 4.256013336206897,
+        "reference": 4.5035658440366975,
+        "candidate": 4.266832878260869
+      },
+      "cpuMilliseconds": {
+        "reference-control": 4.678899082568807,
+        "candidate-control": 4.3965517241379315,
+        "reference": 4.678899082568807,
+        "candidate": 4.3478260869565215
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.7364474473935108,
+        "candidate-control": 0.03639698051811503,
+        "reference": 0.34575089618537336,
+        "candidate": 0.3564833275655772
+      },
+      "elapsedChangePercent": [
+        -5.496811113744271,
+        -5.30916191170544,
+        -5.256567217492625,
+        -5.0684409778431245
+      ],
+      "cpuChangePercent": [
+        -7.075873827791989,
+        -7.075873827791989,
+        -6.034482758620674,
+        -6.034482758620674
+      ],
+      "referenceSpreadPercent": 0.19856388366394917,
+      "candidateSpreadPercent": 0.2542177667050005
+    },
+    {
+      "case": "calls.positional.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 2.08150968879668,
+        "candidate-control": 2.0431631487603306,
+        "reference": 2.0830948395061726,
+        "candidate": 2.0727507242798353
+      },
+      "cpuMilliseconds": {
+        "reference-control": 2.074688796680498,
+        "candidate-control": 2.066115702479339,
+        "reference": 2.0987654320987654,
+        "candidate": 2.05761316872428
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.6963318905334297,
+        "candidate-control": 1.3553510435352893,
+        "reference": 0.3038299420453699,
+        "candidate": 0.642140666155947
+      },
+      "elapsedChangePercent": [
+        -1.9169406014806545,
+        -1.8422465310991565,
+        -0.4965743772275655,
+        -0.4207986426384758
+      ],
+      "cpuChangePercent": [
+        -1.9607843137254943,
+        -1.5556635877491343,
+        -0.8230452674897193,
+        -0.4132231404958664
+      ],
+      "referenceSpreadPercent": 0.07615389532049655,
+      "candidateSpreadPercent": 1.4481259383254175
+    }
+  ],
+  "CPythonRefreshed": false,
+  "decision": "Retained for lower allocation and validated-record elapsed and CPU benefits. Invoice remains qualified by control movement."
+}

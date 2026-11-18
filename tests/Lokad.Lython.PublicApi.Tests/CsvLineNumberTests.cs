@@ -17,11 +17,36 @@ public sealed class CsvLineNumberTests
         { "fieldnames-refresh", "import csv\nr=csv.DictReader(['bad','2'],fieldnames=['a'],quoting=csv.QUOTE_NONNUMERIC)\ntry:\n next(r)\nexcept ValueError:\n print('bad',r.line_num)\nprint(r.fieldnames,r.line_num)\nprint(next(r),r.line_num)", "bad 0\n['a'] 1\n{'a': 2.0} 2\n" },
         { "repeated-first-errors", "import csv\nr=csv.DictReader(['bad','bad','3'],fieldnames=['a'],quoting=csv.QUOTE_NONNUMERIC)\nfor i in range(2):\n try:\n  next(r)\n except ValueError:\n  print('bad',r.line_num)\nprint(next(r),r.line_num)", "bad 0\nbad 1\n{'a': 3.0} 3\n" },
         { "plain-reader-error", "import csv\nr=csv.reader(['1','bad','2'],quoting=csv.QUOTE_NONNUMERIC)\nprint(next(r),r.line_num)\ntry:\n next(r)\nexcept ValueError:\n print('bad',r.line_num)\nprint(next(r),r.line_num)\nprint(next(r,'end'),r.line_num)", "[1.0] 1\nbad 2\n[2.0] 3\nend 3\n" },
+        { "assigned-and-observed", """
+            import csv
+            events = []
+            class Decision:
+                def __bool__(self):
+                    events.append('truth')
+                    return True
+            class Assigned:
+                def __eq__(self, value):
+                    events.append(('eq', value))
+                    return Decision()
+            r = csv.DictReader(['head', 'data'] + ['x'] * 258)
+            assigned = Assigned()
+            r.line_num = assigned
+            assert r.line_num is assigned
+            print(next(r), events, r.line_num)
+            # Above the small-integer cache, each refresh publishes a new value.
+            for i in range(255):
+                next(r)
+            first = r.line_num
+            print(first, first is r.line_num)
+            r.fieldnames
+            refreshed = r.line_num
+            print(first == refreshed, first is refreshed, refreshed is r.line_num)
+            """, "{'head': 'data'} [('eq', 0), 'truth'] 2\n257 True\nTrue False True\n" },
     };
 
     [Theory]
     [MemberData(nameof(Programs))]
-    public async Task ErrorsPreserveTheAppropriatePublishedLineCount(string label, string source, string expected)
+    public async Task ReaderPreservesTheAppropriatePublishedLineCount(string label, string source, string expected)
     {
         var budget = new LythonMemoryBudget(512 * 1024);
         using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
