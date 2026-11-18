@@ -1,0 +1,9 @@
+2026-11-18T23:10:03.8194029Z [31;1m[xUnit.net 00:00:08.30]     Lokad.Lython.Tests.FunctionAttributeAccountingTests.DeniedReservedResetDoesNotPublishMetadata(name: "__module__") [FAIL][0m
+2026-11-18T23:10:03.8246106Z [31;1m[xUnit.net 00:00:08.30]     Lokad.Lython.Tests.FunctionAttributeAccountingTests.DeniedReservedResetDoesNotPublishMetadata(name: "__doc__") [FAIL][0m
+2026-11-18T23:10:11.2407610Z [31;1m[xUnit.net 00:00:16.10]     Lokad.Lython.Tests.AnnotatedHelperExecutionTests.OrdinaryAnnotatedBodiesRemainExecutable(source: "def helper(value:int)->int:return value+1\nreturn "···) [FAIL][0m
+2026-11-18T23:10:11.2430614Z [31;1m[xUnit.net 00:00:16.10]     Lokad.Lython.Tests.AnnotatedHelperExecutionTests.OrdinaryAnnotatedBodiesRemainExecutable(source: "def helper(value:int):return value\nreturn helper") [FAIL][0m
+2026-11-18T23:10:11.2442090Z [31;1m[xUnit.net 00:00:16.11]     Lokad.Lython.Tests.AnnotatedHelperExecutionTests.OrdinaryAnnotatedBodiesRemainExecutable(source: "from __future__ import annotations\ndef helper(val"···) [FAIL][0m
+2026-11-18T23:10:11.2673231Z [31;1m[xUnit.net 00:00:16.11]     Lokad.Lython.Tests.AnnotatedHelperExecutionTests.OrdinaryAnnotatedBodiesRemainExecutable(source: "def helper(value)->int:return value\nreturn helper") [FAIL][0m
+2026-11-18T23:10:11.2689880Z [31;1m[xUnit.net 00:00:16.12]     Lokad.Lython.Tests.AnnotatedHelperExecutionTests.OrdinaryAnnotatedBodiesRemainExecutable(source: "def helper(value:'int')->'int':return value+1\nret"···) [FAIL][0m
+2026-11-18T23:10:37.1811239Z Failed!  - Failed:     7, Passed:  4890, Skipped:     0, Total:  4897, Duration: 39 s - Lokad.Lython.WhiteBox.Tests.dll (net11.0)
+2026-11-18T23:14:40.1278951Z Passed!  - Failed:     0, Passed: 18088, Skipped:     0, Total: 18088, Duration: 4 m 33 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)
