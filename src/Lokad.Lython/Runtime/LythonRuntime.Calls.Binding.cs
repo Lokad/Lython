@@ -327,10 +327,9 @@ internal sealed partial class LythonRuntime
         return PyTuple.FromReservedOwnedArray(items, governor, span, storage);
     }
 
-    // Constructed function objects retain a wrapper plus binding plan and
-    // default containers per evaluation. Defs and lambdas execute per evaluation,
-    // so each constructed value charges once built.
-    private const long FunctionValueBytes = 128;
+    // Each definition funds its wrapper, binding plan and fixed metadata slots.
+    // Default containers, metadata values and custom attributes own their storage.
+    private const long FunctionValueBytes = 160;
 
     // Constructed class objects retain a type record plus one namespace slot per
     // member; admit the base plus per-member slots before construction. Member values
@@ -343,12 +342,6 @@ internal sealed partial class LythonRuntime
         var bytes = checked(ClassTypeBaseBytes + ClassMemberSlotBytes * (long)memberCount);
         governor.Reserve(bytes, span);
         governor.Commit(bytes);
-    }
-
-    private static void ChargeFunctionValue(ExecutionContext? context, LythonSourceSpan? span)
-    {
-        context?.MemoryGovernor.Reserve(FunctionValueBytes, span);
-        context?.MemoryGovernor.Commit(FunctionValueBytes);
     }
 
     private const long ClosureContextBaseBytes = 512;

@@ -11,20 +11,16 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
     private readonly FunctionBindingPlan _bindingPlan;
     private readonly int? _storageCapacity;
     private readonly LythonRuntime.ExecutionContext _closure;
-    // Metadata tables grow one CLR entry per guest attribute name; charge
-    // each new key so retained attributes accumulate. The key strings
-    // themselves are caller-owned; only the table slot is charged here.
-    // Storage remains charged to the function's execution/result owner.
-    private const long AttributeSlotBytes = 64;
-    private MemoryGovernor? _memoryGovernor;
     private readonly PyString _nameValue;
-    // Computed qualnames are immutable for a bound owner/shape, so the first
-    // qualified read caches its governed copy and every later read aliases it
-    // (matching CPython identity). Explicit metadata assignments shadow through
-    // _metadata before this cache is ever consulted, and binding an owner below
-    // clears a premature ownerless computation.
+    // Standard attributes have fixed storage in the funded function wrapper.
+    // Explicit overrides shadow the defaults, including a cached qualname.
     private PyString? _qualNameValue;
-    private readonly Dictionary<string, object> _metadata = new(StringComparer.Ordinal);
+    private object? _assignedName;
+    private object? _assignedQualName;
+    private object? _assignedModule;
+    private object? _docstring;
+    private object? _annotations;
+    private object? _typeParameters;
     private PyDict? _customAttributes;
     private readonly ScopeDirectiveFacts _scopeFacts;
 
@@ -40,7 +36,6 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         Name = name;
         _storageCapacity = storageCapacity;
         _closure = closure;
-        _memoryGovernor = closure.MemoryGovernor;
         _nameValue = callableKind == PythonCallableKind.Lambda
             ? LambdaName : PyString.FromString(name, closure.MemoryGovernor, null);
         _bindingPlan = new FunctionBindingPlan(name, callableKind, parameterLayout, defaults);
@@ -241,37 +236,18 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
     {
         if (_bindingPlan.TryGetDefaultMetadata(name, out value)) return true;
         if (name == "__dict__") { value = _customAttributes ??= new PyDict(_closure.MemoryGovernor); return true; }
-        if (_metadata.TryGetValue(name, out value))
-        {
-            return true;
-        }
-
-        if (name == "__annotations__")
-        {
-            var annotations = new PyDict(_closure.MemoryGovernor);
-            TrySetMember(name, annotations);
-            value = annotations;
-            return true;
-        }
-
-        // Absent docstrings report None like CPython (nothing to store); present
-        // ones are captured into metadata by CaptureFunctionDocstring.
-        if (name == "__doc__")
-        {
-            value = PyNone.Instance;
-            return true;
-        }
-
         value = name switch
         {
-            "__name__" => _nameValue,
-            "__qualname__" => QualName(),
-            "__module__" => TryGetModuleName(out var moduleName) ? moduleName : PyNone.Instance,
-            _ => PyNone.Instance,
+            "__name__" => _assignedName ?? _nameValue,
+            "__qualname__" => _assignedQualName ?? QualName(),
+            "__module__" => _assignedModule ?? (TryGetModuleName(out var moduleName) ? moduleName : (object)PyNone.Instance),
+            "__doc__" => _docstring ?? PyNone.Instance,
+            "__annotations__" => _annotations ??= new PyDict(_closure.MemoryGovernor),
+            "__type_params__" => _typeParameters,
+            _ => null,
         };
-        if (name == "__module__" || !ReferenceEquals(value, PyNone.Instance)) return true;
-        return _customAttributes is not null && _customAttributes.TryGetStringValue(name,
-            _memoryGovernor ?? _closure.MemoryGovernor, null, null, out value);
+        return value is not null || _customAttributes is not null &&
+            _customAttributes.TryGetStringValue(name, _closure.MemoryGovernor, null, null, out value);
     }
 
     // The defining module is resolved per read by walking the closure frame
@@ -296,15 +272,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         {
             return _nameValue;
         }
-        // Publish only a fully constructed copy: a denied reservation leaves
-        // the field null so the next read retries instead of aliasing half
-        // ownership. Governorless hosts keep the previous unowned behavior,
-        // still bounded to one object by the cache above.
-        var computed = _memoryGovernor is null
-            ? PyString.FromString(text)
-            : PyString.FromString(text, _memoryGovernor, null);
-        _qualNameValue = computed;
-        return computed;
+        return _qualNameValue = PyString.FromString(text, _closure.MemoryGovernor, null);
     }
 
     internal bool TryGetModuleName([MaybeNullWhen(false)] out PyString moduleName)
@@ -361,23 +329,21 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
     public bool TrySetMember(string name, object value)
     {
         if (_bindingPlan.TrySetDefaultMetadata(name, value)) return true;
-        if (name == "__dict__")
+        switch (name)
         {
-            _customAttributes = value as PyDict ?? throw new LythonRuntimeException("TypeError", "__dict__ must be set to a dictionary", null);
-            return true;
+            case "__dict__":
+                _customAttributes = value as PyDict ?? throw new LythonRuntimeException("TypeError", "__dict__ must be set to a dictionary", null);
+                break;
+            case "__name__": _assignedName = value; break;
+            case "__qualname__": _assignedQualName = value; break;
+            case "__module__": _assignedModule = value; break;
+            case "__doc__": _docstring = value; break;
+            case "__annotations__": _annotations = value; break;
+            case "__type_params__": _typeParameters = value; break;
+            default:
+                (_customAttributes ??= new PyDict(_closure.MemoryGovernor)).SetStringItem(name, value, _closure.MemoryGovernor, null);
+                break;
         }
-        if (name is not ("__name__" or "__qualname__" or "__module__" or "__doc__" or "__annotations__" or "__type_params__"))
-        {
-            (_customAttributes ??= new PyDict(_closure.MemoryGovernor)).SetStringItem(name, value, _memoryGovernor ?? _closure.MemoryGovernor, null);
-            return true;
-        }
-        if (_memoryGovernor is not null && !_metadata.ContainsKey(name))
-        {
-            _memoryGovernor.Reserve(AttributeSlotBytes, null);
-            _memoryGovernor.Commit(AttributeSlotBytes);
-        }
-
-        _metadata[name] = value;
         return true;
     }
 
@@ -388,12 +354,22 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
             throw new LythonRuntimeException("TypeError", $"cannot delete {name}", span);
         if (name is "__doc__" or "__module__") return TrySetMember(name, PyNone.Instance);
 
-        // Removing a key retains table capacity and funding for escaped values.
-        // Annotations are recreated lazily, including after repeated deletion.
-        var removed = _metadata.Remove(name);
+        // Values previously returned to Python can remain aliased after deletion.
+        // Removing the field keeps those values funded by their existing owners.
+        var removed = false;
+        if (name == "__annotations__")
+        {
+            removed = _annotations is not null;
+            _annotations = null;
+        }
+        else if (name == "__type_params__")
+        {
+            removed = _typeParameters is not null;
+            _typeParameters = null;
+        }
         if (!removed && _customAttributes is not null)
         {
-            var governor = _memoryGovernor ?? _closure.MemoryGovernor;
+            var governor = _closure.MemoryGovernor;
             var key = PyString.FromString(name, governor, span);
             var mayEscape = _customAttributes.HasProtocolKeys;
             try { removed = _customAttributes.Remove(key); }
