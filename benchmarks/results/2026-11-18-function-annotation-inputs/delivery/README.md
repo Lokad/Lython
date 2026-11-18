@@ -1,7 +1,9 @@
 # R579 and R581 delivery checkpoint
 
 [CI 44412602615](https://github.com/Lokad/Lython/actions/runs/44412602615)
-ran source `0547e5489`. Windows .NET 11 passed 4,897 white-box and
+ran source `0547e5489`. Ubuntu passed both Release targets, the
+original stress scales and installed-package consumers. Windows .NET 11
+passed 4,897 white-box and
 18,083 public tests. Windows .NET 10 passed all 4,897 white-box tests
 and 18,082 public tests. One JSON preflight test observed 131,952
 process-wide bytes by the end of failure cleanup, above its 131,072-byte
