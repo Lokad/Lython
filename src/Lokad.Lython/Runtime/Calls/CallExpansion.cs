@@ -638,19 +638,33 @@ internal static class CallExpansion
             finally { _deferredStar = null; _deferredSpan = null; }
         }
 
-        internal async ValueTask<object> InvokeAsync(LythonSourceSpan targetSpan, LythonSourceSpan callSpan, bool asynchronous)
+        internal async ValueTask<object> InvokeAsync(LythonSourceSpan targetSpan, LythonSourceSpan callSpan,
+            bool asynchronous, object? keywordMapping, LythonSourceSpan? mappingSpan)
         {
             try
             {
+                if (mappingSpan is not null)
+                {
+                    var bound = _target as PyBoundMethod;
+                    var function = (bound?.Function ?? _target) as PyFunctionBase;
+                    if (keywordMapping is PyDict dictionary && function is not null &&
+                        function.CanTakeExpandedKeywords(_count, bound?.Receiver) &&
+                        function.CopyExpandedKeywords(dictionary, Context, mappingSpan, callSpan) is { } keywords)
+                    {
+                        return await LythonRuntime.InvokeWithPreparedKeywords(function, _values.AsSpan(0, _count),
+                            bound?.Receiver, keywords, callSpan, Context, asynchronous).ConfigureAwait(false);
+                    }
+                    await AppendAsync(CallArgumentForm.StarredDictionary, keywordMapping.RequireNotNull(), mappingSpan, asynchronous).ConfigureAwait(false);
+                }
                 await FinishDeferredStarAsync(asynchronous).ConfigureAwait(false);
-                if (_target is PyFunctionBase function)
+                if (_bindsNativeKeywords)
                 {
                     // Binding consumes the live prefix into owned slots before
                     // suspension. Keep this accumulator alive through cleanup.
                     return asynchronous
-                        ? await LythonRuntime.InvokeBorrowedCallableTargetAsync(function, targetSpan, callSpan,
+                        ? await LythonRuntime.InvokeBorrowedCallableTargetAsync(_target!, targetSpan, callSpan,
                             _values.AsSpan(0, _count), Context).ConfigureAwait(false)
-                        : LythonRuntime.InvokeBorrowedCallableTarget(function, targetSpan, callSpan,
+                        : LythonRuntime.InvokeBorrowedCallableTarget(_target!, targetSpan, callSpan,
                             _values.AsSpan(0, _count), Context);
                 }
                 return asynchronous

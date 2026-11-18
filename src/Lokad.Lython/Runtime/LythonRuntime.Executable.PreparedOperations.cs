@@ -222,7 +222,10 @@ internal sealed partial class LythonRuntime
                     try
                     {
                         var accumulator = (CallExpansion.CallArgumentAccumulator)_execution.Stack[accumulatorSlot];
-                        var result = await accumulator.InvokeAsync(call.TargetSpan, span, asynchronous).ConfigureAwait(false);
+                        var mapping = call.KeywordMappingSpan is null ? null
+                            : _execution.Stack.TakeValue(accumulatorSlot + 1, accumulatorSlot + 1);
+                        var result = await accumulator.InvokeAsync(call.TargetSpan, span, asynchronous, mapping,
+                            call.KeywordMappingSpan).ConfigureAwait(false);
                         PublishInstructionResult(instruction, result);
                     }
                     catch { _execution.Stack.RetireTo(accumulatorSlot); throw; }

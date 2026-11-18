@@ -449,6 +449,35 @@ internal sealed partial class LythonRuntime
         finally { context.LeaveInterpreterFrame(); }
     }
 
+    // The expansion has validated the keys and supplied every positional slot.
+    // Transfer the final dictionary to the invocation before any body can see it.
+    internal static ValueTask<object> InvokeWithPreparedKeywords(PyFunctionBase function,
+        ReadOnlySpan<CallArgumentValue> positional, object? receiver, PyDict keywords,
+        LythonSourceSpan callSpan, ExecutionContext context, bool asynchronous)
+    {
+        var entered = false;
+        var transferred = false;
+        var pendingFrame = false;
+        try
+        {
+            context.EnterInterpreterFrame(callSpan);
+            entered = true;
+            var bound = function.BindPreparedKeywords(positional, receiver, keywords, callSpan, context);
+            transferred = true;
+            if (!asynchronous) return new(RuntimeValue(function.InvokeBound(bound, callSpan)));
+            var pending = function.InvokeBoundAsync(bound, callSpan);
+            if (pending.IsCompletedSuccessfully) return new(RuntimeValue(pending.Result));
+            pendingFrame = true;
+            return AwaitBorrowedCall(pending, callSpan, context);
+        }
+        catch (Exception error) when (TryTranslateCallableException(error, callSpan, out var translated)) { throw translated; }
+        finally
+        {
+            try { if (!transferred) keywords.DiscardUnpublishedStorage(); }
+            finally { if (entered && !pendingFrame) context.LeaveInterpreterFrame(); }
+        }
+    }
+
     private interface IAsyncCallArguments
     {
         ValueTask<CallArgumentValue[]> ExpandAsync();

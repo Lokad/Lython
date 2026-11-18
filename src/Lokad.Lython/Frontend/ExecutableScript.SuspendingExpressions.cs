@@ -13,7 +13,7 @@ internal sealed record ExecutableFinishComprehension : ExecutableOperation;
 internal sealed record ExecutableFinishTuple : ExecutableOperation;
 internal sealed record ExecutableStartCall(int ArgumentCount, bool DeferSingleStar) : ExecutableOperation;
 internal sealed record ExecutableAppendCall(CallArgumentForm Form) : ExecutableOperation;
-internal sealed record ExecutableFinishCall(LythonSourceSpan TargetSpan) : ExecutableOperation;
+internal sealed record ExecutableFinishCall(LythonSourceSpan TargetSpan, LythonSourceSpan? KeywordMappingSpan = null) : ExecutableOperation;
 internal sealed record ExecutableFormatField(string? FormatSpecifier, bool DynamicSpecifier, bool Append,
     LythonRuntime.InterpolatedFormatSpecifier? PreparedFormat);
 internal sealed record ExecutableCreateGeneratorExpression(ExecutableCodeObject CodeObject, LythonSourceSpan OuterSpan,
@@ -31,12 +31,21 @@ internal sealed partial class ExecutableScript
             block = CompileExpression(call.Target, block);
             EmitOperation(new ExecutableStartCall(call.Arguments.Count,
                 call.Arguments.Count(a => a.Form.Kind is CallArgumentKind.Positional or CallArgumentKind.StarredList) == 1), call.Span, block);
-            foreach (var argument in call.Arguments)
+            // Keep a sole trailing keyword mapping in its operand slot. This
+            // leaves the existing earlier-argument snapshot boundaries intact.
+            var mergeTrailingMapping = call.Arguments[^1].Form.Kind == CallArgumentKind.StarredDictionary;
+            for (var i = 0; mergeTrailingMapping && i < call.Arguments.Count - 1; i++)
+                mergeTrailingMapping = call.Arguments[i].Form.Kind == CallArgumentKind.Positional;
+            LythonSourceSpan? mappingSpan = null;
+            for (var i = 0; i < call.Arguments.Count; i++)
             {
+                var argument = call.Arguments[i];
                 block = CompileExpression(argument.Expression, block);
-                EmitOperation(new ExecutableAppendCall(argument.Form), argument.Expression.Span, block);
+                if (mergeTrailingMapping && i == call.Arguments.Count - 1)
+                    mappingSpan = argument.Expression.Span;
+                else EmitOperation(new ExecutableAppendCall(argument.Form), argument.Expression.Span, block);
             }
-            EmitOperation(new ExecutableFinishCall(call.Target.Span), call.Span, block);
+            EmitOperation(new ExecutableFinishCall(call.Target.Span, mappingSpan), call.Span, block);
             return block;
         }
 

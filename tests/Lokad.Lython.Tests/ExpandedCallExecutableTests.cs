@@ -1,4 +1,8 @@
 using Lokad.Lython.Frontend;
+using Lokad.Lython.Runtime;
+using Lokad.Lython.Runtime.Text;
+using Lokad.Lython.Tests.Harness;
+using Context = Lokad.Lython.Runtime.LythonRuntime.ExecutionContext;
 
 namespace Lokad.Lython.Tests;
 
@@ -18,5 +22,80 @@ public sealed class ExpandedCallExecutableTests
         Assert.Empty(body.StatementFallbacks);
         Assert.False(body.RequiresLocalVariableMirroring);
         Assert.False(code.EntryPoint.RequiresLocalVariableMirroring);
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task TrailingExactKeywordsKeepAdmissionAtomic(bool asynchronous, bool refuse)
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var owner = budget.CreateScope();
+        var hook = new AdmissionHookMemoryBudget(owner);
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = hook });
+        var key = PyString.FromString("début");
+        var added = PyString.FromString("reentered");
+        var value = PyString.FromString("aliased");
+        var dictionary = new PyDict(4, context.MemoryGovernor, null);
+        dictionary.SetItem(key, value);
+        var source = new ReentrantKeywords(hook, dictionary, added, value, refuse);
+        context.Variables["prepare"] = source;
+        var syntax = LythonFrontend.Compile("def collect(tag,/,**kw): return kw\nreturn collect(17, **prepare())").Script!;
+        var executable = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
+        try
+        {
+            if (refuse)
+            {
+                var failure = await Assert.ThrowsAsync<LythonRuntimeException>(Run);
+                Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
+                Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
+                Assert.Same(value, dictionary.GetItem(key));
+                Assert.Single(dictionary);
+            }
+            else
+            {
+                var result = Assert.IsType<PyDict>(await Run());
+                Assert.NotSame(dictionary, result);
+                Assert.Same(key, result.Keys.First());
+                Assert.Same(value, result.GetItem(key));
+                Assert.Same(value, result.GetItem(added));
+                Assert.Same(context.MemoryGovernor, result.OwnerMemoryGovernor);
+                Assert.True(result.CommittedStorageBytes > 0);
+                result.SetItem(key, PyNone.Instance);
+                Assert.Same(value, dictionary.GetItem(key));
+            }
+            Assert.Equal(1, source.Admissions);
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            Assert.Equal(0, context.State.CurrentInterpreterDepth);
+            Assert.Equal(0, context.State.CurrentRecursionDepth);
+            Assert.Null(context.CurrentExecutableFrame);
+        }
+        finally { context.State.CloseResources(); }
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+
+        async Task<object?> Run()
+            => asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(executable, context)
+                : LythonRuntime.ExecuteExecutableCodeObject(executable, context, default, null);
+    }
+
+    private sealed class ReentrantKeywords(AdmissionHookMemoryBudget hook, PyDict source, PyString added,
+        PyString value, bool refuse) : LythonRuntime.ICallable
+    {
+        internal int Admissions;
+
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)
+        {
+            if (refuse) hook.RefuseGrowth = _ => { Admissions++; return true; };
+            else hook.AfterGrowth = _ =>
+            {
+                hook.AfterGrowth = null;
+                Admissions++;
+                source.SetItem(added, value);
+            };
+            return source;
+        }
     }
 }

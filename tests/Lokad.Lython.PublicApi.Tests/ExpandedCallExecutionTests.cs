@@ -150,4 +150,41 @@ print(Target()(*Values(),**Mapping()))
         second.Dispose();
         Assert.Equal(baseline, budget.ReservedBytes);
     }
+
+    [Fact]
+    public async Task ExactKeywordCopyStaysFundedThroughSuspendedCallAndCancellation()
+    {
+        const string source = """
+            def write(label, /, **kw):
+                kw['début'] = label
+                with open('result.txt', 'a') as target:
+                    target.write(kw['début'])
+                return kw
+            row = {'début': 'original', 'end': 23}
+            return write('called', **row)
+            """;
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid);
+        var baseline = budget.ReservedBytes;
+        var host = new DelayedLythonHost();
+        host.SeedFile("/result.txt", "before");
+        var entered = host.PauseWriteUntilCancellation("/result.txt");
+        using var cancellation = new CancellationTokenSource();
+        var pending = script.RunAsync(host, cancellationToken: cancellation.Token);
+        try
+        {
+            await entered.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.False(pending.IsCompleted);
+            Assert.True(budget.ReservedBytes > baseline);
+        }
+        finally
+        {
+            cancellation.Cancel();
+            using var result = await pending.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
+        }
+        Assert.Equal("before", host.ReadText("/result.txt"));
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
 }

@@ -1,3 +1,4 @@
+using Lokad.Lython.Runtime.Calls;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
@@ -67,6 +68,42 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
     internal long CommittedStorageBytes => _items.CommittedBytes;
     public int Length => Count;
     internal bool HasProtocolKeys => _nativeItems is null ? _items.HasProtocolKeys : _nativeProtocolCount != 0;
+
+    internal PyDict? CopyExpandedKeywords(FunctionBindingPlan plan, LythonRuntime.ExecutionContext context,
+        LythonSourceSpan mappingSpan, LythonSourceSpan callSpan)
+    {
+        if (!SupportsNativeStringReads) return null;
+        var version = _version;
+        var output = new PyDict(Count, context.MemoryGovernor, mappingSpan);
+        var transferred = false;
+        try
+        {
+            // Host admission can reenter. Detect a changed source before
+            // sampling any entries. The ordinary path starts its own expansion.
+            context.CheckExecution(mappingSpan);
+            if (version != _version || !SupportsNativeStringReads) return null;
+            var conflicting = -1;
+            for (var i = 0; i < NativeExtent; i++)
+            {
+                if ((i & 1023) == 0) context.CheckExecution(mappingSpan);
+                if (!IsNativeLive(i)) continue;
+                var entry = _nativeItems![i];
+                if (entry.Key is not PyString key) throw RuntimeErrors.Type("keywords must be strings", mappingSpan);
+                var value = ReadNativeValue(i);
+                if (conflicting < 0)
+                    _ = plan.TryGetKeywordIndex(CallArgumentValue.Keyword(key, value), context, callSpan, out conflicting);
+                output.AppendNativeItem(key, value, entry.Hash);
+            }
+            // Mapping errors precede binder errors even when a collision was
+            // found in an earlier entry. Every bindable parameter is filled.
+            if (conflicting >= 0)
+                throw CallErrors.MultipleValues(plan.CallableKind, plan.CallableName, plan.NameAt(conflicting), callSpan);
+            context.CheckExecution(callSpan);
+            transferred = true;
+            return output;
+        }
+        finally { if (!transferred) output.DiscardUnpublishedStorage(); }
+    }
     // Check after argument evaluation: a guest callback may have inserted a
     // protocol key. This is the same native proof used by subscript execution.
     internal bool CanReadKeySynchronously(object key) => key is PyString && !HasProtocolKeys;

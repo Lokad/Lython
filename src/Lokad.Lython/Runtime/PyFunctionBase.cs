@@ -92,6 +92,39 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
     internal bool CanBorrowPositionalArguments(int count, object? receiver)
         => receiver is null && SupportsPositionalBinding && count == _bindingPlan.PositionalCount;
 
+    internal bool CanTakeExpandedKeywords(int positionalCount, object? receiver)
+        => _bindingPlan.KeywordOnlyCount == 0 && _bindingPlan.VariadicListIndex < 0 &&
+            _bindingPlan.VariadicDictionaryIndex >= 0 &&
+            positionalCount == _bindingPlan.PositionalCount - (receiver is null ? 0 : 1);
+
+    internal PyDict? CopyExpandedKeywords(PyDict source, LythonRuntime.ExecutionContext context,
+        LythonSourceSpan mappingSpan, LythonSourceSpan callSpan)
+        => source.CopyExpandedKeywords(_bindingPlan, context, mappingSpan, callSpan);
+
+    internal BoundFunctionArguments BindPreparedKeywords(ReadOnlySpan<CallArgumentValue> positional, object? receiver,
+        PyDict keywords, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    {
+        context.CheckExecution(span);
+        var storage = LythonRuntime.RentFunctionArgumentStorage(_bindingPlan, span, context, _storageCapacity);
+        try
+        {
+            var slot = 0;
+            if (receiver is not null) storage.Values[slot++].Object = receiver;
+            for (var i = 0; i < positional.Length; i++)
+            {
+                if ((i & 1023) == 0) context.CheckExecution(span);
+                storage.Values[slot++].Object = positional[i].Value;
+            }
+            storage.Values[_bindingPlan.VariadicDictionaryIndex].Object = keywords;
+            return storage;
+        }
+        catch
+        {
+            LythonRuntime.ReturnBoundArguments(storage);
+            throw;
+        }
+    }
+
     /// <summary>States whether bound arguments must also be materialized in the frame's name dictionary.</summary>
     protected abstract bool RequiresArgumentMirroring { get; }
 
@@ -111,7 +144,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         return InvokeBound(boundArguments, span);
     }
 
-    protected object InvokeBound(BoundFunctionArguments boundArguments, LythonSourceSpan span)
+    internal object InvokeBound(BoundFunctionArguments boundArguments, LythonSourceSpan span)
     {
         LythonRuntime.ExecutionContext? frame = null;
         try
@@ -162,7 +195,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
     private async ValueTask<object> BindAndInvokeAsync(ValueTask<BoundFunctionArguments> binding, LythonSourceSpan span)
         => await InvokeBoundAsync(await binding.ConfigureAwait(false), span).ConfigureAwait(false);
 
-    protected async ValueTask<object> InvokeBoundAsync(BoundFunctionArguments boundArguments, LythonSourceSpan span)
+    internal async ValueTask<object> InvokeBoundAsync(BoundFunctionArguments boundArguments, LythonSourceSpan span)
     {
         LythonRuntime.ExecutionContext? frame = null;
         try

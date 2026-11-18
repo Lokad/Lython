@@ -549,9 +549,12 @@ Positional overflow is copied from the caller's operands into the admitted
 `*args` tuple after argument checks. There is no intermediate list to fund.
 Keyword overflow goes into the admitted `**kwargs` dictionary. Expanded
 mapping keys keep their original Python identity and insertion order.
-Executable expanded calls to user functions borrow the argument buffer's
-live prefix through binding and cleanup. Buffer growth admits both the old
-and new capacity before it copies any values.
+A sole trailing native dictionary can fill the final `**kwargs` directly when
+all positional slots are supplied and the signature requires only that keyword
+dictionary. Other forms use the general expansion. Executable calls to guest
+functions and bound guest methods borrow the expanded argument buffer's live
+prefix through binding and cleanup. Buffer growth admits both capacities before
+copying any values.
 Live defaults and genuinely suspending default protocols use the same slots.
 Async binding checks the live default dictionary at lookup, after storage admission
 can reenter; it does not save an earlier decision about whether lookup may suspend.
