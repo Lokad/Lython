@@ -43,3 +43,7 @@ already absent from the VM. No deletion followed. Current staging headroom remai
 insufficient for the configuration-only correction; existing runtime references
 are preserved pending a safe retained-delivery retirement. This constrains the
 next collection, not independent source/design work. [Proof](additional-source-checks.tar.xz).
+
+The [configuration-only sizing correction](configuration/README.md) completed after
+current65fc full qualification permitted safe exact old5ae retirement. Original
+missing profile/end gate and failed conditions above are preserved unchanged.

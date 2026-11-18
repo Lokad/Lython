@@ -1,0 +1,12 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "ramTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 269516800,
+  "archiveSHA256": "2c6d23de0f6057e9d27e3021fcabdba52502c15e10cd325815ac096f88c014c3",
+  "source": "R508/B932 qualified0691 production/frozen65fc configuration attribution, warmup1024correction, no elapsed comparison",
+  "performanceComparison": false
+}
