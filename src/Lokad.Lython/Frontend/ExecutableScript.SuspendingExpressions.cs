@@ -16,7 +16,8 @@ internal sealed record ExecutableAppendCall(CallArgumentForm Form) : ExecutableO
 internal sealed record ExecutableFinishCall(LythonSourceSpan TargetSpan) : ExecutableOperation;
 internal sealed record ExecutableFormatField(string? FormatSpecifier, bool DynamicSpecifier, bool Append,
     LythonRuntime.InterpolatedFormatSpecifier? PreparedFormat);
-internal sealed record ExecutableCreateGeneratorExpression(ExecutableCodeObject CodeObject, LythonSourceSpan OuterSpan) : ExecutableOperation;
+internal sealed record ExecutableCreateGeneratorExpression(ExecutableCodeObject CodeObject, LythonSourceSpan OuterSpan,
+    bool JoinedTrimmedSplit = false) : ExecutableOperation;
 
 internal sealed partial class ExecutableScript
 {

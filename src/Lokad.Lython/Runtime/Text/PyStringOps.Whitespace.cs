@@ -245,6 +245,66 @@ internal static partial class PyStringOps
         => BuildSplitResult(value, null, new(value.ByteLength, -1, false, true, keepEnds, null),
             null, governor, span, context);
 
+    internal static PyString JoinTrimmedSplit(PyString value, PyString delimiter, PyString separator,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        using var ambient = PyStructuralGuard.PushAmbient(context, span);
+        var source = value.Utf8Span;
+        var split = delimiter.Utf8Span;
+        var join = separator.Utf8Span;
+        var length = ScanTrimmedSplit(source, split, join, default, context, span);
+        if (length == 0) return PyString.Empty;
+
+        // The input and both separators are immutable. Replay their ranges
+        // directly into admitted final storage after the host admission call.
+        var bytes = PyString.EstimateApproximateBytes(length);
+        using var storage = context.MemoryGovernor.ReserveTemporary(bytes, span);
+        context.CheckExecution(span);
+        var result = PyString.CreateReservedUtf8(length, context.MemoryGovernor);
+        _ = ScanTrimmedSplit(source, split, join, result.UnpublishedUtf8, context, span);
+        context.CheckExecution(span);
+        storage.Commit(bytes);
+        return result;
+    }
+
+    private static int ScanTrimmedSplit(ReadOnlySpan<byte> source, ReadOnlySpan<byte> delimiter,
+        ReadOnlySpan<byte> separator, Span<byte> output, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        var scan = new SplitScanState(source.Length, -1, false, false, false, null);
+        var first = true;
+        var length = 0;
+        while (TryReadSplitRange(source, delimiter, ref scan, context, span, out var range))
+        {
+            context.CheckExecution(span);
+            if (!first) length = AppendJoinedBytes(separator, output, length, context, span);
+            var end = TrimUtf8End(source, range.Start, range.End, null);
+            length = AppendJoinedBytes(source[range.Start..end], output, length, context, span);
+            first = false;
+        }
+        return length;
+    }
+
+    private static int AppendJoinedBytes(ReadOnlySpan<byte> source, Span<byte> output, int length,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        if (source.Length > Array.MaxLength - length) throw RuntimeErrors.Memory("joined string exceeds supported capacity", span);
+        if (!output.IsEmpty) CopyJoinBytes(source, output.Slice(length, source.Length), context, span);
+        return length + source.Length;
+    }
+
+    internal static void CopyJoinBytes(ReadOnlySpan<byte> source, Span<byte> output,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        while (source.Length > 4096)
+        {
+            context.CheckExecution(span);
+            source[..4096].CopyTo(output);
+            source = source[4096..];
+            output = output[4096..];
+        }
+        source.CopyTo(output);
+    }
+
     private static PyList BuildSplitResult(PyString value, PyString? separator, SplitScanState scan,
         CaseMapping? casing, MemoryGovernor? governor, LythonSourceSpan? span,
         LythonRuntime.ExecutionContext? context)

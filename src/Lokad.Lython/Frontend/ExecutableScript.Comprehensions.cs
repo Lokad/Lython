@@ -4,7 +4,7 @@ internal sealed partial class ExecutableScript
 {
     private sealed partial class Builder
     {
-        private int CompileGeneratorExpression(LoweredGeneratorExpression expression, int block)
+        private int CompileGeneratorExpression(LoweredGeneratorExpression expression, int block, bool joinedTrimmedSplit = false)
         {
             if (expression.PreparedCode is null)
             {
@@ -14,9 +14,23 @@ internal sealed partial class ExecutableScript
             }
             var code = expression.Code;
             block = CompileExpression(expression.Clauses[0].Iterable, block);
-            EmitOperation(new ExecutableCreateGeneratorExpression(code, expression.Clauses[0].Iterable.Span), expression.Span, block);
+            EmitOperation(new ExecutableCreateGeneratorExpression(code, expression.Clauses[0].Iterable.Span, joinedTrimmedSplit), expression.Span, block);
             return block;
         }
+
+        private static bool IsTrimmedSplitGenerator(LoweredGeneratorExpression expression)
+            => expression.Clauses is [{ Condition: null, Target: LoopNameTargetSyntax variable,
+                    Iterable: LoweredCallExpression
+                    {
+                        Target: LoweredMemberExpression { Member.MemberName: "split" },
+                        Arguments: [{ Kind: CallArgumentKind.Positional }],
+                    } }]
+                && expression.ItemExpression is LoweredCallExpression
+                {
+                    Target: LoweredMemberExpression { Member.MemberName: "rstrip", Target: LoweredIdentifierExpression item },
+                    Arguments.Count: 0,
+                }
+                && item.Identifier.Name == variable.Name;
 
         private int CompileComprehension(ScopeDirectiveFacts facts,
             IReadOnlyList<LoweredComprehensionClause> clauses, LoweredExpression item,

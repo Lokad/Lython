@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Join an immediately consumed generator of trimmed, explicitly split string
+  parts directly into admitted UTF-8 storage. Preserve ordinary iteration for
+  dynamic receivers and other call shapes.
+
 - Reuse admitted JSON encoder frame capacity across nested containers.
   Builtin sequences keep a live position without allocating an enumerator.
   Preserve cycle checks, pending writes and deterministic cleanup.

@@ -351,9 +351,14 @@ internal sealed partial class ExecutableScript
             else exitBlock = CompileExpression(call.Target, exitBlock);
             if (call.Call.PreloadImplicitSuperArguments)
                 AddInstruction(exitBlock, ExecutableInstruction.PreloadImplicitSuperArguments(call.Span));
-            foreach (var argument in call.Arguments)
+            if (callTarget is LoweredMemberExpression { Member.MemberName: "join" }
+                && call.Arguments is [{ Kind: CallArgumentKind.Positional, Expression: LoweredGeneratorExpression generator }]
+                && IsTrimmedSplitGenerator(generator))
+                exitBlock = CompileGeneratorExpression(generator, exitBlock, joinedTrimmedSplit: true);
+            else
             {
-                exitBlock = CompileExpression(argument.Expression, exitBlock);
+                foreach (var argument in call.Arguments)
+                    exitBlock = CompileExpression(argument.Expression, exitBlock);
             }
 
             AddInstruction(exitBlock, ExecutableInstruction.Call(InternCallSite(call, hasReceiver), call.Span));

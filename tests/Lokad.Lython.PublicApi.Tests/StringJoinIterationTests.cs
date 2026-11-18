@@ -26,6 +26,25 @@ public sealed class StringJoinIterationTests
             yield return [asynchronous, "iterator-rebinds-receiver", "separator='|'\nevents=[]\ndef parts():\n global separator\n events.append('iteration')\n separator='changed'\n yield 'café'\n yield '😀'\nprint(separator.join(parts()),separator,events)", "café|😀 changed ['iteration']\n"];
             yield return [asynchronous, "custom-receiver", "class Separator:\n def join(self,parts):return ['custom',parts]\nprint(Separator().join(['a','b']))", "['custom', ['a', 'b']]\n"];
             yield return [asynchronous, "custom-iterator", "events=[]\nclass Parts:\n def __iter__(self):\n  events.append('iter')\n  yield 1\n  events.append('after')\n  raise ValueError('custom')\ntry:'|'.join(Parts())\nexcept Exception as error:print(type(error).__name__,str(error))\nprint(events)", "ValueError custom\n['iter', 'after']\n"];
+            yield return [asynchronous, "trimmed-split-unicode", """
+                print('|'.join(part.rstrip() for part in 'café\u3000§😀\x1c§§'.split('§')))
+                print(repr(''.join(part.rstrip() for part in ' \n  '.split('\n'))))
+                print(repr('|'.join(part.rstrip() for part in ''.split('\n'))))
+                """, "café|😀||\n''\n''\n"];
+            yield return [asynchronous, "trimmed-split-dynamic-methods", """
+                events=[]
+                class Source:
+                    def split(self, delimiter):
+                        events.append(delimiter)
+                        return ['a  ', 'b ']
+                class Separator:
+                    def join(self, parts):
+                        events.append(type(parts).__name__)
+                        return list(parts)
+                print('|'.join(part.rstrip() for part in Source().split('\n')))
+                print(Separator().join(part.rstrip() for part in 'c  \nd '.split('\n')))
+                print(events)
+                """, "a|b\n['c', 'd']\n['\\n', 'generator']\n"];
         }
     }
 
@@ -38,6 +57,45 @@ public sealed class StringJoinIterationTests
         using var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(expected, result.StandardOutput);
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task PrivateTrimmedSplitUsesTheAllowanceForItsFinalText(bool asynchronous, bool refuse)
+    {
+        var code = """
+            def normalize(text, separator):
+                return separator.join(part.rstrip() for part in text.split('\n'))
+            try:
+                return normalize('α \n' * 2048, SEPARATOR)
+            except MemoryError:
+                print('guest handler ran')
+            """.Replace("SEPARATOR", refuse ? "'q' * 64" : "'|'", StringComparison.Ordinal);
+        using var script = new LythonEngine().Compile(code);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics));
+        var budget = new LythonMemoryBudget(96 * 1024);
+        var options = new LythonRunOptions { MemoryBudget = budget };
+        using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options)
+            : script.Run(new MockLythonHost(), options))
+        {
+            if (refuse)
+            {
+                Assert.False(result.Success);
+                Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+                Assert.True(result.FailureAttribution?.Requested >= 2048 * 64);
+                Assert.Equal(string.Empty, result.StandardOutput);
+            }
+            else
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal(string.Concat(Enumerable.Repeat("α|", 2048)), result.ReturnValue);
+                Assert.True(budget.ReservedBytes > 0);
+            }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [Theory]

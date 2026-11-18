@@ -1,0 +1,191 @@
+{
+  "complete": true,
+  "elapsedSeconds": 230.95058307191357,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "archivalOnlyRecovery": null,
+  "rows": [
+    {
+      "case": "scripts.text-normalization.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 0.45745130587023686,
+        "reference": 0.7939409591836735,
+        "candidate-control": 0.4571762117768595,
+        "reference-control": 0.80795888441331
+      },
+      "cpuMilliseconds": {
+        "candidate": 0.5252317198764161,
+        "reference": 0.8673469387755102,
+        "candidate-control": 0.5268595041322314,
+        "reference-control": 0.8756567425569177
+      },
+      "elapsedIQRPercent": {
+        "candidate": 1.8655945007156784,
+        "reference": 3.9023429842420296,
+        "candidate-control": 2.0350825313023058,
+        "reference-control": 0.8420132474402473
+      },
+      "elapsedChangePercent": [
+        -43.41590635409217,
+        -43.38185832285144,
+        -42.416850209249056,
+        -42.382201021523535
+      ],
+      "cpuChangePercent": [
+        -40.018537590113276,
+        -39.83264462809918,
+        -39.443872296601434,
+        -39.25619834710744
+      ],
+      "referenceSpreadPercent": 1.7656130556672256,
+      "candidateSpreadPercent": 0.06017244254861165
+    },
+    {
+      "case": "scripts.text-normalization.large",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "candidate": 0.5134353858823529,
+        "reference": 0.8526309537892791,
+        "candidate-control": 0.5156827676886792,
+        "reference-control": 0.8608208507462687
+      },
+      "cpuMilliseconds": {
+        "candidate": 0.6000000000000001,
+        "reference": 0.9242144177449169,
+        "candidate-control": 0.5896226415094339,
+        "reference-control": 0.9328358208955224
+      },
+      "elapsedIQRPercent": {
+        "candidate": 1.0308338746963077,
+        "reference": 0.3397545107668203,
+        "candidate-control": 0.3569178174199731,
+        "reference-control": 0.19650889622066184
+      },
+      "elapsedChangePercent": [
+        -40.35514062685145,
+        -40.09406635055135,
+        -39.782225404727164,
+        -39.51864339467483
+      ],
+      "cpuChangePercent": [
+        -36.792452830188694,
+        -36.20283018867926,
+        -35.67999999999999,
+        -35.07999999999999
+      ],
+      "referenceSpreadPercent": 0.9605441745448973,
+      "candidateSpreadPercent": 0.4377146313092606
+    },
+    {
+      "case": "scripts.text-normalization.helper-list",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 1.1305918075949366,
+        "candidate-control": 1.1395968824940048,
+        "reference": 1.1481355742092456,
+        "candidate": 1.1333133638554216
+      },
+      "cpuMilliseconds": {
+        "reference-control": 1.2151898734177213,
+        "candidate-control": 1.199040767386091,
+        "reference": 1.2165450121654502,
+        "candidate": 1.2048192771084338
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 1.198891771622945,
+        "candidate-control": 0.22008097861186104,
+        "reference": 0.2728208121424088,
+        "candidate": 0.9849267096015991
+      },
+      "elapsedChangePercent": [
+        -1.2909808464067973,
+        -0.7437006488647202,
+        0.24071961624014815,
+        0.7964921414232107
+      ],
+      "cpuChangePercent": [
+        -1.4388489208633226,
+        -1.3289368505195798,
+        -0.9638554216867434,
+        -0.8534136546184512
+      ],
+      "referenceSpreadPercent": 1.5517330389673623,
+      "candidateSpreadPercent": 0.5544378844353659
+    },
+    {
+      "case": "scripts.csv-validated-records.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 4.121077330434782,
+        "candidate-control": 4.079402347457627,
+        "reference": 4.088535179487179,
+        "candidate": 4.105298615384615
+      },
+      "cpuMilliseconds": {
+        "reference-control": 4.173913043478261,
+        "candidate-control": 4.1525423728813555,
+        "reference": 4.273504273504274,
+        "candidate": 4.188034188034188
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.376080848913854,
+        "candidate-control": 0.8821147170492608,
+        "reference": 0.250224404863659,
+        "candidate": 0.156506307676955
+      },
+      "elapsedChangePercent": [
+        -1.011264279594537,
+        -0.38287840253904415,
+        -0.22337662826953375,
+        0.4100108024394755
+      ],
+      "cpuChangePercent": [
+        -2.8305084745762987,
+        -2.000000000000013,
+        -0.5120056497175174,
+        0.3383190883190945
+      ],
+      "referenceSpreadPercent": 0.7959366746034702,
+      "candidateSpreadPercent": 0.6348054376917878
+    },
+    {
+      "case": "calls.positional.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 2.130994071729958,
+        "candidate-control": 2.094876919831224,
+        "reference": 2.121331852320675,
+        "candidate": 2.0577041893004115
+      },
+      "cpuMilliseconds": {
+        "reference-control": 2.151898734177215,
+        "candidate-control": 2.067510548523207,
+        "reference": 2.151898734177215,
+        "candidate": 2.05761316872428
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.4343518727254763,
+        "candidate-control": 0.3161085181424127,
+        "reference": 0.5242729753992368,
+        "candidate": 0.9772717694060119
+      },
+      "elapsedChangePercent": [
+        -3.4392344587823698,
+        -2.999420526809926,
+        -1.6948499471616918,
+        -1.2470907114561225
+      ],
+      "cpuChangePercent": [
+        -4.381505688695231,
+        -4.381505688695231,
+        -3.9215686274509776,
+        -3.9215686274509776
+      ],
+      "referenceSpreadPercent": 0.4554789199394893,
+      "candidateSpreadPercent": 1.8065147908091994
+    }
+  ],
+  "CPythonRefreshed": false,
+  "decision": "Retained for removal of the private producer/drain stage and the complete text result."
+}

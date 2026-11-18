@@ -70,28 +70,7 @@ internal static partial class PyStringOps
             }
         }
 
-        if (trimEnd)
-        {
-            while (endByte > startByte)
-            {
-                PyStructuralGuard.NoteWork();
-                if (trimRunes is null && source[endByte - 1] < 0x80)
-                {
-                    if (!IsAsciiWhitespace(source[endByte - 1])) break;
-                    var chunkStart = Math.Max(startByte, endByte - 64);
-                    endByte -= AsciiWhitespaceRunLength(source[chunkStart..endByte], whitespace: true, reverse: true);
-                    continue;
-                }
-                var runeStart = GetPreviousRuneStart(source, endByte);
-                Rune.DecodeFromUtf8(source[runeStart..endByte], out var rune, out var _);
-                if (!ShouldTrim(rune, trimRunes))
-                {
-                    break;
-                }
-
-                endByte = runeStart;
-            }
-        }
+        if (trimEnd) endByte = TrimUtf8End(source, startByte, endByte, trimRunes);
 
         // Shared constants have no individual governor. Admit a fresh slice
         // through the active execution rather than copying it unowned first.
@@ -100,6 +79,26 @@ internal static partial class PyStringOps
             : SliceUtf8(value, startByte, endByte,
                 value.OwnerMemoryGovernor ?? PyStructuralGuard.AmbientContext?.MemoryGovernor,
                 PyStructuralGuard.AmbientSpan);
+    }
+
+    private static int TrimUtf8End(ReadOnlySpan<byte> source, int startByte, int endByte, HashSet<int>? trimRunes)
+    {
+        while (endByte > startByte)
+        {
+            PyStructuralGuard.NoteWork();
+            if (trimRunes is null && source[endByte - 1] < 0x80)
+            {
+                if (!IsAsciiWhitespace(source[endByte - 1])) break;
+                var chunkStart = Math.Max(startByte, endByte - 64);
+                endByte -= AsciiWhitespaceRunLength(source[chunkStart..endByte], whitespace: true, reverse: true);
+                continue;
+            }
+            var runeStart = GetPreviousRuneStart(source, endByte);
+            Rune.DecodeFromUtf8(source[runeStart..endByte], out var rune, out _);
+            if (!ShouldTrim(rune, trimRunes)) break;
+            endByte = runeStart;
+        }
+        return endByte;
     }
 
     private static PyString MapCase(PyString value, CaseMapping mapping, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)

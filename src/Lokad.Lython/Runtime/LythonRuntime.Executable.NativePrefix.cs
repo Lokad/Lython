@@ -360,10 +360,19 @@ internal sealed partial class LythonRuntime
                         Publish(final, result);
                         return true;
                     }
-                    if (!TryInvokeClosedReceiver(method, receiver,
+                    if (ReferenceEquals(method, ReceiverMethods.StringSplit)
+                        && TryJoinTrimmedSplit(Code, Values, Index, call, start, _scope) is { } joined)
+                    {
+                        Index += 2;
+                        result.Object = joined;
+                    }
+                    else
+                    {
+                        if (!TryInvokeClosedReceiver(method, receiver,
                         Values.Slice(start + call.ArgumentOffset, call.ArgumentCount), call.CallSpan, _scope,
-                        out var called)) return false;
-                    result.Object = called;
+                            out var called)) return false;
+                        result.Object = called;
+                    }
                 }
                 else
                 {
@@ -380,7 +389,7 @@ internal sealed partial class LythonRuntime
             { throw translated; }
             // Publication and its store checkpoint remain outside callable
             // exception translation. The marker never leaves this activation.
-            Publish(instruction, result);
+            Publish(Code.Instructions[Index], result);
             return true;
         }
 

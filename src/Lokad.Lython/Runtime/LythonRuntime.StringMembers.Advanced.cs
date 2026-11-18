@@ -50,30 +50,18 @@ internal sealed partial class LythonRuntime
                 if ((index & 15) == 0) context.CheckExecution(span);
                 if (index != 0)
                 {
-                    CopyJoinBytes(separator.Utf8Span,
+                    PyStringOps.CopyJoinBytes(separator.Utf8Span,
                         output.Slice(written, separator.ByteLength), context, span);
                     written += separator.ByteLength;
                 }
                 var text = (PyString)parts[index];
-                CopyJoinBytes(text.Utf8Span,
+                PyStringOps.CopyJoinBytes(text.Utf8Span,
                     output.Slice(written, text.ByteLength), context, span);
                 written += text.ByteLength;
             }
             context.CheckExecution(span);
             storage.Commit(bytes);
             return result;
-        }
-
-        private static void CopyJoinBytes(ReadOnlySpan<byte> source, Span<byte> output, ExecutionContext context, LythonSourceSpan span)
-        {
-            while (source.Length > 4096)
-            {
-                context.CheckExecution(span);
-                source[..4096].CopyTo(output);
-                source = source[4096..];
-                output = output[4096..];
-            }
-            source.CopyTo(output);
         }
 
         private static readonly ReceiverMethod CenterMethod = CreatePaddingMethod("center", PyStringOps.Center);

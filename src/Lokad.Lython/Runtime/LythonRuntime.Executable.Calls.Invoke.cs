@@ -85,6 +85,14 @@ internal sealed partial class LythonRuntime
                 if (target is not ReceiverMethod method) return false;
                 try
                 {
+                    if (ReferenceEquals(method, ReceiverMethods.StringSplit)
+                        && TryJoinTrimmedSplit(execution.Code, execution.Stack.Values, execution.InstructionIndex,
+                            call, start, invocation ?? scope) is { } joined)
+                    {
+                        execution.InstructionIndex += 2;
+                        PublishInstructionResult(ref execution, invocation, execution.Code.Instructions[execution.InstructionIndex], joined);
+                        return true;
+                    }
                     var receiver = execution.Stack[start];
                     var arguments = execution.Stack.Slice(start + call.ArgumentOffset, call.ArgumentCount).Span;
                     if (call.AccumulatesDictionary && arguments.Length is 1 or 2
