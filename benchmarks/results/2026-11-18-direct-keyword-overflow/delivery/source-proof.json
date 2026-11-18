@@ -1,0 +1,14 @@
+{
+  "qualified": "045eb7f4428a302caf39016d99f4a833f45cb85b",
+  "start": "2f98d36dbbb98d3bfc0e516dcff5a11bbcc1b882",
+  "reconstructedTree": "87e5f80c20587fb3d010e90ceafde017d2da25a1",
+  "productionCoreFiles": 589,
+  "identicalSourceAndTests": true,
+  "measurements": [
+    {
+      "archive": "benchmarks/results/2026-11-18-direct-keyword-overflow/checks-and-procedures.tar.xz",
+      "archiveSHA256": "8c19242730729928021f72d2adb1dd32c1e5ed58bfa919b690317e5fcd5de2f1",
+      "patchSHA256": "44cb696cc97245bac484b1c36f548d135f0a0dbf0d60309fba661b933860d69a"
+    }
+  ]
+}
