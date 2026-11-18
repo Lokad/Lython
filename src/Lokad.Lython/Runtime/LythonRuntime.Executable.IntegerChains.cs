@@ -27,7 +27,7 @@ internal sealed partial class LythonRuntime
         end = index;
         result = 0;
         ref readonly var first = ref code.Instructions[index];
-        if (first.HasLocalResult || index + 1 >= code.Instructions.Length
+        if (first.HasResultConsumer || index + 1 >= code.Instructions.Length
             || !ContinuesIntegerChain(code, code.Instructions[index + 1], first.ResultSlot)) return false;
 
         long accumulator;
@@ -45,7 +45,7 @@ internal sealed partial class LythonRuntime
             var b = next.SecondInput == first.ResultSlot ? accumulator : operand;
             if (!TryMachineBinary(next.BinaryOperator, a, b, out accumulator)) return false;
             end++;
-            if (next.HasLocalResult) break;
+            if (next.HasResultConsumer) break;
         }
 
         // The caller boxes the one published value using existing minor-

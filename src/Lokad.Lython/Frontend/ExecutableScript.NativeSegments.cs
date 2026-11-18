@@ -19,8 +19,8 @@ internal sealed partial class ExecutableCodeObject
                     Instructions[index] = call.WithClosureArithmetic(~add.SecondInput);
                 continue;
             }
-            if (call.OpCode != ExecutableOpCode.Call || call.HasLocalResult
-                || add.OpCode != ExecutableOpCode.Binary || add.BinaryOperator != BinaryOperatorSyntax.Add || add.HasLocalResult
+            if (call.OpCode != ExecutableOpCode.Call || call.HasResultConsumer
+                || add.OpCode != ExecutableOpCode.Binary || add.BinaryOperator != BinaryOperatorSyntax.Add || add.HasResultConsumer
                 || store.OpCode != ExecutableOpCode.StoreSubscript
                 || add.InputStart != call.ResultSlot || add.ResultSlot != call.ResultSlot || add.LiveExtent != call.LiveExtent
                 || store.InputStart != call.ResultSlot || store.LiveExtent != call.ResultSlot
@@ -51,7 +51,7 @@ internal sealed partial class ExecutableCodeObject
             ref readonly var member = ref Instructions[headIndex + 2];
             ref readonly var key = ref Instructions[headIndex + 3];
             ref readonly var fallback = ref Instructions[headIndex + 4];
-            if (head.OpCode != ExecutableOpCode.ForNext || !head.HasLocalResult
+            if (head.OpCode != ExecutableOpCode.ForNext || !head.HasResultConsumer
                 || binding.OpCode != ExecutableOpCode.StoreLocal || binding.LocalSlot != store.ThirdInput
                 || binding.InputStart != head.ResultSlot || binding.LiveExtent != head.ResultSlot
                 || head.LiveExtent != head.ResultSlot + 1 || Instructions[callIndex].InputStart != head.ResultSlot
@@ -71,7 +71,7 @@ internal sealed partial class ExecutableCodeObject
             {
                 ref readonly var total = ref Instructions[tailIndex];
                 ref readonly var totalStore = ref Instructions[tailIndex + 1];
-                if (total.AugmentedOperator != AugmentedAssignmentOperatorSyntax.Add || !total.HasLocalResult
+                if (total.AugmentedOperator != AugmentedAssignmentOperatorSyntax.Add || !total.HasResultConsumer
                     || !IsUncapturedLocal(total.InputStart) || total.SecondInput >= 0
                     || total.InputStart == store.ThirdInput || total.InputStart == store.SecondInput
                     || (uint)~total.SecondInput >= (uint)Constants.Length
@@ -90,9 +90,9 @@ internal sealed partial class ExecutableCodeObject
 
     private bool CanPrepareClosureArithmetic(int index, in ExecutableInstruction load,
         in ExecutableInstruction arithmetic, in ExecutableInstruction store)
-        => !RequiresLocalVariableMirroring && !load.HasLocalResult
+        => !RequiresLocalVariableMirroring && !load.HasResultConsumer
             && load.LiveExtent == load.ResultSlot + 1
-            && arithmetic.OpCode == ExecutableOpCode.Augmented && !arithmetic.HasLocalResult
+            && arithmetic.OpCode == ExecutableOpCode.Augmented && !arithmetic.HasResultConsumer
             && arithmetic.AugmentedOperator is AugmentedAssignmentOperatorSyntax.Add
                 or AugmentedAssignmentOperatorSyntax.Subtract or AugmentedAssignmentOperatorSyntax.Multiply
                 or AugmentedAssignmentOperatorSyntax.FloorDivide or AugmentedAssignmentOperatorSyntax.Modulo

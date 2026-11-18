@@ -383,7 +383,7 @@ values[1:4:2]
 
         var augmented = Assert.Single(instructions, instruction => instruction.OpCode == ExecutableOpCode.Augmented);
         Assert.Equal(AugmentedAssignmentOperatorSyntax.Add, augmented.AugmentedOperator);
-        Assert.True(augmented.HasLocalResult);
+        Assert.True(augmented.HasResultConsumer);
         var store = instructions[Array.IndexOf(instructions, augmented) + 1];
         Assert.Equal(executable.EntryPoint.LocalNameToSlot["total"], store.LocalSlot);
         Assert.True(store.LocalSlot < executable.EntryPoint.FirstTemporarySlot);

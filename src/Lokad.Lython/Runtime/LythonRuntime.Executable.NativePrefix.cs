@@ -425,7 +425,7 @@ internal sealed partial class LythonRuntime
         private bool TryReturnUnpackedTuple(in ExecutableInstruction instruction)
         {
             if (Code.NativePrefixEnd != Code.Instructions.Length || _unpackedReturnCount == 0 || instruction.ItemCount != _unpackedReturnCount
-                || instruction.HasLocalResult || Index + 1 >= Code.Instructions.Length) return false;
+                || instruction.HasResultConsumer || Index + 1 >= Code.Instructions.Length) return false;
             ref readonly var next = ref Code.Instructions[Index + 1];
             if (next.OpCode != ExecutableOpCode.Return || next.InputStart != instruction.ResultSlot) return false;
             var items = Values.Slice(instruction.InputStart, instruction.ItemCount);
@@ -476,13 +476,17 @@ internal sealed partial class LythonRuntime
 
         private void Publish(in ExecutableInstruction instruction, ExecutableSlot value)
         {
-            if (!instruction.HasLocalResult) { Put(instruction.ResultSlot, instruction.LiveExtent, value); return; }
+            if (!instruction.HasResultConsumer) { Put(instruction.ResultSlot, instruction.LiveExtent, value); return; }
             if (instruction.LiveExtent < LiveExtent) Trim(instruction.LiveExtent);
             Values[instruction.ResultSlot] = default;
             LiveExtent = instruction.ResultSlot;
-            ref readonly var store = ref Code.Instructions[Index + 1];
-            _scope.CheckExecution(store.Span);
-            Values[store.LocalSlot] = value;
+            ref readonly var consumer = ref Code.Instructions[Index + 1];
+            _scope.CheckExecution(consumer.Span);
+            if (consumer.OpCode == ExecutableOpCode.StoreLocal)
+                Values[consumer.LocalSlot] = value;
+            else if (consumer.OpCode != ExecutableOpCode.PopTop)
+                throw new InvalidOperationException("Invalid prepared result consumer.");
+            else if (value.IsUnassigned) _ = value.Object.RequireNotNull();
             Index++;
         }
 

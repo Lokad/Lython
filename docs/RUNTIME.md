@@ -615,7 +615,12 @@ completion instruction distinguishes module completion from a guest return.
 The executable engine runs both public APIs and local imports, using local/closure
 slots, operand storage and resumable generator frames. Lowered evaluation remains
 for class suites, annotations, lazy type metadata and actual statement-opcode
-consumers. Supported expressions in executable code use instructions; there is no
+consumers. Adjacent operation results can complete a local store or an immediate discard
+without temporary publication. Discarded calls still perform their operation and
+admission; the original consumer checkpoint and pending input-cleanup continuation
+remain. Unobserved native scalar results need no object materialization.
+
+Supported expressions in executable code use instructions; there is no
 generic expression opcode or whole-program alternate backend. Unknown compiler
 nodes fail explicitly. Imports retain canonical module namespaces.
 Eligible invocations begin with owned slot workstate. Native zero-argument string

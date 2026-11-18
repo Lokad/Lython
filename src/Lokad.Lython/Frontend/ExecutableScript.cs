@@ -145,26 +145,26 @@ internal readonly record struct ExecutableInstruction
     // every instruction at the existing size, including native helper code.
     public int ResultSlot => OpCode is ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast or ExecutableOpCode.CompareJumpIfFalse
         ? LiveExtent : _resultSlot;
-    // A complemented prepared extent marks the adjacent local-result store.
+    // A complemented prepared extent marks the adjacent result consumer.
     // Decode the original extent; physical positions never name locals.
-    public int LiveExtent => HasLocalResult ? ~_liveExtent : _liveExtent;
-    public bool HasLocalResult => _liveExtent < 0;
+    public int LiveExtent => HasResultConsumer ? ~_liveExtent : _liveExtent;
+    public bool HasResultConsumer => _liveExtent < 0;
 
     internal ExecutableInstruction WithStorageSlots(int inputStart, int resultSlot, int liveExtent)
         => new(OpCode, Span, _primaryOperand,
             ValueInputCount > 1 ? checked(inputStart + 1) : _secondaryOperand,
             inputStart, OpCode == ExecutableOpCode.CompareJumpIfFalse ? _resultSlot
                 : ValueInputCount == 3 ? checked(inputStart + 2) : resultSlot,
-            HasLocalResult ? ~liveExtent : liveExtent);
+            HasResultConsumer ? ~liveExtent : liveExtent);
 
     internal ExecutableInstruction WithValueInputs(int first, int second, int third = int.MaxValue)
         => new(OpCode, Span, _primaryOperand,
             ValueInputCount > 1 ? second : _secondaryOperand,
             first, ValueInputCount == 3 ? third : _resultSlot, _liveExtent);
 
-    // The following store retains its own source span and is also the
+    // The following consumer retains its source span and is also the
     // continuation when input cleanup must finish asynchronously.
-    internal ExecutableInstruction WithLocalResult()
+    internal ExecutableInstruction WithResultConsumer()
         => new(OpCode, Span, _primaryOperand, _secondaryOperand,
             _inputStart, _resultSlot, ~_liveExtent);
 

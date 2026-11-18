@@ -21,7 +21,8 @@ public sealed class FunctionBodyTemporaryLifetimeTests
         var tape = new Tape(root);
         root.Variables["produce"] = new Produce(tape);
         root.Variables["pause"] = new Pause(tape);
-        await LythonRuntime.ExecuteStatementsAsync(LoweredScript.Lower(frontend.Script.RequireNotNull()).Statements, root);
+        var executable = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull())).EntryPoint;
+        await LythonRuntime.ExecuteExecutableCodeObjectAsync(executable, root, default, null);
         var receiver = Assert.IsType<PyInstance>(root.Variables["runner"]);
         Assert.True(receiver.Type.TryGetOwnMember("run", out var value));
         var method = Assert.IsType<PyBoundMethod>(Assert.IsAssignableFrom<PyFunctionBase>(value).Bind(receiver));

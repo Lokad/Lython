@@ -1,0 +1,8 @@
+{
+  "purpose": "Local allocation/semantic gate for actual removed scalar materialization, not a replacement for existing adverse/control cases or a CPU comparison",
+  "hypothesis": "Complete CSV field validation discards int/float results; generic text helper mostly discards None. Existing slot-to-object PopTop may allocate scalar boxes that prepared consumer removes.",
+  "sourceSelection": "Derived from maintained numeric CSV fixture;32known invalid records appended. Fixed golden4096valid/32invalid from generator counts, not observed guest output.",
+  "boundary": "Both actual frozen32-file images through existing comparison verify/CPython goldens and existing allocation/reuse harness. No new benchmark framework or runtime policy.",
+  "includedIOAndEffects": "Complete input file read/CSV parse/validation/error counts/stdout; current tokens, exception order, shared admission and cleanup unchanged.",
+  "performanceMeasured": false
+}

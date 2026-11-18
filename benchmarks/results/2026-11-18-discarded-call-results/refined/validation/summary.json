@@ -1,0 +1,11 @@
+{
+  "referenceBytes": 3405830,
+  "candidateBytes": 3176454,
+  "changePercent": -6.734804731886202,
+  "referencePeak": 6336349,
+  "candidatePeak": 6336349,
+  "goldensAndSharedBudgetReuse": true,
+  "CPUClaim": false,
+  "inputBytes": 128183,
+  "records": 4128
+}

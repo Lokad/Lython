@@ -210,11 +210,14 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
                     kept--;
                 }
                 if (count != 0) instruction = instruction.WithValueInputs(first, second, third);
-                // Keep the store as the pending-cleanup continuation and for its
+                // Keep the consumer as the pending-cleanup continuation and for its
                 // own guard/span. Direct sources do not consume a producer result.
-                if (instruction.OpCode == ExecutableOpCode.StoreLocal && first == int.MaxValue && kept > 0
-                    && CanForwardResult(instructions[kept - 1], code.Constants))
-                    instructions[kept - 1] = instructions[kept - 1].WithLocalResult();
+                if (kept > 0 &&
+                    ((instruction.OpCode == ExecutableOpCode.StoreLocal && first == int.MaxValue
+                        && CanForwardResult(instructions[kept - 1], code.Constants))
+                    || (instruction.OpCode == ExecutableOpCode.PopTop
+                        && instructions[kept - 1].OpCode == ExecutableOpCode.Call)))
+                    instructions[kept - 1] = instructions[kept - 1].WithResultConsumer();
                 if (firstSpan is not null) reads.Add((block, kept, 0, firstSpan));
                 if (secondSpan is not null) reads.Add((block, kept, 1, secondSpan));
                 if (thirdSpan is not null) reads.Add((block, kept, 2, thirdSpan));

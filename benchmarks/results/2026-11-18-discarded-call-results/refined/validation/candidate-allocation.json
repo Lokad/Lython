@@ -1,0 +1,21 @@
+{
+  "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+  "rows": [
+    {
+      "id": "scripts.csv-field-validation.large",
+      "asynchronous": false,
+      "allocatedBytesPerInvocation": [
+        3176224,
+        3176454,
+        3176454
+      ],
+      "peakExecutionMemoryBytes": 6336349,
+      "compiledReservedBytes": 62624,
+      "compilationMillisecondsDiagnostic": 146.7561,
+      "compilationAllocatedBytesDiagnostic": 1391400,
+      "firstInvocationMillisecondsDiagnostic": 97.5785,
+      "sharedBudgetBaselineRestored": true
+    }
+  ],
+  "boundary": "Complete warm runs including mediated I/O/reset, all output/file checks and result cleanup; compilation/startup/final cache teardown excluded. Process-wide CLR allocation counters, no forced GC. Compilation and first invocation clocks are local diagnostic observations, not a controlled CPU/source timing comparison."
+}

@@ -19,19 +19,19 @@ internal sealed partial class LythonRuntime
         private static void PublishInstructionResult(ref ExecutableWorkState execution,
             ExecutionContext? invocation, in ExecutableInstruction instruction, ExecutableSlot value)
         {
-            if (!instruction.HasLocalResult)
+            if (!instruction.HasResultConsumer)
             {
                 execution.Stack.PublishSlot(instruction.ResultSlot, instruction.LiveExtent, value);
             }
-            else CompleteLocalResult(ref execution, invocation, instruction, value);
+            else CompleteResultConsumer(ref execution, invocation, instruction, value);
         }
 
-        private static void CompleteLocalResult(ref ExecutableWorkState execution,
+        private static void CompleteResultConsumer(ref ExecutableWorkState execution,
             ExecutionContext? invocation, in ExecutableInstruction instruction, ExecutableSlot value)
         {
             // Preserve the original input retirement and its disposal order.
-            // Pending cleanup must finish before the binding becomes visible;
-            // the unchanged driver and following store already implement that.
+            // Pending cleanup must finish before the consumer becomes visible;
+            // the unchanged driver and following consumer already implement that.
             if (instruction.LiveExtent < execution.Stack.LiveExtent) execution.Stack.RetireTo(instruction.LiveExtent);
             if (execution.Stack.HasPendingDisposals)
             {
@@ -40,9 +40,15 @@ internal sealed partial class LythonRuntime
             }
 
             execution.Stack.ForgetResultInput(instruction.ResultSlot);
-            ref readonly var store = ref execution.Code.Instructions[execution.InstructionIndex + 1];
-            execution.Stack.CheckExecution(store.Span);
-            StoreLocalValue(execution.Code, execution.Locals, invocation, store.LocalSlot, value, store.Span);
+            ref readonly var consumer = ref execution.Code.Instructions[execution.InstructionIndex + 1];
+            execution.Stack.CheckExecution(consumer.Span);
+            if (consumer.OpCode == ExecutableOpCode.StoreLocal)
+                StoreLocalValue(execution.Code, execution.Locals, invocation, consumer.LocalSlot, value, consumer.Span);
+            else if (consumer.OpCode != ExecutableOpCode.PopTop)
+                throw new InvalidOperationException("Invalid prepared result consumer.");
+            // Discarded calls cannot return private iteration loans. No
+            // publication or scalar materialization is needed for their result.
+            else if (value.IsUnassigned) _ = value.Object.RequireNotNull();
             execution.InstructionIndex++;
         }
     }

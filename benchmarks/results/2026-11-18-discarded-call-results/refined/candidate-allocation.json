@@ -1,0 +1,201 @@
+{
+  "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+  "rows": [
+    {
+      "id": "scripts.text-normalization.large",
+      "asynchronous": false,
+      "allocatedBytesPerInvocation": [
+        1255582,
+        1255352,
+        1255352
+      ],
+      "peakExecutionMemoryBytes": 2355001,
+      "compiledReservedBytes": 66080,
+      "compilationMillisecondsDiagnostic": 144.1915,
+      "compilationAllocatedBytesDiagnostic": 1397760,
+      "firstInvocationMillisecondsDiagnostic": 94.1211,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "id": "scripts.numeric-squared-error.large",
+      "asynchronous": false,
+      "allocatedBytesPerInvocation": [
+        557814,
+        557584,
+        557584
+      ],
+      "peakExecutionMemoryBytes": 906686,
+      "compiledReservedBytes": 97280,
+      "compilationMillisecondsDiagnostic": 17.082,
+      "compilationAllocatedBytesDiagnostic": 140512,
+      "firstInvocationMillisecondsDiagnostic": 42.8828,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "id": "scripts.csv-invoice.large",
+      "asynchronous": false,
+      "allocatedBytesPerInvocation": [
+        4197230,
+        4197286,
+        4197286
+      ],
+      "peakExecutionMemoryBytes": 9432323,
+      "compiledReservedBytes": 150080,
+      "compilationMillisecondsDiagnostic": 10.899,
+      "compilationAllocatedBytesDiagnostic": 230104,
+      "firstInvocationMillisecondsDiagnostic": 55.6011,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "id": "scripts.report-render.large",
+      "asynchronous": false,
+      "allocatedBytesPerInvocation": [
+        2564110,
+        2563880,
+        2564110
+      ],
+      "peakExecutionMemoryBytes": 3493303,
+      "compiledReservedBytes": 76352,
+      "compilationMillisecondsDiagnostic": 4.8142,
+      "compilationAllocatedBytesDiagnostic": 107272,
+      "firstInvocationMillisecondsDiagnostic": 39.744,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "id": "calls.positional.large",
+      "asynchronous": false,
+      "allocatedBytesPerInvocation": [
+        1060696,
+        1060696,
+        1060696
+      ],
+      "peakExecutionMemoryBytes": 1383,
+      "compiledReservedBytes": 43232,
+      "compilationMillisecondsDiagnostic": 0.7587,
+      "compilationAllocatedBytesDiagnostic": 44624,
+      "firstInvocationMillisecondsDiagnostic": 8.4784,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "id": "scripts.binary-normalization.large",
+      "asynchronous": false,
+      "allocatedBytesPerInvocation": [
+        536952,
+        537064,
+        537070
+      ],
+      "peakExecutionMemoryBytes": 252246,
+      "compiledReservedBytes": 52736,
+      "compilationMillisecondsDiagnostic": 2.5635,
+      "compilationAllocatedBytesDiagnostic": 58424,
+      "firstInvocationMillisecondsDiagnostic": 27.1395,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "id": "generators.drain.large",
+      "asynchronous": false,
+      "allocatedBytesPerInvocation": [
+        3308992,
+        3308992,
+        3309412
+      ],
+      "peakExecutionMemoryBytes": 3781782,
+      "compiledReservedBytes": 42080,
+      "compilationMillisecondsDiagnostic": 2.0631,
+      "compilationAllocatedBytesDiagnostic": 43728,
+      "firstInvocationMillisecondsDiagnostic": 19.7051,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "id": "scripts.report-render.tuple.sync",
+      "asynchronous": false,
+      "allocatedBytesPerInvocation": [
+        2654632,
+        2654862,
+        2654632
+      ],
+      "peakExecutionMemoryBytes": 4000049,
+      "compiledReservedBytes": 80576,
+      "compilationMillisecondsDiagnostic": 0.7753,
+      "compilationAllocatedBytesDiagnostic": 118568,
+      "firstInvocationMillisecondsDiagnostic": 41.9368,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "id": "scripts.report-render.tuple.async",
+      "asynchronous": true,
+      "allocatedBytesPerInvocation": [
+        2656626,
+        2656166,
+        2655936
+      ],
+      "peakExecutionMemoryBytes": 4000049,
+      "compiledReservedBytes": 80576,
+      "compilationMillisecondsDiagnostic": 0.5656,
+      "compilationAllocatedBytesDiagnostic": 117560,
+      "firstInvocationMillisecondsDiagnostic": 40.863,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "id": "scripts.text-normalization.helper-list",
+      "asynchronous": false,
+      "allocatedBytesPerInvocation": [
+        1287304,
+        1287304,
+        1287534
+      ],
+      "peakExecutionMemoryBytes": 3009731,
+      "compiledReservedBytes": 75296,
+      "compilationMillisecondsDiagnostic": 3.1283,
+      "compilationAllocatedBytesDiagnostic": 119488,
+      "firstInvocationMillisecondsDiagnostic": 20.465,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "id": "scripts.report-render.helper-list",
+      "asynchronous": false,
+      "allocatedBytesPerInvocation": [
+        2634866,
+        2637446,
+        2634872
+      ],
+      "peakExecutionMemoryBytes": 3968148,
+      "compiledReservedBytes": 83840,
+      "compilationMillisecondsDiagnostic": 0.8502,
+      "compilationAllocatedBytesDiagnostic": 140376,
+      "firstInvocationMillisecondsDiagnostic": 28.8576,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "id": "scripts.json-summary-helpers.large",
+      "asynchronous": false,
+      "allocatedBytesPerInvocation": [
+        1791502,
+        1791272,
+        1791272
+      ],
+      "peakExecutionMemoryBytes": 3954823,
+      "compiledReservedBytes": 91040,
+      "compilationMillisecondsDiagnostic": 9.6338,
+      "compilationAllocatedBytesDiagnostic": 133192,
+      "firstInvocationMillisecondsDiagnostic": 19.8885,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "id": "scripts.numeric-squared-error.floating.large",
+      "asynchronous": false,
+      "allocatedBytesPerInvocation": [
+        491896,
+        491896,
+        491896
+      ],
+      "peakExecutionMemoryBytes": 906686,
+      "compiledReservedBytes": 97280,
+      "compilationMillisecondsDiagnostic": 0.444,
+      "compilationAllocatedBytesDiagnostic": 232848,
+      "firstInvocationMillisecondsDiagnostic": 14.1055,
+      "sharedBudgetBaselineRestored": true
+    }
+  ],
+  "boundary": "Complete warm runs including mediated I/O/reset, all output/file checks and result cleanup; compilation/startup/final cache teardown excluded. Process-wide CLR allocation counters, no forced GC. Compilation and first invocation clocks are local diagnostic observations, not a controlled CPU/source timing comparison."
+}
