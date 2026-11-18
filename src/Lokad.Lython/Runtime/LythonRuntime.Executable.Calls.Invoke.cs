@@ -85,12 +85,10 @@ internal sealed partial class LythonRuntime
                 if (target is not ReceiverMethod method) return false;
                 try
                 {
-                    if (ReferenceEquals(method, ReceiverMethods.StringSplit)
-                        && TryJoinTrimmedSplit(execution.Code, execution.Stack.Values, execution.InstructionIndex,
-                            call, start, invocation ?? scope) is { } joined)
+                    if (TryConsumePrivateStringResult(method, execution.Code, execution.Stack.Values,
+                        ref execution.InstructionIndex, call, start, invocation ?? scope, out var consumed))
                     {
-                        execution.InstructionIndex += 2;
-                        PublishInstructionResult(ref execution, invocation, execution.Code.Instructions[execution.InstructionIndex], joined);
+                        PublishInstructionResult(ref execution, invocation, execution.Code.Instructions[execution.InstructionIndex], consumed);
                         return true;
                     }
                     var receiver = execution.Stack[start];

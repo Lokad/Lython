@@ -32,40 +32,7 @@ internal static partial class PyStringOps
         wholeSource = false;
         if (state.Lines)
         {
-            var breaks = 0;
-            var breakBytes = 0;
-            for (var offset = 0; offset < source.Length;)
-            {
-                context?.CheckExecution(span);
-                var end = offset + Math.Min(4096, source.Length - offset);
-                var lineFeeds = source[offset..end].Count((byte)'\n');
-                breaks = checked(breaks + lineFeeds);
-                breakBytes += lineFeeds;
-                var position = offset;
-                while (position < end)
-                {
-                    var found = source[position..end].IndexOfAny(OtherLineBreakCandidates);
-                    if (found < 0) break;
-                    position += found;
-                    if (TryGetLineBreakByteLength(source, position, out var width))
-                    {
-                        // LF was counted in bulk, including a CRLF crossing
-                        // this chunk boundary. Count the combined break once.
-                        if (source[position] == (byte)'\r' && width == 2) breakBytes++;
-                        else { breaks++; breakBytes += width; }
-                        position += width;
-                    }
-                    else position++;
-                }
-                offset = end;
-            }
-            var endsWithBreak = false;
-            if (!source.IsEmpty)
-            {
-                Rune.DecodeLastFromUtf8(source, out _, out var width);
-                endsWithBreak = TryGetLineBreakByteLength(source, source.Length - width, out _);
-            }
-            count = checked(breaks + (!source.IsEmpty && !endsWithBreak ? 1 : 0));
+            count = CountSplitLines(source, context, span, out var breakBytes, out var endsWithBreak);
             payloadBytes = state.KeepEnds ? source.Length : source.Length - breakBytes;
             wholeSource = count == 1 && (state.KeepEnds || !endsWithBreak);
             return true;
@@ -84,6 +51,45 @@ internal static partial class PyStringOps
         payloadBytes = source.Length - foundSeparators;
         wholeSource = count == 1;
         return true;
+    }
+
+    internal static int CountSplitLines(ReadOnlySpan<byte> source, LythonRuntime.ExecutionContext? context,
+        LythonSourceSpan? span, out int breakBytes, out bool endsWithBreak)
+    {
+        var breaks = 0;
+        breakBytes = 0;
+        for (var offset = 0; offset < source.Length;)
+        {
+            context?.CheckExecution(span);
+            var end = offset + Math.Min(4096, source.Length - offset);
+            var lineFeeds = source[offset..end].Count((byte)'\n');
+            breaks = checked(breaks + lineFeeds);
+            breakBytes += lineFeeds;
+            var position = offset;
+            while (position < end)
+            {
+                var found = source[position..end].IndexOfAny(OtherLineBreakCandidates);
+                if (found < 0) break;
+                position += found;
+                if (TryGetLineBreakByteLength(source, position, out var width))
+                {
+                    // LF was counted in bulk, including a CRLF crossing
+                    // this chunk boundary. Count the combined break once.
+                    if (source[position] == (byte)'\r' && width == 2) breakBytes++;
+                    else { breaks++; breakBytes += width; }
+                    position += width;
+                }
+                else position++;
+            }
+            offset = end;
+        }
+        endsWithBreak = false;
+        if (!source.IsEmpty)
+        {
+            Rune.DecodeLastFromUtf8(source, out _, out var width);
+            endsWithBreak = TryGetLineBreakByteLength(source, source.Length - width, out _);
+        }
+        return checked(breaks + (!source.IsEmpty && !endsWithBreak ? 1 : 0));
     }
 
     private static bool TryReadSplitRange(ReadOnlySpan<byte> source, ReadOnlySpan<byte> separator,

@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Reuse the UTF-8 line count when builtin `len` immediately consumes an
+  exact argument-free `str.splitlines()` call. Lists that can be observed
+  by Python retain ordinary construction and memory admission.
+
 - Join an immediately consumed generator of trimmed, explicitly split string
   parts directly into admitted UTF-8 storage. Preserve ordinary iteration for
   dynamic receivers and other call shapes.

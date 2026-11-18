@@ -360,16 +360,10 @@ internal sealed partial class LythonRuntime
                         Publish(final, result);
                         return true;
                     }
-                    if (ReferenceEquals(method, ReceiverMethods.StringSplit)
-                        && TryJoinTrimmedSplit(Code, Values, Index, call, start, _scope) is { } joined)
-                    {
-                        Index += 2;
-                        result.Object = joined;
-                    }
-                    else
+                    if (!TryConsumePrivateStringResult(method, Code, Values, ref Index, call, start, _scope, out result))
                     {
                         if (!TryInvokeClosedReceiver(method, receiver,
-                        Values.Slice(start + call.ArgumentOffset, call.ArgumentCount), call.CallSpan, _scope,
+                            Values.Slice(start + call.ArgumentOffset, call.ArgumentCount), call.CallSpan, _scope,
                             out var called)) return false;
                         result.Object = called;
                     }

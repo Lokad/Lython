@@ -37,7 +37,63 @@ public sealed class DirectStringSplitExecutionTests
         { "count-count_method_forms", "events=[]\nclass Count:\n def __index__(self):\n  events.append('index')\n  return 1\nmethod='a,b,c'.split\nprint(method(',',Count()),'a,b,c'.split(sep=',',maxsplit=Count()),'a,b,c'.split(*[',',Count()]))\nprint(events)", "['a', 'b,c'] ['a', 'b,c'] ['a', 'b,c']\n['index', 'index', 'index']\n" },
         { "count-index-rebinds-receiver", "text='a,b,c'\nclass Count:\n def __index__(self):\n  global text\n  text='changed'\n  return 1\nprint(text.split(',',Count()),text)", "['a', 'b,c'] changed\n" },
         { "count-dynamic-two-arguments", "class Text:\n def split(self,sep,count):return ['custom',sep,count]\nprint(Text().split(',',1))", "['custom', ',', 1]\n" },
+        { "line-count-boundaries", """
+            def count(text):return len(text.splitlines())
+            print(count(''), count('\n'), count('a\n\n'), count('a\nb'))
+            print(count('x'*4095+'\r\ncafé\x85😀\u2028z\x1c'))
+            print(count('x'*4095+'\u2029tail'), count('x'*4095+'\x85tail'))
+            print(len('a\nb'.splitlines()), len('a\nb'.splitlines(True)))
+            """, "0 1 2 2\n4\n2 2\n2 2\n" },
+        { "line-count-dynamic-calls", """
+            events=[]
+            class Text:
+                def splitlines(self):
+                    events.append('split')
+                    return ['one']
+            class Keep:
+                def __bool__(self):
+                    events.append('keep')
+                    return True
+            def observed(parts):
+                events.append(parts)
+                return 7
+            def count(length,text):return length(text.splitlines())
+            print(count(len,Text()),count(observed,'a\nb'),len('a\nb'.splitlines(Keep())))
+            print(events)
+            """, "1 7 2\n['split', ['a', 'b'], 'keep']\n" },
     };
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task OnlyPrivateLineCountsCanSkipFundingTheList(bool asynchronous, bool exposeList)
+    {
+        var code = exposeList
+            ? "try:\n lines=('α\\n'*4096).splitlines()\n print(lines[0],len(lines))\nexcept MemoryError:\n print('guest handler ran')"
+            : "def count(text):return len(text.splitlines())\nprint(count('α\\n'*4096))";
+        using var script = new LythonEngine().Compile(code);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics));
+        var budget = new LythonMemoryBudget(96 * 1024);
+        var options = new LythonRunOptions { MemoryBudget = budget };
+        using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options)
+            : script.Run(new MockLythonHost(), options))
+        {
+            if (exposeList)
+            {
+                Assert.False(result.Success);
+                Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+                Assert.Equal(string.Empty, result.StandardOutput);
+            }
+            else
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal("4096\n", result.StandardOutput);
+            }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
 
     [Theory]
     [InlineData(false)]

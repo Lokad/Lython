@@ -68,7 +68,7 @@ internal sealed partial class LythonRuntime
             static (receiver, arguments, span, context) => RSplit((PyString)receiver, arguments, span, context, false).GetAwaiter().GetResult(),
             static (receiver, arguments, span, context) => RSplit((PyString)receiver, arguments, span, context, true));
 
-        private static readonly ReceiverMethod SplitLinesMethod = new(
+        internal static readonly ReceiverMethod SplitLinesMethod = new(
             LythonCallableSignature.Create("str.splitlines", ["keepends"], 0, 1, LythonVariadicParameters.None, 0),
             static (receiver, arguments, span, context) => PyStringOps.SplitLines((PyString)receiver,
                 arguments.Length == 1 && IsTruthy(arguments[0]!, context, span), context.MemoryGovernor, span, context),
