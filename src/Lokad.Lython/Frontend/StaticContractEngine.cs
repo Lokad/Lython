@@ -123,7 +123,7 @@ internal static class StaticContractEngine
 
         if (call.Target is MemberExpressionSyntax { Target: var memberReceiver, MemberName: var memberName } &&
             StaticAbstractValueResolver.TryResolve(memberReceiver, bindings, out var receiverValue) &&
-            StaticContracts.TryGetMemberReturn(receiverValue, memberName, call.Span, out value))
+            StaticContracts.TryGetMemberReturn(receiverValue, memberName, call.Span, bindings.AnalysisContext, out value))
         {
             if (StaticCallArguments.TryGetConcreteArguments(call, bindings, out var arguments) &&
                 StaticContracts.TryGetCallableContract(receiverValue, memberName, out var contract) &&

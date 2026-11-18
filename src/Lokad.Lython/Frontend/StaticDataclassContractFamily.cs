@@ -78,7 +78,7 @@ internal static class StaticDataclassContractFamily
                 }
             }
 
-            value = AbstractValue.UserInstance(new AbstractInstanceSummary(instance.Class, fields, span), span);
+            value = AbstractValue.UserInstance(new AbstractInstanceSummary(instance.Class, fields, span), span, bindings.AnalysisContext);
             return true;
         }
 

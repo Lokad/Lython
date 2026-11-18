@@ -53,11 +53,12 @@ internal static partial class StaticContracts
     private static readonly IReadOnlyDictionary<StaticMemberContractKey, StaticMemberReturnContract> MemberReturnContractsByMember =
         MemberReturnContracts.ToDictionary(static contract => new StaticMemberContractKey(contract.ReceiverKind, contract.MemberName));
 
-    public static bool TryGetMemberReturn(AbstractValue receiver, string memberName, LythonSourceSpan span, out AbstractValue value)
+    public static bool TryGetMemberReturn(AbstractValue receiver, string memberName, LythonSourceSpan span,
+        StaticAnalysisContext? context, out AbstractValue value)
     {
         if (TryGetMemberReturnShape(receiver.Kind, memberName, out var shape))
         {
-            value = CreateReturnValue(shape, receiver, span);
+            value = CreateReturnValue(shape, receiver, span, context);
             return true;
         }
 

@@ -7,11 +7,9 @@ namespace Lokad.Lython.Tests;
 public sealed class StaticFactCancellationTests
 {
     [Theory]
-    [InlineData(false, false)]
-    [InlineData(false, true)]
-    [InlineData(true, false)]
-    [InlineData(true, true)]
-    public void ActiveFactInspectionStopsAndPreservesFirstRefusal(bool refuse, bool callbacks)
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ActiveFactConstructionStopsAndPreservesFirstRefusal(bool refuse)
     {
         var budget = new LythonMemoryBudget(1024);
         using var cancellation = new CancellationTokenSource();
@@ -24,16 +22,12 @@ public sealed class StaticFactCancellationTests
                 cancellationToken: cancellation.Token);
             LythonRuntimeException? refusal = null;
             var span = new LythonSourceSpan(1, 1, 1, 1);
-            var facts = AbstractValue.Tuple(new CancellingFacts(() =>
+            var items = new CancellingFacts(() =>
             {
                 if (refuse) refusal = governor.RefuseAdmission("test admission refused", 2048, span);
                 cancellation.Cancel();
-            }), span);
-            var error = Assert.Throws<LythonRuntimeException>(() =>
-            {
-                if (callbacks) AbstractState.IsCallbackFreeValue(facts, context);
-                else AbstractState.ContainsMutableCollectionFacts(facts, context);
             });
+            var error = Assert.Throws<LythonRuntimeException>(() => AbstractValue.Tuple(items, span, context));
             Assert.True(cancellation.IsCancellationRequested);
             if (refuse) Assert.Same(refusal, error);
             else Assert.Equal(LythonFailureReason.Cancelled, error.Attribution?.Reason);

@@ -35,8 +35,8 @@ internal static partial class StaticAbstractValueResolver
         {
             var sequenceItems = items.Select(item => item.WithSpan(call.Span)).ToArray();
             value = constructorName == "list"
-                ? AbstractValue.List(sequenceItems, call.Span)
-                : AbstractValue.Tuple(sequenceItems, call.Span);
+                ? AbstractValue.List(sequenceItems, call.Span, bindings.AnalysisContext)
+                : AbstractValue.Tuple(sequenceItems, call.Span, bindings.AnalysisContext);
             return true;
         }
 
@@ -94,7 +94,7 @@ internal static partial class StaticAbstractValueResolver
         {
             if (!TryResolve(subscript.Index, bindings, out var index))
             {
-                return TryGetIndexedSequenceValue(target, null, subscript.Span, out value);
+                return TryGetIndexedSequenceValue(target, null, subscript.Span, bindings.AnalysisContext, out value);
             }
 
             if (StaticAbstractFacts.IsDefinitelyNonIntegerLike(index))
@@ -105,10 +105,10 @@ internal static partial class StaticAbstractValueResolver
 
             if (StaticAbstractFacts.TryGetNonNegativeInt32(index, out var indexValue))
             {
-                return TryGetIndexedSequenceValue(target, indexValue, subscript.Span, out value);
+                return TryGetIndexedSequenceValue(target, indexValue, subscript.Span, bindings.AnalysisContext, out value);
             }
 
-            return TryGetIndexedSequenceValue(target, null, subscript.Span, out value);
+            return TryGetIndexedSequenceValue(target, null, subscript.Span, bindings.AnalysisContext, out value);
         }
 
         if (StaticRegexReturnResolver.TryResolveMatchSubscriptReturn(target, subscript.Index, bindings, subscript.Span, out value) ||
@@ -196,7 +196,7 @@ internal static partial class StaticAbstractValueResolver
                 value = AbstractValue.BytesType(slice.Span);
                 return true;
             case AbstractValueKind.List:
-                value = AbstractValue.ListOf(StaticBindingEngine.JoinSequenceItems(target.RequireSequenceItems(), slice.Span), slice.Span);
+                value = AbstractValue.ListOf(StaticBindingEngine.JoinSequenceItems(target.RequireSequenceItems(), slice.Span, bindings.AnalysisContext), slice.Span);
                 return true;
             case AbstractValueKind.ListType:
                 value = AbstractValue.ListOf((target.RequireNestedValue()).WithSpan(slice.Span), slice.Span);
@@ -232,7 +232,8 @@ internal static partial class StaticAbstractValueResolver
         }
     }
 
-    private static bool TryGetIndexedSequenceValue(AbstractValue target, int? index, LythonSourceSpan span, out AbstractValue value)
+    private static bool TryGetIndexedSequenceValue(AbstractValue target, int? index, LythonSourceSpan span,
+        StaticAnalysisContext? context, out AbstractValue value)
     {
         switch (target.Kind)
         {
@@ -262,7 +263,7 @@ internal static partial class StaticAbstractValueResolver
 
                     if (index is null)
                     {
-                        value = StaticBindingEngine.JoinSequenceItems(items, span);
+                        value = StaticBindingEngine.JoinSequenceItems(items, span, context);
                         return true;
                     }
 

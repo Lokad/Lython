@@ -180,7 +180,7 @@ internal static partial class StaticAbstractValueResolver
                 value = AbstractValue.Join(
                     ResolveOrUnknown(conditional.Consequent, bindings),
                     ResolveOrUnknown(conditional.Alternative, bindings),
-                    conditional.Span);
+                    conditional.Span, bindings.AnalysisContext);
                 return true;
 
             case BinaryExpressionSyntax binary:

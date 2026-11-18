@@ -3,9 +3,10 @@ namespace Lokad.Lython.Frontend;
 internal static partial class StaticContracts
 {
     private static AbstractValue CreateReturnValue(StaticReturnShape shape, LythonSourceSpan span)
-        => CreateReturnValue(shape, AbstractValue.Unknown(span), span);
+        => CreateReturnValue(shape, AbstractValue.Unknown(span), span, null);
 
-    private static AbstractValue CreateReturnValue(StaticReturnShape shape, AbstractValue receiver, LythonSourceSpan span)
+    private static AbstractValue CreateReturnValue(StaticReturnShape shape, AbstractValue receiver, LythonSourceSpan span,
+        StaticAnalysisContext? context)
     {
         return shape switch
         {
@@ -101,7 +102,7 @@ internal static partial class StaticContracts
             StaticReturnShape.OpenPyxlRowDimension => AbstractValue.OpenPyxlRowDimension(span),
             StaticReturnShape.OpenPyxlMergedCellSet => AbstractValue.OpenPyxlMergedCellSet(span),
             StaticReturnShape.ListSame => CopyContainerValue(receiver, span, AbstractValueKind.List),
-            StaticReturnShape.ListElement => GetListElementValue(receiver, span),
+            StaticReturnShape.ListElement => GetListElementValue(receiver, span, context),
             StaticReturnShape.DictSame => CopyContainerValue(receiver, span, AbstractValueKind.Dict),
             StaticReturnShape.SetSame => CopyContainerValue(receiver, span, AbstractValueKind.Set),
             _ => AbstractValue.Unknown(span)
@@ -115,12 +116,12 @@ internal static partial class StaticContracts
             ? receiver.WithSpan(span)
             : AbstractValue.Unknown(span);
 
-    private static AbstractValue GetListElementValue(AbstractValue receiver, LythonSourceSpan span)
+    private static AbstractValue GetListElementValue(AbstractValue receiver, LythonSourceSpan span, StaticAnalysisContext? context)
     {
         return receiver.Kind switch
         {
             AbstractValueKind.ListType => (receiver.RequireNestedValue()).WithSpan(span),
-            AbstractValueKind.List => StaticBindingEngine.JoinSequenceItems(receiver.RequireSequenceItems(), span),
+            AbstractValueKind.List => StaticBindingEngine.JoinSequenceItems(receiver.RequireSequenceItems(), span, context),
             _ => AbstractValue.Unknown(span)
         };
     }

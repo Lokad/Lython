@@ -170,25 +170,49 @@ internal sealed record AbstractDataclassFieldSummary(
     string Name,
     LythonSourceSpan Span);
 
+[Flags]
+internal enum AbstractValueFacts : byte
+{
+    None = 0,
+    Dictionary = 1,
+    MutableCollection = 2,
+    Callback = 4,
+}
+
 internal readonly record struct AbstractValue
 {
     private static readonly LythonSourceSpan SyntheticSpan = new(0, 0, 0, 0);
     private readonly AbstractPayload _payload;
+    private readonly AbstractValueFacts _facts;
 
-    private AbstractValue(AbstractValueKind kind, AbstractPayload payload, LythonSourceSpan span)
+    private AbstractValue(AbstractValueKind kind, AbstractPayload payload, LythonSourceSpan span,
+        AbstractValueFacts containedFacts = AbstractValueFacts.None)
     {
         Kind = kind;
         _payload = payload;
         Span = span;
+        _facts = containedFacts | (kind switch
+        {
+            AbstractValueKind.Dict => AbstractValueFacts.Dictionary | AbstractValueFacts.MutableCollection,
+            AbstractValueKind.List or AbstractValueKind.Set => AbstractValueFacts.MutableCollection,
+            AbstractValueKind.ListType or AbstractValueKind.SetType or AbstractValueKind.CollectionsDeque or
+                AbstractValueKind.CollectionsDefaultDict or AbstractValueKind.CollectionsCounter or
+                AbstractValueKind.CollectionsChainMap => AbstractValueFacts.MutableCollection | AbstractValueFacts.Callback,
+            AbstractValueKind.String or AbstractValueKind.StringType or
+                AbstractValueKind.Bytes or AbstractValueKind.BytesType or
+                AbstractValueKind.Integer or AbstractValueKind.IntegerType or
+                AbstractValueKind.Float or AbstractValueKind.FloatType or
+                AbstractValueKind.Boolean or AbstractValueKind.BooleanType or
+                AbstractValueKind.None or AbstractValueKind.Tuple => AbstractValueFacts.None,
+            _ => AbstractValueFacts.Callback,
+        });
     }
 
     public AbstractValueKind Kind { get; }
 
-    public LythonSourceSpan Span { get; }
+    public LythonSourceSpan Span { get; private init; }
 
-    // Shared compiler facts form a graph. Reference identity avoids recursively
-    // hashing their record payloads when inspecting that graph within one query.
-    internal object PayloadIdentity => _payload;
+    internal AbstractValueFacts Facts => _payload is null ? AbstractValueFacts.Callback : _facts;
 
     public string RequireText() => _payload is TextPayload payload ? payload.Value : ThrowPayloadMismatch<string>();
     public BigInteger RequireInteger() => _payload is IntegerPayload payload ? payload.Value : ThrowPayloadMismatch<BigInteger>();
@@ -261,14 +285,51 @@ internal readonly record struct AbstractValue
         {
             AbstractValueKind.None => None(span),
             AbstractValueKind.MaybeNone => nonNoneValue.WithSpan(span),
-            _ => new(AbstractValueKind.MaybeNone, new NestedValuePayload(nonNoneValue.WithSpan(span)), span)
+            _ => new(AbstractValueKind.MaybeNone, new NestedValuePayload(nonNoneValue.WithSpan(span)), span, nonNoneValue.Facts)
         };
-    public static AbstractValue ListOf(AbstractValue item, LythonSourceSpan span) => new(AbstractValueKind.ListType, new NestedValuePayload(item), span);
-    public static AbstractValue List(IReadOnlyList<AbstractValue> items, LythonSourceSpan span) => new(AbstractValueKind.List, new SequencePayload(items), span);
-    public static AbstractValue Tuple(IReadOnlyList<AbstractValue> items, LythonSourceSpan span) => new(AbstractValueKind.Tuple, new SequencePayload(items), span);
-    public static AbstractValue Set(IReadOnlyList<AbstractValue> items, LythonSourceSpan span) => new(AbstractValueKind.Set, new SequencePayload(items), span);
+    public static AbstractValue ListOf(AbstractValue item, LythonSourceSpan span)
+        => new(AbstractValueKind.ListType, new NestedValuePayload(item), span, item.Facts);
+
+    public static AbstractValue List(IReadOnlyList<AbstractValue> items, LythonSourceSpan span, StaticAnalysisContext? context = null)
+        => Sequence(AbstractValueKind.List, items, span, context);
+
+    public static AbstractValue Tuple(IReadOnlyList<AbstractValue> items, LythonSourceSpan span, StaticAnalysisContext? context = null)
+        => Sequence(AbstractValueKind.Tuple, items, span, context);
+
+    public static AbstractValue Set(IReadOnlyList<AbstractValue> items, LythonSourceSpan span, StaticAnalysisContext? context = null)
+        => Sequence(AbstractValueKind.Set, items, span, context);
+
     public static AbstractValue SetOf(AbstractValue item, LythonSourceSpan span) => new(AbstractValueKind.SetType, new NestedValuePayload(item), span);
-    public static AbstractValue Dict(IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>> pairs, LythonSourceSpan span) => new(AbstractValueKind.Dict, new DictionaryPayload(pairs), span);
+
+    public static AbstractValue Dict(IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>> pairs, LythonSourceSpan span,
+        StaticAnalysisContext? context = null)
+    {
+        var facts = AbstractValueFacts.None;
+        context?.CheckExecution();
+        for (var i = 0; i < pairs.Count; i++)
+        {
+            var pair = pairs[i];
+            context?.CheckExecution();
+            facts |= pair.Key.Facts | pair.Value.Facts;
+        }
+        return new(AbstractValueKind.Dict, new DictionaryPayload(pairs), span, facts);
+    }
+
+    private static AbstractValue Sequence(AbstractValueKind kind, IReadOnlyList<AbstractValue> items, LythonSourceSpan span,
+        StaticAnalysisContext? context)
+    {
+        // The producer hands off the completed sequence. Its children already
+        // summarize their own effects, including shared nested payloads.
+        var facts = AbstractValueFacts.None;
+        context?.CheckExecution();
+        for (var i = 0; i < items.Count; i++)
+        {
+            var item = items[i];
+            context?.CheckExecution();
+            facts |= item.Facts;
+        }
+        return new(kind, new SequencePayload(items), span, facts);
+    }
     public static AbstractValue Path(LythonSourceSpan span) => Marker(AbstractValueKind.Path, span);
     public static AbstractValue TextFileHandle(AbstractTextFileMode mode, LythonSourceSpan span) => new(AbstractValueKind.TextFileHandle, new TextFileModePayload(mode), span);
     public static AbstractValue BinaryFileHandle(AbstractTextFileMode mode, LythonSourceSpan span) => new(AbstractValueKind.BinaryFileHandle, new TextFileModePayload(mode), span);
@@ -346,9 +407,34 @@ internal readonly record struct AbstractValue
     public static AbstractValue OpenPyxlColumnDimension(LythonSourceSpan span) => Marker(AbstractValueKind.OpenPyxlColumnDimension, span);
     public static AbstractValue OpenPyxlRowDimension(LythonSourceSpan span) => Marker(AbstractValueKind.OpenPyxlRowDimension, span);
     public static AbstractValue OpenPyxlMergedCellSet(LythonSourceSpan span) => Marker(AbstractValueKind.OpenPyxlMergedCellSet, span);
-    public static AbstractValue Function(AbstractFunctionSummary summary, LythonSourceSpan span) => new(AbstractValueKind.Function, new FunctionPayload(summary), span);
-    public static AbstractValue UserClass(AbstractClassSummary summary, LythonSourceSpan span) => new(AbstractValueKind.UserClass, new ClassPayload(summary), span);
-    public static AbstractValue UserInstance(AbstractInstanceSummary summary, LythonSourceSpan span) => new(AbstractValueKind.UserInstance, new InstancePayload(summary), span);
+    // Function summaries take a private CloneForDeferredBody snapshot,
+    // which has already removed all reachable mutable collection facts.
+    public static AbstractValue Function(AbstractFunctionSummary summary, LythonSourceSpan span)
+        => new(AbstractValueKind.Function, new FunctionPayload(summary), span);
+
+    public static AbstractValue UserClass(AbstractClassSummary summary, LythonSourceSpan span, StaticAnalysisContext? context = null)
+    {
+        var facts = AbstractValueFacts.None;
+        context?.CheckExecution();
+        foreach (var field in summary.Fields)
+        {
+            context?.CheckExecution();
+            facts |= field.DefaultValue.Facts;
+        }
+        return new(AbstractValueKind.UserClass, new ClassPayload(summary), span, facts);
+    }
+
+    public static AbstractValue UserInstance(AbstractInstanceSummary summary, LythonSourceSpan span, StaticAnalysisContext? context = null)
+    {
+        var facts = AbstractValueFacts.None;
+        context?.CheckExecution();
+        foreach (var field in summary.Fields)
+        {
+            context?.CheckExecution();
+            facts |= field.Value.Facts;
+        }
+        return new(AbstractValueKind.UserInstance, new InstancePayload(summary), span, facts);
+    }
 
     public bool IsLiteralLike =>
         Kind is AbstractValueKind.String or
@@ -371,13 +457,14 @@ internal readonly record struct AbstractValue
             not AbstractValueKind.String and
             not AbstractValueKind.StringType;
 
-    public AbstractValue WithSpan(LythonSourceSpan span) => new(Kind, _payload, span);
+    public AbstractValue WithSpan(LythonSourceSpan span) => this with { Span = span };
 
     public static AbstractValue Join(AbstractValue left, AbstractValue right)
-        => AbstractValueJoin.Join(left, right, left.Span);
+        => AbstractValueJoin.Join(left, right, left.Span, null);
 
-    public static AbstractValue Join(AbstractValue left, AbstractValue right, LythonSourceSpan span)
-        => AbstractValueJoin.Join(left, right, span);
+    public static AbstractValue Join(AbstractValue left, AbstractValue right, LythonSourceSpan span,
+        StaticAnalysisContext? context = null)
+        => AbstractValueJoin.Join(left, right, span, context);
 
     private static AbstractRegexPatternSummary CreateUnknownRegexPatternSummary()
         => new(null, null, new Dictionary<PyString, int>());

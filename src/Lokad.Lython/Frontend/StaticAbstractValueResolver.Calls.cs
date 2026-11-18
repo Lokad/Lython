@@ -130,7 +130,7 @@ internal static partial class StaticAbstractValueResolver
             ? AbstractValue.BinaryFileHandle(operation, span) : AbstractValue.TextFileHandle(operation, span);
     }
 
-    private static bool TryGetListElementAbstractValue(AbstractValue value, out AbstractValue item)
+    private static bool TryGetListElementAbstractValue(AbstractValue value, StaticAnalysisContext? context, out AbstractValue item)
     {
         switch (value.Kind)
         {
@@ -138,7 +138,7 @@ internal static partial class StaticAbstractValueResolver
                 item = value.RequireNestedValue();
                 return true;
             case AbstractValueKind.List:
-                item = StaticBindingEngine.JoinSequenceItems(value.RequireSequenceItems(), value.Span);
+                item = StaticBindingEngine.JoinSequenceItems(value.RequireSequenceItems(), value.Span, context);
                 return true;
             default:
                 item = default;

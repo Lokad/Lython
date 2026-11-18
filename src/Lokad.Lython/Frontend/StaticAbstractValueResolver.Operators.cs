@@ -18,7 +18,7 @@ internal static partial class StaticAbstractValueResolver
             value = AbstractValue.Join(
                 ResolveOrUnknown(binary.Left, bindings),
                 ResolveOrUnknown(binary.Right, bindings),
-                binary.Span);
+                binary.Span, bindings.AnalysisContext);
             return true;
         }
 
@@ -110,13 +110,13 @@ internal static partial class StaticAbstractValueResolver
                 return true;
             }
 
-            if (TryGetListElementAbstractValue(left, out var repeatedLeftItem) && StaticAbstractFacts.IsIntegerLike(right))
+            if (TryGetListElementAbstractValue(left, bindings.AnalysisContext, out var repeatedLeftItem) && StaticAbstractFacts.IsIntegerLike(right))
             {
                 value = AbstractValue.ListOf(repeatedLeftItem.WithSpan(binary.Span), binary.Span);
                 return true;
             }
 
-            if (StaticAbstractFacts.IsIntegerLike(left) && TryGetListElementAbstractValue(right, out var repeatedRightItem))
+            if (StaticAbstractFacts.IsIntegerLike(left) && TryGetListElementAbstractValue(right, bindings.AnalysisContext, out var repeatedRightItem))
             {
                 value = AbstractValue.ListOf(repeatedRightItem.WithSpan(binary.Span), binary.Span);
                 return true;
@@ -150,14 +150,14 @@ internal static partial class StaticAbstractValueResolver
         {
             value = AbstractValue.List(
                 (left.RequireSequenceItems()).Concat(right.RequireSequenceItems()).ToArray(),
-                binary.Span);
+                binary.Span, bindings.AnalysisContext);
             return true;
         }
 
-        if (TryGetListElementAbstractValue(left, out var leftItem) &&
-            TryGetListElementAbstractValue(right, out var rightItem))
+        if (TryGetListElementAbstractValue(left, bindings.AnalysisContext, out var leftItem) &&
+            TryGetListElementAbstractValue(right, bindings.AnalysisContext, out var rightItem))
         {
-            value = AbstractValue.ListOf(AbstractValue.Join(leftItem, rightItem, binary.Span), binary.Span);
+            value = AbstractValue.ListOf(AbstractValue.Join(leftItem, rightItem, binary.Span, bindings.AnalysisContext), binary.Span);
             return true;
         }
 
@@ -171,7 +171,7 @@ internal static partial class StaticAbstractValueResolver
         {
             value = AbstractValue.Tuple(
                 (left.RequireSequenceItems()).Concat(right.RequireSequenceItems()).ToArray(),
-                binary.Span);
+                binary.Span, bindings.AnalysisContext);
             return true;
         }
 

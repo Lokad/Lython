@@ -36,6 +36,12 @@ internal sealed class StaticAnalysisContext : IDisposable
     internal void RetainRegexProgram(byte[] encoded, LythonRegexOptions options, ILythonRegexPattern program, LythonSourceSpan span)
         => _regexPrograms.Add(encoded, options, program, CancellationToken, span);
 
+    internal void CheckExecution()
+    {
+        MemoryGovernor?.ThrowIfAdmissionFailed();
+        PythonTokenization.CheckCancellation(CancellationToken, 0);
+    }
+
     public void Dispose()
     {
         RegexPatterns.Clear();

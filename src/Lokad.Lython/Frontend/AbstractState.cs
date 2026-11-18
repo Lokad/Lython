@@ -132,48 +132,49 @@ internal sealed class AbstractState
         => _values.TryGetValue(name, out var value) &&
            value.Kind is AbstractValueKind.List or AbstractValueKind.ListType or AbstractValueKind.CollectionsDeque;
 
-    public void InvalidateDictionaryFacts()
-    {
-        _containerFactsInvalidated = true;
-        // Mutable mapping aliases are not tracked. Calls and mutations can
-        // change any reachable mapping, including one captured by a function.
-        foreach (var name in _values.Keys.ToArray())
-        {
-            if (MatchesFactQuery(_values[name], FactQuery.Dictionary, AnalysisContext))
-            {
-                Remove(name);
-            }
-        }
-    }
+    public void InvalidateDictionaryFacts() => InvalidateContainerFacts(dictionaries: true, sequences: false);
 
-    public void InvalidateMutableSequenceFacts()
+    public void InvalidateMutableSequenceFacts() => InvalidateContainerFacts(dictionaries: false, sequences: true);
+
+    public void InvalidateCollectionFacts() => InvalidateContainerFacts(dictionaries: true, sequences: true);
+
+    private void InvalidateContainerFacts(bool dictionaries, bool sequences)
     {
         _containerFactsInvalidated = true;
         var changed = false;
-        foreach (var name in _values.Keys.ToArray())
+        try
         {
-            var value = _values[name];
-            var remainingTupleWork = Parser.MaxNestingDepth;
-            var widened = ForgetMutableSequenceContents(value, ref remainingTupleWork);
-            if (widened.Kind != value.Kind || !widened.HasSamePayload(value))
+            foreach (var name in _values.Keys.ToArray())
             {
-                _values[name] = widened;
-                changed = true;
-            }
+                AnalysisContext?.CheckExecution();
+                var value = _values[name];
+                if (dictionaries && (value.Facts & AbstractValueFacts.Dictionary) != 0)
+                {
+                    _values.Remove(name);
+                    _sequenceLengths.Remove(name);
+                    changed = true;
+                    continue;
+                }
 
-            if (value.Kind is AbstractValueKind.List or AbstractValueKind.ListType or AbstractValueKind.CollectionsDeque)
-            {
-                changed |= _sequenceLengths.Remove(name);
+                if (!sequences) continue;
+                var remainingTupleWork = Parser.MaxNestingDepth;
+                var widened = ForgetMutableSequenceContents(value, ref remainingTupleWork);
+                if (widened.Kind != value.Kind || !widened.HasSamePayload(value))
+                {
+                    _values[name] = widened;
+                    changed = true;
+                }
+                if (value.Kind is AbstractValueKind.List or AbstractValueKind.ListType or AbstractValueKind.CollectionsDeque)
+                    changed |= _sequenceLengths.Remove(name);
             }
         }
-
-        if (changed)
+        finally
         {
-            InvalidateCachedFacts();
+            if (changed) InvalidateCachedFacts();
         }
     }
 
-    private static AbstractValue ForgetMutableSequenceContents(AbstractValue value, ref int remainingTupleWork)
+    private AbstractValue ForgetMutableSequenceContents(AbstractValue value, ref int remainingTupleWork)
     {
         switch (value.Kind)
         {
@@ -193,6 +194,7 @@ internal sealed class AbstractState
                 AbstractValue[]? replacement = null;
                 for (var index = 0; index < items.Count; index++)
                 {
+                    AnalysisContext?.CheckExecution();
                     var item = items[index];
                     var widened = ForgetMutableSequenceContents(item, ref remainingTupleWork);
                     if (widened.Kind != item.Kind || !widened.HasSamePayload(item))
@@ -201,7 +203,7 @@ internal sealed class AbstractState
                         replacement[index] = widened;
                     }
                 }
-                return replacement is null ? value : AbstractValue.Tuple(replacement, value.Span);
+                return replacement is null ? value : AbstractValue.Tuple(replacement, value.Span, AnalysisContext);
 
             case AbstractValueKind.MaybeNone:
                 if (remainingTupleWork == 0) return AbstractValue.Unknown(value.Span);
@@ -221,11 +223,7 @@ internal sealed class AbstractState
     {
         // A lexical child can mutate an outer container even when its own
         // binding shadows that container. Carry the effect, not its bindings.
-        if (other._containerFactsInvalidated)
-        {
-            InvalidateDictionaryFacts();
-            InvalidateMutableSequenceFacts();
-        }
+        if (other._containerFactsInvalidated) InvalidateCollectionFacts();
     }
 
     public AbstractState CloneForDeferredBody()
@@ -245,106 +243,15 @@ internal sealed class AbstractState
     }
 
     public static bool ContainsMutableCollectionFacts(AbstractValue value, StaticAnalysisContext? context)
-        => MatchesFactQuery(value, FactQuery.MutableCollection, context);
-
-    public static bool IsCallbackFreeValue(AbstractValue value, StaticAnalysisContext? context)
-        => !MatchesFactQuery(value, FactQuery.Callback, context);
-
-    private enum FactQuery { Dictionary, MutableCollection, Callback }
-
-    private static bool MatchesFactQuery(AbstractValue value, FactQuery query, StaticAnalysisContext? context)
     {
-        // These are temporary compiler facts, never runtime guest roots. Shared
-        // tuples can describe an exponentially larger tree than their source;
-        // inspect each payload once, without consuming the CLR call stack.
-        Stack<AbstractValue>? pending = null;
-        HashSet<object>? visited = null;
-        var callbacks = query == FactQuery.Callback;
-        while (true)
-        {
-            CheckFactQuery(context);
-            if (callbacks && value.Kind is not (
-                AbstractValueKind.String or AbstractValueKind.StringType or
-                AbstractValueKind.Bytes or AbstractValueKind.BytesType or
-                AbstractValueKind.Integer or AbstractValueKind.IntegerType or
-                AbstractValueKind.Float or AbstractValueKind.FloatType or
-                AbstractValueKind.Boolean or AbstractValueKind.BooleanType or
-                AbstractValueKind.None or AbstractValueKind.List or AbstractValueKind.Tuple or
-                AbstractValueKind.Set or AbstractValueKind.Dict))
-                return true;
-            if (!callbacks && (value.Kind == AbstractValueKind.Dict || query == FactQuery.MutableCollection && value.Kind is
-                AbstractValueKind.List or AbstractValueKind.ListType or AbstractValueKind.Set or
-                AbstractValueKind.SetType or AbstractValueKind.CollectionsDeque or
-                AbstractValueKind.CollectionsDefaultDict or AbstractValueKind.CollectionsCounter or
-                AbstractValueKind.CollectionsChainMap))
-                return true;
-
-            if (value.Kind is AbstractValueKind.List or AbstractValueKind.Tuple or AbstractValueKind.Set or
-                AbstractValueKind.ListType or AbstractValueKind.MaybeNone or AbstractValueKind.UserInstance or
-                AbstractValueKind.UserClass or AbstractValueKind.Function or AbstractValueKind.Dict)
-            {
-                visited ??= new(ReferenceEqualityComparer.Instance);
-                var identity = value.Kind == AbstractValueKind.Function
-                    ? (object)value.RequireFunctionSummary().CapturedBindings : value.PayloadIdentity;
-                if (visited.Add(identity))
-                {
-                    pending ??= new();
-                    switch (value.Kind)
-                    {
-                        case AbstractValueKind.List:
-                        case AbstractValueKind.Tuple:
-                        case AbstractValueKind.Set:
-                            foreach (var item in value.RequireSequenceItems())
-                            {
-                                CheckFactQuery(context);
-                                pending.Push(item);
-                            }
-                            break;
-                        case AbstractValueKind.ListType:
-                        case AbstractValueKind.MaybeNone:
-                            pending.Push(value.RequireNestedValue());
-                            break;
-                        case AbstractValueKind.Dict:
-                            foreach (var pair in value.RequireDictionaryItems())
-                            {
-                                CheckFactQuery(context);
-                                pending.Push(pair.Key);
-                                pending.Push(pair.Value);
-                            }
-                            break;
-                        case AbstractValueKind.UserInstance:
-                            foreach (var field in value.RequireInstanceSummary().Fields.Values)
-                            {
-                                CheckFactQuery(context);
-                                pending.Push(field);
-                            }
-                            break;
-                        case AbstractValueKind.UserClass:
-                            foreach (var field in value.RequireClassSummary().Fields)
-                            {
-                                CheckFactQuery(context);
-                                pending.Push(field.DefaultValue);
-                            }
-                            break;
-                        case AbstractValueKind.Function:
-                            foreach (var captured in ((AbstractState)identity)._values.Values)
-                            {
-                                CheckFactQuery(context);
-                                pending.Push(captured);
-                            }
-                            break;
-                    }
-                }
-            }
-
-            if (pending is null || !pending.TryPop(out value)) return false;
-        }
+        context?.CheckExecution();
+        return (value.Facts & AbstractValueFacts.MutableCollection) != 0;
     }
 
-    private static void CheckFactQuery(StaticAnalysisContext? context)
+    public static bool IsCallbackFreeValue(AbstractValue value, StaticAnalysisContext? context)
     {
-        context?.MemoryGovernor?.ThrowIfAdmissionFailed();
-        PythonTokenization.CheckCancellation(context?.CancellationToken ?? default, 0);
+        context?.CheckExecution();
+        return (value.Facts & AbstractValueFacts.Callback) == 0;
     }
 
     // Each clone records new invalidation requests independently. Deferred
@@ -375,7 +282,7 @@ internal sealed class AbstractState
         {
             if (right._values.TryGetValue(name, out var rightValue))
             {
-                _values[name] = AbstractValue.Join(leftValue, rightValue);
+                _values[name] = AbstractValue.Join(leftValue, rightValue, leftValue.Span, AnalysisContext);
             }
         }
 

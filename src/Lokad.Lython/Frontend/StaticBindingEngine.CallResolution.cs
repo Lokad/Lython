@@ -89,7 +89,7 @@ internal static partial class StaticBindingEngine
             }
         }
 
-        value = AbstractValue.UserInstance(new AbstractInstanceSummary(summary, fields, span), span);
+        value = AbstractValue.UserInstance(new AbstractInstanceSummary(summary, fields, span), span, bindings.AnalysisContext);
         return true;
     }
 

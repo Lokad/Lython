@@ -43,9 +43,9 @@ internal static partial class StaticAbstractValueResolver
 
         return kind switch
         {
-            AbstractValueKind.List => AbstractValue.List(items, span),
-            AbstractValueKind.Tuple => AbstractValue.Tuple(items, span),
-            AbstractValueKind.Set => AbstractValue.Set(items, span),
+            AbstractValueKind.List => AbstractValue.List(items, span, bindings.AnalysisContext),
+            AbstractValueKind.Tuple => AbstractValue.Tuple(items, span, bindings.AnalysisContext),
+            AbstractValueKind.Set => AbstractValue.Set(items, span, bindings.AnalysisContext),
             _ => throw new InvalidOperationException($"{kind} is not a literal sequence kind.")
         };
     }
@@ -72,7 +72,7 @@ internal static partial class StaticAbstractValueResolver
                 ResolveOrUnknown(item.Value, bindings)));
         }
 
-        return AbstractValue.Dict(pairs, dict.Span);
+        return AbstractValue.Dict(pairs, dict.Span, bindings.AnalysisContext);
     }
 
     private static AbstractValue ResolveListComprehensionValue(ListComprehensionExpressionSyntax listComprehension, AbstractState bindings)

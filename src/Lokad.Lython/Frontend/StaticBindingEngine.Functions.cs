@@ -331,7 +331,7 @@ internal static partial class StaticBindingEngine
 
                         if (thenReturned && elseReturned)
                         {
-                            returnValue = AbstractValue.Join(thenReturnValue, elseReturnValue, statement.Span);
+                            returnValue = AbstractValue.Join(thenReturnValue, elseReturnValue, statement.Span, bindings.AnalysisContext);
                             return true;
                         }
 

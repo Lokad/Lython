@@ -7,7 +7,8 @@ internal static class AbstractValueJoin
 {
     private static readonly IEqualityComparer<AbstractValue> LiteralKeyComparer = new AbstractLiteralKeyComparer();
 
-    public static AbstractValue Join(AbstractValue left, AbstractValue right, LythonSourceSpan span)
+    public static AbstractValue Join(AbstractValue left, AbstractValue right, LythonSourceSpan span,
+        StaticAnalysisContext? context)
     {
         // Join is the least upper bound used at control-flow merges. Preserve exact
         // literals only when both paths agree, then widen within a Python value family;
@@ -48,7 +49,7 @@ internal static class AbstractValueJoin
         {
             var leftValue = left.Kind == AbstractValueKind.MaybeNone ? left.RequireNestedValue() : left;
             var rightValue = right.Kind == AbstractValueKind.MaybeNone ? right.RequireNestedValue() : right;
-            return MaybeNone(Join(leftValue, rightValue, span), span);
+            return MaybeNone(Join(leftValue, rightValue, span, context), span);
         }
 
         if (left.Kind == right.Kind)
@@ -60,11 +61,11 @@ internal static class AbstractValueJoin
                 AbstractValueKind.Integer => left.HasSamePayload(right) ? left.WithSpan(span) : IntegerType(span),
                 AbstractValueKind.Float => left.HasSamePayload(right) ? left.WithSpan(span) : FloatType(span),
                 AbstractValueKind.Boolean => left.HasSamePayload(right) ? left.WithSpan(span) : BooleanType(span),
-                AbstractValueKind.MaybeNone => MaybeNone(Join(left.RequireNestedValue(), right.RequireNestedValue(), span), span),
-                AbstractValueKind.List => JoinLiteralLists(left, right, span),
-                AbstractValueKind.ListType => ListOf(Join(left.RequireNestedValue(), right.RequireNestedValue(), span), span),
-                AbstractValueKind.SetType => SetOf(Join(left.RequireNestedValue(), right.RequireNestedValue(), span), span),
-                AbstractValueKind.Dict => JoinLiteralDictionaries(left, right, span),
+                AbstractValueKind.MaybeNone => MaybeNone(Join(left.RequireNestedValue(), right.RequireNestedValue(), span, context), span),
+                AbstractValueKind.List => JoinLiteralLists(left, right, span, context),
+                AbstractValueKind.ListType => ListOf(Join(left.RequireNestedValue(), right.RequireNestedValue(), span, context), span),
+                AbstractValueKind.SetType => SetOf(Join(left.RequireNestedValue(), right.RequireNestedValue(), span, context), span),
+                AbstractValueKind.Dict => JoinLiteralDictionaries(left, right, span, context),
                 AbstractValueKind.TextFileHandle => TextFileHandle(JoinTextFileModes(left.RequireTextFileMode(), right.RequireTextFileMode()), span),
                 AbstractValueKind.BinaryFileHandle => BinaryFileHandle(JoinTextFileModes(left.RequireTextFileMode(), right.RequireTextFileMode()), span),
                 AbstractValueKind.Module => left.HasSamePayload(right) ? left.WithSpan(span) : Unknown(span),
@@ -75,7 +76,7 @@ internal static class AbstractValueJoin
                 AbstractValueKind.DataclassField => JoinDataclassFields(left, right, span),
                 AbstractValueKind.Function => left.HasSamePayload(right) ? left.WithSpan(span) : Unknown(span),
                 AbstractValueKind.UserClass => left.HasSamePayload(right) ? left.WithSpan(span) : Unknown(span),
-                AbstractValueKind.UserInstance => JoinUserInstances(left, right, span),
+                AbstractValueKind.UserInstance => JoinUserInstances(left, right, span, context),
                 _ => left.WithSpan(span),
             };
         }
@@ -105,19 +106,20 @@ internal static class AbstractValueJoin
             return BytesType(span);
         }
 
-        if (TryGetListElement(left, out var leftItem) && TryGetListElement(right, out var rightItem))
+        if (TryGetListElement(left, context, out var leftItem) && TryGetListElement(right, context, out var rightItem))
         {
-            return ListOf(Join(leftItem, rightItem, span), span);
+            return ListOf(Join(leftItem, rightItem, span, context), span);
         }
 
-        if (TryGetSetElement(left, out var leftSetItem) && TryGetSetElement(right, out var rightSetItem))
+        if (TryGetSetElement(left, context, out var leftSetItem) && TryGetSetElement(right, context, out var rightSetItem))
         {
-            return SetOf(Join(leftSetItem, rightSetItem, span), span);
+            return SetOf(Join(leftSetItem, rightSetItem, span, context), span);
         }
 
         return Unknown(span);
 
-        static AbstractValue JoinLiteralDictionaries(AbstractValue left, AbstractValue right, LythonSourceSpan span)
+        static AbstractValue JoinLiteralDictionaries(AbstractValue left, AbstractValue right, LythonSourceSpan span,
+            StaticAnalysisContext? context)
         {
             var leftPairs = left.RequireDictionaryItems();
             var rightPairs = right.RequireDictionaryItems();
@@ -149,10 +151,10 @@ internal static class AbstractValueJoin
 
                 joinedPairs.Add(new KeyValuePair<AbstractValue, AbstractValue>(
                     leftPair.Key.WithSpan(span),
-                    Join(leftPair.Value, rightValue, span)));
+                    Join(leftPair.Value, rightValue, span, context)));
             }
 
-            return Dict(joinedPairs, span);
+            return Dict(joinedPairs, span, context);
         }
     }
 
@@ -165,7 +167,8 @@ internal static class AbstractValueJoin
             : Unknown(span);
     }
 
-    private static AbstractValue JoinUserInstances(AbstractValue left, AbstractValue right, LythonSourceSpan span)
+    private static AbstractValue JoinUserInstances(AbstractValue left, AbstractValue right, LythonSourceSpan span,
+        StaticAnalysisContext? context)
     {
         var leftInstance = left.RequireInstanceSummary();
         var rightInstance = right.RequireInstanceSummary();
@@ -180,16 +183,17 @@ internal static class AbstractValueJoin
             if (leftInstance.Fields.TryGetValue(name, out var leftField) &&
                 rightInstance.Fields.TryGetValue(name, out var rightField))
             {
-                fields[name] = Join(leftField, rightField, span);
+                fields[name] = Join(leftField, rightField, span, context);
             }
         }
 
         return fields.Count == 0
             ? Unknown(span)
-            : UserInstance(new AbstractInstanceSummary(leftInstance.Class, fields, span), span);
+            : UserInstance(new AbstractInstanceSummary(leftInstance.Class, fields, span), span, context);
     }
 
-    private static AbstractValue JoinLiteralLists(AbstractValue left, AbstractValue right, LythonSourceSpan span)
+    private static AbstractValue JoinLiteralLists(AbstractValue left, AbstractValue right, LythonSourceSpan span,
+        StaticAnalysisContext? context)
     {
         var leftItems = left.RequireSequenceItems();
         var rightItems = right.RequireSequenceItems();
@@ -211,7 +215,7 @@ internal static class AbstractValueJoin
             }
         }
 
-        return ListOf(JoinListItems(leftItems, rightItems, span), span);
+        return ListOf(JoinListItems(leftItems, rightItems, span, context), span);
     }
 
     private static AbstractValue JoinRegexPatterns(AbstractValue left, AbstractValue right, LythonSourceSpan span)
@@ -235,23 +239,26 @@ internal static class AbstractValueJoin
         return maybe ? MaybeRegexMatch(leftSummary, span) : RegexMatch(leftSummary, span);
     }
 
-    private static AbstractValue JoinListItems(IReadOnlyList<AbstractValue> leftItems, IReadOnlyList<AbstractValue> rightItems, LythonSourceSpan span)
+    private static AbstractValue JoinListItems(IReadOnlyList<AbstractValue> leftItems, IReadOnlyList<AbstractValue> rightItems,
+        LythonSourceSpan span, StaticAnalysisContext? context)
     {
         var result = Never(span);
         foreach (var item in leftItems)
         {
-            result = Join(result, item, span);
+            context?.CheckExecution();
+            result = Join(result, item, span, context);
         }
 
         foreach (var item in rightItems)
         {
-            result = Join(result, item, span);
+            context?.CheckExecution();
+            result = Join(result, item, span, context);
         }
 
         return result.Kind == AbstractValueKind.Never ? Unknown(span) : result;
     }
 
-    private static bool TryGetListElement(AbstractValue value, out AbstractValue item)
+    private static bool TryGetListElement(AbstractValue value, StaticAnalysisContext? context, out AbstractValue item)
     {
         if (value.Kind == AbstractValueKind.ListType)
         {
@@ -261,7 +268,7 @@ internal static class AbstractValueJoin
 
         if (value.Kind == AbstractValueKind.List)
         {
-            item = JoinListItems(value.RequireSequenceItems(), Array.Empty<AbstractValue>(), value.Span);
+            item = JoinListItems(value.RequireSequenceItems(), Array.Empty<AbstractValue>(), value.Span, context);
             return true;
         }
 
@@ -269,7 +276,7 @@ internal static class AbstractValueJoin
         return false;
     }
 
-    private static bool TryGetSetElement(AbstractValue value, out AbstractValue item)
+    private static bool TryGetSetElement(AbstractValue value, StaticAnalysisContext? context, out AbstractValue item)
     {
         if (value.Kind == AbstractValueKind.SetType)
         {
@@ -279,7 +286,7 @@ internal static class AbstractValueJoin
 
         if (value.Kind == AbstractValueKind.Set)
         {
-            item = JoinListItems(value.RequireSequenceItems(), Array.Empty<AbstractValue>(), value.Span);
+            item = JoinListItems(value.RequireSequenceItems(), Array.Empty<AbstractValue>(), value.Span, context);
             return true;
         }
 

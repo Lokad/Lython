@@ -126,7 +126,7 @@ internal static partial class StaticBindingEngine
             case ClassDefinitionStatementSyntax classDefinition:
                 if (TryBuildSimpleClassSummary(classDefinition, bindings, out var classSummary))
                 {
-                    bindings.Set(classDefinition.Name, AbstractValue.UserClass(classSummary, classDefinition.Span));
+                    bindings.Set(classDefinition.Name, AbstractValue.UserClass(classSummary, classDefinition.Span, bindings.AnalysisContext));
                 }
                 else
                 {
@@ -306,11 +306,11 @@ internal static partial class StaticBindingEngine
             case AbstractValueKind.List:
             case AbstractValueKind.Tuple:
             case AbstractValueKind.Set:
-                itemValue = JoinSequenceItems(iterableValue.RequireSequenceItems(), expression.Span);
+                itemValue = JoinSequenceItems(iterableValue.RequireSequenceItems(), expression.Span, bindings.AnalysisContext);
                 return true;
 
             case AbstractValueKind.Dict:
-                itemValue = JoinDictKeys(iterableValue.RequireDictionaryItems(), expression.Span);
+                itemValue = JoinDictKeys(iterableValue.RequireDictionaryItems(), expression.Span, bindings.AnalysisContext);
                 return true;
 
             case AbstractValueKind.TextFileHandle:
@@ -397,12 +397,13 @@ internal static partial class StaticBindingEngine
         }
     }
 
-    public static AbstractValue JoinSequenceItems(IReadOnlyList<AbstractValue> items, LythonSourceSpan span)
+    public static AbstractValue JoinSequenceItems(IReadOnlyList<AbstractValue> items, LythonSourceSpan span, StaticAnalysisContext? context = null)
     {
         var result = AbstractValue.Never(span);
         foreach (var item in items)
         {
-            result = AbstractValue.Join(result, item, span);
+            context?.CheckExecution();
+            result = AbstractValue.Join(result, item, span, context);
         }
 
         return result.Kind == AbstractValueKind.Never ? AbstractValue.Unknown(span) : result;
@@ -485,7 +486,7 @@ internal static partial class StaticBindingEngine
             rest.Add(items[layout.StarredTargetIndex + i].WithSpan(span));
         }
 
-        BindUnpackingTarget(targets[layout.StarredTargetIndex], AbstractValue.List(rest, span), bindings);
+        BindUnpackingTarget(targets[layout.StarredTargetIndex], AbstractValue.List(rest, span, bindings.AnalysisContext), bindings);
 
         for (var i = layout.StarredTargetIndex + 1; i < targets.Count; i++)
         {
@@ -598,12 +599,14 @@ internal static partial class StaticBindingEngine
         }
     }
 
-    private static AbstractValue JoinDictKeys(IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>> pairs, LythonSourceSpan span)
+    private static AbstractValue JoinDictKeys(IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>> pairs,
+        LythonSourceSpan span, StaticAnalysisContext? context)
     {
         var result = AbstractValue.Never(span);
         foreach (var pair in pairs)
         {
-            result = AbstractValue.Join(result, pair.Key, span);
+            context?.CheckExecution();
+            result = AbstractValue.Join(result, pair.Key, span, context);
         }
 
         return result.Kind == AbstractValueKind.Never ? AbstractValue.Unknown(span) : result;
