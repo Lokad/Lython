@@ -6,6 +6,40 @@ public sealed class NativeReceiverPipelineTests
 {
     public static IEnumerable<object[]> Controls()
     {
+        yield return ["shared-global-and-member-name", """
+            get=1000
+            def read(value): return value.get('x',get)
+            print(read({}),read({'x':7}))
+            get=2000
+            print(read({}),read({'x':8}))
+            """, "1000 7\n2000 8\n"];
+        yield return ["bound-value-before-immediate-call-and-override", """
+            strip=11
+            def clean(value):
+                saved=value.strip
+                return saved(),value.strip(),strip
+            class Custom:
+                def strip(self): return 'custom'
+            print(clean(' x '),clean(Custom()))
+            strip=12
+            print(clean(' y '))
+            """, "('x', 'x', 11) ('custom', 'custom', 11)\n('y', 'y', 12)\n"];
+        yield return ["same-member-name-on-string-and-bytes", """
+            def changed(value,old,new): return value.replace(old,new)
+            print(changed('abc','b','X'),changed(b'abc',b'b',b'Y'))
+            print(changed('def','e','Z'),changed(b'def',b'e',b'W'))
+            """, "aXc b'aYc'\ndZf b'dWf'\n"];
+        yield return ["missing-member-before-argument-effects", """
+            effects=[]
+            def key():
+                effects.append('arg')
+                return 'x'
+            def read(value): return value.get(key())
+            try: read('missing')
+            except AttributeError: pass
+            print(effects)
+            print(read({'x':7}),effects)
+            """, "[]\n7 ['arg']\n"];
         yield return ["append-alias-and-bound-value", """
             def add(out, value):
                 out.append(value)

@@ -1,0 +1,407 @@
+﻿{
+  "coreSha256": "a5038a280566316898258b4c3c3c8377bee5b8b5bcc6c7cf18ce99cdcf7b29f7",
+  "phases": [
+    "frontend-parse-and-validation",
+    "lowered-tree",
+    "executable-code"
+  ],
+  "boundary": "Local Windows source attribution only; exact qualified core, internal phases, 30 warmups and 5x30 compilations, normal GC/tiering. No public-owner/protocol/run costs, no controlled CPU/speedup or removable-share claim.",
+  "rows": [
+    {
+      "id": "scripts.csv-invoice.large",
+      "sourceCharacters": 1222,
+      "samples": [
+        {
+          "allocatedBytes": [
+            161616,
+            12840,
+            54937.86666666667
+          ],
+          "elapsedMicroseconds": [
+            587.0699999999999,
+            28.84333333333333,
+            142.70666666666665
+          ]
+        },
+        {
+          "allocatedBytes": [
+            161616,
+            12840,
+            54920
+          ],
+          "elapsedMicroseconds": [
+            524.1533333333333,
+            26.80666666666667,
+            133.87666666666667
+          ]
+        },
+        {
+          "allocatedBytes": [
+            161616,
+            12840,
+            54937.86666666667
+          ],
+          "elapsedMicroseconds": [
+            616.7733333333333,
+            28.55666666666667,
+            142.93333333333334
+          ]
+        },
+        {
+          "allocatedBytes": [
+            161616,
+            12840,
+            54920
+          ],
+          "elapsedMicroseconds": [
+            683.06,
+            35.54666666666667,
+            170.3
+          ]
+        },
+        {
+          "allocatedBytes": [
+            161616,
+            12840,
+            54920
+          ],
+          "elapsedMicroseconds": [
+            594.2133333333334,
+            31.226666666666667,
+            163.47333333333333
+          ]
+        }
+      ]
+    },
+    {
+      "id": "scripts.report-render.large",
+      "sourceCharacters": 454,
+      "samples": [
+        {
+          "allocatedBytes": [
+            74144,
+            4912,
+            27248
+          ],
+          "elapsedMicroseconds": [
+            309.32666666666665,
+            17.01,
+            97.81333333333333
+          ]
+        },
+        {
+          "allocatedBytes": [
+            74144,
+            4912,
+            27248
+          ],
+          "elapsedMicroseconds": [
+            229.57999999999998,
+            11.826666666666666,
+            71.42333333333333
+          ]
+        },
+        {
+          "allocatedBytes": [
+            74144,
+            4912,
+            27248
+          ],
+          "elapsedMicroseconds": [
+            484.57,
+            20.476666666666667,
+            113.91666666666667
+          ]
+        },
+        {
+          "allocatedBytes": [
+            74144,
+            4912,
+            27248
+          ],
+          "elapsedMicroseconds": [
+            303.6666666666667,
+            17.44,
+            104.3
+          ]
+        },
+        {
+          "allocatedBytes": [
+            74144,
+            4912,
+            27248
+          ],
+          "elapsedMicroseconds": [
+            233.85666666666665,
+            12.633333333333333,
+            73.62333333333332
+          ]
+        }
+      ]
+    },
+    {
+      "id": "calls.positional.large",
+      "sourceCharacters": 109,
+      "samples": [
+        {
+          "allocatedBytes": [
+            29024,
+            1984,
+            13256
+          ],
+          "elapsedMicroseconds": [
+            72.03,
+            4.836666666666667,
+            23.303333333333335
+          ]
+        },
+        {
+          "allocatedBytes": [
+            29024,
+            1984,
+            13256
+          ],
+          "elapsedMicroseconds": [
+            94.96000000000001,
+            7.383333333333334,
+            33.29333333333333
+          ]
+        },
+        {
+          "allocatedBytes": [
+            29024,
+            1984,
+            13256
+          ],
+          "elapsedMicroseconds": [
+            69.94333333333334,
+            4.756666666666666,
+            23.333333333333332
+          ]
+        },
+        {
+          "allocatedBytes": [
+            29024,
+            1984,
+            13256
+          ],
+          "elapsedMicroseconds": [
+            89.50666666666666,
+            8.139999999999999,
+            34.580000000000005
+          ]
+        },
+        {
+          "allocatedBytes": [
+            29024,
+            1984,
+            13256
+          ],
+          "elapsedMicroseconds": [
+            145.71666666666667,
+            12.129999999999999,
+            53.84
+          ]
+        }
+      ]
+    },
+    {
+      "id": "scripts.text-normalization.helper-list",
+      "sourceCharacters": 443,
+      "samples": [
+        {
+          "allocatedBytes": [
+            83216,
+            6416,
+            30984
+          ],
+          "elapsedMicroseconds": [
+            245.31,
+            12.346666666666666,
+            72.34666666666666
+          ]
+        },
+        {
+          "allocatedBytes": [
+            83216,
+            6416,
+            30984
+          ],
+          "elapsedMicroseconds": [
+            291.18333333333334,
+            15.32,
+            87.58666666666666
+          ]
+        },
+        {
+          "allocatedBytes": [
+            83216,
+            6416,
+            30984
+          ],
+          "elapsedMicroseconds": [
+            238.64333333333335,
+            12.389999999999999,
+            73.62666666666668
+          ]
+        },
+        {
+          "allocatedBytes": [
+            83216,
+            6416,
+            30984
+          ],
+          "elapsedMicroseconds": [
+            230.92333333333332,
+            10.92,
+            67.67333333333333
+          ]
+        },
+        {
+          "allocatedBytes": [
+            83216,
+            6416,
+            30984
+          ],
+          "elapsedMicroseconds": [
+            227.88666666666668,
+            10.6,
+            65.42666666666666
+          ]
+        }
+      ]
+    },
+    {
+      "id": "scripts.json-summary-helpers.large",
+      "sourceCharacters": 607,
+      "samples": [
+        {
+          "allocatedBytes": [
+            90504,
+            6408,
+            31560
+          ],
+          "elapsedMicroseconds": [
+            302.52000000000004,
+            15.783333333333333,
+            83.85
+          ]
+        },
+        {
+          "allocatedBytes": [
+            90504,
+            6408,
+            31560
+          ],
+          "elapsedMicroseconds": [
+            412.32666666666665,
+            24.07,
+            111.39666666666668
+          ]
+        },
+        {
+          "allocatedBytes": [
+            90504,
+            6408,
+            31560
+          ],
+          "elapsedMicroseconds": [
+            415.9533333333333,
+            24.493333333333332,
+            118.3
+          ]
+        },
+        {
+          "allocatedBytes": [
+            90504,
+            6408,
+            31560
+          ],
+          "elapsedMicroseconds": [
+            293.63666666666666,
+            16.12666666666667,
+            86.70333333333333
+          ]
+        },
+        {
+          "allocatedBytes": [
+            90504,
+            6408,
+            31560
+          ],
+          "elapsedMicroseconds": [
+            279.3066666666667,
+            13.866666666666667,
+            75.33666666666666
+          ]
+        }
+      ]
+    },
+    {
+      "id": "scripts.numeric-squared-error.floating.large",
+      "sourceCharacters": 672,
+      "samples": [
+        {
+          "allocatedBytes": [
+            92184,
+            7936,
+            38184
+          ],
+          "elapsedMicroseconds": [
+            295.35999999999996,
+            14.043333333333333,
+            93.80333333333333
+          ]
+        },
+        {
+          "allocatedBytes": [
+            92184,
+            7936,
+            38184
+          ],
+          "elapsedMicroseconds": [
+            281.1766666666666,
+            11.653333333333334,
+            95.17
+          ]
+        },
+        {
+          "allocatedBytes": [
+            92184,
+            7936,
+            38184
+          ],
+          "elapsedMicroseconds": [
+            288.48333333333335,
+            12.32,
+            96.54666666666667
+          ]
+        },
+        {
+          "allocatedBytes": [
+            92184,
+            7936,
+            38184
+          ],
+          "elapsedMicroseconds": [
+            311.5133333333333,
+            14.463333333333333,
+            103.05666666666666
+          ]
+        },
+        {
+          "allocatedBytes": [
+            92184,
+            7936,
+            38184
+          ],
+          "elapsedMicroseconds": [
+            280.75333333333333,
+            12.123333333333333,
+            90.69666666666667
+          ]
+        }
+      ]
+    }
+  ]
+}

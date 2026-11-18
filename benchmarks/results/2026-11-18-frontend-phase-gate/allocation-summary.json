@@ -1,0 +1,236 @@
+{
+  "phases": [
+    {
+      "case": "scripts.csv-invoice.large",
+      "allocatedBytes": [
+        161616,
+        12840,
+        54920
+      ]
+    },
+    {
+      "case": "scripts.report-render.large",
+      "allocatedBytes": [
+        74144,
+        4912,
+        27248
+      ]
+    },
+    {
+      "case": "calls.positional.large",
+      "allocatedBytes": [
+        29024,
+        1984,
+        13256
+      ]
+    },
+    {
+      "case": "scripts.text-normalization.helper-list",
+      "allocatedBytes": [
+        83216,
+        6416,
+        30984
+      ]
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "allocatedBytes": [
+        90504,
+        6408,
+        31560
+      ]
+    },
+    {
+      "case": "scripts.numeric-squared-error.floating.large",
+      "allocatedBytes": [
+        92184,
+        7936,
+        38184
+      ]
+    }
+  ],
+  "decomposition": [
+    {
+      "case": "scripts.csv-invoice.large",
+      "allocatedBytes": [
+        13464,
+        61408,
+        12272,
+        88,
+        16096,
+        240,
+        0,
+        58016,
+        0
+      ]
+    },
+    {
+      "case": "scripts.report-render.large",
+      "allocatedBytes": [
+        3768,
+        36976,
+        5136,
+        88,
+        8256,
+        240,
+        0,
+        19648,
+        0
+      ]
+    },
+    {
+      "case": "calls.positional.large",
+      "allocatedBytes": [
+        2032,
+        7464,
+        2856,
+        88,
+        5344,
+        240,
+        0,
+        10968,
+        0
+      ]
+    },
+    {
+      "case": "scripts.text-normalization.helper-list",
+      "allocatedBytes": [
+        6776,
+        42968,
+        6152,
+        88,
+        7176,
+        240,
+        0,
+        19784,
+        0
+      ]
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "allocatedBytes": [
+        7168,
+        38024,
+        7464,
+        88,
+        9432,
+        240,
+        1376,
+        26600,
+        0
+      ]
+    },
+    {
+      "case": "scripts.numeric-squared-error.floating.large",
+      "allocatedBytes": [
+        6928,
+        41064,
+        7856,
+        88,
+        10048,
+        240,
+        0,
+        25928,
+        0
+      ]
+    }
+  ],
+  "passes": [
+    {
+      "case": "scripts.csv-invoice.large",
+      "allocatedBytes": [
+        13464,
+        61408,
+        12272,
+        88,
+        16096,
+        240,
+        0,
+        1560,
+        54704,
+        1752,
+        0
+      ]
+    },
+    {
+      "case": "scripts.report-render.large",
+      "allocatedBytes": [
+        3768,
+        36976,
+        5136,
+        88,
+        8256,
+        240,
+        0,
+        896,
+        17704,
+        1048,
+        0
+      ]
+    },
+    {
+      "case": "calls.positional.large",
+      "allocatedBytes": [
+        2032,
+        7464,
+        2856,
+        88,
+        5344,
+        240,
+        0,
+        816,
+        9432,
+        720,
+        0
+      ]
+    },
+    {
+      "case": "scripts.text-normalization.helper-list",
+      "allocatedBytes": [
+        6776,
+        42968,
+        6152,
+        88,
+        7176,
+        240,
+        0,
+        896,
+        18088,
+        800,
+        0
+      ]
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "allocatedBytes": [
+        7168,
+        38024,
+        7464,
+        88,
+        9432,
+        240,
+        1376,
+        976,
+        24744,
+        880,
+        0
+      ]
+    },
+    {
+      "case": "scripts.numeric-squared-error.floating.large",
+      "allocatedBytes": [
+        6928,
+        41064,
+        7856,
+        88,
+        10048,
+        240,
+        0,
+        856,
+        24312,
+        760,
+        0
+      ]
+    }
+  ]
+}

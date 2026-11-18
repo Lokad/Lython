@@ -1,0 +1,50 @@
+﻿{
+  "coreSha256": "f96cd8a99ed882759b3c5ca0887bd07a3d6125bedf85f9995b617e3c54e0a8db",
+  "boundary": "Synchronous Compile(source, borrowed budget) plus compiled-owner disposal on the current thread; 20 warmups, 5x20 compilations; no execution, elapsed measurement, forced GC or runtime overrides.",
+  "rows": [
+    {
+      "id": "calls.positional.large",
+      "allocatedBytesPerCompilation": [
+        44864,
+        44864,
+        44864,
+        44864,
+        44864
+      ],
+      "allowanceBaselineRestored": true
+    },
+    {
+      "id": "scripts.text-normalization.helper-list",
+      "allocatedBytesPerCompilation": [
+        122130.8,
+        122104,
+        122104,
+        122104,
+        122104
+      ],
+      "allowanceBaselineRestored": true
+    },
+    {
+      "id": "scripts.json-summary-helpers.large",
+      "allocatedBytesPerCompilation": [
+        129360,
+        129386.8,
+        129360,
+        129360,
+        129360
+      ],
+      "allowanceBaselineRestored": true
+    },
+    {
+      "id": "scripts.numeric-squared-error.floating.large",
+      "allocatedBytesPerCompilation": [
+        139320,
+        139320,
+        139320,
+        139320,
+        139320
+      ],
+      "allowanceBaselineRestored": true
+    }
+  ]
+}
