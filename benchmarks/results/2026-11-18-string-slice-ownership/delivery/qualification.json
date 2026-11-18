@@ -1,0 +1,88 @@
+{
+  "run": 44315328047,
+  "head": "227d80b4710dc9fd7f159d9c6222373381643b6e",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "log": "0_tests (windows-latest).txt",
+      "summaries": [
+        {
+          "framework": "net11.0",
+          "passed": 4867
+        },
+        {
+          "framework": "net11.0",
+          "passed": 18054
+        },
+        {
+          "framework": "net10.0",
+          "passed": 4867
+        },
+        {
+          "framework": "net10.0",
+          "passed": 18054
+        },
+        {
+          "framework": "net11.0",
+          "passed": 14
+        },
+        {
+          "framework": "net11.0",
+          "passed": 406
+        },
+        {
+          "framework": "net10.0",
+          "passed": 14
+        },
+        {
+          "framework": "net10.0",
+          "passed": 406
+        }
+      ]
+    },
+    {
+      "log": "1_tests (ubuntu-latest).txt",
+      "summaries": [
+        {
+          "framework": "net11.0",
+          "passed": 4867
+        },
+        {
+          "framework": "net11.0",
+          "passed": 18054
+        },
+        {
+          "framework": "net10.0",
+          "passed": 4867
+        },
+        {
+          "framework": "net10.0",
+          "passed": 18054
+        },
+        {
+          "framework": "net11.0",
+          "passed": 14
+        },
+        {
+          "framework": "net11.0",
+          "passed": 406
+        },
+        {
+          "framework": "net10.0",
+          "passed": 14
+        },
+        {
+          "framework": "net10.0",
+          "passed": 406
+        }
+      ]
+    }
+  ],
+  "summaries": 16,
+  "sourceInputsVerified": 2392,
+  "production": 588,
+  "matchMeasuredSource": true,
+  "binaryEqualityInferred": false,
+  "logsSHA256": "ebae66b16b75d8bd36fa3e03baffa77df5c1d0aee479ee4bcbf5eef602043174",
+  "normalAdapterPin": "0.4.0"
+}
