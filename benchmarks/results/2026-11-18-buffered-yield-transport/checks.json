@@ -1,0 +1,70 @@
+[
+  {
+    "kind": "internal",
+    "framework": "net11.0",
+    "command": [
+      "C:\\Users\\JoannesVermorel\\.dotnet11\\dotnet.exe",
+      "test",
+      "tests/Lokad.Lython.Tests/Lokad.Lython.Tests.csproj",
+      "-c",
+      "Release",
+      "-f",
+      "net11.0",
+      "--no-build",
+      "--filter",
+      "(FullyQualifiedName~Executable|FullyQualifiedName~Generator|FullyQualifiedName~DirectOperandOwnership|FullyQualifiedName~NativeFunctionRefund)&Category!=Stress"
+    ],
+    "exitCode": 0
+  },
+  {
+    "kind": "public",
+    "framework": "net11.0",
+    "command": [
+      "C:\\Users\\JoannesVermorel\\.dotnet11\\dotnet.exe",
+      "test",
+      "tests/Lokad.Lython.PublicApi.Tests/Lokad.Lython.PublicApi.Tests.csproj",
+      "-c",
+      "Release",
+      "-f",
+      "net11.0",
+      "--no-build",
+      "--filter",
+      "(FullyQualifiedName~BufferedGeneratorContinuation|FullyQualifiedName~Generator|FullyQualifiedName~Join|FullyQualifiedName~NativeReceiverPipeline|FullyQualifiedName~ProtectedHelperExecution|FullyQualifiedName~RepresentativeProtocolCancellation|FullyQualifiedName~GovernedMemoryContract|FullyQualifiedName~MemoryDenialAttribution|FullyQualifiedName~HelperLocalLifetime|FullyQualifiedName~DirectGlobalOperand)&Category!=Stress"
+    ],
+    "exitCode": 0
+  },
+  {
+    "kind": "internal",
+    "framework": "net10.0",
+    "command": [
+      "C:\\Users\\JoannesVermorel\\.dotnet11\\dotnet.exe",
+      "test",
+      "tests/Lokad.Lython.Tests/Lokad.Lython.Tests.csproj",
+      "-c",
+      "Release",
+      "-f",
+      "net10.0",
+      "--no-build",
+      "--filter",
+      "(FullyQualifiedName~Executable|FullyQualifiedName~Generator|FullyQualifiedName~DirectOperandOwnership|FullyQualifiedName~NativeFunctionRefund)&Category!=Stress"
+    ],
+    "exitCode": 0
+  },
+  {
+    "kind": "public",
+    "framework": "net10.0",
+    "command": [
+      "C:\\Users\\JoannesVermorel\\.dotnet11\\dotnet.exe",
+      "test",
+      "tests/Lokad.Lython.PublicApi.Tests/Lokad.Lython.PublicApi.Tests.csproj",
+      "-c",
+      "Release",
+      "-f",
+      "net10.0",
+      "--no-build",
+      "--filter",
+      "(FullyQualifiedName~BufferedGeneratorContinuation|FullyQualifiedName~Generator|FullyQualifiedName~Join|FullyQualifiedName~NativeReceiverPipeline|FullyQualifiedName~ProtectedHelperExecution|FullyQualifiedName~RepresentativeProtocolCancellation|FullyQualifiedName~GovernedMemoryContract|FullyQualifiedName~MemoryDenialAttribution|FullyQualifiedName~HelperLocalLifetime|FullyQualifiedName~DirectGlobalOperand)&Category!=Stress"
+    ],
+    "exitCode": 0
+  }
+]

@@ -1,0 +1,33 @@
+{
+  "base": "cf052bd5e69253393e73b1579139c5d300d7df93",
+  "state": "private corrected source frozen1bce52ad; focused correctness/goldens/reuse pass, allocation effectively flat; no timing or promotion",
+  "hypothesis": "Same-command buffered ordinary yields still publish a suspended value, leave the executable prefix, restore send state and dispatch a PopTop for a result the compiler immediately discards. Complete that private transport inside the existing instruction loop instead.",
+  "removedWork": [
+    "YieldValue/HasYield/waitingForSend staging for a buffered discarded yield",
+    "prefix return/reentry for each buffered discarded yield",
+    "Resume namespace/send publication when no namespace is mirrored and no callback can run",
+    "publication and PopTop dispatch of the unused None send result"
+  ],
+  "unchanged": [
+    "generic join drains before validation",
+    "all outputs admitted before allocation; existing drain capacity and sum state",
+    "unbuffered send/throw/close and yield-from",
+    "mirrored namespaces use existing resume semantics",
+    "pending async cleanup completes before continuation",
+    "no new opcode, framework, owner, cache or policy"
+  ],
+  "scripts": [
+    "scripts.text-normalization.large",
+    "scripts.numeric-squared-error.floating.large",
+    "calls.positional.large"
+  ],
+  "acceptance": [
+    "ordering, aliases, nested yield expressions and retained generators",
+    "real delayed host I/O, cancellation and awaited cleanup",
+    "terminal refusal, shared-budget cleanup and reuse",
+    "actual worker goldens/allocation; one bounded whole-script/control comparison"
+  ],
+  "stopping": "Retain only after source/correctness and controlled named benefit or justified simplification/debt decision; refine on concrete evidence, preserve all adversity. Do not infer performance from instruction counts.",
+  "publicationHeld": true,
+  "sourceReviewCorrection": "Source review identified a duplicate declined-sum probe in the initial untimed condition; no observable semantic failure was demonstrated. Completed-yield buffering now stays in the existing prefix and duplicate driver probes disappear. Initial passing checks/source are preserved."
+}

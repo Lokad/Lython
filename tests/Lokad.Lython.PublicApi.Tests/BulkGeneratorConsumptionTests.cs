@@ -45,6 +45,35 @@ public sealed class BulkGeneratorConsumptionTests
     public static TheoryData<string> Programs => new()
     {
         """
+        events = []
+        def values():
+            for value in [9223372036854775807, 1, 5]:
+                events.append(value)
+                yield value
+        assert sum(values()) == 9223372036854775813
+        assert events == [9223372036854775807, 1, 5]
+        return 'ok'
+        """,
+        """
+        events = []
+        class Add:
+            def __radd__(self, prefix):
+                assert prefix == 8.5
+                value = next(g)
+                events.append(value)
+                return prefix + value
+        def values():
+            yield 1
+            yield 7.5
+            yield Add()
+            yield 9
+        g = values()
+        assert sum(g) == 17.5
+        assert events == [9]
+        assert next(g, 'end') == 'end'
+        return 'ok'
+        """,
+        """
         def inner():
             for i in range(37): yield str(i)
             return 7

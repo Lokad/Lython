@@ -90,12 +90,39 @@ internal sealed partial class LythonRuntime
                             }
                             break;
                         case ExecutableOpCode.Yield:
+                        {
                             if (invocation is null) return InstructionPause.ContextRequired;
-                            invocation!.YieldValue = execution.Stack.TakeSlotValue(instruction.InputStart, instruction.ResultSlot);
+                            var value = execution.Stack.TakeSlotValue(instruction.InputStart, instruction.ResultSlot);
+                            // A private funded consumer can take an ordinary
+                            // discarded yield without suspending this frame or
+                            // publishing the unused send(None) result. Retain
+                            // real resume boundaries for mirrored namespaces,
+                            // delegated yields and outstanding cleanup.
+                            var following = execution.InstructionIndex + 1;
+                            var buffered = invocation._yieldDestination;
+                            var discardsSend = !invocation.MirrorsExecutableLocals && !invocation.MirrorLocalStores
+                                && following < instructions.Length
+                                && instructions[following].OpCode == ExecutableOpCode.PopTop;
+                            if (discardsSend && buffered is not null
+                                && invocation.TryAppendBufferedYield(buffered, value))
+                            {
+                                scope.CheckExecution(instructions[following].Span);
+                                scope.State.SetCurrentException(invocation.HasActiveHandler
+                                    ? scope.State.CurrentException : invocation._entryActiveException);
+                                execution.Stack.RetireTo(instructions[following].LiveExtent);
+                                execution.InstructionIndex += 2;
+                                continue;
+                            }
+                            invocation!.YieldValue = value;
                             invocation!.HasYield = true;
                             invocation!._waitingForSend = true;
                             execution.InstructionIndex++;
+                            // The same prefix owns other completed yields too.
+                            // A declined direct sum must reach ordinary addition
+                            // without probing or changing its state twice.
+                            if (!discardsSend && buffered is not null && invocation.TryBufferYield(buffered)) continue;
                             return InstructionPause.Boundary;
+                        }
                         case ExecutableOpCode.YieldFrom:
                             if (invocation is null) return InstructionPause.ContextRequired;
                             if (asynchronous)
@@ -113,7 +140,12 @@ internal sealed partial class LythonRuntime
                                 }
                                 invocation!.CompleteDelegatedStep(invocation!._delegation.Advance(invocation!._sentValue, invocation!._injectedException), instruction);
                             }
-                            if (invocation!.HasYield) return InstructionPause.Boundary;
+                            if (invocation!.HasYield)
+                            {
+                                if (invocation._yieldDestination is { } delegatedDestination
+                                    && invocation.TryBufferYield(delegatedDestination)) continue;
+                                return InstructionPause.Boundary;
+                            }
                             break;
                         case ExecutableOpCode.Import or ExecutableOpCode.DefineFunction or ExecutableOpCode.ExecuteFallbackStatement:
                             if (invocation is null) return InstructionPause.ContextRequired;

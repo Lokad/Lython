@@ -52,6 +52,8 @@ check final-array refusal before allocation, other owners' funding, terminal ref
 and cancellation when a source has a different execution authority.
 [Bulk consumption](Lokad.Lython.PublicApi.Tests/BulkGeneratorConsumptionTests.cs)
 preserves exception state, bounded unpacking, reentry and delegated return values.
+Integer promotion and user-defined addition also preserve generator reentry at
+the consumer boundary.
 
 [Helper continuation cleanup](Lokad.Lython.PublicApi.Tests/BufferedGeneratorContinuationTests.cs)
 checks partial helper effects, aliases, guest errors, terminal refusal and cancellation

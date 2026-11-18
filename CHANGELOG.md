@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Complete buffered generator yields inside the executable instruction loop,
+  avoiding redundant suspension and unused send-result transport. Preserve Python
+  iteration order, external sends, cancellation, admission and awaited cleanup.
+
 - Read adjacent global operands directly from the executable constant/name pools.
   Remove redundant producer instructions and intermediate publication, preserving
   live bindings, evaluation order, original error spans and suspended aliases.

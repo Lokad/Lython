@@ -157,6 +157,16 @@ internal sealed partial class LythonRuntime
 
         private bool TryBufferYield(object destination)
         {
+            if (!TryAppendBufferedYield(destination, YieldValue)) return false;
+            TakeYieldValue();
+            CheckExecution(_execution.Code.Instructions[_execution.InstructionIndex].Span);
+            State.SetCurrentException(HasActiveHandler ? State.CurrentException : _entryActiveException);
+            Resume(PyNone.Instance, null);
+            return true;
+        }
+
+        private bool TryAppendBufferedYield(object destination, ExecutableSlot value)
+        {
             // Keep the final yielded item for the ordinary Advance result.
             // The private list has admitted capacity; Add invokes no Python or
             // host callback. Pending cleanup must finish before resumption.
@@ -165,26 +175,20 @@ internal sealed partial class LythonRuntime
             {
                 // Native addition invokes no guest code. Leave an unsupported
                 // value untouched for ordinary advancement and general addition.
-                var item = PyIterationResult.Yield(YieldValue);
+                var item = PyIterationResult.Yield(value);
                 if (!sum.TryAddResult(ref item)) return false;
-                TakeYieldValue();
             }
             else if (destination is PyList list)
             {
                 if (list.Count >= Math.Min(_yieldLimit, list.Capacity) - 1) return false;
-                var value = TakeYieldValue();
                 list.Add(value.Object.RequireNotNull());
             }
             else
             {
                 var items = (List<object>)destination;
                 if (items.Count >= _yieldLimit - 1) return false;
-                var value = TakeYieldValue();
                 items.Add(value.Object.RequireNotNull());
             }
-            CheckExecution(_execution.Code.Instructions[_execution.InstructionIndex].Span);
-            State.SetCurrentException(HasActiveHandler ? State.CurrentException : _entryActiveException);
-            Resume(PyNone.Instance, null);
             return true;
         }
         // Handler-save chain, created on first except-route push: plain calls
@@ -745,7 +749,6 @@ internal sealed partial class LythonRuntime
                     var pause = ExecuteInstructionPrefix(ref _execution, this, this, true, out var pending, out var span, out var nextCall);
                     if (pause == InstructionPause.Boundary)
                     {
-                        if (_yieldDestination is { } destination && HasYield && TryBufferYield(destination)) continue;
                         return null;
                     }
                     var jumped = false;

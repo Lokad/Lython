@@ -423,6 +423,12 @@ the existing yield buffer lifetime, avoiding frame entry and exit for every valu
 The accumulator has an admitted 64-byte command-local lifetime; no batch is
 materialized. General additions leave the running generator first. Per-yield
 cancellation, exception state, exact promotion and compensated summation remain.
+Same-command buffered yields complete inside the instruction prefix. When the
+send result is immediately discarded and locals need no namespace synchronization,
+the existing admitted destination receives the value without staging a suspension
+or publishing an unused `None`. External sends, mirrored locals, delegation and
+pending disposal retain their required resume and cleanup behavior. Generic `join`
+still consumes the iterable before validating its items.
 Comparisons consumed immediately as conditions use one comparison/branch
 instruction. Exact numeric truth needs no boxed temporary; escaping comparisons
 retain their Python result objects. Ordered comparison helpers share the operator
