@@ -178,6 +178,10 @@ original conditions retained. Current comparisons belong in
   before sampling. The completed profiles motivate consolidating three
   local instruction passes in executable construction.
   [Compiler attribution](results/2026-11-19-current-frontend-profile/README.md).
+- B1068 removes redundant local instruction scans in a private prototype.
+  Compilation allocation falls slightly. Compile-only CPU is mixed, the
+  generated validator's compile-to-result worsens, and warm shipment moves
+  favorably. [Operand preparation comparison](results/2026-11-19-combined-operand-preparation/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
