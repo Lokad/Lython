@@ -27,6 +27,34 @@ public sealed class RegexAdapterCapabilityTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task InvertedSearchWindowsHaveNoMatch(bool asynchronous)
+    {
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using (var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
+            import re
+            p = re.compile('')
+            q = re.compile(pattern)
+            print(p.search('😀x尾', 2, 1), p.fullmatch('😀x尾', 2, 1))
+            print(q.search(subject, 2, 1), q.fullmatch(subject, 2, 1))
+            print(p.search('😀x尾', 5, 4).span(), p.fullmatch('😀x尾', 5, 4).span())
+            """, budget))
+        {
+            Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
+            var baseline = budget.ReservedBytes;
+            var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["pattern"] = "", ["subject"] = "😀x尾" } };
+            using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal("None None\nNone None\n(3, 3) (3, 3)\n", result.StandardOutput);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Fact]
     public void ScopedInlineFlagsDoNotLeakIntoPatternFlagsOrConstantAnalysis()
     {
