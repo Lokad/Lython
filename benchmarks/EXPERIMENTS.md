@@ -246,6 +246,10 @@ original conditions retained. Current comparisons belong in
   unchanged ordinary-rule Lython processes differ by roughly 7%. Retained
   siblings stay near parity from compile to result. CSV invoice is
   1.09–1.11× CPython warm. [External checkpoint](results/2026-11-19-compiled-binding-cpython/README.md).
+- B1085 removes repeated parameter-slot scans in a private binder prototype.
+  Ordinary rules and asynchronous reused defaults improve. Complete
+  forwarding regresses in elapsed and CPU with stable controls. Allocation
+  and accounted peak match. [Argument binding scans](results/2026-11-19-argument-binding-scan/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
