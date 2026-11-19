@@ -234,6 +234,10 @@ original conditions retained. Current comparisons belong in
   call entry remain observable in the rule scripts. Split construction,
   keyword copying and formatting remain in forwarding.
   [Call attribution](results/2026-11-19-retained-factory-call-profile/README.md).
+- B1082 routes definition results to their compiled stores. Captured and
+  registration warm timing and annotated compile-to-result improve with
+  lower CPU. Forwarding compile-to-result is slower with mixed CPU.
+  [Compiled publication](results/2026-11-19-compiled-definition-publication/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup

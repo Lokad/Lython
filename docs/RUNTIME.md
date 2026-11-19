@@ -386,6 +386,10 @@ call's current executable slots before an invocation context is required. Defaul
 and annotations use the same preflight, publication order and definition-owned
 lookup cache. Operations that need a scope or can suspend transfer their current
 slots and pending default storage to the owning frame.
+Completed definitions publish through the compiler's ordinary binding stores.
+Local slots can receive the completed value directly. Module declarations
+retain their live namespace entries, and decorators can observe prior bindings
+until publication.
 Generator expressions use the same executable generator and
 protocols in class suites and annotations as at ordinary executable sites. Their
 frame and cursor storage is admitted at construction, which can reject a tight
