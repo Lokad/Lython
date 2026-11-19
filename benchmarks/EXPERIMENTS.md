@@ -363,6 +363,13 @@ original conditions retained. Current comparisons belong in
   with lower CPU. The allocation reductions persist. Asynchronous
   computed-default elapsed rises with mixed CPU.
   [Result forwarding](results/2026-11-19-direct-default-payload/refinement/README.md).
+- B1113 forwards fixed tuple returns from eligible executable frames.
+  Captured rules allocate 6.95% less and improve 3.09–5.60% warm with
+  lower CPU. Ordinary-rule controls remain inconclusive after a longer
+  warmup and reversed worker order. Retain the captured-return gain
+  and keep the ordinary CPU result open.
+  [Initial comparison](results/2026-11-19-framed-unpacked-return/README.md) ·
+  [Control repeat](results/2026-11-19-framed-unpacked-return/confirmation/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
