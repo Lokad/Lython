@@ -12,23 +12,19 @@ internal static class GeneratorSyntaxFacts
             ? lambda.Parameters.Any(parameter => parameter.DefaultValue is not null && ContainsYield(parameter.DefaultValue))
             : expression is YieldExpressionSyntax || ExpressionSyntaxTraversal.EnumerateChildren(expression).Any(ContainsYield);
 
-    public static bool IsGenerator(IReadOnlyList<StatementSyntax> body)
-        => body.Any(statement => StatementSyntaxTraversal.EnumerateDirectExpressions(statement).Any(ContainsYield) ||
-            statement is not (FunctionDefinitionStatementSyntax or ClassDefinitionStatementSyntax) &&
-            StatementSyntaxTraversal.EnumerateChildBodies(statement).Any(IsGenerator));
-
-    public static IEnumerable<LythonDiagnostic> Validate(ScriptSyntax script)
+    public static IEnumerable<LythonDiagnostic> Prepare(ScriptSyntax script, CancellationToken cancellationToken)
     {
         var errors = new List<LythonDiagnostic>();
         var postponed = script.Statements.OfType<ImportStatementSyntax>().Any(i =>
             i.ModuleName == "__future__" && i.ImportedMembers?.Any(m => m.Name == "annotations") == true);
-        Statements(script.Statements, false);
+        Statements(script.Statements, null);
         return errors;
 
-        void Statements(IReadOnlyList<StatementSyntax> statements, bool function)
+        void Statements(IReadOnlyList<StatementSyntax> statements, FunctionDefinitionStatementSyntax? function)
         {
             foreach (var statement in statements)
             {
+                PythonTokenization.CheckCancellation(cancellationToken, statement.Span.Start);
                 if (postponed)
                 {
                     var annotations = statement switch
@@ -48,22 +44,30 @@ internal static class GeneratorSyntaxFacts
                 foreach (var body in StatementSyntaxTraversal.EnumerateChildBodies(statement))
                     Statements(body, statement switch
                     {
-                        FunctionDefinitionStatementSyntax => true,
-                        ClassDefinitionStatementSyntax => false,
+                        FunctionDefinitionStatementSyntax definition => definition,
+                        ClassDefinitionStatementSyntax => null,
                         _ => function,
                     });
             }
         }
-        void Expression(ExpressionSyntax expression, bool function, bool bare)
+        void Expression(ExpressionSyntax expression, object? callable, bool bare)
         {
-            if (expression is YieldExpressionSyntax && (!function || !bare))
-                errors.Add(new LythonDiagnostic("LA1100", !function ? "'yield' outside function or inside comprehension." :
-                    "Yield expression requires parentheses here.", LythonDiagnosticSeverity.Error, expression.Span));
+            PythonTokenization.CheckCancellation(cancellationToken, expression.Span.Start);
+            if (expression is YieldExpressionSyntax)
+            {
+                if (callable is null || !bare)
+                    errors.Add(new LythonDiagnostic("LA1100", callable is null ? "'yield' outside function or inside comprehension." :
+                        "Yield expression requires parentheses here.", LythonDiagnosticSeverity.Error, expression.Span));
+                else if (callable is FunctionDefinitionStatementSyntax function)
+                    function.IsGenerator = true;
+                else if (callable is LambdaExpressionSyntax generator)
+                    generator.IsGenerator = true;
+            }
             if (expression is LambdaExpressionSyntax lambda)
             {
                 foreach (var parameter in lambda.Parameters)
-                    if (parameter.DefaultValue is not null) Expression(parameter.DefaultValue, function, false);
-                Expression(lambda.Body, true, false);
+                    if (parameter.DefaultValue is not null) Expression(parameter.DefaultValue, callable, false);
+                Expression(lambda.Body, lambda, false);
                 return;
             }
             var clauses = expression switch
@@ -75,7 +79,7 @@ internal static class GeneratorSyntaxFacts
                 _ => null,
             };
             foreach (var child in ExpressionSyntaxTraversal.EnumerateChildren(expression))
-                Expression(child, clauses is null ? function : function && ReferenceEquals(child, clauses[0].Iterable),
+                Expression(child, clauses is null || ReferenceEquals(child, clauses[0].Iterable) ? callable : null,
                     expression is ParenthesizedExpressionSyntax or FormattedStringExpressionSyntax);
         }
     }

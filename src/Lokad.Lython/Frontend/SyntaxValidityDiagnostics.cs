@@ -53,7 +53,7 @@ internal static class SyntaxValidityDiagnostics
         // These validators can report only on the syntax discovered above/below.
         // Keep their independent scope rules and diagnostic ordering when needed,
         // without repeating complete walks over ordinary scripts.
-        if (hasYield) diagnostics.AddRange(GeneratorSyntaxFacts.Validate(script));
+        if (hasYield) diagnostics.AddRange(GeneratorSyntaxFacts.Prepare(script, cancellationToken));
         if (hasModernTypes) diagnostics.AddRange(ModernTypeSyntaxFacts.Validate(script));
         if (hasFutureImport) diagnostics.AddRange(PostponedAnnotationText.Validate(script));
         return diagnostics;

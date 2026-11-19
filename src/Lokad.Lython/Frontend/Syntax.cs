@@ -351,11 +351,10 @@ internal sealed record FunctionDefinitionStatementSyntax(
     // Parsing and name rewriting finish before declaration facts are consumed.
     // Flow-dependent captured values remain with each abstract/runtime function.
     private FunctionParameterLayout? _parameterLayout;
-    private bool? _isGenerator;
+    internal bool IsGenerator { get; set; }
     internal FunctionParameterLayout ParameterLayout => PrepareParameterLayout(default);
     internal FunctionParameterLayout PrepareParameterLayout(CancellationToken cancellationToken)
         => _parameterLayout ??= FunctionParameterLayout.FromSyntax(Parameters, cancellationToken);
-    internal bool IsGenerator => _isGenerator ??= GeneratorSyntaxFacts.IsGenerator(Body);
 }
 
 internal sealed record ClassDefinitionStatementSyntax(
@@ -832,6 +831,7 @@ internal sealed record LambdaExpressionSyntax(
     internal ScopeDirectiveFacts? PreparedScopeFacts { get; set; }
     internal PyString? PreparedQualifiedName { get; set; }
     internal LoweredLambdaExpression? PreparedCallable { get; set; }
+    internal bool IsGenerator { get; set; }
     private FunctionParameterLayout? _parameterLayout;
     internal FunctionParameterLayout ParameterLayout => PrepareParameterLayout(default);
     internal FunctionParameterLayout PrepareParameterLayout(CancellationToken cancellationToken)

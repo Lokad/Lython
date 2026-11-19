@@ -71,11 +71,6 @@ internal static class StatementSyntaxTraversal
     internal readonly struct ChildBodies(StatementSyntax statement)
     {
         public BodyEnumerator GetEnumerator() => new(statement);
-        public bool Any(Func<IReadOnlyList<StatementSyntax>, bool> predicate)
-        {
-            foreach (var body in this) if (predicate(body)) return true;
-            return false;
-        }
     }
 
     internal struct BodyEnumerator(StatementSyntax statement)
