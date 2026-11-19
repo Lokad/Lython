@@ -55,3 +55,5 @@ guest elapsed. Process CPU covers the wider request.
 
 [Medians](summary.json) · [Raw observations](observations.tgz) ·
 [Exact retained core](lython-core.dll.gz) · [Source, checks and procedures](checks-and-procedures.tar.xz).
+
+[Platform and installed-package qualification](delivery/README.md).

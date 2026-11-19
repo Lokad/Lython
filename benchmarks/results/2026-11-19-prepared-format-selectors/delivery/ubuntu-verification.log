@@ -1,0 +1,10 @@
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-19T02:00:35.0062884Z Passed!  - Failed:     0, Passed:  4895, Skipped:     0, Total:  4895, Duration: 33 s - Lokad.Lython.WhiteBox.Tests.dll (net11.0)
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-19T02:04:53.3978355Z Passed!  - Failed:     0, Passed: 18093, Skipped:     0, Total: 18093, Duration: 4 m 42 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)
+tests (ubuntu-latest)	Test Release (.NET 10 checkpoint)	2026-11-19T02:05:33.7691883Z Passed!  - Failed:     0, Passed:  4895, Skipped:     0, Total:  4895, Duration: 30 s - Lokad.Lython.WhiteBox.Tests.dll (net10.0)
+tests (ubuntu-latest)	Test Release (.NET 10 checkpoint)	2026-11-19T02:09:47.7270176Z Passed!  - Failed:     0, Passed: 18093, Skipped:     0, Total: 18093, Duration: 4 m 36 s - Lokad.Lython.PublicApi.Tests.dll (net10.0)
+tests (ubuntu-latest)	Verify Release package consumer	2026-11-19T02:09:55.2857623Z Package consumer passed: 0.11.0
+tests (ubuntu-latest)	Verify Release package consumer	2026-11-19T02:10:00.5479240Z Package consumer passed: 0.11.0
+tests (ubuntu-latest)	Test original stress scales	2026-11-19T02:10:10.6673951Z Passed!  - Failed:     0, Passed:    14, Skipped:     0, Total:    14, Duration: 3 s - Lokad.Lython.WhiteBox.Tests.dll (net11.0)
+tests (ubuntu-latest)	Test original stress scales	2026-11-19T02:15:12.9074605Z Passed!  - Failed:     0, Passed:   406, Skipped:     0, Total:   406, Duration: 5 m - Lokad.Lython.PublicApi.Tests.dll (net11.0)
+tests (ubuntu-latest)	Test original stress scales	2026-11-19T02:15:20.8107090Z Passed!  - Failed:     0, Passed:    14, Skipped:     0, Total:    14, Duration: 2 s - Lokad.Lython.WhiteBox.Tests.dll (net10.0)
+tests (ubuntu-latest)	Test original stress scales	2026-11-19T02:20:28.9769319Z Passed!  - Failed:     0, Passed:   406, Skipped:     0, Total:   406, Duration: 5 m 7 s - Lokad.Lython.PublicApi.Tests.dll (net10.0)
