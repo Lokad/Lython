@@ -299,6 +299,10 @@ original conditions retained. Current comparisons belong in
   scripts. It keeps the candidate private after a `locals()` ordering
   regression. Annotated compile-to-result also regresses.
   [Declaration preparation](results/2026-11-19-child-declaration-preparation/README.md).
+- B1098 retains ordered declaration preparation. All three rule compilations
+  improve with lower allocation and CPU. Captured compile-to-result improves.
+  Generated-validator compile and shipment CPU remain controls to revisit.
+  [Ordered preparation](results/2026-11-19-child-declaration-preparation/refinement/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
