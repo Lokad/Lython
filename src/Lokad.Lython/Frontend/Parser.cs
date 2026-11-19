@@ -35,7 +35,13 @@ internal sealed partial class Parser
         CheckCancellation();
         var statements = new List<StatementSyntax>();
 
-        ValidateNumberIdentifierGluing();
+        var gluedNumbers = _tokens.GluedNumbers;
+        for (var index = 0; index < gluedNumbers.Count; index++)
+        {
+            CheckCancellation(index);
+            var start = gluedNumbers[index];
+            AddDiagnostic("LA1009", "Invalid number literal.", Merge(start, start + 1));
+        }
         SkipEndOfLines();
 
         StatementSyntax? previousStatement = null;
@@ -114,29 +120,6 @@ internal sealed partial class Parser
         => pendingBeforeParse != 0 && _position == gapStartTokenIndex
             ? previousEndTokenIndex
             : _position;
-
-    // Numbers glued to identifiers are invalid literals, including extra text
-    // after an imaginary suffix. Keywords lex as their own tokens,
-    // so `1in[1,2]` stays valid: only a true Identifier abutting the number
-    // fails. Runs before parsing; diagnostics accumulate with the parse below.
-    private void ValidateNumberIdentifierGluing()
-    {
-        for (var index = 0; index + 1 < _tokens.Count; index++)
-        {
-            CheckCancellation(index);
-            var current = _tokens.Tokens[index];
-            if (current.Token is not Token.Integer and not Token.Float and not Token.Imaginary)
-            {
-                continue;
-            }
-
-            var next = _tokens.Tokens[index + 1];
-            if (next.Token == Token.Identifier && next.Start == current.Start + current.Length)
-            {
-                AddDiagnostic("LA1009", "Invalid number literal.", Merge(index, index + 1));
-            }
-        }
-    }
 
     private StatementSyntax? ParseStatement()
     {

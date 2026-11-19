@@ -47,6 +47,17 @@ public sealed class StatementSeparationScenarioTests
     }
 
     [Fact]
+    public void GluedNumbersKeepSourceOrderAndSpanBeforeParserDiagnostics()
+    {
+        using var script = new LythonEngine().Compile("x = 1name\ny = 2jother\n");
+        Assert.False(script.IsValid);
+        Assert.Equal("LA1009", script.Diagnostics[0].Code);
+        Assert.Equal(new LythonSourceSpan(4, 5, 1, 5), script.Diagnostics[0].Span);
+        Assert.Equal("LA1009", script.Diagnostics[1].Code);
+        Assert.Equal(new LythonSourceSpan(14, 7, 2, 5), script.Diagnostics[1].Span);
+    }
+
+    [Fact]
     public async Task MultiModuleImportSemicolon_RunsBothModes()
     {
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""

@@ -18,6 +18,7 @@ internal static class PythonTokenization
     {
         private readonly List<SourceToken> _tokens = [];
         private readonly List<int> _newlines = [];
+        private List<int>? _gluedNumbers;
         private readonly List<(long Column, int Alternate)> _indents = [(0, 0)];
         private int _position;
         private int _depth;
@@ -39,12 +40,10 @@ internal static class PythonTokenization
                 if (c == '#') { SkipComment(); continue; }
                 if (c == '\n')
                 {
+                    // The newline token belongs to the physical line that ends here.
+                    if (_depth == 0) AddEndOfLine(start);
                     _newlines.Add(_position++);
-                    if (_depth == 0)
-                    {
-                        AddEndOfLine(start);
-                        if (!ReadIndentation(limit)) break;
-                    }
+                    if (_depth == 0 && !ReadIndentation(limit)) break;
                     continue;
                 }
                 if (c == '\\' && start + 1 < limit && source[start + 1] == '\n')
@@ -103,15 +102,27 @@ internal static class PythonTokenization
                 if (_tokens.Count > 0 && _tokens[^1].Token is not (Token.Eol or Token.Dedent)) Add(Token.Eol, terminal, 0);
                 while (_indents.Count > 1) { _indents.RemoveAt(_indents.Count - 1); Add(Token.Dedent, terminal, 0); }
             }
-            Add(Token.End, terminal, 0);
+            // An unfinished group can place the end token before trailing newlines.
+            var terminalLine = _depth > 0
+                ? TokenizedSource.FindLineIndex(_newlines, terminal)
+                : _newlines.Count;
+            _tokens.Add(new(Token.End, terminal, 0, terminalLine));
             // Trailing whitespace cannot contain a newline, but literals can.
             if (cancellationToken.IsCancellationRequested) throw RuntimeErrors.Cancelled(null);
-            return new(source, _tokens, _newlines, _invalid, _lexicalDiagnostic);
+            return new(source, _tokens, _newlines, _invalid, _lexicalDiagnostic, _gluedNumbers);
         }
 
         private void Add(Token token, int start, int length)
         {
-            _tokens.Add(new(token, start, length));
+            // Only an Identifier can form this error. Keywords remain separate,
+            // preserving compact spellings such as 1in[1,2].
+            if (token == Token.Identifier && _tokens.Count != 0 &&
+                _tokens[^1] is { Token: Token.Integer or Token.Float or Token.Imaginary } number &&
+                number.Start + number.Length == start)
+            {
+                (_gluedNumbers ??= []).Add(_tokens.Count - 1);
+            }
+            _tokens.Add(new(token, start, length, _newlines.Count));
             _invalid |= token == Token.Error;
         }
 

@@ -451,8 +451,10 @@ internal sealed partial class Parser
     private LythonSourceSpan SpanOf(int tokenIndex)
     {
         var token = _tokens.Tokens[tokenIndex];
+        if (_spanSourceTokens is not { } original) return _tokens.SpanOf(token);
+
         var start = token.Start + _spanOffset;
-        (_spanSourceTokens ?? _tokens).LineOfPosition(start, out var line, out var column);
+        original.LineOfPosition(start, out var line, out var column);
         return new LythonSourceSpan(start, token.Length, line, column);
     }
 
