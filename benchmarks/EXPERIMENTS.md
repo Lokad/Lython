@@ -112,6 +112,11 @@ original conditions retained. Current comparisons belong in
   mixed. CPython shares the qualified-name object across instances of
   one declaration. The prototype still builds a separate name per instance.
   [Qualified-name comparisons](results/2026-11-19-lexical-qualified-names/README.md).
+- B1051 retains compile-owned qualified names and module ownership for closed
+  leaf functions. The registration report improves warm and compile-to-result
+  with lower CPU. The large annotated-rule warm spread falls on B1052, and
+  annotated, forwarding and positional elapsed span zero on repeat.
+  [Runtime comparison and confirmation](results/2026-11-19-compiled-qualified-names/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
