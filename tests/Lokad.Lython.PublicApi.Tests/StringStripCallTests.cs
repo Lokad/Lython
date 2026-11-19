@@ -13,6 +13,8 @@ public sealed class StringStripCallTests
         { "print(repr('\\u200bword\\u200b'.strip()))", "'\\u200bword\\u200b'\n" },
         { "text=r' \\ud800 '\nprint(text.strip()==r'\\ud800')", "True\n" },
         { "text='  café  '\nprint(text.strip(None),text.strip(' c'),text.strip(*(None,)))", "café afé café\n" },
+        { "text='\\x00A😀évalueé😀A\\x00'\nprint(repr(text.strip('\\x00😀Aé')),repr(text.lstrip('\\x00A')),repr(text.rstrip('\\x00A')))\ntext='\\x01value\\x01'\nprint(text.strip('A') is text)",
+            "'value' '😀évalueé😀A\\x00' '\\x00A😀évalueé😀'\nTrue\n" },
         { "text=' x '\ndef argument():\n    print('argument')\n    return ' '\ntry: text.strip(chars=argument())\nexcept TypeError: print('keyword')\nprint(repr(text))", "argument\nkeyword\n' x '\n" },
         { "text=' x '\nmethod=text.strip\nfor target in [method,str.strip.__get__(text,str)]:\n    try: target(**{'chars':' '})\n    except TypeError: print('keyword')\ntry: str.strip(text,chars=' ')\nexcept TypeError: print('keyword')\nprint(method(),str.strip(text))", "keyword\nkeyword\nkeyword\nx x\n" },
         { "try: ' x '.strip(1)\nexcept TypeError: print('type')\ntry: ' x '.strip(' ','x')\nexcept TypeError: print('extra')\ntry: str.strip()\nexcept TypeError: print('receiver')", "type\nextra\nreceiver\n" },

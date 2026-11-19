@@ -282,7 +282,7 @@ internal static partial class PyStringOps
         {
             context.CheckExecution(span);
             if (!first) length = AppendJoinedBytes(separator, output, length, context, span);
-            var end = TrimUtf8End(source, range.Start, range.End, null);
+            var end = TrimUtf8End(source, range.Start, range.End);
             length = AppendJoinedBytes(source[range.Start..end], output, length, context, span);
             first = false;
         }

@@ -72,7 +72,7 @@ public sealed class StringStripStorageTests
     [InlineData("strip")]
     [InlineData("lstrip")]
     [InlineData("rstrip")]
-    public void CustomSetNeedsActiveAllowanceEvenWhenTheSourceDoesNotChange(string method)
+    public void UnicodeSetNeedsActiveAllowanceEvenWhenTheSourceDoesNotChange(string method)
     {
         const long limit = 1024 * 1024;
         var budget = new LythonMemoryBudget(limit);
@@ -81,17 +81,19 @@ public sealed class StringStripStorageTests
         {
             var sourceGovernor = new MemoryGovernor(sourceOwner);
             var source = PyString.FromString("word", sourceGovernor, Span);
-            var chars = PyString.FromString("x", sourceGovernor, Span);
+            var ascii = PyString.FromString("x", sourceGovernor, Span);
+            var unicode = PyString.FromString("é", sourceGovernor, Span);
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = owner });
             var callable = Resolve(source, method, context);
             var sourceFunding = sourceGovernor.CurrentAccountedBytes;
             var baseline = context.MemoryGovernor.CurrentAccountedBytes;
             using (context.MemoryGovernor.ReserveTemporary(limit - budget.ReservedBytes, Span))
             {
-                // An empty set borrows the unchanged source without working storage.
+                // Empty and ASCII sets borrow the unchanged source with no heap scratch.
                 Assert.Same(source, callable.Invoke([CallArgumentValue.Positional(PyString.Empty)], Span, context));
+                Assert.Same(source, callable.Invoke([CallArgumentValue.Positional(ascii)], Span, context));
                 var error = Assert.Throws<LythonRuntimeException>(() =>
-                    callable.Invoke([CallArgumentValue.Positional(chars)], Span, context));
+                    callable.Invoke([CallArgumentValue.Positional(unicode)], Span, context));
                 Assert.Equal(LythonFailureReason.SharedMemoryAllowance, error.Attribution?.Reason);
                 Assert.Equal(Span, error.Span);
                 Assert.Same(error, context.MemoryGovernor.AdmissionFailure);
@@ -193,13 +195,13 @@ public sealed class StringStripStorageTests
             var supplied = new CancelOnGrowthBudget(owner, cancellation);
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
                 new() { MemoryBudget = supplied, CancellationToken = cancellation.Token });
-            var padding = new string('x', 256);
+            var padding = new string('é', 256);
             var source = PyString.FromString(phase == "set" ? "word" : phase == "left" ? padding + "word" : "word" + padding);
-            var chars = PyString.FromString(phase == "set" ? padding : "x");
+            var chars = PyString.FromString(phase == "set" ? padding : "é");
             var callable = Resolve(source, method, context);
             var baseline = budget.ReservedBytes;
-            // The budget cancels only after the method's scratch is admitted,
-            // past callable entry. The actual preparation/boundary loop must stop.
+            // The budget cancels as the method admits Unicode scratch.
+            // The method must propagate cancellation and refund the admission.
             supplied.Armed = true;
             var error = Assert.Throws<LythonRuntimeException>(() => callable.Invoke([CallArgumentValue.Positional(chars)], Span, context));
             Assert.Equal(LythonFailureReason.Cancelled, error.Attribution?.Reason);

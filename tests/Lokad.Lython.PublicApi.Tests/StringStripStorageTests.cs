@@ -43,7 +43,8 @@ public sealed class StringStripStorageTests
     [InlineData("rstrip", true)]
     public async Task RefusedWorkingStorageCannotBeSuppressedAndTheNextCommandReusesAllowance(string method, bool asynchronous)
     {
-        var source = "chars='x'*(16384 if fail else 1)\ntext='word'\nprint('before')\ntry:\n value=text." + method
+        // Non-ASCII membership still admits a set before scanning the subject.
+        var source = "chars='é'*(4096 if fail else 1)\ntext='word'\nprint('before')\ntry:\n value=text." + method
             + "(chars)\nexcept MemoryError:print('caught')\nfinally:\n if fail:return 'suppressed'\nreturn value";
         var budget = new LythonMemoryBudget(512 * 1024);
         using (var script = new LythonEngine().Compile(source, budget))

@@ -20,73 +20,71 @@ internal static partial class PyStringOps
 
     private static PyString SliceTrimmed(PyString value, bool trimStart, bool trimEnd, PyString? chars)
     {
-        if (chars is null) return TrimBoundaries(value, trimStart, trimEnd, null);
+        if (chars is null) return TrimDefaultWhitespace(value, trimStart, trimEnd);
         if (chars.ByteLength == 0) return value;
 
-        // Keep the character set funded through scanning and slice construction.
-        var governor = PyStructuralGuard.AmbientContext?.MemoryGovernor ?? value.OwnerMemoryGovernor;
-        using var working = governor?.ReserveTemporary(checked(256L + 64L * chars.ByteLength), PyStructuralGuard.AmbientSpan);
-        PyStructuralGuard.NoteWork();
-        var trimRunes = new HashSet<int>();
+        var context = PyStructuralGuard.AmbientContext;
+        var governor = context?.MemoryGovernor ?? value.OwnerMemoryGovernor;
+        governor?.ThrowIfAdmissionFailed();
         var characters = chars.Utf8Span;
-        for (var offset = 0; offset < characters.Length;)
+        UInt128 ascii = 0;
+        var offset = 0;
+        for (; offset < characters.Length && characters[offset] < 0x80; offset++)
+        {
+            PyStructuralGuard.NoteWork();
+            ascii |= UInt128.One << characters[offset];
+        }
+        if (offset == characters.Length) return TrimExplicitCharacters(value, trimStart, trimEnd, ascii, null);
+
+        // Only the non-ASCII remainder can need heap storage. Fund the
+        // Unicode set through scanning and slice construction.
+        var span = PyStructuralGuard.AmbientSpan;
+        using var working = governor?.ReserveTemporary(checked(256L + 64L * (characters.Length - offset)), span);
+        context?.CheckExecution(span);
+        var unicode = new HashSet<int>();
+        for (; offset < characters.Length;)
         {
             PyStructuralGuard.NoteWork();
             if (Rune.DecodeFromUtf8(characters[offset..], out var trimRune, out var consumed) != System.Buffers.OperationStatus.Done)
                 throw new DecoderFallbackException("Invalid UTF-8 in strip characters.");
-            trimRunes.Add(trimRune.Value);
+            if (trimRune.IsAscii) ascii |= UInt128.One << trimRune.Value;
+            else unicode.Add(trimRune.Value);
             offset += consumed;
         }
-        return TrimBoundaries(value, trimStart, trimEnd, trimRunes);
+        return TrimExplicitCharacters(value, trimStart, trimEnd, ascii, unicode);
     }
 
-    // Trim directly over UTF-8 and slice once. Default ASCII whitespace uses
-    // the same bounded bulk scanner as split; custom sets keep scalar matching.
-    private static PyString TrimBoundaries(PyString value, bool trimStart, bool trimEnd, HashSet<int>? trimRunes)
+    private static PyString TrimDefaultWhitespace(PyString value, bool trimStart, bool trimEnd)
     {
         var source = value.Utf8Span;
-        var startByte = 0;
-        var endByte = source.Length;
-
+        var start = 0;
         if (trimStart)
         {
-            while (startByte < endByte)
+            while (start < source.Length)
             {
                 PyStructuralGuard.NoteWork();
-                if (trimRunes is null && source[startByte] < 0x80)
+                if (source[start] < 0x80)
                 {
-                    if (!IsAsciiWhitespace(source[startByte])) break;
-                    startByte += AsciiWhitespaceRunLength(
-                        source.Slice(startByte, Math.Min(64, endByte - startByte)), whitespace: true);
+                    if (!IsAsciiWhitespace(source[start])) break;
+                    start += AsciiWhitespaceRunLength(source.Slice(start, Math.Min(64, source.Length - start)), whitespace: true);
                     continue;
                 }
-                Rune.DecodeFromUtf8(source[startByte..], out var rune, out var runeLength);
-                if (!ShouldTrim(rune, trimRunes))
-                {
-                    break;
-                }
-
-                startByte += runeLength;
+                Rune.DecodeFromUtf8(source[start..], out var rune, out var width);
+                if (!IsPythonWhitespace(rune)) break;
+                start += width;
             }
         }
-
-        if (trimEnd) endByte = TrimUtf8End(source, startByte, endByte, trimRunes);
-
-        // Shared constants have no individual governor. Admit a fresh slice
-        // through the active execution rather than copying it unowned first.
-        return startByte == 0 && endByte == source.Length
-            ? value
-            : SliceUtf8(value, startByte, endByte,
-                value.OwnerMemoryGovernor ?? PyStructuralGuard.AmbientContext?.MemoryGovernor,
-                PyStructuralGuard.AmbientSpan);
+        var end = trimEnd ? TrimUtf8End(source, start, source.Length) : source.Length;
+        return TrimmedSlice(value, start, end);
     }
 
-    private static int TrimUtf8End(ReadOnlySpan<byte> source, int startByte, int endByte, HashSet<int>? trimRunes)
+    // Also consumes each private part in the default rstrip/split/join path.
+    private static int TrimUtf8End(ReadOnlySpan<byte> source, int startByte, int endByte)
     {
         while (endByte > startByte)
         {
             PyStructuralGuard.NoteWork();
-            if (trimRunes is null && source[endByte - 1] < 0x80)
+            if (source[endByte - 1] < 0x80)
             {
                 if (!IsAsciiWhitespace(source[endByte - 1])) break;
                 var chunkStart = Math.Max(startByte, endByte - 64);
@@ -95,10 +93,54 @@ internal static partial class PyStringOps
             }
             var runeStart = GetPreviousRuneStart(source, endByte);
             Rune.DecodeFromUtf8(source[runeStart..endByte], out var rune, out _);
-            if (!ShouldTrim(rune, trimRunes)) break;
+            if (!IsPythonWhitespace(rune)) break;
             endByte = runeStart;
         }
         return endByte;
+    }
+
+    private static PyString TrimExplicitCharacters(PyString value, bool trimStart, bool trimEnd,
+        UInt128 ascii, HashSet<int>? unicode)
+    {
+        var source = value.Utf8Span;
+        var start = trimStart ? TrimExplicitBoundary(source, ascii, unicode, reverse: false) : 0;
+        var end = trimEnd ? start + TrimExplicitBoundary(source[start..], ascii, unicode, reverse: true) : source.Length;
+        return TrimmedSlice(value, start, end);
+    }
+
+    private static int TrimExplicitBoundary(ReadOnlySpan<byte> source, UInt128 ascii, HashSet<int>? unicode, bool reverse)
+    {
+        var offset = reverse ? source.Length : 0;
+        var boundary = reverse ? 0 : source.Length;
+        while (offset != boundary)
+        {
+            PyStructuralGuard.NoteWork();
+            var current = source[reverse ? offset - 1 : offset];
+            if (current < 0x80)
+            {
+                if ((ascii & (UInt128.One << current)) == 0) break;
+                offset += reverse ? -1 : 1;
+                continue;
+            }
+            if (unicode is null) break;
+            var runeStart = reverse ? GetPreviousRuneStart(source, offset) : offset;
+            var encoded = reverse ? source[runeStart..offset] : source[runeStart..];
+            Rune.DecodeFromUtf8(encoded, out var rune, out var width);
+            if (!unicode.Contains(rune.Value)) break;
+            offset = reverse ? runeStart : offset + width;
+        }
+        return offset;
+    }
+
+    private static PyString TrimmedSlice(PyString value, int start, int end)
+    {
+        // Shared constants have no individual governor. Admit a fresh slice
+        // through the active execution.
+        return start == 0 && end == value.ByteLength
+            ? value
+            : SliceUtf8(value, start, end,
+                value.OwnerMemoryGovernor ?? PyStructuralGuard.AmbientContext?.MemoryGovernor,
+                PyStructuralGuard.AmbientSpan);
     }
 
     private static PyString MapCase(PyString value, CaseMapping mapping, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
@@ -313,13 +355,6 @@ internal static partial class PyStringOps
         }
 
         return sawRune;
-    }
-
-    private static bool ShouldTrim(Rune rune, HashSet<int>? trimRunes)
-    {
-        return trimRunes is null
-            ? IsPythonWhitespace(rune)
-            : trimRunes.Contains(rune.Value);
     }
 
     internal static int LastIndexOfBytes(ReadOnlySpan<byte> haystack, ReadOnlySpan<byte> needle)
