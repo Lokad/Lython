@@ -1222,8 +1222,11 @@ use that rollback. Conservative storage estimates can change admission threshold
 
 `str.format` and `format_map` prepare field structure, argument positions,
 attribute and subscript selectors, and constant specifications once on the
-bound method. Lookups still construct a guest key at the access. Literal
-segments borrow UTF-8. Builtin numeric and padded string fields append directly
+bound method. Native dictionary string subscripts borrow prepared UTF-8 keys
+with cached hashes. Generic subscripts and missing-key errors construct a fresh
+guest key at the access. Preparation admits the retained key capacity before
+rendering, so a tight allowance can refuse earlier. Literal segments borrow
+UTF-8. Builtin numeric and padded string fields append directly
 into final output through the same formatter as f-strings. Immediate calls
 reuse the existing execution member cache. Layouts live in the execution owner, separately from shared compiled literals;
 they hold no guest arguments, callbacks or cancellation token. Reusing an internal

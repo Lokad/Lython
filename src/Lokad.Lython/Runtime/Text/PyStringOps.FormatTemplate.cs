@@ -6,14 +6,14 @@ namespace Lokad.Lython.Runtime.Text;
 internal static partial class PyStringOps
 {
     // A bound method keeps this immutable layout in its execution owner, never
-    // on the shared literal. It contains no guest values, callbacks or tokens.
+    // on the shared literal. It retains no invocation values, callbacks or tokens.
     internal sealed record FormatTemplate(FormatPart[] Parts, MemoryGovernor? Owner, bool IsPositionalText);
 
     internal readonly record struct FormatPart(ReadOnlyMemory<byte> Literal, FormatField? Field = null, string? Error = null);
 
     internal enum FormatAccessKind { Member, StringIndex, IntegerIndex, Error }
 
-    internal readonly record struct FormatAccess(FormatAccessKind Kind, string? Text, long Index = 0);
+    internal readonly record struct FormatAccess(FormatAccessKind Kind, object? Value, long Index = 0);
 
     internal sealed record FormatField(long Position, string? Keyword, FormatAccess[] Accesses, Rune? Conversion,
         string? Spec, FormatTemplate? NestedSpec, bool RecursiveSpec,
@@ -53,8 +53,8 @@ internal static partial class PyStringOps
         }
         // Two supported levels, list growth/replacement overlap, part/field
         // records, UTF-16 names/specs and native spec descriptors. Potential
-        // access markers also cover the list and final access-array overlap.
-        return checked(512L + 8L * source.Length + 384L * braces + 96L * accessMarkers);
+        // access markers cover the access-array overlap and a private UTF-8 key.
+        return checked(512L + 8L * source.Length + 384L * braces + 224L * accessMarkers);
     }
 
     private static FormatTemplate ParseFormatTemplate(ReadOnlyMemory<byte> source, int depth,
@@ -150,7 +150,7 @@ internal static partial class PyStringOps
             // Keep checking the enclosing grammar after an error that belongs
             // to a particular access. The error itself is raised after lookup.
             if (badAccess) continue;
-            var access = PrepareFormatAccess(fieldBytes.Span[start..(member ? index : index - 1)], member, token);
+            var access = PrepareFormatAccess(fieldBytes.Span[start..(member ? index : index - 1)], member, span, token);
             (accesses ??= []).Add(access);
             badAccess = access.Kind == FormatAccessKind.Error;
         }
@@ -228,7 +228,7 @@ internal static partial class PyStringOps
         }
         else
         {
-            var root = Encoding.UTF8.GetString(fieldBytes.Span[..rootEnd]);
+            var root = fieldBytes.Span[..rootEnd];
             if (TryParseFormatIndex(root, out var explicitPosition, token))
             {
                 if (nextPosition > 0)
@@ -236,7 +236,7 @@ internal static partial class PyStringOps
                 nextPosition = -1;
                 position = explicitPosition;
             }
-            else keyword = root;
+            else keyword = Encoding.UTF8.GetString(root);
         }
 
         string? spec = null;
@@ -256,16 +256,18 @@ internal static partial class PyStringOps
         return new(position, keyword, accesses?.ToArray() ?? [], conversion, spec, nested, recursive, prepared);
     }
 
-    private static FormatAccess PrepareFormatAccess(ReadOnlySpan<byte> bytes, bool member, CancellationToken token)
+    private static FormatAccess PrepareFormatAccess(ReadOnlySpan<byte> bytes, bool member,
+        LythonSourceSpan? span, CancellationToken token)
     {
         if (bytes.IsEmpty) return new(FormatAccessKind.Error, "Empty attribute in format string");
-        var text = Encoding.UTF8.GetString(bytes);
-        if (member) return new(FormatAccessKind.Member, text);
+        if (member) return new(FormatAccessKind.Member, Encoding.UTF8.GetString(bytes));
         try
         {
-            return TryParseFormatIndex(text, out var index, token)
-                ? new(FormatAccessKind.IntegerIndex, null, index)
-                : new(FormatAccessKind.StringIndex, text);
+            if (TryParseFormatIndex(bytes, out var index, token))
+                return new(FormatAccessKind.IntegerIndex, null, index);
+            var key = PyString.CopyFromUtf8(bytes, null, span);
+            _ = key.GetHashCode(token, span);
+            return new(FormatAccessKind.StringIndex, key);
         }
         catch (InvalidOperationException error) { return new(FormatAccessKind.Error, error.Message); }
     }
@@ -299,14 +301,16 @@ internal static partial class PyStringOps
         return scan + 1;
     }
 
-    private static bool TryParseFormatIndex(string text, out long value, CancellationToken cancellationToken)
+    private static bool TryParseFormatIndex(ReadOnlySpan<byte> text, out long value, CancellationToken cancellationToken)
     {
         value = 0;
-        if (text.Length == 0) return false;
-        var offset = 0;
-        foreach (var digit in text.EnumerateRunes())
+        if (text.IsEmpty) return false;
+        var scalar = 0;
+        for (var offset = 0; offset < text.Length;)
         {
-            if ((offset++ & 2047) == 0) cancellationToken.ThrowIfCancellationRequested();
+            if ((scalar++ & 2047) == 0) cancellationToken.ThrowIfCancellationRequested();
+            Rune.DecodeFromUtf8(text[offset..], out var digit, out var width);
+            offset += width;
             if (Rune.GetUnicodeCategory(digit) != UnicodeCategory.DecimalDigitNumber) return false;
             // CPython checks overflow while walking, even before a later nondigit.
             var number = (int)Rune.GetNumericValue(digit);

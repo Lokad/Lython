@@ -126,7 +126,48 @@ internal sealed partial class LythonRuntime
 
                     if (field.Accesses.Length != 0)
                     {
-                        selected = await ResolveFormatAccessesAsync(selected, field.Accesses).ConfigureAwait(false);
+                        foreach (var access in field.Accesses)
+                        {
+                            context.CheckExecution(span);
+                            switch (access.Kind)
+                            {
+                                case PyStringOps.FormatAccessKind.Member:
+                                {
+                                    var member = (string)access.Value!;
+                                    var resolved = asynchronous
+                                        ? await TryResolveRuntimeMemberAsync(selected, member, context, span).ConfigureAwait(false)
+                                        : PyMemberAccess.TryResolve(selected, member, context, span, out var found)
+                                            ? (true, found) : (false, PyNone.Instance);
+                                    if (!resolved.Item1)
+                                        throw PyMemberAccess.CreateMissingMemberError(selected, member, span, context);
+                                    selected = resolved.Item2;
+                                    break;
+                                }
+                                case PyStringOps.FormatAccessKind.Error:
+                                    throw new InvalidOperationException((string)access.Value!);
+                                default:
+                                {
+                                    object key;
+                                    if (access.Kind == PyStringOps.FormatAccessKind.StringIndex)
+                                    {
+                                        var preparedKey = (PyString)access.Value!;
+                                        if (selected is PyDict dictionary &&
+                                            dictionary.TryReadNativeStringValue(preparedKey, context, span, out var value))
+                                        {
+                                            selected = value;
+                                            break;
+                                        }
+                                        // Generic subscript protocols and errors can expose the lookup key.
+                                        key = PyString.CopyFromUtf8(preparedKey.Utf8Span, context.MemoryGovernor, span, context);
+                                    }
+                                    else key = new BigInteger(access.Index);
+                                    selected = asynchronous
+                                        ? await ReadLoweredSubscriptAsync(selected, key, span, context).ConfigureAwait(false)
+                                        : ReadSubscriptValue(selected, key, span, context);
+                                    break;
+                                }
+                            }
+                        }
                         context.CheckExecution(span);
                     }
 
@@ -164,42 +205,6 @@ internal sealed partial class LythonRuntime
                     else AppendInterpolatedStringPart(output, selected, character, spec, context, span, field.PreparedSpec);
                     context.CheckExecution(span);
                 }
-            }
-
-            private async ValueTask<object> ResolveFormatAccessesAsync(object current, PyStringOps.FormatAccess[] accesses)
-            {
-                foreach (var access in accesses)
-                {
-                    context.CheckExecution(span);
-                    switch (access.Kind)
-                    {
-                        case PyStringOps.FormatAccessKind.Member:
-                        {
-                            var member = access.Text!;
-                            var resolved = asynchronous
-                                ? await TryResolveRuntimeMemberAsync(current, member, context, span).ConfigureAwait(false)
-                                : PyMemberAccess.TryResolve(current, member, context, span, out var found)
-                                    ? (true, found) : (false, PyNone.Instance);
-                            if (!resolved.Item1)
-                                throw PyMemberAccess.CreateMissingMemberError(current, member, span, context);
-                            current = resolved.Item2;
-                            break;
-                        }
-                        case PyStringOps.FormatAccessKind.Error:
-                            throw new InvalidOperationException(access.Text);
-                        default:
-                        {
-                            object key = access.Kind == PyStringOps.FormatAccessKind.IntegerIndex
-                                ? new BigInteger(access.Index)
-                                : PyString.FromString(access.Text!, context.MemoryGovernor, span);
-                            current = asynchronous
-                                ? await ReadLoweredSubscriptAsync(current, key, span, context).ConfigureAwait(false)
-                                : ReadSubscriptValue(current, key, span, context);
-                            break;
-                        }
-                    }
-                }
-                return current;
             }
 
             private void AdmitExpandedSpec(int length)

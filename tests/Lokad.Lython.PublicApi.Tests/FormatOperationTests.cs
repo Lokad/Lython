@@ -76,6 +76,33 @@ public sealed class FormatOperationTests
     }
 
     [Fact]
+    public async Task PreparedSelectorsReadLiveDictionariesAndGiveHooksFreshKeys()
+    {
+        await FormatTemplateTests.AssertReusable("""
+            values={'naïve':'before'}
+            keys=[]
+            class Selector:
+             def __getitem__(self,key):
+              with open('/value') as handle:
+               result=handle.read()
+              keys.append(key)
+              return result
+            class Mutate:
+             def __format__(self,spec):
+              values['naïve']='after'
+              return ''
+            method='{0[naïve]}{1}{0[naïve]}'.format
+            assert method(values,Mutate())=='beforeafter'
+            assert method(Selector(),'|')=='ok|ok'
+            assert keys==['naïve','naïve'] and keys[0] is not keys[1]
+            try:method({'other':'x'},'|')
+            except KeyError as error:assert error.args[0]=='naïve'
+            else:raise AssertionError('missing dictionary key accepted')
+            return 'ok'
+            """);
+    }
+
+    [Fact]
     public async Task ExpandedSpecsKeepEscapingAliasesFundedAcrossRepeatedCalls()
     {
         await FormatTemplateTests.AssertReusable("""
