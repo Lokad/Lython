@@ -112,6 +112,41 @@ print(Target()({{(starred ? "*Values()" : "1,2")}},**Mapping()))
     }
 
     [Fact]
+    public async Task ForwardedRecordKeepsKeyAndValueAliasesWithIndependentMutation()
+    {
+        const string source = """
+            import json
+            def forward(**fields):
+                return fields
+            record = json.loads('{"début":[1],"status":"open","category":"ops"}')
+            snapshot = forward(**record)
+            key = next(iter(record))
+            print(next(iter(snapshot)) is key, record[key] is snapshot[key])
+            record[key].append(2)
+            record['status'] = 'closed'
+            del record['category']
+            snapshot['extra'] = 'local'
+            retained = forward(**record)
+            print(list(snapshot), snapshot[key], snapshot['status'])
+            print(list(retained), retained['status'], 'extra' in record)
+            """;
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("\n", script.Diagnostics.Select(d => d.Message)));
+        var baseline = budget.ReservedBytes;
+        foreach (var asynchronous in new[] { false, true })
+        {
+            using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal("True True\n['début', 'status', 'category', 'extra'] [1, 2] open\n['début', 'status'] closed False\n",
+                    result.StandardOutput);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+    }
+
+    [Fact]
     public async Task AdmissionDenialPreventsCallingTheTarget()
     {
         const string source = "def sink(*args):\n with open('result.txt','w') as output: output.write('called')\nsink(*range(10000))";

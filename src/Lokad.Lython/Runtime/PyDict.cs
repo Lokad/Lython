@@ -74,7 +74,10 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
     {
         if (!SupportsNativeStringReads) return null;
         var version = _version;
-        var copy = freshMapping ? null : new PyDict(Count, context.MemoryGovernor, mappingSpan);
+        var layout = !freshMapping && _recordKeys is { } keys && keys.Count == _nativeCount &&
+            ReferenceEquals(_memoryGovernor, context.MemoryGovernor) ? keys : null;
+        var copy = freshMapping ? null : layout?.CreateRecord(context, mappingSpan, _nativeCount)
+            ?? new PyDict(Count, context.MemoryGovernor, mappingSpan);
         var output = copy ?? this;
         var transferred = false;
         try
@@ -82,7 +85,8 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
             // Copy admission can reenter and change an exposed source. A fresh
             // display already owns its final capacity and has no other users.
             context.CheckExecution(mappingSpan);
-            if (version != _version || !SupportsNativeStringReads) return null;
+            if (version != _version || !SupportsNativeStringReads ||
+                layout is not null && !ReferenceEquals(layout, _recordKeys)) return null;
             var conflicting = -1;
             for (var i = 0; i < NativeExtent; i++)
             {
@@ -92,12 +96,25 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
                 if (entry.Key is not PyString key) throw RuntimeErrors.Type("keywords must be strings", mappingSpan);
                 if (conflicting < 0)
                     _ = plan.TryGetKeywordIndex(key, context, callSpan, out conflicting);
-                if (copy is not null) copy.AppendNativeItem(key, ReadNativeValue(i), entry.Hash);
+                if (copy is not null && layout is null) copy.AppendNativeItem(key, ReadNativeValue(i), entry.Hash);
             }
             // Mapping errors precede binder errors even when a collision was
             // found in an earlier entry. Every bindable parameter is filled.
             if (conflicting >= 0)
                 throw CallErrors.MultipleValues(plan.CallableKind, plan.CallableName, plan.NameAt(conflicting), callSpan);
+            if (layout is not null)
+            {
+                // Keys and their order are funded by the existing execution
+                // layout. The forwarded argument owns an independent value array.
+                for (var offset = 0; offset < _nativeCount;)
+                {
+                    context.CheckExecution(mappingSpan);
+                    var count = Math.Min(1024, _nativeCount - offset);
+                    _nativeValues!.AsSpan(offset, count).CopyTo(copy!._nativeValues.AsSpan(offset, count));
+                    offset += count;
+                }
+                copy!._nativeCount = _nativeCount;
+            }
             context.CheckExecution(callSpan);
             transferred = true;
             return output;
