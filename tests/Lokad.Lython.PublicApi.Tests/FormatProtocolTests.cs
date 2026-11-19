@@ -22,6 +22,29 @@ public sealed class FormatProtocolTests
         { "invalid-specifier-before-binding", "events=[]\ndef mark(name,value):events.append(name);return value\nclass Descriptor:\n def __get__(self,instance,owner):events.append('bind');return lambda spec:'ok'\nclass Value:__format__=Descriptor()\ntry:format(mark('value',Value()),mark('spec',7))\nexcept TypeError:print(events)", "['value', 'spec']\n" },
         { "static-class-inherited-format", "class Static:\n @staticmethod\n def __format__(spec):return 'static:'+spec\nclass Base:\n @classmethod\n def __format__(cls,spec):return cls.__name__+':'+spec\nclass Child(Base):pass\na=Static()\nb=Child()\na.__format__=lambda spec:'shadow'\nb.__format__=lambda spec:'shadow'\nprint(format(a,'s'),format(b,'c'),b.__format__('x'))", "static:s Child:c shadow\n" },
         { "format-binding-errors-propagate", "class Descriptor:\n def __get__(self,instance,owner):raise error_type('binding')\nclass Value:__format__=Descriptor()\nfor error_type in [AttributeError,ValueError,MemoryError]:\n for convert in [format,lambda v:f'{v}',lambda v:'{}'.format(v),lambda v:'{v}'.format_map({'v':v})]:\n  try:convert(Value())\n  except Exception as error:print(type(error).__name__,str(error))", "AttributeError binding\nAttributeError binding\nAttributeError binding\nAttributeError binding\nValueError binding\nValueError binding\nValueError binding\nValueError binding\nMemoryError binding\nMemoryError binding\nMemoryError binding\nMemoryError binding\n" },
+        { "cached-selection-error-order", """
+            class Value:
+                def __getitem__(self, key):
+                    print('getitem', key)
+                    return self
+
+                @property
+                def attr(self):
+                    print('attr')
+                    return 'X'
+
+            get = '{0[٢].attr}|{0[word].attr}'.format
+            bad = '{0[head][999999999999999999999999]}'.format
+            mixed = '{[head].attr} {1}'.format
+            for _ in range(2):
+                print(get(Value()))
+                for method in (bad, mixed):
+                    try:
+                        method(Value(), 3)
+                    except ValueError as exc:
+                        print(str(exc))
+            """, "getitem 2\nattr\ngetitem word\nattr\nX|X\ngetitem head\nToo many decimal digits in format string\ngetitem head\nattr\ncannot switch from automatic field numbering to manual field specification\n" +
+            "getitem 2\nattr\ngetitem word\nattr\nX|X\ngetitem head\nToo many decimal digits in format string\ngetitem head\nattr\ncannot switch from automatic field numbering to manual field specification\n" },
     };
 
     [Theory]

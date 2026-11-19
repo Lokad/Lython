@@ -1,3 +1,4 @@
+using System.Numerics;
 using System.Globalization;
 using System.Text;
 using Lokad.Lython.Runtime.Text;
@@ -8,15 +9,12 @@ internal sealed partial class LythonRuntime
 {
     internal static partial class StringMembers
     {
-        // One invocation owns its arguments, numbering and expanded-spec scratch.
+        // One invocation owns its arguments and expanded-spec scratch.
         // Cached layouts retain none of these values or the execution token.
         private sealed class MethodFormatOperation(CallArgumentValue[] arguments, int positionalCount,
             int[]? positionalIndices, Dictionary<string, int>? keywords,
             object? mapping, LythonSourceSpan span, ExecutionContext context, bool asynchronous, int templateBytes)
         {
-            private int _autoIndex;
-            private bool _sawAuto;
-            private bool _sawManual;
             private MemoryGovernor.TemporaryMemoryReservation? _metadata;
             private long _metadataBytes;
 
@@ -61,40 +59,31 @@ internal sealed partial class LythonRuntime
                         continue;
                     }
 
-                    var root = field.Root;
                     object selected;
-                    if (root.Length == 0)
+                    if (field.Keyword is not { } keyword)
                     {
                         if (mapping is not null) throw new InvalidOperationException("Format string contains positional fields");
-                        if (_sawManual) throw new InvalidOperationException("cannot switch from manual field specification to automatic field numbering");
-                        _sawAuto = true;
-                        if (_autoIndex >= positionalCount)
-                            throw new IndexOutOfRangeException($"Replacement index {_autoIndex} out of range for positional args tuple");
-                        selected = PositionalValue(_autoIndex++);
-                    }
-                    else if (PyStringOps.TryParseFormatIndex(root, out var slot, context.State.CancellationToken))
-                    {
-                        if (mapping is not null) throw new InvalidOperationException("Format string contains positional fields");
-                        if (_sawAuto) throw new InvalidOperationException("cannot switch from automatic field numbering to manual field specification");
-                        _sawManual = true;
-                        if (slot >= positionalCount)
-                            throw new IndexOutOfRangeException($"Replacement index {slot} out of range for positional args tuple");
-                        selected = PositionalValue((int)slot);
+                        var position = field.Position;
+                        if (position >= positionalCount)
+                            throw new IndexOutOfRangeException($"Replacement index {position} out of range for positional args tuple");
+                        selected = PositionalValue((int)position);
                     }
                     else if (mapping is not null)
                     {
-                        var key = PyString.FromString(root, context.MemoryGovernor, span);
+                        var key = PyString.FromString(keyword, context.MemoryGovernor, span);
                         selected = asynchronous
                             ? await ReadLoweredSubscriptAsync(mapping, key, span, context).ConfigureAwait(false)
                             : ReadSubscriptValue(mapping, key, span, context);
                     }
-                    else if (keywords is not null && keywords.TryGetValue(root, out var keyword)) selected = arguments[keyword].Value;
-                    else throw new KeyNotFoundException(root);
+                    else if (keywords is not null && keywords.TryGetValue(keyword, out var argument)) selected = arguments[argument].Value;
+                    else throw new KeyNotFoundException(keyword);
                     context.CheckExecution(span);
 
-                    if (field.Suffix.Length != 0)
-                        selected = await ResolveFormatFieldSuffixAsync(selected, field.Suffix, span, context, asynchronous).ConfigureAwait(false);
-                    context.CheckExecution(span);
+                    if (field.Accesses.Length != 0)
+                    {
+                        selected = await ResolveFormatAccessesAsync(selected, field.Accesses).ConfigureAwait(false);
+                        context.CheckExecution(span);
+                    }
 
                     var conversion = field.Conversion;
                     if (conversion is { Value: not ('s' or 'r' or 'a') })
@@ -130,6 +119,42 @@ internal sealed partial class LythonRuntime
                     else AppendInterpolatedStringPart(output, selected, character, spec, context, span, field.PreparedSpec);
                     context.CheckExecution(span);
                 }
+            }
+
+            private async ValueTask<object> ResolveFormatAccessesAsync(object current, PyStringOps.FormatAccess[] accesses)
+            {
+                foreach (var access in accesses)
+                {
+                    context.CheckExecution(span);
+                    switch (access.Kind)
+                    {
+                        case PyStringOps.FormatAccessKind.Member:
+                        {
+                            var member = access.Text!;
+                            var resolved = asynchronous
+                                ? await TryResolveRuntimeMemberAsync(current, member, context, span).ConfigureAwait(false)
+                                : PyMemberAccess.TryResolve(current, member, context, span, out var found)
+                                    ? (true, found) : (false, PyNone.Instance);
+                            if (!resolved.Item1)
+                                throw PyMemberAccess.CreateMissingMemberError(current, member, span, context);
+                            current = resolved.Item2;
+                            break;
+                        }
+                        case PyStringOps.FormatAccessKind.Error:
+                            throw new InvalidOperationException(access.Text);
+                        default:
+                        {
+                            object key = access.Kind == PyStringOps.FormatAccessKind.IntegerIndex
+                                ? new BigInteger(access.Index)
+                                : PyString.FromString(access.Text!, context.MemoryGovernor, span);
+                            current = asynchronous
+                                ? await ReadLoweredSubscriptAsync(current, key, span, context).ConfigureAwait(false)
+                                : ReadSubscriptValue(current, key, span, context);
+                            break;
+                        }
+                    }
+                }
+                return current;
             }
 
             private void AdmitExpandedSpec(int length)

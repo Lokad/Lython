@@ -11,7 +11,11 @@ internal static partial class PyStringOps
 
     internal readonly record struct FormatPart(ReadOnlyMemory<byte> Literal, FormatField? Field = null, string? Error = null);
 
-    internal sealed record FormatField(string Root, string Suffix, Rune? Conversion,
+    internal enum FormatAccessKind { Member, StringIndex, IntegerIndex, Error }
+
+    internal readonly record struct FormatAccess(FormatAccessKind Kind, string? Text, long Index = 0);
+
+    internal sealed record FormatField(long Position, string? Keyword, FormatAccess[] Accesses, Rune? Conversion,
         string? Spec, FormatTemplate? NestedSpec, bool RecursiveSpec,
         LythonRuntime.InterpolatedFormatSpecifier? PreparedSpec);
 
@@ -22,7 +26,8 @@ internal static partial class PyStringOps
         governor.Reserve(bytes, span);
         try
         {
-            var result = ParseFormatTemplate(template.Utf8Bytes, 0, governor, span, token);
+            var nextPosition = 0;
+            var result = ParseFormatTemplate(template.Utf8Bytes, 0, governor, span, token, ref nextPosition);
             governor.Commit(bytes);
             return result;
         }
@@ -33,19 +38,27 @@ internal static partial class PyStringOps
     {
         token.ThrowIfCancellationRequested();
         long braces = 0;
+        long accessMarkers = 0;
+        var nesting = 0;
         var source = template.Utf8Span;
         for (var i = 0; i < source.Length; i++)
         {
             if ((i & 2047) == 0) token.ThrowIfCancellationRequested();
-            if (source[i] is (byte)'{' or (byte)'}') braces++;
+            switch (source[i])
+            {
+                case (byte)'{': braces++; nesting++; break;
+                case (byte)'}': braces++; if (nesting > 0) nesting--; break;
+                case (byte)'.' or (byte)'[' when nesting > 0: accessMarkers++; break;
+            }
         }
         // Two supported levels, list growth/replacement overlap, part/field
-        // records, UTF16 names/specs and the shared native spec descriptors.
-        return checked(512L + 8L * source.Length + 384L * braces);
+        // records, UTF-16 names/specs and native spec descriptors. Potential
+        // access markers also cover the list and final access-array overlap.
+        return checked(512L + 8L * source.Length + 384L * braces + 96L * accessMarkers);
     }
 
     private static FormatTemplate ParseFormatTemplate(ReadOnlyMemory<byte> source, int depth,
-        MemoryGovernor? owner, LythonSourceSpan? span, CancellationToken token)
+        MemoryGovernor? owner, LythonSourceSpan? span, CancellationToken token, ref int nextPosition)
     {
         var parts = new List<FormatPart>();
         var literal = 0;
@@ -85,7 +98,10 @@ internal static partial class PyStringOps
                 parts.Add(new(default, Error: "Single '{' encountered in format string"));
                 return new(parts.ToArray(), owner);
             }
-            try { parts.Add(new(default, ParseFormatField(source[(i + 1)..close], depth, owner, span, token))); }
+            try
+            {
+                parts.Add(new(default, ParseFormatField(source[(i + 1)..close], depth, owner, span, token, ref nextPosition)));
+            }
             // Store grammar failures at their original execution position.
             // Earlier fields still perform their lookups, hooks and side effects.
             catch (InvalidOperationException error)
@@ -100,7 +116,7 @@ internal static partial class PyStringOps
         return new(parts.ToArray(), owner);
     }
     private static FormatField ParseFormatField(ReadOnlyMemory<byte> fieldBytes, int depth,
-        MemoryGovernor? owner, LythonSourceSpan? span, CancellationToken token)
+        MemoryGovernor? owner, LythonSourceSpan? span, CancellationToken token, ref int nextPosition)
     {
         var end = fieldBytes.Length;
 
@@ -117,15 +133,25 @@ internal static partial class PyStringOps
         }
 
         var rootEnd = index;
+        List<FormatAccess>? accesses = null;
+        var badAccess = false;
         while (index < end && (fieldBytes.Span[index] == (byte)'.' || fieldBytes.Span[index] == (byte)'['))
         {
-            index = fieldBytes.Span[index] == (byte)'.'
+            var start = index + 1;
+            var member = fieldBytes.Span[index] == (byte)'.';
+            index = member
                 ? SkipFormatAttribute(fieldBytes.Span, index, token)
                 : SkipFormatBracket(fieldBytes.Span, index, token);
+            // Keep checking the enclosing grammar after an error that belongs
+            // to a particular access. The error itself is raised after lookup.
+            if (badAccess) continue;
+            var access = PrepareFormatAccess(fieldBytes.Span[start..(member ? index : index - 1)], member, token);
+            (accesses ??= []).Add(access);
+            badAccess = access.Kind == FormatAccessKind.Error;
         }
 
-        var fieldNameEnd = index;
-        var trailing = index < end && fieldBytes.Span[index] != (byte)'!' && fieldBytes.Span[index] != (byte)':';
+        if (!badAccess && index < end && fieldBytes.Span[index] is not ((byte)'!' or (byte)':'))
+            (accesses ??= []).Add(new(FormatAccessKind.Error, "Only '.' or '[' may follow ']' in format field specifier"));
 
         // Eager structural pass past the field-name walk: bracket spans are
         // skipped (a missing ']' fails before argument resolution), a stray
@@ -185,14 +211,29 @@ internal static partial class PyStringOps
             scan++;
         }
 
-        var root = Encoding.UTF8.GetString(fieldBytes.Span[..rootEnd]);
-        var suffixEnd = fieldNameEnd;
-        if (trailing)
+        var position = -1L;
+        string? keyword = null;
+        // Only successful fields reach later selections. Sharing numbering
+        // across nested templates preserves the order in which fields use it.
+        if (rootEnd == 0)
         {
-            Rune.DecodeFromUtf8(fieldBytes.Span[fieldNameEnd..], out _, out var width);
-            suffixEnd += width;
+            if (nextPosition < 0)
+                throw new InvalidOperationException("cannot switch from manual field specification to automatic field numbering");
+            position = nextPosition++;
         }
-        var suffix = Encoding.UTF8.GetString(fieldBytes.Span[rootEnd..suffixEnd]);
+        else
+        {
+            var root = Encoding.UTF8.GetString(fieldBytes.Span[..rootEnd]);
+            if (TryParseFormatIndex(root, out var explicitPosition, token))
+            {
+                if (nextPosition > 0)
+                    throw new InvalidOperationException("cannot switch from automatic field numbering to manual field specification");
+                nextPosition = -1;
+                position = explicitPosition;
+            }
+            else keyword = root;
+        }
+
         string? spec = null;
         FormatTemplate? nested = null;
         var recursive = false;
@@ -202,14 +243,27 @@ internal static partial class PyStringOps
             if (rawSpec.Span.Contains((byte)'{') || rawSpec.Span.Contains((byte)'}'))
             {
                 recursive = depth >= 1;
-                if (!recursive) nested = ParseFormatTemplate(rawSpec, depth + 1, owner, span, token);
+                if (!recursive) nested = ParseFormatTemplate(rawSpec, depth + 1, owner, span, token, ref nextPosition);
             }
             else spec = Encoding.UTF8.GetString(rawSpec.Span);
         }
         var prepared = LythonRuntime.PrepareConstantFormatSpecifier(spec, span ?? new(0, 0, 0, 0), token);
-        return new(root, suffix, conversion, spec, nested, recursive, prepared);
+        return new(position, keyword, accesses?.ToArray() ?? [], conversion, spec, nested, recursive, prepared);
     }
 
+    private static FormatAccess PrepareFormatAccess(ReadOnlySpan<byte> bytes, bool member, CancellationToken token)
+    {
+        if (bytes.IsEmpty) return new(FormatAccessKind.Error, "Empty attribute in format string");
+        var text = Encoding.UTF8.GetString(bytes);
+        if (member) return new(FormatAccessKind.Member, text);
+        try
+        {
+            return TryParseFormatIndex(text, out var index, token)
+                ? new(FormatAccessKind.IntegerIndex, null, index)
+                : new(FormatAccessKind.StringIndex, text);
+        }
+        catch (InvalidOperationException error) { return new(FormatAccessKind.Error, error.Message); }
+    }
 
     private static bool IsFormatFieldDelimiter(byte value)
         => value is (byte)'.' or (byte)'[' or (byte)'!' or (byte)':';
@@ -240,7 +294,7 @@ internal static partial class PyStringOps
         return scan + 1;
     }
 
-    internal static bool TryParseFormatIndex(string text, out long value, CancellationToken cancellationToken = default)
+    private static bool TryParseFormatIndex(string text, out long value, CancellationToken cancellationToken)
     {
         value = 0;
         if (text.Length == 0) return false;
