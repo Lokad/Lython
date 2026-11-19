@@ -1,0 +1,515 @@
+{
+  "complete": true,
+  "elapsedSeconds": 327.0622244249098,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "archivalOnlyRecovery": {
+    "retiredOnly": [],
+    "alreadyAbsent": [],
+    "freshIdleLease": true,
+    "allHashesPathsOwnershipLinksAndAliasesVerified": true,
+    "canonicalArchiveAndCurrentImagesPreserved": true,
+    "freeBeforeBytes": 229158912,
+    "freeAfterBytes": 217014272
+  },
+  "rows": [
+    {
+      "case": "scripts.config-generated-guards.medium",
+      "lane": "compile",
+      "elapsedMilliseconds": {
+        "reference-control": 2.129310776,
+        "candidate-control": 2.1380374155844155,
+        "reference": 2.0334686088709675,
+        "candidate": 2.0159646774193547
+      },
+      "cpuMilliseconds": {
+        "reference-control": 2.08,
+        "candidate-control": 2.0779220779220777,
+        "reference": 1.975806451612903,
+        "candidate": 1.975806451612903
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.4734435251831859,
+        "candidate-control": 0.6348898162042315,
+        "reference": 1.4285714710631232,
+        "candidate": 2.384508785156165
+      },
+      "elapsedChangePercent": [
+        -5.323135535601375,
+        -0.8607918202057419,
+        0.40983400275693693,
+        5.142386081460448
+      ],
+      "cpuChangePercent": [
+        -5.009305210918125,
+        -0.09990009990010762,
+        0.0,
+        5.1683010866684365
+      ],
+      "referenceSpreadPercent": 4.713235636435353,
+      "candidateSpreadPercent": 6.05530144116051
+    },
+    {
+      "case": "scripts.config-manifest.small",
+      "lane": "compile",
+      "elapsedMilliseconds": {
+        "reference-control": 0.14405366829548719,
+        "candidate-control": 0.14321741218535466,
+        "reference": 0.14322281031997694,
+        "candidate": 0.14152240216462547
+      },
+      "cpuMilliseconds": {
+        "reference-control": 0.1465938488071285,
+        "candidate-control": 0.14302059496567507,
+        "reference": 0.14413375612568463,
+        "candidate": 0.14240956992309883
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.2557837942260998,
+        "candidate-control": 0.2901049732015396,
+        "reference": 1.0487341487402684,
+        "candidate": 0.4915459800596129
+      },
+      "elapsedChangePercent": [
+        -1.7571688113276696,
+        -1.1872467462079261,
+        -0.5805170531424264,
+        -0.0037690467113549175
+      ],
+      "cpuChangePercent": [
+        -2.8543345563802336,
+        -2.43751963027774,
+        -1.1962403873540306,
+        -0.7723112128146359
+      ],
+      "referenceSpreadPercent": 0.5801156768632021,
+      "candidateSpreadPercent": 1.197697321981206
+    },
+    {
+      "case": "scripts.report-render.format-selectors.large",
+      "lane": "compile",
+      "elapsedMilliseconds": {
+        "candidate": 0.025338905187565913,
+        "reference": 0.026388443817023263,
+        "candidate-control": 0.026012616819587366,
+        "reference-control": 0.026354968677179864
+      },
+      "cpuMilliseconds": {
+        "candidate": 0.02561140963189876,
+        "reference": 0.026938817800341918,
+        "candidate-control": 0.0258528919754651,
+        "reference-control": 0.026553947867555407
+      },
+      "elapsedIQRPercent": {
+        "candidate": 1.06480220084592,
+        "reference": 4.116372307991009,
+        "candidate-control": 3.974420646627265,
+        "reference-control": 3.476913062730516
+      },
+      "elapsedChangePercent": [
+        -3.9772660969885965,
+        -3.855301450210924,
+        -1.4242105371649494,
+        -1.2990030904075134
+      ],
+      "cpuChangePercent": [
+        -4.927492283741975,
+        -4.031081961076389,
+        -3.5495220535861405,
+        -2.6401192605596813
+      ],
+      "referenceSpreadPercent": 0.12701642811050462,
+      "candidateSpreadPercent": 2.658803239660301
+    },
+    {
+      "case": "scripts.config-generated-guards.medium",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "candidate": 2.227083017777778,
+        "reference": 2.27169568907563,
+        "candidate-control": 2.2037488803418803,
+        "reference-control": 2.232027054852321
+      },
+      "cpuMilliseconds": {
+        "candidate": 2.2222222222222223,
+        "reference": 2.2689075630252105,
+        "candidate-control": 2.1794871794871793,
+        "reference-control": 2.236286919831224
+      },
+      "elapsedIQRPercent": {
+        "candidate": 2.1073692290578583,
+        "reference": 4.356585709249204,
+        "candidate-control": 5.325949833760159,
+        "reference-control": 3.2483329773470575
+      },
+      "elapsedChangePercent": [
+        -2.9910171974397604,
+        -1.963848921860023,
+        -1.2669279455625349,
+        -0.22150435245822386
+      ],
+      "cpuChangePercent": [
+        -3.9411206077872962,
+        -2.539912917271425,
+        -2.0576131687242927,
+        -0.6289308176100739
+      ],
+      "referenceSpreadPercent": 1.7772470157595865,
+      "candidateSpreadPercent": 1.0588383115719413
+    },
+    {
+      "case": "scripts.config-manifest.small",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "candidate": 0.4391685995893224,
+        "reference": 0.4406038477157361,
+        "candidate-control": 0.42915304689092765,
+        "reference-control": 0.4400336622039135
+      },
+      "cpuMilliseconds": {
+        "candidate": 0.5236139630390143,
+        "reference": 0.5177664974619289,
+        "candidate-control": 0.5096839959225281,
+        "reference-control": 0.5252317198764161
+      },
+      "elapsedIQRPercent": {
+        "candidate": 1.338086290995583,
+        "reference": 1.9598997951104558,
+        "candidate-control": 2.27364740525039,
+        "reference-control": 2.069173689235065
+      },
+      "elapsedChangePercent": [
+        -2.598888067858207,
+        -2.472677944339563,
+        -0.3257457087255444,
+        -0.19659009955247386
+      ],
+      "cpuChangePercent": [
+        -2.960164697887313,
+        -1.561032160060749,
+        -0.30800821355239094,
+        1.129363449691989
+      ],
+      "referenceSpreadPercent": 0.12957770297998827,
+      "candidateSpreadPercent": 2.3337950810216057
+    },
+    {
+      "case": "scripts.report-render.format-selectors.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 3.797873814516129,
+        "reference": 3.79181578125,
+        "candidate-control": 3.8289560000000002,
+        "reference-control": 3.873927592
+      },
+      "cpuMilliseconds": {
+        "candidate": 4.032258064516129,
+        "reference": 4.0625,
+        "candidate-control": 4.094488188976379,
+        "reference-control": 4.16
+      },
+      "elapsedIQRPercent": {
+        "candidate": 2.1646506868837965,
+        "reference": 1.4798605516379135,
+        "candidate-control": 0.4429895254933083,
+        "reference-control": 1.0220540022938014
+      },
+      "elapsedChangePercent": [
+        -1.963221451039221,
+        -1.1608784865486332,
+        0.15976602281380092,
+        0.9794837326658534
+      ],
+      "cpuChangePercent": [
+        -3.0707196029776673,
+        -1.5748031496062853,
+        -0.7444168734491274,
+        0.7874015748031704
+      ],
+      "referenceSpreadPercent": 2.165501055088992,
+      "candidateSpreadPercent": 0.8184101684755918
+    }
+  ],
+  "retentionDecisionPending": false,
+  "CPythonRefreshed": false,
+  "referenceRuntime": "ee057fd12854fc11f0d4a49b309d5c242a5abf40",
+  "measuredPrototype": "5828dad905ea6cd935baf0ac7db74dcfcdfa5a9c",
+  "cores": {
+    "reference": "008395219d84b6569f66f2b26a94da475b231ef221b3a2f6f79539f2e3cc3481",
+    "reference-control": "008395219d84b6569f66f2b26a94da475b231ef221b3a2f6f79539f2e3cc3481",
+    "candidate": "f428fd743b36e3d0de91371ec07d3d26112ea845ebbdbeafbd833b44990c32c9",
+    "candidate-control": "f428fd743b36e3d0de91371ec07d3d26112ea845ebbdbeafbd833b44990c32c9"
+  },
+  "archiveSHA256": "a40daf62363dbf96b264a8995924c6cd7a30a8668e42514e89f4efeb9a079961",
+  "retained": true,
+  "retainedCommit": "5784352e4",
+  "localAllocation": [
+    {
+      "case": "scripts.rule-default-closures",
+      "allocatedBytes": [
+        2142344,
+        2142344
+      ],
+      "allocatedChangePercent": 0.0,
+      "accountedPeak": [
+        2918791,
+        2918791
+      ]
+    },
+    {
+      "case": "scripts.annotated-rule-closures",
+      "allocatedBytes": [
+        1538128,
+        1538128
+      ],
+      "allocatedChangePercent": 0.0,
+      "accountedPeak": [
+        2445353,
+        2445353
+      ]
+    },
+    {
+      "case": "scripts.config-generated-guards.medium",
+      "allocatedBytes": [
+        75976,
+        75976
+      ],
+      "allocatedChangePercent": 0.0,
+      "accountedPeak": [
+        94214,
+        94214
+      ]
+    },
+    {
+      "case": "scripts.config-manifest.small",
+      "allocatedBytes": [
+        103288,
+        103288
+      ],
+      "allocatedChangePercent": 0.0,
+      "accountedPeak": [
+        58255,
+        58255
+      ]
+    },
+    {
+      "case": "scripts.report-render.format-selectors.large",
+      "allocatedBytes": [
+        4263066,
+        4262926
+      ],
+      "allocatedChangePercent": -0.0032840214061913287,
+      "accountedPeak": [
+        3503577,
+        3503577
+      ]
+    }
+  ],
+  "localCompilationAllocation": [
+    {
+      "case": "scripts.rule-default-closures",
+      "allocatedBytes": [
+        81952,
+        81952
+      ],
+      "allocatedChangePercent": 0.0
+    },
+    {
+      "case": "scripts.annotated-rule-closures",
+      "allocatedBytes": [
+        60928,
+        60928
+      ],
+      "allocatedChangePercent": 0.0
+    },
+    {
+      "case": "scripts.config-generated-guards.medium",
+      "allocatedBytes": [
+        2995378.875,
+        2951491.875
+      ],
+      "allocatedChangePercent": -1.4651568910460488
+    },
+    {
+      "case": "scripts.config-manifest.small",
+      "allocatedBytes": [
+        285592,
+        282688
+      ],
+      "allocatedChangePercent": -1.0168352054679364
+    },
+    {
+      "case": "scripts.report-render.format-selectors.large",
+      "allocatedBytes": [
+        65184,
+        62968
+      ],
+      "allocatedChangePercent": -3.399607265586646
+    }
+  ],
+  "stagingConditions": [
+    {
+      "available": 194560000,
+      "need": 195883358,
+      "withoutRetirement": 188755968,
+      "selected": [
+        {
+          "bytes": 5804032,
+          "links": 1,
+          "paths": [
+            "csv-rule-cpython-b1143-20261119/candidate/Lokad.Lython.dll"
+          ],
+          "sha256": "5e40c4284663f78a62016a5d83a6dc1263bf45742177ccbdb976a6fd39187dee",
+          "committedBlobVerified": true,
+          "canonicalCommit": "802c7130ed8564786480655057d7031e439bf56b",
+          "canonicalPath": "benchmarks/results/2026-11-19-csv-rule-cpython-checkpoint/measured-core.dll.gz"
+        }
+      ]
+    },
+    {
+      "available": 194531328,
+      "need": 195883358,
+      "withoutRetirement": 188727296,
+      "selected": [
+        {
+          "bytes": 5804032,
+          "links": 1,
+          "paths": [
+            "csv-rule-cpython-b1143-20261119/candidate/Lokad.Lython.dll"
+          ],
+          "sha256": "5e40c4284663f78a62016a5d83a6dc1263bf45742177ccbdb976a6fd39187dee",
+          "committedBlobVerified": true,
+          "canonicalCommit": "802c7130ed8564786480655057d7031e439bf56b",
+          "canonicalPath": "benchmarks/results/2026-11-19-csv-rule-cpython-checkpoint/measured-core.dll.gz"
+        }
+      ]
+    },
+    {
+      "changed": true,
+      "freeBeforeBytes": 188747776,
+      "freeAfterBytes": 229167104,
+      "files": [
+        {
+          "source": "allocation-current-20261101-ae22392d/worker/Microsoft.CodeAnalysis.dll",
+          "target": "current-text-cpu-20261101-830c6251/candidate/Microsoft.CodeAnalysis.dll",
+          "bytes": 3085096,
+          "originalInode": 811138,
+          "sha256": "42c9ce7891470f430267e2dc02d03571f9d046a7e7e121107754bee58d344613",
+          "metadata": {
+            "mode": 33188,
+            "uid": 1000,
+            "gid": 1000,
+            "size": 3085096,
+            "mtime_ns": 1778712400000000000,
+            "xattrs": {}
+          }
+        },
+        {
+          "source": "allocation-current-20261101-ae22392d/worker/Microsoft.CodeAnalysis.dll",
+          "target": "representative-checkpoint-20261101/candidate/Microsoft.CodeAnalysis.dll",
+          "bytes": 3085096,
+          "originalInode": 620243,
+          "sha256": "42c9ce7891470f430267e2dc02d03571f9d046a7e7e121107754bee58d344613",
+          "metadata": {
+            "mode": 33188,
+            "uid": 1000,
+            "gid": 1000,
+            "size": 3085096,
+            "mtime_ns": 1778712400000000000,
+            "xattrs": {}
+          }
+        },
+        {
+          "source": "allocation-current-20261101-ae22392d/worker/Microsoft.CodeAnalysis.dll",
+          "target": "sigma-properties-20261101/baseline/Microsoft.CodeAnalysis.dll",
+          "bytes": 3085096,
+          "originalInode": 811322,
+          "sha256": "42c9ce7891470f430267e2dc02d03571f9d046a7e7e121107754bee58d344613",
+          "metadata": {
+            "mode": 33188,
+            "uid": 1000,
+            "gid": 1000,
+            "size": 3085096,
+            "mtime_ns": 1778712400000000000,
+            "xattrs": {}
+          }
+        },
+        {
+          "source": "allocation-current-20261101-ae22392d/worker/Microsoft.CodeAnalysis.dll",
+          "target": "sigma-properties-20261101/candidate/Microsoft.CodeAnalysis.dll",
+          "bytes": 3085096,
+          "originalInode": 811256,
+          "sha256": "42c9ce7891470f430267e2dc02d03571f9d046a7e7e121107754bee58d344613",
+          "metadata": {
+            "mode": 33188,
+            "uid": 1000,
+            "gid": 1000,
+            "size": 3085096,
+            "mtime_ns": 1778712400000000000,
+            "xattrs": {}
+          }
+        },
+        {
+          "source": "allocation-current-20261101-ae22392d/worker/Microsoft.CodeAnalysis.CSharp.dll",
+          "target": "current-text-cpu-20261101-830c6251/candidate/Microsoft.CodeAnalysis.CSharp.dll",
+          "bytes": 7013712,
+          "originalInode": 811166,
+          "sha256": "1af1de8a162d2312eb2f6b781f5edbe8cec7d5cd268c7e4de24396225e54260f",
+          "metadata": {
+            "mode": 33188,
+            "uid": 1000,
+            "gid": 1000,
+            "size": 7013712,
+            "mtime_ns": 1778712462000000000,
+            "xattrs": {}
+          }
+        },
+        {
+          "source": "allocation-current-20261101-ae22392d/worker/Microsoft.CodeAnalysis.CSharp.dll",
+          "target": "representative-checkpoint-20261101/candidate/Microsoft.CodeAnalysis.CSharp.dll",
+          "bytes": 7013712,
+          "originalInode": 620242,
+          "sha256": "1af1de8a162d2312eb2f6b781f5edbe8cec7d5cd268c7e4de24396225e54260f",
+          "metadata": {
+            "mode": 33188,
+            "uid": 1000,
+            "gid": 1000,
+            "size": 7013712,
+            "mtime_ns": 1778712462000000000,
+            "xattrs": {}
+          }
+        },
+        {
+          "source": "allocation-current-20261101-ae22392d/worker/Microsoft.CodeAnalysis.CSharp.dll",
+          "target": "sigma-properties-20261101/baseline/Microsoft.CodeAnalysis.CSharp.dll",
+          "bytes": 7013712,
+          "originalInode": 811350,
+          "sha256": "1af1de8a162d2312eb2f6b781f5edbe8cec7d5cd268c7e4de24396225e54260f",
+          "metadata": {
+            "mode": 33188,
+            "uid": 1000,
+            "gid": 1000,
+            "size": 7013712,
+            "mtime_ns": 1778712462000000000,
+            "xattrs": {}
+          }
+        },
+        {
+          "source": "allocation-current-20261101-ae22392d/worker/Microsoft.CodeAnalysis.CSharp.dll",
+          "target": "sigma-properties-20261101/candidate/Microsoft.CodeAnalysis.CSharp.dll",
+          "bytes": 7013712,
+          "originalInode": 811255,
+          "sha256": "1af1de8a162d2312eb2f6b781f5edbe8cec7d5cd268c7e4de24396225e54260f",
+          "metadata": {
+            "mode": 33188,
+            "uid": 1000,
+            "gid": 1000,
+            "size": 7013712,
+            "mtime_ns": 1778712462000000000,
+            "xattrs": {}
+          }
+        }
+      ]
+    }
+  ]
+}

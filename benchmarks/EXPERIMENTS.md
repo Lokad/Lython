@@ -503,6 +503,10 @@ original conditions retained. Current comparisons belong in
   stock CPython. Invoice is 1.03–1.07× warm and 1.02–1.06× compile-to-result.
   Annotated rules remain around 4× warm even with faster compilation.
   [CPython checkpoint](results/2026-11-19-csv-rule-cpython-checkpoint/README.md).
+- B1144 removes abstract-state snapshots on selected paths. Report
+  compilation falls 1.30–3.98% with lower CPU. Validator compile-only and
+  the warm report control span zero. Retain the simpler state handling.
+  [Selected paths](results/2026-11-19-selected-abstract-paths/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
