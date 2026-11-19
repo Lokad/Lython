@@ -8,61 +8,6 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class ExecutionContext
     {
-        private ValueTask ExecutePreparedDefinitionOperation(ExecutableOperation operation, ExecutableInstruction instruction, bool asynchronous)
-        {
-            var span = instruction.Span;
-            switch (operation)
-            {
-                case ExecutableAnnotationsEnabled:
-                    PublishInstructionResult(instruction, !PostponedAnnotations);
-                    break;
-                case ExecutablePostponedAnnotation postponed:
-                    PublishInstructionResult(instruction, CreatePostponedAnnotationValue(postponed.Annotation, this));
-                    break;
-                case ExecutableStoreModuleAnnotation annotation:
-                    var value = _execution.Stack.TakeValue(instruction.InputStart, instruction.LiveExtent);
-                    return StoreAnnotationEntryAsync(ResolveName("__annotations__", span, this),
-                        annotation.Name, value, this, span, asynchronous);
-                case ExecutableStartFunctionDefaults start:
-                    var owner = new PendingFunctionDefaults(start.Binding.ParameterLayout, this, span,
-                        start.Binding.KeywordRecordCache);
-                    try { PublishInstructionResult(instruction, owner); }
-                    catch { owner.Dispose(); throw; }
-                    break;
-                case ExecutableCreateFunction function:
-                    return CreateExecutableFunction(function, instruction.InputStart, asynchronous);
-                case ExecutableCreateLambda lambda:
-                    {
-                        var layout = lambda.Expression.ParameterLayout;
-                        using var defaults = layout.Defaults.Length == 0 ? null
-                            : new PendingFunctionDefaults(layout, this, span, lambda.KeywordRecordCache);
-                        var first = instruction.InputStart;
-                        PyFunctionBase function;
-                        try
-                        {
-                            if (defaults is not null)
-                            {
-                                for (var i = 0; i < layout.Defaults.Length; i++)
-                                    defaults.Add(layout.Defaults[i], RuntimeValue(_execution.Stack[first + i]), span);
-                                defaults.Complete();
-                            }
-                            function = CreateLambdaFunction(lambda.Expression, defaults?.Values ?? default, this);
-                        }
-                        finally { _execution.Stack.RetireTo(instruction.ResultSlot); }
-                        defaults?.Publish();
-                        PublishInstructionResult(instruction, function);
-                    }
-                    break;
-                case ExecutableStartClassHeader header:
-                    PublishInstructionResult(instruction, new CallExpansion.CallArgumentAccumulator(header.Count, this, ClassHeaderExpansionTarget));
-                    break;
-                case ExecutableCreateClass create:
-                    return ExecutePreparedClassDefinitionAsync(create, instruction.InputStart, span, asynchronous);
-                default: throw new InvalidOperationException("Unknown prepared definition operation.");
-            }
-            return ValueTask.CompletedTask;
-        }
-
         private async ValueTask ExecutePreparedClassDefinitionAsync(ExecutableCreateClass create, int first, LythonSourceSpan span, bool asynchronous)
         {
             var definition = create.Definition;
