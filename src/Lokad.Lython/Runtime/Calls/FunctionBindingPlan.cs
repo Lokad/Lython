@@ -117,10 +117,14 @@ internal sealed class FunctionBindingPlan
         LythonSourceSpan span, out int index)
     {
         if (argument.NativeKeyword is { } key)
-            return _layout.TryGetNativeKeywordIndex(key, context, span, out index);
+            return TryGetKeywordIndex(key, context, span, out index);
         return LayoutParameterIndex.TryGetValue(argument.KeywordName, out index) &&
             index >= PositionalOnlyCount && index < NamedLayoutCount;
     }
+
+    internal bool TryGetKeywordIndex(PyString key, LythonRuntime.ExecutionContext context,
+        LythonSourceSpan span, out int index)
+        => _layout.TryGetNativeKeywordIndex(key, context, span, out index);
 
     public PyDict? KeywordDefaultStorage => KeywordDefaults switch
     {

@@ -86,9 +86,9 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
             _bindingPlan.VariadicDictionaryIndex >= 0 &&
             positionalCount == _bindingPlan.PositionalCount - (receiver is null ? 0 : 1);
 
-    internal PyDict? CopyExpandedKeywords(PyDict source, LythonRuntime.ExecutionContext context,
-        LythonSourceSpan mappingSpan, LythonSourceSpan callSpan)
-        => source.CopyExpandedKeywords(_bindingPlan, context, mappingSpan, callSpan);
+    internal PyDict? PrepareExpandedKeywords(PyDict source, LythonRuntime.ExecutionContext context,
+        LythonSourceSpan mappingSpan, LythonSourceSpan callSpan, bool freshMapping)
+        => source.PrepareExpandedKeywords(_bindingPlan, context, mappingSpan, callSpan, freshMapping);
 
     internal BoundFunctionArguments BindPreparedKeywords(ReadOnlySpan<LythonRuntime.ExecutableSlot> positional, object? receiver,
         PyDict keywords, LythonSourceSpan span, LythonRuntime.ExecutionContext context)

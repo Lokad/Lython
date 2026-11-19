@@ -52,6 +52,52 @@ public sealed class BindingPlanConstructionTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task InlineKeywordDictionaryKeepsEntriesThroughSuspension(bool asynchronous)
+    {
+        const string source = """
+            calls = []
+            def collect(label, **fields):
+                calls.append(label)
+                with open('text.txt') as input_file:
+                    fields['status'] = label + input_file.read()
+                return fields
+            key = ''.join(['dynamic', '_key'])
+            value = []
+            fresh = collect('fresh', **{key: None, 'next': 1, key: value})
+            named = {key: value}
+            other = collect('other', **named)
+            record = collect('record', **{'fixed': value})
+            print(list(fresh), next(iter(fresh)) is key, fresh[key] is value)
+            print(other is not named, 'status' not in named, record['fixed'] is value)
+            print(fresh['status'], other['status'], record['status'])
+            try: collect('unreachable', **{'label': 1, 5: value})
+            except TypeError as error: print('keywords must be strings' in str(error))
+            try: collect('unreachable', **{'label': 1})
+            except TypeError as error: print('multiple values' in str(error))
+            print(calls)
+            """;
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        var host = new MockLythonHost(); host.SeedFile("/text.txt", "!");
+        var delayed = new DelayedLythonHost(); delayed.SeedFile("/text.txt", "!");
+        using (var result = asynchronous ? await script.RunAsync(delayed) : script.Run(host))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("['dynamic_key', 'next', 'status'] True True\nTrue True True\n" +
+                "fresh! other! record!\nTrue\nTrue\n['fresh', 'other', 'record']\n", result.StandardOutput);
+            if (asynchronous) Assert.True(delayed.CompletedAsynchronously > 0);
+            Assert.True(budget.ReservedBytes > baseline);
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task BodyLocalKeywordsRemainOverflowAndFactoryDefaultsStayIndependent(bool asynchronous)
         => await Check(asynchronous, "shared declaration, separate defaults", """
             def make(value):

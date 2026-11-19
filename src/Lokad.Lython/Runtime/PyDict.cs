@@ -69,17 +69,18 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
     public int Length => Count;
     internal bool HasProtocolKeys => _nativeItems is null ? _items.HasProtocolKeys : _nativeProtocolCount != 0;
 
-    internal PyDict? CopyExpandedKeywords(FunctionBindingPlan plan, LythonRuntime.ExecutionContext context,
-        LythonSourceSpan mappingSpan, LythonSourceSpan callSpan)
+    internal PyDict? PrepareExpandedKeywords(FunctionBindingPlan plan, LythonRuntime.ExecutionContext context,
+        LythonSourceSpan mappingSpan, LythonSourceSpan callSpan, bool freshMapping)
     {
         if (!SupportsNativeStringReads) return null;
         var version = _version;
-        var output = new PyDict(Count, context.MemoryGovernor, mappingSpan);
+        var copy = freshMapping ? null : new PyDict(Count, context.MemoryGovernor, mappingSpan);
+        var output = copy ?? this;
         var transferred = false;
         try
         {
-            // Host admission can reenter. Detect a changed source before
-            // sampling any entries. The ordinary path starts its own expansion.
+            // Copy admission can reenter and change an exposed source. A fresh
+            // display already owns its final capacity and has no other users.
             context.CheckExecution(mappingSpan);
             if (version != _version || !SupportsNativeStringReads) return null;
             var conflicting = -1;
@@ -89,10 +90,9 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
                 if (!IsNativeLive(i)) continue;
                 var entry = _nativeItems![i];
                 if (entry.Key is not PyString key) throw RuntimeErrors.Type("keywords must be strings", mappingSpan);
-                var value = ReadNativeValue(i);
                 if (conflicting < 0)
-                    _ = plan.TryGetKeywordIndex(CallArgumentValue.Keyword(key, value), context, callSpan, out conflicting);
-                output.AppendNativeItem(key, value, entry.Hash);
+                    _ = plan.TryGetKeywordIndex(key, context, callSpan, out conflicting);
+                if (copy is not null) copy.AppendNativeItem(key, ReadNativeValue(i), entry.Hash);
             }
             // Mapping errors precede binder errors even when a collision was
             // found in an earlier entry. Every bindable parameter is filled.

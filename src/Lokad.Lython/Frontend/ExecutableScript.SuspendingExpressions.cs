@@ -15,7 +15,7 @@ internal sealed record ExecutableStartCall(int ArgumentCount, bool DeferSingleSt
 internal sealed record ExecutableAppendCall(CallArgumentForm Form) : ExecutableOperation;
 internal sealed record ExecutableFinishCall(LythonSourceSpan TargetSpan) : ExecutableOperation;
 internal sealed record ExecutableCallWithKeywordMapping(int PositionalCount, LythonSourceSpan TargetSpan,
-    LythonSourceSpan MappingSpan) : ExecutableOperation;
+    LythonSourceSpan MappingSpan, bool FreshMapping) : ExecutableOperation;
 internal sealed record ExecutableFormatField(string? FormatSpecifier, bool DynamicSpecifier, bool Append,
     LythonRuntime.InterpolatedFormatSpecifier? PreparedFormat);
 internal sealed record ExecutableCreateGeneratorExpression(ExecutableCodeObject CodeObject, LythonSourceSpan OuterSpan,
@@ -40,8 +40,10 @@ internal sealed partial class ExecutableScript
             {
                 foreach (var argument in call.Arguments)
                     block = CompileExpression(argument.Expression, block);
-                EmitOperation(new ExecutableCallWithKeywordMapping(positionalCount, call.Target.Span, mapping.Expression.Span),
-                    call.Span, block);
+                // A dictionary display used directly as the mapping creates a
+                // private dictionary. Its keys and values can still have aliases.
+                EmitOperation(new ExecutableCallWithKeywordMapping(positionalCount, call.Target.Span,
+                    mapping.Expression.Span, mapping.Expression is LoweredDictLiteralExpression), call.Span, block);
                 return block;
             }
 

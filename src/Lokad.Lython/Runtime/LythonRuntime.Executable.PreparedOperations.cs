@@ -315,7 +315,7 @@ internal sealed partial class LythonRuntime
             var method = target as PyBoundMethod;
             if (mapping is PyDict dictionary && (method?.Function ?? target) is PyFunctionBase function &&
                 function.CanTakeExpandedKeywords(positional.Length, method?.Receiver) &&
-                function.CopyExpandedKeywords(dictionary, this, call.MappingSpan, span) is { } keywords)
+                function.PrepareExpandedKeywords(dictionary, this, call.MappingSpan, span, call.FreshMapping) is { } keywords)
                 return InvokeWithPreparedKeywords(function, positional.Span, method?.Receiver, keywords, span, this, asynchronous);
 
             // Operand storage belongs to the caller and remains live through
