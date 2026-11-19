@@ -891,6 +891,9 @@ function keeps independent metadata overrides and mutable defaults. Host-facing
 text projections have their own result ownership. A definition evaluates its defaults in the
 defining scope and fills the final Python tuple and keyword dictionary directly.
 Those containers remain distinct per function and reflect later mutation.
+Binding reads the current keyword default directly when the live dictionary
+still has the expected key in its prepared slot. Other dictionaries and
+structural key changes use the ordinary lookup.
 Executable declarations evaluate decorators and defaults in the surrounding
 instruction stream. The same construction step handles yielding definitions,
 with private default storage owned by the operand stack until publication or
