@@ -1,0 +1,223 @@
+{
+  "complete": true,
+  "elapsedSeconds": 95.51394198602065,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "archivalOnlyRecovery": {
+    "retiredOnly": [
+      {
+        "bytes": 74156,
+        "sha256": "55ed0de28dd6b66427cca462f18707194642b87a7c6ec5ff37103fc69d423924",
+        "canonical": "benchmarks/results/2026-11-18-direct-global-operands/initial/observations.tgz",
+        "canonicalSHA256": "55ed0de28dd6b66427cca462f18707194642b87a7c6ec5ff37103fc69d423924",
+        "committedBlobVerified": true,
+        "kind": "exact archived measured replica",
+        "paths": [
+          "direct-globals-b933-20261118/observations.tgz"
+        ],
+        "links": 1
+      },
+      {
+        "bytes": 74131,
+        "sha256": "d5a324b1e2382a4f7ce8f43bb3c981fc8b806e18ad1627de39d57cdc54113e26",
+        "canonical": "benchmarks/results/2026-11-18-direct-global-operands/refined/observations.tgz",
+        "canonicalSHA256": "d5a324b1e2382a4f7ce8f43bb3c981fc8b806e18ad1627de39d57cdc54113e26",
+        "committedBlobVerified": true,
+        "kind": "exact archived measured replica",
+        "paths": [
+          "direct-globals-refined-b934-20261118/observations.tgz"
+        ],
+        "links": 1
+      },
+      {
+        "bytes": 72788,
+        "sha256": "6cb3afce3ad13b2471b4535ea18513595e1d0a017ae6c257566cffaa6a525dce",
+        "canonical": "benchmarks/results/2026-11-18-result-transport/comparison/observations.tgz",
+        "canonicalSHA256": "6cb3afce3ad13b2471b4535ea18513595e1d0a017ae6c257566cffaa6a525dce",
+        "committedBlobVerified": true,
+        "kind": "exact archived measured replica",
+        "paths": [
+          "result-transport-b961-20261118/observations.tgz"
+        ],
+        "links": 1
+      },
+      {
+        "bytes": 72120,
+        "sha256": "f2e0f302788ce0027981e4fdbd318526e4545b4f893a75c6670a4d1542b1d047",
+        "canonical": "benchmarks/results/2026-11-18-current-helper-phases/observations.tgz",
+        "canonicalSHA256": "f2e0f302788ce0027981e4fdbd318526e4545b4f893a75c6670a4d1542b1d047",
+        "committedBlobVerified": true,
+        "kind": "exact archived measured replica",
+        "paths": [
+          "current-helper-phases-b986-20261118/observations.tgz"
+        ],
+        "links": 1
+      },
+      {
+        "bytes": 71871,
+        "sha256": "f74c5ada1f84fe72efa9a3ec8d42be17f9556662a090f0e70d74cc692f222e44",
+        "canonical": "benchmarks/results/2026-11-18-discarded-call-results/refined/observations.tgz",
+        "canonicalSHA256": "f74c5ada1f84fe72efa9a3ec8d42be17f9556662a090f0e70d74cc692f222e44",
+        "committedBlobVerified": true,
+        "kind": "exact archived measured replica",
+        "paths": [
+          "discarded-results-refined-b945-20261118/observations.tgz"
+        ],
+        "links": 1
+      },
+      {
+        "bytes": 71331,
+        "sha256": "00eae59858d58c683d1b569d89b1e2a5fb736feb48a19c89cfc3ff03f87ba78b",
+        "canonical": "benchmarks/results/2026-11-19-prepared-format-selectors/observations.tgz",
+        "canonicalSHA256": "00eae59858d58c683d1b569d89b1e2a5fb736feb48a19c89cfc3ff03f87ba78b",
+        "committedBlobVerified": true,
+        "kind": "exact archived measured replica",
+        "paths": [
+          "prepared-format-selectors-b1025-20261119/observations.tgz"
+        ],
+        "links": 1
+      },
+      {
+        "bytes": 71309,
+        "sha256": "9dfd8a7c5cd9f9e7dbeb147d929bbd67adc7811c06e35767ccec7cfd5cb7be29",
+        "canonical": "benchmarks/results/2026-11-18-result-entry-correction/observations.tgz",
+        "canonicalSHA256": "9dfd8a7c5cd9f9e7dbeb147d929bbd67adc7811c06e35767ccec7cfd5cb7be29",
+        "committedBlobVerified": true,
+        "kind": "exact archived measured replica",
+        "paths": [
+          "entry-results-b947-20261118/observations.tgz"
+        ],
+        "links": 1
+      },
+      {
+        "bytes": 70307,
+        "sha256": "00cf843587d7e4ae81f444162dd923c29d50445379fa15b04ac681ee1edfced3",
+        "canonical": "benchmarks/results/2026-11-19-final-default-transport/observations.tgz",
+        "canonicalSHA256": "00cf843587d7e4ae81f444162dd923c29d50445379fa15b04ac681ee1edfced3",
+        "committedBlobVerified": true,
+        "kind": "exact archived measured replica",
+        "paths": [
+          "retained-default-transport-b1043-20261119/observations.tgz"
+        ],
+        "links": 1
+      },
+      {
+        "bytes": 69706,
+        "sha256": "31bcefc16420244b298e72fd2ecee58bdb2787b3a7b6597e52b310f4069e2264",
+        "canonical": "benchmarks/results/2026-11-01-sigma-properties-rejected/raw-diagnostics.tar.gz",
+        "canonicalSHA256": "31bcefc16420244b298e72fd2ecee58bdb2787b3a7b6597e52b310f4069e2264",
+        "committedBlobVerified": true,
+        "kind": "exact archived measured replica",
+        "paths": [
+          "sigma-properties-20261101/raw-diagnostics.tar.gz"
+        ],
+        "links": 1
+      },
+      {
+        "bytes": 69675,
+        "sha256": "d50290e90dbe4ab8bca83c4a465f6f0d6655e75c86c860f705a412d9848d896d",
+        "canonical": "benchmarks/results/2026-11-01-bulk-whitespace-rejected/raw-diagnostics.tar.gz",
+        "canonicalSHA256": "d50290e90dbe4ab8bca83c4a465f6f0d6655e75c86c860f705a412d9848d896d",
+        "committedBlobVerified": true,
+        "kind": "exact archived measured replica",
+        "paths": [
+          "whitespace-bulk-20261101-ae22392d/raw-diagnostics.tar.gz"
+        ],
+        "links": 1
+      }
+    ],
+    "alreadyAbsent": [],
+    "freshIdleLease": true,
+    "allHashesPathsOwnershipLinksAndAliasesVerified": true,
+    "canonicalArchiveAndCurrentImagesPreserved": true,
+    "freeBeforeBytes": 266264576,
+    "freeAfterBytes": 266969088
+  },
+  "rows": [
+    {
+      "case": "scripts.report-render.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference": 2.729058774566474,
+        "candidate": 2.702857717514124,
+        "reference-control": 2.763073867052023,
+        "candidate-control": 2.720792893258427
+      },
+      "cpuMilliseconds": {
+        "reference": 2.947976878612717,
+        "candidate": 2.937853107344633,
+        "reference-control": 3.063583815028902,
+        "candidate-control": 2.9775280898876404
+      },
+      "elapsedIQRPercent": {
+        "reference": 0.2760605803561757,
+        "candidate": 0.08536100238380416,
+        "reference-control": 1.682412725649594,
+        "candidate-control": 0.9529067075178118
+      },
+      "elapsedChangePercent": [
+        -2.179317399217584,
+        -1.5302151092582372,
+        -0.9600766863847476,
+        -0.302883960766287
+      ],
+      "cpuChangePercent": [
+        -4.104040081014826,
+        -2.808988764044962,
+        -0.3434142018389319,
+        1.0024234412866262
+      ],
+      "referenceSpreadPercent": 1.2464038078825457,
+      "candidateSpreadPercent": 0.6635634435392612
+    },
+    {
+      "case": "scripts.report-render.format-method.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference": 3.8103775,
+        "candidate": 3.7984113798449615,
+        "reference-control": 3.8151405390625,
+        "candidate-control": 3.884899696
+      },
+      "cpuMilliseconds": {
+        "reference": 4.0476190476190474,
+        "candidate": 4.0310077519379846,
+        "reference-control": 4.0625,
+        "candidate-control": 4.08
+      },
+      "elapsedIQRPercent": {
+        "reference": 0.4318140664998791,
+        "candidate": 0.5932845430191085,
+        "reference-control": 0.8392093370397237,
+        "candidate-control": 0.7103365893439594
+      },
+      "elapsedChangePercent": [
+        -0.4384939177535352,
+        -0.3140402796058539,
+        1.8284819713258127,
+        1.9557693693079026
+      ],
+      "cpuChangePercent": [
+        -0.7751937984496138,
+        -0.41039671682625567,
+        0.43076923076923457,
+        0.8000000000000007
+      ],
+      "referenceSpreadPercent": 0.12500176327674417,
+      "candidateSpreadPercent": 2.276960221158797
+    }
+  ],
+  "retentionDecisionPending": false,
+  "CPythonRefreshed": false,
+  "referenceRuntime": "014e585313e6dff320925348152e2967336735c5",
+  "measuredPrototype": "f04a8daf385de0416b5891d85bac6dc4e2680165",
+  "cores": {
+    "reference": "76b64d1a55732d162674ebf14e8c3a260654f277af94f738098274f55a344d90",
+    "reference-control": "76b64d1a55732d162674ebf14e8c3a260654f277af94f738098274f55a344d90",
+    "candidate": "e4bceee2c9be41334262d3eb0c30c3c2cead3199769f258cbd32e551d76dcad6",
+    "candidate-control": "e4bceee2c9be41334262d3eb0c30c3c2cead3199769f258cbd32e551d76dcad6"
+  },
+  "archiveSHA256": "963df87deb540bc795566d70f78e04398da5ad06e9a7967deaa28a1fe6b7ddab",
+  "retained": true,
+  "retainedCommit": "9ac02d15d"
+}

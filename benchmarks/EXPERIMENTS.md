@@ -93,6 +93,10 @@ original conditions retained. Current comparisons belong in
   report on R611. The separate selector continuation and repeated key
   construction motivate a prepared native dictionary lookup comparison.
   [Record and text attribution](results/2026-11-19-current-record-text-costs/README.md).
+- B1045 retains prepared native format keys. The selector report improves
+  13.17–13.75% warm and 13.87–14.21% compile-to-result with lower CPU. The
+  ordinary method-format control remains mixed after the short B1046 repeat.
+  [Selector comparison and controls](results/2026-11-19-native-format-selectors/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
