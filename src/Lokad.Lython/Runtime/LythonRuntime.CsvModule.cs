@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Numerics;
 using System.Text;
 using Lokad.Lython.Frontend;
@@ -236,9 +237,9 @@ internal sealed partial class LythonRuntime
         private readonly LythonSourceSpan _span;
         private bool _completed;
 
-        // Source/parser objects, builders and list shells; backing is charged
-        // from actual capacities, independently of emitted values.
-        internal const long ShellBytes = 512;
+        // Source/parser objects, builders, list shells and the dialect's
+        // fixed-size search sets. Backing and emitted values are charged separately.
+        internal const long ShellBytes = 1024;
         internal long OwnedBytes => ShellBytes + _parser.StorageBytes;
 
         private CsvRecordSource(CsvOptions options, LythonSourceSpan span, ExecutionContext context)
@@ -507,6 +508,10 @@ internal sealed partial class LythonRuntime
         private readonly LythonSourceSpan _span;
         private readonly List<CsvField> _fields = new();
         private readonly GovernedByteBuilder _record;
+        private readonly PyString? _activeQuote;
+        private readonly SearchValues<byte> _fieldStartBytes;
+        private readonly SearchValues<byte> _unquotedBytes;
+        private readonly SearchValues<byte> _quotedBytes;
         private int _fieldStart;
         private long _stringBytes;
         private int _payloadBytes;
@@ -543,6 +548,32 @@ internal sealed partial class LythonRuntime
             _context = context;
             _span = span;
             _record = new GovernedByteBuilder(context.MemoryGovernor, span, 16);
+
+            _activeQuote = options.Quoting == CsvQuotingMode.None ? null : options.QuoteChar;
+            var delimiter = options.Delimiter.Utf8Span;
+            var quote = _activeQuote is { } q ? q.Utf8Span : default;
+            var escape = options.EscapeChar is { } e ? e.Utf8Span : default;
+            // The dialect is fixed for the reader. These sets find lead bytes;
+            // the parser checks the full scalars before interpreting syntax.
+            Span<byte> unquoted = stackalloc byte[5];
+            unquoted[0] = (byte)'\r';
+            unquoted[1] = (byte)'\n';
+            unquoted[2] = delimiter[0];
+            var bareCount = 3;
+            if (!escape.IsEmpty) unquoted[bareCount++] = escape[0];
+            _unquotedBytes = SearchValues.Create(unquoted[..bareCount]);
+            if (quote.IsEmpty) _fieldStartBytes = _unquotedBytes;
+            else
+            {
+                unquoted[bareCount] = quote[0];
+                _fieldStartBytes = SearchValues.Create(unquoted[..(bareCount + 1)]);
+            }
+
+            Span<byte> quoted = stackalloc byte[2];
+            var quotedCount = 0;
+            if (!quote.IsEmpty) quoted[quotedCount++] = quote[0];
+            if (!escape.IsEmpty) quoted[quotedCount++] = escape[0];
+            _quotedBytes = SearchValues.Create(quoted[..quotedCount]);
         }
 
         // One source item completes at most one row. No subsequent item is
@@ -563,21 +594,8 @@ internal sealed partial class LythonRuntime
         {
             if (_readyRecord is not null) throw new InvalidOperationException("CSV input advanced before consuming its record.");
             var delimiter = _options.Delimiter.Utf8Span;
-            var quote = _options.Quoting != CsvQuotingMode.None && _options.QuoteChar is { } q
-                ? q.Utf8Span : default;
+            var quote = _activeQuote is { } q ? q.Utf8Span : default;
             var escape = _options.EscapeChar is { } e ? e.Utf8Span : default;
-            // Lead bytes find candidates; full scalar matches below distinguish
-            // Unicode dialect characters sharing the same UTF-8 prefix.
-            Span<byte> unquoted = stackalloc byte[5];
-            unquoted[0] = (byte)'\r'; unquoted[1] = (byte)'\n'; unquoted[2] = delimiter[0];
-            var bareCount = 3;
-            if (!escape.IsEmpty) unquoted[bareCount++] = escape[0];
-            var startCount = bareCount;
-            if (!quote.IsEmpty) unquoted[startCount++] = quote[0];
-            Span<byte> quoted = stackalloc byte[2];
-            var quotedCount = 0;
-            if (!quote.IsEmpty) quoted[quotedCount++] = quote[0];
-            if (!escape.IsEmpty) quoted[quotedCount++] = escape[0];
 
             for (var i = 0; i < text.Length;)
             {
@@ -593,8 +611,8 @@ internal sealed partial class LythonRuntime
                     width -= next;
                 }
 
-                var candidates = _state == FieldState.Quoted ? quoted[..quotedCount]
-                    : unquoted[..(_state == FieldState.FieldStart ? startCount : bareCount)];
+                var candidates = _state == FieldState.Quoted ? _quotedBytes
+                    : _state == FieldState.FieldStart ? _fieldStartBytes : _unquotedBytes;
                 var found = text.Slice(i, width).IndexOfAny(candidates);
                 var ordinary = found < 0 ? width : found;
                 if (ordinary != 0)
