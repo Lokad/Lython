@@ -295,6 +295,10 @@ original conditions retained. Current comparisons belong in
   Captured rules improve with supporting CPU. Sibling warm timing is
   inconclusive. Ordinary CPU and annotated and forwarding controls rise.
   [Capture transfer](results/2026-11-19-funded-capture-transfer/README.md).
+- B1097 measures less compiler allocation, elapsed and CPU on the rule
+  scripts. It keeps the candidate private after a `locals()` ordering
+  regression. Annotated compile-to-result also regresses.
+  [Declaration preparation](results/2026-11-19-child-declaration-preparation/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
