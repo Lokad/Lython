@@ -3,11 +3,11 @@
 | Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
 | Unannotated rule closures | 2,048 inputs / 4,096 definitions | 2.307–2.321 ms | 0.683–0.688 ms | 3.35–3.40× | B1122 diagnostic. Controls L/C 0.61 / 0.70%. IQR ≤0.74%. |
-| Annotated rule closures | 2,048 inputs / 2,048 definitions | 1.635–1.698 ms | 0.409–0.411 ms | 3.98–4.16× | B1122 diagnostic. Controls L/C 3.86 / 0.49%. IQR ≤1.94%. Gap size uncertain. |
+| Annotated rule closures | 2,048 inputs / 2,048 definitions | 1.656–1.708 ms | 0.416–0.423 ms | 3.92–4.11× | B1143 diagnostic. Controls L/C 3.15 / 1.70%. IQR ≤3.14%. Gap size uncertain. |
 | Captured rule closures | 2,048 inputs / 4,096 returned closures | 2.437–2.454 ms | 0.776–0.790 ms | 3.09–3.16× | B1122 diagnostic. Controls L/C 0.71 / 1.69%. IQR ≤1.69%. |
 | Inline forwarding with dynamic keys | 1,024 records / 26,112 B | 1.894–1.913 ms | 1.139–1.159 ms | 1.63–1.68× | B1102 diagnostic. Controls L/C 1.01 / 1.74%. IQR ≤2.35%. |
 | Expanded forwarding report | 1,024 records / 26,112 B | 1.853–1.891 ms | 1.180–1.187 ms | 1.56–1.60× | B1109 diagnostic. Controls L/C 2.06 / 0.58%. IQR ≤3.93%. |
-| CSV invoice | 4,096 data records / 127,031 B | 7.174–7.230 ms | 6.439–6.564 ms | 1.09–1.12× | B1114 diagnostic. Controls L/C 0.79 / 1.95%. IQR ≤3.04%. |
+| CSV invoice | 4,096 data records / 127,031 B | 6.439–6.606 ms | 6.169–6.276 ms | 1.03–1.07× | B1143 diagnostic. Controls L/C 2.59 / 1.73%. IQR ≤1.56%. |
 | Retained nonlocal siblings | 240 factories / 720 returned closures | 0.169–0.170 ms | 0.188–0.190 ms | 0.89–0.90× | B1109 diagnostic. Controls L/C 0.57 / 0.89%. IQR ≤2.72%. |
 | Shipment report with format selectors | 3,072 records / 189,441 B | 3.693–3.750 ms | 3.082–3.150 ms | 1.17–1.22× | B1069 diagnostic. Controls L/C 1.52 / 2.22%. IQR ≤3.89%. |
 | Generated validator | 96 guards / 1,714 B JSON | 0.084–0.085 ms | 0.044–0.046 ms | 1.83–1.92× | B1136 diagnostic. Controls L/C 1.13 / 3.76%. IQR ≤3.73%. |
@@ -19,8 +19,9 @@ Controls L/C report the difference between the two Lython/CPython medians.
 
 B1136 measures the validator at **e20604ef4 / frozen 1e9d02fb**.
 B1130 measures the manifest at **a472eb2a4 / frozen e18ee460**.
-B1122 measures the three rule scripts at **0d16f8307 / frozen 99840bea**. B1114 measures the CSV invoice at **2841f6ac2 /
-frozen a2ec3ec4**. B1109 measures expanded forwarding and retained
+B1143 measures the CSV invoice and annotated rules at **353ec074c / frozen 5e40c428**.
+B1122 measures unannotated and captured rules at **0d16f8307 / frozen 99840bea**.
+B1109 measures expanded forwarding and retained
 siblings at **3e67fd010 / frozen aa15d342**. B1102 measures inline
 forwarding at **80cbf4988 / frozen f26c8272**. B1069 measures the shipment
 report at **12fabffb1 / frozen 9b8511fc**.
@@ -29,6 +30,7 @@ All ran **2026-11-19 UTC** against stock **CPython 3.13.16** on the quiet
 uses duplicate processes per engine. Each row describes its measured revision.
 B1122 passed the measured scripts' output and file checks. Its source
 predates the generator-lambda and iterator-cleanup fixture corrections.
+[B1143 observations](../benchmarks/results/2026-11-19-csv-rule-cpython-checkpoint/README.md) ·
 [B1136 observations](../benchmarks/results/2026-11-19-native-integer-cpython/README.md) ·
 [B1130 observations](../benchmarks/results/2026-11-19-postfix-cpython-checkpoint/README.md) ·
 [B1122 observations](../benchmarks/results/2026-11-19-retained-lexical-cpython/README.md) ·
@@ -55,16 +57,16 @@ The table compares workload latency under different containment boundaries.
 | --- | --- | ---: | ---: | ---: | --- |
 | Unannotated rule closures | Compilation only | 0.03072–0.03102 ms | 0.04189–0.04201 ms | 0.73–0.74× | B1122 diagnostic. Controls L/C 1.00 / 0.30%. IQR ≤0.44%. |
 | Unannotated rule closures | Compile-to-result | 2.372–2.375 ms | 0.728–0.729 ms | 3.25–3.26× | B1122 diagnostic. Controls L/C 0.13 / 0.20%. IQR ≤1.60%. |
-| Annotated rule closures | Compilation only | 0.02342–0.02344 ms | 0.03100–0.03110 ms | 0.75–0.76× | B1122 diagnostic. Controls L/C 0.07 / 0.30%. IQR ≤1.11%. |
-| Annotated rule closures | Compile-to-result | 1.668–1.726 ms | 0.431–0.435 ms | 3.83–4.00× | B1122 diagnostic. Controls L/C 3.43 / 0.96%. IQR ≤3.97%. |
+| Annotated rule closures | Compilation only | 0.02233–0.02275 ms | 0.03110–0.03140 ms | 0.71–0.73× | B1143 diagnostic. Controls L/C 1.86 / 0.97%. IQR ≤2.77%. |
+| Annotated rule closures | Compile-to-result | 1.695–1.769 ms | 0.443–0.455 ms | 3.73–3.99× | B1143 diagnostic. Controls L/C 4.35 / 2.56%. IQR ≤2.97%. Gap size uncertain. |
 | Captured rule closures | Compilation only | 0.03460–0.03524 ms | 0.04742–0.04748 ms | 0.73–0.74× | B1122 diagnostic. Controls L/C 1.86 / 0.14%. IQR ≤1.31%. |
 | Captured rule closures | Compile-to-result | 2.519–2.523 ms | 0.830–0.839 ms | 3.00–3.04× | B1122 diagnostic. Controls L/C 0.15 / 1.09%. IQR ≤1.51%. |
 | Inline forwarding with dynamic keys | Compilation only | 0.05339–0.05370 ms | 0.06049–0.06111 ms | 0.87–0.89× | B1102 diagnostic. Controls L/C 0.57 / 1.01%. IQR ≤1.53%. |
 | Inline forwarding with dynamic keys | Compile-to-result | 2.003–2.012 ms | 1.285–1.298 ms | 1.54–1.57× | B1102 diagnostic. Controls L/C 0.47 / 1.00%. IQR ≤1.66%. |
 | Expanded forwarding report | Compilation only | 0.04857–0.05090 ms | 0.06165–0.06317 ms | 0.77–0.83× | B1109 diagnostic. Controls L/C 4.81 / 2.47%. IQR ≤3.75%. Gap size uncertain. |
 | Expanded forwarding report | Compile-to-result | 1.958–2.007 ms | 1.320–1.321 ms | 1.48–1.52× | B1109 diagnostic. Controls L/C 2.50 / 0.04%. IQR ≤2.15%. |
-| CSV invoice | Compilation only | 0.09178–0.09497 ms | 0.09994–0.10061 ms | 0.91–0.95× | B1114 diagnostic. Controls L/C 3.48 / 0.67%. IQR ≤0.97%. |
-| CSV invoice | Compile-to-result | 7.391–7.406 ms | 6.710–6.804 ms | 1.09–1.10× | B1114 diagnostic. Controls L/C 0.21 / 1.40%. IQR ≤0.65%. |
+| CSV invoice | Compilation only | 0.07780–0.07865 ms | 0.09355–0.09493 ms | 0.82–0.84× | B1143 diagnostic. Controls L/C 1.08 / 1.48%. IQR ≤1.10%. |
+| CSV invoice | Compile-to-result | 6.625–6.737 ms | 6.367–6.465 ms | 1.02–1.06× | B1143 diagnostic. Controls L/C 1.69 / 1.53%. IQR ≤0.76%. |
 | Generated validator | Compilation only | 2.04878–2.08010 ms | 1.86838–2.00960 ms | 1.02–1.11× | B1136 diagnostic. Controls L/C 1.53 / 7.56%. IQR ≤2.74%. Gap size uncertain. |
 | Generated validator | Compile-to-result | 2.199–2.243 ms | 2.025–2.072 ms | 1.06–1.11× | B1136 diagnostic. Controls L/C 2.01 / 2.34%. IQR ≤3.93%. |
 | Configuration manifest | Compilation only | 0.15576–0.15686 ms | 0.16836–0.17140 ms | 0.91–0.93× | B1130 diagnostic. Controls L/C 0.70 / 1.80%. IQR ≤0.80%. |
@@ -79,6 +81,7 @@ one execution and compiled-owner disposal. Separately warmed medians are not
 additive. Warm-only numbers do not describe single-use scripts; use compile-to-result.
 These collections exclude cold startup. Earlier startup measurements use separate boundaries.
 
+
 ## Earlier measured workloads
 
 These rows retain the sources and uncertainties of earlier measurements.
@@ -88,6 +91,8 @@ These rows retain the sources and uncertainties of earlier measurements.
 
 | Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| CSV invoice | 4,096 data records / 127,031 B | 7.174–7.230 ms | 6.439–6.564 ms | 1.09–1.12× | B1114 diagnostic. Controls L/C 0.79 / 1.95%. IQR ≤3.04%. |
+| Annotated rule closures | 2,048 inputs / 2,048 definitions | 1.635–1.698 ms | 0.409–0.411 ms | 3.98–4.16× | B1122 diagnostic. Controls L/C 3.86 / 0.49%. IQR ≤1.94%. Gap size uncertain. |
 | Unannotated rule closures | 2,048 inputs / 4,096 definitions | 2.818–2.883 ms | 0.681 ms | 4.14–4.24× | B1057 diagnostic. Controls L/C 2.29 / 0.03%. IQR ≤0.77%. |
 | Annotated rule closures | 2,048 inputs / 2,048 definitions | 1.964–2.010 ms | 0.410–0.411 ms | 4.77–4.90× | B1057 diagnostic. Controls L/C 2.37 / 0.28%. IQR ≤1.40%. |
 | Captured rule closures | 2,048 inputs / 4,096 returned closures | 3.163–3.227 ms | 0.768–0.792 ms | 3.99–4.20× | B1057 diagnostic. Controls L/C 2.02 / 3.20%. IQR ≤1.30%. |
@@ -105,6 +110,10 @@ These rows retain the sources and uncertainties of earlier measurements.
 
 | Workload | Phase | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| CSV invoice | Compile-to-result | 7.391–7.406 ms | 6.710–6.804 ms | 1.09–1.10× | B1114 diagnostic. Controls L/C 0.21 / 1.40%. IQR ≤0.65%. |
+| CSV invoice | Compilation only | 0.09178–0.09497 ms | 0.09994–0.10061 ms | 0.91–0.95× | B1114 diagnostic. Controls L/C 3.48 / 0.67%. IQR ≤0.97%. |
+| Annotated rule closures | Compile-to-result | 1.668–1.726 ms | 0.431–0.435 ms | 3.83–4.00× | B1122 diagnostic. Controls L/C 3.43 / 0.96%. IQR ≤3.97%. |
+| Annotated rule closures | Compilation only | 0.02342–0.02344 ms | 0.03100–0.03110 ms | 0.75–0.76× | B1122 diagnostic. Controls L/C 0.07 / 0.30%. IQR ≤1.11%. |
 | Generated validator | Compilation only | 2.48736–2.51106 ms | 1.83120–1.83826 ms | 1.35–1.37× | B1102 diagnostic. Controls L/C 0.95 / 0.39%. IQR ≤5.01%. Gap size uncertain. |
 | Generated validator | Compile-to-result | 2.635–2.642 ms | 1.967–1.968 ms | 1.34× | B1102 diagnostic. Controls L/C 0.29 / 0.08%. IQR ≤2.07%. |
 | Configuration edit | Compilation only | 0.03577–0.03642 ms | 0.03409–0.03420 ms | 1.05–1.07× | B1002 diagnostic. Controls L/C 1.82 / 0.33%. IQR ≤1.21%. |

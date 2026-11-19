@@ -499,6 +499,10 @@ original conditions retained. Current comparisons belong in
   falls 3.20–6.13%. The repeat finds lower annotated compile-to-result
   latency and a 1.35–2.00% CPU cost on the invoice control.
   [Inline binding state](results/2026-11-19-inline-function-binding-state/README.md).
+- B1143 refreshes invoice and annotated rules at the combined source against
+  stock CPython. Invoice is 1.03–1.07× warm and 1.02–1.06× compile-to-result.
+  Annotated rules remain around 4× warm even with faster compilation.
+  [CPython checkpoint](results/2026-11-19-csv-rule-cpython-checkpoint/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
