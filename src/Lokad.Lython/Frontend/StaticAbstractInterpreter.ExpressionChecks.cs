@@ -196,10 +196,8 @@ internal static partial class StaticAbstractInterpreter
                 AnalyzeExpression(conditional.Condition, diagnostics, bindings);
                 if (TryResolveConditionTruth(conditional.Condition, bindings, out var conditionalTruth))
                 {
-                    var selectedBindings = bindings.Clone();
-                    StaticConditionRefinements.Apply(conditional.Condition, conditionalTruth, selectedBindings);
-                    AnalyzeExpression(conditionalTruth ? conditional.Consequent : conditional.Alternative, diagnostics, selectedBindings);
-                    bindings.TakeBranchResult(selectedBindings);
+                    StaticConditionRefinements.Apply(conditional.Condition, conditionalTruth, bindings);
+                    AnalyzeExpression(conditionalTruth ? conditional.Consequent : conditional.Alternative, diagnostics, bindings);
                 }
                 else
                 {

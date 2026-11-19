@@ -76,16 +76,19 @@ internal static partial class StaticAbstractInterpreter
             case WithStatementSyntax withStatement:
             {
                 AnalyzeExpression(withStatement.ContextExpression, diagnostics, bindings);
-                var withBindings = bindings.Clone();
+                // The target can shadow a name used by the context expression.
+                // Read its incoming fact before binding any of the targets.
+                var contextValue = withStatement.VariableName is null ? default
+                    : StaticAbstractValueResolver.ResolveOrUnknown(withStatement.ContextExpression, bindings);
                 foreach (var name in withStatement.BoundNames)
-                    withBindings.Remove(name);
-                if (withStatement.VariableName is not null && StaticAbstractValueResolver.TryResolve(withStatement.ContextExpression, bindings, out var contextValue) && contextValue.Kind is AbstractValueKind.TextFileHandle or AbstractValueKind.BinaryFileHandle or AbstractValueKind.StringIO or AbstractValueKind.BytesIO)
+                    bindings.Remove(name);
+                if (withStatement.VariableName is { } variable && contextValue.Kind is
+                    AbstractValueKind.TextFileHandle or AbstractValueKind.BinaryFileHandle or AbstractValueKind.StringIO or AbstractValueKind.BytesIO)
                 {
-                    withBindings.Set(withStatement.VariableName, contextValue);
+                    bindings.Set(variable, contextValue);
                 }
 
-                AnalyzeStatements(withStatement.Body, diagnostics, withBindings);
-                bindings.TakeBranchResult(withBindings);
+                AnalyzeStatements(withStatement.Body, diagnostics, bindings);
                 foreach (var name in withStatement.BoundNames)
                     bindings.Remove(name);
                 return;
@@ -296,19 +299,11 @@ internal static partial class StaticAbstractInterpreter
         AnalyzeExpression(ifStatement.Condition, diagnostics, bindings);
         if (TryResolveConditionTruth(ifStatement.Condition, bindings, out var conditionTruth))
         {
-            if (conditionTruth)
+            var body = conditionTruth ? ifStatement.ThenStatements : ifStatement.ElseStatements;
+            if (body is not null)
             {
-                var reachableBindings = bindings.Clone();
-                StaticConditionRefinements.Apply(ifStatement.Condition, assumedTruth: true, reachableBindings);
-                AnalyzeStatements(ifStatement.ThenStatements, diagnostics, reachableBindings);
-                bindings.TakeBranchResult(reachableBindings);
-            }
-            else if (ifStatement.ElseStatements is not null)
-            {
-                var reachableBindings = bindings.Clone();
-                StaticConditionRefinements.Apply(ifStatement.Condition, assumedTruth: false, reachableBindings);
-                AnalyzeStatements(ifStatement.ElseStatements, diagnostics, reachableBindings);
-                bindings.TakeBranchResult(reachableBindings);
+                StaticConditionRefinements.Apply(ifStatement.Condition, conditionTruth, bindings);
+                AnalyzeStatements(body, diagnostics, bindings);
             }
 
             return;
