@@ -60,6 +60,10 @@ original conditions retained. Current comparisons belong in
   and repeat warm timing has CPU support. Initial adverse forwarding elapsed
   did not recur. Reused-default timings still vary between identical workers.
   [Direct definition records](results/2026-11-19-direct-definition-records/README.md).
+- B1033 profiles both rule scripts and forwarding after direct definition
+  records. Definition, reserve and borrowed invocation work remain visible.
+  Frame creation is sparse. Forwarding formatting and split work also
+  justify inspection. [Current frame profiles](results/2026-11-19-current-frame-costs/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
