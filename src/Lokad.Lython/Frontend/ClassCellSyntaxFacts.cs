@@ -21,7 +21,7 @@ internal static class ClassCellSyntaxFacts
             // methods establish a separate cell for their own defining class.
             if (statement is ClassDefinitionStatementSyntax nested)
             {
-                if (SuiteReferencesEnclosingClass(nested.Body)) return true;
+                if (SuiteReferencesEnclosingClass(nested)) return true;
                 continue;
             }
             foreach (var body in StatementSyntaxTraversal.EnumerateChildBodies(statement))
@@ -50,7 +50,7 @@ internal static class ClassCellSyntaxFacts
             }
             if (statement is ClassDefinitionStatementSyntax nested)
             {
-                if (SuiteReferencesEnclosingClass(nested.Body, postponedAnnotations)) return true;
+                if (SuiteReferencesEnclosingClass(nested, postponedAnnotations)) return true;
                 continue;
             }
             foreach (var child in StatementSyntaxTraversal.EnumerateChildBodies(statement))
@@ -94,12 +94,12 @@ internal static class ClassCellSyntaxFacts
 
     private static bool ReferencesClass(ExpressionSyntax expression) => ReferencesFromExpression(expression);
 
-    private static bool SuiteReferencesEnclosingClass(IReadOnlyList<StatementSyntax> body, bool postponedAnnotations = false)
+    private static bool SuiteReferencesEnclosingClass(ClassDefinitionStatementSyntax definition, bool postponedAnnotations = false)
     {
-        var bindings = ScopeDirectiveFactsCollector.ForFunction([], body, includeClassCellRequirement: false);
+        var bindings = ScopeDirectiveFactsCollector.ForClassBindings(definition);
         if (bindings.IsNonlocal("__class__")) return true;
         if (bindings.IsGlobal("__class__") || bindings.LocalNames.Contains("__class__")) return false;
-        var pending = new Stack<StatementSyntax>(body);
+        var pending = new Stack<StatementSyntax>(definition.Body);
         while (pending.Count != 0)
         {
             var statement = pending.Pop();

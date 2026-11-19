@@ -1,0 +1,214 @@
+{
+  "identity": {
+    "referenceCommit": "47fbd2c1b17f3566128351ff8a6c91903b5bb277",
+    "candidateCommit": "5e1cc5f5be3477ec4ec518ab10c03bacc032cdf4",
+    "images": {
+      "reference": {
+        "CompileAllocation.dll": "367506e137763bbec26b1ff6f33f5e45d6d457d3a63b8430ca8a51157d3abe3c",
+        "CompileAllocation.deps.json": "3fe96e15b013d820c4c4ca07486c16ba98ed406546718cac75336d4ea2ce19e7",
+        "CompileAllocation.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0",
+        "Lokad.Lython.dll": "8e7930a7a80a6fcab278892e6291e07c4c2be096307085a865d13390ea1edaea"
+      },
+      "candidate": {
+        "CompileAllocation.dll": "367506e137763bbec26b1ff6f33f5e45d6d457d3a63b8430ca8a51157d3abe3c",
+        "CompileAllocation.deps.json": "3fe96e15b013d820c4c4ca07486c16ba98ed406546718cac75336d4ea2ce19e7",
+        "CompileAllocation.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0",
+        "Lokad.Lython.dll": "f49f67966e76b1455a478af887a72f6bb7594b1f1c0fabb282a5cee45503473b"
+      }
+    }
+  },
+  "rows": [
+    {
+      "workload": "NestedClosuresAndGeneratorsEscape",
+      "referenceBytes": 99064,
+      "candidateBytes": 98464,
+      "changePercent": -0.6056690624242966
+    },
+    {
+      "workload": "NestedClassesHaveIndependentClassCells",
+      "referenceBytes": 58128,
+      "candidateBytes": 55392,
+      "changePercent": -4.706853839801816
+    },
+    {
+      "workload": "ExplicitLocalAndGlobalBindingsOverrideImplicitLookup",
+      "referenceBytes": 50000,
+      "candidateBytes": 48640,
+      "changePercent": -2.72
+    },
+    {
+      "workload": "SuperUsesLexicalClassAndReceiver",
+      "referenceBytes": 86640,
+      "candidateBytes": 83992,
+      "changePercent": -3.0563250230840278
+    },
+    {
+      "workload": "scripts.config-generated-guards.medium",
+      "referenceBytes": 3765669,
+      "candidateBytes": 3765669,
+      "changePercent": 0.0
+    },
+    {
+      "workload": "scripts.config-manifest.small",
+      "referenceBytes": 328216,
+      "candidateBytes": 328216,
+      "changePercent": 0.0
+    }
+  ],
+  "measured": {
+    "reference": {
+      "coreSha256": "8e7930a7a80a6fcab278892e6291e07c4c2be096307085a865d13390ea1edaea",
+      "boundary": "Local synchronous public compilation and compiled-owner disposal. Borrowed budget returns to baseline after every invocation. Counts current-thread allocations. No elapsed claim.",
+      "rows": [
+        {
+          "id": "NestedClosuresAndGeneratorsEscape",
+          "bytes": [
+            99064,
+            99064,
+            99064,
+            99064,
+            99064
+          ],
+          "characters": 258
+        },
+        {
+          "id": "NestedClassesHaveIndependentClassCells",
+          "bytes": [
+            58128,
+            58128,
+            58128,
+            58128,
+            58128
+          ],
+          "characters": 167
+        },
+        {
+          "id": "ExplicitLocalAndGlobalBindingsOverrideImplicitLookup",
+          "bytes": [
+            50000,
+            50000,
+            50000,
+            50000,
+            50000
+          ],
+          "characters": 159
+        },
+        {
+          "id": "SuperUsesLexicalClassAndReceiver",
+          "bytes": [
+            86640,
+            86640,
+            86640,
+            86640,
+            86640
+          ],
+          "characters": 228
+        },
+        {
+          "id": "scripts.config-generated-guards.medium",
+          "bytes": [
+            3841066.5,
+            3764517,
+            3765699.5,
+            3765635.5,
+            3765669
+          ],
+          "characters": 23531
+        },
+        {
+          "id": "scripts.config-manifest.small",
+          "bytes": [
+            328216,
+            328216,
+            328216,
+            328099,
+            328024
+          ],
+          "characters": 1877
+        }
+      ]
+    },
+    "candidate": {
+      "coreSha256": "f49f67966e76b1455a478af887a72f6bb7594b1f1c0fabb282a5cee45503473b",
+      "boundary": "Local synchronous public compilation and compiled-owner disposal. Borrowed budget returns to baseline after every invocation. Counts current-thread allocations. No elapsed claim.",
+      "rows": [
+        {
+          "id": "NestedClosuresAndGeneratorsEscape",
+          "bytes": [
+            98464,
+            98464,
+            98464,
+            98464,
+            98464
+          ],
+          "characters": 258
+        },
+        {
+          "id": "NestedClassesHaveIndependentClassCells",
+          "bytes": [
+            55392,
+            55392,
+            55392,
+            55392,
+            55392
+          ],
+          "characters": 167
+        },
+        {
+          "id": "ExplicitLocalAndGlobalBindingsOverrideImplicitLookup",
+          "bytes": [
+            48640,
+            48640,
+            48640,
+            48640,
+            48640
+          ],
+          "characters": 159
+        },
+        {
+          "id": "SuperUsesLexicalClassAndReceiver",
+          "bytes": [
+            83992,
+            83992,
+            83992,
+            83992,
+            83992
+          ],
+          "characters": 228
+        },
+        {
+          "id": "scripts.config-generated-guards.medium",
+          "bytes": [
+            3766855.875,
+            3765786.625,
+            3765652.25,
+            3765669,
+            3765669
+          ],
+          "characters": 23531
+        },
+        {
+          "id": "scripts.config-manifest.small",
+          "bytes": [
+            328216,
+            328216,
+            328216,
+            328046.5,
+            328024
+          ],
+          "characters": 1877
+        }
+      ]
+    }
+  },
+  "focusedTests": {
+    "win": {
+      "public": 122,
+      "whitebox": 54
+    },
+    "ubuntu": {
+      "public": 122,
+      "whitebox": 54
+    }
+  }
+}

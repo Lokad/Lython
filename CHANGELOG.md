@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Reuse prepared class and function bindings while resolving lexical class
+  cells, including nested classes and `super`.
+
 - Keep eligible nested lexical calls on admitted slots until a caller needs
   its context. Share fixed tuple-return slots with the ordinary frame path
   and transfer pending work at its current instruction.
