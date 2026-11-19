@@ -64,6 +64,10 @@ original conditions retained. Current comparisons belong in
   records. Definition, reserve and borrowed invocation work remain visible.
   Frame creation is sparse. Forwarding formatting and split work also
   justify inspection. [Current frame profiles](results/2026-11-19-current-frame-costs/README.md).
+- B1034/B1035 keep grouped definition admission private. The prototype
+  makes 6,144 fewer positive budget resizes on each rule script and lowers
+  allocation at the same accounted peaks. The confirmation leaves the
+  whole-script timing mixed. [Grouped admission](results/2026-11-19-grouped-definition-admission/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
