@@ -212,6 +212,11 @@ original conditions retained. Current comparisons belong in
   annotated, captured and forwarding effects.
   [Initial comparison](results/2026-11-19-prepared-definition-dispatch/README.md) ·
   [Confirmation](results/2026-11-19-prepared-dispatch-confirmation/README.md).
+- B1077 bypasses the immediate inline-to-frame handoff for entries starting
+  with a frame-only operation. Ordinary compile-to-result elapsed rises,
+  ordinary warm timing spans zero, annotated warm elapsed falls with mixed
+  CPU and captured-rule candidate medians diverge. The frame-first change
+  stays private. [Factory frame entry](results/2026-11-19-factory-frame-entry/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
