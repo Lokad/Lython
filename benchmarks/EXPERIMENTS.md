@@ -250,6 +250,10 @@ original conditions retained. Current comparisons belong in
   Ordinary rules and asynchronous reused defaults improve. Complete
   forwarding regresses in elapsed and CPU with stable controls. Allocation
   and accounted peak match. [Argument binding scans](results/2026-11-19-argument-binding-scan/README.md).
+- B1086 removes a branch-target rewrite pass and emits identical executable
+  instructions. Manifest compilation improves with lower CPU. The two
+  validator candidate processes compile at substantially different rates,
+  so that lane needs confirmation. [Final branch targets](results/2026-11-19-final-block-targets/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
