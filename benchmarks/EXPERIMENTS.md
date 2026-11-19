@@ -392,6 +392,10 @@ original conditions retained. Current comparisons belong in
   `47fbd2c1b`. The mixed annotated repeat keeps that control open.
   [Call entry](results/2026-11-19-inline-lexical-entry/README.md) ·
   [Annotated repeat](results/2026-11-19-inline-lexical-entry/confirmation/README.md).
+- B1118 copies admitted keyword tables with their existing bucket links.
+  Named forwarding runs 0.69–2.33% slower with stable allocation. The
+  mutable-bound result varies by candidate worker and inline CPU rises.
+  Keep this snapshot path private. [Table copy](results/2026-11-19-keyword-table-copy/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
