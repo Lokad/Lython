@@ -226,6 +226,14 @@ original conditions retained. Current comparisons belong in
   elapsed and CPU. Captured, positional and forwarding elapsed span zero.
   Invoice CPU is slightly higher.
   [Factory frame removal](results/2026-11-19-deferred-factory-definitions/README.md).
+- B1080 retains the compact reachable-block map. The exact probe preserves
+  final instructions and protected ranges. Compile-to-result elapsed falls
+  for both targets. Validator CPU and compile-only elapsed remain mixed.
+  [Block map comparison](results/2026-11-19-reachable-block-map/README.md).
+- B1081 profiles the retained factory path. Definition records and native
+  call entry remain observable in the rule scripts. Split construction,
+  keyword copying and formatting remain in forwarding.
+  [Call attribution](results/2026-11-19-retained-factory-call-profile/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup

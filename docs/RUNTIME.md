@@ -401,9 +401,9 @@ ordinary fields/lists and the existing nested walkers for recursive target/heade
 shapes; no retained child-edge cache is built. Exception header expressions
 execute through those instructions; bare handlers need no second type-name resolver.
 Compiler preparation owns one mutable instruction list per block through target
-normalization, operand forwarding and slot layout. Dead suffixes retire in place;
-only final linearization creates the retained instruction array. These construction
-lists do not escape into execution or add another runtime representation.
+normalization, operand forwarding and slot layout. The reachability map compacts
+the builder's block list in original order and translates protected range endpoints.
+Only final linearization creates the retained instruction array.
 Instructions store an opcode, source span, opcode metadata and compiler-prepared
 storage positions. The opcode determines each metadata operand's domain;
 operand projections and control-flow retargeting keep explicit validity checks.
