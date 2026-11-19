@@ -1109,8 +1109,9 @@ Private cursor disposal is terminal, keeps
 the original subject through actual asynchronous cleanup, then clears its roots.
 Breaking a loop does not close a retained Python iterator. The core has no runtime NuGet dependencies;
 the optional regex adapter owns its backend dependency. Python tokenization reads
-normalized source directly, preserving original positions without a masked copy
-or a generic regex lexer. The parser and executable engine consume that token stream.
+normalized source directly and records physical token lines and invalid numeric
+adjacency as it scans. Ordinary parser spans use those prepared line indexes.
+The newline table supplies arbitrary offsets and embedded f-string coordinates.
 Indentation uses eight-column tab stops and checks alternate columns to reject
 ambiguous tab/space mixes. Blank and comment-only lines do not establish levels.
 

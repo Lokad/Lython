@@ -327,6 +327,10 @@ original conditions retained. Current comparisons belong in
   compiles faster with lower CPU. Its compile-to-result elapsed rises and
   the generated validator compiles more slowly. Keep the candidate private.
   [Branch facts](results/2026-11-19-one-abstract-fact-map/README.md).
+- B1105 prepares source positions and numeric adjacency during tokenization.
+  The validator and manifest improve in compilation and compile-to-result
+  with lower CPU. Local compilation allocation rises.
+  [Token source transport](results/2026-11-19-token-source-transport/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
