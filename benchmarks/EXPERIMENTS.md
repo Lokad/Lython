@@ -276,6 +276,11 @@ original conditions retained. Current comparisons belong in
   compile-to-result are slower with higher CPU, and the inline allocation
   benefit stays with the retained B1090 transfer.
   [Keyword copy loop](results/2026-11-19-keyword-copy-path/README.md).
+- B1093 profiles the three retained rule workloads from B1091. Instruction
+  dispatch, memory admission and builtin arithmetic are visible across all
+  three. Function binding and closure storage are more visible for captured
+  rules. The profile does not establish an improvement or a paired timing.
+  [Retained rule stages](results/2026-11-19-retained-rule-stage-profile/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup

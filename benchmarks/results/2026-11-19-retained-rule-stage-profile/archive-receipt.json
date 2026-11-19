@@ -1,0 +1,13 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "ramTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 269361152,
+  "archiveSHA256": "c5a41ad3049305c7aaf60c06adb87a16222c4b045d8806f16b27a453138ab44b",
+  "source": "R664/B1093 06b40a712 rule-definition CPU attribution",
+  "performanceComparison": false,
+  "failure": null
+}
