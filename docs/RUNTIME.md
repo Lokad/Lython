@@ -347,6 +347,11 @@ first definition later fails. For `def`, keyword-default storage is admitted
 before default expressions run. Unpublished values refund on failure. A
 published dictionary admits replacement capacity before a mutation requiring
 private keys.
+Executable definitions build the positional-default tuple from evaluated
+slots. Fresh integers can stay unboxed until observed. Binding uses the live
+tuple and holds the selected value through keyword lookup and suspension.
+The slot-backed form admits its wider capacity and eventual boxes before
+construction, so a definition can need more allowance while allocating less.
 One scope walk collects directives, local bindings
 and annotations, retaining explicit first-binding order. Function slots reuse these
 facts after the parameter prefix. Module function, import, class and type-alias

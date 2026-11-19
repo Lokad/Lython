@@ -311,6 +311,10 @@ original conditions retained. Current comparisons belong in
   original async slowdown does not recur across all pairs. Computed, captured
   and constant-default timing still varies by process.
   [Confirmation](results/2026-11-19-positional-default-slots/confirmation/README.md).
+- B1101 retains direct binding through the final positional tuple. Rule
+  allocation stays lower and accounted peaks stay higher. Ordinary warm
+  timing spans zero. Computed-default CPU falls under `RunAsync` and rises
+  in synchronous execution. [Direct tuple reads](results/2026-11-19-positional-default-slots/refinement/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
