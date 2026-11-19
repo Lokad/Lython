@@ -1,0 +1,280 @@
+{
+  "producer": "7be42c66c60a63afea78523cd26df8ecc108316a",
+  "version": "0.5.0-dev.107",
+  "cpython": {
+    "modes": [
+      {
+        "mode": "Match",
+        "lastIndex": 2,
+        "captures": [
+          {
+            "StartByte": 4,
+            "EndByte": 5
+          },
+          {
+            "StartByte": 0,
+            "EndByte": 4
+          },
+          {
+            "StartByte": 4,
+            "EndByte": 5
+          }
+        ]
+      },
+      {
+        "mode": "Search",
+        "lastIndex": 2,
+        "captures": [
+          {
+            "StartByte": 4,
+            "EndByte": 5
+          },
+          {
+            "StartByte": 0,
+            "EndByte": 4
+          },
+          {
+            "StartByte": 4,
+            "EndByte": 5
+          }
+        ]
+      },
+      {
+        "mode": "FullMatch",
+        "lastIndex": 2,
+        "captures": [
+          {
+            "StartByte": 4,
+            "EndByte": 5
+          },
+          {
+            "StartByte": 0,
+            "EndByte": 4
+          },
+          {
+            "StartByte": 4,
+            "EndByte": 5
+          }
+        ]
+      }
+    ],
+    "invertedScalarSpan": [
+      2,
+      2
+    ],
+    "invertedByteSpan": [
+      5,
+      5
+    ]
+  },
+  "targets": {
+    "net11.0": {
+      "adapter": {
+        "positive": [
+          {
+            "mode": "Match",
+            "lastIndex": 2,
+            "captures": [
+              {
+                "StartByte": 4,
+                "EndByte": 5
+              },
+              {
+                "StartByte": 0,
+                "EndByte": 4
+              },
+              {
+                "StartByte": 4,
+                "EndByte": 5
+              }
+            ]
+          },
+          {
+            "mode": "Search",
+            "lastIndex": 2,
+            "captures": [
+              {
+                "StartByte": 4,
+                "EndByte": 5
+              },
+              {
+                "StartByte": 0,
+                "EndByte": 4
+              },
+              {
+                "StartByte": 4,
+                "EndByte": 5
+              }
+            ]
+          },
+          {
+            "mode": "FullMatch",
+            "lastIndex": 2,
+            "captures": [
+              {
+                "StartByte": 4,
+                "EndByte": 5
+              },
+              {
+                "StartByte": 0,
+                "EndByte": 4
+              },
+              {
+                "StartByte": 4,
+                "EndByte": 5
+              }
+            ]
+          }
+        ],
+        "observedRejections": [
+          "cursor:startOffsetInBytes",
+          "match:startOffsetInBytes"
+        ],
+        "Growths": 24,
+        "Shrinks": 16,
+        "Peak": 2640,
+        "Refusals": 1,
+        "RefusedAmount": 96,
+        "Current": 0
+      },
+      "cancellation": {
+        "match": {
+          "stage": "match",
+          "runningAtCancellation": true,
+          "cancelled": true,
+          "originalToken": true,
+          "balance": 0,
+          "libraries": {
+            "Lokad.Lython": "7170869D8C558E38FFF06BD87D46D85825DEE43DA0E5260C0284E7C39A23AAC9",
+            "Lokad.Lython.Utf8Regex": "B5AD3A11A71F992C3DBE7CA059F67265AFDA3D207CB748678D1C0E7C6B436BD1",
+            "Lokad.Utf8Regex": "5B7A03CE4EC0F115AF4706741E694D4F14EC134E96188FA06DF46767B4EB81AB",
+            "Lokad.Utf8Regex.PythonRe": "DA8720C390375F196C335955A4BDE2D36931CE10F1A9AF6307A1C63898E8C458"
+          }
+        },
+        "cursor": {
+          "stage": "cursor",
+          "runningAtCancellation": true,
+          "cancelled": true,
+          "originalToken": true,
+          "balance": 0,
+          "libraries": {
+            "Lokad.Lython": "7170869D8C558E38FFF06BD87D46D85825DEE43DA0E5260C0284E7C39A23AAC9",
+            "Lokad.Lython.Utf8Regex": "B5AD3A11A71F992C3DBE7CA059F67265AFDA3D207CB748678D1C0E7C6B436BD1",
+            "Lokad.Utf8Regex": "5B7A03CE4EC0F115AF4706741E694D4F14EC134E96188FA06DF46767B4EB81AB",
+            "Lokad.Utf8Regex.PythonRe": "DA8720C390375F196C335955A4BDE2D36931CE10F1A9AF6307A1C63898E8C458"
+          }
+        }
+      },
+      "imageSHA256": {
+        "Lokad.Lython.dll": "7170869d8c558e38fff06bd87d46d85825dee43da0e5260c0284e7c39a23aac9",
+        "Lokad.Lython.Utf8Regex.dll": "b5ad3a11a71f992c3dbe7ca059f67265afda3d207cb748678d1c0e7c6b436bd1",
+        "Lokad.Utf8Regex.dll": "5b7a03ce4ec0f115af4706741e694d4f14ec134e96188fa06df46767b4eb81ab",
+        "Lokad.Utf8Regex.PythonRe.dll": "da8720c390375f196c335955a4bde2d36931ce10f1a9af6307a1c63898e8c458"
+      }
+    },
+    "net10.0": {
+      "adapter": {
+        "positive": [
+          {
+            "mode": "Match",
+            "lastIndex": 2,
+            "captures": [
+              {
+                "StartByte": 4,
+                "EndByte": 5
+              },
+              {
+                "StartByte": 0,
+                "EndByte": 4
+              },
+              {
+                "StartByte": 4,
+                "EndByte": 5
+              }
+            ]
+          },
+          {
+            "mode": "Search",
+            "lastIndex": 2,
+            "captures": [
+              {
+                "StartByte": 4,
+                "EndByte": 5
+              },
+              {
+                "StartByte": 0,
+                "EndByte": 4
+              },
+              {
+                "StartByte": 4,
+                "EndByte": 5
+              }
+            ]
+          },
+          {
+            "mode": "FullMatch",
+            "lastIndex": 2,
+            "captures": [
+              {
+                "StartByte": 4,
+                "EndByte": 5
+              },
+              {
+                "StartByte": 0,
+                "EndByte": 4
+              },
+              {
+                "StartByte": 4,
+                "EndByte": 5
+              }
+            ]
+          }
+        ],
+        "observedRejections": [
+          "cursor:startOffsetInBytes",
+          "match:startOffsetInBytes"
+        ],
+        "Growths": 24,
+        "Shrinks": 16,
+        "Peak": 2640,
+        "Refusals": 1,
+        "RefusedAmount": 96,
+        "Current": 0
+      },
+      "cancellation": {
+        "match": {
+          "stage": "match",
+          "runningAtCancellation": true,
+          "cancelled": true,
+          "originalToken": true,
+          "balance": 0,
+          "libraries": {
+            "Lokad.Lython": "987B80CB7369CBCE12B2FB21F6B891781653C6681A9B0F715BA61DDEC4F40471",
+            "Lokad.Lython.Utf8Regex": "79ED67624909E2F5CEE2B7A8A8D7884545F158152D6065BC3B6110F544593CF0",
+            "Lokad.Utf8Regex": "66EC5ED2C6A693D2212C0FAEC3E34738C15EAD4DC8DB1F925AA130E3B4287410",
+            "Lokad.Utf8Regex.PythonRe": "68F72869789E926A80651CF52F48B725075563051582FC32FDA611436A006B9D"
+          }
+        },
+        "cursor": {
+          "stage": "cursor",
+          "runningAtCancellation": true,
+          "cancelled": true,
+          "originalToken": true,
+          "balance": 0,
+          "libraries": {
+            "Lokad.Lython": "987B80CB7369CBCE12B2FB21F6B891781653C6681A9B0F715BA61DDEC4F40471",
+            "Lokad.Lython.Utf8Regex": "79ED67624909E2F5CEE2B7A8A8D7884545F158152D6065BC3B6110F544593CF0",
+            "Lokad.Utf8Regex": "66EC5ED2C6A693D2212C0FAEC3E34738C15EAD4DC8DB1F925AA130E3B4287410",
+            "Lokad.Utf8Regex.PythonRe": "68F72869789E926A80651CF52F48B725075563051582FC32FDA611436A006B9D"
+          }
+        }
+      },
+      "imageSHA256": {
+        "Lokad.Lython.dll": "987b80cb7369cbce12b2fb21f6b891781653c6681a9b0f715ba61ddec4f40471",
+        "Lokad.Lython.Utf8Regex.dll": "79ed67624909e2f5cee2b7a8a8d7884545f158152d6065bc3b6110f544593cf0",
+        "Lokad.Utf8Regex.dll": "66ec5ed2c6a693d2212c0faec3e34738c15ead4dc8db1f925aa130e3b4287410",
+        "Lokad.Utf8Regex.PythonRe.dll": "68f72869789e926a80651cf52f48b725075563051582fc32fda611436a006b9d"
+      }
+    }
+  }
+}
