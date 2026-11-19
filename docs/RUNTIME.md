@@ -641,9 +641,10 @@ Unexposed captured cells can keep exact machine-integer updates directly, using
 the same arithmetic kernel and compiler preparation as ordinary instructions.
 Reading materializes one stable immutable identity; later updates preserve older
 aliases. Exposed namespaces, general values and overflow retain ordinary storage
-and Python behavior. Cell and closure-retention preflights conservatively fund
-metadata and an observed current scalar. Frequent reads can still box every
-update; this representation changes no reclamation or ownership contract.
+and Python behavior. A lexical cell starts with a frame charge for its metadata
+and current scalar. When a closure captures it, the execution owner keeps that
+charge beyond frame cleanup. Capture arrays and new namespace-backed cells are
+admitted before allocation. Frequent reads can still box every update.
 
 Native f-string helpers use the same formatting kernel as ordinary executable
 frames, including nested fields, conversions and dynamic specifications. Their

@@ -1,4 +1,3 @@
-using Slot = Lokad.Lython.Runtime.LythonRuntime.ExecutableSlot;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Tests.Harness;
@@ -10,38 +9,67 @@ namespace Lokad.Lython.Tests;
 
 public sealed class LambdaExecutableTests
 {
-    [Fact]
-    public void DeniedClosureCaptureDoesNotPublishFundingMarks()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ClosureCaptureTransfersAdmittedCellsOnlyAfterArrayAdmission(bool refuse)
     {
-        var syntax = LythonFrontend.Compile("def outer(value):\n    return lambda:value",regexProvider:Utf8RegexProvider.Instance).Script!;
+        var syntax = LythonFrontend.Compile("def outer(left, right):\n    return lambda:left+right",regexProvider:Utf8RegexProvider.Instance).Script!;
         var module = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
         var outer = Assert.Single(module.FunctionBindings()).CodeObject!;
         var lambda = Assert.Single(outer.Constants.OfType<ExecutableCreateLambda>()).CodeObject!;
         var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024 * 1024) },regexProvider:Utf8RegexProvider.Instance);
-        var values = new Slot[outer.LocalNames.Count];
-        var cell = new LythonRuntime.ExecutableCell(BigInteger.One);
-        values[outer.LocalNameToSlot["value"]].Object = cell;
-        context._execution = new() { Code = outer, Locals = values };
+        var governor = context.MemoryGovernor;
+        var beforeFrame = governor.CurrentAccountedBytes;
+        var cellBytes = 2 * LythonRuntime.ExecutableCell.StorageBytes;
+        var stack = new LythonRuntime.ExecutableValueStorage(outer.ValueStorageCapacity, outer.FirstTemporarySlot,
+            outer.LastOwnedTemporarySlot, context, null, cellBytes, null, null);
+        var first = new LythonRuntime.ExecutableCell(BigInteger.One);
+        var second = new LythonRuntime.ExecutableCell(BigInteger.Zero);
+        stack.Values[outer.LocalNameToSlot["left"]].Object = first;
+        stack.Values[outer.LocalNameToSlot["right"]].Object = second;
+        context._execution = new() { Code = outer, Locals = stack.Values, Stack = stack };
         context.EnterExecutableSlots();
         var capture = typeof(LythonRuntime).GetMethod("CaptureExecutableClosures", BindingFlags.Static | BindingFlags.NonPublic)!
             .CreateDelegate<Func<ExecutableCodeObject, Context, LythonSourceSpan, IReadOnlyList<LythonRuntime.ExecutableCell>>>();
-        var baseline = context.MemoryGovernor.CurrentAccountedBytes;
-        var padding = 1024 * 1024 - baseline;
-        context.MemoryGovernor.Reserve(padding, null);
-        context.MemoryGovernor.Commit(padding);
+        var baseline = governor.CurrentAccountedBytes;
+        var span = syntax.Statements[0].Span;
         try
         {
-            var failure = Assert.Throws<LythonRuntimeException>(() => capture(lambda, context, syntax.Statements[0].Span));
-            Assert.Equal("MemoryError", failure.ExceptionType);
-            Assert.False(cell.RetentionCharged);
-            Assert.Equal(1024 * 1024, context.MemoryGovernor.CurrentAccountedBytes);
-            context.MemoryGovernor.Release(padding);
-            Assert.Same(failure, Assert.Throws<LythonRuntimeException>(() => capture(lambda, context, syntax.Statements[0].Span)));
-            Assert.False(cell.RetentionCharged);
-            Assert.Equal(baseline, context.MemoryGovernor.CurrentAccountedBytes);
-            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            if (refuse)
+            {
+                var padding = 1024 * 1024 - baseline;
+                governor.Reserve(padding, null);
+                governor.Commit(padding);
+                var failure = Assert.Throws<LythonRuntimeException>(() => capture(lambda, context, span));
+                Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
+                Assert.Equal(1024 * 1024, governor.CurrentAccountedBytes);
+                governor.Release(padding);
+                Assert.Same(failure, Assert.Throws<LythonRuntimeException>(() => capture(lambda, context, span)));
+                Assert.False(first.RetentionCharged);
+                Assert.False(second.RetentionCharged);
+                Assert.Equal(baseline, governor.CurrentAccountedBytes);
+                context._execution.Stack.ReleaseStorage();
+                Assert.Equal(beforeFrame, governor.CurrentAccountedBytes);
+            }
+            else
+            {
+                var captured = capture(lambda, context, span);
+                Assert.Same(first, captured[lambda.ClosureNameToSlot["left"]]);
+                Assert.Same(second, captured[lambda.ClosureNameToSlot["right"]]);
+                var arrayBytes = governor.CurrentAccountedBytes - baseline;
+                Assert.InRange(arrayBytes, 1, LythonRuntime.ExecutableCell.StorageBytes - 1);
+                context._execution.Stack.ReleaseStorage();
+                Assert.Equal(beforeFrame + arrayBytes + cellBytes, governor.CurrentAccountedBytes);
+            }
+            Assert.Equal(0, governor.CurrentReservedBytes);
         }
-        finally { context.LeaveExecutableSlots(); }
+        finally
+        {
+            context._execution.Stack.ReleaseStorage();
+            context.LeaveExecutableSlots();
+            context.State.CloseResources();
+        }
     }
 
     [Theory]

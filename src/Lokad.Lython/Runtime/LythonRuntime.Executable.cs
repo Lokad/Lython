@@ -75,7 +75,7 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
-        // MG11: set once a closure owns this cell (first-wins sharing).
+        // Once retained, the execution owner keeps the cell across frame cleanup.
         internal bool RetentionCharged;
 
         int IReadOnlyCollection<ExecutableCell>.Count => 1;
@@ -333,6 +333,14 @@ internal sealed partial class LythonRuntime
         internal readonly void CheckExecution(LythonSourceSpan span) => _state.CheckExecution(span);
 
         internal readonly bool CanContinue => _state.CanContinue;
+
+        internal void TransferCapturedCellCharge()
+        {
+            // The cell is already committed in the shared governor. It now
+            // outlives frame cleanup under the execution owner.
+            System.Diagnostics.Debug.Assert(_ownedStorageBytes >= ExecutableCell.StorageBytes);
+            _ownedStorageBytes -= ExecutableCell.StorageBytes;
+        }
 
         internal void ReleaseStorage()
         {
@@ -691,8 +699,8 @@ internal sealed partial class LythonRuntime
         long bytes = checked((long)codeObject.PatternStorageCount * RuntimeMemoryEstimates.ScalarStorageBytes);
         if (codeObject.CapturedLocalSlots.Count != 0)
             bytes = checked(bytes + ExecutableCell.StorageBytes * codeObject.CapturedLocalSlots.Count);
-        // The compiler-sized operand lifetime funds private frame arrays before any
-        // are allocated. Escaping cells acquire their separate retained charge.
+        // Admit private frame arrays and cells before allocating them. An
+        // escaping cell keeps its original charge beyond this frame.
         var stack = new ExecutableValueStorage(codeObject.ValueStorageCapacity, codeObject.FirstTemporarySlot, codeObject.LastOwnedTemporarySlot,
             context, span, bytes, argumentsAreLocals ? boundArguments.Values : null, lookupOwner);
         try

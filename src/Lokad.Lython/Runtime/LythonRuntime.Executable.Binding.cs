@@ -413,29 +413,29 @@ internal sealed partial class LythonRuntime
             return cell.RequireNotNull();
         }
 
-        // Captured cells outlive the invocation frame through the function.
-        // A comprehension already owns a live binding namespace. Identify that
-        // owner without allocating cells before the array/cell preflight.
-        var uncharged = 0;
-        for (var i = 0; i < names.Count; i++)
+        // Existing locals are funded by their frame. Only a comprehension's
+        // new namespace-backed cells and the capture array need admission.
+        var newCells = 0;
+        if (slots is null)
         {
-            if (i != 0 && (i & 255) == 0) context.CheckExecution(span);
-            if ((slots is null && context.TryGetInlinedBinding(names[i], out _)) || !Resolve(i).RetentionCharged)
+            for (var i = 0; i < names.Count; i++)
             {
-                uncharged++;
+                if (i != 0 && (i & 255) == 0) context.CheckExecution(span);
+                if (context.TryGetInlinedBinding(names[i], out _)) newCells++;
+                else _ = Resolve(i);
             }
         }
 
         var arrayBytes = names.Count == 1 ? 0 : checked(ExecutableCellsArrayBaseBytes +
             ExecutableCellsArraySlotBytes * (long)names.Count);
-        var retainedBytes = checked(arrayBytes + ExecutableCell.StorageBytes * uncharged);
+        var retainedBytes = checked(arrayBytes + ExecutableCell.StorageBytes * newCells);
         context.MemoryGovernor.Reserve(retainedBytes, span);
         context.MemoryGovernor.Commit(retainedBytes);
         try
         {
+            context.CheckExecution(span);
             if (names.Count == 1)
             {
-                context.CheckExecution(span);
                 var cell = Capture(0);
                 Publish(0, cell);
                 return cell;
@@ -465,9 +465,12 @@ internal sealed partial class LythonRuntime
 
         void Publish(int index, ExecutableCell cell)
         {
-            cell.RetentionCharged = true;
+            if (cell.RetentionCharged) return;
             if (slots is null && context.TryGetInlinedBinding(names[index], out var binding))
                 binding.MirrorLocalStores = true;
+            else
+                frame!._execution.Stack.TransferCapturedCellCharge();
+            cell.RetentionCharged = true;
         }
     }
 
