@@ -51,6 +51,10 @@ original conditions retained. Current comparisons belong in
   The records include the initial adverse unannotated one-shot timing,
   moving reused-default controls and higher first-use allocation.
   [Function record keys](results/2026-11-19-function-record-keys/README.md).
+- B1030 refreshed the external comparison after shared function metadata keys,
+  adding the format-selector shipment report and CSV invoice. The rule scripts
+  still have the largest gaps. Both rule cases show same-source timing spread.
+  [Five-script comparison](results/2026-11-19-shared-metadata-cpython/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup

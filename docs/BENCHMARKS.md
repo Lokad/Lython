@@ -5,12 +5,13 @@
 | Configuration edit | 181 B / 16 paths | 0.0766–0.0779 ms | 0.06142–0.06219 ms | 1.23–1.27× | B1002 diagnostic. Controls L/C 1.70 / 1.25%. IQR ≤1.83%. |
 | Configuration manifest | 833 B / 4 declared targets | 0.189–0.192 ms | 0.154–0.156 ms | 1.21–1.24× | Diagnostic bdab/7170. Controls L/C 1.42 / 1.22%. IQR ≤1.46%. |
 | Formatted report | 3,072 records / 189,441 B | 2.934–2.942 ms | 2.671–2.737 ms | 1.07–1.10× | Diagnostic627/5ae; controls L/C 0.27/2.47%; IQR≤5.34% |
-| Expanded forwarding report | 1,024 records / 26,112 B | 2.167–2.177 ms | 1.164–1.166 ms | 1.86–1.87× | B1022 diagnostic. Controls L/C 0.49 / 0.18%. IQR ≤1.01%. |
-| Unannotated rule closures | 2,048 inputs / 4,096 definitions | 2.974–3.054 ms | 0.684–0.687 ms | 4.33–4.46× | B1022 diagnostic. Controls L/C 2.69 / 0.43%. IQR ≤0.98%. |
-| Annotated rule closures | 2,048 inputs / 2,048 definitions | 2.181–2.263 ms | 0.404–0.409 ms | 5.33–5.60× | B1022 diagnostic. Controls L/C 3.77 / 1.20%. IQR ≤2.61%. |
+| Shipment report with format selectors | 3,072 records / 189,441 B | 4.347–4.428 ms | 3.060–3.069 ms | 1.42–1.45× | B1030 diagnostic. Controls L/C 1.88 / 0.31%. IQR ≤1.70%. |
+| Expanded forwarding report | 1,024 records / 26,112 B | 2.150–2.172 ms | 1.182–1.185 ms | 1.81–1.84× | B1030 diagnostic. Controls L/C 0.98 / 0.23%. IQR ≤0.52%. |
+| Unannotated rule closures | 2,048 inputs / 4,096 definitions | 2.892–3.047 ms | 0.682–0.684 ms | 4.23–4.47× | B1030 diagnostic. Controls L/C 5.37 / 0.20%. IQR ≤1.10%. |
+| Annotated rule closures | 2,048 inputs / 2,048 definitions | 2.157–2.246 ms | 0.405–0.411 ms | 5.25–5.54× | B1030 diagnostic. Controls L/C 4.09 / 1.38%. IQR ≤3.95%. |
 | JSON-lines record transform | 4,096 records / 110,592 B | 3.898–4.012 ms | 4.388–4.423 ms | 0.88–0.91× | Diagnostic ea8/cf; controls L/C 2.93/0.79%; IQR≤0.79% |
 | Numeric CSV quality report | 4,096 records / 127,031 B | 4.066–4.166 ms | 4.574–4.693 ms | 0.87–0.91× | Diagnostic; controls L/C 2.46/2.60%; IQR≤1.47% |
-| CSV invoice | 4,096 data records / 127,031 B | 6.670–6.770 ms | 6.118–6.151 ms | 1.08–1.11× | B1002 diagnostic. Controls L/C 1.50 / 0.54%. IQR ≤0.68%. |
+| CSV invoice | 4,096 data records / 127,031 B | 6.676–6.825 ms | 6.042–6.049 ms | 1.10–1.13× | B1030 diagnostic. Controls L/C 2.23 / 0.11%. IQR ≤0.53%. |
 | Text normalization | 52,224 B / 4,096 lines | 0.377–0.382 ms | 0.676–0.679 ms | 0.56–0.57× | Diagnostic 4ff69/74d1. Controls L/C 1.36 / 0.53%. CPython varies across collections. |
 | JSON-lines aggregation with a helper | 4,096 records / 110,592 B | 3.444–3.606 ms | 4.227–4.238 ms | 0.81–0.85× | Diagnostic R534/40db; Lython control 4.69%; IQR≤2.36% |
 | Floating JSON numeric report | 4,096 pairs / 56,495 B | 1.036–1.063 ms | 0.833–0.835 ms | 1.24–1.28× | Diagnostic R534/40db; controls L/C 2.56/0.33%; IQR≤1.64% |
@@ -21,21 +22,21 @@
 the combinations of two process medians per engine, not confidence intervals.
 Controls L/C report the difference between the two Lython/CPython medians.
 Rule closures have the largest execution gaps, followed by expanded forwarding.
-Lython compiles all three faster than CPython on B1022. Direct normalization,
+Lython compiles all five B1030 scripts faster than CPython. Direct normalization,
 CSV validation and the JSON-lines scripts run faster in their recorded checkpoints.
 
-B1022 measured **6ce82ba48 / frozen 589d6b7b** on **2026-11-19 UTC** against
+B1030 measured **2409f0596 / frozen 7e525683** on **2026-11-19 UTC** against
 stock **CPython 3.13.16** on the quiet **Azure F4as_v7**, with Ubuntu 24.04.4
-and .NET 11 RC3. The same processes alternated all three phases for
-forwarding and both rule scripts. Full qualification for this source
-was in progress at measurement. B1016 records the preceding qualified source.
-[B1022 source and observations](../benchmarks/results/2026-11-19-function-and-split-cpython/README.md) · [B1016 evidence](../benchmarks/results/2026-11-18-annotation-and-forwarding-cpython/README.md).
+and .NET 11 RC3. Each process ran all three phases for each case. The two rule
+scripts have 4.09–5.37% same-source Lython warm spread, which limits comparisons
+with earlier runs. Platform qualification for this source was in progress at
+measurement. [B1030 observations](../benchmarks/results/2026-11-19-shared-metadata-cpython/README.md) · [Earlier B1022 snapshot](../benchmarks/results/2026-11-19-function-and-split-cpython/README.md).
 
 B1006 measured **03bb07cf5 / frozen d97f6f98** on **2026-11-18 UTC** against
 stock **CPython 3.13.16** on the quiet **Azure F4as_v7**, with Ubuntu 24.04.4 and
 .NET 11 RC3. It alternated all three phases in the same processes for rule
-closures, expanded forwarding and helper text. Configuration edit and CSV
-invoice use B1002 at **53df08565 / 6c4cb50a** on the same VM and toolchains.
+closures, expanded forwarding and helper text. Configuration edit uses B1002
+at **53df08565 / 6c4cb50a** on the same VM and toolchains.
 [B1006 source and observations](../benchmarks/results/2026-11-18-post-transport-cpython-checkpoint/README.md) ·
 [B1002 source and observations](../benchmarks/results/2026-11-18-direct-defaults-cpython-checkpoint/README.md).
 
@@ -105,12 +106,14 @@ This is useful workload latency, not equivalent containment or cold startup.
 | --- | --- | ---: | ---: | ---: | --- |
 | Configuration edit | Compilation only | 0.03577–0.03642 ms | 0.03409–0.03420 ms | 1.05–1.07× | B1002 diagnostic. Controls L/C 1.82 / 0.33%. IQR ≤1.21%. |
 | Configuration edit | Compile-to-result | 0.1336–0.1345 ms | 0.1235–0.1260 ms | 1.06–1.09× | B1002 diagnostic. Controls L/C 0.66 / 1.98%. IQR ≤0.60%. |
-| Expanded forwarding report | Compilation only | 0.05071–0.05098 ms | 0.06140–0.06195 ms | 0.82–0.83× | B1022 diagnostic. Controls L/C 0.54 / 0.91%. IQR ≤1.00%. |
-| Expanded forwarding report | Compile-to-result | 2.276–2.282 ms | 1.3079–1.3081 ms | 1.74× | B1022 diagnostic. Controls L/C 0.26 / 0.01%. IQR ≤0.66%. |
-| Unannotated rule closures | Compilation only | 0.03282–0.03301 ms | 0.04178–0.04185 ms | 0.78–0.79× | B1022 diagnostic. Controls L/C 0.59 / 0.18%. IQR ≤1.34%. |
-| Unannotated rule closures | Compile-to-result | 3.046–3.127 ms | 0.731–0.735 ms | 4.14–4.28× | B1022 diagnostic. Controls L/C 2.69 / 0.56%. IQR ≤1.65%. |
-| Annotated rule closures | Compilation only | 0.02519–0.02532 ms | 0.03070–0.03079 ms | 0.82× | B1022 diagnostic. Controls L/C 0.51 / 0.28%. IQR ≤0.86%. |
-| Annotated rule closures | Compile-to-result | 2.231–2.295 ms | 0.4357–0.4377 ms | 5.10–5.27× | B1022 diagnostic. Controls L/C 2.86 / 0.47%. IQR ≤1.82%. |
+| Expanded forwarding report | Compilation only | 0.05108–0.05153 ms | 0.06128–0.06156 ms | 0.83–0.84× | B1030 diagnostic. Controls L/C 0.88 / 0.46%. IQR ≤0.69%. |
+| Expanded forwarding report | Compile-to-result | 2.255–2.285 ms | 1.322–1.330 ms | 1.70–1.73× | B1030 diagnostic. Controls L/C 1.32 / 0.62%. IQR ≤0.25%. |
+| Unannotated rule closures | Compilation only | 0.03312–0.03357 ms | 0.04176–0.04191 ms | 0.79–0.80× | B1030 diagnostic. Controls L/C 1.35 / 0.35%. IQR ≤0.67%. |
+| Unannotated rule closures | Compile-to-result | 2.976–3.122 ms | 0.725–0.731 ms | 4.07–4.31× | B1030 diagnostic. Controls L/C 4.89 / 0.79%. IQR ≤0.60%. |
+| Annotated rule closures | Compilation only | 0.02525–0.02529 ms | 0.03111–0.03115 ms | 0.81× | B1030 diagnostic. Controls L/C 0.18 / 0.12%. IQR ≤0.94%. |
+| Annotated rule closures | Compile-to-result | 2.187–2.307 ms | 0.435–0.443 ms | 4.94–5.31× | B1030 diagnostic. Controls L/C 5.53 / 1.77%. IQR ≤1.43%. |
+| Shipment report with format selectors | Compilation only | 0.03101–0.03112 ms | 0.03199–0.03202 ms | 0.97× | B1030 diagnostic. Controls L/C 0.34 / 0.09%. IQR ≤0.56%. |
+| Shipment report with format selectors | Compile-to-result | 4.401–4.497 ms | 3.171–3.222 ms | 1.37–1.42× | B1030 diagnostic. Controls L/C 2.20 / 1.60%. IQR ≤2.25%. |
 | Configuration manifest | Compilation only | 0.198–0.198 ms | 0.157–0.157 ms | 1.26–1.26× | Diagnostic bdab/7170. Controls L/C 0.36 / 0.00%. IQR ≤1.16%. |
 | Configuration manifest | Compile-to-result | 0.489–0.496 ms | 0.462–0.473 ms | 1.03–1.07× | Diagnostic bdab/7170. Controls L/C 1.41 / 2.39%. IQR ≤1.65%. |
 | JSON-lines record transform | Compilation only | 0.057–0.058 ms | 0.056–0.056 ms | 1.01–1.02× | Diagnostic; controls L/C 1.68/0.08%; IQR≤1.81% |
@@ -125,8 +128,8 @@ This is useful workload latency, not equivalent containment or cold startup.
 | Floating JSON numeric report | Compile-to-result | 1.138–1.139 ms | 0.964–0.972 ms | 1.17–1.18× | Diagnostic R534/40db; controls L/C 0.14/0.86%; IQR≤1.26% |
 | Helper text normalization | Compilation only | 0.04545–0.04546 ms | 0.04427–0.04435 ms | 1.02–1.03× | B1006 diagnostic. Controls L/C 0.04 / 0.18%. IQR ≤1.01%. |
 | Helper text normalization | Compile-to-result | 1.105–1.107 ms | 0.835–0.857 ms | 1.29–1.33× | B1006 diagnostic. Controls L/C 0.21 / 2.63%. IQR ≤2.13%. |
-| CSV invoice | Compilation only | 0.0967–0.0976 ms | 0.0931–0.0939 ms | 1.03–1.05× | B1002 diagnostic. Controls L/C 0.92 / 0.84%. IQR ≤0.38%. |
-| CSV invoice | Compile-to-result | 6.856–6.939 ms | 6.349–6.402 ms | 1.07–1.09× | B1002 diagnostic. Controls L/C 1.20 / 0.84%. IQR ≤0.51%. |
+| CSV invoice | Compilation only | 0.09022–0.09083 ms | 0.09345–0.09416 ms | 0.96–0.97× | B1030 diagnostic. Controls L/C 0.68 / 0.76%. IQR ≤0.92%. |
+| CSV invoice | Compile-to-result | 6.867–7.022 ms | 6.256–6.298 ms | 1.09–1.12× | B1030 diagnostic. Controls L/C 2.27 / 0.67%. IQR ≤0.70%. |
 | CSV field validation | Compilation only | 0.0250–0.0251 ms | 0.0265–0.0267 ms | 0.93–0.94× | Diagnostic c14c/1264. Controls L/C 0.29 / 0.72%. IQR ≤0.66%. |
 | CSV field validation | Compile-to-result | 3.146–3.147 ms | 4.663–4.669 ms | 0.67× | Diagnostic c14c/1264. Controls L/C 0.05 / 0.12%. IQR ≤1.11%. |
 
