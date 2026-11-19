@@ -94,17 +94,42 @@ using         var result = compiledAdmission3.Run(
         Assert.True(allocated < 5_000_000, $"allocated {allocated}");
     }
 
-    [Fact]
-    public void CachePublicationDenialIsStable()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QualnamePublicationRefusalIsTerminalAndRefunded(bool asynchronous)
     {
-        var code = "class C:\n def " + LongName.Replace("x", "y") + "(self):\n  pass\nf = C." + LongName.Replace("x", "y") + "\ntry:\n f.__qualname__\n return \"first-ok\"\nexcept MemoryError:\n try:\n  f.__qualname__\n  return \"second-ok\"\n except MemoryError:\n  return \"denied-twice\"\n";
-        using var compiledAdmission5 = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
-using         var result = compiledAdmission5.Run(new MockLythonHost(),new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(15000) });
-        Assert.False(result.Success);
-        Assert.Equal("MemoryError", result.Failure?.ExceptionType);
-        Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
-        // Nothing extra retained by the failed publications.
-        Assert.True(result.PeakExecutionMemoryBytes < 13000, $"peak was {result.PeakExecutionMemoryBytes}");
+        var name = new string('y', 4096);
+        var code = $"""
+            class C:
+                def {name}(self):
+                    pass
+            f = C.{name}
+            print('ready')
+            try:
+                f.__qualname__
+            except MemoryError:
+                print('caught')
+            print('after')
+            """;
+        var budget = new AdmissionGateBudget();
+        var host = new MockLythonHost { OnStandardOutputWrite = () => budget.Gate(1024) };
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code, budget);
+        Assert.True(script.IsValid);
+        var baseline = budget.Root.ReservedBytes;
+
+        using (var result = asynchronous ? await script.RunAsync(host) : script.Run(host))
+        {
+            Assert.False(result.Success);
+            Assert.Equal("MemoryError", result.Failure?.ExceptionType);
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+            Assert.True(result.FailureAttribution?.Requested >= name.Length);
+            Assert.Equal("ready\n", result.StandardOutput);
+        }
+
+        Assert.Equal(baseline, budget.Root.ReservedBytes);
+        script.Dispose();
+        Assert.Equal(0, budget.Root.ReservedBytes);
     }
 
     [Fact]
