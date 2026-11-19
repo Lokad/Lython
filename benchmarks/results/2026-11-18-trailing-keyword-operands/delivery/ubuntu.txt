@@ -1,0 +1,12 @@
+2026-11-18T23:30:34.6473698Z Passed!  - Failed:     0, Passed:  4897, Skipped:     0, Total:  4897, Duration: 31 s - Lokad.Lython.WhiteBox.Tests.dll (net11.0)
+2026-11-18T23:34:45.8024553Z Passed!  - Failed:     0, Passed: 18090, Skipped:     0, Total: 18090, Duration: 4 m 33 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)
+2026-11-18T23:35:21.7329335Z Passed!  - Failed:     0, Passed:  4897, Skipped:     0, Total:  4897, Duration: 29 s - Lokad.Lython.WhiteBox.Tests.dll (net10.0)
+2026-11-18T23:39:30.5078527Z Passed!  - Failed:     0, Passed: 18090, Skipped:     0, Total: 18090, Duration: 4 m 29 s - Lokad.Lython.PublicApi.Tests.dll (net10.0)
+2026-11-18T23:39:37.7709651Z Package consumer passed: 0.11.0
+2026-11-18T23:39:38.7008693Z Package compatibility and mediated file consumer passed.
+2026-11-18T23:39:42.8899637Z Package consumer passed: 0.11.0
+2026-11-18T23:39:44.1703941Z Package compatibility and mediated file consumer passed.
+2026-11-18T23:39:52.5299122Z Passed!  - Failed:     0, Passed:    14, Skipped:     0, Total:    14, Duration: 2 s - Lokad.Lython.WhiteBox.Tests.dll (net11.0)
+2026-11-18T23:44:40.1267364Z Passed!  - Failed:     0, Passed:   406, Skipped:     0, Total:   406, Duration: 4 m 45 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)
+2026-11-18T23:44:47.3704885Z Passed!  - Failed:     0, Passed:    14, Skipped:     0, Total:    14, Duration: 2 s - Lokad.Lython.WhiteBox.Tests.dll (net10.0)
+2026-11-18T23:49:43.0449837Z Passed!  - Failed:     0, Passed:   406, Skipped:     0, Total:   406, Duration: 4 m 54 s - Lokad.Lython.PublicApi.Tests.dll (net10.0)

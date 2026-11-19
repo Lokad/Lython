@@ -45,7 +45,8 @@ tagged positional alias identity and cancellation while kwargs are live.
 The measured images precede the independent module annotation mirror
 correction `6a82ab810`. Combining it with the measured change passes
 all 4,897 Windows .NET 11 white-box cases and 151 focused public tests.
-Full platform, stress and package qualification covers that combination.
+[Full platform, stress and package qualification](delivery/README.md)
+passed for that combination.
 
 Warm includes mediated file I/O on forwarding, verification and
 prior-result cleanup. Compile-to-result adds compilation and disposal of
