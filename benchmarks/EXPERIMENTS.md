@@ -268,6 +268,10 @@ original conditions retained. Current comparisons belong in
   `**kwargs`. Two whole reports allocate less and run faster with lower CPU.
   The named forwarding report is slower. Keep the copy-path regression
   and moving controls with the measured source pair. [Inline keyword dictionaries](results/2026-11-19-private-keyword-mapping/README.md).
+- B1091 measures the combined delivery against CPython. The three rule
+  scripts take 3.72–4.25× CPython warm, the inline and named reports take
+  1.64–1.70× and 1.70–1.73×, and CSV invoice takes 1.10–1.13×.
+  [External checkpoint](results/2026-11-19-inline-forwarding-cpython/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
