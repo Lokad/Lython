@@ -273,15 +273,15 @@ internal sealed partial class LythonRuntime
 
             var provider = context.State.RegexProvider
                 ?? throw RuntimeErrors.Capability("Python regex functionality requires a host-supplied Lython regex provider.", span);
-            ILythonRegexPattern? artifact = null;
-            _ = context.State.RegexPrograms?.TryGet(pattern, options, out artifact);
-            var compiled = artifact ?? ProviderCall(() => provider.Compile(pattern.Utf8Bytes, options,
+            var artifact = context.State.RegexPrograms?.Find(pattern, options);
+            var compiled = artifact?.Program ?? ProviderCall(() => provider.Compile(pattern.Utf8Bytes, options,
                 context.MemoryGovernor.Budget, context.State.CancellationToken), context.MemoryGovernor,
                 context.State.CancellationToken, span, pattern);
             try
             {
                 var token = context.State.CancellationToken;
-                var captureSlotCount = ReadCaptureSlotCount(compiled, context.MemoryGovernor, token, span);
+                var captureSlotCount = artifact?.CaptureSlotCount
+                    ?? ReadCaptureSlotCount(compiled, context.MemoryGovernor, token, span);
                 var flags = ProviderCall(() => compiled.Flags, context.MemoryGovernor, token, span, pattern);
                 var wrapperBytes = checked(256L + 64L * captureSlotCount);
                 using var storage = context.MemoryGovernor.ReserveTemporary(wrapperBytes, span);

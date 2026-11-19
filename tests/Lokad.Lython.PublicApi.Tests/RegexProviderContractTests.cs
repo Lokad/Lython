@@ -235,6 +235,7 @@ public sealed class RegexProviderContractTests
         using var script = new LythonEngine(provider).Compile(source, budget);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         Assert.Equal(2, provider.Compilations);
+        Assert.Equal(2, provider.CaptureSlotReads);
         var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["text"] = "X" } };
         foreach (var asynchronous in new[] { false, true })
@@ -248,6 +249,7 @@ public sealed class RegexProviderContractTests
             Assert.Equal(baseline, budget.ReservedBytes);
         }
         Assert.Equal(2, provider.Compilations);
+        Assert.Equal(2, provider.CaptureSlotReads);
         Assert.Equal(0, provider.ClosedPatterns);
         script.Dispose();
         Assert.Equal(2, provider.ClosedPatterns);
@@ -1409,7 +1411,7 @@ public sealed class RegexProviderContractTests
         internal readonly ManualResetEventSlim ReleaseCleanup = new(false);
         private readonly ManualResetEventSlim _work = new(false);
         private (int Flags, int Slots, ILythonMemoryScope Owner)? _cached;
-        internal int Compilations, ClosedPatterns;
+        internal int Compilations, ClosedPatterns, CaptureSlotReads;
         internal Action? OnCompileReturn, OnMetadata, OnReadFlags;
         internal int CaptureSlots = 1;
         internal int AdditionalEffectiveFlags;
@@ -1477,7 +1479,10 @@ public sealed class RegexProviderContractTests
             {
                 get { provider.OnReadFlags?.Invoke(); return flags; }
             }
-            public int CaptureSlotCount => slots;
+            public int CaptureSlotCount
+            {
+                get { Interlocked.Increment(ref provider.CaptureSlotReads); return slots; }
+            }
             public IReadOnlyList<LythonRegexNamedGroup> NamedGroups
             {
                 get { ObjectDisposedException.ThrowIf(_disposed, this); provider.OnMetadata?.Invoke(); return provider.GroupListOverride ?? _names; }

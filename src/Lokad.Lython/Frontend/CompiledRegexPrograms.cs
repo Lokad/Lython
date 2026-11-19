@@ -7,8 +7,10 @@ namespace Lokad.Lython.Frontend;
 // immutable programs/metadata; disposing the script requires all runs to finish.
 internal sealed class CompiledRegexPrograms(MemoryGovernor? governor) : IDisposable
 {
+    internal readonly record struct Entry(ILythonRegexPattern Program, int CaptureSlotCount);
+
     private ILythonMemoryScope? _owner;
-    private Dictionary<(PyString Pattern, LythonRegexOptions Options), ILythonRegexPattern>? _entries;
+    private Dictionary<(PyString Pattern, LythonRegexOptions Options), Entry>? _entries;
 
     internal bool HasPrograms => _entries is { Count: > 0 };
     internal ILythonMemoryBudget StorageOwner => _owner ??=
@@ -22,7 +24,7 @@ internal sealed class CompiledRegexPrograms(MemoryGovernor? governor) : IDisposa
                     LythonFailureReason.SharedMemoryAllowance, requested: bytes);
     }
 
-    internal void Add(byte[] encoded, LythonRegexOptions options, ILythonRegexPattern program,
+    internal void Add(byte[] encoded, LythonRegexOptions options, ILythonRegexPattern program, int captureSlotCount,
         CancellationToken token, LythonSourceSpan span)
     {
         // The analysis preflight owns the input, key, table capacity and overlap.
@@ -31,15 +33,11 @@ internal sealed class CompiledRegexPrograms(MemoryGovernor? governor) : IDisposa
         _ = key.GetHashCode(token, span);
         // Once published, the lookup owns the handle. It must never replace
         // a program that a compiler fact may still borrow.
-        (_entries ??= new()).Add((key, options), program);
+        (_entries ??= new()).Add((key, options), new Entry(program, captureSlotCount));
     }
 
-    internal bool TryGet(PyString pattern, LythonRegexOptions options, out ILythonRegexPattern? entry)
-    {
-        if (_entries is not null) return _entries.TryGetValue((pattern, options), out entry);
-        entry = null;
-        return false;
-    }
+    internal Entry? Find(PyString pattern, LythonRegexOptions options)
+        => _entries?.TryGetValue((pattern, options), out var entry) == true ? entry : null;
 
     public void Dispose()
     {
@@ -48,7 +46,7 @@ internal sealed class CompiledRegexPrograms(MemoryGovernor? governor) : IDisposa
         try
         {
             if (entries is not null)
-                foreach (var program in entries.Values) program.Dispose();
+                foreach (var entry in entries.Values) entry.Program.Dispose();
         }
         finally { _owner?.Dispose(); _owner = null; }
     }

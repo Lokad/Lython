@@ -279,14 +279,15 @@ internal static class StaticRegexReturnResolver
             var bytes = 512L + 3L * pattern.Length;
             analysis.ReserveRegexStorage(bytes, span);
             var encoded = Encoding.UTF8.GetBytes(pattern);
-            var program = LythonRuntime.RegexCompiler.ProviderCall(() => provider.Compile(encoded, new LythonRegexOptions(options, (options & 64) != 0),
+            var compileOptions = new LythonRegexOptions(options, (options & 64) != 0);
+            var program = LythonRuntime.RegexCompiler.ProviderCall(() => provider.Compile(encoded, compileOptions,
                 analysis.RegexMemoryOwner, token), governor, token, span, operationName: "Regex pattern compilation");
             try
             {
                 var captureSlotCount = LythonRuntime.RegexCompiler.ReadCaptureSlotCount(program, governor, token, span);
                 regex = new(program, captureSlotCount,
                     LythonRuntime.RegexCompiler.CopyNamedGroups(program, captureSlotCount, governor, token, span));
-                analysis.RetainRegexProgram(encoded, new(options, (options & 64) != 0), program, span);
+                analysis.RetainRegexProgram(encoded, compileOptions, program, captureSlotCount, span);
             }
             catch { program.Dispose(); throw; }
             // The compiled lookup now owns the program, even if analysis

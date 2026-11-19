@@ -2302,9 +2302,10 @@ to `LythonEngine`. One provider handles frontend validation/capture analysis,
 runtime `re` and imports, and must outlive its users. Core exposes no backend
 types or Utf8Regex dependency. Missing functionality fails explicitly, without
 silently choosing another dialect. Native `fnmatch`/`glob` need no regex provider.
-Frontend and runtime validate that each pattern's capture slot count includes
-slot zero and fits a managed array before using it for storage or matching.
-An invalid count reports a provider capability failure and closes the handle.
+Lython validates that each new pattern's capture slot count includes slot zero
+and fits a managed array before using it for storage or matching. Executions
+borrowing a frontend-compiled pattern reuse its validated count. An invalid
+count reports a provider capability failure and closes the new handle.
 The named-group list must fit the remaining slots before Lython reserves
 dictionary storage. List access uses the same provider failure handling in
 compilation and execution.
