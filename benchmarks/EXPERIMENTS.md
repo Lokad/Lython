@@ -303,6 +303,10 @@ original conditions retained. Current comparisons belong in
   improve with lower allocation and CPU. Captured compile-to-result improves.
   Generated-validator compile and shipment CPU remain controls to revisit.
   [Ordered preparation](results/2026-11-19-child-declaration-preparation/refinement/README.md).
+- B1099 measures final slot-backed positional defaults. Ordinary and captured
+  rules run faster warm. Rule allocation falls and the accounted default
+  tuple peak rises. Computed defaults show a moving same-source warm control
+  and adverse `RunAsync` timing. [Positional defaults](results/2026-11-19-positional-default-slots/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
