@@ -4,9 +4,8 @@ using System.Runtime.CompilerServices;
 
 namespace Lokad.Lython.Runtime;
 
-internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable, IClassOwnedMember, IPyMutableDynamicAttributes, IPyDeletableDynamicAttributes, IPyHashableValue
+internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue, IPyBindableCallable, IClassOwnedMember, IPyMutableDynamicAttributes, IPyDeletableDynamicAttributes, IPyHashableValue
 {
-    private readonly FunctionBindingPlan _bindingPlan;
     private readonly int? _storageCapacity;
     private readonly LythonRuntime.ExecutionContext _closure;
     // Standard attributes have fixed storage in the funded function wrapper.
@@ -26,23 +25,21 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         FunctionDefaults defaults,
         PythonCallableKind callableKind = PythonCallableKind.Function,
         int? storageCapacity = null)
+        : base(codeObject.Name, callableKind, parameterLayout, defaults)
     {
         CodeObject = codeObject;
         _storageCapacity = storageCapacity;
         _closure = closure;
         _docstring = codeObject.Docstring;
-        _bindingPlan = new FunctionBindingPlan(codeObject.Name, callableKind, parameterLayout, defaults);
-        SupportsPositionalBinding = _bindingPlan.KeywordOnlyCount == 0 &&
-            _bindingPlan.VariadicListIndex < 0 && _bindingPlan.VariadicDictionaryIndex < 0;
+        SupportsPositionalBinding = KeywordOnlyCount == 0 &&
+            VariadicListIndex < 0 && VariadicDictionaryIndex < 0;
     }
 
     internal ExecutableCodeObject CodeObject { get; }
 
-    public string Name => CodeObject.Name;
+    public string Name => CallableName;
 
     public int GetPyHashCode() => RuntimeHelpers.GetHashCode(this);
-
-    protected FunctionBindingPlan BindingPlan => _bindingPlan;
 
     protected LythonRuntime.ExecutionContext Closure => _closure;
 
@@ -71,30 +68,30 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
 
     internal BoundFunctionArguments BindCallOperands(ReadOnlySpan<LythonRuntime.ExecutableSlot> arguments, LythonSourceSpan span,
         LythonRuntime.ExecutionContext context, object? receiver, ExecutableCallSite? callSite)
-        => LythonRuntime.BindFunctionArguments([], span, _bindingPlan, context, receiver, callSite, arguments, storageCapacity: _storageCapacity);
+        => LythonRuntime.BindFunctionArguments([], span, this, context, receiver, callSite, arguments, storageCapacity: _storageCapacity);
 
     internal ValueTask<BoundFunctionArguments> BindCallOperandsAsync(ReadOnlySpan<LythonRuntime.ExecutableSlot> arguments, LythonSourceSpan span,
         LythonRuntime.ExecutionContext context, object? receiver, ExecutableCallSite? callSite)
-        => LythonRuntime.BindFunctionArgumentsAsync([], span, _bindingPlan, context, receiver, callSite, arguments, _storageCapacity);
+        => LythonRuntime.BindFunctionArgumentsAsync([], span, this, context, receiver, callSite, arguments, _storageCapacity);
 
     // No defaults, receiver insertion or dynamic binding during the borrow.
     internal bool CanBorrowPositionalArguments(int count, object? receiver)
-        => receiver is null && SupportsPositionalBinding && count == _bindingPlan.PositionalCount;
+        => receiver is null && SupportsPositionalBinding && count == PositionalCount;
 
     internal bool CanTakeExpandedKeywords(int positionalCount, object? receiver)
-        => _bindingPlan.KeywordOnlyCount == 0 && _bindingPlan.VariadicListIndex < 0 &&
-            _bindingPlan.VariadicDictionaryIndex >= 0 &&
-            positionalCount == _bindingPlan.PositionalCount - (receiver is null ? 0 : 1);
+        => KeywordOnlyCount == 0 && VariadicListIndex < 0 &&
+            VariadicDictionaryIndex >= 0 &&
+            positionalCount == PositionalCount - (receiver is null ? 0 : 1);
 
     internal PyDict? PrepareExpandedKeywords(PyDict source, LythonRuntime.ExecutionContext context,
         LythonSourceSpan mappingSpan, LythonSourceSpan callSpan, bool freshMapping)
-        => source.PrepareExpandedKeywords(_bindingPlan, context, mappingSpan, callSpan, freshMapping);
+        => source.PrepareExpandedKeywords(this, context, mappingSpan, callSpan, freshMapping);
 
     internal BoundFunctionArguments BindPreparedKeywords(ReadOnlySpan<LythonRuntime.ExecutableSlot> positional, object? receiver,
         PyDict keywords, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         context.CheckExecution(span);
-        var storage = LythonRuntime.RentFunctionArgumentStorage(_bindingPlan, span, context, _storageCapacity);
+        var storage = LythonRuntime.RentFunctionArgumentStorage(this, span, context, _storageCapacity);
         try
         {
             var slot = 0;
@@ -106,7 +103,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
                 positional.Slice(offset, length).CopyTo(storage.Values.AsSpan(slot + offset, length));
                 offset += length;
             }
-            storage.Values[_bindingPlan.VariadicDictionaryIndex].Object = keywords;
+            storage.Values[VariadicDictionaryIndex].Object = keywords;
             return storage;
         }
         catch
@@ -128,7 +125,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         LythonRuntime.ExecutionContext context, object? receiver = null)
     {
         context.CheckExecution(span);
-        var boundArguments = LythonRuntime.BindFunctionArguments(arguments, span, _bindingPlan, context, receiver, storageCapacity: _storageCapacity);
+        var boundArguments = LythonRuntime.BindFunctionArguments(arguments, span, this, context, receiver, storageCapacity: _storageCapacity);
         return InvokeBound(boundArguments, span);
     }
 
@@ -174,7 +171,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         try
         {
             context.CheckExecution(span);
-            var binding = LythonRuntime.BindFunctionArgumentsAsync(arguments, span, _bindingPlan, context, receiver, storageCapacity: _storageCapacity);
+            var binding = LythonRuntime.BindFunctionArgumentsAsync(arguments, span, this, context, receiver, storageCapacity: _storageCapacity);
             return binding.IsCompletedSuccessfully ? InvokeBoundAsync(binding.Result, span) : BindAndInvokeAsync(binding, span);
         }
         catch (Exception error) { return ValueTask.FromException<object>(error); }
@@ -226,7 +223,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
 
     public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
     {
-        if (_bindingPlan.TryGetDefaultMetadata(name, out value)) return true;
+        if (TryGetDefaultMetadata(name, out value)) return true;
         if (name == "__dict__") { value = _customAttributes ??= new PyDict(_closure.MemoryGovernor); return true; }
         value = name switch
         {
@@ -268,7 +265,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
 
     public bool TrySetMember(string name, object value)
     {
-        if (_bindingPlan.TrySetDefaultMetadata(name, value)) return true;
+        if (TrySetDefaultMetadata(name, value)) return true;
         switch (name)
         {
             case "__dict__":
@@ -293,7 +290,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
 
     public bool TryDeleteMember(string name, LythonSourceSpan? span)
     {
-        if (_bindingPlan.TrySetDefaultMetadata(name, PyNone.Instance, span)) return true;
+        if (TrySetDefaultMetadata(name, PyNone.Instance, span)) return true;
         if (name is "__name__" or "__qualname__" or "__dict__")
             throw new LythonRuntimeException("TypeError", $"cannot delete {name}", span);
         if (name is "__doc__" or "__module__") return TrySetMember(name, PyNone.Instance);
@@ -358,7 +355,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         => PyFunctionBinding.EnterInvocationFrame(
             _closure,
             CodeObject.ScopeFacts,
-            _bindingPlan,
+            this,
             boundArguments,
             CodeObject.RequiresLocalVariableMirroring,
             OwnerType,

@@ -67,10 +67,10 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         && CodeObject.ValueStorageCapacity <= LythonRuntime.NativeValueCapacity;
 
     internal bool CanBindNativeArguments => CanStartInline
-        && BindingPlan.ParameterCount <= LythonRuntime.NativeValueCapacity
-        && BindingPlan.VariadicListIndex < 0 && BindingPlan.VariadicDictionaryIndex < 0
-        && BindingPlan.PositionalDefaults is null or PyTuple
-        && (BindingPlan.KeywordDefaultStorage is null || BindingPlan.KeywordDefaultStorage.SupportsNativeStringReads);
+        && ParameterCount <= LythonRuntime.NativeValueCapacity
+        && VariadicListIndex < 0 && VariadicDictionaryIndex < 0
+        && PositionalDefaults is null or PyTuple
+        && (KeywordDefaultStorage is null || KeywordDefaultStorage.SupportsNativeStringReads);
 
     [System.Runtime.CompilerServices.InlineArray(LythonRuntime.NativeValueCapacity)]
     private struct NativeValues { private LythonRuntime.ExecutableSlot _first; }
@@ -94,8 +94,8 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         {
             arguments.CopyTo(values!);
         }
-        else LythonRuntime.BindFunctionArgumentsInto(values[..BindingPlan.ParameterCount],
-            [], span, BindingPlan, context, receiver: receiver, callSite: call, operands: arguments);
+        else LythonRuntime.BindFunctionArgumentsInto(values[..ParameterCount],
+            [], span, this, context, receiver: receiver, callSite: call, operands: arguments);
         StartInline(values, null, span, consumedByIteration, unpackedReturn,
             out unpacked, out result, out frame);
     }
@@ -145,7 +145,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
             state.PrepareTransfer();
             if (existing is null)
             {
-                owned = LythonRuntime.RentFunctionArgumentStorage(BindingPlan, span, Closure,
+                owned = LythonRuntime.RentFunctionArgumentStorage(this, span, Closure,
                     CodeObject.ValueStorageCapacity);
                 rented = true;
                 values[..state.LiveExtent].CopyTo(owned.Values);

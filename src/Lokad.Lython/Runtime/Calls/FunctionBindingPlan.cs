@@ -12,7 +12,9 @@ internal readonly record struct FunctionDefaults(PyTuple? Positional, PyDict? Ke
     }
 }
 
-internal sealed class FunctionBindingPlan
+// Ordinary functions own this state directly. Generated callables can own a
+// standalone plan. Binding keeps the live default objects in either case.
+internal class FunctionBindingPlan
 {
     private readonly FunctionParameterLayout _layout;
 
