@@ -182,6 +182,10 @@ original conditions retained. Current comparisons belong in
   Compilation allocation falls slightly. Compile-only CPU is mixed, the
   generated validator's compile-to-result worsens, and warm shipment moves
   favorably. [Operand preparation comparison](results/2026-11-19-combined-operand-preparation/README.md).
+- B1069 refreshes forwarding, retained siblings, shipment and CSV against
+  CPython across warm, compilation and compile-to-result. The staged hash
+  mismatch stopped the original launch before starting any worker.
+  [CPython checkpoint](results/2026-11-19-retained-trim-cpython/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
