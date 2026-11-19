@@ -483,6 +483,10 @@ original conditions retained. Current comparisons belong in
   run 3.24–4.48% faster, with lower CPU. Captured-rule CPU rises and the
   annotated and CSV controls vary across duplicate workers.
   [Prepared destinations](results/2026-11-19-prepared-local-destination/README.md).
+- B1139 keeps parser-built annotation bounds private. Annotated compilation
+  takes less elapsed time and allocates 0.75% less. Annotated compile-to-result
+  and generated-validator compilation use more CPU.
+  [Annotation bounds](results/2026-11-19-parser-annotation-bounds/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
