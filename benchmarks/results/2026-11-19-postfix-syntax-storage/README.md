@@ -38,6 +38,8 @@ diagnostic order and spans, positional-before-keyword evaluation,
 grouping, class headers and slice keys. The initial isolated WSL run
 lacked the probe and fixture layout. The archive preserves that run and
 the passing rerun with the matching build and checkout fixtures.
+The retained source also passed the full platform, stress and package
+workflow. [Delivery](delivery/README.md).
 
 Compilation includes compile-owner disposal. Compile-to-result includes
 mediated I/O, output verification, compilation and result/owner cleanup.

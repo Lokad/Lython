@@ -1,0 +1,12 @@
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-19T00:42:35.4448867Z Passed!  - Failed:     0, Passed:  4895, Skipped:     0, Total:  4895, Duration: 33 s - Lokad.Lython.WhiteBox.Tests.dll (net11.0)
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-19T00:46:51.9410011Z Passed!  - Failed:     0, Passed: 18090, Skipped:     0, Total: 18090, Duration: 4 m 40 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)
+tests (ubuntu-latest)	Test Release (.NET 10 checkpoint)	2026-11-19T00:47:31.7015310Z Passed!  - Failed:     0, Passed:  4895, Skipped:     0, Total:  4895, Duration: 32 s - Lokad.Lython.WhiteBox.Tests.dll (net10.0)
+tests (ubuntu-latest)	Test Release (.NET 10 checkpoint)	2026-11-19T00:51:39.2211291Z Passed!  - Failed:     0, Passed: 18090, Skipped:     0, Total: 18090, Duration: 4 m 32 s - Lokad.Lython.PublicApi.Tests.dll (net10.0)
+tests (ubuntu-latest)	Verify Release package consumer	2026-11-19T00:51:46.5828348Z Package consumer passed: 0.11.0
+tests (ubuntu-latest)	Verify Release package consumer	2026-11-19T00:51:47.5593300Z Package compatibility and mediated file consumer passed.
+tests (ubuntu-latest)	Verify Release package consumer	2026-11-19T00:51:51.8871237Z Package consumer passed: 0.11.0
+tests (ubuntu-latest)	Verify Release package consumer	2026-11-19T00:51:52.9173164Z Package compatibility and mediated file consumer passed.
+tests (ubuntu-latest)	Test original stress scales	2026-11-19T00:52:02.0064469Z Passed!  - Failed:     0, Passed:    14, Skipped:     0, Total:    14, Duration: 3 s - Lokad.Lython.WhiteBox.Tests.dll (net11.0)
+tests (ubuntu-latest)	Test original stress scales	2026-11-19T00:57:02.9083523Z Passed!  - Failed:     0, Passed:   406, Skipped:     0, Total:   406, Duration: 4 m 58 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)
+tests (ubuntu-latest)	Test original stress scales	2026-11-19T00:57:10.6993644Z Passed!  - Failed:     0, Passed:    14, Skipped:     0, Total:    14, Duration: 2 s - Lokad.Lython.WhiteBox.Tests.dll (net10.0)
+tests (ubuntu-latest)	Test original stress scales	2026-11-19T01:02:14.2310964Z Passed!  - Failed:     0, Passed:   406, Skipped:     0, Total:   406, Duration: 5 m 2 s - Lokad.Lython.PublicApi.Tests.dll (net10.0)
