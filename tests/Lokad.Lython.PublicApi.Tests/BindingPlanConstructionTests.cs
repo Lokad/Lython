@@ -66,10 +66,14 @@ public sealed class BindingPlanConstructionTests
             fresh = collect('fresh', **{key: None, 'next': 1, key: value})
             named = {key: value}
             other = collect('other', **named)
-            record = collect('record', **{'fixed': value})
+            def make_record(label):
+                return collect(label, **{'fixed': value})
+            record = make_record('record')
+            repeated = make_record('repeated')
             print(list(fresh), next(iter(fresh)) is key, fresh[key] is value)
             print(other is not named, 'status' not in named, record['fixed'] is value)
-            print(fresh['status'], other['status'], record['status'])
+            print(record is not repeated, repeated['fixed'] is value)
+            print(fresh['status'], other['status'], record['status'], repeated['status'])
             try: collect('unreachable', **{'label': 1, 5: value})
             except TypeError as error: print('keywords must be strings' in str(error))
             try: collect('unreachable', **{'label': 1})
@@ -85,8 +89,8 @@ public sealed class BindingPlanConstructionTests
         using (var result = asynchronous ? await script.RunAsync(delayed) : script.Run(host))
         {
             Assert.True(result.Success, result.Failure?.Message);
-            Assert.Equal("['dynamic_key', 'next', 'status'] True True\nTrue True True\n" +
-                "fresh! other! record!\nTrue\nTrue\n['fresh', 'other', 'record']\n", result.StandardOutput);
+            Assert.Equal("['dynamic_key', 'next', 'status'] True True\nTrue True True\nTrue True\n" +
+                "fresh! other! record! repeated!\nTrue\nTrue\n['fresh', 'other', 'record', 'repeated']\n", result.StandardOutput);
             if (asynchronous) Assert.True(delayed.CompletedAsynchronously > 0);
             Assert.True(budget.ReservedBytes > baseline);
         }
