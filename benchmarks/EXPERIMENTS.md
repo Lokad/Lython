@@ -158,6 +158,10 @@ original conditions retained. Current comparisons belong in
   while ordinary-rule warm CPU rises and compile-to-result remains uncertain.
   The reused-default warm reference drifts.
   [Default ownership evidence](results/2026-11-19-direct-default-owner/README.md).
+- B1063 removes ASCII trim-set allocation in a private prototype.
+  Mixed Unicode and forwarding compile-to-result improve. Warm
+  whitespace normalization and the shipment control have adverse elapsed.
+  [Trim membership comparison](results/2026-11-19-inline-trim-membership/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
