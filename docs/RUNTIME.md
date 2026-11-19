@@ -895,7 +895,9 @@ Executable declarations evaluate decorators and defaults in the surrounding
 instruction stream. The same construction step handles yielding definitions,
 with private default storage owned by the operand stack until publication or
 cleanup. Functions share a prepared Python annotation order across ordinary
-and yielding definitions. Type-scope annotations keep their defining namespace.
+and yielding definitions. The defining source selects eager evaluation or
+postponed spelling, including across imports. Type-scope annotations keep
+their defining namespace.
 Private default storage stays admitted through suspension and is released if
 default evaluation or annotation setup fails. Once a decorator can observe the
 function, the defaults stay funded even if decoration raises.
@@ -2394,9 +2396,9 @@ mutate input, retain subject borrows past disposal, or retain compilation input
 without copying it into their own funded storage.
 Provider captures use absolute byte coordinates, including lookbehind captures
 before `Pos`. Captures end at or before `EndPos`. A reversed anchored match can
-also return empty captures at `Pos`. The frontend and runtime compute scalar and byte window bounds
-with the same UTF-8 routine. Constant analysis encodes known subjects under
-its working owner. Unknown bounds remain uncertain. With clamped `pos` greater
+also return empty captures at `Pos`. The frontend and runtime compute scalar
+and byte window bounds with the same UTF-8 routine. Constant analysis encodes
+known subjects under its working owner. Unknown bounds remain uncertain. With clamped `pos` greater
 than `endpos`, Lython resolves `search` and `fullmatch` to `None` before provider
 subject preparation. An anchored `match` passes the reversed window to the
 provider, since a zero-width match can succeed. Substitution rewrites the
