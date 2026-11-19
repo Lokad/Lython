@@ -413,8 +413,9 @@ internal sealed partial class ExecutableScript
                 functionDefinition.TypeParameters, codeObject, functionDefinition.Syntax.IsGenerator)
             {
                 ParameterLayout = functionDefinition.ParameterLayout,
-                KeywordRecordCache = functionDefinition.ParameterLayout.HasKeywordDefaults ? AllocateLookupCache() : -1,
-                AnnotationRecordCache = functionDefinition.Annotations.Length == 0 ? -1 : AllocateLookupCache()
+                AnnotationKeys = PyDict.RecordKeys.PrepareDefinition(functionDefinition.Annotations.Length,
+                    functionDefinition.Annotations, static (inputs, index) => inputs[index].Key,
+                    _compilationCancellation, functionDefinition.Span)
             };
             return binding;
         }

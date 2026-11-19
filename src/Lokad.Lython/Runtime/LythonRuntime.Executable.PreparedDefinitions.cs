@@ -1,6 +1,5 @@
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Calls;
-using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
@@ -34,15 +33,6 @@ internal sealed partial class LythonRuntime
         }
         ChargeClosureRetention(closure, governor, span);
         return function;
-    }
-
-    private static PyDict CreateDefinitionRecord<T>(ref ExecutableWorkState execution,
-        ExecutionContext context, int count, int cacheIndex, T names, Func<T, int, PyString> nameAt, LythonSourceSpan span)
-    {
-        if (cacheIndex < 0) return new PyDict(count, context.MemoryGovernor, span);
-        ref var cache = ref execution.Stack.GetLookupCaches(execution.Code.LookupCacheCount, span)[cacheIndex];
-        var keys = PyDict.RecordKeys.PrepareDefinition(ref cache, count, names, nameAt, context, span);
-        return keys.CreateRecord(context, span, count);
     }
 
     internal sealed partial class ExecutionContext
@@ -129,7 +119,7 @@ internal sealed partial class LythonRuntime
                 {
                     var evaluated = operation.AnnotationsOnStack ? execution.Stack.Slice(next, binding.Annotations.Length) : default;
                     metadata = AttachTypeMetadataAsync(function, binding.Annotations, binding.TypeParameters is not null,
-                        span, typeScope, context, asynchronous, ref execution, evaluated, binding.AnnotationRecordCache);
+                        span, typeScope, context, asynchronous, evaluated, binding.AnnotationKeys);
                 }
 
                 if (binding.DecoratorCount != 0 || !metadata.IsCompletedSuccessfully)

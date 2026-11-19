@@ -469,8 +469,7 @@ internal sealed record ExecutableFunctionBinding(
     bool IsGenerator)
 {
     public required FunctionParameterLayout ParameterLayout { get; init; }
-    public int KeywordRecordCache { get; init; } = -1;
-    public int AnnotationRecordCache { get; init; } = -1;
+    public PyDict.RecordKeys? AnnotationKeys { get; init; }
 
 }
 

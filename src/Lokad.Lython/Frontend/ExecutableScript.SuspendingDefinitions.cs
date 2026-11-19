@@ -1,6 +1,8 @@
+using Lokad.Lython.Runtime;
+
 namespace Lokad.Lython.Frontend;
 
-internal sealed record ExecutableStartFunctionDefaults(FunctionParameterLayout Layout, int KeywordRecordCache) : ExecutableOperation;
+internal sealed record ExecutableStartFunctionDefaults(FunctionParameterLayout Layout, PyDict.RecordKeys? KeywordKeys) : ExecutableOperation;
 internal sealed record ExecutableAppendFunctionDefault(FunctionParameterLayout.DefaultSlot Default) : ExecutableOperation;
 internal sealed record ExecutableCreateFunction(ExecutableFunctionBinding Binding, bool AnnotationsOnStack = false) : ExecutableOperation
 {
@@ -23,8 +25,7 @@ internal sealed partial class ExecutableScript
         {
             var binding = PrepareFunctionBinding(definition);
             foreach (var decorator in definition.Decorators) block = CompileExpression(decorator, block);
-            block = CompileFunctionDefaults(definition.Parameters, binding.ParameterLayout,
-                binding.KeywordRecordCache, definition.Span, block);
+            block = CompileFunctionDefaults(definition.Parameters, binding.ParameterLayout, definition.Span, block);
             // Future annotations already carry their source spelling. Their
             // mode belongs to this definition and needs no execution-time test.
             if ((!_completeLexicalParent && !yielding) || definition.TypeParameters is not null ||
@@ -51,8 +52,7 @@ internal sealed partial class ExecutableScript
 
         private int CompileLambda(LoweredLambdaExpression lambda, int block)
         {
-            var recordCache = lambda.ParameterLayout.HasKeywordDefaults ? AllocateLookupCache() : -1;
-            block = CompileFunctionDefaults(lambda.Parameters, lambda.ParameterLayout, recordCache, lambda.Span, block);
+            block = CompileFunctionDefaults(lambda.Parameters, lambda.ParameterLayout, lambda.Span, block);
             if (lambda.PreparedCode is null)
                 lambda.CompleteCompilation(CompileFunctionCode("<lambda>", lambda.ParameterLayout,
                     lambda.FunctionBody, lambda.ScopeFacts, generator: lambda.IsGenerator,
@@ -62,10 +62,14 @@ internal sealed partial class ExecutableScript
         }
 
         private int CompileFunctionDefaults(IReadOnlyList<LoweredFunctionParameter> parameters,
-            FunctionParameterLayout layout, int recordCache, LythonSourceSpan span, int block)
+            FunctionParameterLayout layout, LythonSourceSpan span, int block)
         {
             if (layout.Defaults.Length == 0) return block;
-            EmitOperation(new ExecutableStartFunctionDefaults(layout, recordCache), span, block);
+            var keys = PyDict.RecordKeys.PrepareDefinition(layout.Defaults.Length - layout.PositionalDefaultCount,
+                layout, static (parameters, index) => parameters.KeywordDefaultName(
+                    parameters.Defaults[parameters.PositionalDefaultCount + index].KeywordIndex),
+                _compilationCancellation, span);
+            EmitOperation(new ExecutableStartFunctionDefaults(layout, keys), span, block);
             foreach (var slot in layout.Defaults)
             {
                 var expression = parameters[slot.ParameterIndex].DefaultValue.RequireNotNull();

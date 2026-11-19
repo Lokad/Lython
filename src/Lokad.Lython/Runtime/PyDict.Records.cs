@@ -59,7 +59,9 @@ internal sealed partial class PyDict
     internal sealed class RecordKeys
     {
         private readonly NativeKey[] _keys;
-        private readonly MemoryGovernor _owner;
+        // A compiled layout is funded by its code owner. Dynamic layouts
+        // stay with the execution that established them.
+        private readonly MemoryGovernor? _owner;
         private readonly long _sequence;
         internal int Count { get; }
 
@@ -68,7 +70,7 @@ internal sealed partial class PyDict
                 dictionary._nativeCount)
         { }
 
-        private RecordKeys(NativeKey[] keys, MemoryGovernor owner, long sequence, int count)
+        private RecordKeys(NativeKey[] keys, MemoryGovernor? owner, long sequence, int count)
         {
             _keys = keys;
             _owner = owner;
@@ -78,51 +80,42 @@ internal sealed partial class PyDict
 
         // Definition names are distinct native strings in their final insertion order.
         // Build the shared table directly, with no first record to freeze or detach.
-        internal static RecordKeys PrepareDefinition<T>(ref LythonRuntime.ExecutableLookupCache cache,
-            int count, T names, Func<T, int, PyString> nameAt,
-            LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        internal static RecordKeys? PrepareDefinition<T>(int count, T names, Func<T, int, PyString> nameAt,
+            CancellationToken token, LythonSourceSpan span)
         {
-            if (cache.Target is RecordKeys ready) return ready;
-            var owner = context.MemoryGovernor;
-            var capacity = NativeCapacity(count);
-            var bytes = checked(64L + NativeKeyStorageBytes(capacity));
-            using var storage = owner.ReserveTemporary(bytes, span);
-            context.CheckExecution(span);
-            if (cache.Target is RecordKeys reentered) return reentered;
-
-            var keys = new NativeKey[capacity];
+            if (count == 0) return null;
+            // The enclosing compilation was admitted before preparing code.
+            var keys = new NativeKey[NativeCapacity(count)];
             for (var i = 0; i < count; i++)
             {
-                context.CheckExecution(span);
+                if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
                 var key = nameAt(names, i);
-                var hash = MixNativeHash(LythonRuntime.ComputeStructuralHashCode(key, span, context));
+                var hash = MixNativeHash(PyValueComparer.NormalizeHash(key.GetHashCode(token, span)));
                 LinkNativeKey(keys, i, new NativeKey { Key = key, Hash = hash, Sequence = i + 1 });
             }
-            var layout = new RecordKeys(keys, owner, count, count);
-            storage.Commit(bytes);
-            cache = new(layout, null);
-            return layout;
+            return new RecordKeys(keys, null, count, count);
         }
 
         internal PyDict CreateRecord(LythonRuntime.ExecutionContext context, LythonSourceSpan span, int initialCapacity)
         {
             context.CheckExecution(span);
-            if (!ReferenceEquals(_owner, context.MemoryGovernor))
+            var owner = context.MemoryGovernor;
+            if (_owner is not null && !ReferenceEquals(_owner, owner))
                 throw new InvalidOperationException("Record keys must retain their execution owner.");
             var capacity = NativeCapacity(initialCapacity);
             var bytes = checked(NativeShellBytes + (capacity == 0 ? 0 : 32L + 72L * capacity));
-            _owner.Reserve(bytes, span);
+            owner.Reserve(bytes, span);
             try
             {
                 context.CheckExecution(span);
-                var record = new PyDict(_keys, this, _sequence, capacity, _owner, span)
+                var record = new PyDict(_keys, this, _sequence, capacity, owner, span)
                 {
                     _nativeCommittedBytes = bytes,
                 };
-                _owner.Commit(bytes);
+                owner.Commit(bytes);
                 return record;
             }
-            catch { _owner.ReleaseReserved(bytes); throw; }
+            catch { owner.ReleaseReserved(bytes); throw; }
         }
 
         // The caller transfers an exclusively owned, already-funded CSV row.
@@ -131,7 +124,7 @@ internal sealed partial class PyDict
             LythonRuntime.ExecutionContext context, LythonSourceSpan span)
         {
             context.CheckExecution(span);
-            if (!ReferenceEquals(_owner, context.MemoryGovernor))
+            if (_owner is null || !ReferenceEquals(_owner, context.MemoryGovernor))
                 throw new InvalidOperationException("Record keys must retain their execution owner.");
             if (!MatchesFields()) return null;
             using var shell = _owner.ReserveTemporary(NativeShellBytes, span);
