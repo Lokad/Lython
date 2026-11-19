@@ -71,6 +71,37 @@ public sealed class ClosureRetentionAccountingScenarioTests
         Assert.Equal(sync.ReturnValue, asyncResult.ReturnValue);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ForwardedCellsStayLiveAfterFactoryRebindAndReturn(bool asynchronous)
+    {
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
+            shift = 1
+            def factory(seed):
+                captured = seed
+                def middle():
+                    def add(value):
+                        return captured + value + shift
+                    return add
+                add = middle()
+                captured += 1
+                return add
+            funcs = [factory(seed) for seed in range(320)]
+            shift = 10
+            return [funcs[0](5), funcs[-1](5)]
+            """);
+        Assert.True(script.IsValid);
+        var budget = new LythonMemoryBudget(256 * 1024);
+        var options = new LythonRunOptions { MemoryBudget = budget };
+        using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(new List<object?> { new BigInteger(16), new BigInteger(335) }, result.ReturnValue);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Fact]
     public async Task ManyRetainedClosuresStayCharged()
     {

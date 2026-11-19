@@ -206,13 +206,15 @@ internal sealed partial class ExecutableScript
                 docstring: callable ? LoweredStatement.LeadingDocstring(statements) : null)
             {
                 QualifiedName = qualifiedName,
-                // Ordinary leaf bodies resolve names to locals or the live
-                // module. Namespace bodies and deferred descendants may still
-                // depend on their original defining scope.
-                UsesModuleClosure = callable && _completeLexicalParent &&
-                    !requiresLocalVariableMirroring && _closures.Count == 0 && _scopeFacts.NonlocalNames.Count == 0 &&
-                    !_scopeFacts.RequiresClassCell && _functions.Count == 0 && _matchCases.Count == 0 &&
-                    !_constants.Any(value => value is ExecutableCreateLambda or ExecutableCreateGeneratorExpression)
+                // Code using only slots can own cells independently of an
+                // activation. A descendant that can still observe a lexical
+                // namespace keeps its defining chain and the bridge to it.
+                UsesOnlyLexicalSlots = callable && _completeLexicalParent &&
+                    !requiresLocalVariableMirroring && _scopeFacts.NonlocalNames.Count == 0 &&
+                    !_scopeFacts.RequiresClassCell && _matchCases.Count == 0 &&
+                    _functions.All(function => function.CodeObject.UsesOnlyLexicalSlots) &&
+                    !_constants.Any(value => value is ExecutableCreateGeneratorExpression or
+                        ExecutableCreateLambda { CodeObject.UsesOnlyLexicalSlots: false })
             };
             _moduleCode?.Add(code);
             return code;

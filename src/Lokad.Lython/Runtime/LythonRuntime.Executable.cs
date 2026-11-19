@@ -53,6 +53,7 @@ internal sealed partial class LythonRuntime
         }
 
         internal bool CanStoreThroughOwner => _owner is not null && _name is not null && _owner.GlobalNamespace is null;
+        internal bool HasNamespaceOwner => _owner is not null;
 
         private bool UsesNamespace => _owner is { MirrorsExecutableLocals: true } || _owner?.MirrorLocalStores == true;
 
@@ -697,10 +698,14 @@ internal sealed partial class LythonRuntime
                 locals[i] = argumentValues[i];
             // A captured slot holds its cell, never a second cached value. The
             // frame array and escaped closures borrow this same identity.
+            var standalone = codeObject.UsesOnlyLexicalSlots && !context.MirrorLocalStores &&
+                !context.IsClassBody && !context.IsAnnotationScope && context.InlinedComprehensionLookup is null;
             for (var i = 0; i < codeObject.CapturedLocalSlots.Count; i++)
             {
                 var slot = codeObject.CapturedLocalSlots[i];
-                locals[slot].Object = new ExecutableCell(locals[slot].Object, context, codeObject.LocalNames[slot]);
+                locals[slot].Object = standalone
+                    ? new ExecutableCell(locals[slot].Object)
+                    : new ExecutableCell(locals[slot].Object, context, codeObject.LocalNames[slot]);
             }
 
             return new ExecutableWorkState

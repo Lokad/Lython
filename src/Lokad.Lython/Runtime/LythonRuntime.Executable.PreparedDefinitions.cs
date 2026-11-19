@@ -116,7 +116,7 @@ internal sealed partial class LythonRuntime
 
                 var cells = CaptureExecutableClosures(binding.CodeObject, this, span);
                 var typeScope = CreateTypeScope(binding.TypeParameters, this, span);
-                var closure = SelectDefinitionClosure(binding.CodeObject, typeScope.Closure);
+                var closure = SelectDefinitionClosure(binding.CodeObject, typeScope.Closure, cells);
                 var values = defaults?.Values ?? default;
                 using var storage = MemoryGovernor.ReserveTemporary(FunctionValueBytes, span);
                 PyFunctionBase function = binding.IsGenerator

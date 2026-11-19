@@ -751,7 +751,7 @@ internal sealed partial class LythonRuntime
         var code = lambda.Code;
         var cells = CaptureExecutableClosures(code,
             lambda.NamespaceClosure ? context.FunctionClosureContext : context, lambda.Span);
-        var closure = SelectDefinitionClosure(code, context);
+        var closure = SelectDefinitionClosure(code, context, cells);
         using var storage = context.MemoryGovernor.ReserveTemporary(FunctionValueBytes, lambda.Span);
         context.CheckExecution(lambda.Span);
         PyFunctionBase function = lambda.IsGenerator
@@ -769,12 +769,16 @@ internal sealed partial class LythonRuntime
         return function;
     }
 
-    private static ExecutionContext SelectDefinitionClosure(ExecutableCodeObject code, ExecutionContext defining)
+    private static ExecutionContext SelectDefinitionClosure(ExecutableCodeObject code, ExecutionContext defining, ExecutableCell[] cells)
     {
         var closure = defining.FunctionClosureContext;
-        return code.UsesModuleClosure && closure.ParentContext is not null && ReferenceEquals(closure, defining) &&
-            !closure.IsClassBody && !closure.IsAnnotationScope && closure.InlinedComprehensionLookup is null
-            ? GetGlobalContext(closure) : closure;
+        if (!code.UsesOnlyLexicalSlots || closure.ParentContext is null || !ReferenceEquals(closure, defining) ||
+            closure.IsClassBody || closure.IsAnnotationScope || closure.InlinedComprehensionLookup is not null)
+            return closure;
+
+        foreach (var cell in cells)
+            if (cell.HasNamespaceOwner) return closure;
+        return GetGlobalContext(closure);
     }
 
     private static object StoreLoweredAssignmentResult(

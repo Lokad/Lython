@@ -701,10 +701,12 @@ from exposed namespaces, including across generator suspension and cell deletion
 Nonlocal ownership comes from immutable scope facts and lexical parent links;
 invocations do not rebuild a separate owner dictionary. Executable reads use
 captured cells, and dynamic reads and writes resolve the same lexical owners.
-Fully resolved leaf functions with no captures retain their live module instead
-of their factory frame. Defaults and annotations still evaluate in the defining
-context before publication. Patterns, namespace fallbacks and lexical class
-bindings keep their defining context and ownership.
+Fully resolved functions can keep their live module and independently owned
+capture cells without retaining their factory frame. The compiler establishes
+this for the function and its descendants. Such cells share the live binding
+and acquire retained funding when they escape. Patterns, namespace fallbacks,
+nonlocal declarations and lexical class bindings keep their defining context.
+Defaults and annotations still evaluate in that context before publication.
 
 Functions and lambdas borrow the lexical qualified name from compiled code.
 The shared compile owner funds the UTF-8 text and refunds temporary path storage
