@@ -158,7 +158,7 @@ internal static class StaticCollectionContractFamily
 
         foreach (var item in items)
         {
-            if (StaticAbstractFacts.TryGetKnownSequenceArity(item, out var pairArity) && pairArity != 2)
+            if (StaticAbstractFacts.TryGetKnownSequenceArity(item, bindings.AnalysisContext, out var pairArity) && pairArity != 2)
             {
                 AddDiagnostic(diagnostics, "LA3033", "dict(iterable_of_pairs) expects key-value pairs.", item.Span);
                 return;

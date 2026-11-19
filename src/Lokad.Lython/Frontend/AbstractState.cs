@@ -99,7 +99,7 @@ internal sealed class AbstractState
     public void Set(string name, AbstractValue value)
     {
         _values[name] = value;
-        if (AbstractValue.TryGetExactSequenceLength(value, out var length))
+        if (AbstractValue.TryGetExactSequenceLength(value, AnalysisContext, out var length))
         {
             _sequenceLengths[name] = AbstractSequenceLengthBounds.Exact(length);
         }

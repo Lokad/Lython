@@ -1,3 +1,5 @@
+using System.Text;
+
 namespace Lokad.Lython.Frontend;
 
 internal static class StaticAbstractFacts
@@ -236,13 +238,13 @@ internal static class StaticAbstractFacts
     {
         if (StaticAbstractValueResolver.TryResolveKnownValue(expression, bindings, out var value))
         {
-            return TryGetKnownSequenceArity(value, out count);
+            return TryGetKnownSequenceArity(value, bindings.AnalysisContext, out count);
         }
 
         switch (expression)
         {
             case StringLiteralExpressionSyntax text:
-                count = text.Value.Length;
+                count = CountTextScalars(text.Value, bindings.AnalysisContext);
                 return true;
             case BytesLiteralExpressionSyntax bytes:
                 count = bytes.Value.Length;
@@ -262,18 +264,13 @@ internal static class StaticAbstractFacts
         }
     }
 
-    public static bool TryGetKnownSequenceArity(AbstractValue value, out int count)
+    public static bool TryGetKnownSequenceArity(AbstractValue value, StaticAnalysisContext? context, out int count)
     {
+        if (AbstractValue.TryGetExactSequenceLength(value, context, out count))
+            return true;
+
         switch (value.Kind)
         {
-            case AbstractValueKind.String:
-                count = (value.RequireText()).Length;
-                return true;
-            case AbstractValueKind.Bytes:
-                count = (value.RequireBytes()).Length;
-                return true;
-            case AbstractValueKind.List:
-            case AbstractValueKind.Tuple:
             case AbstractValueKind.Set:
                 count = (value.RequireSequenceItems()).Count;
                 return true;
@@ -286,6 +283,35 @@ internal static class StaticAbstractFacts
             default:
                 count = 0;
                 return false;
+        }
+    }
+
+    internal static int CountTextScalars(ReadOnlySpan<char> text, StaticAnalysisContext? context)
+    {
+        // Parser text contains only valid scalars. Each low surrogate is the
+        // extra UTF-16 code unit of one supplementary scalar.
+        var count = text.Length;
+        while (!text.IsEmpty)
+        {
+            context?.CheckExecution();
+            var chunk = text[..Math.Min(1024, text.Length)];
+            text = text[chunk.Length..];
+            if (!chunk.ContainsAnyInRange('\uDC00', '\uDFFF')) continue;
+            foreach (var character in chunk)
+                if (char.IsLowSurrogate(character)) count--;
+        }
+
+        return count;
+    }
+
+    internal static void AppendTextItems(List<AbstractValue> items, string text, LythonSourceSpan span,
+        StaticAnalysisContext? context)
+    {
+        var index = 0;
+        foreach (var rune in text.EnumerateRunes())
+        {
+            if ((index++ & 1023) == 0) context?.CheckExecution();
+            items.Add(AbstractValue.String(rune.ToString(), span));
         }
     }
 

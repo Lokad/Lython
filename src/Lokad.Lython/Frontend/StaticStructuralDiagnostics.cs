@@ -73,7 +73,7 @@ internal static partial class StaticStructuralDiagnostics
             return;
         }
 
-        if (AbstractValue.TryGetExactSequenceLength(target, out var length) &&
+        if (AbstractValue.TryGetExactSequenceLength(target, bindings.AnalysisContext, out var length) &&
             IsIndexDefinitelyInvalid(indexValue, length))
         {
             AddDiagnostic(diagnostics, "LA3117", "Index is out of range.", subscript.Index.Span);
@@ -217,9 +217,9 @@ internal static partial class StaticStructuralDiagnostics
             return;
         }
 
-        if (!AbstractValue.TryGetExactSequenceLength(target, out var targetLength) ||
+        if (!AbstractValue.TryGetExactSequenceLength(target, bindings.AnalysisContext, out var targetLength) ||
             !StaticAbstractValueResolver.TryResolve(slice.Expression, bindings, out var replacement) ||
-            !AbstractValue.TryGetExactSequenceLength(replacement, out var replacementLength) ||
+            !AbstractValue.TryGetExactSequenceLength(replacement, bindings.AnalysisContext, out var replacementLength) ||
             !TryGetSliceBoundObject(slice.Start, bindings, out var startValue) ||
             !TryGetSliceBoundObject(slice.End, bindings, out var endValue))
         {

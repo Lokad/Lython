@@ -26,8 +26,7 @@ internal static partial class StaticAbstractValueResolver
                     items.AddRange(resolved.RequireSequenceItems());
                     break;
                 case AbstractValueKind.String:
-                    items.AddRange((resolved.RequireText()).Select(character =>
-                        AbstractValue.String(character.ToString(), expressions[i].Span)));
+                    StaticAbstractFacts.AppendTextItems(items, resolved.RequireText(), expressions[i].Span, bindings.AnalysisContext);
                     break;
                 case AbstractValueKind.Bytes:
                     items.AddRange((resolved.RequireBytes()).Select(value =>

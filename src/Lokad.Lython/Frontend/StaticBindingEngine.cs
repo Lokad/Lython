@@ -369,11 +369,7 @@ internal static partial class StaticBindingEngine
                 {
                     var text = value.RequireText();
                     var chars = new List<AbstractValue>(text.Length);
-                    for (var i = 0; i < text.Length; i++)
-                    {
-                        chars.Add(AbstractValue.String(text.Substring(i, 1), expression.Span));
-                    }
-
+                    StaticAbstractFacts.AppendTextItems(chars, text, expression.Span, bindings.AnalysisContext);
                     items = chars;
                     return true;
                 }

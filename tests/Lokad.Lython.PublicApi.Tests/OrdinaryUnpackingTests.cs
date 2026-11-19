@@ -16,6 +16,10 @@ public sealed class OrdinaryUnpackingTests
         { "class Box: pass\nbox=Box()\n(chosen:=box).value,other=[1,2]\nprint(chosen is box,box.value,other)", "True 1 2\n" },
         { "class Box:\n a,b=[1,2]\nprint(Box.a,Box.b)", "1 2\n" },
         { "a,(b,*c),d=[1,[2,3,4],5]\nprint(a,b,c,d)", "1 2 [3, 4] 5\n" },
+        { "text='\\U0001f680'\none,=text\nprint(one==text)", "True\n" },
+        { "text='\\U0001f680'\none,=[*text]\nprint(one==text)", "True\n" },
+        { "def identity(value): return value\ntext='\\U0001f680'\nprint(identity(*text)==text)", "True\n" },
+        { "text='a\\U0001f680'\nitems=[0,1,2]\nitems[::2]=text\nprint(items==['a',1,'\\U0001f680'])", "True\n" },
         { """
             events=[]
             def alternate(value):

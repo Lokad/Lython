@@ -490,12 +490,12 @@ internal readonly record struct AbstractValue
         };
     }
 
-    public static bool TryGetExactSequenceLength(AbstractValue value, out int length)
+    public static bool TryGetExactSequenceLength(AbstractValue value, StaticAnalysisContext? context, out int length)
     {
         switch (value.Kind)
         {
             case AbstractValueKind.String:
-                length = value.RequireText().Length;
+                length = StaticAbstractFacts.CountTextScalars(value.RequireText(), context);
                 return true;
             case AbstractValueKind.Bytes:
                 length = value.RequireBytes().Length;
