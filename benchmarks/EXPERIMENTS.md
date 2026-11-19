@@ -238,6 +238,9 @@ original conditions retained. Current comparisons belong in
   registration warm timing and annotated compile-to-result improve with
   lower CPU. Forwarding compile-to-result is slower with mixed CPU.
   [Compiled publication](results/2026-11-19-compiled-definition-publication/README.md).
+- B1083 removes the field rescan for fixed split unpacking in a private
+  prototype. Forwarding uses more CPU and takes longer. Allocation and
+  accounted peaks match. [Fixed split ranges](results/2026-11-19-fixed-split-ranges/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
