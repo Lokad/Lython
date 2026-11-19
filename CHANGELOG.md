@@ -8,6 +8,8 @@
   annotations, dictionaries retain their identity and other values raise `TypeError`.
 - Admit malformed `int()` and `float()` error messages through the shared
   allowance, with one UTF-8 render and one decode per message.
+- Route malformed native `int()` conversions through the Python exception
+  handler without CLR unwinding, and keep short valid decimals in integer slots.
 - Reuse admitted key layouts when forwarding dense CSV and JSON records
   as keywords, while keeping each dictionary's values independently mutable.
   Skip the key scan when the layout proves the keys are valid and the callee

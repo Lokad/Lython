@@ -811,8 +811,9 @@ instruction entry. Yielded generators and pending calls retain their frame state
 native cleanup and cursor disposal finish before owned storage is released.
 Pending child-call failures and generator exceptions route when the frame resumes,
 after pending operand cleanup. Active delegation forwards the exception to its
-delegate. Completed returns use the return value itself as their marker; Python
-None remains a real value. Ordinary instruction execution retains cancellation
+delegate. A malformed native `int()` conversion supplies its error at the current
+instruction through the same router. Completed returns use the return value
+itself as their marker. Ordinary instruction execution retains cancellation
 and admission checks without polling a separate pending-exception/return flag.
 
 Private loops over exact builtin lists and tuples keep the sequence in its operand
@@ -1380,8 +1381,9 @@ use the existing minor-scalar headroom. Cancellation after substantial admission
 stops computation before the CLR operation starts. Empty integer products retain
 their supplied start, including bool; float accumulation returns a fresh float.
 
-Integer text conversion scans its original UTF-8 with an unsigned 128-bit native
-accumulator before arbitrary BigInteger growth. Values above 64 bits still admit
+Short signed decimal text can write its native result directly to the executable
+slot. General integer text conversion scans its original UTF-8 with an unsigned
+128-bit native accumulator before `BigInteger` growth. Values above 64 bits still admit
 their retained magnitude before conversion, including values that fit the native
 accumulator. Promotion reserves overlapping working magnitudes. Only the retained
 result is committed; scratch is refunded after

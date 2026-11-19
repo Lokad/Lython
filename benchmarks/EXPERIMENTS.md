@@ -466,6 +466,11 @@ original conditions retained. Current comparisons belong in
   CPU rises. The source stays private while successful integer transport
   and error-message ownership are addressed.
   [Conversion failure](results/2026-11-19-native-conversion-failure/README.md).
+- B1135 retains native failure transfer and direct short integer results.
+  The malformed validator is 18.81–20.45% faster warm with 4.81% less
+  allocation. The all-valid validator also improves with supporting CPU.
+  CSV timing spans zero in the refined source pair.
+  [Integer transport](results/2026-11-19-native-integer-transport/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
