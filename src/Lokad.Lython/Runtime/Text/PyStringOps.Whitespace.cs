@@ -237,13 +237,18 @@ internal static partial class PyStringOps
         CaseMapping? casing = null, PyString? separator = null)
     {
         return BuildSplitResult(value, separator, new(value.ByteLength, maxSplit, reverse, false, false, casing),
-            casing, governor, span, context);
+            casing, governor, span, context)!;
     }
 
     private static PyList SplitLineRanges(PyString value, bool keepEnds, MemoryGovernor? governor,
         LythonSourceSpan? span, LythonRuntime.ExecutionContext? context)
         => BuildSplitResult(value, null, new(value.ByteLength, -1, false, true, keepEnds, null),
-            null, governor, span, context);
+            null, governor, span, context)!;
+
+    internal static PyList? SplitForUnpack(PyString value, PyString? separator, int maxSplit,
+        Span<LythonRuntime.ExecutableSlot> unpacked, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        => BuildSplitResult(value, separator, new(value.ByteLength, maxSplit, false, false, false, null),
+            null, context.MemoryGovernor, span, context, unpacked);
 
     internal static PyString JoinTrimmedSplit(PyString value, PyString delimiter, PyString separator,
         LythonRuntime.ExecutionContext context, LythonSourceSpan span)
@@ -305,9 +310,9 @@ internal static partial class PyStringOps
         source.CopyTo(output);
     }
 
-    private static PyList BuildSplitResult(PyString value, PyString? separator, SplitScanState scan,
+    private static PyList? BuildSplitResult(PyString value, PyString? separator, SplitScanState scan,
         CaseMapping? casing, MemoryGovernor? governor, LythonSourceSpan? span,
-        LythonRuntime.ExecutionContext? context)
+        LythonRuntime.ExecutionContext? context, Span<LythonRuntime.ExecutableSlot> unpacked = default)
     {
         governor ??= value.OwnerMemoryGovernor;
         span ??= PyStructuralGuard.AmbientSpan;
@@ -355,42 +360,55 @@ internal static partial class PyStringOps
         else if (reuseWhole && first.Capacity != 0)
             outputBytes -= PyString.EstimateApproximateBytes(first.Capacity);
         else if (borrow) outputBytes -= sharedPayload;
-        var resultBytes = PyList.EstimateCapacityBytes(count);
+        var writeOperands = !unpacked.IsEmpty && count == unpacked.Length;
+        var resultBytes = writeOperands ? 0 : PyList.EstimateCapacityBytes(count);
         using var output = governor?.ReserveTemporary(checked(resultBytes + outputBytes + sharedHeader), span);
         context?.CheckExecution(span);
-        var parts = count == 0 ? Array.Empty<object>() : new object[count];
+        var parts = writeOperands ? null : count == 0 ? Array.Empty<object>() : new object[count];
         var index = 0;
         var headerCommitted = false;
-        while (TryReadSplitRange(source, delimiter, ref scan, context, span, out var range))
+        try
         {
-            context?.CheckExecution(span);
-            object fragment;
-            if (reuseWhole) fragment = value;
-            else
+            while (TryReadSplitRange(source, delimiter, ref scan, context, span, out var range))
             {
-                var bytes = range.Capacity == 0 ? 0 : PyString.EstimateApproximateBytes(range.Capacity);
-                if (borrow && range.Capacity > PyString.InlineUtf8Capacity)
+                context?.CheckExecution(span);
+                object fragment;
+                if (reuseWhole) fragment = value;
+                else
                 {
-                    if (!headerCommitted)
+                    var bytes = range.Capacity == 0 ? 0 : PyString.EstimateApproximateBytes(range.Capacity);
+                    if (borrow && range.Capacity > PyString.InlineUtf8Capacity)
                     {
-                        // Fund surviving source backing before its first view;
-                        // admission reentry may already have established it.
-                        output?.Commit(value.Utf8SharingHeaderBytes);
-                        headerCommitted = true;
+                        if (!headerCommitted)
+                        {
+                            // Fund surviving source backing before its first view;
+                            // admission reentry may already have established it.
+                            output?.Commit(value.Utf8SharingHeaderBytes);
+                            headerCommitted = true;
+                        }
+                        fragment = value.CreateReservedUtf8Range(range.Start, range.Capacity, governor!);
+                        bytes -= range.Capacity;
                     }
-                    fragment = value.CreateReservedUtf8Range(range.Start, range.Capacity, governor!);
-                    bytes -= range.Capacity;
+                    else fragment = CreateSplitFragment(source, range, casing, governor, span, context);
+                    resultBytes = checked(resultBytes + bytes);
                 }
-                else fragment = CreateSplitFragment(source, range, casing, governor, span, context);
-                resultBytes = checked(resultBytes + bytes);
+                var destination = scan.Reverse ? count - index - 1 : index;
+                if (parts is null) unpacked[destination] = LythonRuntime.ExecutableSlot.FromObject(fragment);
+                else parts[destination] = fragment;
+                index++;
             }
-            parts[scan.Reverse ? parts.Length - index - 1 : index] = fragment;
-            index++;
+            var result = parts is null ? null : PyList.FromTransferredArray(parts, governor, span);
+            context?.CheckExecution(span);
+            output?.Commit(resultBytes);
+            return result;
         }
-        var result = PyList.FromTransferredArray(parts, governor, span);
-        context?.CheckExecution(span);
-        output?.Commit(resultBytes);
-        return result;
+        catch
+        {
+            // Speculative operands are private. Clear them before refunding the
+            // reservation for their uncommitted storage.
+            if (writeOperands) unpacked.Clear();
+            throw;
+        }
     }
 
     private static PyString CreateSplitFragment(ReadOnlySpan<byte> source,

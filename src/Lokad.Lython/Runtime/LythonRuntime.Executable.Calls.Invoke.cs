@@ -93,6 +93,10 @@ internal sealed partial class LythonRuntime
                     }
                     var receiver = execution.Stack[start];
                     var arguments = execution.Stack.Slice(start + call.ArgumentOffset, call.ArgumentCount).Span;
+                    if (call.UnpackedReturnCount != 0 && ReferenceEquals(method, ReceiverMethods.StringSplit)
+                        && receiver is PyString text && arguments.Length <= 2
+                        && TryExecuteSplitUnpack(ref execution, invocation, scope, call, start, text, arguments))
+                        return true;
                     if (call.AccumulatesDictionary && arguments.Length is 1 or 2
                         && ReferenceEquals(method, ReceiverMethods.DictionaryGet) && receiver is PyDict dictionary
                         && dictionary.CanReadKeySynchronously(arguments[0].Object!)
@@ -118,6 +122,33 @@ internal sealed partial class LythonRuntime
                 return true;
             }
             catch { execution.Stack.RetireTo(start); throw; }
+        }
+
+        private static bool TryExecuteSplitUnpack(ref ExecutableWorkState execution, ExecutionContext? invocation,
+            ExecutionContext scope, ExecutableCallSite call, int start, PyString text, ReadOnlySpan<ExecutableSlot> arguments)
+        {
+            var separator = arguments.Length == 0 ? null : arguments[0].Object;
+            var count = arguments.Length < 2 ? null : arguments[1].Object;
+            if (!CanUseNativeStringCall(NativeStringOperation.Split, separator, count, null)) return false;
+            var unpacked = PrepareUnpackedCallReturn(ref execution, call, start, out var originalExtent);
+            if (unpacked.IsEmpty) return false;
+
+            var context = invocation ?? scope;
+            PyList? list;
+            context.EnterInterpreterFrame(call.CallSpan);
+            try { list = StringMembers.SplitForUnpack(text, separator as PyString, count, unpacked, call.CallSpan, context); }
+            catch (Exception error) when (TryTranslateCallableException(error, call.CallSpan, out var translated))
+            { throw translated; }
+            finally { context.LeaveInterpreterFrame(); }
+
+            if (list is null)
+                CompleteUnpackedCallReturn(ref execution, scope, start, unpacked.Length);
+            else
+            {
+                execution.Stack.RestoreNativeExtent(originalExtent);
+                PublishInstructionResult(ref execution, invocation, execution.Code.Instructions[execution.InstructionIndex], list);
+            }
+            return true;
         }
 
         private static Span<ExecutableSlot> PrepareUnpackedCallReturn(ref ExecutableWorkState execution,

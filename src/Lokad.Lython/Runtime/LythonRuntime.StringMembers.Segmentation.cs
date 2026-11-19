@@ -30,6 +30,15 @@ internal sealed partial class LythonRuntime
             return SplitWithCount(text, separatorArgument, NormalizeSplitCount(indexed ?? PyNone.Instance, context, span), span, context);
         }
 
+        internal static PyList? SplitForUnpack(PyString text, PyString? separator, object? count,
+            Span<ExecutableSlot> unpacked, LythonSourceSpan span, ExecutionContext context)
+        {
+            var maxSplit = count is null ? -1 : NormalizeSplitCount(count, context, span);
+            try { return PyStringOps.SplitForUnpack(text, separator, maxSplit, unpacked, context, span); }
+            catch (InvalidOperationException error) when (separator is not null)
+            { throw new LythonRuntimeException("ValueError", error.Message, span); }
+        }
+
         private static int NormalizeSplitCount(object value, ExecutionContext context, LythonSourceSpan span)
         {
             if (!PyNumberOps.TryAsInteger(value, out var integer))

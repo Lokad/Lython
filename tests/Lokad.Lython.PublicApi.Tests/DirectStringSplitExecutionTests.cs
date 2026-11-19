@@ -98,6 +98,44 @@ public sealed class DirectStringSplitExecutionTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task FixedUnpackingRefusalPrecedesTargetCallbacks(bool asynchronous)
+    {
+        var source = """
+            import time
+            text = ('α' * 32 + '|') * 7 + '😀' * 32
+            items = {}
+            def target(index):
+                time.time()
+                return index
+            time.time()
+            try:
+                (items[target(0)], items[target(1)], items[target(2)], items[target(3)],
+                 items[target(4)], items[target(5)], items[target(6)], items[target(7)]) = text.split('|')
+            except MemoryError:
+                print('guest handler ran')
+            """.Replace("\r\n", "\n", StringComparison.Ordinal);
+        using var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics));
+        var budget = new AdmissionGateBudget();
+        // Leave room for the clock result. The complete set of split fields
+        // needs more than this small amount, even when their backing is shared.
+        var host = new AdmissionGateHost(budget, 256);
+        var options = new LythonRunOptions { MemoryBudget = budget };
+        using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
+        {
+            Assert.False(result.Success);
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+            var span = Assert.IsType<LythonSourceSpan>(result.Failure?.Span);
+            Assert.Equal("text.split('|')", source.Substring(span.Start, span.Length));
+            Assert.Empty(result.StandardOutput);
+            Assert.Equal(0, host.AtSecondGate);
+        }
+        Assert.Equal(0, budget.Root.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task RetainedCountedSplitStaysFundedAcrossAnotherExecution(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
