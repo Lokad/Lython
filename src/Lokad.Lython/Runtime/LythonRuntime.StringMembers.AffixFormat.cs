@@ -130,6 +130,10 @@ internal sealed partial class LythonRuntime
             }
 
             var keywordCount = arguments.Length - positionalCount;
+            if (keywordCount == 0 && prepared.IsPositionalText &&
+                JoinPreparedPositionalText(prepared.Parts, arguments, context, span) is { } joined)
+                return new(joined);
+
             var interleaved = firstKeyword < positionalCount;
             var indexBytes = (interleaved ? 32L + 4L * positionalCount : 0) +
                 (keywordCount != 0 ? 64L + 64L * keywordCount : 0);

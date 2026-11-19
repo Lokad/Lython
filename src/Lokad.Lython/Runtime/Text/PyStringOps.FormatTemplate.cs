@@ -7,7 +7,7 @@ internal static partial class PyStringOps
 {
     // A bound method keeps this immutable layout in its execution owner, never
     // on the shared literal. It contains no guest values, callbacks or tokens.
-    internal sealed record FormatTemplate(FormatPart[] Parts, MemoryGovernor? Owner);
+    internal sealed record FormatTemplate(FormatPart[] Parts, MemoryGovernor? Owner, bool IsPositionalText);
 
     internal readonly record struct FormatPart(ReadOnlyMemory<byte> Literal, FormatField? Field = null, string? Error = null);
 
@@ -61,6 +61,7 @@ internal static partial class PyStringOps
         MemoryGovernor? owner, LythonSourceSpan? span, CancellationToken token, ref int nextPosition)
     {
         var parts = new List<FormatPart>();
+        var isPositionalText = true;
         var literal = 0;
         var i = 0;
         for (; i < source.Length; i++)
@@ -79,7 +80,7 @@ internal static partial class PyStringOps
             if (b == (byte)'}')
             {
                 parts.Add(new(default, Error: "Single '}' encountered in format string"));
-                return new(parts.ToArray(), owner);
+                return new(parts.ToArray(), owner, false);
             }
             var nesting = 0;
             var close = -1;
@@ -96,24 +97,28 @@ internal static partial class PyStringOps
             if (close < 0)
             {
                 parts.Add(new(default, Error: "Single '{' encountered in format string"));
-                return new(parts.ToArray(), owner);
+                return new(parts.ToArray(), owner, false);
             }
             try
             {
-                parts.Add(new(default, ParseFormatField(source[(i + 1)..close], depth, owner, span, token, ref nextPosition)));
+                var field = ParseFormatField(source[(i + 1)..close], depth, owner, span, token, ref nextPosition);
+                parts.Add(new(default, field));
+                isPositionalText = isPositionalText && field is
+                    { Keyword: null, Accesses.Length: 0, Conversion: null, NestedSpec: null, RecursiveSpec: false }
+                    && string.IsNullOrEmpty(field.Spec);
             }
             // Store grammar failures at their original execution position.
             // Earlier fields still perform their lookups, hooks and side effects.
             catch (InvalidOperationException error)
             {
                 parts.Add(new(default, Error: error.Message));
-                return new(parts.ToArray(), owner);
+                return new(parts.ToArray(), owner, false);
             }
             i = close;
             literal = i + 1;
         }
         if (literal < source.Length) parts.Add(new(source[literal..]));
-        return new(parts.ToArray(), owner);
+        return new(parts.ToArray(), owner, isPositionalText);
     }
     private static FormatField ParseFormatField(ReadOnlyMemory<byte> fieldBytes, int depth,
         MemoryGovernor? owner, LythonSourceSpan? span, CancellationToken token, ref int nextPosition)

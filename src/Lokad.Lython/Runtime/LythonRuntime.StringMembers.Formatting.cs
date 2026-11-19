@@ -9,6 +9,51 @@ internal sealed partial class LythonRuntime
 {
     internal static partial class StringMembers
     {
+        private static PyString? JoinPreparedPositionalText(PyStringOps.FormatPart[] parts,
+            CallArgumentValue[] arguments, ExecutionContext context, LythonSourceSpan span)
+        {
+            long length = 0;
+            foreach (var part in parts)
+            {
+                context.CheckExecution(span);
+                if (part.Field is { } field)
+                {
+                    if ((ulong)field.Position >= (ulong)arguments.Length ||
+                        arguments[(int)field.Position].Value is not PyString text) return null;
+                    length += text.ByteLength;
+                }
+                else length += part.Literal.Length;
+                if (length > Array.MaxLength) return null;
+            }
+            if (length == 0) return PyString.Empty;
+
+            // Every referenced value is immutable exact text. No field work or
+            // argument mutation can intervene between sizing and the copy.
+            var count = (int)length;
+            var bytes = PyString.EstimateApproximateBytes(count);
+            var governor = context.MemoryGovernor;
+            governor.Reserve(bytes, span);
+            try
+            {
+                context.CheckExecution(span);
+                var result = PyString.CreateReservedUtf8(count, governor);
+                var destination = result.UnpublishedUtf8;
+                foreach (var part in parts)
+                {
+                    context.CheckExecution(span);
+                    var source = part.Field is { } field
+                        ? ((PyString)arguments[(int)field.Position].Value).Utf8Span
+                        : part.Literal.Span;
+                    PyStringOps.CopyJoinBytes(source, destination, context, span);
+                    destination = destination[source.Length..];
+                }
+                result.CompleteUnpublishedUtf8(count);
+                governor.Commit(bytes);
+                return result;
+            }
+            catch { governor.ReleaseReserved(bytes); throw; }
+        }
+
         // One invocation owns its arguments and expanded-spec scratch.
         // Cached layouts retain none of these values or the execution token.
         private sealed class MethodFormatOperation(CallArgumentValue[] arguments, int positionalCount,

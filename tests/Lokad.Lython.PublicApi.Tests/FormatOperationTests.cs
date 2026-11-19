@@ -3,6 +3,28 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class FormatOperationTests
 {
     [Fact]
+    public async Task PositionalTextKeepsRepeatedUtf8FragmentsAndMixedFieldOrder()
+    {
+        await FormatTemplateTests.AssertReusable("""
+            method='{1}|{{}}{0}{1:}'.format
+            fragment='🦊é'*1300
+            assert method('prefix',fragment)==fragment+'|{}prefix'+fragment
+            events=[]
+            class Field:
+             def __format__(self,spec):
+              events.append(spec)
+              return 'hook'
+            assert method('prefix',Field())=='hook|{}prefixhook'
+            assert events==['','']
+            try:method('prefix')
+            except IndexError:pass
+            else:raise AssertionError('missing positional field accepted')
+            assert method('',fragment)==fragment+'|{}'+fragment
+            return 'ok'
+            """, requireAsyncIo: false);
+    }
+
+    [Fact]
     public async Task NestedFieldsShareNumberingAndPreserveConversionOrder()
     {
         await FormatTemplateTests.AssertReusable("""

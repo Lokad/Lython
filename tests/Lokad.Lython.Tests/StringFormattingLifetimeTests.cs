@@ -46,11 +46,16 @@ public sealed class StringFormattingLifetimeTests
     }
 
     [Theory]
-    [InlineData(false, false)] [InlineData(true, false)]
-    [InlineData(false, true)] [InlineData(true, true)]
-    public async Task FinalFundingFailurePreservesTargetAliasesAndReturnsSharedAllowance(bool asynchronous, bool cancel)
+    [InlineData(false, false, false)] [InlineData(true, false, false)]
+    [InlineData(false, true, false)] [InlineData(true, true, false)]
+    [InlineData(false, false, true)] [InlineData(true, false, true)]
+    [InlineData(false, true, true)] [InlineData(true, true, true)]
+    public async Task FinalFundingFailurePreservesTargetAliasesAndReturnsSharedAllowance(bool asynchronous, bool cancel, bool method)
     {
-        var syntax = LythonFrontend.Compile("global target\narm()\ntarget=format(value, '>8s')\nrecord()").Script!;
+        var source = method
+            ? "global target\nformatter='{0}|{0}'.format\nassert formatter('')=='|'\narm()\ntarget=formatter(value)\nrecord()"
+            : "global target\narm()\ntarget=format(value, '>8s')\nrecord()";
+        var syntax = LythonFrontend.Compile(source).Script!;
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
         var root = new LythonMemoryBudget(4 * 1024 * 1024);
         using var cancellation = new CancellationTokenSource();
@@ -67,8 +72,9 @@ public sealed class StringFormattingLifetimeTests
             context.Variables["record"] = effects;
             context.Variables["arm"] = new Callback(() =>
             {
-                // Eight scalar columns: six spaces and the original six UTF-8 bytes.
-                var outputBytes = PyString.EstimateApproximateBytes(12);
+                // The method joins two six-byte fragments and one separator.
+                // The builtin uses six spaces and one six-byte fragment.
+                var outputBytes = PyString.EstimateApproximateBytes(method ? 13 : 12);
                 if (cancel) hook.AfterGrowth = bytes => { if (bytes == outputBytes) { reached = true; cancellation.Cancel(); } };
                 else hook.RefuseGrowth = bytes => { if (bytes != outputBytes) return false; reached = true; return true; };
             });
@@ -78,6 +84,7 @@ public sealed class StringFormattingLifetimeTests
                 : Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null));
             Assert.True(reached);
             Assert.Equal(cancel ? LythonFailureReason.Cancelled : LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
+            Assert.Equal(method ? 5 : 3, failure.Span?.Line);
             if (!cancel) Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
             Assert.Same(original, context.Variables["target"]);
             Assert.Equal(0, effects.Calls);

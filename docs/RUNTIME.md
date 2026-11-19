@@ -1228,6 +1228,10 @@ method with another execution owner prepares a layout funded by that owner.
 The runtime executes the layout through its existing lookup and formatting functions.
 Builtin fields append synchronously; actual mapping, attribute and formatting
 protocol work follows the current execution API and is awaited by RunAsync.
+When a valid positional layout references only exact strings and uses no
+selectors, conversions or nonempty specifications, the runtime sizes and
+admits one final UTF-8 result. It copies literals and argument bytes directly
+with cancellation checks during sizing and copying.
 
 Preparation admits conservative capacity, metadata and replacement overlap before
 allocation, including estimated selector metadata. Its charge remains until
