@@ -381,7 +381,12 @@ definition point; generator expressions acquire their outer iterator immediately
 Executable sites reuse their enclosing builder's capture facts. Remaining lowered
 consumers use their live namespace closure. Calls use the same executable/native
 function machinery; there is no separate interpreted function backend or runtime
-callable compilation. Generator expressions use the same executable generator and
+callable compilation. Eligible local definitions construct their function in the
+call's current executable slots before an invocation context is required. Defaults
+and annotations use the same preflight, publication order and definition-owned
+lookup cache. Operations that need a scope or can suspend transfer their current
+slots and pending default storage to the owning frame.
+Generator expressions use the same executable generator and
 protocols in class suites and annotations as at ordinary executable sites. Their
 frame and cursor storage is admitted at construction, which can reject a tight
 allowance earlier than deferred interpretation. Lowered class suites and annotations

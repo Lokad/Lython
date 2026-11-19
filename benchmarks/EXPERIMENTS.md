@@ -221,6 +221,11 @@ original conditions retained. Current comparisons belong in
   remain 3.98–4.98× CPython warm. Retained siblings are 1.00–1.02× from
   compile to result. The archive includes the local allocation size of a
   factory frame. [External checkpoint](results/2026-11-19-retained-definitions-cpython/README.md).
+- B1079 retains factory definitions without invocation frames. Both target
+  scripts remove 2,048 contexts, allocate 884,736 bytes less and improve
+  elapsed and CPU. Captured, positional and forwarding elapsed span zero.
+  Invoice CPU is slightly higher.
+  [Factory frame removal](results/2026-11-19-deferred-factory-definitions/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
