@@ -689,7 +689,8 @@ internal sealed partial class LythonRuntime
         IReadOnlyList<ExecutableCell>? closureCells,
         bool argumentsAreLocals,
         PyExecutableFunction? lookupOwner = null,
-        bool returnConsumedByIteration = false)
+        bool returnConsumedByIteration = false,
+        bool borrowedInvocation = false)
     {
         // InvokeBound owns bound storage until this interpreter has detached,
         // including actual asynchronous suspension. No second local array/copy
@@ -711,8 +712,10 @@ internal sealed partial class LythonRuntime
                 locals[i] = argumentValues[i];
             // A captured slot holds its cell, never a second cached value. The
             // frame array and escaped closures borrow this same identity.
-            var standalone = codeObject.UsesOnlyLexicalSlots && !context.MirrorLocalStores &&
-                !context.IsClassBody && !context.IsAnnotationScope && context.InlinedComprehensionLookup is null;
+            // A borrowed invocation uses the defining scope as its execution
+            // authority. That scope's namespace flags do not describe its locals.
+            var standalone = codeObject.UsesOnlyLexicalSlots && (borrowedInvocation || !context.MirrorLocalStores &&
+                !context.IsClassBody && !context.IsAnnotationScope && context.InlinedComprehensionLookup is null);
             for (var i = 0; i < codeObject.CapturedLocalSlots.Count; i++)
             {
                 var slot = codeObject.CapturedLocalSlots[i];

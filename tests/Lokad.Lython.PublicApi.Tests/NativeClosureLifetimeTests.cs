@@ -1,9 +1,64 @@
+using System.Numerics;
 using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class NativeClosureLifetimeTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FactoryCapturesSurvivePromotionAndAwaitedCleanup(bool cancel)
+    {
+        const string source = """
+            def observe(callback):
+                with open('/body') as stream:
+                    stream.read()
+                callback(3)
+            def make(seed):
+                saved = [seed]
+                def append(value):
+                    saved.append(value)
+                def reader():
+                    return lambda: saved
+                read = reader()
+                observe(append)
+                return [read() is saved, read()]
+            return make(7)
+            """;
+        var budget = new LythonMemoryBudget(512 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join(", ", script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        var host = new DelayedLythonHost();
+        host.SeedFile("/body", "ready");
+        var entered = cancel ? host.PauseReadUntilCancellation("/body") : null;
+        using var cancellation = new CancellationTokenSource();
+        var pending = script.RunAsync(host, new LythonRunOptions { CancellationToken = cancellation.Token });
+        try
+        {
+            if (entered is not null)
+            {
+                Assert.Same(entered, await Task.WhenAny(entered, pending).WaitAsync(TimeSpan.FromSeconds(5)));
+                Assert.False(pending.IsCompleted);
+                Assert.True(budget.ReservedBytes > baseline);
+                await cancellation.CancelAsync();
+            }
+            using var result = await pending.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.Equal(!cancel, result.Success);
+            if (cancel) Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
+            else Assert.Equal(new List<object?> { true, new List<object?> { new BigInteger(7), new BigInteger(3) } },
+                result.ReturnValue);
+        }
+        finally
+        {
+            await cancellation.CancelAsync();
+            using var drained = await pending.WaitAsync(TimeSpan.FromSeconds(5));
+        }
+        Assert.Equal(1, host.ClosedFileCount);
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
     [Theory]
     [InlineData(15)]
     [InlineData(16)]

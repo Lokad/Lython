@@ -156,18 +156,23 @@ internal sealed partial class LythonRuntime
                     catch { owner.Dispose(); throw; }
                     break;
                 case ExecutableCreateFunction function:
+                    int[]? functionCaptures = null;
                     if (invocation is null)
                     {
                         var binding = function.Binding;
-                        if (!CanDefineWithoutInvocation(binding.CodeObject) || binding.TypeParameters is not null ||
+                        if (binding.TypeParameters is not null ||
                             binding.DecoratorCount != 0 || !function.AnnotationsOnStack && binding.Annotations.Length != 0 ||
-                            HasTypeParameterScope(scope)) return false;
+                            HasTypeParameterScope(scope) || !CanDefineWithoutInvocation(binding.CodeObject,
+                                in execution, scope, span, out functionCaptures)) return false;
                     }
-                    pending = CreateExecutableFunction(ref execution, context, invocation, function, instruction, asynchronous);
+                    pending = CreateExecutableFunction(ref execution, context, invocation, function, instruction,
+                        asynchronous, functionCaptures);
                     break;
                 case ExecutableCreateLambda lambda:
                     {
-                        if (invocation is null && (lambda.Expression.NamespaceClosure || !CanDefineWithoutInvocation(lambda.CodeObject)))
+                        int[]? lambdaCaptures = null;
+                        if (invocation is null && (lambda.Expression.NamespaceClosure || !CanDefineWithoutInvocation(
+                            lambda.CodeObject, in execution, scope, span, out lambdaCaptures)))
                             return false;
                         var layout = lambda.Expression.ParameterLayout;
                         using var defaults = layout.Defaults.Length == 0 ? null
@@ -177,7 +182,11 @@ internal sealed partial class LythonRuntime
                         try
                         {
                             defaults?.Complete(execution.Stack.Values.AsSpan(first, layout.Defaults.Length));
-                            function = CreateLambdaFunction(lambda.Expression, defaults?.Values ?? default, context, borrowed: invocation is null);
+                            function = invocation is null
+                                ? CreateFunctionValue(layout, lambda.CodeObject, GetGlobalContext(context),
+                                    CaptureExecutableCells(lambda.CodeObject, context, span, ref execution, lambdaCaptures),
+                                    defaults?.Values ?? default, lambda.Expression.IsGenerator, context, span, PythonCallableKind.Lambda)
+                                : CreateLambdaFunction(lambda.Expression, defaults?.Values ?? default, context);
                         }
                         finally { execution.Stack.RetireTo(instruction.ResultSlot); }
                         defaults?.Publish();

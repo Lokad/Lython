@@ -48,13 +48,13 @@ internal sealed class PyExecutableFunction : PyFunctionBase
     internal IReadOnlyList<LythonRuntime.ExecutableCell> ClosureCells => _closureCells;
     internal LythonRuntime.ExecutionContext DefinitionContext => Closure;
 
-    // Incoming cells already belong to the work; new local cells still need a frame.
-    // Scope-sensitive operations still promote before observing their namespace.
+    // Standalone local cells belong to the work. Scope-sensitive operations
+    // still promote before observing their namespace.
     // Owner binding alone adds no namespace requirement; lexical class-cell
     // facts below retain the context needed by __class__ and implicit super.
     internal bool CanDeferInvocationContext => !CodeObject.RequiresLocalVariableMirroring &&
         !CodeObject.ScopeFacts.RequiresClassCell &&
-        CodeObject.CapturedLocalSlots.Count == 0 &&
+        (CodeObject.CapturedLocalSlots.Count == 0 || CodeObject.UsesOnlyLexicalSlots) &&
         CodeObject.ExceptionRegions.Count == 0 &&
         !Closure.IsClassBody && !Closure.IsAnnotationScope && !Closure.IsTypeParameterScope && Closure.ClassCell is null &&
         Closure.InlinedComprehensionLookup is null && Closure.ActiveHandlerVariables is not { Count: > 0 };

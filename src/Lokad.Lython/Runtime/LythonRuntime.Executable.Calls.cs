@@ -279,7 +279,8 @@ internal sealed partial class LythonRuntime
                     try
                     {
                         work = CreateExecutableWorkState(function.CodeObject, scope, bound, function.ClosureCells,
-                            argumentsAreLocals: true, lookupOwner: function, returnConsumedByIteration: consumedByIteration);
+                            argumentsAreLocals: true, lookupOwner: function, returnConsumedByIteration: consumedByIteration,
+                            borrowedInvocation: true);
                         ownsWork = true;
                         var pause = ExecuteInstructionPrefix(ref work, scope, null, false, out _, out _, out _);
                         if (pause == InstructionPause.Boundary)

@@ -78,12 +78,31 @@ internal sealed partial class LythonRuntime
             SyncExecutableLocalsFromContext(_execution.Code, _execution.Locals, this);
         }
 
-        private static bool CanDefineWithoutInvocation(ExecutableCodeObject code)
-            => code.UsesOnlyLexicalSlots && code.ClosureNames.Count == 0 && !code.ScopeFacts.RequiresClassCell;
+        private static bool CanDefineWithoutInvocation(ExecutableCodeObject code, in ExecutableWorkState parent,
+            ExecutionContext scope, LythonSourceSpan span, out int[]? slots)
+        {
+            slots = null;
+            if (!code.UsesOnlyLexicalSlots || code.ScopeFacts.RequiresClassCell) return false;
+            if (code.ClosureNames.Count == 0) return true;
+            if (code.CaptureSources is not { } sources ||
+                !ReferenceEquals(sources.ParentLocalSlots, parent.Code.LocalNameToSlot)) return false;
+
+            // Prepared local slots already hold standalone cells. A forwarded
+            // cell can still belong to a live namespace outside this work.
+            for (var i = 0; i < sources.Slots.Length; i++)
+            {
+                if ((i & 255) == 0) scope.CheckExecution(span);
+                var slot = sources.Slots[i];
+                if (slot < 0 && ReadCapturedCell(parent.ClosureCells, ~slot) is not { HasNamespaceOwner: false })
+                    return false;
+            }
+            slots = sources.Slots;
+            return true;
+        }
 
         private static ValueTask CreateExecutableFunction(ref ExecutableWorkState execution,
             ExecutionContext context, ExecutionContext? invocation, ExecutableCreateFunction operation,
-            in ExecutableInstruction instruction, bool asynchronous)
+            in ExecutableInstruction instruction, bool asynchronous, int[]? borrowedCaptures)
         {
             var binding = operation.Binding;
             var span = binding.Span;
@@ -104,7 +123,9 @@ internal sealed partial class LythonRuntime
                     next += layout.Defaults.Length;
                 }
 
-                var cells = CaptureExecutableClosures(binding.CodeObject, context, span);
+                var cells = invocation is null
+                    ? CaptureExecutableCells(binding.CodeObject, context, span, ref execution, borrowedCaptures)
+                    : CaptureExecutableClosures(binding.CodeObject, context, span);
                 var typeScope = CreateTypeScope(binding.TypeParameters, context, span);
                 var closure = invocation is null ? GetGlobalContext(context)
                     : SelectDefinitionClosure(binding.CodeObject, typeScope.Closure, cells);

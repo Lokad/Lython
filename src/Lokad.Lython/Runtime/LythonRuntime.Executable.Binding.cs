@@ -393,14 +393,26 @@ internal sealed partial class LythonRuntime
         var slots = frame is not null && ReferenceEquals(context, context.FunctionClosureContext) &&
             codeObject.CaptureSources is { } sources && ReferenceEquals(sources.ParentLocalSlots, frame._execution.Code.LocalNameToSlot)
             ? sources.Slots : null;
+        return CaptureExecutableCells(codeObject, context, span, ref (frame ?? context)._execution, slots, frame);
+    }
+
+    // The prepared slot map can read either an owning frame or a borrowed
+    // factory's work. Only name/namespace resolution needs the actual frame.
+    private static IReadOnlyList<ExecutableCell> CaptureExecutableCells(ExecutableCodeObject codeObject,
+        ExecutionContext context, LythonSourceSpan span, ref ExecutableWorkState parent, int[]? slots,
+        ExecutionContext? frame = null)
+    {
         var names = codeObject.ClosureNames;
+        if (names.Count == 0) return [];
+        var parentLocals = parent.Locals;
+        var parentCells = parent.ClosureCells;
         ExecutableCell Resolve(int index)
         {
             if (slots is not null)
             {
                 var slot = slots[index];
-                return slot >= 0 ? (ExecutableCell)frame!._execution.Locals[slot].Reference!
-                    : frame!._execution.ClosureCells![~slot];
+                return slot >= 0 ? (ExecutableCell)parentLocals[slot].Reference!
+                    : parentCells![~slot];
             }
             var name = names[index];
             ExecutableCell? cell = null;
@@ -437,7 +449,7 @@ internal sealed partial class LythonRuntime
             if (names.Count == 1)
             {
                 var cell = Capture(0);
-                Publish(0, cell);
+                Publish(0, cell, ref parent.Stack);
                 return cell;
             }
 
@@ -450,7 +462,7 @@ internal sealed partial class LythonRuntime
             // Publish only after every allocation succeeds. Namespace-backed
             // cells observe later loop stores through the existing owner.
             for (var i = 0; i < cells.Length; i++)
-                Publish(i, cells[i]);
+                Publish(i, cells[i], ref parent.Stack);
             return cells;
         }
         catch
@@ -463,13 +475,13 @@ internal sealed partial class LythonRuntime
             => slots is null && context.TryGetInlinedBinding(names[index], out var binding)
                 ? new ExecutableCell(null, binding, names[index]) : Resolve(index);
 
-        void Publish(int index, ExecutableCell cell)
+        void Publish(int index, ExecutableCell cell, ref ExecutableValueStorage stack)
         {
             if (cell.RetentionCharged) return;
             if (slots is null && context.TryGetInlinedBinding(names[index], out var binding))
                 binding.MirrorLocalStores = true;
             else
-                frame!._execution.Stack.TransferCapturedCellCharge();
+                stack.TransferCapturedCellCharge();
             cell.RetentionCharged = true;
         }
     }
