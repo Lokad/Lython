@@ -416,7 +416,6 @@ internal sealed partial class ExecutableScript
                 KeywordRecordCache = functionDefinition.ParameterLayout.HasKeywordDefaults ? AllocateLookupCache() : -1,
                 AnnotationRecordCache = functionDefinition.Annotations.Length == 0 ? -1 : AllocateLookupCache()
             };
-            _functions.Add(binding);
             return binding;
         }
 

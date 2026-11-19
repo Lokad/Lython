@@ -481,7 +481,7 @@ internal sealed record ExecutableMatchCaseBinding(
 
 // A nonnegative index names a local cell. A complemented index names an
 // incoming cell in the defining code's capture array.
-internal sealed record ExecutableCaptureSources(ExecutableCodeObject Parent, int[] Slots);
+internal sealed record ExecutableCaptureSources(IReadOnlyDictionary<string, int> ParentLocalSlots, int[] Slots);
 
 internal sealed partial class ExecutableCodeObject
 {
@@ -601,51 +601,24 @@ internal sealed partial class ExecutableCodeObject
         GlobalModule = module;
     }
 
-    internal void PrepareChildCaptureSlots(MemoryGovernor? governor, CancellationToken cancellationToken)
+    internal void PrepareCaptureSources(IReadOnlyDictionary<string, int> parentLocals,
+        IReadOnlyDictionary<string, int> parentClosures, MemoryGovernor? governor, CancellationToken cancellationToken)
     {
-        if (CapturedLocalSlots.Count == 0 && ClosureNames.Count == 0) return;
-
-        for (var constantIndex = 0; constantIndex < Constants.Length; constantIndex++)
+        var span = Instructions[EntryIndex].Span;
+        var bytes = checked(64L + sizeof(int) * (long)ClosureNames.Count);
+        using var storage = governor?.ReserveTemporary(bytes, span);
+        PythonTokenization.CheckCancellation(cancellationToken, span.Start);
+        var slots = new int[ClosureNames.Count];
+        for (var i = 0; i < slots.Length; i++)
         {
-            if ((constantIndex & 1023) == 0) PythonTokenization.CheckCancellation(cancellationToken, 0);
-            var child = Constants[constantIndex] switch
-            {
-                ExecutableCreateFunction function => function.Binding.CodeObject,
-                ExecutableCreateLambda lambda => lambda.CodeObject,
-                ExecutableCreateGeneratorExpression generator => generator.CodeObject,
-                _ => null
-            };
-            if (child is null || child.ClosureNames.Count == 0 || child.CaptureSources is not null) continue;
-
-            var names = child.ClosureNames;
-            var span = child.Instructions[child.EntryIndex].Span;
-            var resolved = true;
-            for (var i = 0; i < names.Count; i++)
-            {
-                if ((i & 255) == 0) PythonTokenization.CheckCancellation(cancellationToken, span.Start);
-                if (!LocalNameToSlot.ContainsKey(names[i]) && !ClosureNameToSlot.ContainsKey(names[i]))
-                {
-                    resolved = false;
-                    break;
-                }
-            }
-            if (!resolved) continue;
-
-            var bytes = checked(64L + sizeof(int) * (long)names.Count);
-            using (var storage = governor?.ReserveTemporary(bytes, span))
-            {
-                PythonTokenization.CheckCancellation(cancellationToken, span.Start);
-                var slots = new int[names.Count];
-                for (var i = 0; i < slots.Length; i++)
-                {
-                    if ((i & 255) == 0) PythonTokenization.CheckCancellation(cancellationToken, span.Start);
-                    slots[i] = LocalNameToSlot.TryGetValue(names[i], out var local) ? local : ~ClosureNameToSlot[names[i]];
-                }
-                var sources = new ExecutableCaptureSources(this, slots);
-                storage?.Commit(bytes);
-                child.CaptureSources = sources;
-            }
+            if ((i & 255) == 0) PythonTokenization.CheckCancellation(cancellationToken, span.Start);
+            var name = ClosureNames[i];
+            slots[i] = parentLocals.TryGetValue(name, out var local) ? local : ~parentClosures[name];
         }
+        // The builder's local-slot map also belongs to the final parent code.
+        var sources = new ExecutableCaptureSources(parentLocals, slots);
+        storage?.Commit(bytes);
+        CaptureSources = sources;
     }
 
     public IReadOnlyList<string> LocalNames { get; }

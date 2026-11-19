@@ -21,7 +21,7 @@ internal sealed partial class ExecutableScript
     {
         List<ExecutableCodeObject> moduleCode = [];
         var entryPoint = new Builder(null, null, ScopeDirectiveFactsCollector.ForModule(lowered.Syntax), completeLexicalParent: true,
-            moduleCode: moduleCode)
+            moduleCode: moduleCode, compilationCancellation: cancellationToken, compilationGovernor: governor)
             .CompileCodeObject("<module>", lowered.Statements);
         // Actual executable sites have supplied their lexical capture facts.
         // Remaining callables belong to retained lowered consumers or lazy
@@ -43,11 +43,7 @@ internal sealed partial class ExecutableScript
                 default: throw new InvalidOperationException("Unexpected prepared callable syntax.");
             }
         }
-        foreach (var code in moduleCode)
-        {
-            code.PrepareModuleGlobals(entryPoint, cancellationToken);
-            code.PrepareChildCaptureSlots(governor, cancellationToken);
-        }
+        foreach (var code in moduleCode) code.PrepareModuleGlobals(entryPoint, cancellationToken);
         return new ExecutableScript(entryPoint.ScopeFacts.ContainsVariableAnnotations
             ? lowered.Syntax.Statements[0].Span : null, entryPoint);
     }
@@ -82,7 +78,6 @@ internal sealed partial class ExecutableScript
         private readonly List<ImportStatementSyntax> _imports = [];
         private readonly List<ExecutableCallSite> _callSites = [];
         private int _lookupCacheCount;
-        private readonly List<ExecutableFunctionBinding> _functions = [];
         private readonly List<ExecutableMatchCaseBinding> _matchCases = [];
         private readonly List<LoweredStatement> _statementFallbacks = [];
         private readonly Stack<LoopContext> _loops = [];
@@ -97,6 +92,8 @@ internal sealed partial class ExecutableScript
         private readonly bool _completeLexicalParent;
         private readonly ScopeDirectiveFacts _scopeFacts;
         private readonly List<ExecutableCodeObject>? _moduleCode;
+        private readonly CancellationToken _compilationCancellation;
+        private readonly MemoryGovernor? _compilationGovernor;
 
         internal Builder(FunctionParameterLayout parameterLayout, bool generator, ScopeDirectiveFacts scopeFacts)
             : this(parameterLayout, null, scopeFacts) { _generator = generator; }
@@ -107,9 +104,13 @@ internal sealed partial class ExecutableScript
             ScopeDirectiveFacts scopeFacts,
             bool completeLexicalParent = false,
             List<ExecutableCodeObject>? moduleCode = null,
-            IReadOnlySet<string>? typeParameterNames = null)
+            IReadOnlySet<string>? typeParameterNames = null,
+            CancellationToken compilationCancellation = default,
+            MemoryGovernor? compilationGovernor = null)
         {
             _moduleCode = moduleCode;
+            _compilationCancellation = lexicalParent?._compilationCancellation ?? compilationCancellation;
+            _compilationGovernor = lexicalParent?._compilationGovernor ?? compilationGovernor;
             _scopeFacts = scopeFacts;
             _parameterLayout = parameterLayout;
             // Only enclosing executable compilation supplies complete lexical
@@ -170,20 +171,15 @@ internal sealed partial class ExecutableScript
             var jumpTargets = ResolveJumpTargets();
             var blockTargets = new ExecutableBlockTargets(RetainReachableBlocks(entryBlock, jumpTargets), jumpTargets);
             var normalizedRegions = NormalizeRegions(blockTargets);
+            var (capturedLocalSlots, containsCallable, needsMirroring, completeChildren) = PrepareDeclarations();
             // Annotation values can retain functions or deferred generators after
             // module slots leave. Keep their existing global namespace lifetime
             // conservatively; scalar-only declarations need no such mirror.
             var moduleAnnotationNamespace = _parameterLayout is null &&
-                _scopeFacts.ContainsVariableAnnotations &&
-                (_functions.Count != 0 || _constants.Any(value => value is ExecutableCreateLambda or ExecutableCreateGeneratorExpression));
+                _scopeFacts.ContainsVariableAnnotations && containsCallable;
             var requiresLocalVariableMirroring =
                 moduleAnnotationNamespace || (_generator && generatorExpression is null && !_completeLexicalParent) ||
-                _statementFallbacks.Count != 0 ||
-                _constants.Any(value => value is ExecutableCreateClass) ||
-                _functions.Any(function => function.CodeObject.RequiresLocalVariableMirroring) ||
-                _constants.OfType<ExecutableCreateLambda>().Any(lambda => lambda.CodeObject.RequiresLocalVariableMirroring) ||
-                _constants.OfType<ExecutableCreateGeneratorExpression>().Any(generator => generator.CodeObject.RequiresLocalVariableMirroring);
-            var capturedLocalSlots = CollectCapturedLocalSlots();
+                _statementFallbacks.Count != 0 || needsMirroring;
 
             // The existing compilation owner funds the immutable function metadata.
             // A function and its body can share the same leading string literal.
@@ -222,56 +218,85 @@ internal sealed partial class ExecutableScript
                 UsesOnlyLexicalSlots = callable && resolvedNonlocals &&
                     !requiresLocalVariableMirroring &&
                     !_scopeFacts.RequiresClassCell && _matchCases.Count == 0 &&
-                    _functions.All(function => function.CodeObject.UsesOnlyLexicalSlots) &&
-                    !_constants.Any(value => value is ExecutableCreateGeneratorExpression or
-                        ExecutableCreateLambda { CodeObject.UsesOnlyLexicalSlots: false })
+                    completeChildren
             };
             _moduleCode?.Add(code);
             return code;
+        }
 
-            int[] CollectCapturedLocalSlots()
+        private (int[] CapturedLocals, bool ContainsCallable, bool NeedsMirroring, bool CompleteChildren) PrepareDeclarations()
+        {
+            var containsCallable = false;
+            var needsMirroring = false;
+            var completeChildren = true;
+            HashSet<int>? captured = null;
+            var firstLambda = _constants.Count;
+            var firstGenerator = _constants.Count;
+            for (var index = 0; index < _constants.Count; index++)
             {
-                // No local-index short-circuit here: an intermediate def can own no
-                // locals of its own (nested def names do not bind local slots) while
-                // still needing to forward transitively free names into its closures;
-                // skipping the pass-through below orphans grandchild captures.
-
-
-                var captured = new HashSet<int>();
-                foreach (var code in _functions.Select(function => function.CodeObject)
-                    .Concat(_constants.OfType<ExecutableCreateLambda>().Select(lambda => lambda.CodeObject))
-                    .Concat(_constants.OfType<ExecutableCreateGeneratorExpression>().Select(generator => generator.CodeObject)))
+                if ((index & 1023) == 0) PythonTokenization.CheckCancellation(_compilationCancellation, 0);
+                switch (_constants[index])
                 {
-                    if (code is null)
+                    // An annotated definition also emits its ordinary declaration.
+                    case ExecutableCreateFunction { AnnotationsOnStack: false } function:
+                        PrepareChild(function.Binding.CodeObject);
+                        break;
+                    case ExecutableCreateClass:
+                        needsMirroring = true;
+                        break;
+                    case ExecutableCreateLambda:
+                        firstLambda = Math.Min(firstLambda, index);
+                        break;
+                    case ExecutableCreateGeneratorExpression:
+                        firstGenerator = Math.Min(firstGenerator, index);
+                        break;
+                }
+            }
+
+            // Forwarded cells contribute to locals() snapshots. Preserve the
+            // declaration order of named functions, lambdas and generators.
+            for (var index = firstLambda; index < _constants.Count; index++)
+            {
+                if ((index & 1023) == 0) PythonTokenization.CheckCancellation(_compilationCancellation, 0);
+                if (_constants[index] is ExecutableCreateLambda lambda) PrepareChild(lambda.CodeObject);
+            }
+            for (var index = firstGenerator; index < _constants.Count; index++)
+            {
+                if ((index & 1023) == 0) PythonTokenization.CheckCancellation(_compilationCancellation, 0);
+                if (_constants[index] is not ExecutableCreateGeneratorExpression generator) continue;
+                completeChildren = false;
+                PrepareChild(generator.CodeObject);
+            }
+
+            var slots = captured?.ToArray() ?? [];
+            if (slots.Length > 1) Array.Sort(slots);
+            return (slots, containsCallable, needsMirroring, completeChildren);
+
+            void PrepareChild(ExecutableCodeObject child)
+            {
+                containsCallable = true;
+                needsMirroring |= child.RequiresLocalVariableMirroring;
+                completeChildren &= child.UsesOnlyLexicalSlots;
+
+                // Forward names through intermediate functions even when they
+                // own no local cells. Namespace captures keep runtime lookup.
+                var names = child.ClosureNames;
+                if (names.Count == 0) return;
+                var sourceStart = child.Instructions[child.EntryIndex].Span.Start;
+                var resolved = true;
+                for (var i = 0; i < names.Count; i++)
+                {
+                    if ((i & 255) == 0) PythonTokenization.CheckCancellation(_compilationCancellation, sourceStart);
+                    var name = names[i];
+                    if (_localIndexes.TryGetValue(name, out var slot)) (captured ??= []).Add(slot);
+                    else if (!_closureIndexes.ContainsKey(name))
                     {
-                        continue;
-                    }
-
-                    foreach (var closureName in code.ClosureNames)
-                    {
-                        CaptureName(closureName);
+                        if (HasEnclosingBinding(name)) InternClosure(name);
+                        else resolved = false;
                     }
                 }
-
-                if (captured.Count == 0)
-                {
-                    return [];
-                }
-
-                var result = new int[captured.Count];
-                var index = 0;
-                foreach (var slot in captured.Order())
-                {
-                    result[index++] = slot;
-                }
-
-                return result;
-
-                void CaptureName(string capturedName)
-                {
-                    if (_localIndexes.TryGetValue(capturedName, out var slot)) captured.Add(slot);
-                    else if (HasEnclosingBinding(capturedName)) InternClosure(capturedName);
-                }
+                if (resolved && child.CaptureSources is null && _moduleCode is not null)
+                    child.PrepareCaptureSources(_localIndexes, _closureIndexes, _compilationGovernor, _compilationCancellation);
             }
         }
 

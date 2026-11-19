@@ -391,7 +391,7 @@ internal sealed partial class LythonRuntime
 
         var frame = context.CurrentExecutableFrame;
         var slots = frame is not null && ReferenceEquals(context, context.FunctionClosureContext) &&
-            codeObject.CaptureSources is { } sources && ReferenceEquals(sources.Parent, frame._execution.Code)
+            codeObject.CaptureSources is { } sources && ReferenceEquals(sources.ParentLocalSlots, frame._execution.Code.LocalNameToSlot)
             ? sources.Slots : null;
         var names = codeObject.ClosureNames;
         ExecutableCell Resolve(int index)
