@@ -23,7 +23,8 @@ internal sealed partial class LythonRuntime
                     return StoreAnnotationEntryAsync(ResolveName("__annotations__", span, this),
                         annotation.Name, value, this, span, asynchronous);
                 case ExecutableStartFunctionDefaults start:
-                    var owner = new PendingFunctionDefaults(start.Layout, this, span);
+                    var owner = new PendingFunctionDefaults(start.Binding.ParameterLayout, this, span,
+                        start.Binding.KeywordRecordCache);
                     try { PublishInstructionResult(instruction, owner); }
                     catch { owner.Dispose(); throw; }
                     break;
@@ -32,7 +33,8 @@ internal sealed partial class LythonRuntime
                 case ExecutableCreateLambda lambda:
                     {
                         var layout = lambda.Expression.ParameterLayout;
-                        using var defaults = layout.Defaults.Length == 0 ? null : new PendingFunctionDefaults(layout, this, span);
+                        using var defaults = layout.Defaults.Length == 0 ? null
+                            : new PendingFunctionDefaults(layout, this, span, lambda.KeywordRecordCache);
                         var first = instruction.InputStart;
                         PyFunctionBase function;
                         try
@@ -127,7 +129,7 @@ internal sealed partial class LythonRuntime
                 {
                     var evaluated = operation.AnnotationsOnStack ? _execution.Stack.Slice(next, binding.Annotations.Length) : default;
                     metadata = AttachTypeMetadataAsync(function, binding.Annotations, binding.TypeParameters is not null,
-                        span, typeScope, this, asynchronous, evaluated);
+                        span, typeScope, this, asynchronous, evaluated, binding.AnnotationRecordCache);
                 }
 
                 if (binding.DecoratorCount != 0 || !metadata.IsCompletedSuccessfully)
@@ -172,6 +174,18 @@ internal sealed partial class LythonRuntime
             {
                 RetireExecutableDefinition(first);
             }
+        }
+
+        internal PyDict CreateDefinitionRecord(int count, int cacheIndex, LythonSourceSpan span)
+            => cacheIndex < 0 ? new PyDict(count, MemoryGovernor, span)
+                : CreateCachedRecord(_execution.Stack.GetLookupCaches(_execution.Code.LookupCacheCount, span)[cacheIndex],
+                    count, this, span);
+
+        internal void CacheDefinitionRecordKeys(PyDict record, int cacheIndex, LythonSourceSpan span)
+        {
+            if (cacheIndex < 0) return;
+            ref var cache = ref _execution.Stack.GetLookupCaches(_execution.Code.LookupCacheCount, span)[cacheIndex];
+            CacheRecordKeys(ref cache, record, this, span);
         }
 
         private void RetireExecutableDefinition(int first)

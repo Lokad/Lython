@@ -12,13 +12,16 @@ internal sealed partial class LythonRuntime
         private readonly ExecutionContext _context;
         private readonly LythonSourceSpan _span;
         private readonly MemoryGovernor.TemporaryMemoryReservation? _positionalStorage;
+        private readonly int _keywordRecordCache;
         private object[]? _positionalItems;
         private int _position;
         private PyTuple? _positional;
         private PyDict? _keywords;
 
-        internal PendingFunctionDefaults(FunctionParameterLayout layout, ExecutionContext context, LythonSourceSpan span)
+        internal PendingFunctionDefaults(FunctionParameterLayout layout, ExecutionContext context, LythonSourceSpan span,
+            int keywordRecordCache = -1)
         {
+            _keywordRecordCache = keywordRecordCache;
             _layout = layout;
             _context = context;
             _span = span;
@@ -31,7 +34,7 @@ internal sealed partial class LythonRuntime
             {
                 context.CheckExecution(span);
                 if (positionalCount != 0) _positionalItems = new object[positionalCount];
-                if (keywordCount != 0) _keywords = new PyDict(keywordCount, governor, span);
+                if (keywordCount != 0) _keywords = context.CreateDefinitionRecord(keywordCount, keywordRecordCache, span);
             }
             catch { Dispose(); throw; }
         }
@@ -40,16 +43,23 @@ internal sealed partial class LythonRuntime
 
         internal void Add(FunctionParameterLayout.DefaultSlot slot, object value, LythonSourceSpan span)
         {
-            _context.CheckExecution(span);
-            if (slot.KeywordIndex < 0) _positionalItems![_position++] = value;
-            else _keywords!.TryAddNativeString(_layout.KeywordDefaultName(slot.KeywordIndex), value, _context, span);
+            if (slot.KeywordIndex < 0)
+            {
+                _context.CheckExecution(span);
+                _positionalItems![_position++] = value;
+            }
+            else _keywords!.SetRecordItem(_layout.KeywordDefaultName(slot.KeywordIndex), value, _context, span,
+                replaceExisting: false);
         }
 
         internal void Complete()
         {
-            if (_positionalItems is not { } items) return;
-            _positional = PyTuple.FromReservedOwnedArray(items, _context.MemoryGovernor, _span, _positionalStorage!);
-            _positionalItems = null;
+            if (_positionalItems is { } items)
+            {
+                _positional = PyTuple.FromReservedOwnedArray(items, _context.MemoryGovernor, _span, _positionalStorage!);
+                _positionalItems = null;
+            }
+            if (_keywords is not null) _context.CacheDefinitionRecordKeys(_keywords, _keywordRecordCache, _span);
         }
 
         internal void Publish()

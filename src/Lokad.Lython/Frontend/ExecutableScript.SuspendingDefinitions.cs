@@ -1,12 +1,12 @@
 namespace Lokad.Lython.Frontend;
 
-internal sealed record ExecutableStartFunctionDefaults(FunctionParameterLayout Layout) : ExecutableOperation;
+internal sealed record ExecutableStartFunctionDefaults(ExecutableFunctionBinding Binding) : ExecutableOperation;
 internal sealed record ExecutableCreateFunction(ExecutableFunctionBinding Binding, bool AnnotationsOnStack = false) : ExecutableOperation
 {
     internal int InputCount => checked(Binding.DecoratorCount + (AnnotationsOnStack ? Binding.Annotations.Length : 0) + Binding.ParameterLayout.Defaults.Length +
         (Binding.ParameterLayout.Defaults.Length == 0 ? 0 : 1));
 }
-internal sealed record ExecutableCreateLambda(LoweredLambdaExpression Expression) : ExecutableOperation
+internal sealed record ExecutableCreateLambda(LoweredLambdaExpression Expression, int KeywordRecordCache) : ExecutableOperation
 {
     internal ExecutableCodeObject CodeObject => Expression.Code;
 }
@@ -25,7 +25,7 @@ internal sealed partial class ExecutableScript
             var layout = binding.ParameterLayout;
             if (layout.Defaults.Length != 0)
             {
-                EmitOperation(new ExecutableStartFunctionDefaults(layout), definition.Span, block);
+                EmitOperation(new ExecutableStartFunctionDefaults(binding), definition.Span, block);
                 foreach (var slot in layout.Defaults)
                     block = CompileExpression(definition.Parameters[slot.ParameterIndex].DefaultValue.RequireNotNull(), block);
             }
@@ -53,7 +53,8 @@ internal sealed partial class ExecutableScript
             if (lambda.PreparedCode is null)
                 lambda.CompleteCompilation(CompileFunctionCode("<lambda>", lambda.ParameterLayout,
                     lambda.FunctionBody, lambda.ScopeFacts, generator: lambda.IsGenerator));
-            EmitOperation(new ExecutableCreateLambda(lambda), lambda.Span, block);
+            var recordCache = lambda.ParameterLayout.HasKeywordDefaults ? AllocateLookupCache() : -1;
+            EmitOperation(new ExecutableCreateLambda(lambda, recordCache), lambda.Span, block);
             return block;
         }
 

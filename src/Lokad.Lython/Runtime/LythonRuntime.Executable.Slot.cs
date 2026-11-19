@@ -216,9 +216,7 @@ internal sealed partial class LythonRuntime
     private static PyDict CreateSlotRecord(Span<ExecutableSlot> values, PyTuple keys,
         ref ExecutableLookupCache cache, ExecutionContext context, LythonSourceSpan span)
     {
-        var dictionary = cache.Target is PyDict.RecordKeys layout
-            ? layout.CreateRecord(context, span, values.Length)
-            : new PyDict(values.Length, context.MemoryGovernor, span);
+        var dictionary = CreateCachedRecord(cache, values.Length, context, span);
         using var ambient = PyStructuralGuard.PushAmbient(context, span);
         try
         {
@@ -227,12 +225,26 @@ internal sealed partial class LythonRuntime
                 context.CheckExecution(span);
                 dictionary.SetRecordItem((PyString)keys[i], values[i].Object.RequireNotNull(), context, span);
             }
-            if (cache.Target is not PyDict.RecordKeys && dictionary.ShareRecordKeys(context, span) is { } shared)
-                cache = new(shared, null);
+            CacheRecordKeys(ref cache, dictionary, context, span);
             context.CheckExecution(span);
             return dictionary;
         }
         catch { dictionary.DiscardUnpublishedStorage(); throw; }
+    }
+
+    private static PyDict CreateCachedRecord(in ExecutableLookupCache cache, int count,
+        ExecutionContext context, LythonSourceSpan span)
+        => cache.Target is PyDict.RecordKeys layout
+            ? layout.CreateRecord(context, span, count)
+            : new PyDict(count, context.MemoryGovernor, span);
+
+    private static void CacheRecordKeys(ref ExecutableLookupCache cache, PyDict dictionary,
+        ExecutionContext context, LythonSourceSpan span)
+    {
+        // Only key storage moves to the cache owner. A callback during
+        // admission may fill the same site before the first row completes.
+        if (cache.Target is null && dictionary.ShareRecordKeys(context, span) is { } shared && cache.Target is null)
+            cache = new(shared, null);
     }
 
     private static PySet CreateSlotSet(Span<ExecutableSlot> values,

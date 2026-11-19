@@ -161,7 +161,8 @@ internal sealed partial class PyDict
         return true;
     }
 
-    internal void SetRecordItem(PyString key, object value, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    internal void SetRecordItem(PyString key, object value, LythonRuntime.ExecutionContext context,
+        LythonSourceSpan span, bool replaceExisting = true)
     {
         context.CheckExecution(span);
         // Builders call this only before publishing their record. Ordered
@@ -177,7 +178,8 @@ internal sealed partial class PyDict
                 return;
             }
         }
-        SetItem(key, value);
+        if (replaceExisting) SetItem(key, value);
+        else TryAddNativeString(key, value, context, span);
     }
 
     private void EnsureRecordValueCapacity(int targetCount, LythonRuntime.ExecutionContext context, LythonSourceSpan span)

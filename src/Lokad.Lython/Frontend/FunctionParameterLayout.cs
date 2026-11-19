@@ -158,6 +158,7 @@ internal sealed class FunctionParameterLayout
     internal PyString KeywordDefaultName(int index) => _keywordDefaultNames[index];
     internal DefaultSlot[] Defaults { get; }
     internal int PositionalDefaultCount { get; }
+    internal bool HasKeywordDefaults => Defaults.Length > PositionalDefaultCount;
 
     public int PositionalCount { get; }
     public int KeywordOnlyCount { get; }

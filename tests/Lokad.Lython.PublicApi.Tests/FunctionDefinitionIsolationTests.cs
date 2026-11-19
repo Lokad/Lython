@@ -106,6 +106,49 @@ print(list(gen()), list(gen(n=2)))
         Assert.Equal(0, budget.ReservedBytes);
     }
 
+    [Fact]
+    public async Task RepeatedMetadataDictionariesKeepTheirValuesAndMutationOrder()
+    {
+        const string source = """
+            def create(seed):
+                def rule(*, value: seed = seed, scale: int = 2) -> seed:
+                    return value * scale
+                return rule
+
+            first, second, third = create(3), create(5), create(7)
+            defaults = second.__kwdefaults__
+            annotations = second.__annotations__
+            del defaults['value']
+            defaults['value'] = 11
+            del annotations['value']
+            annotations['value'] = 13
+            fourth = create(17)
+            print(list(defaults), list(annotations))
+            print(list(first.__kwdefaults__), list(third.__annotations__), list(fourth.__kwdefaults__))
+            print(first(), second(), third(), fourth())
+            print(first.__annotations__['value'], annotations['value'], fourth.__annotations__['value'])
+            return [defaults, fourth.__kwdefaults__]
+            """;
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var compiled = new LythonEngine().Compile(source, budget);
+        Assert.True(compiled.IsValid, string.Join(" | ", compiled.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        foreach (var asynchronous in new[] { false, true })
+        {
+            using (var result = asynchronous ? await compiled.RunAsync(new MockLythonHost()) : compiled.Run(new MockLythonHost()))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal("['scale', 'value'] ['scale', 'return', 'value']\n" +
+                    "['value', 'scale'] ['value', 'scale', 'return'] ['value', 'scale']\n" +
+                    "6 22 14 34\n3 13 17\n", result.StandardOutput);
+                Assert.True(budget.ReservedBytes > baseline);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        compiled.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     private sealed class HeldTiming : ILythonTiming
     {
         internal TaskCompletionSource Entered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);

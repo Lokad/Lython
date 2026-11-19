@@ -471,6 +471,8 @@ internal sealed record ExecutableFunctionBinding(
     string? Docstring)
 {
     public required FunctionParameterLayout ParameterLayout { get; init; }
+    public int KeywordRecordCache { get; init; } = -1;
+    public int AnnotationRecordCache { get; init; } = -1;
 
 }
 

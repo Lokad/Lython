@@ -474,7 +474,12 @@ internal sealed partial class ExecutableScript
                 functionDefinition.Syntax.Name, functionDefinition.Syntax.DeclaredName, functionDefinition.Span,
                 functionDefinition.Decorators.Count, functionDefinition.Annotations,
                 functionDefinition.TypeParameters, codeObject, functionDefinition.Syntax.IsGenerator,
-                functionDefinition.Docstring) { ParameterLayout = functionDefinition.ParameterLayout };
+                functionDefinition.Docstring)
+            {
+                ParameterLayout = functionDefinition.ParameterLayout,
+                KeywordRecordCache = functionDefinition.ParameterLayout.HasKeywordDefaults ? AllocateLookupCache() : -1,
+                AnnotationRecordCache = functionDefinition.Annotations.Length == 0 ? -1 : AllocateLookupCache()
+            };
             _functions.Add(binding);
             return binding;
         }
