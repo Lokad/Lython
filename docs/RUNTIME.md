@@ -305,6 +305,8 @@ Compilation tokenizes/parses source, validates the subset, computes scope facts,
 lowers constructs, and builds executable instructions. Abstract statement and
 expression checks select syntax directly and share the existing binding state;
 their branch, short-circuit and diagnostic order remains explicit.
+Name-binding diagnostics use the prepared local-name sets and check each
+nested function header in its defining scope before checking the body.
 Numeric syntax carries the parsed value for analysis, annotations and execution.
 Inferred numbers stay typed. The analyzer retains literal spelling where branch
 joins or diagnostics distinguish it.

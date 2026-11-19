@@ -29,6 +29,22 @@ public sealed class SharedCompilerFactTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
+    [Fact]
+    public void DefaultLambdaLocalReadsAreReportedOncePerDeclaration()
+    {
+        using var script = new LythonEngine().Compile("""
+            def top(arg=lambda: first + (first := 1)): pass
+            def owner():
+                def nested(arg=lambda: second + (second := 1)): pass
+            """);
+
+        Assert.False(script.IsValid);
+        Assert.Equal(
+            ["Local variable 'first' is read before it is assigned.",
+             "Local variable 'second' is read before it is assigned."],
+            script.Diagnostics.Where(diagnostic => diagnostic.Code == "LA3146").Select(diagnostic => diagnostic.Message));
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

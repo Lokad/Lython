@@ -13,7 +13,8 @@ internal static class StaticNameBindingDiagnostics
         {
             if (statement is FunctionDefinitionStatementSyntax functionDefinition)
             {
-                AnalyzeFunctionDefinition(functionDefinition, context);
+                AnalyzeFunctionHeaderLambdas(functionDefinition, context);
+                AnalyzeFunctionBody(functionDefinition, context);
                 continue;
             }
 
@@ -24,7 +25,7 @@ internal static class StaticNameBindingDiagnostics
         }
     }
 
-    private static void AnalyzeFunctionDefinition(FunctionDefinitionStatementSyntax functionDefinition, StaticAnalysisContext context)
+    private static void AnalyzeFunctionHeaderLambdas(FunctionDefinitionStatementSyntax functionDefinition, StaticAnalysisContext context)
     {
         foreach (var parameter in functionDefinition.Parameters)
         {
@@ -43,11 +44,18 @@ internal static class StaticNameBindingDiagnostics
         {
             AnalyzeExpressionForNestedFunctions(decorator, context);
         }
+    }
 
+    private static void AnalyzeFunctionBody(FunctionDefinitionStatementSyntax functionDefinition, StaticAnalysisContext context)
+    {
         var scopeFacts = ScopeDirectiveFactsCollector.ForFunction(functionDefinition);
-        var localNames = new HashSet<string>(scopeFacts.LocalNames, StringComparer.Ordinal);
-        if (scopeFacts.NestedNonlocalNames is { } nonlocalTargets)
-            localNames.ExceptWith(nonlocalTargets);
+        var localNames = scopeFacts.LocalNames;
+        if (scopeFacts.NestedNonlocalNames is { Count: > 0 } nonlocalTargets)
+        {
+            var checkedLocals = new HashSet<string>(localNames, StringComparer.Ordinal);
+            checkedLocals.ExceptWith(nonlocalTargets);
+            localNames = checkedLocals;
+        }
 
         var maybeAssigned = new HashSet<string>(
             functionDefinition.Parameters
@@ -60,7 +68,7 @@ internal static class StaticNameBindingDiagnostics
     private static void AnalyzeStatements(
         IReadOnlyList<StatementSyntax> statements,
         StaticAnalysisContext context,
-        HashSet<string> localNames,
+        IReadOnlySet<string> localNames,
         HashSet<string> maybeAssigned)
     {
         foreach (var statement in statements)
@@ -72,7 +80,7 @@ internal static class StaticNameBindingDiagnostics
     private static void AnalyzeStatement(
         StatementSyntax statement,
         StaticAnalysisContext context,
-        HashSet<string> localNames,
+        IReadOnlySet<string> localNames,
         HashSet<string> maybeAssigned)
     {
         foreach (var expression in StatementSyntaxTraversal.EnumerateDirectExpressions(statement))
@@ -223,7 +231,8 @@ internal static class StaticNameBindingDiagnostics
 
             case FunctionDefinitionStatementSyntax functionDefinition:
                 maybeAssigned.Add(functionDefinition.Name);
-                AnalyzeFunctionDefinition(functionDefinition, context);
+                // The surrounding expression walk has already checked this header.
+                AnalyzeFunctionBody(functionDefinition, context);
                 break;
 
             case ClassDefinitionStatementSyntax classDefinition:
@@ -318,7 +327,7 @@ internal static class StaticNameBindingDiagnostics
     private static void AnalyzeExpression(
         ExpressionSyntax expression,
         StaticAnalysisContext context,
-        HashSet<string> localNames,
+        IReadOnlySet<string> localNames,
         HashSet<string> maybeAssigned)
     {
         switch (expression)
@@ -381,7 +390,7 @@ internal static class StaticNameBindingDiagnostics
     private static HashSet<string> AnalyzeComprehensionClauses(
         IReadOnlyList<ComprehensionClauseSyntax> clauses,
         StaticAnalysisContext context,
-        HashSet<string> localNames,
+        IReadOnlySet<string> localNames,
         HashSet<string> maybeAssigned)
     {
         var comprehensionAssigned = Clone(maybeAssigned);
@@ -402,7 +411,7 @@ internal static class StaticNameBindingDiagnostics
         string name,
         LythonSourceSpan span,
         StaticAnalysisContext context,
-        HashSet<string> localNames,
+        IReadOnlySet<string> localNames,
         HashSet<string> maybeAssigned)
     {
         if (localNames.Contains(name) && !maybeAssigned.Contains(name))
@@ -441,7 +450,7 @@ internal static class StaticNameBindingDiagnostics
     }
 
     private static void AnalyzeLoopStores(LoopTargetSyntax target, StaticAnalysisContext context,
-        HashSet<string> localNames, HashSet<string> assigned)
+        IReadOnlySet<string> localNames, HashSet<string> assigned)
     {
         if (target is LoopTupleTargetSyntax tuple)
         {

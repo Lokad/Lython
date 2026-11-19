@@ -83,8 +83,9 @@ internal static class ScopeDirectiveFactsCollector
         => definition.PreparedScopeFacts ?? CollectFunctionBindings(definition.Parameters.Select(p => p.Name),
             definition.Body, includeClassCellRequirement: false);
 
-    public static HashSet<string> CollectLambdaLocalNames(LambdaExpressionSyntax lambda)
+    public static IReadOnlySet<string> CollectLambdaLocalNames(LambdaExpressionSyntax lambda)
     {
+        if (lambda.PreparedScopeFacts is { } prepared) return prepared.LocalNames;
         var localNames = new HashSet<string>(
             lambda.Parameters.Select(static parameter => parameter.Name),
             StringComparer.Ordinal);
