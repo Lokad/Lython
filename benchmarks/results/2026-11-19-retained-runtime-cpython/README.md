@@ -31,9 +31,9 @@ Warm elapsed includes mediated RAM-backed I/O, golden checks and prior-result
 cleanup. Compilation alone includes disposal of compiled storage.
 Compile-to-result includes compilation, execution and cleanup. Cold startup,
 fixture reset, request framing and final cache teardown are outside elapsed.
-Process CPU includes the wider request. Platform, stress and package-consumer
-checks are tracked in the delivery run.
-[CI](https://github.com/Lokad/Lython/actions/runs/44453736908).
+Process CPU includes the wider request. The measured source passed platform,
+stress and installed-package checks in the combined delivery.
+[Delivery](../2026-11-19-final-method-format/delivery/README.md).
 
 [Per-process elapsed and CPU](summary.json) · [Raw observations](observations.tgz) ·
 [Verified procedures and image hashes](procedures.tar.xz).

@@ -63,8 +63,9 @@ were removed and raw archives verified under the lease. Warm includes
 mediated RAM-backed I/O, goldens and prior-result cleanup. Compile-to-result
 adds compilation and disposal of its owner. Startup, fixture reset,
 request framing and final cache teardown are outside elapsed. Process CPU
-has a wider boundary. A separate checkpoint covers platform and package
-qualification.
+has a wider boundary. Platform, stress and installed-package checks passed
+in the combined delivery with direct definition records.
+[Delivery](delivery/README.md).
 
 [B1038 summary](summary.json) · [B1038 raw](observations.tgz) ·
 [B1039 summary](confirmation/summary.json) · [B1039 raw](confirmation/observations.tgz) ·
