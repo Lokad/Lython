@@ -121,4 +121,44 @@ print(second.__defaults__, second.__kwdefaults__)
         }
         Assert.Equal(0, budget.ReservedBytes);
     }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ProjectedDefinitionRecordsSurviveCompilationDisposal(bool asynchronous)
+    {
+        const string source = """
+            from __future__ import annotations
+            def make(value):
+                def read(*, clé: int = value):
+                    return clé
+                return read
+            first = make(2)
+            second = make(7)
+            first.__kwdefaults__['clé'] = 3
+            first.__annotations__['clé'] = 'other'
+            return [second.__kwdefaults__, second.__annotations__]
+            """;
+        var compilation = new LythonMemoryBudget(2 * 1024 * 1024);
+        var execution = new LythonMemoryBudget(2 * 1024 * 1024);
+        var projection = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var script = new LythonEngine().Compile(source, compilation);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics));
+        var options = new LythonRunOptions { MemoryBudget = execution, ResultMemoryBudget = projection };
+        using var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options)
+            : script.Run(new MockLythonHost(), options);
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(0, execution.ReservedBytes);
+
+        script.Dispose();
+        Assert.Equal(0, compilation.ReservedBytes);
+        Assert.True(projection.ReservedBytes > 0);
+        var records = Assert.IsType<List<object?>>(result.ReturnValue);
+        var defaults = Assert.IsType<Dictionary<object, object?>>(records[0]);
+        var annotations = Assert.IsType<Dictionary<object, object?>>(records[1]);
+        Assert.Equal("7", defaults["clé"]?.ToString());
+        Assert.Equal("int", annotations["clé"]);
+        result.Dispose();
+        Assert.Equal(0, projection.ReservedBytes);
+    }
 }
