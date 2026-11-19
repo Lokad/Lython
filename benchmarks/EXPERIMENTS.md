@@ -264,6 +264,10 @@ original conditions retained. Current comparisons belong in
   constructor is retained for allocation and simplification.
   [Function construction](results/2026-11-19-funded-function-construction/README.md) ·
   [Confirmation](results/2026-11-19-funded-function-construction/confirmation/README.md).
+- B1090 retains private inline keyword dictionaries through the callee's
+  `**kwargs`. Two whole reports allocate less and run faster with lower CPU.
+  The named forwarding report is slower. Keep the copy-path regression
+  and moving controls with the measured source pair. [Inline keyword dictionaries](results/2026-11-19-private-keyword-mapping/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
