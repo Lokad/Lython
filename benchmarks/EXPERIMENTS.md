@@ -475,6 +475,10 @@ original conditions retained. Current comparisons belong in
   1.83–1.92× and compile-to-result is 1.06–1.11×. Compilation controls on
   CPython still vary. The manifest keeps its B1130 source and rows.
   [CPython checkpoint](results/2026-11-19-native-integer-cpython/README.md).
+- B1137 profiles all three rule scripts on `e20604ef4`. The result consumer
+  remains visible on each, supporting a test that precomputes plain local
+  destinations while keeping the cleanup continuation and mirrored stores.
+  [Current rule profile](results/2026-11-19-current-rule-checkpoint-profile/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
