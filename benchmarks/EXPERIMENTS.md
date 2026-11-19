@@ -125,6 +125,10 @@ original conditions retained. Current comparisons belong in
   Capture construction is visible in both capture workloads. Repeated name
   lookup there gives the next constrained runtime target.
   [Capture attribution](results/2026-11-19-current-lexical-costs/README.md).
+- B1055 prepares capture source indexes for exact executable parent-child
+  pairs. Captured rules and mutable counters improve warm and compile-to-result
+  with lower CPU and allocation. The forwarding and positional comparisons span
+  zero. [Prepared capture sources](results/2026-11-19-prepared-capture-slots/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
