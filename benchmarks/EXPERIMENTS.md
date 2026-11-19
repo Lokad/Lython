@@ -495,6 +495,10 @@ original conditions retained. Current comparisons belong in
   three warm CSV cases improve. The text control spans zero and accounted
   CSV peaks rise 512 bytes.
   [Prepared searches](results/2026-11-19-prepared-csv-search-sets/README.md).
+- B1142 embeds the live binding plan into the function. Rule allocation
+  falls 3.20–6.13%. The repeat finds lower annotated compile-to-result
+  latency and a 1.35–2.00% CPU cost on the invoice control.
+  [Inline binding state](results/2026-11-19-inline-function-binding-state/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
