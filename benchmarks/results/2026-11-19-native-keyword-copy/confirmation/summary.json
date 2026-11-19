@@ -1,0 +1,150 @@
+{
+  "complete": true,
+  "elapsedSeconds": 140.3838456501253,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "archivalOnlyRecovery": {
+    "retiredOnly": [
+      {
+        "bytes": 879452,
+        "sha256": "3ed77c1a8a8573f7aa741cbd147bdb739bfa0157f2522252aceb9385fc6fd131",
+        "canonical": "benchmarks/results/2026-10-29-foundation/full.json.gz",
+        "canonicalSHA256": "3ed77c1a8a8573f7aa741cbd147bdb739bfa0157f2522252aceb9385fc6fd131",
+        "committedBlobVerified": true,
+        "kind": "exact archived measured replica",
+        "paths": [
+          "annotation-comprehensions-1c5cff2a/benchmarks/results/2026-10-29-foundation/full.json.gz"
+        ],
+        "links": 1
+      }
+    ],
+    "alreadyAbsent": [],
+    "freshIdleLease": true,
+    "allHashesPathsOwnershipLinksAndAliasesVerified": true,
+    "canonicalArchiveAndCurrentImagesPreserved": true,
+    "freeBeforeBytes": 266354688,
+    "freeAfterBytes": 267194368
+  },
+  "rows": [
+    {
+      "case": "scripts.report-forwarding.mutable-bound",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "reference": 1.3418951394101877,
+        "candidate": 1.36889264010989,
+        "reference-control": 1.3401119386666667,
+        "candidate-control": 1.3255665862068966
+      },
+      "cpuMilliseconds": {
+        "reference": 1.3404825737265416,
+        "candidate": 1.3736263736263736,
+        "reference-control": 1.3333333333333333,
+        "candidate-control": 1.3262599469496021
+      },
+      "elapsedIQRPercent": {
+        "reference": 0.12328069001418193,
+        "candidate": 0.3204633673972533,
+        "reference-control": 0.10002129633042896,
+        "candidate-control": 0.30940395453101216
+      },
+      "elapsedChangePercent": [
+        -1.2168278074595418,
+        -1.0853833952290448,
+        2.0118934711671033,
+        2.147634135090115
+      ],
+      "cpuChangePercent": [
+        -1.0610079575596787,
+        -0.5305039787798393,
+        2.4725274725274637,
+        3.0219780219780334
+      ],
+      "referenceSpreadPercent": 0.13306356671183295,
+      "candidateSpreadPercent": 3.26849321292646
+    },
+    {
+      "case": "scripts.report-forwarding.expanded",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference": 2.171696577777778,
+        "candidate": 2.202264963963964,
+        "reference-control": 2.162023844444444,
+        "candidate-control": 2.1498064449339207
+      },
+      "cpuMilliseconds": {
+        "reference": 2.2222222222222223,
+        "candidate": 2.2522522522522523,
+        "reference-control": 2.2222222222222223,
+        "candidate-control": 2.246696035242291
+      },
+      "elapsedIQRPercent": {
+        "reference": 0.5859863009715016,
+        "candidate": 0.3359704477222362,
+        "reference-control": 0.2613214061273409,
+        "candidate-control": 0.7577387414549335
+      },
+      "elapsedChangePercent": [
+        -1.0079738149358142,
+        -0.565090877323926,
+        1.4075808977636273,
+        1.8612708468930261
+      ],
+      "cpuChangePercent": [
+        1.1013215859030812,
+        1.1013215859030812,
+        1.3513513513513598,
+        1.3513513513513598
+      ],
+      "referenceSpreadPercent": 0.4473925372372234,
+      "candidateSpreadPercent": 2.4401507937453326
+    },
+    {
+      "case": "scripts.report-forwarding.explicit-dictionary-copy",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate-control": 2.197299771300448,
+        "reference-control": 2.2161026,
+        "candidate": 2.2129664324324327,
+        "reference": 2.2616002314814816
+      },
+      "cpuMilliseconds": {
+        "candidate-control": 2.242152466367713,
+        "reference-control": 2.2727272727272725,
+        "candidate": 2.2972972972972974,
+        "reference": 2.314814814814815
+      },
+      "elapsedIQRPercent": {
+        "candidate-control": 0.7301287153201412,
+        "reference-control": 0.26212131481310413,
+        "candidate": 0.06133465449012147,
+        "reference": 0.22363241858102934
+      },
+      "elapsedChangePercent": [
+        -2.8431399716877914,
+        -2.1504153727995856,
+        -0.8484638165918934,
+        -0.14151725500287649
+      ],
+      "cpuChangePercent": [
+        -3.1390134529148073,
+        -1.3452914798206206,
+        -0.7567567567567601,
+        1.0810810810810922
+      ],
+      "referenceSpreadPercent": 2.053047159525989,
+      "candidateSpreadPercent": 0.712996075301664
+    }
+  ],
+  "retentionDecisionPending": false,
+  "CPythonRefreshed": false,
+  "referenceRuntime": "e93356adce033a97011a469dda4a5bddb3b8065a",
+  "measuredPrototype": "98c4f2954a754fe05ea7be34884c1c20357f2f8b",
+  "cores": {
+    "reference": "b21ca2e47b7a71c7798f2307eae2a9a3efd263c76419e5b6054e9cfdf3dd4744",
+    "reference-control": "b21ca2e47b7a71c7798f2307eae2a9a3efd263c76419e5b6054e9cfdf3dd4744",
+    "candidate": "9fe26c48781077ee6e16b6e6cce2a2e7522c9be63311a514ad776b72016336d9",
+    "candidate-control": "9fe26c48781077ee6e16b6e6cce2a2e7522c9be63311a514ad776b72016336d9"
+  },
+  "archiveSHA256": "78f620b0036711bdbf2395632ec2a2881d978e057ad72fe2ca943c0def73ba08",
+  "retained": false
+}

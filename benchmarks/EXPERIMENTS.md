@@ -68,6 +68,10 @@ original conditions retained. Current comparisons belong in
   makes 6,144 fewer positive budget resizes on each rule script and lowers
   allocation at the same accounted peaks. The confirmation leaves the
   whole-script timing mixed. [Grouped admission](results/2026-11-19-grouped-definition-admission/README.md).
+- B1036/B1037 keep native keyword copy private. Warm mutable forwarding
+  ran faster. Its compile-to-result timing stayed mixed, and expanded
+  forwarding used more CPU on repeat. Allocation and accounted peaks
+  were effectively unchanged. [Native keyword copy](results/2026-11-19-native-keyword-copy/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
