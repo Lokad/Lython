@@ -520,6 +520,11 @@ original conditions retained. Current comparisons belong in
   path and neither invoice profile samples general binding. The cause of
   the repeated regression remains open.
   [Invoice and annotated-rule profiles](results/2026-11-19-invoice-call-profile/README.md).
+- B1149/B1150 replace runtime definition layout caches with immutable keys
+  owned by code. Nested factories allocate 37.33% less and run
+  11.24–17.26% faster with lower CPU. Ordinary annotation warm timings
+  differ across the two runs. Invoice and compile-to-result span zero.
+  [Compiler-owned definition keys](results/2026-11-19-compiled-definition-keys/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup

@@ -339,18 +339,19 @@ Executable local slots use that same prepared parameter order,
 then append body locals. Mutable defaults, keyword-name values, attributes and closures
 remain function-owned. Native generated definitions admit their layout before
 allocation and keep its construction overlap funded through default creation.
-Executable definition sites prepare immutable keyword-default and annotation
-key layouts directly from their known names and retain them in existing lookup
-storage. Each definition admits its own default containers before evaluating
-defaults. Function declarations and lambdas fill the final private tuple and
-dictionary as expressions complete, with one owner through suspension.
+Executable code owns immutable keyword-default and annotation key layouts
+prepared during compilation. Each definition admits its own mutable default
+containers before evaluating defaults. Function declarations and lambdas fill
+the final private tuple and dictionary as expressions complete, with one owner
+through suspension.
 Fresh integers can stay unboxed until observed. The tuple preflights room
 for eventual scalar boxes, and a larger magnitude can require a further
 charge. A supplied allowance can refuse earlier because this storage is
-admitted before the callbacks. Private containers refund on failure, and a
-cached key layout stays funded. Decorators can expose a definition, so its
-finished defaults transfer before the first decorator call. Binding uses the
-live tuple and holds selected values through keyword lookup and suspension.
+admitted before the callbacks. Private containers refund on failure, and the
+compiled key layouts stay funded with the code. Decorators can expose a
+definition, so its finished defaults transfer before the first decorator call.
+Binding uses the live tuple and holds selected values through keyword lookup
+and suspension.
 A published dictionary admits replacement capacity before a mutation
 requiring private keys.
 One scope walk collects directives, local bindings

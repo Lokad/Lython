@@ -1,0 +1,129 @@
+{
+  "complete": true,
+  "elapsedSeconds": 165.6186648113653,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "archivalOnlyRecovery": {
+    "retiredOnly": [],
+    "alreadyAbsent": [],
+    "freshIdleLease": true,
+    "allHashesPathsOwnershipLinksAndAliasesVerified": true,
+    "canonicalArchiveAndCurrentImagesPreserved": true,
+    "freeBeforeBytes": 186007552,
+    "freeAfterBytes": 185942016
+  },
+  "rows": [
+    {
+      "case": "scripts.annotated-rule-closures",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 1.5315665227963524,
+        "reference": 1.5646314096774194,
+        "candidate-control": 1.4921445175438597,
+        "reference-control": 1.5885553291139243
+      },
+      "cpuMilliseconds": {
+        "candidate": 1.5197568389057752,
+        "reference": 1.5483870967741935,
+        "candidate-control": 1.4912280701754386,
+        "reference-control": 1.5822784810126582
+      },
+      "elapsedIQRPercent": {
+        "candidate": 1.134690379768235,
+        "reference": 2.7408374241092246,
+        "candidate-control": 1.8639733022896605,
+        "reference-control": 0.17376468107066784
+      },
+      "elapsedChangePercent": [
+        -6.069087415660956,
+        -4.632841427394352,
+        -3.587461215427701,
+        -2.113270044085591
+      ],
+      "cpuChangePercent": [
+        -5.754385964912279,
+        -3.951367781155013,
+        -3.691520467836251,
+        -1.8490374873353477
+      ],
+      "referenceSpreadPercent": 1.5290450702020175,
+      "candidateSpreadPercent": 2.6419696476440047
+    },
+    {
+      "case": "scripts.csv-invoice.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 6.4447226103896105,
+        "candidate-control": 6.461327584415585,
+        "reference": 6.7007327631578955,
+        "candidate": 6.429882192307692
+      },
+      "cpuMilliseconds": {
+        "reference-control": 6.493506493506494,
+        "candidate-control": 6.623376623376624,
+        "reference": 6.842105263157895,
+        "candidate": 6.538461538461539
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.46656396348664664,
+        "candidate-control": 0.6420788551548068,
+        "reference": 3.1871298286328495,
+        "candidate": 1.5153505693591531
+      },
+      "elapsedChangePercent": [
+        -4.042103758254623,
+        -3.5728208720486876,
+        -0.2302724101421294,
+        0.2576522688378491
+      ],
+      "cpuChangePercent": [
+        -4.4378698224851965,
+        -3.1968031968031885,
+        0.692307692307681,
+        1.9999999999999796
+      ],
+      "referenceSpreadPercent": 3.9723998726580945,
+      "candidateSpreadPercent": 0.4890508281086836
+    },
+    {
+      "case": "scripts.annotated-rule-closures",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "reference-control": 1.5169776626506024,
+        "candidate-control": 1.5412950607902736,
+        "reference": 1.5953813167701862,
+        "candidate": 1.5372938662613982
+      },
+      "cpuMilliseconds": {
+        "reference-control": 1.536144578313253,
+        "candidate-control": 1.5501519756838904,
+        "reference": 1.5838509316770186,
+        "candidate": 1.5197568389057752
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 2.0950491555236397,
+        "candidate-control": 0.15298684744991325,
+        "reference": 2.2386096585830666,
+        "candidate": 1.2131563473193558
+      },
+      "elapsedChangePercent": [
+        -3.640975978481731,
+        -3.3901773457776896,
+        1.3392552910302946,
+        1.6030162301257311
+      ],
+      "cpuChangePercent": [
+        -4.046725073007917,
+        -2.1276595744680993,
+        -1.0668097026044432,
+        0.9118541033434457
+      ],
+      "referenceSpreadPercent": 5.1684119054587585,
+      "candidateSpreadPercent": 0.2602751898442168
+    }
+  ],
+  "retentionDecisionPending": false,
+  "CPythonRefreshed": false,
+  "retainedCommit": "f8fd828ac",
+  "retentionReason": "Compiler-owned immutable layouts remove runtime caches and improve nested factories; ordinary annotated timing varies across collections."
+}
