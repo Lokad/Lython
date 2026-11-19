@@ -29,7 +29,7 @@ public sealed class TupleConstructionFailureTests
                 if (cancelled) gate.AfterGrowth = _ => cancellation.Cancel();
                 else gate.RefuseGrowth = _ => true;
                 var error = Assert.Throws<LythonRuntimeException>(() =>
-                    PyTuple.FromIntegerSlots([first, second], context, new(0, 1, 1, 1)));
+                    PyTuple.FromSlots([first, second], context, new(0, 1, 1, 1)));
                 Assert.Equal(cancelled ? LythonFailureReason.Cancelled : LythonFailureReason.SharedMemoryAllowance,
                     error.Attribution?.Reason);
                 if (!cancelled) Assert.Same(context.MemoryGovernor.AdmissionFailure, error);

@@ -166,7 +166,7 @@ internal sealed partial class LythonRuntime
                 var parameterName = plan.NameAt(i);
                 if (plan.TryGetPositionalDefault(i, out var defaultValue))
                 {
-                    values[i].Object = defaultValue;
+                    values[i] = defaultValue;
                     continue;
                 }
 

@@ -216,7 +216,7 @@ internal sealed partial class LythonRuntime
                     {
                         if (TryReturnUnpackedTuple(instruction)) return true;
                         var tuple = instruction.ItemCount == 0 ? PyTuple.Empty
-                            : CreateSlotTuple(Values.Slice(instruction.InputStart, instruction.ItemCount), _scope, instruction.Span);
+                            : PyTuple.FromSlots(Values.Slice(instruction.InputStart, instruction.ItemCount), _scope, instruction.Span);
                         Trim(instruction.InputStart);
                         Publish(instruction, tuple);
                         break;
@@ -435,7 +435,7 @@ internal sealed partial class LythonRuntime
             // Keep eager tuple admission before any caller target can change.
             // Its conservative funding survives until the execution owner ends;
             // only the unobservable tuple shell/backing allocation disappears.
-            var bytes = SlotTupleBytes(items, _scope, instruction.Span);
+            var bytes = PyTuple.EstimateObjectSlotStorage(items, _scope, instruction.Span);
             _scope.MemoryGovernor.Reserve(bytes, instruction.Span);
             try
             {

@@ -176,12 +176,7 @@ internal sealed partial class LythonRuntime
                         PyFunctionBase function;
                         try
                         {
-                            if (defaults is not null)
-                            {
-                                for (var i = 0; i < layout.Defaults.Length; i++)
-                                    defaults.Add(layout.Defaults[i], RuntimeValue(execution.Stack[first + i]), span);
-                                defaults.Complete();
-                            }
+                            defaults?.Complete(execution.Stack.Values.AsSpan(first, layout.Defaults.Length));
                             function = CreateLambdaFunction(lambda.Expression, defaults?.Values ?? default, context, borrowed: invocation is null);
                         }
                         finally { execution.Stack.RetireTo(instruction.ResultSlot); }

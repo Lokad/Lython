@@ -100,9 +100,8 @@ internal sealed partial class LythonRuntime
                 if (layout.Defaults.Length != 0)
                 {
                     defaults = (PendingFunctionDefaults)execution.Stack[next++];
-                    foreach (var slot in layout.Defaults)
-                        defaults.Add(slot, RuntimeValue(execution.Stack[next++]), span);
-                    defaults.Complete();
+                    defaults.Complete(execution.Stack.Values.AsSpan(next, layout.Defaults.Length));
+                    next += layout.Defaults.Length;
                 }
 
                 var cells = CaptureExecutableClosures(binding.CodeObject, context, span);

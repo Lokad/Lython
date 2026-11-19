@@ -43,7 +43,7 @@ public sealed class FunctionDefaultConstructionTests
                     [new("a", FunctionParameterKind.Positional, null), new("b", FunctionParameterKind.KeywordOnly, null)],
                     new Dictionary<string, object> { ["a"] = supplied, ["b"] = supplied }, context);
                 Assert.True(plan.TryGetPositionalDefault(0, out var positional));
-                Assert.Same(supplied, positional);
+                Assert.Same(supplied, positional.Object);
                 Assert.True(plan.KeywordDefaultStorage!.TryGetValue(plan.KeywordDefaultName(0), out var keyword));
                 Assert.Same(supplied, keyword);
                 completed++;
@@ -61,5 +61,31 @@ public sealed class FunctionDefaultConstructionTests
         }
         Assert.True(denials > 1);
         Assert.True(completed > 0);
+    }
+
+    [Fact]
+    public void RefusedSlotTupleGrowthLeavesItsOperandsAndExistingReservationIntact()
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var owner = budget.CreateScope();
+        var gate = new AdmissionHookMemoryBudget(owner);
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = gate });
+        var governor = context.MemoryGovernor;
+        var baseline = budget.ReservedBytes;
+        var span = new LythonSourceSpan(0, 1, 1, 1);
+        var values = new[] { LythonRuntime.ExecutableSlot.FromInteger(10003) };
+        var bytes = PyTuple.EstimateApproximateBytes(values.Length);
+        using (var preflight = governor.ReserveTemporary(bytes, span))
+        {
+            gate.RefuseGrowth = _ => true;
+            var failure = Assert.Throws<LythonRuntimeException>(() => PyTuple.FromSlots(values, context, span, preflight));
+            Assert.Same(governor.AdmissionFailure, failure);
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
+            Assert.Equal(baseline + bytes, budget.ReservedBytes);
+            Assert.True(values[0].IsUnpublishedInteger);
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+        Assert.Equal(0, governor.CurrentReservedBytes);
+        context.State.CloseResources();
     }
 }

@@ -95,7 +95,7 @@ internal sealed partial class LythonRuntime
 
         // The existing operand owner survives admission/reentry and copying.
         // Retire its inputs only after the independent final tuple is funded.
-        var tuple = CreateSlotTuple(stack.Values.AsSpan(start, count), context, span);
+        var tuple = PyTuple.FromSlots(stack.Values.AsSpan(start, count), context, span);
         stack.RetireTo(start);
         return tuple;
     }

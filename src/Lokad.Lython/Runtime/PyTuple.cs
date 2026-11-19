@@ -46,7 +46,7 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
         _items = takeOwnership ? items : [.. items];
     }
 
-    private PyTuple(object[] items, MemoryGovernor governor, LythonSourceSpan? allocationSpan, long committedBytes)
+    private PyTuple(Array items, MemoryGovernor governor, LythonSourceSpan? allocationSpan, long committedBytes)
     {
         _items = items;
         _memoryGovernor = governor;
@@ -54,33 +54,64 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
         _committedBytes = committedBytes;
     }
 
-    private PyTuple(LythonRuntime.ExecutableSlot[] items, MemoryGovernor governor,
-        LythonSourceSpan span, long committedBytes)
-    {
-        _items = items;
-        _memoryGovernor = governor;
-        _allocationSpan = span;
-        _committedBytes = committedBytes;
-    }
-
-    internal static PyTuple FromIntegerSlots(ReadOnlySpan<LythonRuntime.ExecutableSlot> values,
+    internal static long EstimateObjectSlotStorage(ReadOnlySpan<LythonRuntime.ExecutableSlot> values,
         LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        // Admit the wider backing, metadata and every eventual scalar box.
-        var bytes = checked(64L + 24L * values.Length
-            + RuntimeMemoryEstimates.ScalarStorageBytes * values.Length);
-        using var storage = context.MemoryGovernor.ReserveTemporary(bytes, span);
-        context.CheckExecution(span);
-        var items = new LythonRuntime.ExecutableSlot[values.Length];
-        for (var offset = 0; offset < values.Length;)
+        var bytes = EstimateApproximateBytes(values.Length);
+        for (var i = 0; i < values.Length; i++)
         {
-            context.CheckExecution(span);
-            var count = Math.Min(1024, values.Length - offset);
-            values.Slice(offset, count).CopyTo(items.AsSpan(offset));
-            offset += count;
+            if ((i & 1023) == 0) context.CheckExecution(span);
+            bytes = checked(bytes + values[i].ScalarStorageBytes);
         }
-        var tuple = new PyTuple(items, context.MemoryGovernor, span, bytes);
-        storage.Commit(bytes);
+        return bytes;
+    }
+
+    // The definition can bring a lease for the ordinary tuple capacity, admitted
+    // before its default expressions. Evaluated slots are still owned by the frame.
+    internal static PyTuple FromSlots(Span<LythonRuntime.ExecutableSlot> values,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span,
+        MemoryGovernor.TemporaryMemoryReservation? preflight = null)
+    {
+        // Fresh integers still have no aliases. Retain their machine slots and
+        // fund eventual boxes. Other slots publish their existing identities.
+        var integers = !values.IsEmpty;
+        for (var i = 0; i < values.Length && integers; i++)
+        {
+            if ((i & 1023) == 0) context.CheckExecution(span);
+            integers = values[i].IsUnpublishedInteger;
+        }
+        var bytes = integers
+            ? checked(64L + (24L + RuntimeMemoryEstimates.ScalarStorageBytes) * values.Length)
+            : EstimateObjectSlotStorage(values, context, span);
+        var governor = context.MemoryGovernor;
+        using var owned = preflight is null ? governor.ReserveTemporary(bytes, span) : null;
+        preflight?.Grow(bytes - EstimateApproximateBytes(values.Length), span);
+        context.CheckExecution(span);
+        Array items;
+        if (integers)
+        {
+            var slots = new LythonRuntime.ExecutableSlot[values.Length];
+            for (var offset = 0; offset < values.Length;)
+            {
+                context.CheckExecution(span);
+                var count = Math.Min(1024, values.Length - offset);
+                values.Slice(offset, count).CopyTo(slots.AsSpan(offset));
+                offset += count;
+            }
+            items = slots;
+        }
+        else
+        {
+            var objects = new object[values.Length];
+            for (var i = 0; i < objects.Length; i++)
+            {
+                if ((i & 1023) == 0) context.CheckExecution(span);
+                objects[i] = values[i].Object.RequireNotNull();
+            }
+            items = objects;
+        }
+        var tuple = new PyTuple(items, governor, span, bytes);
+        (preflight ?? owned!).Commit(bytes);
         return tuple;
     }
 
@@ -97,9 +128,31 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
         if (_items is not LythonRuntime.ExecutableSlot[] items) return false;
         if (index < 0) index += items.Length;
         if ((ulong)index >= (uint)items.Length) return false;
-        if (items[(int)index].IsUnpublishedInteger) value.BorrowTupleInteger(this, (int)index);
-        else value.Object = items[(int)index].Reference;
+        value = ReadIntegerSlot(items, (int)index);
         return true;
+    }
+
+    // Positional defaults align with the end of the callable's parameter list.
+    internal bool TryReadTrailingSlot(int distance, out LythonRuntime.ExecutableSlot value)
+    {
+        var index = _items.Length - distance;
+        if ((uint)index >= (uint)_items.Length)
+        {
+            value = default;
+            return false;
+        }
+        value = _items is object[] objects ? LythonRuntime.ExecutableSlot.FromObject(objects[index])
+            : ReadIntegerSlot((LythonRuntime.ExecutableSlot[])_items, index);
+        return true;
+    }
+
+    private LythonRuntime.ExecutableSlot ReadIntegerSlot(LythonRuntime.ExecutableSlot[] items, int index)
+    {
+        if (!items[index].IsUnpublishedInteger)
+            return LythonRuntime.ExecutableSlot.FromObject(items[index].Reference);
+        LythonRuntime.ExecutableSlot value = default;
+        value.BorrowTupleInteger(this, index);
+        return value;
     }
 
     public MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;

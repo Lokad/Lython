@@ -121,43 +121,6 @@ internal sealed partial class LythonRuntime
 
     internal static long ExecutableSlotsBytes(int capacity) => checked(32L + 24L * capacity);
 
-    private static long SlotTupleBytes(ReadOnlySpan<ExecutableSlot> values, ExecutionContext context,
-        LythonSourceSpan span)
-    {
-        var bytes = PyTuple.EstimateApproximateBytes(values.Length);
-        for (var i = 0; i < values.Length; i++)
-        {
-            if ((i & 1023) == 0) context.CheckExecution(span);
-            bytes = checked(bytes + values[i].ScalarStorageBytes);
-        }
-        return bytes;
-    }
-
-    private static PyTuple CreateSlotTuple(Span<ExecutableSlot> values, ExecutionContext context, LythonSourceSpan span)
-    {
-        // Completed object references keep their compact backing and identities.
-        // Fresh integer operands have no aliases yet; carry the final slots into
-        // immutable tuple storage rather than boxing them during construction.
-        var integers = !values.IsEmpty;
-        for (var i = 0; i < values.Length && integers; i++)
-        {
-            if ((i & 1023) == 0) context.CheckExecution(span);
-            integers = values[i].IsUnpublishedInteger;
-        }
-        if (integers) return PyTuple.FromIntegerSlots(values, context, span);
-        var bytes = SlotTupleBytes(values, context, span);
-        using var storage = context.MemoryGovernor.ReserveTemporary(bytes, span);
-        context.CheckExecution(span);
-        var items = new object[values.Length];
-        for (var i = 0; i < items.Length; i++)
-        {
-            if ((i & 1023) == 0) context.CheckExecution(span);
-            items[i] = values[i].Object.RequireNotNull();
-        }
-        return PyTuple.FromReservedOwnedArray(items, context.MemoryGovernor, span, storage,
-            bytes - PyTuple.EstimateApproximateBytes(values.Length));
-    }
-
     private static PyList CreateSlotList(Span<ExecutableSlot> values, ExecutionContext context, LythonSourceSpan span)
     {
         var bytes = PyList.EstimateCapacityBytes(values.Length);

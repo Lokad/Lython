@@ -31,7 +31,6 @@ internal sealed partial class LythonRuntime
             try
             {
                 context.CheckExecution(span);
-                if (positionalCount != 0) _positionalItems = new object[positionalCount];
                 if (keywordCount != 0)
                     _keywords = CreateDefinitionRecord(ref execution, context, keywordCount, keywordRecordCache, layout,
                         static (parameters, index) => parameters.KeywordDefaultName(
@@ -47,7 +46,7 @@ internal sealed partial class LythonRuntime
             if (slot.KeywordIndex < 0)
             {
                 _context.CheckExecution(span);
-                _positionalItems![_position++] = value;
+                (_positionalItems ??= new object[_layout.PositionalDefaultCount])[_position++] = value;
             }
             else _keywords!.AddDefinitionValue(_layout.KeywordDefaultName(slot.KeywordIndex), value, _context, span);
         }
@@ -59,6 +58,18 @@ internal sealed partial class LythonRuntime
                 _positional = PyTuple.FromReservedOwnedArray(items, _context.MemoryGovernor, _span, _positionalStorage!);
                 _positionalItems = null;
             }
+        }
+
+        internal void Complete(Span<ExecutableSlot> evaluated)
+        {
+            var positionalCount = _layout.PositionalDefaultCount;
+            var slots = _layout.Defaults;
+            // Keep keyword admission ahead of positional scalar admission, as in
+            // the lowered path. The private operands stay rooted through both.
+            for (var i = positionalCount; i < slots.Length; i++)
+                Add(slots[i], RuntimeValue(evaluated[i].Object), _span);
+            if (positionalCount != 0)
+                _positional = PyTuple.FromSlots(evaluated[..positionalCount], _context, _span, _positionalStorage);
         }
 
         internal void Publish()

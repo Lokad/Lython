@@ -134,18 +134,20 @@ internal sealed class FunctionBindingPlan
         _ => null,
     };
 
-    public bool TryGetPositionalDefault(int parameterIndex, [MaybeNullWhen(false)] out object value)
+    public bool TryGetPositionalDefault(int parameterIndex, out LythonRuntime.ExecutableSlot value)
     {
-        if (PositionalDefaults is { } defaults && PyTupleLike.TryGetItems(defaults, out var items))
+        var defaults = PositionalDefaults;
+        if (defaults is PyTuple tuple) return tuple.TryReadTrailingSlot(PositionalCount - parameterIndex, out value);
+        if (defaults is not null && PyTupleLike.TryGetItems(defaults, out var items))
         {
             var index = parameterIndex - (PositionalCount - items.Count);
             if (index >= 0 && index < items.Count)
             {
-                value = items[index];
+                value = LythonRuntime.ExecutableSlot.FromObject(items[index]);
                 return true;
             }
         }
-        value = null;
+        value = default;
         return false;
     }
 

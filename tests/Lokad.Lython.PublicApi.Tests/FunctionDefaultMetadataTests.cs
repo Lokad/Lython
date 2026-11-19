@@ -48,6 +48,42 @@ public sealed class FunctionDefaultMetadataTests
 
     private const string YieldingLookup = "class Key:\n    def __hash__(self): return hash('x')\n    def __eq__(self,other):\n        f.__kwdefaults__={'x':99,'y':100}\n        with open('events.txt','a') as target: target.write('eq\\n')\n        return other=='x'\ndef f(*,x,y): return x,y\nf.__kwdefaults__={Key():7,'y':8}\nprint(f())\nprint(f())";
 
+    [Fact]
+    public async Task BoundPositionalDefaultSurvivesReplacementDuringSuspendedKeywordLookup()
+    {
+        const string source = """
+            def make(seed):
+                def f(value=seed+7, /, *, flag): return value
+                return f
+            f = make(10003)
+            initial = f.__defaults__
+            replacement = 10021
+            class Key:
+                def __hash__(self): return hash('flag')
+                def __eq__(self, other):
+                    f.__defaults__ = (replacement,)
+                    f.__kwdefaults__ = {'flag': None}
+                    with open('/events.txt', 'a') as events: events.write('replaced')
+                    return other == 'flag'
+            f.__kwdefaults__ = {Key(): None}
+            value = f()
+            print(value, value is initial[0], f() is replacement)
+            """;
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid);
+        var baseline = budget.ReservedBytes;
+        var host = new DelayedLythonHost();
+        using (var result = await script.RunAsync(host))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("10010 True True\n", result.StandardOutput);
+            Assert.Equal("replaced", host.ReadText("/events.txt"));
+            Assert.True(host.CompletedAsynchronously > 0);
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
     [Theory]
     [InlineData(false, false)]
     [InlineData(true, false)]
