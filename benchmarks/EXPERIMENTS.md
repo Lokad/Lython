@@ -272,6 +272,10 @@ original conditions retained. Current comparisons belong in
   scripts take 3.72–4.25× CPython warm, the inline and named reports take
   1.64–1.70× and 1.70–1.73×, and CSV invoice takes 1.10–1.13×.
   [External checkpoint](results/2026-11-19-inline-forwarding-cpython/README.md).
+- B1092 keeps the split keyword loops private. Named warm and mutable-bound
+  compile-to-result are slower with higher CPU, and the inline allocation
+  benefit stays with the retained B1090 transfer.
+  [Keyword copy loop](results/2026-11-19-keyword-copy-path/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
