@@ -386,6 +386,12 @@ original conditions retained. Current comparisons belong in
   10.22% more allocation. Annotated timing remains mixed. Retain both private
   variants as evidence and examine common bound-call entry next.
   [Return transport isolation](results/2026-11-19-borrowed-return-transport/README.md).
+- B1117 keeps ordinary prefixes in the common bound-call entry. Captured
+  rules improve 8.11–13.63% warm with lower CPU and 26.90% less allocation.
+  Ordinary rules improve 2.82–6.63% warm. The runtime is retained at
+  `47fbd2c1b`. The mixed annotated repeat keeps that control open.
+  [Call entry](results/2026-11-19-inline-lexical-entry/README.md) ·
+  [Annotated repeat](results/2026-11-19-inline-lexical-entry/confirmation/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
