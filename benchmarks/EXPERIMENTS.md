@@ -186,6 +186,10 @@ original conditions retained. Current comparisons belong in
   CPython across warm, compilation and compile-to-result. The staged hash
   mismatch stopped the original launch before starting any worker.
   [CPython checkpoint](results/2026-11-19-retained-trim-cpython/README.md).
+- B1070/B1071 profile ordinary rules, retained siblings and forwarding
+  on the retained runtime. The initial siblings warmup stopped short.
+  Admission for singleton capture arrays remains visible in the completed
+  siblings capture. [Call attribution](results/2026-11-19-retained-call-profile/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
