@@ -370,6 +370,11 @@ original conditions retained. Current comparisons belong in
   and keep the ordinary CPU result open.
   [Initial comparison](results/2026-11-19-framed-unpacked-return/README.md) ·
   [Control repeat](results/2026-11-19-framed-unpacked-return/confirmation/README.md).
+- B1114 refreshes the three rule scripts and CSV invoice against CPython
+  at `2841f6ac2`. Warm rule execution takes 3.42–4.27× CPython elapsed,
+  and the invoice takes 1.09–1.12×. Each script compiles faster than
+  CPython. Worker spreads leave the exact annotated and captured gaps
+  uncertain. [External comparison](results/2026-11-19-retained-return-cpython/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
