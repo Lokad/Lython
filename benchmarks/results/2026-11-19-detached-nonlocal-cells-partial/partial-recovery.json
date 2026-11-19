@@ -1,0 +1,11 @@
+{
+  "originalExitCode": 1,
+  "complete": false,
+  "timedJobs": 2,
+  "batches": 40,
+  "allWorkersJoined": true,
+  "guestFixturesRemoved": true,
+  "archiveSHA256": "42e1f10a5c0a517308c409ee3c4bb6c18903d4650dbe3475c522a19feb11e37a",
+  "archiveVerifiedUnderIdleLease": true,
+  "reason": "Unrelated expectedFilesSha256 on stdout-only retained case"
+}

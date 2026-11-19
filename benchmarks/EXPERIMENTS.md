@@ -146,6 +146,9 @@ original conditions retained. Current comparisons belong in
   extraction scripts. Mutable cells still pay retained-context admission.
   The pinned regex provider accounts for most sampled CPU in all three
   extraction cases. [Rule and Unicode attribution](results/2026-11-19-retained-rule-regex-profile/README.md).
+- B1060 retains two completed mutable-counter lanes from a partial comparison.
+  Correcting the copied file-output checksum requires a new catalog and the
+  same frozen images. [Partial observations](results/2026-11-19-detached-nonlocal-cells-partial/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup

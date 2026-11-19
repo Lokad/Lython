@@ -38,6 +38,10 @@ Both VM quiet gates and all 160 measured golden batches passed. Workers
 joined, guest fixtures were removed and the complete raw data was archived
 and verified under the lease in 364.72 seconds of collection.
 
+R622 and R624 passed the Windows and Ubuntu .NET 10/11 Release suites,
+original stress cases and installed-package consumers at `af7cdee8a`.
+[Delivery CI](https://github.com/Lokad/Lython/actions/runs/44471822057).
+
 Warm includes mediated I/O, golden checks and preceding-result cleanup.
 Compile-to-result also includes compilation and compiled-owner disposal.
 Startup and final cache teardown are outside guest elapsed. Process CPU
