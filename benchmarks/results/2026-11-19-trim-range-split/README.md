@@ -4,7 +4,7 @@ R676 passes a private right-trimmed UTF-8 range into the existing split
 scanner. The prepared recipe applies to the builtin `str.rstrip` with one
 ASCII character and an immediate `split` with a literal nonempty separator.
 Both execution APIs preserve fixed unpacking, failure spans and cancellation.
-Retained fields use the original storage owner and allocation preflights.
+Borrowed fields keep the original storage owner and copies use allocation preflights.
 Custom receivers and other argument shapes follow ordinary method dispatch.
 
 The pair is `9407f4fb7` versus retained `3e67fd010`. Windows .NET 11 and
