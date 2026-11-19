@@ -31,6 +31,10 @@ original conditions retained. Current comparisons belong in
   operands after the paired forwarding improvement and lower accounted
   peak. B1022 refreshed the external comparison with both changes.
   [B1002](results/2026-11-18-direct-defaults-cpython-checkpoint/README.md) · [B1006](results/2026-11-18-post-transport-cpython-checkpoint/README.md) · [B1016](results/2026-11-18-annotation-and-forwarding-cpython/README.md) · [B1018](results/2026-11-19-rule-and-forwarding-attribution/README.md) · [B1019](results/2026-11-19-direct-function-definitions/README.md) · [B1020](results/2026-11-19-direct-function-completion/README.md) · [B1021](results/2026-11-19-final-split-operands/README.md) · [B1022](results/2026-11-19-function-and-split-cpython/README.md).
+- B1023/B1024 kept the shared function binding owner private. It reduces
+  rule-script allocation. Warm forwarding is unresolved and the confirmation
+  measures adverse forwarding compile-to-result elapsed and CPU.
+  [Function binding ownership](results/2026-11-19-function-binding-ownership/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup

@@ -1,0 +1,138 @@
+{
+  "complete": true,
+  "elapsedSeconds": 140.6956465090625,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "archivalOnlyRecovery": {
+    "retiredOnly": [],
+    "alreadyAbsent": [],
+    "freshIdleLease": true,
+    "allHashesPathsOwnershipLinksAndAliasesVerified": true,
+    "canonicalArchiveAndCurrentImagesPreserved": true,
+    "freeBeforeBytes": 268779520,
+    "freeAfterBytes": 268738560
+  },
+  "rows": [
+    {
+      "case": "scripts.report-forwarding.expanded",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 2.1491972290748897,
+        "candidate-control": 2.1332295304347824,
+        "reference": 2.2109946561085976,
+        "candidate": 2.1750719469026545
+      },
+      "cpuMilliseconds": {
+        "reference-control": 2.2026431718061676,
+        "candidate-control": 2.217391304347826,
+        "reference": 2.2624434389140275,
+        "candidate": 2.2566371681415927
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.21575538753921022,
+        "candidate-control": 0.6375153270365278,
+        "reference": 1.2578497588580329,
+        "candidate": 1.1918415637395512
+      },
+      "elapsedChangePercent": [
+        -3.5172009782548974,
+        -1.6247307114331977,
+        -0.7429610658385544,
+        1.2039247714320966
+      ],
+      "cpuChangePercent": [
+        -1.991304347826106,
+        -0.25663716814162685,
+        0.6695652173912992,
+        2.451327433628303
+      ],
+      "referenceSpreadPercent": 2.87537254365009,
+      "candidateSpreadPercent": 1.961458711821984
+    },
+    {
+      "case": "scripts.report-forwarding.expanded",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "reference-control": 2.2604696093023255,
+        "candidate-control": 2.3316159423076925,
+        "reference": 2.2432529209302325,
+        "candidate": 2.321273587677725
+      },
+      "cpuMilliseconds": {
+        "reference-control": 2.372093023255814,
+        "candidate-control": 2.403846153846154,
+        "reference": 2.3255813953488373,
+        "candidate": 2.4170616113744074
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.014335773974571017,
+        "candidate-control": 0.4013568783663365,
+        "reference": 0.24447491615884506,
+        "candidate": 0.28745843307251834
+      },
+      "elapsedChangePercent": [
+        2.689882585688297,
+        3.1474138255424666,
+        3.478014717802691,
+        3.9390574532637945
+      ],
+      "cpuChangePercent": [
+        1.338612368024128,
+        1.8957345971563733,
+        3.3653846153846256,
+        3.9336492890995167
+      ],
+      "referenceSpreadPercent": 0.7674876163742406,
+      "candidateSpreadPercent": 0.4455465605118336
+    },
+    {
+      "case": "scripts.annotated-rule-closures",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "candidate": 2.3965160140845074,
+        "reference": 2.408167132701422,
+        "candidate-control": 2.372453480769231,
+        "reference-control": 2.465167024038461
+      },
+      "cpuMilliseconds": {
+        "candidate": 2.3943661971830985,
+        "reference": 2.3696682464454977,
+        "candidate-control": 2.355769230769231,
+        "reference-control": 2.5
+      },
+      "elapsedIQRPercent": {
+        "candidate": 4.578846854231639,
+        "reference": 5.48095116250975,
+        "candidate-control": 3.7875833846494813,
+        "reference-control": 0.5512797394105418
+      },
+      "elapsedChangePercent": [
+        -3.7609436750190683,
+        -2.78484213379947,
+        -1.4830221477247996,
+        -0.4838168604952564
+      ],
+      "cpuChangePercent": [
+        -5.769230769230771,
+        -4.225352112676061,
+        -0.586538461538455,
+        1.0422535211267459
+      ],
+      "referenceSpreadPercent": 2.3669408390728286,
+      "candidateSpreadPercent": 1.014246791784279
+    }
+  ],
+  "retentionDecisionPending": false,
+  "CPythonRefreshed": false,
+  "referenceRuntime": "6ce82ba48",
+  "measuredPrototype": "4499c67ba6441c3134024efc57aebd32ae545797",
+  "cores": {
+    "reference": "589d6b7b37ea59a3fde7b01d325970b6a95d0a4f6d0311ad73e5901160d168cb",
+    "reference-control": "589d6b7b37ea59a3fde7b01d325970b6a95d0a4f6d0311ad73e5901160d168cb",
+    "candidate": "ca63ac385fc4aa62717061d9e74bf784fe2dd5867575840874e40a34a8d09fc5",
+    "candidate-control": "ca63ac385fc4aa62717061d9e74bf784fe2dd5867575840874e40a34a8d09fc5"
+  },
+  "archiveSHA256": "cc10b5437d05a64d84dc33ba0902d5fbe3dcb38259fede8e76ba67eb622df1c6",
+  "retained": false,
+  "reason": "Stable adverse forwarding compile-to-result elapsed and CPU in B1024"
+}
