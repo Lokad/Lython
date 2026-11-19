@@ -189,40 +189,46 @@ internal sealed partial class LythonRuntime
 
         internal static IReadOnlyDictionary<PyString, int> CopyNamedGroups(ILythonRegexPattern pattern, int captureSlotCount,
             MemoryGovernor? governor, CancellationToken token, LythonSourceSpan? span, PyString? sourcePattern = null)
-        {
-            var entries = ProviderCall(() => pattern.NamedGroups, governor, token, span, sourcePattern);
-            var bytes = checked(64L + 96L * entries.Count);
-            using var storage = governor?.ReserveTemporary(bytes, span);
-            var names = new Dictionary<PyString, int>(entries.Count);
-            var previous = 0;
-            for (var i = 0; i < entries.Count; i++)
+            => ProviderCall<IReadOnlyDictionary<PyString, int>>(() =>
             {
-                if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
+                var entries = pattern.NamedGroups;
+                var count = entries?.Count ?? -1;
                 governor?.ThrowIfAdmissionFailed();
-                var entry = entries[i];
                 if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
-                if (entry.Index <= previous || entry.Index >= captureSlotCount || entry.Name.IsEmpty)
+                if ((uint)count >= (uint)captureSlotCount)
                     throw RuntimeErrors.Runtime("Regex provider returned inconsistent named-group metadata.", span);
-                var input = entry.Name.Span;
-                for (int offset = 0, scalar = 0; offset < input.Length; scalar++)
+
+                var bytes = checked(64L + 96L * count);
+                using var storage = governor?.ReserveTemporary(bytes, span);
+                var names = new Dictionary<PyString, int>(count);
+                var previous = 0;
+                for (var i = 0; i < count; i++)
                 {
-                    if ((scalar & 1023) == 0 && token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
-                    if (Rune.DecodeFromUtf8(input[offset..], out _, out var width) != System.Buffers.OperationStatus.Done)
-                        throw RuntimeErrors.Runtime("Regex provider returned invalid UTF-8 group names.", span);
-                    offset += width;
+                    if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
+                    var entry = entries![i];
+                    governor?.ThrowIfAdmissionFailed();
+                    if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
+                    if (entry.Index <= previous || entry.Index >= captureSlotCount || entry.Name.IsEmpty)
+                        throw RuntimeErrors.Runtime("Regex provider returned inconsistent named-group metadata.", span);
+                    var input = entry.Name.Span;
+                    for (int offset = 0, scalar = 0; offset < input.Length; scalar++)
+                    {
+                        if ((scalar & 1023) == 0 && token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
+                        if (Rune.DecodeFromUtf8(input[offset..], out _, out var width) != System.Buffers.OperationStatus.Done)
+                            throw RuntimeErrors.Runtime("Regex provider returned invalid UTF-8 group names.", span);
+                        offset += width;
+                    }
+                    // Group names are borrowed from the provider until the handle closes.
+                    var name = governor is null ? PyString.FromUtf8(entry.Name.ToArray())
+                        : PyString.CopyFromUtf8(entry.Name.Span, governor, span);
+                    if (!names.TryAdd(name, entry.Index))
+                        throw RuntimeErrors.Runtime("Regex provider returned duplicate group names.", span);
+                    previous = entry.Index;
                 }
-                // Metadata is borrowed. Copy before its pattern handle can close;
-                // a full-array view is not permission to adopt provider storage.
-                var name = governor is null ? PyString.FromUtf8(entry.Name.ToArray())
-                    : PyString.CopyFromUtf8(entry.Name.Span, governor, span);
-                if (!names.TryAdd(name, entry.Index))
-                    throw RuntimeErrors.Runtime("Regex provider returned duplicate group names.", span);
-                previous = entry.Index;
-            }
-            if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
-            storage?.Commit(bytes);
-            return names;
-        }
+                if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
+                storage?.Commit(bytes);
+                return names;
+            }, governor, token, span, sourcePattern);
 
         internal static RePatternObject CreatePattern(object[] arguments, string signature, LythonSourceSpan span, ExecutionContext context)
         {

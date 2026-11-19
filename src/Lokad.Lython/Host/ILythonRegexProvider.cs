@@ -53,7 +53,10 @@ public interface ILythonRegexPattern : IDisposable
     int CaptureSlotCount { get; }
 
     /// <summary>Gets immutable UTF-8 Python group names in ascending capture-slot order.</summary>
-    /// <remarks>Names are unique valid UTF-8 identifiers, borrowed for this handle's lifetime.</remarks>
+    /// <remarks>
+    /// Names are unique valid UTF-8 identifiers, borrowed for this handle's lifetime.
+    /// The list has at most <see cref="CaptureSlotCount"/> minus one entry.
+    /// </remarks>
     IReadOnlyList<LythonRegexNamedGroup> NamedGroups { get; }
 
     /// <summary>Prepares an original UTF-8 subject with Python scalar pos/endpos bounds.</summary>

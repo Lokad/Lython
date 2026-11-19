@@ -8,6 +8,8 @@
   has no keyword-bindable parameters.
 - Route regex effective flags through provider error handling so a failed
   metadata read closes the pattern and reports the provider's failure.
+- Check borrowed regex group-list sizes before admitting their dictionaries.
+  Report faults during list access through the provider boundary.
 - Record named-function generator classification during yield validation
   so lowering can use it without scanning function bodies again.
 - Bind generator arguments directly into the suspended frame's admitted

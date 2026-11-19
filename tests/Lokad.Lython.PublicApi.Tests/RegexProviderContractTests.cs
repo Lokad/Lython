@@ -435,6 +435,55 @@ public sealed class RegexProviderContractTests
     }
 
     [Theory]
+    [InlineData(true, "inconsistent named-group metadata")]
+    [InlineData(false, "Host regex provider failed")]
+    public async Task BorrowedGroupListFailuresCloseThePattern(bool oversized, string message)
+    {
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        var entries = new FaultingGroupList(oversized ? int.MaxValue : 1);
+        using var provider = new CooperatingProvider { CaptureSlots = 2, GroupListOverride = entries };
+        var engine = new LythonEngine(provider);
+        var error = Assert.ThrowsAny<Exception>(() => engine.Compile("import re\np=re.compile('x')", budget));
+        Assert.Contains(message, error.Message);
+        Assert.Equal(0, budget.ReservedBytes);
+
+        using (var script = engine.Compile("import re\np=re.compile(pattern)\nprint('after')", budget))
+        {
+            Assert.True(script.IsValid);
+            var baseline = budget.ReservedBytes;
+            foreach (var asynchronous in new[] { false, true })
+            {
+                using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), Options(default))
+                    : script.Run(new MockLythonHost(), Options(default)))
+                {
+                    Assert.False(result.Success);
+                    Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
+                    Assert.Contains(message, result.Failure?.Message);
+                    Assert.Empty(result.StandardOutput);
+                }
+                Assert.Equal(baseline, budget.ReservedBytes);
+            }
+        }
+
+        Assert.Equal(provider.Compilations, provider.ClosedPatterns);
+        Assert.Equal(provider.Compilations, entries.CountReads);
+        Assert.Equal(oversized ? 0 : entries.CountReads, entries.IndexReads);
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    private sealed class FaultingGroupList(int count) : IReadOnlyList<LythonRegexNamedGroup>
+    {
+        internal int CountReads, IndexReads;
+        public int Count { get { CountReads++; return count; } }
+        public LythonRegexNamedGroup this[int index]
+        {
+            get { IndexReads++; throw new InvalidOperationException("Group list index unavailable."); }
+        }
+        public IEnumerator<LythonRegexNamedGroup> GetEnumerator() => throw new NotSupportedException();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+
+    [Theory]
     [InlineData(1, 2)]
     [InlineData(0, 99)]
     [InlineData(2, 1)]
@@ -1281,6 +1330,7 @@ public sealed class RegexProviderContractTests
         internal int CaptureSlots = 1;
         internal int AdditionalEffectiveFlags;
         internal IReadOnlyList<LythonRegexNamedGroup> GroupNames = [];
+        internal IReadOnlyList<LythonRegexNamedGroup>? GroupListOverride;
         internal Action<ReadOnlyMemory<byte>, LythonRegexWindow>? OnPrepare;
         internal Func<ReadOnlyMemory<byte>, LythonRegexWindow, FixtureMatch?>? MatchFactory;
         internal LythonRegexCapture[]? CursorMatches;
@@ -1345,7 +1395,7 @@ public sealed class RegexProviderContractTests
             public int CaptureSlotCount => slots;
             public IReadOnlyList<LythonRegexNamedGroup> NamedGroups
             {
-                get { ObjectDisposedException.ThrowIf(_disposed, this); provider.OnMetadata?.Invoke(); return _names; }
+                get { ObjectDisposedException.ThrowIf(_disposed, this); provider.OnMetadata?.Invoke(); return provider.GroupListOverride ?? _names; }
             }
             public ILythonRegexSubject Prepare(ReadOnlyMemory<byte> input, LythonRegexWindow window, ILythonMemoryBudget owner, CancellationToken token)
             {
