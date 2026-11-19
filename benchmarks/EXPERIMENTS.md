@@ -307,6 +307,10 @@ original conditions retained. Current comparisons belong in
   rules run faster warm. Rule allocation falls and the accounted default
   tuple peak rises. Computed defaults show a moving same-source warm control
   and adverse `RunAsync` timing. [Positional defaults](results/2026-11-19-positional-default-slots/README.md).
+- B1100 repeats the ordinary-rule improvement with close controls. The
+  original async slowdown does not recur across all pairs. Computed, captured
+  and constant-default timing still varies by process.
+  [Confirmation](results/2026-11-19-positional-default-slots/confirmation/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup

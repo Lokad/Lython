@@ -39,8 +39,9 @@ Computed-default async elapsed and CPU are consistently adverse in this run,
 with up to 8.01% batch IQR. Captured rules are a control for the default path
 and also exercise the shared tuple builder. The comparisons cannot apportion
 their change between the builder, default borrowing and process variance.
-Keep the change private while confirming the computed case and the main controls
-with longer warmup and reordered workers.
+The [longer-warmup confirmation](confirmation/README.md) repeats the
+ordinary-rule improvement. The computed and reused-default controls remain
+mixed. The original candidate stays private while its lookup refinement is tested.
 
 The collection completed 160 verified batches in 364.16 seconds. Both quiet
 gates, worker joins, fixture removal and archive verification passed. The
