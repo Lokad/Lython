@@ -8,14 +8,14 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class ExecutionContext
     {
-        private enum InstructionPause { Continue, Boundary, Call, Operation, Disposal, ContextRequired }
+        private enum InstructionPause { Continue, Boundary, UnpackedReturn, Call, Operation, Disposal, ContextRequired }
 
         // Both APIs execute completed instructions here, outside an async state
         // machine. An incomplete operation leaves its instruction/span current.
         // The async driver owns the pending value and all disposal until resume.
         private static InstructionPause ExecuteInstructionPrefix(ref ExecutableWorkState execution, ExecutionContext scope,
             ExecutionContext? invocation, bool asynchronous, out ValueTask<bool> pending, out LythonSourceSpan? pendingSpan,
-            out ValueTask<ExecutionContext?> nextCall)
+            out ValueTask<ExecutionContext?> nextCall, Span<ExecutableSlot> unpackedReturn = default)
         {
             pending = default;
             pendingSpan = default;
@@ -187,6 +187,12 @@ internal sealed partial class LythonRuntime
                         case ExecutableOpCode.MakeTuple:
                             if (invocation is not null && invocation.TryStageUnpackedFrameReturn(instruction))
                                 return InstructionPause.Boundary;
+                            if (!unpackedReturn.IsEmpty &&
+                                CanForwardFixedReturn(in execution, instruction, unpackedReturn.Length))
+                            {
+                                CopyFixedReturn(ref execution, scope, instruction, unpackedReturn);
+                                return InstructionPause.UnpackedReturn;
+                            }
                             PublishInstructionResult(ref execution, invocation, instruction,
                                 CreateTupleFromStack(ref execution.Stack, instruction.InputStart, instruction.ItemCount, instruction.Span, scope));
                             break;
@@ -260,7 +266,15 @@ internal sealed partial class LythonRuntime
                                 pendingSpan = call.CallSpan;
                                 return InstructionPause.Call;
                             }
-                            if (invocation is null) return InstructionPause.ContextRequired;
+                            if (invocation is null)
+                            {
+                                if (!TryExecuteDeferredChild(ref execution, scope, call, callStart, target, out var child))
+                                    return InstructionPause.ContextRequired;
+                                if (child is null) break;
+                                nextCall = new(child);
+                                pendingSpan = call.CallSpan;
+                                return InstructionPause.Call;
+                            }
                             if (invocation!.TryBeginExecutableCall(call, callStart, target, asynchronous, out nextCall))
                             {
                                 if (!nextCall.IsCompletedSuccessfully || !ReferenceEquals(nextCall.Result, invocation))

@@ -923,6 +923,10 @@ cells in the admitted work state. The compiled parent slot map supplies both
 local and inherited cells. A factory that needs its context transfers that work
 at the current instruction. Lexical class cells, implicit `super`, protected
 bodies and captures of a live namespace use their owning context.
+Fully supplied positional calls to eligible slot-only leaf functions can
+complete inside a borrowed factory. The leaf has no explicit calls of its
+own. An instruction that needs a context transfers the pending child into
+the ordinary chain at that instruction, before starting suspendable work.
 Lowered calls and callbacks retain their general entry. Type subscription uses
 that chain for executable `__class_getitem__` methods and raw descriptor `__get__`
 methods, followed by the getter's callable result. Each invocation owns its
@@ -941,9 +945,10 @@ Exposed bound methods and operations invoking guest protocols keep their general
 binding and continuation semantics. Receiver and argument evaluation order stays
 the same, including rebinding and admission callbacks.
 An exact tuple returned immediately to a fixed unpack can transfer its elements
-into the caller's admitted operand slots. Native helpers and eligible executable
-frames share the tuple shape check and conservative admission. An eligible frame
-can stage elements after resuming from host I/O. Publication waits for child
+into the caller's admitted operand slots. Native helpers, borrowed functions
+and eligible executable frames share the tuple shape check and conservative
+admission. An eligible frame can stage elements after resuming from host I/O.
+Publication waits for child
 cleanup, and preserves element aliases and assignment order. Protected framed
 returns, escaping tuples, starred targets and mismatched counts keep ordinary
 tuple construction.

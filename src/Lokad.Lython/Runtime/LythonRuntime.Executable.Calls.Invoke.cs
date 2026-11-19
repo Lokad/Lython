@@ -53,7 +53,7 @@ internal sealed partial class LythonRuntime
                         }
                         catch
                         {
-                            AbortPreparedNativeCall(frame, function.DefinitionContext.MemoryGovernor);
+                            AbortPreparedCall(frame, function.DefinitionContext.MemoryGovernor);
                             throw;
                         }
                         started = frame;
@@ -184,20 +184,20 @@ internal sealed partial class LythonRuntime
             execution.InstructionIndex++;
         }
 
-        internal static void AbortPreparedNativeCall(ExecutionContext frame, MemoryGovernor storageOwner)
+        internal static void AbortPreparedCall(ExecutionContext frame, MemoryGovernor storageOwner)
         {
             try
             {
-                if (frame.TakePreparedNativeChild() is { } child)
+                if (frame.TakePreparedChild() is { } child)
                 {
-                    try { AbortPreparedNativeCall(child, child._boundStorageOwner!); }
+                    try { AbortPreparedCall(child, child._boundStorageOwner!); }
                     finally { frame.LeaveInterpreterFrame(); }
                 }
             }
-            finally { AbortPreparedNativeFrame(frame, storageOwner); }
+            finally { AbortPreparedFrame(frame, storageOwner); }
         }
 
-        private static void AbortPreparedNativeFrame(ExecutionContext frame, MemoryGovernor storageOwner)
+        private static void AbortPreparedFrame(ExecutionContext frame, MemoryGovernor storageOwner)
         {
             try
             {

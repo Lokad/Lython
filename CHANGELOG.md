@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Keep eligible nested lexical calls on admitted slots until a caller needs
+  its context. Share fixed tuple-return slots with the ordinary frame path
+  and transfer pending work at its current instruction.
+
 - Report invalid regex-provider capture counts during frontend or runtime
   pattern creation. Close the handle before starting any matching work.
   Validate constant match results with the runtime's capture and window rules

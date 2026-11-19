@@ -48,6 +48,19 @@ public sealed class HelperLocalLifetimeTests
             assert check(20) == (24, 18, 21)
             print('ok')
             """];
+        yield return ["""
+            def factory(shared):
+                def child():
+                    saved = shared
+                    return lambda: saved
+                return child(), shared
+            obj = []
+            read, alias = factory(obj)
+            assert read() is obj and alias is obj
+            result = factory(obj)
+            assert type(result) is tuple and result[0]() is result[1]
+            print('ok')
+            """];
     }
 
     [Theory]
@@ -70,5 +83,63 @@ public sealed class HelperLocalLifetimeTests
             }
         }
         Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task NestedLexicalChildPromotesOnceAcrossHostSuspension(bool cancel)
+    {
+        const string source = """
+            class Source:
+                def __getitem__(self, index):
+                    with open('effects.txt', 'a') as output:
+                        output.write('write')
+                    return index
+            def factory(source):
+                count = 0
+                def child():
+                    nonlocal count
+                    count += 1
+                    return source[7]
+                return child(), lambda: count
+            value, read = factory(Source())
+            print(value, read())
+            """;
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        var host = new DelayedLythonHost();
+        host.SeedFile("/effects.txt", "before");
+        var blockedWrite = cancel ? host.PauseWriteUntilCancellation("/effects.txt") : null;
+        using var cancellation = new CancellationTokenSource();
+        var pending = script.RunAsync(host, cancellationToken: cancellation.Token);
+        try
+        {
+            if (blockedWrite is not null)
+            {
+                var first = await Task.WhenAny(blockedWrite, pending).WaitAsync(TimeSpan.FromSeconds(10));
+                if (ReferenceEquals(first, pending))
+                {
+                    using var early = await pending;
+                    Assert.Fail(early.Failure?.Message ?? "The child completed before the host write suspended.");
+                }
+                Assert.True(budget.ReservedBytes > baseline);
+                cancellation.Cancel();
+            }
+
+            using var result = await pending.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.Equal(!cancel, result.Success);
+            Assert.Equal(cancel ? "" : "7 1\n", result.StandardOutput);
+            Assert.Equal(cancel ? "before" : "beforewrite", host.ReadText("/effects.txt"));
+            if (!cancel) Assert.True(host.CompletedAsynchronously > 0);
+        }
+        finally
+        {
+            cancellation.Cancel();
+            using var drained = await pending.WaitAsync(TimeSpan.FromSeconds(10));
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
     }
 }

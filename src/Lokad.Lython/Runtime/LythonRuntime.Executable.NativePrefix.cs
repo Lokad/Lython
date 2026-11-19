@@ -535,7 +535,7 @@ internal sealed partial class LythonRuntime
             if (_preparedChild is { } child)
             {
                 var call = Code.CallSites[Code.Instructions[Index].CallSiteIndex];
-                frame.AdoptPreparedNativeChild(child, call, Code.Instructions[Index].InputStart, _preparedChildOwner!);
+                frame.AdoptPreparedChild(child, call, Code.Instructions[Index].InputStart, _preparedChildOwner!);
                 _preparedChild = null;
                 _preparedChildOwner = null;
             }
@@ -549,7 +549,7 @@ internal sealed partial class LythonRuntime
                 if (_preparedChild is { } child)
                 {
                     _preparedChild = null;
-                    try { ExecutionContext.AbortPreparedNativeCall(child, _preparedChildOwner!); }
+                    try { ExecutionContext.AbortPreparedCall(child, _preparedChildOwner!); }
                     finally { _scope.LeaveInterpreterFrame(); }
                 }
             }
