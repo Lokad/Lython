@@ -8,7 +8,6 @@ namespace Lokad.Lython.Frontend;
 internal sealed class CompiledRegexPrograms(MemoryGovernor? governor) : IDisposable
 {
     private ILythonMemoryScope? _owner;
-    private List<ILythonRegexPattern>? _handles;
     private Dictionary<(PyString Pattern, LythonRegexOptions Options), ILythonRegexPattern>? _entries;
 
     internal bool HasPrograms => _entries is { Count: > 0 };
@@ -23,8 +22,6 @@ internal sealed class CompiledRegexPrograms(MemoryGovernor? governor) : IDisposa
                     LythonFailureReason.SharedMemoryAllowance, requested: bytes);
     }
 
-    internal void Own(ILythonRegexPattern program) => (_handles ??= new()).Add(program);
-
     internal void Add(byte[] encoded, LythonRegexOptions options, ILythonRegexPattern program,
         CancellationToken token, LythonSourceSpan span)
     {
@@ -32,7 +29,9 @@ internal sealed class CompiledRegexPrograms(MemoryGovernor? governor) : IDisposa
         // Borrow the same encoded input instead of decoding runtime lookup keys.
         var key = PyString.FromOwnedUtf8(encoded);
         _ = key.GetHashCode(token, span);
-        (_entries ??= new())[(key, options)] = program;
+        // Once published, the lookup owns the handle. It must never replace
+        // a program that a compiler fact may still borrow.
+        (_entries ??= new()).Add((key, options), program);
     }
 
     internal bool TryGet(PyString pattern, LythonRegexOptions options, out ILythonRegexPattern? entry)
@@ -44,13 +43,12 @@ internal sealed class CompiledRegexPrograms(MemoryGovernor? governor) : IDisposa
 
     public void Dispose()
     {
-        var handles = _handles;
-        _handles = null;
+        var entries = _entries;
         _entries = null;
         try
         {
-            if (handles is not null)
-                foreach (var program in handles) program.Dispose();
+            if (entries is not null)
+                foreach (var program in entries.Values) program.Dispose();
         }
         finally { _owner?.Dispose(); _owner = null; }
     }

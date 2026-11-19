@@ -221,6 +221,40 @@ public sealed class RegexProviderContractTests
     }
 
     [Fact]
+    public async Task CompiledProgramsReuseEqualPatternsAndOwnDistinctOptionsUntilDisposal()
+    {
+        const string source = """
+            import re
+            exact = re.compile('x')
+            same = re.compile('\x78')
+            folded = re.compile('x', re.I)
+            return exact is same, exact.fullmatch(text) is None, folded.fullmatch(text).group(0)
+            """;
+        using var provider = new CooperatingProvider();
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var script = new LythonEngine(provider).Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
+        Assert.Equal(2, provider.Compilations);
+        var baseline = budget.ReservedBytes;
+        var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["text"] = "X" } };
+        foreach (var asynchronous in new[] { false, true })
+        {
+            using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options)
+                : script.Run(new MockLythonHost(), options))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal(new object?[] { true, true, "X" }, Assert.IsAssignableFrom<IEnumerable<object?>>(result.ReturnValue));
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        Assert.Equal(2, provider.Compilations);
+        Assert.Equal(0, provider.ClosedPatterns);
+        script.Dispose();
+        Assert.Equal(2, provider.ClosedPatterns);
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Fact]
     public async Task ActualAdapterSharesValidatedProgramsAcrossConcurrentRunsAndRetainedResults()
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);

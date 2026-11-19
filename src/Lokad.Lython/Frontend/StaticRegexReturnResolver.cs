@@ -286,12 +286,12 @@ internal static class StaticRegexReturnResolver
                 var captureSlotCount = LythonRuntime.RegexCompiler.ReadCaptureSlotCount(program, governor, token, span);
                 regex = new(program, captureSlotCount,
                     LythonRuntime.RegexCompiler.CopyNamedGroups(program, captureSlotCount, governor, token, span));
-                analysis.OwnRegexPattern(program);
                 analysis.RetainRegexProgram(encoded, new(options, (options & 64) != 0), program, span);
-                // Inputs remain funded until every analysis pattern handle ends.
-                analysis.RegexPatterns[(pattern, options)] = regex;
             }
             catch { program.Dispose(); throw; }
+            // The compiled lookup now owns the program, even if analysis
+            // exits before publishing the new fact.
+            analysis.RegexPatterns[(pattern, options)] = regex;
             return true;
         }
         catch (LythonRuntimeException error) when (error.ExceptionType == "PatternError")

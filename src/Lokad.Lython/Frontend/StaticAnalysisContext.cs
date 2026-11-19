@@ -30,7 +30,6 @@ internal sealed class StaticAnalysisContext : IDisposable
     public IReadOnlyList<LythonDiagnostic> Diagnostics => _diagnostics;
 
     internal List<LythonDiagnostic> DiagnosticList => _diagnostics;
-    internal void OwnRegexPattern(ILythonRegexPattern pattern) => _regexPrograms.Own(pattern);
     internal void RetainRegexProgram(byte[] encoded, LythonRegexOptions options, ILythonRegexPattern program, LythonSourceSpan span)
         => _regexPrograms.Add(encoded, options, program, CancellationToken, span);
 
