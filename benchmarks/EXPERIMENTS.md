@@ -349,6 +349,10 @@ original conditions retained. Current comparisons belong in
   3.52–3.69× CPython warm elapsed, forwarding takes 1.56–1.60×, and retained
   siblings take 0.89–0.90×. Each script compiles faster than CPython.
   [External comparison](results/2026-11-19-retained-factories-cpython/README.md).
+- B1110 profiles ordinary and captured rules and expanded forwarding on
+  the B1109 image. Ordinary-rule admission often comes from definition
+  defaults and retained function construction. Captured rules also show
+  bound-call entry and work-state creation. [Current profile](results/2026-11-19-current-rule-forwarding-profile/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
