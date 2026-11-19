@@ -846,7 +846,10 @@ cell slots use the shared namespace lookup. Unused lowered method bodies are
 discarded. Other real lowered consumers remain.
 
 Executable function bindings retain declaration inputs and prepared code without
-the original function body tree. A definition evaluates its defaults in the
+the original function body tree. The compilation owner funds the function name
+and leading string literal shared by instances of the same declaration. A
+function keeps independent metadata overrides and mutable defaults. Host-facing
+text projections have their own result ownership. A definition evaluates its defaults in the
 defining scope and fills the final Python tuple and keyword dictionary directly.
 Those containers remain distinct per function and reflect later mutation.
 Executable declarations evaluate decorators and defaults in the surrounding

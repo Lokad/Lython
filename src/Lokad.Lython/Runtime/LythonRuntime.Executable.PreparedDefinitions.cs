@@ -120,11 +120,10 @@ internal sealed partial class LythonRuntime
                 var values = defaults?.Values ?? default;
                 using var storage = MemoryGovernor.ReserveTemporary(FunctionValueBytes, span);
                 PyFunctionBase function = binding.IsGenerator
-                    ? new PyGeneratorFunction(binding.DeclaredName, layout, binding.CodeObject, closure, values, binding.CodeObject.ScopeFacts, cells)
-                    : new PyExecutableFunction(binding.DeclaredName, layout, binding.CodeObject, closure, cells, values, binding.CodeObject.ScopeFacts);
+                    ? new PyGeneratorFunction(layout, binding.CodeObject, closure, values, cells)
+                    : new PyExecutableFunction(layout, binding.CodeObject, closure, cells, values);
                 storage.Commit(FunctionValueBytes);
                 ChargeClosureRetention(closure, MemoryGovernor, span);
-                PyFunctionBase.CaptureFunctionDocstring(function, binding.Docstring, this, span);
                 var metadata = ValueTask.CompletedTask;
                 if (binding.Annotations.Length != 0 || binding.TypeParameters is not null || HasTypeParameterScope(this))
                 {

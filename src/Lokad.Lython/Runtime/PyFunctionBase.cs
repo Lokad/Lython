@@ -6,12 +6,9 @@ namespace Lokad.Lython.Runtime;
 
 internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable, IClassOwnedMember, IPyMutableDynamicAttributes, IPyDeletableDynamicAttributes, IPyHashableValue
 {
-    private static readonly PyString LambdaName = PyString.FromString("<lambda>");
-
     private readonly FunctionBindingPlan _bindingPlan;
     private readonly int? _storageCapacity;
     private readonly LythonRuntime.ExecutionContext _closure;
-    private readonly PyString _nameValue;
     // Standard attributes have fixed storage in the funded function wrapper.
     // Explicit overrides shadow the defaults, including a cached qualname.
     private PyString? _qualNameValue;
@@ -22,29 +19,27 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
     private object? _annotations;
     private object? _typeParameters;
     private PyDict? _customAttributes;
-    private readonly ScopeDirectiveFacts _scopeFacts;
 
     protected PyFunctionBase(
-        string name,
+        ExecutableCodeObject codeObject,
         FunctionParameterLayout parameterLayout,
         LythonRuntime.ExecutionContext closure,
         FunctionDefaults defaults,
-        ScopeDirectiveFacts scopeFacts,
         PythonCallableKind callableKind = PythonCallableKind.Function,
         int? storageCapacity = null)
     {
-        Name = name;
+        CodeObject = codeObject;
         _storageCapacity = storageCapacity;
         _closure = closure;
-        _nameValue = callableKind == PythonCallableKind.Lambda
-            ? LambdaName : PyString.FromString(name, closure.MemoryGovernor, null);
-        _bindingPlan = new FunctionBindingPlan(name, callableKind, parameterLayout, defaults);
+        _docstring = codeObject.Docstring;
+        _bindingPlan = new FunctionBindingPlan(codeObject.Name, callableKind, parameterLayout, defaults);
         SupportsPositionalBinding = _bindingPlan.KeywordOnlyCount == 0 &&
             _bindingPlan.VariadicListIndex < 0 && _bindingPlan.VariadicDictionaryIndex < 0;
-        _scopeFacts = scopeFacts;
     }
 
-    public string Name { get; }
+    internal ExecutableCodeObject CodeObject { get; }
+
+    public string Name => CodeObject.Name;
 
     public int GetPyHashCode() => RuntimeHelpers.GetHashCode(this);
 
@@ -121,9 +116,6 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
             throw;
         }
     }
-
-    /// <summary>States whether bound arguments must also be materialized in the frame's name dictionary.</summary>
-    protected abstract bool RequiresArgumentMirroring { get; }
 
     public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         => InvokeBorrowed(arguments, span, context);
@@ -240,7 +232,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         if (name == "__dict__") { value = _customAttributes ??= new PyDict(_closure.MemoryGovernor); return true; }
         value = name switch
         {
-            "__name__" => _assignedName ?? _nameValue,
+            "__name__" => _assignedName ?? CodeObject.FunctionName.RequireNotNull(),
             "__qualname__" => _assignedQualName ?? QualName(),
             "__module__" => _assignedModule ?? (TryGetModuleName(out var moduleName) ? moduleName : (object)PyNone.Instance),
             "__doc__" => _docstring ?? PyNone.Instance,
@@ -272,7 +264,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
                 : null;
         if (text is null)
         {
-            return _nameValue;
+            return CodeObject.FunctionName.RequireNotNull();
         }
         return _qualNameValue = PyString.FromString(text, _closure.MemoryGovernor, null);
     }
@@ -296,36 +288,6 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
 
         moduleName = null;
         return false;
-    }
-
-    // Docstrings are the leading string constant of the lowered body, stored as
-    // governed metadata so reads report the text like CPython; absent stays None.
-    // Only plain string literals count (f-strings and bytes do not document).
-    internal static string? LeadingDocstring(IReadOnlyList<LoweredStatement> body)
-    {
-        if (body.Count == 0 ||
-            body[0] is not LoweredExpressionStatement { Expression: LoweredStringLiteralExpression doc })
-        {
-            return null;
-        }
-
-        return doc.Literal.Value;
-    }
-
-    // Capture metadata under the execution owner before the function escapes.
-    internal static void CaptureFunctionDocstring(
-        PyFunctionBase function,
-        string? text,
-        LythonRuntime.ExecutionContext context,
-        LythonSourceSpan span)
-    {
-        if (text is null)
-        {
-            return;
-        }
-
-        var doc = PyString.FromString(text, context.MemoryGovernor, span);
-        function.TrySetMember("__doc__", doc);
     }
 
     public bool TrySetMember(string name, object value)
@@ -415,10 +377,10 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         bool enterFunctionCall = true)
         => PyFunctionBinding.EnterInvocationFrame(
             _closure,
-            _scopeFacts,
+            CodeObject.ScopeFacts,
             _bindingPlan,
             boundArguments,
-            RequiresArgumentMirroring,
+            CodeObject.RequiresLocalVariableMirroring,
             OwnerType,
             span,
             enterFunctionCall);

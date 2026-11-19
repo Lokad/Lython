@@ -41,6 +41,74 @@ public sealed class FunctionDocstringLifetimeTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task RepeatedDefinitionsShareTextAndKeepOverridesIndependent(bool imported)
+    {
+        const string definitions = """
+            def build():
+                def café():
+                    "unicode documentation: café 😀"
+                    return 7
+                return café
+
+            def prepare():
+                class Container:
+                    "container documentation: café 😀"
+                    def read(self):
+                        "method documentation: café 😀"
+                        yield 11
+                return Container
+            """;
+        const string checks = """
+            a, b = build(), build()
+            assert a.__name__ is b.__name__
+            assert a.__doc__ is b.__doc__
+            a.__name__ = 'changed'
+            del a.__doc__
+            assert a.__name__ == 'changed' and a.__doc__ is None
+            assert b.__name__ == 'café' and b.__doc__ == 'unicode documentation: café 😀'
+
+            a, b = prepare(), prepare()
+            assert a.__doc__ is b.__doc__
+            assert a.read.__name__ is b.read.__name__
+            assert a.read.__doc__ is b.read.__doc__
+            assert next(b().read()) == 11
+            a.__doc__ = 'changed'
+            a.read.__doc__ = None
+            assert b.__doc__ == 'container documentation: café 😀'
+            return b.read.__doc__
+            """;
+        static string WithLf(string text) => text.Replace("\r\n", "\n", StringComparison.Ordinal);
+        var source = (imported ? "from metadata import build, prepare" : WithLf(definitions)) + "\n" + WithLf(checks);
+        var compilationBudget = new LythonMemoryBudget(1024 * 1024);
+        var executionBudget = new LythonMemoryBudget(1024 * 1024);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, compilationBudget);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
+        var compilationBytes = compilationBudget.ReservedBytes;
+        foreach (var asynchronous in new[] { false, true })
+        {
+            var host = new MockLythonHost();
+            if (imported) host.SeedFile("/metadata.py", WithLf(definitions));
+            var options = new LythonRunOptions
+            {
+                MemoryBudget = executionBudget,
+                AllowedLocalModules = new HashSet<string>(StringComparer.Ordinal) { "metadata" }
+            };
+            using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal("method documentation: café 😀", result.ReturnValue);
+                Assert.True(executionBudget.ReservedBytes > 0);
+                Assert.Equal(compilationBytes, compilationBudget.ReservedBytes);
+            }
+            Assert.Equal(0, executionBudget.ReservedBytes);
+        }
+        script.Dispose();
+        Assert.Equal(0, compilationBudget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task DocstringOwnersSurviveHostIoAndRetainedResults(bool cancel)
     {
         var document = string.Concat(Enumerable.Repeat("café😀", 1024));

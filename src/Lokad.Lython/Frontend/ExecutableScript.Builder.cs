@@ -1,4 +1,5 @@
 using Lokad.Lython.Runtime;
+using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Frontend;
 
@@ -60,6 +61,7 @@ internal sealed partial class ExecutableScript
 
     private sealed partial class Builder
     {
+        private static readonly PyString LambdaName = PyString.FromString("<lambda>");
         private static readonly LythonSourceSpan EmptySpan = new(0, 0, 0, 0);
 
         private readonly List<object?> _constants = [];
@@ -174,6 +176,10 @@ internal sealed partial class ExecutableScript
                 _constants.OfType<ExecutableCreateGeneratorExpression>().Any(generator => generator.CodeObject.RequiresLocalVariableMirroring);
             var capturedLocalSlots = CollectCapturedLocalSlots();
 
+            // The existing compilation owner funds the immutable function metadata.
+            // A function and its body can share the same leading string literal.
+            var callable = _parameterLayout is not null && generatorExpression is null;
+
             // This builder is single-use; its completed slot maps become code metadata.
             var code = new ExecutableCodeObject(
                 name,
@@ -195,7 +201,9 @@ internal sealed partial class ExecutableScript
                 _statementFallbacks.ToArray(),
                 requiresLocalVariableMirroring,
                 isFunctionScope: _parameterLayout is not null,
-                initialOperandDepth: generatorExpression is null ? 0 : 1);
+                initialOperandDepth: generatorExpression is null ? 0 : 1,
+                functionName: callable ? name == "<lambda>" ? LambdaName : PyString.FromString(name) : null,
+                docstring: callable ? LoweredStatement.LeadingDocstring(statements) : null);
             _moduleCode?.Add(code);
             return code;
 

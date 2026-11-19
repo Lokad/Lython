@@ -829,7 +829,7 @@ public sealed class SimpleFunctionExecutionBoundaryTests
         var code = binding.CodeObject.RequireNotNull();
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options,regexProvider:Utf8RegexProvider.Instance);
         var closure = LythonRuntime.ExecutionContext.CreateModule(context, "/callee.py", "callee");
-        var function = new PyExecutableFunction("f", binding.ParameterLayout, code, closure, [], default, code.ScopeFacts);
+        var function = new PyExecutableFunction(binding.ParameterLayout, code, closure, [], default);
         return (function, context, code);
     }
 }

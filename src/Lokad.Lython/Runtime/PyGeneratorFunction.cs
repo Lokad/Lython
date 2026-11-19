@@ -4,24 +4,20 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed class PyGeneratorFunction : PyFunctionBase
 {
-    private readonly ExecutableCodeObject _code;
     private readonly IReadOnlyList<LythonRuntime.ExecutableCell>? _closureCells;
 
-    public PyGeneratorFunction(string name, FunctionParameterLayout parameterLayout,
+    public PyGeneratorFunction(FunctionParameterLayout parameterLayout,
         ExecutableCodeObject code, LythonRuntime.ExecutionContext closure,
-        FunctionDefaults defaults, ScopeDirectiveFacts scopeFacts,
+        FunctionDefaults defaults,
         IReadOnlyList<LythonRuntime.ExecutableCell>? closureCells = null,
         PythonCallableKind callableKind = PythonCallableKind.Function)
-        : base(name, parameterLayout, closure, defaults, scopeFacts, callableKind)
+        : base(code, parameterLayout, closure, defaults, callableKind)
     {
-        _code = code;
         _closureCells = closureCells;
     }
 
-    protected override bool RequiresArgumentMirroring => _code.RequiresLocalVariableMirroring;
-
     protected override object ExecuteBody(LythonRuntime.ExecutionContext frame, BoundFunctionArguments arguments, LythonSourceSpan span)
-        => LythonRuntime.PyGenerator.Create(_code, frame, span, _closureCells, arguments);
+        => LythonRuntime.PyGenerator.Create(CodeObject, frame, span, _closureCells, arguments);
 
     protected override ValueTask<object> ExecuteBodyAsync(LythonRuntime.ExecutionContext frame, BoundFunctionArguments arguments, LythonSourceSpan span)
         => new(ExecuteBody(frame, arguments, span));

@@ -390,13 +390,12 @@ internal sealed partial class LythonRuntime
         using var storage = context.MemoryGovernor.ReserveTemporary(FunctionValueBytes, functionDefinition.Span);
         context.CheckExecution(functionDefinition.Span);
         PyFunctionBase function = functionDefinition.Syntax.IsGenerator
-                ? new PyGeneratorFunction(functionDefinition.Syntax.DeclaredName, functionDefinition.ParameterLayout,
-                    code, context.FunctionClosureContext, defaults, code.ScopeFacts, cells)
-                : new PyExecutableFunction(functionDefinition.Syntax.DeclaredName, functionDefinition.ParameterLayout,
-                    code, context.FunctionClosureContext, cells, defaults, code.ScopeFacts);
+                ? new PyGeneratorFunction(functionDefinition.ParameterLayout,
+                    code, context.FunctionClosureContext, defaults, cells)
+                : new PyExecutableFunction(functionDefinition.ParameterLayout,
+                    code, context.FunctionClosureContext, cells, defaults);
         storage.Commit(FunctionValueBytes);
         ChargeClosureRetention(context.FunctionClosureContext, context.MemoryGovernor, functionDefinition.Span);
-        PyFunctionBase.CaptureFunctionDocstring(function, functionDefinition.Docstring, context, functionDefinition.Span);
         return function;
     }
 
@@ -543,17 +542,17 @@ internal sealed partial class LythonRuntime
                 annotations, total, definingContext, classDefinition.Span);
             if (members.TryGetValue("__module__", out var module)) typed.ModuleName = module;
             if (members.TryGetValue("__doc__", out var doc)) typed.Docstring = doc;
-            else if (PyFunctionBase.LeadingDocstring(classDefinition.Body) is { } text)
-                typed.Docstring = PyString.FromString(text, definingContext.MemoryGovernor, classDefinition.Span);
+            else if (LoweredStatement.LeadingDocstring(classDefinition.Body) is { } docstring)
+                typed.Docstring = docstring;
             return typed;
         }
 
         // Class docstrings follow the function rule; an explicit __doc__ assignment
         // in the body wins since it already ran. The entry rides the member charge.
-        if (PyFunctionBase.LeadingDocstring(classDefinition.Body) is { } docText &&
+        if (LoweredStatement.LeadingDocstring(classDefinition.Body) is { } classDocstring &&
             !classContext.Variables.ContainsKey("__doc__"))
         {
-            classContext.Variables["__doc__"] = PyString.FromString(docText, definingContext.MemoryGovernor, classDefinition.Span);
+            classContext.Variables["__doc__"] = classDocstring;
         }
         classContext.Variables.TryAdd("__doc__", PyNone.Instance);
 
@@ -755,10 +754,10 @@ internal sealed partial class LythonRuntime
         using var storage = context.MemoryGovernor.ReserveTemporary(FunctionValueBytes, lambda.Span);
         context.CheckExecution(lambda.Span);
         PyFunctionBase function = lambda.IsGenerator
-            ? new PyGeneratorFunction("<lambda>", lambda.ParameterLayout, code, context.FunctionClosureContext,
-                defaults, lambda.ScopeFacts, cells, PythonCallableKind.Lambda)
-            : new PyExecutableFunction("<lambda>", lambda.ParameterLayout, code, context.FunctionClosureContext,
-                cells, defaults, lambda.ScopeFacts, PythonCallableKind.Lambda);
+            ? new PyGeneratorFunction(lambda.ParameterLayout, code, context.FunctionClosureContext,
+                defaults, cells, PythonCallableKind.Lambda)
+            : new PyExecutableFunction(lambda.ParameterLayout, code, context.FunctionClosureContext,
+                cells, defaults, PythonCallableKind.Lambda);
         storage.Commit(FunctionValueBytes);
         ChargeClosureRetention(context.FunctionClosureContext, context.MemoryGovernor, lambda.Span);
         // Module lambdas expose their globals after the executable slots leave.

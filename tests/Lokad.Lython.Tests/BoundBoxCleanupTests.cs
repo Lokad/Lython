@@ -252,13 +252,11 @@ public sealed class BoundBoxCleanupTests
         var definition = Assert.IsType<LoweredFunctionDefinitionStatement>(Assert.Single(
             LoweredScript.Lower(LythonFrontend.Compile("def f(a,b):pass").Script!).Statements));
         var fun = new PyExecutableFunction(
-            "f",
             FunctionParameterLayout.Create(parameters),
             ExecutableScript.CompileClassFunction(definition),
             closure,
             [],
-            default,
-            ScopeDirectiveFacts.Empty);
+            default);
         var box = fun.BindCallOperands([Slot.FromObject(1), Slot.FromObject(2)], Span, closure, receiver: null, callSite: null);
         LythonRuntime.ReturnBoundArguments(box);
 

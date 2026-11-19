@@ -461,14 +461,12 @@ internal sealed record ExecutableCallSite(
 // Execution retains declaration inputs, not the original syntax/body graph.
 internal sealed record ExecutableFunctionBinding(
     string Name,
-    string DeclaredName,
     LythonSourceSpan Span,
     int DecoratorCount,
     LoweredFunctionAnnotation[] Annotations,
     IReadOnlyList<LoweredTypeParameter>? TypeParameters,
     ExecutableCodeObject CodeObject,
-    bool IsGenerator,
-    string? Docstring)
+    bool IsGenerator)
 {
     public required FunctionParameterLayout ParameterLayout { get; init; }
     public int KeywordRecordCache { get; init; } = -1;
@@ -483,6 +481,7 @@ internal sealed record ExecutableMatchCaseBinding(
 
 internal sealed partial class ExecutableCodeObject
 {
+
     public ExecutableCodeObject(
         string name,
         object?[] constants,
@@ -503,9 +502,13 @@ internal sealed partial class ExecutableCodeObject
         IReadOnlyList<LoweredStatement> statementFallbacks,
         bool requiresLocalVariableMirroring,
         bool isFunctionScope,
-        int initialOperandDepth)
+        int initialOperandDepth,
+        PyString? functionName,
+        PyString? docstring)
     {
         Name = name;
+        FunctionName = functionName;
+        Docstring = docstring;
         Constants = constants;
         Names = names;
         LocalNames = localNames;
@@ -561,6 +564,8 @@ internal sealed partial class ExecutableCodeObject
     }
 
     public string Name { get; }
+    internal PyString? FunctionName { get; }
+    internal PyString? Docstring { get; }
 
     // Builder-owned arrays are immutable after preparation. Operand reads use
     // their physical bounds directly, without another collection interface.

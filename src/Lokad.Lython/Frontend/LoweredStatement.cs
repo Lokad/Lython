@@ -17,6 +17,11 @@ internal abstract record LoweredStatement(LythonSourceSpan Span)
 {
     /// <summary>Gets the stable lowered statement discriminator used by interpreters and analyzers.</summary>
     public abstract LoweredStatementKind Kind { get; }
+
+    // A leading plain string remains the same compiled literal used by the body.
+    internal static PyString? LeadingDocstring(IReadOnlyList<LoweredStatement> body)
+        => body.Count > 0 && body[0] is LoweredExpressionStatement { Expression: LoweredStringLiteralExpression doc }
+            ? doc.Value : null;
 }
 
 internal sealed record LoweredTypeParameter(TypeParameterSyntax Syntax, LoweredExpression? Bound, LoweredExpression? Default);
@@ -58,7 +63,6 @@ internal sealed record LoweredFunctionDefinitionStatement(
     // Class suites still execute lowered; their method bodies are
     // prepared once, without retaining an unused second lowered body.
     public ExecutableCodeObject? PreparedCode { get; init; }
-    public string? Docstring { get; } = Runtime.PyFunctionBase.LeadingDocstring(Body);
     public IReadOnlyList<LoweredTypeParameter>? TypeParameters { get; } = LoweredScript.LowerTypeParameters(Syntax.TypeParameters);
 }
 

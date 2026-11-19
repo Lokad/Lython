@@ -168,8 +168,8 @@ public sealed class CasedSplitOwnershipTests
             var definition = Assert.IsType<LoweredFunctionDefinitionStatement>(Assert.Single(
                 LoweredScript.Lower(LythonFrontend.Compile("def words(value):return value.lower().split()").Script!).Statements));
             var code = ExecutableScript.CompileClassFunction(definition);
-            var function = new PyExecutableFunction("words", definition.ParameterLayout, code, context, [],
-                default, definition.ScopeFacts);
+            var function = new PyExecutableFunction(definition.ParameterLayout, code, context, [],
+                default);
             var input = PyString.FromString("A ß C D E F G H I J K", context.MemoryGovernor, span);
             using var cursor = PyStringOps.PrepareCasedWhitespaceIteration(input, true, context, span);
             var index = Array.FindIndex(code.Instructions, instruction => instruction.OpCode == ExecutableOpCode.Return);

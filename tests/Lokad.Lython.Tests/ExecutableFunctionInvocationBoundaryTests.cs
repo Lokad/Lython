@@ -100,8 +100,8 @@ public sealed class ExecutableFunctionInvocationBoundaryTests
             context.State.SetCurrentException(active);
             var tap = new RecordingTap(context, active, receiver, width);
             context.Variables["tap"] = tap;
-            var function = new PyExecutableFunction("f", definition.ParameterLayout,
-                ExecutableScript.CompileClassFunction(definition), context, [], default, definition.ScopeFacts);
+            var function = new PyExecutableFunction(definition.ParameterLayout,
+                ExecutableScript.CompileClassFunction(definition), context, [], default);
             var result = asynchronous
                 ? await function.InvokeAsync(Arguments(width, receiver), CallSpan, context)
                 : function.Invoke(Arguments(width, receiver), CallSpan, context);
@@ -143,8 +143,8 @@ public sealed class ExecutableFunctionInvocationBoundaryTests
         var parameters = string.Join(",", new[] { "self" }.Concat(Enumerable.Range(0, width).Select(i => $"arg{i}")));
         var definition = Definition($"def f({parameters}):\n return self\n");
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options,regexProvider:Utf8RegexProvider.Instance);
-        var function = new PyExecutableFunction("f", definition.ParameterLayout,
-            ExecutableScript.CompileClassFunction(definition), context, [], default, definition.ScopeFacts);
+        var function = new PyExecutableFunction(definition.ParameterLayout,
+            ExecutableScript.CompileClassFunction(definition), context, [], default);
         return (function, context);
     }
 

@@ -26,9 +26,9 @@ public sealed class ManagedStackGuardTests
         var projected = new PyList([true]);
         var definition = Assert.IsType<LoweredFunctionDefinitionStatement>(Assert.Single(
             LoweredScript.Lower(LythonFrontend.Compile("def value():return 1").Script!).Statements));
-        var function = new PyExecutableFunction("value", definition.ParameterLayout,
+        var function = new PyExecutableFunction(definition.ParameterLayout,
             ExecutableScript.CompileClassFunction(definition), context, [],
-            default, definition.ScopeFacts);
+            default);
         Action enter = entry switch
         {
             "function" => () => context.EnterFunctionCall(span),

@@ -471,10 +471,9 @@ internal sealed partial class ExecutableScript
                 functionDefinition.ScopeFacts, functionDefinition.TypeParameters, functionDefinition.Syntax.IsGenerator);
 
             var binding = new ExecutableFunctionBinding(
-                functionDefinition.Syntax.Name, functionDefinition.Syntax.DeclaredName, functionDefinition.Span,
+                functionDefinition.Syntax.Name, functionDefinition.Span,
                 functionDefinition.Decorators.Count, functionDefinition.Annotations,
-                functionDefinition.TypeParameters, codeObject, functionDefinition.Syntax.IsGenerator,
-                functionDefinition.Docstring)
+                functionDefinition.TypeParameters, codeObject, functionDefinition.Syntax.IsGenerator)
             {
                 ParameterLayout = functionDefinition.ParameterLayout,
                 KeywordRecordCache = functionDefinition.ParameterLayout.HasKeywordDefaults ? AllocateLookupCache() : -1,

@@ -3,8 +3,6 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed class PyExecutableFunction : PyFunctionBase
 {
-
-    private readonly ExecutableCodeObject _codeObject;
     private readonly IReadOnlyList<LythonRuntime.ExecutableCell> _closureCells;
     private LythonRuntime.ExecutableLookupCache[]? _lookupCaches;
 
@@ -13,11 +11,11 @@ internal sealed class PyExecutableFunction : PyFunctionBase
     internal LythonRuntime.ExecutableLookupCache[] GetLookupCaches(LythonSourceSpan span)
     {
         if (_lookupCaches is { } cached) return cached;
-        var bytes = LythonRuntime.LookupCacheBytes(_codeObject.LookupCacheCount);
+        var bytes = LythonRuntime.LookupCacheBytes(CodeObject.LookupCacheCount);
         using var storage = Closure.MemoryGovernor.ReserveTemporary(bytes, span);
         Closure.CheckExecution(span);
         if (_lookupCaches is { } established) return established;
-        var caches = new LythonRuntime.ExecutableLookupCache[_codeObject.LookupCacheCount];
+        var caches = new LythonRuntime.ExecutableLookupCache[CodeObject.LookupCacheCount];
         storage.Commit(bytes);
         return _lookupCaches = caches;
     }
@@ -28,23 +26,18 @@ internal sealed class PyExecutableFunction : PyFunctionBase
     }
 
     public PyExecutableFunction(
-        string name,
         FunctionParameterLayout parameterLayout,
         ExecutableCodeObject codeObject,
         LythonRuntime.ExecutionContext closure,
         IReadOnlyList<LythonRuntime.ExecutableCell> closureCells,
         FunctionDefaults defaults,
-        ScopeDirectiveFacts scopeFacts,
         PythonCallableKind callableKind = PythonCallableKind.Function)
-        : base(name, parameterLayout, closure, defaults, scopeFacts, callableKind,
+        : base(codeObject, parameterLayout, closure, defaults, callableKind,
             storageCapacity: codeObject.ValueStorageCapacity)
     {
-        _codeObject = codeObject;
         _closureCells = closureCells;
         SupportsDirectPositional = SupportsPositionalBinding;
     }
-
-    protected override bool RequiresArgumentMirroring => _codeObject.RequiresLocalVariableMirroring;
 
     internal bool SupportsDirectPositional { get; }
     // Compiler parameter slots are the binding-layout prefix. The invocation
@@ -52,7 +45,6 @@ internal sealed class PyExecutableFunction : PyFunctionBase
     // separate cells; mirrored namespaces and exposed locals copy values,
     // never this array.
 
-    internal ExecutableCodeObject CodeObject => _codeObject;
     internal IReadOnlyList<LythonRuntime.ExecutableCell> ClosureCells => _closureCells;
     internal LythonRuntime.ExecutionContext DefinitionContext => Closure;
 
@@ -60,19 +52,19 @@ internal sealed class PyExecutableFunction : PyFunctionBase
     // Scope-sensitive operations still promote before observing their namespace.
     // Owner binding alone adds no namespace requirement; lexical class-cell
     // facts below retain the context needed by __class__ and implicit super.
-    internal bool CanDeferInvocationContext => !_codeObject.RequiresLocalVariableMirroring &&
-        !_codeObject.ScopeFacts.RequiresClassCell &&
-        _codeObject.CapturedLocalSlots.Count == 0 &&
-        _codeObject.ExceptionRegions.Count == 0 &&
+    internal bool CanDeferInvocationContext => !CodeObject.RequiresLocalVariableMirroring &&
+        !CodeObject.ScopeFacts.RequiresClassCell &&
+        CodeObject.CapturedLocalSlots.Count == 0 &&
+        CodeObject.ExceptionRegions.Count == 0 &&
         !Closure.IsClassBody && !Closure.IsAnnotationScope && !Closure.IsTypeParameterScope && Closure.ClassCell is null &&
         Closure.InlinedComprehensionLookup is null && Closure.ActiveHandlerVariables is not { Count: > 0 };
 
-    private bool CanRunNativePrefix => _codeObject.CanRunNativeInstructions
+    private bool CanRunNativePrefix => CodeObject.CanRunNativeInstructions
         && !Closure.IsClassBody && !Closure.IsAnnotationScope && !Closure.IsTypeParameterScope
         && Closure.ClassCell is null && Closure.InlinedComprehensionLookup is null;
 
     internal bool CanStartInline => CanRunNativePrefix
-        && _codeObject.ValueStorageCapacity <= LythonRuntime.NativeValueCapacity;
+        && CodeObject.ValueStorageCapacity <= LythonRuntime.NativeValueCapacity;
 
     internal bool CanBindNativeArguments => CanStartInline
         && BindingPlan.ParameterCount <= LythonRuntime.NativeValueCapacity
@@ -94,7 +86,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         // after binding and asks the caller to try another execution route.
         NativeValues buffer = default;
         Span<LythonRuntime.ExecutableSlot> values = buffer;
-        values = values[.._codeObject.ValueStorageCapacity];
+        values = values[..CodeObject.ValueStorageCapacity];
         // This span is private to the synchronous prefix and cannot escape. Its
         // live values transfer before suspension; stack exit ends the remaining
         // references. Owned callback arrays keep their ordinary full clear.
@@ -119,7 +111,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         result = LythonRuntime.ExecutableSlot.FromObject(PyNone.Instance);
         frame = null;
         if (!CanRunNativePrefix) return false;
-        StartInline(bound.Values.AsSpan(0, _codeObject.ValueStorageCapacity),
+        StartInline(bound.Values.AsSpan(0, CodeObject.ValueStorageCapacity),
             bound, span, consumedByIteration, unpackedReturn, out unpacked, out result, out frame);
         return true;
     }
@@ -154,7 +146,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
             if (existing is null)
             {
                 owned = LythonRuntime.RentFunctionArgumentStorage(BindingPlan, span, Closure,
-                    _codeObject.ValueStorageCapacity);
+                    CodeObject.ValueStorageCapacity);
                 rented = true;
                 values[..state.LiveExtent].CopyTo(owned.Values);
             }
@@ -176,7 +168,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
                 try { if (entered && !transferred) Closure.LeaveFunctionCall(); }
                 finally
                 {
-                    if (rented && !transferred) LythonRuntime.ReturnBoundArguments(owned, _codeObject.ValueStorageCapacity);
+                    if (rented && !transferred) LythonRuntime.ReturnBoundArguments(owned, CodeObject.ValueStorageCapacity);
 
                 }
             }
@@ -188,7 +180,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         BoundFunctionArguments boundArguments,
         LythonSourceSpan span)
     {
-        return LythonRuntime.ExecuteExecutableCodeObject(_codeObject, frame, boundArguments, _closureCells, true, span, this)
+        return LythonRuntime.ExecuteExecutableCodeObject(CodeObject, frame, boundArguments, _closureCells, true, span, this)
             ?? PyNone.Instance;
     }
 
@@ -198,7 +190,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         LythonSourceSpan span)
     {
         return await LythonRuntime.ExecuteExecutableCodeObjectAsync(
-            _codeObject, frame, boundArguments, _closureCells, true, span, this).ConfigureAwait(false)
+            CodeObject, frame, boundArguments, _closureCells, true, span, this).ConfigureAwait(false)
             ?? PyNone.Instance;
     }
 }
