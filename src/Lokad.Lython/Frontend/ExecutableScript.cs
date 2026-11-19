@@ -498,6 +498,7 @@ internal sealed partial class ExecutableCodeObject
         ScopeDirectiveFacts scopeFacts,
         List<List<ExecutableInstruction>> blocks,
         int entryBlockIndex,
+        ExecutableBlockTargets blockTargets,
         IReadOnlyList<ExecutableExceptionRegion> exceptionRegions,
         IReadOnlyList<ImportStatementSyntax> imports,
         ExecutableCallSite[] callSites,
@@ -535,10 +536,10 @@ internal sealed partial class ExecutableCodeObject
         // Assign physical positions after forwarding. Both execution forms use
         // this final layout, including at a dynamic-operation transition.
         var operandLayout = ExecutableStackLayout.Prepare(blocks, constants, callSites,
-            exceptionRegions, entryBlockIndex, initialOperandDepth, FirstTemporarySlot);
+            exceptionRegions, blockTargets, entryBlockIndex, initialOperandDepth, FirstTemporarySlot);
         OperandCapacity = operandLayout.MaximumDepth;
         LastOwnedTemporarySlot = operandLayout.LastOwnedTemporarySlot;
-        Instructions = ExecutableStackLayout.Linearize(blocks, operandLayout, out var offsets);
+        Instructions = ExecutableStackLayout.Linearize(blocks, operandLayout, blockTargets, out var offsets);
         _operandReadSpans = reads.Select(read => new ExecutableOperandSpan(
             ((long)(offsets[read.Block] + read.Instruction) << 2) | (uint)read.Input, read.Span)).ToArray();
         EntryIndex = offsets[entryBlockIndex];

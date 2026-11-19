@@ -89,22 +89,13 @@ internal sealed partial class ExecutableScript
             return instructions[^1].OpCode is ExecutableOpCode.Jump or ExecutableOpCode.AbruptJump or ExecutableOpCode.Return or ExecutableOpCode.ReturnNone or ExecutableOpCode.ReraiseException;
         }
 
-        private void NormalizeBlockTargets(int[] indexMap, int[] jumpTargets)
-        {
-            foreach (var instructions in _blocks)
-            {
-                for (var i = 0; i < instructions.Count; i++)
-                    instructions[i] = RewriteInstructionTargets(instructions[i], indexMap, jumpTargets);
-            }
-        }
-
-        private IReadOnlyList<ExecutableExceptionRegion> NormalizeRegions(int[] indexMap, int[] jumpTargets)
+        private IReadOnlyList<ExecutableExceptionRegion> NormalizeRegions(ExecutableBlockTargets targets)
         {
             var normalized = new List<ExecutableExceptionRegion>(_regions.Count);
             foreach (var region in _regions)
             {
-                var firstProtected = FirstAtOrAfter(indexMap[region.ProtectedStartIndex]);
-                var afterLastProtected = FirstAfter(indexMap[region.ProtectedEndIndex]);
+                var firstProtected = FirstAtOrAfter(targets.Compacted[region.ProtectedStartIndex]);
+                var afterLastProtected = FirstAfter(targets.Compacted[region.ProtectedEndIndex]);
                 if (firstProtected == afterLastProtected)
                 {
                     continue;
@@ -115,8 +106,8 @@ internal sealed partial class ExecutableScript
                 if (region.SuiteStartIndex is int suiteStartOriginal &&
                     region.SuiteEndIndex is int suiteEndOriginal)
                 {
-                    var firstSuite = FirstAtOrAfter(indexMap[suiteStartOriginal]);
-                    var afterLastSuite = FirstAfter(indexMap[suiteEndOriginal]);
+                    var firstSuite = FirstAtOrAfter(targets.Compacted[suiteStartOriginal]);
+                    var afterLastSuite = FirstAfter(targets.Compacted[suiteEndOriginal]);
                     if (firstSuite != afterLastSuite)
                     {
                         suiteStart = firstSuite;
@@ -127,8 +118,8 @@ internal sealed partial class ExecutableScript
                 normalized.Add(new ExecutableExceptionRegion(
                     firstProtected,
                     afterLastProtected - 1,
-                    region.ExceptIndex is int exceptBlock ? NormalizedBlock(indexMap, jumpTargets[exceptBlock]) : null,
-                    region.FinallyIndex is int finallyBlock ? NormalizedBlock(indexMap, jumpTargets[finallyBlock]) : null,
+                    region.ExceptIndex is int exceptBlock ? targets.Follow(exceptBlock) : null,
+                    region.FinallyIndex is int finallyBlock ? targets.Follow(finallyBlock) : null,
                     suiteStart,
                     suiteEnd, region.CleanupId));
             }
@@ -239,26 +230,6 @@ internal sealed partial class ExecutableScript
             _blocks.RemoveRange(count, _blocks.Count - count);
             return indexMap;
         }
-
-        private static ExecutableInstruction RewriteInstructionTargets(ExecutableInstruction instruction, int[] indexMap, int[] jumpTargets)
-        {
-            return instruction.OpCode switch
-            {
-                ExecutableOpCode.AbruptJump => instruction.WithTargetIndex(NormalizedBlock(indexMap, instruction.TargetIndex)),
-                ExecutableOpCode.Jump or
-                ExecutableOpCode.JumpIfFalse or
-                ExecutableOpCode.CompareJumpIfFalse or
-                ExecutableOpCode.ForNext or
-                ExecutableOpCode.EndFinally => instruction.WithTargetIndex(NormalizedBlock(indexMap, jumpTargets[instruction.TargetIndex])),
-                ExecutableOpCode.MatchCase => instruction.WithFailureIndex(NormalizedBlock(indexMap, jumpTargets[instruction.FailureIndex])),
-                _ => instruction
-            };
-        }
-
-        private static int NormalizedBlock(int[] indexMap, int originalIndex)
-            => indexMap[originalIndex] is var normalized && normalized >= 0
-                ? normalized
-                : throw new InvalidOperationException("Executable target is unreachable.");
 
         private int[] ResolveJumpTargets()
         {

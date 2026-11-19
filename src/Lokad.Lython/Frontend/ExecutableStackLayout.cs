@@ -2,13 +2,24 @@ using System.Numerics;
 
 namespace Lokad.Lython.Frontend;
 
+// Keep original branch IDs in the blocks. Both operand analysis and final
+// emission resolve them without writing intermediate branch instructions.
+internal readonly record struct ExecutableBlockTargets(int[] Compacted, int[] Threaded)
+{
+    // Abrupt jumps must encounter the destination's original protected region.
+    internal int Map(int original) => Compacted[original] is var target && target >= 0
+        ? target : throw new InvalidOperationException("Executable target is unreachable.");
+
+    internal int Follow(int original) => Map(Threaded[original]);
+}
+
 // Operand shapes are a compiler invariant. Guest iteration, expansion and
 // suspension change values, never the number of executable operand slots.
 internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepths, int FirstTemporarySlot,
     int LastOwnedTemporarySlot)
 {
     internal static ExecutableInstruction[] Linearize(IReadOnlyList<List<ExecutableInstruction>> blocks,
-        ExecutableStackLayout layout, out int[] offsets)
+        ExecutableStackLayout layout, ExecutableBlockTargets targets, out int[] offsets)
     {
         offsets = new int[blocks.Count + 1];
         for (var i = 0; i < blocks.Count; i++)
@@ -22,9 +33,10 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
                 var instruction = source[j];
                 instructions[offsets[i] + j] = instruction.OpCode switch
                 {
-                    ExecutableOpCode.Jump or ExecutableOpCode.AbruptJump or ExecutableOpCode.JumpIfFalse or ExecutableOpCode.CompareJumpIfFalse or
-                        ExecutableOpCode.ForNext or ExecutableOpCode.EndFinally => instruction.WithTargetIndex(offsets[instruction.TargetIndex]),
-                    ExecutableOpCode.MatchCase => instruction.WithFailureIndex(offsets[instruction.FailureIndex]),
+                    ExecutableOpCode.AbruptJump => instruction.WithTargetIndex(offsets[targets.Map(instruction.TargetIndex)]),
+                    ExecutableOpCode.Jump or ExecutableOpCode.JumpIfFalse or ExecutableOpCode.CompareJumpIfFalse or
+                        ExecutableOpCode.ForNext or ExecutableOpCode.EndFinally => instruction.WithTargetIndex(offsets[targets.Follow(instruction.TargetIndex)]),
+                    ExecutableOpCode.MatchCase => instruction.WithFailureIndex(offsets[targets.Follow(instruction.FailureIndex)]),
                     _ => instruction
                 };
             }
@@ -47,7 +59,8 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
 
     internal static ExecutableStackLayout Prepare(IReadOnlyList<List<ExecutableInstruction>> blocks,
         IReadOnlyList<object?> constants, IReadOnlyList<ExecutableCallSite> calls,
-        IReadOnlyList<ExecutableExceptionRegion> regions, int entryBlock, int initialDepth, int firstTemporarySlot)
+        IReadOnlyList<ExecutableExceptionRegion> regions, ExecutableBlockTargets targets,
+        int entryBlock, int initialDepth, int firstTemporarySlot)
     {
         var depths = new int?[blocks.Count];
         var pending = new Queue<int>();
@@ -119,21 +132,21 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
                 switch (instruction.OpCode)
                 {
                     case ExecutableOpCode.ForNext:
-                        Enter(instruction.TargetIndex, depth - 2);
+                        Enter(targets.Follow(instruction.TargetIndex), depth - 2);
                         break;
                     case ExecutableOpCode.JumpIfFalse:
                     case ExecutableOpCode.CompareJumpIfFalse:
-                        Enter(instruction.TargetIndex, depth);
+                        Enter(targets.Follow(instruction.TargetIndex), depth);
                         break;
                     case ExecutableOpCode.MatchCase:
-                        Enter(instruction.FailureIndex, depth);
+                        Enter(targets.Follow(instruction.FailureIndex), depth);
                         break;
                     case ExecutableOpCode.AbruptJump:
-                        Enter(instruction.TargetIndex, depth - (instruction.DiscardIterator ? 1 : 0));
+                        Enter(targets.Map(instruction.TargetIndex), depth - (instruction.DiscardIterator ? 1 : 0));
                         goto CompleteBlock;
                     case ExecutableOpCode.Jump:
                     case ExecutableOpCode.EndFinally:
-                        Enter(instruction.TargetIndex, depth);
+                        Enter(targets.Follow(instruction.TargetIndex), depth);
                         goto CompleteBlock;
                     case ExecutableOpCode.Return:
                     case ExecutableOpCode.ReturnNone:
