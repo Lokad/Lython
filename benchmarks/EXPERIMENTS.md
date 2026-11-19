@@ -129,6 +129,11 @@ original conditions retained. Current comparisons belong in
   pairs. Captured rules and mutable counters improve warm and compile-to-result
   with lower CPU and allocation. The forwarding and positional comparisons span
   zero. [Prepared capture sources](results/2026-11-19-prepared-capture-slots/README.md).
+- B1056 borrows enclosing compiler bindings in a private prototype.
+  Captured-rules compilation and compile-to-result improve with less
+  allocation and CPU. The warm shipment report is adverse. Refine generic
+  name membership and confirm with the original controls.
+  [Enclosing compiler bindings](results/2026-11-19-borrowed-compiler-bindings/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
