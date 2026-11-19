@@ -37,6 +37,8 @@ dataclass fields and retained closures. Cancellation and the first
 admission refusal are tested during construction. The first WSL public
 run had no .NET 10 probe in its test ancestor directory. Its log remains
 in the archive alongside the passing run using the exact built probe.
+The retained source passed
+[full Windows and Ubuntu platform, stress and installed-package qualification](delivery/README.md).
 
 Compilation includes public compilation and compilation-owner disposal.
 Compile-to-result includes mediated file I/O, output checks, result cleanup
