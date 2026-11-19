@@ -4,7 +4,8 @@
 
 - Match Python CSV parsing after a closing quote. Default mode treats
   trailing text as part of the field, and strict mode reports the
-  expected delimiter and quote.
+  expected delimiter and quote. Escaped line endings keep the current
+  record open across source items and honor strict end-of-input handling.
 - Count Unicode scalars in frontend unpacking, starred arguments and slice
   diagnostics so supplementary characters keep Python's length and arity.
 - Use the compiled regex lookup to own provider patterns, releasing each

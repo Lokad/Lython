@@ -114,6 +114,43 @@ public sealed class CsvNativeInputTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task EscapedItemAndPhysicalNewlinesKeepTheRecordOpen(bool asynchronous)
+    {
+        await AssertFile(asynchronous, "first@\nsecond\nlast@\n", """
+            import csv
+            for strict in [False, True]:
+                for rows in [['one@'], ['one@','next'], ['one@\n','next'], ['"one@','next"']]:
+                    reader = csv.reader(rows, escapechar='@', strict=strict)
+                    try:
+                        print(list(reader), reader.line_num)
+                    except csv.Error as error:
+                        print(str(error), reader.line_num)
+            with open('/input.csv', newline='') as source:
+                reader = csv.reader(source, escapechar='@', strict=True)
+                print(next(reader), reader.line_num)
+                try:
+                    next(reader)
+                except csv.Error as error:
+                    print(str(error), reader.line_num)
+                print(next(reader, None) is None)
+            """, """
+            [['one\n']] 1
+            [['one\nnext']] 2
+            [['one\nnext']] 2
+            [['one\nnext']] 2
+            unexpected end of data 1
+            [['one\nnext']] 2
+            unexpected end of data 2
+            [['one\nnext']] 2
+            ['first\nsecond'] 2
+            unexpected end of data 3
+            True
+            """ + "\n");
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task InterruptedReadDiscardsTheUnfinishedRecord(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(1024 * 1024);

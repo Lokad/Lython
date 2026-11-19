@@ -511,7 +511,7 @@ internal sealed partial class LythonRuntime
         private long _stringBytes;
         private int _payloadBytes;
         private object[]? _readyRecord;
-        private enum FieldState { RecordStart, FieldStart, Bare, Quoted, AfterQuote }
+        private enum FieldState { RecordStart, FieldStart, Bare, Quoted, AfterQuote, AfterEscapedNewline }
         private FieldState _state;
         private bool _fieldWasQuoted;
 
@@ -611,7 +611,9 @@ internal sealed partial class LythonRuntime
                 if (_state == FieldState.Quoted)
                 {
                     if (!escape.IsEmpty && remaining.StartsWith(escape))
-                        i = ConsumeEscape(text, i, escape);
+                    {
+                        if (!ConsumeEscape(text, ref i, escape)) return;
+                    }
                     else if (!quote.IsEmpty && remaining.StartsWith(quote))
                     {
                         if (_options.DoubleQuote && remaining[quote.Length..].StartsWith(quote))
@@ -657,28 +659,25 @@ internal sealed partial class LythonRuntime
                         _record.Append(remaining[..literalWidth]);
                         i += literalWidth;
                     }
-                    else if (!escape.IsEmpty && remaining.StartsWith(escape)) i = ConsumeEscape(text, i, escape);
+                    else if (!escape.IsEmpty && remaining.StartsWith(escape))
+                    {
+                        if (!ConsumeEscape(text, ref i, escape)) return;
+                    }
                     else
                     {
                         _record.Append(text.Slice(i, 1));
-                        _state = FieldState.Bare;
+                        if (_state == FieldState.FieldStart) _state = FieldState.Bare;
                         i++;
                     }
                 }
             }
             _context.CheckExecution(_span);
-            if (_state == FieldState.Quoted) return;
-            if (text.IsEmpty)
-            {
-                FinishRecord();
-                return;
-            }
-            if (text[^1] != (byte)'\n' && text[^1] != (byte)'\r') FinishRecord();
+            if (_state is not (FieldState.Quoted or FieldState.AfterEscapedNewline)) FinishRecord();
         }
 
         public void Finish()
         {
-            if (_state != FieldState.Quoted) return;
+            if (_state == FieldState.RecordStart) return;
             if (_options.Strict) throw CsvError("unexpected end of data", _span);
             FinishRecord();
         }
@@ -690,20 +689,25 @@ internal sealed partial class LythonRuntime
             _state = FieldState.Bare;
         }
 
-        private int ConsumeEscape(ReadOnlySpan<byte> text, int index, ReadOnlySpan<byte> escape)
+        // Returns whether the item's implicit end marker remains to process.
+        private bool ConsumeEscape(ReadOnlySpan<byte> text, ref int index, ReadOnlySpan<byte> escape)
         {
             index += escape.Length;
-            if (index >= text.Length)
+            var quoted = _state == FieldState.Quoted;
+            if (index == text.Length)
             {
-                if (_options.Strict) throw CsvError("Invalid csv input.", _span);
-                _record.Append(escape);
-                return index;
+                _record.Append("\n"u8);
+                if (!quoted) _state = FieldState.Bare;
+                _context.CheckExecution(_span);
+                return false;
             }
             // Consume one Python character, including a supplementary scalar.
-            Rune.DecodeFromUtf8(text[index..], out _, out var width);
+            Rune.DecodeFromUtf8(text[index..], out var escaped, out var width);
             _record.Append(text.Slice(index, width));
-            if (_state == FieldState.FieldStart) _state = FieldState.Bare;
-            return index + width;
+            if (!quoted)
+                _state = escaped.Value is '\n' or '\r' ? FieldState.AfterEscapedNewline : FieldState.Bare;
+            index += width;
+            return true;
         }
 
         private void EnsureListCapacity<T>(List<T> values)
