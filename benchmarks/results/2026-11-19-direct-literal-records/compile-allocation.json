@@ -1,0 +1,102 @@
+{
+  "reference": {
+    "coreSha256": "9b8511fc88b24bae211f892bd136051e086295934a92d7612b5aa1d1c3b827d8",
+    "boundary": "Local synchronous public compilation and compiled-owner disposal. Borrowed budget returns to baseline after every invocation. Counts current-thread allocations. No elapsed claim.",
+    "rows": [
+      {
+        "id": "scripts.json-record-transform.large",
+        "bytes": [
+          124240.375,
+          124232,
+          124240.375,
+          124232,
+          124232
+        ],
+        "characters": 671
+      },
+      {
+        "id": "scripts.config-manifest.small",
+        "bytes": [
+          340760,
+          340760,
+          340760,
+          340760,
+          340760
+        ],
+        "characters": 1877
+      },
+      {
+        "id": "scripts.report-forwarding.expanded",
+        "bytes": [
+          125888,
+          125888,
+          125888,
+          125888,
+          125888
+        ],
+        "characters": 772
+      },
+      {
+        "id": "scripts.csv-invoice.large",
+        "bytes": [
+          196968,
+          196996.5,
+          197064,
+          197064,
+          197064
+        ],
+        "characters": 1222
+      }
+    ]
+  },
+  "candidate": {
+    "coreSha256": "14a059d06d3e2cff35f59bfd6514afd8d28bbc76e9ef0e223032408ae06e78c7",
+    "boundary": "Local synchronous public compilation and compiled-owner disposal. Borrowed budget returns to baseline after every invocation. Counts current-thread allocations. No elapsed claim.",
+    "rows": [
+      {
+        "id": "scripts.json-record-transform.large",
+        "bytes": [
+          124448.375,
+          124440,
+          124448.375,
+          124440,
+          124440
+        ],
+        "characters": 671
+      },
+      {
+        "id": "scripts.config-manifest.small",
+        "bytes": [
+          341592,
+          341592,
+          341592,
+          341592,
+          341592
+        ],
+        "characters": 1877
+      },
+      {
+        "id": "scripts.report-forwarding.expanded",
+        "bytes": [
+          125920,
+          125920,
+          125920,
+          125920,
+          125920
+        ],
+        "characters": 772
+      },
+      {
+        "id": "scripts.csv-invoice.large",
+        "bytes": [
+          196968,
+          196968,
+          196968,
+          196969.5,
+          197064
+        ],
+        "characters": 1222
+      }
+    ]
+  }
+}
