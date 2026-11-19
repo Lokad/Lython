@@ -769,15 +769,15 @@ internal sealed partial class LythonRuntime
         return function;
     }
 
-    private static ExecutionContext SelectDefinitionClosure(ExecutableCodeObject code, ExecutionContext defining, ExecutableCell[] cells)
+    private static ExecutionContext SelectDefinitionClosure(ExecutableCodeObject code, ExecutionContext defining, IReadOnlyList<ExecutableCell> cells)
     {
         var closure = defining.FunctionClosureContext;
         if (!code.UsesOnlyLexicalSlots || closure.ParentContext is null || !ReferenceEquals(closure, defining) ||
             closure.IsClassBody || closure.IsAnnotationScope || closure.InlinedComprehensionLookup is not null)
             return closure;
 
-        foreach (var cell in cells)
-            if (cell.HasNamespaceOwner) return closure;
+        for (var i = 0; i < cells.Count; i++)
+            if (cells[i].HasNamespaceOwner) return closure;
         return GetGlobalContext(closure);
     }
 

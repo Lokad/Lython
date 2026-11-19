@@ -24,7 +24,7 @@ public sealed class LambdaExecutableTests
         context._execution = new() { Code = outer, Locals = values };
         context.EnterExecutableSlots();
         var capture = typeof(LythonRuntime).GetMethod("CaptureExecutableClosures", BindingFlags.Static | BindingFlags.NonPublic)!
-            .CreateDelegate<Func<ExecutableCodeObject, Context, LythonSourceSpan, LythonRuntime.ExecutableCell[]>>();
+            .CreateDelegate<Func<ExecutableCodeObject, Context, LythonSourceSpan, IReadOnlyList<LythonRuntime.ExecutableCell>>>();
         var baseline = context.MemoryGovernor.CurrentAccountedBytes;
         var padding = 1024 * 1024 - baseline;
         context.MemoryGovernor.Reserve(padding, null);

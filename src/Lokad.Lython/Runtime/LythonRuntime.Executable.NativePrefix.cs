@@ -100,11 +100,11 @@ internal sealed partial class LythonRuntime
                     case ExecutableOpCode.LoadClosure:
                         if (TryExecuteClosureArithmetic(Code, _cells, Index, LiveExtent, _scope))
                         { Index += 2; break; }
-                        if (!TryCell(instruction.ClosureSlot, out var readCell) || readCell.Value is not { } captured) return false;
+                        if (ReadCapturedCell(_cells, instruction.ClosureSlot)?.Value is not { } captured) return false;
                         Publish(instruction, captured);
                         break;
                     case ExecutableOpCode.StoreClosure:
-                        if (!TryCell(instruction.ClosureSlot, out var writeCell) || !writeCell.CanStoreDirectly) return false;
+                        if (ReadCapturedCell(_cells, instruction.ClosureSlot) is not { CanStoreDirectly: true } writeCell) return false;
                         var stored = Take(instruction);
                         writeCell.Value = stored;
                         break;
@@ -447,12 +447,6 @@ internal sealed partial class LythonRuntime
             // native cleanup. The hot execution state retains no caller borrow.
             _unpackedTupleStart = instruction.InputStart;
             return true;
-        }
-
-        private bool TryCell(int slot, out ExecutableCell cell)
-        {
-            cell = (uint)slot < (uint)_cells.Count ? _cells[slot] : null!;
-            return cell is not null;
         }
 
         private void StoreLocal(in ExecutableInstruction instruction)

@@ -40,11 +40,19 @@ internal sealed partial class LythonRuntime
             : RuntimeErrors.NameNotDefined(codeObject.LocalNames[slot], span);
     }
 
+    // Executable captures carry either the singleton cell itself or the
+    // owned array. Both interpreters read that storage directly.
+    private static ExecutableCell? ReadCapturedCell(IReadOnlyList<ExecutableCell>? cells, int slot)
+    {
+        if (cells is ExecutableCell singleton) return slot == 0 ? singleton : null;
+        return cells is ExecutableCell[] array && (uint)slot < (uint)array.Length ? array[slot] : null;
+    }
+
     private static bool TryLoadClosure(in ExecutableWorkState execution, ExecutionContext? context,
         int slot, LythonSourceSpan span, out object value)
     {
         var codeObject = execution.Code;
-        if (execution.ClosureCells is not { } cells || (uint)slot >= (uint)cells.Count)
+        if (ReadCapturedCell(execution.ClosureCells, slot) is not { } cell)
         {
             // Missing-cell/nonlocal resolution needs the actual invocation's
             // lexical scope. Present cells belong to the work, not its frame.
@@ -61,7 +69,7 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.FreeVariableNotAssociated(codeObject.ClosureNames[slot], span);
         }
 
-        var captured = cells[slot].Value;
+        var captured = cell.Value;
         if (captured is null)
         {
             throw RuntimeErrors.FreeVariableNotAssociated(codeObject.ClosureNames[slot], span);
@@ -103,10 +111,10 @@ internal sealed partial class LythonRuntime
         in ExecutableInstruction instruction)
     {
         var slot = instruction.ClosureSlot;
-        if (execution.ClosureCells is { } cells && (uint)slot < (uint)cells.Count && cells[slot].CanStoreDirectly)
+        if (ReadCapturedCell(execution.ClosureCells, slot) is { CanStoreDirectly: true } cell)
         {
             var value = execution.Stack.TakeValue(instruction.InputStart, instruction.LiveExtent);
-            cells[slot].Value = value;
+            cell.Value = value;
             return true;
         }
         if (context is null) return false;
@@ -371,7 +379,7 @@ internal sealed partial class LythonRuntime
             _ => throw new InvalidOperationException($"Executable call site contains unsupported argument kind {spec.Kind}.")
         };
 
-    private static ExecutableCell[] CaptureExecutableClosures(
+    private static IReadOnlyList<ExecutableCell> CaptureExecutableClosures(
         ExecutableCodeObject codeObject,
         ExecutionContext context,
         LythonSourceSpan span)
@@ -418,36 +426,48 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        var retainedBytes = checked(
-            ExecutableCellsArrayBaseBytes +
-            ExecutableCellsArraySlotBytes * (long)names.Count +
-            ExecutableCell.StorageBytes * uncharged);
+        var arrayBytes = names.Count == 1 ? 0 : checked(ExecutableCellsArrayBaseBytes +
+            ExecutableCellsArraySlotBytes * (long)names.Count);
+        var retainedBytes = checked(arrayBytes + ExecutableCell.StorageBytes * uncharged);
         context.MemoryGovernor.Reserve(retainedBytes, span);
         context.MemoryGovernor.Commit(retainedBytes);
         try
         {
+            if (names.Count == 1)
+            {
+                context.CheckExecution(span);
+                var cell = Capture(0);
+                Publish(0, cell);
+                return cell;
+            }
+
             var cells = new ExecutableCell[names.Count];
             for (var i = 0; i < cells.Length; i++)
             {
                 if (i != 0 && (i & 255) == 0) context.CheckExecution(span);
-                cells[i] = slots is null && context.TryGetInlinedBinding(names[i], out var binding)
-                    ? new ExecutableCell(null, binding, names[i]) : Resolve(i);
+                cells[i] = Capture(i);
             }
-            // Lookups above have no callbacks or mutation. Publish only after
-            // every allocation succeeds. Namespace-backed cells observe later
-            // loop stores without mirroring the enclosing caller or a registry.
+            // Publish only after every allocation succeeds. Namespace-backed
+            // cells observe later loop stores through the existing owner.
             for (var i = 0; i < cells.Length; i++)
-            {
-                cells[i].RetentionCharged = true;
-                if (slots is null && context.TryGetInlinedBinding(names[i], out var binding))
-                    binding.MirrorLocalStores = true;
-            }
+                Publish(i, cells[i]);
             return cells;
         }
         catch
         {
             context.MemoryGovernor.Release(retainedBytes);
             throw;
+        }
+
+        ExecutableCell Capture(int index)
+            => slots is null && context.TryGetInlinedBinding(names[index], out var binding)
+                ? new ExecutableCell(null, binding, names[index]) : Resolve(index);
+
+        void Publish(int index, ExecutableCell cell)
+        {
+            cell.RetentionCharged = true;
+            if (slots is null && context.TryGetInlinedBinding(names[index], out var binding))
+                binding.MirrorLocalStores = true;
         }
     }
 

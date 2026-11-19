@@ -84,8 +84,8 @@ public sealed class ComprehensionLambdaExecutableTests
         var padding = deny ? cap - before : 0;
         if (deny) { governor.Reserve(padding, null); governor.Commit(padding); }
         var capture = typeof(LythonRuntime).GetMethod("CaptureExecutableClosures", BindingFlags.Static | BindingFlags.NonPublic)!
-            .CreateDelegate<Func<ExecutableCodeObject, LythonRuntime.ExecutionContext, LythonSourceSpan, LythonRuntime.ExecutableCell[]>>();
-        LythonRuntime.ExecutableCell[]? captured = null;
+            .CreateDelegate<Func<ExecutableCodeObject, LythonRuntime.ExecutionContext, LythonSourceSpan, IReadOnlyList<LythonRuntime.ExecutableCell>>>();
+        IReadOnlyList<LythonRuntime.ExecutableCell>? captured = null;
         long charged = 0;
         try
         {

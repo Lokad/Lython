@@ -11,7 +11,9 @@ internal sealed partial class LythonRuntime
     // Null is internal unbound storage; every guest None is PyNone.
     // Cleared workspaces need no separate sentinel initialization.
 
-    internal sealed class ExecutableCell
+    // A single-capture function can use the cell itself as its capture list.
+    // The list has a fixed position even as the shared binding changes.
+    internal sealed class ExecutableCell : IReadOnlyList<ExecutableCell>
     {
         // Cell metadata and one observed current scalar. Older aliases retain
         // their existing container/execution funding; updates refund nothing.
@@ -75,6 +77,15 @@ internal sealed partial class LythonRuntime
 
         // MG11: set once a closure owns this cell (first-wins sharing).
         internal bool RetentionCharged;
+
+        int IReadOnlyCollection<ExecutableCell>.Count => 1;
+        ExecutableCell IReadOnlyList<ExecutableCell>.this[int index]
+            => index == 0 ? this : throw new IndexOutOfRangeException();
+        IEnumerator<ExecutableCell> IEnumerable<ExecutableCell>.GetEnumerator()
+        {
+            yield return this;
+        }
+        IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable<ExecutableCell>)this).GetEnumerator();
     }
 
     // Mutable execution data is distinct from the lexical context's identity.
@@ -212,14 +223,8 @@ internal sealed partial class LythonRuntime
 
         public bool TryGetClosureCell(int slot, [MaybeNullWhen(false)] out ExecutableCell cell)
         {
-            if (_execution.ClosureCells is not null && slot >= 0 && slot < _execution.ClosureCells.Count)
-            {
-                cell = _execution.ClosureCells[slot];
-                return true;
-            }
-
-            cell = null;
-            return false;
+            cell = ReadCapturedCell(_execution.ClosureCells, slot);
+            return cell is not null;
         }
 
         public bool TryStoreLocalOrClosure(string name, object value)

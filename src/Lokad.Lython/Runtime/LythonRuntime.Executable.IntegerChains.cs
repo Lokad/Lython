@@ -11,9 +11,9 @@ internal sealed partial class LythonRuntime
         ref readonly var load = ref code.Instructions[index];
         // A clean statement extent has no input retirement or pending user.
         if (!load.HasClosureArithmetic || liveExtent != load.ResultSlot
-            || cells is null || (uint)load.ClosureSlot >= (uint)cells.Count) return false;
+            || ReadCapturedCell(cells, load.ClosureSlot) is not { } cell) return false;
         ref readonly var arithmetic = ref code.Instructions[index + 1];
-        return cells[load.ClosureSlot].TryApplyIntegerArithmetic(AugmentedBinaryOperator(arithmetic.AugmentedOperator),
+        return cell.TryApplyIntegerArithmetic(AugmentedBinaryOperator(arithmetic.AugmentedOperator),
             (long)(BigInteger)code.Constants[load.ClosureArithmeticConstant]!, context,
             arithmetic.Span, code.Instructions[index + 2].Span);
     }
