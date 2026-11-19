@@ -80,11 +80,13 @@ internal sealed partial class LythonRuntime
 
             if (call.HasReceiver && call.IsPositionalOnly)
             {
-                if (call.ArgumentCount == 0 && call.CasedSplit is not null
-                    && TryExecuteCasedSplit(ref execution, invocation ?? scope, invocation, call, start, target)) return true;
+                if (call.ArgumentCount == 0 && call.SplitPrefix is ExecutableCasedSplit cased
+                    && TryExecuteCasedSplit(ref execution, invocation ?? scope, invocation, cased, start, target)) return true;
                 if (target is not ReceiverMethod method) return false;
                 try
                 {
+                    if (call.SplitPrefix is ExecutableTrimmedSplit trimmed &&
+                        TryExecuteTrimmedSplit(ref execution, scope, invocation, trimmed, call, start, target)) return true;
                     if (TryConsumePrivateStringResult(method, execution.Code, execution.Stack.Values,
                         ref execution.InstructionIndex, call, start, invocation ?? scope, out var consumed))
                     {
@@ -141,14 +143,20 @@ internal sealed partial class LythonRuntime
             { throw translated; }
             finally { context.LeaveInterpreterFrame(); }
 
+            PublishSplitResult(ref execution, invocation, scope, start, unpacked.Length, originalExtent, list);
+            return true;
+        }
+
+        private static void PublishSplitResult(ref ExecutableWorkState execution, ExecutionContext? invocation,
+            ExecutionContext scope, int start, int unpackedCount, int originalExtent, PyList? list)
+        {
             if (list is null)
-                CompleteUnpackedCallReturn(ref execution, scope, start, unpacked.Length);
+                CompleteUnpackedCallReturn(ref execution, scope, start, unpackedCount);
             else
             {
                 execution.Stack.RestoreNativeExtent(originalExtent);
                 PublishInstructionResult(ref execution, invocation, execution.Code.Instructions[execution.InstructionIndex], list);
             }
-            return true;
         }
 
         private static Span<ExecutableSlot> PrepareUnpackedCallReturn(ref ExecutableWorkState execution,

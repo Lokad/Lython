@@ -348,7 +348,7 @@ internal sealed partial class LythonRuntime
                 {
                     var receiver = Values[start].Object!;
                     if (call.ArgumentCount == 0 && receiver is PyString text
-                        && call.CasedSplit is { } recipe && ReferenceEquals(target, recipe.CasingMethod))
+                        && call.SplitPrefix is ExecutableCasedSplit recipe && ReferenceEquals(target, recipe.CasingMethod))
                     {
                         var final = Code.Instructions[Index + 2];
                         var consumer = Code.CallSites[final.CallSiteIndex];
@@ -360,7 +360,15 @@ internal sealed partial class LythonRuntime
                         Publish(final, result);
                         return true;
                     }
-                    if (!TryConsumePrivateStringResult(method, Code, Values, ref Index, call, start, _scope, out result))
+                    if (call.SplitPrefix is ExecutableTrimmedSplit trimmed &&
+                        Code.Instructions[Index + 3].InputStart == start &&
+                        TryReadAsciiTrim(call, target, Values, start, out var input, out var trim))
+                    {
+                        var split = Code.CallSites[Code.Instructions[Index + 3].CallSiteIndex];
+                        result.Object = ExecuteTrimmedSplit(trimmed, input, trim, call.CallSpan, split.CallSpan, default, _scope)!;
+                        Index += 3;
+                    }
+                    else if (!TryConsumePrivateStringResult(method, Code, Values, ref Index, call, start, _scope, out result))
                     {
                         if (!TryInvokeClosedReceiver(method, receiver,
                             Values.Slice(start + call.ArgumentOffset, call.ArgumentCount), call.CallSpan, _scope,

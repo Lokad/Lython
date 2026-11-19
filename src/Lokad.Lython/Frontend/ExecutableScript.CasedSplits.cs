@@ -1,13 +1,19 @@
 using Lokad.Lython.Runtime;
+using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Frontend;
 
 // The same existing kernel serves an immediate ordinary chain and a closed
 // native body. Original instructions remain the pre-effect dynamic path.
+internal abstract record ExecutableSplitPrefix;
+
 internal sealed record ExecutableCasedSplit(
     LythonRuntime.ReceiverMethod CasingMethod, bool Upper,
     LythonSourceSpan CasingMemberSpan, LythonSourceSpan CasingCallSpan,
-    LythonSourceSpan SplitMemberSpan, LythonSourceSpan SplitCallSpan);
+    LythonSourceSpan SplitMemberSpan, LythonSourceSpan SplitCallSpan) : ExecutableSplitPrefix;
+
+internal sealed record ExecutableTrimmedSplit(
+    PyString Separator, LythonSourceSpan MemberSpan, LythonSourceSpan SeparatorSpan) : ExecutableSplitPrefix;
 
 internal sealed partial class ExecutableCodeObject
 {
@@ -35,9 +41,15 @@ internal sealed partial class ExecutableCodeObject
                     };
                 }
             for (var index = 1; index + 2 < instructions.Count; index++)
-                if (instructions[index].OpCode == ExecutableOpCode.Call
-                    && instructions[index + 2].OpCode == ExecutableOpCode.Call)
+            {
+                if (instructions[index].OpCode != ExecutableOpCode.Call) continue;
+                if (instructions[index + 2].OpCode == ExecutableOpCode.Call)
                     PrepareCasedSplit(instructions, index, index + 2, sites);
+                else if (index >= 2 && index + 3 < instructions.Count &&
+                    instructions[index + 2].OpCode == ExecutableOpCode.LoadConst &&
+                    instructions[index + 3].OpCode == ExecutableOpCode.Call)
+                    PrepareTrimmedSplit(instructions, index, sites);
+            }
         }
     }
 
@@ -55,13 +67,31 @@ internal sealed partial class ExecutableCodeObject
             || Names[instructions[consumer - 1].NameIndex] is not ("split" or "rsplit")) return null;
         var name = Names[instructions[producer - 1].NameIndex];
         if (name is not ("lower" or "upper")) return null;
-        var recipe = last.CasedSplit ?? new ExecutableCasedSplit(LythonRuntime.StringMembers.GetMethod(name)!,
+        var recipe = last.SplitPrefix as ExecutableCasedSplit ?? new ExecutableCasedSplit(LythonRuntime.StringMembers.GetMethod(name)!,
             name == "upper", instructions[producer - 1].Span, first.CallSpan,
             instructions[consumer - 1].Span, last.CallSpan);
-        sites[lastIndex] = last with { CasedSplit = recipe };
+        sites[lastIndex] = last with { SplitPrefix = recipe };
         // A local between the calls is observable. Never skip its instructions.
         if (consumer == producer + 2) sites[firstIndex] = first with
-        { CasedSplit = recipe };
+        { SplitPrefix = recipe };
         return recipe;
+    }
+
+    private void PrepareTrimmedSplit(IReadOnlyList<ExecutableInstruction> instructions,
+        int producer, ExecutableCallSite[] sites)
+    {
+        var trimMember = instructions[producer - 2];
+        var splitMember = instructions[producer + 1];
+        if (trimMember.OpCode != ExecutableOpCode.LoadCallMember || Names[trimMember.NameIndex] != "rstrip" ||
+            splitMember.OpCode != ExecutableOpCode.LoadCallMember || Names[splitMember.NameIndex] != "split") return;
+        var trimIndex = instructions[producer].CallSiteIndex;
+        var trim = sites[trimIndex];
+        var split = sites[instructions[producer + 3].CallSiteIndex];
+        var delimiter = instructions[producer + 2];
+        if (!trim.HasReceiver || !split.HasReceiver || trim.ArgumentCount != 1 || split.ArgumentCount != 1 ||
+            !trim.IsPositionalOnly || !split.IsPositionalOnly ||
+            Constants[delimiter.ConstantIndex] is not PyString { ByteLength: > 0 } separator) return;
+
+        sites[trimIndex] = trim with { SplitPrefix = new ExecutableTrimmedSplit(separator, splitMember.Span, delimiter.Span) };
     }
 }

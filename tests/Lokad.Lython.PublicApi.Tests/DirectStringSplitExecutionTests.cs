@@ -37,6 +37,34 @@ public sealed class DirectStringSplitExecutionTests
         { "count-count_method_forms", "events=[]\nclass Count:\n def __index__(self):\n  events.append('index')\n  return 1\nmethod='a,b,c'.split\nprint(method(',',Count()),'a,b,c'.split(sep=',',maxsplit=Count()),'a,b,c'.split(*[',',Count()]))\nprint(events)", "['a', 'b,c'] ['a', 'b,c'] ['a', 'b,c']\n['index', 'index', 'index']\n" },
         { "count-index-rebinds-receiver", "text='a,b,c'\nclass Count:\n def __index__(self):\n  global text\n  text='changed'\n  return 1\nprint(text.split(',',Count()),text)", "['a', 'b,c'] changed\n" },
         { "count-dynamic-two-arguments", "class Text:\n def split(self,sep,count):return ['custom',sep,count]\nprint(Text().split(',',1))", "['custom', ',', 1]\n" },
+        { "trimmed-split-range", """
+            def parts(text):return text.rstrip('\n').split(',')
+            untrimmed='é'*32
+            a,b='α,😀\n\n'.rstrip('\n').split(',')
+            print(a, b, parts('é,tail\n'), parts('\n'))
+            print(untrimmed.rstrip('\n').split(',')[0] is untrimmed)
+            print((untrimmed+'\n').rstrip('\n').split(',')[0] is untrimmed)
+            try:
+                a,b='one\n'.rstrip('\n').split(',')
+            except ValueError as error:
+                print(str(error), a, b)
+            """, "α 😀 ['é', 'tail'] ['']\nTrue\nFalse\nnot enough values to unpack (expected 2, got 1) α 😀\n" },
+        { "trimmed-split-dynamic-paths", """
+            class Text:
+                def rstrip(self, chars):
+                    print('trim', repr(chars))
+                    return 'x,y'
+            def sep():
+                print('separator')
+                return ','
+            print(Text().rstrip('\n').split(','))
+            print('α,béé'.rstrip('é').split(','))
+            print('a,b\n'.rstrip('\n').split(sep()))
+            try:
+                'a,b\n'.rstrip('\n').split('')
+            except ValueError as error:
+                print(str(error))
+            """, "trim '\\n'\n['x', 'y']\n['α', 'b']\nseparator\n['a', 'b']\nempty separator\n" },
         { "line-count-boundaries", """
             def count(text):return len(text.splitlines())
             print(count(''), count('\n'), count('a\n\n'), count('a\nb'))
@@ -161,6 +189,41 @@ public sealed class DirectStringSplitExecutionTests
             Assert.Equal(baseline, budget.ReservedBytes);
         }
         Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task TrimmedSplitRefusesBeforeUnpackingTargets(bool asynchronous)
+    {
+        var source = """
+            import time
+            class Target:
+                def __setitem__(self, key, value):
+                    time.time()
+            target=Target()
+            text=('λ,'*4096)+'tail\n'
+            time.time()
+            try:
+                target[0],target[1]=text.rstrip('\n').split(',')
+            except MemoryError:
+                print('guest handler')
+            """.Replace("\r\n", "\n", StringComparison.Ordinal);
+        var budget = new AdmissionGateBudget();
+        var host = new AdmissionGateHost(budget, 4096);
+        using var compiled = new LythonEngine().Compile(source);
+        Assert.True(compiled.IsValid, string.Join(", ", compiled.Diagnostics));
+        var options = new LythonRunOptions { MemoryBudget = budget };
+        using (var result = asynchronous ? await compiled.RunAsync(host, options) : compiled.Run(host, options))
+        {
+            Assert.False(result.Success);
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+            var span = Assert.IsType<LythonSourceSpan>(result.Failure?.Span);
+            Assert.Equal("text.rstrip('\\n').split(',')", source.Substring(span.Start, span.Length));
+            Assert.Equal(0, host.AtSecondGate);
+            Assert.Empty(result.StandardOutput);
+        }
+        Assert.Equal(0, budget.Root.ReservedBytes);
     }
 
     [Theory]

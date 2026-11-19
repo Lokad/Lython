@@ -236,18 +236,23 @@ internal static partial class PyStringOps
         MemoryGovernor? governor, LythonSourceSpan? span, LythonRuntime.ExecutionContext? context,
         CaseMapping? casing = null, PyString? separator = null)
     {
-        return BuildSplitResult(value, separator, new(value.ByteLength, maxSplit, reverse, false, false, casing),
+        return BuildSplitResult(value, value.Utf8Span, separator, new(value.ByteLength, maxSplit, reverse, false, false, casing),
             casing, governor, span, context)!;
     }
 
     private static PyList SplitLineRanges(PyString value, bool keepEnds, MemoryGovernor? governor,
         LythonSourceSpan? span, LythonRuntime.ExecutionContext? context)
-        => BuildSplitResult(value, null, new(value.ByteLength, -1, false, true, keepEnds, null),
+        => BuildSplitResult(value, value.Utf8Span, null, new(value.ByteLength, -1, false, true, keepEnds, null),
             null, governor, span, context)!;
 
     internal static PyList? SplitForUnpack(PyString value, PyString? separator, int maxSplit,
         Span<LythonRuntime.ExecutableSlot> unpacked, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
-        => BuildSplitResult(value, separator, new(value.ByteLength, maxSplit, false, false, false, null),
+        => BuildSplitResult(value, value.Utf8Span, separator, new(value.ByteLength, maxSplit, false, false, false, null),
+            null, context.MemoryGovernor, span, context, unpacked);
+
+    internal static PyList? SplitUtf8Prefix(PyString value, int end, PyString separator,
+        Span<LythonRuntime.ExecutableSlot> unpacked, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        => BuildSplitResult(value, value.Utf8Span[..end], separator, new(end, -1, false, false, false, null),
             null, context.MemoryGovernor, span, context, unpacked);
 
     internal static PyString JoinTrimmedSplit(PyString value, PyString delimiter, PyString separator,
@@ -310,7 +315,7 @@ internal static partial class PyStringOps
         source.CopyTo(output);
     }
 
-    private static PyList? BuildSplitResult(PyString value, PyString? separator, SplitScanState scan,
+    private static PyList? BuildSplitResult(PyString value, ReadOnlySpan<byte> source, PyString? separator, SplitScanState scan,
         CaseMapping? casing, MemoryGovernor? governor, LythonSourceSpan? span,
         LythonRuntime.ExecutionContext? context, Span<LythonRuntime.ExecutableSlot> unpacked = default)
     {
@@ -320,7 +325,6 @@ internal static partial class PyStringOps
         governor?.ThrowIfAdmissionFailed();
         context?.CheckExecution(span);
         if (separator is { ByteLength: 0 }) throw new InvalidOperationException("empty separator");
-        var source = value.Utf8Span;
         var delimiter = separator is null ? default : separator.Utf8Span;
         var sizing = scan;
         long outputBytes = 0, sharedPayload = 0;
@@ -344,7 +348,8 @@ internal static partial class PyStringOps
 
         // Deterministic scanning establishes exact final capacity before any
         // allocation. Replay directly into it; no temporary range table or loan.
-        var reuseWhole = casing is null && wholeSource && ReferenceEquals(governor, value.OwnerMemoryGovernor);
+        var reuseWhole = casing is null && wholeSource && source.Length == value.ByteLength &&
+            ReferenceEquals(governor, value.OwnerMemoryGovernor);
         var borrow = !reuseWhole && casing is null && value.CanBorrowUtf8Ranges(governor);
         var sharedHeader = borrow && (bulkCount ? source.Length > PyString.InlineUtf8Capacity : sharedPayload != 0)
             ? value.Utf8SharingHeaderBytes : 0;

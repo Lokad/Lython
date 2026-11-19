@@ -10,6 +10,19 @@ namespace Lokad.Lython.Tests;
 
 public sealed class DirectStringSplitTests
 {
+    [Fact]
+    public void OnlyImmediateLiteralSplitCanConsumeTheTrimmedRange()
+    {
+        var immediate = Compile("return text.rstrip('\\n').split(',')");
+        var recipe = Assert.Single(immediate.CallSites.Select(site => site.SplitPrefix).OfType<ExecutableTrimmedSplit>());
+        Assert.Equal(",", recipe.Separator.AsString());
+
+        var withCallback = Compile("return text.rstrip('\\n').split(sep())");
+        Assert.DoesNotContain(withCallback.CallSites, site => site.SplitPrefix is ExecutableTrimmedSplit);
+        var exposed = Compile("trimmed=text.rstrip('\\n')\nreturn trimmed.split(',')");
+        Assert.DoesNotContain(exposed.CallSites, site => site.SplitPrefix is ExecutableTrimmedSplit);
+    }
+
     [Theory]
     [InlineData(false, false)]
     [InlineData(true, false)]

@@ -144,8 +144,8 @@ public sealed class NativeClosureSequenceTests
                 Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
                 Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
                 Assert.Equal(new BigInteger(1), Assert.Single(armed.Function!.ClosureCells).Value);
-                var splitSpan = Assert.Single(armed.Function.CodeObject.CallSites.Where(site => site.CasedSplit is not null)
-                    .Select(site => site.CasedSplit!.SplitCallSpan).Distinct());
+                var splitSpan = Assert.Single(armed.Function.CodeObject.CallSites.Select(site => site.SplitPrefix)
+                    .OfType<ExecutableCasedSplit>().Select(site => site.SplitCallSpan).Distinct());
                 Assert.Same(splitSpan, failure.Span);
                 Assert.Equal(8192, payload.ByteLength);
                 Assert.All(payload.Utf8Span.ToArray(), value => Assert.Equal((byte)'A', value));

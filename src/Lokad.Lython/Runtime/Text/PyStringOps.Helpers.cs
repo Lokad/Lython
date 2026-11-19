@@ -132,6 +132,12 @@ internal static partial class PyStringOps
         return offset;
     }
 
+    internal static int FindAsciiRightTrimEnd(PyString value, byte trim, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        using var ambient = PyStructuralGuard.PushAmbient(context, span);
+        return TrimExplicitBoundary(value.Utf8Span, UInt128.One << trim, null, reverse: true);
+    }
+
     private static PyString TrimmedSlice(PyString value, int start, int end)
     {
         // Shared constants have no individual governor. Admit a fresh slice

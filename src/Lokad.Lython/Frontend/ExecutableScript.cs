@@ -448,7 +448,7 @@ internal sealed record ExecutableCallSite(
     LythonSourceSpan CallSpan,
     bool HasReceiver = false)
 {
-    public ExecutableCasedSplit? CasedSplit { get; init; }
+    public ExecutableSplitPrefix? SplitPrefix { get; init; }
     public bool ConsumedByIteration { get; init; }
     public bool ReturnedDirectly { get; init; }
     public int UnpackedReturnCount { get; init; }

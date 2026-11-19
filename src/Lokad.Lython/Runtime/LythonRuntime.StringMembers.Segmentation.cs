@@ -98,7 +98,7 @@ internal sealed partial class LythonRuntime
             LythonCallableSignature.Create("str.strip", ["chars"], 0, 1, LythonVariadicParameters.None, 1));
         private static readonly ReceiverMethod LStripMethod = CreateStripMethod("lstrip", PyStringOps.LStrip,
             LythonCallableSignature.Create("str.lstrip", ["chars"], 0, 1, LythonVariadicParameters.None, 1));
-        private static readonly ReceiverMethod RStripMethod = CreateStripMethod("rstrip", PyStringOps.RStrip,
+        internal static readonly ReceiverMethod RStripMethod = CreateStripMethod("rstrip", PyStringOps.RStrip,
             LythonCallableSignature.Create("str.rstrip", ["chars"], 0, 1, LythonVariadicParameters.None, 1));
 
         private static ValueTask<object> RSplit(PyString text, ReceiverArguments arguments,
