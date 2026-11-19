@@ -36,7 +36,9 @@ cleanup. Compilation alone includes disposal of compiled storage.
 Compile-to-result includes compilation, execution and cleanup. Cold startup,
 fixture reset, request framing and final cache teardown fall outside elapsed.
 Process CPU includes the wider request. The measured runtime passed focused
-Windows .NET 11 and WSL .NET 10 checks. Full delivery remains in progress.
+Windows .NET 11 and WSL .NET 10 checks, then the combined Windows and Ubuntu
+.NET 10/11 Release, stress and installed-package checkpoint at `bed567750`.
+[Delivery CI](https://github.com/Lokad/Lython/actions/runs/44461746551).
 
 [Per-process elapsed and CPU](summary.json) · [Raw observations](observations.tgz) ·
 [Verified procedures and image hashes](procedures.tar.xz).
