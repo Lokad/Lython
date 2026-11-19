@@ -72,6 +72,11 @@ original conditions retained. Current comparisons belong in
   ran faster. Its compile-to-result timing stayed mixed, and expanded
   forwarding used more CPU on repeat. Allocation and accounted peaks
   were effectively unchanged. [Native keyword copy](results/2026-11-19-native-keyword-copy/README.md).
+- B1038/B1039 retain final UTF-8 construction for exact positional text
+  formats. The two forwarding reports use less allocation, elapsed time
+  and CPU warm. The original named-format slowdown did not recur.
+  Positional and f-string timing span zero on confirmation.
+  [Final UTF-8 method formatting](results/2026-11-19-final-method-format/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
