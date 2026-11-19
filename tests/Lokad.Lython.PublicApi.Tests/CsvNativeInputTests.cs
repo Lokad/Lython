@@ -145,7 +145,7 @@ public sealed class CsvNativeInputTests
             ['first\nsecond'] 2
             unexpected end of data 3
             True
-            """ + "\n");
+            """.ReplaceLineEndings("\n") + "\n");
     }
 
     [Theory]
