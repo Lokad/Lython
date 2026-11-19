@@ -1,0 +1,13 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "ramTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 266665984,
+  "archiveSHA256": "ffb115917f539eb9e0d2864aef6dec9259e4390e490350133c8c4e3e48a3289d",
+  "source": "R592/B1018 6c1da75b76a1f406210c035caf78841cf574e853/c9969271 whole-script runtime CPU attribution",
+  "performanceComparison": false,
+  "failure": null
+}
