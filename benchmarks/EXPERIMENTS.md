@@ -315,6 +315,10 @@ original conditions retained. Current comparisons belong in
   allocation stays lower and accounted peaks stay higher. Ordinary warm
   timing spans zero. Computed-default CPU falls under `RunAsync` and rises
   in synchronous execution. [Direct tuple reads](results/2026-11-19-positional-default-slots/refinement/README.md).
+- B1102 refreshes the six B1091 CPython workloads after the retained changes.
+  Warm rules still take 3.58–4.18× CPython. A generated validator takes
+  1.35–1.37× CPython's compilation time and about 1.34× compile-to-result.
+  [External checkpoint](results/2026-11-19-retained-defaults-cpython/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
