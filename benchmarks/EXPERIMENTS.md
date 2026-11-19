@@ -423,6 +423,9 @@ original conditions retained. Current comparisons belong in
 - B1123 shares admitted immutable keys while copying forwarded record
   values. JSON/CSV warm elapsed improves with lower CPU and allocation.
   The positional CSV CPU control remains adverse. [Shared record keys](results/2026-11-19-shared-record-keywords/README.md).
+- B1125 profiles three rule scripts at `40ab5132a`. Annotated rules have
+  88 samples nearest the redundant stack-transfer dispatcher. Admission,
+  arithmetic and metadata remain visible. [Current rule profile](results/2026-11-19-current-rule-profile/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
