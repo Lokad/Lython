@@ -563,7 +563,7 @@ internal sealed partial class LythonRuntime
     {
         var frame = function.EnterInvocationFrame(bound, span, enterFunctionCall: false);
         InitializeExecutableFrame(function.CodeObject, frame, bound, function.ClosureCells,
-            argumentsAreLocals: true, lookupOwner: function, returnConsumedByIteration: consumedByIteration);
+            lookupOwner: function, returnConsumedByIteration: consumedByIteration);
         frame.RestoreNativePosition(index, liveExtent, failure);
         return frame;
     }

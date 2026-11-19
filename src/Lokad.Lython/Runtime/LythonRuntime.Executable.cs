@@ -598,7 +598,6 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         BoundFunctionArguments boundArguments,
         IReadOnlyList<ExecutableCell>? closureCells,
-        bool argumentsAreLocals = false,
         LythonSourceSpan? entrySpan = null,
         PyExecutableFunction? lookupOwner = null)
     {
@@ -611,7 +610,7 @@ internal sealed partial class LythonRuntime
         else ExecutionState.EnsureInterpreterStack(entrySpan);
         try
         {
-            InitializeExecutableFrame(codeObject, context, boundArguments, closureCells, argumentsAreLocals, lookupOwner);
+            InitializeExecutableFrame(codeObject, context, boundArguments, closureCells, lookupOwner);
             return ExecuteInitializedFrame(context);
         }
         finally
@@ -628,7 +627,6 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         BoundFunctionArguments boundArguments,
         IReadOnlyList<ExecutableCell>? closureCells,
-        bool argumentsAreLocals = false,
         LythonSourceSpan? entrySpan = null,
         PyExecutableFunction? lookupOwner = null)
     {
@@ -638,7 +636,7 @@ internal sealed partial class LythonRuntime
         else ExecutionState.EnsureInterpreterStack(entrySpan);
         try
         {
-            InitializeExecutableFrame(codeObject, context, boundArguments, closureCells, argumentsAreLocals, lookupOwner);
+            InitializeExecutableFrame(codeObject, context, boundArguments, closureCells, lookupOwner);
             return await ExecuteInitializedFrameAsync(context).ConfigureAwait(false);
         }
         finally
@@ -674,11 +672,10 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         BoundFunctionArguments boundArguments,
         IReadOnlyList<ExecutableCell>? closureCells,
-        bool argumentsAreLocals,
         PyExecutableFunction? lookupOwner = null,
         bool returnConsumedByIteration = false)
     {
-        var execution = CreateExecutableWorkState(codeObject, context, boundArguments, closureCells, argumentsAreLocals, lookupOwner, returnConsumedByIteration);
+        var execution = CreateExecutableWorkState(codeObject, context, boundArguments, closureCells, lookupOwner, returnConsumedByIteration);
         context.AdoptExecutableExecution(ref execution, context.State.CurrentException);
     }
 
@@ -687,14 +684,12 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         BoundFunctionArguments boundArguments,
         IReadOnlyList<ExecutableCell>? closureCells,
-        bool argumentsAreLocals,
         PyExecutableFunction? lookupOwner = null,
         bool returnConsumedByIteration = false,
         bool borrowedInvocation = false)
     {
-        // InvokeBound owns bound storage until this interpreter has detached,
-        // including actual asynchronous suspension. No second local array/copy
-        // is needed for executable functions, including mirrored namespaces.
+        // Binding already fills the final local slots. Borrow their storage
+        // under the invocation owner, including while a generator is suspended.
         var entry = codeObject.Instructions;
         var span = entry.Length == 0 ? null : entry[0].Span;
         long bytes = checked((long)codeObject.PatternStorageCount * RuntimeMemoryEstimates.ScalarStorageBytes);
@@ -703,13 +698,10 @@ internal sealed partial class LythonRuntime
         // Admit private frame arrays and cells before allocating them. An
         // escaping cell keeps its original charge beyond this frame.
         var stack = new ExecutableValueStorage(codeObject.ValueStorageCapacity, codeObject.FirstTemporarySlot, codeObject.LastOwnedTemporarySlot,
-            context, span, bytes, argumentsAreLocals ? boundArguments.Values : null, lookupOwner);
+            context, span, bytes, boundArguments.Values, lookupOwner);
         try
         {
             var locals = stack.Values;
-            var argumentValues = boundArguments.Values ?? Array.Empty<ExecutableSlot>();
-            for (var i = 0; !argumentsAreLocals && i < boundArguments.ParameterCount; i++)
-                locals[i] = argumentValues[i];
             // A captured slot holds its cell, never a second cached value. The
             // frame array and escaped closures borrow this same identity.
             // A borrowed invocation uses the defining scope as its execution

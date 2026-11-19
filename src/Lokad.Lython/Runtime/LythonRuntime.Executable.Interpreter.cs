@@ -44,6 +44,24 @@ internal sealed partial class LythonRuntime
             execution = default;
         }
 
+        internal void AdoptGeneratorExecution(ref ExecutableWorkState execution, MemoryGovernor? storageOwner)
+        {
+            AdoptExecutableExecution(ref execution, State.CurrentException);
+            _boundStorageOwner = storageOwner;
+        }
+
+        internal bool RetainsBoundWorkspace(ExecutableSlot[] workspace)
+            => _boundStorageOwner is not null && ReferenceEquals(_execution.Locals, workspace);
+
+        internal void DetachGeneratorExecution()
+        {
+            var owner = _boundStorageOwner;
+            var locals = _execution.Locals;
+            var capacity = _execution.Code.ValueStorageCapacity;
+            DetachExecutableExecution();
+            if (owner is not null) ReturnBoundArguments(locals, owner, capacity);
+        }
+
         internal void EnsureExecutableStateAvailable()
         {
             if (_execution.Code is not null)

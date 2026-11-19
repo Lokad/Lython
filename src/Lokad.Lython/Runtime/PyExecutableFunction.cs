@@ -180,7 +180,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         BoundFunctionArguments boundArguments,
         LythonSourceSpan span)
     {
-        return LythonRuntime.ExecuteExecutableCodeObject(CodeObject, frame, boundArguments, _closureCells, true, span, this)
+        return LythonRuntime.ExecuteExecutableCodeObject(CodeObject, frame, boundArguments, _closureCells, span, this)
             ?? PyNone.Instance;
     }
 
@@ -190,7 +190,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         LythonSourceSpan span)
     {
         return await LythonRuntime.ExecuteExecutableCodeObjectAsync(
-            CodeObject, frame, boundArguments, _closureCells, true, span, this).ConfigureAwait(false)
+            CodeObject, frame, boundArguments, _closureCells, span, this).ConfigureAwait(false)
             ?? PyNone.Instance;
     }
 }

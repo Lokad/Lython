@@ -295,7 +295,7 @@ internal sealed partial class LythonRuntime
                     frame = function.EnterInvocationFrame(bound, span);
                     functionEntered = true;
                     InitializeExecutableFrame(function.CodeObject, frame, bound,
-                        function.ClosureCells, argumentsAreLocals: true, lookupOwner: function, returnConsumedByIteration: consumedByIteration);
+                        function.ClosureCells, lookupOwner: function, returnConsumedByIteration: consumedByIteration);
                 }
             PreparedFrame:
                 frame.EnterExecutableSlots();
@@ -347,7 +347,7 @@ internal sealed partial class LythonRuntime
         private static ExecutableWorkState CreateBorrowedFunctionWork(PyExecutableFunction function,
             in BoundFunctionArguments bound, bool consumedByIteration)
             => CreateExecutableWorkState(function.CodeObject, function.DefinitionContext, bound, function.ClosureCells,
-                argumentsAreLocals: true, lookupOwner: function, returnConsumedByIteration: consumedByIteration,
+                lookupOwner: function, returnConsumedByIteration: consumedByIteration,
                 borrowedInvocation: true);
 
         private static void ReleaseBorrowedFunctionWork(ref ExecutableWorkState work)

@@ -5,6 +5,31 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class GeneratorCleanupCompositionTests
 {
     [Fact]
+    public async Task SuspendedGeneratorsAndEscapedCellsKeepTheirOwnArguments()
+    {
+        await AssertOutput("""
+            def generate(value, label):
+                def read(): return value, label
+                yield read
+                yield value, label
+            left_value = []
+            right_value = []
+            left = generate(left_value, 'left')
+            right = generate(right_value, 'right')
+            read_left = next(left)
+            read_right = next(right)
+            left.close()
+            later = generate([], 'later')
+            print(next(later)()[1], read_left()[1], read_right()[1])
+            print(read_left()[0] is left_value, read_right()[0] is right_value)
+            print(next(right)[0] is right_value)
+            later.close()
+            right.close()
+            left.close()
+            """, "later left right\nTrue True\nTrue\n");
+    }
+
+    [Fact]
     public async Task BranchingWhileConditionsReenterTheirFirstBlock()
     {
         await AssertOutput("""

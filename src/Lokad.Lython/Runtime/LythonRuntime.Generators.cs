@@ -94,10 +94,8 @@ internal sealed partial class LythonRuntime
             frame.MirrorLocalStores |= code.RequiresLocalVariableMirroring;
             _span = span;
             OwnerMemoryGovernor = frame.MemoryGovernor;
-            // Bound storage returns when this call ends. Copy directly into the
-            // generator's admitted workspace, never through a name dictionary.
-            var execution = CreateExecutableWorkState(code, frame, arguments, closureCells, argumentsAreLocals: false);
-            frame.AdoptExecutableExecution(ref execution, frame.State.CurrentException);
+            var execution = CreateExecutableWorkState(code, frame, arguments, closureCells);
+            frame.AdoptGeneratorExecution(ref execution, arguments.StorageOwner);
         }
 
         public bool IsTruthy() => true;
@@ -300,9 +298,10 @@ internal sealed partial class LythonRuntime
         private void Complete()
         {
             _completed = true;
-            _frame?.DetachExecutableExecution();
+            var frame = _frame;
             _frame = null;
             _suspendedException = null;
+            frame?.DetachGeneratorExecution();
         }
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
