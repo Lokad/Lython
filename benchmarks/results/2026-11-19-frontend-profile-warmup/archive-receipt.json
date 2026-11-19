@@ -1,0 +1,13 @@
+{
+  "complete": false,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "ramTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 182927360,
+  "archiveSHA256": "7cbdd32ac794db520dde5522e0a027787ce307cf441e76823118da2b249756f6",
+  "source": "R636/B1066 12fabffb1 frontend phase attribution",
+  "performanceComparison": false,
+  "failure": "Traceback (most recent call last):\n  File \"/home/lokad/lython-bench-checks/current-frontend-profile-b1066-20261119/collect.py\", line 13, in <module>\n    subprocess.run(['python3',str(root/'ops-profile.py'),str(root/'guest-fixtures/profiles')],check=True)\n  File \"/usr/lib/python3.12/subprocess.py\", line 571, in run\n    raise CalledProcessError(retcode, process.args,\nsubprocess.CalledProcessError: Command '['python3', '/home/lokad/lython-bench-checks/current-frontend-profile-b1066-20261119/ops-profile.py', '/home/lokad/lython-bench-checks/current-frontend-profile-b1066-20261119/guest-fixtures/profiles']' returned non-zero exit status 1.\n"
+}
