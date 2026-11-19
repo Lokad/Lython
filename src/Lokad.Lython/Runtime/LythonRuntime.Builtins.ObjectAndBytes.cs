@@ -80,7 +80,7 @@ internal sealed partial class LythonRuntime
         for (var i = 0; i < decoded.Length; i++)
         {
             // The CLR parser accepts trailing NULs; Python rejects them.
-            if (decoded[i] == '\0') throw FloatConversionError(source, context, span, working);
+            if (decoded[i] == '\0') throw FloatConversionError(source, context, span);
             if (decoded[i] == '_') underscores++;
             nonAscii |= decoded[i] > '\x7f';
         }
@@ -99,7 +99,7 @@ internal sealed partial class LythonRuntime
             {
                 if (rune.Value == '_')
                 {
-                    if (!previousDigit || pendingUnderscore) throw FloatConversionError(source, context, span, working);
+                    if (!previousDigit || pendingUnderscore) throw FloatConversionError(source, context, span);
                     pendingUnderscore = true;
                     continue;
                 }
@@ -109,15 +109,15 @@ internal sealed partial class LythonRuntime
                 else if (PyStringOps.IsPythonWhitespace(rune)) character = ' ';
                 else if (Rune.GetUnicodeCategory(rune) == UnicodeCategory.DecimalDigitNumber)
                     character = (char)('0' + (int)Rune.GetNumericValue(rune));
-                else throw FloatConversionError(source, context, span, working);
+                else throw FloatConversionError(source, context, span);
 
                 var digit = char.IsAsciiDigit(character);
-                if (pendingUnderscore && !digit) throw FloatConversionError(source, context, span, working);
+                if (pendingUnderscore && !digit) throw FloatConversionError(source, context, span);
                 buffer[written++] = character;
                 previousDigit = digit;
                 pendingUnderscore = false;
             }
-            if (pendingUnderscore) throw FloatConversionError(source, context, span, working);
+            if (pendingUnderscore) throw FloatConversionError(source, context, span);
             normalized = buffer.AsSpan(0, written).Trim();
         }
         var negative = !normalized.IsEmpty && normalized[0] == '-';
@@ -132,7 +132,7 @@ internal sealed partial class LythonRuntime
         }
         catch (FormatException)
         {
-            throw FloatConversionError(source, context, span, working);
+            throw FloatConversionError(source, context, span);
         }
     }
 
@@ -156,24 +156,35 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static LythonRuntimeException FloatConversionError(object source, ExecutionContext context,
-        LythonSourceSpan span, MemoryGovernor.TemporaryMemoryReservation working)
+    private static LythonRuntimeException FloatConversionError(object source, ExecutionContext context, LythonSourceSpan span)
+        => TextConversionError(source, "could not convert string to float: ", context, span);
+
+    private static LythonRuntimeException TextConversionError(object source, string prefix, ExecutionContext context,
+        LythonSourceSpan span)
     {
-        const string prefix = "could not convert string to float: ";
-        var length = source is PyString text ? text.ByteLength : ((PyBytes)source).Length;
-        // Repr expands each input byte to at most four UTF-16 units (\xNN).
-        // Admit both the decoded repr and the final message while they overlap.
-        var messageChars = RuntimeMemoryEstimates.SaturatingAdd(prefix.Length + 4,
-            RuntimeMemoryEstimates.SaturatingMultiply(4, length));
-        var messageBytes = RuntimeMemoryEstimates.SaturatingAdd(32,
-            RuntimeMemoryEstimates.SaturatingMultiply(2, messageChars));
-        working.Grow(RuntimeMemoryEstimates.SaturatingMultiply(2, messageBytes), span);
-        var message = prefix + PyRendering.ToReprPyString(source, new PyRenderingContext(context)).AsString();
-        var error = new LythonRuntimeException("ValueError", message, span);
-        // The exception can escape after parsing scratch ends. Keep its message
-        // conservatively owned by this execution, even if Python catches it.
-        working.Commit(messageBytes);
-        return error;
+        var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
+        context.EnterInterpreterFrame(span);
+        try
+        {
+            context.CheckExecution(span);
+            builder.AppendAscii(prefix);
+            if (source is PyString text) PyRendering.AppendStringLiteral(builder, text, context, span);
+            else ((PyBytes)source).AppendLiteral(builder, context, span);
+
+            // Admit the CLR message while the UTF-8 builder and any parsing
+            // scratch are still live. The message can escape with the error.
+            var bytes = checked(32L + 2L * builder.Length);
+            using var messageStorage = context.MemoryGovernor.ReserveTemporary(bytes, span);
+            context.CheckExecution(span);
+            var error = new LythonRuntimeException("ValueError", Encoding.UTF8.GetString(builder.WrittenSpan), span);
+            messageStorage.Commit(bytes);
+            return error;
+        }
+        finally
+        {
+            try { builder.Release(); }
+            finally { context.LeaveInterpreterFrame(); }
+        }
     }
 
     private static object Bytes(object[] arguments, LythonSourceSpan span, ExecutionContext context)

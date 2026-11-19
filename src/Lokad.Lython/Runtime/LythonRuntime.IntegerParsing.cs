@@ -187,5 +187,5 @@ internal sealed partial class LythonRuntime
 
     private static LythonRuntimeException InvalidIntegerText(object source, int numberBase,
         ExecutionContext context, LythonSourceSpan span)
-        => new("ValueError", $"invalid literal for int() with base {numberBase}: {IntFailureDisplay(source, context)}", span);
+        => TextConversionError(source, $"invalid literal for int() with base {numberBase}: ", context, span);
 }

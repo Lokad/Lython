@@ -2226,6 +2226,12 @@ without a regex provider. Its conservative input/format working estimates can
 reject earlier; scratch funding returns when parsing ends. Duplicate directives
 raise `re.PatternError`, including when no regex provider is supplied.
 
+Malformed `int()` and `float()` input renders into temporary UTF-8 storage.
+The shared allowance admits the exception message while that builder is live.
+The execution retains the message charge and returns the builder's allowance
+after decoding. A refused admission stops the command before an error handler
+can observe a conversion exception.
+
 Parsing keeps time fields separate from datetime construction: `time.strptime`
 can retain seconds 60/61 and February 29 with default year 1900. The shared
 strftime formatter accepts these time records; datetime constructors and parsing

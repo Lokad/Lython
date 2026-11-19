@@ -763,12 +763,6 @@ internal sealed partial class LythonRuntime
         finally { output.Release(); }
     }
 
-    // Shared int() conversion failure: quotes the offending source like CPython
-    // (str form for strings, bytes form for bytes). Rendered lazily like the
-    // float() path: building it eagerly committed a retained repr per call.
-    private static string IntFailureDisplay(object source, ExecutionContext context)
-        => PyRendering.ToReprPyString(source, new PyRenderingContext(context)).AsString();
-
     private static BigInteger ParseOwnedIntegerText(object source, int numberBase, ExecutionContext context, LythonSourceSpan span)
     {
         context.MemoryGovernor.ThrowIfAdmissionFailed();

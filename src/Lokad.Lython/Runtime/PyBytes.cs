@@ -163,20 +163,25 @@ internal sealed class PyBytes : IEquatable<PyBytes>, IPyTruthyValue, IPyIterable
         var builder = new GovernedByteBuilder(execution.MemoryGovernor, span);
         try
         {
-            var quote = _bytes.AsSpan().Contains((byte)'\'') && !_bytes.AsSpan().Contains((byte)'"') ? (byte)'"' : (byte)'\'';
-            builder.AppendAscii("b");
-            builder.Append(quote);
-            for (var i = 0; i < _bytes.Length; i++)
-            {
-                if ((i & 1023) == 0) execution.CheckExecution(span);
-                AppendEscapedByte(builder, _bytes[i], quote);
-            }
-
-            builder.Append(quote);
-            execution.CheckExecution(span);
+            AppendLiteral(builder, execution, span);
             return builder.ToPyStringAndRelease();
         }
         finally { builder.Release(); }
+    }
+
+    internal void AppendLiteral(GovernedByteBuilder builder, LythonRuntime.ExecutionContext execution, LythonSourceSpan? span)
+    {
+        var quote = _bytes.AsSpan().Contains((byte)'\'') && !_bytes.AsSpan().Contains((byte)'"') ? (byte)'"' : (byte)'\'';
+        builder.Append((byte)'b');
+        builder.Append(quote);
+        for (var i = 0; i < _bytes.Length; i++)
+        {
+            if ((i & 1023) == 0) execution.CheckExecution(span);
+            AppendEscapedByte(builder, _bytes[i], quote);
+        }
+
+        builder.Append(quote);
+        execution.CheckExecution(span);
     }
 
     private static void AppendEscapedByte(GovernedByteBuilder builder, byte value, byte quote)
@@ -203,7 +208,9 @@ internal sealed class PyBytes : IEquatable<PyBytes>, IPyTruthyValue, IPyIterable
                 builder.Append(value);
                 return;
             default:
-                builder.AppendString($"\\x{value:x2}");
+                builder.Append("\\x"u8);
+                builder.Append("0123456789abcdef"u8[value >> 4]);
+                builder.Append("0123456789abcdef"u8[value & 15]);
                 return;
         }
     }

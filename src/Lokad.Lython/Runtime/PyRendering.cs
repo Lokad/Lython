@@ -356,56 +356,62 @@ internal static class PyRendering
 
     private static PyString RenderStringLiteral(PyString text, PyRenderingContext context)
     {
-        var source = text.Utf8Span;
         var builder = new GovernedByteBuilder(context.Context.MemoryGovernor);
+        try
+        {
+            AppendStringLiteral(builder, text, context.Context, null);
+            return builder.ToPyStringAndRelease();
+        }
+        finally { builder.Release(); }
+    }
+
+    internal static void AppendStringLiteral(GovernedByteBuilder builder, PyString text,
+        LythonRuntime.ExecutionContext execution, LythonSourceSpan? span)
+    {
+        var source = text.Utf8Span;
         // Like CPython, a string holding a single quote but no double quote
         // renders wrapped in double quotes with its singles left bare;
         // strings holding both, neither, or only doubles keep single quotes.
         var quote = source.IndexOf((byte)'\'') >= 0 && source.IndexOf((byte)'"') < 0 ? (byte)'"' : (byte)'\'';
         Span<byte> escape = stackalloc byte[10];
         long nextCheck = 0;
-        try
+        builder.Append(quote);
+        for (var cursor = 0; cursor < source.Length;)
         {
-            builder.Append(quote);
-            for (var cursor = 0; cursor < source.Length;)
+            if (cursor >= nextCheck)
             {
-                if (cursor >= nextCheck)
-                {
-                    context.Context.State.CheckExecution(null);
-                    nextCheck = (long)cursor + 1024;
-                }
-                Rune.DecodeFromUtf8(source[cursor..], out var rune, out var width);
-                if (rune.Value == quote)
-                {
-                    builder.Append((byte)'\\');
-                    builder.Append(quote);
-                }
-                else switch (rune.Value)
-                {
-                    case '\\': builder.AppendAscii("\\\\"); break;
-                    case '\n': builder.AppendAscii("\\n"); break;
-                    case '\r': builder.AppendAscii("\\r"); break;
-                    case '\t': builder.AppendAscii("\\t"); break;
-                    default:
-                        if (PyStringOps.IsPrintableRune(rune))
-                            builder.Append(source.Slice(cursor, width));
-                        else
-                        {
-                            var digits = rune.Value <= 0xff ? 2 : rune.Value <= 0xffff ? 4 : 8;
-                            escape[0] = (byte)'\\';
-                            escape[1] = digits == 2 ? (byte)'x' : digits == 4 ? (byte)'u' : (byte)'U';
-                            for (var digit = 0; digit < digits; digit++)
-                                escape[digit + 2] = (byte)"0123456789abcdef"[(rune.Value >> (4 * (digits - digit - 1))) & 15];
-                            builder.Append(escape[..(digits + 2)]);
-                        }
-                        break;
-                }
-                cursor += width;
+                execution.State.CheckExecution(span);
+                nextCheck = (long)cursor + 1024;
             }
-            builder.Append(quote);
-            return builder.ToPyStringAndRelease();
+            Rune.DecodeFromUtf8(source[cursor..], out var rune, out var width);
+            if (rune.Value == quote)
+            {
+                builder.Append((byte)'\\');
+                builder.Append(quote);
+            }
+            else switch (rune.Value)
+            {
+                case '\\': builder.AppendAscii("\\\\"); break;
+                case '\n': builder.AppendAscii("\\n"); break;
+                case '\r': builder.AppendAscii("\\r"); break;
+                case '\t': builder.AppendAscii("\\t"); break;
+                default:
+                    if (PyStringOps.IsPrintableRune(rune))
+                        builder.Append(source.Slice(cursor, width));
+                    else
+                    {
+                        var digits = rune.Value <= 0xff ? 2 : rune.Value <= 0xffff ? 4 : 8;
+                        escape[0] = (byte)'\\';
+                        escape[1] = digits == 2 ? (byte)'x' : digits == 4 ? (byte)'u' : (byte)'U';
+                        for (var digit = 0; digit < digits; digit++)
+                            escape[digit + 2] = (byte)"0123456789abcdef"[(rune.Value >> (4 * (digits - digit - 1))) & 15];
+                        builder.Append(escape[..(digits + 2)]);
+                    }
+                    break;
+            }
+            cursor += width;
         }
-        finally { builder.Release(); }
+        builder.Append(quote);
     }
 
     private static PyString RenderReprTuple(PyTuple tuple, PyRenderingContext context, HashSet<object>? activeContainers)

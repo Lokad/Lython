@@ -6,6 +6,37 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class GovernedAdmissionPreflightTests
 {
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task IntegerFailureMessageNeedsAdmissionBeforeItCanBeCaught(bool asynchronous)
+    {
+        const string source = """
+            import time
+            value = 'x' * 49152
+            time.time()
+            try:
+                int(value)
+            except ValueError:
+                print('caught')
+            """;
+        using var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid);
+        var budget = new AdmissionGateBudget();
+        // Allow repr capacity and its replacement overlap, then deny the
+        // additional CLR message while the UTF-8 builder remains live.
+        var host = new AdmissionGateHost(budget, 140 * 1024);
+        var options = new LythonRunOptions { MemoryBudget = budget };
+        using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
+        {
+            Assert.False(result.Success);
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+            Assert.True(result.FailureAttribution?.Requested >= 2 * 49152);
+            Assert.Empty(result.StandardOutput);
+        }
+        Assert.Equal(0, budget.Root.ReservedBytes);
+    }
+
+    [Theory]
     [InlineData("return 1 << 6000000\n")]
     [InlineData("return 'x' * 750000\n")]
     public void SharedRefusalPrecedesTheLargePayloadAllocation(string source)
