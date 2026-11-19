@@ -154,6 +154,10 @@ original conditions retained. Current comparisons belong in
   lower accounted peak. Mutable-counter elapsed spans zero. The original
   partial collection stays in B1060.
   [Completed comparison](results/2026-11-19-detached-nonlocal-cells/README.md).
+- B1061 keeps direct positional default ownership private. Allocation falls,
+  while ordinary-rule warm CPU rises and compile-to-result remains uncertain.
+  The reused-default warm reference drifts.
+  [Default ownership evidence](results/2026-11-19-direct-default-owner/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
