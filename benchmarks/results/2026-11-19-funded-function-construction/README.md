@@ -24,6 +24,10 @@ elapsed and CPU increase remains unexplained. Keep the prototype private
 while confirming this result with exact images and independently rotated
 processes. The annotated and captured CPU gains justify that confirmation.
 
+B1089 confirmed the synchronous slowdown did not repeat and measured
+a smaller asynchronous CPU increase. The constructor was retained for
+allocation and simplification. [Confirmation](confirmation/README.md).
+
 Each local target, Windows .NET 11 and Ubuntu .NET 10, passed 337 focused
 Release cases. Both complete 32-file images match six CPython catalog
 goldens. These cover the function shapes, mutable defaults, both APIs,
