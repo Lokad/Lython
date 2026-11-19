@@ -1,0 +1,114 @@
+[
+  {
+    "framework": "net11.0",
+    "stage": "funding",
+    "exitCode": 0,
+    "Growths": 9,
+    "Shrinks": 7,
+    "Peak": 784,
+    "Refusals": 1,
+    "RefusedAmount": 224,
+    "Current": 0
+  },
+  {
+    "framework": "net11.0",
+    "stage": "compile",
+    "exitCode": 0,
+    "runningAtCancellation": true,
+    "cancelled": true,
+    "originalToken": true,
+    "balance": 0,
+    "libraries": {
+      "Lokad.Lython": "7170869D8C558E38FFF06BD87D46D85825DEE43DA0E5260C0284E7C39A23AAC9",
+      "Lokad.Lython.Utf8Regex": "00457D91F7D50ECB87405B3BC71EBE05671D124EAF390BD59ED63ED29778B879",
+      "Lokad.Utf8Regex": "5B7A03CE4EC0F115AF4706741E694D4F14EC134E96188FA06DF46767B4EB81AB",
+      "Lokad.Utf8Regex.PythonRe": "DA8720C390375F196C335955A4BDE2D36931CE10F1A9AF6307A1C63898E8C458"
+    }
+  },
+  {
+    "framework": "net11.0",
+    "stage": "match",
+    "exitCode": 0,
+    "runningAtCancellation": true,
+    "cancelled": true,
+    "originalToken": true,
+    "balance": 0,
+    "libraries": {
+      "Lokad.Lython": "7170869D8C558E38FFF06BD87D46D85825DEE43DA0E5260C0284E7C39A23AAC9",
+      "Lokad.Lython.Utf8Regex": "00457D91F7D50ECB87405B3BC71EBE05671D124EAF390BD59ED63ED29778B879",
+      "Lokad.Utf8Regex": "5B7A03CE4EC0F115AF4706741E694D4F14EC134E96188FA06DF46767B4EB81AB",
+      "Lokad.Utf8Regex.PythonRe": "DA8720C390375F196C335955A4BDE2D36931CE10F1A9AF6307A1C63898E8C458"
+    }
+  },
+  {
+    "framework": "net11.0",
+    "stage": "cursor",
+    "exitCode": 0,
+    "runningAtCancellation": true,
+    "cancelled": true,
+    "originalToken": true,
+    "balance": 0,
+    "libraries": {
+      "Lokad.Lython": "7170869D8C558E38FFF06BD87D46D85825DEE43DA0E5260C0284E7C39A23AAC9",
+      "Lokad.Lython.Utf8Regex": "00457D91F7D50ECB87405B3BC71EBE05671D124EAF390BD59ED63ED29778B879",
+      "Lokad.Utf8Regex": "5B7A03CE4EC0F115AF4706741E694D4F14EC134E96188FA06DF46767B4EB81AB",
+      "Lokad.Utf8Regex.PythonRe": "DA8720C390375F196C335955A4BDE2D36931CE10F1A9AF6307A1C63898E8C458"
+    }
+  },
+  {
+    "framework": "net10.0",
+    "stage": "funding",
+    "exitCode": 0,
+    "Growths": 9,
+    "Shrinks": 7,
+    "Peak": 784,
+    "Refusals": 1,
+    "RefusedAmount": 224,
+    "Current": 0
+  },
+  {
+    "framework": "net10.0",
+    "stage": "compile",
+    "exitCode": 0,
+    "runningAtCancellation": true,
+    "cancelled": true,
+    "originalToken": true,
+    "balance": 0,
+    "libraries": {
+      "Lokad.Lython": "987B80CB7369CBCE12B2FB21F6B891781653C6681A9B0F715BA61DDEC4F40471",
+      "Lokad.Lython.Utf8Regex": "782DDFA5CCEE9D4C75B6DF95E4CAACB9753C134EC4F166280F5BB5F8E44FC5AE",
+      "Lokad.Utf8Regex": "66EC5ED2C6A693D2212C0FAEC3E34738C15EAD4DC8DB1F925AA130E3B4287410",
+      "Lokad.Utf8Regex.PythonRe": "68F72869789E926A80651CF52F48B725075563051582FC32FDA611436A006B9D"
+    }
+  },
+  {
+    "framework": "net10.0",
+    "stage": "match",
+    "exitCode": 0,
+    "runningAtCancellation": true,
+    "cancelled": true,
+    "originalToken": true,
+    "balance": 0,
+    "libraries": {
+      "Lokad.Lython": "987B80CB7369CBCE12B2FB21F6B891781653C6681A9B0F715BA61DDEC4F40471",
+      "Lokad.Lython.Utf8Regex": "782DDFA5CCEE9D4C75B6DF95E4CAACB9753C134EC4F166280F5BB5F8E44FC5AE",
+      "Lokad.Utf8Regex": "66EC5ED2C6A693D2212C0FAEC3E34738C15EAD4DC8DB1F925AA130E3B4287410",
+      "Lokad.Utf8Regex.PythonRe": "68F72869789E926A80651CF52F48B725075563051582FC32FDA611436A006B9D"
+    }
+  },
+  {
+    "framework": "net10.0",
+    "stage": "cursor",
+    "exitCode": 0,
+    "runningAtCancellation": true,
+    "cancelled": true,
+    "originalToken": true,
+    "balance": 0,
+    "libraries": {
+      "Lokad.Lython": "987B80CB7369CBCE12B2FB21F6B891781653C6681A9B0F715BA61DDEC4F40471",
+      "Lokad.Lython.Utf8Regex": "782DDFA5CCEE9D4C75B6DF95E4CAACB9753C134EC4F166280F5BB5F8E44FC5AE",
+      "Lokad.Utf8Regex": "66EC5ED2C6A693D2212C0FAEC3E34738C15EAD4DC8DB1F925AA130E3B4287410",
+      "Lokad.Utf8Regex.PythonRe": "68F72869789E926A80651CF52F48B725075563051582FC32FDA611436A006B9D"
+    }
+  }
+]
