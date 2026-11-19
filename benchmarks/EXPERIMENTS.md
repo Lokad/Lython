@@ -353,6 +353,11 @@ original conditions retained. Current comparisons belong in
   the B1109 image. Ordinary-rule admission often comes from definition
   defaults and retained function construction. Captured rules also show
   bound-call entry and work-state creation. [Current profile](results/2026-11-19-current-rule-forwarding-profile/README.md).
+- B1111 fills the final function default containers as values are evaluated.
+  Ordinary and annotated rules allocate 8.76% and 6.94% less. Ordinary
+  rules run 1.59–3.89% slower warm with higher CPU. Keep this prototype
+  private and examine the extra append dispatch.
+  [Direct default construction](results/2026-11-19-direct-default-payload/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
