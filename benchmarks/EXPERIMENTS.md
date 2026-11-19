@@ -381,6 +381,11 @@ original conditions retained. Current comparisons belong in
   and allocate 10.29% less. Annotated rules take 5.73–8.60% longer with
   higher CPU and flat allocation. Keep the prototype private for refinement.
   [Borrowed leaf calls](results/2026-11-19-borrowed-lexical-leaf/README.md).
+- B1116 isolates borrowed fixed returns from lexical child transfer. Removing
+  the return path makes captured rules 4.32–8.69% slower with higher CPU and
+  10.22% more allocation. Annotated timing remains mixed. Retain both private
+  variants as evidence and examine common bound-call entry next.
+  [Return transport isolation](results/2026-11-19-borrowed-return-transport/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
