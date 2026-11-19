@@ -278,7 +278,11 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
             case "__qualname__": _assignedQualName = value; break;
             case "__module__": _assignedModule = value; break;
             case "__doc__": _docstring = value; break;
-            case "__annotations__": _annotations = value; break;
+            case "__annotations__":
+                if (value is not (PyNone or PyDict or PyDefaultDict or PyCounter))
+                    throw new LythonRuntimeException("TypeError", "__annotations__ must be set to a dict object", null);
+                _annotations = value is PyNone ? null : value;
+                break;
             case "__type_params__": _typeParameters = value; break;
             default:
                 (_customAttributes ??= new PyDict(_closure.MemoryGovernor)).SetStringItem(name, value, _closure.MemoryGovernor, null);

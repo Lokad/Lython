@@ -142,6 +142,7 @@ public sealed class AnnotatedHelperTests
         { "docstring", "def f(value:int)->int:\n 'helper documentation'\n return value+1\nprint(f(2),f.__doc__)", "3 helper documentation\n" },
         { "parameter_shapes", "def f(value:int=2,/,*,scale:int=3)->int:return value*scale\nprint(f(),f(4,scale=5),list(f.__annotations__))", "6 20 ['value', 'scale', 'return']\n" },
         { "metadata_alias", "def f(value:int)->int:return value+1\nannotations=f.__annotations__\nannotations['extra']=123\nprint(f(2),annotations is f.__annotations__,f.__annotations__['extra'])", "3 True 123\n" },
+        { "metadata_assignment", "from collections import Counter, defaultdict\ndef f(value:int)->int:return value\noriginal=f.__annotations__\ntry:\n f.__annotations__=7\nexcept TypeError as error:\n print(type(error).__name__,str(error))\nprint(f.__annotations__ is original)\nf.__annotations__=None\nprint(f.__annotations__,len(original))\nfor replacement in ({'fresh':str},Counter(),defaultdict(int)):\n f.__annotations__=replacement\n print(f.__annotations__ is replacement)", "TypeError __annotations__ must be set to a dict object\nTrue\n{} 2\nTrue\nTrue\nTrue\n" },
         { "recursion", "def factorial(value:int)->int:\n if value<2:return 1\n return value*factorial(value-1)\nprint(factorial(6))", "720\n" },
         { "none_return", "def f(value:int)->None:pass\nprint(f(2),f.__annotations__['return'] is None)", "None True\n" },
         { "metadata_not_enforcement", "def helper(value:int)->int:return value\nprint(helper('text'))", "text\n" },

@@ -4,6 +4,8 @@
 
 - Parse a shared postfix prefix for assignment targets and expression
   statements, removing repeated speculative parses.
+- Match Python function `__annotations__` assignment. `None` clears the
+  annotations, dictionaries retain their identity and other values raise `TypeError`.
 - Reuse admitted key layouts when forwarding dense CSV and JSON records
   as keywords, while keeping each dictionary's values independently mutable.
   Skip the key scan when the layout proves the keys are valid and the callee
