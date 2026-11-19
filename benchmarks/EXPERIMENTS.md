@@ -89,6 +89,10 @@ original conditions retained. Current comparisons belong in
   replay and reduces the annotated accounted peak by 48 bytes. Unannotated
   rules run slower warm with higher CPU, and annotated compilation slows.
   Annotated compile-to-result improves. [Direct default transport](results/2026-11-19-final-default-transport/README.md).
+- B1044 profiles forwarding, the CSV invoice and the shipment selector
+  report on R611. The separate selector continuation and repeated key
+  construction motivate a prepared native dictionary lookup comparison.
+  [Record and text attribution](results/2026-11-19-current-record-text-costs/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
