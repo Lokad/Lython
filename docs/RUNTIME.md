@@ -2266,6 +2266,8 @@ scalar/byte window bounds. Captures identify absolute byte ranges. Lython checks
 capture boundaries, the whole match's window and forward cursor progression
 before projecting or slicing subject text. Lookbehind captures can precede
 `pos`, and an anchored empty match can succeed at `pos` in a reversed window.
+Constant matching during frontend analysis uses the same capture and window
+checks before accepting a provider result as a compiler fact.
 Lython counts UTF-8 scalars from nearby known endpoints or the iteration
 checkpoint, checking cancellation during long scans. It copies retained
 values from the original subject before a cursor can advance. Provider

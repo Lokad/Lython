@@ -112,6 +112,38 @@ internal sealed partial class LythonRuntime
             { throw ProviderFailure(error, governor, token, span, pattern); }
         }
 
+        internal static string? MatchResultError(ReadOnlySpan<byte> input, LythonRegexWindow window,
+            LythonRegexMatchMode mode, ReadOnlySpan<LythonRegexCapture?> captures, int? lastIndex,
+            MemoryGovernor? governor, CancellationToken token, LythonSourceSpan span)
+        {
+            if (captures[0] is not { } whole ||
+                lastIndex is { } last && (last <= 0 || last >= captures.Length || captures[last] is null))
+                return "Regex provider returned inconsistent capture metadata.";
+
+            // Subgroups from lookbehind may precede Pos. Only slot zero is
+            // constrained to the search window.
+            foreach (var capture in captures)
+            {
+                governor?.ThrowIfAdmissionFailed();
+                if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
+                if (capture is not { } value) continue;
+                if (value.StartByte < 0 || value.EndByte < value.StartByte || value.EndByte > input.Length ||
+                    value.StartByte < input.Length && (input[value.StartByte] & 0xc0) == 0x80 ||
+                    value.EndByte < input.Length && (input[value.EndByte] & 0xc0) == 0x80)
+                    return "Regex provider returned inconsistent capture ranges.";
+            }
+
+            // An anchored match can be empty at Pos in a reversed window.
+            var valid = mode switch
+            {
+                LythonRegexMatchMode.Match => whole.StartByte == window.StartByte &&
+                    whole.EndByte <= Math.Max(window.EndByte, window.StartByte),
+                LythonRegexMatchMode.FullMatch => whole.StartByte == window.StartByte && whole.EndByte == window.EndByte,
+                _ => whole.StartByte >= window.StartByte && whole.EndByte <= window.EndByte
+            };
+            return valid ? null : "Regex provider returned a match outside its window.";
+        }
+
         private static LythonRuntimeException ProviderFailure(Exception error, MemoryGovernor? governor,
             CancellationToken token, LythonSourceSpan? span, PyString? pattern,
             string operationName = "Regex provider")

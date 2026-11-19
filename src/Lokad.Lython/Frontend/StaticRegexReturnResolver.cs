@@ -335,7 +335,12 @@ internal static class StaticRegexReturnResolver
         using var storage = analysis.MemoryGovernor?.ReserveTemporary(checked(32L + 16L * captureSlotCount), span);
         token.ThrowIfCancellationRequested();
         var captures = new LythonRegexCapture?[captureSlotCount];
-        return LythonRuntime.RegexCompiler.TryMatch(subject, operation, captures, out _,
-            analysis.MemoryGovernor, token, span, operationName: "Regex constant matching");
+        if (!LythonRuntime.RegexCompiler.TryMatch(subject, operation, captures, out var lastIndex,
+            analysis.MemoryGovernor, token, span, operationName: "Regex constant matching")) return false;
+
+        var error = LythonRuntime.RegexCompiler.MatchResultError(input, window, operation, captures, lastIndex,
+            analysis.MemoryGovernor, token, span);
+        if (error is not null) throw RuntimeErrors.Capability(error, span);
+        return true;
     }
 }

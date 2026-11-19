@@ -446,13 +446,15 @@ public sealed class RegexProviderContractTests
         {
             MatchFactory = (_, _) => new(new LythonRegexCapture?[] { new(startByte, endByte) }, null)
         };
-        using (var script = new LythonEngine(provider).Compile("import re\nprint(re.match('x','éx').group())", budget))
+        using (var script = new LythonEngine(provider).Compile("import re\nprint(re.match('x',text).group())", budget))
         {
             Assert.True(script.IsValid);
             var baseline = budget.ReservedBytes;
+            var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["text"] = "éx" } };
             foreach (var asynchronous in new[] { false, true })
             {
-                using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
+                using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options)
+                    : script.Run(new MockLythonHost(), options))
                 {
                     Assert.False(result.Success);
                     Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
@@ -1162,6 +1164,52 @@ public sealed class RegexProviderContractTests
             Assert.Equal(3, provider.Compilations);
             Assert.Equal(provider.Compilations, provider.ClosedPatterns);
         }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData("search", 1, 2, null, "inconsistent capture ranges")]
+    [InlineData("match", 2, 3, null, "outside its window")]
+    [InlineData("fullmatch", 0, 2, null, "outside its window")]
+    [InlineData("search", 0, 2, 1, "inconsistent capture metadata")]
+    public async Task InvalidProviderMatchCannotSupplyACompilerFact(string mode, int start, int end,
+        int? lastIndex, string message)
+    {
+        using var provider = new CooperatingProvider
+        {
+            MatchFactory = (_, _) => new([new LythonRegexCapture(start, end)], lastIndex),
+        };
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        var engine = new LythonEngine(provider);
+        var program = $"import re\np = re.compile('x')\nm = p.{mode}(subject)\nreturn m";
+        using (var literal = engine.Compile(program.Replace("(subject)", "('éx')", StringComparison.Ordinal), budget))
+        {
+            Assert.False(literal.IsValid);
+            Assert.Contains(literal.Diagnostics, d => d.Message.Contains(message, StringComparison.Ordinal));
+            Assert.True(provider.Compilations > 0);
+            Assert.Equal(provider.Compilations, provider.ClosedPatterns);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+
+        using (var dynamic = engine.Compile(program, budget))
+        {
+            Assert.True(dynamic.IsValid, string.Join("; ", dynamic.Diagnostics));
+            var baseline = budget.ReservedBytes;
+            var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["subject"] = "éx" } };
+            foreach (var asynchronous in new[] { false, true })
+            {
+                using (var result = asynchronous ? await dynamic.RunAsync(new MockLythonHost(), options)
+                    : dynamic.Run(new MockLythonHost(), options))
+                {
+                    Assert.False(result.Success);
+                    var failure = Assert.IsType<LythonRuntimeFailure>(result.Failure);
+                    Assert.Equal("RuntimeError", failure.ExceptionType);
+                    Assert.Contains(message, failure.Message);
+                }
+                Assert.Equal(baseline, budget.ReservedBytes);
+            }
+        }
+        Assert.Equal(provider.Compilations, provider.ClosedPatterns);
         Assert.Equal(0, budget.ReservedBytes);
     }
 

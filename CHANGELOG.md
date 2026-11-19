@@ -4,6 +4,8 @@
 
 - Report invalid regex-provider capture counts during frontend or runtime
   pattern creation. Close the handle before starting any matching work.
+  Validate constant match results with the runtime's capture and window rules
+  before recording frontend facts.
 
 - Admit function and lambda default containers before evaluating defaults.
   Write values directly into the final containers and refund them on
