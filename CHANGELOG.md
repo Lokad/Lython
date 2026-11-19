@@ -2,6 +2,8 @@
 
 ## 0.11.0 - Unreleased
 
+- Record generator classification during yield validation so lowering
+  can use it without scanning callable bodies again.
 - Bind generator arguments directly into the suspended frame's admitted
   slots and return the workspace after the frame's cleanup.
 - Reuse prepared class and function bindings while resolving lexical class
