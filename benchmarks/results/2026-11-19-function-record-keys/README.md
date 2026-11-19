@@ -68,3 +68,5 @@ outside guest elapsed. Process CPU has the wider request boundary.
 [B1028 medians](summary.json) · [B1028 raw observations](observations.tgz) ·
 [B1029 medians](confirmation/summary.json) · [B1029 raw observations](confirmation/observations.tgz) ·
 [Measured core](measured-core.dll.gz) · [Source, tests and procedures](checks-and-procedures.tar.xz).
+
+[Platform and installed-package qualification](delivery/README.md).
