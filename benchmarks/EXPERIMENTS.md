@@ -331,6 +331,11 @@ original conditions retained. Current comparisons belong in
   The validator and manifest improve in compilation and compile-to-result
   with lower CPU. Local compilation allocation rises.
   [Token source transport](results/2026-11-19-token-source-transport/README.md).
+- B1106 refreshes validator and manifest compilation and compile-to-result
+  against CPython at the tokenization checkpoint. The validator takes
+  1.28–1.30× CPython compile-to-result. The manifest is close and its
+  CPython controls differ by 3.00%.
+  [External comparison](results/2026-11-19-token-source-cpython/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup

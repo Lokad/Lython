@@ -19,9 +19,11 @@ B1102 measured **80cbf4988 / frozen f26c8272**. The B1069
 shipment row measures **12fabffb1 / frozen 9b8511fc**. B1084's retained
 siblings row measures **44fe04178 / frozen 51154d37**. These collections
 ran **2026-11-19 UTC** against stock **CPython 3.13.16** on the quiet **Azure
-F4as_v7**, with Ubuntu 24.04.4 and .NET 11 RC3. Each workload ran three phases
-on duplicate processes per engine. The generated validator has compilation
-and compile-to-result rows only.
+F4as_v7**, with Ubuntu 24.04.4 and .NET 11 RC3. B1106 uses the same setup for
+the validator and manifest at **27f68744b / frozen 22c49edc**. Both of its
+workloads have compilation and compile-to-result rows only. Each collection
+uses duplicate processes per engine.
+[B1106 observations](../benchmarks/results/2026-11-19-token-source-cpython/README.md) ·
 [B1102 observations](../benchmarks/results/2026-11-19-retained-defaults-cpython/README.md) ·
 [B1091 history](../benchmarks/results/2026-11-19-inline-forwarding-cpython/README.md) ·
 [Earlier B1084](../benchmarks/results/2026-11-19-compiled-binding-cpython/README.md) ·
@@ -52,8 +54,10 @@ The table compares workload latency under different containment boundaries.
 | Expanded forwarding report | Compile-to-result | 2.078–2.092 ms | 1.289–1.300 ms | 1.60–1.62× | B1102 diagnostic. Controls L/C 0.65 / 0.92%. IQR ≤2.47%. |
 | CSV invoice | Compilation only | 0.08813–0.08839 ms | 0.09403–0.09497 ms | 0.93–0.94× | B1102 diagnostic. Controls L/C 0.29 / 1.00%. IQR ≤3.03%. |
 | CSV invoice | Compile-to-result | 6.854–7.043 ms | 6.318–6.416 ms | 1.07–1.11× | B1102 diagnostic. Controls L/C 2.76 / 1.55%. IQR ≤2.62%. |
-| Generated validator | Compilation only | 2.48736–2.51106 ms | 1.83120–1.83826 ms | 1.35–1.37× | B1102 diagnostic. Controls L/C 0.95 / 0.39%. IQR ≤5.01%. Gap size uncertain. |
-| Generated validator | Compile-to-result | 2.635–2.642 ms | 1.967–1.968 ms | 1.34× | B1102 diagnostic. Controls L/C 0.29 / 0.08%. IQR ≤2.07%. |
+| Generated validator | Compilation only | 2.36686–2.40217 ms | 1.85039–1.85728 ms | 1.27–1.30× | B1106 diagnostic. Controls L/C 1.49 / 0.37%. IQR ≤3.71%. |
+| Generated validator | Compile-to-result | 2.569–2.600 ms | 1.996–2.008 ms | 1.28–1.30× | B1106 diagnostic. Controls L/C 1.18 / 0.63%. IQR ≤2.80%. |
+| Configuration manifest | Compilation only | 0.16381–0.16541 ms | 0.15707–0.15763 ms | 1.04–1.05× | B1106 diagnostic. Controls L/C 0.98 / 0.36%. IQR ≤5.59%. |
+| Configuration manifest | Compile-to-result | 0.4569–0.4577 ms | 0.4615–0.4753 ms | 0.96–0.99× | B1106 diagnostic. Controls L/C 0.18 / 3.00%. IQR ≤4.26%. Close comparison. |
 | Retained nonlocal siblings | Compilation only | 0.04565–0.04589 ms | 0.05469–0.05545 ms | 0.82–0.84× | B1084 diagnostic. Controls L/C 0.53 / 1.39%. IQR ≤0.95%. |
 | Retained nonlocal siblings | Compile-to-result | 0.255–0.260 ms | 0.252–0.259 ms | 0.99–1.03× | B1084 diagnostic. Controls L/C 1.73 / 2.75%. IQR ≤1.17%. |
 | Shipment report with format selectors | Compilation only | 0.03038–0.03059 ms | 0.03230–0.03252 ms | 0.93–0.95× | B1069 diagnostic. Controls L/C 0.69 / 0.69%. IQR ≤0.93%. |
@@ -90,6 +94,8 @@ These rows retain the sources and uncertainties of earlier measurements.
 
 | Workload | Phase | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| Generated validator | Compilation only | 2.48736–2.51106 ms | 1.83120–1.83826 ms | 1.35–1.37× | B1102 diagnostic. Controls L/C 0.95 / 0.39%. IQR ≤5.01%. Gap size uncertain. |
+| Generated validator | Compile-to-result | 2.635–2.642 ms | 1.967–1.968 ms | 1.34× | B1102 diagnostic. Controls L/C 0.29 / 0.08%. IQR ≤2.07%. |
 | Configuration edit | Compilation only | 0.03577–0.03642 ms | 0.03409–0.03420 ms | 1.05–1.07× | B1002 diagnostic. Controls L/C 1.82 / 0.33%. IQR ≤1.21%. |
 | Configuration edit | Compile-to-result | 0.1336–0.1345 ms | 0.1235–0.1260 ms | 1.06–1.09× | B1002 diagnostic. Controls L/C 0.66 / 1.98%. IQR ≤0.60%. |
 | Unannotated rule closures | Compilation only | 0.03308–0.03364 ms | 0.04178–0.04211 ms | 0.79–0.81× | B1057 diagnostic. Controls L/C 1.68 / 0.81%. IQR ≤0.62%. |
