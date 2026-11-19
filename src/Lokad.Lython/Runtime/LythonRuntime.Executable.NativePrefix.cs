@@ -104,7 +104,7 @@ internal sealed partial class LythonRuntime
                         Publish(instruction, captured);
                         break;
                     case ExecutableOpCode.StoreClosure:
-                        if (!TryCell(instruction.ClosureSlot, out var writeCell) || !writeCell.CanStoreThroughOwner) return false;
+                        if (!TryCell(instruction.ClosureSlot, out var writeCell) || !writeCell.CanStoreDirectly) return false;
                         var stored = Take(instruction);
                         writeCell.Value = stored;
                         break;

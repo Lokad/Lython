@@ -143,6 +143,18 @@ internal sealed partial class ExecutableScript
                 foreach (var localName in _scopeFacts.LocalBindingOrder)
                     InternLocal(localName);
 
+            var resolvedNonlocals = _completeLexicalParent;
+            if (resolvedNonlocals && generatorExpression is null && _scopeFacts.NonlocalNames.Count != 0)
+            {
+                // Bound names used by declarations, deletion and locals() also
+                // need a capture when no ordinary expression loads them.
+                foreach (var nonlocalName in _scopeFacts.NonlocalNames)
+                {
+                    if (HasEnclosingBinding(nonlocalName)) InternClosure(nonlocalName);
+                    else resolvedNonlocals = false;
+                }
+            }
+
             var entryBlock = CreateBlock();
             var exitBlock = generatorExpression is null ? CompileStatements(statements, entryBlock)
                 : CompileComprehensionBody(generatorExpression.Clauses, generatorExpression.ItemExpression,
@@ -214,8 +226,8 @@ internal sealed partial class ExecutableScript
                 // Code using only slots can own cells independently of an
                 // activation. A descendant that can still observe a lexical
                 // namespace keeps its defining chain and the bridge to it.
-                UsesOnlyLexicalSlots = callable && _completeLexicalParent &&
-                    !requiresLocalVariableMirroring && _scopeFacts.NonlocalNames.Count == 0 &&
+                UsesOnlyLexicalSlots = callable && resolvedNonlocals &&
+                    !requiresLocalVariableMirroring &&
                     !_scopeFacts.RequiresClassCell && _matchCases.Count == 0 &&
                     _functions.All(function => function.CodeObject.UsesOnlyLexicalSlots) &&
                     !_constants.Any(value => value is ExecutableCreateGeneratorExpression or

@@ -359,5 +359,6 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
             CodeObject.RequiresLocalVariableMirroring,
             OwnerType,
             span,
-            enterFunctionCall);
+            enterFunctionCall,
+            nonlocalsAreCaptured: CodeObject.UsesOnlyLexicalSlots && _closure.ParentContext is null);
 }

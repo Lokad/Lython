@@ -153,6 +153,48 @@ public sealed class ClosureRetentionAccountingScenarioTests
         Assert.True(asyncResult.PeakExecutionMemoryBytes <= ClosureBudgetBytes);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RetainedNonlocalSiblingsShareTheirCellWithinTheBorrowedAllowance(bool asynchronous)
+    {
+        var budget = new LythonMemoryBudget(256 * 1024);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
+            def factory(seed):
+                value = seed
+                def add(step):
+                    nonlocal value
+                    value += step
+                    return value
+                def erase():
+                    nonlocal value
+                    del value
+                def assign(replacement):
+                    nonlocal value
+                    value = replacement
+                    return value
+                return add, erase, assign
+            functions = [factory(seed) for seed in range(240)]
+            add, erase, assign = functions[-1]
+            previous = add(999)
+            erase()
+            unbound = False
+            try:
+                add(1)
+            except NameError:
+                unbound = True
+            return [previous, unbound, assign(previous) is previous, functions[0][0](0)]
+            """);
+        Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
+        var options = new LythonRunOptions { MemoryBudget = budget };
+        using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(new List<object?> { new BigInteger(1238), true, true, BigInteger.Zero }, result.ReturnValue);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Fact]
     public async Task ManyWideClosuresStayCharged()
     {

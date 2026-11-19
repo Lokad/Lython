@@ -12,9 +12,10 @@ internal static class PyFunctionBinding
         bool mirrorBoundArguments,
         PyType? ownerType,
         LythonSourceSpan span,
-        bool enterFunctionCall = true)
+        bool enterFunctionCall = true,
+        bool nonlocalsAreCaptured = false)
     {
-        var frame = new LythonRuntime.ExecutionContext(closure, scopeFacts);
+        var frame = new LythonRuntime.ExecutionContext(closure, scopeFacts, nonlocalsAreCaptured);
         frame.FunctionName = bindingPlan.CallableName;
         frame.FirstPositionalParameterName = bindingPlan.PositionalCount == 0
             ? null : bindingPlan.NameAt(0);

@@ -83,14 +83,14 @@ internal sealed partial class LythonRuntime
             ScopeFacts = facts ?? ScopeDirectiveFacts.Empty;
         }
 
-        public ExecutionContext(ExecutionContext parent, ScopeDirectiveFacts scopeFacts)
+        public ExecutionContext(ExecutionContext parent, ScopeDirectiveFacts scopeFacts, bool nonlocalsAreCaptured = false)
             : base(parent.Frame)
         {
             State = parent.State;
             SourcePath = parent.SourcePath;
             FunctionClosureContext = this;
             ScopeFacts = scopeFacts;
-            ValidateNonlocalTargets();
+            if (!nonlocalsAreCaptured) ValidateNonlocalTargets();
         }
 
         private void ValidateNonlocalTargets()
@@ -262,6 +262,14 @@ internal sealed partial class LythonRuntime
         {
             context = ScopeFacts.IsNonlocal(name) ? FindNonlocalTarget(name) : null;
             return context is not null;
+        }
+
+        internal bool TryGetStandaloneCapture(string name, [MaybeNullWhen(false)] out ExecutableCell cell)
+        {
+            if (CurrentExecutableFrame is { } frame && frame.TryGetCell(name, out cell) && !cell.HasNamespaceOwner)
+                return true;
+            cell = null;
+            return false;
         }
 
         internal bool TryReadNonlocalValue(string name, [MaybeNullWhen(false)] out object value)

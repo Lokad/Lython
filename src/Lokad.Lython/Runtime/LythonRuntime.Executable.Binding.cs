@@ -103,7 +103,7 @@ internal sealed partial class LythonRuntime
         in ExecutableInstruction instruction)
     {
         var slot = instruction.ClosureSlot;
-        if (execution.ClosureCells is { } cells && (uint)slot < (uint)cells.Count && cells[slot].CanStoreThroughOwner)
+        if (execution.ClosureCells is { } cells && (uint)slot < (uint)cells.Count && cells[slot].CanStoreDirectly)
         {
             var value = execution.Stack.TakeValue(instruction.InputStart, instruction.LiveExtent);
             cells[slot].Value = value;
@@ -128,7 +128,7 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.NameNotDefined(codeObject.ClosureNames[slot], span);
         }
 
-        if (cell.CanStoreThroughOwner) cell.Value = value;
+        if (cell.CanStoreDirectly) cell.Value = value;
         else
         {
             cell.Value = value;

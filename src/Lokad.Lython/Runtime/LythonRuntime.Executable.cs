@@ -52,7 +52,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        internal bool CanStoreThroughOwner => _owner is not null && _name is not null && _owner.GlobalNamespace is null;
+        internal bool CanStoreDirectly => _owner is null || (_name is not null && _owner.GlobalNamespace is null);
         internal bool HasNamespaceOwner => _owner is not null;
 
         private bool UsesNamespace => _owner is { MirrorsExecutableLocals: true } || _owner?.MirrorLocalStores == true;
@@ -60,7 +60,7 @@ internal sealed partial class LythonRuntime
         internal bool TryApplyIntegerArithmetic(BinaryOperatorSyntax operation, long operand,
             ExecutionContext context, LythonSourceSpan arithmeticSpan, LythonSourceSpan storeSpan)
         {
-            if (!CanStoreThroughOwner || UsesNamespace) return false;
+            if (!CanStoreDirectly || UsesNamespace) return false;
             long prior;
             if (_hasInteger) prior = _integer;
             else if (!TryMachineInteger(_value, out prior)) return false;

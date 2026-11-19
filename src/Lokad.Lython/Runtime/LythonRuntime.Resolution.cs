@@ -44,10 +44,15 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.NameNotDefined(name, span);
         }
 
-        if (context.TryGetNonlocalTarget(name, out _))
+        if (context.ScopeFacts.IsNonlocal(name))
         {
-            if (context.TryReadNonlocalValue(name, out var nonlocalValue)) return nonlocalValue;
-            throw RuntimeErrors.FreeVariableNotAssociated(name, span);
+            if (context.TryGetStandaloneCapture(name, out var cell))
+                return cell.Value ?? throw RuntimeErrors.FreeVariableNotAssociated(name, span);
+            if (context.TryGetNonlocalTarget(name, out _))
+            {
+                if (context.TryReadNonlocalValue(name, out var nonlocalValue)) return nonlocalValue;
+                throw RuntimeErrors.FreeVariableNotAssociated(name, span);
+            }
         }
 
         for (var current = context; current is not null; current = current.ParentContext)
@@ -95,8 +100,12 @@ internal sealed partial class LythonRuntime
     {
         // A retained closure cell remains authoritative after its defining
         // executable workspace has detached. Do not write only its old namespace.
-        if (context.ScopeFacts.IsNonlocal(name) && !context.TryGetInlinedBinding(name, out _))
-            context.CurrentExecutableFrame?.TryStoreLocalOrClosure(name, value);
+        if (context.ScopeFacts.IsNonlocal(name) && !context.TryGetInlinedBinding(name, out _) &&
+            context.CurrentExecutableFrame is { } frame && frame.TryGetCell(name, out var captured))
+        {
+            captured.Value = value;
+            if (!captured.HasNamespaceOwner) return;
+        }
         var storageContext = ResolveNameStorageContext(name, context, span);
         if (storageContext.GlobalNamespace is not null)
         {
@@ -116,6 +125,7 @@ internal sealed partial class LythonRuntime
         {
             removed = cell.Value is not null;
             cell.Value = null;
+            if (!cell.HasNamespaceOwner) return removed;
         }
         var storageContext = ResolveNameStorageContext(name, context, span);
         if (storageContext.GlobalNamespace is not null)
@@ -128,7 +138,8 @@ internal sealed partial class LythonRuntime
     }
 
     private static LythonRuntimeException MissingDeletedName(string name, ExecutionContext context, LythonSourceSpan span)
-        => context.TryGetNonlocalTarget(name, out _)
+        => context.ScopeFacts.IsNonlocal(name) &&
+            (context.TryGetStandaloneCapture(name, out _) || context.TryGetNonlocalTarget(name, out _))
             ? RuntimeErrors.FreeVariableNotAssociated(name, span)
             : context.FunctionName is not null && context.ScopeFacts.LocalNames.Contains(name)
                 ? RuntimeErrors.UnboundLocalVariable(name, span)
