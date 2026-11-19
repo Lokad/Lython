@@ -319,8 +319,12 @@ selects generator, modern-type and future-import validation only when the releva
 syntax occurs, including in dead bodies. Those validators retain their own scope
 rules and diagnostic order. Comprehension and type-parameter validation allocate
 name sets only when introducing bindings; unchanged scopes share their read-only
-inherited set. Lexical scope preparation
-follows parsing/name rewriting; analysis, lowering and class creation reuse those
+inherited set. Syntax validation records potential mutating calls by statement.
+Binding analysis uses current bindings to determine their effects and releases
+the call-site map when analysis ends.
+
+Lexical scope preparation follows parsing and name rewriting. Analysis,
+lowering and class creation reuse the resulting
 immutable function/class/lambda facts. They belong to the compiled program,
 without a cross-script cache. A function declaration also owns one flat parameter
 name/slot table, role counts and generator classification, shared by analysis,

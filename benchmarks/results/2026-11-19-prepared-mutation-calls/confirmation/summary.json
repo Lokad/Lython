@@ -1,0 +1,93 @@
+{
+  "complete": true,
+  "elapsedSeconds": 112.30738995876163,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "archivalOnlyRecovery": {
+    "retiredOnly": [],
+    "alreadyAbsent": [],
+    "freshIdleLease": true,
+    "allHashesPathsOwnershipLinksAndAliasesVerified": true,
+    "canonicalArchiveAndCurrentImagesPreserved": true,
+    "freeBeforeBytes": 186859520,
+    "freeAfterBytes": 186793984
+  },
+  "rows": [
+    {
+      "case": "scripts.annotated-rule-closures",
+      "lane": "compile",
+      "elapsedMilliseconds": {
+        "reference-control": 0.021999308816954305,
+        "candidate-control": 0.020971242620232172,
+        "reference": 0.022421436855444853,
+        "candidate": 0.023105774015110634
+      },
+      "cpuMilliseconds": {
+        "reference-control": 0.02190825359921309,
+        "candidate-control": 0.021144278606965175,
+        "reference": 0.022723300122356235,
+        "candidate": 0.022935779816513763
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.2552231176667895,
+        "candidate-control": 1.3207144525869006,
+        "reference": 2.435756760665087,
+        "candidate": 3.8624287336250136
+      },
+      "elapsedChangePercent": [
+        -6.467891618910738,
+        -4.673174985978779,
+        3.0521556851054177,
+        5.029545279638992
+      ],
+      "cpuChangePercent": [
+        -6.948909299655581,
+        -3.487156056452423,
+        0.9350741002116969,
+        4.69013293390752
+      ],
+      "referenceSpreadPercent": 1.9188240958062597,
+      "candidateSpreadPercent": 10.178373468528545
+    },
+    {
+      "case": "scripts.config-generated-guards.medium",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "reference-control": 2.139745087719298,
+        "candidate-control": 2.1658023507109005,
+        "reference": 2.197466914027149,
+        "candidate": 2.1372990307017545
+      },
+      "cpuMilliseconds": {
+        "reference-control": 2.1491228070175437,
+        "candidate-control": 2.132701421800948,
+        "reference": 2.2171945701357463,
+        "candidate": 2.1052631578947367
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 3.962758680797122,
+        "candidate-control": 2.811087845346851,
+        "reference": 0.8887400809588675,
+        "candidate": 3.761337125738036
+      },
+      "elapsedChangePercent": [
+        -2.7380563930825663,
+        -1.4409574548823967,
+        -0.11431534679444688,
+        1.2177741704445966
+      ],
+      "cpuChangePercent": [
+        -5.048335123523085,
+        -3.810813424896009,
+        -2.0408163265306034,
+        -0.7640971080375203
+      ],
+      "referenceSpreadPercent": 2.6976029359354836,
+      "candidateSpreadPercent": 1.3336140427569143
+    }
+  ],
+  "retentionDecisionPending": false,
+  "CPythonRefreshed": false,
+  "retainedCommit": "ad8bb0c4e",
+  "retentionReason": "Removes recursive statement rewalk and lowers compilation allocation. Preserve original and repeat timing uncertainty."
+}
