@@ -7,7 +7,7 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class ExecutionContext
     {
-        private async ValueTask ExecutePreparedDefinitionOperationAsync(ExecutableOperation operation, ExecutableInstruction instruction, bool asynchronous)
+        private ValueTask ExecutePreparedDefinitionOperation(ExecutableOperation operation, ExecutableInstruction instruction, bool asynchronous)
         {
             var span = instruction.Span;
             switch (operation)
@@ -20,17 +20,15 @@ internal sealed partial class LythonRuntime
                     break;
                 case ExecutableStoreModuleAnnotation annotation:
                     var value = _execution.Stack.TakeValue(instruction.InputStart, instruction.LiveExtent);
-                    await StoreAnnotationEntryAsync(ResolveName("__annotations__", span, this),
-                        annotation.Name, value, this, span, asynchronous).ConfigureAwait(false);
-                    break;
+                    return StoreAnnotationEntryAsync(ResolveName("__annotations__", span, this),
+                        annotation.Name, value, this, span, asynchronous);
                 case ExecutableStartFunctionDefaults start:
                     var owner = new PendingFunctionDefaults(start.Layout, this, span);
                     try { PublishInstructionResult(instruction, owner); }
                     catch { owner.Dispose(); throw; }
                     break;
                 case ExecutableCreateFunction function:
-                    await CreateExecutableFunctionAsync(function, instruction.InputStart, asynchronous).ConfigureAwait(false);
-                    break;
+                    return CreateExecutableFunction(function, instruction.InputStart, asynchronous);
                 case ExecutableCreateLambda lambda:
                     {
                         var layout = lambda.Expression.ParameterLayout;
@@ -56,48 +54,49 @@ internal sealed partial class LythonRuntime
                     PublishInstructionResult(instruction, new CallExpansion.CallArgumentAccumulator(header.Count, this, ClassHeaderExpansionTarget));
                     break;
                 case ExecutableCreateClass create:
-                    using (var accumulator = create.ExpandedHeader ? (CallExpansion.CallArgumentAccumulator)_execution.Stack.TakeValue(instruction.InputStart + create.Definition.Decorators.Count, instruction.InputStart + create.Definition.Decorators.Count) : null)
-                    using (var storage = MemoryGovernor.ReserveTemporary(256L + 128L * create.Definition.Decorators.Count, span))
-                    {
-                        var definition = create.Definition;
-                        var decorators = new LoweredExpression[definition.Decorators.Count];
-                        for (var i = decorators.Length - 1; i >= 0; i--)
-                            decorators[i] = new LoweredCapturedExpression(definition.Decorators[i].Syntax, _execution.Stack.TakeValue(instruction.InputStart + i, instruction.InputStart + i));
-                        definition = definition with { Decorators = decorators };
-                        if (accumulator is not null)
-                        {
-                            var arguments = accumulator.ToArray();
-                            storage.Grow(128L * arguments.Length, span);
-                            var headers = new LoweredCallArgument[arguments.Length];
-                            for (var i = 0; i < arguments.Length; i++)
-                            {
-                                var argument = arguments[i];
-                                if (argument.IsKeyword) storage.Grow(2L * argument.KeywordName.Length, span);
-                                headers[i] = new LoweredCallArgument(argument.IsKeyword ? CallArgumentForm.Keyword(argument.KeywordName) : CallArgumentForm.Positional,
-                                    new LoweredCapturedExpression(create.Definition.HeaderArguments[0].Expression.Syntax, argument.Value));
-                            }
-                            definition = definition with { HeaderArguments = headers };
-                        }
-                        if (asynchronous) await ExecuteLoweredClassDefinitionAsync(definition, this).ConfigureAwait(false);
-                        else ExecuteLoweredClassDefinition(definition, this);
-                        SyncExecutableLocalsFromContext(_execution.Code, _execution.Locals, this);
-                    }
-                    break;
+                    return ExecutePreparedClassDefinitionAsync(create, instruction.InputStart, span, asynchronous);
                 default: throw new InvalidOperationException("Unknown prepared definition operation.");
             }
+            return ValueTask.CompletedTask;
         }
 
-        private void AdmitPreparedDefinitionStorage(long bytes, LythonSourceSpan span)
+        private async ValueTask ExecutePreparedClassDefinitionAsync(ExecutableCreateClass create, int first, LythonSourceSpan span, bool asynchronous)
         {
-            MemoryGovernor.Reserve(bytes, span);
-            MemoryGovernor.Commit(bytes);
+            var definition = create.Definition;
+            var decoratorCount = definition.Decorators.Count;
+            using var accumulator = create.ExpandedHeader
+                ? (CallExpansion.CallArgumentAccumulator)_execution.Stack.TakeValue(first + decoratorCount, first + decoratorCount)
+                : null;
+            using var storage = MemoryGovernor.ReserveTemporary(256L + 128L * decoratorCount, span);
+            var decorators = new LoweredExpression[decoratorCount];
+            for (var i = decorators.Length - 1; i >= 0; i--)
+                decorators[i] = new LoweredCapturedExpression(definition.Decorators[i].Syntax, _execution.Stack.TakeValue(first + i, first + i));
+            definition = definition with { Decorators = decorators };
+            if (accumulator is not null)
+            {
+                var arguments = accumulator.ToArray();
+                storage.Grow(128L * arguments.Length, span);
+                var headers = new LoweredCallArgument[arguments.Length];
+                for (var i = 0; i < arguments.Length; i++)
+                {
+                    var argument = arguments[i];
+                    if (argument.IsKeyword) storage.Grow(2L * argument.KeywordName.Length, span);
+                    headers[i] = new LoweredCallArgument(argument.IsKeyword ? CallArgumentForm.Keyword(argument.KeywordName) : CallArgumentForm.Positional,
+                        new LoweredCapturedExpression(definition.HeaderArguments[0].Expression.Syntax, argument.Value));
+                }
+                definition = definition with { HeaderArguments = headers };
+            }
+            if (asynchronous) await ExecuteLoweredClassDefinitionAsync(definition, this).ConfigureAwait(false);
+            else ExecuteLoweredClassDefinition(definition, this);
+            SyncExecutableLocalsFromContext(_execution.Code, _execution.Locals, this);
         }
 
-        private async ValueTask CreateExecutableFunctionAsync(ExecutableCreateFunction operation, int first, bool asynchronous)
+        private ValueTask CreateExecutableFunction(ExecutableCreateFunction operation, int first, bool asynchronous)
         {
             var binding = operation.Binding;
             var span = binding.Span;
             EnterInterpreterFrame(span);
+            var transferred = false;
             try
             {
                 var layout = binding.ParameterLayout;
@@ -123,18 +122,44 @@ internal sealed partial class LythonRuntime
                 storage.Commit(FunctionValueBytes);
                 ChargeClosureRetention(closure, MemoryGovernor, span);
                 PyFunctionBase.CaptureFunctionDocstring(function, binding.Docstring, this, span);
+                var metadata = ValueTask.CompletedTask;
                 if (binding.Annotations.Length != 0 || binding.TypeParameters is not null || HasTypeParameterScope(this))
                 {
                     var evaluated = operation.AnnotationsOnStack ? _execution.Stack.Slice(next, binding.Annotations.Length) : default;
-                    await AttachTypeMetadataAsync(function, binding.Annotations, binding.TypeParameters is not null,
-                        span, typeScope, this, asynchronous, evaluated).ConfigureAwait(false);
+                    metadata = AttachTypeMetadataAsync(function, binding.Annotations, binding.TypeParameters is not null,
+                        span, typeScope, this, asynchronous, evaluated);
                 }
 
+                if (binding.DecoratorCount != 0 || !metadata.IsCompletedSuccessfully)
+                {
+                    var completion = FinishExecutableFunctionAsync(binding, function, defaults, metadata, first, asynchronous);
+                    transferred = true;
+                    return completion;
+                }
+
+                metadata.GetAwaiter().GetResult();
+                defaults?.Publish();
+                AssignExecutableBoundName(_execution.Code, _execution.Locals, binding.Name, function, this, span);
+                return ValueTask.CompletedTask;
+            }
+            finally
+            {
+                if (!transferred) RetireExecutableDefinition(first);
+            }
+        }
+
+        private async ValueTask FinishExecutableFunctionAsync(ExecutableFunctionBinding binding, PyFunctionBase function,
+            PendingFunctionDefaults? defaults, ValueTask metadata, int first, bool asynchronous)
+        {
+            var span = binding.Span;
+            try
+            {
+                await metadata.ConfigureAwait(false);
                 // Decorator callbacks can publish the original definition even
                 // when they replace it or raise. Transfer the default owner first.
                 defaults?.Publish();
                 object decorated = function;
-                for (var i = endDecorators - 1; i >= first; i--)
+                for (var i = first + binding.DecoratorCount - 1; i >= first; i--)
                 {
                     if (_execution.Stack[i] is not ICallable decorator)
                         throw new LythonRuntimeException("TypeError", "Decorator expression must evaluate to a callable.", span);
@@ -145,9 +170,14 @@ internal sealed partial class LythonRuntime
             }
             finally
             {
-                try { _execution.Stack.RetireTo(first); }
-                finally { LeaveInterpreterFrame(); }
+                RetireExecutableDefinition(first);
             }
+        }
+
+        private void RetireExecutableDefinition(int first)
+        {
+            try { _execution.Stack.RetireTo(first); }
+            finally { LeaveInterpreterFrame(); }
         }
     }
 }

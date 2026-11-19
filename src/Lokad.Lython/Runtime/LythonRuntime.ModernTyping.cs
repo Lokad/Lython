@@ -109,33 +109,59 @@ internal sealed partial class LythonRuntime
                 : parameter.TryGetMember("__default__", context, span, out var value) ? value : PyTypeParameter.NoDefault;
     }
 
-    private static async ValueTask AttachTypeMetadataAsync(PyFunctionBase function,
+    private static ValueTask AttachTypeMetadataAsync(PyFunctionBase function,
         LoweredFunctionAnnotation[] inputs, bool hasTypeParameters, LythonSourceSpan span,
         TypeScope scope, ExecutionContext definingContext, bool asynchronous, ReadOnlyMemory<ExecutableSlot> evaluated = default)
     {
         if (hasTypeParameters)
             function.TrySetMember("__type_params__", scope.Parameters);
-        if (inputs.Length == 0 && !hasTypeParameters && !HasTypeParameterScope(definingContext)) return;
+        if (inputs.Length == 0 && !hasTypeParameters && !HasTypeParameterScope(definingContext))
+            return ValueTask.CompletedTask;
+
         var annotations = new PyDict(inputs.Length, definingContext.MemoryGovernor, span);
-        var published = false;
+        if (evaluated.IsEmpty && inputs.Length != 0)
+            return EvaluateFunctionAnnotationsAsync(function, annotations, inputs, scope, definingContext, asynchronous);
+
         try
         {
             for (var i = 0; i < inputs.Length; i++)
             {
                 var input = inputs[i];
+                var value = RuntimeValue(evaluated.Span[i].Object.RequireNotNull());
+                var annotationSpan = input.Expression.Span;
+                definingContext.CheckExecution(annotationSpan);
+                annotations.TryAddNativeString(input.Key, value, definingContext, annotationSpan);
+            }
+            function.TrySetMember("__annotations__", annotations);
+        }
+        catch
+        {
+            annotations.DiscardUnpublishedStorage();
+            throw;
+        }
+        return ValueTask.CompletedTask;
+    }
+
+    private static async ValueTask EvaluateFunctionAnnotationsAsync(PyFunctionBase function, PyDict annotations,
+        LoweredFunctionAnnotation[] inputs, TypeScope scope, ExecutionContext definingContext, bool asynchronous)
+    {
+        try
+        {
+            foreach (var input in inputs)
+            {
                 var expression = input.Expression;
-                var value = !evaluated.IsEmpty ? RuntimeValue(evaluated.Span[i].Object.RequireNotNull())
-                    : definingContext.PostponedAnnotations ? CreatePostponedAnnotationValue(expression.Syntax, definingContext)
-                        : await EvaluateTypeExpressionAsync(expression, scope.Annotations, asynchronous).ConfigureAwait(false);
+                var value = definingContext.PostponedAnnotations
+                    ? CreatePostponedAnnotationValue(expression.Syntax, definingContext)
+                    : await EvaluateTypeExpressionAsync(expression, scope.Annotations, asynchronous).ConfigureAwait(false);
                 definingContext.CheckExecution(expression.Span);
                 annotations.TryAddNativeString(input.Key, value, definingContext, expression.Span);
             }
             function.TrySetMember("__annotations__", annotations);
-            published = true;
         }
-        finally
+        catch
         {
-            if (!published) annotations.DiscardUnpublishedStorage();
+            annotations.DiscardUnpublishedStorage();
+            throw;
         }
     }
 

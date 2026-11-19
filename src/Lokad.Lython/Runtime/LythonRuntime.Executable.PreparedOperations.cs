@@ -137,7 +137,7 @@ internal sealed partial class LythonRuntime
                 case ExecutableAnnotationsEnabled or ExecutablePostponedAnnotation or ExecutableStoreModuleAnnotation
                     or ExecutableStartFunctionDefaults or ExecutableCreateFunction or ExecutableCreateLambda
                     or ExecutableStartClassHeader or ExecutableCreateClass:
-                    return ExecutePreparedDefinitionOperationAsync(operation, instruction, asynchronous);
+                    return ExecutePreparedDefinitionOperation(operation, instruction, asynchronous);
                 default: throw new InvalidOperationException("Unknown prepared operation.");
             }
             return ValueTask.CompletedTask;
