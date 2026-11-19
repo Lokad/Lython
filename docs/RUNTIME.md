@@ -1209,11 +1209,12 @@ inventory is maintained. Raw scans remain separate from mutation-checked iterati
 Private construction failure refunds only unpublished backing; live views cannot
 use that rollback. Conservative storage estimates can change admission thresholds.
 
-`str.format` and `format_map` prepare field structure, names, suffixes and constant
-specifications once on the bound method. Literal segments borrow UTF-8; builtin
-numeric and padded string fields append directly into final output through the
-same formatter as f-strings. Immediate calls reuse the existing execution member
-cache. Layouts live in the execution owner, separately from shared compiled literals;
+`str.format` and `format_map` prepare field structure, argument positions,
+attribute and subscript selectors, and constant specifications once on the
+bound method. Lookups still construct a guest key at the access. Literal
+segments borrow UTF-8. Builtin numeric and padded string fields append directly
+into final output through the same formatter as f-strings. Immediate calls
+reuse the existing execution member cache. Layouts live in the execution owner, separately from shared compiled literals;
 they hold no guest arguments, callbacks or cancellation token. Reusing an internal
 method with another execution owner prepares a layout funded by that owner.
 The runtime executes the layout through its existing lookup and formatting functions.
@@ -1221,8 +1222,9 @@ Builtin fields append synchronously; actual mapping, attribute and formatting
 protocol work follows the current execution API and is awaited by RunAsync.
 
 Preparation admits conservative capacity, metadata and replacement overlap before
-allocation. Its charge remains until execution/result cleanup, including when a
-method is no longer referenced; many distinct one-use methods can reject earlier.
+allocation, including estimated selector metadata. Its charge remains until
+execution/result cleanup. Many distinct one-use methods or long access chains
+can reject earlier.
 Method argument copies and expanded nested specifications have operation-owned
 storage, funded until all callbacks settle. Final strings and user hook return
 strings keep their own ownership. RunAsync awaits actual lookup and formatting

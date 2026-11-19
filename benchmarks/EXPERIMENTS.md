@@ -35,6 +35,10 @@ original conditions retained. Current comparisons belong in
   rule-script allocation. Warm forwarding is unresolved and the confirmation
   measures adverse forwarding compile-to-result elapsed and CPU.
   [Function binding ownership](results/2026-11-19-function-binding-ownership/README.md).
+- B1025 retained prepared method-format field selectors. The report using
+  format subscripts improves with lower elapsed, CPU and allocation. The
+  ordinary method-format comparison spans zero with moving controls.
+  [Prepared selectors](results/2026-11-19-prepared-format-selectors/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
