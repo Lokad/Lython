@@ -119,9 +119,10 @@ internal sealed partial class LythonRuntime
         if (inputs.Length == 0 && !hasTypeParameters && !HasTypeParameterScope(definingContext))
             return ValueTask.CompletedTask;
 
-        var annotations = definingContext.CreateDefinitionRecord(inputs.Length, recordCache, span);
+        var annotations = definingContext.CreateDefinitionRecord(inputs.Length, recordCache, inputs,
+            static (entries, index) => entries[index].Key, span);
         if (evaluated.IsEmpty && inputs.Length != 0)
-            return EvaluateFunctionAnnotationsAsync(function, annotations, inputs, scope, definingContext, asynchronous, span, recordCache);
+            return EvaluateFunctionAnnotationsAsync(function, annotations, inputs, scope, definingContext, asynchronous);
 
         try
         {
@@ -130,9 +131,8 @@ internal sealed partial class LythonRuntime
                 var input = inputs[i];
                 var value = RuntimeValue(evaluated.Span[i].Object.RequireNotNull());
                 var annotationSpan = input.Expression.Span;
-                annotations.SetRecordItem(input.Key, value, definingContext, annotationSpan, replaceExisting: false);
+                annotations.AddDefinitionValue(input.Key, value, definingContext, annotationSpan);
             }
-            definingContext.CacheDefinitionRecordKeys(annotations, recordCache, span);
             function.TrySetMember("__annotations__", annotations);
         }
         catch
@@ -144,8 +144,7 @@ internal sealed partial class LythonRuntime
     }
 
     private static async ValueTask EvaluateFunctionAnnotationsAsync(PyFunctionBase function, PyDict annotations,
-        LoweredFunctionAnnotation[] inputs, TypeScope scope, ExecutionContext definingContext, bool asynchronous,
-        LythonSourceSpan span, int recordCache)
+        LoweredFunctionAnnotation[] inputs, TypeScope scope, ExecutionContext definingContext, bool asynchronous)
     {
         try
         {
@@ -155,9 +154,8 @@ internal sealed partial class LythonRuntime
                 var value = definingContext.PostponedAnnotations
                     ? CreatePostponedAnnotationValue(expression.Syntax, definingContext)
                     : await EvaluateTypeExpressionAsync(expression, scope.Annotations, asynchronous).ConfigureAwait(false);
-                annotations.SetRecordItem(input.Key, value, definingContext, expression.Span, replaceExisting: false);
+                annotations.AddDefinitionValue(input.Key, value, definingContext, expression.Span);
             }
-            definingContext.CacheDefinitionRecordKeys(annotations, recordCache, span);
             function.TrySetMember("__annotations__", annotations);
         }
         catch

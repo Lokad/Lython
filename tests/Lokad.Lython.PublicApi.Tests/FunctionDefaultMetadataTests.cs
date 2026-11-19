@@ -218,6 +218,33 @@ finally:
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task RefusedKeywordStoragePrecedesDefaultExpressionEffects(bool asynchronous)
+    {
+        var defaults = string.Join(", ", Enumerable.Range(0, 64).Select(i => $"key{i}=0"));
+        using var script = new LythonEngine().Compile($"""
+            import time
+            time.time()
+            def target(*, effect=time.time(), {defaults}):
+                return effect
+            print('unreachable')
+            """);
+        Assert.True(script.IsValid, string.Join("\n", script.Diagnostics.Select(diagnostic => diagnostic.Message)));
+        var budget = new AdmissionGateBudget();
+        var host = new AdmissionGateHost(budget, 4096);
+        var options = new LythonRunOptions { MemoryBudget = budget };
+        using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
+        {
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+            Assert.Empty(result.StandardOutput);
+            Assert.True(budget.AtGate > 0);
+            Assert.Equal(0, host.AtSecondGate);
+        }
+        Assert.Equal(0, budget.Root.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task FailedDefinitionRefundsDefaultStorageOnlyWhilePrivate(bool asynchronous)
     {
         const int keywordCount = 512;

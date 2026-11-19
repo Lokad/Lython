@@ -12,7 +12,6 @@ internal sealed partial class LythonRuntime
         private readonly ExecutionContext _context;
         private readonly LythonSourceSpan _span;
         private readonly MemoryGovernor.TemporaryMemoryReservation? _positionalStorage;
-        private readonly int _keywordRecordCache;
         private object[]? _positionalItems;
         private int _position;
         private PyTuple? _positional;
@@ -21,7 +20,6 @@ internal sealed partial class LythonRuntime
         internal PendingFunctionDefaults(FunctionParameterLayout layout, ExecutionContext context, LythonSourceSpan span,
             int keywordRecordCache = -1)
         {
-            _keywordRecordCache = keywordRecordCache;
             _layout = layout;
             _context = context;
             _span = span;
@@ -34,7 +32,10 @@ internal sealed partial class LythonRuntime
             {
                 context.CheckExecution(span);
                 if (positionalCount != 0) _positionalItems = new object[positionalCount];
-                if (keywordCount != 0) _keywords = context.CreateDefinitionRecord(keywordCount, keywordRecordCache, span);
+                if (keywordCount != 0)
+                    _keywords = context.CreateDefinitionRecord(keywordCount, keywordRecordCache, layout,
+                        static (parameters, index) => parameters.KeywordDefaultName(
+                            parameters.Defaults[parameters.PositionalDefaultCount + index].KeywordIndex), span);
             }
             catch { Dispose(); throw; }
         }
@@ -48,8 +49,7 @@ internal sealed partial class LythonRuntime
                 _context.CheckExecution(span);
                 _positionalItems![_position++] = value;
             }
-            else _keywords!.SetRecordItem(_layout.KeywordDefaultName(slot.KeywordIndex), value, _context, span,
-                replaceExisting: false);
+            else _keywords!.AddDefinitionValue(_layout.KeywordDefaultName(slot.KeywordIndex), value, _context, span);
         }
 
         internal void Complete()
@@ -59,7 +59,6 @@ internal sealed partial class LythonRuntime
                 _positional = PyTuple.FromReservedOwnedArray(items, _context.MemoryGovernor, _span, _positionalStorage!);
                 _positionalItems = null;
             }
-            if (_keywords is not null) _context.CacheDefinitionRecordKeys(_keywords, _keywordRecordCache, _span);
         }
 
         internal void Publish()

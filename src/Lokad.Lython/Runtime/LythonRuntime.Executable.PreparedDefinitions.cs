@@ -1,5 +1,6 @@
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Calls;
+using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
@@ -176,16 +177,13 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        internal PyDict CreateDefinitionRecord(int count, int cacheIndex, LythonSourceSpan span)
-            => cacheIndex < 0 ? new PyDict(count, MemoryGovernor, span)
-                : CreateCachedRecord(_execution.Stack.GetLookupCaches(_execution.Code.LookupCacheCount, span)[cacheIndex],
-                    count, this, span);
-
-        internal void CacheDefinitionRecordKeys(PyDict record, int cacheIndex, LythonSourceSpan span)
+        internal PyDict CreateDefinitionRecord<T>(int count, int cacheIndex, T names,
+            Func<T, int, PyString> nameAt, LythonSourceSpan span)
         {
-            if (cacheIndex < 0) return;
+            if (cacheIndex < 0) return new PyDict(count, MemoryGovernor, span);
             ref var cache = ref _execution.Stack.GetLookupCaches(_execution.Code.LookupCacheCount, span)[cacheIndex];
-            CacheRecordKeys(ref cache, record, this, span);
+            var keys = PyDict.RecordKeys.PrepareDefinition(ref cache, count, names, nameAt, this, span);
+            return keys.CreateRecord(this, span, count);
         }
 
         private void RetireExecutableDefinition(int first)

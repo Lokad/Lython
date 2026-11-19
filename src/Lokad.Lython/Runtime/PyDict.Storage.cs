@@ -32,8 +32,8 @@ internal sealed partial class PyDict
     private bool IsNativeLive(int index) => _recordKeys is null ||
         (uint)index < (uint)_nativeValues!.Length && _nativeValues[index] is not null;
 
-    private long NativeKeyStorageBytes(int capacity)
-        => capacity == 0 ? 0 : checked((_keysOnly ? 96L : 64L) + (NativeKeyBytes + 64L) * capacity);
+    private static long NativeKeyStorageBytes(int capacity, bool keysOnly = false)
+        => capacity == 0 ? 0 : checked((keysOnly ? 96L : 64L) + (NativeKeyBytes + 64L) * capacity);
     private long NativeValueStorageBytes(int capacity)
         => _keysOnly || capacity == 0 ? 0 : checked(32L + 72L * capacity);
 
@@ -131,7 +131,7 @@ internal sealed partial class PyDict
         {
             // Shared keys keep their original cache/batch funding. Only private
             // old storage is relinquished; both replacement arrays overlap it.
-            var bytes = NativeKeyStorageBytes(capacity) - (shared ? 0 : NativeKeyStorageBytes(previous.Length))
+            var bytes = NativeKeyStorageBytes(capacity, _keysOnly) - (shared ? 0 : NativeKeyStorageBytes(previous.Length, _keysOnly))
                 + NativeValueStorageBytes(capacity) - NativeValueStorageBytes(previousValueCapacity);
             replacement.Commit(bytes);
             _nativeCommittedBytes += bytes;
@@ -146,14 +146,20 @@ internal sealed partial class PyDict
             PyStructuralGuard.NoteWork(null, span);
             if (!IsNativeLive(index)) continue;
             var source = _nativeItems![index];
-            var head = items[destination].Bucket;
-            items[destination] = source;
-            items[destination].Bucket = head;
+            LinkNativeKey(items, destination, source);
             if (values is not null) values[destination] = _nativeValues![index];
-            var bucket = NativeBucket(source.Hash, items.Length);
-            items[destination].Next = items[bucket].Bucket;
-            items[bucket].Bucket = ++destination;
+            destination++;
         }
+    }
+
+    private static void LinkNativeKey(NativeKey[] items, int index, NativeKey source)
+    {
+        var head = items[index].Bucket;
+        items[index] = source;
+        items[index].Bucket = head;
+        var bucket = NativeBucket(source.Hash, items.Length);
+        items[index].Next = items[bucket].Bucket;
+        items[bucket].Bucket = index + 1;
     }
 
     private int FindNativeIndex(object key)
@@ -442,6 +448,6 @@ internal sealed partial class PyDict
     }
 
     private long EstimateNativeSlots(int previousCapacity, int newCapacity)
-        => NativeKeyStorageBytes(newCapacity) - NativeKeyStorageBytes(previousCapacity)
+        => NativeKeyStorageBytes(newCapacity, _keysOnly) - NativeKeyStorageBytes(previousCapacity, _keysOnly)
             + NativeValueStorageBytes(newCapacity) - NativeValueStorageBytes(previousCapacity);
 }

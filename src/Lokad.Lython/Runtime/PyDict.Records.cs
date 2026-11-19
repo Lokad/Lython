@@ -48,11 +48,44 @@ internal sealed partial class PyDict
         internal int Count { get; }
 
         internal RecordKeys(PyDict dictionary)
+            : this(dictionary._nativeItems!, dictionary._memoryGovernor!, dictionary._nativeSequence,
+                dictionary._nativeCount)
+        { }
+
+        private RecordKeys(NativeKey[] keys, MemoryGovernor owner, long sequence, int count)
         {
-            _keys = dictionary._nativeItems!;
-            _owner = dictionary._memoryGovernor!;
-            _sequence = dictionary._nativeSequence;
-            Count = dictionary._nativeCount;
+            _keys = keys;
+            _owner = owner;
+            _sequence = sequence;
+            Count = count;
+        }
+
+        // Definition names are distinct native strings in their final insertion order.
+        // Build the shared table directly, with no first record to freeze or detach.
+        internal static RecordKeys PrepareDefinition<T>(ref LythonRuntime.ExecutableLookupCache cache,
+            int count, T names, Func<T, int, PyString> nameAt,
+            LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        {
+            if (cache.Target is RecordKeys ready) return ready;
+            var owner = context.MemoryGovernor;
+            var capacity = NativeCapacity(count);
+            var bytes = checked(64L + NativeKeyStorageBytes(capacity));
+            using var storage = owner.ReserveTemporary(bytes, span);
+            context.CheckExecution(span);
+            if (cache.Target is RecordKeys reentered) return reentered;
+
+            var keys = new NativeKey[capacity];
+            for (var i = 0; i < count; i++)
+            {
+                context.CheckExecution(span);
+                var key = nameAt(names, i);
+                var hash = MixNativeHash(LythonRuntime.ComputeStructuralHashCode(key, span, context));
+                LinkNativeKey(keys, i, new NativeKey { Key = key, Hash = hash, Sequence = i + 1 });
+            }
+            var layout = new RecordKeys(keys, owner, count, count);
+            storage.Commit(bytes);
+            cache = new(layout, null);
+            return layout;
         }
 
         internal PyDict CreateRecord(LythonRuntime.ExecutionContext context, LythonSourceSpan span, int initialCapacity)
@@ -62,12 +95,18 @@ internal sealed partial class PyDict
                 throw new InvalidOperationException("Record keys must retain their execution owner.");
             var capacity = NativeCapacity(initialCapacity);
             var bytes = checked(NativeShellBytes + (capacity == 0 ? 0 : 32L + 72L * capacity));
-            using var storage = _owner.ReserveTemporary(bytes, span);
-            context.CheckExecution(span);
-            var record = new PyDict(_keys, this, _sequence, capacity, _owner, span);
-            storage.Commit(bytes);
-            record._nativeCommittedBytes = bytes;
-            return record;
+            _owner.Reserve(bytes, span);
+            try
+            {
+                context.CheckExecution(span);
+                var record = new PyDict(_keys, this, _sequence, capacity, _owner, span)
+                {
+                    _nativeCommittedBytes = bytes,
+                };
+                _owner.Commit(bytes);
+                return record;
+            }
+            catch { _owner.ReleaseReserved(bytes); throw; }
         }
 
         // The caller transfers an exclusively owned, already-funded CSV row.
@@ -161,8 +200,22 @@ internal sealed partial class PyDict
         return true;
     }
 
+    internal void AddDefinitionValue(PyString key, object value, LythonRuntime.ExecutionContext context,
+        LythonSourceSpan span)
+    {
+        context.CheckExecution(span);
+        if (_recordKeys is null)
+        {
+            TryAddNativeString(key, value, context, span);
+            return;
+        }
+        System.Diagnostics.Debug.Assert(_nativeCount < _recordKeys.Count &&
+            ReferenceEquals(_nativeItems![_nativeCount].Key, key));
+        _nativeValues![_nativeCount++] = value;
+    }
+
     internal void SetRecordItem(PyString key, object value, LythonRuntime.ExecutionContext context,
-        LythonSourceSpan span, bool replaceExisting = true)
+        LythonSourceSpan span)
     {
         context.CheckExecution(span);
         // Builders call this only before publishing their record. Ordered
@@ -178,8 +231,7 @@ internal sealed partial class PyDict
                 return;
             }
         }
-        if (replaceExisting) SetItem(key, value);
-        else TryAddNativeString(key, value, context, span);
+        SetItem(key, value);
     }
 
     private void EnsureRecordValueCapacity(int targetCount, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
