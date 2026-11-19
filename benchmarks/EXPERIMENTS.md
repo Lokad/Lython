@@ -77,6 +77,10 @@ original conditions retained. Current comparisons belong in
   and CPU warm. The original named-format slowdown did not recur.
   Positional and f-string timing span zero on confirmation.
   [Final UTF-8 method formatting](results/2026-11-19-final-method-format/README.md).
+- B1040 refreshes the five unchanged CPython comparisons for the retained
+  formatter image. Rule closure execution remains the largest gap. The
+  collection includes the three phases, both process controls and raw checks.
+  [Current external comparison](results/2026-11-19-retained-runtime-cpython/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
