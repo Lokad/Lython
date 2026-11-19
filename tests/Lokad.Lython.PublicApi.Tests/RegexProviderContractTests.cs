@@ -1168,6 +1168,33 @@ public sealed class RegexProviderContractTests
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task EffectiveFlagFailureIsAttributedAndClosesThePattern(bool asynchronous)
+    {
+        using var provider = new CooperatingProvider
+        {
+            OnReadFlags = () => throw new LythonRegexException(LythonRegexFailure.Capability, "Effective flags unavailable."),
+        };
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var script = new LythonEngine(provider).Compile("import re\nreturn re.compile(pattern).flags", budget);
+        Assert.True(script.IsValid, string.Join("\n", script.Diagnostics.Select(d => d.Message)));
+        var baseline = budget.ReservedBytes;
+        using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), Options(default))
+            : script.Run(new MockLythonHost(), Options(default)))
+        {
+            Assert.False(result.Success);
+            Assert.Equal(LythonFailureReason.HostCapabilityUnavailable, result.FailureAttribution?.Reason);
+            Assert.Contains("Effective flags unavailable.", result.Failure!.Message);
+        }
+        Assert.Equal(1, provider.Compilations);
+        Assert.Equal(1, provider.ClosedPatterns);
+        Assert.Equal(baseline, budget.ReservedBytes);
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
     [InlineData("search", 1, 2, null, "inconsistent capture ranges")]
     [InlineData("match", 2, 3, null, "outside its window")]
     [InlineData("fullmatch", 0, 2, null, "outside its window")]
@@ -1250,7 +1277,7 @@ public sealed class RegexProviderContractTests
         private readonly ManualResetEventSlim _work = new(false);
         private (int Flags, int Slots, ILythonMemoryScope Owner)? _cached;
         internal int Compilations, ClosedPatterns;
-        internal Action? OnCompileReturn, OnMetadata;
+        internal Action? OnCompileReturn, OnMetadata, OnReadFlags;
         internal int CaptureSlots = 1;
         internal int AdditionalEffectiveFlags;
         internal IReadOnlyList<LythonRegexNamedGroup> GroupNames = [];
@@ -1311,7 +1338,10 @@ public sealed class RegexProviderContractTests
             private readonly LythonRegexNamedGroup[] _names = provider.GroupNames
                 .Select(entry => new LythonRegexNamedGroup(entry.Name.ToArray(), entry.Index)).ToArray();
             internal int ActiveSubjects;
-            public int Flags => flags;
+            public int Flags
+            {
+                get { provider.OnReadFlags?.Invoke(); return flags; }
+            }
             public int CaptureSlotCount => slots;
             public IReadOnlyList<LythonRegexNamedGroup> NamedGroups
             {

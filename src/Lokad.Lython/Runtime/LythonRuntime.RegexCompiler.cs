@@ -269,13 +269,14 @@ internal sealed partial class LythonRuntime
             {
                 var token = context.State.CancellationToken;
                 var captureSlotCount = ReadCaptureSlotCount(compiled, context.MemoryGovernor, token, span);
+                var flags = ProviderCall(() => compiled.Flags, context.MemoryGovernor, token, span, pattern);
                 var wrapperBytes = checked(256L + 64L * captureSlotCount);
                 using var storage = context.MemoryGovernor.ReserveTemporary(wrapperBytes, span);
                 // Guest-visible name strings can acquire caches and produce new
                 // strings. Give those values the current run's governor rather
                 // than sharing an analysis governor across concurrent runs.
                 var names = CopyNamedGroups(compiled, captureSlotCount, context.MemoryGovernor, token, span, pattern);
-                var result = new RePatternObject(pattern, compiled.Flags, compiled, captureSlotCount, names);
+                var result = new RePatternObject(pattern, flags, compiled, captureSlotCount, names);
                 storage.Commit(wrapperBytes);
                 cache.Add(pattern, options, result, context.MemoryGovernor, span);
                 if (artifact is null) context.State.TrackRegexPattern(compiled);

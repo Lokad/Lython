@@ -2,6 +2,8 @@
 
 ## 0.11.0 - Unreleased
 
+- Route regex effective flags through provider error handling so a failed
+  metadata read closes the pattern and reports the provider's failure.
 - Record generator classification during yield validation so lowering
   can use it without scanning callable bodies again.
 - Bind generator arguments directly into the suspended frame's admitted
