@@ -87,21 +87,26 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
             context.CheckExecution(mappingSpan);
             if (version != _version || !SupportsNativeStringReads ||
                 layout is not null && !ReferenceEquals(layout, _recordKeys)) return null;
-            var conflicting = -1;
-            for (var i = 0; i < NativeExtent; i++)
+            // A shared layout already proves that all keys are strings.
+            // Scan it only if a key can collide with a named parameter.
+            if (layout is null || plan.PositionalOnlyCount < plan.NamedLayoutCount)
             {
-                if ((i & 1023) == 0) context.CheckExecution(mappingSpan);
-                if (!IsNativeLive(i)) continue;
-                var entry = _nativeItems![i];
-                if (entry.Key is not PyString key) throw RuntimeErrors.Type("keywords must be strings", mappingSpan);
-                if (conflicting < 0)
-                    _ = plan.TryGetKeywordIndex(key, context, callSpan, out conflicting);
-                if (copy is not null && layout is null) copy.AppendNativeItem(key, ReadNativeValue(i), entry.Hash);
+                var conflicting = -1;
+                for (var i = 0; i < NativeExtent; i++)
+                {
+                    if ((i & 1023) == 0) context.CheckExecution(mappingSpan);
+                    if (!IsNativeLive(i)) continue;
+                    var entry = _nativeItems![i];
+                    if (entry.Key is not PyString key) throw RuntimeErrors.Type("keywords must be strings", mappingSpan);
+                    if (conflicting < 0)
+                        _ = plan.TryGetKeywordIndex(key, context, callSpan, out conflicting);
+                    if (copy is not null && layout is null) copy.AppendNativeItem(key, ReadNativeValue(i), entry.Hash);
+                }
+                // Mapping errors precede binder errors even when a collision was
+                // found in an earlier entry. Every bindable parameter is filled.
+                if (conflicting >= 0)
+                    throw CallErrors.MultipleValues(plan.CallableKind, plan.CallableName, plan.NameAt(conflicting), callSpan);
             }
-            // Mapping errors precede binder errors even when a collision was
-            // found in an earlier entry. Every bindable parameter is filled.
-            if (conflicting >= 0)
-                throw CallErrors.MultipleValues(plan.CallableKind, plan.CallableName, plan.NameAt(conflicting), callSpan);
             if (layout is not null)
             {
                 // Keys and their order are funded by the existing execution

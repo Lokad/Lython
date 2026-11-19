@@ -17,6 +17,24 @@ public sealed class ExpandedCallExecutionTests
         { "def sink(value,/,**kw): return value,value,kw\ndef run():\n yield sink((yield 'value')+1,**(yield 'mapping'))\ng=run()\nprint(next(g),g.send(1000))\na,b,kw=g.send({'end':3})\nprint(a,b,a is b,kw)", "value mapping\n1001 1001 True {'end': 3}\n" },
         { "def inspect():\n value=7\n return locals(*[])['value']\nprint(inspect())", "7\n" },
         { "class Base:\n def value(self): return 3\nclass Child(Base):\n def value(self): return super(*[]).value()+1\nprint(Child().value())", "4\n" },
+        { """
+          import json
+          def positional(label, /, **fields):
+              return label, list(fields)
+          def named(label, **fields):
+              return fields
+          row = json.loads('{"label":"ops","status":"open"}')
+          print(positional(17, **row))
+          try:
+              named(17, **row)
+          except TypeError as error:
+              print('label' in str(error))
+          row[9] = 'extra'
+          try:
+              positional(17, **row)
+          except TypeError as error:
+              print(str(error))
+          """, "(17, ['label', 'status'])\nTrue\nkeywords must be strings\n" },
     };
 
     [Theory]
