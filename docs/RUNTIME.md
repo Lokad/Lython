@@ -2280,6 +2280,9 @@ to `LythonEngine`. One provider handles frontend validation/capture analysis,
 runtime `re` and imports, and must outlive its users. Core exposes no backend
 types or Utf8Regex dependency. Missing functionality fails explicitly, without
 silently choosing another dialect. Native `fnmatch`/`glob` need no regex provider.
+Frontend and runtime validate that each pattern's capture slot count includes
+slot zero and fits a managed array before using it for storage or matching.
+An invalid count reports a provider capability failure and closes the handle.
 
 Filename matching reads the original UTF-8 inputs with scalar cursors; it creates
 no whole-string rune arrays or per-character string cache. `?` and character

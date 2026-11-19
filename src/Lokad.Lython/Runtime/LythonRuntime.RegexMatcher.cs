@@ -42,8 +42,6 @@ internal sealed partial class LythonRuntime
                 _pattern = pattern; _context = context; _span = span;
                 _window = window;
                 _position = new(window.StartByte, window.Pos);
-                if (pattern.CaptureSlotCount <= 0 || pattern.CaptureSlotCount > Array.MaxLength)
-                    throw RuntimeErrors.Runtime("Regex provider returned inconsistent capture metadata.", span);
                 _storage = context.MemoryGovernor.ReserveTemporary(checked(128L + 16L * pattern.CaptureSlotCount), span);
                 try
                 {

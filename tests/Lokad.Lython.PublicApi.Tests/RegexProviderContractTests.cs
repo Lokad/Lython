@@ -1122,6 +1122,49 @@ public sealed class RegexProviderContractTests
         Assert.Equal(LythonFailureReason.HostCapabilityUnavailable, result.FailureAttribution?.Reason);
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    [InlineData(int.MaxValue)]
+    public async Task InvalidCaptureCountsFailBeforePreparationAndCloseThePattern(int captureSlots)
+    {
+        using var provider = new CooperatingProvider
+        {
+            CaptureSlots = captureSlots,
+            OnPrepare = (_, _) => Assert.Fail("Invalid provider metadata reached subject preparation."),
+        };
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        var engine = new LythonEngine(provider);
+        using (var literal = engine.Compile("import re\np = re.compile('x')\nm = p.search('x')\nreturn m", budget))
+        {
+            Assert.False(literal.IsValid);
+            Assert.Contains(literal.Diagnostics, diagnostic => diagnostic.Message.Contains("invalid capture slot count", StringComparison.Ordinal));
+            Assert.Equal(1, provider.ClosedPatterns);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+
+        using (var dynamic = engine.Compile("import re\nreturn re.search(pattern,text)", budget))
+        {
+            Assert.True(dynamic.IsValid, string.Join("; ", dynamic.Diagnostics));
+            var baseline = budget.ReservedBytes;
+            foreach (var asynchronous in new[] { false, true })
+            {
+                var options = Options(default);
+                using (var result = asynchronous ? await dynamic.RunAsync(new MockLythonHost(), options)
+                    : dynamic.Run(new MockLythonHost(), options))
+                {
+                    Assert.False(result.Success);
+                    Assert.Equal(LythonFailureReason.HostCapabilityUnavailable, result.FailureAttribution?.Reason);
+                    Assert.Contains("invalid capture slot count", result.Failure!.Message);
+                }
+                Assert.Equal(baseline, budget.ReservedBytes);
+            }
+            Assert.Equal(3, provider.Compilations);
+            Assert.Equal(provider.Compilations, provider.ClosedPatterns);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     private static LythonRunOptions Options(CancellationToken token) => new()
     {
         Globals = new Dictionary<string, object?> { ["pattern"] = "x", ["text"] = "x" },

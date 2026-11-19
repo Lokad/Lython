@@ -146,7 +146,16 @@ internal sealed partial class LythonRuntime
 
         internal readonly record struct RegexSplitInputs(RePatternObject Pattern, RegexSubjectRange Range, int MaxSplit);
 
-        internal static IReadOnlyDictionary<PyString, int> CopyNamedGroups(ILythonRegexPattern pattern,
+        internal static int ReadCaptureSlotCount(ILythonRegexPattern pattern, MemoryGovernor? governor,
+            CancellationToken token, LythonSourceSpan? span)
+        {
+            var count = ProviderCall(() => pattern.CaptureSlotCount, governor, token, span);
+            if (count <= 0 || count > Array.MaxLength)
+                throw RuntimeErrors.Capability("Regex provider returned an invalid capture slot count.", span);
+            return count;
+        }
+
+        internal static IReadOnlyDictionary<PyString, int> CopyNamedGroups(ILythonRegexPattern pattern, int captureSlotCount,
             MemoryGovernor? governor, CancellationToken token, LythonSourceSpan? span, PyString? sourcePattern = null)
         {
             var entries = ProviderCall(() => pattern.NamedGroups, governor, token, span, sourcePattern);
@@ -160,7 +169,7 @@ internal sealed partial class LythonRuntime
                 governor?.ThrowIfAdmissionFailed();
                 var entry = entries[i];
                 if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
-                if (entry.Index <= previous || entry.Index >= pattern.CaptureSlotCount || entry.Name.IsEmpty)
+                if (entry.Index <= previous || entry.Index >= captureSlotCount || entry.Name.IsEmpty)
                     throw RuntimeErrors.Runtime("Regex provider returned inconsistent named-group metadata.", span);
                 var input = entry.Name.Span;
                 for (int offset = 0, scalar = 0; offset < input.Length; scalar++)
@@ -226,14 +235,15 @@ internal sealed partial class LythonRuntime
                 context.State.CancellationToken, span, pattern);
             try
             {
-                var wrapperBytes = checked(256L + 64L * compiled.CaptureSlotCount);
+                var token = context.State.CancellationToken;
+                var captureSlotCount = ReadCaptureSlotCount(compiled, context.MemoryGovernor, token, span);
+                var wrapperBytes = checked(256L + 64L * captureSlotCount);
                 using var storage = context.MemoryGovernor.ReserveTemporary(wrapperBytes, span);
                 // Guest-visible name strings can acquire caches and produce new
                 // strings. Give those values the current run's governor rather
                 // than sharing an analysis governor across concurrent runs.
-                var names = CopyNamedGroups(compiled, context.MemoryGovernor, context.State.CancellationToken, span, pattern);
-                var result = new RePatternObject(pattern, compiled.Flags, compiled,
-                    compiled.CaptureSlotCount, names);
+                var names = CopyNamedGroups(compiled, captureSlotCount, context.MemoryGovernor, token, span, pattern);
+                var result = new RePatternObject(pattern, compiled.Flags, compiled, captureSlotCount, names);
                 storage.Commit(wrapperBytes);
                 cache.Add(pattern, options, result, context.MemoryGovernor, span);
                 if (artifact is null) context.State.TrackRegexPattern(compiled);

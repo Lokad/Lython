@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Report invalid regex-provider capture counts during frontend or runtime
+  pattern creation. Close the handle before starting any matching work.
+
 - Admit function and lambda default containers before evaluating defaults.
   Write values directly into the final containers and refund them on
   private definition failure. Retain funding when a decorator can expose
