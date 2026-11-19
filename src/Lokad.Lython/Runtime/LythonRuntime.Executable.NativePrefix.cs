@@ -435,22 +435,9 @@ internal sealed partial class LythonRuntime
 
         private bool TryReturnUnpackedTuple(in ExecutableInstruction instruction)
         {
-            if (Code.NativePrefixEnd != Code.Instructions.Length || _unpackedReturnCount == 0 || instruction.ItemCount != _unpackedReturnCount
-                || instruction.HasResultConsumer || Index + 1 >= Code.Instructions.Length) return false;
-            ref readonly var next = ref Code.Instructions[Index + 1];
-            if (next.OpCode != ExecutableOpCode.Return || next.InputStart != instruction.ResultSlot) return false;
-            var items = Values.Slice(instruction.InputStart, instruction.ItemCount);
-            // Keep eager tuple admission before any caller target can change.
-            // Its conservative funding survives until the execution owner ends;
-            // only the unobservable tuple shell/backing allocation disappears.
-            var bytes = PyTuple.EstimateObjectSlotStorage(items, _scope, instruction.Span);
-            _scope.MemoryGovernor.Reserve(bytes, instruction.Span);
-            try
-            {
-                _scope.CheckExecution(instruction.Span);
-                _scope.MemoryGovernor.Commit(bytes);
-            }
-            catch { _scope.MemoryGovernor.ReleaseReserved(bytes); throw; }
+            if (Code.NativePrefixEnd != Code.Instructions.Length ||
+                !IsUnpackedTupleReturn(Code, Index, instruction, _unpackedReturnCount)) return false;
+            AdmitUnpackedTuple(Values.Slice(instruction.InputStart, instruction.ItemCount), _scope, instruction.Span);
             // The return wrapper copies these already-admitted operands before
             // native cleanup. The hot execution state retains no caller borrow.
             _unpackedTupleStart = instruction.InputStart;

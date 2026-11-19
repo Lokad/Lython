@@ -940,12 +940,13 @@ ordinary array-backed windows remain funded through actual asynchronous users.
 Exposed bound methods and operations invoking guest protocols keep their general
 binding and continuation semantics. Receiver and argument evaluation order stays
 the same, including rebinding and admission callbacks.
-An immediately unpacked exact tuple return from a completed native helper can
-transfer its elements into the caller's admitted operand slots, avoiding a transient
-tuple object and backing array. The original conservative tuple admission still
-precedes target publication. Element aliases and target order remain unchanged;
-escaping tuples, starred or mismatched unpacking, and suspended producers keep
-ordinary tuple construction. Call-input cleanup must complete before unpacking.
+An exact tuple returned immediately to a fixed unpack can transfer its elements
+into the caller's admitted operand slots. Native helpers and eligible executable
+frames share the tuple shape check and conservative admission. An eligible frame
+can stage elements after resuming from host I/O. Publication waits for child
+cleanup, and preserves element aliases and assignment order. Protected framed
+returns, escaping tuples, starred targets and mismatched counts keep ordinary
+tuple construction.
 Ownership admits the fixed whole-frame capacity and fresh cell/control storage
 before construction and retains them through suspension. A cache-eligible member
 lookup admits its frame's table before descriptor or protocol effects. Instances,

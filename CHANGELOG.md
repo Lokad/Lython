@@ -7,6 +7,10 @@
   private definition failure. Retain funding when a decorator can expose
   the function.
 
+- Forward eligible tuple returns from executable frames into the caller's
+  fixed unpacking slots. Preserve admission, element identity and child
+  cleanup before assignment.
+
 - Read method-format arguments from their existing invocation packet
   through callback completion. Allocate indices for named or interleaved
   arguments and preserve lookup order.

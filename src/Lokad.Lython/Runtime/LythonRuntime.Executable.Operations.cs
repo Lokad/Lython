@@ -100,6 +100,30 @@ internal sealed partial class LythonRuntime
         return tuple;
     }
 
+    private static bool IsUnpackedTupleReturn(ExecutableCodeObject code, int index,
+        in ExecutableInstruction tuple, int count)
+    {
+        if (count == 0 || tuple.ItemCount != count || tuple.HasResultConsumer || index + 1 >= code.Instructions.Length)
+            return false;
+        ref readonly var next = ref code.Instructions[index + 1];
+        return next.OpCode == ExecutableOpCode.Return && next.InputStart == tuple.ResultSlot;
+    }
+
+    private static void AdmitUnpackedTuple(ReadOnlySpan<ExecutableSlot> items, ExecutionContext scope, LythonSourceSpan span)
+    {
+        // Keep eager admission for the retained elements and their eventual
+        // boxes. The guest cannot observe a tuple shell in a fixed unpack.
+        var bytes = PyTuple.EstimateObjectSlotStorage(items, scope, span);
+        var governor = scope.MemoryGovernor;
+        governor.Reserve(bytes, span);
+        try
+        {
+            scope.CheckExecution(span);
+            governor.Commit(bytes);
+        }
+        catch { governor.ReleaseReserved(bytes); throw; }
+    }
+
     private static object EvaluateExecutableUnary(ExecutableUnaryOperator op, object operand, ExecutionContext context, LythonSourceSpan span)
         => EvaluateUnaryOperator(MapExecutableUnary(op), operand, context, span);
 

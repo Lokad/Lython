@@ -15,7 +15,7 @@ internal sealed partial class LythonRuntime
         private int _pendingCallStart;
         private ExecutableSlot _completedCallValue;
         private Exception? _completedCallError;
-        private enum CallCompletion { Call, TypeGetter, TypeSubscription, Constructor }
+        private enum CallCompletion { Call, TypeGetter, TypeSubscription, Constructor, Unpacked }
         private CallCompletion _callCompletion;
         private LythonSourceSpan? _protocolCallSpan;
         private object? _preparedCallValue;
@@ -342,16 +342,50 @@ internal sealed partial class LythonRuntime
             }
         Completed:
             if (unpacked && completedError is null)
-            {
-                try
-                {
-                    CompleteUnpackedCallReturn(ref _execution, this, start, site!.UnpackedReturnCount);
-                    _execution.InstructionIndex++;
-                }
-                catch { _execution.Stack.RetireTo(start); throw; }
-            }
+                FinishUnpackedCall(start, site!.UnpackedReturnCount);
             else ApplyCallResult(start, span, completion, completedValue, completedError);
             return this;
+        }
+
+        private void FinishUnpackedCall(int start, int count)
+        {
+            try
+            {
+                CompleteUnpackedCallReturn(ref _execution, this, start, count);
+                _execution.InstructionIndex++;
+            }
+            catch { _execution.Stack.RetireTo(start); throw; }
+        }
+
+        private bool TryStageUnpackedFrameReturn(in ExecutableInstruction tuple)
+        {
+            var caller = _caller;
+            if (caller is null || caller._callCompletion != CallCompletion.Call ||
+                caller._pendingCallSite is not { UnpackedReturnCount: > 0 } call ||
+                _execution.Code.ExceptionRegions.Count != 0 ||
+                !IsUnpackedTupleReturn(_execution.Code, _execution.InstructionIndex, tuple, call.UnpackedReturnCount) ||
+                !_execution.Stack.CanRetireWithoutCleanup(tuple.InputStart))
+                return false;
+
+            var returned = PrepareUnpackedCallReturn(ref caller._execution, call, caller._pendingCallStart, out var originalExtent);
+            if (returned.IsEmpty) return false;
+            try
+            {
+                var items = _execution.Stack.Values.AsSpan(tuple.InputStart, tuple.ItemCount);
+                AdmitUnpackedTuple(items, this, tuple.Span);
+                _execution.InstructionIndex++;
+                CheckExecution(_execution.Code.Instructions[_execution.InstructionIndex].Span);
+                // Both arrays are live here. Only the existing pending caller
+                // can publish these slots, after child cleanup succeeds.
+                items.CopyTo(returned);
+                caller._callCompletion = CallCompletion.Unpacked;
+                return true;
+            }
+            catch
+            {
+                caller._execution.Stack.RestoreNativeExtent(originalExtent);
+                throw;
+            }
         }
 
         private void AttachPreparedCall(ExecutionContext frame, ExecutableCallSite? site,
@@ -418,13 +452,18 @@ internal sealed partial class LythonRuntime
             var value = _completedCallValue;
             var failure = _completedCallError;
             var completion = _callCompletion;
+            var site = _pendingCallSite;
             var span = PendingCallSpan;
             _pendingCallSite = null;
             _protocolCallSpan = null;
             _callCompletion = CallCompletion.Call;
             _completedCallValue = default;
             _completedCallError = null;
-            try { ApplyCallResult(start, span, completion, value, failure); }
+            try
+            {
+                if (completion == CallCompletion.Unpacked && failure is null) FinishUnpackedCall(start, site!.UnpackedReturnCount);
+                else ApplyCallResult(start, span, completion, value, failure);
+            }
             catch (LythonRuntimeException error) { _injectedException = error; }
         }
 

@@ -185,6 +185,8 @@ internal sealed partial class LythonRuntime
                                 CreateListFromStack(ref execution.Stack, instruction.InputStart, instruction.ItemCount, instruction.Span, scope));
                             break;
                         case ExecutableOpCode.MakeTuple:
+                            if (invocation is not null && invocation.TryStageUnpackedFrameReturn(instruction))
+                                return InstructionPause.Boundary;
                             PublishInstructionResult(ref execution, invocation, instruction,
                                 CreateTupleFromStack(ref execution.Stack, instruction.InputStart, instruction.ItemCount, instruction.Span, scope));
                             break;
