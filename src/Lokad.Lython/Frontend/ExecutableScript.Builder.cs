@@ -92,7 +92,8 @@ internal sealed partial class ExecutableScript
         private int _syntheticLocalCounter;
 
         private readonly FunctionParameterLayout? _parameterLayout;
-        private readonly HashSet<string> _parentClosureCandidates;
+        private readonly Builder? _lexicalParent;
+        private readonly IReadOnlyList<LoweredTypeParameter>? _typeParameters;
         private readonly bool _completeLexicalParent;
         private readonly ScopeDirectiveFacts _scopeFacts;
         private readonly List<ExecutableCodeObject>? _moduleCode;
@@ -102,10 +103,11 @@ internal sealed partial class ExecutableScript
 
         internal Builder(
             FunctionParameterLayout? parameterLayout,
-            IEnumerable<string>? parentClosureCandidates,
+            Builder? lexicalParent,
             ScopeDirectiveFacts scopeFacts,
             bool completeLexicalParent = false,
-            List<ExecutableCodeObject>? moduleCode = null)
+            List<ExecutableCodeObject>? moduleCode = null,
+            IReadOnlyList<LoweredTypeParameter>? typeParameters = null)
         {
             _moduleCode = moduleCode;
             _scopeFacts = scopeFacts;
@@ -114,9 +116,8 @@ internal sealed partial class ExecutableScript
             // bindings. Independently compiled class methods/generator lambdas use
             // their live retained namespaces for unresolved names.
             _completeLexicalParent = completeLexicalParent;
-            _parentClosureCandidates = parentClosureCandidates is null
-                ? new HashSet<string>(StringComparer.Ordinal)
-                : new HashSet<string>(parentClosureCandidates, StringComparer.Ordinal);
+            _lexicalParent = lexicalParent;
+            _typeParameters = typeParameters;
         }
 
         public ExecutableCodeObject CompileCodeObject(string name, IReadOnlyList<LoweredStatement> statements,
@@ -264,7 +265,7 @@ internal sealed partial class ExecutableScript
                 void CaptureName(string capturedName)
                 {
                     if (_localIndexes.TryGetValue(capturedName, out var slot)) captured.Add(slot);
-                    else if (_parentClosureCandidates.Contains(capturedName)) InternClosure(capturedName);
+                    else if (HasEnclosingBinding(capturedName)) InternClosure(capturedName);
                 }
             }
         }

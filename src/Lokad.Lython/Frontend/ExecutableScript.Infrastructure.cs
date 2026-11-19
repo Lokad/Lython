@@ -340,7 +340,7 @@ internal sealed partial class ExecutableScript
             {
                 AddInstruction(currentBlock, ExecutableInstruction.LoadLocal(slot, span));
             }
-            else if (_parentClosureCandidates.Contains(name))
+            else if (HasEnclosingBinding(name))
             {
                 AddInstruction(currentBlock, ExecutableInstruction.LoadClosure(InternClosure(name), span));
             }
@@ -369,7 +369,7 @@ internal sealed partial class ExecutableScript
             {
                 // Standalone class-method preparation has a retained lexical
                 // namespace, not an enclosing builder's known cell slots.
-                AddInstruction(currentBlock, _parentClosureCandidates.Contains(name)
+                AddInstruction(currentBlock, HasEnclosingBinding(name)
                     ? ExecutableInstruction.StoreClosure(InternClosure(name), span)
                     : ExecutableInstruction.StoreName(InternName(name), span));
                 return;
@@ -489,28 +489,33 @@ internal sealed partial class ExecutableScript
             ScopeDirectiveFacts scopeFacts, IReadOnlyList<LoweredTypeParameter>? typeParameters = null,
             bool generator = false, PyString? qualifiedName = null)
         {
-            // Forward transitive free names as before. Comprehension names
-            // are inner bindings, even at module scope or when the caller
-            // declares a same-named global; add them after that exclusion.
-            var candidates = ChildClosureCandidates();
-            // Type parameters shadow enclosing locals in the body. Defaults
-            // still evaluate in the defining context before TypeScope exists.
-            if (candidates is not null && typeParameters is not null)
-                candidates = candidates.Except(typeParameters.Select(static parameter => parameter.Syntax.Name), StringComparer.Ordinal);
-            return new Builder(parameterLayout, candidates, scopeFacts,
+            return new Builder(parameterLayout, this, scopeFacts,
                 completeLexicalParent: _completeLexicalParent && typeParameters is not { Count: > 0 },
-                moduleCode: _moduleCode)
+                moduleCode: _moduleCode, typeParameters: typeParameters)
                 { _generator = generator }
                 .CompileCodeObject(name, body, qualifiedName: qualifiedName);
         }
 
-        private IEnumerable<string>? ChildClosureCandidates()
+        // A child is compiled while its parent's active comprehensions and
+        // slot maps are intact. Resolve just the names the child references.
+        private bool HasEnclosingBinding(string name)
         {
-            IEnumerable<string>? candidates = _parameterLayout is null ? null
-                : _locals.Concat(_closures).Concat(_parentClosureCandidates)
-                    .Except(_scopeFacts.GlobalNames, StringComparer.Ordinal);
-            return _comprehensionNames.Count == 0 ? candidates
-                : (candidates ?? []).Concat(_comprehensionNames.SelectMany(static names => names));
+            for (var descendant = this; descendant._lexicalParent is { } parent; descendant = parent)
+            {
+                // Type parameters shadow outer bindings in the callable body.
+                if (descendant._typeParameters is { } parameters)
+                    for (var i = 0; i < parameters.Count; i++)
+                        if (parameters[i].Syntax.Name == name) return false;
+
+                // The iteration scope can bind the name even at module scope
+                // or when the enclosing function declared it global.
+                foreach (var names in parent._comprehensionNames)
+                    if (names.Contains(name)) return true;
+
+                if (parent._parameterLayout is null || parent._scopeFacts.IsGlobal(name)) return false;
+                if (parent._localIndexes.ContainsKey(name) || parent._closureIndexes.ContainsKey(name)) return true;
+            }
+            return false;
         }
 
         private int InternMatchCase(LoweredMatchCase matchCase)

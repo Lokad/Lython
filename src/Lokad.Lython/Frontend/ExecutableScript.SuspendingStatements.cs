@@ -51,7 +51,7 @@ internal sealed partial class ExecutableScript
                 case IdentifierExpressionSyntax name:
                     // Deletion alone captures a nonlocal just like a read/store;
                     // its defining frame can have relinquished executable slots.
-                    if (_scopeFacts.IsNonlocal(name.Name) && _parentClosureCandidates.Contains(name.Name))
+                    if (_scopeFacts.IsNonlocal(name.Name) && HasEnclosingBinding(name.Name))
                         InternClosure(name.Name);
                     AddInstruction(block, ExecutableInstruction.DeleteName(InternName(name.Name), expression.Span));
                     break;
