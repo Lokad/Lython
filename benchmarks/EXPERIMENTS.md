@@ -471,6 +471,10 @@ original conditions retained. Current comparisons belong in
   allocation. The all-valid validator also improves with supporting CPU.
   CSV timing spans zero in the refined source pair.
   [Integer transport](results/2026-11-19-native-integer-transport/README.md).
+- B1136 refreshes the exact retained validator against CPython. Warm is
+  1.83–1.92× and compile-to-result is 1.06–1.11×. Compilation controls on
+  CPython still vary. The manifest keeps its B1130 source and rows.
+  [CPython checkpoint](results/2026-11-19-native-integer-cpython/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
