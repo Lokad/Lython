@@ -107,6 +107,11 @@ original conditions retained. Current comparisons belong in
   The warm control moves favorably. The original post-collection archive
   failure and recovered observations remain available.
   [Compiler comparison](results/2026-11-19-prepared-binding-diagnostics/README.md).
+- B1049 and B1050 keep the lazy qualified-name prototype private. The
+  registration report allocates 5.56% less, and repeated timing remains
+  mixed. CPython shares the qualified-name object across instances of
+  one declaration. The prototype still builds a separate name per instance.
+  [Qualified-name comparisons](results/2026-11-19-lexical-qualified-names/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
