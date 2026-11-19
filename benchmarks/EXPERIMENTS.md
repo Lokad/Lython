@@ -487,6 +487,10 @@ original conditions retained. Current comparisons belong in
   takes less elapsed time and allocates 0.75% less. Annotated compile-to-result
   and generated-validator compilation use more CPU.
   [Annotation bounds](results/2026-11-19-parser-annotation-bounds/README.md).
+- B1140 profiles current CSV execution. Source pull and parsing dominate
+  the observed CSV stages. Header layout validation and adoption are also
+  visible, with the already-funded array transferring into the record.
+  [CSV row finalization](results/2026-11-19-csv-row-finalization-profile/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup

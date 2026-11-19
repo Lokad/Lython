@@ -1,0 +1,13 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "ramTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 187240448,
+  "archiveSHA256": "b2e34c28aa92ea6d7c1dc7146c499a3a30cb0ab3c6091eff06190b40f4d8e3e0",
+  "source": "B1140 CSV row-finalization CPU attribution",
+  "performanceComparison": false,
+  "failure": null
+}
