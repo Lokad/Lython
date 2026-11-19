@@ -323,6 +323,10 @@ original conditions retained. Current comparisons belong in
   Captured rules run faster and annotated rules slower with corresponding CPU
   changes. Helper and validator measurements remain mixed. The candidate
   stays private. [Prepared continuations](results/2026-11-19-prepared-integer-prefix/README.md).
+- B1104 joins abstract values and sequence lengths in one map. The manifest
+  compiles faster with lower CPU. Its compile-to-result elapsed rises and
+  the generated validator compiles more slowly. Keep the candidate private.
+  [Branch facts](results/2026-11-19-one-abstract-fact-map/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
