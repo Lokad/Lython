@@ -10,6 +10,31 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class TransitiveClosureCompatibilityTests
 {
     [Fact]
+    public async Task LocalsSnapshotPreservesForwardedCaptureOrder()
+    {
+        using var script = new LythonEngine().Compile("""
+            def outer():
+                a = 1
+                b = 2
+                def middle():
+                    read_b = lambda: b
+                    def read_a(): return a
+                    return tuple(locals()), read_a(), read_b()
+                return middle()
+            print(outer())
+            """);
+        Assert.True(script.IsValid);
+
+        using var sync = script.Run(new MockLythonHost());
+        using var asyncResult = await script.RunAsync(new MockLythonHost());
+        foreach (var result in new[] { sync, asyncResult })
+        {
+            Assert.True(result.Success, Describe(result));
+            Assert.Equal("(('read_b', 'read_a', 'a', 'b'), 1, 2)\n", result.StandardOutput);
+        }
+    }
+
+    [Fact]
     public async Task TransitiveDefCaptureSurvivesReturnedScopes()
     {
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
