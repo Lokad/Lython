@@ -286,6 +286,11 @@ original conditions retained. Current comparisons belong in
   processes diverge by 22.99% on identical binaries, and captured
   compile-to-result uses more CPU. The original setup failure and successful
   collection are archived. [Integer prefix](results/2026-11-19-machine-integer-prefix/README.md).
+- B1095 confirms the integer prefix on the same images with different worker
+  order and longer warmup. The large ordinary warm split does not recur.
+  Annotated warm gains remain unconfirmed and captured compile-to-result CPU
+  still has adverse pairs. The candidate remains private.
+  [Confirmation](results/2026-11-19-machine-integer-prefix/confirmation/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup

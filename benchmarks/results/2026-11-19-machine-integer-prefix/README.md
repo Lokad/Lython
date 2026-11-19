@@ -36,9 +36,10 @@ The ordinary warm candidate processes diverge by 22.99% using the same
 binary. The slow process repeats 3.00–3.18 ms during timed batches, and the
 other candidate stays near 2.52 ms. CPU rises correspondingly. The divergence
 is visible late in warmup. Preserve both workers and the captured
-compile-to-result CPU result. A bounded confirmation using reordered process
-launch and longer warmup can test recurrence. Keep the candidate private
-until the result supports a delivery decision.
+compile-to-result CPU result. The [B1095 confirmation](confirmation/README.md)
+reordered the workers and lengthened warmup. The large process divergence did
+not recur and the annotated warm improvements did not repeat. The prototype
+remains private.
 
 The first setup left a six-job guard in an eight-job catalog, so it exited
 before starting any worker. The empty owned fixture mount was released under
