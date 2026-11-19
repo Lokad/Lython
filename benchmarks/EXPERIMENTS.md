@@ -204,6 +204,10 @@ original conditions retained. Current comparisons belong in
   Sibling compile-to-result improves with lower CPU, captured-rule warm
   timing remains mixed, and allocation reductions persist.
   [Direct slot comparison](results/2026-11-19-direct-capture-access/README.md).
+- B1075 removes the second type dispatch for prepared definitions in a
+  private prototype. Ordinary-rule controls diverge. Captured rules use
+  less CPU and annotated rules use more. The confirmation keeps the same
+  source pair. [Prepared definition dispatch](results/2026-11-19-prepared-definition-dispatch/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
