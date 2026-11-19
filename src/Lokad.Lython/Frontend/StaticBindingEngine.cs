@@ -9,13 +9,13 @@ internal static partial class StaticBindingEngine
         // Aliases to mutable sequences are not tracked. Any known mutating path therefore invalidates
         // all sequence-shape facts before this statement establishes new bindings.
         // Descriptor and item setters may also mutate captured sequences.
-        if (mutatedReceivers.Any(bindings.IsKnownMutableSequence) ||
+        if (mutatedReceivers?.Any(bindings.IsKnownMutableSequence) == true ||
             AssignmentMayMutateSequenceFacts(statement))
         {
             bindings.InvalidateMutableSequenceFacts();
         }
 
-        if (mutatedReceivers.Count != 0 || statement is
+        if (mutatedReceivers is not null || statement is
             SubscriptAssignmentStatementSyntax or SliceAssignmentStatementSyntax or
             MemberAssignmentStatementSyntax or AugmentedAssignmentStatementSyntax or
             DeleteStatementSyntax or UnpackingAssignmentStatementSyntax or
@@ -148,6 +148,7 @@ internal static partial class StaticBindingEngine
 
         }
 
+        if (mutatedReceivers is null) return;
         foreach (var receiver in mutatedReceivers)
         {
             // A mutating method may also change the receiver's more specific abstract kind.

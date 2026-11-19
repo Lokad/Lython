@@ -4,7 +4,11 @@ namespace Lokad.Lython.Frontend;
 // uncalled bodies. Keep them independent of abstract-value/runtime analysis.
 internal static class SyntaxValidityDiagnostics
 {
+    private readonly record struct ExpressionVisit(ExpressionSyntax Expression, HashSet<string>? Targets,
+        bool Iterable, bool InLambda = false, bool RecordCall = false);
+
     public static IReadOnlyList<LythonDiagnostic> Analyze(ScriptSyntax script, out bool hasScopeDirectives,
+        out Dictionary<StatementSyntax, List<CallExpressionSyntax>>? potentialMutations,
         CancellationToken cancellationToken)
     {
         var diagnostics = new List<LythonDiagnostic>();
@@ -13,7 +17,8 @@ internal static class SyntaxValidityDiagnostics
         var hasFutureImport = false;
         hasScopeDirectives = false;
         var statements = new Stack<(StatementSyntax Statement, int LoopDepth)>();
-        var expressions = new Stack<(ExpressionSyntax Expression, HashSet<string>? Targets, bool Iterable)>();
+        var expressions = new Stack<ExpressionVisit>();
+        potentialMutations = null;
         HashSet<string>? seenNames = null;
         foreach (var statement in script.Statements) statements.Push((statement, 0));
         while (statements.TryPop(out var work))
@@ -37,7 +42,11 @@ internal static class SyntaxValidityDiagnostics
             }
             hasModernTypes |= statement is TypeAliasStatementSyntax;
             hasFutureImport |= statement is ImportStatementSyntax { ModuleName: "__future__", ImportedMembers: not null };
-            foreach (var expression in StatementSyntaxTraversal.EnumerateDirectExpressions(statement)) Expressions(expression);
+            List<CallExpressionSyntax>? calls = null;
+            foreach (var expression in StatementSyntaxTraversal.EnumerateDirectExpressions(statement))
+                Expressions(expression, ref calls);
+            if (calls is not null)
+                (potentialMutations ??= new(ReferenceEqualityComparer.Instance))[statement] = calls;
             foreach (var body in StatementSyntaxTraversal.EnumerateChildBodies(statement))
             {
                 var depth = statement switch
@@ -79,12 +88,18 @@ internal static class SyntaxValidityDiagnostics
         void Parameters(IReadOnlyList<FunctionParameterSyntax> parameters, LythonSourceSpan span)
             => Unique(parameters.Select(p => p.Name), span, "Duplicate function parameter.");
 
-        void Expressions(ExpressionSyntax root)
+        void Expressions(ExpressionSyntax root, ref List<CallExpressionSyntax>? calls)
         {
-            expressions.Push((root, null, false));
+            var first = calls?.Count ?? 0;
+            expressions.Push(new(root, null, false));
             while (expressions.TryPop(out var item))
             {
-                var (expression, targets, iterable) = item;
+                var (expression, targets, iterable, inLambda, recordCall) = item;
+                if (recordCall)
+                {
+                    (calls ??= []).Add((CallExpressionSyntax)expression);
+                    continue;
+                }
                 PythonTokenization.CheckCancellation(cancellationToken, expression.Span.Start);
                 hasYield |= expression is YieldExpressionSyntax;
                 if (expression is AssignmentExpressionSyntax assignment)
@@ -93,13 +108,20 @@ internal static class SyntaxValidityDiagnostics
                     else if (targets?.Contains(assignment.Name) == true) Error("Assignment expression rebinds a comprehension iteration target.", assignment.Span);
                 }
                 if (expression is CallExpressionSyntax call)
+                {
                     Unique(call.Arguments.Where(a => a.Kind == CallArgumentKind.Keyword).Select(a => a.KeywordName), call.Span, "Repeated keyword argument.");
+                    // The mutation pass stops at lambdas. Record the call after
+                    // descendants so reversing this segment restores its original
+                    // preorder without changing validation's diagnostic order.
+                    if (!inLambda && call.Target is MemberExpressionSyntax { Target: IdentifierExpressionSyntax })
+                        expressions.Push(item with { RecordCall = true });
+                }
                 if (expression is LambdaExpressionSyntax lambda)
                 {
                     Parameters(lambda.Parameters, lambda.Span);
                     foreach (var parameter in lambda.Parameters)
-                        if (parameter.DefaultValue is not null) expressions.Push((parameter.DefaultValue, targets, iterable));
-                    expressions.Push((lambda.Body, null, iterable));
+                        if (parameter.DefaultValue is not null) expressions.Push(new(parameter.DefaultValue, targets, iterable, InLambda: true));
+                    expressions.Push(new(lambda.Body, null, iterable, InLambda: true));
                     continue;
                 }
                 var clauses = expression switch
@@ -116,11 +138,14 @@ internal static class SyntaxValidityDiagnostics
                         : new HashSet<string>(targets, StringComparer.Ordinal);
                     foreach (var clause in clauses) AddTargetNames(clause.Target, nestedTargets);
                     foreach (var child in ExpressionSyntaxTraversal.EnumerateChildren(expression))
-                        expressions.Push((child, nestedTargets, iterable || clauses.Any(c => ReferenceEquals(c.Iterable, child))));
+                        expressions.Push(new(child, nestedTargets,
+                            iterable || clauses.Any(c => ReferenceEquals(c.Iterable, child)), inLambda));
                 }
                 else
-                    foreach (var child in ExpressionSyntaxTraversal.EnumerateChildren(expression)) expressions.Push((child, targets, iterable));
+                    foreach (var child in ExpressionSyntaxTraversal.EnumerateChildren(expression))
+                        expressions.Push(new(child, targets, iterable, inLambda));
             }
+            if (calls is not null) calls.Reverse(first, calls.Count - first);
         }
 
         HashSet<string> PatternNames(PatternSyntax pattern)

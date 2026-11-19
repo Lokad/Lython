@@ -2,12 +2,6 @@ namespace Lokad.Lython.Frontend;
 
 internal static class StaticAnalyzer
 {
-    public static IReadOnlyList<LythonDiagnostic> Analyze(ScriptSyntax script, ILythonRegexProvider? regexProvider = null, Runtime.MemoryGovernor? governor = null, CancellationToken cancellationToken = default)
-    {
-        using var context = new StaticAnalysisContext(script, regexProvider, governor, cancellationToken);
-        return Analyze(context);
-    }
-
     internal static IReadOnlyList<LythonDiagnostic> Analyze(StaticAnalysisContext context, bool hasScopeDirectives = true)
     {
         if (hasScopeDirectives)
