@@ -168,16 +168,9 @@ internal sealed partial class ExecutableScript
             }
 
             var jumpTargets = ResolveJumpTargets();
-            var ordered = CollectReachableBlocks(entryBlock, jumpTargets);
-            var indexMap = new int[_blocks.Count];
-            Array.Fill(indexMap, -1);
-            for (var i = 0; i < ordered.Length; i++)
-            {
-                indexMap[ordered[i]] = i;
-            }
-
-            var normalizedBlocks = NormalizeBlocks(ordered, indexMap, jumpTargets);
-            var normalizedRegions = NormalizeRegions(ordered, indexMap, jumpTargets);
+            var indexMap = RetainReachableBlocks(entryBlock, jumpTargets);
+            NormalizeBlockTargets(indexMap, jumpTargets);
+            var normalizedRegions = NormalizeRegions(indexMap, jumpTargets);
             // Annotation values can retain functions or deferred generators after
             // module slots leave. Keep their existing global namespace lifetime
             // conservatively; scalar-only declarations need no such mirror.
@@ -208,7 +201,7 @@ internal sealed partial class ExecutableScript
                 _closures.ToArray(),
                 _closureIndexes,
                 _scopeFacts,
-                normalizedBlocks,
+                _blocks,
                 0,
                 normalizedRegions,
                 _imports.ToArray(),

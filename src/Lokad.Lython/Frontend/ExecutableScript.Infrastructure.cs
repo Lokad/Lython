@@ -89,45 +89,34 @@ internal sealed partial class ExecutableScript
             return instructions[^1].OpCode is ExecutableOpCode.Jump or ExecutableOpCode.AbruptJump or ExecutableOpCode.Return or ExecutableOpCode.ReturnNone or ExecutableOpCode.ReraiseException;
         }
 
-        private List<List<ExecutableInstruction>> NormalizeBlocks(IReadOnlyList<int> ordered, int[] indexMap, int[] jumpTargets)
+        private void NormalizeBlockTargets(int[] indexMap, int[] jumpTargets)
         {
-            var normalized = new List<List<ExecutableInstruction>>(ordered.Count);
-            foreach (var originalIndex in ordered)
+            foreach (var instructions in _blocks)
             {
-                var instructions = _blocks[originalIndex];
-                // This single-use builder owns the lists throughout preparation.
-                // Normalize targets in place; only the final tape needs an array.
                 for (var i = 0; i < instructions.Count; i++)
                     instructions[i] = RewriteInstructionTargets(instructions[i], indexMap, jumpTargets);
-                normalized.Add(instructions);
             }
-
-            return normalized;
         }
 
-        private IReadOnlyList<ExecutableExceptionRegion> NormalizeRegions(
-            IReadOnlyList<int> orderedBlocks,
-            int[] indexMap, int[] jumpTargets)
+        private IReadOnlyList<ExecutableExceptionRegion> NormalizeRegions(int[] indexMap, int[] jumpTargets)
         {
             var normalized = new List<ExecutableExceptionRegion>(_regions.Count);
             foreach (var region in _regions)
             {
-                var firstProtected = LowerBound(orderedBlocks, region.ProtectedStartIndex);
-                var afterLastProtected = UpperBound(orderedBlocks, region.ProtectedEndIndex);
+                var firstProtected = FirstAtOrAfter(indexMap[region.ProtectedStartIndex]);
+                var afterLastProtected = FirstAfter(indexMap[region.ProtectedEndIndex]);
                 if (firstProtected == afterLastProtected)
                 {
                     continue;
                 }
 
-                // orderedBlocks is sorted and indexMap assigns its position as the
-                // normalized index, so a reachable original range remains contiguous.
                 int? suiteStart = null;
                 int? suiteEnd = null;
                 if (region.SuiteStartIndex is int suiteStartOriginal &&
                     region.SuiteEndIndex is int suiteEndOriginal)
                 {
-                    var firstSuite = LowerBound(orderedBlocks, suiteStartOriginal);
-                    var afterLastSuite = UpperBound(orderedBlocks, suiteEndOriginal);
+                    var firstSuite = FirstAtOrAfter(indexMap[suiteStartOriginal]);
+                    var afterLastSuite = FirstAfter(indexMap[suiteEndOriginal]);
                     if (firstSuite != afterLastSuite)
                     {
                         suiteStart = firstSuite;
@@ -150,63 +139,24 @@ internal sealed partial class ExecutableScript
                 .OrderBy(region => region.ProtectedEndIndex - region.ProtectedStartIndex)
                 .ToArray();
 
-            static int LowerBound(IReadOnlyList<int> values, int target)
-            {
-                var start = 0;
-                var end = values.Count;
-                while (start < end)
-                {
-                    var middle = start + ((end - start) / 2);
-                    if (values[middle] < target)
-                    {
-                        start = middle + 1;
-                    }
-                    else
-                    {
-                        end = middle;
-                    }
-                }
-
-                return start;
-            }
-
-            static int UpperBound(IReadOnlyList<int> values, int target)
-            {
-                var start = 0;
-                var end = values.Count;
-                while (start < end)
-                {
-                    var middle = start + ((end - start) / 2);
-                    if (values[middle] <= target)
-                    {
-                        start = middle + 1;
-                    }
-                    else
-                    {
-                        end = middle;
-                    }
-                }
-
-                return start;
-            }
+            static int FirstAtOrAfter(int index) => index >= 0 ? index : ~index;
+            static int FirstAfter(int index) => index >= 0 ? index + 1 : ~index;
         }
 
-        private int[] CollectReachableBlocks(int entryBlockIndex, int[] jumpTargets)
+        private int[] RetainReachableBlocks(int entryBlockIndex, int[] jumpTargets)
         {
-            var reachable = new bool[_blocks.Count];
-            var count = 0;
+            var indexMap = new int[_blocks.Count];
             var pending = new Stack<int>();
             pending.Push(entryBlockIndex);
 
             while (pending.Count > 0)
             {
                 var blockIndex = pending.Pop();
-                if (reachable[blockIndex])
+                if (indexMap[blockIndex] != 0)
                 {
                     continue;
                 }
-                reachable[blockIndex] = true;
-                count++;
+                indexMap[blockIndex] = 1;
 
                 var block = _blocks[blockIndex];
                 if (block.Count == 0)
@@ -270,12 +220,24 @@ internal sealed partial class ExecutableScript
                 }
             }
 
-            var ordered = new int[count];
-            var next = 0;
-            for (var i = 0; i < reachable.Length; i++)
-                if (reachable[i])
-                    ordered[next++] = i;
-            return ordered;
+            // Compact in original order so every protected range stays contiguous.
+            // Reuse the visit map for destination indexes. An unreachable block
+            // stores the complement of its insertion position so a range endpoint
+            // still maps directly without making it a valid branch target.
+            var count = 0;
+            for (var original = 0; original < indexMap.Length; original++)
+            {
+                if (indexMap[original] == 0)
+                {
+                    indexMap[original] = ~count;
+                    continue;
+                }
+                _blocks[count] = _blocks[original];
+                indexMap[original] = count++;
+            }
+
+            _blocks.RemoveRange(count, _blocks.Count - count);
+            return indexMap;
         }
 
         private static ExecutableInstruction RewriteInstructionTargets(ExecutableInstruction instruction, int[] indexMap, int[] jumpTargets)
