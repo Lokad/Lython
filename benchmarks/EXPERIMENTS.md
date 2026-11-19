@@ -455,6 +455,11 @@ original conditions retained. Current comparisons belong in
   parsing also visible on validator. The acquisition samples include
   inlined host work and leave any removable costs to a controlled comparison.
   [Warm profile](results/2026-11-19-validator-warm-profile/README.md).
+- B1133 keeps the completed-acquisition shortcut private. The validator and
+  manifest timings span zero with effectively flat allocation and identical
+  accounted peaks. This leaves the inlined host work and validation failures
+  as separate attribution questions.
+  [File acquisition](results/2026-11-19-opened-file-acquisition/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
