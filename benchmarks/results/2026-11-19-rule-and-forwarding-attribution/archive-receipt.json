@@ -1,0 +1,12 @@
+{
+  "complete": false,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "ramTraceArchivedAndVerifiedBeforeUnmount": true,
+  "recoveredFrom": "inherited two-workload capture ceiling and interrupted perf.data ownership normalization",
+  "archiveSHA256": "29fea7788f361965dfda2319a79a017530463abcd8efbac9e52302b89dfa9e94",
+  "freeBytes": 266338304,
+  "perfOwnerChangedWithoutByteChanges": true
+}
