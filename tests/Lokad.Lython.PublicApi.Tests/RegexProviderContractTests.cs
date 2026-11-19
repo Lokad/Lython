@@ -466,6 +466,63 @@ public sealed class RegexProviderContractTests
     }
 
     [Theory]
+    [InlineData("search", 0, 4)]
+    [InlineData("search", 4, 8)]
+    [InlineData("match", 5, 5)]
+    [InlineData("fullmatch", 4, 4)]
+    public async Task WholeMatchMustUseTheRequestedWindow(string operation, int startByte, int endByte)
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var provider = new CooperatingProvider
+        {
+            MatchFactory = (_, _) => new([new LythonRegexCapture(startByte, endByte)], null)
+        };
+        using var script = new LythonEngine(provider).Compile(
+            $"import re\nreturn re.compile(pattern).{operation}(text, 1, 2)", budget);
+        Assert.True(script.IsValid);
+        var baseline = budget.ReservedBytes;
+        var options = new LythonRunOptions
+        {
+            Globals = new Dictionary<string, object?> { ["pattern"] = "x", ["text"] = "😀x尾" },
+        };
+        using (var result = await script.RunAsync(new MockLythonHost(), options))
+        {
+            Assert.False(result.Success);
+            Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
+            Assert.Contains("outside its window", result.Failure?.Message);
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData("re.split(pattern, text)", true)]
+    [InlineData("re.sub(pattern, 'new', text)", false)]
+    [InlineData("list(re.finditer(pattern, text))", false)]
+    public async Task InvalidCursorProgressionClosesItsSubjectAndCursor(string expression, bool empty)
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        var first = new LythonRegexCapture(0, empty ? 0 : 1);
+        var second = new LythonRegexCapture(0, 0);
+        using var provider = new CooperatingProvider { CursorMatches = [first, second] };
+        using var script = new LythonEngine(provider).Compile($"import re\nreturn {expression}", budget);
+        Assert.True(script.IsValid);
+        var baseline = budget.ReservedBytes;
+        using (var result = await script.RunAsync(new MockLythonHost(), Options(default)))
+        {
+            Assert.False(result.Success);
+            Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
+            Assert.Contains("cursor did not advance", result.Failure?.Message);
+            Assert.True(provider.CursorDisposed);
+            Assert.True(provider.CleanupFinished);
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
     [InlineData(1, 2, 2, 5)]
     [InlineData(2, 1, 1, 4)]
     [InlineData(1, 99, 3, 8)]
@@ -1108,6 +1165,7 @@ public sealed class RegexProviderContractTests
         internal IReadOnlyList<LythonRegexNamedGroup> GroupNames = [];
         internal Action<ReadOnlyMemory<byte>, LythonRegexWindow>? OnPrepare;
         internal Func<ReadOnlyMemory<byte>, LythonRegexWindow, FixtureMatch?>? MatchFactory;
+        internal LythonRegexCapture[]? CursorMatches;
 
         private static void Reserve(ILythonMemoryBudget owner, long bytes)
         {
@@ -1246,9 +1304,16 @@ public sealed class RegexProviderContractTests
         private sealed class Cursor(CooperatingProvider provider, Subject subject) : ILythonRegexCursor
         {
             private bool _done;
+            private int _next;
             public bool TryNext(Span<LythonRegexCapture?> captures, out int? lastIndex, CancellationToken token)
             {
                 provider.Work("next", token); lastIndex = null;
+                if (provider.CursorMatches is { } matches)
+                {
+                    if (_next == matches.Length) return false;
+                    captures[0] = matches[_next++];
+                    return true;
+                }
                 if (_done) return false;
                 _done = true;
                 return subject.TryMatch(LythonRegexMatchMode.Search, captures, out lastIndex, token);

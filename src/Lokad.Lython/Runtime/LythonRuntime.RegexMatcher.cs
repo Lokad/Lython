@@ -56,11 +56,24 @@ internal sealed partial class LythonRuntime
                 catch { _storage.Dispose(); throw; }
             }
 
-            internal bool Match(LythonRegexMatchMode mode)
+            internal bool Match(LythonRegexMatchMode mode, RegexSubjectRange range)
             {
                 ObjectDisposedException.ThrowIf(_subject is null, this);
-                return RegexCompiler.TryMatch(_subject, mode, Captures, out LastIndex,
-                    _context.MemoryGovernor, _context.State.CancellationToken, _span, _pattern.Pattern);
+                if (!RegexCompiler.TryMatch(_subject, mode, Captures, out LastIndex,
+                    _context.MemoryGovernor, _context.State.CancellationToken, _span, _pattern.Pattern)) return false;
+
+                var whole = ValidateCaptures(range);
+                // Python can match an empty pattern at Pos in a reversed window.
+                var valid = mode switch
+                {
+                    LythonRegexMatchMode.Match => whole.StartByte == _window.StartByte &&
+                        whole.EndByte <= Math.Max(_window.EndByte, _window.StartByte),
+                    LythonRegexMatchMode.FullMatch => whole.StartByte == _window.StartByte &&
+                        whole.EndByte == _window.EndByte,
+                    _ => ContainsWholeMatch(whole)
+                };
+                if (!valid) throw RuntimeErrors.Runtime("Regex provider returned a match outside its window.", _span);
+                return true;
             }
 
             internal ILythonRegexCursor Find()
@@ -70,9 +83,44 @@ internal sealed partial class LythonRuntime
                     _context.MemoryGovernor, _context.State.CancellationToken, _span, _pattern.Pattern);
             }
 
-            internal bool Next(ILythonRegexCursor cursor)
-                => RegexCompiler.TryNext(cursor, Captures, out LastIndex, _context.MemoryGovernor,
-                    _context.State.CancellationToken, _span, _pattern.Pattern);
+            internal bool Next(ILythonRegexCursor cursor, RegexSubjectRange range)
+            {
+                // Each prepared subject has one cursor. Capture zero still holds the
+                // last successful pull and is null before the first pull.
+                var previous = Captures[0];
+                if (!RegexCompiler.TryNext(cursor, Captures, out LastIndex, _context.MemoryGovernor,
+                    _context.State.CancellationToken, _span, _pattern.Pattern)) return false;
+
+                var whole = ValidateCaptures(range);
+                if (!ContainsWholeMatch(whole))
+                    throw RuntimeErrors.Runtime("Regex provider returned a match outside its window.", _span);
+                if (previous is { } last && (whole.StartByte < last.EndByte || whole == last))
+                    throw RuntimeErrors.Runtime("Regex provider cursor did not advance.", _span);
+                return true;
+            }
+
+            private bool ContainsWholeMatch(LythonRegexCapture whole)
+                => whole.StartByte >= _window.StartByte && whole.EndByte <= _window.EndByte;
+
+            private LythonRegexCapture ValidateCaptures(RegexSubjectRange range)
+            {
+                if (Captures[0] is not { } whole ||
+                    LastIndex is { } last && (last <= 0 || last >= Captures.Length || Captures[last] is null))
+                    throw RuntimeErrors.Runtime("Regex provider returned inconsistent capture metadata.", _span);
+
+                // Lookbehind can place participating subgroups before Pos.
+                var input = range.Original.Utf8Span;
+                foreach (var capture in Captures)
+                {
+                    _context.CheckExecution(_span);
+                    if (capture is not { } value) continue;
+                    if (value.StartByte < 0 || value.EndByte < value.StartByte || value.EndByte > input.Length ||
+                        value.StartByte < input.Length && (input[value.StartByte] & 0xc0) == 0x80 ||
+                        value.EndByte < input.Length && (input[value.EndByte] & 0xc0) == 0x80)
+                        throw RuntimeErrors.Runtime("Regex provider returned inconsistent capture ranges.", _span);
+                }
+                return whole;
+            }
 
             internal void Project(RegexSubjectRange range, ReCaptureRange[] captures)
             {
@@ -105,24 +153,6 @@ internal sealed partial class LythonRuntime
 
         private static ReadOnlyMemory<byte> CaptureBytes(RegexSubjectRange range, LythonRegexCapture capture)
             => range.Original.Utf8Bytes.Slice(capture.StartByte, capture.EndByte - capture.StartByte);
-
-        private static void ValidateMatch(RePatternObject pattern, RegexSubjectRange range, PreparedSubject match,
-            ExecutionContext context, LythonSourceSpan span)
-        {
-            if (match.Captures.Length != pattern.CaptureSlotCount || match.Captures.Length == 0 || match.Captures[0] is null ||
-                match.LastIndex is { } last && (last <= 0 || last >= match.Captures.Length || match.Captures[last] is null))
-                throw RuntimeErrors.Runtime("Regex provider returned inconsistent capture metadata.", span);
-            var input = range.Original.Utf8Span;
-            for (var i = 0; i < match.Captures.Length; i++)
-            {
-                context.CheckExecution(span);
-                if (match.Captures[i] is not { } value) continue;
-                if (value.StartByte < 0 || value.EndByte < value.StartByte || value.EndByte > input.Length ||
-                    value.StartByte < input.Length && (input[value.StartByte] & 0xc0) == 0x80 ||
-                    value.EndByte < input.Length && (input[value.EndByte] & 0xc0) == 0x80)
-                    throw RuntimeErrors.Runtime("Regex provider returned inconsistent capture ranges.", span);
-            }
-        }
 
         private static void ProjectScalarBounds(RegexSubjectRange range, LythonRegexWindow window, ReCaptureRange[] captures,
             ref RegexScalarPosition previous, Span<long> coordinates, ExecutionContext context, LythonSourceSpan span)
@@ -205,7 +235,7 @@ internal sealed partial class LythonRuntime
                 return PyNone.Instance;
             }
             using var subject = Prepare(pattern, range, context, span);
-            return subject.Match(mode) ? CreateMatchObject(pattern, range, subject, context, span) : PyNone.Instance;
+            return subject.Match(mode, range) ? CreateMatchObject(pattern, range, subject, context, span) : PyNone.Instance;
         }
 
         internal static PyRegexFindIterator CreateFindIterMatches(RePatternObject pattern, RegexSubjectRange range,
@@ -218,11 +248,10 @@ internal sealed partial class LythonRuntime
             if (!range.IsValid) return result;
             using var subject = Prepare(pattern, range, context, span);
             using var cursor = subject.Find();
-            while (subject.Next(cursor))
+            while (subject.Next(cursor, range))
             {
                 var match = subject;
                 context.CheckExecution(span);
-                ValidateMatch(pattern, range, match, context, span);
                 if (pattern.CaptureSlotCount <= 2)
                 {
                     var slot = pattern.CaptureSlotCount == 1 ? 0 : 1;
@@ -239,7 +268,6 @@ internal sealed partial class LythonRuntime
             PreparedSubject match, ExecutionContext context, LythonSourceSpan span)
         {
             context.CheckExecution(span);
-            ValidateMatch(pattern, range, match, context, span);
             var bytes = checked(128L + 32L * match.Captures.Length);
             using var storage = context.MemoryGovernor.ReserveTemporary(bytes, span);
             context.CheckExecution(span);
@@ -271,11 +299,10 @@ internal sealed partial class LythonRuntime
                 using var cursor = subject.Find();
                 var splits = 0;
                 while ((maxSplit == 0 || splits < maxSplit) &&
-                    subject.Next(cursor))
+                    subject.Next(cursor, range))
                 {
                     var match = subject;
                     context.CheckExecution(span);
-                    ValidateMatch(pattern, range, match, context, span);
                     var whole = match.Captures[0]!.Value;
                     result.Add(CreateUtf8String(range.Original.Utf8Bytes.Slice(lastByte, whole.StartByte - lastByte), context, span));
                     for (var i = 1; i < match.Captures.Length; i++)
@@ -328,13 +355,12 @@ internal sealed partial class LythonRuntime
             try
             {
                 while ((count == 0 || replaced < count) &&
-                    subject.Next(cursor))
+                    subject.Next(cursor, range))
                 {
                     var match = subject;
                     context.CheckExecution(span);
                     ReMatchObject? projected = null;
                     if (plan is null) projected = CreateMatchObject(pattern, range, match, context, span);
-                    else ValidateMatch(pattern, range, match, context, span);
                     var whole = match.Captures[0]!.Value;
                     AppendRegexBytes(builder, range.Original.Utf8Span[lastByte..whole.StartByte], context, span);
                     if (plan is not null) plan.AppendTo(builder, range, match.Captures, context, span);

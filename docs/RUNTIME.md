@@ -2253,10 +2253,12 @@ are diagnostics, not separate allowances. See [memory controls](../tests/Lokad.L
 ## Regex providers
 
 Regex preparation carries the original UTF-8 subject and independently clamped
-scalar/byte window bounds. Captures identify absolute byte ranges; they do not
-carry a second copy of their text. Lython checks capture bounds and UTF-8
-boundaries, then counts UTF-8 scalars from nearby known endpoints or the
-iteration checkpoint, checking cancellation during long scans. It copies retained
+scalar/byte window bounds. Captures identify absolute byte ranges. Lython checks
+capture boundaries, the whole match's window and forward cursor progression
+before projecting or slicing subject text. Lookbehind captures can precede
+`pos`, and an anchored empty match can succeed at `pos` in a reversed window.
+Lython counts UTF-8 scalars from nearby known endpoints or the iteration
+checkpoint, checking cancellation during long scans. It copies retained
 values from the original subject before a cursor can advance. Provider
 working/result borrows remain alive
 through that copy and actual cleanup. Native providers need no dense coordinate

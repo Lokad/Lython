@@ -204,6 +204,10 @@ invariants belong in the white-box suite.
 
 ## Test responsibilities
 
+Use the project's normal build output for workflow fixture tests and controlled
+worker subprocesses. The test assembly finds workflow files and the matching
+worker by walking up from that output directory.
+
 Keep captured stdout goldens independent of checkout line endings: escaped `\n`
 literals preserve Python output bytes on Windows and Ubuntu. Compare actual
 output exactly, including any intentionally embedded carriage returns.

@@ -36,7 +36,7 @@ internal sealed partial class LythonRuntime
                     _cursor = _subject.Find();
                     _context.State.TrackRegexIterator(this);
                 }
-                if (!_subject.Next(_cursor!)) { Dispose(); return PyIterationResult.End; }
+                if (!_subject.Next(_cursor!, _range)) { Dispose(); return PyIterationResult.End; }
                 return PyIterationResult.Yield(RegexMatcher.CreateMatchObject(_pattern, _range, _subject, _context, _span));
             }
             catch { Dispose(); throw; }
