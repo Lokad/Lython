@@ -154,6 +154,9 @@ original conditions retained. Current comparisons belong in
   lower accounted peak. Mutable-counter elapsed spans zero. The original
   partial collection stays in B1060.
   [Completed comparison](results/2026-11-19-detached-nonlocal-cells/README.md).
+- Windows and Ubuntu Release .NET 10/11, original stress and installed
+  consumers passed for R627, R629 and the R633 catalog guard at `cd4c9510b`.
+  [Delivery CI](https://github.com/Lokad/Lython/actions/runs/44479156111).
 - B1061 keeps direct positional default ownership private. Allocation falls,
   while ordinary-rule warm CPU rises and compile-to-result remains uncertain.
   The reused-default warm reference drifts.
