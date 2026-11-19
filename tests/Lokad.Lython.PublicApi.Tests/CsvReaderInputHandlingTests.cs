@@ -100,7 +100,7 @@ public sealed class CsvReaderInputHandlingTests
         // the partial record drops and the next pull starts clean.
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
-            r = csv.reader(["a", "\"b\"x", "c"])
+            r = csv.reader(["a", "\"b\"x", "c"], strict=True)
             it = iter(r)
             results = [next(it)]
             try:

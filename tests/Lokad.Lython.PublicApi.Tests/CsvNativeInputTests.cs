@@ -86,20 +86,29 @@ public sealed class CsvNativeInputTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task ParseFailureConsumesTheLineAndDoesNotDamageTheFollowingRow(bool asynchronous)
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task ClosingQuoteSuffixFollowsStrictnessAndKeepsReaderPosition(bool asynchronous, bool strict)
     {
-        await AssertFile(asynchronous, "\"bad\"x,1\n\"kept\",2\n", """
+        var script = $$"""
             import csv
             with open('/input.csv', newline='') as source:
-                reader = csv.reader(source, strict=True)
+                reader = csv.reader(source, delimiter='§', quotechar='«', escapechar='🦋', strict={{(strict ? "True" : "False")}})
                 try:
-                    next(reader)
-                except csv.Error:
-                    print('bad', reader.line_num)
+                    print(next(reader), reader.line_num)
+                except csv.Error as error:
+                    print(str(error), reader.line_num)
+                try:
+                    print(next(reader), reader.line_num)
+                except csv.Error as error:
+                    print(str(error), reader.line_num)
                 print(next(reader), reader.line_num)
-            """, "bad 1\n['kept', '2'] 2\n");
+            """;
+        var expected = strict ? "'§' expected after '«' 1\n'§' expected after '«' 2\n['kept', '2'] 3\n"
+            : "['prefix', '1'] 1\n['a🦋βγ', 'z'] 2\n['kept', '2'] 3\n";
+        await AssertFile(asynchronous, "«pre«fix§1\n«a«🦋β🦋γ§z\n«kept«§2\n", script, expected);
     }
 
     [Theory]

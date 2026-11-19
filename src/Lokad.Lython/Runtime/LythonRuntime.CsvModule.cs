@@ -599,7 +599,7 @@ internal sealed partial class LythonRuntime
                 var ordinary = found < 0 ? width : found;
                 if (ordinary != 0)
                 {
-                    if (_state == FieldState.AfterQuote) throw CsvError("Invalid csv input.", _span);
+                    if (_state == FieldState.AfterQuote) ResumeUnquotedField();
                     _record.Append(text.Slice(i, ordinary));
                     _context.CheckExecution(_span);
                     if (_state == FieldState.FieldStart) _state = FieldState.Bare;
@@ -648,8 +648,16 @@ internal sealed partial class LythonRuntime
                 }
                 else
                 {
-                    if (_state == FieldState.AfterQuote) throw CsvError("Invalid csv input.", _span);
-                    if (!escape.IsEmpty && remaining.StartsWith(escape)) i = ConsumeEscape(text, i, escape);
+                    if (_state == FieldState.AfterQuote)
+                    {
+                        ResumeUnquotedField();
+                        // Immediately after a closing quote this character is
+                        // literal, even when it is the configured escape.
+                        Rune.DecodeFromUtf8(remaining, out _, out var literalWidth);
+                        _record.Append(remaining[..literalWidth]);
+                        i += literalWidth;
+                    }
+                    else if (!escape.IsEmpty && remaining.StartsWith(escape)) i = ConsumeEscape(text, i, escape);
                     else
                     {
                         _record.Append(text.Slice(i, 1));
@@ -673,6 +681,13 @@ internal sealed partial class LythonRuntime
             if (_state != FieldState.Quoted) return;
             if (_options.Strict) throw CsvError("unexpected end of data", _span);
             FinishRecord();
+        }
+
+        private void ResumeUnquotedField()
+        {
+            if (_options.Strict)
+                throw CsvError($"'{_options.Delimiter.AsString()}' expected after '{_options.QuoteChar!.AsString()}'", _span);
+            _state = FieldState.Bare;
         }
 
         private int ConsumeEscape(ReadOnlySpan<byte> text, int index, ReadOnlySpan<byte> escape)
