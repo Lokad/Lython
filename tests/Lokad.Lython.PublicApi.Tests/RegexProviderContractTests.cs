@@ -658,7 +658,7 @@ public sealed class RegexProviderContractTests
     {
         var reversed = pos > end;
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var provider = new CooperatingProvider { CaptureSlots = reversed ? 1 : 2 };
+        using var provider = new CooperatingProvider { CaptureSlots = 2 };
         var preparations = 0;
         provider.OnPrepare = (input, window) =>
         {
@@ -667,11 +667,11 @@ public sealed class RegexProviderContractTests
             preparations++;
         };
         provider.MatchFactory = (input, _) => reversed
-            ? new(new LythonRegexCapture?[] { new(5, 5) }, null)
+            ? new(new LythonRegexCapture?[] { new(5, 5), new(5, 5) }, 1)
             : new(new LythonRegexCapture?[] { new(4, 5), new(0, 4) }, 1);
         using (var script = new LythonEngine(provider).Compile("import re\nm=re.compile('" +
-            (reversed ? "" : "(?<=(😀))x") + $"').match('😀x尾',{pos},{end})\n" +
-            "print(m.span(),m.pos,m.endpos,m.string)\n" + (reversed ? "" : "print(m.span(1),m.group(1))"), budget))
+            (reversed ? "()" : "(?<=(😀))x") + $"').match('😀x尾',{pos},{end})\n" +
+            "print(m.span(),m.pos,m.endpos,m.string)\nprint(m.span(1),repr(m.group(1)))", budget))
         {
             Assert.True(script.IsValid, string.Join(";", script.Diagnostics.Select(d => d.Message)));
             Assert.True(preparations > 0);
@@ -682,7 +682,8 @@ public sealed class RegexProviderContractTests
                 using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
                 {
                     Assert.True(result.Success, result.Failure?.Message);
-                    Assert.Equal(reversed ? "(2, 2) 2 1 😀x尾\n" : $"(1, 2) 1 {endPos} 😀x尾\n(0, 1) 😀\n", result.StandardOutput);
+                    Assert.Equal(reversed ? "(2, 2) 2 1 😀x尾\n(2, 2) ''\n"
+                        : $"(1, 2) 1 {endPos} 😀x尾\n(0, 1) '😀'\n", result.StandardOutput);
                 }
                 Assert.Equal(baseline, budget.ReservedBytes);
             }
@@ -1325,17 +1326,22 @@ public sealed class RegexProviderContractTests
     [InlineData("match", 2, 3, null, "outside its window")]
     [InlineData("fullmatch", 0, 2, null, "outside its window")]
     [InlineData("search", 0, 2, 1, "inconsistent capture metadata")]
+    [InlineData("search", 0, 2, 1, "capture outside its window", 3)]
     public async Task InvalidProviderMatchCannotSupplyACompilerFact(string mode, int start, int end,
-        int? lastIndex, string message)
+        int? lastIndex, string message, int? groupEnd = null)
     {
         using var provider = new CooperatingProvider
         {
-            MatchFactory = (_, _) => new([new LythonRegexCapture(start, end)], lastIndex),
+            CaptureSlots = groupEnd.HasValue ? 2 : 1,
+            MatchFactory = (_, _) => new(groupEnd is { } limit
+                ? [new LythonRegexCapture(start, end), new LythonRegexCapture(0, limit)]
+                : [new LythonRegexCapture(start, end)], lastIndex),
         };
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
         var engine = new LythonEngine(provider);
-        var program = $"import re\np = re.compile('x')\nm = p.{mode}(subject)\nreturn m";
-        using (var literal = engine.Compile(program.Replace("(subject)", "('éx')", StringComparison.Ordinal), budget))
+        var arguments = groupEnd.HasValue ? "(subject, 0, 1)" : "(subject)";
+        var program = $"import re\np = re.compile('x')\nm = p.{mode}{arguments}\nreturn m";
+        using (var literal = engine.Compile(program.Replace("(subject", "('éx'", StringComparison.Ordinal), budget))
         {
             Assert.False(literal.IsValid);
             Assert.Contains(literal.Diagnostics, d => d.Message.Contains(message, StringComparison.Ordinal));

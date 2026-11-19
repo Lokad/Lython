@@ -71,7 +71,9 @@ public interface ILythonRegexPattern : IDisposable
     /// Pos may exceed EndPos: Python match can still succeed without consuming text.
     /// Byte bounds identify the same scalar boundaries without another conversion.
     /// Captures use absolute original-subject byte coordinates, including lookbehind
-    /// captures before Pos. The caller funds the subject through disposal.
+    /// captures before Pos. A capture cannot end beyond EndPos, except that a
+    /// reversed anchored match may include an empty capture at Pos. The caller
+    /// funds the subject through disposal.
     /// </remarks>
     ILythonRegexSubject Prepare(ReadOnlyMemory<byte> subject, LythonRegexWindow window, ILythonMemoryBudget memoryOwner,
         CancellationToken cancellationToken);

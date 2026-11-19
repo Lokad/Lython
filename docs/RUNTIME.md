@@ -2393,7 +2393,8 @@ callers of the provider interfaces must uphold the same contract. Providers neve
 mutate input, retain subject borrows past disposal, or retain compilation input
 without copying it into their own funded storage.
 Provider captures use absolute byte coordinates, including lookbehind captures
-before `Pos`. The frontend and runtime compute scalar and byte window bounds
+before `Pos`. Captures end at or before `EndPos`. A reversed anchored match can
+also return empty captures at `Pos`. The frontend and runtime compute scalar and byte window bounds
 with the same UTF-8 routine. Constant analysis encodes known subjects under
 its working owner. Unknown bounds remain uncertain. With clamped `pos` greater
 than `endpos`, Lython resolves `search` and `fullmatch` to `None` before provider

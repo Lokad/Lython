@@ -121,17 +121,23 @@ internal sealed partial class LythonRuntime
                 lastIndex is { } last && (last <= 0 || last >= captures.Length || captures[last] is null))
                 return "Regex provider returned inconsistent capture metadata.";
 
-            // Subgroups from lookbehind may precede Pos. Only slot zero is
-            // constrained to the search window.
-            foreach (var capture in captures)
+            // Lookbehind may capture before Pos, and lookahead may capture
+            // past the whole match. Neither can consume beyond EndPos.
+            // A reversed anchored match can still capture an empty range at Pos.
+            var reversedStart = mode == LythonRegexMatchMode.Match && window.StartByte > window.EndByte
+                ? window.StartByte : -1;
+            for (var i = 0; i < captures.Length; i++)
             {
                 governor?.ThrowIfAdmissionFailed();
                 if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
-                if (capture is not { } value) continue;
+                if (captures[i] is not { } value) continue;
                 if (value.StartByte < 0 || value.EndByte < value.StartByte || value.EndByte > input.Length ||
                     value.StartByte < input.Length && (input[value.StartByte] & 0xc0) == 0x80 ||
                     value.EndByte < input.Length && (input[value.EndByte] & 0xc0) == 0x80)
                     return "Regex provider returned inconsistent capture ranges.";
+                if (i != 0 && value.EndByte > window.EndByte &&
+                    (value.StartByte != reversedStart || value.EndByte != reversedStart))
+                    return "Regex provider returned a capture outside its window.";
             }
 
             // An anchored match can be empty at Pos in a reversed window.
