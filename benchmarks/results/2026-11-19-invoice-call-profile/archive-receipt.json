@@ -1,0 +1,13 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "persistentTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 187203584,
+  "archiveSHA256": "e33db85460316e05be2e09f125e5cc243d185db976f36f3551f4bcff2df98b62",
+  "source": "B1148 invoice and annotated call attribution",
+  "performanceComparison": false,
+  "failure": null
+}

@@ -516,6 +516,10 @@ original conditions retained. Current comparisons belong in
   elapsed is adverse in both runs. The repeat bounds the regression at
   1.24–3.24% elapsed and 0.00–2.67% CPU.
   [Keyword-default lookup](results/2026-11-19-keyword-default-record/README.md).
+- B1148 samples both retained images. Invoice uses the direct positional
+  path and neither invoice profile samples general binding. The cause of
+  the repeated regression remains open.
+  [Invoice and annotated-rule profiles](results/2026-11-19-invoice-call-profile/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
