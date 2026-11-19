@@ -1225,8 +1225,9 @@ String character and UTF-16 width counts share a bounded UTF-8 traversal. Native
 retain no caller token. Projection still admits the full CLR UTF-16 width before
 allocation, including supplementary characters. Final CLR decoding is synchronous.
 
-CSV parsing searches bounded UTF-8 spans for structural byte candidates and
-verifies complete dialect characters at each boundary. Native text files append
+Each CSV reader prepares its dialect's byte search sets once. The parser
+searches bounded UTF-8 spans and verifies complete dialect characters at
+each boundary. Native text files append
 a complete physical line directly into the parser's admitted buffer, which the
 same parser compacts in place. Public file iteration still returns independent
 strings. Raw line bytes and an unfinished multiline prefix can require more
@@ -1243,9 +1244,10 @@ dictionaries/rest lists retain their storage funding.
 csv.reader and exposed fieldnames adopt the funded array without copying.
 Source and parse errors consume the failed item and discard its unfinished
 record; already returned rows remain valid and funded.
-Non-strict quoted EOF produces a final row before source/scratch cleanup; its
-independent storage stays funded through cleanup and later guest use. Strict
-quoted EOF fails without publishing that row.
+Escaped line endings keep the record open across source items. Non-strict
+EOF can publish the final unfinished row before source and scratch cleanup.
+Its independent storage stays funded through cleanup and later guest use.
+Strict EOF fails without publishing an unfinished row.
 
 Dictionaries and sets share one native entry authority: stored Python hashes,
 insertion identities and bucket links live with their keys. Dictionaries preserve
