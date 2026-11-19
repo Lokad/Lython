@@ -45,15 +45,43 @@ internal sealed partial class Parser
             Merge(nameToken, (expression ?? annotation).Span));
     }
 
-    // Parentheses preserve the assignment destination but suppress simple-name
-    // annotation metadata. Tuple/list targets remain invalid annotations.
-    private StatementSyntax? TryParseComplexAnnotatedAssignmentStatement()
+    private StatementSyntax? ParseExpressionOrAssignmentStatement()
     {
         var startPosition = _position;
+        var first = CurrentToken;
         var startDiagnosticCount = _diagnostics.Count;
+        var prefix = ParsePostfixExpression();
+        if (prefix is not null)
+        {
+            var next = CurrentToken;
+            if (next is Token.Eol or Token.Semicolon or Token.Dedent or Token.End)
+                return new ExpressionStatementSyntax(prefix, prefix.Span);
+            if (next == Token.Colon) return ParseComplexAnnotatedAssignment(prefix, startPosition);
+            if (next == Token.Assign)
+            {
+                ReadToken();
+                var target = UnwrapParenthesizedTarget(prefix);
+                return TryConvertExpressionToAssignmentTarget(target, out var assignment)
+                    ? ParseAssignmentAfterFirstTarget(assignment.RequireNotNull(), startPosition)
+                    : AddUnsupportedAssignmentTarget(target);
+            }
+            if ((IsNameToken(first) || first == Token.OpenParen) && TryMapAugmentedAssignmentOperator(next, out var op))
+                return ParseAugmentedAssignment(prefix, op);
+        }
 
-        var target = ParsePostfixExpression();
-        AssignmentTargetSyntax? assignmentTarget = target is null ? null : UnwrapParenthesizedTarget(target) switch
+        // Infix expressions and tuple displays still use ordinary precedence.
+        _position = startPosition;
+        if (_diagnostics.Count > startDiagnosticCount)
+            _diagnostics.RemoveRange(startDiagnosticCount, _diagnostics.Count - startDiagnosticCount);
+        var expression = ParseExpressionList();
+        return expression is null ? null : new ExpressionStatementSyntax(expression, expression.Span);
+    }
+
+    // Parentheses preserve the assignment destination and suppress simple-name
+    // annotation metadata. Tuple/list targets remain invalid annotations.
+    private StatementSyntax? ParseComplexAnnotatedAssignment(ExpressionSyntax target, int startPosition)
+    {
+        AssignmentTargetSyntax? assignmentTarget = UnwrapParenthesizedTarget(target) switch
         {
             IdentifierExpressionSyntax identifier => new NameAssignmentTargetSyntax(identifier.Name, identifier.Span),
             SubscriptExpressionSyntax subscript => new SubscriptAssignmentTargetSyntax(subscript.Target, subscript.Index, subscript.Span),
@@ -61,17 +89,7 @@ internal sealed partial class Parser
             MemberExpressionSyntax member => new MemberAssignmentTargetSyntax(member.Target, member.MemberName, member.Span),
             _ => null,
         };
-
-        if (target is null || assignmentTarget is null || CurrentToken != Token.Colon)
-        {
-            _position = startPosition;
-            if (_diagnostics.Count > startDiagnosticCount)
-            {
-                _diagnostics.RemoveRange(startDiagnosticCount, _diagnostics.Count - startDiagnosticCount);
-            }
-
-            return null;
-        }
+        if (assignmentTarget is null) return AddUnsupportedAssignmentTarget(target);
 
         ReadToken();
         var annotation = ParseExpression();
@@ -98,53 +116,6 @@ internal sealed partial class Parser
             annotation,
             expression,
             Merge(startPosition, (expression ?? annotation).Span)) { IsSimple = target is IdentifierExpressionSyntax };
-    }
-
-    private StatementSyntax? TryParsePostfixAssignmentStatement(bool reportUnsupportedAnnotationTarget = false)
-    {
-        var startPosition = _position;
-        var startDiagnosticCount = _diagnostics.Count;
-
-        var target = ParsePostfixExpression();
-        if (target is not null && reportUnsupportedAnnotationTarget && CurrentToken == Token.Colon)
-        {
-            return AddUnsupportedAssignmentTarget(target);
-        }
-        if (target is null || CurrentToken != Token.Assign)
-        {
-            _position = startPosition;
-            if (_diagnostics.Count > startDiagnosticCount)
-            {
-                _diagnostics.RemoveRange(startDiagnosticCount, _diagnostics.Count - startDiagnosticCount);
-            }
-
-            return null;
-        }
-
-        ReadToken();
-        target = UnwrapParenthesizedTarget(target);
-        return target switch
-        {
-            IdentifierExpressionSyntax identifier => ParseAssignmentAfterFirstTarget(
-                new NameAssignmentTargetSyntax(identifier.Name, identifier.Span),
-                startPosition),
-            SubscriptExpressionSyntax subscript => ParseAssignmentAfterFirstTarget(
-                new SubscriptAssignmentTargetSyntax(subscript.Target, subscript.Index, subscript.Span),
-                startPosition),
-            SliceExpressionSyntax slice => ParseAssignmentAfterFirstTarget(
-                new SliceAssignmentTargetSyntax(slice.Target, slice.Start, slice.End, slice.Step, slice.Span),
-                startPosition),
-            MemberExpressionSyntax member => ParseAssignmentAfterFirstTarget(
-                new MemberAssignmentTargetSyntax(member.Target, member.MemberName, member.Span),
-                startPosition),
-            TupleLiteralExpressionSyntax tuple when TryConvertSequenceExpressionToTargets(tuple.Items, out var tupleTargets) => ParseAssignmentAfterFirstTarget(
-                new UnpackingAssignmentTargetGroupSyntax(tupleTargets, target.Span),
-                startPosition),
-            ListLiteralExpressionSyntax list when TryConvertSequenceExpressionToTargets(list.Items, out var listTargets) => ParseAssignmentAfterFirstTarget(
-                new UnpackingAssignmentTargetGroupSyntax(listTargets, target.Span),
-                startPosition),
-            _ => AddUnsupportedAssignmentTarget(target)
-        };
     }
 
     private StatementSyntax? AddUnsupportedAssignmentTarget(ExpressionSyntax target)
@@ -606,23 +577,8 @@ internal sealed partial class Parser
         return true;
     }
 
-    private StatementSyntax? TryParseAugmentedAssignmentStatement()
+    private StatementSyntax? ParseAugmentedAssignment(ExpressionSyntax targetExpression, AugmentedAssignmentOperatorSyntax op)
     {
-        var startPosition = _position;
-        var startDiagnosticCount = _diagnostics.Count;
-
-        var targetExpression = ParsePostfixExpression();
-        if (targetExpression is null || !IsAugmentedAssignmentToken(CurrentToken))
-        {
-            _position = startPosition;
-            if (_diagnostics.Count > startDiagnosticCount)
-            {
-                _diagnostics.RemoveRange(startDiagnosticCount, _diagnostics.Count - startDiagnosticCount);
-            }
-
-            return null;
-        }
-
         if (!TryConvertExpressionToAssignmentTarget(targetExpression, out var target) ||
             target is UnpackingAssignmentTargetGroupSyntax)
         {
@@ -631,12 +587,6 @@ internal sealed partial class Parser
         }
 
         var operatorToken = ReadToken();
-        if (!TryMapAugmentedAssignmentOperator(_tokens.Tokens[operatorToken].Token, out var op))
-        {
-            AddDiagnostic("LA2000", "Unsupported Python construct 'augmented assignment'.", operatorToken);
-            return null;
-        }
-
         var expression = ParseExpressionList();
         if (expression is null)
         {
@@ -650,24 +600,6 @@ internal sealed partial class Parser
             expression,
             Merge(targetExpression.Span, expression.Span));
     }
-    private static bool IsAugmentedAssignmentToken(Token token)
-    {
-        return token is
-            Token.AtEqual or
-            Token.PlusEqual or
-            Token.MinusEqual or
-            Token.StarEqual or
-            Token.SlashEqual or
-            Token.PercentEqual or
-            Token.SlashSlashEqual or
-            Token.StarStarEqual or
-            Token.AmpersandEqual or
-            Token.PipeEqual or
-            Token.CaretEqual or
-            Token.LessLessEqual or
-            Token.GreaterGreaterEqual;
-    }
-
     private static bool TryMapAugmentedAssignmentOperator(Token token, out AugmentedAssignmentOperatorSyntax op)
     {
         switch (token)

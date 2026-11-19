@@ -273,100 +273,12 @@ internal sealed partial class Parser
 
         if (IsNameToken(CurrentToken))
         {
-            var startDiagnosticCount = _diagnostics.Count;
-            var augmentedAssignment = TryParseAugmentedAssignmentStatement();
-            if (augmentedAssignment is not null || _diagnostics.Count != startDiagnosticCount)
-            {
-                return augmentedAssignment;
-            }
+            if (PeekToken(1) == Token.Colon) return ParseAnnotatedAssignmentStatement();
+            if (PeekToken(1) == Token.Assign) return ParseAssignmentStatement();
         }
 
-        if (IsUnpackingAssignmentStart())
-        {
-            return ParseUnpackingAssignmentStatement();
-        }
-
-        if (IsNameToken(CurrentToken) && PeekToken(1) == Token.Colon)
-        {
-            return ParseAnnotatedAssignmentStatement();
-        }
-
-        if (IsNameToken(CurrentToken) && PeekToken(1) == Token.Assign)
-        {
-            return ParseAssignmentStatement();
-        }
-
-        if (IsNameToken(CurrentToken) && PeekToken(1) is Token.OpenBracket or Token.Dot)
-        {
-            var startDiagnosticCount = _diagnostics.Count;
-            var targetAssignment = TryParsePostfixAssignmentStatement();
-            if (targetAssignment is not null || _diagnostics.Count != startDiagnosticCount)
-            {
-                return targetAssignment;
-            }
-
-            var complexAnnotatedAssignment = TryParseComplexAnnotatedAssignmentStatement();
-            if (complexAnnotatedAssignment is not null || _diagnostics.Count != startDiagnosticCount)
-            {
-                return complexAnnotatedAssignment;
-            }
-        }
-
-        // A leading parenthesis may parenthesize a single assignment target like CPython.
-        if (CurrentToken == Token.OpenParen)
-        {
-            var startDiagnosticCount = _diagnostics.Count;
-            var parenthesizedAugmentedAssignment = TryParseAugmentedAssignmentStatement();
-            if (parenthesizedAugmentedAssignment is not null || _diagnostics.Count != startDiagnosticCount)
-            {
-                return parenthesizedAugmentedAssignment;
-            }
-
-            var parenthesizedAssignment = TryParsePostfixAssignmentStatement();
-            if (parenthesizedAssignment is not null || _diagnostics.Count != startDiagnosticCount)
-            {
-                return parenthesizedAssignment;
-            }
-
-            var parenthesizedAnnotatedAssignment = TryParseComplexAnnotatedAssignmentStatement();
-            if (parenthesizedAnnotatedAssignment is not null || _diagnostics.Count != startDiagnosticCount)
-            {
-                return parenthesizedAnnotatedAssignment;
-            }
-        }
-
-        // A leading bracket may open a list-display unpacking target like CPython.
-        if (CurrentToken == Token.OpenBracket)
-        {
-            var startDiagnosticCount = _diagnostics.Count;
-            var listDisplayAssignment = TryParsePostfixAssignmentStatement();
-            if (listDisplayAssignment is not null || _diagnostics.Count != startDiagnosticCount)
-            {
-                return listDisplayAssignment;
-            }
-        }
-
-        {
-            var startDiagnosticCount = _diagnostics.Count;
-            var annotatedTarget = TryParseComplexAnnotatedAssignmentStatement();
-            if (annotatedTarget is not null || _diagnostics.Count != startDiagnosticCount)
-            {
-                return annotatedTarget;
-            }
-            var targetAssignment = TryParsePostfixAssignmentStatement(reportUnsupportedAnnotationTarget: true);
-            if (targetAssignment is not null || _diagnostics.Count != startDiagnosticCount)
-            {
-                return targetAssignment;
-            }
-        }
-
-        var expression = ParseExpressionList();
-        if (expression is null)
-        {
-            return null;
-        }
-
-        return new ExpressionStatementSyntax(expression, expression.Span);
+        if (IsUnpackingAssignmentStart()) return ParseUnpackingAssignmentStatement();
+        return ParseExpressionOrAssignmentStatement();
     }
 
     private StatementSyntax? ParseIfStatement()
