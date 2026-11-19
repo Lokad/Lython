@@ -18,7 +18,7 @@ internal sealed partial class LythonRuntime
         private PyDict? _keywords;
 
         internal PendingFunctionDefaults(FunctionParameterLayout layout, ExecutionContext context, LythonSourceSpan span,
-            int keywordRecordCache = -1)
+            ref ExecutableWorkState execution, int keywordRecordCache = -1)
         {
             _layout = layout;
             _context = context;
@@ -33,7 +33,7 @@ internal sealed partial class LythonRuntime
                 context.CheckExecution(span);
                 if (positionalCount != 0) _positionalItems = new object[positionalCount];
                 if (keywordCount != 0)
-                    _keywords = context.CreateDefinitionRecord(keywordCount, keywordRecordCache, layout,
+                    _keywords = CreateDefinitionRecord(ref execution, context, keywordCount, keywordRecordCache, layout,
                         static (parameters, index) => parameters.KeywordDefaultName(
                             parameters.Defaults[parameters.PositionalDefaultCount + index].KeywordIndex), span);
             }
@@ -90,7 +90,7 @@ internal sealed partial class LythonRuntime
         IReadOnlyList<LoweredFunctionParameter> parameters, FunctionParameterLayout layout,
         ExecutionContext context, LythonSourceSpan span, bool asynchronous)
     {
-        var pending = new PendingFunctionDefaults(layout, context, span);
+        var pending = new PendingFunctionDefaults(layout, context, span, ref context._execution);
         try
         {
             foreach (var slot in layout.Defaults)

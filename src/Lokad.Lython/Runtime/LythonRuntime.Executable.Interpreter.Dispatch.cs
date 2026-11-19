@@ -79,12 +79,13 @@ internal sealed partial class LythonRuntime
                             }
                             break;
                         case ExecutableOpCode.ApplyOperation:
-                            if (invocation is null) return InstructionPause.ContextRequired;
+                            if (!TryExecutePreparedOperation(ref execution, scope, invocation, instruction, asynchronous, out var operationTask))
+                                return InstructionPause.ContextRequired;
                             if (!asynchronous)
-                                invocation!.ExecutePreparedOperationAsync(instruction, false).GetAwaiter().GetResult();
+                                operationTask.GetAwaiter().GetResult();
                             else
                             {
-                                pending = WithoutJump(invocation!.ExecutePreparedOperationAsync(instruction, true));
+                                pending = WithoutJump(operationTask);
                                 if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
                                 _ = ConsumeOperation(ref pending);
                             }

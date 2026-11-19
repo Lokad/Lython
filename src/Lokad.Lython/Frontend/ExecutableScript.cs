@@ -564,7 +564,10 @@ internal sealed partial class ExecutableCodeObject
         // Lexical/storage admission only. The native loop transfers at the
         // actual operation needing a frame, without a second opcode inventory.
         CanRunNativeInstructions = IsFunctionScope && !RequiresLocalVariableMirroring && capturedLocalSlots.Count == 0
-            && EntryIndex < NativePrefixEnd;
+            && EntryIndex < NativePrefixEnd
+            && (Instructions[EntryIndex].OpCode != ExecutableOpCode.ApplyOperation ||
+                Constants[Instructions[EntryIndex].ConstantIndex] is not
+                    (ExecutableStartFunctionDefaults or ExecutableCreateFunction or ExecutableCreateLambda));
     }
 
     public string Name { get; }

@@ -77,85 +77,105 @@ internal sealed partial class LythonRuntime
                 await FormatSuspendedFieldAsync(value, null, specifier, this, span, asynchronous, field.PreparedFormat).ConfigureAwait(false));
         }
 
-        private ValueTask ExecutePreparedOperationAsync(ExecutableInstruction instruction, bool asynchronous)
+        private static bool TryExecutePreparedOperation(ref ExecutableWorkState execution,
+            ExecutionContext scope, ExecutionContext? invocation, in ExecutableInstruction instruction,
+            bool asynchronous, out ValueTask pending)
         {
-            var operation = (ExecutableOperation)_execution.Code.Constants[instruction.ConstantIndex]!;
+            pending = default;
+            var context = invocation ?? scope;
+            var operation = (ExecutableOperation)execution.Code.Constants[instruction.ConstantIndex]!;
             var span = instruction.Span;
             switch (operation)
             {
-                case ExecutableStartComprehension start:
+                case ExecutableStartComprehension start when invocation is not null:
                 {
-                    var comprehensionOuter = _execution.Stack.TakeValue(instruction.InputStart, instruction.ResultSlot);
-                    var scope = EnterComprehension(start.ScopeFacts);
+                    var comprehensionOuter = execution.Stack.TakeValue(instruction.InputStart, instruction.ResultSlot);
+                    var comprehension = invocation.EnterComprehension(start.ScopeFacts);
                     var onStack = false;
                     try
                     {
                         object result = start.Kind switch
                         {
-                            ExecutableDisplayKind.Set => new PySet(MemoryGovernor, span),
-                            ExecutableDisplayKind.Dictionary => new PyDict(MemoryGovernor, span),
-                            _ => new PyList([], MemoryGovernor, span),
+                            ExecutableDisplayKind.Set => new PySet(context.MemoryGovernor, span),
+                            ExecutableDisplayKind.Dictionary => new PyDict(context.MemoryGovernor, span),
+                            _ => new PyList([], context.MemoryGovernor, span),
                         };
-                        _execution.Stack.PublishValue(instruction.ResultSlot, instruction.ResultSlot + 1, scope);
+                        execution.Stack.PublishValue(instruction.ResultSlot, instruction.ResultSlot + 1, comprehension);
                         onStack = true;
-                        _execution.Stack.PublishValue(instruction.ResultSlot + 1, instruction.ResultSlot + 2, result);
-                        _execution.Stack.PublishValue(instruction.ResultSlot + 2, instruction.LiveExtent, comprehensionOuter);
+                        execution.Stack.PublishValue(instruction.ResultSlot + 1, instruction.ResultSlot + 2, result);
+                        execution.Stack.PublishValue(instruction.ResultSlot + 2, instruction.LiveExtent, comprehensionOuter);
                     }
-                    catch { if (!onStack) scope.Dispose(); throw; }
+                    catch { if (!onStack) comprehension.Dispose(); throw; }
                     break;
                 }
-                case ExecutableFinishComprehension:
-                    var completed = _execution.Stack.TakeValue(instruction.InputStart + 1, instruction.InputStart + 1);
-                    ((ExecutableTemporaryValue)_execution.Stack.TakeValue(instruction.InputStart, instruction.InputStart)).Dispose();
-                    PublishInstructionResult(instruction, completed);
+                case ExecutableFinishComprehension when invocation is not null:
+                    var completed = execution.Stack.TakeValue(instruction.InputStart + 1, instruction.InputStart + 1);
+                    ((ExecutableTemporaryValue)execution.Stack.TakeValue(instruction.InputStart, instruction.InputStart)).Dispose();
+                    PublishInstructionResult(ref execution, invocation, instruction, completed);
                     break;
-                case ExecutableStartDisplay start:
+                case ExecutableStartDisplay start when invocation is not null:
                     object collection = start.Kind switch
                     {
-                        ExecutableDisplayKind.Set => new PySet(MemoryGovernor, span),
-                        ExecutableDisplayKind.Dictionary => new PyDict(MemoryGovernor, span),
-                        _ => new PyList([], MemoryGovernor, span),
+                        ExecutableDisplayKind.Set => new PySet(context.MemoryGovernor, span),
+                        ExecutableDisplayKind.Dictionary => new PyDict(context.MemoryGovernor, span),
+                        _ => new PyList([], context.MemoryGovernor, span),
                     };
-                    PublishInstructionResult(instruction, collection);
+                    PublishInstructionResult(ref execution, invocation, instruction, collection);
                     break;
-                case ExecutableFinishTuple:
-                    var expanded = (PyList)_execution.Stack.TakeValue(instruction.InputStart, instruction.ResultSlot);
-                    var tuple = expanded.Count == 0 ? PyTuple.Empty : new PyTuple(expanded, MemoryGovernor, span);
-                    PublishInstructionResult(instruction, tuple);
+                case ExecutableFinishTuple when invocation is not null:
+                    var expanded = (PyList)execution.Stack.TakeValue(instruction.InputStart, instruction.ResultSlot);
+                    var tuple = expanded.Count == 0 ? PyTuple.Empty : new PyTuple(expanded, context.MemoryGovernor, span);
+                    PublishInstructionResult(ref execution, invocation, instruction, tuple);
                     break;
-                case ExecutableStartCall call:
+                case ExecutableStartCall call when invocation is not null:
                     var targetSlot = instruction.InputStart;
-                    try { _execution.Stack[targetSlot] = new CallExpansion.CallArgumentAccumulator(call.ArgumentCount, this, _execution.Stack[targetSlot], deferSingleStar: call.DeferSingleStar); }
-                    catch { _execution.Stack.RetireTo(targetSlot); throw; }
+                    try { execution.Stack[targetSlot] = new CallExpansion.CallArgumentAccumulator(call.ArgumentCount, context, execution.Stack[targetSlot], deferSingleStar: call.DeferSingleStar); }
+                    catch { execution.Stack.RetireTo(targetSlot); throw; }
                     break;
                 // Display and call operations with a suspension path.
                 case ExecutableAppendDisplay or ExecutableStoreDictionaryItem or ExecutableAppendCall
                     or ExecutableFinishCall or ExecutableCallWithKeywordMapping
-                    or ExecutableCreateGeneratorExpression:
-                    return ExecutePreparedSuspendingOperationAsync(operation, instruction, asynchronous);
+                    or ExecutableCreateGeneratorExpression when invocation is not null:
+                    pending = invocation.ExecutePreparedSuspendingOperationAsync(operation, instruction, asynchronous);
+                    break;
                 case ExecutableAnnotationsEnabled:
-                    PublishInstructionResult(instruction, !PostponedAnnotations);
+                    PublishInstructionResult(ref execution, invocation, instruction, !context.PostponedAnnotations);
                     break;
-                case ExecutablePostponedAnnotation postponed:
-                    PublishInstructionResult(instruction, CreatePostponedAnnotationValue(postponed.Annotation, this));
+                case ExecutablePostponedAnnotation postponed when invocation is not null:
+                    PublishInstructionResult(ref execution, invocation, instruction, CreatePostponedAnnotationValue(postponed.Annotation, context));
                     break;
-                case ExecutableStoreModuleAnnotation annotation:
-                    var value = _execution.Stack.TakeValue(instruction.InputStart, instruction.LiveExtent);
-                    return StoreAnnotationEntryAsync(ResolveName("__annotations__", span, this),
-                        annotation.Name, value, this, span, asynchronous);
+                case ExecutableStoreModuleAnnotation annotation when invocation is not null:
+                    var value = execution.Stack.TakeValue(instruction.InputStart, instruction.LiveExtent);
+                    pending = StoreAnnotationEntryAsync(ResolveName("__annotations__", span, context),
+                        annotation.Name, value, context, span, asynchronous);
+                    break;
                 case ExecutableStartFunctionDefaults start:
-                    var owner = new PendingFunctionDefaults(start.Binding.ParameterLayout, this, span,
-                        start.Binding.KeywordRecordCache);
-                    try { PublishInstructionResult(instruction, owner); }
+                    var owner = new PendingFunctionDefaults(start.Binding.ParameterLayout, context, span,
+                        ref execution, start.Binding.KeywordRecordCache);
+                    try { PublishInstructionResult(ref execution, invocation, instruction, owner); }
                     catch { owner.Dispose(); throw; }
                     break;
                 case ExecutableCreateFunction function:
-                    return CreateExecutableFunction(function, instruction.InputStart, asynchronous);
+                    var local = -1;
+                    if (invocation is null)
+                    {
+                        var binding = function.Binding;
+                        if (!CanDefineWithoutInvocation(binding.CodeObject) || binding.TypeParameters is not null ||
+                            binding.DecoratorCount != 0 || !function.AnnotationsOnStack && binding.Annotations.Length != 0 ||
+                            HasTypeParameterScope(scope) || execution.Code.ScopeFacts.IsGlobal(binding.Name) ||
+                            execution.Code.ScopeFacts.IsNonlocal(binding.Name) ||
+                            !execution.Code.LocalNameToSlot.TryGetValue(binding.Name, out local)) return false;
+                    }
+                    pending = CreateExecutableFunction(ref execution, context, invocation, function,
+                        instruction.InputStart, local, asynchronous);
+                    break;
                 case ExecutableCreateLambda lambda:
                     {
+                        if (invocation is null && (lambda.Expression.NamespaceClosure || !CanDefineWithoutInvocation(lambda.CodeObject)))
+                            return false;
                         var layout = lambda.Expression.ParameterLayout;
                         using var defaults = layout.Defaults.Length == 0 ? null
-                            : new PendingFunctionDefaults(layout, this, span, lambda.KeywordRecordCache);
+                            : new PendingFunctionDefaults(layout, context, span, ref execution, lambda.KeywordRecordCache);
                         var first = instruction.InputStart;
                         PyFunctionBase function;
                         try
@@ -163,24 +183,26 @@ internal sealed partial class LythonRuntime
                             if (defaults is not null)
                             {
                                 for (var i = 0; i < layout.Defaults.Length; i++)
-                                    defaults.Add(layout.Defaults[i], RuntimeValue(_execution.Stack[first + i]), span);
+                                    defaults.Add(layout.Defaults[i], RuntimeValue(execution.Stack[first + i]), span);
                                 defaults.Complete();
                             }
-                            function = CreateLambdaFunction(lambda.Expression, defaults?.Values ?? default, this);
+                            function = CreateLambdaFunction(lambda.Expression, defaults?.Values ?? default, context, borrowed: invocation is null);
                         }
-                        finally { _execution.Stack.RetireTo(instruction.ResultSlot); }
+                        finally { execution.Stack.RetireTo(instruction.ResultSlot); }
                         defaults?.Publish();
-                        PublishInstructionResult(instruction, function);
+                        PublishInstructionResult(ref execution, invocation, instruction, function);
                     }
                     break;
-                case ExecutableStartClassHeader header:
-                    PublishInstructionResult(instruction, new CallExpansion.CallArgumentAccumulator(header.Count, this, ClassHeaderExpansionTarget));
+                case ExecutableStartClassHeader header when invocation is not null:
+                    PublishInstructionResult(ref execution, invocation, instruction, new CallExpansion.CallArgumentAccumulator(header.Count, context, ClassHeaderExpansionTarget));
                     break;
-                case ExecutableCreateClass create:
-                    return ExecutePreparedClassDefinitionAsync(create, instruction.InputStart, span, asynchronous);
+                case ExecutableCreateClass create when invocation is not null:
+                    pending = invocation.ExecutePreparedClassDefinitionAsync(create, instruction.InputStart, span, asynchronous);
+                    break;
+                case ExecutableOperation when invocation is null: return false;
                 default: throw new InvalidOperationException("Unknown prepared operation.");
             }
-            return ValueTask.CompletedTask;
+            return true;
         }
 
         private async ValueTask ExecutePreparedSuspendingOperationAsync(ExecutableOperation operation, ExecutableInstruction instruction, bool asynchronous)

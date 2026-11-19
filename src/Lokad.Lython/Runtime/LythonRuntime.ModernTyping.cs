@@ -112,14 +112,14 @@ internal sealed partial class LythonRuntime
     private static ValueTask AttachTypeMetadataAsync(PyFunctionBase function,
         LoweredFunctionAnnotation[] inputs, bool hasTypeParameters, LythonSourceSpan span,
         TypeScope scope, ExecutionContext definingContext, bool asynchronous,
-        ReadOnlyMemory<ExecutableSlot> evaluated = default, int recordCache = -1)
+        ref ExecutableWorkState execution, ReadOnlyMemory<ExecutableSlot> evaluated = default, int recordCache = -1)
     {
         if (hasTypeParameters)
             function.TrySetMember("__type_params__", scope.Parameters);
         if (inputs.Length == 0 && !hasTypeParameters && !HasTypeParameterScope(definingContext))
             return ValueTask.CompletedTask;
 
-        var annotations = definingContext.CreateDefinitionRecord(inputs.Length, recordCache, inputs,
+        var annotations = CreateDefinitionRecord(ref execution, definingContext, inputs.Length, recordCache, inputs,
             static (entries, index) => entries[index].Key, span);
         if (evaluated.IsEmpty && inputs.Length != 0)
             return EvaluateFunctionAnnotationsAsync(function, annotations, inputs, scope, definingContext, asynchronous);

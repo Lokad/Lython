@@ -6,6 +6,15 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
+    private static PyDict CreateDefinitionRecord<T>(ref ExecutableWorkState execution,
+        ExecutionContext context, int count, int cacheIndex, T names, Func<T, int, PyString> nameAt, LythonSourceSpan span)
+    {
+        if (cacheIndex < 0) return new PyDict(count, context.MemoryGovernor, span);
+        ref var cache = ref execution.Stack.GetLookupCaches(execution.Code.LookupCacheCount, span)[cacheIndex];
+        var keys = PyDict.RecordKeys.PrepareDefinition(ref cache, count, names, nameAt, context, span);
+        return keys.CreateRecord(context, span, count);
+    }
+
     internal sealed partial class ExecutionContext
     {
         private async ValueTask ExecutePreparedClassDefinitionAsync(ExecutableCreateClass create, int first, LythonSourceSpan span, bool asynchronous)
@@ -39,11 +48,16 @@ internal sealed partial class LythonRuntime
             SyncExecutableLocalsFromContext(_execution.Code, _execution.Locals, this);
         }
 
-        private ValueTask CreateExecutableFunction(ExecutableCreateFunction operation, int first, bool asynchronous)
+        private static bool CanDefineWithoutInvocation(ExecutableCodeObject code)
+            => code.UsesOnlyLexicalSlots && code.ClosureNames.Count == 0 && !code.ScopeFacts.RequiresClassCell;
+
+        private static ValueTask CreateExecutableFunction(ref ExecutableWorkState execution,
+            ExecutionContext context, ExecutionContext? invocation, ExecutableCreateFunction operation,
+            int first, int local, bool asynchronous)
         {
             var binding = operation.Binding;
             var span = binding.Span;
-            EnterInterpreterFrame(span);
+            context.EnterInterpreterFrame(span);
             var transferred = false;
             try
             {
@@ -53,45 +67,50 @@ internal sealed partial class LythonRuntime
                 PendingFunctionDefaults? defaults = null;
                 if (layout.Defaults.Length != 0)
                 {
-                    defaults = (PendingFunctionDefaults)_execution.Stack[next++];
+                    defaults = (PendingFunctionDefaults)execution.Stack[next++];
                     foreach (var slot in layout.Defaults)
-                        defaults.Add(slot, RuntimeValue(_execution.Stack[next++]), span);
+                        defaults.Add(slot, RuntimeValue(execution.Stack[next++]), span);
                     defaults.Complete();
                 }
 
-                var cells = CaptureExecutableClosures(binding.CodeObject, this, span);
-                var typeScope = CreateTypeScope(binding.TypeParameters, this, span);
-                var closure = SelectDefinitionClosure(binding.CodeObject, typeScope.Closure, cells);
+                var cells = CaptureExecutableClosures(binding.CodeObject, context, span);
+                var typeScope = CreateTypeScope(binding.TypeParameters, context, span);
+                var closure = invocation is null ? GetGlobalContext(context)
+                    : SelectDefinitionClosure(binding.CodeObject, typeScope.Closure, cells);
                 var values = defaults?.Values ?? default;
-                using var storage = MemoryGovernor.ReserveTemporary(FunctionValueBytes, span);
+                var governor = context.MemoryGovernor;
+                using var storage = governor.ReserveTemporary(FunctionValueBytes, span);
                 PyFunctionBase function = binding.IsGenerator
                     ? new PyGeneratorFunction(layout, binding.CodeObject, closure, values, cells)
                     : new PyExecutableFunction(layout, binding.CodeObject, closure, cells, values);
                 storage.Commit(FunctionValueBytes);
-                ChargeClosureRetention(closure, MemoryGovernor, span);
+                ChargeClosureRetention(closure, governor, span);
                 var metadata = ValueTask.CompletedTask;
-                if (binding.Annotations.Length != 0 || binding.TypeParameters is not null || HasTypeParameterScope(this))
+                if (binding.Annotations.Length != 0 || binding.TypeParameters is not null || HasTypeParameterScope(context))
                 {
-                    var evaluated = operation.AnnotationsOnStack ? _execution.Stack.Slice(next, binding.Annotations.Length) : default;
+                    var evaluated = operation.AnnotationsOnStack ? execution.Stack.Slice(next, binding.Annotations.Length) : default;
                     metadata = AttachTypeMetadataAsync(function, binding.Annotations, binding.TypeParameters is not null,
-                        span, typeScope, this, asynchronous, evaluated, binding.AnnotationRecordCache);
+                        span, typeScope, context, asynchronous, ref execution, evaluated, binding.AnnotationRecordCache);
                 }
 
                 if (binding.DecoratorCount != 0 || !metadata.IsCompletedSuccessfully)
                 {
-                    var completion = FinishExecutableFunctionAsync(binding, function, defaults, metadata, first, asynchronous);
+                    var completion = invocation!.FinishExecutableFunctionAsync(binding, function, defaults, metadata, first, asynchronous);
                     transferred = true;
                     return completion;
                 }
 
                 metadata.GetAwaiter().GetResult();
                 defaults?.Publish();
-                AssignExecutableBoundName(_execution.Code, _execution.Locals, binding.Name, function, this, span);
+                if (invocation is null)
+                    StoreLocalValue(execution.Code, execution.Locals, null, local, ExecutableSlot.FromObject(function), span);
+                else
+                    AssignExecutableBoundName(execution.Code, execution.Locals, binding.Name, function, context, span);
                 return ValueTask.CompletedTask;
             }
             finally
             {
-                if (!transferred) RetireExecutableDefinition(first);
+                if (!transferred) RetireExecutableDefinition(ref execution, context, first);
             }
         }
 
@@ -117,23 +136,14 @@ internal sealed partial class LythonRuntime
             }
             finally
             {
-                RetireExecutableDefinition(first);
+                RetireExecutableDefinition(ref _execution, this, first);
             }
         }
 
-        internal PyDict CreateDefinitionRecord<T>(int count, int cacheIndex, T names,
-            Func<T, int, PyString> nameAt, LythonSourceSpan span)
+        private static void RetireExecutableDefinition(ref ExecutableWorkState execution, ExecutionContext context, int first)
         {
-            if (cacheIndex < 0) return new PyDict(count, MemoryGovernor, span);
-            ref var cache = ref _execution.Stack.GetLookupCaches(_execution.Code.LookupCacheCount, span)[cacheIndex];
-            var keys = PyDict.RecordKeys.PrepareDefinition(ref cache, count, names, nameAt, this, span);
-            return keys.CreateRecord(this, span, count);
-        }
-
-        private void RetireExecutableDefinition(int first)
-        {
-            try { _execution.Stack.RetireTo(first); }
-            finally { LeaveInterpreterFrame(); }
+            try { execution.Stack.RetireTo(first); }
+            finally { context.LeaveInterpreterFrame(); }
         }
     }
 }
