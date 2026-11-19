@@ -2,8 +2,11 @@
 
 | Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| Expanded forwarding report | 1,024 records / 26,112 B | 2.006–2.021 ms | 1.154–1.160 ms | 1.73–1.75× | B1069 diagnostic. Controls L/C 0.77 / 0.50%. IQR ≤1.32%. |
-| Retained nonlocal siblings | 240 factories / 720 returned closures | 0.213–0.214 ms | 0.186–0.193 ms | 1.10–1.15× | B1069 diagnostic. Controls L/C 0.54 / 3.59%. IQR ≤1.91%. |
+| Unannotated rule closures | 2,048 inputs / 4,096 definitions | 2.771–2.790 ms | 0.685–0.687 ms | 4.03–4.07× | B1078 diagnostic. Controls L/C 0.68 / 0.22%. IQR ≤1.95%. |
+| Annotated rule closures | 2,048 inputs / 2,048 definitions | 1.982–2.047 ms | 0.411–0.418 ms | 4.74–4.98× | B1078 diagnostic. Controls L/C 3.24 / 1.72%. IQR ≤2.73%. |
+| Captured rule closures | 2,048 inputs / 4,096 returned closures | 3.160–3.190 ms | 0.771–0.793 ms | 3.98–4.14× | B1078 diagnostic. Controls L/C 0.97 / 2.87%. IQR ≤1.49%. |
+| Retained nonlocal siblings | 240 factories / 720 returned closures | 0.201–0.206 ms | 0.189–0.190 ms | 1.06–1.09× | B1078 diagnostic. Controls L/C 2.31 / 0.23%. IQR ≤0.92%. |
+| Expanded forwarding report | 1,024 records / 26,112 B | 1.981–2.037 ms | 1.164–1.183 ms | 1.67–1.75× | B1078 diagnostic. Controls L/C 2.87 / 1.63%. IQR ≤0.80%. |
 | Shipment report with format selectors | 3,072 records / 189,441 B | 3.693–3.750 ms | 3.082–3.150 ms | 1.17–1.22× | B1069 diagnostic. Controls L/C 1.52 / 2.22%. IQR ≤3.89%. |
 | CSV invoice | 4,096 data records / 127,031 B | 6.755–6.767 ms | 6.076–6.128 ms | 1.10–1.11× | B1069 diagnostic. Controls L/C 0.18 / 0.85%. IQR ≤1.13%. |
 
@@ -11,14 +14,13 @@
 the combinations of two process medians per engine, not confidence intervals.
 Controls L/C report the difference between the two Lython/CPython medians.
 
-B1069 measured **12fabffb1 / frozen 9b8511fc** on
-**2026-11-19 UTC** against stock **CPython 3.13.16** on the quiet **Azure
-F4as_v7**, with Ubuntu 24.04.4 and .NET 11 RC3. Four workloads ran all three
-phases on duplicate processes per engine. These figures describe that
-checkpoint. [B1069 observations](../benchmarks/results/2026-11-19-retained-trim-cpython/README.md).
-
-The earlier B1057 rule workloads span 3.76–4.90× CPython warm. Their
-inputs, revision and controls are recorded below. [B1057 observations](../benchmarks/results/2026-11-19-retained-capture-cpython/README.md).
+B1078 measured **eb444b988 / frozen 93f0cf74**. The B1069
+shipment and CSV rows measure **12fabffb1 / frozen 9b8511fc**. Both collections
+ran **2026-11-19 UTC** against stock **CPython 3.13.16** on the quiet **Azure
+F4as_v7**, with Ubuntu 24.04.4 and .NET 11 RC3. Each workload ran three phases
+on duplicate processes per engine.
+[B1078 observations](../benchmarks/results/2026-11-19-retained-definitions-cpython/README.md) ·
+[B1069 observations](../benchmarks/results/2026-11-19-retained-trim-cpython/README.md).
 
 Warm clocks include Run, mediated RAM-backed file I/O, stdout/file golden checks
 and previous-result cleanup. Lython's host supplies efficient range/append I/O;
@@ -31,10 +33,16 @@ The table compares workload latency under different containment boundaries.
 
 | Workload | Phase | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| Expanded forwarding report | Compilation only | 0.05149–0.05161 ms | 0.06150–0.06153 ms | 0.84× | B1069 diagnostic. Controls L/C 0.22 / 0.06%. IQR ≤1.16%. |
-| Expanded forwarding report | Compile-to-result | 2.116–2.123 ms | 1.296–1.315 ms | 1.61–1.64× | B1069 diagnostic. Controls L/C 0.34 / 1.44%. IQR ≤0.49%. |
-| Retained nonlocal siblings | Compilation only | 0.04571–0.04589 ms | 0.05519–0.05564 ms | 0.82–0.83× | B1069 diagnostic. Controls L/C 0.40 / 0.81%. IQR ≤1.13%. |
-| Retained nonlocal siblings | Compile-to-result | 0.269–0.273 ms | 0.250–0.258 ms | 1.04–1.09× | B1069 diagnostic. Controls L/C 1.77 / 3.41%. IQR ≤2.82%. |
+| Unannotated rule closures | Compilation only | 0.03269–0.03281 ms | 0.04159–0.04197 ms | 0.78–0.79× | B1078 diagnostic. Controls L/C 0.36 / 0.93%. IQR ≤1.70%. |
+| Unannotated rule closures | Compile-to-result | 2.839–2.873 ms | 0.726–0.730 ms | 3.89–3.96× | B1078 diagnostic. Controls L/C 1.21 / 0.51%. IQR ≤2.60%. |
+| Annotated rule closures | Compilation only | 0.02464–0.02521 ms | 0.03093–0.03110 ms | 0.79–0.82× | B1078 diagnostic. Controls L/C 2.33 / 0.55%. IQR ≤1.04%. |
+| Annotated rule closures | Compile-to-result | 2.050–2.088 ms | 0.441–0.443 ms | 4.62–4.74× | B1078 diagnostic. Controls L/C 1.84 / 0.59%. IQR ≤0.88%. |
+| Captured rule closures | Compilation only | 0.03746–0.03762 ms | 0.04735–0.04739 ms | 0.79× | B1078 diagnostic. Controls L/C 0.41 / 0.09%. IQR ≤0.48%. |
+| Captured rule closures | Compile-to-result | 3.245–3.290 ms | 0.823–0.847 ms | 3.83–4.00× | B1078 diagnostic. Controls L/C 1.38 / 3.00%. IQR ≤1.42%. |
+| Retained nonlocal siblings | Compilation only | 0.04596–0.04691 ms | 0.05585–0.05608 ms | 0.82–0.84× | B1078 diagnostic. Controls L/C 2.08 / 0.41%. IQR ≤0.83%. |
+| Retained nonlocal siblings | Compile-to-result | 0.258–0.263 ms | 0.257 ms | 1.00–1.02× | B1078 diagnostic. Controls L/C 1.71 / 0.08%. IQR ≤3.30%. |
+| Expanded forwarding report | Compilation only | 0.05102–0.05103 ms | 0.06208–0.06252 ms | 0.82× | B1078 diagnostic. Controls L/C 0.03 / 0.71%. IQR ≤2.11%. |
+| Expanded forwarding report | Compile-to-result | 2.095–2.158 ms | 1.307–1.331 ms | 1.57–1.65× | B1078 diagnostic. Controls L/C 3.01 / 1.85%. IQR ≤0.97%. |
 | Shipment report with format selectors | Compilation only | 0.03038–0.03059 ms | 0.03230–0.03252 ms | 0.93–0.95× | B1069 diagnostic. Controls L/C 0.69 / 0.69%. IQR ≤0.93%. |
 | Shipment report with format selectors | Compile-to-result | 3.840–3.847 ms | 3.228–3.256 ms | 1.18–1.19× | B1069 diagnostic. Controls L/C 0.18 / 0.86%. IQR ≤1.69%. |
 | CSV invoice | Compilation only | 0.08935–0.09046 ms | 0.09385–0.09412 ms | 0.95–0.96× | B1069 diagnostic. Controls L/C 1.24 / 0.28%. IQR ≤0.31%. |
@@ -43,7 +51,7 @@ The table compares workload latency under different containment boundaries.
 Compilation includes compiled-owner disposal. Compile-to-result includes compilation,
 one execution and compiled-owner disposal. Separately warmed medians are not
 additive. Warm-only numbers do not describe single-use scripts; use compile-to-result.
-B1069 excludes cold startup. Earlier startup measurements use separate boundaries.
+Both collections exclude cold startup. Earlier startup measurements use separate boundaries.
 
 ## Earlier measured workloads
 

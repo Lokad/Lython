@@ -217,6 +217,10 @@ original conditions retained. Current comparisons belong in
   ordinary warm timing spans zero, annotated warm elapsed falls with mixed
   CPU and captured-rule candidate medians diverge. The frame-first change
   stays private. [Factory frame entry](results/2026-11-19-factory-frame-entry/README.md).
+- B1078 refreshes the CPython comparison at `eb444b988`. Rule workloads
+  remain 3.98–4.98× CPython warm. Retained siblings are 1.00–1.02× from
+  compile to result. The archive includes the local allocation size of a
+  factory frame. [External checkpoint](results/2026-11-19-retained-definitions-cpython/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
