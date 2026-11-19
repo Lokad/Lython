@@ -162,6 +162,10 @@ original conditions retained. Current comparisons belong in
   Mixed Unicode and forwarding compile-to-result improve. Warm
   whitespace normalization and the shipment control have adverse elapsed.
   [Trim membership comparison](results/2026-11-19-inline-trim-membership/README.md).
+- B1064 retains inline ASCII trim membership with the dedicated default
+  whitespace scan. Forwarding and mixed Unicode improve with lower CPU,
+  and the unchanged shipment control spans zero.
+  [Trim scan confirmation](results/2026-11-19-trim-policy-scan/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup

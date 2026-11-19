@@ -173,6 +173,7 @@ for the CPython ratios above.
 
 | Change | Established outcome | Limits / evidence |
 | --- | --- | --- |
+| Inline ASCII trim membership | Expanded forwarding runs 3.06–3.39% faster warm and 1.09–3.45% faster compile-to-result. Mixed Unicode trim improves 14.07–14.78% warm. Both use less CPU and allocate less. | `43c9f2c38` versus `12fabffb1`. Shipment JSON elapsed and CPU span zero. Earlier adverse controls remain in B1063. [B1064](../benchmarks/results/2026-11-19-trim-policy-scan/README.md). |
 | Independent capture cells | Captured rules improve 0.78–2.84% warm and 0.95–2.69% compile-to-result, with lower CPU. Allocation falls 6.22% and accounted peak falls 46.86%. | `56d7e329d` versus `68a7fc465`. Annotated warm elapsed stays within 0.18%, with CPU up to 2.40% higher. [B1053](../benchmarks/results/2026-11-19-standalone-capture-cells/README.md). |
 | Prepared capture sources | Captured rules improve 6.05–7.42% warm and 4.12–5.16% compile-to-result. Mutable counters improve 7.23–9.89% warm and 5.24–9.66% compile-to-result. Both allocate less and use less CPU. | `68a7fc465` versus `f80035c13`. Forwarding and positional elapsed controls span zero. [B1055](../benchmarks/results/2026-11-19-prepared-capture-slots/README.md). |
 | Shared compiler bindings | Captured and generic rules compile 2.17–3.78% and 1.03–3.77% faster with lower CPU and 3.23% and 4.15% less allocation respectively. | `f80035c13` versus `d4b2088d4`. Captured and mutable compile-to-result span zero. [B1058](../benchmarks/results/2026-11-19-prepared-compiler-bindings/README.md). |

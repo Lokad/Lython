@@ -110,9 +110,10 @@ can keep the entire capacity charged until owner cleanup. This conservative sibl
 retention, conservative preflight headroom and replacement overlap can cause earlier rejection;
 exact tiny-budget thresholds are not a compatibility contract.
 
-Default trimming and whitespace splitting share a bounded managed ASCII scanner;
-Unicode whitespace and explicit trim character sets retain scalar matching.
-Both paths use the current execution's cooperative cancellation checks.
+Default trimming and whitespace splitting share a bounded managed ASCII scanner
+with scalar Unicode whitespace matching. Explicit trim sets store ASCII
+membership inline and admit hash storage for non-ASCII scalars. Both scans
+use the current execution's cooperative cancellation checks.
 
 Scalar and UTF-16 widths count UTF-8 leading bytes in bounded chunks, using
 managed vectors and a scalar tail. Counting needs no decoded string or indexing
