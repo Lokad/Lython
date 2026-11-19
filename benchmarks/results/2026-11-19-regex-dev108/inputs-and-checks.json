@@ -1,0 +1,107 @@
+{
+  "packageVersion": "0.5.0-dev.108",
+  "producer": "e0097a3fa7b839f56cc11c35e0b50c3d3960b34c",
+  "coreSource": "0d16f83071efb9aaf64a7f9e5b3d4a6d14f3b047",
+  "files": {
+    "net10.0": {
+      "imageHashes": {
+        "Lokad.Lython.dll": "a90c3089d7fb4884f85551bae2f84a62982179cecf1430240779f8085843765f",
+        "Lokad.Lython.pdb": "2963537dfac86536523278dd91d3c9e5303ff84c84bce187aca2018f6d98fce4",
+        "Lokad.Lython.Utf8Regex.dll": "e1a3e3b19f173efb6ee5e7df3e1d82a62406a2fce2ab10685122ab7945ff43fc",
+        "Lokad.Lython.Utf8Regex.pdb": "f1e172a996b725108c4d62562dd033b1ea37c2fa94fd6aebbc21f478817880dd",
+        "Lokad.Utf8Regex.dll": "83d5ea3f4b546e7d36a3f4506fcf4ba02cfacbaec0d3196dc7117be10793388b",
+        "Lokad.Utf8Regex.PythonRe.dll": "f214c809392ff38cfd2610356e35fffab6280e748fad1f8849096338aa3a93b4",
+        "LythonProbe.deps.json": "746b4dc4d8133404c2cf9107d46a6da8b67145c2f428e769080bb4ffa963e9da",
+        "LythonProbe.dll": "88e2edce9615e84a5110c79ec5d03bdf7ecf3e47f3b92cf410116a330ecf2680",
+        "LythonProbe.exe": "a69556c94607eb8695215834de14b1f65009c43f0b9af1017e174cce3bf5dfeb",
+        "LythonProbe.pdb": "63b078ab9a6d84e4f0c3f531906082da8dd3868233dd9a832399576dbe551301",
+        "LythonProbe.runtimeconfig.json": "c230a317a54dd960bcbeb5f347f52e18dc665a26f7efda2159fced9a5ac7e097"
+      },
+      "producerHashes": {
+        "Lokad.Utf8Regex": {
+          "packageSha256": "40ec8b8eaf08be1e22a13cba1386c2eca157e6b64c851de5bc8cd393d66fc9c0",
+          "assemblySha256": "83d5ea3f4b546e7d36a3f4506fcf4ba02cfacbaec0d3196dc7117be10793388b"
+        },
+        "Lokad.Utf8Regex.PythonRe": {
+          "packageSha256": "eb862a3df829683cbc56bfd14101df18eeac053a649e2ec37838c9b832f951e0",
+          "assemblySha256": "f214c809392ff38cfd2610356e35fffab6280e748fad1f8849096338aa3a93b4"
+        }
+      }
+    },
+    "net11.0": {
+      "imageHashes": {
+        "Lokad.Lython.dll": "99840bea42b8500b1759fdd44b026edffd99b968d6e873837e5fd76bdf31482c",
+        "Lokad.Lython.pdb": "9e953af906d2150ca8aa341ce014ed1090bcb5ea18ca84f0d6ce4781ffd3ef54",
+        "Lokad.Lython.Utf8Regex.dll": "f8d12097b63f906a82201d83b129d3b4c43ac66b009c235c433d0318cb13d3ae",
+        "Lokad.Lython.Utf8Regex.pdb": "ee721b04838345f09bc4884a334a04c0674c71db577094a7bbca247c6e394ae0",
+        "Lokad.Utf8Regex.dll": "ffb23f5640fcb422dc885b7c2333e5d2f651ee85a22ec6ef22a23bc0b194217b",
+        "Lokad.Utf8Regex.PythonRe.dll": "feab7de990b71dcaf223e36a40abe0a8ee30c8664ea4891f54844deb14f9e368",
+        "LythonProbe.deps.json": "8b115571f2fea95c89dbb425a0576e6f20358dc5b23c64307670a70b77024a91",
+        "LythonProbe.dll": "66e2cf26d693fcb8a64a96881593c240fd2b928c3ff70411754fb8050a2ad8c9",
+        "LythonProbe.exe": "c2dd4d73170bb663b5371782bf00fb37f2266cad60dee384b2a615f30571e2b0",
+        "LythonProbe.pdb": "a5d9850cc90a522caf7b5a33650dafa1db5ef8462722b507c5ce14a0b1d48891",
+        "LythonProbe.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0"
+      },
+      "producerHashes": {
+        "Lokad.Utf8Regex": {
+          "packageSha256": "40ec8b8eaf08be1e22a13cba1386c2eca157e6b64c851de5bc8cd393d66fc9c0",
+          "assemblySha256": "ffb23f5640fcb422dc885b7c2333e5d2f651ee85a22ec6ef22a23bc0b194217b"
+        },
+        "Lokad.Utf8Regex.PythonRe": {
+          "packageSha256": "eb862a3df829683cbc56bfd14101df18eeac053a649e2ec37838c9b832f951e0",
+          "assemblySha256": "feab7de990b71dcaf223e36a40abe0a8ee30c8664ea4891f54844deb14f9e368"
+        }
+      }
+    }
+  },
+  "probes": [
+    {
+      "framework": "net10.0",
+      "api": "sync",
+      "exitCode": 0,
+      "match": true
+    },
+    {
+      "framework": "net10.0",
+      "api": "async",
+      "exitCode": 0,
+      "match": true
+    },
+    {
+      "framework": "net11.0",
+      "api": "sync",
+      "exitCode": 0,
+      "match": true
+    },
+    {
+      "framework": "net11.0",
+      "api": "async",
+      "exitCode": 0,
+      "match": true
+    }
+  ],
+  "producerHostChecks": [
+    {
+      "framework": "net10.0",
+      "passed": 405,
+      "trxSHA256": "e8b4cb4d46c44d9185fd2a80041439d85bf6012690b880362a45979a5c621729",
+      "inFlightCases": [
+        "Lokad.Lython.PublicApi.Tests.RegexAdapterLifetimeTests.ActualBackendWorkObservesInFlightCancellationAndUnwinds(stage: \"cursor\")",
+        "Lokad.Lython.PublicApi.Tests.RegexAdapterLifetimeTests.ActualBackendWorkObservesInFlightCancellationAndUnwinds(stage: \"compile\")",
+        "Lokad.Lython.PublicApi.Tests.RegexAdapterLifetimeTests.ActualBackendWorkObservesInFlightCancellationAndUnwinds(stage: \"match\")"
+      ],
+      "exactPackageBytesVerified": true
+    },
+    {
+      "framework": "net11.0",
+      "passed": 405,
+      "trxSHA256": "0bdf848e08da622e9fa4114618d2fc49face155e51c97a3ba5871484e32b8c10",
+      "inFlightCases": [
+        "Lokad.Lython.PublicApi.Tests.RegexAdapterLifetimeTests.ActualBackendWorkObservesInFlightCancellationAndUnwinds(stage: \"compile\")",
+        "Lokad.Lython.PublicApi.Tests.RegexAdapterLifetimeTests.ActualBackendWorkObservesInFlightCancellationAndUnwinds(stage: \"cursor\")",
+        "Lokad.Lython.PublicApi.Tests.RegexAdapterLifetimeTests.ActualBackendWorkObservesInFlightCancellationAndUnwinds(stage: \"match\")"
+      ],
+      "exactPackageBytesVerified": true
+    }
+  ]
+}

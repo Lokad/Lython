@@ -407,6 +407,14 @@ original conditions retained. Current comparisons belong in
 - R689 records callable generator classification during yield validation
   and deletes the later body scans. Local compilation allocation falls
   0.28–1.10% across seven sources. [Yield classification](results/2026-11-19-yield-classification/README.md).
+- B1120 and B1121 remove the separately allocated function binding object.
+  Captured-rule elapsed falls in both runs, and allocation falls 3.20–6.13%
+  across rule scripts. The annotated comparison is mixed and reused
+  defaults slow in the confirmation. Keep it private pending a design that
+  addresses call-time behavior. [Binding state](results/2026-11-19-inline-function-binding/README.md).
+- R691 verifies the immutable dev.108 provider through nine CPython cases
+  on both targets and verifies the supplier's in-flight cancellation records.
+  Final adapter qualification remains separate. [Development package](results/2026-11-19-regex-dev108/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
