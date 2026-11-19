@@ -166,6 +166,10 @@ original conditions retained. Current comparisons belong in
   whitespace scan. Forwarding and mixed Unicode improve with lower CPU,
   and the unchanged shipment control spans zero.
   [Trim scan confirmation](results/2026-11-19-trim-policy-scan/README.md).
+- B1065 compares the cumulative call checkpoint from before R611 through
+  R629. Ordinary rules improve with lower CPU. Forwarding spans zero.
+  Positional debt remains open with adverse pairs and moving controls.
+  [Call checkpoint](results/2026-11-19-cumulative-positional-debt/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
