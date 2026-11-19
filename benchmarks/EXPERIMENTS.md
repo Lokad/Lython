@@ -101,6 +101,12 @@ original conditions retained. Current comparisons belong in
   The selector report is 1.18–1.22× CPython warm. The two rule scripts
   are 4.06–4.19× and 4.82–4.88×. Compilation favors Lython on these five.
   [CPython checkpoint](results/2026-11-19-retained-selectors-cpython/README.md).
+- B1048 retains the duplicate name-binding diagnostic correction. The
+  configuration edit uses less elapsed time and CPU compile-to-result.
+  Generated-validator CPU is adverse in that phase, with mixed elapsed.
+  The warm control moves favorably. The original post-collection archive
+  failure and recovered observations remain available.
+  [Compiler comparison](results/2026-11-19-prepared-binding-diagnostics/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
