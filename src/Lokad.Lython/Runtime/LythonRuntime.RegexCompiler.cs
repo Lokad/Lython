@@ -18,6 +18,11 @@ internal sealed partial class LythonRuntime
         internal const int RegexDebugFlag = 128;
         internal const int PythonAsciiFlag = 256;
 
+        // Bounds are independently clamped before this test. Python's anchored
+        // match may still succeed without consuming text in a reversed range.
+        internal static bool IsImpossibleWindow(LythonRegexMatchMode mode, int pos, int endPos)
+            => pos > endPos && mode is LythonRegexMatchMode.Search or LythonRegexMatchMode.FullMatch;
+
         internal static LythonRegexWindow CreateWindow(ReadOnlySpan<byte> subject, int scalarLength,
             int pos, int endPos, CancellationToken token, LythonSourceSpan span)
         {

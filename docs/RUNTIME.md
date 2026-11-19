@@ -2354,7 +2354,10 @@ without copying it into their own funded storage.
 Provider captures use absolute byte coordinates, including lookbehind captures
 before `Pos`. The frontend and runtime compute scalar and byte window bounds
 with the same UTF-8 routine. Constant analysis encodes known subjects under
-its working owner. Unknown bounds remain uncertain. Substitution rewrites the
+its working owner. Unknown bounds remain uncertain. With clamped `pos` greater
+than `endpos`, Lython resolves `search` and `fullmatch` to `None` before provider
+subject preparation. An anchored `match` passes the reversed window to the
+provider, since a zero-width match can succeed. Substitution rewrites the
 selected window and preserves the original prefix and suffix. Splitting returns
 the window's parts.
 Both extensions preserve original assertion context. Reversed

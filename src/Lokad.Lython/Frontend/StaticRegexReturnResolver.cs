@@ -327,6 +327,7 @@ internal static class StaticRegexReturnResolver
         var input = Encoding.UTF8.GetBytes(text);
         var length = PyString.CountUtf8Units(input, false, token, span);
         var window = LythonRuntime.RegexCompiler.CreateWindow(input, length, pos, endPos, token, span);
+        if (LythonRuntime.RegexCompiler.IsImpossibleWindow(operation, window.Pos, window.EndPos)) return false;
         using var subject = LythonRuntime.RegexCompiler.ProviderCall(() => pattern.Prepare(input, window,
             analysis.MemoryGovernor?.Budget ?? new LythonMemoryBudget(), token), analysis.MemoryGovernor, token, span,
             operationName: "Regex constant-subject preparation");

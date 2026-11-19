@@ -508,6 +508,47 @@ public sealed class RegexProviderContractTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
+    [Fact]
+    public async Task ReversedSearchAndFullmatchResolveBeforePreparingTheSubject()
+    {
+        const string source = """
+            import re
+            p = re.compile('')
+            q = re.compile(pattern)
+            print(p.search('😀x尾', 2, 1), p.fullmatch('😀x尾', 2, 1))
+            print(q.search(subject, 2, 1), q.fullmatch(subject, 2, 1))
+            print(p.search('😀x尾', 5, 4).span(), p.fullmatch('😀x尾', 5, 4).span())
+            """;
+        using var provider = new CooperatingProvider { CaptureSlots = 1 };
+        var preparations = 0;
+        provider.OnPrepare = (input, window) =>
+        {
+            Assert.Equal("😀x尾", Encoding.UTF8.GetString(input.Span));
+            Assert.Equal(new LythonRegexWindow(3, 3, 8, 8), window);
+            preparations++;
+        };
+        provider.MatchFactory = (_, _) => new(new LythonRegexCapture?[] { new(8, 8) }, null);
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var script = new LythonEngine(provider).Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics));
+        Assert.True(preparations > 0);
+        var baseline = budget.ReservedBytes;
+        var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["pattern"] = "", ["subject"] = "😀x尾" } };
+        foreach (var asynchronous in new[] { false, true })
+        {
+            var beforeRun = preparations;
+            using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal("None None\nNone None\n(3, 3) (3, 3)\n", result.StandardOutput);
+                Assert.True(preparations > beforeRun);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Theory]
     [InlineData("compile")]
     [InlineData("prepare")]

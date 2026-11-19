@@ -199,6 +199,11 @@ internal sealed partial class LythonRuntime
         internal static object Match(RePatternObject pattern, RegexSubjectRange range, LythonRegexMatchMode mode,
             LythonSourceSpan span, ExecutionContext context)
         {
+            if (RegexCompiler.IsImpossibleWindow(mode, range.Pos, range.EndPos))
+            {
+                context.CheckExecution(span);
+                return PyNone.Instance;
+            }
             using var subject = Prepare(pattern, range, context, span);
             return subject.Match(mode) ? CreateMatchObject(pattern, range, subject, context, span) : PyNone.Instance;
         }
