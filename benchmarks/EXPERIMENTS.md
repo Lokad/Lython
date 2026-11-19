@@ -149,6 +149,11 @@ original conditions retained. Current comparisons belong in
 - B1060 retains two completed mutable-counter lanes from a partial comparison.
   Correcting the copied file-output checksum requires a new catalog and the
   same frozen images. [Partial observations](results/2026-11-19-detached-nonlocal-cells-partial/README.md).
+- B1062 retains independently owned cells for complete nonlocal captures.
+  The retained-sibling script improves both timed boundaries and uses a
+  lower accounted peak. Mutable-counter elapsed spans zero. The original
+  partial collection stays in B1060.
+  [Completed comparison](results/2026-11-19-detached-nonlocal-cells/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
