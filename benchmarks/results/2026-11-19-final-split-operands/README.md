@@ -45,3 +45,5 @@ guest elapsed measurements. Process CPU has a wider boundary.
 
 [Measurements](summary.json) · [Raw observations](observations.tgz) ·
 [Source, checks and procedures](checks-and-procedures.tar.xz)
+
+[Full platform, stress and installed-package qualification](delivery/README.md).

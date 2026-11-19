@@ -43,3 +43,5 @@ guest elapsed. Process CPU includes the wider request.
 
 [Measurements](summary.json) · [Raw observations](observations.tgz) ·
 [Source, checks and procedures](checks-and-procedures.tar.xz)
+
+[Full platform, stress and installed-package qualification](../2026-11-19-final-split-operands/delivery/README.md).
