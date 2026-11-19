@@ -375,6 +375,12 @@ original conditions retained. Current comparisons belong in
   and the invoice takes 1.09–1.12×. Each script compiles faster than
   CPython. Worker spreads leave the exact annotated and captured gaps
   uncertain. [External comparison](results/2026-11-19-retained-return-cpython/README.md).
+- B1115 keeps eligible lexical leaf calls in the borrowed dispatcher and
+  reuses the fixed-return destination. Captured rules improve 7.58–9.34%
+  warm and allocate 26.90% less. Ordinary rules improve 3.09–6.08% warm
+  and allocate 10.29% less. Annotated rules take 5.73–8.60% longer with
+  higher CPU and flat allocation. Keep the prototype private for refinement.
+  [Borrowed leaf calls](results/2026-11-19-borrowed-lexical-leaf/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
