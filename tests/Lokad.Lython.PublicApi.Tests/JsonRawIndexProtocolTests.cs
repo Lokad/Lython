@@ -81,36 +81,81 @@ public sealed class JsonRawIndexProtocolTests
         using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(HostSource(keyword, descriptor), budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
-        var host = new DelayedLythonHost(); host.SeedFile("/events.txt", "before");
+        var host = new PendingWriteHost();
         using var cancellation = new CancellationTokenSource();
-        var entered = cancel ? host.PauseWriteUntilCancellation("/events.txt") : null;
         var pending = script.RunAsync(host, cancellationToken: cancellation.Token);
         try
         {
-            if (entered is not null)
+            var first = await Task.WhenAny(host.Entered.Task, pending).WaitAsync(TimeSpan.FromSeconds(5));
+            if (ReferenceEquals(first, pending))
             {
-                var first = await Task.WhenAny(entered, pending).WaitAsync(TimeSpan.FromSeconds(5));
-                if (ReferenceEquals(first, pending))
-                {
-                    using var early = await pending;
-                    Assert.Fail(early.Failure?.Message ?? "Index coercion did not reach its pending write.");
-                }
-                Assert.False(pending.IsCompleted);
-                Assert.True(budget.ReservedBytes > baseline);
-                cancellation.Cancel();
+                using var early = await pending;
+                Assert.Fail(early.Failure?.Message ?? "Index coercion did not reach its pending write.");
             }
+            Assert.False(pending.IsCompleted);
+            Assert.Equal("before", host.ReadText());
+            Assert.True(budget.ReservedBytes > baseline);
+            if (cancel) cancellation.Cancel();
+            else host.Resume.TrySetResult();
             using var result = await pending.WaitAsync(TimeSpan.FromSeconds(5));
             Assert.Equal(!cancel, result.Success);
             Assert.Equal(cancel ? "" : "(7, 3)\n", result.StandardOutput);
-            Assert.Equal(cancel ? "before" : "beforeseen", host.ReadText("/events.txt"));
+            Assert.Equal(cancel ? "before" : "beforeseen", host.ReadText());
+            Assert.Equal(1, host.ClosedFiles);
             if (cancel) Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
         }
         finally
         {
             cancellation.Cancel();
+            host.Resume.TrySetResult();
             using var drained = await pending.WaitAsync(TimeSpan.FromSeconds(5));
         }
         Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
+    private sealed class PendingWriteHost : ILythonHost
+    {
+        private readonly MockLythonHost _inner = new();
+        internal readonly TaskCompletionSource Entered = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        internal readonly TaskCompletionSource Resume = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        internal PendingWriteHost() => _inner.SeedFile("/events.txt", "before");
+        internal string ReadText() => _inner.ReadText("/events.txt");
+        internal int ClosedFiles => _inner.ClosedFileCount;
+        public string Cwd => _inner.Cwd;
+        public DateTimeOffset LocalNow => _inner.LocalNow;
+        public DateTimeOffset UtcNow => _inner.UtcNow;
+
+        public async ValueTask<ILythonByteFile> OpenFileAsync(LythonPathRequest path, LythonFileOpenOptions options,
+            ILythonMemoryBudget budget, CancellationToken token)
+            => new PendingWriteFile(this, await _inner.OpenFileAsync(path, options, budget, token).ConfigureAwait(false));
+
+        public ValueTask<bool> ExistsAsync(LythonPathRequest path, CancellationToken token) => _inner.ExistsAsync(path, token);
+        public ValueTask<IReadOnlyList<string>> ListDirAsync(LythonPathRequest path, CancellationToken token) => _inner.ListDirAsync(path, token);
+        public ValueTask MkDirAsync(LythonPathRequest path, CancellationToken token) => _inner.MkDirAsync(path, token);
+        public ValueTask RemoveAsync(LythonPathRequest path, CancellationToken token) => _inner.RemoveAsync(path, token);
+        public ValueTask CopyAsync(LythonPathRequest source, LythonPathRequest destination, CancellationToken token) => _inner.CopyAsync(source, destination, token);
+        public ValueTask MoveAsync(LythonPathRequest source, LythonPathRequest destination, CancellationToken token) => _inner.MoveAsync(source, destination, token);
+        public ValueTask<LythonPathStat> StatAsync(LythonPathRequest path, CancellationToken token) => _inner.StatAsync(path, token);
+
+        private sealed class PendingWriteFile(PendingWriteHost host, ILythonByteFile file) : ILythonByteFile
+        {
+            public long Position => file.Position;
+            public long? LengthHint => file.LengthHint;
+            public ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken token) => file.ReadAsync(buffer, token);
+            public async ValueTask<LythonFileWriteResult> WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken token)
+            {
+                if (!buffer.IsEmpty)
+                {
+                    host.Entered.TrySetResult();
+                    await host.Resume.Task.WaitAsync(token).ConfigureAwait(false);
+                }
+                return await file.WriteAsync(buffer, token).ConfigureAwait(false);
+            }
+            public ValueTask RewindAndTruncateAsync(CancellationToken token) => file.RewindAndTruncateAsync(token);
+            public ValueTask FlushAsync(CancellationToken token) => file.FlushAsync(token);
+            public ValueTask DisposeAsync() => file.DisposeAsync();
+        }
     }
 
     [Theory]
