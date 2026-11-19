@@ -206,8 +206,12 @@ original conditions retained. Current comparisons belong in
   [Direct slot comparison](results/2026-11-19-direct-capture-access/README.md).
 - B1075 removes the second type dispatch for prepared definitions in a
   private prototype. Ordinary-rule controls diverge. Captured rules use
-  less CPU and annotated rules use more. The confirmation keeps the same
-  source pair. [Prepared definition dispatch](results/2026-11-19-prepared-definition-dispatch/README.md).
+  less CPU and annotated rules use more. B1076 uses the same images with
+  longer warmup and shows lower ordinary-rule warm elapsed and CPU with
+  tighter controls. The dispatcher is retained, with uncertainty in the
+  annotated, captured and forwarding effects.
+  [Initial comparison](results/2026-11-19-prepared-definition-dispatch/README.md) ·
+  [Confirmation](results/2026-11-19-prepared-dispatch-confirmation/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
