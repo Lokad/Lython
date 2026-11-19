@@ -341,9 +341,17 @@ internal sealed partial class LythonRuntime
     // The private call result can carry a conversion failure to the existing
     // exception router. The dispatcher consumes it before writing guest slots.
     private static readonly Func<object, LythonSourceSpan, ExecutionContext, ExecutableSlot> IntegerTextOperation
-        = static (value, span, context) => TryParseOwnedIntegerText(value, 10, context, span, out var integer)
-            ? NativeIntegerResult(integer)
-            : ExecutableSlot.FromObject(InvalidIntegerText(value, 10, context, span));
+        = InvokeNativeIntegerText;
+
+    private static ExecutableSlot InvokeNativeIntegerText(object source, LythonSourceSpan span, ExecutionContext context)
+    {
+        context.MemoryGovernor.ThrowIfAdmissionFailed();
+        var utf8 = IntegerTextBytes(source);
+        if (TryParseShortDecimal(utf8, out var small)) return ExecutableSlot.FromInteger(small);
+        return TryParseOwnedIntegerText(utf8, source is PyString, 10, context, span, out var result)
+            ? NativeIntegerResult(result)
+            : ExecutableSlot.FromObject(InvalidIntegerText(source, 10, context, span));
+    }
 
     private static object Int(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
@@ -768,29 +776,38 @@ internal sealed partial class LythonRuntime
     }
 
     private static BigInteger ParseOwnedIntegerText(object source, int numberBase, ExecutionContext context, LythonSourceSpan span)
-        => TryParseOwnedIntegerText(source, numberBase, context, span, out var result)
-            ? result
-            : throw InvalidIntegerText(source, numberBase, context, span);
-
-    private static bool TryParseOwnedIntegerText(object source, int numberBase, ExecutionContext context,
-        LythonSourceSpan span, out BigInteger result)
     {
         context.MemoryGovernor.ThrowIfAdmissionFailed();
-        ReadOnlySpan<byte> utf8 = source is PyString text ? text.Utf8Span : ((PyBytes)source).Bytes;
-        // A bounded native decimal needs neither decoded text nor major scratch.
-        // Complete consumption rejects suffixes/NULs; all other Python forms and
-        // overflow keep the admitted general path. Small publication uses control headroom.
-        if (numberBase == 10 && utf8.Length <= 20 &&
-            System.Buffers.Text.Utf8Parser.TryParse(utf8, out long integer, out var consumed) && consumed == utf8.Length)
-        {
-            result = new BigInteger(integer);
-            return true;
-        }
+        var utf8 = IntegerTextBytes(source);
+        if (numberBase == 10 && TryParseShortDecimal(utf8, out var machine)) return new BigInteger(machine);
+        return TryParseOwnedIntegerText(utf8, source is PyString, numberBase, context, span, out var result)
+            ? result
+            : throw InvalidIntegerText(source, numberBase, context, span);
+    }
 
+    private static ReadOnlySpan<byte> IntegerTextBytes(object source)
+        => source is PyString text ? text.Utf8Span : ((PyBytes)source).Bytes;
+
+    private static bool TryParseShortDecimal(ReadOnlySpan<byte> utf8, out long integer)
+    {
+        // A bounded native decimal needs neither decoded text nor major scratch.
+        // Complete consumption rejects suffixes/NULs. Remaining forms use the
+        // general parser, including larger magnitudes under the shared budget.
+        if (utf8.Length > 20)
+        {
+            integer = default;
+            return false;
+        }
+        return System.Buffers.Text.Utf8Parser.TryParse(utf8, out integer, out var consumed) && consumed == utf8.Length;
+    }
+
+    private static bool TryParseOwnedIntegerText(ReadOnlySpan<byte> utf8, bool unicode, int numberBase,
+        ExecutionContext context, LythonSourceSpan span, out BigInteger result)
+    {
         MemoryGovernor.TemporaryMemoryReservation? admission = null;
         try
         {
-            if (!TryParseIntegerUtf8(utf8, source is PyString, numberBase, span, context, ref admission, out result))
+            if (!TryParseIntegerUtf8(utf8, unicode, numberBase, span, context, ref admission, out result))
                 return false;
             context.CheckExecution(span);
             // Keep the conservative box estimate even when native arithmetic
