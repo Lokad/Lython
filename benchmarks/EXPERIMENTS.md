@@ -420,6 +420,9 @@ original conditions retained. Current comparisons belong in
   workloads. The validator takes 1.21–1.22× to compile and run. The
   measured revision predates the generator-lambda correction.
   [Representative comparison](results/2026-11-19-retained-lexical-cpython/README.md).
+- B1123 shares admitted immutable keys while copying forwarded record
+  values. JSON/CSV warm elapsed improves with lower CPU and allocation.
+  The positional CSV CPU control remains adverse. [Shared record keys](results/2026-11-19-shared-record-keywords/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup

@@ -2,6 +2,8 @@
 
 ## 0.11.0 - Unreleased
 
+- Reuse admitted key layouts when forwarding dense CSV and JSON records
+  as keywords, while keeping each dictionary's values independently mutable.
 - Route regex effective flags through provider error handling so a failed
   metadata read closes the pattern and reports the provider's failure.
 - Record named-function generator classification during yield validation
