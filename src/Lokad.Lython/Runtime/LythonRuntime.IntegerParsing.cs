@@ -8,10 +8,11 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private static BigInteger ParseIntegerUtf8(ReadOnlySpan<byte> input, bool unicode, int numberBase,
-        LythonSourceSpan span, object original, ExecutionContext context,
-        ref MemoryGovernor.TemporaryMemoryReservation? admission)
+    private static bool TryParseIntegerUtf8(ReadOnlySpan<byte> input, bool unicode, int numberBase,
+        LythonSourceSpan span, ExecutionContext context, ref MemoryGovernor.TemporaryMemoryReservation? admission,
+        out BigInteger result)
     {
+        result = default;
         context.CheckExecution(span);
         var inputLength = input.Length;
         input = TrimIntegerWhitespace(input, unicode, context, span);
@@ -58,13 +59,13 @@ internal sealed partial class LythonRuntime
             }
             if (input[position] == (byte)'_')
             {
-                if (!previousDigit) throw InvalidIntegerText(original, numberBase, context, span);
+                if (!previousDigit) return false;
                 previousDigit = false;
                 position++;
                 continue;
             }
             var digit = ReadIntegerDigit(input[position..], unicode, out var width);
-            if (digit < 0 || digit >= radix) throw InvalidIntegerText(original, numberBase, context, span);
+            if (digit < 0 || digit >= radix) return false;
             previousDigit = true;
             sawNonZero |= digit != 0;
             if (admission is null)
@@ -100,10 +101,8 @@ internal sealed partial class LythonRuntime
             }
             position += width;
         }
-        if (!previousDigit || leadingZero && sawNonZero)
-            throw InvalidIntegerText(original, numberBase, context, span);
+        if (!previousDigit || leadingZero && sawNonZero) return false;
         context.CheckExecution(span);
-        BigInteger result;
         if (admission is null)
         {
             // The wider native accumulator is working storage, not an ownership
@@ -116,7 +115,8 @@ internal sealed partial class LythonRuntime
             result = small;
         }
         else result = large * power + chunk;
-        return negative ? -result : result;
+        if (negative) result = -result;
+        return true;
     }
 
     private static MemoryGovernor.TemporaryMemoryReservation ReserveIntegerParseMagnitude(

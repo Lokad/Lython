@@ -14,6 +14,33 @@ public sealed class DirectIntegerTextCallTests
         { "returned_callable", "def choose():return int\nprint(choose()(b'7'))", "7\n" },
         { "general_stars_bases", "print(int(*('7',)),int('ff',base=16),int('11',2),int('11',**{'base':2}))", "7 255 3 3\n" },
         { "argument_error_effects", "events=[]\ndef arg(label,value):events.append(label);return value\nfor action in [lambda:int(arg('bad','x')),lambda:int(arg('first','7'),arg('base',10),arg('extra',1)),lambda:int(x=arg('kw','7'))]:\n try:action()\n except (TypeError,ValueError) as error:events.append(type(error).__name__)\nprint(events)", "['bad', 'ValueError', 'first', 'base', 'extra', 'TypeError', 'kw', 'TypeError']\n" },
+        {
+            "conversion_error_unwind",
+            """
+            events = []
+            def operand(value):
+                events.append('operand')
+                return value
+            def convert(value):
+                try:
+                    return int(operand(value))
+                finally:
+                    events.append('finally')
+            try:
+                raise LookupError('outer')
+            except LookupError as outer:
+                try:
+                    try:
+                        convert(b'invalid')
+                    except ValueError as error:
+                        events.append(error)
+                        raise
+                except ValueError as error:
+                    print(error is events[-1], error.__context__ is outer, error.args)
+            print(events[:2])
+            """,
+            "True True (\"invalid literal for int() with base 10: b'invalid'\",)\n['operand', 'finally']\n"
+        },
         { "dynamic_protocol", "events=[]\nclass Value:\n @property\n def __int__(self):\n  events.append('bind')\n  def convert():\n   events.append('call')\n   return 7\n  return convert\nprint(int(Value()),events)", "7 ['bind', 'call']\n" },
         { "dynamic_base", "events=[]\nclass Base:\n def __index__(self):events.append('base');return 16\nprint(int('ff',Base()),events)", "255 ['base']\n" },
         { "major_results", "source='9'*101\nprint(int(source).bit_length(),int(b'9'*101).bit_length())", "336 336\n" },

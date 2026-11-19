@@ -12,10 +12,12 @@ internal sealed partial class LythonRuntime
 
         // The same native selection serves ordinary and not-yet-materialized
         // invocations. A false result has performed no operation or admission.
+        // A completed call publishes directly. A child frame or a returned
+        // Python failure goes back to the dispatcher's existing continuation.
         private static bool TryExecuteNativeCall(ref ExecutableWorkState execution, ExecutionContext scope,
-            ExecutionContext? invocation, ExecutableCallSite call, int start, object target, out ExecutionContext? started)
+            ExecutionContext? invocation, ExecutableCallSite call, int start, object target, out object? continuation)
         {
-            started = null;
+            continuation = null;
             // Closed helpers complete here just like native builtins. Borrow the
             // evaluated arguments without manufacturing a pending call/resume.
             // Other function calls still use the existing binding/frame runner.
@@ -56,7 +58,7 @@ internal sealed partial class LythonRuntime
                             AbortPreparedCall(frame, function.DefinitionContext.MemoryGovernor);
                             throw;
                         }
-                        started = frame;
+                        continuation = frame;
                         callEntered = false; // The existing child completion owns it.
                         return true;
                     }
@@ -120,6 +122,12 @@ internal sealed partial class LythonRuntime
             try
             {
                 var result = InvokeSingleInput(argument!, unary, call.CallSpan, scope);
+                if (result.Reference is LythonRuntimeException failure)
+                {
+                    execution.Stack.RetireTo(start);
+                    continuation = failure;
+                    return true;
+                }
                 PublishInstructionResult(ref execution, invocation, execution.Code.Instructions[execution.InstructionIndex], result);
                 return true;
             }

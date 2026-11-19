@@ -24,6 +24,7 @@ internal sealed partial class LythonRuntime
             while (execution.InstructionIndex < instructions.Length)
             {
                 var jumped = false;
+                LythonRuntimeException returnedFailure;
                 ref readonly var instruction = ref instructions[execution.InstructionIndex];
                 scope.State.CheckExecution(instruction.Span);
                 try
@@ -283,10 +284,15 @@ internal sealed partial class LythonRuntime
                             var call = execution.Code.CallSites[instruction.CallSiteIndex];
                             var callStart = instruction.InputStart;
                             var target = execution.Stack[callStart + call.TargetOffset];
-                            if (TryExecuteNativeCall(ref execution, scope, invocation, call, callStart, target, out var started))
+                            if (TryExecuteNativeCall(ref execution, scope, invocation, call, callStart, target, out var continuation))
                             {
-                                if (started is null) break;
-                                nextCall = new(started);
+                                if (continuation is null) break;
+                                if (continuation is LythonRuntimeException failure)
+                                {
+                                    returnedFailure = failure;
+                                    goto RouteReturnedFailure;
+                                }
+                                nextCall = new((ExecutionContext)continuation);
                                 pendingSpan = call.CallSpan;
                                 return InstructionPause.Call;
                             }
@@ -394,24 +400,35 @@ internal sealed partial class LythonRuntime
                 }
                 catch (LythonRuntimeException error)
                 {
-                    if (invocation is null)
-                    {
-                        var previous = scope.State.CurrentException;
-                        if (previous is not null && !ReferenceEquals(error.OriginalPythonException, previous)) error.PythonContext ??= previous;
-                        throw;
-                    }
-                    if (!invocation.TryRouteRuntimeException(error, instruction.Span)) throw;
+                    if (!RouteInstructionFailure(error, scope, invocation, instruction.Span)) throw;
                     jumped = true;
                 }
-
+            FinishInstruction:
                 if (asynchronous && execution.Stack.HasPendingDisposals)
                 {
                     pending = new(jumped);
                     return InstructionPause.Disposal;
                 }
                 if (!jumped) execution.InstructionIndex++;
+                continue;
+
+            // Route outside the CLR catch so an unhandled returned failure is
+            // propagated once with the current instruction still selected.
+            RouteReturnedFailure:
+                if (!RouteInstructionFailure(returnedFailure, scope, invocation, instruction.Span)) throw returnedFailure;
+                jumped = true;
+                goto FinishInstruction;
             }
             return InstructionPause.Boundary;
+        }
+
+        private static bool RouteInstructionFailure(LythonRuntimeException error, ExecutionContext scope,
+            ExecutionContext? invocation, LythonSourceSpan span)
+        {
+            if (invocation is not null) return invocation.TryRouteRuntimeException(error, span);
+            var previous = scope.State.CurrentException;
+            if (previous is not null && !ReferenceEquals(error.OriginalPythonException, previous)) error.PythonContext ??= previous;
+            return false;
         }
 
         private static InstructionPause PauseOperation(LythonSourceSpan span, out LythonSourceSpan? pendingSpan)

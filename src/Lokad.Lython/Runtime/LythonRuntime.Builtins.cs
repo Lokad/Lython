@@ -338,8 +338,12 @@ internal sealed partial class LythonRuntime
         return RuntimeValue(arguments.Length == 1 && await IsTruthyAsync(arguments[0], context, span).ConfigureAwait(false));
     }
 
+    // The private call result can carry a conversion failure to the existing
+    // exception router. The dispatcher consumes it before writing guest slots.
     private static readonly Func<object, LythonSourceSpan, ExecutionContext, ExecutableSlot> IntegerTextOperation
-        = static (value, span, context) => NativeIntegerResult(ParseOwnedIntegerText(value, 10, context, span));
+        = static (value, span, context) => TryParseOwnedIntegerText(value, 10, context, span, out var integer)
+            ? NativeIntegerResult(integer)
+            : ExecutableSlot.FromObject(InvalidIntegerText(value, 10, context, span));
 
     private static object Int(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
@@ -764,6 +768,12 @@ internal sealed partial class LythonRuntime
     }
 
     private static BigInteger ParseOwnedIntegerText(object source, int numberBase, ExecutionContext context, LythonSourceSpan span)
+        => TryParseOwnedIntegerText(source, numberBase, context, span, out var result)
+            ? result
+            : throw InvalidIntegerText(source, numberBase, context, span);
+
+    private static bool TryParseOwnedIntegerText(object source, int numberBase, ExecutionContext context,
+        LythonSourceSpan span, out BigInteger result)
     {
         context.MemoryGovernor.ThrowIfAdmissionFailed();
         ReadOnlySpan<byte> utf8 = source is PyString text ? text.Utf8Span : ((PyBytes)source).Bytes;
@@ -772,18 +782,22 @@ internal sealed partial class LythonRuntime
         // overflow keep the admitted general path. Small publication uses control headroom.
         if (numberBase == 10 && utf8.Length <= 20 &&
             System.Buffers.Text.Utf8Parser.TryParse(utf8, out long integer, out var consumed) && consumed == utf8.Length)
-            return new BigInteger(integer);
+        {
+            result = new BigInteger(integer);
+            return true;
+        }
 
         MemoryGovernor.TemporaryMemoryReservation? admission = null;
         try
         {
-            var result = ParseIntegerUtf8(utf8, source is PyString, numberBase, span, source, context, ref admission);
+            if (!TryParseIntegerUtf8(utf8, source is PyString, numberBase, span, context, ref admission, out result))
+                return false;
             context.CheckExecution(span);
             // Keep the conservative box estimate even when native arithmetic
             // retains this result in its existing private integer storage.
             if (admission is not null)
                 admission.Commit(RuntimeMemoryEstimates.EstimateBigIntegerBytes(result));
-            return result;
+            return true;
         }
         catch (FormatException ex) { throw new LythonRuntimeException("ValueError", ex.Message, span); }
         catch (OverflowException ex) { throw new LythonRuntimeException("OverflowError", ex.Message, span); }

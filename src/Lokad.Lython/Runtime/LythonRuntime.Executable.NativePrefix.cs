@@ -41,6 +41,8 @@ internal sealed partial class LythonRuntime
             try
             {
                 var completed = RunCore(out result);
+                if (!completed && Failure is { } returned)
+                    RecordFailure(returned, previous, entrySpan);
                 if (completed && ReturnedUnpacked)
                 {
                     Values.Slice(_unpackedTupleStart, _unpackedReturnCount).CopyTo(unpackedReturn);
@@ -51,14 +53,7 @@ internal sealed partial class LythonRuntime
             }
             catch (LythonRuntimeException error)
             {
-                if (previous is not null && !ReferenceEquals(error.OriginalPythonException, previous))
-                    error.PythonContext ??= previous;
-                if (Code.ExceptionRegions.Count == 0) throw;
-                // First refusal and cancellation still fail the command. A
-                // catchable guest fault transfers once, without replaying its
-                // operation or building a second exception dispatcher here.
-                _scope.CheckExecution(entrySpan);
-                Failure = error;
+                if (!RecordFailure(error, previous, entrySpan)) throw;
                 result = ExecutableSlot.FromObject(PyNone.Instance);
                 return false;
             }
@@ -66,6 +61,18 @@ internal sealed partial class LythonRuntime
             {
                 _scope.State.SetCurrentException(previous);
             }
+        }
+
+        private bool RecordFailure(LythonRuntimeException error, PyException? previous, LythonSourceSpan entrySpan)
+        {
+            if (previous is not null && !ReferenceEquals(error.OriginalPythonException, previous))
+                error.PythonContext ??= previous;
+            if (Code.ExceptionRegions.Count == 0) return false;
+            // Reuse the existing transferred PC and pending exception. Refusal
+            // and cancellation still stop the command before another guest step.
+            _scope.CheckExecution(entrySpan);
+            Failure = error;
+            return true;
         }
 
         private bool RunCore(out ExecutableSlot result)
@@ -383,7 +390,15 @@ internal sealed partial class LythonRuntime
                     var closed = false;
                     var operation = argument is not null ? SelectNativeUnaryOperation(target, argument, out closed) : null;
                     if (operation is not null && closed)
+                    {
                         result = InvokeSingleInput(argument!, operation, call.CallSpan, _scope);
+                        if (result.Reference is LythonRuntimeException failure)
+                        {
+                            if (Code.ExceptionRegions.Count == 0) throw failure;
+                            Failure = failure;
+                            return false;
+                        }
+                    }
                     else if (!CallFunction(call, start, target, out result)) return false;
                 }
             }
