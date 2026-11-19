@@ -103,6 +103,28 @@ public sealed class ClosureRetentionAccountingScenarioTests
     }
 
     [Fact]
+    public async Task InlinedComprehensionShadowsTheSameNameInADefiningSlot()
+    {
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
+            def factory():
+                value = 1
+                direct = lambda: value
+                inlined = [lambda: value for value in [3, 4]]
+                value = 2
+                return direct, inlined
+            direct, inlined = factory()
+            return [direct(), inlined[0](), inlined[1]()]
+            """);
+        Assert.True(script.IsValid);
+        using var sync = script.Run(new MockLythonHost());
+        using var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(new List<object?> { new BigInteger(2), new BigInteger(4), new BigInteger(4) }, sync.ReturnValue);
+        Assert.Equal(sync.ReturnValue, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task ManyRetainedClosuresStayCharged()
     {
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""

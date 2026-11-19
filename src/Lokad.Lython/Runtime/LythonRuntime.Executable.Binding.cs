@@ -382,8 +382,19 @@ internal sealed partial class LythonRuntime
         }
 
         var frame = context.CurrentExecutableFrame;
-        ExecutableCell Resolve(string name)
+        var slots = frame is not null && ReferenceEquals(context, context.FunctionClosureContext) &&
+            codeObject.CaptureSources is { } sources && ReferenceEquals(sources.Parent, frame._execution.Code)
+            ? sources.Slots : null;
+        var names = codeObject.ClosureNames;
+        ExecutableCell Resolve(int index)
         {
+            if (slots is not null)
+            {
+                var slot = slots[index];
+                return slot >= 0 ? (ExecutableCell)frame!._execution.Locals[slot].Reference!
+                    : frame!._execution.ClosureCells![~slot];
+            }
+            var name = names[index];
             ExecutableCell? cell = null;
             if (frame?.TryGetCell(name, out cell) != true &&
                 !(name == "__class__" && context.TryGetLexicalClassCell(out cell)))
@@ -398,9 +409,10 @@ internal sealed partial class LythonRuntime
         // A comprehension already owns a live binding namespace. Identify that
         // owner without allocating cells before the array/cell preflight.
         var uncharged = 0;
-        foreach (var name in codeObject.ClosureNames)
+        for (var i = 0; i < names.Count; i++)
         {
-            if (context.TryGetInlinedBinding(name, out _) || !Resolve(name).RetentionCharged)
+            if (i != 0 && (i & 255) == 0) context.CheckExecution(span);
+            if ((slots is null && context.TryGetInlinedBinding(names[i], out _)) || !Resolve(i).RetentionCharged)
             {
                 uncharged++;
             }
@@ -408,18 +420,18 @@ internal sealed partial class LythonRuntime
 
         var retainedBytes = checked(
             ExecutableCellsArrayBaseBytes +
-            ExecutableCellsArraySlotBytes * (long)codeObject.ClosureNames.Count +
+            ExecutableCellsArraySlotBytes * (long)names.Count +
             ExecutableCell.StorageBytes * uncharged);
         context.MemoryGovernor.Reserve(retainedBytes, span);
         context.MemoryGovernor.Commit(retainedBytes);
         try
         {
-            var cells = new ExecutableCell[codeObject.ClosureNames.Count];
+            var cells = new ExecutableCell[names.Count];
             for (var i = 0; i < cells.Length; i++)
             {
-                var name = codeObject.ClosureNames[i];
-                cells[i] = context.TryGetInlinedBinding(name, out var binding)
-                    ? new ExecutableCell(null, binding, name) : Resolve(name);
+                if (i != 0 && (i & 255) == 0) context.CheckExecution(span);
+                cells[i] = slots is null && context.TryGetInlinedBinding(names[i], out var binding)
+                    ? new ExecutableCell(null, binding, names[i]) : Resolve(i);
             }
             // Lookups above have no callbacks or mutation. Publish only after
             // every allocation succeeds. Namespace-backed cells observe later
@@ -427,7 +439,7 @@ internal sealed partial class LythonRuntime
             for (var i = 0; i < cells.Length; i++)
             {
                 cells[i].RetentionCharged = true;
-                if (context.TryGetInlinedBinding(codeObject.ClosureNames[i], out var binding))
+                if (slots is null && context.TryGetInlinedBinding(names[i], out var binding))
                     binding.MirrorLocalStores = true;
             }
             return cells;

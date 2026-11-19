@@ -512,7 +512,7 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.CannotImportModule(moduleName, message, diagnostic?.Span ?? span);
         }
 
-        var executable = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script), context.State.CancellationToken);
+        var executable = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script), context.State.CancellationToken, context.MemoryGovernor);
         var moduleContext = ExecutionContext.CreateModule(context, path, moduleName);
         // Exports and escaped functions share this module dictionary after its
         // executable slots leave. Do not depend on incidental opcode fallbacks.

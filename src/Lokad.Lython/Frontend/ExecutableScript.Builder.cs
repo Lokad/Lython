@@ -17,7 +17,7 @@ internal sealed partial class ExecutableScript
 
     public ExecutableCodeObject EntryPoint { get; }
 
-    public static ExecutableScript Compile(LoweredScript lowered, CancellationToken cancellationToken = default)
+    public static ExecutableScript Compile(LoweredScript lowered, CancellationToken cancellationToken = default, MemoryGovernor? governor = null)
     {
         List<ExecutableCodeObject> moduleCode = [];
         var entryPoint = new Builder(null, null, ScopeDirectiveFactsCollector.ForModule(lowered.Syntax), completeLexicalParent: true,
@@ -43,7 +43,11 @@ internal sealed partial class ExecutableScript
                 default: throw new InvalidOperationException("Unexpected prepared callable syntax.");
             }
         }
-        foreach (var code in moduleCode) code.PrepareModuleGlobals(entryPoint, cancellationToken);
+        foreach (var code in moduleCode)
+        {
+            code.PrepareModuleGlobals(entryPoint, cancellationToken);
+            code.PrepareChildCaptureSlots(governor, cancellationToken);
+        }
         return new ExecutableScript(entryPoint.ScopeFacts.ContainsVariableAnnotations
             ? lowered.Syntax.Statements[0].Span : null, entryPoint);
     }
