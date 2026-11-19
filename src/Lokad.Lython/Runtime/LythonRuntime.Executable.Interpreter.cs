@@ -404,80 +404,24 @@ internal sealed partial class LythonRuntime
             else _execution.Stack.ClearLookupCache(instruction.LookupCacheIndex);
         }
 
-        private static void ExecuteStackTransfer(ref ExecutableWorkState execution, ExecutionContext scope, ExecutionContext? invocation, in ExecutableInstruction instruction)
+        private static void ExecuteSynchronousMemberLoad(ref ExecutableWorkState execution, ExecutionContext scope,
+            ExecutionContext invocation, in ExecutableInstruction instruction)
         {
-            switch (instruction.OpCode)
+            var target = ReadOperand(ref execution, instruction.InputStart, scope, 0);
+            execution.Stack.RetireTo(instruction.ResultSlot);
+            var memberName = execution.Code.Names[instruction.NameIndex];
+            if (!invocation.TryReadMemberCache(instruction, target, out var memberValue))
             {
-                case ExecutableOpCode.LoadConst:
-                    var constant = RuntimeValue(execution.Code.Constants[instruction.ConstantIndex]);
-                    PublishInstructionResult(ref execution, invocation, instruction, constant);
-                    break;
-
-                case ExecutableOpCode.LoadGlobal:
-                    PublishInstructionResult(ref execution, invocation, instruction, ResolveExecutableGlobal(execution.Code, instruction.NameIndex, instruction.Span, scope));
-                    break;
-
-                case ExecutableOpCode.LoadName:
-                    PublishInstructionResult(ref execution, invocation, instruction, ResolveExecutableName(execution.Code.Names[instruction.NameIndex], instruction.Span, invocation!));
-                    break;
-
-
-                case ExecutableOpCode.LoadCallMember:
-                    if (TryLoadDirectCallReceiver(ref execution, scope, invocation, instruction)) break;
-                    goto case ExecutableOpCode.LoadMember;
-                case ExecutableOpCode.LoadMember:
-                    var target = ReadOperand(ref execution, instruction.InputStart, scope, 0);
-                    execution.Stack.RetireTo(instruction.ResultSlot);
-                    var memberName = execution.Code.Names[instruction.NameIndex];
-                    if (!invocation!.TryReadMemberCache(instruction, target, out var memberValue))
-                    {
-                        if (!TryResolveRuntimeMember(target, memberName, invocation!, instruction.Span, out var resolvedMember))
-                        {
-                            throw PyMemberAccess.CreateMissingMemberError(target, memberName, instruction.Span, invocation!);
-                        }
-
-                        memberValue = resolvedMember;
-                        invocation!.PublishMemberCache(instruction, target, memberValue);
-                    }
-                    if (instruction.OpCode == ExecutableOpCode.LoadCallMember)
-                    {
-                        execution.Stack[instruction.ResultSlot] = PyNone.Instance;
-                        execution.Stack.PublishValue(instruction.ResultSlot + 1, instruction.LiveExtent, memberValue);
-                    }
-                    else PublishInstructionResult(ref execution, invocation, instruction, memberValue);
-                    break;
-
-                case ExecutableOpCode.PreloadImplicitSuperArguments:
-                    PreloadImplicitSuperArguments(invocation!, instruction.Span);
-                    break;
-
-                case ExecutableOpCode.StoreGlobal:
-                    StoreName(
-                        execution.Code.Names[instruction.NameIndex],
-                        execution.Stack.TakeValue(instruction.InputStart, instruction.LiveExtent),
-                        invocation!,
-                        instruction.Span);
-                    break;
-
-                case ExecutableOpCode.StoreName:
-                    AssignExecutableBoundName(
-                        execution.Code,
-                        execution.Locals,
-                        execution.Code.Names[instruction.NameIndex],
-                        execution.Stack.TakeValue(instruction.InputStart, instruction.LiveExtent),
-                        invocation!,
-                        instruction.Span);
-                    break;
-
-                case ExecutableOpCode.Dup:
-                    execution.Stack.PublishValue(instruction.ResultSlot + 1, instruction.LiveExtent, execution.Stack[instruction.InputStart]);
-                    break;
-
-                case ExecutableOpCode.PopTop:
-                    _ = execution.Stack[instruction.InputStart];
-                    execution.Stack.RetireTo(instruction.LiveExtent);
-                    break;
+                if (!TryResolveRuntimeMember(target, memberName, invocation, instruction.Span, out memberValue))
+                    throw PyMemberAccess.CreateMissingMemberError(target, memberName, instruction.Span, invocation);
+                invocation.PublishMemberCache(instruction, target, memberValue);
             }
+            if (instruction.OpCode == ExecutableOpCode.LoadCallMember)
+            {
+                execution.Stack[instruction.ResultSlot] = PyNone.Instance;
+                execution.Stack.PublishValue(instruction.ResultSlot + 1, instruction.LiveExtent, memberValue);
+            }
+            else PublishInstructionResult(ref execution, invocation, instruction, memberValue);
         }
 
         private bool ExecuteStructure(in ExecutableInstruction instruction)

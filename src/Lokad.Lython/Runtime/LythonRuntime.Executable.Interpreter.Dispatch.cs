@@ -159,26 +159,50 @@ internal sealed partial class LythonRuntime
                             }
                             break;
                         case ExecutableOpCode.LoadMember or ExecutableOpCode.LoadCallMember:
-                            if (invocation is null)
+                            if (TryLoadDirectCallReceiver(ref execution, scope, invocation, instruction)) break;
+                            if (invocation is null) return InstructionPause.ContextRequired;
+                            if (!asynchronous) ExecuteSynchronousMemberLoad(ref execution, scope, invocation, instruction);
+                            else
                             {
-                                if (!TryLoadDirectCallReceiver(ref execution, scope, null, instruction)) return InstructionPause.ContextRequired;
-                                break;
-                            }
-                            if (!asynchronous) ExecuteStackTransfer(ref execution, scope, invocation, instruction);
-                            else if (!TryLoadDirectCallReceiver(ref execution, scope, invocation, instruction))
-                            {
-                                pending = invocation!.ExecuteMemberLoadAsync(instruction);
+                                pending = invocation.ExecuteMemberLoadAsync(instruction);
                                 if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
                                 _ = ConsumeOperation(ref pending);
                             }
                             break;
-                        case ExecutableOpCode.LoadConst or ExecutableOpCode.LoadGlobal or
-                             ExecutableOpCode.LoadName or ExecutableOpCode.PreloadImplicitSuperArguments or
-                             ExecutableOpCode.StoreGlobal or ExecutableOpCode.StoreName or
-                             ExecutableOpCode.Dup or ExecutableOpCode.PopTop:
-                            if (invocation is null && instruction.OpCode is not (ExecutableOpCode.LoadConst or ExecutableOpCode.LoadGlobal or ExecutableOpCode.Dup or ExecutableOpCode.PopTop))
-                                return InstructionPause.ContextRequired;
-                            ExecuteStackTransfer(ref execution, scope, invocation, instruction);
+                        case ExecutableOpCode.LoadConst:
+                            PublishInstructionResult(ref execution, invocation, instruction,
+                                RuntimeValue(execution.Code.Constants[instruction.ConstantIndex]));
+                            break;
+                        case ExecutableOpCode.LoadGlobal:
+                            PublishInstructionResult(ref execution, invocation, instruction,
+                                ResolveExecutableGlobal(execution.Code, instruction.NameIndex, instruction.Span, scope));
+                            break;
+                        case ExecutableOpCode.LoadName:
+                            if (invocation is null) return InstructionPause.ContextRequired;
+                            PublishInstructionResult(ref execution, invocation, instruction,
+                                ResolveExecutableName(execution.Code.Names[instruction.NameIndex], instruction.Span, invocation));
+                            break;
+                        case ExecutableOpCode.PreloadImplicitSuperArguments:
+                            if (invocation is null) return InstructionPause.ContextRequired;
+                            PreloadImplicitSuperArguments(invocation, instruction.Span);
+                            break;
+                        case ExecutableOpCode.StoreGlobal:
+                            if (invocation is null) return InstructionPause.ContextRequired;
+                            StoreName(execution.Code.Names[instruction.NameIndex],
+                                execution.Stack.TakeValue(instruction.InputStart, instruction.LiveExtent), invocation, instruction.Span);
+                            break;
+                        case ExecutableOpCode.StoreName:
+                            if (invocation is null) return InstructionPause.ContextRequired;
+                            AssignExecutableBoundName(execution.Code, execution.Locals, execution.Code.Names[instruction.NameIndex],
+                                execution.Stack.TakeValue(instruction.InputStart, instruction.LiveExtent), invocation, instruction.Span);
+                            break;
+                        case ExecutableOpCode.Dup:
+                            execution.Stack.PublishValue(instruction.ResultSlot + 1, instruction.LiveExtent,
+                                execution.Stack[instruction.InputStart]);
+                            break;
+                        case ExecutableOpCode.PopTop:
+                            _ = execution.Stack[instruction.InputStart];
+                            execution.Stack.RetireTo(instruction.LiveExtent);
                             break;
                         case ExecutableOpCode.MakeList:
                             PublishInstructionResult(ref execution, invocation, instruction,
