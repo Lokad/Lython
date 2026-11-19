@@ -53,11 +53,13 @@ internal sealed partial class LythonRuntime
 
         private static ValueTask CreateExecutableFunction(ref ExecutableWorkState execution,
             ExecutionContext context, ExecutionContext? invocation, ExecutableCreateFunction operation,
-            int first, int local, bool asynchronous)
+            in ExecutableInstruction instruction, bool asynchronous)
         {
             var binding = operation.Binding;
             var span = binding.Span;
+            var first = instruction.InputStart;
             context.EnterInterpreterFrame(span);
+            PyFunctionBase function;
             var transferred = false;
             try
             {
@@ -80,7 +82,7 @@ internal sealed partial class LythonRuntime
                 var values = defaults?.Values ?? default;
                 var governor = context.MemoryGovernor;
                 using var storage = governor.ReserveTemporary(FunctionValueBytes, span);
-                PyFunctionBase function = binding.IsGenerator
+                function = binding.IsGenerator
                     ? new PyGeneratorFunction(layout, binding.CodeObject, closure, values, cells)
                     : new PyExecutableFunction(layout, binding.CodeObject, closure, cells, values);
                 storage.Commit(FunctionValueBytes);
@@ -95,36 +97,34 @@ internal sealed partial class LythonRuntime
 
                 if (binding.DecoratorCount != 0 || !metadata.IsCompletedSuccessfully)
                 {
-                    var completion = invocation!.FinishExecutableFunctionAsync(binding, function, defaults, metadata, first, asynchronous);
+                    var completion = invocation!.FinishExecutableFunctionAsync(binding, function, defaults, metadata, instruction, asynchronous);
                     transferred = true;
                     return completion;
                 }
 
                 metadata.GetAwaiter().GetResult();
                 defaults?.Publish();
-                if (invocation is null)
-                    StoreLocalValue(execution.Code, execution.Locals, null, local, ExecutableSlot.FromObject(function), span);
-                else
-                    AssignExecutableBoundName(execution.Code, execution.Locals, binding.Name, function, context, span);
-                return ValueTask.CompletedTask;
             }
             finally
             {
                 if (!transferred) RetireExecutableDefinition(ref execution, context, first);
             }
+            PublishInstructionResult(ref execution, invocation, instruction, function);
+            return ValueTask.CompletedTask;
         }
 
         private async ValueTask FinishExecutableFunctionAsync(ExecutableFunctionBinding binding, PyFunctionBase function,
-            PendingFunctionDefaults? defaults, ValueTask metadata, int first, bool asynchronous)
+            PendingFunctionDefaults? defaults, ValueTask metadata, ExecutableInstruction instruction, bool asynchronous)
         {
             var span = binding.Span;
+            var first = instruction.InputStart;
+            object decorated = function;
             try
             {
                 await metadata.ConfigureAwait(false);
                 // Decorator callbacks can publish the original definition even
                 // when they replace it or raise. Transfer the default owner first.
                 defaults?.Publish();
-                object decorated = function;
                 for (var i = first + binding.DecoratorCount - 1; i >= first; i--)
                 {
                     if (_execution.Stack[i] is not ICallable decorator)
@@ -132,12 +132,12 @@ internal sealed partial class LythonRuntime
                     decorated = asynchronous ? await CallableInvocation.InvokeUnaryAsync(decorator, decorated, span, this).ConfigureAwait(false)
                         : CallableInvocation.InvokeUnary(decorator, decorated, span, this);
                 }
-                AssignExecutableBoundName(_execution.Code, _execution.Locals, binding.Name, decorated, this, span);
             }
             finally
             {
                 RetireExecutableDefinition(ref _execution, this, first);
             }
+            PublishInstructionResult(instruction, decorated);
         }
 
         private static void RetireExecutableDefinition(ref ExecutableWorkState execution, ExecutionContext context, int first)

@@ -156,18 +156,14 @@ internal sealed partial class LythonRuntime
                     catch { owner.Dispose(); throw; }
                     break;
                 case ExecutableCreateFunction function:
-                    var local = -1;
                     if (invocation is null)
                     {
                         var binding = function.Binding;
                         if (!CanDefineWithoutInvocation(binding.CodeObject) || binding.TypeParameters is not null ||
                             binding.DecoratorCount != 0 || !function.AnnotationsOnStack && binding.Annotations.Length != 0 ||
-                            HasTypeParameterScope(scope) || execution.Code.ScopeFacts.IsGlobal(binding.Name) ||
-                            execution.Code.ScopeFacts.IsNonlocal(binding.Name) ||
-                            !execution.Code.LocalNameToSlot.TryGetValue(binding.Name, out local)) return false;
+                            HasTypeParameterScope(scope)) return false;
                     }
-                    pending = CreateExecutableFunction(ref execution, context, invocation, function,
-                        instruction.InputStart, local, asynchronous);
+                    pending = CreateExecutableFunction(ref execution, context, invocation, function, instruction, asynchronous);
                     break;
                 case ExecutableCreateLambda lambda:
                     {

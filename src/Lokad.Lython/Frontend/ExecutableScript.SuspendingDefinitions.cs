@@ -31,7 +31,7 @@ internal sealed partial class ExecutableScript
             }
             if ((!_completeLexicalParent && !yielding) || definition.TypeParameters is not null || binding.Annotations.Length == 0)
             {
-                EmitOperation(new ExecutableCreateFunction(binding), definition.Span, block);
+                EmitDefinition(block);
                 return block;
             }
             var skipped = CreateBlock();
@@ -39,11 +39,22 @@ internal sealed partial class ExecutableScript
             EmitOperation(new ExecutableAnnotationsEnabled(), definition.Span, block);
             AddInstruction(block, ExecutableInstruction.JumpIfFalse(skipped, definition.Span));
             foreach (var annotation in binding.Annotations) block = CompileExpression(annotation.Expression, block);
-            EmitOperation(new ExecutableCreateFunction(binding, AnnotationsOnStack: true), definition.Span, block);
+            EmitDefinition(block, annotationsOnStack: true);
             AddInstruction(block, ExecutableInstruction.Jump(after, definition.Span));
-            EmitOperation(new ExecutableCreateFunction(binding), definition.Span, skipped);
+            EmitDefinition(skipped);
             AddInstruction(skipped, ExecutableInstruction.Jump(after, definition.Span));
             return after;
+
+            void EmitDefinition(int target, bool annotationsOnStack = false)
+            {
+                EmitOperation(new ExecutableCreateFunction(binding, annotationsOnStack), definition.Span, target);
+                // Module declarations update their live namespace as well as
+                // their optional slot, including across import completion.
+                if (_parameterLayout is null)
+                    AddInstruction(target, ExecutableInstruction.StoreName(InternName(binding.Name), definition.Span));
+                else
+                    CompileStoreBoundName(binding.Name, definition.Span, target);
+            }
         }
 
         private int CompileLambda(LoweredLambdaExpression lambda, int block)

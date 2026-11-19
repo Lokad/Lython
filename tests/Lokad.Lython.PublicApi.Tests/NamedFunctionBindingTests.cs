@@ -93,6 +93,62 @@ return [decorated('value', suffix='!'), read('marker.txt', suffix='.')]
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task DecoratedDefinitionsPublishTheirTargetsAfterTheCallback(bool asynchronous)
+    {
+        const string source = """
+seen = []
+def observe(read_previous):
+    def decorate(replacement):
+        with open('/marker.txt') as marker:
+            seen.append((marker.read(), read_previous()))
+        return lambda: replacement()
+    return decorate
+def published():
+    return 'old global'
+def replace_global():
+    global published
+    @observe(lambda: published())
+    def published():
+        return 'new global'
+def factory():
+    def shared():
+        return 'old nonlocal'
+    def replace_nonlocal():
+        nonlocal shared
+        @observe(lambda: shared())
+        def shared():
+            return 'new nonlocal'
+    replace_nonlocal()
+    return shared
+replace_global()
+read_shared = factory()
+print(published(), read_shared(), globals()['published'] is published)
+print(seen)
+""";
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using (var script = new LythonEngine().Compile(source, budget))
+        {
+            Assert.True(script.IsValid, string.Join("; ", script.Diagnostics));
+            var baseline = budget.ReservedBytes;
+            var immediate = new MockLythonHost();
+            immediate.SeedFile("/marker.txt", "decorator");
+            var delayed = new DelayedLythonHost();
+            delayed.SeedFile("/marker.txt", "decorator");
+            using (var result = asynchronous ? await script.RunAsync(delayed) : script.Run(immediate))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal("new global new nonlocal True\n" +
+                    "[('decorator', 'old global'), ('decorator', 'old nonlocal')]\n", result.StandardOutput);
+                if (asynchronous) Assert.True(delayed.CompletedAsynchronously > 0);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task PartialNamedCallsAwaitProtocolDefaultsBeforeEnteringTheBody(bool asynchronous)
     {
         const string source = """
