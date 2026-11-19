@@ -181,18 +181,17 @@ internal sealed partial class LythonRuntime
                     continue;
                 }
 
-                var parameterName = plan.NameAt(plan.PositionalCount + k);
                 var keywordDefaults = plan.KeywordDefaultStorage;
                 // Exact native dictionaries finish synchronously. A protocol lookup
                 // defers this and the remaining defaults in their original order.
                 if (deferProtocolDefaults && keywordDefaults is { HasProtocolKeys: true }) break;
-                if (keywordDefaults is not null && keywordDefaults.TryGetValue(plan.KeywordDefaultName(k), out var defaultValue, context, span))
+                if (keywordDefaults is not null && plan.TryGetKeywordDefault(keywordDefaults, k, out var defaultValue, context, span))
                 {
                     values[i].Object = defaultValue;
                     continue;
                 }
 
-                throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, parameterName, span);
+                throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, plan.NameAt(i), span);
             }
 
             if (plan.VariadicDictionaryIndex >= 0)

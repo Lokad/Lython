@@ -115,6 +115,13 @@ internal class FunctionBindingPlan
     public object? KeywordDefaults { get; private set; }
     public PyString KeywordDefaultName(int index) => _layout.KeywordDefaultName(index);
 
+    internal bool TryGetKeywordDefault(PyDict dictionary, int index, [MaybeNullWhen(false)] out object value,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        var (name, position) = _layout.KeywordDefaultAt(index);
+        return dictionary.TryGetDefinitionValue(name, position, out value, context, span);
+    }
+
     internal bool TryGetKeywordIndex(CallArgumentValue argument, LythonRuntime.ExecutionContext context,
         LythonSourceSpan span, out int index)
     {

@@ -27,6 +27,23 @@ public sealed class FunctionDefaultMetadataTests
             print(tuple(x is y for x,y in zip(defaults, values)))
             """, "10003 True 1.5 True\nTrue True\n(True, True, True, True)\n" },
         { "def f(*,x=2): return x\ndefaults=f.__kwdefaults__\ndefaults['x']=9\nprint(f(),defaults is f.__kwdefaults__)", "9 True\n" },
+        { """
+            def factory(seed):
+                def f(*, before, left=seed, middle, right=seed):
+                    return before, left, middle, right
+                return f
+            first, second = factory(2), factory(3)
+            print(first(before=0, middle=1))
+            defaults = second.__kwdefaults__
+            first.__kwdefaults__ = defaults
+            defaults['right'] = 4
+            print(first(before=0, middle=1))
+            del defaults['left']
+            try: first(before=0, middle=1)
+            except TypeError: print('missing')
+            defaults['left'] = []
+            print(first(before=0, middle=1)[1] is defaults['left'])
+            """, "(0, 2, 1, 2)\n(0, 3, 1, 4)\nmissing\nTrue\n" },
         { "def f(a=1,*,b=2): return a,b\ndel f.__defaults__\ndel f.__kwdefaults__\nprint(f.__defaults__,f.__kwdefaults__)\ntry: f()\nexcept TypeError: print('missing')", "None None\nmissing\n" },
         { "def f(x=1): return x\ntry: f.__defaults__=[]\nexcept TypeError: print('tuple-required')\ntry: f.__kwdefaults__=()\nexcept TypeError: print('dict-required')\nprint(f())", "tuple-required\ndict-required\n1\n" },
         { "def f(a,b): return a,b\nf.__defaults__=(1,2,3)\nprint(f())", "(2, 3)\n" },

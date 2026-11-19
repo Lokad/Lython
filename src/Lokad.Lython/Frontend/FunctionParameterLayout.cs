@@ -8,11 +8,12 @@ namespace Lokad.Lython.Frontend;
 internal sealed class FunctionParameterLayout
 {
     internal readonly record struct DefaultSlot(int ParameterIndex, int KeywordIndex);
+    internal readonly record struct KeywordDefault(PyString Name, int RecordPosition);
 
     private readonly string[] _names;
     private readonly record struct NativeKeyword(PyString Key, int Slot);
     private readonly NativeKeyword[] _nativeKeywords;
-    private readonly PyString[] _keywordDefaultNames;
+    private readonly KeywordDefault[] _keywordDefaults;
 
     private FunctionParameterLayout(string[] names, Dictionary<string, int> indices, DefaultSlot[] defaults,
         int positionalDefaultCount,
@@ -31,14 +32,21 @@ internal sealed class FunctionParameterLayout
         VariadicDictionaryIndex = variadicDictionaryIndex;
 
         var keywordCount = NamedLayoutCount - positionalOnlyCount;
-        _keywordDefaultNames = keywordOnlyCount == 0 ? [] : new PyString[keywordOnlyCount];
+        _keywordDefaults = keywordOnlyCount == 0 ? [] : new KeywordDefault[keywordOnlyCount];
         _nativeKeywords = keywordCount == 0 ? [] : new NativeKeyword[keywordCount];
+        var nextDefault = positionalDefaultCount;
         for (var i = positionalOnlyCount; i < NamedLayoutCount; i++)
         {
             PythonTokenization.CheckCancellation(cancellationToken, i - positionalOnlyCount);
             var key = PyString.FromString(names[i]);
             _nativeKeywords[i - positionalOnlyCount] = new(key, i);
-            if (i >= positionalCount) _keywordDefaultNames[i - positionalCount] = key;
+            if (i >= positionalCount)
+            {
+                var keyword = i - positionalCount;
+                var position = nextDefault < defaults.Length && defaults[nextDefault].KeywordIndex == keyword
+                    ? nextDefault++ - positionalDefaultCount : -1;
+                _keywordDefaults[keyword] = new(key, position);
+            }
         }
         if (keywordCount > 1)
             Array.Sort(_nativeKeywords, static (left, right) => PyString.CompareOrdinal(left.Key, right.Key));
@@ -155,7 +163,8 @@ internal sealed class FunctionParameterLayout
         return false;
     }
 
-    internal PyString KeywordDefaultName(int index) => _keywordDefaultNames[index];
+    internal KeywordDefault KeywordDefaultAt(int index) => _keywordDefaults[index];
+    internal PyString KeywordDefaultName(int index) => KeywordDefaultAt(index).Name;
     internal DefaultSlot[] Defaults { get; }
     internal int PositionalDefaultCount { get; }
     internal bool HasKeywordDefaults => Defaults.Length > PositionalDefaultCount;

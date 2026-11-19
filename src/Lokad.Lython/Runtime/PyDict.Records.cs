@@ -7,6 +7,22 @@ internal sealed partial class PyDict
     private RecordKeys? _recordKeys;
     internal bool HasSharedRecordKeys => _recordKeys is not null;
 
+    internal bool TryGetDefinitionValue(PyString key, int position, [MaybeNullWhen(false)] out object value,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        // Probe the live record only after admission and argument evaluation.
+        // A value assignment keeps its slot. Deletion, promotion or replacement
+        // can invalidate this proof, so fall through to the ordinary lookup.
+        if (_recordKeys is not null && (uint)position < (uint)NativeExtent &&
+            ReferenceEquals(_nativeItems![position].Key, key) && _nativeValues![position] is { } current)
+        {
+            context.CheckExecution(span);
+            value = current;
+            return true;
+        }
+        return TryGetValue(key, out value, context, span);
+    }
+
     // Layout identities survive changes to values, but not insertion of new
     // keys. Deletion leaves a vacant slot. Read the current value only after
     // checking both facts; a cache entry must never keep a previous row alive.
