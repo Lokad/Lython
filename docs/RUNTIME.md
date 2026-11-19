@@ -2279,8 +2279,10 @@ concurrent-safe metadata includes effective Python flags (inline flags and impli
 Unicode included), capture slots including zero and UTF-8 names in capture order.
 Lython copies borrowed names into its own admitted storage, once per frontend
 analysis program and once per runtime cached pattern; no provider name storage is
-adopted. Frontend analysis uses the same effective flags. Invalid provider metadata
-fails explicitly (including a compilation exception for a broken host contract);
+adopted. Frontend constant matching uses the prepared pattern and its effective
+flags. Runtime looks up that pattern under its original normalized options.
+Invalid provider metadata fails explicitly (including a compilation exception
+for a broken host contract);
 ordinary guest pattern errors retain their Python diagnostics. Prepared subjects
 provide match/search/fullmatch and finditer progression. Lython owns captured
 splitting, template/callable substitution, expansion and public scalar offsets;

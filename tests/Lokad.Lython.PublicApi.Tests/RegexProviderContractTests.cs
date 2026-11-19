@@ -985,6 +985,33 @@ public sealed class RegexProviderContractTests
         Assert.Equal("X", result.ReturnValue);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DistinctCompileOptionsKeepTheirOwnPreparedPatterns(bool asynchronous)
+    {
+        // Model a provider applying the leading inline flag to both patterns.
+        using var provider = new CooperatingProvider { AdditionalEffectiveFlags = 2 };
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using var script = new LythonEngine(provider).Compile(
+            "import re\np=re.compile('(?i)x')\nq=re.compile('(?i)x',re.I)\n" +
+            "assert p.flags == q.flags\nreturn p.match('X').group() + re.match(q,'X').group()", budget);
+        Assert.True(script.IsValid, string.Join(";", script.Diagnostics.Select(d => d.Message)));
+        Assert.Equal(2, provider.Compilations);
+        var baseline = budget.ReservedBytes;
+        using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("XX", result.ReturnValue);
+            Assert.Equal(2, provider.Compilations);
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+        Assert.Equal(0, provider.ClosedPatterns);
+        script.Dispose();
+        Assert.Equal(2, provider.ClosedPatterns);
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Fact]
     public void CoreReportsMissingProviderWithoutInstallingAnotherDialect()
     {
@@ -1036,6 +1063,7 @@ public sealed class RegexProviderContractTests
         internal int Compilations, ClosedPatterns;
         internal Action? OnCompileReturn, OnMetadata;
         internal int CaptureSlots = 1;
+        internal int AdditionalEffectiveFlags;
         internal IReadOnlyList<LythonRegexNamedGroup> GroupNames = [];
         internal Action<ReadOnlyMemory<byte>, LythonRegexWindow>? OnPrepare;
         internal Func<ReadOnlyMemory<byte>, LythonRegexWindow, FixtureMatch?>? MatchFactory;
@@ -1070,7 +1098,7 @@ public sealed class RegexProviderContractTests
             try { Work("compile", token); }
             catch { Cleanup(scratch); throw; }
             ILythonMemoryScope? retained = null;
-            var flags = options.Flags;
+            var flags = options.Flags | AdditionalEffectiveFlags;
             var slots = CancelCapture is null ? CaptureSlots : 4;
             if (_cached is { } cached) { flags = cached.Flags; slots = cached.Slots; }
             else

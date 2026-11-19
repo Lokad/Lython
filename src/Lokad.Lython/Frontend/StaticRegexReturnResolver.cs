@@ -63,15 +63,8 @@ internal static class StaticRegexReturnResolver
                 _ => LythonRegexMatchMode.Search
             };
 
-            return TryResolveRegexMatchLikeReturn(
-                summary,
-                arguments,
-                0,
-                "string",
-                bindings,
-                call.Span,
-                operation,
-                out value);
+            value = ResolveRegexMatchLikeReturn(summary, arguments, 0, "string", 1, bindings, call.Span, operation);
+            return true;
         }
 
         value = memberName switch
@@ -154,51 +147,33 @@ internal static class StaticRegexReturnResolver
             return false;
         }
 
-        if (flagsKnown &&
-            patternSummary.PatternText is not null &&
-            TryGetArgument(arguments, textPosition, textKeyword, bindings, out _, out var textValue) &&
-            textValue.Kind == AbstractValueKind.String &&
-            TryGetBounds(arguments, flagsPosition + 1, bindings, out var pos, out var endPos) &&
-            TryCompileRegex(patternSummary.PatternText, patternSummary.Flags ?? GetRegexOptions(arguments, flagsPosition, flagsKeyword, bindings), bindings, span, out var regex))
-        {
-            var matched = MatchConstant(regex.Program, textValue.RequireText(), pos, endPos, operation, bindings, span);
-
-            value = matched
-                ? AbstractValue.RegexMatch(CreateRegexMatchSummary(patternSummary), span)
-                : AbstractValue.None(span);
-            return true;
-        }
-
-        value = AbstractValue.MaybeRegexMatch(CreateRegexMatchSummary(patternSummary), span);
+        value = ResolveRegexMatchLikeReturn(patternSummary, arguments, textPosition, textKeyword,
+            flagsPosition + 1, bindings, span, operation, flagsKnown);
         return true;
     }
 
-    private static bool TryResolveRegexMatchLikeReturn(
+    private static AbstractValue ResolveRegexMatchLikeReturn(
         AbstractRegexPatternSummary patternSummary,
         ConcreteCallArguments arguments,
         int textPosition,
         string textKeyword,
+        int boundsPosition,
         AbstractState bindings,
         LythonSourceSpan span,
         LythonRegexMatchMode operation,
-        out AbstractValue value)
+        bool evaluateConstant = true)
     {
-        if (patternSummary.Flags is { } effectiveFlags && patternSummary.PatternText is not null &&
+        if (evaluateConstant && patternSummary.Program is { } program &&
             TryGetArgument(arguments, textPosition, textKeyword, bindings, out _, out var textValue) &&
             textValue.Kind == AbstractValueKind.String &&
-            TryGetBounds(arguments, textPosition + 1, bindings, out var pos, out var endPos) &&
-            TryCompileRegex(patternSummary.PatternText, effectiveFlags, bindings, span, out var regex))
+            TryGetBounds(arguments, boundsPosition, bindings, out var pos, out var endPos))
         {
-            var matched = MatchConstant(regex.Program, textValue.RequireText(), pos, endPos, operation, bindings, span);
-
-            value = matched
+            return MatchConstant(program, textValue.RequireText(), pos, endPos, operation, bindings, span)
                 ? AbstractValue.RegexMatch(CreateRegexMatchSummary(patternSummary), span)
                 : AbstractValue.None(span);
-            return true;
         }
 
-        value = AbstractValue.MaybeRegexMatch(CreateRegexMatchSummary(patternSummary), span);
-        return true;
+        return AbstractValue.MaybeRegexMatch(CreateRegexMatchSummary(patternSummary), span);
     }
 
     private static bool TryGetRegexPatternSummary(
@@ -221,6 +196,7 @@ internal static class StaticRegexReturnResolver
 
         if (allowCompiledPattern && patternValue.Kind == AbstractValueKind.RegexPattern)
         {
+            flagsKnown &= patternFlags == 0;
             summary = patternValue.RequireRegexPatternSummary();
             return true;
         }
@@ -231,16 +207,10 @@ internal static class StaticRegexReturnResolver
             return false;
         }
 
-        summary = CreateRegexPatternSummary(patternValue.RequireText(), flagsKnown ? patternFlags : null, bindings,
-            DiagnosticSpan(patternExpression, patternValue));
+        summary = flagsKnown && TryCompileRegex(patternValue.RequireText(), patternFlags, bindings,
+            DiagnosticSpan(patternExpression, patternValue), out var compiled)
+            ? compiled : AbstractRegexPatternSummary.Unknown;
         return true;
-    }
-
-    private static AbstractRegexPatternSummary CreateRegexPatternSummary(string pattern, int? flags, AbstractState bindings, LythonSourceSpan span)
-    {
-        if (flags is { } known && TryCompileRegex(pattern, known, bindings, span, out var compiled))
-            return new AbstractRegexPatternSummary(pattern, compiled.Program.CaptureSlotCount, compiled.NamedGroups, compiled.Program.Flags);
-        return new AbstractRegexPatternSummary(pattern, null, new Dictionary<PyString, int>());
     }
 
     private static AbstractRegexMatchSummary CreateRegexMatchSummary(AbstractRegexPatternSummary pattern)
@@ -293,17 +263,8 @@ internal static class StaticRegexReturnResolver
         return true;
     }
 
-    private static int GetRegexOptions(
-        ConcreteCallArguments arguments,
-        int flagsPosition,
-        string flagsKeyword,
-        AbstractState bindings)
-        => TryGetRegexOptions(arguments, flagsPosition, flagsKeyword, bindings, out var options)
-            ? options
-            : 0;
-
     private static bool TryCompileRegex(string pattern, int options, AbstractState bindings, LythonSourceSpan span,
-        [MaybeNullWhen(false)] out StaticAnalysisContext.AnalyzedRegexPattern regex)
+        [MaybeNullWhen(false)] out AbstractRegexPatternSummary regex)
     {
         var analysis = bindings.AnalysisContext;
         if ((options & 256) == 0) options |= 32;
@@ -323,11 +284,11 @@ internal static class StaticRegexReturnResolver
             try
             {
                 analysis.OwnRegexPattern(program);
-                regex = new(program, LythonRuntime.RegexCompiler.CopyNamedGroups(program, governor, token, span));
+                regex = new(program, program.CaptureSlotCount,
+                    LythonRuntime.RegexCompiler.CopyNamedGroups(program, governor, token, span));
                 analysis.RetainRegexProgram(encoded, new(options, (options & 64) != 0), program, span);
                 // Inputs remain funded until every analysis pattern handle ends.
                 analysis.RegexPatterns[(pattern, options)] = regex;
-                analysis.RegexPatterns[(pattern, program.Flags)] = regex;
             }
             catch { program.Dispose(); throw; }
             return true;

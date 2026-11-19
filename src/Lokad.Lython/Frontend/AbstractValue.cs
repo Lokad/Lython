@@ -123,10 +123,12 @@ internal sealed record AbstractFunctionSummary(
 }
 
 internal sealed record AbstractRegexPatternSummary(
-    string? PatternText,
+    ILythonRegexPattern? Program,
     int? CaptureSlotCount,
-    IReadOnlyDictionary<PyString, int> NamedGroups,
-    int? Flags = null);
+    IReadOnlyDictionary<PyString, int> NamedGroups)
+{
+    internal static readonly AbstractRegexPatternSummary Unknown = new(null, null, new Dictionary<PyString, int>());
+}
 
 internal sealed record AbstractRegexMatchSummary(
     int? CaptureSlotCount,
@@ -335,7 +337,7 @@ internal readonly record struct AbstractValue
     public static AbstractValue BinaryFileHandle(AbstractTextFileMode mode, LythonSourceSpan span) => new(AbstractValueKind.BinaryFileHandle, new TextFileModePayload(mode), span);
     public static AbstractValue Module(string name, LythonSourceSpan span) => new(AbstractValueKind.Module, new TextPayload(name), span);
     public static AbstractValue KnownCallable(string targetName, LythonSourceSpan span) => new(AbstractValueKind.KnownCallable, new TextPayload(targetName), span);
-    public static AbstractValue RegexPattern(LythonSourceSpan span) => RegexPattern(CreateUnknownRegexPatternSummary(), span);
+    public static AbstractValue RegexPattern(LythonSourceSpan span) => RegexPattern(AbstractRegexPatternSummary.Unknown, span);
     public static AbstractValue RegexPattern(AbstractRegexPatternSummary summary, LythonSourceSpan span) => new(AbstractValueKind.RegexPattern, new RegexPatternPayload(summary), span);
     public static AbstractValue MaybeRegexMatch(LythonSourceSpan span) => MaybeRegexMatch(CreateUnknownRegexMatchSummary(), span);
     public static AbstractValue MaybeRegexMatch(AbstractRegexMatchSummary summary, LythonSourceSpan span) => new(AbstractValueKind.MaybeRegexMatch, new RegexMatchPayload(summary), span);
@@ -465,9 +467,6 @@ internal readonly record struct AbstractValue
     public static AbstractValue Join(AbstractValue left, AbstractValue right, LythonSourceSpan span,
         StaticAnalysisContext? context = null)
         => AbstractValueJoin.Join(left, right, span, context);
-
-    private static AbstractRegexPatternSummary CreateUnknownRegexPatternSummary()
-        => new(null, null, new Dictionary<PyString, int>());
 
     private static AbstractRegexMatchSummary CreateUnknownRegexMatchSummary()
         => new(null, new Dictionary<PyString, int>());

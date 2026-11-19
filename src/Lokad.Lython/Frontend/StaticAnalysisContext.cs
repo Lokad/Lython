@@ -19,9 +19,7 @@ internal sealed class StaticAnalysisContext : IDisposable
 
     public ScriptSyntax Script { get; }
     internal ILythonRegexProvider? RegexProvider { get; }
-    internal sealed record AnalyzedRegexPattern(ILythonRegexPattern Program,
-        IReadOnlyDictionary<Runtime.Text.PyString, int> NamedGroups);
-    internal Dictionary<(string Pattern, int Flags), AnalyzedRegexPattern> RegexPatterns { get; } = new();
+    internal Dictionary<(string Pattern, int Flags), AbstractRegexPatternSummary> RegexPatterns { get; } = new();
     internal Runtime.MemoryGovernor? MemoryGovernor { get; }
     internal CancellationToken CancellationToken { get; }
     internal ILythonMemoryBudget RegexMemoryOwner => _regexPrograms.StorageOwner;

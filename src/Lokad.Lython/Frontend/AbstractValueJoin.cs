@@ -222,9 +222,12 @@ internal static class AbstractValueJoin
     {
         var leftSummary = left.RequireRegexPatternSummary();
         var rightSummary = right.RequireRegexPatternSummary();
-        return RegexPatternSummariesEqual(leftSummary, rightSummary)
-            ? RegexPattern(leftSummary, span)
-            : RegexPattern(span);
+        if (ReferenceEquals(leftSummary, rightSummary)) return left.WithSpan(span);
+        // Agreeing capture metadata survives the join. Constant matching
+        // requires the actual program to be the same on both branches.
+        return leftSummary.CaptureSlotCount == rightSummary.CaptureSlotCount &&
+               IntegerMapsEqual(leftSummary.NamedGroups, rightSummary.NamedGroups)
+            ? RegexPattern(leftSummary with { Program = null }, span) : RegexPattern(span);
     }
 
     private static AbstractValue JoinRegexMatches(AbstractValue left, AbstractValue right, LythonSourceSpan span, bool maybe)
@@ -296,11 +299,6 @@ internal static class AbstractValueJoin
 
     private static AbstractTextFileMode JoinTextFileModes(AbstractTextFileMode left, AbstractTextFileMode right)
         => left == right ? left : AbstractTextFileMode.Unknown;
-
-    private static bool RegexPatternSummariesEqual(AbstractRegexPatternSummary left, AbstractRegexPatternSummary right)
-        => string.Equals(left.PatternText, right.PatternText, StringComparison.Ordinal) && left.Flags == right.Flags &&
-           left.CaptureSlotCount == right.CaptureSlotCount &&
-           IntegerMapsEqual(left.NamedGroups, right.NamedGroups);
 
     private static bool RegexMatchSummariesEqual(AbstractRegexMatchSummary left, AbstractRegexMatchSummary right)
         => left.CaptureSlotCount == right.CaptureSlotCount &&
