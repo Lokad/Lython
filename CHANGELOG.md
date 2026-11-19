@@ -2,6 +2,8 @@
 
 ## 0.11.0 - Unreleased
 
+- Parse a shared postfix prefix for assignment targets and expression
+  statements, removing repeated speculative parses.
 - Reuse admitted key layouts when forwarding dense CSV and JSON records
   as keywords, while keeping each dictionary's values independently mutable.
   Skip the key scan when the layout proves the keys are valid and the callee

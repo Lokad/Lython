@@ -438,6 +438,10 @@ original conditions retained. Current comparisons belong in
   All five workloads slow, with supporting process CPU on the rule and
   floating workloads and unchanged allocation. The candidate stays private.
   [Boxed arithmetic](results/2026-11-19-boxed-arithmetic/README.md).
+- B1129 shares postfix parsing across assignment and expression statements.
+  Validator and manifest end-to-end latency improve with lower compilation
+  allocation and CPU. CSV warm elapsed is mixed and its CPU rises.
+  [Postfix statement parsing](results/2026-11-19-postfix-statement-parsing/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
