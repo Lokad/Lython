@@ -12,7 +12,6 @@ internal sealed record ExecutableCreateLambda(LoweredLambdaExpression Expression
     internal ExecutableCodeObject CodeObject => Expression.Code;
     internal int InputCount => Expression.ParameterLayout.Defaults.Length == 0 ? 0 : 1;
 }
-internal sealed record ExecutableAnnotationsEnabled : ExecutableOperation;
 internal sealed record ExecutableStartClassHeader(int Count) : ExecutableOperation;
 internal sealed record ExecutableCreateClass(LoweredClassDefinitionStatement Definition, bool ExpandedHeader) : ExecutableOperation;
 
@@ -26,21 +25,17 @@ internal sealed partial class ExecutableScript
             foreach (var decorator in definition.Decorators) block = CompileExpression(decorator, block);
             block = CompileFunctionDefaults(definition.Parameters, binding.ParameterLayout,
                 binding.KeywordRecordCache, definition.Span, block);
-            if ((!_completeLexicalParent && !yielding) || definition.TypeParameters is not null || binding.Annotations.Length == 0)
+            // Future annotations already carry their source spelling. Their
+            // mode belongs to this definition and needs no execution-time test.
+            if ((!_completeLexicalParent && !yielding) || definition.TypeParameters is not null ||
+                binding.Annotations.Length == 0 || binding.Annotations[0].Expression.Syntax.PostponedAnnotationText is not null)
             {
                 EmitDefinition(block);
                 return block;
             }
-            var skipped = CreateBlock();
-            var after = CreateBlock();
-            EmitOperation(new ExecutableAnnotationsEnabled(), definition.Span, block);
-            AddInstruction(block, ExecutableInstruction.JumpIfFalse(skipped, definition.Span));
             foreach (var annotation in binding.Annotations) block = CompileExpression(annotation.Expression, block);
             EmitDefinition(block, annotationsOnStack: true);
-            AddInstruction(block, ExecutableInstruction.Jump(after, definition.Span));
-            EmitDefinition(skipped);
-            AddInstruction(skipped, ExecutableInstruction.Jump(after, definition.Span));
-            return after;
+            return block;
 
             void EmitDefinition(int target, bool annotationsOnStack = false)
             {

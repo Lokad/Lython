@@ -237,8 +237,7 @@ internal sealed partial class ExecutableScript
                 if ((index & 1023) == 0) PythonTokenization.CheckCancellation(_compilationCancellation, 0);
                 switch (_constants[index])
                 {
-                    // An annotated definition also emits its ordinary declaration.
-                    case ExecutableCreateFunction { AnnotationsOnStack: false } function:
+                    case ExecutableCreateFunction function:
                         PrepareChild(function.Binding.CodeObject);
                         break;
                     case ExecutableCreateClass:

@@ -258,7 +258,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
             ExecutableOpCode.ApplyOperation => constants[instruction.ConstantIndex] is
                 ExecutableStartDisplay or ExecutableFinishComprehension or ExecutableFinishTuple or
                 ExecutableFinishCall or ExecutableCallWithKeywordMapping or ExecutableCreateGeneratorExpression or
-                ExecutableCreateFunction or ExecutableCreateLambda or ExecutablePostponedAnnotation or ExecutableAnnotationsEnabled,
+                ExecutableCreateFunction or ExecutableCreateLambda or ExecutablePostponedAnnotation,
             _ => false,
         };
 
@@ -340,7 +340,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
 
     private static (int Pop, int Push) OperationEffect(ExecutableOperation operation) => operation switch
     {
-        ExecutableStartDisplay or ExecutableStartClassHeader or ExecutableStartFunctionDefaults or ExecutablePostponedAnnotation or ExecutableAnnotationsEnabled => (0, 1),
+        ExecutableStartDisplay or ExecutableStartClassHeader or ExecutableStartFunctionDefaults or ExecutablePostponedAnnotation => (0, 1),
         ExecutableStartComprehension => (1, 3),
         ExecutableFinishComprehension => (2, 1),
         ExecutableFinishCall => (1, 1),

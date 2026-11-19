@@ -138,11 +138,8 @@ internal sealed partial class LythonRuntime
                     or ExecutableCreateGeneratorExpression when invocation is not null:
                     pending = invocation.ExecutePreparedSuspendingOperationAsync(operation, instruction, asynchronous);
                     break;
-                case ExecutableAnnotationsEnabled:
-                    PublishInstructionResult(ref execution, invocation, instruction, !context.PostponedAnnotations);
-                    break;
                 case ExecutablePostponedAnnotation postponed when invocation is not null:
-                    PublishInstructionResult(ref execution, invocation, instruction, CreatePostponedAnnotationValue(postponed.Annotation, context));
+                    PublishInstructionResult(ref execution, invocation, instruction, CreatePostponedAnnotationValue(postponed.Text, span, context));
                     break;
                 case ExecutableStoreModuleAnnotation annotation when invocation is not null:
                     var value = execution.Stack.TakeValue(instruction.InputStart, instruction.LiveExtent);

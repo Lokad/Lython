@@ -17,8 +17,9 @@ internal sealed partial class LythonRuntime
         ExecutionContext context, bool asynchronous)
     {
         if (context.ParentContext is not null && !context.IsClassBody) return;
-        if (context.PostponedAnnotations && !statement.Assignment.IsSimple) return;
-        var annotation = context.PostponedAnnotations ? CreatePostponedAnnotationValue(statement.Annotation.Syntax, context)
+        var text = statement.Annotation.Syntax.PostponedAnnotationText;
+        if (text is not null && !statement.Assignment.IsSimple) return;
+        var annotation = text is not null ? CreatePostponedAnnotationValue(text, statement.Annotation.Span, context)
             : await EvaluateTypeExpressionAsync(statement.Annotation, context, asynchronous).ConfigureAwait(false);
         if (!statement.Assignment.IsSimple || statement.Assignment.Target is not NameAssignmentTargetSyntax name) return;
         // Annotation stores use LOAD_NAME semantics, even when the class body
@@ -31,11 +32,10 @@ internal sealed partial class LythonRuntime
         await StoreAnnotationEntryAsync(annotations, name.Name, annotation, context, statement.Span, asynchronous).ConfigureAwait(false);
     }
 
-    private static PyString CreatePostponedAnnotationValue(ExpressionSyntax expression, ExecutionContext context)
+    private static PyString CreatePostponedAnnotationValue(string text, LythonSourceSpan span, ExecutionContext context)
     {
-        var text = expression.PostponedAnnotationText ?? throw RuntimeErrors.Runtime("Postponed annotation metadata is unavailable.", expression.Span);
-        var result = PyString.FromString(text, context.MemoryGovernor, expression.Span);
-        context.CheckExecution(expression.Span);
+        var result = PyString.FromString(text, context.MemoryGovernor, span);
+        context.CheckExecution(span);
         return result;
     }
 

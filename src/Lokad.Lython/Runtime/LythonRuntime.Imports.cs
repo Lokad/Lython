@@ -182,10 +182,8 @@ internal sealed partial class LythonRuntime
     {
         if (string.Equals(statement.ModuleName, "__future__", StringComparison.Ordinal) &&
             statement.ImportedMembers is not null && ImportsOnlyFutureAnnotations(statement.ImportedMembers))
-        {
-            context.PostponedAnnotations = true;
+            // The frontend has already applied this directive to the source annotations.
             return;
-        }
 
         var module = await ResolveImportedModuleHierarchyCore(statement.ModuleName, statement.Span, resolveModule).ConfigureAwait(false);
 

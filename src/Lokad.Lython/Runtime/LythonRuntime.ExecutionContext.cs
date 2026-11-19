@@ -19,12 +19,6 @@ internal sealed partial class LythonRuntime
         internal PyDict? GlobalNamespace;
         internal GlobalNamespaceStorage? GlobalNamespaceBacking;
 
-        private bool? _postponedAnnotations;
-        public bool PostponedAnnotations
-        {
-            get => _postponedAnnotations ?? ParentContext?.PostponedAnnotations ?? false;
-            set => _postponedAnnotations = value;
-        }
         public ExecutionContext(ILythonHost host, LythonRunOptions? options, ILythonRegexProvider? regexProvider = null,
             CompiledRegexPrograms? regexPrograms = null)
         {
