@@ -10,6 +10,8 @@ internal sealed partial class LythonRuntime
 
     private static class RegexMatcher
     {
+        private const int DirectCoordinateSortCount = 64;
+
         internal static PreparedSubject Prepare(RePatternObject pattern, RegexSubjectRange range,
             ExecutionContext context, LythonSourceSpan span)
         {
@@ -31,6 +33,7 @@ internal sealed partial class LythonRuntime
             private readonly MemoryGovernor.TemporaryMemoryReservation _storage;
             private ILythonRegexSubject? _subject;
             private long[]? _coordinates;
+            private Comparison<long>? _coordinateComparison;
             private readonly LythonRegexWindow _window;
             private RegexScalarPosition _position;
             internal readonly LythonRegexCapture?[] Captures;
@@ -99,18 +102,32 @@ internal sealed partial class LythonRuntime
                 if (range.Original.Length != range.Original.ByteLength && _coordinates is null)
                 {
                     var count = checked(2 * captures.Length);
-                    _storage.Grow(checked(32L + 8L * count), _span);
+                    var needsComparison = count > DirectCoordinateSortCount;
+                    _storage.Grow(checked(32L + 8L * count + (needsComparison ? 96L : 0)), _span);
                     _context.CheckExecution(_span);
                     _coordinates = new long[count];
+                    if (needsComparison) _coordinateComparison = CompareCoordinates;
                 }
-                ProjectScalarBounds(range, _window, captures, ref _position, _coordinates, _context, _span);
+                ProjectScalarBounds(range, _window, captures, ref _position, _coordinates, _context, _span,
+                    _coordinateComparison);
+            }
+
+            private int CompareCoordinates(long left, long right)
+            {
+                _context.CheckExecution(_span);
+                return left.CompareTo(right);
             }
 
             public void Dispose()
             {
                 var subject = _subject; _subject = null;
                 try { subject?.Dispose(); }
-                finally { _coordinates = null; _storage.Dispose(); }
+                finally
+                {
+                    _coordinates = null;
+                    _coordinateComparison = null;
+                    _storage.Dispose();
+                }
             }
         }
 
@@ -126,7 +143,8 @@ internal sealed partial class LythonRuntime
             => range.Original.Utf8Bytes.Slice(capture.StartByte, capture.EndByte - capture.StartByte);
 
         private static void ProjectScalarBounds(RegexSubjectRange range, LythonRegexWindow window, ReCaptureRange[] captures,
-            ref RegexScalarPosition previous, Span<long> coordinates, ExecutionContext context, LythonSourceSpan span)
+            ref RegexScalarPosition previous, Span<long> coordinates, ExecutionContext context, LythonSourceSpan span,
+            Comparison<long>? coordinateComparison)
         {
             var count = checked(2 * captures.Length);
             var input = range.Original.Utf8Span;
@@ -150,7 +168,8 @@ internal sealed partial class LythonRuntime
                 coordinates[2 * i] = ((long)captures[i].StartByte << 32) | (uint)(2 * i);
                 coordinates[2 * i + 1] = ((long)captures[i].EndByte << 32) | (uint)(2 * i + 1);
             }
-            coordinates.Sort();
+            if (coordinateComparison is null) coordinates.Sort();
+            else ExecutionSort.Sort(coordinates, coordinateComparison);
             var offset = previous.ByteOffset;
             var scalar = previous.ScalarOffset;
             for (var i = 0; i < count; i++)

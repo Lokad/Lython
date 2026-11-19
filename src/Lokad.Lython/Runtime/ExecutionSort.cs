@@ -6,6 +6,16 @@ namespace Lokad.Lython.Runtime;
 // failure identity so callers cannot turn cancellation into a host/CLR error.
 internal static class ExecutionSort
 {
+    // The caller owns the reusable comparison and its working storage.
+    internal static void Sort<T>(Span<T> values, Comparison<T> comparison)
+    {
+        try { values.Sort(comparison); }
+        catch (InvalidOperationException exception) when (exception.InnerException is LythonRuntimeException failure)
+        {
+            ExceptionDispatchInfo.Throw(failure);
+        }
+    }
+
     internal static void Sort<T>(List<T> values, LythonRuntime.ExecutionContext? context,
         LythonSourceSpan? span, Comparison<T>? comparison = null)
     {

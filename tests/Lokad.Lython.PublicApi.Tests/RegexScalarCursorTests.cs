@@ -16,6 +16,8 @@ public sealed class RegexScalarCursorTests
         { "import re\ntext='aé😀bç🦊d'\np=re.compile(r'(?<=(..))')\nfor pos,endpos in [(7,7),(4,6),(0,7)]:\n m=p.match(text,pos,endpos)\n print(None if m is None else (m.regs,m.pos,m.endpos,m.groups()))\n", "(((7, 7), (5, 7)), 7, 7, ('🦊d',))\n(((4, 4), (2, 4)), 4, 6, ('😀b',))\nNone\n" },
         { "import re\ntext='é😀a'*64\nmatches=list(re.finditer(r'(?=(.*))',text))\nprint(len(matches),sum(m.start() for m in matches),sum(m.end(1) for m in matches))\nprint(matches[0].regs,matches[-1].regs,matches[17].group(1)==text[17:])\nre.purge()\nprint(matches[0].string is text,matches[0].span(1),matches[-1].group(1))\n", "193 18528 37056\n((0, 0), (0, 192)) ((192, 192), (192, 192)) True\nTrue (0, 192) \n" },
         { "import re\ntext='é😀a'*64\np=re.compile(r'(?<=(..))(?=(.*))|(?P<missing>Z)')\nmatches=list(p.finditer(text,5,len(text)-7))\nprint(len(matches),sum(m.start() for m in matches),sum(m.end(2) for m in matches))\nprint(matches[0].regs,matches[-1].regs,matches[0].pos,matches[0].endpos)\nre.purge()\nprint(matches[0].group(1)==text[3:5],matches[0].group(2)==text[5:-7],matches[-1].group(2),matches[-1].span('missing'))\n", "181 17195 33485\n((5, 5), (3, 5), (5, 185), (-1, -1)) ((185, 185), (183, 185), (185, 185), (-1, -1)) 5 185\nTrue True  (-1, -1)\n" },
+        { "import re\np=re.compile('(é)'*40)\nmatches=list(p.finditer('é'*80))\nre.purge()\nfor m in matches:print(m.span(),m.span(1),m.span(40),m.lastindex)\n",
+            "(0, 40) (0, 1) (39, 40) 40\n(40, 80) (40, 41) (79, 80) 40\n" },
     };
 
     [Theory]

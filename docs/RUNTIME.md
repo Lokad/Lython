@@ -2404,6 +2404,8 @@ subject preparation. An anchored `match` passes the reversed window to the
 provider, since a zero-width match can succeed. Substitution rewrites the
 selected window and preserves the original prefix and suffix. Splitting returns
 the window's parts.
+Large non-ASCII capture projections check cancellation while ordering byte
+coordinates. The prepared subject funds and reuses this working storage.
 Both extensions preserve original assertion context. Reversed
 substitution bounds raise `ValueError` before invoking replacement callbacks.
 

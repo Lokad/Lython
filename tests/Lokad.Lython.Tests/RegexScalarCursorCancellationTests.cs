@@ -14,7 +14,7 @@ public sealed class RegexScalarCursorCancellationTests
 {
     private static readonly LythonSourceSpan Span = new(13, 4, 2, 6);
     private delegate void Project(SubjectRange range, LythonRegexWindow window, Capture[] captures, ref Position previous, Span<long> coordinates,
-        Context context, LythonSourceSpan span);
+        Context context, LythonSourceSpan span, Comparison<long>? coordinateComparison);
     private static readonly Project ProjectCaptures = typeof(LythonRuntime)
         .GetNestedType("RegexMatcher", BindingFlags.NonPublic)!
         .GetMethod("ProjectScalarBounds", BindingFlags.NonPublic | BindingFlags.Static)!
@@ -60,7 +60,7 @@ public sealed class RegexScalarCursorCancellationTests
                 {
                     previous = original;
                     ProjectCaptures(new(text, 0, characters + 2), new(0, characters + 2, 0, byteLength),
-                        captures, ref previous, coordinates, context, Span);
+                        captures, ref previous, coordinates, context, Span, null);
                     // Signal only after an actual rewind completes. A later
                     // attempt must observe cancellation before updating its cursor.
                     started.Set();
@@ -95,6 +95,42 @@ public sealed class RegexScalarCursorCancellationTests
         Assert.Equal(0, budget.ReservedBytes);
         using (var script = new LythonEngine().Compile("return 42", budget))
         using (var result = script.Run(new MockLythonHost())) Assert.True(result.Success);
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Fact]
+    public void CancellationDuringCoordinateOrderingDoesNotPublishScalarPositions()
+    {
+        using var cancellation = new CancellationTokenSource();
+        var budget = new LythonMemoryBudget(4096);
+        using var owner = budget.CreateScope();
+        var context = new Context(new MockLythonHost(), new LythonRunOptions
+            { MemoryBudget = owner, CancellationToken = cancellation.Token });
+        try
+        {
+            using var scratch = context.MemoryGovernor.ReserveTemporary(2048, Span);
+            var text = PyString.FromString("éx");
+            var range = new SubjectRange(text, 0, 2);
+            var window = new LythonRegexWindow(0, 2, 0, 3);
+            var captures = new Capture[40];
+            Array.Fill(captures, new Capture(0, 2, -1, -1));
+            var coordinates = new long[2 * captures.Length];
+            var previous = new Position(0, 0);
+            var baseline = budget.ReservedBytes;
+            var failure = Assert.Throws<LythonRuntimeException>(() =>
+                ProjectCaptures(range, window, captures, ref previous, coordinates, context, Span, (left, right) =>
+                {
+                    cancellation.Cancel();
+                    context.CheckExecution(Span);
+                    return left.CompareTo(right);
+                }));
+            Assert.Equal(LythonFailureReason.Cancelled, failure.Attribution?.Reason);
+            Assert.Equal(Span, failure.Span);
+            Assert.Equal(new Position(0, 0), previous);
+            Assert.All(captures, capture => Assert.Equal((-1, -1), (capture.Start, capture.End)));
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        finally { context.State.CloseResources(); }
         Assert.Equal(0, budget.ReservedBytes);
     }
 }
