@@ -319,6 +319,10 @@ original conditions retained. Current comparisons belong in
   Warm rules still take 3.58–4.18× CPython. A generated validator takes
   1.35–1.37× CPython's compilation time and about 1.34× compile-to-result.
   [External checkpoint](results/2026-11-19-retained-defaults-cpython/README.md).
+- B1103 prepares machine-integer continuations during instruction emission.
+  Captured rules run faster and annotated rules slower with corresponding CPU
+  changes. Helper and validator measurements remain mixed. The candidate
+  stays private. [Prepared continuations](results/2026-11-19-prepared-integer-prefix/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
