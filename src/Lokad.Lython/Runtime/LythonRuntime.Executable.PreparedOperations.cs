@@ -150,11 +150,16 @@ internal sealed partial class LythonRuntime
                         annotation.Name, value, context, span, asynchronous);
                     break;
                 case ExecutableStartFunctionDefaults start:
-                    var owner = new PendingFunctionDefaults(start.Binding.ParameterLayout, context, span,
-                        ref execution, start.Binding.KeywordRecordCache);
+                    var owner = new PendingFunctionDefaults(start.Layout, context, span, ref execution, start.KeywordRecordCache);
                     try { PublishInstructionResult(ref execution, invocation, instruction, owner); }
                     catch { owner.Dispose(); throw; }
                     break;
+                case ExecutableAppendFunctionDefault:
+                    {
+                        var defaultValue = execution.Stack.TakeSlotValue(instruction.ResultSlot, instruction.LiveExtent);
+                        StoreDefaultResult(execution.Code, execution.Stack.Values, instruction, defaultValue);
+                        break;
+                    }
                 case ExecutableCreateFunction function:
                     int[]? functionCaptures = null;
                     if (invocation is null)
@@ -175,21 +180,19 @@ internal sealed partial class LythonRuntime
                             lambda.CodeObject, in execution, scope, span, out lambdaCaptures)))
                             return false;
                         var layout = lambda.Expression.ParameterLayout;
-                        using var defaults = layout.Defaults.Length == 0 ? null
-                            : new PendingFunctionDefaults(layout, context, span, ref execution, lambda.KeywordRecordCache);
                         var first = instruction.InputStart;
+                        var defaults = lambda.InputCount == 0 ? null : (PendingFunctionDefaults)execution.Stack[first];
                         PyFunctionBase function;
                         try
                         {
-                            defaults?.Complete(execution.Stack.Values.AsSpan(first, layout.Defaults.Length));
                             function = invocation is null
                                 ? CreateFunctionValue(layout, lambda.CodeObject, GetGlobalContext(context),
                                     CaptureExecutableCells(lambda.CodeObject, context, span, ref execution, lambdaCaptures),
                                     defaults?.Values ?? default, lambda.Expression.IsGenerator, context, span, PythonCallableKind.Lambda)
                                 : CreateLambdaFunction(lambda.Expression, defaults?.Values ?? default, context);
+                            defaults?.Publish();
                         }
                         finally { execution.Stack.RetireTo(instruction.ResultSlot); }
-                        defaults?.Publish();
                         PublishInstructionResult(ref execution, invocation, instruction, function);
                     }
                     break;

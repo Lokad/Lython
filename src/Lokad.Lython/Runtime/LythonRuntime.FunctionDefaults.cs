@@ -10,9 +10,6 @@ internal sealed partial class LythonRuntime
     {
         private readonly FunctionParameterLayout _layout;
         private readonly ExecutionContext _context;
-        private readonly LythonSourceSpan _span;
-        private readonly MemoryGovernor.TemporaryMemoryReservation? _positionalStorage;
-        private object[]? _positionalItems;
         private int _position;
         private PyTuple? _positional;
         private PyDict? _keywords;
@@ -22,15 +19,13 @@ internal sealed partial class LythonRuntime
         {
             _layout = layout;
             _context = context;
-            _span = span;
-            var governor = context.MemoryGovernor;
             var positionalCount = layout.PositionalDefaultCount;
             var keywordCount = layout.Defaults.Length - positionalCount;
-            _positionalStorage = positionalCount == 0 ? null
-                : governor.ReserveTemporary(PyTuple.EstimateApproximateBytes(positionalCount), span);
             try
             {
                 context.CheckExecution(span);
+                if (positionalCount != 0)
+                    _positional = PyTuple.CreateDefaultStorage(positionalCount, context, span);
                 if (keywordCount != 0)
                     _keywords = CreateDefinitionRecord(ref execution, context, keywordCount, keywordRecordCache, layout,
                         static (parameters, index) => parameters.KeywordDefaultName(
@@ -41,35 +36,10 @@ internal sealed partial class LythonRuntime
 
         internal FunctionDefaults Values => new(_positional, _keywords);
 
-        internal void Add(FunctionParameterLayout.DefaultSlot slot, object value, LythonSourceSpan span)
+        internal void Add(FunctionParameterLayout.DefaultSlot slot, ExecutableSlot value, LythonSourceSpan span)
         {
-            if (slot.KeywordIndex < 0)
-            {
-                _context.CheckExecution(span);
-                (_positionalItems ??= new object[_layout.PositionalDefaultCount])[_position++] = value;
-            }
-            else _keywords!.AddDefinitionValue(_layout.KeywordDefaultName(slot.KeywordIndex), value, _context, span);
-        }
-
-        internal void Complete()
-        {
-            if (_positionalItems is { } items)
-            {
-                _positional = PyTuple.FromReservedOwnedArray(items, _context.MemoryGovernor, _span, _positionalStorage!);
-                _positionalItems = null;
-            }
-        }
-
-        internal void Complete(Span<ExecutableSlot> evaluated)
-        {
-            var positionalCount = _layout.PositionalDefaultCount;
-            var slots = _layout.Defaults;
-            // Keep keyword admission ahead of positional scalar admission, as in
-            // the lowered path. The private operands stay rooted through both.
-            for (var i = positionalCount; i < slots.Length; i++)
-                Add(slots[i], RuntimeValue(evaluated[i].Object), _span);
-            if (positionalCount != 0)
-                _positional = PyTuple.FromSlots(evaluated[..positionalCount], _context, _span, _positionalStorage);
+            if (slot.KeywordIndex < 0) _positional!.SetPrivateDefault(_position++, value, _context, span);
+            else _keywords!.AddDefinitionValue(_layout.KeywordDefaultName(slot.KeywordIndex), RuntimeValue(value.Object), _context, span);
         }
 
         internal void Publish()
@@ -82,9 +52,7 @@ internal sealed partial class LythonRuntime
         {
             var unpublished = Values;
             Publish();
-            _positionalItems = null;
-            try { _positionalStorage?.Dispose(); }
-            finally { unpublished.RefundUnpublished(_context.MemoryGovernor); }
+            unpublished.RefundUnpublished(_context.MemoryGovernor);
         }
     }
 
@@ -110,9 +78,8 @@ internal sealed partial class LythonRuntime
                 context.CheckExecution(expression.Span);
                 var value = asynchronous ? await EvaluateLoweredExpressionAsync(expression, context).ConfigureAwait(false)
                     : EvaluateLoweredExpression(expression, context);
-                pending.Add(slot, RuntimeValue(value), expression.Span);
+                pending.Add(slot, ExecutableSlot.FromObject(value), expression.Span);
             }
-            pending.Complete();
             return pending;
         }
         catch { pending.Dispose(); throw; }

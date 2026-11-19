@@ -1,3 +1,4 @@
+using System.Numerics;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Tests.Harness;
@@ -64,7 +65,7 @@ public sealed class FunctionDefaultConstructionTests
     }
 
     [Fact]
-    public void RefusedSlotTupleGrowthLeavesItsOperandsAndExistingReservationIntact()
+    public void RefusedLargeDefaultLeavesEarlierAliasedValueAndPrivateStorageFunded()
     {
         var budget = new LythonMemoryBudget(1024 * 1024);
         using var owner = budget.CreateScope();
@@ -73,18 +74,22 @@ public sealed class FunctionDefaultConstructionTests
         var governor = context.MemoryGovernor;
         var baseline = budget.ReservedBytes;
         var span = new LythonSourceSpan(0, 1, 1, 1);
-        var values = new[] { LythonRuntime.ExecutableSlot.FromInteger(10003) };
-        var bytes = PyTuple.EstimateApproximateBytes(values.Length);
-        using (var preflight = governor.ReserveTemporary(bytes, span))
+        var tuple = PyTuple.CreateDefaultStorage(2, context, span);
+        var alias = new PyList([], governor, span);
+        tuple.SetPrivateDefault(0, LythonRuntime.ExecutableSlot.FromObject(alias), context, span);
+        var beforeRefusal = budget.ReservedBytes;
+        try
         {
             gate.RefuseGrowth = _ => true;
-            var failure = Assert.Throws<LythonRuntimeException>(() => PyTuple.FromSlots(values, context, span, preflight));
+            var large = LythonRuntime.ExecutableSlot.FromObject(BigInteger.One << 127);
+            var failure = Assert.Throws<LythonRuntimeException>(() => tuple.SetPrivateDefault(1, large, context, span));
             Assert.Same(governor.AdmissionFailure, failure);
             Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
-            Assert.Equal(baseline + bytes, budget.ReservedBytes);
-            Assert.True(values[0].IsUnpublishedInteger);
+            Assert.Equal(beforeRefusal, budget.ReservedBytes);
+            Assert.Same(alias, tuple[0]);
         }
-        Assert.Equal(baseline, budget.ReservedBytes);
+        finally { governor.RefundUnpublishedValue(tuple); }
+        Assert.Equal(baseline + alias.CommittedStorageBytes, budget.ReservedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
         context.State.CloseResources();
     }

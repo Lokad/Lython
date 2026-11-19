@@ -1,14 +1,16 @@
 namespace Lokad.Lython.Frontend;
 
-internal sealed record ExecutableStartFunctionDefaults(ExecutableFunctionBinding Binding) : ExecutableOperation;
+internal sealed record ExecutableStartFunctionDefaults(FunctionParameterLayout Layout, int KeywordRecordCache) : ExecutableOperation;
+internal sealed record ExecutableAppendFunctionDefault(FunctionParameterLayout.DefaultSlot Default) : ExecutableOperation;
 internal sealed record ExecutableCreateFunction(ExecutableFunctionBinding Binding, bool AnnotationsOnStack = false) : ExecutableOperation
 {
-    internal int InputCount => checked(Binding.DecoratorCount + (AnnotationsOnStack ? Binding.Annotations.Length : 0) + Binding.ParameterLayout.Defaults.Length +
+    internal int InputCount => checked(Binding.DecoratorCount + (AnnotationsOnStack ? Binding.Annotations.Length : 0) +
         (Binding.ParameterLayout.Defaults.Length == 0 ? 0 : 1));
 }
-internal sealed record ExecutableCreateLambda(LoweredLambdaExpression Expression, int KeywordRecordCache) : ExecutableOperation
+internal sealed record ExecutableCreateLambda(LoweredLambdaExpression Expression) : ExecutableOperation
 {
     internal ExecutableCodeObject CodeObject => Expression.Code;
+    internal int InputCount => Expression.ParameterLayout.Defaults.Length == 0 ? 0 : 1;
 }
 internal sealed record ExecutableAnnotationsEnabled : ExecutableOperation;
 internal sealed record ExecutableStartClassHeader(int Count) : ExecutableOperation;
@@ -22,13 +24,8 @@ internal sealed partial class ExecutableScript
         {
             var binding = PrepareFunctionBinding(definition);
             foreach (var decorator in definition.Decorators) block = CompileExpression(decorator, block);
-            var layout = binding.ParameterLayout;
-            if (layout.Defaults.Length != 0)
-            {
-                EmitOperation(new ExecutableStartFunctionDefaults(binding), definition.Span, block);
-                foreach (var slot in layout.Defaults)
-                    block = CompileExpression(definition.Parameters[slot.ParameterIndex].DefaultValue.RequireNotNull(), block);
-            }
+            block = CompileFunctionDefaults(definition.Parameters, binding.ParameterLayout,
+                binding.KeywordRecordCache, definition.Span, block);
             if ((!_completeLexicalParent && !yielding) || definition.TypeParameters is not null || binding.Annotations.Length == 0)
             {
                 EmitDefinition(block);
@@ -59,14 +56,27 @@ internal sealed partial class ExecutableScript
 
         private int CompileLambda(LoweredLambdaExpression lambda, int block)
         {
-            foreach (var slot in lambda.ParameterLayout.Defaults)
-                block = CompileExpression(lambda.Parameters[slot.ParameterIndex].DefaultValue.RequireNotNull(), block);
+            var recordCache = lambda.ParameterLayout.HasKeywordDefaults ? AllocateLookupCache() : -1;
+            block = CompileFunctionDefaults(lambda.Parameters, lambda.ParameterLayout, recordCache, lambda.Span, block);
             if (lambda.PreparedCode is null)
                 lambda.CompleteCompilation(CompileFunctionCode("<lambda>", lambda.ParameterLayout,
                     lambda.FunctionBody, lambda.ScopeFacts, generator: lambda.IsGenerator,
                     qualifiedName: lambda.Lambda.PreparedQualifiedName));
-            var recordCache = lambda.ParameterLayout.HasKeywordDefaults ? AllocateLookupCache() : -1;
-            EmitOperation(new ExecutableCreateLambda(lambda, recordCache), lambda.Span, block);
+            EmitOperation(new ExecutableCreateLambda(lambda), lambda.Span, block);
+            return block;
+        }
+
+        private int CompileFunctionDefaults(IReadOnlyList<LoweredFunctionParameter> parameters,
+            FunctionParameterLayout layout, int recordCache, LythonSourceSpan span, int block)
+        {
+            if (layout.Defaults.Length == 0) return block;
+            EmitOperation(new ExecutableStartFunctionDefaults(layout, recordCache), span, block);
+            foreach (var slot in layout.Defaults)
+            {
+                var expression = parameters[slot.ParameterIndex].DefaultValue.RequireNotNull();
+                block = CompileExpression(expression, block);
+                EmitOperation(new ExecutableAppendFunctionDefault(slot), expression.Span, block);
+            }
             return block;
         }
 

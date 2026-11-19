@@ -113,15 +113,8 @@ internal sealed partial class LythonRuntime
             try
             {
                 var layout = binding.ParameterLayout;
-                var endDecorators = first + binding.DecoratorCount;
-                var next = endDecorators;
-                PendingFunctionDefaults? defaults = null;
-                if (layout.Defaults.Length != 0)
-                {
-                    defaults = (PendingFunctionDefaults)execution.Stack[next++];
-                    defaults.Complete(execution.Stack.Values.AsSpan(next, layout.Defaults.Length));
-                    next += layout.Defaults.Length;
-                }
+                var next = first + binding.DecoratorCount;
+                var defaults = layout.Defaults.Length == 0 ? null : (PendingFunctionDefaults)execution.Stack[next++];
 
                 var cells = invocation is null
                     ? CaptureExecutableCells(binding.CodeObject, context, span, ref execution, borrowedCaptures)

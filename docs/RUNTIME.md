@@ -341,17 +341,18 @@ remain function-owned. Native generated definitions admit their layout before
 allocation and keep its construction overlap funded through default creation.
 Executable definition sites prepare immutable keyword-default and annotation
 key layouts directly from their known names and retain them in existing lookup
-storage. Each definition admits a separate dictionary shell and fills its
-private value backing in order. A layout already cached stays funded if the
-first definition later fails. For `def`, keyword-default storage is admitted
-before default expressions run. Unpublished values refund on failure. A
-published dictionary admits replacement capacity before a mutation requiring
-private keys.
-Executable definitions build the positional-default tuple from evaluated
-slots. Fresh integers can stay unboxed until observed. Binding uses the live
-tuple and holds the selected value through keyword lookup and suspension.
-The slot-backed form admits its wider capacity and eventual boxes before
-construction, so a definition can need more allowance while allocating less.
+storage. Each definition admits its own default containers before evaluating
+defaults. Function declarations and lambdas fill the final private tuple and
+dictionary as expressions complete, with one owner through suspension.
+Fresh integers can stay unboxed until observed. The tuple preflights room
+for eventual scalar boxes, and a larger magnitude can require a further
+charge. A supplied allowance can refuse earlier because this storage is
+admitted before the callbacks. Private containers refund on failure, and a
+cached key layout stays funded. Decorators can expose a definition, so its
+finished defaults transfer before the first decorator call. Binding uses the
+live tuple and holds selected values through keyword lookup and suspension.
+A published dictionary admits replacement capacity before a mutation
+requiring private keys.
 One scope walk collects directives, local bindings
 and annotations, retaining explicit first-binding order. Function slots reuse these
 facts after the parameter prefix. Module function, import, class and type-alias

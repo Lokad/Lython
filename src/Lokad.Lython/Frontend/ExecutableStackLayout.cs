@@ -226,7 +226,9 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
                 // Keep the consumer as the pending-cleanup continuation and for its
                 // own guard/span. Direct sources do not consume a producer result.
                 if (kept > 0 &&
-                    ((instruction.OpCode == ExecutableOpCode.StoreLocal && first == int.MaxValue
+                    (((instruction.OpCode == ExecutableOpCode.StoreLocal ||
+                       instruction.OpCode == ExecutableOpCode.ApplyOperation &&
+                       code.Constants[instruction.ConstantIndex] is ExecutableAppendFunctionDefault) && first == int.MaxValue
                         && CanForwardResult(instructions[kept - 1], code.Constants))
                     || (instruction.OpCode == ExecutableOpCode.PopTop
                         && instructions[kept - 1].OpCode == ExecutableOpCode.Call)))
@@ -321,7 +323,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
             {
                 ExecutableAppendDisplay item => checked(2 + item.IteratorDepth),
                 ExecutableStoreDictionaryItem item => checked(pop + 1 + item.IteratorDepth),
-                ExecutableAppendCall => 2,
+                ExecutableAppendCall or ExecutableAppendFunctionDefault => 2,
                 _ => pop
             };
         }
@@ -344,10 +346,10 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
         ExecutableFinishCall => (1, 1),
         ExecutableCallWithKeywordMapping call => (checked(call.PositionalCount + 2), 1),
         ExecutableFinishTuple or ExecutableStartCall or ExecutableCreateGeneratorExpression => (1, 1),
-        ExecutableAppendDisplay or ExecutableAppendCall or ExecutableStoreModuleAnnotation => (1, 0),
+        ExecutableAppendDisplay or ExecutableAppendCall or ExecutableAppendFunctionDefault or ExecutableStoreModuleAnnotation => (1, 0),
         ExecutableStoreDictionaryItem item => (item.Unpacking ? 1 : 2, 0),
         ExecutableCreateFunction function => (function.InputCount, 1),
-        ExecutableCreateLambda lambda => (lambda.Expression.ParameterLayout.Defaults.Length, 1),
+        ExecutableCreateLambda lambda => (lambda.InputCount, 1),
         ExecutableCreateClass type => (checked(type.Definition.Decorators.Count + (type.ExpandedHeader ? 1 : 0)), 0),
         _ => throw new InvalidOperationException($"Unknown prepared operand effect: {operation.GetType().Name}.")
     };

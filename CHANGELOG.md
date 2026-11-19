@@ -2,9 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
-- Build function and lambda defaults directly in their Python containers.
-  Refund defaults on private definition failure and retain funding when
-  a decorator can expose the function.
+- Admit function and lambda default containers before evaluating defaults.
+  Write values directly into the final containers and refund them on
+  private definition failure. Retain funding when a decorator can expose
+  the function.
 
 - Read method-format arguments from their existing invocation packet
   through callback completion. Allocate indices for named or interleaved

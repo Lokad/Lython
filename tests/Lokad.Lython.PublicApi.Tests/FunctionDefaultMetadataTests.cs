@@ -12,6 +12,20 @@ public sealed class FunctionDefaultMetadataTests
         { "def f(a=0,b=1,c=2,d=3,e=4,f=5,g=6,h=7,i=8,j=9,k=10,l=11,m=12,n=13,o=14,p=15,q=16): return q\nprint(f(),f(q=23),f(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16))", "16 23 16\n" },
         { "def f(a=1,*,b=2): return a,b\nprint(f.__defaults__,f.__kwdefaults__)\nprint(f.__defaults__ is f.__defaults__,f.__kwdefaults__ is f.__kwdefaults__)", "(1,) {'b': 2}\nTrue True\n" },
         { "def f(x=5): return x\nf.__defaults__=(7,)\nprint(f())", "7\n" },
+        { """
+            shared = []
+            def factory(n):
+                def source(value=n+10000, alias=shared, real=n/2, large=10**80):
+                    return value, alias, real, large
+                defaults = source.__defaults__
+                return source, lambda copy=defaults[0], *, alias=defaults[1]: (copy, alias)
+            function, copy = factory(3)
+            defaults = function.__defaults__
+            values = function()
+            print(values[0], values[1] is shared, values[2], values[3] == 10**80)
+            print(copy()[0] is defaults[0], copy()[1] is shared)
+            print(tuple(x is y for x,y in zip(defaults, values)))
+            """, "10003 True 1.5 True\nTrue True\n(True, True, True, True)\n" },
         { "def f(*,x=2): return x\ndefaults=f.__kwdefaults__\ndefaults['x']=9\nprint(f(),defaults is f.__kwdefaults__)", "9 True\n" },
         { "def f(a=1,*,b=2): return a,b\ndel f.__defaults__\ndel f.__kwdefaults__\nprint(f.__defaults__,f.__kwdefaults__)\ntry: f()\nexcept TypeError: print('missing')", "None None\nmissing\n" },
         { "def f(x=1): return x\ntry: f.__defaults__=[]\nexcept TypeError: print('tuple-required')\ntry: f.__kwdefaults__=()\nexcept TypeError: print('dict-required')\nprint(f())", "tuple-required\ndict-required\n1\n" },
@@ -252,16 +266,20 @@ finally:
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task RefusedKeywordStoragePrecedesDefaultExpressionEffects(bool asynchronous)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task RefusedKeywordStoragePrecedesDefaultExpressionEffects(bool asynchronous, bool lambda)
     {
         var defaults = string.Join(", ", Enumerable.Range(0, 64).Select(i => $"key{i}=0"));
+        var declaration = lambda
+            ? $"target = lambda *, effect=time.time(), {defaults}: effect"
+            : $"def target(*, effect=time.time(), {defaults}): return effect";
         using var script = new LythonEngine().Compile($"""
             import time
             time.time()
-            def target(*, effect=time.time(), {defaults}):
-                return effect
+            {declaration}
             print('unreachable')
             """);
         Assert.True(script.IsValid, string.Join("\n", script.Diagnostics.Select(diagnostic => diagnostic.Message)));

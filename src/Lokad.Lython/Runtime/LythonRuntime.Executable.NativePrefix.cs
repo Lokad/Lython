@@ -509,6 +509,8 @@ internal sealed partial class LythonRuntime
             ref readonly var consumer = ref Code.Instructions[Index + 1];
             if (consumer.OpCode == ExecutableOpCode.StoreLocal)
                 Values[consumer.LocalSlot] = value;
+            else if (consumer.OpCode == ExecutableOpCode.ApplyOperation)
+                StoreDefaultResult(Code, Values, consumer, value);
             else if (consumer.OpCode != ExecutableOpCode.PopTop)
                 throw new InvalidOperationException("Invalid prepared result consumer.");
             else if (value.IsUnassigned) _ = value.Object.RequireNotNull();

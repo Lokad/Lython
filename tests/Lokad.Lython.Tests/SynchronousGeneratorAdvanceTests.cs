@@ -58,10 +58,12 @@ public sealed class SynchronousGeneratorAdvanceTests
         var span = new LythonSourceSpan(1, 1, 1, 1);
         var code = GeneratorCode(" def inner(value=(yield 17)):return value\n yield inner()");
         var generator = LythonRuntime.PyGenerator.Create(code, context, span);
+        var beforeDefault = budget.ReservedBytes;
         var yielded = await Move(generator, asynchronous);
         Assert.True(yielded.HasValue);
         Assert.Equal(new BigInteger(17), yielded.Value);
-        Assert.True(context.MemoryGovernor.CurrentReservedBytes > 0);
+        var held = budget.ReservedBytes;
+        Assert.True(held > beforeDefault);
 
         if (cancel)
         {
@@ -77,6 +79,7 @@ public sealed class SynchronousGeneratorAdvanceTests
             Assert.Same(PyNone.Instance, result);
         }
 
+        Assert.True(budget.ReservedBytes < held);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         Assert.Null(context.CurrentExecutableFrame);
         Assert.Equal(0, context.State.CurrentRecursionDepth);

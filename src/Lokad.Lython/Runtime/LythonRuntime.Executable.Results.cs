@@ -45,6 +45,8 @@ internal sealed partial class LythonRuntime
             ref readonly var consumer = ref execution.Code.Instructions[execution.InstructionIndex + 1];
             if (consumer.OpCode == ExecutableOpCode.StoreLocal)
                 StoreLocalValue(execution.Code, execution.Locals, invocation, consumer.LocalSlot, value, consumer.Span);
+            else if (consumer.OpCode == ExecutableOpCode.ApplyOperation)
+                StoreDefaultResult(execution.Code, execution.Stack.Values, consumer, value);
             else if (consumer.OpCode != ExecutableOpCode.PopTop)
                 throw new InvalidOperationException("Invalid prepared result consumer.");
             // Discarded calls cannot return private iteration loans. No
@@ -52,5 +54,13 @@ internal sealed partial class LythonRuntime
             else if (value.IsUnassigned) _ = value.Object.RequireNotNull();
             execution.InstructionIndex++;
         }
+    }
+
+    private static void StoreDefaultResult(ExecutableCodeObject code, ReadOnlySpan<ExecutableSlot> slots,
+        in ExecutableInstruction consumer, ExecutableSlot value)
+    {
+        var append = (ExecutableAppendFunctionDefault)code.Constants[consumer.ConstantIndex]!;
+        var destination = (PendingFunctionDefaults)slots[consumer.InputStart].Reference!;
+        destination.Add(append.Default, value, consumer.Span);
     }
 }

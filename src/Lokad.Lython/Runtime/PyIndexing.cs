@@ -136,7 +136,7 @@ internal static class PyIndexing
             throw IndexTooWide(span, TargetKind(target));
         if (!TryGetIndexPosition((int)index, length, out var position))
             throw OutOfRange(TargetKind(target), IndexOperation.Read, span);
-        if (target is PyTuple tuple && tuple.TryBorrowInteger(position, out result)) return true;
+        if (target is PyTuple tuple && tuple.TryReadStoredSlot(position, out result)) return true;
         result.Object = sequence.GetIndex(position);
         return true;
     }
