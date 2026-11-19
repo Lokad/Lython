@@ -6,6 +6,36 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
+    // Covers the function, its binding plan and inline metadata slots.
+    // Default containers and metadata values fund their own storage.
+    private const long FunctionValueBytes = 160;
+
+    private static PyFunctionBase CreateFunctionValue(FunctionParameterLayout layout, ExecutableCodeObject code,
+        ExecutionContext closure, IReadOnlyList<ExecutableCell> cells, FunctionDefaults defaults,
+        bool generator, ExecutionContext context, LythonSourceSpan span, PythonCallableKind kind = PythonCallableKind.Function)
+    {
+        // Constructor storage has a fixed estimate and one owner. No separate
+        // reservation object needs to survive the synchronous construction.
+        var governor = context.MemoryGovernor;
+        governor.Reserve(FunctionValueBytes, span);
+        PyFunctionBase function;
+        try
+        {
+            context.CheckExecution(span);
+            function = generator
+                ? new PyGeneratorFunction(layout, code, closure, defaults, cells, kind)
+                : new PyExecutableFunction(layout, code, closure, cells, defaults, kind);
+            governor.Commit(FunctionValueBytes);
+        }
+        catch
+        {
+            governor.ReleaseReserved(FunctionValueBytes);
+            throw;
+        }
+        ChargeClosureRetention(closure, governor, span);
+        return function;
+    }
+
     private static PyDict CreateDefinitionRecord<T>(ref ExecutableWorkState execution,
         ExecutionContext context, int count, int cacheIndex, T names, Func<T, int, PyString> nameAt, LythonSourceSpan span)
     {
@@ -79,14 +109,8 @@ internal sealed partial class LythonRuntime
                 var typeScope = CreateTypeScope(binding.TypeParameters, context, span);
                 var closure = invocation is null ? GetGlobalContext(context)
                     : SelectDefinitionClosure(binding.CodeObject, typeScope.Closure, cells);
-                var values = defaults?.Values ?? default;
-                var governor = context.MemoryGovernor;
-                using var storage = governor.ReserveTemporary(FunctionValueBytes, span);
-                function = binding.IsGenerator
-                    ? new PyGeneratorFunction(layout, binding.CodeObject, closure, values, cells)
-                    : new PyExecutableFunction(layout, binding.CodeObject, closure, cells, values);
-                storage.Commit(FunctionValueBytes);
-                ChargeClosureRetention(closure, governor, span);
+                function = CreateFunctionValue(layout, binding.CodeObject, closure, cells, defaults?.Values ?? default,
+                    binding.IsGenerator, context, span);
                 var metadata = ValueTask.CompletedTask;
                 if (binding.Annotations.Length != 0 || binding.TypeParameters is not null || HasTypeParameterScope(context))
                 {

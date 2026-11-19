@@ -385,18 +385,11 @@ internal sealed partial class LythonRuntime
         FunctionDefaults defaults)
     {
         var code = functionDefinition.PreparedCode.RequireNotNull();
+        var closure = context.FunctionClosureContext;
         var cells = code.ClosureNames.Count > 0
-            ? CaptureExecutableClosures(code, context.FunctionClosureContext, functionDefinition.Span) : [];
-        using var storage = context.MemoryGovernor.ReserveTemporary(FunctionValueBytes, functionDefinition.Span);
-        context.CheckExecution(functionDefinition.Span);
-        PyFunctionBase function = functionDefinition.Syntax.IsGenerator
-                ? new PyGeneratorFunction(functionDefinition.ParameterLayout,
-                    code, context.FunctionClosureContext, defaults, cells)
-                : new PyExecutableFunction(functionDefinition.ParameterLayout,
-                    code, context.FunctionClosureContext, cells, defaults);
-        storage.Commit(FunctionValueBytes);
-        ChargeClosureRetention(context.FunctionClosureContext, context.MemoryGovernor, functionDefinition.Span);
-        return function;
+            ? CaptureExecutableClosures(code, closure, functionDefinition.Span) : [];
+        return CreateFunctionValue(functionDefinition.ParameterLayout, code, closure, cells, defaults,
+            functionDefinition.Syntax.IsGenerator, context, functionDefinition.Span);
     }
 
     private static object CreateNamedTupleClassType(
@@ -752,15 +745,8 @@ internal sealed partial class LythonRuntime
         var cells = CaptureExecutableClosures(code,
             lambda.NamespaceClosure ? context.FunctionClosureContext : context, lambda.Span);
         var closure = borrowed ? GetGlobalContext(context) : SelectDefinitionClosure(code, context, cells);
-        using var storage = context.MemoryGovernor.ReserveTemporary(FunctionValueBytes, lambda.Span);
-        context.CheckExecution(lambda.Span);
-        PyFunctionBase function = lambda.IsGenerator
-            ? new PyGeneratorFunction(lambda.ParameterLayout, code, closure,
-                defaults, cells, PythonCallableKind.Lambda)
-            : new PyExecutableFunction(lambda.ParameterLayout, code, closure,
-                cells, defaults, PythonCallableKind.Lambda);
-        storage.Commit(FunctionValueBytes);
-        ChargeClosureRetention(closure, context.MemoryGovernor, lambda.Span);
+        var function = CreateFunctionValue(lambda.ParameterLayout, code, closure, cells, defaults,
+            lambda.IsGenerator, context, lambda.Span, PythonCallableKind.Lambda);
         // Module lambdas expose their globals after the executable slots leave.
         // Retain the existing namespace once, without lowering a compiled body.
         if (!borrowed && (lambda.NamespaceClosure || code.RequiresLocalVariableMirroring ||

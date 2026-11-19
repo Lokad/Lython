@@ -327,10 +327,6 @@ internal sealed partial class LythonRuntime
         return PyTuple.FromReservedOwnedArray(items, governor, span, storage);
     }
 
-    // Each definition funds its wrapper, binding plan and fixed metadata slots.
-    // Default containers, metadata values and custom attributes own their storage.
-    private const long FunctionValueBytes = 160;
-
     // Constructed class objects retain a type record plus one namespace slot per
     // member; admit the base plus per-member slots before construction. Member values
     // stay owned by their own construction.
