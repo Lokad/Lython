@@ -479,6 +479,10 @@ original conditions retained. Current comparisons belong in
   remains visible on each, supporting a test that precomputes plain local
   destinations while keeping the cleanup continuation and mirrored stores.
   [Current rule profile](results/2026-11-19-current-rule-checkpoint-profile/README.md).
+- B1138 keeps prepared local result destinations private. Ordinary rules
+  run 3.24–4.48% faster, with lower CPU. Captured-rule CPU rises and the
+  annotated and CSV controls vary across duplicate workers.
+  [Prepared destinations](results/2026-11-19-prepared-local-destination/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
