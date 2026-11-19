@@ -912,9 +912,11 @@ enters the body directly; genuinely pending default lookup retains call admissio
 caller operands and bound storage until completion or failure. It then enters the
 same body transition, without recursively starting another instruction driver.
 Eligible functions and ordinary methods defer lexical contexts independently of
-signature shape. Owner binding alone does not require a context; lexical class
-cells, implicit `super`, captured local cells and protected bodies keep their
-scope machinery.
+signature shape. Slot-only factories can construct closures from standalone
+cells in the admitted work state. The compiled parent slot map supplies both
+local and inherited cells. A factory that needs its context transfers that work
+at the current instruction. Lexical class cells, implicit `super`, protected
+bodies and captures of a live namespace use their owning context.
 Lowered calls and callbacks retain their general entry. Type subscription uses
 that chain for executable `__class_getitem__` methods and raw descriptor `__get__`
 methods, followed by the getter's callable result. Each invocation owns its

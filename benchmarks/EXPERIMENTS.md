@@ -336,6 +336,10 @@ original conditions retained. Current comparisons belong in
   1.28–1.30× CPython compile-to-result. The manifest is close and its
   CPython controls differ by 3.00%.
   [External comparison](results/2026-11-19-token-source-cpython/README.md).
+- B1107 defers factory frames with standalone captured locals. Retained
+  sibling closures improve 14.12–18.15% warm with lower CPU. Captured
+  rules allocate 20.02% less. Ordinary warm CPU rises in every pairing.
+  [Standalone capture prefix](results/2026-11-19-standalone-capture-prefix/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
