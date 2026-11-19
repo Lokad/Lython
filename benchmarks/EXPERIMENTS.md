@@ -442,6 +442,19 @@ original conditions retained. Current comparisons belong in
   Validator and manifest end-to-end latency improve with lower compilation
   allocation and CPU. CSV warm elapsed is mixed and its CPU rises.
   [Postfix statement parsing](results/2026-11-19-postfix-statement-parsing/README.md).
+- B1130 refreshes validator and manifest on `a472eb2a4` against CPython.
+  The validator's one-shot gap is 1.07–1.11× and its warm gap is
+  2.33–2.38×. Compilation spans parity with variable CPython controls.
+  [CPython checkpoint](results/2026-11-19-postfix-cpython-checkpoint/README.md).
+- B1131 keeps deferred annotation dictionaries private. Reading only the
+  last dictionary is faster and allocates less. Reading every dictionary
+  raises elapsed, CPU and allocation. Pre-admitting overlap raises peaks.
+  [Annotation values](results/2026-11-19-retained-annotation-values/README.md).
+- B1132 profiles current warm validator and manifest execution. The file
+  acquisition wrapper is visible on both profiles, with integer text
+  parsing also visible on validator. The acquisition samples include
+  inlined host work and leave any removable costs to a controlled comparison.
+  [Warm profile](results/2026-11-19-validator-warm-profile/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup

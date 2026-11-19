@@ -1,0 +1,13 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "ramTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 187080704,
+  "archiveSHA256": "d0d90b8e9f6e843648e49311da9cfac2588b27994c21ec8ee2a62f42de2cc603",
+  "source": "B1132 validator and manifest warm CPU attribution",
+  "performanceComparison": false,
+  "failure": null
+}
