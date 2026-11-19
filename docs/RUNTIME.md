@@ -755,6 +755,11 @@ write final words without allocating a cased intermediate string. Custom receive
 keep ordinary method dispatch and suspension; intervening local bindings remain
 observable on ordinary execution. Final storage is admitted before allocation and
 keeps the current cancellation context and requesting source span.
+An immediate `rstrip` with one ASCII character followed by `split` with a
+literal nonempty separator can pass the trimmed UTF-8 range into the same
+split scanner. Unchanged whole fields preserve the receiver's identity.
+Retained ranges keep their storage owner, and fixed unpacking and error
+locations follow the ordinary split path.
 UTF16 byte and file output transcodes bounded UTF8 spans into admitted final
 storage, with explicit byte order, BOM and newline framing. Sizing remains a
 preflight; cancellation checks separate scalar-aligned chunks. No intermediate

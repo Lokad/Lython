@@ -340,6 +340,10 @@ original conditions retained. Current comparisons belong in
   sibling closures improve 14.12–18.15% warm with lower CPU. Captured
   rules allocate 20.02% less. Ordinary warm CPU rises in every pairing.
   [Standalone capture prefix](results/2026-11-19-standalone-capture-prefix/README.md).
+- B1108 uses a private right-trimmed UTF-8 range in the existing split scanner.
+  Named and inline forwarding improve 5.34–7.24% and 4.16–8.03% warm, with
+  lower CPU and allocation. CSV invoice elapsed spans zero and CPU rises.
+  [Trimmed split ranges](results/2026-11-19-trim-range-split/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
