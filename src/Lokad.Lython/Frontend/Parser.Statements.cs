@@ -361,9 +361,8 @@ internal sealed partial class Parser
             IReadOnlyList<CallArgumentSyntax> headerArguments = [];
             if (CurrentToken == Token.OpenParen)
             {
-                var target = new IdentifierExpressionSyntax(IdentifierText(nameToken), SpanOf(nameToken));
-                if (CallPostfixParser.Instance.Parse(this, target) is not CallExpressionSyntax header) return null;
-                headerArguments = header.Arguments;
+                if (ParseCallArguments(out _) is not { } arguments) return null;
+                headerArguments = arguments;
             }
             var bases = headerArguments.Where(argument => argument.Kind == CallArgumentKind.Positional)
                 .Select(argument => argument.Expression).ToArray();
