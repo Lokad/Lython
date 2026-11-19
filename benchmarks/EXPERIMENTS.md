@@ -190,6 +190,9 @@ original conditions retained. Current comparisons belong in
   on the retained runtime. The initial siblings warmup stopped short.
   Admission for singleton capture arrays remains visible in the completed
   siblings capture. [Call attribution](results/2026-11-19-retained-call-profile/README.md).
+- B1072 eliminates singleton arrays in a private prototype. Retained
+  siblings improve with lower CPU and memory. Captured rules allocate
+  less and use more CPU on repeat. [Singleton capture comparison](results/2026-11-19-direct-singleton-capture/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
