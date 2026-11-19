@@ -4,6 +4,7 @@ namespace Lokad.Lython;
 /// <remarks>
 /// The provider is borrowed and must outlive its compiled scripts and executions.
 /// Patterns and metadata must be immutable and safe for concurrent callers.
+/// Successful compilation, preparation and cursor creation return non-null handles.
 /// Every operation must honor its current token while working, finish its users
 /// before returning or throwing, and admit substantial storage before allocation.
 /// Owners are borrowed: do not dispose them or introduce an independent allowance.

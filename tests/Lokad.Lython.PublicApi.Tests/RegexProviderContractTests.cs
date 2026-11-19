@@ -471,6 +471,49 @@ public sealed class RegexProviderContractTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
+    [Theory]
+    [InlineData("compile")]
+    [InlineData("prepare")]
+    [InlineData("find")]
+    public async Task MissingProviderHandleReportsTheContractErrorAndReturnsAllowance(string stage)
+    {
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var provider = new CooperatingProvider { MissingHandleStage = stage };
+        var engine = new LythonEngine(provider);
+        if (stage == "compile")
+        {
+            var error = Assert.ThrowsAny<Exception>(() => engine.Compile("import re\np=re.compile('x')", budget));
+            Assert.Contains("Regex pattern compilation returned no result", error.Message);
+        }
+        else if (stage == "prepare")
+        {
+            var error = Assert.ThrowsAny<Exception>(() => engine.Compile("import re\np=re.compile('x')\nm=p.match('x')\nreturn m", budget));
+            Assert.Contains("Regex constant-subject preparation returned no result", error.Message);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+
+        var match = stage == "find" ? "list(p.finditer(text))" : "p.match(text)";
+        using (var script = engine.Compile($"import re\np=re.compile(pattern)\nresult={match}\nprint('after')", budget))
+        {
+            Assert.True(script.IsValid);
+            var baseline = budget.ReservedBytes;
+            foreach (var asynchronous in new[] { false, true })
+            {
+                using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), Options(default))
+                    : script.Run(new MockLythonHost(), Options(default)))
+                {
+                    Assert.False(result.Success);
+                    Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
+                    Assert.Contains("Regex provider returned no result", result.Failure?.Message);
+                    Assert.Empty(result.StandardOutput);
+                }
+                Assert.Equal(baseline, budget.ReservedBytes);
+            }
+        }
+        Assert.Equal(provider.Compilations, provider.ClosedPatterns);
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     private sealed class FaultingGroupList(int count) : IReadOnlyList<LythonRegexNamedGroup>
     {
         internal int CountReads, IndexReads;
@@ -1314,6 +1357,7 @@ public sealed class RegexProviderContractTests
         internal bool HoldCleanup;
         internal bool Refuse;
         internal string? RefuseStage;
+        internal string? MissingHandleStage;
         internal bool CleanupFinished;
         internal CancellationToken? ExpectedToken;
         internal CancellationTokenSource? CancelCapture;
@@ -1364,6 +1408,7 @@ public sealed class RegexProviderContractTests
             Reserve(scratch, 256);
             try { Work("compile", token); }
             catch { Cleanup(scratch); throw; }
+            if (MissingHandleStage == "compile") return null!;
             ILythonMemoryScope? retained = null;
             var flags = options.Flags | AdditionalEffectiveFlags;
             var slots = CancelCapture is null ? CaptureSlots : 4;
@@ -1400,6 +1445,7 @@ public sealed class RegexProviderContractTests
             public ILythonRegexSubject Prepare(ReadOnlyMemory<byte> input, LythonRegexWindow window, ILythonMemoryBudget owner, CancellationToken token)
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
+                if (provider.MissingHandleStage == "prepare") return null!;
                 var scope = owner.CreateScope();
                 Reserve(scope, 1024);
                 try
@@ -1459,6 +1505,7 @@ public sealed class RegexProviderContractTests
             public ILythonRegexCursor Find(CancellationToken token)
             {
                 provider.Work("find", token);
+                if (provider.MissingHandleStage == "find") return null!;
                 var cursor = new Cursor(provider, this);
                 if (provider.CancelOnReturnStage == "find") provider.CancelOnReturn?.Cancel();
                 return cursor;

@@ -60,7 +60,8 @@ internal sealed partial class LythonRuntime
                 {
                     governor?.ThrowIfAdmissionFailed();
                     if (cancellationToken.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
-                    return result;
+                    return result is not null ? result
+                        : throw RuntimeErrors.Runtime($"{operationName} returned no result.", span);
                 }
                 catch
                 {
