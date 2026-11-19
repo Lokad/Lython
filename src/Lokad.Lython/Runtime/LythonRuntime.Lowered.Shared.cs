@@ -751,21 +751,30 @@ internal sealed partial class LythonRuntime
         var code = lambda.Code;
         var cells = CaptureExecutableClosures(code,
             lambda.NamespaceClosure ? context.FunctionClosureContext : context, lambda.Span);
+        var closure = SelectDefinitionClosure(code, context);
         using var storage = context.MemoryGovernor.ReserveTemporary(FunctionValueBytes, lambda.Span);
         context.CheckExecution(lambda.Span);
         PyFunctionBase function = lambda.IsGenerator
-            ? new PyGeneratorFunction(lambda.ParameterLayout, code, context.FunctionClosureContext,
+            ? new PyGeneratorFunction(lambda.ParameterLayout, code, closure,
                 defaults, cells, PythonCallableKind.Lambda)
-            : new PyExecutableFunction(lambda.ParameterLayout, code, context.FunctionClosureContext,
+            : new PyExecutableFunction(lambda.ParameterLayout, code, closure,
                 cells, defaults, PythonCallableKind.Lambda);
         storage.Commit(FunctionValueBytes);
-        ChargeClosureRetention(context.FunctionClosureContext, context.MemoryGovernor, lambda.Span);
+        ChargeClosureRetention(closure, context.MemoryGovernor, lambda.Span);
         // Module lambdas expose their globals after the executable slots leave.
         // Retain the existing namespace once, without lowering a compiled body.
         if (lambda.NamespaceClosure || code.RequiresLocalVariableMirroring ||
             context.FunctionClosureContext.ParentContext is null && !context.FunctionClosureContext.MirrorLocalStores)
             RetainLocalsForLambda(context.FunctionClosureContext);
         return function;
+    }
+
+    private static ExecutionContext SelectDefinitionClosure(ExecutableCodeObject code, ExecutionContext defining)
+    {
+        var closure = defining.FunctionClosureContext;
+        return code.UsesModuleClosure && closure.ParentContext is not null && ReferenceEquals(closure, defining) &&
+            !closure.IsClassBody && !closure.IsAnnotationScope && closure.InlinedComprehensionLookup is null
+            ? GetGlobalContext(closure) : closure;
     }
 
     private static object StoreLoweredAssignmentResult(

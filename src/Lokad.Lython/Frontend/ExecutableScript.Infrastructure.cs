@@ -468,7 +468,8 @@ internal sealed partial class ExecutableScript
             InternModuleBinding(functionDefinition.Syntax.Name);
             var codeObject = CompileFunctionCode(functionDefinition.Syntax.DeclaredName,
                 functionDefinition.ParameterLayout, functionDefinition.Body,
-                functionDefinition.ScopeFacts, functionDefinition.TypeParameters, functionDefinition.Syntax.IsGenerator);
+                functionDefinition.ScopeFacts, functionDefinition.TypeParameters, functionDefinition.Syntax.IsGenerator,
+                qualifiedName: functionDefinition.Syntax.PreparedQualifiedName);
 
             var binding = new ExecutableFunctionBinding(
                 functionDefinition.Syntax.Name, functionDefinition.Span,
@@ -486,7 +487,7 @@ internal sealed partial class ExecutableScript
         private ExecutableCodeObject CompileFunctionCode(string name,
             FunctionParameterLayout parameterLayout, IReadOnlyList<LoweredStatement> body,
             ScopeDirectiveFacts scopeFacts, IReadOnlyList<LoweredTypeParameter>? typeParameters = null,
-            bool generator = false)
+            bool generator = false, PyString? qualifiedName = null)
         {
             // Forward transitive free names as before. Comprehension names
             // are inner bindings, even at module scope or when the caller
@@ -500,7 +501,7 @@ internal sealed partial class ExecutableScript
                 completeLexicalParent: _completeLexicalParent && typeParameters is not { Count: > 0 },
                 moduleCode: _moduleCode)
                 { _generator = generator }
-                .CompileCodeObject(name, body);
+                .CompileCodeObject(name, body, qualifiedName: qualifiedName);
         }
 
         private IEnumerable<string>? ChildClosureCandidates()

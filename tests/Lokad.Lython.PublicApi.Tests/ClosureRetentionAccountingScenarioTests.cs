@@ -17,6 +17,60 @@ public sealed class ClosureRetentionAccountingScenarioTests
     // 3000 closures over 21 captured entries own an extra 640B each.
     private const long WideClosureBudgetBytes = 1572864;
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ReturnedLeafFunctionsKeepLiveGlobalsAndIndependentDefaults(bool asynchronous)
+    {
+        var budget = new LythonMemoryBudget(256 * 1024);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
+            shift = 1
+            def factory(seed):
+                def named(value=seed):
+                    return value + shift
+                return named if seed % 2 == 0 else (lambda value=seed: value + shift)
+            funcs = [factory(seed) for seed in range(400)]
+            shift = 10
+            return [funcs[0](), funcs[-1](), funcs[0].__qualname__, funcs[-1].__qualname__]
+            """);
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MemoryBudget = budget };
+        using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(new List<object?>
+            {
+                new BigInteger(10), new BigInteger(409), "factory.<locals>.named", "factory.<locals>.<lambda>"
+            }, result.ReturnValue);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Fact]
+    public async Task ReturnedMatchBodyKeepsItsPatternNamespace()
+    {
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
+            def factory():
+                class Verdict:
+                    ok = 1
+                def accepts(value):
+                    match value:
+                        case Verdict.ok:
+                            return True
+                    return False
+                return accepts
+            accepts = factory()
+            return [accepts(1), accepts(2)]
+            """);
+        Assert.True(script.IsValid);
+        using var sync = script.Run(new MockLythonHost());
+        using var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(new List<object?> { true, false }, sync.ReturnValue);
+        Assert.Equal(sync.ReturnValue, asyncResult.ReturnValue);
+    }
+
     [Fact]
     public async Task ManyRetainedClosuresStayCharged()
     {

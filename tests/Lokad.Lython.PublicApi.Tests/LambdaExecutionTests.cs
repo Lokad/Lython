@@ -40,6 +40,29 @@ public sealed class LambdaExecutionTests
         { "value='global'\nclass Holder:\n value='class'\n type Alias=((lambda:value)(),list((lambda:(yield value))()))\nprint(Holder.Alias.__value__)", "('global', ['global'])\n" },
         { "class Holder[T:(lambda:int)(),U=(lambda:str)()]:pass\nprint(Holder.__type_params__[0].__bound__.__name__,Holder.__type_params__[1].__default__.__name__)", "int str\n" },
         { "def f[T:(lambda:int)(),U=(lambda:str)()](value):return value\nprint(f.__type_params__[0].__bound__.__name__,f.__type_params__[1].__default__.__name__,f(7))", "int str 7\n" },
+        {
+            """
+            type Alias[T: (lambda: int)] = lambda: T
+            def outer():
+                class C[T = (lambda: str)]:
+                    def __f[U: (lambda: int)](self, x: (lambda: str) = (lambda: float)):
+                        return lambda: x
+                return C
+            C = outer()
+            f = C._C__f
+            print(Alias.__value__.__qualname__)
+            print(Alias.__type_params__[0].__bound__.__qualname__)
+            print(C.__type_params__[0].__default__.__qualname__)
+            print(f.__type_params__[0].__bound__.__qualname__)
+            print(f.__defaults__[0].__qualname__, f.__annotations__['x'].__qualname__)
+            print(f(C()).__qualname__)
+            """,
+            "Alias.<locals>.<lambda>\n<generic parameters of Alias>.<lambda>\n" +
+            "outer.<locals>.<generic parameters of C>.<lambda>\n" +
+            "outer.<locals>.C.<generic parameters of __f>.<lambda>\n" +
+            "outer.<locals>.C.<lambda> outer.<locals>.C.<lambda>\n" +
+            "outer.<locals>.C.__f.<locals>.<lambda>\n"
+        },
     };
 
     [Theory]

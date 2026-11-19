@@ -701,6 +701,15 @@ from exposed namespaces, including across generator suspension and cell deletion
 Nonlocal ownership comes from immutable scope facts and lexical parent links;
 invocations do not rebuild a separate owner dictionary. Executable reads use
 captured cells, and dynamic reads and writes resolve the same lexical owners.
+Fully resolved leaf functions with no captures retain their live module instead
+of their factory frame. Defaults and annotations still evaluate in the defining
+context before publication. Patterns, namespace fallbacks and lexical class
+bindings keep their defining context and ownership.
+
+Functions and lambdas borrow the lexical qualified name from compiled code.
+The shared compile owner funds the UTF-8 text and refunds temporary path storage
+after analysis. The name reflects the declaration path even after rebinding as
+a method. Explicit `__qualname__` assignments stay local to each function value.
 Immediate instance-method calls keep the selected function and receiver in their
 operand storage when default attribute lookup proves an ordinary function binding.
 They do not construct a temporary bound-method object. Selection precedes argument

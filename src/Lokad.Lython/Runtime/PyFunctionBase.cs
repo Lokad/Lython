@@ -10,8 +10,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
     private readonly int? _storageCapacity;
     private readonly LythonRuntime.ExecutionContext _closure;
     // Standard attributes have fixed storage in the funded function wrapper.
-    // Explicit overrides shadow the defaults, including a cached qualname.
-    private PyString? _qualNameValue;
+    // Explicit overrides shadow the compiled defaults.
     private object? _assignedName;
     private object? _assignedQualName;
     private object? _assignedModule;
@@ -219,7 +218,6 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         if (OwnerType is null)
         {
             OwnerType = owner;
-            _qualNameValue = null;
         }
     }
 
@@ -233,7 +231,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         value = name switch
         {
             "__name__" => _assignedName ?? CodeObject.FunctionName.RequireNotNull(),
-            "__qualname__" => _assignedQualName ?? QualName(),
+            "__qualname__" => _assignedQualName ?? CodeObject.QualifiedName ?? CodeObject.FunctionName.RequireNotNull(),
             "__module__" => _assignedModule ?? (TryGetModuleName(out var moduleName) ? moduleName : (object)PyNone.Instance),
             "__doc__" => _docstring ?? PyNone.Instance,
             "__annotations__" => _annotations ??= new PyDict(_closure.MemoryGovernor),
@@ -247,28 +245,6 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
     // The defining module is resolved per read by walking the closure frame
     // chain to its module root and aliasing that frame.__name__ string, so
     // reads cost no retained storage and alias stably like CPython.
-    // __qualname__ prefers the defining class (first-wins owner) and otherwise
-    // prefixes the enclosing function path. A class scope between a function
-    // scope and the definition stays invisible, so that segment is missing.
-    private PyString QualName()
-    {
-        if (_qualNameValue is { } cached)
-        {
-            return cached;
-        }
-
-        var text = OwnerType is { } owner
-            ? owner.Name + "." + Name
-            : PyFunctionBinding.EnclosingFunctionPath(_closure) is { } path
-                ? path + ".<locals>." + Name
-                : null;
-        if (text is null)
-        {
-            return CodeObject.FunctionName.RequireNotNull();
-        }
-        return _qualNameValue = PyString.FromString(text, _closure.MemoryGovernor, null);
-    }
-
     internal bool TryGetModuleName([MaybeNullWhen(false)] out PyString moduleName)
         => TryGetModuleName(_closure, out moduleName);
 

@@ -97,7 +97,7 @@ using         var result = compiledAdmission3.Run(
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task QualnamePublicationRefusalIsTerminalAndRefunded(bool asynchronous)
+    public async Task PreparedQualnameIsReadableBeforeConcatenationRefuses(bool asynchronous)
     {
         var name = new string('y', 4096);
         var code = $"""
@@ -107,7 +107,7 @@ using         var result = compiledAdmission3.Run(
             f = C.{name}
             print('ready')
             try:
-                f.__qualname__
+                f.__qualname__ + f.__qualname__
             except MemoryError:
                 print('caught')
             print('after')
@@ -123,7 +123,7 @@ using         var result = compiledAdmission3.Run(
             Assert.False(result.Success);
             Assert.Equal("MemoryError", result.Failure?.ExceptionType);
             Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
-            Assert.True(result.FailureAttribution?.Requested >= name.Length);
+            Assert.True(result.FailureAttribution?.Requested >= 2L * name.Length);
             Assert.Equal("ready\n", result.StandardOutput);
         }
 

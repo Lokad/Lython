@@ -52,7 +52,8 @@ internal sealed partial class ExecutableScript
                 block = CompileExpression(lambda.Parameters[slot.ParameterIndex].DefaultValue.RequireNotNull(), block);
             if (lambda.PreparedCode is null)
                 lambda.CompleteCompilation(CompileFunctionCode("<lambda>", lambda.ParameterLayout,
-                    lambda.FunctionBody, lambda.ScopeFacts, generator: lambda.IsGenerator));
+                    lambda.FunctionBody, lambda.ScopeFacts, generator: lambda.IsGenerator,
+                    qualifiedName: lambda.Lambda.PreparedQualifiedName));
             var recordCache = lambda.ParameterLayout.HasKeywordDefaults ? AllocateLookupCache() : -1;
             EmitOperation(new ExecutableCreateLambda(lambda, recordCache), lambda.Span, block);
             return block;

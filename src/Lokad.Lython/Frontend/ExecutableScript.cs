@@ -565,6 +565,8 @@ internal sealed partial class ExecutableCodeObject
 
     public string Name { get; }
     internal PyString? FunctionName { get; }
+    internal PyString? QualifiedName { get; init; }
+    internal bool UsesModuleClosure { get; init; }
     internal PyString? Docstring { get; }
 
     // Builder-owned arrays are immutable after preparation. Operand reads use

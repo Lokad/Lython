@@ -1,4 +1,5 @@
 using System.Numerics;
+using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Frontend;
 
@@ -342,6 +343,7 @@ internal sealed record FunctionDefinitionStatementSyntax(
     IReadOnlyList<TypeParameterSyntax>? TypeParameters = null) : StatementSyntax(Span)
 {
     internal ScopeDirectiveFacts? PreparedScopeFacts { get; set; }
+    internal PyString? PreparedQualifiedName { get; set; }
     public string? OriginalName { get; init; }
     public string DeclaredName => OriginalName ?? Name;
 
@@ -827,6 +829,7 @@ internal sealed record LambdaExpressionSyntax(
     LythonSourceSpan Span) : ExpressionSyntax(Span)
 {
     internal ScopeDirectiveFacts? PreparedScopeFacts { get; set; }
+    internal PyString? PreparedQualifiedName { get; set; }
     internal LoweredLambdaExpression? PreparedCallable { get; set; }
     private FunctionParameterLayout? _parameterLayout;
     internal FunctionParameterLayout ParameterLayout => PrepareParameterLayout(default);

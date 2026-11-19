@@ -53,11 +53,11 @@ internal sealed partial class ExecutableScript
 
     private static void CompileNamespaceLambda(LoweredLambdaExpression lambda)
         => lambda.CompleteCompilation(new Builder(lambda.ParameterLayout, lambda.IsGenerator, lambda.ScopeFacts)
-            .CompileCodeObject("<lambda>", lambda.FunctionBody), namespaceClosure: true);
+            .CompileCodeObject("<lambda>", lambda.FunctionBody, qualifiedName: lambda.Lambda.PreparedQualifiedName), namespaceClosure: true);
 
     internal static ExecutableCodeObject CompileClassFunction(LoweredFunctionDefinitionStatement function)
         => new Builder(function.ParameterLayout, function.Syntax.IsGenerator, function.ScopeFacts)
-            .CompileCodeObject(function.Syntax.DeclaredName, function.Body);
+            .CompileCodeObject(function.Syntax.DeclaredName, function.Body, qualifiedName: function.Syntax.PreparedQualifiedName);
 
     private sealed partial class Builder
     {
@@ -116,7 +116,7 @@ internal sealed partial class ExecutableScript
         }
 
         public ExecutableCodeObject CompileCodeObject(string name, IReadOnlyList<LoweredStatement> statements,
-            LoweredGeneratorExpression? generatorExpression = null)
+            LoweredGeneratorExpression? generatorExpression = null, PyString? qualifiedName = null)
         {
             // A lexical super read also requests the hidden free __class__ cell.
             // Ordinary enclosing locals must be retained like explicit reads.
@@ -203,7 +203,17 @@ internal sealed partial class ExecutableScript
                 isFunctionScope: _parameterLayout is not null,
                 initialOperandDepth: generatorExpression is null ? 0 : 1,
                 functionName: callable ? name == "<lambda>" ? LambdaName : PyString.FromString(name) : null,
-                docstring: callable ? LoweredStatement.LeadingDocstring(statements) : null);
+                docstring: callable ? LoweredStatement.LeadingDocstring(statements) : null)
+            {
+                QualifiedName = qualifiedName,
+                // Ordinary leaf bodies resolve names to locals or the live
+                // module. Namespace bodies and deferred descendants may still
+                // depend on their original defining scope.
+                UsesModuleClosure = callable && _completeLexicalParent &&
+                    !requiresLocalVariableMirroring && _closures.Count == 0 && _scopeFacts.NonlocalNames.Count == 0 &&
+                    !_scopeFacts.RequiresClassCell && _functions.Count == 0 && _matchCases.Count == 0 &&
+                    !_constants.Any(value => value is ExecutableCreateLambda or ExecutableCreateGeneratorExpression)
+            };
             _moduleCode?.Add(code);
             return code;
 

@@ -43,25 +43,6 @@ internal static class PyFunctionBinding
         return frame;
     }
 
-    /// <summary>
-    /// Joins enclosing function names for nested qualnames (o.[locals.]i).
-    /// Class bodies and modules contribute no segment; methods compose the
-    /// defining class at read time instead. Returns null at module scope.
-    /// </summary>
-    internal static string? EnclosingFunctionPath(LythonRuntime.ExecutionContext context)
-    {
-        string? path = null;
-        for (var current = context; current is not null; current = current.ParentContext)
-        {
-            if (current.FunctionName is { } name)
-            {
-                path = path is null ? name : name + ".<locals>." + path;
-            }
-        }
-
-        return path;
-    }
-
     public static void AnnotateException(
         LythonRuntimeException exception,
         LythonRuntime.ExecutionContext frame,

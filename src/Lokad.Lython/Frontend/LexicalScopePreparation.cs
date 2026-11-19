@@ -1,3 +1,5 @@
+using Lokad.Lython.Runtime.Text;
+
 namespace Lokad.Lython.Frontend;
 
 // Prepare lexical facts once, including Python's direct super().member argument
@@ -5,9 +7,28 @@ namespace Lokad.Lython.Frontend;
 internal static class LexicalScopePreparation
 {
     private sealed record Scope(Scope? Parent, ScopeDirectiveFacts Facts,
-        bool Function = false, bool Class = false, bool Positional = false, bool Annotation = false)
+        bool Function = false, bool Class = false, bool Positional = false, bool Annotation = false,
+        string? DeclarationName = null, bool UseLocalsQualifier = false)
     {
         public bool IsModule => !Function && !Class && !Annotation && (Parent?.IsModule ?? true);
+
+        public string? QualifyDeclaration(string name, Runtime.MemoryGovernor.TemporaryMemoryReservation? workspace, LythonSourceSpan span,
+            CancellationToken cancellationToken, bool genericParameters = false)
+        {
+            Scope? scope = this;
+            while (scope is { DeclarationName: null }) scope = scope.Parent;
+            if (scope is null && !genericParameters) return null;
+
+            const string genericPrefix = "<generic parameters of ";
+            var enclosing = scope?.DeclarationName ?? string.Empty;
+            var separator = scope is null ? string.Empty : scope.UseLocalsQualifier ? ".<locals>." : ".";
+            var length = checked(enclosing.Length + separator.Length + name.Length + (genericParameters ? genericPrefix.Length + 1 : 0));
+            workspace?.Grow(48L + 2L * length, span);
+            PythonTokenization.CheckCancellation(cancellationToken, span.Start);
+            return genericParameters
+                ? string.Concat((ReadOnlySpan<string>)[enclosing, separator, genericPrefix, name, ">"])
+                : string.Concat(enclosing, separator, name);
+        }
 
         public bool CanPreload => Function && Positional &&
             !Facts.IsGlobal("__class__") && !Facts.LocalNames.Contains("__class__") &&
@@ -75,6 +96,7 @@ internal static class LexicalScopePreparation
         var importsRegex = false;
         // Module bindings do not supply lexical class cells to child functions.
         var root = new Scope(null, ScopeDirectiveFacts.Empty);
+        using var qualifiedNameWorkspace = governor?.ReserveTemporary(0, null);
         var pending = new Stack<(object Syntax, Scope Scope)>();
         PushStatements(script.Statements, root);
         while (pending.Count != 0)
@@ -95,10 +117,16 @@ internal static class LexicalScopePreparation
                 // statement-expression walk, but their callable code is eager.
                 if (statement is TypeAliasStatementSyntax alias)
                 {
+                    var qualified = scope.Facts.IsGlobal(alias.Name) ? null
+                        : scope.QualifyDeclaration(alias.DeclaredName, qualifiedNameWorkspace, alias.Span, cancellationToken);
                     var aliasScope = new Scope(TypeParameterScope(scope, alias.TypeParameters),
                         ScopeDirectiveFacts.Empty, Annotation: true);
-                    pending.Push((alias.Value, aliasScope));
-                    PushTypeParameters(alias.TypeParameters, aliasScope);
+                    pending.Push((alias.Value, aliasScope with
+                    {
+                        DeclarationName = qualified ?? alias.DeclaredName,
+                        UseLocalsQualifier = true
+                    }));
+                    PushTypeParameters(alias.TypeParameters, alias.DeclaredName, alias.Span, scope, aliasScope);
                     continue;
                 }
                 foreach (var expression in ReadExpressions(statement, postponed)) pending.Push((expression, scope));
@@ -107,11 +135,15 @@ internal static class LexicalScopePreparation
                     requiresAnnotationChecks |= function.ReturnAnnotation is not null ||
                         function.Parameters.Any(static parameter => parameter.Annotation is not null && parameter.DefaultValue is not null);
                     var enclosing = TypeParameterScope(scope, function.TypeParameters);
-                    PushTypeParameters(function.TypeParameters, enclosing);
+                    PushTypeParameters(function.TypeParameters, function.DeclaredName, function.Span, scope, enclosing);
                     var facts = ScopeDirectiveFactsCollector.ForFunctionBindings(function);
                     var parameters = function.PrepareParameterLayout(cancellationToken);
+                    var qualified = scope.Facts.IsGlobal(function.Name) ? null
+                        : scope.QualifyDeclaration(function.DeclaredName, qualifiedNameWorkspace, function.Span, cancellationToken);
+                    function.PreparedQualifiedName = PrepareQualifiedName(qualified, function.Span);
                     var functionScope = new Scope(enclosing, facts,
-                        Function: true, Positional: parameters.PositionalCount != 0);
+                        Function: true, Positional: parameters.PositionalCount != 0,
+                        DeclarationName: qualified ?? function.DeclaredName, UseLocalsQualifier: true);
                     function.PreparedScopeFacts = facts with { RequiresClassCell =
                         !facts.IsGlobal("__class__") && !facts.LocalNames.Contains("__class__") &&
                         functionScope.HasEnclosingClassBinding() && ClassCellSyntaxFacts.ReferencesFromFunction(function.Body, postponed) };
@@ -120,9 +152,12 @@ internal static class LexicalScopePreparation
                 else if (statement is ClassDefinitionStatementSyntax definition)
                 {
                     var enclosing = TypeParameterScope(scope, definition.TypeParameters);
-                    PushTypeParameters(definition.TypeParameters, enclosing);
+                    PushTypeParameters(definition.TypeParameters, definition.DeclaredName, definition.Span, scope, enclosing);
+                    var qualified = scope.Facts.IsGlobal(definition.Name) ? null
+                        : scope.QualifyDeclaration(definition.DeclaredName, qualifiedNameWorkspace, definition.Span, cancellationToken);
                     PushStatements(definition.Body, new Scope(enclosing,
-                        ScopeDirectiveFactsCollector.ForClass(definition), Class: true));
+                        ScopeDirectiveFactsCollector.ForClass(definition), Class: true,
+                        DeclarationName: qualified ?? definition.DeclaredName));
                 }
                 else foreach (var body in StatementSyntaxTraversal.EnumerateChildBodies(statement)) PushStatements(body, scope);
                 continue;
@@ -141,8 +176,11 @@ internal static class LexicalScopePreparation
                     if (parameter.DefaultValue is { } value) pending.Push((value, scope));
                 var facts = ScopeDirectiveFactsCollector.ForLambda(lambda);
                 var parameters = lambda.PrepareParameterLayout(cancellationToken);
+                var qualified = scope.QualifyDeclaration("<lambda>", qualifiedNameWorkspace, lambda.Span, cancellationToken);
+                lambda.PreparedQualifiedName = PrepareQualifiedName(qualified, lambda.Span);
                 var lambdaScope = new Scope(scope, facts, Function: true,
-                    Positional: parameters.PositionalCount != 0);
+                    Positional: parameters.PositionalCount != 0,
+                    DeclarationName: qualified ?? "<lambda>", UseLocalsQualifier: true);
                 lambda.PreparedScopeFacts = facts with { RequiresClassCell = facts.RequiresClassCell && lambdaScope.HasEnclosingClassBinding() };
                 pending.Push((lambda.Body, lambdaScope));
             }
@@ -156,7 +194,10 @@ internal static class LexicalScopePreparation
                     (callables ??= []).Add(node);
                     facts = scope.BindGeneratorAssignments(node, facts);
                 }
-                var bodyScope = new Scope(scope, facts, Function: generator || scope.Function, Positional: generator || scope.Positional);
+                var generatorName = generator
+                    ? scope.QualifyDeclaration("<genexpr>", qualifiedNameWorkspace, node.Span, cancellationToken) ?? "<genexpr>" : null;
+                var bodyScope = new Scope(scope, facts, Function: generator || scope.Function,
+                    Positional: generator || scope.Positional, DeclarationName: generatorName);
                 if (generator)
                     facts = facts with { RequiresClassCell = !facts.LocalNames.Contains("__class__") && bodyScope.HasEnclosingClassBinding() &&
                         ComprehensionSyntaxFacts.BodyReferencesClass(items, clauses) };
@@ -187,13 +228,42 @@ internal static class LexicalScopePreparation
             foreach (var statement in statements) pending.Push((statement, scope));
         }
 
-        void PushTypeParameters(IReadOnlyList<TypeParameterSyntax>? parameters, Scope scope)
+        PyString? PrepareQualifiedName(string? qualified, LythonSourceSpan span)
+        {
+            if (qualified is null) return null;
+            // UTF-8 uses at most three bytes per UTF-16 code unit. The
+            // frontend workspace retains the intermediate until this walk ends.
+            var bytes = PyString.EstimateApproximateBytes(0) + 3L * qualified.Length;
+            governor?.Reserve(bytes, span);
+            try
+            {
+                PythonTokenization.CheckCancellation(cancellationToken, span.Start);
+                var name = PyString.FromString(qualified);
+                governor?.Commit(bytes);
+                return name;
+            }
+            catch
+            {
+                governor?.ReleaseReserved(bytes);
+                throw;
+            }
+        }
+
+        void PushTypeParameters(IReadOnlyList<TypeParameterSyntax>? parameters, string declarationName, LythonSourceSpan span,
+            Scope declarationScope, Scope parameterScope)
         {
             if (parameters is null) return;
+            Scope? expressionScope = null;
             foreach (var parameter in parameters)
             {
-                if (parameter.Bound is { } bound) pending.Push((bound, scope));
-                if (parameter.Default is { } value) pending.Push((value, scope));
+                if (parameter.Bound is null && parameter.Default is null) continue;
+                expressionScope ??= parameterScope with
+                {
+                    DeclarationName = declarationScope.QualifyDeclaration(declarationName, qualifiedNameWorkspace, span, cancellationToken,
+                        genericParameters: true)
+                };
+                if (parameter.Bound is { } bound) pending.Push((bound, expressionScope));
+                if (parameter.Default is { } value) pending.Push((value, expressionScope));
             }
         }
     }

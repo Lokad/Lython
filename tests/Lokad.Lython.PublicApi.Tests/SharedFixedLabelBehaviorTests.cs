@@ -5823,22 +5823,44 @@ public sealed class SharedFixedLabelBehaviorTests
                 def i():
                     pass
                 return i
+            def top():
+                pass
             class C:
                 class D:
                     def m(self):
                         pass
+                alias = top
             def outer():
-                return lambda: 1
+                global exported
+                def exported():
+                    pass
+                class Local:
+                    def m(self):
+                        pass
+                return (lambda: 1), Local
+            def comprehensions():
+                inlined = [lambda: x for x in range(1)][0]
+                generator = next(lambda: x for x in range(1))
+                return inlined.__qualname__, generator.__qualname__
             l = lambda: 0
             f = o()
+            g = o()
+            shared = f.__qualname__ is g.__qualname__
+            g.__qualname__ = 'override'
+            nested, local = outer()
+            inlined, generator = comprehensions()
             return [f.__qualname__, C.D().m.__qualname__, l.__qualname__,
-                outer().__qualname__, l.__name__, l.__module__]
+                nested.__qualname__, l.__name__, l.__module__,
+                C.alias.__qualname__, top.__qualname__, local.m.__qualname__,
+                exported.__qualname__, inlined, generator, shared, g.__qualname__]
             """);
         Assert.True(script.IsValid);
         var expected = new List<object?>
         {
-            "o.<locals>.i", "D.m", "<lambda>", "outer.<locals>.<lambda>",
-            "<lambda>", "__main__",
+            "o.<locals>.i", "C.D.m", "<lambda>", "outer.<locals>.<lambda>",
+            "<lambda>", "__main__", "top", "top", "outer.<locals>.Local.m", "exported",
+            "comprehensions.<locals>.<lambda>", "comprehensions.<locals>.<genexpr>.<lambda>",
+            true, "override",
         };
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
