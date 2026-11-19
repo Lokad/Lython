@@ -415,6 +415,11 @@ original conditions retained. Current comparisons belong in
 - R691 verifies the immutable dev.108 provider through nine CPython cases
   on both targets and verifies the supplier's in-flight cancellation records.
   Final adapter qualification remains separate. [Development package](results/2026-11-19-regex-dev108/README.md).
+- B1122 refreshes the three rule scripts and two frontend workloads at
+  `0d16f8307` against CPython. Warm rule gaps are 3.09–4.16× across the
+  workloads. The validator takes 1.21–1.22× to compile and run. The
+  measured revision predates the generator-lambda correction.
+  [Representative comparison](results/2026-11-19-retained-lexical-cpython/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
