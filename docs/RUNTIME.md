@@ -2305,10 +2305,12 @@ Providers may rely on these guarantees without another validation scan. Direct
 callers of the provider interfaces must uphold the same contract. Providers never
 mutate input, retain subject borrows past disposal, or retain compilation input
 without copying it into their own funded storage.
-Provider captures use absolute byte coordinates, including lookbehind captures before `Pos`; slicing at `Pos` would
-change anchors and lookbehind. Frontend constant analysis uses the same window;
-unknown bounds remain uncertain. Substitution rewrites the selected window and
-preserves the original prefix/suffix; splitting returns the window's parts.
+Provider captures use absolute byte coordinates, including lookbehind captures
+before `Pos`. The frontend and runtime compute scalar and byte window bounds
+with the same UTF-8 routine. Constant analysis encodes known subjects under
+its working owner. Unknown bounds remain uncertain. Substitution rewrites the
+selected window and preserves the original prefix and suffix. Splitting returns
+the window's parts.
 Both extensions preserve original assertion context. Reversed
 substitution bounds raise `ValueError` before invoking replacement callbacks.
 

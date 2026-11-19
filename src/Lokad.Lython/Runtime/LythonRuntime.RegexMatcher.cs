@@ -1,5 +1,4 @@
 using System.Numerics;
-using System.Text;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
@@ -99,23 +98,9 @@ internal sealed partial class LythonRuntime
         private static LythonRegexWindow Window(RegexSubjectRange range, ExecutionContext context, LythonSourceSpan span)
         {
             context.CheckExecution(span);
-            var input = range.Original.Utf8Span;
-            var length = range.Original.Length;
-            if (length == input.Length) return new(range.Pos, range.EndPos, range.Pos, range.EndPos);
-            var start = range.Pos == 0 ? 0 : range.Pos == length ? input.Length : -1;
-            var end = range.EndPos == 0 ? 0 : range.EndPos == length ? input.Length : -1;
-            // One cancellable scan for the requested boundaries; never require
-            // a dense whole-subject coordinate map from a native provider.
-            for (int scalar = 0, offset = 0; start < 0 || end < 0; scalar++)
-            {
-                if ((scalar & 1023) == 0) context.CheckExecution(span);
-                if (scalar == range.Pos) start = offset;
-                if (scalar == range.EndPos) end = offset;
-                if (start >= 0 && end >= 0) break;
-                Rune.DecodeFromUtf8(input[offset..], out _, out var width);
-                offset += width;
-            }
-            return new(range.Pos, range.EndPos, start, end);
+            var token = context.State.CancellationToken;
+            return RegexCompiler.CreateWindow(range.Original.Utf8Span, range.Original.GetCharacterCount(token, span),
+                range.Pos, range.EndPos, token, span);
         }
 
         private static ReadOnlyMemory<byte> CaptureBytes(RegexSubjectRange range, LythonRegexCapture capture)

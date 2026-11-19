@@ -466,24 +466,26 @@ public sealed class RegexProviderContractTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task FrontendAndRuntimePassOriginalSubjectAndAbsoluteWindowCaptures(bool reversed)
+    [InlineData(1, 2, 2, 5)]
+    [InlineData(2, 1, 1, 4)]
+    [InlineData(1, 99, 3, 8)]
+    public async Task FrontendAndRuntimePassOriginalSubjectAndAbsoluteWindowCaptures(int pos, int end, int endPos, int endByte)
     {
+        var reversed = pos > end;
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
         using var provider = new CooperatingProvider { CaptureSlots = reversed ? 1 : 2 };
         var preparations = 0;
         provider.OnPrepare = (input, window) =>
         {
             Assert.Equal("😀x尾", Encoding.UTF8.GetString(input.Span));
-            Assert.Equal(reversed ? new(2, 1, 5, 4) : new LythonRegexWindow(1, 2, 4, 5), window);
+            Assert.Equal(new LythonRegexWindow(pos, endPos, reversed ? 5 : 4, endByte), window);
             preparations++;
         };
         provider.MatchFactory = (input, _) => reversed
             ? new(new LythonRegexCapture?[] { new(5, 5) }, null)
             : new(new LythonRegexCapture?[] { new(4, 5), new(0, 4) }, 1);
         using (var script = new LythonEngine(provider).Compile("import re\nm=re.compile('" +
-            (reversed ? "" : "(?<=(😀))x") + "').match('😀x尾'," + (reversed ? "2,1" : "1,2") + ")\n" +
+            (reversed ? "" : "(?<=(😀))x") + $"').match('😀x尾',{pos},{end})\n" +
             "print(m.span(),m.pos,m.endpos,m.string)\n" + (reversed ? "" : "print(m.span(1),m.group(1))"), budget))
         {
             Assert.True(script.IsValid, string.Join(";", script.Diagnostics.Select(d => d.Message)));
@@ -495,7 +497,7 @@ public sealed class RegexProviderContractTests
                 using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
                 {
                     Assert.True(result.Success, result.Failure?.Message);
-                    Assert.Equal(reversed ? "(2, 2) 2 1 😀x尾\n" : "(1, 2) 1 2 😀x尾\n(0, 1) 😀\n", result.StandardOutput);
+                    Assert.Equal(reversed ? "(2, 2) 2 1 😀x尾\n" : $"(1, 2) 1 {endPos} 😀x尾\n(0, 1) 😀\n", result.StandardOutput);
                 }
                 Assert.Equal(baseline, budget.ReservedBytes);
             }

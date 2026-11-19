@@ -18,6 +18,30 @@ internal sealed partial class LythonRuntime
         internal const int RegexDebugFlag = 128;
         internal const int PythonAsciiFlag = 256;
 
+        internal static LythonRegexWindow CreateWindow(ReadOnlySpan<byte> subject, int scalarLength,
+            int pos, int endPos, CancellationToken token, LythonSourceSpan span)
+        {
+            if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
+            pos = Math.Clamp(pos, 0, scalarLength);
+            endPos = Math.Clamp(endPos, 0, scalarLength);
+            if (scalarLength == subject.Length) return new(pos, endPos, pos, endPos);
+
+            var startByte = pos == 0 ? 0 : pos == scalarLength ? subject.Length : -1;
+            var endByte = endPos == 0 ? 0 : endPos == scalarLength ? subject.Length : -1;
+            // Byte boundaries are relative to the original subject. Resolve
+            // both in one walk, including independently clamped reversed bounds.
+            for (int scalar = 0, offset = 0; startByte < 0 || endByte < 0; scalar++)
+            {
+                if ((scalar & 1023) == 0 && token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
+                if (scalar == pos) startByte = offset;
+                if (scalar == endPos) endByte = offset;
+                if (startByte >= 0 && endByte >= 0) break;
+                Rune.DecodeFromUtf8(subject[offset..], out _, out var width);
+                offset += width;
+            }
+            return new(pos, endPos, startByte, endByte);
+        }
+
         internal static T ProviderCall<T>(Func<T> operation, MemoryGovernor? governor,
             CancellationToken cancellationToken, LythonSourceSpan? span, PyString? pattern = null,
             string operationName = "Regex provider")
