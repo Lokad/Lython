@@ -434,6 +434,10 @@ original conditions retained. Current comparisons belong in
   Rule timings are inconclusive and CSV invoice is faster in this run.
   Allocation and accounted peaks are effectively unchanged.
   [Dispatch comparison](results/2026-11-19-shared-stack-dispatch/README.md).
+- B1128 removes duplicate boxed operand reads on its private branch.
+  All five workloads slow, with supporting process CPU on the rule and
+  floating workloads and unchanged allocation. The candidate stays private.
+  [Boxed arithmetic](results/2026-11-19-boxed-arithmetic/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
