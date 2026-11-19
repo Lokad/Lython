@@ -2,6 +2,8 @@
 
 ## 0.11.0 - Unreleased
 
+- Bind generator arguments directly into the suspended frame's admitted
+  slots and return the workspace after the frame's cleanup.
 - Reuse prepared class and function bindings while resolving lexical class
   cells, including nested classes and `super`.
 
