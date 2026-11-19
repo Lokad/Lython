@@ -29,7 +29,11 @@ public sealed class ExpandedCallExecutableTests
     [InlineData(true, false)]
     [InlineData(false, true)]
     [InlineData(true, true)]
-    public async Task TrailingExactKeywordsKeepAdmissionAtomic(bool asynchronous, bool refuse)
+    [InlineData(false, false, true)]
+    [InlineData(true, false, true)]
+    [InlineData(false, true, true)]
+    [InlineData(true, true, true)]
+    public async Task TrailingExactKeywordsKeepAdmissionAtomic(bool asynchronous, bool refuse, bool sharedKeys = false)
     {
         var budget = new LythonMemoryBudget(1024 * 1024);
         using var owner = budget.CreateScope();
@@ -40,7 +44,12 @@ public sealed class ExpandedCallExecutableTests
         var value = PyString.FromString("aliased");
         var dictionary = new PyDict(4, context.MemoryGovernor, null);
         dictionary.SetItem(key, value);
-        var source = new ReentrantKeywords(hook, dictionary, added, value, refuse);
+        if (sharedKeys)
+        {
+            dictionary.SetItem(added, value);
+            Assert.NotNull(dictionary.ShareRecordKeys(context, new(0, 1, 1, 1)));
+        }
+        var source = new ReentrantKeywords(hook, dictionary, added, value, refuse, sharedKeys);
         context.Variables["prepare"] = source;
         var syntax = LythonFrontend.Compile("def collect(tag,/,**kw): return kw\nreturn collect(17, **prepare())").Script!;
         var executable = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
@@ -52,7 +61,7 @@ public sealed class ExpandedCallExecutableTests
                 Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
                 Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
                 Assert.Same(value, dictionary.GetItem(key));
-                Assert.Single(dictionary);
+                Assert.Equal(sharedKeys ? 2 : 1, dictionary.Count);
             }
             else
             {
@@ -60,7 +69,10 @@ public sealed class ExpandedCallExecutableTests
                 Assert.NotSame(dictionary, result);
                 Assert.Same(key, result.Keys.First());
                 Assert.Same(value, result.GetItem(key));
-                Assert.Same(value, result.GetItem(added));
+                if (sharedKeys)
+                    Assert.False(result.TryGetValue(added, out _));
+                else
+                    Assert.Same(value, result.GetItem(added));
                 Assert.Same(context.MemoryGovernor, result.OwnerMemoryGovernor);
                 Assert.True(result.CommittedStorageBytes > 0);
                 result.SetItem(key, PyNone.Instance);
@@ -82,7 +94,7 @@ public sealed class ExpandedCallExecutableTests
     }
 
     private sealed class ReentrantKeywords(AdmissionHookMemoryBudget hook, PyDict source, PyString added,
-        PyString value, bool refuse) : LythonRuntime.ICallable
+        PyString value, bool refuse, bool sharedKeys) : LythonRuntime.ICallable
     {
         internal int Admissions;
 
@@ -93,7 +105,10 @@ public sealed class ExpandedCallExecutableTests
             {
                 hook.AfterGrowth = null;
                 Admissions++;
-                source.SetItem(added, value);
+                if (sharedKeys)
+                    Assert.True(source.Remove(added));
+                else
+                    source.SetItem(added, value);
             };
             return source;
         }
