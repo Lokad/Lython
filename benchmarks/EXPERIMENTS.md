@@ -281,6 +281,11 @@ original conditions retained. Current comparisons belong in
   three. Function binding and closure storage are more visible for captured
   rules. The profile does not establish an improvement or a paired timing.
   [Retained rule stages](results/2026-11-19-retained-rule-stage-profile/README.md).
+- B1094 publishes the completed machine-integer prefix in a private candidate.
+  Annotated warm execution improves with lower CPU. The ordinary warm candidate
+  processes diverge by 22.99% on identical binaries, and captured
+  compile-to-result uses more CPU. The original setup failure and successful
+  collection are archived. [Integer prefix](results/2026-11-19-machine-integer-prefix/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
