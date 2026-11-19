@@ -706,7 +706,9 @@ Fully resolved functions can release their factory frame and keep the live
 module and independently owned cells, including mutable nonlocal captures.
 The compiler establishes this for the function and its descendants. Such
 cells share rebinding and deletion and acquire retained funding when they
-escape. Pattern scopes, namespace fallbacks, unresolved nonlocal targets
+escape. A singleton capture retains the cell directly. Multiple captures
+use one owned array. Both executable interpreters read these same slots.
+Pattern scopes, namespace fallbacks, unresolved nonlocal targets
 and lexical class bindings keep their defining context.
 Defaults and annotations still evaluate in that context before publication.
 

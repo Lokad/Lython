@@ -169,6 +169,9 @@ original conditions retained. Current comparisons belong in
   whitespace scan. Forwarding and mixed Unicode improve with lower CPU,
   and the unchanged shipment control spans zero.
   [Trim scan confirmation](results/2026-11-19-trim-policy-scan/README.md).
+- Windows and Ubuntu Release .NET 10/11, original stress and installed
+  consumers passed for R634 and R639 at `81837beee`.
+  [Delivery CI](https://github.com/Lokad/Lython/actions/runs/44485293658).
 - B1065 compares the cumulative call checkpoint from before R611 through
   R629. Ordinary rules improve with lower CPU. Forwarding spans zero.
   Positional debt remains open with adverse pairs and moving controls.
@@ -197,6 +200,10 @@ original conditions retained. Current comparisons belong in
   first-row key transfer with effectively flat warm JSON allocation, mixed
   JSON CPU and slower manifest compile-to-result elapsed.
   [Literal record comparison](results/2026-11-19-direct-literal-records/README.md).
+- B1074 retains the direct singleton capture with shared slot lookup.
+  Sibling compile-to-result improves with lower CPU, captured-rule warm
+  timing remains mixed, and allocation reductions persist.
+  [Direct slot comparison](results/2026-11-19-direct-capture-access/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
