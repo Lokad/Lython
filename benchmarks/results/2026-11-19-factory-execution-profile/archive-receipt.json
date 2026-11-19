@@ -1,0 +1,13 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "persistentTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 186871808,
+  "archiveSHA256": "68e07d7c2eb2b7743bf2e73d4b7049aaee626da9b6b8a8f46668d8a4094e5bb8",
+  "source": "B1153 retained annotated and nested factory attribution",
+  "performanceComparison": false,
+  "failure": null
+}

@@ -530,6 +530,10 @@ original conditions retained. Current comparisons belong in
   and 1.05–1.07× for invoice. Both factory scripts compile in about 0.7× the
   CPython time. The original collector startup failure is archived.
   [Factory checkpoint](results/2026-11-19-factory-cpython-checkpoint/README.md).
+- B1153 profiles the same retained factory scripts. The shared instruction
+  prefix, result publication, bound entry and definition work remain
+  visible. Scope promotion has no samples in these captures.
+  [Factory execution profile](results/2026-11-19-factory-execution-profile/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
