@@ -6,6 +6,33 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+## November 18–19, 0.11.0 compiler and call work
+
+- The retained formatting and function-default changes have paired evidence.
+  R574 improved positional formatting with 13.35% lower local allocation.
+  Named timing spans zero, and a confirmation bounded the original adverse
+  positional control. R575 removed a default map and improved rule closures,
+  with a small adverse reused-default control. The corrected full checkpoint
+  checks live recursion, default identity and governed capacity.
+  [Format](results/2026-11-18-borrowed-format-packet/README.md) · [Defaults](results/2026-11-18-direct-function-defaults/README.md) · [Delivery](results/2026-11-18-direct-function-defaults/delivery/README.md).
+- Prepared definition inputs, trailing mapping transport, annotation operands
+  and fixed metadata fields were retained. The earlier metadata checkpoint
+  found mirror and admission-test regressions. Its corrections passed with
+  the fully qualified trailing-keyword checkpoint. B1008 found little
+  evidence for separating retained closure cells from their context.
+  [Definitions](results/2026-11-18-executable-definition-inputs/README.md) · [Closure attribution](results/2026-11-18-retained-closure-attribution/README.md) · [Annotation inputs](results/2026-11-18-function-annotation-inputs/README.md) · [Annotation storage](results/2026-11-18-function-annotation-storage/README.md) · [Metadata](results/2026-11-18-function-metadata-slots/README.md) · [Correction delivery](results/2026-11-18-trailing-keyword-operands/delivery/README.md).
+- The B1002 and B1006 CPython comparisons describe their own images. B1016
+  refreshed the forwarding and both rule scripts at the later qualified R587
+  checkpoint. B1018 profiled those scripts and preserves a partial capture
+  and the successful annotated confirmation. B1019 preserves an adverse
+  positional control alongside a gain for annotated compile-to-result.
+  [B1002](results/2026-11-18-direct-defaults-cpython-checkpoint/README.md) · [B1006](results/2026-11-18-post-transport-cpython-checkpoint/README.md) · [B1016](results/2026-11-18-annotation-and-forwarding-cpython/README.md) · [B1018](results/2026-11-19-rule-and-forwarding-attribution/README.md) · [B1019](results/2026-11-19-direct-function-definitions/README.md).
+- The compiler profiles led to summarized abstract-value effects and direct
+  postfix result storage. Separate source pairs establish compilation
+  gains with CPU support. The archive retains both the short B1013 warmup
+  and the completed B1014 profiling run.
+  [Profile](results/2026-11-18-current-compile-attribution/README.md) · [Facts](results/2026-11-18-abstract-value-facts/README.md) · [Postfix](results/2026-11-19-postfix-syntax-storage/README.md).
+
 [R471/B878–B880 floating transport](results/2026-11-17-float-transport/README.md)
 retains existing-slot arithmetic→locals→helper/generator→compensated sum after
 restoring integer-first dispatch. Complete floating report allocation−28.52%,
