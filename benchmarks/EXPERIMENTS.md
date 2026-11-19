@@ -291,6 +291,10 @@ original conditions retained. Current comparisons belong in
   Annotated warm gains remain unconfirmed and captured compile-to-result CPU
   still has adverse pairs. The candidate remains private.
   [Confirmation](results/2026-11-19-machine-integer-prefix/confirmation/README.md).
+- B1096 retains one charge for a captured lexical cell across frame cleanup.
+  Captured rules improve with supporting CPU. Sibling warm timing is
+  inconclusive. Ordinary CPU and annotated and forwarding controls rise.
+  [Capture transfer](results/2026-11-19-funded-capture-transfer/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
