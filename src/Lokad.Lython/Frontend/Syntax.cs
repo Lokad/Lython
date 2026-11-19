@@ -831,7 +831,6 @@ internal sealed record LambdaExpressionSyntax(
     internal ScopeDirectiveFacts? PreparedScopeFacts { get; set; }
     internal PyString? PreparedQualifiedName { get; set; }
     internal LoweredLambdaExpression? PreparedCallable { get; set; }
-    internal bool IsGenerator { get; set; }
     private FunctionParameterLayout? _parameterLayout;
     internal FunctionParameterLayout ParameterLayout => PrepareParameterLayout(default);
     internal FunctionParameterLayout PrepareParameterLayout(CancellationToken cancellationToken)

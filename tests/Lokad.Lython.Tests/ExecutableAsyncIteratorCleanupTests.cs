@@ -142,6 +142,9 @@ public sealed class ExecutableAsyncIteratorCleanupTests
         Assert.Equal(1, inner.Disposals);
         Assert.Equal(1, outer.Disposals);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        Assert.InRange(context.MemoryGovernor.CurrentCommittedBytes, 1, baseline);
+        // A returned frame can remain funded while the execution cache is live.
+        context.State.CloseResources();
         Assert.InRange(context.MemoryGovernor.CurrentCommittedBytes, 1, baseline - 1);
         owner.Dispose();
         Assert.Equal(0, budget.ReservedBytes);
@@ -182,6 +185,8 @@ public sealed class ExecutableAsyncIteratorCleanupTests
         Assert.Equal(1, inner.Disposals);
         Assert.Equal(1, outer.Disposals);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        Assert.InRange(context.MemoryGovernor.CurrentCommittedBytes, 1, baseline);
+        context.State.CloseResources();
         Assert.InRange(context.MemoryGovernor.CurrentCommittedBytes, 1, baseline - 1);
         owner.Dispose();
         Assert.Equal(0, budget.ReservedBytes);
@@ -245,12 +250,10 @@ public sealed class ExecutableAsyncIteratorCleanupTests
         var lowered = LoweredScript.Lower(frontend.Script);
         var definition = Assert.Single(lowered.Statements.OfType<LoweredFunctionDefinitionStatement>());
         var code = Assert.Single(ExecutableScript.Compile(lowered).EntryPoint.FunctionBindings()).CodeObject;
-        var frame = new Context(context, ScopeDirectiveFactsCollector.ForFunction(definition.Syntax))
-        { FunctionName = "scan", FirstPositionalParameterName = "source" };
-        frame.Variables["source"] = sources[0];
         if (sources.Length > 1) context.Variables["inner"] = sources[1];
-        return LythonRuntime.PyGenerator.Create(code, frame, definition.Span,
-            arguments: new BoundFunctionArguments([LythonRuntime.ExecutableSlot.FromObject(sources[0])], 1));
+        var function = new PyGeneratorFunction(definition.ParameterLayout, code, context, default);
+        return Assert.IsType<LythonRuntime.PyGenerator>(
+            function.Invoke([CallArgumentValue.Positional(sources[0])], definition.Span, context));
     }
 
     private sealed class PausedSource(bool empty = false) : IPyAsyncIterableValue, IEnumerable<object>, IAsyncEnumerable<object>, IAsyncEnumerator<object>

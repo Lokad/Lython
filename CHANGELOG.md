@@ -4,8 +4,8 @@
 
 - Route regex effective flags through provider error handling so a failed
   metadata read closes the pattern and reports the provider's failure.
-- Record generator classification during yield validation so lowering
-  can use it without scanning callable bodies again.
+- Record named-function generator classification during yield validation
+  so lowering can use it without scanning function bodies again.
 - Bind generator arguments directly into the suspended frame's admitted
   slots and return the workspace after the frame's cleanup.
 - Reuse prepared class and function bindings while resolving lexical class

@@ -323,6 +323,9 @@ internal sealed record LoweredLambdaExpression : LoweredExpression
             parameter.Name, parameter.Kind,
             parameter.DefaultValue is null ? null : LoweredScript.LowerStandaloneExpression(parameter.DefaultValue))).ToArray();
         ScopeFacts = ScopeDirectiveFactsCollector.ForLambda(lambda);
+        // Lazy annotation expressions reach lowering outside the statement
+        // yield-validation walk. Classify each lambda from its own body.
+        IsGenerator = GeneratorSyntaxFacts.ContainsYield(lambda.Body);
         _body = [new LoweredReturnStatement(new ReturnStatementSyntax(lambda.Body, lambda.Span), body)];
         lambda.PreparedCallable = this;
     }
@@ -332,7 +335,7 @@ internal sealed record LoweredLambdaExpression : LoweredExpression
     public FunctionParameterLayout ParameterLayout => Lambda.ParameterLayout;
     public ScopeDirectiveFacts ScopeFacts { get; }
     public override ExpressionSyntax Syntax => Lambda;
-    public bool IsGenerator => Lambda.IsGenerator;
+    public bool IsGenerator { get; }
     private IReadOnlyList<LoweredStatement>? _body;
     internal IReadOnlyList<LoweredStatement> FunctionBody => _body.RequireNotNull();
     internal ExecutableCodeObject? PreparedCode { get; private set; }

@@ -60,8 +60,6 @@ internal static class GeneratorSyntaxFacts
                         "Yield expression requires parentheses here.", LythonDiagnosticSeverity.Error, expression.Span));
                 else if (callable is FunctionDefinitionStatementSyntax function)
                     function.IsGenerator = true;
-                else if (callable is LambdaExpressionSyntax generator)
-                    generator.IsGenerator = true;
             }
             if (expression is LambdaExpressionSyntax lambda)
             {
