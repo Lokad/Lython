@@ -1,0 +1,12 @@
+{
+  "complete": true,
+  "jobs": 3,
+  "elapsedSeconds": 261.52203406207263,
+  "allWorkersJoined": true,
+  "guestFixturesRemoved": true,
+  "quietBeforeAndAfter": true,
+  "archivedAndVerifiedUnderLease": true,
+  "archiveSHA256": "2a83eb99c3a09406f6034b9947bdf8af97d41413590adcb74d5aef01413dcd3e",
+  "freeBytesAfterArchive": 298385408,
+  "performanceQualified": false
+}

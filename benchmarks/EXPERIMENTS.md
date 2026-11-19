@@ -253,7 +253,10 @@ original conditions retained. Current comparisons belong in
 - B1086 removes a branch-target rewrite pass and emits identical executable
   instructions. Manifest compilation improves with lower CPU. The two
   validator candidate processes compile at substantially different rates,
-  so that lane needs confirmation. [Final branch targets](results/2026-11-19-final-block-targets/README.md).
+  and the split does not recur in B1088. The original manifest gain also
+  does not repeat. The change is retained for simplification with mixed
+  timing. [Final branch targets](results/2026-11-19-final-block-targets/README.md) ·
+  [Confirmation](results/2026-11-19-final-block-targets/confirmation/README.md).
 - B1087 shares fixed function construction. Three rule workloads allocate
   less, with lower CPU for annotated and captured rules. Reused defaults
   takes longer and uses more CPU. Keep the candidate private pending

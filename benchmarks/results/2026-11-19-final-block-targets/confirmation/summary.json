@@ -1,0 +1,138 @@
+{
+  "complete": true,
+  "elapsedSeconds": 261.52203406207263,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "archivalOnlyRecovery": {
+    "retiredOnly": [],
+    "alreadyAbsent": [],
+    "freshIdleLease": true,
+    "allHashesPathsOwnershipLinksAndAliasesVerified": true,
+    "canonicalArchiveAndCurrentImagesPreserved": true,
+    "freeBeforeBytes": 305266688,
+    "freeAfterBytes": 298938368
+  },
+  "rows": [
+    {
+      "case": "scripts.config-generated-guards.medium",
+      "lane": "compile",
+      "elapsedMilliseconds": {
+        "reference-control": 2.497103355,
+        "candidate-control": 2.500962738693467,
+        "reference": 2.5300677817258883,
+        "candidate": 2.5100400000000005
+      },
+      "cpuMilliseconds": {
+        "reference-control": 2.4499999999999997,
+        "candidate-control": 2.462311557788945,
+        "reference": 2.487309644670051,
+        "candidate": 2.4747474747474745
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.44989207104725953,
+        "candidate-control": 0.5102559650471165,
+        "reference": 0.5320926445434615,
+        "candidate": 0.25078416392896774
+      },
+      "elapsedChangePercent": [
+        -1.1503661381185193,
+        -0.7915907182623361,
+        0.1545544234578644,
+        0.5180660613865573
+      ],
+      "cpuChangePercent": [
+        -1.005025125628134,
+        -0.5050505050505194,
+        0.5025125628140836,
+        1.0101010101010166
+      ],
+      "referenceSpreadPercent": 1.3201066211329548,
+      "candidateSpreadPercent": 0.36295068159533095
+    },
+    {
+      "case": "scripts.config-generated-guards.medium",
+      "lane": "compile",
+      "elapsedMilliseconds": {
+        "candidate": 2.5566884329896906,
+        "reference": 2.551812300518135,
+        "candidate-control": 2.500537582089552,
+        "reference-control": 2.5275962666666665
+      },
+      "cpuMilliseconds": {
+        "candidate": 2.5257731958762886,
+        "reference": 2.4870466321243523,
+        "candidate-control": 2.487562189054726,
+        "reference-control": 2.4615384615384617
+      },
+      "elapsedIQRPercent": {
+        "candidate": 1.9683072793205463,
+        "reference": 1.4611949852387156,
+        "candidate-control": 1.548018965887877,
+        "reference-control": 0.10767359811555616
+      },
+      "elapsedChangePercent": [
+        -2.009345217834857,
+        -1.0705303269338495,
+        0.1910850759111682,
+        1.1509815355673858
+      ],
+      "cpuChangePercent": [
+        0.020729684908782353,
+        1.057213930348233,
+        1.5571305841924454,
+        2.6095360824742064
+      ],
+      "referenceSpreadPercent": 0.9580657390115377,
+      "candidateSpreadPercent": 2.245551168769744
+    },
+    {
+      "case": "scripts.config-manifest.small",
+      "lane": "compile",
+      "elapsedMilliseconds": {
+        "candidate": 0.17307548985905813,
+        "reference": 0.16875817633175993,
+        "candidate-control": 0.17012310130944178,
+        "reference-control": 0.17015438017094017
+      },
+      "cpuMilliseconds": {
+        "candidate": 0.17188037126160194,
+        "reference": 0.16857720836142953,
+        "candidate-control": 0.16884906960716747,
+        "reference-control": 0.17094017094017094
+      },
+      "elapsedIQRPercent": {
+        "candidate": 1.3494414636151792,
+        "reference": 0.3566675167074804,
+        "candidate-control": 0.8001685405411652,
+        "reference-control": 0.4683119720648896
+      },
+      "elapsedChangePercent": [
+        -0.018382636677927167,
+        0.8088052427152048,
+        1.7167408121867567,
+        2.5582840613368685
+      ],
+      "cpuChangePercent": [
+        -1.22329427980703,
+        0.16126809097174455,
+        0.550017188037133,
+        1.9594362323822612
+      ],
+      "referenceSpreadPercent": 0.8273399662932279,
+      "candidateSpreadPercent": 1.7354424689485004
+    }
+  ],
+  "retentionDecisionPending": false,
+  "CPythonRefreshed": false,
+  "referenceRuntime": "118e6e0dbe06794042d000adc9d3e4088873380d",
+  "measuredPrototype": "94379398703bcadd032606706b60cfa76d3a08c5",
+  "cores": {
+    "reference": "51154d372ac7a45eb42b0eb75a83f5898334bd54e8b2b70e3ad3966e40bb166e",
+    "reference-control": "51154d372ac7a45eb42b0eb75a83f5898334bd54e8b2b70e3ad3966e40bb166e",
+    "candidate": "50b770ac9d5cd96db9146723e5c6d1f1ae008dc28f42c5b8fc1552bb89182f71",
+    "candidate-control": "50b770ac9d5cd96db9146723e5c6d1f1ae008dc28f42c5b8fc1552bb89182f71"
+  },
+  "archiveSHA256": "2a83eb99c3a09406f6034b9947bdf8af97d41413590adcb74d5aef01413dcd3e",
+  "retained": true,
+  "retainedCommit": "c3873194c"
+}

@@ -22,6 +22,10 @@ per invocation, and each process has elapsed IQR below 2%. The cause of the
 split remains open. Preserve both processes and keep the candidate private
 pending a bounded confirmation of the compile-only result.
 
+B1088 repeats the exact images with longer warmup and two validator blocks.
+The candidate split did not recur. The change was retained on structural and
+correctness evidence with mixed timing. [Confirmation](confirmation/README.md).
+
 Six instruction and protected-region inventories match exactly, including a
 nested `try`/`finally`, abrupt loop control and match probe. Both complete
 32-file images match the five catalog goldens against CPython. Local
