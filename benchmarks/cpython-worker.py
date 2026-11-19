@@ -223,7 +223,9 @@ def load_manifest(path):
                 or (fixture['text'] is not None and type(fixture['text']) is not str)):
             raise ValueError('Invalid fixture size/text metadata')
         case['_files'] = file_fixture(fixture)
-        if case['_files'] is not None and file_digest(case['_files'][1]) != case.get('expectedFilesSha256'):
+        files = case['_files']
+        expected_digest = file_digest(files[1]) if files is not None else None
+        if expected_digest != case.get('expectedFilesSha256'):
             raise ValueError('Catalog output-file digest mismatch')
         for source, checksum in (('source', 'sourceSha256'), ('fixtureJson', 'fixtureSha256'),
                                  ('expectedOutput', 'expectedOutputSha256')):

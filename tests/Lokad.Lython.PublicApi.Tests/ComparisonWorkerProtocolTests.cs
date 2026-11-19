@@ -131,6 +131,7 @@ public sealed class ComparisonWorkerProtocolTests
     [InlineData("sourceSha256")]
     [InlineData("fixtureSha256")]
     [InlineData("expectedOutputSha256")]
+    [InlineData("expectedFilesSha256")]
     public void ModifiedCatalogDigestIsRejectedBeforeCompilation(string field)
     {
         using var catalog = new TestCatalog("print('λ😀')\n", "λ😀\n");
