@@ -241,6 +241,11 @@ original conditions retained. Current comparisons belong in
 - B1083 removes the field rescan for fixed split unpacking in a private
   prototype. Forwarding uses more CPU and takes longer. Allocation and
   accounted peaks match. [Fixed split ranges](results/2026-11-19-fixed-split-ranges/README.md).
+- B1084 refreshes the CPython comparison at `44fe04178`. Annotated rules
+  have a smaller warm gap, while the forwarding ratio is higher and the
+  unchanged ordinary-rule Lython processes differ by roughly 7%. Retained
+  siblings stay near parity from compile to result. CSV invoice is
+  1.09–1.11× CPython warm. [External checkpoint](results/2026-11-19-compiled-binding-cpython/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
