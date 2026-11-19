@@ -161,6 +161,7 @@ for the CPython ratios above.
 
 | Change | Established outcome | Limits / evidence |
 | --- | --- | --- |
+| Direct function-definition completion | Annotated rules improve 1.85–2.48% warm and 3.34–5.93% compile-to-result, with lower process CPU. | Unannotated elapsed and the positional control span zero. Local allocations and accounted peaks agree. [B1020](../benchmarks/results/2026-11-19-direct-function-completion/README.md). |
 | Direct postfix syntax storage | Compilation improves 2.11–3.95% for the manifest and 2.33–2.97% for the generated validator, with lower process CPU. The validator allocates 7.40% less in a local first-compile diagnostic. | Warm elapsed controls and manifest compile-to-result CPU span zero. [B1017](../benchmarks/results/2026-11-19-postfix-syntax-storage/README.md). |
 | Shared function annotation inputs | Annotated rule closures improve 7.11–9.90% warm and 6.56–8.06% compile-to-result with supporting CPU. Allocation falls 11.99% at the same accounted peak. | Compilation, unannotated rules and positional warm timing span zero. [B1007](../benchmarks/results/2026-11-18-function-annotation-inputs/README.md). |
 | Direct trailing keyword dictionaries | File forwarding improves 16.36–17.89% warm and 16.33–16.96% compile-to-result with supporting CPU. Allocation falls 20.73% at the same accounted peak. | The mutable bound-method report improves 24.44–26.92% warm. Positional timing spans zero and compile CPU is mixed. [B1005](../benchmarks/results/2026-11-18-exact-keyword-transport/README.md). |

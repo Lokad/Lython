@@ -26,7 +26,9 @@ original conditions retained. Current comparisons belong in
   checkpoint. B1018 profiled those scripts and preserves a partial capture
   and the successful annotated confirmation. B1019 preserves an adverse
   positional control alongside a gain for annotated compile-to-result.
-  [B1002](results/2026-11-18-direct-defaults-cpython-checkpoint/README.md) · [B1006](results/2026-11-18-post-transport-cpython-checkpoint/README.md) · [B1016](results/2026-11-18-annotation-and-forwarding-cpython/README.md) · [B1018](results/2026-11-19-rule-and-forwarding-attribution/README.md) · [B1019](results/2026-11-19-direct-function-definitions/README.md).
+  B1020 retained direct completion after the annotated gains strengthened
+  and the positional adversity did not recur.
+  [B1002](results/2026-11-18-direct-defaults-cpython-checkpoint/README.md) · [B1006](results/2026-11-18-post-transport-cpython-checkpoint/README.md) · [B1016](results/2026-11-18-annotation-and-forwarding-cpython/README.md) · [B1018](results/2026-11-19-rule-and-forwarding-attribution/README.md) · [B1019](results/2026-11-19-direct-function-definitions/README.md) · [B1020](results/2026-11-19-direct-function-completion/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
