@@ -135,6 +135,8 @@ internal static class LexicalScopePreparation
                     requiresAnnotationChecks |= function.ReturnAnnotation is not null ||
                         function.Parameters.Any(static parameter => parameter.Annotation is not null && parameter.DefaultValue is not null);
                     var enclosing = TypeParameterScope(scope, function.TypeParameters);
+                    if (!ReferenceEquals(enclosing, scope))
+                        function.PreparedTypeParameterNames = enclosing.Facts.LocalNames;
                     PushTypeParameters(function.TypeParameters, function.DeclaredName, function.Span, scope, enclosing);
                     var facts = ScopeDirectiveFactsCollector.ForFunctionBindings(function);
                     var parameters = function.PrepareParameterLayout(cancellationToken);

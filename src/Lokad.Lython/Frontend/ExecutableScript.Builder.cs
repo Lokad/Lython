@@ -93,7 +93,7 @@ internal sealed partial class ExecutableScript
 
         private readonly FunctionParameterLayout? _parameterLayout;
         private readonly Builder? _lexicalParent;
-        private readonly IReadOnlyList<LoweredTypeParameter>? _typeParameters;
+        private readonly IReadOnlySet<string>? _typeParameterNames;
         private readonly bool _completeLexicalParent;
         private readonly ScopeDirectiveFacts _scopeFacts;
         private readonly List<ExecutableCodeObject>? _moduleCode;
@@ -107,7 +107,7 @@ internal sealed partial class ExecutableScript
             ScopeDirectiveFacts scopeFacts,
             bool completeLexicalParent = false,
             List<ExecutableCodeObject>? moduleCode = null,
-            IReadOnlyList<LoweredTypeParameter>? typeParameters = null)
+            IReadOnlySet<string>? typeParameterNames = null)
         {
             _moduleCode = moduleCode;
             _scopeFacts = scopeFacts;
@@ -117,7 +117,7 @@ internal sealed partial class ExecutableScript
             // their live retained namespaces for unresolved names.
             _completeLexicalParent = completeLexicalParent;
             _lexicalParent = lexicalParent;
-            _typeParameters = typeParameters;
+            _typeParameterNames = typeParameterNames;
         }
 
         public ExecutableCodeObject CompileCodeObject(string name, IReadOnlyList<LoweredStatement> statements,

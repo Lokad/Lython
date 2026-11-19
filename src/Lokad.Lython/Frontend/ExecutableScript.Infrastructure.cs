@@ -466,9 +466,12 @@ internal sealed partial class ExecutableScript
         private ExecutableFunctionBinding PrepareFunctionBinding(LoweredFunctionDefinitionStatement functionDefinition)
         {
             InternModuleBinding(functionDefinition.Syntax.Name);
+            var typeParameterNames = functionDefinition.Syntax.PreparedTypeParameterNames;
+            if (typeParameterNames is null && functionDefinition.TypeParameters is { Count: > 0 } typeParameters)
+                typeParameterNames = typeParameters.Select(static p => p.Syntax.Name).ToHashSet(StringComparer.Ordinal);
             var codeObject = CompileFunctionCode(functionDefinition.Syntax.DeclaredName,
                 functionDefinition.ParameterLayout, functionDefinition.Body,
-                functionDefinition.ScopeFacts, functionDefinition.TypeParameters, functionDefinition.Syntax.IsGenerator,
+                functionDefinition.ScopeFacts, typeParameterNames, functionDefinition.Syntax.IsGenerator,
                 qualifiedName: functionDefinition.Syntax.PreparedQualifiedName);
 
             var binding = new ExecutableFunctionBinding(
@@ -486,12 +489,12 @@ internal sealed partial class ExecutableScript
 
         private ExecutableCodeObject CompileFunctionCode(string name,
             FunctionParameterLayout parameterLayout, IReadOnlyList<LoweredStatement> body,
-            ScopeDirectiveFacts scopeFacts, IReadOnlyList<LoweredTypeParameter>? typeParameters = null,
+            ScopeDirectiveFacts scopeFacts, IReadOnlySet<string>? typeParameterNames = null,
             bool generator = false, PyString? qualifiedName = null)
         {
             return new Builder(parameterLayout, this, scopeFacts,
-                completeLexicalParent: _completeLexicalParent && typeParameters is not { Count: > 0 },
-                moduleCode: _moduleCode, typeParameters: typeParameters)
+                completeLexicalParent: _completeLexicalParent && typeParameterNames is null,
+                moduleCode: _moduleCode, typeParameterNames: typeParameterNames)
                 { _generator = generator }
                 .CompileCodeObject(name, body, qualifiedName: qualifiedName);
         }
@@ -503,9 +506,7 @@ internal sealed partial class ExecutableScript
             for (var descendant = this; descendant._lexicalParent is { } parent; descendant = parent)
             {
                 // Type parameters shadow outer bindings in the callable body.
-                if (descendant._typeParameters is { } parameters)
-                    for (var i = 0; i < parameters.Count; i++)
-                        if (parameters[i].Syntax.Name == name) return false;
+                if (descendant._typeParameterNames?.Contains(name) == true) return false;
 
                 // The iteration scope can bind the name even at module scope
                 // or when the enclosing function declared it global.
