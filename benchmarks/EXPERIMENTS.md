@@ -134,6 +134,10 @@ original conditions retained. Current comparisons belong in
   allocation and CPU. The warm shipment report is adverse. Refine generic
   name membership and confirm with the original controls.
   [Enclosing compiler bindings](results/2026-11-19-borrowed-compiler-bindings/README.md).
+- B1057 refreshes the CPython comparison on the retained capture runtime.
+  Closure-heavy scripts remain the largest execution gaps. The shipment
+  report's CPython control spread limits the precision of that result.
+  [CPython comparison](results/2026-11-19-retained-capture-cpython/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
