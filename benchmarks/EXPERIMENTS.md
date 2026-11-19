@@ -426,6 +426,10 @@ original conditions retained. Current comparisons belong in
 - B1125 profiles three rule scripts at `40ab5132a`. Annotated rules have
   88 samples nearest the redundant stack-transfer dispatcher. Admission,
   arithmetic and metadata remain visible. [Current rule profile](results/2026-11-19-current-rule-profile/README.md).
+- B1124/B1126 skip validation already proved by a shared record layout.
+  CSV keyword forwarding repeats its warm gain with lower CPU. JSON and
+  expanded-report timings vary across the original and reversed runs.
+  [Original and confirmation](results/2026-11-19-proven-record-keywords/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup

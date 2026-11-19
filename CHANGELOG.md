@@ -4,6 +4,8 @@
 
 - Reuse admitted key layouts when forwarding dense CSV and JSON records
   as keywords, while keeping each dictionary's values independently mutable.
+  Skip the key scan when the layout proves the keys are valid and the callee
+  has no keyword-bindable parameters.
 - Route regex effective flags through provider error handling so a failed
   metadata read closes the pattern and reports the provider's failure.
 - Record named-function generator classification during yield validation
