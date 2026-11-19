@@ -336,13 +336,14 @@ Executable local slots use that same prepared parameter order,
 then append body locals. Mutable defaults, keyword-name values, attributes and closures
 remain function-owned. Native generated definitions admit their layout before
 allocation and keep its construction overlap funded through default creation.
-Repeated executable definition sites share immutable key layouts for keyword
-defaults and annotations through existing lookup storage. Each definition keeps
-its own mutable values. Layout capacity stays charged to the execution even when
-the first dictionary is gone, while the next definition allocates only its value
-backing and dictionary shell. A first definition can require additional storage
-for its lookup slot and shared layout. A mutation requiring private keys admits
-the replacement before publication.
+Executable definition sites prepare immutable keyword-default and annotation
+key layouts directly from their known names and retain them in existing lookup
+storage. Each definition admits a separate dictionary shell and fills its
+private value backing in order. A layout already cached stays funded if the
+first definition later fails. For `def`, keyword-default storage is admitted
+before default expressions run. Unpublished values refund on failure. A
+published dictionary admits replacement capacity before a mutation requiring
+private keys.
 One scope walk collects directives, local bindings
 and annotations, retaining explicit first-binding order. Function slots reuse these
 facts after the parameter prefix. Module function, import, class and type-alias

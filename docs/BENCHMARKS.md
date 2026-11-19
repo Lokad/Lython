@@ -29,8 +29,8 @@ B1030 measured **2409f0596 / frozen 7e525683** on **2026-11-19 UTC** against
 stock **CPython 3.13.16** on the quiet **Azure F4as_v7**, with Ubuntu 24.04.4
 and .NET 11 RC3. Each process ran all three phases for each case. The two rule
 scripts have 4.09–5.37% same-source Lython warm spread, which limits comparisons
-with earlier runs. Platform qualification for this source was in progress at
-measurement. [B1030 observations](../benchmarks/results/2026-11-19-shared-metadata-cpython/README.md) · [Earlier B1022 snapshot](../benchmarks/results/2026-11-19-function-and-split-cpython/README.md).
+with earlier runs. The measured runtime later passed the full delivery matrix.
+[B1030 observations](../benchmarks/results/2026-11-19-shared-metadata-cpython/README.md) · [Earlier B1022 snapshot](../benchmarks/results/2026-11-19-function-and-split-cpython/README.md) · [Delivery](../benchmarks/results/2026-11-19-function-record-keys/delivery/README.md).
 
 B1006 measured **03bb07cf5 / frozen d97f6f98** on **2026-11-18 UTC** against
 stock **CPython 3.13.16** on the quiet **Azure F4as_v7**, with Ubuntu 24.04.4 and
@@ -164,6 +164,7 @@ for the CPython ratios above.
 
 | Change | Established outcome | Limits / evidence |
 | --- | --- | --- |
+| Direct definition records | Rule allocation falls 3.07% and 4.19% at the same accounted peaks. Annotated compile-to-result improves 1.98–6.24% with lower CPU. Confirmation shows 3.43–5.94% lower annotated warm elapsed with lower CPU. | First-run annotated warm is inconclusive. Forwarding’s initial elapsed increase did not recur. Reused-default timing remains unresolved. [B1031/B1032](../benchmarks/results/2026-11-19-direct-definition-records/README.md). |
 | Shared function metadata keys | Allocations fall 9.06% for unannotated rules and 15.85% for annotated rules. Accounted peaks fall 21.45% and 29.43%. Both annotated compile-to-result runs use less CPU. | Single-definition allocation rises 1.68%. Annotated compilation-only time rises 0.55–1.90%. The unannotated compile-to-result slowdown did not recur, and reused-default timing remains unresolved. [B1028/B1029](../benchmarks/results/2026-11-19-function-record-keys/README.md). |
 | Prepared method-format selectors | Shipment report with format subscripts improves 4.13–6.65% warm and 1.12–2.95% compile-to-result with lower CPU. Allocation falls 6.14%. | Accounted peak rises 384 bytes. The ordinary method-format and f-string elapsed controls span zero. [B1025](../benchmarks/results/2026-11-19-prepared-format-selectors/README.md). |
 | Split fields into final unpack operands | Expanded forwarding improves 1.72–3.02% warm and 1.52–3.58% compile-to-result, with lower CPU. Local allocation falls 4.26% and the accounted peak falls 11.34%. | The positional control spans zero. The text control reference elapsed spread is 2.22%. [B1021](../benchmarks/results/2026-11-19-final-split-operands/README.md). |

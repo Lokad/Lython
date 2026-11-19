@@ -55,6 +55,11 @@ original conditions retained. Current comparisons belong in
   adding the format-selector shipment report and CSV invoice. The rule scripts
   still have the largest gaps. Both rule cases show same-source timing spread.
   [Five-script comparison](results/2026-11-19-shared-metadata-cpython/README.md).
+- B1031/B1032 retained direct construction of known definition records.
+  Allocations fall on both rule scripts. Annotated compile-to-result improves
+  and repeat warm timing has CPU support. Initial adverse forwarding elapsed
+  did not recur. Reused-default timings still vary between identical workers.
+  [Direct definition records](results/2026-11-19-direct-definition-records/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
