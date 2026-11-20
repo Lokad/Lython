@@ -56,28 +56,28 @@ internal sealed partial class LythonRuntime
     }
 
     private static ValueTask<PendingFunctionDefaults?> EvaluateFunctionDefaults(
-        IReadOnlyList<LoweredFunctionParameter> parameters, FunctionParameterLayout layout,
+        LoweredExpression[] defaults, FunctionParameterLayout layout,
         ExecutionContext context, LythonSourceSpan span, bool asynchronous)
     {
         context.CheckExecution(span);
-        return layout.Defaults.Length == 0 ? new((PendingFunctionDefaults?)null)
-            : EvaluateDefaultsAsync(parameters, layout, context, span, asynchronous);
+        return defaults.Length == 0 ? new((PendingFunctionDefaults?)null)
+            : EvaluateDefaultsAsync(defaults, layout, context, span, asynchronous);
     }
 
     private static async ValueTask<PendingFunctionDefaults?> EvaluateDefaultsAsync(
-        IReadOnlyList<LoweredFunctionParameter> parameters, FunctionParameterLayout layout,
+        LoweredExpression[] defaults, FunctionParameterLayout layout,
         ExecutionContext context, LythonSourceSpan span, bool asynchronous)
     {
         var pending = new PendingFunctionDefaults(layout, context, span);
         try
         {
-            foreach (var slot in layout.Defaults)
+            for (var i = 0; i < defaults.Length; i++)
             {
-                var expression = parameters[slot.ParameterIndex].DefaultValue.RequireNotNull();
+                var expression = defaults[i];
                 context.CheckExecution(expression.Span);
                 var value = asynchronous ? await EvaluateLoweredExpressionAsync(expression, context).ConfigureAwait(false)
                     : EvaluateLoweredExpression(expression, context);
-                pending.Add(slot, ExecutableSlot.FromObject(value), expression.Span);
+                pending.Add(layout.Defaults[i], ExecutableSlot.FromObject(value), expression.Span);
             }
             return pending;
         }

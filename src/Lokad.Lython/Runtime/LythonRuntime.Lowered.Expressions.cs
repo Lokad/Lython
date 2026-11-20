@@ -471,8 +471,7 @@ internal sealed partial class LythonRuntime
 
     private static object CreateLoweredLambda(LoweredLambdaExpression lambda, ExecutionContext context)
     {
-        var loweredParameters = lambda.Parameters;
-        using var defaults = EvaluateFunctionDefaults(loweredParameters, lambda.ParameterLayout, context, lambda.Span, false)
+        using var defaults = EvaluateFunctionDefaults(lambda.DefaultValues, lambda.ParameterLayout, context, lambda.Span, false)
             .GetAwaiter().GetResult();
         var function = CreateLambdaFunction(lambda, defaults?.Values ?? default, context);
         defaults?.Publish();

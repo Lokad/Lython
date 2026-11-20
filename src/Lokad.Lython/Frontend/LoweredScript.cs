@@ -51,11 +51,21 @@ internal sealed class LoweredScript
     private static LoweredFunctionDefinitionStatement LowerFunction(FunctionDefinitionStatementSyntax definition)
     {
         var decorators = definition.Decorators.Select(LowerExpression).ToArray();
-        var parameters = definition.Parameters.Select(parameter => new LoweredFunctionParameter(
-            parameter.Name, parameter.Kind,
-            parameter.DefaultValue is null ? null : LowerExpression(parameter.DefaultValue))).ToArray();
-        return new(definition, decorators, parameters, LowerFunctionAnnotations(definition),
+        var defaults = LowerDefaults(definition.Parameters, definition.ParameterLayout);
+        return new(definition, decorators, defaults, LowerFunctionAnnotations(definition),
             LowerStatements(definition.Body), ScopeDirectiveFactsCollector.ForFunction(definition));
+    }
+
+    // The shared layout owns names, kinds and binding order. Lower only the
+    // expressions that execute in the enclosing scope, in layout order.
+    internal static LoweredExpression[] LowerDefaults(IReadOnlyList<FunctionParameterSyntax> parameters,
+        FunctionParameterLayout layout)
+    {
+        if (layout.Defaults.Length == 0) return [];
+        var expressions = new LoweredExpression[layout.Defaults.Length];
+        for (var i = 0; i < expressions.Length; i++)
+            expressions[i] = LowerExpression(parameters[layout.Defaults[i].ParameterIndex].DefaultValue.RequireNotNull());
+        return expressions;
     }
 
     private static LoweredFunctionAnnotation[] LowerFunctionAnnotations(FunctionDefinitionStatementSyntax definition)

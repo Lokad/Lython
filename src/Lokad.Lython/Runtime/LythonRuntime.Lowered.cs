@@ -54,7 +54,7 @@ internal sealed partial class LythonRuntime
             using var decoratorStorage = context.MemoryGovernor.ReserveTemporary(EstimateObjectArrayBytes(functionDefinition.Decorators.Count), functionDefinition.Span);
             var decorators = EvaluateDecorators(functionDefinition.Decorators, context);
             var syntax = functionDefinition.Syntax;
-            using var defaults = EvaluateFunctionDefaults(functionDefinition.Parameters, functionDefinition.ParameterLayout,
+            using var defaults = EvaluateFunctionDefaults(functionDefinition.DefaultValues, functionDefinition.ParameterLayout,
                 context, functionDefinition.Span, false).GetAwaiter().GetResult();
             var typeScope = CreateTypeScope(functionDefinition.TypeParameters, context, functionDefinition.Span);
             var function = CreateLoweredFunction(functionDefinition, typeScope.Closure, defaults?.Values ?? default);

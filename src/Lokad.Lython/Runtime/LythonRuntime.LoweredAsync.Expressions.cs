@@ -483,8 +483,7 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<object> CreateLoweredLambdaAsync(LoweredLambdaExpression lambda, ExecutionContext context)
     {
-        var loweredParameters = lambda.Parameters;
-        using var defaults = await EvaluateFunctionDefaults(loweredParameters, lambda.ParameterLayout, context, lambda.Span, true)
+        using var defaults = await EvaluateFunctionDefaults(lambda.DefaultValues, lambda.ParameterLayout, context, lambda.Span, true)
             .ConfigureAwait(false);
         var function = CreateLambdaFunction(lambda, defaults?.Values ?? default, context);
         defaults?.Publish();

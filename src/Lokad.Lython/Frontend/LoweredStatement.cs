@@ -53,7 +53,7 @@ internal readonly record struct LoweredFunctionAnnotation(PyString Key, LoweredE
 internal sealed record LoweredFunctionDefinitionStatement(
     FunctionDefinitionStatementSyntax Syntax,
     IReadOnlyList<LoweredExpression> Decorators,
-    IReadOnlyList<LoweredFunctionParameter> Parameters,
+    LoweredExpression[] DefaultValues,
     LoweredFunctionAnnotation[] Annotations,
     IReadOnlyList<LoweredStatement> Body,
     ScopeDirectiveFacts ScopeFacts) : LoweredStatement(Syntax.Span)

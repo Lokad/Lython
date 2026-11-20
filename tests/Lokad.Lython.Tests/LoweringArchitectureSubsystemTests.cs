@@ -200,7 +200,7 @@ helper.value = b"x"
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var outer = Assert.IsType<LoweredFunctionDefinitionStatement>(lowered.Statements[0]);
         var inner = Assert.IsType<LoweredFunctionDefinitionStatement>(outer.Body[0]);
-        Assert.Equal(FunctionParameterKind.KeywordOnly, inner.Parameters[0].Kind);
+        Assert.IsType<LoweredStringLiteralExpression>(Assert.Single(inner.DefaultValues));
 
         var returnStatement = Assert.IsType<LoweredReturnStatement>(inner.Body[0]);
         var tuple = Assert.IsType<LoweredTupleLiteralExpression>(returnStatement.Expression);
@@ -1058,16 +1058,9 @@ return helper(payload["items"]) + "|" + text
             switch (statement)
             {
                 case LoweredFunctionDefinitionStatement functionDefinition:
-                    foreach (var parameter in functionDefinition.Parameters)
-                    {
-                        if (parameter.DefaultValue is not null)
-                        {
-                            foreach (var expression in FlattenExpressions(parameter.DefaultValue))
-                            {
-                                yield return expression;
-                            }
-                        }
-                    }
+                    foreach (var value in functionDefinition.DefaultValues)
+                        foreach (var expression in FlattenExpressions(value))
+                            yield return expression;
                     break;
                 case LoweredAssignmentStatement assignment:
                     foreach (var loweredExpression in GetAssignmentExpressions(assignment))

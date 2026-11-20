@@ -30,7 +30,7 @@ internal sealed partial class ExecutableScript
         {
             var binding = PrepareFunctionBinding(definition);
             foreach (var decorator in definition.Decorators) block = CompileExpression(decorator, block);
-            block = CompileFunctionDefaults(definition.Parameters, binding.ParameterLayout, definition.Span, block);
+            block = CompileFunctionDefaults(definition.DefaultValues, binding.ParameterLayout, definition.Span, block);
             if ((!_completeLexicalParent && !yielding) || definition.TypeParameters is not null ||
                 binding.Annotations.Length == 0)
             {
@@ -61,7 +61,7 @@ internal sealed partial class ExecutableScript
 
         private int CompileLambda(LoweredLambdaExpression lambda, int block)
         {
-            block = CompileFunctionDefaults(lambda.Parameters, lambda.ParameterLayout, lambda.Span, block);
+            block = CompileFunctionDefaults(lambda.DefaultValues, lambda.ParameterLayout, lambda.Span, block);
             if (lambda.PreparedCode is null)
                 lambda.CompleteCompilation(CompileFunctionCode("<lambda>", lambda.ParameterLayout,
                     lambda.FunctionBody, lambda.ScopeFacts, generator: lambda.IsGenerator,
@@ -70,7 +70,7 @@ internal sealed partial class ExecutableScript
             return block;
         }
 
-        private int CompileFunctionDefaults(IReadOnlyList<LoweredFunctionParameter> parameters,
+        private int CompileFunctionDefaults(LoweredExpression[] defaults,
             FunctionParameterLayout layout, LythonSourceSpan span, int block)
         {
             if (layout.Defaults.Length == 0) return block;
@@ -79,11 +79,11 @@ internal sealed partial class ExecutableScript
                     parameters.Defaults[parameters.PositionalDefaultCount + index].KeywordIndex),
                 _compilationCancellation, span);
             EmitOperation(new ExecutableStartFunctionDefaults(layout, keys), span, block);
-            foreach (var slot in layout.Defaults)
+            for (var i = 0; i < defaults.Length; i++)
             {
-                var expression = parameters[slot.ParameterIndex].DefaultValue.RequireNotNull();
+                var expression = defaults[i];
                 block = CompileExpression(expression, block);
-                EmitOperation(new ExecutableAppendFunctionDefault(slot), expression.Span, block);
+                EmitOperation(new ExecutableAppendFunctionDefault(layout.Defaults[i]), expression.Span, block);
             }
             return block;
         }

@@ -313,9 +313,7 @@ internal sealed record LoweredLambdaExpression : LoweredExpression
     public LoweredLambdaExpression(LambdaExpressionSyntax lambda, LoweredExpression body)
     {
         Lambda = lambda;
-        Parameters = lambda.Parameters.Select(parameter => new LoweredFunctionParameter(
-            parameter.Name, parameter.Kind,
-            parameter.DefaultValue is null ? null : LoweredScript.LowerStandaloneExpression(parameter.DefaultValue))).ToArray();
+        DefaultValues = LoweredScript.LowerDefaults(lambda.Parameters, lambda.ParameterLayout);
         ScopeFacts = ScopeDirectiveFactsCollector.ForLambda(lambda);
         // Lazy annotation expressions reach lowering outside the statement
         // yield-validation walk. Classify each lambda from its own body.
@@ -325,7 +323,7 @@ internal sealed record LoweredLambdaExpression : LoweredExpression
     }
 
     public LambdaExpressionSyntax Lambda { get; }
-    public IReadOnlyList<LoweredFunctionParameter> Parameters { get; }
+    public LoweredExpression[] DefaultValues { get; }
     public FunctionParameterLayout ParameterLayout => Lambda.ParameterLayout;
     public ScopeDirectiveFacts ScopeFacts { get; }
     public override ExpressionSyntax Syntax => Lambda;
