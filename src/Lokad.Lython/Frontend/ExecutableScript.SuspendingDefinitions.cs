@@ -4,10 +4,11 @@ namespace Lokad.Lython.Frontend;
 
 internal sealed record ExecutableStartFunctionDefaults(FunctionParameterLayout Layout) : ExecutableOperation;
 internal sealed record ExecutableAppendFunctionDefault(FunctionParameterLayout.DefaultSlot Default) : ExecutableOperation;
-internal sealed record ExecutableCreateFunction(ExecutableFunctionBinding Binding, bool AnnotationsOnStack = false) : ExecutableOperation
+internal sealed record ExecutableCreateFunction(ExecutableCodeObject CodeObject, FunctionParameterLayout ParameterLayout,
+    int DecoratorCount, bool IsGenerator, int AnnotationOperandCount, LoweredFunctionAnnotation[] DeferredAnnotations,
+    IReadOnlyList<LoweredTypeParameter>? TypeParameters) : ExecutableOperation
 {
-    internal int InputCount => checked(Binding.DecoratorCount + (AnnotationsOnStack ? Binding.Annotations.Length : 0) +
-        (Binding.ParameterLayout.Defaults.Length == 0 ? 0 : 1));
+    internal int InputCount => checked(DecoratorCount + AnnotationOperandCount + (ParameterLayout.Defaults.Length == 0 ? 0 : 1));
 }
 internal readonly record struct ExecutableLambdaBinding(
     ExecutableCodeObject CodeObject, FunctionParameterLayout Layout, bool IsGenerator, bool NamespaceClosure);
@@ -31,35 +32,33 @@ internal sealed partial class ExecutableScript
     {
         private int CompileFunctionDefinition(LoweredFunctionDefinitionStatement definition, int block, bool yielding)
         {
-            var binding = PrepareFunctionBinding(definition);
+            var code = PrepareFunctionCode(definition);
             foreach (var decorator in definition.Decorators) block = CompileExpression(decorator, block);
-            block = CompileFunctionDefaults(definition.DefaultValues, binding.ParameterLayout, definition.Span, block);
-            if ((!_completeLexicalParent && !yielding) || definition.TypeParameters is not null ||
-                binding.Annotations.Length == 0)
+            block = CompileFunctionDefaults(definition.DefaultValues, definition.ParameterLayout, definition.Span, block);
+            var annotationOperandCount = (_completeLexicalParent || yielding) && definition.TypeParameters is null
+                ? definition.Annotations.Length : 0;
+            if (annotationOperandCount != 0)
             {
-                EmitDefinition(block);
-                return block;
+                foreach (var annotation in definition.Annotations)
+                {
+                    var expression = annotation.Expression;
+                    if (expression.Syntax.PostponedAnnotation is { } text)
+                        AddInstruction(block, ExecutableInstruction.LoadConst(InternConstant(text), expression.Span));
+                    else block = CompileExpression(expression, block);
+                }
             }
-            foreach (var annotation in binding.Annotations)
-            {
-                var expression = annotation.Expression;
-                if (expression.Syntax.PostponedAnnotation is { } text)
-                    AddInstruction(block, ExecutableInstruction.LoadConst(InternConstant(text), expression.Span));
-                else block = CompileExpression(expression, block);
-            }
-            EmitDefinition(block, annotationsOnStack: true);
+            // The creation operation retains lowered annotations only when
+            // it still evaluates them in the definition's type scope.
+            EmitOperation(new ExecutableCreateFunction(code, definition.ParameterLayout, definition.Decorators.Count,
+                definition.Syntax.IsGenerator, annotationOperandCount,
+                annotationOperandCount == 0 ? definition.Annotations : [], definition.TypeParameters), definition.Span, block);
+            // Module declarations update their live namespace and optional slot.
+            var name = definition.Syntax.Name;
+            if (_parameterLayout is null)
+                AddInstruction(block, ExecutableInstruction.StoreName(InternName(name), definition.Span));
+            else
+                CompileStoreBoundName(name, definition.Span, block);
             return block;
-
-            void EmitDefinition(int target, bool annotationsOnStack = false)
-            {
-                EmitOperation(new ExecutableCreateFunction(binding, annotationsOnStack), definition.Span, target);
-                // Module declarations update their live namespace as well as
-                // their optional slot, including across import completion.
-                if (_parameterLayout is null)
-                    AddInstruction(target, ExecutableInstruction.StoreName(InternName(binding.Name), definition.Span));
-                else
-                    CompileStoreBoundName(binding.Name, definition.Span, target);
-            }
         }
 
         private int CompileLambda(LoweredLambdaExpression lambda, int block)

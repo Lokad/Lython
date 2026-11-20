@@ -158,10 +158,9 @@ internal sealed partial class LythonRuntime
                     int[]? functionCaptures = null;
                     if (invocation is null)
                     {
-                        var binding = function.Binding;
-                        if (binding.TypeParameters is not null ||
-                            binding.DecoratorCount != 0 || !function.AnnotationsOnStack && binding.Annotations.Length != 0 ||
-                            HasTypeParameterScope(scope) || !CanDefineWithoutInvocation(binding.CodeObject,
+                        if (function.TypeParameters is not null ||
+                            function.DecoratorCount != 0 || function.DeferredAnnotations.Length != 0 ||
+                            HasTypeParameterScope(scope) || !CanDefineWithoutInvocation(function.CodeObject,
                                 in execution, scope, span, out functionCaptures)) return false;
                     }
                     pending = CreateExecutableFunction(ref execution, context, invocation, function, instruction,

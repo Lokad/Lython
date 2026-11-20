@@ -396,7 +396,7 @@ internal sealed partial class ExecutableScript
             return _callSites.Count - 1;
         }
 
-        private ExecutableFunctionBinding PrepareFunctionBinding(LoweredFunctionDefinitionStatement functionDefinition)
+        private ExecutableCodeObject PrepareFunctionCode(LoweredFunctionDefinitionStatement functionDefinition)
         {
             InternModuleBinding(functionDefinition.Syntax.Name);
             var typeParameterNames = functionDefinition.Syntax.PreparedTypeParameterNames;
@@ -410,13 +410,7 @@ internal sealed partial class ExecutableScript
             codeObject.DefinitionAnnotationKeys = PyDict.RecordKeys.PrepareDefinition(functionDefinition.Annotations.Length,
                 functionDefinition.Annotations, static (inputs, index) => inputs[index].Key,
                 _compilationCancellation, functionDefinition.Span);
-            return new ExecutableFunctionBinding(
-                functionDefinition.Syntax.Name, functionDefinition.Span,
-                functionDefinition.Decorators.Count, functionDefinition.Annotations,
-                functionDefinition.TypeParameters, codeObject, functionDefinition.Syntax.IsGenerator)
-            {
-                ParameterLayout = functionDefinition.ParameterLayout,
-            };
+            return codeObject;
         }
 
         private ExecutableCodeObject CompileFunctionCode(string name,

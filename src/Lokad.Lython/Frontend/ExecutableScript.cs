@@ -458,20 +458,6 @@ internal sealed record ExecutableCallSite(
     public int ArgumentOffset => TargetOffset + 1;
 }
 
-// Execution retains declaration inputs, not the original syntax/body graph.
-internal sealed record ExecutableFunctionBinding(
-    string Name,
-    LythonSourceSpan Span,
-    int DecoratorCount,
-    LoweredFunctionAnnotation[] Annotations,
-    IReadOnlyList<LoweredTypeParameter>? TypeParameters,
-    ExecutableCodeObject CodeObject,
-    bool IsGenerator)
-{
-    public required FunctionParameterLayout ParameterLayout { get; init; }
-
-}
-
 internal sealed record ExecutableMatchCaseBinding(
     LoweredRootPattern Pattern,
     LythonSourceSpan Span,

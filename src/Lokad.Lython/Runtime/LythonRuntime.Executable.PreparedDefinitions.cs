@@ -90,39 +90,40 @@ internal sealed partial class LythonRuntime
             ExecutionContext context, ExecutionContext? invocation, ExecutableCreateFunction operation,
             in ExecutableInstruction instruction, bool asynchronous, int[]? borrowedCaptures)
         {
-            var binding = operation.Binding;
-            var span = binding.Span;
+            var span = instruction.Span;
             var first = instruction.InputStart;
             context.EnterInterpreterFrame(span);
             PyFunctionBase function;
             var transferred = false;
             try
             {
-                var layout = binding.ParameterLayout;
-                var next = first + binding.DecoratorCount;
+                var layout = operation.ParameterLayout;
+                var code = operation.CodeObject;
+                var next = first + operation.DecoratorCount;
                 var defaults = layout.Defaults.Length == 0 ? null : (PendingFunctionDefaults)execution.Stack[next++];
 
                 var cells = invocation is null
-                    ? CaptureExecutableCells(binding.CodeObject, context, span, ref execution, borrowedCaptures)
-                    : CaptureExecutableClosures(binding.CodeObject, context, span);
-                var typeScope = CreateTypeScope(binding.TypeParameters, context, span);
+                    ? CaptureExecutableCells(code, context, span, ref execution, borrowedCaptures)
+                    : CaptureExecutableClosures(code, context, span);
+                var typeScope = CreateTypeScope(operation.TypeParameters, context, span);
                 var closure = invocation is null ? GetGlobalContext(context)
-                    : SelectDefinitionClosure(binding.CodeObject, typeScope.Closure, cells);
-                ReadOnlySpan<ExecutableSlot> annotations = operation.AnnotationsOnStack
-                    ? execution.Stack.Slice(next, binding.Annotations.Length).Span : default;
-                function = CreateFunctionValue(layout, binding.CodeObject, closure, cells, defaults?.Values ?? default,
-                    binding.IsGenerator, context, span, annotations: annotations);
+                    : SelectDefinitionClosure(code, typeScope.Closure, cells);
+                ReadOnlySpan<ExecutableSlot> annotations = operation.AnnotationOperandCount != 0
+                    ? execution.Stack.Slice(next, operation.AnnotationOperandCount).Span : default;
+                function = CreateFunctionValue(layout, code, closure, cells, defaults?.Values ?? default,
+                    operation.IsGenerator, context, span, annotations: annotations);
                 var metadata = ValueTask.CompletedTask;
-                if (!operation.AnnotationsOnStack &&
-                    (binding.Annotations.Length != 0 || binding.TypeParameters is not null || HasTypeParameterScope(context)))
+                if (operation.AnnotationOperandCount == 0 &&
+                    (operation.DeferredAnnotations.Length != 0 || operation.TypeParameters is not null || HasTypeParameterScope(context)))
                 {
-                    metadata = AttachTypeMetadataAsync(function, binding.Annotations, binding.TypeParameters is not null,
-                        span, typeScope, context, asynchronous, binding.CodeObject.DefinitionAnnotationKeys);
+                    metadata = AttachTypeMetadataAsync(function, operation.DeferredAnnotations, operation.TypeParameters is not null,
+                        span, typeScope, context, asynchronous, code.DefinitionAnnotationKeys);
                 }
 
-                if (binding.DecoratorCount != 0 || !metadata.IsCompletedSuccessfully)
+                if (operation.DecoratorCount != 0 || !metadata.IsCompletedSuccessfully)
                 {
-                    var completion = invocation!.FinishExecutableFunctionAsync(binding, function, defaults, metadata, instruction, asynchronous);
+                    var completion = invocation!.FinishExecutableFunctionAsync(operation.DecoratorCount, function, defaults, metadata,
+                        instruction, asynchronous);
                     transferred = true;
                     return completion;
                 }
@@ -138,10 +139,10 @@ internal sealed partial class LythonRuntime
             return ValueTask.CompletedTask;
         }
 
-        private async ValueTask FinishExecutableFunctionAsync(ExecutableFunctionBinding binding, PyFunctionBase function,
+        private async ValueTask FinishExecutableFunctionAsync(int decoratorCount, PyFunctionBase function,
             PendingFunctionDefaults? defaults, ValueTask metadata, ExecutableInstruction instruction, bool asynchronous)
         {
-            var span = binding.Span;
+            var span = instruction.Span;
             var first = instruction.InputStart;
             object decorated = function;
             try
@@ -150,7 +151,7 @@ internal sealed partial class LythonRuntime
                 // Decorator callbacks can publish the original definition even
                 // when they replace it or raise. Transfer the default owner first.
                 defaults?.Publish();
-                for (var i = first + binding.DecoratorCount - 1; i >= first; i--)
+                for (var i = first + decoratorCount - 1; i >= first; i--)
                 {
                     if (_execution.Stack[i] is not ICallable decorator)
                         throw new LythonRuntimeException("TypeError", "Decorator expression must evaluate to a callable.", span);

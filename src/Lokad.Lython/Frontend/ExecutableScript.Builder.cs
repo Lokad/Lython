@@ -238,7 +238,7 @@ internal sealed partial class ExecutableScript
                 switch (_constants[index])
                 {
                     case ExecutableCreateFunction function:
-                        PrepareChild(function.Binding.CodeObject);
+                        PrepareChild(function.CodeObject);
                         break;
                     case ExecutableCreateClass:
                         needsMirroring = true;
