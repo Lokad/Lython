@@ -1,0 +1,132 @@
+{
+  "reference": "9b14997e4bb353f9e0e93d514471bf6997f1530e",
+  "candidate": "5f42f319c2ded221ef281082839bf24438845cc8",
+  "verification": "Three CPython goldens per full 32-file image.",
+  "rows": [
+    {
+      "boundary": "liveBytes-1",
+      "id": "scripts.lambda-rule-table.generated",
+      "referenceBytes": 638200,
+      "candidateBytes": 399608,
+      "changePct": -37.38514572234409
+    },
+    {
+      "boundary": "liveBytes-1",
+      "id": "lists.stable-lambda-sort",
+      "referenceBytes": 9048,
+      "candidateBytes": 8536,
+      "changePct": -5.658709106984972
+    },
+    {
+      "boundary": "liveBytes-1",
+      "id": "scripts.config-generated-guards.medium",
+      "referenceBytes": 258368,
+      "candidateBytes": 258368,
+      "changePct": 0.0
+    },
+    {
+      "boundary": "allocatedBytes-1",
+      "id": "scripts.lambda-rule-table.generated",
+      "referenceBytes": 1824368,
+      "candidateBytes": 1826416.375,
+      "changePct": 0.11227860826323877
+    },
+    {
+      "boundary": "allocatedBytes-1",
+      "id": "lists.stable-lambda-sort",
+      "referenceBytes": 56136,
+      "candidateBytes": 56152,
+      "changePct": 0.028502208921188377
+    },
+    {
+      "boundary": "allocatedBytes-1",
+      "id": "scripts.config-generated-guards.medium",
+      "referenceBytes": 3048474.625,
+      "candidateBytes": 3048474.625,
+      "changePct": 0.0
+    },
+    {
+      "boundary": "liveBytes-2",
+      "id": "scripts.lambda-rule-table.generated",
+      "referenceBytes": 638200,
+      "candidateBytes": 399608,
+      "changePct": -37.38514572234409
+    },
+    {
+      "boundary": "liveBytes-2",
+      "id": "lists.stable-lambda-sort",
+      "referenceBytes": 9048,
+      "candidateBytes": 8536,
+      "changePct": -5.658709106984972
+    },
+    {
+      "boundary": "liveBytes-2",
+      "id": "scripts.config-generated-guards.medium",
+      "referenceBytes": 258368,
+      "candidateBytes": 258368,
+      "changePct": 0.0
+    },
+    {
+      "boundary": "allocatedBytes-2",
+      "id": "scripts.lambda-rule-table.generated",
+      "referenceBytes": 1824368,
+      "candidateBytes": 1826416.375,
+      "changePct": 0.11227860826323877
+    },
+    {
+      "boundary": "allocatedBytes-2",
+      "id": "lists.stable-lambda-sort",
+      "referenceBytes": 56136,
+      "candidateBytes": 56152,
+      "changePct": 0.028502208921188377
+    },
+    {
+      "boundary": "allocatedBytes-2",
+      "id": "scripts.config-generated-guards.medium",
+      "referenceBytes": 3048474.625,
+      "candidateBytes": 3048474.625,
+      "changePct": 0.0
+    },
+    {
+      "boundary": "warm-allocation",
+      "id": "scripts.lambda-rule-table.generated",
+      "referenceBytes": 92072,
+      "candidateBytes": 92072,
+      "changePct": 0.0,
+      "referencePeak": 135024,
+      "candidatePeak": 135024
+    },
+    {
+      "boundary": "warm-allocation",
+      "id": "lists.stable-lambda-sort",
+      "referenceBytes": 769752,
+      "candidateBytes": 769752,
+      "changePct": 0.0,
+      "referencePeak": 822304,
+      "candidatePeak": 822304
+    },
+    {
+      "boundary": "warm-allocation",
+      "id": "scripts.config-generated-guards.medium",
+      "referenceBytes": 76250,
+      "candidateBytes": 75936,
+      "changePct": -0.4118032786885273,
+      "referencePeak": 94214,
+      "candidatePeak": 94214
+    }
+  ],
+  "retained": "68215bac8",
+  "focusedTests": {
+    "windowsNet11": 421,
+    "ubuntuNet10": 421
+  },
+  "retentionHelper": {
+    "ManagedRetention.dll": "3fe0d454742bf17496bec83d143ceadb40aa54d5457d104f3773ba9d126ab041",
+    "ManagedRetention.deps.json": "5685316d2e60126df9a2c514e02a026f5584eefcbefa97978eef6d2211ff2754",
+    "ManagedRetention.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0"
+  },
+  "cores": {
+    "reference": "ca0b99826518a3a911036023b7044729e62cff3429c71a6f60ef431908d3fb31",
+    "candidate": "6ebe106337ad93d49767868b436319948960de7b6cfbecd877241b9c667e675a"
+  }
+}

@@ -66,6 +66,16 @@ CPU. Eager warm includes adverse pairings and nested warm spans zero.
 identifies separable positional and keyword default admissions in both
 hot factory workloads. The capture and generic binder groups remain small.
 
+[B1171 combined default admission](results/2026-11-20-default-container-admission/README.md)
+keeps the prototype private. Eager warm elapsed rises 3.38–5.77% with
+higher CPU. Nested factories are mixed, and the keyword dataclass control
+is modestly adverse. The original interleaved-field failures are preserved.
+
+[Prepared executable lambda bindings](results/2026-11-20-executable-lambda-binding/README.md)
+remove lowered defaults and syntax from executable instructions. The
+generated 128-lambda table retains 37.39% fewer managed bytes after
+compilation. Warm allocation stays flat, with no CPU or elapsed comparison.
+
 ## November 18–19, 0.11.0 compiler and call work
 
 - The retained formatting and function-default changes have paired evidence.
