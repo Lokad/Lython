@@ -18,12 +18,12 @@ Reuse compiled programs for repeated inputs when useful.
 Compilation observes its token during indentation checks, tokenization, ordinary
 parsing, literal decoding, container/callback fact inspection and provider work,
 and between later compiler phases.
-Lexical-fact discovery also checks between statements.
-Later diagnostics, annotation formatting, lowering and
-instruction construction can finish their current pass before the next check; CLR copies/conversions are
-also not preemptible. Cancellation returns an invalid script with `LA2011`;
-dispose that script to release its compilation owner. Refused admission retains
-priority over cancellation.
+Lexical-fact discovery and statement lowering also check the token. Class
+methods and deferred callables use the same compilation token and memory owner
+as the enclosing source, including during imports. Individual expression walks
+and CLR copies or conversions can still complete before the next check.
+Cancellation returns an invalid script with `LA2011`. Dispose that script to
+release its compilation owner. Refused admission retains priority over cancellation.
 
 Hosts can throw [`LythonHostException`](../src/Lokad.Lython/Host/LythonHostException.cs)
 with a contained diagnostic safe for guest code. Its failure kinds map missing,

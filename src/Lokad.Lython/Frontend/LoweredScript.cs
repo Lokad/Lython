@@ -1,3 +1,4 @@
+using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Frontend;
@@ -16,9 +17,9 @@ internal sealed class LoweredScript
 
     public IReadOnlyList<LoweredStatement> Statements { get; }
 
-    public static LoweredScript Lower(ScriptSyntax syntax)
+    public static LoweredScript Lower(ScriptSyntax syntax, CancellationToken cancellationToken = default, MemoryGovernor? governor = null)
     {
-        var statements = LowerStatements(syntax.Statements);
+        var statements = LowerStatements(syntax.Statements, cancellationToken, governor);
         return new LoweredScript(syntax, statements);
     }
 
@@ -27,18 +28,21 @@ internal sealed class LoweredScript
         return LowerExpression(expression);
     }
 
-    private static IReadOnlyList<LoweredStatement> LowerStatements(IReadOnlyList<StatementSyntax> statements, bool classScope = false)
+    private static IReadOnlyList<LoweredStatement> LowerStatements(IReadOnlyList<StatementSyntax> statements,
+        CancellationToken cancellationToken, MemoryGovernor? governor, bool classScope = false)
     {
-        var lowered = new List<LoweredStatement>(statements.Count);
-        foreach (var statement in statements)
+        if (statements.Count == 0) return [];
+        var lowered = new LoweredStatement[statements.Count];
+        for (var index = 0; index < lowered.Length; index++)
         {
-            var item = LowerStatement(statement, classScope);
+            PythonTokenization.CheckCancellation(cancellationToken, index);
+            var item = LowerStatement(statements[index], cancellationToken, governor, classScope);
             if (classScope && item is LoweredFunctionDefinitionStatement function)
             {
-                var code = ExecutableScript.CompileClassFunction(function);
+                var code = ExecutableScript.CompileClassFunction(function, cancellationToken, governor);
                 item = function with { PreparedCode = code, Body = [] };
             }
-            lowered.Add(item);
+            lowered[index] = item;
         }
 
         return lowered;
@@ -48,12 +52,13 @@ internal sealed class LoweredScript
         => parameters?.Select(parameter => new LoweredTypeParameter(parameter, parameter.Bound is null ? null : LowerExpression(parameter.Bound),
             parameter.Default is null ? null : LowerExpression(parameter.Default))).ToArray();
 
-    private static LoweredFunctionDefinitionStatement LowerFunction(FunctionDefinitionStatementSyntax definition)
+    private static LoweredFunctionDefinitionStatement LowerFunction(FunctionDefinitionStatementSyntax definition,
+        CancellationToken cancellationToken, MemoryGovernor? governor)
     {
         var decorators = definition.Decorators.Select(LowerExpression).ToArray();
         var defaults = LowerDefaults(definition.Parameters, definition.ParameterLayout);
         return new(definition, decorators, defaults, LowerFunctionAnnotations(definition),
-            LowerStatements(definition.Body), ScopeDirectiveFactsCollector.ForFunction(definition));
+            LowerStatements(definition.Body, cancellationToken, governor), ScopeDirectiveFactsCollector.ForFunction(definition));
     }
 
     // The shared layout owns names, kinds and binding order. Lower only the
@@ -103,20 +108,21 @@ internal sealed class LoweredScript
         return annotations;
     }
 
-    private static LoweredStatement LowerStatement(StatementSyntax statement, bool classScope)
+    private static LoweredStatement LowerStatement(StatementSyntax statement, CancellationToken cancellationToken,
+        MemoryGovernor? governor, bool classScope)
     {
         return statement switch
         {
             TypeAliasStatementSyntax alias => new LoweredTypeAliasStatement(alias, LowerExpression(alias.Value)),
             ImportStatementSyntax importStatement => new LoweredImportStatement(importStatement),
             ScopeDirectiveStatementSyntax scopeDirective => new LoweredScopeDirectiveStatement(scopeDirective),
-            FunctionDefinitionStatementSyntax functionDefinition => LowerFunction(functionDefinition),
+            FunctionDefinitionStatementSyntax functionDefinition => LowerFunction(functionDefinition, cancellationToken, governor),
             ClassDefinitionStatementSyntax classDefinition => new LoweredClassDefinitionStatement(
                 classDefinition,
                 classDefinition.Decorators.Select(LowerExpression).ToArray(),
                 classDefinition.HeaderArguments.Select(argument =>
                     new LoweredCallArgument(argument.Form, LowerExpression(argument.Expression))).ToArray(),
-                LowerStatements(classDefinition.Body, classScope: true)),
+                LowerStatements(classDefinition.Body, cancellationToken, governor, classScope: true)),
             AssignmentStatementSyntax assignment
                 => new LoweredNameAssignmentStatement(
                     assignment,
@@ -162,37 +168,32 @@ internal sealed class LoweredScript
             IfStatementSyntax ifStatement => new LoweredIfStatement(
                 ifStatement,
                 LowerExpression(ifStatement.Condition),
-                LowerStatements(ifStatement.ThenStatements, classScope),
-                ifStatement.ElseStatements is null ? null : LowerStatements(ifStatement.ElseStatements, classScope)),
+                LowerStatements(ifStatement.ThenStatements, cancellationToken, governor, classScope),
+                ifStatement.ElseStatements is null ? null : LowerStatements(ifStatement.ElseStatements, cancellationToken, governor, classScope)),
             ForStatementSyntax forStatement => new LoweredForStatement(
                 forStatement,
                 LowerExpression(forStatement.Iterable),
-                forStatement.ElseStatements is null ? null : LowerStatements(forStatement.ElseStatements, classScope),
-                LowerStatements(forStatement.Body, classScope)),
+                forStatement.ElseStatements is null ? null : LowerStatements(forStatement.ElseStatements, cancellationToken, governor, classScope),
+                LowerStatements(forStatement.Body, cancellationToken, governor, classScope)),
             WhileStatementSyntax whileStatement => new LoweredWhileStatement(
                 whileStatement,
                 LowerExpression(whileStatement.Condition),
-                whileStatement.ElseStatements is null ? null : LowerStatements(whileStatement.ElseStatements, classScope),
-                LowerStatements(whileStatement.Body, classScope)),
+                whileStatement.ElseStatements is null ? null : LowerStatements(whileStatement.ElseStatements, cancellationToken, governor, classScope),
+                LowerStatements(whileStatement.Body, cancellationToken, governor, classScope)),
             MatchStatementSyntax matchStatement => new LoweredMatchStatement(
                 matchStatement,
                 LowerExpression(matchStatement.Subject),
-                matchStatement.Cases.Select(matchCase => new LoweredMatchCase(
-                    matchCase,
-                    LoweredPatternPreparation.Prepare(matchCase.Pattern),
-                    LowerStatements(matchCase.Body, classScope),
-                    matchCase.Guard is null ? null : LowerExpression(matchCase.Guard))).ToArray()),
+                LowerMatchCases(matchStatement.Cases, cancellationToken, governor, classScope)),
             WithStatementSyntax withStatement => new LoweredWithStatement(
                 withStatement,
                 LowerExpression(withStatement.ContextExpression),
-                LowerStatements(withStatement.Body, classScope)),
+                LowerStatements(withStatement.Body, cancellationToken, governor, classScope)),
             TryStatementSyntax tryStatement => new LoweredTryStatement(
                 tryStatement,
-                LowerStatements(tryStatement.TryBody, classScope),
-                tryStatement.ExceptClauses.Select(clause => new LoweredExceptClause(clause, LowerStatements(clause.Body, classScope),
-                    clause.ExceptionTypeExpression is null ? null : LowerExpression(clause.ExceptionTypeExpression))).ToArray(),
-                tryStatement.ElseBody is null ? null : LowerStatements(tryStatement.ElseBody, classScope),
-                tryStatement.FinallyBody is null ? null : LowerStatements(tryStatement.FinallyBody, classScope)),
+                LowerStatements(tryStatement.TryBody, cancellationToken, governor, classScope),
+                LowerExceptClauses(tryStatement.ExceptClauses, cancellationToken, governor, classScope),
+                tryStatement.ElseBody is null ? null : LowerStatements(tryStatement.ElseBody, cancellationToken, governor, classScope),
+                tryStatement.FinallyBody is null ? null : LowerStatements(tryStatement.FinallyBody, cancellationToken, governor, classScope)),
             PassStatementSyntax passStatement => new LoweredPassStatement(passStatement),
             BreakStatementSyntax breakStatement => new LoweredBreakStatement(breakStatement),
             ContinueStatementSyntax continueStatement => new LoweredContinueStatement(continueStatement),
@@ -212,6 +213,34 @@ internal sealed class LoweredScript
                 raiseStatement.CauseExpression is null ? null : LowerExpression(raiseStatement.CauseExpression)),
             _ => new LoweredOtherStatement(statement)
         };
+    }
+
+    private static LoweredMatchCase[] LowerMatchCases(IReadOnlyList<MatchCaseSyntax> cases,
+        CancellationToken cancellationToken, MemoryGovernor? governor, bool classScope)
+    {
+        var lowered = new LoweredMatchCase[cases.Count];
+        for (var index = 0; index < lowered.Length; index++)
+        {
+            var matchCase = cases[index];
+            lowered[index] = new LoweredMatchCase(matchCase, LoweredPatternPreparation.Prepare(matchCase.Pattern),
+                LowerStatements(matchCase.Body, cancellationToken, governor, classScope),
+                matchCase.Guard is null ? null : LowerExpression(matchCase.Guard));
+        }
+        return lowered;
+    }
+
+    private static LoweredExceptClause[] LowerExceptClauses(IReadOnlyList<ExceptClauseSyntax> clauses,
+        CancellationToken cancellationToken, MemoryGovernor? governor, bool classScope)
+    {
+        if (clauses.Count == 0) return [];
+        var lowered = new LoweredExceptClause[clauses.Count];
+        for (var index = 0; index < lowered.Length; index++)
+        {
+            var clause = clauses[index];
+            lowered[index] = new LoweredExceptClause(clause, LowerStatements(clause.Body, cancellationToken, governor, classScope),
+                clause.ExceptionTypeExpression is null ? null : LowerExpression(clause.ExceptionTypeExpression));
+        }
+        return lowered;
     }
 
     internal static LoweredExpression LowerExpression(ExpressionSyntax expression)

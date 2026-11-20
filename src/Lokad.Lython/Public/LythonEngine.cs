@@ -107,7 +107,7 @@ public sealed class LythonEngine
         {
             if (isValid && script is not null)
             {
-                var loweredScript = LoweredScript.Lower(script);
+                var loweredScript = LoweredScript.Lower(script, cancellationToken, governor);
                 governor.ThrowIfAdmissionFailed();
                 PythonTokenization.CheckCancellation(cancellationToken, 0);
                 // Invalid source never executes. Other compiler defects surface

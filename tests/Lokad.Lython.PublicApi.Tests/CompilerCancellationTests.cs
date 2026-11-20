@@ -32,17 +32,20 @@ public sealed class CompilerCancellationTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void CancellationDuringAnnotationStorageUnwindsCompilationAndPreservesRefusal(bool refuse)
+    [InlineData(AnnotationSource, false)]
+    [InlineData(AnnotationSource, true)]
+    [InlineData(ClassFormatSource, false)]
+    [InlineData(ClassFormatSource, true)]
+    [InlineData(ClassLambdaSource, false)]
+    [InlineData(ClassLambdaSource, true)]
+    public void CancellationDuringPreparedStorageUnwindsCompilationAndPreservesRefusal(string source, bool refuse)
     {
         var budget = new LythonMemoryBudget(1024 * 1024);
         using var cancellation = new CancellationTokenSource();
-        using var supplied = new CancellingScope(budget.CreateScope(), cancellation, refuse);
-        using (var script = new LythonEngine().Compile("""
-            from __future__ import annotations
-            def helper(value: list[str]): pass
-            """, supplied, cancellation.Token))
+        // Class names use a temporary frontend workspace. Wait for its refund
+        // so these cases interrupt code preparation rather than name binding.
+        using var supplied = new CancellingScope(budget.CreateScope(), cancellation, refuse, afterRefund: source != AnnotationSource);
+        using (var script = new LythonEngine().Compile(source, supplied, cancellation.Token))
         {
             Assert.True(cancellation.IsCancellationRequested);
             Assert.False(script.IsValid);
@@ -63,26 +66,35 @@ public sealed class CompilerCancellationTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
+    private const string AnnotationSource = "from __future__ import annotations\ndef helper(value: list[str]): pass";
+    private const string ClassFormatSource = "class Helper:\n def apply(self, value): return '{value}'.format(value=value)";
+    private const string ClassLambdaSource = "class Helper:\n apply = lambda self, value: '{value}'.format(value=value)";
+
     // A real compiler working-storage admission supplies the cancellation window,
     // after lexing/parsing, without timing or a new production checkpoint hook.
-    private sealed class CancellingScope(ILythonMemoryScope inner, CancellationTokenSource cancellation, bool refuse) : ILythonMemoryScope
+    private sealed class CancellingScope(ILythonMemoryScope inner, CancellationTokenSource cancellation, bool refuse,
+        bool afterRefund) : ILythonMemoryScope
     {
-        public ILythonMemoryScope CreateScope() => new CancellingScope(inner.CreateScope(), cancellation, refuse);
+        public ILythonMemoryScope CreateScope() => new CancellingScope(inner.CreateScope(), cancellation, refuse, afterRefund);
         public bool TryReserve(long bytes, [NotNullWhen(true)] out ILythonMemoryReservation? reservation)
         {
             if (!inner.TryReserve(bytes, out var result)) { reservation = null; return false; }
-            reservation = new CancellingReservation(result, cancellation, refuse);
+            reservation = new CancellingReservation(result, cancellation, refuse, afterRefund);
             return true;
         }
         public void Dispose() => inner.Dispose();
     }
 
-    private sealed class CancellingReservation(ILythonMemoryReservation inner, CancellationTokenSource cancellation, bool refuse) : ILythonMemoryReservation
+    private sealed class CancellingReservation(ILythonMemoryReservation inner, CancellationTokenSource cancellation, bool refuse,
+        bool afterRefund) : ILythonMemoryReservation
     {
+        private bool _refunded;
+
         public long Bytes => inner.Bytes;
         public bool TryResize(long bytes)
         {
-            if (bytes > inner.Bytes)
+            if (bytes < inner.Bytes) _refunded = true;
+            if (bytes > inner.Bytes && (!afterRefund || _refunded))
             {
                 cancellation.Cancel();
                 if (refuse) return false;

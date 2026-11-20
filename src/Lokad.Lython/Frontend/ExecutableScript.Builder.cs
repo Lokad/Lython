@@ -28,16 +28,17 @@ internal sealed partial class ExecutableScript
         // annotations. Prepare their namespace code without evaluating them.
         foreach (var syntax in lowered.Syntax.PreparedCallables)
         {
+            PythonTokenization.CheckCancellation(cancellationToken, 0);
             switch (syntax)
             {
                 case LambdaExpressionSyntax lambdaSyntax:
                     var lambda = lambdaSyntax.PreparedCallable ?? (LoweredLambdaExpression)LoweredScript.LowerStandaloneExpression(lambdaSyntax);
-                    if (lambda.PreparedCode is null) CompileNamespaceLambda(lambda);
+                    if (lambda.PreparedCode is null) CompileNamespaceLambda(lambda, cancellationToken, governor);
                     break;
                 case GeneratorExpressionSyntax generatorSyntax:
                     var generator = generatorSyntax.PreparedCallable ?? (LoweredGeneratorExpression)LoweredScript.LowerStandaloneExpression(generatorSyntax);
                     if (generator.PreparedCode is null)
-                        generator.CompleteCompilation(new Builder(FunctionParameterLayout.Create([]), true, GeneratorFacts(generator))
+                        generator.CompleteCompilation(new Builder(FunctionParameterLayout.Create([]), true, GeneratorFacts(generator), cancellationToken, governor)
                             .CompileCodeObject("<genexpr>", [], generator));
                     break;
                 default: throw new InvalidOperationException("Unexpected prepared callable syntax.");
@@ -51,12 +52,13 @@ internal sealed partial class ExecutableScript
     private static ScopeDirectiveFacts GeneratorFacts(LoweredGeneratorExpression expression)
         => expression.ScopeFacts with { LocalNames = new HashSet<string>(expression.ScopeFacts.LocalNames, StringComparer.Ordinal) { ".0" } };
 
-    private static void CompileNamespaceLambda(LoweredLambdaExpression lambda)
-        => lambda.CompleteCompilation(new Builder(lambda.ParameterLayout, lambda.IsGenerator, lambda.ScopeFacts)
+    private static void CompileNamespaceLambda(LoweredLambdaExpression lambda, CancellationToken cancellationToken, MemoryGovernor? governor)
+        => lambda.CompleteCompilation(new Builder(lambda.ParameterLayout, lambda.IsGenerator, lambda.ScopeFacts, cancellationToken, governor)
             .CompileCodeObject("<lambda>", lambda.FunctionBody, qualifiedName: lambda.Lambda.PreparedQualifiedName), namespaceClosure: true);
 
-    internal static ExecutableCodeObject CompileClassFunction(LoweredFunctionDefinitionStatement function)
-        => new Builder(function.ParameterLayout, function.Syntax.IsGenerator, function.ScopeFacts)
+    internal static ExecutableCodeObject CompileClassFunction(LoweredFunctionDefinitionStatement function,
+        CancellationToken cancellationToken = default, MemoryGovernor? governor = null)
+        => new Builder(function.ParameterLayout, function.Syntax.IsGenerator, function.ScopeFacts, cancellationToken, governor)
             .CompileCodeObject(function.Syntax.DeclaredName, function.Body, qualifiedName: function.Syntax.PreparedQualifiedName);
 
     private sealed partial class Builder
@@ -95,8 +97,12 @@ internal sealed partial class ExecutableScript
         private readonly CancellationToken _compilationCancellation;
         private readonly MemoryGovernor? _compilationGovernor;
 
-        internal Builder(FunctionParameterLayout parameterLayout, bool generator, ScopeDirectiveFacts scopeFacts)
-            : this(parameterLayout, null, scopeFacts) { _generator = generator; }
+        internal Builder(FunctionParameterLayout parameterLayout, bool generator, ScopeDirectiveFacts scopeFacts,
+            CancellationToken cancellationToken, MemoryGovernor? governor)
+            : this(parameterLayout, null, scopeFacts, compilationCancellation: cancellationToken, compilationGovernor: governor)
+        {
+            _generator = generator;
+        }
 
         internal Builder(
             FunctionParameterLayout? parameterLayout,
