@@ -23,13 +23,23 @@ remain in its own record.
 removes the per-definition wrapper in a private source pair. Ordinary rule
 allocation falls 11.24% and compile-to-result improves slightly. Ordinary
 warm CPU rises 1.72–2.88%. Other warm timings remain uncertain. The revised
-cleanup route needs separate confirmation.
+cleanup route was checked in B1165.
 
 [B1165 default cleanup refinement](results/2026-11-20-frame-default-refinement/README.md)
 keeps frame-owned defaults private. Ordinary warm CPU spans zero after
 restoring the native prefix's cleanup. Eager and computed defaults still
 have adverse CPU pairings, with retained allocation savings. B1164 and
 B1165 preserve the original and revised source pairs.
+
+[Fixed split range follow-up](results/2026-11-20-fixed-split-followup/README.md)
+keeps the stack scratch variant private after noisy local timings and
+review of B1083. The same tradeoff still replaces bulk counting with
+per-field sizing and a saved coordinate for each field.
+
+[B1166 method-format continuation](results/2026-11-20-method-format-continuation/README.md)
+keeps the combined change private. Named formatting allocates 10.73% less
+and uses less CPU. Every two-width nested pairing uses 2.21–4.64% more CPU.
+Shipment warm and the unchanged invoice span zero.
 
 ## November 18–19, 0.11.0 compiler and call work
 
