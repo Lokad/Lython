@@ -365,8 +365,24 @@ internal sealed partial class PyDict
     // Raw scans are live; Python iteration separately checks dictionary version.
     private IEnumerable<KeyValuePair<object, object>> NativeEntries()
     {
-        for (var index = 0; index < NativeExtent; index++)
-            if (IsNativeLive(index)) yield return new(_nativeItems![index].Key!, ReadNativeValue(index));
+        var next = 0;
+        while (TryTakeNativeEntry(ref next, out var pair))
+            yield return pair;
+    }
+
+    private bool TryTakeNativeEntry(ref int next, out KeyValuePair<object, object> pair,
+        LythonRuntime.ExecutionContext? context = null, LythonSourceSpan? span = null)
+    {
+        while (next < NativeExtent)
+        {
+            var index = next++;
+            if ((index & 1023) == 0) context?.CheckExecution(span);
+            if (!IsNativeLive(index)) continue;
+            pair = new(_nativeItems![index].Key!, ReadNativeValue(index));
+            return true;
+        }
+        pair = default;
+        return false;
     }
 
     private IEnumerable<object> NativeKeys()

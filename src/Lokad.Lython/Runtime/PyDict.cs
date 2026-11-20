@@ -592,22 +592,43 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
     public PyString RenderInterpolated(PyRenderingContext context) => PyRendering.ToReprPyString(this, context);
 
     public IEnumerator<KeyValuePair<object, object>> GetEnumerator()
-        => EnumerateItems(_version).GetEnumerator();
+        => EnumerateItems(new ItemCursor(this)).GetEnumerator();
 
-    private IEnumerable<KeyValuePair<object, object>> EnumerateItems(int expectedVersion)
+    private static IEnumerable<KeyValuePair<object, object>> EnumerateItems(ItemCursor cursor)
     {
-        using var enumerator = _items.Entries.GetEnumerator();
-        while (true)
+        try
         {
-            EnsureUnmodified(expectedVersion);
-            if (!enumerator.MoveNext())
-            {
-                yield break;
-            }
-
-            var pair = enumerator.Current;
-            yield return new KeyValuePair<object, object>(pair.Key, pair.Value);
+            while (cursor.MoveNext(out var pair))
+                yield return pair;
         }
+        finally { cursor.Dispose(); }
+    }
+
+    internal struct ItemCursor(PyDict dictionary)
+    {
+        private readonly PyDict _dictionary = dictionary;
+        private readonly int _version = dictionary._version;
+        private int _next;
+        private IEnumerator<KeyValuePair<object, object>>? _bridge;
+
+        internal bool MoveNext(out KeyValuePair<object, object> pair,
+            LythonRuntime.ExecutionContext? context = null, LythonSourceSpan? span = null)
+        {
+            _dictionary.EnsureUnmodified(_version);
+            if (_bridge is null && _dictionary._nativeItems is not null)
+                return _dictionary.TryTakeNativeEntry(ref _next, out pair, context, span);
+
+            _bridge ??= _dictionary._items.Entries.GetEnumerator();
+            if (_bridge.MoveNext())
+            {
+                pair = _bridge.Current;
+                return true;
+            }
+            pair = default;
+            return false;
+        }
+
+        internal void Dispose() => _bridge?.Dispose();
     }
 
     System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();

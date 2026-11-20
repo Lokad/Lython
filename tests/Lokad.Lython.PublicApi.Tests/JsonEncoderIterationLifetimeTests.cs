@@ -91,6 +91,50 @@ public sealed class JsonEncoderIterationLifetimeTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task DictionaryEncoderChecksLiveItemsAfterDefaultCallback(bool asynchronous)
+    {
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using (var script = new LythonEngine().Compile("""
+            import json
+            def encode(change_size):
+                record = {'first': {1}, 'next': 1}
+                def fallback(value):
+                    with open('/value') as source:
+                        text = source.read()
+                    if change_size:
+                        record['new'] = 1
+                    else:
+                        record['next'] = 2
+                    return text
+                return ''.join(json.JSONEncoder(default=fallback).iterencode(record))
+            assert encode(False) == '{"first": "v", "next": 2}'
+            try:
+                encode(True)
+            except RuntimeError as error:
+                assert 'dictionary changed size' in str(error)
+            else:
+                raise AssertionError('encoder accepted a change to the key set')
+            """, budget))
+        {
+            Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
+            var baseline = budget.ReservedBytes;
+            var host = new MockLythonHost();
+            var delayed = new DelayedLythonHost();
+            host.SeedFile("/value", "v");
+            delayed.SeedFile("/value", "v");
+            using (var result = asynchronous ? await script.RunAsync(delayed) : script.Run(host))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                if (asynchronous) Assert.True(delayed.CompletedAsynchronously > 0);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task EarlierChunksRemainIndependentAcrossLargeAndSmallValues(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);

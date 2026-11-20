@@ -216,7 +216,7 @@ internal sealed partial class LythonRuntime
             public bool IsDefault;
             public readonly object Container = container;
             public IReadOnlyList<object>? Sequence;
-            public IEnumerator<KeyValuePair<object, object>>? DictPairs;
+            public PyDict.ItemCursor DictPairs;
             public List<(object OriginalKey, object Value)>? SortedEntries;
             public int SortedIndex;
             public int Index;
@@ -598,12 +598,12 @@ internal sealed partial class LythonRuntime
 
         private void PrepareDictFrame(PyDict dict, int depth, bool sorted)
         {
-            // Reserve the frame slot before retaining any enumerator or sorted pairs.
+            // Reserve the frame slot before retaining an item cursor or sorted pairs.
             if (_frameCount == _frames.Length) GrowFrameStorage();
             var frame = new EmitFrame(dict, depth);
             if (!sorted)
             {
-                frame.DictPairs = dict.GetEnumerator();
+                frame.DictPairs = new PyDict.ItemCursor(dict);
                 PushFrame(frame);
                 return;
             }
@@ -642,8 +642,7 @@ internal sealed partial class LythonRuntime
                 }
                 else
                 {
-                    if (frame.DictPairs is null || !frame.DictPairs.MoveNext()) return new((false, PyNone.Instance, PyNone.Instance));
-                    var pair = frame.DictPairs.Current;
+                    if (!frame.DictPairs.MoveNext(out var pair, _context, _span)) return new((false, PyNone.Instance, PyNone.Instance));
                     key = pair.Key; value = pair.Value;
                 }
                 if (JsonModule.IsSupportedJsonObjectKey(key)) return new((true, key, value));
@@ -669,7 +668,7 @@ internal sealed partial class LythonRuntime
             var pairs = frame.DictPairs;
             _markers?.Remove(frame.Container);
             frame = default;
-            pairs?.Dispose();
+            pairs.Dispose();
             _context.MemoryGovernor.Release(bytes);
         }
     }
