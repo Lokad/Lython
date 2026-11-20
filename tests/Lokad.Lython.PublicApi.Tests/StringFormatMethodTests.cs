@@ -450,6 +450,71 @@ __lython_file.close()
             host.ReadText("/out.txt"));
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task NestedFieldResumesAfterEarlierFieldsAndKeepsScratchFunded(bool cancel)
+    {
+        const string source = """
+            specs = []
+            class Echo:
+                def __format__(self, spec):
+                    specs.append(spec)
+                    return spec
+            class Width:
+                def __getitem__(self, key):
+                    with open('/width') as file:
+                        return {'value': int(file.read())}
+            count = 7
+            row = {'label': 'café'}
+            print('{row[label]}|{echo:{count}}|{count:0{width[key][value]}d}|{echo:{row[label]}}'.format(
+                row=row, echo=Echo(), count=count, width=Width()))
+            print(specs)
+            """;
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
+        Assert.True(script.IsValid);
+        var baseline = budget.ReservedBytes;
+        var host = new DelayedLythonHost();
+        host.SeedFile("/width", "3");
+        var entered = cancel ? host.PauseReadUntilCancellation("/width") : null;
+        using var cancellation = new CancellationTokenSource();
+        var pending = script.RunAsync(host, cancellationToken: cancellation.Token);
+        try
+        {
+            if (entered is not null)
+            {
+                var first = await Task.WhenAny(entered, pending).WaitAsync(TimeSpan.FromSeconds(5));
+                Assert.Same(entered, first);
+                Assert.False(pending.IsCompleted);
+                Assert.True(budget.ReservedBytes > baseline);
+                cancellation.Cancel();
+            }
+
+            using var result = await pending.WaitAsync(TimeSpan.FromSeconds(5));
+            if (cancel)
+            {
+                Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
+                Assert.Empty(result.StandardOutput);
+            }
+            else
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal("café|7|007|café\n['7', 'café']\n", result.StandardOutput);
+            }
+            Assert.Equal(1, host.ClosedFileCount);
+        }
+        finally
+        {
+            cancellation.Cancel();
+            using var drained = await pending.WaitAsync(TimeSpan.FromSeconds(5));
+        }
+
+        Assert.Equal(baseline, budget.ReservedBytes);
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Fact]
     public void FormatMethodOutput_ObservesExecutionMemoryBudget()
     {

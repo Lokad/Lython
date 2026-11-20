@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1205 synchronous format traversal](results/2026-11-20-synchronous-format-traversal/README.md)
+keeps the renderer prototype private. Nested widths improve 2.91–6.22% in
+elapsed with lower CPU. Named and positional shipment elapsed shift
+adversely at matching accounted peaks and effectively flat allocation.
+Forwarding and invoice elapsed span zero. Preserve the complete source
+pair, independent same-source controls and both adverse shipments.
+
 [B1204 factory and report attribution](results/2026-11-20-current-factory-report-attribution/README.md)
 locates current work in both reports and the eager factory. Named shipment
 has 380 formatting ancestry samples. The original capture limit interrupted
