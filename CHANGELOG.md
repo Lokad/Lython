@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Emit ordinary expressions, defaults and eager annotations directly from
+  validated syntax. Reuse prepared comprehension bindings and keep lowered
+  expressions for runtime evaluation where needed.
 - Run class suites on the same instruction engine as functions and modules.
   Reuse transient compiler buffers across sibling scopes and remove the two
   lowered statement interpreters.

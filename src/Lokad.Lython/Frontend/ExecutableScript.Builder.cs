@@ -213,11 +213,11 @@ internal sealed partial class ExecutableScript
             var entryBlock = CreateBlock();
             int? exitBlock;
             if (generatorExpression is not null)
-                exitBlock = CompileComprehensionBody(generatorExpression.Clauses, generatorExpression.ItemExpression,
+                exitBlock = CompileComprehensionBody(generatorExpression.Generator.Clauses, generatorExpression.Generator.ItemExpression,
                     null, generatorExpression.Span, entryBlock, yielding: true);
             else if (lambda is not null)
             {
-                var resultBlock = CompileExpression(lambda.Body, entryBlock);
+                var resultBlock = CompileExpression(lambda.Lambda.Body, entryBlock);
                 AddInstruction(resultBlock, ExecutableInstruction.Return(lambda.Span));
                 exitBlock = null;
             }

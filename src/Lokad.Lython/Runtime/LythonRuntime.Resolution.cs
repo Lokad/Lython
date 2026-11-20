@@ -528,7 +528,7 @@ internal sealed partial class LythonRuntime
     private static object EvaluateGeneratorExpression(GeneratorExpressionSyntax generator, ExecutionContext context)
     {
         var prepared = generator.PreparedCallable.RequireNotNull();
-        var outer = prepared.Clauses[0].Iterable;
+        var outer = prepared.OuterIterable;
         return PyGenerator.CreateExpressionAsync(prepared.Code, context,
             EvaluateLoweredExpression(outer, context), outer.Span, generator.Span, false)
             .GetAwaiter().GetResult();

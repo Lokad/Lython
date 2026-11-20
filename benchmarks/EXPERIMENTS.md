@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1197 direct expression emission](results/2026-11-20-eager-expression-emission/README.md)
+removes eager expression lowering and reuses comprehension binding facts.
+Manifest compile-to-result elapsed falls 1.61–3.50% with lower CPU.
+Dataclass elapsed and eager-rule warm timings remain mixed.
+
 [B1196 executable classes against CPython](results/2026-11-20-cpython-executable-classes/README.md)
 measures the class-suite delivery. The inherited dataclass script takes
 0.080–0.082× as long from compile to result. Eager rules run 3.30–3.42× as

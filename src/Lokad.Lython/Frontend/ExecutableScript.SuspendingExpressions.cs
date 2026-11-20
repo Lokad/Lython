@@ -28,7 +28,7 @@ internal sealed partial class ExecutableScript
         private void EmitOperation(ExecutableOperation operation, LythonSourceSpan span, int block)
             => AddInstruction(block, ExecutableInstruction.ApplyOperation(InternConstant(operation), span));
 
-        private int CompileExpandedCall(LoweredCallExpression call, int block)
+        private int CompileExpandedCall(CallExpressionSyntax call, int block)
         {
             block = CompileExpression(call.Target, block);
             var positionalCount = call.Arguments.Count - 1;
@@ -43,7 +43,7 @@ internal sealed partial class ExecutableScript
                 // A dictionary display used directly as the mapping creates a
                 // private dictionary. Its keys and values can still have aliases.
                 EmitOperation(new ExecutableCallWithKeywordMapping(positionalCount, call.Target.Span,
-                    mapping.Expression.Span, mapping.Expression is LoweredDictLiteralExpression), call.Span, block);
+                    mapping.Expression.Span, mapping.Expression is DictLiteralExpressionSyntax), call.Span, block);
                 return block;
             }
 
@@ -58,7 +58,7 @@ internal sealed partial class ExecutableScript
             return block;
         }
 
-        private int CompileFormattedParts(IReadOnlyList<LoweredFormattedStringPart> parts, LythonSourceSpan span, int block)
+        private int CompileFormattedParts(IReadOnlyList<FormattedStringPartSyntax> parts, LythonSourceSpan span, int block)
         {
             if (parts.Count == 0)
             {
@@ -74,14 +74,14 @@ internal sealed partial class ExecutableScript
             if (append) AddInstruction(block, ExecutableInstruction.StartFormattedString(0, span));
             foreach (var part in parts)
             {
-                if (part is LoweredFormattedStringTextPart text)
+                if (part is FormattedStringTextPartSyntax text)
                 {
                     var literal = PyString.FromString(text.Text);
                     initialCapacity = Math.Min(256, initialCapacity + Math.Min(256, literal.ByteLength));
                     if (append) AddInstruction(block, ExecutableInstruction.AppendFormattedText(InternConstant(literal), span));
                     else AddInstruction(block, ExecutableInstruction.LoadConst(InternConstant(literal), span));
                 }
-                else if (part is LoweredFormattedStringExpressionPart field)
+                else if (part is FormattedStringExpressionPartSyntax field)
                 {
                     block = CompileExpression(field.Expression, block);
                     if (field.Conversion is { } conversion)
@@ -109,7 +109,7 @@ internal sealed partial class ExecutableScript
             return block;
         }
 
-        private int CompileDictionaryDisplay(LoweredDictLiteralExpression dict, int block)
+        private int CompileDictionaryDisplay(DictLiteralExpressionSyntax dict, int block)
         {
             EmitOperation(new ExecutableStartDisplay(ExecutableDisplayKind.Dictionary), dict.Span, block);
             foreach (var item in dict.Items)
@@ -117,12 +117,12 @@ internal sealed partial class ExecutableScript
                 block = CompileExpression(item.Key, block);
                 if (!item.IsUnpacking) block = CompileExpression(item.Value, block);
                 EmitOperation(new ExecutableStoreDictionaryItem(item.IsUnpacking),
-                    item.IsUnpacking ? item.Syntax.Span : item.Key.Span, block);
+                    item.IsUnpacking ? item.Span : item.Key.Span, block);
             }
             return block;
         }
 
-        private int CompileDisplay(IReadOnlyList<LoweredCollectionDisplayItem> items, ExecutableDisplayKind kind, LythonSourceSpan span, int block)
+        private int CompileDisplay(IReadOnlyList<CollectionDisplayItemSyntax> items, ExecutableDisplayKind kind, LythonSourceSpan span, int block)
         {
             EmitOperation(new ExecutableStartDisplay(kind), span, block);
             foreach (var item in items)

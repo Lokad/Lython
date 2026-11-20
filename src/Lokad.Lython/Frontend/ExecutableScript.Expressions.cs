@@ -9,95 +9,95 @@ internal sealed partial class ExecutableScript
 {
     private sealed partial class Builder
     {
-        private int CompileExpression(ExpressionSyntax expression, int currentBlock)
-            => CompileExpression(LoweredScript.LowerExpression(expression), currentBlock);
-
         private int CompileExpression(LoweredExpression expression, int currentBlock)
+            => CompileExpression(expression.Syntax, currentBlock);
+
+        private int CompileExpression(ExpressionSyntax expression, int currentBlock)
         {
             switch (expression)
             {
-                case LoweredUnpackedTypeExpression unpacked:
+                case UnpackedTypeExpressionSyntax unpacked:
                     currentBlock = CompileExpression(unpacked.Value, currentBlock);
                     AddInstruction(currentBlock, ExecutableInstruction.UnpackValues(new UnpackingLayout(1, -1), unpacked.Span));
                     return currentBlock;
-                case LoweredYieldExpression yielded:
+                case YieldExpressionSyntax yielded:
                     if (yielded.Value is null)
                         AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(PyNone.Instance), yielded.Span));
                     else currentBlock = CompileExpression(yielded.Value, currentBlock);
-                    AddInstruction(currentBlock, ExecutableInstruction.Yield(yielded.Yield.Delegated, yielded.Span));
+                    AddInstruction(currentBlock, ExecutableInstruction.Yield(yielded.Delegated, yielded.Span));
                     return currentBlock;
-                case LoweredParenthesizedExpression parenthesized:
+                case ParenthesizedExpressionSyntax parenthesized:
                     currentBlock = CompileExpression(parenthesized.Inner, currentBlock);
                     return currentBlock;
 
-                case LoweredStringLiteralExpression text:
-                    AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(text.Value), text.Span));
+                case StringLiteralExpressionSyntax text:
+                    AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(PyString.FromString(text.Value)), text.Span));
                     return currentBlock;
 
-                case LoweredFormattedStringExpression formatted:
+                case FormattedStringExpressionSyntax formatted:
                     return CompileFormattedParts(formatted.Parts, formatted.Span, currentBlock);
 
-                case LoweredLambdaExpression lambda:
-                    return CompileLambda(lambda, currentBlock);
+                case LambdaExpressionSyntax lambda:
+                    return CompileLambda((LoweredLambdaExpression)LoweredScript.LowerExpression(lambda), currentBlock);
 
-                case LoweredBytesLiteralExpression bytes:
-                    AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(bytes.Value), bytes.Span));
+                case BytesLiteralExpressionSyntax bytes:
+                    AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(new PyBytes(bytes.Value.ToArray())), bytes.Span));
                     return currentBlock;
 
-                case LoweredIntegerLiteralExpression integer:
+                case IntegerLiteralExpressionSyntax integer:
                     AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(integer.Value), integer.Span));
                     return currentBlock;
 
-                case LoweredImaginaryLiteralExpression imaginary:
-                    AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(new PyComplex(0, imaginary.ImaginaryPart)), imaginary.Span));
+                case ImaginaryLiteralExpressionSyntax imaginary:
+                    AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(new PyComplex(0, imaginary.Value)), imaginary.Span));
                     return currentBlock;
 
-                case LoweredFloatLiteralExpression floating:
+                case FloatLiteralExpressionSyntax floating:
                     AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(floating.Value), floating.Span));
                     return currentBlock;
 
-                case LoweredBooleanLiteralExpression boolean:
-                    AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(boolean.Literal.Value), boolean.Span));
+                case BooleanLiteralExpressionSyntax boolean:
+                    AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(boolean.Value), boolean.Span));
                     return currentBlock;
 
-                case LoweredNoneLiteralExpression none:
+                case NoneLiteralExpressionSyntax none:
                     AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(PyNone.Instance), none.Span));
                     return currentBlock;
 
-                case LoweredEllipsisLiteralExpression ellipsis:
+                case EllipsisLiteralExpressionSyntax ellipsis:
                     AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(PyEllipsis.Instance), ellipsis.Span));
                     return currentBlock;
 
-                case LoweredIdentifierExpression identifier:
-                    CompileLoadIdentifier(identifier.Identifier.Name, identifier.Span, currentBlock);
+                case IdentifierExpressionSyntax identifier:
+                    CompileLoadIdentifier(identifier.Name, identifier.Span, currentBlock);
                     return currentBlock;
 
-                case LoweredMemberExpression member:
+                case MemberExpressionSyntax member:
                     currentBlock = CompileExpression(member.Target, currentBlock);
-                    AddInstruction(currentBlock, ExecutableInstruction.LoadMember(InternName(member.Member.MemberName), AllocateLookupCache(), member.Span));
+                    AddInstruction(currentBlock, ExecutableInstruction.LoadMember(InternName(member.MemberName), AllocateLookupCache(), member.Span));
                     return currentBlock;
 
-                case LoweredCallExpression call:
+                case CallExpressionSyntax call:
                     return CompileCallExpression(call, currentBlock);
 
-                case LoweredListComprehensionExpression comprehension:
-                    return CompileComprehension(comprehension.ScopeFacts, comprehension.Clauses,
+                case ListComprehensionExpressionSyntax comprehension:
+                    return CompileComprehension(comprehension, comprehension.Clauses,
                         comprehension.ItemExpression, null, ExecutableDisplayKind.List, comprehension.Span, currentBlock);
 
-                case LoweredGeneratorExpression generator:
+                case GeneratorExpressionSyntax generator:
                     return CompileGeneratorExpression(generator, currentBlock);
 
-                case LoweredSetComprehensionExpression comprehension:
-                    return CompileComprehension(comprehension.ScopeFacts, comprehension.Clauses,
+                case SetComprehensionExpressionSyntax comprehension:
+                    return CompileComprehension(comprehension, comprehension.Clauses,
                         comprehension.ItemExpression, null, ExecutableDisplayKind.Set, comprehension.Span, currentBlock);
 
-                case LoweredDictComprehensionExpression comprehension:
-                    return CompileComprehension(comprehension.ScopeFacts, comprehension.Clauses,
+                case DictComprehensionExpressionSyntax comprehension:
+                    return CompileComprehension(comprehension, comprehension.Clauses,
                         comprehension.KeyExpression, comprehension.ValueExpression, ExecutableDisplayKind.Dictionary,
                         comprehension.Span, currentBlock);
 
-                case LoweredListLiteralExpression list:
-                    if (list.List.HasUnpacking)
+                case ListLiteralExpressionSyntax list:
+                    if (list.HasUnpacking)
                     {
                         return CompileDisplay(list.Items, ExecutableDisplayKind.List, list.Span, currentBlock);
                     }
@@ -109,8 +109,8 @@ internal sealed partial class ExecutableScript
                     AddInstruction(currentBlock, ExecutableInstruction.MakeList(list.Items.Count, list.Span));
                     return currentBlock;
 
-                case LoweredTupleLiteralExpression tuple:
-                    if (tuple.Tuple.HasUnpacking)
+                case TupleLiteralExpressionSyntax tuple:
+                    if (tuple.HasUnpacking)
                     {
                         return CompileDisplay(tuple.Items, ExecutableDisplayKind.Tuple, tuple.Span, currentBlock);
                     }
@@ -126,8 +126,8 @@ internal sealed partial class ExecutableScript
                     AddInstruction(currentBlock, ExecutableInstruction.MakeTuple(tuple.Items.Count, tuple.Span));
                     return currentBlock;
 
-                case LoweredSetLiteralExpression set:
-                    if (set.Set.HasUnpacking)
+                case SetLiteralExpressionSyntax set:
+                    if (set.HasUnpacking)
                     {
                         return CompileDisplay(set.Items, ExecutableDisplayKind.Set, set.Span, currentBlock);
                     }
@@ -139,8 +139,8 @@ internal sealed partial class ExecutableScript
                     AddInstruction(currentBlock, ExecutableInstruction.MakeSet(set.Items.Count, set.Span));
                     return currentBlock;
 
-                case LoweredDictLiteralExpression dict:
-                    if (dict.Items.Count != 0 && dict.Items.All(item => !item.IsUnpacking && item.Key is LoweredStringLiteralExpression))
+                case DictLiteralExpressionSyntax dict:
+                    if (dict.Items.Count != 0 && dict.Items.All(item => !item.IsUnpacking && item.Key is StringLiteralExpressionSyntax))
                     {
                         // Immutable keys belong to compiled storage, as literal
                         // tuples do. Preserve the constant pool's key identities;
@@ -149,7 +149,7 @@ internal sealed partial class ExecutableScript
                         for (var i = 0; i < keys.Length; i++)
                         {
                             var item = dict.Items[i];
-                            keys[i] = _buffers.Constants[InternConstant(((LoweredStringLiteralExpression)item.Key).Value)]!;
+                            keys[i] = _buffers.Constants[InternConstant(PyString.FromString(((StringLiteralExpressionSyntax)item.Key).Value))]!;
                             currentBlock = CompileExpression(item.Value, currentBlock);
                         }
                         AddInstruction(currentBlock, ExecutableInstruction.MakeRecord(
@@ -170,12 +170,12 @@ internal sealed partial class ExecutableScript
                     // names still supply the very same string keys.
                     var recordCache = dict.Items.Count > 1 &&
                         (_parameterLayout is not null || _buffers.Loops.Count != 0 || _buffers.ComprehensionNames.Count != 0) &&
-                        dict.Items.All(item => item.Key is LoweredIdentifierExpression or LoweredStringLiteralExpression)
+                        dict.Items.All(item => item.Key is IdentifierExpressionSyntax or StringLiteralExpressionSyntax)
                         ? AllocateLookupCache() : -1;
                     AddInstruction(currentBlock, ExecutableInstruction.MakeDict(dict.Items.Count, recordCache, dict.Span));
                     return currentBlock;
 
-                case LoweredSubscriptExpression subscript:
+                case SubscriptExpressionSyntax subscript:
                     currentBlock = CompileExpression(subscript.Target, currentBlock);
                     currentBlock = CompileExpression(subscript.Index, currentBlock);
                     // Functions and retained generators already own lookup
@@ -186,7 +186,7 @@ internal sealed partial class ExecutableScript
                             ? AllocateLookupCache() : -1));
                     return currentBlock;
 
-                case LoweredSliceExpression slice:
+                case SliceExpressionSyntax slice:
                     currentBlock = CompileExpression(slice.Target, currentBlock);
                     var parts = ExecutableSliceParts.None;
                     if (slice.Start is not null)
@@ -207,7 +207,7 @@ internal sealed partial class ExecutableScript
                     AddInstruction(currentBlock, ExecutableInstruction.Slice(parts, slice.Span));
                     return currentBlock;
 
-                case LoweredSliceValueExpression sliceValue:
+                case SliceValueExpressionSyntax sliceValue:
                     var valueParts = ExecutableSliceParts.None;
                     if (sliceValue.Start is not null)
                     {
@@ -227,29 +227,29 @@ internal sealed partial class ExecutableScript
                     AddInstruction(currentBlock, ExecutableInstruction.MakeSlice(valueParts, sliceValue.Span));
                     return currentBlock;
 
-                case LoweredBinaryExpression binary:
-                    if (binary.Binary.Operator is BinaryOperatorSyntax.Or or BinaryOperatorSyntax.And)
+                case BinaryExpressionSyntax binary:
+                    if (binary.Operator is BinaryOperatorSyntax.Or or BinaryOperatorSyntax.And)
                     {
                         return CompileShortCircuitExpression(binary, currentBlock);
                     }
 
                     currentBlock = CompileExpression(binary.Left, currentBlock);
                     currentBlock = CompileExpression(binary.Right, currentBlock);
-                    AddInstruction(currentBlock, ExecutableInstruction.Binary(binary.Binary.Operator, binary.Span));
+                    AddInstruction(currentBlock, ExecutableInstruction.Binary(binary.Operator, binary.Span));
                     return currentBlock;
 
-                case LoweredUnaryExpression unary:
+                case UnaryExpressionSyntax unary:
                     currentBlock = CompileExpression(unary.Operand, currentBlock);
-                    AddInstruction(currentBlock, ExecutableInstruction.Unary(MapUnaryOperator(unary.Unary.Operator), unary.Span));
+                    AddInstruction(currentBlock, ExecutableInstruction.Unary(MapUnaryOperator(unary.Operator), unary.Span));
                     return currentBlock;
 
-                case LoweredConditionalExpression conditional:
+                case ConditionalExpressionSyntax conditional:
                     return CompileConditionalExpression(conditional, currentBlock);
 
-                case LoweredChainedComparisonExpression chained:
+                case ChainedComparisonExpressionSyntax chained:
                     return CompileChainedComparisonExpression(chained, currentBlock);
 
-                case LoweredAssignmentExpression walrus:
+                case AssignmentExpressionSyntax walrus:
                     return CompileAssignmentExpression(walrus, currentBlock);
 
                 default:
@@ -262,24 +262,24 @@ internal sealed partial class ExecutableScript
         // for its deciding edge (CPython returns operands, not bools) and
         // test it with the left span like the lowered path does, so both
         // join edges arrive with the same stack depth.
-        private int CompileShortCircuitExpression(LoweredBinaryExpression binary, int currentBlock)
+        private int CompileShortCircuitExpression(BinaryExpressionSyntax binary, int currentBlock)
         {
             currentBlock = CompileExpression(binary.Left, currentBlock);
             AddInstruction(currentBlock, ExecutableInstruction.Dup(binary.Left.Span));
 
             var joinBlock = CreateBlock();
-            if (binary.Binary.Operator == BinaryOperatorSyntax.And)
+            if (binary.Operator == BinaryOperatorSyntax.And)
             {
                 AddInstruction(currentBlock, ExecutableInstruction.JumpIfFalse(joinBlock, binary.Left.Span));
-                AddInstruction(currentBlock, ExecutableInstruction.PopTop(binary.Binary.Span));
+                AddInstruction(currentBlock, ExecutableInstruction.PopTop(binary.Span));
                 currentBlock = CompileExpression(binary.Right, currentBlock);
             }
             else
             {
                 var rightBlock = CreateBlock();
                 AddInstruction(currentBlock, ExecutableInstruction.JumpIfFalse(rightBlock, binary.Left.Span));
-                AddInstruction(currentBlock, ExecutableInstruction.Jump(joinBlock, binary.Binary.Span));
-                AddInstruction(rightBlock, ExecutableInstruction.PopTop(binary.Binary.Span));
+                AddInstruction(currentBlock, ExecutableInstruction.Jump(joinBlock, binary.Span));
+                AddInstruction(rightBlock, ExecutableInstruction.PopTop(binary.Span));
                 currentBlock = CompileExpression(binary.Right, rightBlock);
             }
 
@@ -294,7 +294,7 @@ internal sealed partial class ExecutableScript
         // Keep raw rich results, like and/or: only intermediate results are
         // truth-tested, and the deciding result remains on the operand stack.
         // Retain the middle operand once for the next comparison.
-        private int CompileChainedComparisonExpression(LoweredChainedComparisonExpression chained, int currentBlock)
+        private int CompileChainedComparisonExpression(ChainedComparisonExpressionSyntax chained, int currentBlock)
         {
             var slot = InternSyntheticLocal("chain_left");
 
@@ -303,17 +303,17 @@ internal sealed partial class ExecutableScript
 
             var joinBlock = CreateBlock();
 
-            for (var i = 0; i < chained.ChainedComparison.Operators.Count; i++)
+            for (var i = 0; i < chained.Operators.Count; i++)
             {
                 AddInstruction(currentBlock, ExecutableInstruction.LoadLocal(slot, chained.Span));
                 currentBlock = CompileExpression(chained.Operands[i + 1], currentBlock);
-                if (i < chained.ChainedComparison.Operators.Count - 1)
+                if (i < chained.Operators.Count - 1)
                 {
                     AddInstruction(currentBlock, ExecutableInstruction.Dup(chained.Span));
                     AddInstruction(currentBlock, ExecutableInstruction.StoreLocal(slot, chained.Span));
                 }
-                AddInstruction(currentBlock, ExecutableInstruction.Binary(chained.ChainedComparison.Operators[i], chained.Span));
-                if (i < chained.ChainedComparison.Operators.Count - 1)
+                AddInstruction(currentBlock, ExecutableInstruction.Binary(chained.Operators[i], chained.Span));
+                if (i < chained.Operators.Count - 1)
                 {
                     AddInstruction(currentBlock, ExecutableInstruction.Dup(chained.Span));
                     AddInstruction(currentBlock, ExecutableInstruction.JumpIfFalse(joinBlock, chained.Span));
@@ -330,15 +330,15 @@ internal sealed partial class ExecutableScript
         // instead of paying one lowered-dispatch state machine per
         // evaluation. Scope facts resolve the target exactly like a plain
         // store in the same position.
-        private int CompileAssignmentExpression(LoweredAssignmentExpression walrus, int currentBlock)
+        private int CompileAssignmentExpression(AssignmentExpressionSyntax walrus, int currentBlock)
         {
             currentBlock = CompileExpression(walrus.Expression, currentBlock);
             AddInstruction(currentBlock, ExecutableInstruction.Dup(walrus.Expression.Span));
-            CompileStoreBoundName(walrus.Assignment.Name, walrus.Span, currentBlock);
+            CompileStoreBoundName(walrus.Name, walrus.Span, currentBlock);
             return currentBlock;
         }
 
-        private int CompileCallExpression(LoweredCallExpression call, int currentBlock)
+        private int CompileCallExpression(CallExpressionSyntax call, int currentBlock)
         {
             if (call.Arguments.Any(argument => argument.Kind is CallArgumentKind.StarredList or CallArgumentKind.StarredDictionary))
             {
@@ -347,21 +347,21 @@ internal sealed partial class ExecutableScript
 
             var exitBlock = currentBlock;
             var callTarget = call.Target;
-            while (callTarget is LoweredParenthesizedExpression parenthesized)
+            while (callTarget is ParenthesizedExpressionSyntax parenthesized)
                 callTarget = parenthesized.Inner;
-            var hasReceiver = callTarget is LoweredMemberExpression;
-            if (callTarget is LoweredMemberExpression member)
+            var hasReceiver = callTarget is MemberExpressionSyntax;
+            if (callTarget is MemberExpressionSyntax member)
             {
                 exitBlock = CompileExpression(member.Target, exitBlock);
-                var nameIndex = InternName(member.Member.MemberName);
+                var nameIndex = InternName(member.MemberName);
                 var cacheIndex = AllocateLookupCache();
                 AddInstruction(exitBlock, ExecutableInstruction.LoadCallMember(nameIndex, cacheIndex, member.Span));
             }
             else exitBlock = CompileExpression(call.Target, exitBlock);
-            if (call.Call.PreloadImplicitSuperArguments)
+            if (call.PreloadImplicitSuperArguments)
                 AddInstruction(exitBlock, ExecutableInstruction.PreloadImplicitSuperArguments(call.Span));
-            if (callTarget is LoweredMemberExpression { Member.MemberName: "join" }
-                && call.Arguments is [{ Kind: CallArgumentKind.Positional, Expression: LoweredGeneratorExpression generator }]
+            if (callTarget is MemberExpressionSyntax { MemberName: "join" }
+                && call.Arguments is [{ Kind: CallArgumentKind.Positional, Expression: GeneratorExpressionSyntax generator }]
                 && IsTrimmedSplitGenerator(generator))
                 exitBlock = CompileGeneratorExpression(generator, exitBlock, joinedTrimmedSplit: true);
             else
@@ -379,7 +379,7 @@ internal sealed partial class ExecutableScript
         // CompileIfStatement: the condition value feeds JumpIfFalse, and
         // exactly one side leaves its value for the join, so both edges
         // arrive with the same stack depth.
-        private int CompileConditionalExpression(LoweredConditionalExpression conditional, int currentBlock)
+        private int CompileConditionalExpression(ConditionalExpressionSyntax conditional, int currentBlock)
         {
             currentBlock = CompileExpression(conditional.Condition, currentBlock);
 
@@ -388,7 +388,7 @@ internal sealed partial class ExecutableScript
             var joinBlock = CreateBlock();
 
             AddInstruction(currentBlock, ExecutableInstruction.JumpIfFalse(alternativeBlock, conditional.Condition.Span));
-            AddInstruction(currentBlock, ExecutableInstruction.Jump(consequentBlock, conditional.Conditional.Span));
+            AddInstruction(currentBlock, ExecutableInstruction.Jump(consequentBlock, conditional.Span));
 
             var consequentExit = CompileExpression(conditional.Consequent, consequentBlock);
             if (!IsTerminated(consequentExit))

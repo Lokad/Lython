@@ -166,20 +166,17 @@ internal sealed record LoweredListComprehensionExpression(
 
 internal sealed record LoweredGeneratorExpression : LoweredExpression
 {
-    public LoweredGeneratorExpression(GeneratorExpressionSyntax generator, LoweredExpression itemExpression,
-        IReadOnlyList<LoweredComprehensionClause> clauses)
+    public LoweredGeneratorExpression(GeneratorExpressionSyntax generator, LoweredExpression outerIterable)
     {
         Generator = generator;
-        ItemExpression = itemExpression;
-        Clauses = clauses;
+        OuterIterable = outerIterable;
         ScopeFacts = generator.PreparedComprehensionScopeFacts ??
-            ComprehensionSyntaxFacts.Bindings(clauses.Select(clause => clause.Target), generator: true);
+            ComprehensionSyntaxFacts.Bindings(generator.Clauses.Select(static clause => clause.Target), generator: true);
         generator.PreparedCallable = this;
     }
 
     public GeneratorExpressionSyntax Generator { get; }
-    public LoweredExpression ItemExpression { get; }
-    public IReadOnlyList<LoweredComprehensionClause> Clauses { get; }
+    public LoweredExpression OuterIterable { get; }
     public override ExpressionSyntax Syntax => Generator;
     public ScopeDirectiveFacts ScopeFacts { get; }
     internal ExecutableCodeObject? PreparedCode { get; private set; }
@@ -310,7 +307,7 @@ internal sealed record LoweredAssignmentExpression(
 
 internal sealed record LoweredLambdaExpression : LoweredExpression
 {
-    public LoweredLambdaExpression(LambdaExpressionSyntax lambda, LoweredExpression body)
+    public LoweredLambdaExpression(LambdaExpressionSyntax lambda)
     {
         Lambda = lambda;
         DefaultValues = LoweredScript.LowerDefaults(lambda.Parameters, lambda.ParameterLayout);
@@ -318,7 +315,6 @@ internal sealed record LoweredLambdaExpression : LoweredExpression
         // Lazy annotation expressions reach lowering outside the statement
         // yield-validation walk. Classify each lambda from its own body.
         IsGenerator = GeneratorSyntaxFacts.ContainsYield(lambda.Body);
-        _body = body;
         lambda.PreparedCallable = this;
     }
 
@@ -328,8 +324,6 @@ internal sealed record LoweredLambdaExpression : LoweredExpression
     public ScopeDirectiveFacts ScopeFacts { get; }
     public override ExpressionSyntax Syntax => Lambda;
     public bool IsGenerator { get; }
-    private LoweredExpression? _body;
-    internal LoweredExpression Body => _body.RequireNotNull();
     internal ExecutableCodeObject? PreparedCode { get; private set; }
     public ExecutableCodeObject Code => PreparedCode.RequireNotNull();
     private bool NamespaceClosure { get; set; }
@@ -339,6 +333,5 @@ internal sealed record LoweredLambdaExpression : LoweredExpression
     {
         PreparedCode = code;
         NamespaceClosure = namespaceClosure;
-        _body = null;
     }
 }

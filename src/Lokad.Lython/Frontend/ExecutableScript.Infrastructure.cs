@@ -400,10 +400,10 @@ internal sealed partial class ExecutableScript
 
         private int AllocateLookupCache() => _lookupCacheCount++;
 
-        private int InternCallSite(LoweredCallExpression call, bool hasReceiver)
+        private int InternCallSite(CallExpressionSyntax call, bool hasReceiver)
         {
             var arguments = call.Arguments.Select(argument => argument.Form).ToArray();
-            var formatKeywords = call.Target is LoweredMemberExpression { Member.MemberName: "format" }
+            var formatKeywords = call.Target is MemberExpressionSyntax { MemberName: "format" }
                 ? PrepareFormatKeywordIndices(arguments, call.Span) : null;
             _buffers.CallSites.Add(formatKeywords is null
                 ? new ExecutableCallSite(arguments.Length, arguments, call.Target.Span, call.Span, hasReceiver)
@@ -437,22 +437,16 @@ internal sealed partial class ExecutableScript
             return indices;
         }
 
-        private ExecutableCodeObject PrepareFunctionCode(FunctionDefinitionStatementSyntax functionDefinition,
-            LoweredFunctionAnnotation[] annotations)
+        private ExecutableCodeObject PrepareFunctionCode(FunctionDefinitionStatementSyntax functionDefinition)
         {
             InternModuleBinding(functionDefinition.Name);
             var typeParameterNames = functionDefinition.PreparedTypeParameterNames;
             if (typeParameterNames is null && functionDefinition.TypeParameters is { Count: > 0 } typeParameters)
                 typeParameterNames = typeParameters.Select(static p => p.Name).ToHashSet(StringComparer.Ordinal);
-            var codeObject = CompileFunctionCode(functionDefinition.DeclaredName,
+            return CompileFunctionCode(functionDefinition.DeclaredName,
                 functionDefinition.ParameterLayout, functionDefinition.Body,
                 ScopeDirectiveFactsCollector.ForFunction(functionDefinition), typeParameterNames, functionDefinition.IsGenerator,
                 qualifiedName: functionDefinition.PreparedQualifiedName);
-
-            codeObject.DefinitionAnnotationKeys = PyDict.RecordKeys.PrepareDefinition(annotations.Length,
-                annotations, static (inputs, index) => inputs[index].Key,
-                _compilation.CancellationToken, functionDefinition.Span);
-            return codeObject;
         }
 
         private ExecutableCodeObject CompileFunctionCode(string name,

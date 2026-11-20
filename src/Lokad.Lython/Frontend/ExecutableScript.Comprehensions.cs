@@ -4,8 +4,9 @@ internal sealed partial class ExecutableScript
 {
     private sealed partial class Builder
     {
-        private int CompileGeneratorExpression(LoweredGeneratorExpression expression, int block, bool joinedTrimmedSplit = false)
+        private int CompileGeneratorExpression(GeneratorExpressionSyntax syntax, int block, bool joinedTrimmedSplit = false)
         {
+            var expression = (LoweredGeneratorExpression)LoweredScript.LowerExpression(syntax);
             if (expression.PreparedCode is null)
             {
                 var builder = new Builder(_compilation, FunctionParameterLayout.Create([]), this, GeneratorFacts(expression),
@@ -13,29 +14,29 @@ internal sealed partial class ExecutableScript
                 expression.CompleteCompilation(builder.CompileCodeObject("<genexpr>", [], expression));
             }
             var code = expression.Code;
-            block = CompileExpression(expression.Clauses[0].Iterable, block);
-            EmitOperation(new ExecutableCreateGeneratorExpression(code, expression.Clauses[0].Iterable.Span, joinedTrimmedSplit), expression.Span, block);
+            block = CompileExpression(syntax.Clauses[0].Iterable, block);
+            EmitOperation(new ExecutableCreateGeneratorExpression(code, syntax.Clauses[0].Iterable.Span, joinedTrimmedSplit), expression.Span, block);
             return block;
         }
 
-        private static bool IsTrimmedSplitGenerator(LoweredGeneratorExpression expression)
+        private static bool IsTrimmedSplitGenerator(GeneratorExpressionSyntax expression)
             => expression.Clauses is [{ Condition: null, Target: LoopNameTargetSyntax variable,
-                    Iterable: LoweredCallExpression
+                    Iterable: CallExpressionSyntax
                     {
-                        Target: LoweredMemberExpression { Member.MemberName: "split" },
+                        Target: MemberExpressionSyntax { MemberName: "split" },
                         Arguments: [{ Kind: CallArgumentKind.Positional }],
                     } }]
-                && expression.ItemExpression is LoweredCallExpression
+                && expression.ItemExpression is CallExpressionSyntax
                 {
-                    Target: LoweredMemberExpression { Member.MemberName: "rstrip", Target: LoweredIdentifierExpression item },
+                    Target: MemberExpressionSyntax { MemberName: "rstrip", Target: IdentifierExpressionSyntax item },
                     Arguments.Count: 0,
                 }
-                && item.Identifier.Name == variable.Name;
+                && item.Name == variable.Name;
 
-        private int CompileComprehension(ScopeDirectiveFacts facts,
-            IReadOnlyList<LoweredComprehensionClause> clauses, LoweredExpression item,
-            LoweredExpression? value, ExecutableDisplayKind kind, LythonSourceSpan span, int block)
+        private int CompileComprehension(ExpressionSyntax syntax, IReadOnlyList<ComprehensionClauseSyntax> clauses, ExpressionSyntax item,
+            ExpressionSyntax? value, ExecutableDisplayKind kind, LythonSourceSpan span, int block)
         {
+            var facts = syntax.PreparedComprehensionScopeFacts ?? ComprehensionSyntaxFacts.Bindings(clauses.Select(static clause => clause.Target));
             // The outer iterable belongs to the caller's scope. All remaining
             // expressions stay in this executable frame under the existing
             // comprehension binding lifetime, rather than a new invocation.
@@ -52,8 +53,8 @@ internal sealed partial class ExecutableScript
             finally { _buffers.ComprehensionNames.Pop(); }
         }
 
-        private int CompileComprehensionBody(IReadOnlyList<LoweredComprehensionClause> clauses,
-            LoweredExpression item, LoweredExpression? value, LythonSourceSpan span, int block, bool yielding)
+        private int CompileComprehensionBody(IReadOnlyList<ComprehensionClauseSyntax> clauses,
+            ExpressionSyntax item, ExpressionSyntax? value, LythonSourceSpan span, int block, bool yielding)
         {
             // The eager caller or the retained generator frame already owns
             // the acquired outer iterator on this value stack.
@@ -71,8 +72,8 @@ internal sealed partial class ExecutableScript
                 loops[index] = (head, exit);
                 AddInstruction(block, ExecutableInstruction.Jump(head, clause.Span));
                 AddInstruction(head, ExecutableInstruction.ForNext(exit, clause.Iterable.Span));
-                var targetExit = CompileStoreTarget(clause.StoreTarget, clause.Iterable.Span, head, clause.Iterable.Span);
-                block = targetExit;
+                var store = LoweredStoreTarget.FromLoop(clause.Target, clause.Iterable.Span);
+                block = CompileStoreTarget(store, clause.Iterable.Span, head, clause.Iterable.Span);
                 if (clause.Condition is not null)
                 {
                     block = CompileExpression(clause.Condition, block);

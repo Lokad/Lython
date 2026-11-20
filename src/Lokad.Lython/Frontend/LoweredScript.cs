@@ -1,5 +1,4 @@
 using Lokad.Lython.Runtime;
-using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Frontend;
 
@@ -19,41 +18,6 @@ internal static class LoweredScript
         for (var i = 0; i < expressions.Length; i++)
             expressions[i] = LowerExpression(parameters[layout.Defaults[i].ParameterIndex].DefaultValue.RequireNotNull());
         return expressions;
-    }
-
-    internal static LoweredFunctionAnnotation[] LowerFunctionAnnotations(FunctionDefinitionStatementSyntax definition)
-    {
-        var count = definition.ReturnAnnotation is null ? 0 : 1;
-        var positionalCount = 0;
-        var positionalOnlyCount = 0;
-        foreach (var parameter in definition.Parameters)
-        {
-            if (parameter.Annotation is null) continue;
-            count++;
-            if (parameter.Kind == FunctionParameterKind.Positional) positionalCount++;
-            else if (parameter.Kind == FunctionParameterKind.PositionalOnly) positionalOnlyCount++;
-        }
-        if (count == 0) return [];
-
-        // Exchange the two positional groups for Python's annotation order.
-        // The remaining parameter kinds already appear in evaluation order.
-        var annotations = new LoweredFunctionAnnotation[count];
-        var nextPositional = 0;
-        var nextPositionalOnly = positionalCount;
-        var nextOther = positionalCount + positionalOnlyCount;
-        foreach (var parameter in definition.Parameters)
-        {
-            if (parameter.Annotation is not { } expression) continue;
-            var index = parameter.Kind switch
-            {
-                FunctionParameterKind.Positional => nextPositional++,
-                FunctionParameterKind.PositionalOnly => nextPositionalOnly++,
-                _ => nextOther++,
-            };
-            annotations[index] = new(PyString.FromString(parameter.Name), LowerExpression(expression));
-        }
-        if (definition.ReturnAnnotation is { } result) annotations[^1] = new(PyString.FromString("return"), LowerExpression(result));
-        return annotations;
     }
 
     internal static LoweredExpression LowerExpression(ExpressionSyntax expression)
@@ -86,8 +50,7 @@ internal static class LoweredScript
                 comprehension.Clauses.Select(LowerComprehensionClause).ToArray()),
             GeneratorExpressionSyntax generator => generator.PreparedCallable ?? new LoweredGeneratorExpression(
                 generator,
-                LowerExpression(generator.ItemExpression),
-                generator.Clauses.Select(LowerComprehensionClause).ToArray()),
+                LowerExpression(generator.Clauses[0].Iterable)),
             TupleLiteralExpressionSyntax tuple => new LoweredTupleLiteralExpression(
                 tuple,
                 tuple.Items.Select(LowerCollectionDisplayItem).ToArray()),
@@ -158,9 +121,7 @@ internal static class LoweredScript
             AssignmentExpressionSyntax assignment => new LoweredAssignmentExpression(
                 assignment,
                 LowerExpression(assignment.Expression)),
-            LambdaExpressionSyntax lambda => lambda.PreparedCallable ?? new LoweredLambdaExpression(
-                lambda,
-                LowerExpression(lambda.Body)),
+            LambdaExpressionSyntax lambda => lambda.PreparedCallable ?? new LoweredLambdaExpression(lambda),
             _ => throw new InvalidOperationException($"Unknown expression during lowering: {expression.GetType().Name}")
         };
     }

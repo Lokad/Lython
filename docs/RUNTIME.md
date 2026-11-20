@@ -25,11 +25,11 @@ and CLR copies or conversions can still complete before the next check.
 Cancellation returns an invalid script with `LA2011`. Dispose that script to
 release its compilation owner. Refused admission retains priority over cancellation.
 
-Statement suites emit executable instructions directly from validated syntax.
-Class suites use the same engine with their live namespace. Lazy expressions
-keep their lowered representation under the owning operation. Sibling scopes
-reuse transient compiler buffers. Final instructions and capture maps belong
-to their compiled scope.
+Statement suites and ordinary expressions emit executable instructions directly
+from validated syntax. Class suites use the same engine with their live namespace.
+Runtime-evaluated expressions in type scopes and lazy metadata keep their lowered
+representation under the owning operation. Sibling scopes reuse transient compiler
+buffers. Final instructions and capture maps belong to their compiled scope.
 Type alias declarations use a dedicated binding operation and retain their lazy
 value expression and defining namespace.
 
