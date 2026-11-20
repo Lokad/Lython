@@ -1,0 +1,70 @@
+{
+  "reference": "bbbf360cdff6ff11e00165c9cdea583b22b6b826",
+  "candidate": "48c661256ac000924284de7fcc9064417c5252f0",
+  "rows": [
+    {
+      "boundary": "compile-allocation",
+      "id": "scripts.annotated-rule-closures",
+      "referenceBytes": 57304,
+      "candidateBytes": 56984,
+      "changePct": -0.5584252408208812
+    },
+    {
+      "boundary": "compile-allocation",
+      "id": "scripts.config-generated-guards.medium",
+      "referenceBytes": 3048406,
+      "candidateBytes": 2842070,
+      "changePct": -6.7686522070879
+    },
+    {
+      "boundary": "compile-allocation",
+      "id": "scripts.config-manifest.small",
+      "referenceBytes": 285144,
+      "candidateBytes": 283648,
+      "changePct": -0.5246471958028187
+    },
+    {
+      "boundary": "compile-allocation",
+      "id": "scripts.csv-invoice.large",
+      "referenceBytes": 168528,
+      "candidateBytes": 166800,
+      "changePct": -1.0253489034463104
+    },
+    {
+      "boundary": "allocation",
+      "id": "scripts.annotated-rule-closures",
+      "referenceBytes": 1242728,
+      "candidateBytes": 1242728,
+      "changePct": 0.0,
+      "referencePeak": 2444313,
+      "candidatePeak": 2444313
+    },
+    {
+      "boundary": "allocation",
+      "id": "scripts.config-generated-guards.medium",
+      "referenceBytes": 75936,
+      "candidateBytes": 75936,
+      "changePct": 0.0,
+      "referencePeak": 94214,
+      "candidatePeak": 94214
+    },
+    {
+      "boundary": "allocation",
+      "id": "scripts.config-manifest.small",
+      "referenceBytes": 103024,
+      "candidateBytes": 103024,
+      "changePct": 0.0,
+      "referencePeak": 58255,
+      "candidatePeak": 58255
+    },
+    {
+      "boundary": "allocation",
+      "id": "scripts.csv-invoice.large",
+      "referenceBytes": 3672462,
+      "candidateBytes": 3672462,
+      "changePct": 0.0,
+      "referencePeak": 9432613,
+      "candidatePeak": 9432613
+    }
+  ]
+}

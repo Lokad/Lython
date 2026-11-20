@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1176 owned statement joins](results/2026-11-20-statement-join-confirmation/README.md)
+retains the broader branch-map reuse. Validator compilation allocates
+6.77% less and compile-to-result takes 0.43–2.55% less time with lower
+CPU. Compile-only magnitude remains uncertain and the manifest is mixed.
+
 [B1175 owned branch-state joins](results/2026-11-20-branch-state-ownership/README.md)
 cuts validator compile allocation by 6.77%. Validator timing spans zero
 with large duplicate compile spread. Eager compile CPU rises in every

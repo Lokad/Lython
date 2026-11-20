@@ -331,8 +331,10 @@ name/slot table, role counts and generator classification, shared by analysis,
 lowering and its created functions. Lowered definitions and lambdas keep only
 the default expressions in layout order. An executable lambda retains its
 prepared signature, code and closure flags. Flow-dependent analysis owns its
-bindings separately. The declaration facts replace per-call keyword-shape maps
-and repeated generator-body scans.
+bindings separately. Statement branches reuse owned binding and sequence maps
+at joins. The surviving facts keep their diagnostic spans, and state changes
+invalidate expression resolutions. The declaration facts replace per-call
+keyword-shape maps and repeated generator-body scans.
 Ordinary call syntax also owns its positional/keyword expression partition, shared
 by static contract checks and return analysis. Inferred values belong to the
 current analysis state; `*` and `**` expansion is resolved again from that state.
