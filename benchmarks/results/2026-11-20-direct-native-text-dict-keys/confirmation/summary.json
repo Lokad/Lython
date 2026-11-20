@@ -1,0 +1,92 @@
+{
+  "complete": true,
+  "elapsedSeconds": 244.78106530196965,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "staging": {
+    "retiredOnly": [],
+    "alreadyAbsent": [],
+    "freshIdleLease": true,
+    "allHashesPathsOwnershipLinksAndAliasesVerified": true,
+    "canonicalArchiveAndCurrentImagesPreserved": true,
+    "freeBeforeBytes": 244072448,
+    "freeAfterBytes": 244031488
+  },
+  "rows": [
+    {
+      "case": "scripts.report-render.named-format-selectors.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 3.5859116603773584,
+        "reference": 3.5700728966789668,
+        "candidate-control": 3.714593573643411,
+        "reference-control": 3.6308353917910448
+      },
+      "cpuMilliseconds": {
+        "candidate": 3.811320754716981,
+        "reference": 3.8007380073800743,
+        "candidate-control": 3.9534883720930236,
+        "reference-control": 3.843283582089552
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.6799241463387777,
+        "reference": 0.6936181458582993,
+        "candidate-control": 1.1946713207980852,
+        "reference-control": 1.0444078396764227
+      },
+      "elapsedChangePercent": [
+        -1.2372836156454348,
+        0.44365378962221147,
+        2.3068570401658883,
+        4.048115574863553
+      ],
+      "cpuChangePercent": [
+        -0.8316541491115492,
+        0.27843927459241247,
+        2.8674644389252713,
+        4.018965906525174
+      ],
+      "referenceSpreadPercent": 1.7019959219488623,
+      "candidateSpreadPercent": 3.588541086717978
+    },
+    {
+      "case": "scripts.config-generated-guards.medium.bad-0",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 0.07817311989854737,
+        "candidate-control": 0.07619804642652944,
+        "reference": 0.07998308655851681,
+        "candidate": 0.07622996170356981
+      },
+      "cpuMilliseconds": {
+        "reference-control": 0.11067558219967719,
+        "candidate-control": 0.1097770154373928,
+        "reference": 0.11355735805330243,
+        "candidate": 0.10957975598734748
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 4.367005538315859,
+        "candidate-control": 3.5779168525719327,
+        "reference": 4.970991426450711,
+        "candidate": 4.404060044249075
+      },
+      "elapsedChangePercent": [
+        -4.732300658612587,
+        -4.692398126197794,
+        -2.5265378618394285,
+        -2.4857114536293023
+      ],
+      "cpuChangePercent": [
+        -3.5027250846113467,
+        -3.329015997479612,
+        -0.9901246422653998,
+        -0.8118925100057073
+      ],
+      "referenceSpreadPercent": 2.3153312319099006,
+      "candidateSpreadPercent": 0.04188463948500143
+    }
+  ],
+  "retentionDecisionPending": false,
+  "CPythonRefreshed": false,
+  "decision": "Retain exact candidate. Validator and alternating shipment gains, named shipment unresolved."
+}

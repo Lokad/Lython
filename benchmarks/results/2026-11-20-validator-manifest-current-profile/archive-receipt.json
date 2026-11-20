@@ -1,0 +1,13 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "persistentTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 240857088,
+  "archiveSHA256": "dcdc9cd472c433a6abb378508525b1c6d709b67f2871ba44d5d487896f7549fd",
+  "source": "Validator and guarded manifest CPU attribution",
+  "performanceComparison": false,
+  "failure": null
+}

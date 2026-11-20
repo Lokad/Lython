@@ -6,6 +6,19 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1246/B1247 direct string-key dictionary operations](results/2026-11-20-direct-native-text-dict-keys/README.md)
+skip generic hash and protocol dispatch for closed reads and private
+records. The validator and alternating shipment improve with lower CPU.
+The named shipment is adverse initially and spans zero on repeat.
+
+[B1245 validator and manifest profile](results/2026-11-20-validator-manifest-current-profile/README.md)
+records acquisition, dispatch and dictionary construction samples on
+`bd94edeec`. It leaves exclusive call transport costs unresolved.
+
+[Utf8Regex dev.114](results/2026-11-20-regex-dev114-boundary/README.md)
+verifies immutable package bytes and capture names on both Windows
+targets. The reversed-window and managed-code blockers persist.
+
 [B1243/B1244 stable parameter captures](results/2026-11-20-stable-parameter-captures/README.md)
 holds proven stable parameters directly. Postponed and eager factories
 allocate 8.99% and 8.25% less. The repeat improves postponed elapsed

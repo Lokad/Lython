@@ -1,0 +1,38 @@
+[
+  {
+    "case": "scripts.config-generated-guards.medium.bad-0",
+    "previousAllocatedBytes": 66984,
+    "candidateAllocatedBytes": 66984,
+    "allocationChangePercent": 0.0,
+    "previousAccountedPeak": 92830,
+    "candidateAccountedPeak": 92830,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.report-render.named-format-selectors.large",
+    "previousAllocatedBytes": 3770326,
+    "candidateAllocatedBytes": 3770432,
+    "allocationChangePercent": 0.002811427977311709,
+    "previousAccountedPeak": 3497481,
+    "candidateAccountedPeak": 3497481,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.report-render.alternating-records",
+    "previousAllocatedBytes": 12459068,
+    "candidateAllocatedBytes": 12461134,
+    "allocationChangePercent": 0.01658229973542369,
+    "previousAccountedPeak": 17648433,
+    "candidateAccountedPeak": 17648433,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.config-manifest.helper-guards",
+    "previousAllocatedBytes": 114408,
+    "candidateAllocatedBytes": 114632,
+    "allocationChangePercent": 0.19579050416054233,
+    "previousAccountedPeak": 61015,
+    "candidateAccountedPeak": 61015,
+    "budgetReturnedToBaseline": true
+  }
+]
