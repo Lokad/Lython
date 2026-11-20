@@ -1,0 +1,226 @@
+[
+  {
+    "repetition": 1,
+    "case": "scripts.report-forwarding.expanded",
+    "metric": "liveBytes",
+    "referenceBytes": 15840,
+    "candidateBytes": 15840,
+    "changePercent": 0.0
+  },
+  {
+    "repetition": 1,
+    "case": "scripts.report-forwarding.expanded",
+    "metric": "allocatedBytes",
+    "referenceBytes": 110232.375,
+    "candidateBytes": 110232.375,
+    "changePercent": 0.0
+  },
+  {
+    "repetition": 1,
+    "case": "scripts.report-render.format-selectors.large",
+    "metric": "liveBytes",
+    "referenceBytes": 9848,
+    "candidateBytes": 9848,
+    "changePercent": 0.0
+  },
+  {
+    "repetition": 1,
+    "case": "scripts.report-render.format-selectors.large",
+    "metric": "allocatedBytes",
+    "referenceBytes": 62808.375,
+    "candidateBytes": 62808.375,
+    "changePercent": 0.0
+  },
+  {
+    "repetition": 1,
+    "case": "scripts.csv-invoice.large",
+    "metric": "liveBytes",
+    "referenceBytes": 22256,
+    "candidateBytes": 22256,
+    "changePercent": 0.0
+  },
+  {
+    "repetition": 1,
+    "case": "scripts.csv-invoice.large",
+    "metric": "allocatedBytes",
+    "referenceBytes": 166744.375,
+    "candidateBytes": 166744.375,
+    "changePercent": 0.0
+  },
+  {
+    "repetition": 1,
+    "case": "strings.named-format-report.medium",
+    "metric": "liveBytes",
+    "referenceBytes": 6368,
+    "candidateBytes": 6592,
+    "changePercent": 3.5175879396984966
+  },
+  {
+    "repetition": 1,
+    "case": "strings.named-format-report.medium",
+    "metric": "allocatedBytes",
+    "referenceBytes": 38672,
+    "candidateBytes": 38936,
+    "changePercent": 0.682664460074478
+  },
+  {
+    "repetition": 1,
+    "case": "strings.nested-format-report.medium",
+    "metric": "liveBytes",
+    "referenceBytes": 6536,
+    "candidateBytes": 6760,
+    "changePercent": 3.427172582619331
+  },
+  {
+    "repetition": 1,
+    "case": "strings.nested-format-report.medium",
+    "metric": "allocatedBytes",
+    "referenceBytes": 39624,
+    "candidateBytes": 39888,
+    "changePercent": 0.6662628709872775
+  },
+  {
+    "repetition": 1,
+    "case": "strings.nested-format-unicode.medium",
+    "metric": "liveBytes",
+    "referenceBytes": 6544,
+    "candidateBytes": 6768,
+    "changePercent": 3.4229828850855792
+  },
+  {
+    "repetition": 1,
+    "case": "strings.nested-format-unicode.medium",
+    "metric": "allocatedBytes",
+    "referenceBytes": 39648,
+    "candidateBytes": 39912,
+    "changePercent": 0.6658595641646503
+  },
+  {
+    "repetition": 1,
+    "case": "scripts.report-render.named-format-selectors.large",
+    "metric": "liveBytes",
+    "referenceBytes": 9880,
+    "candidateBytes": 10104,
+    "changePercent": 2.267206477732797
+  },
+  {
+    "repetition": 1,
+    "case": "scripts.report-render.named-format-selectors.large",
+    "metric": "allocatedBytes",
+    "referenceBytes": 63048.375,
+    "candidateBytes": 63312.375,
+    "changePercent": 0.4187260972229767
+  },
+  {
+    "repetition": 2,
+    "case": "scripts.report-forwarding.expanded",
+    "metric": "liveBytes",
+    "referenceBytes": 15840,
+    "candidateBytes": 15840,
+    "changePercent": 0.0
+  },
+  {
+    "repetition": 2,
+    "case": "scripts.report-forwarding.expanded",
+    "metric": "allocatedBytes",
+    "referenceBytes": 110232.375,
+    "candidateBytes": 110232.375,
+    "changePercent": 0.0
+  },
+  {
+    "repetition": 2,
+    "case": "scripts.report-render.format-selectors.large",
+    "metric": "liveBytes",
+    "referenceBytes": 9848,
+    "candidateBytes": 9848,
+    "changePercent": 0.0
+  },
+  {
+    "repetition": 2,
+    "case": "scripts.report-render.format-selectors.large",
+    "metric": "allocatedBytes",
+    "referenceBytes": 62808.375,
+    "candidateBytes": 62808.375,
+    "changePercent": 0.0
+  },
+  {
+    "repetition": 2,
+    "case": "scripts.csv-invoice.large",
+    "metric": "liveBytes",
+    "referenceBytes": 22256,
+    "candidateBytes": 22256,
+    "changePercent": 0.0
+  },
+  {
+    "repetition": 2,
+    "case": "scripts.csv-invoice.large",
+    "metric": "allocatedBytes",
+    "referenceBytes": 166744.375,
+    "candidateBytes": 166744.375,
+    "changePercent": 0.0
+  },
+  {
+    "repetition": 2,
+    "case": "strings.named-format-report.medium",
+    "metric": "liveBytes",
+    "referenceBytes": 6368,
+    "candidateBytes": 6592,
+    "changePercent": 3.5175879396984966
+  },
+  {
+    "repetition": 2,
+    "case": "strings.named-format-report.medium",
+    "metric": "allocatedBytes",
+    "referenceBytes": 38672,
+    "candidateBytes": 38936,
+    "changePercent": 0.682664460074478
+  },
+  {
+    "repetition": 2,
+    "case": "strings.nested-format-report.medium",
+    "metric": "liveBytes",
+    "referenceBytes": 6536,
+    "candidateBytes": 6760,
+    "changePercent": 3.427172582619331
+  },
+  {
+    "repetition": 2,
+    "case": "strings.nested-format-report.medium",
+    "metric": "allocatedBytes",
+    "referenceBytes": 39624,
+    "candidateBytes": 39888,
+    "changePercent": 0.6662628709872775
+  },
+  {
+    "repetition": 2,
+    "case": "strings.nested-format-unicode.medium",
+    "metric": "liveBytes",
+    "referenceBytes": 6544,
+    "candidateBytes": 6768,
+    "changePercent": 3.4229828850855792
+  },
+  {
+    "repetition": 2,
+    "case": "strings.nested-format-unicode.medium",
+    "metric": "allocatedBytes",
+    "referenceBytes": 39648,
+    "candidateBytes": 39912,
+    "changePercent": 0.6658595641646503
+  },
+  {
+    "repetition": 2,
+    "case": "scripts.report-render.named-format-selectors.large",
+    "metric": "liveBytes",
+    "referenceBytes": 9880,
+    "candidateBytes": 10104,
+    "changePercent": 2.267206477732797
+  },
+  {
+    "repetition": 2,
+    "case": "scripts.report-render.named-format-selectors.large",
+    "metric": "allocatedBytes",
+    "referenceBytes": 63048.375,
+    "candidateBytes": 63312.375,
+    "changePercent": 0.4187260972229767
+  }
+]

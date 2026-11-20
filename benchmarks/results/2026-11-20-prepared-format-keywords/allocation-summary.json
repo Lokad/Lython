@@ -1,0 +1,58 @@
+[
+  {
+    "case": "scripts.report-forwarding.expanded",
+    "referenceBytes": 1654288,
+    "candidateBytes": 1654296,
+    "changePercent": 0.0004835917325252126,
+    "referencePeak": 2976186,
+    "candidatePeak": 2976186
+  },
+  {
+    "case": "scripts.report-render.format-selectors.large",
+    "referenceBytes": 4114398,
+    "candidateBytes": 4114286,
+    "changePercent": -0.0027221479302674823,
+    "referencePeak": 3503577,
+    "candidatePeak": 3503577
+  },
+  {
+    "case": "scripts.csv-invoice.large",
+    "referenceBytes": 3672406,
+    "candidateBytes": 3672406,
+    "changePercent": 0.0,
+    "referencePeak": 9432613,
+    "candidatePeak": 9432613
+  },
+  {
+    "case": "strings.named-format-report.medium",
+    "referenceBytes": 2257672,
+    "candidateBytes": 1749768,
+    "changePercent": -22.496802015527496,
+    "referencePeak": 598773,
+    "candidatePeak": 598722
+  },
+  {
+    "case": "strings.nested-format-report.medium",
+    "referenceBytes": 2815544,
+    "candidateBytes": 2307520,
+    "changePercent": -18.043546824343714,
+    "referencePeak": 892456,
+    "candidatePeak": 892333
+  },
+  {
+    "case": "strings.nested-format-unicode.medium",
+    "referenceBytes": 2831808,
+    "candidateBytes": 2323904,
+    "changePercent": -17.93567925509074,
+    "referencePeak": 904792,
+    "candidatePeak": 904669
+  },
+  {
+    "case": "scripts.report-render.named-format-selectors.large",
+    "referenceBytes": 4850534,
+    "candidateBytes": 4089270,
+    "changePercent": -15.694436942406753,
+    "referencePeak": 3497609,
+    "candidatePeak": 3497481
+  }
+]

@@ -1350,6 +1350,10 @@ Preparation admits conservative capacity, metadata and replacement overlap befor
 allocation, including estimated selector metadata. Its charge remains until
 execution/result cleanup. Many distinct one-use methods or long access chains
 can reject earlier.
+Ordinary named `str.format` calls reuse an operand index admitted with the
+compiled call site. The index contains names and positions. Evaluated values
+remain with the caller through callbacks. Expanded arguments build their
+index under the execution owner as needed.
 A format invocation reuses one admitted UTF-8 buffer for nested specifications.
 Builtin fields borrow those bytes synchronously. A custom `__format__` hook
 receives an owned specification after binding, which can survive the callback

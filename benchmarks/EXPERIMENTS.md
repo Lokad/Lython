@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1189 prepared named format arguments](results/2026-11-20-prepared-format-keywords/README.md)
+moves the ordinary named index from execution to the compiled call site.
+The file-backed named report allocates 15.69% less warm and takes 5.37–6.19%
+less time including compilation. CPU is lower on the named lanes. The
+positional report control has adverse elapsed and mixed CPU. Named sites
+retain 224 more bytes per measured script. The first prototype's increase
+in retained storage on unrelated scripts was removed before timing.
+
 [B1188 grouped annotation confirmation](results/2026-11-20-annotation-read-confirmation/README.md)
 rechecks the design after consolidating declaration metadata. Eager warm
 elapsed and CPU span zero. Callback CPU rises 1.35–1.69% across all
