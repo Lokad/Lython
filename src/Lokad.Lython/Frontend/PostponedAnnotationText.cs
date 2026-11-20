@@ -70,30 +70,9 @@ internal static class PostponedAnnotationText
         }
     }
 
-    public static void Attach(ScriptSyntax script, string source, MemoryGovernor? governor = null, CancellationToken cancellationToken = default)
-    {
-        if (!script.Statements.OfType<ImportStatementSyntax>().Any(import => import.ModuleName == "__future__" &&
-            import.ImportedMembers?.Any(member => member.Name == "annotations") == true)) return;
-        var statements = new Stack<StatementSyntax>(script.Statements.Reverse());
-        while (statements.TryPop(out var statement))
-        {
-            if (statement is FunctionDefinitionStatementSyntax definition)
-            {
-                foreach (var parameter in definition.Parameters)
-                    if (parameter.Annotation is not null) Store(parameter.Annotation);
-                if (definition.ReturnAnnotation is not null) Store(definition.ReturnAnnotation);
-            }
-            else if (statement is AnnotatedAssignmentStatementSyntax assignment) Store(assignment.Annotation);
-            foreach (var body in StatementSyntaxTraversal.EnumerateChildBodies(statement))
-                for (var i = body.Count - 1; i >= 0; i--) statements.Push(body[i]);
-        }
-
-        void Store(ExpressionSyntax expression)
-        {
-            if (expression.PostponedAnnotation is not null) return;
-            expression.PostponedAnnotation = new Writer(source, governor, cancellationToken).FormatLiteral(expression);
-        }
-    }
+    internal static void Attach(ExpressionSyntax annotation, string source, MemoryGovernor? governor,
+        CancellationToken cancellationToken)
+        => annotation.PostponedAnnotation ??= new Writer(source, governor, cancellationToken).FormatLiteral(annotation);
 
     // Use an explicit work stack: long flat operator chains must not consume
     // the CLR stack while their canonical annotation spelling is constructed.

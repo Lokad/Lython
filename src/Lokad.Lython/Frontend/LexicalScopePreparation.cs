@@ -82,7 +82,7 @@ internal static class LexicalScopePreparation
         }
     }
 
-    public static void Prepare(ScriptSyntax script, Runtime.MemoryGovernor? governor = null,
+    public static void Prepare(ScriptSyntax script, string source, Runtime.MemoryGovernor? governor = null,
         CancellationToken cancellationToken = default)
     {
         var postponed = script.Statements.OfType<ImportStatementSyntax>().Any(import =>
@@ -106,7 +106,11 @@ internal static class LexicalScopePreparation
             {
                 governor?.ThrowIfAdmissionFailed();
                 PythonTokenization.CheckCancellation(cancellationToken, statement.Span.Start);
-                requiresAnnotationChecks |= statement is AnnotatedAssignmentStatementSyntax { Expression: not null };
+                if (statement is AnnotatedAssignmentStatementSyntax annotated)
+                {
+                    requiresAnnotationChecks |= annotated.Expression is not null;
+                    if (postponed) PostponedAnnotationText.Attach(annotated.Annotation, source, governor, cancellationToken);
+                }
                 importsRegex |= statement is ImportStatementSyntax import &&
                     (import.ModuleName == "re" || import.ModuleName.StartsWith("re.", StringComparison.Ordinal));
                 // Even a later declaration in a sibling function affects the
@@ -134,6 +138,14 @@ internal static class LexicalScopePreparation
                 {
                     requiresAnnotationChecks |= function.ReturnAnnotation is not null ||
                         function.Parameters.Any(static parameter => parameter.Annotation is not null && parameter.DefaultValue is not null);
+                    if (postponed)
+                    {
+                        foreach (var parameter in function.Parameters)
+                            if (parameter.Annotation is { } annotation)
+                                PostponedAnnotationText.Attach(annotation, source, governor, cancellationToken);
+                        if (function.ReturnAnnotation is { } returns)
+                            PostponedAnnotationText.Attach(returns, source, governor, cancellationToken);
+                    }
                     var enclosing = TypeParameterScope(scope, function.TypeParameters);
                     if (!ReferenceEquals(enclosing, scope))
                         function.PreparedTypeParameterNames = enclosing.Facts.LocalNames;

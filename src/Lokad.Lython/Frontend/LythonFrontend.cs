@@ -53,12 +53,9 @@ internal static class LythonFrontend
             return new FrontendResult(null, parsed.Diagnostics.Concat(syntaxDiagnostics).ToArray());
         }
 
-        PostponedAnnotationText.Attach(parsed.Script, source, governor, cancellationToken);
-        governor?.ThrowIfAdmissionFailed();
-        PythonTokenization.CheckCancellation(cancellationToken, 0);
         // Parsing/name rewriting is finished. Prepare the immutable lexical facts
         // once for analysis, lowering and the remaining runtime scope consumers.
-        LexicalScopePreparation.Prepare(parsed.Script, governor, cancellationToken);
+        LexicalScopePreparation.Prepare(parsed.Script, source, governor, cancellationToken);
         PythonTokenization.CheckCancellation(cancellationToken, 0);
 
         using var analysis = new StaticAnalysisContext(parsed.Script, regexProvider, governor, cancellationToken, regexPrograms, potentialMutations);
