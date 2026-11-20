@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1193 factory costs after direct emission](results/2026-11-20-factory-dispatch-after-direct-emission/README.md)
+samples the current instruction route through eager and nested factory
+workloads. Instruction execution, result completion and admission remain
+distributed across the request. The general binder appears in 21 and 16
+of 1,000 and 988 stacks with identifiable runtime ancestry.
+
 [B1192 direct statement confirmation](results/2026-11-20-direct-statement-emission/confirmation/README.md)
 uses longer batches on the same images. Validator compile-only elapsed falls
 9.75–13.73% with lower CPU. The original manifest CPU increase does not recur.
