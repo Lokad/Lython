@@ -178,6 +178,8 @@ internal static partial class StaticAbstractInterpreter
 
             case FunctionDefinitionStatementSyntax functionDefinition:
             {
+                var mayMutateCollections = functionDefinition.Decorators.Count != 0 ||
+                    AnnotationMayInvokeGuest(functionDefinition.ReturnAnnotation);
                 foreach (var decorator in functionDefinition.Decorators)
                 {
                     AnalyzeExpression(decorator, diagnostics, bindings);
@@ -186,7 +188,11 @@ internal static partial class StaticAbstractInterpreter
                 foreach (var parameter in functionDefinition.Parameters)
                 {
                     AnalyzeExpressionIfPresent(parameter.DefaultValue, diagnostics, bindings);
+                    mayMutateCollections |= AnnotationMayInvokeGuest(parameter.Annotation);
                 }
+                // Applying decorators and evaluating eager annotations can
+                // mutate aliases without an explicit call in the outer scope.
+                if (mayMutateCollections) bindings.InvalidateCollectionFacts();
 
                 if (ScopeDirectiveFactsCollector.ForFunction(functionDefinition).ContainsDirectivesInBody)
                 {
@@ -265,6 +271,9 @@ internal static partial class StaticAbstractInterpreter
             }
         }
     }
+
+    private static bool AnnotationMayInvokeGuest(ExpressionSyntax? annotation)
+        => annotation is { PostponedAnnotation: null } and not (IdentifierExpressionSyntax or StringLiteralExpressionSyntax);
 
     private static void AnalyzeAnnotatedTarget(
         AssignmentTargetSyntax target,

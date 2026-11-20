@@ -51,6 +51,32 @@ public sealed class DecoratorEvaluationOrderTests
         if (delayed) Assert.True(delayedHost.CompletedAsynchronously > 0);
     }
 
+    [Theory]
+    [InlineData("@register\ndef answer():\n    return 42")]
+    [InlineData("def answer() -> register():\n    return 42")]
+    [InlineData("def answer(value: register()):\n    return 42")]
+    public async Task DefinitionCallbacksCanMutateCollectionsBeforeLaterReads(string definition)
+    {
+        const string source = """
+            events = []
+            labels = {}
+            def register(func=None):
+                events.append('registered')
+                labels['answer'] = 42
+                return int if func is None else func
+            DEFINITION
+            print(events[0], labels['answer'])
+            """;
+        using var script = new LythonEngine().Compile(source.Replace("DEFINITION", definition));
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
+        using var sync = script.Run(new MockLythonHost());
+        using var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("registered 42\n", sync.StandardOutput);
+        Assert.Equal(sync.StandardOutput, asyncResult.StandardOutput);
+    }
+
     [Fact]
     public void FailedDecoratorExpressionPreventsDefinitionEffects()
     {
