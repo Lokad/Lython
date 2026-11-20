@@ -1,0 +1,16 @@
+{
+  "complete": true,
+  "jobs": 5,
+  "elapsedSeconds": 271.23170702392235,
+  "allWorkersJoined": true,
+  "guestFixturesRemoved": true,
+  "quietBeforeAndAfter": true,
+  "archivedAndVerifiedUnderLease": false,
+  "verifiedInRecoveryLease": true,
+  "rawMatchesPersistentRecords": true,
+  "archiveSHA256": "9a3c00faa162680ce165764e70a681ec9af63d54f8a5f077833e36809b7ffbb5",
+  "freeBytesAtRecovery": 118665216,
+  "originalDiskFloorBytes": 176160768,
+  "originalExitCode": 1,
+  "performanceQualified": false
+}

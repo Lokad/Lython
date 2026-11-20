@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1194 executable class suites](results/2026-11-20-executable-class-suites/README.md)
+retires both lowered statement interpreters in the private prototype.
+Dataclass compile allocation rises 20.86% and compile-to-result elapsed rises
+9.83–15.16% with higher CPU. Warm dataclass time spans zero. The five lanes
+finished before the archive free-space check failed. A recovery lease verified
+the persistent data. Keep the prototype private while investigating compilation cost.
+
 [B1193 factory costs after direct emission](results/2026-11-20-factory-dispatch-after-direct-emission/README.md)
 samples the current instruction route through eager and nested factory
 workloads. Instruction execution, result completion and admission remain
