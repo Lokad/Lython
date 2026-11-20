@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1224 nested factories after final default storage](results/2026-11-20-current-nested-factory-profile/README.md)
+keeps the incomplete local profiler starts and the successful quiet-VM
+CPU captures. Default storage, callable shells and captures still appear
+in reservation stacks. Call-entry ancestry includes useful guest body
+work. No scope promotion or previous-result disposal frame resolves.
+
 [B1223 grouped abstract expression dispatch](results/2026-11-20-one-abstract-expression-dispatch/README.md)
 removes a second dispatch and preserves compile allocations. Both clocks
 span zero in all local lanes with unstable duplicate controls. Retain

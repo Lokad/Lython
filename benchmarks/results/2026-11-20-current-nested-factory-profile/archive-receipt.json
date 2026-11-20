@@ -1,0 +1,13 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "persistentTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 244387840,
+  "archiveSHA256": "96d42a43f8f6ea13d9b758bfc38892613f2ab40acd13dc221f253c7d87c2ba68",
+  "source": "Nested factory CPU attribution after final default storage",
+  "performanceComparison": false,
+  "failure": null
+}
