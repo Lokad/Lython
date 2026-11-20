@@ -328,6 +328,7 @@ internal sealed partial class LythonRuntime
         }
 
         internal readonly ExecutableSlot[] Values => _items;
+        internal readonly ExecutionState State => _state;
 
         internal readonly void CheckExecution(LythonSourceSpan span) => _state.CheckExecution(span);
 
@@ -492,7 +493,7 @@ internal sealed partial class LythonRuntime
         {
             if (HasPendingDisposals) return false;
             for (var i = Math.Min(LiveExtent - 1, _lastOwnedTemporarySlot); i >= liveExtent; i--)
-                if (_items[i].Reference is PyIteration.Cursor or ExecutableTemporaryValue) return false;
+                if (_items[i].RequiresRetirement) return false;
             return true;
         }
 
@@ -504,7 +505,7 @@ internal sealed partial class LythonRuntime
             }
 
             var newCount = liveExtent;
-            // Compiler-owned wrappers cannot occur above this conservative bound.
+            // Compiler-owned values cannot occur above this conservative bound.
             // Still clear every retired guest reference after private cleanup.
             for (var i = Math.Min(LiveExtent - 1, _lastOwnedTemporarySlot); i >= newCount; i--)
             {
@@ -517,14 +518,7 @@ internal sealed partial class LythonRuntime
                     // disposal can fail; retrying the trim must not enqueue twice.
                     _items[i].Object = null!;
                 }
-                else if (_items[i].Reference is ExecutableTemporaryValue temporary)
-                {
-                    // Ownership leaves this slot before cleanup can reenter or
-                    // fail, just as on the native and asynchronous paths. A retry
-                    // must not dispose a returned loan that now has another user.
-                    _items[i].Object = null!;
-                    temporary.Dispose();
-                }
+                else _items[i].RetireTemporary(_state.MemoryGovernor);
             }
             Array.Clear(_items, newCount, LiveExtent - newCount);
             LiveExtent = newCount;

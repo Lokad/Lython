@@ -127,9 +127,10 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
                     // Conservatively include every duplicate, without another
                     // value-liveness analysis or runtime resource registry.
                     ExecutableOpCode.Dup => resultSlot + 1,
+                    ExecutableOpCode.ApplyOperation when constants[instruction.ConstantIndex] is ExecutableStartFunctionDefaults
+                        => depth - 1,
                     ExecutableOpCode.ApplyOperation when constants[instruction.ConstantIndex] is
-                        ExecutableStartComprehension or ExecutableStartCall or
-                        ExecutableStartClassHeader or ExecutableStartFunctionDefaults => resultSlot,
+                        ExecutableStartComprehension or ExecutableStartCall or ExecutableStartClassHeader => resultSlot,
                     _ => -1
                 };
                 if (ownedSlot >= 0)
@@ -345,7 +346,8 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
             {
                 ExecutableAppendDisplay item => checked(2 + item.IteratorDepth),
                 ExecutableStoreDictionaryItem item => checked(pop + 1 + item.IteratorDepth),
-                ExecutableAppendCall or ExecutableAppendFunctionDefault => 2,
+                ExecutableAppendCall => 2,
+                ExecutableAppendFunctionDefault append => 1 + append.StorageDepth,
                 _ => pop
             };
         }
@@ -362,7 +364,8 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
 
     private static (int Pop, int Push) OperationEffect(ExecutableOperation operation) => operation switch
     {
-        ExecutableStartDisplay or ExecutableStartClassHeader or ExecutableStartFunctionDefaults => (0, 1),
+        ExecutableStartDisplay or ExecutableStartClassHeader => (0, 1),
+        ExecutableStartFunctionDefaults defaults => (0, defaults.Layout.DefaultStorageCount),
         ExecutableStartComprehension => (1, 3),
         ExecutableFinishComprehension => (2, 1),
         ExecutableFinishCall => (1, 1),

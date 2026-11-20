@@ -1,0 +1,92 @@
+{
+  "complete": true,
+  "elapsedSeconds": 155.50041560595855,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "staging": {
+    "retiredOnly": [],
+    "alreadyAbsent": [],
+    "freshIdleLease": true,
+    "allHashesPathsOwnershipLinksAndAliasesVerified": true,
+    "canonicalArchiveAndCurrentImagesPreserved": true,
+    "freeBeforeBytes": 266326016,
+    "freeAfterBytes": 260403200
+  },
+  "rows": [
+    {
+      "case": "scripts.annotated-rule-closures.nested-factories",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 1.4435478444846293,
+        "candidate-control": 1.4509326097122301,
+        "reference": 1.437617293478261,
+        "candidate": 1.3637501600688469
+      },
+      "cpuMilliseconds": {
+        "reference-control": 1.4466546112115732,
+        "candidate-control": 1.456834532374101,
+        "reference": 1.4311594202898552,
+        "candidate": 1.376936316695353
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 1.2737127399790393,
+        "candidate-control": 1.0450346280690304,
+        "reference": 1.7761317612766176,
+        "candidate": 1.6947345341745317
+      },
+      "elapsedChangePercent": [
+        -5.527886361416135,
+        -5.138163942831775,
+        0.5115705209090216,
+        0.9262072941369048
+      ],
+      "cpuChangePercent": [
+        -4.819277108433728,
+        -3.7887535676158546,
+        0.7036870503597248,
+        1.7940078317093322
+      ],
+      "referenceSpreadPercent": 0.4125264097247783,
+      "candidateSpreadPercent": 6.392846152918663
+    },
+    {
+      "case": "scripts.csv-invoice.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 6.598476235294117,
+        "candidate-control": 6.64021968067227,
+        "reference": 6.753014844827586,
+        "candidate": 6.673404041322313
+      },
+      "cpuMilliseconds": {
+        "reference-control": 6.722689075630252,
+        "candidate-control": 6.722689075630252,
+        "reference": 6.8965517241379315,
+        "candidate": 6.776859504132231
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.721770852132776,
+        "candidate-control": 1.0540727756777202,
+        "reference": 0.9376402765864439,
+        "candidate": 0.9091947571841982
+      },
+      "elapsedChangePercent": [
+        -1.6702934429606797,
+        -1.1788927661879778,
+        0.6326225008566944,
+        1.1355319524744223
+      ],
+      "cpuChangePercent": [
+        -2.5210084033613467,
+        -1.7355371900826588,
+        0.0,
+        0.80578512396694
+      ],
+      "referenceSpreadPercent": 2.342034797471393,
+      "candidateSpreadPercent": 0.49974793374130133
+    }
+  ],
+  "CPythonRefreshed": false,
+  "retained": true,
+  "retentionReason": "The final containers replace the temporary owner. Warm allocation falls and eager and postponed workloads improve on both clocks. Nested warm remains inconclusive."
+}

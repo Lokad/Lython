@@ -51,13 +51,13 @@ internal sealed partial class LythonRuntime
     // order. Only the caller retires the storage the operands came from.
     private static PyFunctionBase CreateLexicalFunctionValue(FunctionParameterLayout layout, ExecutableCodeObject code,
         IReadOnlyList<ExecutableCell> cells, bool generator, ExecutionContext scope, LythonSourceSpan span,
-        PythonCallableKind kind, ReadOnlySpan<ExecutableSlot> operands)
+        PythonCallableKind kind, Span<ExecutableSlot> operands)
     {
-        var firstAnnotation = layout.Defaults.Length == 0 ? 0 : 1;
-        var defaults = firstAnnotation == 0 ? null : (PendingFunctionDefaults)operands[0].Reference!;
-        var function = CreateFunctionValue(layout, code, GetGlobalContext(scope), cells, defaults?.Values ?? default,
+        var firstAnnotation = layout.DefaultStorageCount;
+        var defaults = operands[..firstAnnotation];
+        var function = CreateFunctionValue(layout, code, GetGlobalContext(scope), cells, ReadExecutableDefaults(layout, defaults),
             generator, scope, span, kind, operands[firstAnnotation..]);
-        defaults?.Publish();
+        defaults.Clear();
         return function;
     }
 
@@ -140,8 +140,10 @@ internal sealed partial class LythonRuntime
             {
                 var layout = operation.ParameterLayout;
                 var code = operation.CodeObject;
-                var next = first + operation.DecoratorCount;
-                var defaults = layout.Defaults.Length == 0 ? null : (PendingFunctionDefaults)execution.Stack[next++];
+                var defaultStart = first + operation.DecoratorCount;
+                var defaultCount = layout.DefaultStorageCount;
+                var defaults = execution.Stack.Slice(defaultStart, defaultCount).Span;
+                var next = defaultStart + defaultCount;
 
                 var typeScope = context.IsClassBody ? CreateTypeScope(operation.TypeParameters, context, span) : default;
                 var cells = CaptureExecutableClosures(code, context.IsClassBody ? typeScope.Closure.FunctionClosureContext : context, span);
@@ -149,7 +151,7 @@ internal sealed partial class LythonRuntime
                 var closure = SelectDefinitionClosure(code, typeScope.Closure, cells);
                 ReadOnlySpan<ExecutableSlot> annotations = operation.AnnotationOperandCount != 0
                     ? execution.Stack.Slice(next, operation.AnnotationOperandCount).Span : default;
-                function = CreateFunctionValue(layout, code, closure, cells, defaults?.Values ?? default,
+                function = CreateFunctionValue(layout, code, closure, cells, ReadExecutableDefaults(layout, defaults),
                     operation.IsGenerator, context, span, annotations: annotations);
                 var metadata = ValueTask.CompletedTask;
                 if (operation.AnnotationOperandCount == 0 &&
@@ -161,14 +163,14 @@ internal sealed partial class LythonRuntime
 
                 if (operation.DecoratorCount != 0 || !metadata.IsCompletedSuccessfully)
                 {
-                    var completion = context.FinishExecutableFunctionAsync(operation.DecoratorCount, function, defaults, metadata,
+                    var completion = context.FinishExecutableFunctionAsync(operation.DecoratorCount, defaultCount, function, metadata,
                         instruction, asynchronous);
                     transferred = true;
                     return completion;
                 }
 
                 metadata.GetAwaiter().GetResult();
-                defaults?.Publish();
+                defaults.Clear();
             }
             finally
             {
@@ -178,8 +180,8 @@ internal sealed partial class LythonRuntime
             return ValueTask.CompletedTask;
         }
 
-        private async ValueTask FinishExecutableFunctionAsync(int decoratorCount, PyFunctionBase function,
-            PendingFunctionDefaults? defaults, ValueTask metadata, ExecutableInstruction instruction, bool asynchronous)
+        private async ValueTask FinishExecutableFunctionAsync(int decoratorCount, int defaultCount, PyFunctionBase function,
+            ValueTask metadata, ExecutableInstruction instruction, bool asynchronous)
         {
             var span = instruction.Span;
             var first = instruction.InputStart;
@@ -189,7 +191,7 @@ internal sealed partial class LythonRuntime
                 await metadata.ConfigureAwait(false);
                 // Decorator callbacks can publish the original definition even
                 // when they replace it or raise. Transfer the default owner first.
-                defaults?.Publish();
+                _execution.Stack.Slice(first + decoratorCount, defaultCount).Span.Clear();
                 for (var i = first + decoratorCount - 1; i >= first; i--)
                 {
                     if (_execution.Stack[i] is not ICallable decorator)

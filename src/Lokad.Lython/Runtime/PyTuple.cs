@@ -128,15 +128,14 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
         catch { governor.ReleaseReserved(bytes); throw; }
     }
 
-    internal void SetPrivateDefault(int index, LythonRuntime.ExecutableSlot value,
-        LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    internal void SetPrivateDefault(int index, LythonRuntime.ExecutableSlot value, ExecutionState state, LythonSourceSpan span)
     {
         var extra = Math.Max(0, value.ScalarStorageBytes - RuntimeMemoryEstimates.ScalarStorageBytes);
-        var governor = context.MemoryGovernor;
+        var governor = state.MemoryGovernor;
         if (extra != 0) governor.Reserve(extra, span);
         try
         {
-            context.CheckExecution(span);
+            state.CheckExecution(span);
             // Fresh integers can stay unboxed. Other values retain their current
             // identity, including an integer borrowed from another tuple.
             ((LythonRuntime.ExecutableSlot[])_items)[index] = value.IsUnpublishedInteger

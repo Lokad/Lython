@@ -46,7 +46,7 @@ internal sealed partial class LythonRuntime
             if (consumer.OpCode == ExecutableOpCode.StoreLocal)
                 StoreLocalValue(execution.Code, execution.Locals, invocation, consumer.LocalSlot, value, consumer.Span);
             else if (consumer.OpCode == ExecutableOpCode.ApplyOperation)
-                StoreDefaultResult(execution.Code, execution.Stack.Values, consumer, value);
+                StoreDefaultResult(execution.Code, execution.Stack.Values, consumer, value, execution.Stack.State);
             else if (consumer.OpCode != ExecutableOpCode.PopTop)
                 throw new InvalidOperationException("Invalid prepared result consumer.");
             // Discarded calls cannot return private iteration loans. No
@@ -57,10 +57,11 @@ internal sealed partial class LythonRuntime
     }
 
     private static void StoreDefaultResult(ExecutableCodeObject code, ReadOnlySpan<ExecutableSlot> slots,
-        in ExecutableInstruction consumer, ExecutableSlot value)
+        in ExecutableInstruction consumer, ExecutableSlot value, ExecutionState state)
     {
         var append = (ExecutableAppendFunctionDefault)code.Constants[consumer.ConstantIndex]!;
-        var destination = (PendingFunctionDefaults)slots[consumer.InputStart].Reference!;
-        destination.Add(append.Default, value, consumer.Span);
+        var destination = slots[consumer.InputStart].Reference;
+        if (destination is PyTuple positional) positional.SetPrivateDefault(append.Index, value, state, consumer.Span);
+        else StorePreparedKeywordDefault((object?[])destination!, append.Index, value, state, consumer.Span);
     }
 }

@@ -13,7 +13,9 @@ internal sealed partial class LythonRuntime
         private static readonly object UnpublishedInteger = new();
         private static readonly object UnpublishedDouble = new();
         private object? _value;
-        // Integer value, double bits, or an immutable integer tuple's item offset.
+        // Integer value, double bits, an immutable tuple's positive item offset,
+        // or the private-default marker paired with its admitted final storage.
+        private const long PrivateDefault = -1;
         private long _integer;
 
         internal object? Object
@@ -22,6 +24,7 @@ internal sealed partial class LythonRuntime
             {
                 if (ReferenceEquals(_value, UnpublishedInteger)) return PublishInteger();
                 if (ReferenceEquals(_value, UnpublishedDouble)) return PublishDouble();
+                System.Diagnostics.Debug.Assert(!HasPrivateDefault);
                 return _integer == 0 ? _value : PublishTupleBorrow();
             }
             set { _value = value; _integer = 0; }
@@ -32,6 +35,28 @@ internal sealed partial class LythonRuntime
         internal readonly object? Reference => _value;
 
         internal readonly bool IsUnpublishedInteger => ReferenceEquals(_value, UnpublishedInteger);
+        private readonly bool HasPrivateDefault => _integer == PrivateDefault && _value is PyTuple or object?[] or PyDict;
+        internal readonly bool RequiresRetirement => _value is PyIteration.Cursor or ExecutableTemporaryValue || HasPrivateDefault;
+
+        internal static ExecutableSlot OwnPrivateDefault(object storage) => new() { _value = storage, _integer = PrivateDefault };
+
+        internal void RetireTemporary(MemoryGovernor governor)
+        {
+            if (_value is ExecutableTemporaryValue temporary)
+            {
+                // Clear before cleanup can reenter, as a returned loan can
+                // immediately have another user.
+                this = default;
+                temporary.Dispose();
+            }
+            else if (HasPrivateDefault)
+            {
+                var storage = _value;
+                this = default;
+                if (storage is object?[] keywordValues) PyDict.RecordKeys.RefundPreparedValues(keywordValues, governor);
+                else governor.RefundUnpublishedValue(storage!);
+            }
+        }
 
         private object PublishInteger()
         {
@@ -51,7 +76,7 @@ internal sealed partial class LythonRuntime
 
         private object? PublishTupleBorrow()
         {
-            if (_value is PyTuple tuple)
+            if (_integer > 0 && _value is PyTuple tuple)
             {
                 _value = tuple[(int)(_integer - 1)];
                 _integer = 0;
@@ -103,13 +128,13 @@ internal sealed partial class LythonRuntime
         internal readonly bool TryGetInteger(out long value)
         {
             if (ReferenceEquals(_value, UnpublishedInteger)) { value = _integer; return true; }
-            if (_integer != 0 && _value is PyTuple tuple) return tuple.TryReadInteger((int)(_integer - 1), out value);
+            if (_integer > 0 && _value is PyTuple tuple) return tuple.TryReadInteger((int)(_integer - 1), out value);
             return TryMachineInteger(_value, out value);
         }
 
         internal readonly long ScalarStorageBytes => ReferenceEquals(_value, UnpublishedInteger)
             || ReferenceEquals(_value, UnpublishedDouble)
-            || _integer != 0 && _value is PyTuple
+            || _integer > 0 && _value is PyTuple
             ? RuntimeMemoryEstimates.ScalarStorageBytes
             : RuntimeMemoryEstimates.EstimateScalarStorageBytes(_value);
 

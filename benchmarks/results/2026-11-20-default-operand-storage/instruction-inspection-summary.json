@@ -1,0 +1,156 @@
+[
+  {
+    "code": "scripts.annotated-rule-closures",
+    "reference": 8,
+    "candidate": 8,
+    "referenceNative": false,
+    "candidateNative": false,
+    "referencePrefix": 29,
+    "candidatePrefix": 29,
+    "referenceInstructionCount": 29,
+    "candidateInstructionCount": 29
+  },
+  {
+    "code": "scripts.annotated-rule-closures/compile_rule",
+    "reference": 7,
+    "candidate": 8,
+    "referenceNative": true,
+    "candidateNative": true,
+    "referencePrefix": 13,
+    "candidatePrefix": 13,
+    "referenceInstructionCount": 13,
+    "candidateInstructionCount": 13
+  },
+  {
+    "code": "scripts.annotated-rule-closures/compile_rule/evaluate",
+    "reference": 7,
+    "candidate": 7,
+    "referenceNative": true,
+    "candidateNative": true,
+    "referencePrefix": 3,
+    "candidatePrefix": 3,
+    "referenceInstructionCount": 3,
+    "candidateInstructionCount": 3
+  },
+  {
+    "code": "scripts.annotated-rule-closures.nested-factories",
+    "reference": 9,
+    "candidate": 9,
+    "referenceNative": false,
+    "candidateNative": false,
+    "referencePrefix": 34,
+    "candidatePrefix": 34,
+    "referenceInstructionCount": 34,
+    "candidateInstructionCount": 34
+  },
+  {
+    "code": "scripts.annotated-rule-closures.nested-factories/for_policy",
+    "reference": 6,
+    "candidate": 6,
+    "referenceNative": true,
+    "candidateNative": true,
+    "referencePrefix": 3,
+    "candidatePrefix": 3,
+    "referenceInstructionCount": 3,
+    "candidateInstructionCount": 3
+  },
+  {
+    "code": "scripts.annotated-rule-closures.nested-factories/for_policy/compile_rule",
+    "reference": 7,
+    "candidate": 8,
+    "referenceNative": true,
+    "candidateNative": true,
+    "referencePrefix": 12,
+    "candidatePrefix": 12,
+    "referenceInstructionCount": 12,
+    "candidateInstructionCount": 12
+  },
+  {
+    "code": "scripts.annotated-rule-closures.nested-factories/for_policy/compile_rule/evaluate",
+    "reference": 7,
+    "candidate": 7,
+    "referenceNative": true,
+    "candidateNative": true,
+    "referencePrefix": 3,
+    "candidatePrefix": 3,
+    "referenceInstructionCount": 3,
+    "candidateInstructionCount": 3
+  },
+  {
+    "code": "scripts.annotated-rule-closures.nested-factories.postponed",
+    "reference": 10,
+    "candidate": 10,
+    "referenceNative": false,
+    "candidateNative": false,
+    "referencePrefix": 35,
+    "candidatePrefix": 35,
+    "referenceInstructionCount": 35,
+    "candidateInstructionCount": 35
+  },
+  {
+    "code": "scripts.annotated-rule-closures.nested-factories.postponed/for_policy",
+    "reference": 6,
+    "candidate": 6,
+    "referenceNative": true,
+    "candidateNative": true,
+    "referencePrefix": 3,
+    "candidatePrefix": 3,
+    "referenceInstructionCount": 3,
+    "candidateInstructionCount": 3
+  },
+  {
+    "code": "scripts.annotated-rule-closures.nested-factories.postponed/for_policy/compile_rule",
+    "reference": 7,
+    "candidate": 8,
+    "referenceNative": true,
+    "candidateNative": true,
+    "referencePrefix": 12,
+    "candidatePrefix": 12,
+    "referenceInstructionCount": 12,
+    "candidateInstructionCount": 12
+  },
+  {
+    "code": "scripts.annotated-rule-closures.nested-factories.postponed/for_policy/compile_rule/evaluate",
+    "reference": 7,
+    "candidate": 7,
+    "referenceNative": true,
+    "candidateNative": true,
+    "referencePrefix": 3,
+    "candidatePrefix": 3,
+    "referenceInstructionCount": 3,
+    "candidateInstructionCount": 3
+  },
+  {
+    "code": "scripts.csv-invoice.large",
+    "reference": 28,
+    "candidate": 28,
+    "referenceNative": false,
+    "candidateNative": false,
+    "referencePrefix": 57,
+    "candidatePrefix": 57,
+    "referenceInstructionCount": 111,
+    "candidateInstructionCount": 111
+  },
+  {
+    "code": "scripts.csv-invoice.large/rounded_basis_points",
+    "reference": 6,
+    "candidate": 6,
+    "referenceNative": true,
+    "candidateNative": true,
+    "referencePrefix": 4,
+    "candidatePrefix": 4,
+    "referenceInstructionCount": 4,
+    "candidateInstructionCount": 4
+  },
+  {
+    "code": "scripts.csv-invoice.large/price_line",
+    "reference": 12,
+    "candidate": 12,
+    "referenceNative": true,
+    "candidateNative": true,
+    "referencePrefix": 32,
+    "candidatePrefix": 32,
+    "referenceInstructionCount": 32,
+    "candidateInstructionCount": 32
+  }
+]

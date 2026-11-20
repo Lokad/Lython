@@ -1,0 +1,66 @@
+[
+  {
+    "case": "scripts.annotated-rule-closures",
+    "boundary": "compile",
+    "referenceBytes": 52608,
+    "candidateBytes": 52608,
+    "changePercent": 0.0
+  },
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories",
+    "boundary": "compile",
+    "referenceBytes": 63968,
+    "candidateBytes": 63968,
+    "changePercent": 0.0
+  },
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+    "boundary": "compile",
+    "referenceBytes": 69840,
+    "candidateBytes": 69840,
+    "changePercent": 0.0
+  },
+  {
+    "case": "scripts.csv-invoice.large",
+    "boundary": "compile",
+    "referenceBytes": 150920,
+    "candidateBytes": 150920,
+    "changePercent": 0.0
+  },
+  {
+    "case": "scripts.annotated-rule-closures",
+    "boundary": "warm",
+    "referenceBytes": 1045984,
+    "candidateBytes": 931296,
+    "changePercent": -10.96460366506562,
+    "referencePeakBytes": 2444081,
+    "candidatePeakBytes": 2444081
+  },
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories",
+    "boundary": "warm",
+    "referenceBytes": 1504752,
+    "candidateBytes": 1390064,
+    "changePercent": -7.6217210543664375,
+    "referencePeakBytes": 2968425,
+    "candidatePeakBytes": 2968425
+  },
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+    "boundary": "warm",
+    "referenceBytes": 1504856,
+    "candidateBytes": 1390168,
+    "changePercent": -7.621194320253899,
+    "referencePeakBytes": 2968481,
+    "candidatePeakBytes": 2968481
+  },
+  {
+    "case": "scripts.csv-invoice.large",
+    "boundary": "warm",
+    "referenceBytes": 3672546,
+    "candidateBytes": 3672546,
+    "changePercent": 0.0,
+    "referencePeakBytes": 9432613,
+    "candidatePeakBytes": 9432613
+  }
+]

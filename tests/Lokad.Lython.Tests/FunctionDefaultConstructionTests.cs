@@ -122,13 +122,13 @@ public sealed class FunctionDefaultConstructionTests
         var span = new LythonSourceSpan(0, 1, 1, 1);
         var tuple = PyTuple.CreateDefaultStorage(2, context, span);
         var alias = new PyList([], governor, span);
-        tuple.SetPrivateDefault(0, LythonRuntime.ExecutableSlot.FromObject(alias), context, span);
+        tuple.SetPrivateDefault(0, LythonRuntime.ExecutableSlot.FromObject(alias), context.State, span);
         var beforeRefusal = budget.ReservedBytes;
         try
         {
             gate.RefuseGrowth = _ => true;
             var large = LythonRuntime.ExecutableSlot.FromObject(BigInteger.One << 127);
-            var failure = Assert.Throws<LythonRuntimeException>(() => tuple.SetPrivateDefault(1, large, context, span));
+            var failure = Assert.Throws<LythonRuntimeException>(() => tuple.SetPrivateDefault(1, large, context.State, span));
             Assert.Same(governor.AdmissionFailure, failure);
             Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
             Assert.Equal(beforeRefusal, budget.ReservedBytes);

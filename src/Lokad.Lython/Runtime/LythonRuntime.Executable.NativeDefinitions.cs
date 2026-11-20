@@ -12,16 +12,17 @@ internal sealed partial class LythonRuntime
             switch (Code.Constants[instruction.ConstantIndex])
             {
                 case ExecutableStartFunctionDefaults start:
-                    var owner = new PendingFunctionDefaults(start.Layout, _scope, span);
-                    try { Publish(instruction, owner); }
-                    catch { owner.Dispose(); throw; }
+                    System.Diagnostics.Debug.Assert(LiveExtent == instruction.ResultSlot);
+                    StartExecutableDefaults(start.Layout, Values.Slice(instruction.ResultSlot,
+                        instruction.LiveExtent - instruction.ResultSlot), _scope, span);
+                    LiveExtent = instruction.LiveExtent;
                     return true;
                 case ExecutableAppendFunctionDefault:
                     var result = Values[instruction.ResultSlot];
                     if (result.IsUnassigned) _ = result.Object.RequireNotNull();
                     Values[instruction.ResultSlot] = default;
                     Trim(instruction.LiveExtent);
-                    StoreDefaultResult(Code, Values, instruction, result);
+                    StoreDefaultResult(Code, Values, instruction, result, _scope.State);
                     return true;
                 case ExecutableCreateFunction function
                     when !NeedsDefinitionContext(function, _scope) && CanDefineWithoutInvocation(function.CodeObject,

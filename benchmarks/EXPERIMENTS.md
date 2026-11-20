@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1216/B1217 final default storage](results/2026-11-20-default-operand-storage/README.md)
+eliminates the heap owner for unpublished defaults. Three factory scripts
+allocate 7.62–10.96% less with matching accounted peaks. Eager rules
+and postponed nested factories improve warm with lower CPU. The original
+eager nested comparison includes a candidate about 9% slower. The
+identical-image longer repeat spans zero on both clocks. Keep both
+collections and the small compile-only CPU increase.
+
 [B1214/B1215 factory attribution](results/2026-11-20-post-capture-factory-attribution/confirmation/README.md)
 locates default ownership and separate admission in eager, nested and
 postponed nested factories after inline captures. Scope promotion does

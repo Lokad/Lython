@@ -148,14 +148,15 @@ internal sealed partial class LythonRuntime
                         annotation.Name, value, context, span, asynchronous);
                     break;
                 case ExecutableStartFunctionDefaults start:
-                    var owner = new PendingFunctionDefaults(start.Layout, context, span);
-                    try { PublishInstructionResult(ref execution, invocation, instruction, owner); }
-                    catch { owner.Dispose(); throw; }
+                    System.Diagnostics.Debug.Assert(execution.Stack.LiveExtent == instruction.ResultSlot);
+                    StartExecutableDefaults(start.Layout, execution.Stack.Values.AsSpan(instruction.ResultSlot,
+                        instruction.LiveExtent - instruction.ResultSlot), context, span);
+                    execution.Stack.RestoreNativeExtent(instruction.LiveExtent);
                     break;
                 case ExecutableAppendFunctionDefault:
                     {
                         var defaultValue = execution.Stack.TakeSlotValue(instruction.ResultSlot, instruction.LiveExtent);
-                        StoreDefaultResult(execution.Code, execution.Stack.Values, instruction, defaultValue);
+                        StoreDefaultResult(execution.Code, execution.Stack.Values, instruction, defaultValue, context.State);
                         break;
                     }
                 case ExecutableCreateFunction function:
@@ -186,9 +187,9 @@ internal sealed partial class LythonRuntime
                             }
                             else
                             {
-                                var defaults = lambda.InputCount == 0 ? null : (PendingFunctionDefaults)execution.Stack[first];
-                                function = CreateLambdaFunction(binding, defaults?.Values ?? default, invocation, span);
-                                defaults?.Publish();
+                                var defaults = execution.Stack.Slice(first, lambda.InputCount).Span;
+                                function = CreateLambdaFunction(binding, ReadExecutableDefaults(binding.Layout, defaults), invocation, span);
+                                defaults.Clear();
                             }
                         }
                         finally { execution.Stack.RetireTo(instruction.ResultSlot); }

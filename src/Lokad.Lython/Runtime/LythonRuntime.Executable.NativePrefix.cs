@@ -528,7 +528,7 @@ internal sealed partial class LythonRuntime
                 else StoreCapturedLocal(consumer.LocalSlot, value);
             }
             else if (consumer.OpCode == ExecutableOpCode.ApplyOperation)
-                StoreDefaultResult(Code, Values, consumer, value);
+                StoreDefaultResult(Code, Values, consumer, value, _scope.State);
             else if (consumer.OpCode != ExecutableOpCode.PopTop)
                 throw new InvalidOperationException("Invalid prepared result consumer.");
             else if (value.IsUnassigned) _ = value.Object.RequireNotNull();
@@ -548,8 +548,7 @@ internal sealed partial class LythonRuntime
         private void Trim(int liveExtent)
         {
             for (var i = Math.Min(LiveExtent - 1, Code.LastOwnedTemporarySlot); i >= liveExtent; i--)
-                if (Values[i].Reference is ExecutableTemporaryValue owned)
-                { Values[i].Object = null!; owned.Dispose(); }
+                Values[i].RetireTemporary(_scope.MemoryGovernor);
             // Dead references stay in the private span or already-admitted owned
             // backing until this synchronous prefix ends. Their owners remain
             // funded. Clear the dead tail once before transfer.

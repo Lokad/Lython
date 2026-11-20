@@ -951,10 +951,12 @@ dictionary keeps its owner for any aliases. Binding reads the live dictionary
 when exposed, using the prepared slot where its key layout still matches.
 Replacement dictionaries and structural key changes use ordinary lookup.
 Executable declarations evaluate decorators and defaults in the surrounding
-instruction stream. The same construction step handles yielding definitions,
-with private default storage owned by the operand stack until publication or
-cleanup. Functions share a prepared Python annotation order across ordinary
-and yielding definitions. The defining source selects eager evaluation or
+instruction stream. The compiler places the final positional tuple and
+prepared keyword values in private operands before any default expression
+runs. Each expression writes to its prepared destination. Those operands
+carry ownership through suspension and relinquish it at publication or
+cleanup. Ordinary and yielding definitions share construction and the
+prepared Python annotation order. The defining source selects eager evaluation or
 postponed spelling, including across imports. The compiled code owns
 postponed UTF-8 text and its scalar index where needed. For prepared
 annotation operands, each definition admits the final value storage and

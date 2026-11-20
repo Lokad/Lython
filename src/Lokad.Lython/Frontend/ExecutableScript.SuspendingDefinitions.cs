@@ -4,12 +4,12 @@ using Lokad.Lython.Runtime.Text;
 namespace Lokad.Lython.Frontend;
 
 internal sealed record ExecutableStartFunctionDefaults(FunctionParameterLayout Layout) : ExecutableOperation;
-internal sealed record ExecutableAppendFunctionDefault(FunctionParameterLayout.DefaultSlot Default) : ExecutableOperation;
+internal sealed record ExecutableAppendFunctionDefault(int StorageDepth, int Index) : ExecutableOperation;
 internal sealed record ExecutableCreateFunction(ExecutableCodeObject CodeObject, FunctionParameterLayout ParameterLayout,
     int DecoratorCount, bool IsGenerator, int AnnotationOperandCount, LoweredFunctionAnnotation[] DeferredAnnotations,
     IReadOnlyList<LoweredTypeParameter>? TypeParameters) : ExecutableOperation
 {
-    internal int InputCount => checked(DecoratorCount + AnnotationOperandCount + (ParameterLayout.Defaults.Length == 0 ? 0 : 1));
+    internal int InputCount => checked(DecoratorCount + AnnotationOperandCount + ParameterLayout.DefaultStorageCount);
 }
 internal readonly record struct ExecutableLambdaBinding(
     ExecutableCodeObject CodeObject, FunctionParameterLayout Layout, bool IsGenerator, bool NamespaceClosure);
@@ -17,7 +17,7 @@ internal readonly record struct ExecutableLambdaBinding(
 internal sealed record ExecutableCreateLambda(ExecutableLambdaBinding Binding) : ExecutableOperation
 {
     internal ExecutableCodeObject CodeObject => Binding.CodeObject;
-    internal int InputCount => Binding.Layout.Defaults.Length == 0 ? 0 : 1;
+    internal int InputCount => Binding.Layout.DefaultStorageCount;
 }
 internal sealed record ExecutableStartClassHeader(int Count) : ExecutableOperation;
 internal sealed record ExecutableCreateClass(ClassDefinitionStatementSyntax Syntax, ExecutableCodeObject Body,
@@ -124,11 +124,15 @@ internal sealed partial class ExecutableScript
             if (layout.Defaults.Length == 0) return block;
             layout.PrepareKeywordDefaultKeys(_compilation.CancellationToken, span);
             EmitOperation(new ExecutableStartFunctionDefaults(layout), span, block);
-            foreach (var slot in layout.Defaults)
+            for (var i = 0; i < layout.Defaults.Length; i++)
             {
+                var slot = layout.Defaults[i];
                 var expression = parameters[slot.ParameterIndex].DefaultValue.RequireNotNull();
                 block = CompileExpression(expression, block);
-                EmitOperation(new ExecutableAppendFunctionDefault(slot), expression.Span, block);
+                var positional = slot.KeywordIndex < 0;
+                var index = positional ? i : layout.KeywordDefaultAt(slot.KeywordIndex).RecordPosition;
+                EmitOperation(new ExecutableAppendFunctionDefault(positional ? layout.DefaultStorageCount : 1, index),
+                    expression.Span, block);
             }
             return block;
         }

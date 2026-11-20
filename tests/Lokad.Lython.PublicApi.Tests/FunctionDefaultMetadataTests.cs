@@ -283,16 +283,21 @@ finally:
     }
 
     [Theory]
-    [InlineData(false, false)]
-    [InlineData(true, false)]
-    [InlineData(false, true)]
-    [InlineData(true, true)]
-    public async Task RefusedKeywordStoragePrecedesDefaultExpressionEffects(bool asynchronous, bool lambda)
+    [InlineData(false, false, false)]
+    [InlineData(true, false, false)]
+    [InlineData(false, true, false)]
+    [InlineData(true, true, false)]
+    [InlineData(false, false, true)]
+    [InlineData(true, false, true)]
+    [InlineData(false, true, true)]
+    [InlineData(true, true, true)]
+    public async Task RefusedKeywordStoragePrecedesDefaultExpressionEffects(bool asynchronous, bool lambda, bool mixed)
     {
         var defaults = string.Join(", ", Enumerable.Range(0, 64).Select(i => $"key{i}=0"));
+        var first = mixed ? "positional=time.time(), *, effect=0" : "*, effect=time.time()";
         var declaration = lambda
-            ? $"target = lambda *, effect=time.time(), {defaults}: effect"
-            : $"def target(*, effect=time.time(), {defaults}): return effect";
+            ? $"target = lambda {first}, {defaults}: effect"
+            : $"def target({first}, {defaults}): return effect";
         using var script = new LythonEngine().Compile($"""
             import time
             time.time()
