@@ -50,6 +50,30 @@ public sealed class AbstractStateResolutionLifetimeTests
         Assert.Equal(AbstractValueKind.IntegerType, joined.Kind);
     }
 
+    [Fact]
+    public void JoinedPathsKeepOnlyFactsPresentOnBothPaths()
+    {
+        var left = new AbstractState();
+        left.Set("value", AbstractValue.Integer(1, Span));
+        left.Set("left", AbstractValue.Integer(2, Span));
+        left.SetSequenceLength("left", AbstractSequenceLengthBounds.Exact(2));
+        AssertInteger(left, 1);
+        var right = new AbstractState();
+        right.Set("value", AbstractValue.Integer(2, Span));
+        right.Set("right", AbstractValue.Integer(3, Span));
+        right.SetSequenceLength("right", AbstractSequenceLengthBounds.Exact(3));
+
+        left.JoinBranch(right);
+
+        Assert.True(StaticAbstractValueResolver.TryResolve(Read, left, out var joined));
+        Assert.Equal(AbstractValueKind.IntegerType, joined.Kind);
+        Assert.False(left.TryGet("left", out _));
+        Assert.False(left.TryGet("right", out _));
+        Assert.False(left.TryGetSequenceLength("left", out _));
+        Assert.True(right.TryGetSequenceLength("right", out _));
+        AssertInteger(right, 2);
+    }
+
     private static void AssertInteger(AbstractState state, int expected)
     {
         Assert.True(StaticAbstractValueResolver.TryResolve(Read, state, out var value));
