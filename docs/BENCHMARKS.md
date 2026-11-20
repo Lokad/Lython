@@ -12,7 +12,8 @@
 | Expanded forwarding report | 1,024 records / 26,112 B | 1.533–1.543 ms | 1.173–1.189 ms | 1.29–1.32× | B1180 diagnostic. Controls L/C 0.62 / 1.38%. IQR ≤4.03%. |
 | CSV invoice | 4,096 data records / 127,031 B | 6.877–7.224 ms | 6.588–6.618 ms | 1.04–1.10× | B1229 diagnostic. Controls L/C 5.04 / 0.45%. IQR ≤1.30%. |
 | Retained nonlocal siblings | 240 factories / 720 returned closures | 0.169–0.170 ms | 0.188–0.190 ms | 0.89–0.90× | B1109 diagnostic. Controls L/C 0.57 / 0.89%. IQR ≤2.72%. |
-| Shipment report with named format selectors | 3,072 records / 189,441 B | 3.786–3.842 ms | 3.233–3.314 ms | 1.14–1.19× | B1190 diagnostic. Controls L/C 1.48 / 2.50%. IQR ≤3.48%. |
+| Shipment report with named format selectors | 3,072 records / 189,441 B | 3.732–3.755 ms | 3.357–3.410 ms | 1.09–1.12× | B1233 diagnostic. Controls L/C 0.62 / 1.56%. IQR ≤2.71%. |
+| Shipment report with wide records | 3,072 records / 1,329,057 B | 6.504–6.536 ms | 12.600–13.123 ms | 0.496–0.519× | B1233 diagnostic. Controls L/C 0.49 / 4.15%. IQR ≤4.60%. |
 | Shipment report with positional format selectors | 3,072 records / 189,441 B | 3.737–3.750 ms | 2.861–2.893 ms | 1.29–1.31× | B1190 diagnostic. Controls L/C 0.35 / 1.13%. IQR ≤3.50%. |
 | Generated validator | 96 guards / 1,714 B JSON | 0.08372–0.08402 ms | 0.04481–0.04509 ms | 1.86–1.88× | B1213 diagnostic. Controls L/C 0.36 / 0.62%. IQR ≤2.70%. |
 | Inherited dataclass definitions | 1 base and 48 subclasses, 48 instances | 0.198–0.204 ms | 4.881–5.089 ms | 0.039–0.042× | B1222 diagnostic. Controls L/C 3.19 / 4.26%. Includes class construction and decoration. |
@@ -21,6 +22,11 @@
 **Ratio = Lython elapsed / CPython elapsed. Above one means slower.** Ranges cover
 the combinations of two process medians per engine, not confidence intervals.
 Controls L/C report the difference between the two Lython/CPython medians.
+
+B1233 measures the named and wide shipment reports at
+**d61cfc85b / frozen 11de545f6** on **2026-11-20 UTC**. The wide records
+have 24 fields each. Both machine checks and all 80 batches passed.
+Only the named report also measures compilation and compile-to-result.
 
 B1229 measures nested factories and the warm invoice at
 **46ccc2efa / frozen eaf4d65c1** on **2026-11-20 UTC**. Both machine
@@ -74,6 +80,7 @@ Earlier rows ran **2026-11-19 UTC**. All use stock **CPython 3.13.16** on the qu
 uses duplicate processes per engine. Each row describes its measured revision.
 B1122 passed the measured scripts' output and file checks. Its source
 predates the generator-lambda and iterator-cleanup fixture corrections.
+[B1233 observations](../benchmarks/results/2026-11-20-cpython-json-property-layout/README.md) ·
 [B1229 observations](../benchmarks/results/2026-11-20-cpython-prepared-entry-progress/README.md) ·
 [B1222 observations](../benchmarks/results/2026-11-20-cpython-direct-declaration-operands/README.md) ·
 [B1218 observations](../benchmarks/results/2026-11-20-cpython-default-operand-storage/README.md) ·
@@ -141,8 +148,8 @@ The table compares workload latency under different containment boundaries.
 | Configuration manifest | Compile-to-result | 0.463–0.464 ms | 0.493–0.498 ms | 0.93–0.94× | B1130 diagnostic. Controls L/C 0.30 / 0.99%. IQR ≤2.07%. |
 | Retained nonlocal siblings | Compilation only | 0.04323–0.04410 ms | 0.05508–0.05515 ms | 0.78–0.80× | B1109 diagnostic. Controls L/C 2.01 / 0.12%. IQR ≤2.17%. |
 | Retained nonlocal siblings | Compile-to-result | 0.221 ms | 0.252–0.255 ms | 0.87–0.88× | B1109 diagnostic. Controls L/C 0.10 / 0.96%. IQR ≤1.02%. |
-| Shipment report with named format selectors | Compilation only | 0.02498–0.02535 ms | 0.03346–0.03397 ms | 0.74–0.76× | B1190 diagnostic. Controls L/C 1.49 / 1.53%. IQR ≤3.25%. |
-| Shipment report with named format selectors | Compile-to-result | 3.915–4.031 ms | 3.324–3.370 ms | 1.16–1.21× | B1190 diagnostic. Controls L/C 2.96 / 1.39%. IQR ≤1.29%. |
+| Shipment report with named format selectors | Compilation only | 0.02448–0.02453 ms | 0.03435–0.03456 ms | 0.708–0.714× | B1233 diagnostic. Controls L/C 0.20 / 0.61%. IQR ≤3.02%. |
+| Shipment report with named format selectors | Compile-to-result | 3.818–3.873 ms | 3.487–3.501 ms | 1.09–1.11× | B1233 diagnostic. Controls L/C 1.44 / 0.41%. IQR ≤1.41%. |
 | Shipment report with positional format selectors | Compilation only | 0.02489–0.02539 ms | 0.03288–0.03296 ms | 0.76–0.77× | B1190 diagnostic. Controls L/C 2.04 / 0.26%. IQR ≤3.19%. |
 | Shipment report with positional format selectors | Compile-to-result | 3.865–3.902 ms | 2.966–3.085 ms | 1.25–1.32× | B1190 diagnostic. Controls L/C 0.95 / 4.04%. IQR ≤2.83%. |
 
