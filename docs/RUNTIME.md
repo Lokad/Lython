@@ -893,6 +893,13 @@ reuse lexical/class cells and retained namespaces; nonlocals without known paren
 cell slots use the shared namespace lookup. Unused lowered method bodies are
 discarded. Other real lowered consumers remain.
 
+Executable class statements evaluate decorators and ordinary header arguments
+in the defining instruction stream. Explicit arguments fill the final base and
+keyword arrays from the operand slots. Expanded headers keep their original
+keys and their owner through class construction and callbacks. Generic headers
+evaluate in the type-parameter scope. Executable statements and lowered class
+suites share class completion.
+
 Executable function bindings retain declaration inputs and prepared code without
 the original function body tree. The compilation owner funds the function name
 and leading string literal shared by instances of the same declaration. A
