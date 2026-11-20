@@ -27,11 +27,11 @@ internal sealed partial class LythonRuntime
         public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
             => ReMatchMembers.TryGetMember(this, name, context, span, out value);
 
-        internal ReadOnlyMemory<byte> GroupBytes(int index)
+        internal ReadOnlySpan<byte> GroupBytes(int index)
         {
             var capture = Captures[index];
-            return capture.StartByte < 0 ? ReadOnlyMemory<byte>.Empty
-                : String.Utf8Bytes.Slice(capture.StartByte, capture.EndByte - capture.StartByte);
+            return capture.StartByte < 0 ? default
+                : String.Utf8Span.Slice(capture.StartByte, capture.EndByte - capture.StartByte);
         }
 
         internal PyString MaterializeGroup(int index, ExecutionContext? context, LythonSourceSpan? span)
@@ -43,18 +43,7 @@ internal sealed partial class LythonRuntime
             var bytes = GroupBytes(index);
             if (bytes.IsEmpty) return PyString.Empty;
             if (bytes.Length == String.ByteLength) return String;
-            using var storage = governor.ReserveTemporary(PyString.EstimateApproximateBytes(bytes.Length), span);
-            context?.CheckExecution(span);
-            var copy = new byte[bytes.Length];
-            for (var offset = 0; offset < copy.Length;)
-            {
-                context?.CheckExecution(span);
-                var count = Math.Min(4096, copy.Length - offset);
-                bytes.Span.Slice(offset, count).CopyTo(copy.AsSpan(offset, count));
-                offset += count;
-            }
-            context?.CheckExecution(span);
-            return PyString.FromOwnedUtf8(copy, governor, span, storage);
+            return PyString.CopyFromUtf8(bytes, governor, span, context);
         }
     }
 

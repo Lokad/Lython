@@ -34,7 +34,7 @@ internal sealed partial class LythonRuntime
                 context.CheckExecution(span);
                 var part = _parts[i];
                 if (part.Group < 0) AppendRegexBytes(builder, _literals.AsSpan(part.Start, part.Length), context, span);
-                else AppendRegexBytes(builder, match.GroupBytes(part.Group).Span, context, span);
+                else AppendRegexBytes(builder, match.GroupBytes(part.Group), context, span);
             }
         }
 

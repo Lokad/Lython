@@ -1,0 +1,29 @@
+[
+  {
+    "case": "diagnostic.regex.group-copy.short.4096",
+    "reference": 2273536,
+    "candidate": 2011392,
+    "allocationChangePercent": -11.530233081860153,
+    "referenceAccountedPeak": 1323135,
+    "candidateAccountedPeak": 1323135,
+    "allowanceRestored": true
+  },
+  {
+    "case": "diagnostic.regex.group-copy.interior.4096",
+    "reference": 11181464,
+    "candidate": 11066744,
+    "allocationChangePercent": -1.0259837173379083,
+    "referenceAccountedPeak": 5432941,
+    "candidateAccountedPeak": 5432941,
+    "allowanceRestored": true
+  },
+  {
+    "case": "diagnostic.regex.unicode-short.4096",
+    "reference": 1945832,
+    "candidate": 1945776,
+    "allocationChangePercent": -0.0028779462975192516,
+    "referenceAccountedPeak": 789358,
+    "candidateAccountedPeak": 789358,
+    "allowanceRestored": true
+  }
+]
