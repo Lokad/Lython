@@ -1,0 +1,13 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "persistentTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 184913920,
+  "archiveSHA256": "01f5fca57c084a77e7bcfb58621111cfa08ca1b99a0a33de88d34a1c46e0c923",
+  "source": "B1159 retained factory, forwarding and report attribution",
+  "performanceComparison": false,
+  "failure": null
+}

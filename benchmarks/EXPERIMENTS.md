@@ -562,6 +562,10 @@ original conditions retained. Current comparisons belong in
   Inherited dataclass compile-to-result CPU rises with flat elapsed.
   The initial yielding-only allocation measurements remain archived.
   [Class headers](results/2026-11-20-direct-class-headers/README.md).
+- B1159 refreshes CPU attribution on the retained factory and report
+  workloads. Both formatting reports still carry generic call packaging.
+  Defaults, annotations and instruction dispatch remain visible in the
+  factory cases. [Profile](results/2026-11-20-retained-dispatch-profile/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
