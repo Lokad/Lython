@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1174 positional defaults on observation](results/2026-11-20-lazy-positional-defaults/README.md)
+removes eager tuple shells in a private source pair. Factory allocations
+fall 4.81–8.02%, but ordinary compile-to-result and CPU when every tuple
+is read are adverse. Dataclass warm timing improves slightly.
+
 [B1173 reports and validator against CPython](results/2026-11-20-cpython-reports-validator/README.md)
 refreshes four scripts at `c1c15c008`. Validator compilation takes 1.11–1.13×
 with tighter duplicate controls. Shipment, forwarding and invoice remain

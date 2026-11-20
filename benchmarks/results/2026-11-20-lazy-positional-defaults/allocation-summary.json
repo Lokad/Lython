@@ -1,0 +1,119 @@
+{
+  "reference": "bbbf360cdff6ff11e00165c9cdea583b22b6b826",
+  "candidate": "7d84720ebbd9a7464c1e17c480ca11177e6b7804",
+  "verification": "Seven CPython goldens per full 32-file image.",
+  "rows": [
+    {
+      "boundary": "compile-allocation",
+      "id": "scripts.rule-default-closures",
+      "referenceBytes": 78768,
+      "candidateBytes": 78768,
+      "changePct": 0.0
+    },
+    {
+      "boundary": "compile-allocation",
+      "id": "scripts.annotated-rule-closures",
+      "referenceBytes": 57304,
+      "candidateBytes": 57304,
+      "changePct": 0.0
+    },
+    {
+      "boundary": "compile-allocation",
+      "id": "scripts.annotated-rule-closures.nested-factories",
+      "referenceBytes": 69832,
+      "candidateBytes": 69832,
+      "changePct": 0.0
+    },
+    {
+      "boundary": "compile-allocation",
+      "id": "scripts.csv-invoice.large",
+      "referenceBytes": 168528,
+      "candidateBytes": 168528,
+      "changePct": 0.0
+    },
+    {
+      "boundary": "compile-allocation",
+      "id": "scripts.dataclass-inherited-configuration.generated",
+      "referenceBytes": 644248,
+      "candidateBytes": 644248,
+      "changePct": 0.0
+    },
+    {
+      "boundary": "compile-allocation",
+      "id": "scripts.rule-default-closures.observed",
+      "referenceBytes": 86368,
+      "candidateBytes": 86368,
+      "changePct": 0.0
+    },
+    {
+      "boundary": "compile-allocation",
+      "id": "calls.defaults.computed",
+      "referenceBytes": 49336,
+      "candidateBytes": 49336,
+      "changePct": 0.0
+    },
+    {
+      "boundary": "allocation",
+      "id": "scripts.rule-default-closures",
+      "referenceBytes": 2043536,
+      "candidateBytes": 1879696,
+      "changePct": -8.017475591327972,
+      "referencePeak": 2917959,
+      "candidatePeak": 2917959
+    },
+    {
+      "boundary": "allocation",
+      "id": "scripts.annotated-rule-closures",
+      "referenceBytes": 1242728,
+      "candidateBytes": 1160808,
+      "changePct": -6.591949324389567,
+      "referencePeak": 2444313,
+      "candidatePeak": 2444313
+    },
+    {
+      "boundary": "allocation",
+      "id": "scripts.annotated-rule-closures.nested-factories",
+      "referenceBytes": 1701616,
+      "candidateBytes": 1619696,
+      "changePct": -4.8142471626971055,
+      "referencePeak": 2968657,
+      "candidatePeak": 2968657
+    },
+    {
+      "boundary": "allocation",
+      "id": "scripts.csv-invoice.large",
+      "referenceBytes": 3672418,
+      "candidateBytes": 3672462,
+      "changePct": 0.0011981206932354382,
+      "referencePeak": 9432613,
+      "candidatePeak": 9432613
+    },
+    {
+      "boundary": "allocation",
+      "id": "scripts.dataclass-inherited-configuration.generated",
+      "referenceBytes": 423056,
+      "candidateBytes": 421136,
+      "changePct": -0.4538406263000616,
+      "referencePeak": 285027,
+      "candidatePeak": 285027
+    },
+    {
+      "boundary": "allocation",
+      "id": "scripts.rule-default-closures.observed",
+      "referenceBytes": 2289224,
+      "candidateBytes": 2322112,
+      "changePct": 1.4366440330871866,
+      "referencePeak": 3049135,
+      "candidatePeak": 3049135
+    },
+    {
+      "boundary": "allocation",
+      "id": "calls.defaults.computed",
+      "referenceBytes": 143288,
+      "candidateBytes": 143248,
+      "changePct": -0.027915805929312754,
+      "referencePeak": 2239,
+      "candidatePeak": 2239
+    }
+  ]
+}
