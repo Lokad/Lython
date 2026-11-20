@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1211 compact call-site refinement](results/2026-11-20-positional-call-sites/refinement/README.md)
+retains the positional flag in the private variant. Local compile allocation
+savings repeat. Manifest compile elapsed spans zero and eager warm controls
+vary. Named shipment elapsed again rises, by 0.77–4.28%. Both variants stay
+private. Keep the original compiler and warm observations for a different
+representation with a smaller effect on binding.
+
 [B1210 compact call-site metadata](results/2026-11-20-positional-call-sites/README.md)
 removes positional argument-form arrays. Compilation allocates
 1.19–1.95% less and manifest compilation improves 0.32–2.64%
