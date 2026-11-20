@@ -127,8 +127,8 @@ internal sealed partial class LythonRuntime
                 "ASCII" or "A" => new BigInteger(RegexCompiler.PythonAsciiFlag),
                 "LOCALE" or "L" => new BigInteger(RegexCompiler.PythonLocaleFlag),
                 "DEBUG" => new BigInteger(RegexCompiler.RegexDebugFlag),
-                "Pattern" => PyString.FromString("re.Pattern"),
-                "Match" => PyString.FromString("re.Match"),
+                "Pattern" => PyType.RegexPatternType,
+                "Match" => PyType.RegexMatchType,
                 _ => MissingMemberValue.Instance,
             };
 
@@ -142,13 +142,13 @@ internal sealed partial class LythonRuntime
         }
 
         private object Search(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-            => ExecuteMatch(arguments, span, context, RegexMatchMode.Search);
+            => ExecuteMatch(arguments, span, context, LythonRegexMatchMode.Search);
 
         private object Match(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-            => ExecuteMatch(arguments, span, context, RegexMatchMode.Match);
+            => ExecuteMatch(arguments, span, context, LythonRegexMatchMode.Match);
 
         private object FullMatch(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-            => ExecuteMatch(arguments, span, context, RegexMatchMode.FullMatch);
+            => ExecuteMatch(arguments, span, context, LythonRegexMatchMode.FullMatch);
 
         private object FindAll(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
@@ -206,14 +206,14 @@ internal sealed partial class LythonRuntime
             object[] arguments,
             LythonSourceSpan span,
             ExecutionContext context,
-            RegexMatchMode mode)
+            LythonRegexMatchMode mode)
         {
             context.CheckExecution(span);
             var operationName = mode switch
             {
-                RegexMatchMode.Search => "search",
-                RegexMatchMode.Match => "match",
-                RegexMatchMode.FullMatch => "fullmatch",
+                LythonRegexMatchMode.Search => "search",
+                LythonRegexMatchMode.Match => "match",
+                LythonRegexMatchMode.FullMatch => "fullmatch",
                 _ => throw new InvalidOperationException(),
             };
             var inputs = RegexCompiler.CreatePatternAndRange(
@@ -221,7 +221,7 @@ internal sealed partial class LythonRuntime
                 $"re.{operationName}(pattern, string[, flags][, pos][, endpos])",
                 span,
                 context);
-            return RegexMatcher.Match(inputs.Pattern, inputs.Range, (LythonRegexMatchMode)mode, span, context);
+            return RegexMatcher.Match(inputs.Pattern, inputs.Range, mode, span, context);
         }
 
         private static object ExecuteSubstitute(
@@ -245,13 +245,6 @@ internal sealed partial class LythonRuntime
                 inputs.Range, inputs.Count, span, context, mode)
                 : new ValueTask<object>(RegexMatcher.ExecuteSubstitute(inputs.Pattern, inputs.Replacement,
                     inputs.Range, inputs.Count, span, context, mode));
-        }
-
-        private enum RegexMatchMode
-        {
-            Search,
-            Match,
-            FullMatch,
         }
 
         internal sealed class RegexFlagFactory : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyDynamicAttributes

@@ -77,6 +77,27 @@ return re.error is re.PatternError
         }
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ModuleExportsRegexTypesAndHonorsSplitLimitsWithZeroFlags(bool asynchronous)
+    {
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
+            import re
+            p = re.compile(',')
+            m = p.search('a,b')
+            assert type(p) is re.Pattern and isinstance(p, re.Pattern)
+            assert type(m) is re.Match and isinstance(m, re.Match)
+            assert re.split(p, 'a,b,c', maxsplit=1) == ['a', 'b,c']
+            assert re.split(p, 'a,b,c', maxsplit=1, flags=0) == ['a', 'b,c']
+            assert re.split(',', 'a,b,c', maxsplit=1, flags=0) == ['a', 'b,c']
+            """);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
+        var host = new MockLythonHost();
+        using var result = asynchronous ? await script.RunAsync(host) : script.Run(host);
+        Assert.True(result.Success, result.Failure?.Message);
+    }
+
     [Fact]
     public void MultiFileCompiledPatternFixture_RunsSuccessfully()
     {

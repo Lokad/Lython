@@ -305,10 +305,17 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", $"{signature} expects a string pattern and optional flags.", span);
             }
 
-            CheckFlagsHashable(arguments, 1, span);
-            if (arguments[0] is RePatternObject existing)
+            var flags = arguments.Length == 2 ? arguments[1] : null;
+            CheckFlagsHashable(flags, span);
+            return ResolvePattern(arguments[0], flags, span, context);
+        }
+
+        private static RePatternObject ResolvePattern(object value, object? requestedFlags, LythonSourceSpan span,
+            ExecutionContext context)
+        {
+            if (value is RePatternObject existing)
             {
-                if (arguments.Length == 2 && IsTruthy(arguments[1], context, span))
+                if (requestedFlags is not null && IsTruthy(requestedFlags, context, span))
                 {
                     throw new LythonRuntimeException("ValueError", "cannot process flags argument with a compiled pattern", span);
                 }
@@ -316,13 +323,13 @@ internal sealed partial class LythonRuntime
                 return existing;
             }
 
-            if (!PyStringOps.TryAsString(arguments[0], out var pattern))
+            if (!PyStringOps.TryAsString(value, out var pattern))
             {
                 throw new LythonRuntimeException("TypeError", "first argument must be string or compiled pattern", span);
             }
 
-            var options = arguments.Length == 2
-                ? ParseFlags(arguments[1], span, context)
+            var options = requestedFlags is not null
+                ? ParseFlags(requestedFlags, span, context)
                 : new LythonRegexOptions(PythonUnicodeFlag, false);
             context.CheckExecution(span);
             _ = pattern.GetHashCode(context.State.CancellationToken, span);
@@ -361,29 +368,21 @@ internal sealed partial class LythonRuntime
 
         // The cache lookup hashes flags first, so unhashable flags fail before
         // any dispatch or compiled-pattern check like CPython.
-        private static void CheckFlagsHashable(object[] arguments, int flagsIndex, LythonSourceSpan span)
+        private static void CheckFlagsHashable(object? flags, LythonSourceSpan span)
         {
-            if (arguments.Length > flagsIndex)
+            if (flags is null) return;
+            try
             {
-                try
-                {
-                    _ = PyValueComparer.Instance.GetHashCode(arguments[flagsIndex]);
-                }
-                catch (InvalidOperationException)
-                {
-                    throw RuntimeErrors.UnhashableType(arguments[flagsIndex], span);
-                }
+                _ = PyValueComparer.Instance.GetHashCode(flags);
+            }
+            catch (InvalidOperationException)
+            {
+                throw RuntimeErrors.UnhashableType(flags, span);
             }
         }
 
-        // A compiled pattern with truthy flags fails like CPython before any dispatch.
-        private static void ThrowIfCompiledFlags(object[] arguments, int flagsIndex, LythonSourceSpan span, ExecutionContext context)
-        {
-            if (arguments.Length > flagsIndex && IsTruthy(arguments[flagsIndex], context, span))
-            {
-                throw new LythonRuntimeException("ValueError", "cannot process flags argument with a compiled pattern", span);
-            }
-        }
+        private static object? ReadModuleFlags(object[] arguments, int flagsIndex)
+            => arguments.Length > flagsIndex && arguments[flagsIndex] is not PyNone ? arguments[flagsIndex] : null;
 
         internal static RegexPatternRange CreatePatternAndRange(object[] arguments, string signature, LythonSourceSpan span, ExecutionContext context)
         {
@@ -392,24 +391,13 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", $"{signature} expects pattern, string, optional flags, pos, and endpos.", span);
             }
 
-            CheckFlagsHashable(arguments, 2, span);
+            var flags = ReadModuleFlags(arguments, 2);
+            CheckFlagsHashable(flags, span);
             var pos = arguments.Length >= 4 ? ParseOptionalPosition(arguments[3], 0, span, context) : 0;
             var endPos = arguments.Length >= 5 ? ParseOptionalPosition(arguments[4], text.Length, span, context) : text.Length;
 
-            if (arguments[0] is RePatternObject compiled)
-            {
-                ThrowIfCompiledFlags(arguments, 2, span, context);
-                var compiledRange = CreateSubjectRange(text, pos, endPos);
-                return new RegexPatternRange(compiled, compiledRange);
-            }
-
-            object[] patternArguments = arguments.Length >= 3 && !ReferenceEquals(arguments[2], PyNone.Instance)
-                ? [arguments[0], arguments[2]]
-                : [arguments[0]];
             var matchRange = CreateSubjectRange(text, pos, endPos);
-            return new RegexPatternRange(
-                CreatePattern(patternArguments, signature, span, context),
-                matchRange);
+            return new RegexPatternRange(ResolvePattern(arguments[0], flags, span, context), matchRange);
         }
 
         internal static RegexSubstituteInputs CreateSubstituteInputs(object[] arguments, string signature, LythonSourceSpan span, ExecutionContext context)
@@ -431,23 +419,10 @@ internal sealed partial class LythonRuntime
             var pos = arguments.Length >= 6 ? ParseOptionalPosition(arguments[5], 0, span, context) : 0;
             var endPos = arguments.Length >= 7 ? ParseOptionalPosition(arguments[6], text.Length, span, context) : text.Length;
 
-            CheckFlagsHashable(arguments, 4, span);
-            RePatternObject pattern;
-            if (arguments[0] is RePatternObject compiled)
-            {
-                ThrowIfCompiledFlags(arguments, 4, span, context);
-                pattern = compiled;
-            }
-            else
-            {
-                object[] patternArguments = arguments.Length >= 5 && !ReferenceEquals(arguments[4], PyNone.Instance)
-                    ? [arguments[0], arguments[4]]
-                    : [arguments[0]];
-                pattern = CreatePattern(patternArguments, signature, span, context);
-            }
-
-            var substituteInputs = new RegexSubstituteInputs(pattern, replacement, CreateSubjectRange(text, pos, endPos), count);
-            return substituteInputs;
+            var flags = ReadModuleFlags(arguments, 4);
+            CheckFlagsHashable(flags, span);
+            var pattern = ResolvePattern(arguments[0], flags, span, context);
+            return new RegexSubstituteInputs(pattern, replacement, CreateSubjectRange(text, pos, endPos), count);
         }
 
         internal static RegexSplitInputs CreateSplitInputs(object[] arguments, string signature, LythonSourceSpan span, ExecutionContext context)
@@ -457,35 +432,16 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", $"{signature} expects pattern, string, optional maxsplit, flags, pos, and endpos.", span);
             }
 
-            var maxSplit = 0;
             var pos = arguments.Length >= 5 ? ParseOptionalPosition(arguments[4], 0, span, context) : 0;
             var endPos = arguments.Length >= 6 ? ParseOptionalPosition(arguments[5], text.Length, span, context) : text.Length;
 
-            CheckFlagsHashable(arguments, 3, span);
-            RePatternObject pattern;
-            if (arguments[0] is RePatternObject compiled)
-            {
-                ThrowIfCompiledFlags(arguments, 3, span, context);
-                pattern = compiled;
-                if (arguments.Length == 3)
-                {
-                    maxSplit = ParseOptionalIntOrDefault(arguments[2], 0, "maxsplit", signature, span, context);
-                }
-            }
-            else
-            {
-                object[] patternArguments = arguments.Length >= 4 && !ReferenceEquals(arguments[3], PyNone.Instance)
-                    ? [arguments[0], arguments[3]]
-                    : [arguments[0]];
-                pattern = CreatePattern(patternArguments, signature, span, context);
-                if (arguments.Length >= 3)
-                {
-                    maxSplit = ParseOptionalIntOrDefault(arguments[2], 0, "maxsplit", signature, span, context);
-                }
-            }
-
-            var splitRange = CreateSubjectRange(text, pos, endPos);
-            return new RegexSplitInputs(pattern, splitRange, maxSplit);
+            var flags = ReadModuleFlags(arguments, 3);
+            CheckFlagsHashable(flags, span);
+            var pattern = ResolvePattern(arguments[0], flags, span, context);
+            var maxSplit = arguments.Length >= 3
+                ? ParseOptionalIntOrDefault(arguments[2], 0, "maxsplit", signature, span, context)
+                : 0;
+            return new RegexSplitInputs(pattern, CreateSubjectRange(text, pos, endPos), maxSplit);
         }
 
         // Regex bounds coerce through __index__ like CPython. Module-level
