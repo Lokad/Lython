@@ -904,8 +904,10 @@ instruction stream. The same construction step handles yielding definitions,
 with private default storage owned by the operand stack until publication or
 cleanup. Functions share a prepared Python annotation order across ordinary
 and yielding definitions. The defining source selects eager evaluation or
-postponed spelling, including across imports. Type-scope annotations keep
-their defining namespace.
+postponed spelling, including across imports. The compiled code owns
+postponed UTF-8 text and its scalar index where needed. Each function
+definition still creates and funds its own mutable annotation dictionary.
+Type-scope annotations keep their defining namespace.
 Private default storage stays admitted through suspension and is released if
 default evaluation or annotation setup fails. Once a decorator can observe the
 function, the defaults stay funded even if decoration raises.
