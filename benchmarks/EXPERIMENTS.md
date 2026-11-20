@@ -19,6 +19,12 @@ Reading every definition allocates the same amount and has inconclusive
 timing. Accounted peaks match. The original prototype's adverse timings
 remain in its own record.
 
+[B1164 frame-owned function defaults](results/2026-11-20-frame-default-storage/README.md)
+removes the per-definition wrapper in a private source pair. Ordinary rule
+allocation falls 11.24% and compile-to-result improves slightly. Ordinary
+warm CPU rises 1.72–2.88%. Other warm timings remain uncertain. The revised
+cleanup route needs separate confirmation.
+
 ## November 18–19, 0.11.0 compiler and call work
 
 - The retained formatting and function-default changes have paired evidence.
