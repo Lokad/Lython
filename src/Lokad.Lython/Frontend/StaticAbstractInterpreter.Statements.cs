@@ -318,30 +318,28 @@ internal static partial class StaticAbstractInterpreter
             return;
         }
 
-        var thenBindings = bindings.Clone();
-        StaticConditionRefinements.Apply(ifStatement.Condition, assumedTruth: true, thenBindings);
-        AnalyzeStatements(ifStatement.ThenStatements, diagnostics, thenBindings);
-        var elseBindings = bindings.Clone();
-        StaticConditionRefinements.Apply(ifStatement.Condition, assumedTruth: false, elseBindings);
-        if (ifStatement.ElseStatements is not null)
-        {
-            AnalyzeStatements(ifStatement.ElseStatements, diagnostics, elseBindings);
-        }
-
         var thenExits = StatementsAlwaysExit(ifStatement.ThenStatements);
         var elseExits = ifStatement.ElseStatements is not null && StatementsAlwaysExit(ifStatement.ElseStatements);
-        if (thenExits && !elseExits)
+        // Keep the incoming maps on the continuing path when one branch ends.
+        // Both branches still run in source order for diagnostic purposes.
+        var keepThen = !thenExits && elseExits;
+        var fork = bindings.Clone();
+        var thenBindings = keepThen ? bindings : fork;
+        var elseBindings = keepThen ? fork : bindings;
+        bindings.InvalidateCachedFacts();
+        StaticConditionRefinements.Apply(ifStatement.Condition, assumedTruth: true, thenBindings);
+        AnalyzeStatements(ifStatement.ThenStatements, diagnostics, thenBindings);
+        StaticConditionRefinements.Apply(ifStatement.Condition, assumedTruth: false, elseBindings);
+        if (ifStatement.ElseStatements is not null)
+            AnalyzeStatements(ifStatement.ElseStatements, diagnostics, elseBindings);
+        if (thenExits != elseExits)
         {
-            bindings.TakeBranchResult(elseBindings);
+            bindings.InvalidateCachedFacts();
+            return;
         }
-        else if (!thenExits && elseExits)
-        {
-            bindings.TakeBranchResult(thenBindings);
-        }
-        else
-        {
-            bindings.MergeFrom(thenBindings, elseBindings);
-        }
+
+        thenBindings.JoinBranch(elseBindings);
+        bindings.TakeBranchResult(thenBindings);
     }
 
     private static void AnalyzeTry(
@@ -349,44 +347,51 @@ internal static partial class StaticAbstractInterpreter
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
     {
-        var tryBindings = bindings.Clone();
+        var handlers = tryStatement.ExceptClauses;
         AbstractState? exceptBindings = null;
-        if (tryStatement.ExceptClauses.Count == 0)
+        if (handlers.Count == 0)
         {
-            AnalyzeStatements(tryStatement.TryBody, diagnostics, tryBindings);
-        }
-        else
-        {
-            // A runtime contract failure in the protected body may be the exception
-            // that the Python program intends to catch. Keep its successful-path facts,
-            // but do not turn the catchable failure into a compilation failure.
-            AnalyzeStatements(tryStatement.TryBody, [], tryBindings);
-            foreach (var exceptClause in tryStatement.ExceptClauses)
-            {
-                var clauseBindings = bindings.Clone();
-                // The protected body can partially mutate retained containers
-                // before a computed header or this suite observes them.
-                clauseBindings.InvalidateCollectionFacts();
-                if (exceptClause.ExceptionTypeExpression is { } header)
-                    AnalyzeExpression(header, [], clauseBindings);
-                AnalyzeStatements(exceptClause.Body, diagnostics, clauseBindings);
-                exceptBindings = exceptBindings is null ? clauseBindings : AbstractState.Merge(exceptBindings, clauseBindings);
-            }
+            bindings.InvalidateCachedFacts();
+            AnalyzeStatements(tryStatement.TryBody, diagnostics, bindings);
+            AnalyzeRemainingSuites(bindings);
+            bindings.InvalidateCachedFacts();
+            return;
         }
 
-        if (tryStatement.ElseBody is not null)
+        // A runtime contract failure in the protected body can be the exception
+        // the script intends to catch. Keep successful-path facts, and continue
+        // to report diagnostics for handlers and the successful else suite.
+        var tryBindings = bindings.Clone();
+        AnalyzeStatements(tryStatement.TryBody, [], tryBindings);
+
+        for (var i = 0; i < handlers.Count; i++)
         {
-            // Python enters else only when the protected body completed successfully.
-            AnalyzeStatements(tryStatement.ElseBody, diagnostics, tryBindings);
+            var handler = handlers[i];
+            var clauseBindings = i == handlers.Count - 1 ? bindings : bindings.Clone();
+            clauseBindings.InvalidateCachedFacts();
+            // The protected body can partially mutate retained containers
+            // before a computed header or handler suite observes them.
+            clauseBindings.InvalidateCollectionFacts();
+            if (handler.ExceptionTypeExpression is { } header)
+                AnalyzeExpression(header, [], clauseBindings);
+            AnalyzeStatements(handler.Body, diagnostics, clauseBindings);
+
+            if (exceptBindings is null) exceptBindings = clauseBindings;
+            else exceptBindings.JoinBranch(clauseBindings);
         }
 
-        var continuationBindings = exceptBindings is null ? tryBindings : AbstractState.Merge(tryBindings, exceptBindings);
-        if (tryStatement.FinallyBody is not null)
-        {
-            AnalyzeStatements(tryStatement.FinallyBody, diagnostics, continuationBindings);
-        }
+        AnalyzeRemainingSuites(tryBindings);
+        bindings.TakeBranchResult(tryBindings);
 
-        bindings.TakeBranchResult(continuationBindings);
+        void AnalyzeRemainingSuites(AbstractState continuation)
+        {
+            if (tryStatement.ElseBody is not null)
+                AnalyzeStatements(tryStatement.ElseBody, diagnostics, continuation);
+            if (exceptBindings is not null)
+                continuation.JoinBranch(exceptBindings);
+            if (tryStatement.FinallyBody is not null)
+                AnalyzeStatements(tryStatement.FinallyBody, diagnostics, continuation);
+        }
     }
 
     private static void InvalidateDirectiveBindings(

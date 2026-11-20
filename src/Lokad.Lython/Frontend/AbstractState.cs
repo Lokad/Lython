@@ -274,6 +274,50 @@ internal sealed class AbstractState
         branch.InvalidateCachedFacts();
     }
 
+    // The left branch owns these maps. Keep its intersection with the
+    // completed right branch and preserve the left binding's diagnostic span.
+    internal void JoinBranch(AbstractState right)
+    {
+        _containerFactsInvalidated |= right._containerFactsInvalidated;
+        InvalidateCachedFacts();
+        var kept = 0;
+        foreach (var (name, rightValue) in right._values)
+        {
+            if (_values.TryGetValue(name, out var leftValue))
+            {
+                _values[name] = AbstractValue.Join(leftValue, rightValue, leftValue.Span, AnalysisContext);
+                kept++;
+            }
+        }
+        if (kept != _values.Count)
+        {
+            // Dictionary.Remove preserves active enumerators on .NET 10/11.
+            foreach (var name in _values.Keys)
+            {
+                AnalysisContext?.CheckExecution();
+                if (!right._values.ContainsKey(name)) _values.Remove(name);
+            }
+        }
+
+        kept = 0;
+        foreach (var (name, rightBounds) in right._sequenceLengths)
+        {
+            if (_sequenceLengths.TryGetValue(name, out var leftBounds))
+            {
+                _sequenceLengths[name] = AbstractSequenceLengthBounds.Union(leftBounds, rightBounds);
+                kept++;
+            }
+        }
+        if (kept != _sequenceLengths.Count)
+        {
+            foreach (var name in _sequenceLengths.Keys)
+            {
+                AnalysisContext?.CheckExecution();
+                if (!right._sequenceLengths.ContainsKey(name)) _sequenceLengths.Remove(name);
+            }
+        }
+    }
+
     public void MergeFrom(AbstractState left, AbstractState right)
     {
         _containerFactsInvalidated |= left._containerFactsInvalidated || right._containerFactsInvalidated;
@@ -311,6 +355,6 @@ internal sealed class AbstractState
     public void SetCachedAbstractValue(ExpressionSyntax expression, AbstractValueResolution resolution)
         => _abstractValueCache[expression] = resolution;
 
-    private void InvalidateCachedFacts()
+    internal void InvalidateCachedFacts()
         => _abstractValueCache.Clear();
 }
