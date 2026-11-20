@@ -1,0 +1,14 @@
+{
+  "complete": true,
+  "jobs": 4,
+  "elapsedSeconds": 243.18238942930475,
+  "archiveSHA256": "5c856d89e1fb67d7edc8d07bacc50b3c15988cc235a4c775072ac29f93ecdb53",
+  "verifiedAfterCollectionUnderIdleLease": true,
+  "originalExitCode": 1,
+  "archiveOnlyFailure": true,
+  "allWorkersJoined": true,
+  "guestFixturesRemoved": true,
+  "quietBeforeAndAfter": true,
+  "freeBytesAtVerification": 180838400,
+  "originalArchiveFloorBytes": 182452224
+}

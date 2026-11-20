@@ -9,11 +9,11 @@
 | Postponed nested factories | 2,048 inputs / 4,096 definitions | 2.051–2.117 ms | 0.577–0.590 ms | 3.47–3.67× | B1156 diagnostic. Controls L/C 3.22 / 2.39%. IQR ≤1.50%. |
 | Captured rule closures | 2,048 inputs / 4,096 returned closures | 2.437–2.454 ms | 0.776–0.790 ms | 3.09–3.16× | B1122 diagnostic. Controls L/C 0.71 / 1.69%. IQR ≤1.69%. |
 | Inline forwarding with dynamic keys | 1,024 records / 26,112 B | 1.894–1.913 ms | 1.139–1.159 ms | 1.63–1.68× | B1102 diagnostic. Controls L/C 1.01 / 1.74%. IQR ≤2.35%. |
-| Expanded forwarding report | 1,024 records / 26,112 B | 1.799–1.800 ms | 1.159–1.164 ms | 1.55× | B1162 diagnostic. Controls L/C 0.02 / 0.43%. IQR ≤3.45%. |
-| CSV invoice | 4,096 data records / 127,031 B | 6.498–6.700 ms | 6.099–6.101 ms | 1.07–1.10× | B1168 diagnostic. Controls L/C 3.10 / 0.04%. IQR ≤3.43%. |
+| Expanded forwarding report | 1,024 records / 26,112 B | 1.775–1.822 ms | 1.154–1.169 ms | 1.52–1.58× | B1173 diagnostic. Controls L/C 2.67 / 1.37%. IQR ≤0.95%. |
+| CSV invoice | 4,096 data records / 127,031 B | 6.435–6.455 ms | 6.079–6.091 ms | 1.06× | B1173 diagnostic. Controls L/C 0.30 / 0.20%. IQR ≤1.65%. |
 | Retained nonlocal siblings | 240 factories / 720 returned closures | 0.169–0.170 ms | 0.188–0.190 ms | 0.89–0.90× | B1109 diagnostic. Controls L/C 0.57 / 0.89%. IQR ≤2.72%. |
-| Shipment report with format selectors | 3,072 records / 189,441 B | 3.735–3.739 ms | 3.089–3.096 ms | 1.21× | B1162 diagnostic. Controls L/C 0.10 / 0.20%. IQR ≤2.53%. |
-| Generated validator | 96 guards / 1,714 B JSON | 0.084–0.085 ms | 0.044–0.046 ms | 1.83–1.92× | B1136 diagnostic. Controls L/C 1.13 / 3.76%. IQR ≤3.73%. |
+| Shipment report with format selectors | 3,072 records / 189,441 B | 3.812–3.827 ms | 3.067–3.124 ms | 1.22–1.25× | B1173 diagnostic. Controls L/C 0.40 / 1.86%. IQR ≤4.91%. |
+| Generated validator | 96 guards / 1,714 B JSON | 0.081 ms | 0.043–0.044 ms | 1.83–1.87× | B1173 diagnostic. Controls L/C 0.57 / 1.49%. IQR ≤3.66%. |
 | Inherited dataclass definitions | 1 base and 48 subclasses, 48 instances | 0.192–0.194 ms | 4.896–4.942 ms | 0.039–0.040× | B1168 diagnostic. Repeated class decoration and method generation dominate this script on CPython. |
 | Configuration manifest | 4 targets / 833 B across 2 files | 0.199–0.200 ms | 0.165 ms | 1.21× | B1130 diagnostic. Controls L/C 0.17 / 0.06%. IQR ≤0.99%. |
 
@@ -21,11 +21,13 @@
 the combinations of two process medians per engine, not confidence intervals.
 Controls L/C report the difference between the two Lython/CPython medians.
 
-B1168 measures inherited dataclasses, eager and nested factory scripts, and
-the warm invoice at **ab2aa9554** on **2026-11-20 UTC**.
-B1162 measures expanded forwarding and shipment selectors at **e6e1f964c**
-on the same date.
-B1136 measures the validator at **e20604ef4 / frozen 1e9d02fb**.
+B1173 measures shipment, forwarding, validator and warm invoice at
+**c1c15c008 / frozen 8643ebfd8** on **2026-11-20 UTC**. It uses the same
+source-verified core as B1172. Both machine checks and all 200 batches passed.
+The original archive-floor failure and subsequent verification are recorded.
+B1168 measures inherited dataclasses and eager and nested factories at
+**ab2aa9554** on the same date. Its earlier warm invoice result and the
+earlier B1162 report and B1136 validator results remain in their linked records.
 B1130 measures the manifest at **a472eb2a4 / frozen e18ee460**.
 B1156 measures postponed factory variants at **551fde44e**, using the
 exact `a6928c942` core from B1155, on **2026-11-20 UTC**.
@@ -40,6 +42,7 @@ Earlier rows ran **2026-11-19 UTC**. All use stock **CPython 3.13.16** on the qu
 uses duplicate processes per engine. Each row describes its measured revision.
 B1122 passed the measured scripts' output and file checks. Its source
 predates the generator-lambda and iterator-cleanup fixture corrections.
+[B1173 observations](../benchmarks/results/2026-11-20-cpython-reports-validator/README.md) ·
 [B1168 observations](../benchmarks/results/2026-11-20-cpython-dataclasses-and-factories/README.md) ·
 [B1162 observations](../benchmarks/results/2026-11-20-representative-cpython/README.md) ·
 [B1156 observations](../benchmarks/results/2026-11-20-postponed-factories-cpython/README.md) ·
@@ -85,18 +88,18 @@ The table compares workload latency under different containment boundaries.
 | Captured rule closures | Compile-to-result | 2.519–2.523 ms | 0.830–0.839 ms | 3.00–3.04× | B1122 diagnostic. Controls L/C 0.15 / 1.09%. IQR ≤1.51%. |
 | Inline forwarding with dynamic keys | Compilation only | 0.05339–0.05370 ms | 0.06049–0.06111 ms | 0.87–0.89× | B1102 diagnostic. Controls L/C 0.57 / 1.01%. IQR ≤1.53%. |
 | Inline forwarding with dynamic keys | Compile-to-result | 2.003–2.012 ms | 1.285–1.298 ms | 1.54–1.57× | B1102 diagnostic. Controls L/C 0.47 / 1.00%. IQR ≤1.66%. |
-| Expanded forwarding report | Compilation only | 0.04379–0.04398 ms | 0.06122–0.06140 ms | 0.71–0.72× | B1162 diagnostic. Controls L/C 0.44 / 0.30%. IQR ≤3.95%. |
-| Expanded forwarding report | Compile-to-result | 1.887–1.916 ms | 1.303–1.305 ms | 1.45–1.47× | B1162 diagnostic. Controls L/C 1.51 / 0.21%. IQR ≤3.34%. |
+| Expanded forwarding report | Compilation only | 0.04374 ms | 0.06121–0.06165 ms | 0.71× | B1173 diagnostic. Controls L/C 0.00 / 0.73%. IQR ≤0.92%. |
+| Expanded forwarding report | Compile-to-result | 1.869–1.942 ms | 1.303–1.307 ms | 1.43–1.49× | B1173 diagnostic. Controls L/C 3.94 / 0.29%. IQR ≤1.93%. |
 | CSV invoice | Compilation only | 0.07780–0.07865 ms | 0.09355–0.09493 ms | 0.82–0.84× | B1143 diagnostic. Controls L/C 1.08 / 1.48%. IQR ≤1.10%. |
 | CSV invoice | Compile-to-result | 6.625–6.737 ms | 6.367–6.465 ms | 1.02–1.06× | B1143 diagnostic. Controls L/C 1.69 / 1.53%. IQR ≤0.76%. |
-| Generated validator | Compilation only | 2.04878–2.08010 ms | 1.86838–2.00960 ms | 1.02–1.11× | B1136 diagnostic. Controls L/C 1.53 / 7.56%. IQR ≤2.74%. Gap size uncertain. |
-| Generated validator | Compile-to-result | 2.199–2.243 ms | 2.025–2.072 ms | 1.06–1.11× | B1136 diagnostic. Controls L/C 2.01 / 2.34%. IQR ≤3.93%. |
+| Generated validator | Compilation only | 2.04870–2.05688 ms | 1.82118–1.83917 ms | 1.11–1.13× | B1173 diagnostic. Controls L/C 0.40 / 0.99%. IQR ≤3.10%. |
+| Generated validator | Compile-to-result | 2.110–2.148 ms | 1.949–1.974 ms | 1.07–1.10× | B1173 diagnostic. Controls L/C 1.80 / 1.28%. IQR ≤2.05%. |
 | Configuration manifest | Compilation only | 0.15576–0.15686 ms | 0.16836–0.17140 ms | 0.91–0.93× | B1130 diagnostic. Controls L/C 0.70 / 1.80%. IQR ≤0.80%. |
 | Configuration manifest | Compile-to-result | 0.463–0.464 ms | 0.493–0.498 ms | 0.93–0.94× | B1130 diagnostic. Controls L/C 0.30 / 0.99%. IQR ≤2.07%. |
 | Retained nonlocal siblings | Compilation only | 0.04323–0.04410 ms | 0.05508–0.05515 ms | 0.78–0.80× | B1109 diagnostic. Controls L/C 2.01 / 0.12%. IQR ≤2.17%. |
 | Retained nonlocal siblings | Compile-to-result | 0.221 ms | 0.252–0.255 ms | 0.87–0.88× | B1109 diagnostic. Controls L/C 0.10 / 0.96%. IQR ≤1.02%. |
-| Shipment report with format selectors | Compilation only | 0.02472–0.02496 ms | 0.03206–0.03216 ms | 0.77–0.78× | B1162 diagnostic. Controls L/C 0.97 / 0.32%. IQR ≤2.05%. |
-| Shipment report with format selectors | Compile-to-result | 3.731–3.854 ms | 3.218–3.229 ms | 1.16–1.20× | B1162 diagnostic. Controls L/C 3.31 / 0.33%. IQR ≤5.04%. Gap size uncertain. |
+| Shipment report with format selectors | Compilation only | 0.02478 ms | 0.03226–0.03231 ms | 0.77× | B1173 diagnostic. Controls L/C 0.01 / 0.15%. IQR ≤2.89%. |
+| Shipment report with format selectors | Compile-to-result | 3.825–3.852 ms | 3.240–3.245 ms | 1.18–1.19× | B1173 diagnostic. Controls L/C 0.70 / 0.15%. IQR ≤2.52%. |
 
 Compilation includes compiled-owner disposal. Compile-to-result includes compilation,
 one execution and compiled-owner disposal. Separately warmed medians are not

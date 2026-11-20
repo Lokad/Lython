@@ -323,9 +323,9 @@ inherited set. Syntax validation records potential mutating calls by statement.
 Binding analysis uses current bindings to determine their effects and releases
 the call-site map when analysis ends.
 
-Lexical scope preparation follows parsing and name rewriting. Analysis,
-lowering and class creation reuse the resulting
-immutable function/class/lambda facts. They belong to the compiled program,
+Lexical scope preparation follows parsing and name rewriting. It also
+prepares canonical text for postponed annotations. Analysis, lowering and
+class creation reuse the resulting immutable function/class/lambda facts. They belong to the compiled program,
 without a cross-script cache. A function declaration also owns one flat parameter
 name/slot table, role counts and generator classification, shared by analysis,
 lowering and its created functions. Lowered definitions and lambdas keep only

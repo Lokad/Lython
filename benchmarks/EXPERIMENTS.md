@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1173 reports and validator against CPython](results/2026-11-20-cpython-reports-validator/README.md)
+refreshes four scripts at `c1c15c008`. Validator compilation takes 1.11–1.13×
+with tighter duplicate controls. Shipment, forwarding and invoice remain
+slower warm. The completed measurements and original archive-floor failure
+are preserved in the recovered record.
+
 [Postponed annotation text attachment](results/2026-11-20-postponed-attachment/README.md)
 removes a suite traversal and redundant future-import query. The three
 affected scripts allocate 0.49–0.59% less during compilation. Warm
