@@ -364,11 +364,6 @@ internal sealed partial class Parser
                 if (ParseCallArguments(out _) is not { } arguments) return null;
                 headerArguments = arguments;
             }
-            var bases = headerArguments.Where(argument => argument.Kind == CallArgumentKind.Positional)
-                .Select(argument => argument.Expression).ToArray();
-            var keywordArguments = headerArguments.Where(argument => argument.Kind == CallArgumentKind.Keyword)
-                .Select(argument => new ClassKeywordArgumentSyntax(argument.KeywordName, argument.Expression, argument.Expression.Span)).ToArray();
-
             if (!TryRead(Token.Colon, out _))
             {
                 AddDiagnostic("LA1103", "Expected ':' after class definition header.", nameToken);
@@ -386,10 +381,9 @@ internal sealed partial class Parser
                 bindingName,
                 dataclassDecorator,
                 decorators,
-                bases,
-                keywordArguments,
+                headerArguments,
                 body,
-                Merge(SpanOf(classToken), body[^1].Span), typeParameters, headerArguments)
+                Merge(SpanOf(classToken), body[^1].Span), typeParameters)
             {
                 OriginalName = bindingName == declaredName ? null : declaredName
             };

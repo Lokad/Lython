@@ -104,8 +104,8 @@ internal sealed class LoweredScript
             ClassDefinitionStatementSyntax classDefinition => new LoweredClassDefinitionStatement(
                 classDefinition,
                 classDefinition.Decorators.Select(LowerExpression).ToArray(),
-                classDefinition.Bases.Select(LowerExpression).ToArray(),
-                classDefinition.KeywordArguments.Select(argument => new LoweredCallArgument(CallArgumentForm.Keyword(argument.Name), LowerExpression(argument.Value))).ToArray(),
+                classDefinition.HeaderArguments.Select(argument =>
+                    new LoweredCallArgument(argument.Form, LowerExpression(argument.Expression))).ToArray(),
                 LowerStatements(classDefinition.Body, classScope: true)),
             AssignmentStatementSyntax assignment
                 => new LoweredNameAssignmentStatement(

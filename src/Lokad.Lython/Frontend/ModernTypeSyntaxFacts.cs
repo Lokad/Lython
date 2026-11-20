@@ -33,15 +33,7 @@ internal static class ModernTypeSyntaxFacts
                     if (generic.ReturnAnnotation is not null) Annotation(generic.ReturnAnnotation);
                 }
                 if (statement is ClassDefinitionStatementSyntax { TypeParameters: not null } genericClass)
-                {
-                    if (genericClass.HeaderArguments is { } headers)
-                        foreach (var header in headers) Annotation(header.Expression);
-                    else
-                    {
-                        foreach (var header in genericClass.Bases) Annotation(header);
-                        foreach (var header in genericClass.KeywordArguments) Annotation(header.Value);
-                    }
-                }
+                    foreach (var header in genericClass.HeaderArguments) Annotation(header.Expression);
                 if (statement is ScopeDirectiveStatementSyntax { Kind: ScopeDirectiveKind.Nonlocal } directive && directive.Names.Any(typeNames.Contains))
                     Error("Type parameters cannot be rebound with nonlocal.", directive.Span);
                 var nestedNames = typeNames;

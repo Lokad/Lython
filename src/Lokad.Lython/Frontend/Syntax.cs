@@ -361,22 +361,15 @@ internal sealed record ClassDefinitionStatementSyntax(
     string Name,
     DataclassDecoratorSyntax? DataclassDecorator,
     IReadOnlyList<ExpressionSyntax> Decorators,
-    IReadOnlyList<ExpressionSyntax> Bases,
-    IReadOnlyList<ClassKeywordArgumentSyntax> KeywordArguments,
+    IReadOnlyList<CallArgumentSyntax> HeaderArguments,
     IReadOnlyList<StatementSyntax> Body,
     LythonSourceSpan Span,
-    IReadOnlyList<TypeParameterSyntax>? TypeParameters = null,
-    IReadOnlyList<CallArgumentSyntax>? HeaderArguments = null) : StatementSyntax(Span)
+    IReadOnlyList<TypeParameterSyntax>? TypeParameters = null) : StatementSyntax(Span)
 {
     internal ScopeDirectiveFacts? PreparedScopeFacts { get; set; }
     public string? OriginalName { get; init; }
     public string DeclaredName => OriginalName ?? Name;
 }
-
-internal sealed record ClassKeywordArgumentSyntax(
-    string Name,
-    ExpressionSyntax Value,
-    LythonSourceSpan Span);
 
 internal sealed record DataclassDecoratorSyntax(
     bool Init,

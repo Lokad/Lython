@@ -16,7 +16,7 @@ public sealed class StatementSyntaxTraversalTests
         IReadOnlyList<StatementSyntax> fourth = [new ReturnStatementSyntax(null, Span)];
 
         AssertBodies(new FunctionDefinitionStatementSyntax("f", [], [], null, first, Span), first);
-        AssertBodies(new ClassDefinitionStatementSyntax("C", null, [], [], [], first, Span), first);
+        AssertBodies(new ClassDefinitionStatementSyntax("C", null, [], [], first, Span), first);
         AssertBodies(new IfStatementSyntax(Condition, first, second, Span), first, second);
         AssertBodies(new ForStatementSyntax(new LoopNameTargetSyntax("item"), Condition, second, first, Span), first, second);
         AssertBodies(new WhileStatementSyntax(Condition, second, first, Span), first, second);

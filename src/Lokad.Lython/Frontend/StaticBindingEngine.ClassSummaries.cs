@@ -9,10 +9,7 @@ internal static partial class StaticBindingEngine
         AbstractState bindings,
         [MaybeNullWhen(false)] out AbstractClassSummary summary)
     {
-        if (classDefinition.DataclassDecorator is null ||
-            classDefinition.Bases.Count != 0 ||
-            classDefinition.KeywordArguments.Count != 0 ||
-            classDefinition.HeaderArguments?.Any(argument => argument.Kind is CallArgumentKind.StarredList or CallArgumentKind.StarredDictionary) == true)
+        if (classDefinition.DataclassDecorator is null || classDefinition.HeaderArguments.Count != 0)
         {
             summary = default;
             return false;

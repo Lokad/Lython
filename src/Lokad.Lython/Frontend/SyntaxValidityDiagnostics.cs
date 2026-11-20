@@ -37,7 +37,8 @@ internal static class SyntaxValidityDiagnostics
                 foreach (var matchCase in match.Cases) PatternNames(matchCase.Pattern);
             if (statement is ClassDefinitionStatementSyntax type)
             {
-                Unique(type.KeywordArguments.Select(a => a.Name), type.Span, "Repeated class keyword argument.");
+                Unique(type.HeaderArguments.Where(a => a.Kind == CallArgumentKind.Keyword).Select(a => a.KeywordName),
+                    type.Span, "Repeated class keyword argument.");
                 hasModernTypes |= type.TypeParameters is not null;
             }
             hasModernTypes |= statement is TypeAliasStatementSyntax;
