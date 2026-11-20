@@ -121,14 +121,12 @@ internal sealed partial class LythonRuntime
             catch { governor.ReleaseReserved(bytes); throw; }
         }
 
-        // One invocation owns its arguments and expanded-spec scratch.
+        // The continuation borrows the arguments and owns the scratch buffer.
         // Cached layouts retain none of these values or the execution token.
-        private sealed class MethodFormatOperation(MethodFormatArguments arguments, int positionalCount,
+        private readonly struct MethodFormatOperation(MethodFormatArguments arguments, int positionalCount,
             int[]? positionalIndices, Dictionary<string, int>? keywords,
             object? mapping, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
-            private GovernedByteBuilder? _expandedSpec;
-
             internal async ValueTask<object> RunAsync(PyString text, PyStringOps.FormatTemplate template,
                 MemoryGovernor.TemporaryMemoryReservation? indexStorage = null)
             {
@@ -136,9 +134,13 @@ internal sealed partial class LythonRuntime
                 context.CheckExecution(span);
                 var output = new GovernedByteBuilder(context.MemoryGovernor, span,
                     checked(text.ByteLength + positionalCount * 8));
+                GovernedByteBuilder? expanded = null;
                 try
                 {
-                    await AppendTemplateAsync(template, output).ConfigureAwait(false);
+                    // Only a nested spec needs this builder. Its first append
+                    // admits backing capacity and later fields reuse it.
+                    if (template.HasNestedSpecs) expanded = new GovernedByteBuilder(context.MemoryGovernor, span);
+                    await AppendTemplateAsync(template, output, expanded).ConfigureAwait(false);
                     context.CheckExecution(span);
                     return output.ToPyStringAndRelease();
                 }
@@ -152,13 +154,14 @@ internal sealed partial class LythonRuntime
                 finally
                 {
                     try { output.Release(); }
-                    finally { _expandedSpec?.Release(); }
+                    finally { expanded?.Release(); }
                 }
             }
 
             private object PositionalValue(int index) => arguments.ValueAt(positionalIndices?[index] ?? index);
 
-            private async ValueTask AppendTemplateAsync(PyStringOps.FormatTemplate template, GovernedByteBuilder output)
+            private async ValueTask AppendTemplateAsync(PyStringOps.FormatTemplate template, GovernedByteBuilder output,
+                GovernedByteBuilder? expandedSpec)
             {
                 foreach (var part in template.Parts)
                 {
@@ -253,9 +256,9 @@ internal sealed partial class LythonRuntime
                     {
                         // The template admits only one nested level. Builtins
                         // borrow this backing, while an escaping spec detaches it.
-                        var expanded = _expandedSpec ??= new GovernedByteBuilder(context.MemoryGovernor, span);
+                        var expanded = expandedSpec.RequireNotNull();
                         expanded.Clear();
-                        await AppendTemplateAsync(nested, expanded).ConfigureAwait(false);
+                        await AppendTemplateAsync(nested, expanded, null).ConfigureAwait(false);
                         specifier = new(expanded);
                     }
 

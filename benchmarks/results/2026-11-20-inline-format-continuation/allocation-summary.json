@@ -1,0 +1,103 @@
+{
+  "reference": "f0263f0eca8299ebdeaf6717fd9a386f1f764f4b",
+  "candidate": "9e65abf0a2b51ba98642e01f6d461e6553edfaea",
+  "verification": "Six CPython goldens per full 32-file image.",
+  "rows": [
+    {
+      "boundary": "compile-allocation",
+      "id": "scripts.report-forwarding.expanded",
+      "referenceBytes": 102600,
+      "candidateBytes": 102600,
+      "changePct": 0.0
+    },
+    {
+      "boundary": "compile-allocation",
+      "id": "scripts.report-render.format-selectors.large",
+      "referenceBytes": 58720,
+      "candidateBytes": 58720,
+      "changePct": 0.0
+    },
+    {
+      "boundary": "compile-allocation",
+      "id": "scripts.csv-invoice.large",
+      "referenceBytes": 153744,
+      "candidateBytes": 153744,
+      "changePct": 0.0
+    },
+    {
+      "boundary": "compile-allocation",
+      "id": "strings.named-format-report.medium",
+      "referenceBytes": 36160,
+      "candidateBytes": 36160,
+      "changePct": 0.0
+    },
+    {
+      "boundary": "compile-allocation",
+      "id": "strings.nested-format-report.medium",
+      "referenceBytes": 37040,
+      "candidateBytes": 37040,
+      "changePct": 0.0
+    },
+    {
+      "boundary": "compile-allocation",
+      "id": "scripts.report-render.named-format-selectors.large",
+      "referenceBytes": 59224,
+      "candidateBytes": 59224,
+      "changePct": 0.0
+    },
+    {
+      "boundary": "allocation",
+      "id": "scripts.report-forwarding.expanded",
+      "referenceBytes": 1654288,
+      "candidateBytes": 1654400,
+      "changePct": 0.0067702842552197495,
+      "referencePeak": 2976186,
+      "candidatePeak": 2976186
+    },
+    {
+      "boundary": "allocation",
+      "id": "scripts.report-render.format-selectors.large",
+      "referenceBytes": 4114398,
+      "candidateBytes": 3794854,
+      "changePct": -7.7664824841933155,
+      "referencePeak": 3503577,
+      "candidatePeak": 3503577
+    },
+    {
+      "boundary": "allocation",
+      "id": "scripts.csv-invoice.large",
+      "referenceBytes": 3672462,
+      "candidateBytes": 3672462,
+      "changePct": 0.0,
+      "referencePeak": 9432613,
+      "candidatePeak": 9432613
+    },
+    {
+      "boundary": "allocation",
+      "id": "strings.named-format-report.medium",
+      "referenceBytes": 1749768,
+      "candidateBytes": 1536776,
+      "changePct": -12.172585165576233,
+      "referencePeak": 598722,
+      "candidatePeak": 598722
+    },
+    {
+      "boundary": "allocation",
+      "id": "strings.nested-format-report.medium",
+      "referenceBytes": 2307640,
+      "candidateBytes": 2094528,
+      "changePct": -9.235062661420324,
+      "referencePeak": 892333,
+      "candidatePeak": 892333
+    },
+    {
+      "boundary": "allocation",
+      "id": "scripts.report-render.named-format-selectors.large",
+      "referenceBytes": 4088636,
+      "candidateBytes": 3769190,
+      "changePct": -7.813021261858477,
+      "referencePeak": 3497481,
+      "candidatePeak": 3497481
+    }
+  ]
+}

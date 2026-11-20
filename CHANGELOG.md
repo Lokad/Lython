@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Keep `str.format` renderer state in the continuation and reuse one
+  admitted scratch buffer across expanded specs.
+
 - Emit ordinary expressions, defaults and eager annotations directly from
   validated syntax. Reuse prepared comprehension bindings and keep lowered
   expressions for runtime evaluation where needed.

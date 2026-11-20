@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1198 inline format continuation](results/2026-11-20-inline-format-continuation/README.md)
+removes the per-call renderer object and reuses one expanded-spec buffer.
+Both shipment workloads allocate about 7.8% less. Positional warm elapsed
+and CPU fall, while named shipment elapsed rises 0.08–1.02%. The two-width
+CPU range spans zero with the reused buffer.
+
 [B1197 direct expression emission](results/2026-11-20-eager-expression-emission/README.md)
 removes eager expression lowering and reuses comprehension binding facts.
 Manifest compile-to-result elapsed falls 1.61–3.50% with lower CPU.

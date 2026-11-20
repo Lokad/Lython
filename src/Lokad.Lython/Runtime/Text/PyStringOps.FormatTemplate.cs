@@ -7,7 +7,7 @@ internal static partial class PyStringOps
 {
     // A bound method keeps this immutable layout in its execution owner, never
     // on the shared literal. It retains no invocation values, callbacks or tokens.
-    internal sealed record FormatTemplate(FormatPart[] Parts, MemoryGovernor? Owner, bool IsPositionalText);
+    internal sealed record FormatTemplate(FormatPart[] Parts, MemoryGovernor? Owner, bool IsPositionalText, bool HasNestedSpecs);
 
     internal readonly record struct FormatPart(ReadOnlyMemory<byte> Literal, FormatField? Field = null, string? Error = null);
 
@@ -62,6 +62,7 @@ internal static partial class PyStringOps
     {
         var parts = new List<FormatPart>();
         var isPositionalText = true;
+        var hasNestedSpecs = false;
         var literal = 0;
         var i = 0;
         for (; i < source.Length; i++)
@@ -80,7 +81,7 @@ internal static partial class PyStringOps
             if (b == (byte)'}')
             {
                 parts.Add(new(default, Error: "Single '}' encountered in format string"));
-                return new(parts.ToArray(), owner, false);
+                return new(parts.ToArray(), owner, false, hasNestedSpecs);
             }
             var nesting = 0;
             var close = -1;
@@ -97,12 +98,13 @@ internal static partial class PyStringOps
             if (close < 0)
             {
                 parts.Add(new(default, Error: "Single '{' encountered in format string"));
-                return new(parts.ToArray(), owner, false);
+                return new(parts.ToArray(), owner, false, hasNestedSpecs);
             }
             try
             {
                 var field = ParseFormatField(source[(i + 1)..close], depth, owner, span, token, ref nextPosition);
                 parts.Add(new(default, field));
+                hasNestedSpecs |= field.NestedSpec is not null;
                 isPositionalText = isPositionalText && field is
                     { Keyword: null, Accesses.Length: 0, Conversion: null, NestedSpec: null, RecursiveSpec: false }
                     && field.Spec is null;
@@ -112,13 +114,13 @@ internal static partial class PyStringOps
             catch (InvalidOperationException error)
             {
                 parts.Add(new(default, Error: error.Message));
-                return new(parts.ToArray(), owner, false);
+                return new(parts.ToArray(), owner, false, hasNestedSpecs);
             }
             i = close;
             literal = i + 1;
         }
         if (literal < source.Length) parts.Add(new(source[literal..]));
-        return new(parts.ToArray(), owner, isPositionalText);
+        return new(parts.ToArray(), owner, isPositionalText, hasNestedSpecs);
     }
     private static FormatField ParseFormatField(ReadOnlyMemory<byte> fieldBytes, int depth,
         MemoryGovernor? owner, LythonSourceSpan? span, CancellationToken token, ref int nextPosition)

@@ -914,6 +914,8 @@ Ordinary executable `str.format` calls borrow the evaluated operand slots
 and compiled keyword labels through rendering. The caller retains their
 owner across field callbacks and suspension. Expanded calls use their
 already-owned argument packet with the same renderer and template cache.
+The continuation holds the renderer inputs directly and reuses one buffer
+for expanded specs until rendering completes or unwinds.
 
 Class bodies and their nested definitions are prepared during compilation.
 The class suite uses dynamic name operations against its live namespace,
