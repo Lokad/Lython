@@ -85,8 +85,9 @@ internal sealed class PyException : IPyHashableValue
         if (_chainOwned) return;
         if (OwnerMemoryGovernor is null)
         {
-            context.MemoryGovernor.Reserve(ShellBytes, span);
-            context.MemoryGovernor.Commit(ShellBytes);
+            var bytes = Message.Length == 0 ? ShellBytes : ShellBytes + 24L + 2L * Message.Length;
+            context.MemoryGovernor.Reserve(bytes, span);
+            context.MemoryGovernor.Commit(bytes);
             OwnerMemoryGovernor = context.MemoryGovernor;
         }
         if (Cause is not null || Context is not null)

@@ -57,7 +57,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", $"__format__() argument 1 must be str, not {IsoformatTypeName(arguments[0], context)}", span);
                     }
 
-                    return PyDateTimeOps.FormatValue(date, format, span, context);
+                    return PyDateTimeOps.FormatValue(date, format.Utf8Span, span, context);
                 }, DateFormatSignature),
                 "strftime" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -71,7 +71,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", $"strftime() argument 1 must be str, not {IsoformatTypeName(arguments[0], context)}", span);
                     }
 
-                    return PyDateTimeOps.Strftime(date.Value, format, span, context);
+                    return PyDateTimeOps.Strftime(date.Value, format.Utf8Span, span, context);
                 }, DateStrftimeSignature),
                 "replace" => BoundCallable.CreateWithPresence(
                     (bound, span, context) => ReplaceAsync(date, bound, span, context, false).GetAwaiter().GetResult(),
@@ -167,7 +167,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", $"__format__() argument 1 must be str, not {IsoformatTypeName(arguments[0], context)}", span);
                     }
 
-                    return PyDateTimeOps.FormatValue(time, format, span, context);
+                    return PyDateTimeOps.FormatValue(time, format.Utf8Span, span, context);
                 }, TimeFormatSignature),
                 "strftime" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -181,7 +181,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", $"strftime() argument 1 must be str, not {IsoformatTypeName(arguments[0], context)}", span);
                     }
 
-                    return PyDateTimeOps.Strftime(time.Value, time.TzInfo, format, span, context);
+                    return PyDateTimeOps.Strftime(time.Value, time.TzInfo, format.Utf8Span, span, context);
                 }, TimeStrftimeSignature),
                 "replace" => BoundCallable.CreateWithPresence(
                     (bound, span, context) => ReplaceAsync(time, bound, span, context, false).GetAwaiter().GetResult(),
@@ -345,7 +345,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", $"__format__() argument 1 must be str, not {IsoformatTypeName(arguments[0], context)}", span);
                     }
 
-                    return PyDateTimeOps.FormatValue(dateTime, format, span, context);
+                    return PyDateTimeOps.FormatValue(dateTime, format.Utf8Span, span, context);
                 }, DateTimeFormatSignature),
                 "strftime" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -359,7 +359,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", $"strftime() argument 1 must be str, not {IsoformatTypeName(arguments[0], context)}", span);
                     }
 
-                    return PyDateTimeOps.Strftime(dateTime.Value, dateTime.TzInfo, format, span, context);
+                    return PyDateTimeOps.Strftime(dateTime.Value, dateTime.TzInfo, format.Utf8Span, span, context);
                 }, DateTimeStrftimeSignature),
                 "replace" => BoundCallable.CreateWithPresence(
                     (bound, span, context) => ReplaceAsync(dateTime, bound, span, context, false).GetAwaiter().GetResult(),

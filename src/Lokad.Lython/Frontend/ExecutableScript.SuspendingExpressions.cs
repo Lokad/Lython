@@ -16,7 +16,7 @@ internal sealed record ExecutableAppendCall(CallArgumentForm Form) : ExecutableO
 internal sealed record ExecutableFinishCall(LythonSourceSpan TargetSpan) : ExecutableOperation;
 internal sealed record ExecutableCallWithKeywordMapping(int PositionalCount, LythonSourceSpan TargetSpan,
     LythonSourceSpan MappingSpan, bool FreshMapping) : ExecutableOperation;
-internal sealed record ExecutableFormatField(string? FormatSpecifier, bool DynamicSpecifier, bool Append,
+internal sealed record ExecutableFormatField(PyString? FormatSpecifier, bool DynamicSpecifier, bool Append,
     LythonRuntime.InterpolatedFormatSpecifier? PreparedFormat);
 internal sealed record ExecutableCreateGeneratorExpression(ExecutableCodeObject CodeObject, LythonSourceSpan OuterSpan,
     bool JoinedTrimmedSplit = false) : ExecutableOperation;
@@ -89,7 +89,9 @@ internal sealed partial class ExecutableScript
                     if (field.FormatSpecifierParts is not null)
                         block = CompileFormattedParts(field.FormatSpecifierParts, span, block);
                     var prepared = field.FormatSpecifierParts is null
-                        ? LythonRuntime.PrepareConstantFormatSpecifier(field.FormatSpecifier, span) : null;
+                        ? LythonRuntime.PrepareConstantFormatSpecifier(
+                            field.FormatSpecifier is { } specifier ? specifier.Utf8Span : default, span, _compilationCancellation)
+                        : null;
                     initialCapacity = Math.Min(256, initialCapacity + Math.Min(256, prepared?.Width ?? 0));
                     AddInstruction(block, ExecutableInstruction.FormatField(InternConstant(
                         new ExecutableFormatField(field.FormatSpecifier, field.FormatSpecifierParts is not null, append, prepared)), span));

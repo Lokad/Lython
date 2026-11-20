@@ -474,7 +474,7 @@ internal static class PostponedAnnotationText
                 else if (part is FormattedStringExpressionPartSyntax field)
                 {
                     var expression = new Writer(source, governor, cancellationToken).Format(field.Expression, 2);
-                    var specifier = field.FormatSpecifierParts is not null ? FormattedBody(field.FormatSpecifierParts) : field.FormatSpecifier;
+                    var specifier = field.FormatSpecifierParts is not null ? FormattedBody(field.FormatSpecifierParts) : field.FormatSpecifier?.AsString();
                     AdmitCapacity(storage, ref funded, checked(8L + builder.Length + expression.Length + (specifier?.Length ?? 0)));
                     builder.Append(expression.StartsWith('{') ? "{ " : "{").Append(expression);
                     if (field.Conversion is { } conversion) builder.Append('!').Append(conversion);

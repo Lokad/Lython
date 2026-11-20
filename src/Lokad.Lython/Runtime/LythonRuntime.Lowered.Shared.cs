@@ -195,7 +195,7 @@ internal sealed partial class LythonRuntime
                         var formatSpecifier = expression.FormatSpecifierParts is null
                             ? expression.FormatSpecifier
                             : (await EvaluateLoweredFormattedStringPartsCoreAsync(
-                                expression.FormatSpecifierParts, context, span, evaluateExpression, asynchronous).ConfigureAwait(false)).AsString();
+                                expression.FormatSpecifierParts, context, span, evaluateExpression, asynchronous).ConfigureAwait(false));
                         if (value is PyInstance instance)
                             builder.Append(await FormatInstanceFieldAsync(instance, null, formatSpecifier, context, span, asynchronous).ConfigureAwait(false));
                         else AppendInterpolatedStringPart(builder, value, null, formatSpecifier, context, span);

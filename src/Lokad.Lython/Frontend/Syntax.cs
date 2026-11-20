@@ -494,7 +494,7 @@ internal sealed record FormattedStringTextPartSyntax(
 internal sealed record FormattedStringExpressionPartSyntax(
     ExpressionSyntax Expression,
     char? Conversion,
-    string? FormatSpecifier,
+    PyString? FormatSpecifier,
     IReadOnlyList<FormattedStringPartSyntax>? FormatSpecifierParts) : FormattedStringPartSyntax
 {
     public FormattedStringExpressionPartSyntax(ExpressionSyntax Expression)
@@ -502,15 +502,6 @@ internal sealed record FormattedStringExpressionPartSyntax(
     {
     }
 
-    public FormattedStringExpressionPartSyntax(ExpressionSyntax Expression, char? Conversion)
-        : this(Expression, Conversion, null, null)
-    {
-    }
-
-    public FormattedStringExpressionPartSyntax(ExpressionSyntax Expression, char? Conversion, string? FormatSpecifier)
-        : this(Expression, Conversion, FormatSpecifier, null)
-    {
-    }
 }
 
 internal sealed record FormattedStringExpressionSyntax(

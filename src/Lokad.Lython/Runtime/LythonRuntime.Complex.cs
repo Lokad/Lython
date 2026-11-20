@@ -176,11 +176,9 @@ internal sealed partial class LythonRuntime
         return result;
     }
 
-    private static void AppendComplexValue(Text.GovernedByteBuilder output, PyComplex value, string format, ExecutionContext context, LythonSourceSpan span,
-        InterpolatedFormatSpecifier? prepared = null)
+    private static void AppendComplexValue(Text.GovernedByteBuilder output, PyComplex value, InterpolatedFormatSpecifier spec,
+        ExecutionContext context, LythonSourceSpan span)
     {
-        if (format.Length == 0) { output.AppendString(value.Render()); return; }
-        var spec = prepared ?? ParseInterpolatedFormatSpecifier(format, value, span);
         if (spec.ZeroPad || spec.Fill == '0') throw new LythonRuntimeException("ValueError", "Zero padding is not allowed in complex format specifier", span);
         if (spec.Align == '=') throw new LythonRuntimeException("ValueError", "'=' alignment flag is not allowed in complex format specifier", span);
         if (spec.Type is not (null or 'e' or 'E' or 'f' or 'F' or 'g' or 'G' or 'n')) throw new LythonRuntimeException("ValueError", "Unknown format code for complex", span);

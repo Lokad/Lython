@@ -16,7 +16,7 @@ internal static partial class PyStringOps
     internal readonly record struct FormatAccess(FormatAccessKind Kind, object? Value, long Index = 0);
 
     internal sealed record FormatField(long Position, string? Keyword, FormatAccess[] Accesses, Rune? Conversion,
-        string? Spec, FormatTemplate? NestedSpec, bool RecursiveSpec,
+        PyString? Spec, FormatTemplate? NestedSpec, bool RecursiveSpec,
         LythonRuntime.InterpolatedFormatSpecifier? PreparedSpec);
 
     internal static FormatTemplate PrepareFormatTemplate(PyString template, MemoryGovernor governor,
@@ -52,7 +52,7 @@ internal static partial class PyStringOps
             }
         }
         // Two supported levels, list growth/replacement overlap, part/field
-        // records, UTF-16 names/specs and native spec descriptors. Potential
+        // records, UTF-16 names and UTF-8 specs and native spec descriptors. Potential
         // access markers cover the access-array overlap and a private UTF-8 key.
         return checked(512L + 8L * source.Length + 384L * braces + 224L * accessMarkers);
     }
@@ -105,7 +105,7 @@ internal static partial class PyStringOps
                 parts.Add(new(default, field));
                 isPositionalText = isPositionalText && field is
                     { Keyword: null, Accesses.Length: 0, Conversion: null, NestedSpec: null, RecursiveSpec: false }
-                    && string.IsNullOrEmpty(field.Spec);
+                    && field.Spec is null;
             }
             // Store grammar failures at their original execution position.
             // Earlier fields still perform their lookups, hooks and side effects.
@@ -239,7 +239,7 @@ internal static partial class PyStringOps
             else keyword = Encoding.UTF8.GetString(root);
         }
 
-        string? spec = null;
+        PyString? spec = null;
         FormatTemplate? nested = null;
         var recursive = false;
         if (specStart >= 0 && specStart < end)
@@ -250,9 +250,9 @@ internal static partial class PyStringOps
                 recursive = depth >= 1;
                 if (!recursive) nested = ParseFormatTemplate(rawSpec, depth + 1, owner, span, token, ref nextPosition);
             }
-            else spec = Encoding.UTF8.GetString(rawSpec.Span);
+            else spec = PyString.CopyFromUtf8(rawSpec.Span, governor: null, span);
         }
-        var prepared = LythonRuntime.PrepareConstantFormatSpecifier(spec, span ?? new(0, 0, 0, 0), token);
+        var prepared = LythonRuntime.PrepareConstantFormatSpecifier(spec is null ? default : spec.Utf8Span, span ?? new(0, 0, 0, 0), token);
         return new(position, keyword, accesses?.ToArray() ?? [], conversion, spec, nested, recursive, prepared);
     }
 

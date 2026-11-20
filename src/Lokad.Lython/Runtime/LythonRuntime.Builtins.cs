@@ -287,14 +287,12 @@ internal sealed partial class LythonRuntime
     private static object Format(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var spec = ReadFormatSpecifier(arguments, span, context);
-        return arguments[0] is PyDate or PyTime or PyDateTime
-            ? PyDateTimeOps.FormatValue(arguments[0], spec, span, context)
-            : FormatValue(arguments[0], spec.AsString(), context, span);
+        return FormatValue(arguments[0], spec, context, span, passExistingSpecifier: true);
     }
 
     private static ValueTask<object> FormatAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         => arguments.Length > 0 && arguments[0] is PyInstance instance
-            ? FormatInstanceAsync(instance, ReadFormatSpecifier(arguments, span, context).AsString(), context, span, true)
+            ? FormatInstanceAsync(instance, ReadFormatSpecifier(arguments, span, context), context, span, true, passExistingSpecifier: true)
             : new(Format(arguments, span, context));
 
     private static PyString ReadFormatSpecifier(object[] arguments, LythonSourceSpan span, ExecutionContext context)

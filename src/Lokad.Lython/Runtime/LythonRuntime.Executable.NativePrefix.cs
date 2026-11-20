@@ -297,7 +297,7 @@ internal sealed partial class LythonRuntime
         {
             ExecutableFormatField? field = null;
             object? value = null;
-            string? specifier = null;
+            PyString? specifier = null;
             if (instruction.OpCode is ExecutableOpCode.ConvertFormattedValue or ExecutableOpCode.FormatField)
             {
                 var source = instruction.OpCode == ExecutableOpCode.ConvertFormattedValue

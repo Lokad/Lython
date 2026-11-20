@@ -46,9 +46,9 @@ internal static partial class PyDateTimeOps
         };
     }
 
-    public static PyString FormatValue(object value, PyString format, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    public static PyString FormatValue(object value, ReadOnlySpan<byte> format, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        if (format.Length == 0)
+        if (format.IsEmpty)
         {
             return value switch
             {
@@ -68,36 +68,33 @@ internal static partial class PyDateTimeOps
         };
     }
 
-    public static PyString Strftime(DateOnly value, PyString format, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-        => FormatStrftime(value.ToDateTime(TimeOnly.MinValue), null, format, span, context);
+    public static PyString Strftime(DateOnly value, ReadOnlySpan<byte> format, LythonSourceSpan span,
+        LythonRuntime.ExecutionContext context)
+        => Strftime(value.ToDateTime(TimeOnly.MinValue), null, format, span, context);
 
-    public static PyString Strftime(TimeOnly value, PyTimezone? timezone, PyString format, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    public static PyString Strftime(TimeOnly value, PyTimezone? timezone, ReadOnlySpan<byte> format, LythonSourceSpan span,
+        LythonRuntime.ExecutionContext context)
     {
         var dateTime = new DateTime(1900, 1, 1, value.Hour, value.Minute, value.Second, value.Millisecond, DateTimeKind.Unspecified)
             .AddTicks(value.Ticks % TimeSpan.TicksPerMillisecond);
-        return FormatStrftime(dateTime, timezone, format, span, context);
+        return Strftime(dateTime, timezone, format, span, context);
     }
-
-    public static PyString Strftime(DateTime value, PyTimezone? timezone, PyString format, LythonSourceSpan span,
-        LythonRuntime.ExecutionContext context)
-        => FormatStrftime(value, timezone, format, span, context);
 
     internal readonly record struct StrftimeFields(int Year, int Month, int Day, int Hour, int Minute,
         int Second, int Microsecond, int Weekday, int YearDay);
 
-    public static PyString FormatStrftime(DateTime value, PyTimezone? timezone, PyString format,
-        LythonSourceSpan span, LythonRuntime.ExecutionContext context, int? weekdayOverride = null, int? yearDayOverride = null)
+    public static PyString Strftime(DateTime value, PyTimezone? timezone, ReadOnlySpan<byte> format,
+        LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         => FormatStrftime(new StrftimeFields(value.Year, value.Month, value.Day, value.Hour, value.Minute, value.Second,
-            (int)((value.Ticks % TimeSpan.TicksPerSecond) / 10), weekdayOverride ?? ((int)value.DayOfWeek + 6) % 7,
-            yearDayOverride ?? value.DayOfYear), timezone, format, span, context);
+            (int)((value.Ticks % TimeSpan.TicksPerSecond) / 10), ((int)value.DayOfWeek + 6) % 7,
+            value.DayOfYear), timezone, format, span, context);
 
-    internal static PyString FormatStrftime(StrftimeFields value, PyTimezone? timezone, PyString format,
+    internal static PyString FormatStrftime(StrftimeFields value, PyTimezone? timezone, ReadOnlySpan<byte> input,
         LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         var mondayBasedWeekday = value.Weekday;
         var yearDay = value.YearDay;
         var displayWeekday = new DateTime(2024, 1, 1).AddDays(mondayBasedWeekday);
-        var input = format.Utf8Span;
         var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
         try
         {

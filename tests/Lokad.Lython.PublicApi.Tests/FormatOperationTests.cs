@@ -113,10 +113,38 @@ public sealed class FormatOperationTests
               assert value==spec
               saved.append(value)
               return ''
-            method='{0:{1}}'.format
-            for repeat in range(3):assert method(Field(),spec)==''
+            method='{0:{1}}{2:🟩>{3}}'.format
+            for repeat in range(3):assert method(Field(),spec,'a',4)=='🟩🟩🟩a'
             assert len(saved)==3
             assert all(value==spec for value in saved)
+            assert saved[0] is not saved[1] and saved[1] is not saved[2]
+            return 'ok'
+            """, requireAsyncIo: false);
+    }
+
+    [Fact]
+    public async Task NativeFormatPathsShareUtf8SpecifierSemantics()
+    {
+        await FormatTemplateTests.AssertReusable("""
+            from datetime import date
+            width,precision=7,2
+            spec='🟩>7.2s'
+            expected='🟩'*5+'éa'
+            value='éabc'
+            assert format(value,spec)==expected
+            assert f'{value:{spec}}'==expected
+            assert '{0:🟩>{1}.{2}s}'.format(value,width,precision)==expected
+            assert '{0:🟩>7.2s}'.format(value)==expected
+            assert '{value:{specifier}}'.format_map({'value':value,'specifier':spec})==expected
+            assert '{0:{1}}'.format(date(2026,11,20),'λ%Y%m%d')=='λ20261120'
+            class Echo:
+             def __format__(self,value):return value
+            assert format(Echo(),spec) is spec
+            for spec,error in [('.', 'Format specifier missing precision'),
+                               ('??λ','Invalid format specifier \'??λ\' for object of type \'str\'')]:
+             try:'{0:{1}}'.format(value,spec)
+             except ValueError as failure:assert str(failure)==error
+             else:raise AssertionError('invalid specifier accepted')
             return 'ok'
             """, requireAsyncIo: false);
     }

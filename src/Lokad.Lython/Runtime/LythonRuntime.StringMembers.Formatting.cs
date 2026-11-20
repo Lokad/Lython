@@ -124,10 +124,9 @@ internal sealed partial class LythonRuntime
         // Cached layouts retain none of these values or the execution token.
         private sealed class MethodFormatOperation(MethodFormatArguments arguments, int positionalCount,
             int[]? positionalIndices, Dictionary<string, int>? keywords,
-            object? mapping, LythonSourceSpan span, ExecutionContext context, bool asynchronous, int templateBytes)
+            object? mapping, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
-            private MemoryGovernor.TemporaryMemoryReservation? _metadata;
-            private long _metadataBytes;
+            private GovernedByteBuilder? _expandedSpec;
 
             internal async ValueTask<object> RunAsync(PyString text, PyStringOps.FormatTemplate template,
                 MemoryGovernor.TemporaryMemoryReservation? indexStorage = null)
@@ -152,7 +151,7 @@ internal sealed partial class LythonRuntime
                 finally
                 {
                     try { output.Release(); }
-                    finally { _metadata?.Dispose(); }
+                    finally { _expandedSpec?.Release(); }
                 }
             }
 
@@ -246,45 +245,28 @@ internal sealed partial class LythonRuntime
                         throw new InvalidOperationException($"Unknown conversion specifier {display}");
                     }
 
-                    var spec = field.Spec;
                     if (field.RecursiveSpec) throw new InvalidOperationException("Max string recursion exceeded");
-                    if (field.NestedSpec is { } nestedTemplate)
+                    var character = conversion is { } rune ? (char?)rune.Value : null;
+                    FormatSpecifierInput specifier = field.Spec;
+                    if (field.NestedSpec is { } nested)
                     {
-                        var nested = new GovernedByteBuilder(context.MemoryGovernor, span);
-                        try
-                        {
-                            await AppendTemplateAsync(nestedTemplate, nested).ConfigureAwait(false);
-                            AdmitExpandedSpec(nested.Length);
-                            spec = Encoding.UTF8.GetString(nested.WrittenSpan);
-                        }
-                        finally { nested.Release(); }
+                        // The template admits only one nested level. Builtins
+                        // borrow this backing, while an escaping spec detaches it.
+                        var expanded = _expandedSpec ??= new GovernedByteBuilder(context.MemoryGovernor, span);
+                        expanded.Clear();
+                        await AppendTemplateAsync(nested, expanded).ConfigureAwait(false);
+                        specifier = new(expanded);
                     }
 
-                    var character = conversion is { } rune ? (char?)rune.Value : null;
                     if (selected is PyInstance instance)
                     {
-                        var rendered = await FormatInstanceFieldAsync(instance, character, spec, context, span,
+                        var rendered = await FormatInstanceFieldAsync(instance, character, specifier, context, span,
                             asynchronous).ConfigureAwait(false);
                         context.CheckExecution(span);
                         output.Append(rendered);
                     }
-                    else AppendInterpolatedStringPart(output, selected, character, spec, context, span, field.PreparedSpec);
+                    else AppendInterpolatedStringPart(output, selected, character, specifier, context, span, field.PreparedSpec);
                     context.CheckExecution(span);
-                }
-            }
-
-            private void AdmitExpandedSpec(int length)
-            {
-                var bytes = checked(512L + 8L * templateBytes + 32L + 2L * length);
-                if (_metadata is null)
-                {
-                    _metadata = context.MemoryGovernor.ReserveTemporary(bytes, span);
-                    _metadataBytes = bytes;
-                }
-                else if (bytes > _metadataBytes)
-                {
-                    _metadata.Grow(bytes - _metadataBytes, span);
-                    _metadataBytes = bytes;
                 }
             }
         }

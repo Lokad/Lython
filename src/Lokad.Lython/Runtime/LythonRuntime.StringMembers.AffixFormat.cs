@@ -158,14 +158,14 @@ internal sealed partial class LythonRuntime
                 // The caller owns the original arguments until formatting and
                 // all its callbacks complete. Only the indices need a new lease.
                 return new MethodFormatOperation(arguments, positionalCount, positionalIndices, keywords, null,
-                    span, context, asynchronous, text.ByteLength).RunAsync(text, prepared, indexStorage);
+                    span, context, asynchronous).RunAsync(text, prepared, indexStorage);
             }
             catch { indexStorage?.Dispose(); throw; }
         }
 
         private static ValueTask<object> FormatMappingAsync(PyString text, object mapping,
             LythonSourceSpan span, ExecutionContext context, bool asynchronous, PyStringOps.FormatTemplate prepared)
-            => new MethodFormatOperation(default, 0, null, null, mapping, span, context, asynchronous, text.ByteLength)
+            => new MethodFormatOperation(default, 0, null, null, mapping, span, context, asynchronous)
                 .RunAsync(text, prepared);
 
         private sealed class StringTranslateMemberProvider : IStringMemberProvider

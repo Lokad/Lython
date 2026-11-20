@@ -9,13 +9,13 @@ internal sealed partial class LythonRuntime
     private static bool IsImmediateFormattedValue(object value)
         => value is PyNone or BigInteger or double or bool or PyString or PyBytes;
 
-    private static string? GetExecutableFormatSpecifier(ExecutableFormatField field, object? dynamicSpecifier)
-        => field.DynamicSpecifier ? ((PyString)dynamicSpecifier!).AsString() : field.FormatSpecifier;
+    private static PyString? GetExecutableFormatSpecifier(ExecutableFormatField field, object? dynamicSpecifier)
+        => field.DynamicSpecifier ? (PyString)dynamicSpecifier! : field.FormatSpecifier;
 
     // The two storage views consume their own operands before entering this one
     // native operation. Protocol values transfer to the ordinary frame first.
     private static object? ExecuteBuiltinFormattedInstruction(in ExecutableInstruction instruction,
-        GovernedByteBuilder? output, object? value, string? specifier, ExecutableFormatField? field,
+        GovernedByteBuilder? output, object? value, PyString? specifier, ExecutableFormatField? field,
         ExecutionContext context)
     {
         switch (instruction.OpCode)

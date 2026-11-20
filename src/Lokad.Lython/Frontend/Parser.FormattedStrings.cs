@@ -1,3 +1,5 @@
+using Lokad.Lython.Runtime.Text;
+
 namespace Lokad.Lython.Frontend;
 
 internal sealed partial class Parser
@@ -194,7 +196,7 @@ internal sealed partial class Parser
         part = new FormattedStringExpressionPartSyntax(
             expression,
             conversion,
-            formatSpecifier,
+            formatSpecifier is null ? null : PyString.FromString(formatSpecifier),
             formatSpecifierParts);
         return true;
     }

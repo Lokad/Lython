@@ -393,7 +393,7 @@ internal sealed partial class LythonRuntime
                 fields.Hour, fields.Minute, fields.Second, 0, fields.Weekday, fields.YearDay);
             var timezone = TimezoneForFormatting(fields, context, span);
             var result = PyDateTimeOps.FormatStrftime(
-                value, timezone, format, span, context);
+                value, timezone, format.Utf8Span, span, context);
             return result;
         }
 

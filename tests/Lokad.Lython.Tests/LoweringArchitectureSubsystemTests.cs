@@ -69,7 +69,7 @@ unique = {f"{item}" for item in [1, 2] if item}
         var listComprehension = Assert.IsType<LoweredListComprehensionExpression>(listAssignment.Expression);
         var listFormatted = Assert.IsType<LoweredFormattedStringExpression>(listComprehension.ItemExpression);
         var listPart = Assert.IsType<LoweredFormattedStringExpressionPart>(Assert.Single(listFormatted.Parts));
-        Assert.Equal("03d", listPart.FormatSpecifier);
+        Assert.Equal("03d", listPart.FormatSpecifier!.AsString());
         Assert.Single(listComprehension.Clauses);
         Assert.IsType<LoweredListLiteralExpression>(listComprehension.Clauses[0].Iterable);
         Assert.IsType<LoweredIdentifierExpression>(listComprehension.Clauses[0].Condition);

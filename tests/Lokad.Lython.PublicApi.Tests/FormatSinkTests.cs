@@ -5,16 +5,22 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class FormatSinkTests
 {
     [Theory]
-    [InlineData(false, "success")]
-    [InlineData(true, "success")]
-    [InlineData(false, "cancel")]
-    [InlineData(true, "cancel")]
-    [InlineData(false, "refuse")]
-    [InlineData(true, "refuse")]
-    public async Task PendingFieldKeepsStorageFundedAndJoinsBeforeReuse(bool mapping, string outcome)
+    [InlineData(false, "success", false)]
+    [InlineData(true, "success", false)]
+    [InlineData(false, "cancel", false)]
+    [InlineData(true, "cancel", false)]
+    [InlineData(false, "refuse", false)]
+    [InlineData(true, "refuse", false)]
+    [InlineData(false, "success", true)]
+    [InlineData(true, "cancel", true)]
+    [InlineData(false, "refuse", true)]
+    public async Task PendingFieldKeepsStorageFundedAndJoinsBeforeReuse(bool mapping, string outcome, bool nested)
     {
         var expression = mapping ? "'begin|{value:>9}|end'.format_map({'value':value})"
             : "'begin|{0:>9}|end'.format(value)";
+        if (nested)
+            expression = mapping ? "'begin|{value:>{width}}|end'.format_map({'value':value,'width':9})"
+                : "'begin|{0:>{width}}|end'.format(value, width=9)";
         var source = """
             import time
             class Field:

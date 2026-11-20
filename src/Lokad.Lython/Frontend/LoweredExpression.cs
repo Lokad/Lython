@@ -90,7 +90,7 @@ internal sealed record LoweredFormattedStringTextPart(
 internal sealed record LoweredFormattedStringExpressionPart(
     LoweredExpression Expression,
     char? Conversion,
-    string? FormatSpecifier,
+    PyString? FormatSpecifier,
     IReadOnlyList<LoweredFormattedStringPart>? FormatSpecifierParts) : LoweredFormattedStringPart;
 
 internal sealed record LoweredFormattedStringExpression(

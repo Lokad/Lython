@@ -40,6 +40,18 @@ public sealed class ExceptionShellStorageTests
     }
 
     [Fact]
+    public void RetainedNativeDiagnosticNeedsAdmissionForItsMessage()
+    {
+        var context = Root();
+        var exception = new PyException("ValueError", new string('x', 2048), PyNone.Instance);
+        var baseline = context.MemoryGovernor.CurrentAccountedBytes;
+        var error = Assert.Throws<LythonRuntimeException>(() => exception.Adopt(context, Span));
+        Assert.Equal("MemoryError", error.ExceptionType);
+        Assert.Null(exception.OwnerMemoryGovernor);
+        Assert.Equal(baseline, context.MemoryGovernor.CurrentAccountedBytes);
+    }
+
+    [Fact]
     public void PartialChainAdmissionKeepsOnlyPublishedRootFunding()
     {
         var context = Root();

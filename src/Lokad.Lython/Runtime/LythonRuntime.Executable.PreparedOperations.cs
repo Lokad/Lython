@@ -19,7 +19,7 @@ internal sealed partial class LythonRuntime
         {
             ExecutableFormatField? field = null;
             object? value = null;
-            string? specifier = null;
+            PyString? specifier = null;
             if (instruction.OpCode is ExecutableOpCode.ConvertFormattedValue or ExecutableOpCode.FormatField)
             {
                 var source = instruction.OpCode == ExecutableOpCode.ConvertFormattedValue
@@ -63,7 +63,7 @@ internal sealed partial class LythonRuntime
             }
             var field = (ExecutableFormatField)_execution.Code.Constants[instruction.ConstantIndex]!;
             var specifier = field.DynamicSpecifier
-                ? ((PyString)_execution.Stack.TakeValue(instruction.ResultSlot + 1, instruction.ResultSlot + 1)).AsString()
+                ? (PyString)_execution.Stack.TakeValue(instruction.ResultSlot + 1, instruction.ResultSlot + 1)
                 : field.FormatSpecifier;
             var value = _execution.Stack.TakeValue(instruction.ResultSlot, instruction.ResultSlot);
             if (field.Append)
@@ -338,13 +338,13 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static ValueTask<PyString> FormatSuspendedFieldAsync(object value, char? conversion, string? specifier,
+    private static ValueTask<PyString> FormatSuspendedFieldAsync(object value, char? conversion, FormatSpecifierInput specifier,
         ExecutionContext _context, LythonSourceSpan span, bool asynchronous, InterpolatedFormatSpecifier? prepared = null)
         => value is PyInstance instance
             ? FormatInstanceFieldAsync(instance, conversion, specifier, _context, span, asynchronous)
             : new(FormatInterpolatedStringPart(value, conversion, specifier, _context, span, prepared));
 
-    private static async ValueTask<PyString> FormatInstanceFieldAsync(PyInstance instance, char? conversion, string? specifier,
+    private static async ValueTask<PyString> FormatInstanceFieldAsync(PyInstance instance, char? conversion, FormatSpecifierInput specifier,
         ExecutionContext _context, LythonSourceSpan span, bool asynchronous)
     {
         object value = instance;
@@ -367,7 +367,7 @@ internal sealed partial class LythonRuntime
         }
         if (hook.Found)
         {
-            var arguments = conversion is null ? new[] { CallArgumentValue.Positional(PyString.FromString(specifier ?? "", _context.MemoryGovernor, span)) } : [];
+            var arguments = conversion is null ? new[] { CallArgumentValue.Positional(specifier.Publish(_context, span)) } : [];
             var rendered = asynchronous ? await InvokeCallableTargetAsync(hook.Value, span, span, _context,
                 () => new ValueTask<CallArgumentValue[]>(arguments)).ConfigureAwait(false)
                 : InvokeCallableTarget(hook.Value, span, span, _context, () => arguments);
