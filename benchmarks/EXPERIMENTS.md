@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1223 grouped abstract expression dispatch](results/2026-11-20-one-abstract-expression-dispatch/README.md)
+removes a second dispatch and preserves compile allocations. Both clocks
+span zero in all local lanes with unstable duplicate controls. Retain
+this private prototype and all observations pending a shared frontend change.
+
 [B1222 dataclass delivery against CPython](results/2026-11-20-cpython-direct-declaration-operands/README.md)
 records 0.433–0.443× compile, 0.073–0.078× compile-to-result
 and 0.039–0.042× warm for the generated dataclass workload. Manifest
