@@ -46,8 +46,15 @@ internal sealed partial class LythonRuntime
         object? receiver = null,
         ExecutableCallSite? callSite = null,
         ReadOnlySpan<ExecutableSlot> operands = default,
-        bool deferProtocolDefaults = false,
         int? storageCapacity = null)
+        => BindOwnedFunctionArguments(arguments, span, plan, context, receiver, callSite, operands,
+            storageCapacity, deferProtocolDefaults: false, out _);
+
+    private static BoundFunctionArguments BindOwnedFunctionArguments(
+        ReadOnlySpan<CallArgumentValue> arguments, LythonSourceSpan span, FunctionBindingPlan plan,
+        ExecutionContext context, object? receiver, ExecutableCallSite? callSite,
+        ReadOnlySpan<ExecutableSlot> operands, int? storageCapacity, bool deferProtocolDefaults,
+        out int firstProtocolDefault)
     {
         // Values travel in plan layout order (positional, keyword-only, then
         // variadic names). The layout lives on the shared plan; the final value
@@ -56,7 +63,7 @@ internal sealed partial class LythonRuntime
         var storage = RentFunctionArgumentStorage(plan, span, context, storageCapacity);
         try
         {
-            BindFunctionArgumentsInto(storage.Values, arguments, span, plan, context,
+            firstProtocolDefault = BindFunctionArgumentsInto(storage.Values, arguments, span, plan, context,
                 deferProtocolDefaults, receiver, callSite, operands);
             return storage;
         }
@@ -78,21 +85,20 @@ internal sealed partial class LythonRuntime
         // Admission and supplied-argument construction can reenter and replace
         // defaults. Inspect their live storage at lookup, after owning borrowed
         // operands, rather than saving a pre-admission protocol decision.
-        var bound = BindFunctionArguments(arguments, span, plan, context, receiver, callSite, operands,
-            deferProtocolDefaults: true, storageCapacity: storageCapacity);
-        for (var k = 0; k < plan.KeywordOnlyCount; k++)
-            if (bound.Values[plan.PositionalCount + k].IsUnassigned)
-                return CompleteProtocolDefaultsAsync(bound, span, plan, context);
-        return new(bound);
+        var bound = BindOwnedFunctionArguments(arguments, span, plan, context, receiver, callSite, operands,
+            storageCapacity, deferProtocolDefaults: true, out var firstProtocolDefault);
+        return firstProtocolDefault < 0 ? new(bound)
+            : CompleteProtocolDefaultsAsync(bound, span, plan, context, firstProtocolDefault);
     }
 
     private static async ValueTask<BoundFunctionArguments> CompleteProtocolDefaultsAsync(
-        BoundFunctionArguments bound, LythonSourceSpan span, FunctionBindingPlan plan, ExecutionContext context)
+        BoundFunctionArguments bound, LythonSourceSpan span, FunctionBindingPlan plan, ExecutionContext context,
+        int firstProtocolDefault)
     {
         var values = bound.Values;
         try
         {
-            for (var k = 0; k < plan.KeywordOnlyCount; k++)
+            for (var k = firstProtocolDefault; k < plan.KeywordOnlyCount; k++)
             {
                 var index = plan.PositionalCount + k;
                 if (!values[index].IsUnassigned) continue;
@@ -116,7 +122,7 @@ internal sealed partial class LythonRuntime
     // One binding fill serves an admitted workspace or a synchronous caller's
     // borrowed destination. The caller owns storage/rollback; this routine
     // retains ordinary live-default and Python argument/error semantics.
-    internal static void BindFunctionArgumentsInto(
+    internal static int BindFunctionArgumentsInto(
         Span<ExecutableSlot> values,
         ReadOnlySpan<CallArgumentValue> arguments,
         LythonSourceSpan span,
@@ -153,31 +159,33 @@ internal sealed partial class LythonRuntime
                     values[positionalIndex++] = operands[i];
                 }
             }
-            else BindSuppliedFunctionArguments(values, arguments, span, plan, context,
+            else positionalIndex = BindSuppliedFunctionArguments(values, arguments, span, plan, context,
                 receiver, callSite, operands, out firstExtraPositional, out extraPositionalCount, ref extraKeywords, ref syntheticKeyBytes);
 
-            for (var i = 0; i < plan.PositionalCount; i++)
+            // The supplied positional prefix is already filled. Named
+            // arguments can also occupy slots after it, with holes for defaults.
+            for (var i = positionalIndex; i < plan.PositionalCount; i++)
             {
                 if (!values[i].IsUnassigned)
                 {
                     continue;
                 }
 
-                var parameterName = plan.NameAt(i);
                 if (plan.TryGetPositionalDefault(i, out var defaultValue))
                 {
                     values[i] = defaultValue;
                     continue;
                 }
 
-                throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, parameterName, span);
+                throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, plan.NameAt(i), span);
             }
 
+            var firstProtocolDefault = -1;
             if (plan.KeywordOnlyCount != 0)
             {
                 if (plan.PreparedKeywordDefaults is { } preparedDefaults)
                     plan.FillPreparedKeywordDefaults(preparedDefaults, values, context, span);
-                else CompleteLiveKeywordDefaults(values, span, plan, context, deferProtocolDefaults);
+                else firstProtocolDefault = CompleteLiveKeywordDefaults(values, span, plan, context, deferProtocolDefaults);
             }
 
             if (plan.VariadicDictionaryIndex >= 0)
@@ -197,6 +205,7 @@ internal sealed partial class LythonRuntime
                 values[plan.VariadicDictionaryIndex].Object = extraKeywords;
                 extraKeywords = null;
             }
+            return firstProtocolDefault;
         }
         finally
         {
@@ -210,7 +219,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static void CompleteLiveKeywordDefaults(Span<ExecutableSlot> values, LythonSourceSpan span,
+    private static int CompleteLiveKeywordDefaults(Span<ExecutableSlot> values, LythonSourceSpan span,
         FunctionBindingPlan plan, ExecutionContext context, bool deferProtocolDefaults)
     {
         for (var k = 0; k < plan.KeywordOnlyCount; k++)
@@ -221,7 +230,7 @@ internal sealed partial class LythonRuntime
             var keywordDefaults = plan.KeywordDefaultStorage;
             // A protocol lookup defers this and the remaining defaults
             // in their original order.
-            if (deferProtocolDefaults && keywordDefaults is { HasProtocolKeys: true }) return;
+            if (deferProtocolDefaults && keywordDefaults is { HasProtocolKeys: true }) return k;
             if (keywordDefaults is not null && plan.TryGetKeywordDefault(keywordDefaults, k, out var defaultValue, context, span))
             {
                 values[i].Object = defaultValue;
@@ -229,12 +238,13 @@ internal sealed partial class LythonRuntime
             }
             throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, plan.NameAt(i), span);
         }
+        return -1;
     }
 
     // Named and variadic calls interpret their supplied forms here. Ordinary
     // flat calls keep their direct fill and live-default completion together;
     // the shared binder need not inline this larger dynamic parsing branch.
-    private static void BindSuppliedFunctionArguments(Span<ExecutableSlot> values,
+    private static int BindSuppliedFunctionArguments(Span<ExecutableSlot> values,
         ReadOnlySpan<CallArgumentValue> arguments, LythonSourceSpan span, FunctionBindingPlan plan,
         ExecutionContext context, object? receiver, ExecutableCallSite? callSite,
         ReadOnlySpan<ExecutableSlot> operands, out int firstExtraPositional, out int extraPositionalCount,
@@ -306,7 +316,7 @@ internal sealed partial class LythonRuntime
 
             values[keywordIndex].Object = argument.Value;
         }
-
+        return positionalIndex;
     }
 
     private static bool IsSuppliedPositional(int index, ReadOnlySpan<CallArgumentValue> arguments, ExecutableCallSite? callSite)

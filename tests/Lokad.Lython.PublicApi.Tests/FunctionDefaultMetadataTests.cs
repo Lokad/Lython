@@ -244,11 +244,13 @@ class Key:
    except MemoryError: print('caught-default')
    finally: return True
   return other=='x'
-def f(value,*,x,y): return len(value[0]),x,y
+def f(value,*,head,x,y):
+ assert head == 18
+ return len(value[0]),x,y
 f.__kwdefaults__={Key():7,'y':8}
 payload=['é'*8192]
 try:
- print(f(value=payload))
+ print(f(value=payload,head=18))
 except BaseException:
  print('caught-caller')
 finally:
