@@ -1,0 +1,180 @@
+{
+  "version": "0.5.0-dev.109",
+  "producerRevision": "18c1e0e20b372e85ab3aaebd22fc627a69d19cf5",
+  "lythonSource": "7ddb8be02ec9633bce7f17337ee9d23ca16358b4",
+  "developmentAdapterImageFrom": "0d16f83071efb9aaf64a7f9e5b3d4a6d14f3b047",
+  "producerHostSource": "98b9f87f7a010080ac83923932994a685a7a99f4",
+  "published": false,
+  "images": {
+    "net10.0": {
+      "files": {
+        "Lokad.Lython.dll": "108a2344de51dc9c8e575450e1b3f3c2113965420062f4b52b6add1c47891578",
+        "Lokad.Lython.pdb": "2963537dfac86536523278dd91d3c9e5303ff84c84bce187aca2018f6d98fce4",
+        "Lokad.Lython.Utf8Regex.dll": "e1a3e3b19f173efb6ee5e7df3e1d82a62406a2fce2ab10685122ab7945ff43fc",
+        "Lokad.Lython.Utf8Regex.pdb": "f1e172a996b725108c4d62562dd033b1ea37c2fa94fd6aebbc21f478817880dd",
+        "Lokad.Utf8Regex.dll": "7533ce3cd8f7c833d75cf06ef57d23fb0e472d1cf13087d17d93ba6b0d1ffd9b",
+        "Lokad.Utf8Regex.PythonRe.dll": "61675f603b35cd2a381671fef54a88e6e15c4971e5d4ffa26d68fd918feea6b9",
+        "LythonProbe.deps.json": "746b4dc4d8133404c2cf9107d46a6da8b67145c2f428e769080bb4ffa963e9da",
+        "LythonProbe.dll": "88e2edce9615e84a5110c79ec5d03bdf7ecf3e47f3b92cf410116a330ecf2680",
+        "LythonProbe.exe": "a69556c94607eb8695215834de14b1f65009c43f0b9af1017e174cce3bf5dfeb",
+        "LythonProbe.pdb": "63b078ab9a6d84e4f0c3f531906082da8dd3868233dd9a832399576dbe551301",
+        "LythonProbe.runtimeconfig.json": "c230a317a54dd960bcbeb5f347f52e18dc665a26f7efda2159fced9a5ac7e097"
+      },
+      "packages": {
+        "Lokad.Utf8Regex": {
+          "packageSha256": "903fca5435250ec34f492204cc94d7ae58f01a5b64cf58b558879bfb779d48f2",
+          "assemblySha256": "7533ce3cd8f7c833d75cf06ef57d23fb0e472d1cf13087d17d93ba6b0d1ffd9b"
+        },
+        "Lokad.Utf8Regex.PythonRe": {
+          "packageSha256": "143acd25201a1219f59ae16ed8a8d9c8c56a4ec525bd41dd62a3ef98c9e960ba",
+          "assemblySha256": "61675f603b35cd2a381671fef54a88e6e15c4971e5d4ffa26d68fd918feea6b9"
+        }
+      }
+    },
+    "net11.0": {
+      "files": {
+        "Lokad.Lython.dll": "7eed0beabce53d65d6122af8a42e8c2d207ecef4276251ece843f2232416a96d",
+        "Lokad.Lython.pdb": "9e953af906d2150ca8aa341ce014ed1090bcb5ea18ca84f0d6ce4781ffd3ef54",
+        "Lokad.Lython.Utf8Regex.dll": "f8d12097b63f906a82201d83b129d3b4c43ac66b009c235c433d0318cb13d3ae",
+        "Lokad.Lython.Utf8Regex.pdb": "ee721b04838345f09bc4884a334a04c0674c71db577094a7bbca247c6e394ae0",
+        "Lokad.Utf8Regex.dll": "b9645b9cc8e92f04836805f1a705ec7dd936adb8a384767b4e8870165803111f",
+        "Lokad.Utf8Regex.PythonRe.dll": "246fa3574f709d62b6b89d3f92e61a83c888daea01a5f75de176eefe903b1db0",
+        "LythonProbe.deps.json": "8b115571f2fea95c89dbb425a0576e6f20358dc5b23c64307670a70b77024a91",
+        "LythonProbe.dll": "66e2cf26d693fcb8a64a96881593c240fd2b928c3ff70411754fb8050a2ad8c9",
+        "LythonProbe.exe": "c2dd4d73170bb663b5371782bf00fb37f2266cad60dee384b2a615f30571e2b0",
+        "LythonProbe.pdb": "a5d9850cc90a522caf7b5a33650dafa1db5ef8462722b507c5ce14a0b1d48891",
+        "LythonProbe.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0"
+      },
+      "packages": {
+        "Lokad.Utf8Regex": {
+          "packageSha256": "903fca5435250ec34f492204cc94d7ae58f01a5b64cf58b558879bfb779d48f2",
+          "assemblySha256": "b9645b9cc8e92f04836805f1a705ec7dd936adb8a384767b4e8870165803111f"
+        },
+        "Lokad.Utf8Regex.PythonRe": {
+          "packageSha256": "143acd25201a1219f59ae16ed8a8d9c8c56a4ec525bd41dd62a3ef98c9e960ba",
+          "assemblySha256": "246fa3574f709d62b6b89d3f92e61a83c888daea01a5f75de176eefe903b1db0"
+        }
+      }
+    }
+  },
+  "producerHostChecks": [
+    {
+      "platform": "Windows",
+      "target": "net10.0",
+      "count": 405,
+      "trxSha256": "421c4699fb35b611f78bafcc7a4518d7070e328b544725bbf33302115bc3efe6",
+      "cancellation": [
+        "Lokad.Lython.PublicApi.Tests.RegexAdapterLifetimeTests.ActualBackendWorkObservesInFlightCancellationAndUnwinds(stage: \"match\")",
+        "Lokad.Lython.PublicApi.Tests.RegexAdapterLifetimeTests.ActualBackendWorkObservesInFlightCancellationAndUnwinds(stage: \"compile\")",
+        "Lokad.Lython.PublicApi.Tests.RegexAdapterLifetimeTests.ActualBackendWorkObservesInFlightCancellationAndUnwinds(stage: \"cursor\")"
+      ]
+    },
+    {
+      "platform": "Linux",
+      "target": "net10.0",
+      "count": 405,
+      "trxSha256": "41a2b025680997df144261f515dfe3db8532c0ef71b2672fc9d3fdccba1b71ea",
+      "cancellation": [
+        "Lokad.Lython.PublicApi.Tests.RegexAdapterLifetimeTests.ActualBackendWorkObservesInFlightCancellationAndUnwinds(stage: \"match\")",
+        "Lokad.Lython.PublicApi.Tests.RegexAdapterLifetimeTests.ActualBackendWorkObservesInFlightCancellationAndUnwinds(stage: \"compile\")",
+        "Lokad.Lython.PublicApi.Tests.RegexAdapterLifetimeTests.ActualBackendWorkObservesInFlightCancellationAndUnwinds(stage: \"cursor\")"
+      ]
+    },
+    {
+      "platform": "Windows",
+      "target": "net11.0",
+      "count": 405,
+      "trxSha256": "28b6287fae6613e1e0f5780213b6d429c6086b9da5cb160fe77047918f6f2b1c",
+      "cancellation": [
+        "Lokad.Lython.PublicApi.Tests.RegexAdapterLifetimeTests.ActualBackendWorkObservesInFlightCancellationAndUnwinds(stage: \"compile\")",
+        "Lokad.Lython.PublicApi.Tests.RegexAdapterLifetimeTests.ActualBackendWorkObservesInFlightCancellationAndUnwinds(stage: \"cursor\")",
+        "Lokad.Lython.PublicApi.Tests.RegexAdapterLifetimeTests.ActualBackendWorkObservesInFlightCancellationAndUnwinds(stage: \"match\")"
+      ]
+    },
+    {
+      "platform": "Linux",
+      "target": "net11.0",
+      "count": 405,
+      "trxSha256": "9e4d43334c5041df4e574b813c6ca2d58999c0816baabea88cb7d231ed973b2d",
+      "cancellation": [
+        "Lokad.Lython.PublicApi.Tests.RegexAdapterLifetimeTests.ActualBackendWorkObservesInFlightCancellationAndUnwinds(stage: \"match\")",
+        "Lokad.Lython.PublicApi.Tests.RegexAdapterLifetimeTests.ActualBackendWorkObservesInFlightCancellationAndUnwinds(stage: \"compile\")",
+        "Lokad.Lython.PublicApi.Tests.RegexAdapterLifetimeTests.ActualBackendWorkObservesInFlightCancellationAndUnwinds(stage: \"cursor\")"
+      ]
+    }
+  ],
+  "probes": [
+    {
+      "target": "net10.0",
+      "api": "sync",
+      "case": "semantics",
+      "matches": true,
+      "exitCode": 0
+    },
+    {
+      "target": "net10.0",
+      "api": "sync",
+      "case": "reversed-window",
+      "matches": false,
+      "exitCode": 1
+    },
+    {
+      "target": "net10.0",
+      "api": "async",
+      "case": "semantics",
+      "matches": true,
+      "exitCode": 0
+    },
+    {
+      "target": "net10.0",
+      "api": "async",
+      "case": "reversed-window",
+      "matches": false,
+      "exitCode": 1
+    },
+    {
+      "target": "net11.0",
+      "api": "sync",
+      "case": "semantics",
+      "matches": true,
+      "exitCode": 0
+    },
+    {
+      "target": "net11.0",
+      "api": "sync",
+      "case": "reversed-window",
+      "matches": false,
+      "exitCode": 1
+    },
+    {
+      "target": "net11.0",
+      "api": "async",
+      "case": "semantics",
+      "matches": true,
+      "exitCode": 0
+    },
+    {
+      "target": "net11.0",
+      "api": "async",
+      "case": "reversed-window",
+      "matches": false,
+      "exitCode": 1
+    }
+  ],
+  "directPackageProbes": [
+    {
+      "target": "net10.0",
+      "utf8GroupCopy": true,
+      "ordinaryAnchoredMatch": true,
+      "reversedAnchor": "ArgumentOutOfRangeException(startOffsetInBytes)",
+      "published": false
+    },
+    {
+      "target": "net11.0",
+      "utf8GroupCopy": true,
+      "ordinaryAnchoredMatch": true,
+      "reversedAnchor": "ArgumentOutOfRangeException(startOffsetInBytes)",
+      "published": false
+    }
+  ]
+}
