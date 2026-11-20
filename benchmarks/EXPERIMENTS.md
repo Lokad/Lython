@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1209 current compilation attribution](results/2026-11-20-current-cold-compiler-attribution/README.md)
+captures 993 manifest and 1,071 validator stacks with compiler ancestry.
+Call emission occurs on 65 and 101 stacks. Select removal of per-operand
+form storage for ordinary call sites, with retained keyword forms and
+shared binding. These are samples of useful and potentially redundant
+work together. No elapsed change is inferred.
+
 [B1208 captured factory delivery against CPython](results/2026-11-20-cpython-inline-captured-factories/README.md)
 records the retained source. Its nested factories take 2.28–2.52× warm
 and 2.20–2.40× compile-to-result. The duplicate Lython processes differ

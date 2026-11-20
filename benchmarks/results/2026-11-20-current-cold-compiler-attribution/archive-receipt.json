@@ -1,0 +1,13 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "persistentTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 295182336,
+  "archiveSHA256": "6576e2e6187f19b4893f93bb26df21293d91e44715b8cd53f0d92f24814f3952",
+  "source": "B1209 current cold compiler attribution",
+  "performanceComparison": false,
+  "failure": null
+}
