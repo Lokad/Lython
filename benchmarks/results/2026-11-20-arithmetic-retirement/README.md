@@ -12,7 +12,7 @@ the frozen `48c661256`, whose production, test and worker sources match
 | Integer reduction, 65,536 iterations | −1.85% to +1.02% | −1.03% to +1.04% |
 | Eager annotated rules, 2,048 definitions | +2.21% to +3.91% | +0.92% to +8.34% |
 | Nested annotated factories, 2,048 definitions | −0.69% to +4.87% | −0.40% to +3.21% |
-| File-backed CSV invoice, 1,024 rows | +0.18% to +3.74% | +0.64% to +3.30% |
+| File-backed CSV invoice, 4,096 rows | +0.18% to +3.74% | +0.64% to +3.30% |
 
 The quiet Azure F4as_v7 ran Ubuntu 24.04.4 and .NET 11 RC3 on November 20,
 2026 UTC. The elapsed boundary includes guest I/O, golden checks and

@@ -540,10 +540,12 @@ values and aliases keep their existing owners. Large scans remain cancellable.
 String-literal dictionary displays evaluate and transport their values only.
 The existing execution/function lookup cache retains a key-only record layout;
 later records allocate final value storage, without rebuilding private key tables.
+Repeating displays with evaluated string keys can reuse that layout when every
+key is the same object in insertion order. Each row gets its own value storage.
 Duplicates preserve insertion order and first-key identity. A new key or protocol
 mutation admits private backing before changing the record. Cache/layout storage
 remains funded for its existing execution/result lifetime, even if a constructed
-row is discarded. Dynamic keys and unpacking retain general dictionary semantics.
+row is discarded. Changed keys and unpacking use general dictionary construction.
 Dictionary copies admit their destination before reading the current source.
 If admission lets the source grow, the copy admits replacement capacity and
 checks that the source fits before copying. The unpublished destination is

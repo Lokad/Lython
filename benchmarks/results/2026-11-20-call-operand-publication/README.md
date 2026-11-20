@@ -11,7 +11,7 @@ production, test and worker sources match `33481a879`. The candidate is
 | --- | ---: | ---: | ---: |
 | In-memory invoice helper pipeline, 4,096 lines | −24.91% | −4.43% to −2.24% | −4.31% to −0.86% |
 | Eager annotated rules, 2,048 definitions | 0.00% | −3.47% to +2.82% | −3.37% to +2.94% |
-| File-backed CSV invoice, 1,024 rows | 0.00% | −1.61% to +2.43% | −1.96% to +0.66% |
+| File-backed CSV invoice, 4,096 rows | 0.00% | −1.61% to +2.43% | −1.96% to +0.66% |
 | Nested annotated factories, 2,048 definitions | 0.00% | — | — |
 
 The in-memory pipeline uses one-argument pricing functions and holds the
