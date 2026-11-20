@@ -31,20 +31,46 @@ internal sealed partial class LythonRuntime
             endPos = Math.Clamp(endPos, 0, scalarLength);
             if (scalarLength == subject.Length) return new(pos, endPos, pos, endPos);
 
-            var startByte = pos == 0 ? 0 : pos == scalarLength ? subject.Length : -1;
-            var endByte = endPos == 0 ? 0 : endPos == scalarLength ? subject.Length : -1;
-            // Byte boundaries are relative to the original subject. Resolve
-            // both in one walk, including independently clamped reversed bounds.
-            for (int scalar = 0, offset = 0; startByte < 0 || endByte < 0; scalar++)
+            var lower = Math.Min(pos, endPos);
+            var upper = Math.Max(pos, endPos);
+            int lowerByte, upperByte;
+            // Resolve the bound nearest either original edge, then use it
+            // for the other bound when that walk is shorter.
+            if (lower <= scalarLength - upper)
+            {
+                lowerByte = MoveToScalarBoundary(subject, 0, 0, lower, token, span);
+                upperByte = upper - lower <= scalarLength - upper
+                    ? MoveToScalarBoundary(subject, lower, lowerByte, upper, token, span)
+                    : MoveToScalarBoundary(subject, scalarLength, subject.Length, upper, token, span);
+            }
+            else
+            {
+                upperByte = MoveToScalarBoundary(subject, scalarLength, subject.Length, upper, token, span);
+                lowerByte = upper - lower < lower
+                    ? MoveToScalarBoundary(subject, upper, upperByte, lower, token, span)
+                    : MoveToScalarBoundary(subject, 0, 0, lower, token, span);
+            }
+
+            if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
+            return pos <= endPos ? new(pos, endPos, lowerByte, upperByte) : new(pos, endPos, upperByte, lowerByte);
+        }
+
+        private static int MoveToScalarBoundary(ReadOnlySpan<byte> subject, int scalar, int offset, int target,
+            CancellationToken token, LythonSourceSpan span)
+        {
+            // The original subject is valid UTF-8. A boundary needs its
+            // leading-byte position; scalar decoding would discard the value.
+            for (; scalar < target; scalar++)
             {
                 if ((scalar & 1023) == 0 && token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
-                if (scalar == pos) startByte = offset;
-                if (scalar == endPos) endByte = offset;
-                if (startByte >= 0 && endByte >= 0) break;
-                Rune.DecodeFromUtf8(subject[offset..], out _, out var width);
-                offset += width;
+                do { offset++; } while (offset < subject.Length && (subject[offset] & 0xc0) == 0x80);
             }
-            return new(pos, endPos, startByte, endByte);
+            for (; scalar > target; scalar--)
+            {
+                if ((scalar & 1023) == 0 && token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
+                do { offset--; } while ((subject[offset] & 0xc0) == 0x80);
+            }
+            return offset;
         }
 
         internal static T ProviderCall<T>(Func<T> operation, MemoryGovernor? governor,

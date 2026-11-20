@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Original UTF-8 regex window bounds](results/2026-11-20-regex-window-boundaries/README.md)
+uses the nearer subject end and an already located boundary. For a
+32,768-scalar mixed-width suffix, the isolated coordinate step falls
+from roughly 85 µs to roughly 16 ns, with no measured allocation on
+either side. Semantic and provider contract checks pass independently.
+
 [B1220/B1221 direct declaration operands](results/2026-11-20-direct-declaration-operands/README.md)
 removes structural hashing of per-site declaration metadata. Dataclass
 compilation takes 5.77–6.95% less elapsed and compile-to-result takes

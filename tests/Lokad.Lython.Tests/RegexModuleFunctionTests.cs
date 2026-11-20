@@ -1,3 +1,4 @@
+using System.Text;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Tests.Harness;
 
@@ -5,6 +6,28 @@ namespace Lokad.Lython.Tests;
 
 public sealed class RegexModuleFunctionTests
 {
+    [Fact]
+    public void MixedWidthSubjectWindowsKeepBothOriginalBoundaries()
+    {
+        var text = string.Concat(Enumerable.Repeat("aé漢😀", 1027));
+        var subject = Encoding.UTF8.GetBytes(text);
+        var offsets = new List<int> { 0 };
+        foreach (var rune in text.EnumerateRunes()) offsets.Add(offsets[^1] + rune.Utf8SequenceLength);
+        var length = offsets.Count - 1;
+        var bounds = new[] { int.MinValue, -1, 0, 1, 2, 3, 4, 5, 1023, 1024, 1025,
+            length / 2, (length / 2) + 1, length - 1025, length - 1024, length - 1, length, int.MaxValue };
+        var span = new LythonSourceSpan(2, 3, 1, 2);
+
+        foreach (var pos in bounds)
+        foreach (var end in bounds)
+        {
+            var start = Math.Clamp(pos, 0, length);
+            var stop = Math.Clamp(end, 0, length);
+            var window = LythonRuntime.RegexCompiler.CreateWindow(subject, length, pos, end, default, span);
+            Assert.Equal(new LythonRegexWindow(start, stop, offsets[start], offsets[stop]), window);
+        }
+    }
+
     [Fact]
     public void RegexModule_EmptyMatchesPreserveAdjacentNonEmptyProgression()
     {

@@ -2349,7 +2349,9 @@ are diagnostics, not separate allowances. See [memory controls](../tests/Lokad.L
 ## Regex providers
 
 Regex preparation carries the original UTF-8 subject and independently clamped
-scalar/byte window bounds. Captures identify absolute byte ranges. Lython checks
+scalar/byte window bounds. Lython locates those byte bounds from the nearer
+subject end or an already located boundary. Captures identify absolute byte
+ranges. Lython checks
 capture boundaries, the whole match's window and forward cursor progression
 before projecting or slicing subject text. Lookbehind captures can precede
 `pos`, and an anchored empty match can succeed at `pos` in a reversed window.
