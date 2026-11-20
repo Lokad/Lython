@@ -15,7 +15,12 @@ internal sealed record ExecutableCreateLambda(LoweredLambdaExpression Expression
     internal int InputCount => Expression.ParameterLayout.Defaults.Length == 0 ? 0 : 1;
 }
 internal sealed record ExecutableStartClassHeader(int Count) : ExecutableOperation;
-internal sealed record ExecutableCreateClass(LoweredClassDefinitionStatement Definition, bool ExpandedHeader) : ExecutableOperation;
+internal sealed record ExecutableCreateClass(LoweredClassDefinitionStatement Definition, bool ExpandedHeader,
+    int PreparedBaseCount) : ExecutableOperation
+{
+    internal int DirectHeaderCount => !ExpandedHeader && Definition.TypeParameters is null
+        ? Definition.HeaderArguments.Count : 0;
+}
 
 internal sealed partial class ExecutableScript
 {
@@ -83,20 +88,25 @@ internal sealed partial class ExecutableScript
             return block;
         }
 
-        private int CompileSuspendingClass(LoweredClassDefinitionStatement definition, int block)
+        private int CompileClassDefinition(LoweredClassDefinitionStatement definition, int block)
         {
             foreach (var decorator in definition.Decorators) block = CompileExpression(decorator, block);
-            var expandedHeader = definition.TypeParameters is null && definition.HeaderArguments.Count != 0;
-            if (expandedHeader)
+            var expandedHeader = false;
+            var baseCount = 0;
+            if (definition.TypeParameters is null)
             {
-                EmitOperation(new ExecutableStartClassHeader(definition.HeaderArguments.Count), definition.Span, block);
+                expandedHeader = definition.HeaderArguments.Any(argument => argument.Form.Kind is
+                    CallArgumentKind.StarredList or CallArgumentKind.StarredDictionary);
+                if (expandedHeader)
+                    EmitOperation(new ExecutableStartClassHeader(definition.HeaderArguments.Count), definition.Span, block);
                 foreach (var argument in definition.HeaderArguments)
                 {
                     block = CompileExpression(argument.Expression, block);
-                    EmitOperation(new ExecutableAppendCall(argument.Form), argument.Expression.Span, block);
+                    if (expandedHeader) EmitOperation(new ExecutableAppendCall(argument.Form), argument.Expression.Span, block);
+                    else if (argument.Form.Kind == CallArgumentKind.Positional) baseCount++;
                 }
             }
-            EmitOperation(new ExecutableCreateClass(definition, expandedHeader), definition.Span, block);
+            EmitOperation(new ExecutableCreateClass(definition, expandedHeader, baseCount), definition.Span, block);
             return block;
         }
     }

@@ -463,20 +463,6 @@ return value
     }
 
     [Fact]
-    public void ExecutableScript_CompilesClassDefinitionFallback()
-    {
-        var frontend = LythonFrontend.Compile("""
-class Box:
-    pass
-""",regexProvider:Utf8RegexProvider.Instance);
-
-        var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
-        var executable = ExecutableScript.Compile(lowered);
-
-        Assert.NotEmpty(executable.EntryPoint.StatementFallbacks);
-    }
-
-    [Fact]
     public void ExecutableSubsetScript_ExecutesThroughExecutablePipeline()
     {
         var frontend = LythonFrontend.Compile("""

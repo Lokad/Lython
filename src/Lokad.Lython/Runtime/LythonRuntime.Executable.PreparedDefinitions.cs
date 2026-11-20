@@ -41,11 +41,14 @@ internal sealed partial class LythonRuntime
         {
             var definition = create.Definition;
             var decorators = _execution.Stack.Slice(first, definition.Decorators.Count);
+            var headerStart = first + decorators.Length;
             var header = create.ExpandedHeader
-                ? (CallExpansion.CallArgumentAccumulator)_execution.Stack[first + decorators.Length] : null;
+                ? (CallExpansion.CallArgumentAccumulator)_execution.Stack[headerStart] : null;
+            var directHeader = _execution.Stack.Slice(headerStart, create.DirectHeaderCount);
             try
             {
-                await ExecuteClassDefinitionAsync(definition, this, asynchronous, decorators, header).ConfigureAwait(false);
+                await ExecuteClassDefinitionAsync(definition, this, asynchronous, decorators, header,
+                    directHeader, create.PreparedBaseCount).ConfigureAwait(false);
             }
             finally
             {

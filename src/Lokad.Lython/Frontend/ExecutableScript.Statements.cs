@@ -39,9 +39,8 @@ internal sealed partial class ExecutableScript
                 case LoweredScopeDirectiveStatement:
                     return currentBlock;
 
-                case LoweredClassDefinitionStatement classDefinition when _generator &&
-                    StatementSyntaxTraversal.EnumerateDirectExpressions(classDefinition.Syntax).Any(GeneratorSyntaxFacts.ContainsYield):
-                    return CompileSuspendingClass(classDefinition, currentBlock);
+                case LoweredClassDefinitionStatement classDefinition:
+                    return CompileClassDefinition(classDefinition, currentBlock);
                 case LoweredFunctionDefinitionStatement functionDefinition:
                     return CompileFunctionDefinition(functionDefinition, currentBlock, _generator &&
                         StatementSyntaxTraversal.EnumerateDirectExpressions(functionDefinition.Syntax).Any(GeneratorSyntaxFacts.ContainsYield));

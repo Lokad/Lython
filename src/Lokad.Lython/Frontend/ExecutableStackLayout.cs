@@ -350,7 +350,8 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
         ExecutableStoreDictionaryItem item => (item.Unpacking ? 1 : 2, 0),
         ExecutableCreateFunction function => (function.InputCount, 1),
         ExecutableCreateLambda lambda => (lambda.InputCount, 1),
-        ExecutableCreateClass type => (checked(type.Definition.Decorators.Count + (type.ExpandedHeader ? 1 : 0)), 0),
+        ExecutableCreateClass type => (checked(type.Definition.Decorators.Count +
+            (type.ExpandedHeader ? 1 : type.DirectHeaderCount)), 0),
         _ => throw new InvalidOperationException($"Unknown prepared operand effect: {operation.GetType().Name}.")
     };
 }

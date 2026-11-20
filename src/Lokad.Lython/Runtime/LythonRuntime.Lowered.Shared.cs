@@ -780,7 +780,8 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask ExecuteClassDefinitionAsync(LoweredClassDefinitionStatement definition,
         ExecutionContext context, bool asynchronous, ReadOnlyMemory<ExecutableSlot> preparedDecorators = default,
-        CallExpansion.CallArgumentAccumulator? preparedHeader = null)
+        CallExpansion.CallArgumentAccumulator? preparedHeader = null, ReadOnlyMemory<ExecutableSlot> directHeader = default,
+        int directBaseCount = 0)
     {
         var span = definition.Span;
         context.EnterInterpreterFrame(span);
@@ -810,7 +811,9 @@ internal sealed partial class LythonRuntime
             var typeScope = CreateTypeScope(definition.TypeParameters, context, span);
             var (baseTypes, keywords) = preparedHeader is not null
                 ? SplitClassHeaderArguments(preparedHeader.Arguments, context, storage, span)
-                : await EvaluateClassHeaderArgumentsAsync(definition, typeScope.Annotations, storage, asynchronous).ConfigureAwait(false);
+                : !directHeader.IsEmpty
+                    ? ReadDirectClassHeader(directHeader.Span, definition.HeaderArguments, directBaseCount, context, storage, span)
+                    : await EvaluateClassHeaderArgumentsAsync(definition, typeScope.Annotations, storage, asynchronous).ConfigureAwait(false);
             var resolvedBases = AddGenericClassBase(definition, ResolveClassBases(baseTypes, span, context), context);
             ValidateClassKeywordArguments(keywords, span);
 
@@ -861,10 +864,7 @@ internal sealed partial class LythonRuntime
             if (arguments[i].IsPositional) positionalCount++;
         }
         var keywordCount = arguments.Length - positionalCount;
-        storage.Grow(EstimateObjectArrayBytes(positionalCount) + 64L + 32L * keywordCount, span);
-        context.CheckExecution(span);
-        object[] bases = positionalCount == 0 ? [] : new object[positionalCount];
-        CallArgumentValue[] keywords = keywordCount == 0 ? [] : new CallArgumentValue[keywordCount];
+        var (bases, keywords) = AllocateClassHeader(positionalCount, keywordCount, context, storage, span);
         var baseIndex = 0;
         var keywordIndex = 0;
         foreach (var argument in arguments)
@@ -880,6 +880,34 @@ internal sealed partial class LythonRuntime
             }
         }
         return (bases, keywords);
+    }
+
+    private static (object[] Bases, CallArgumentValue[] Keywords) ReadDirectClassHeader(
+        ReadOnlySpan<ExecutableSlot> values, IReadOnlyList<LoweredCallArgument> header, int baseCount,
+        ExecutionContext context, MemoryGovernor.TemporaryMemoryReservation storage, LythonSourceSpan span)
+    {
+        var (bases, keywords) = AllocateClassHeader(baseCount, values.Length - baseCount, context, storage, span);
+        for (var i = 0; i < bases.Length; i++)
+        {
+            context.CheckExecution(span);
+            bases[i] = RuntimeValue(values[i].Object.RequireNotNull());
+        }
+        for (var i = 0; i < keywords.Length; i++)
+        {
+            context.CheckExecution(span);
+            var index = baseCount + i;
+            keywords[i] = CallArgumentValue.Keyword(header[index].Form.KeywordName, RuntimeValue(values[index].Object.RequireNotNull()));
+        }
+        return (bases, keywords);
+    }
+
+    private static (object[] Bases, CallArgumentValue[] Keywords) AllocateClassHeader(
+        int baseCount, int keywordCount, ExecutionContext context, MemoryGovernor.TemporaryMemoryReservation storage,
+        LythonSourceSpan span)
+    {
+        storage.Grow(EstimateObjectArrayBytes(baseCount) + 64L + 32L * keywordCount, span);
+        context.CheckExecution(span);
+        return (baseCount == 0 ? [] : new object[baseCount], keywordCount == 0 ? [] : new CallArgumentValue[keywordCount]);
     }
 
     private static void ValidateClassKeywordArguments(CallArgumentValue[] arguments, LythonSourceSpan span)

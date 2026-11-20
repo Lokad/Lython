@@ -30,17 +30,20 @@ public sealed class ClassHeaderUnpackingTests
     }
 
     [Fact]
-    public async Task SubclassHookReceivesTheOriginalExpandedKeyword()
+    public async Task YieldingHeaderKeepsTheOriginalExpandedKeyword()
     {
         await AssertOutput("""
             key = ''.join(('trace', '_label'))
             class Base:
                 def __init_subclass__(cls, **options):
                     cls.first_label = next(iter(options))
-            class Item(Base, **{key: 7}):
-                pass
-            print(Item.first_label is key)
-            """, "True\n");
+            def definition():
+                class Item(Base, **(yield 'header')):
+                    pass
+                yield Item.first_label
+            build = definition()
+            print(next(build), build.send({key: 7}) is key)
+            """, "header True\n");
     }
 
     [Fact]
