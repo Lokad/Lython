@@ -24,39 +24,39 @@ internal sealed partial class LythonRuntime
                     StoreDefaultResult(Code, Values, instruction, result);
                     return true;
                 case ExecutableCreateFunction function
-                    when CanCreateWithoutCapture(function.CodeObject) && !NeedsDefinitionContext(function, _scope):
+                    when !NeedsDefinitionContext(function, _scope) && CanDefineWithoutInvocation(function.CodeObject,
+                        Code, _cells, _scope, span, out var functionCaptures):
                     _scope.EnterInterpreterFrame(span);
                     PyFunctionBase value;
                     try
                     {
                         value = CreateInlineDefinition(instruction, function.CodeObject, function.ParameterLayout,
-                            function.IsGenerator, PythonCallableKind.Function, function.InputCount);
+                            function.IsGenerator, PythonCallableKind.Function, function.InputCount, functionCaptures);
                     }
                     finally { _scope.LeaveInterpreterFrame(); }
                     Publish(instruction, value);
                     return true;
                 case ExecutableCreateLambda { Binding.NamespaceClosure: false } lambda
-                    when CanCreateWithoutCapture(lambda.CodeObject):
+                    when CanDefineWithoutInvocation(lambda.CodeObject, Code, _cells, _scope, span, out var lambdaCaptures):
                     var binding = lambda.Binding;
                     Publish(instruction, CreateInlineDefinition(instruction, binding.CodeObject, binding.Layout,
-                        binding.IsGenerator, PythonCallableKind.Lambda, lambda.InputCount));
+                        binding.IsGenerator, PythonCallableKind.Lambda, lambda.InputCount, lambdaCaptures));
                     return true;
                 default:
                     return false;
             }
         }
 
-        private static bool CanCreateWithoutCapture(ExecutableCodeObject code)
-            => code.ClosureNames.Count == 0 && CanDefineLexically(code);
-
         private PyFunctionBase CreateInlineDefinition(in ExecutableInstruction instruction,
             ExecutableCodeObject code, FunctionParameterLayout layout, bool generator, PythonCallableKind kind,
-            int inputCount)
+            int inputCount, int[]? captures)
         {
             var first = instruction.InputStart;
             try
             {
-                return CreateLexicalFunctionValue(layout, code, [], generator, _scope, instruction.Span, kind,
+                IReadOnlyList<ExecutableCell> cells = captures is null ? [] :
+                    CaptureExecutableCells(code, _scope, instruction.Span, Values, _cells, captures, out _, inline: true);
+                return CreateLexicalFunctionValue(layout, code, cells, generator, _scope, instruction.Span, kind,
                     Values.Slice(first, inputCount));
             }
             finally { Trim(first); }

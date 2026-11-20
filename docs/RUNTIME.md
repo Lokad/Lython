@@ -680,10 +680,12 @@ Unexposed captured cells can keep exact machine-integer updates directly, using
 the same arithmetic kernel and compiler preparation as ordinary instructions.
 Reading materializes one stable immutable identity; later updates preserve older
 aliases. Exposed namespaces, general values and overflow retain ordinary storage
-and Python behavior. A lexical cell starts with a frame charge for its metadata
-and current scalar. When a closure captures it, the execution owner keeps that
-charge beyond frame cleanup. Capture arrays and new namespace-backed cells are
-admitted before allocation. Frequent reads can still box every update.
+and Python behavior. Small slot-only factories keep a local in its ordinary
+slot until a definition first captures it. The execution owner admits that cell
+before construction. A continuation adopts the same cell and charge and admits
+remaining cells. Ordinary frames fund their cells up front and retain the charge
+for captured cells beyond frame cleanup. Capture arrays and new namespace-backed
+cells are admitted before allocation. Frequent reads can still box every update.
 
 Native f-string helpers use the same formatting kernel as ordinary executable
 frames, including nested fields, conversions and dynamic specifications. Their
@@ -697,9 +699,9 @@ Direct positional, named and method calls can fill the private span without an
 owned workspace. Wider or dynamic binding keeps admitted invocation storage.
 The sixteen-slot inline capacity is an optimization threshold, not a Python
 argument or expression limit. Caller and definition owners keep all inputs funded.
-Native instruction eligibility is independent of that private-buffer capacity.
-Already-bound calls can run eligible bodies over their admitted full locals array;
-the private stack buffer stays at sixteen slots. Dead operand references stay in
+Already-bound calls can also run eligible bodies without captured locals over
+their admitted full locals array. The private stack buffer and the captured
+factory optimization both use the sixteen-slot threshold. Dead operand references stay in
 their funded backing until the synchronous prefix ends; the dead tail clears
 before transfer and owned arrays clear on return.
 Private cursors retire deterministically, including cancellation before a return

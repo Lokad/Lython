@@ -60,6 +60,98 @@ public sealed class NativeClosureLifetimeTests
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FactoryKeepsTheSameBindingAcrossSuspensionAndRebinding(bool cancel)
+    {
+        const string source = """
+            def pause():
+                with open('/body') as stream:
+                    stream.read()
+            def factory(value):
+                def read(): return value
+                value += 1
+                before = read()
+                pause()
+                value += 2
+                return before, read
+            before, read = factory(7)
+            print(before, read())
+            """;
+        var budget = new LythonMemoryBudget(512 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join(", ", script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        var host = new DelayedLythonHost();
+        host.SeedFile("/body", "ready");
+        var entered = cancel ? host.PauseReadUntilCancellation("/body") : null;
+        using var cancellation = new CancellationTokenSource();
+        var pending = script.RunAsync(host, cancellationToken: cancellation.Token);
+        try
+        {
+            if (entered is not null)
+            {
+                Assert.Same(entered, await Task.WhenAny(entered, pending).WaitAsync(TimeSpan.FromSeconds(5)));
+                Assert.False(pending.IsCompleted);
+                Assert.True(budget.ReservedBytes > baseline);
+                await cancellation.CancelAsync();
+            }
+
+            using var result = await pending.WaitAsync(TimeSpan.FromSeconds(5));
+            if (cancel)
+            {
+                Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
+                Assert.Empty(result.StandardOutput);
+            }
+            else
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal("8 10\n", result.StandardOutput);
+            }
+            Assert.Equal(1, host.ClosedFileCount);
+        }
+        finally
+        {
+            await cancellation.CancelAsync();
+            using var drained = await pending.WaitAsync(TimeSpan.FromSeconds(5));
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
+    [Fact]
+    public async Task RefusedCaptureEndsExecutionBeforeTheClosureCanEscape()
+    {
+        const string source = """
+            import time
+            def factory(value):
+                def read(): return value
+                return read
+            try:
+                time.time()
+                read = factory(7)
+                time.time()
+            except MemoryError:
+                time.time()
+            """;
+        using var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid, string.Join(", ", script.Diagnostics));
+        foreach (var asynchronous in new[] { false, true })
+        {
+            var budget = new AdmissionGateBudget();
+            var host = new AdmissionGateHost(budget, 0);
+            var options = new LythonRunOptions { MemoryBudget = budget };
+            using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
+            {
+                Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+                Assert.True(budget.AtGate > 0);
+                Assert.Equal(0, host.AtSecondGate);
+                Assert.Equal(3, result.Failure?.Span?.Line);
+            }
+            Assert.Equal(0, budget.Root.ReservedBytes);
+        }
+    }
+
+    [Theory]
     [InlineData(15)]
     [InlineData(16)]
     [InlineData(20)]

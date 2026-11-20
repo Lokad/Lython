@@ -333,12 +333,13 @@ internal sealed partial class LythonRuntime
 
         internal readonly bool CanContinue => _state.CanContinue;
 
-        internal void TransferCapturedCellCharge()
+        internal void TransferCapturedCellCharges(int count)
         {
-            // The cell is already committed in the shared governor. It now
-            // outlives frame cleanup under the execution owner.
-            System.Diagnostics.Debug.Assert(_ownedStorageBytes >= ExecutableCell.StorageBytes);
-            _ownedStorageBytes -= ExecutableCell.StorageBytes;
+            // These cells are already committed in the shared governor. They
+            // outlive frame cleanup under the execution owner.
+            var bytes = (long)ExecutableCell.StorageBytes * count;
+            System.Diagnostics.Debug.Assert(_ownedStorageBytes >= bytes);
+            _ownedStorageBytes -= bytes;
         }
 
         internal void ReleaseStorage()
@@ -672,9 +673,10 @@ internal sealed partial class LythonRuntime
         BoundFunctionArguments boundArguments,
         IReadOnlyList<ExecutableCell>? closureCells,
         PyExecutableFunction? lookupOwner = null,
-        bool returnConsumedByIteration = false)
+        bool returnConsumedByIteration = false, bool continuingNative = false)
     {
-        var execution = CreateExecutableWorkState(codeObject, context, boundArguments, closureCells, lookupOwner, returnConsumedByIteration);
+        var execution = CreateExecutableWorkState(codeObject, context, boundArguments, closureCells, lookupOwner,
+            returnConsumedByIteration, continuingNative: continuingNative);
         context.AdoptExecutableExecution(ref execution, context.State.CurrentException);
     }
 
@@ -685,15 +687,20 @@ internal sealed partial class LythonRuntime
         IReadOnlyList<ExecutableCell>? closureCells,
         PyExecutableFunction? lookupOwner = null,
         bool returnConsumedByIteration = false,
-        bool borrowedInvocation = false)
+        bool borrowedInvocation = false, bool continuingNative = false)
     {
         // Binding already fills the final local slots. Borrow their storage
         // under the invocation owner, including while a generator is suspended.
         var entry = codeObject.Instructions;
         var span = entry.Length == 0 ? null : entry[0].Span;
         long bytes = checked((long)codeObject.PatternStorageCount * RuntimeMemoryEstimates.ScalarStorageBytes);
-        if (codeObject.CapturedLocalSlots.Count != 0)
-            bytes = checked(bytes + ExecutableCell.StorageBytes * codeObject.CapturedLocalSlots.Count);
+        var newCells = codeObject.CapturedLocalSlots.Count;
+        if (continuingNative && newCells != 0)
+        {
+            foreach (var slot in codeObject.CapturedLocalSlots)
+                if (boundArguments.Values[slot].Reference is ExecutableCell) newCells--;
+        }
+        bytes = checked(bytes + ExecutableCell.StorageBytes * newCells);
         // Admit private frame arrays and cells before allocating them. An
         // escaping cell keeps its original charge beyond this frame.
         var stack = new ExecutableValueStorage(codeObject.ValueStorageCapacity, codeObject.FirstTemporarySlot, codeObject.LastOwnedTemporarySlot,
@@ -710,6 +717,7 @@ internal sealed partial class LythonRuntime
             for (var i = 0; i < codeObject.CapturedLocalSlots.Count; i++)
             {
                 var slot = codeObject.CapturedLocalSlots[i];
+                if (continuingNative && locals[slot].Reference is ExecutableCell) continue;
                 locals[slot].Object = standalone
                     ? new ExecutableCell(locals[slot].Object)
                     : new ExecutableCell(locals[slot].Object, context, codeObject.LocalNames[slot]);

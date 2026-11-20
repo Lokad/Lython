@@ -194,6 +194,9 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
             for (var index = 0; index < instructions.Count; index++)
             {
                 var instruction = instructions[index];
+                if (instruction.OpCode == ExecutableOpCode.StoreLocal && code.CapturedLocalSlots.Count != 0 &&
+                    code.CapturedLocalSlots.Contains(instruction.LocalSlot))
+                    instruction = instruction.WithCapturedLocalStore();
                 var count = instruction.ValueInputCount;
                 var first = instruction.InputStart;
                 var second = instruction.SecondInput;

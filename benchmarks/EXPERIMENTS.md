@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1206 captured lexical factories](results/2026-11-20-inline-captured-factories/README.md)
+reduces nested warm elapsed 17.87–20.13% with lower CPU. Postponed and CSV
+invoice controls move adversely. [B1207](results/2026-11-20-inline-captured-factories/refinement/README.md)
+keeps a 14.66–17.26% nested improvement after preparing capture-store
+facts. The original invoice regression does not repeat. Both eager and
+postponed controls remain mixed. Retain the refined source with that
+uncertainty and the original adverse run preserved.
+
 [B1205 synchronous format traversal](results/2026-11-20-synchronous-format-traversal/README.md)
 keeps the renderer prototype private. Nested widths improve 2.91–6.22% in
 elapsed with lower CPU. Named and positional shipment elapsed shift

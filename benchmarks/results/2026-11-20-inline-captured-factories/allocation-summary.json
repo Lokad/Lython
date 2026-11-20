@@ -1,0 +1,34 @@
+[
+  {
+    "case": "scripts.annotated-rule-closures",
+    "referenceMedianBytes": 1045984,
+    "candidateMedianBytes": 1045984,
+    "changePercent": 0.0,
+    "referencePeakBytes": 2444081,
+    "candidatePeakBytes": 2444081
+  },
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories",
+    "referenceMedianBytes": 1504872,
+    "candidateMedianBytes": 1504752,
+    "changePercent": -0.007974100122798422,
+    "referencePeakBytes": 2968633,
+    "candidatePeakBytes": 2968425
+  },
+  {
+    "case": "scripts.annotated-rule-closures.postponed",
+    "referenceMedianBytes": 1046088,
+    "candidateMedianBytes": 1046088,
+    "changePercent": 0.0,
+    "referencePeakBytes": 2444137,
+    "candidatePeakBytes": 2444137
+  },
+  {
+    "case": "scripts.csv-invoice.large",
+    "referenceMedianBytes": 3672462,
+    "candidateMedianBytes": 3672462,
+    "changePercent": 0.0,
+    "referencePeakBytes": 9432613,
+    "candidatePeakBytes": 9432613
+  }
+]

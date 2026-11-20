@@ -467,19 +467,30 @@ internal sealed partial class LythonRuntime
             if (source < Code.FirstTemporarySlot)
             {
                 // The input can still be read through its original binding.
-                Values[instruction.LocalSlot].Object = Take(instruction);
+                var input = Take(instruction);
+                if (!instruction.StoresCapturedLocal) Values[instruction.LocalSlot].Object = input;
+                else StoreCapturedLocal(instruction.LocalSlot, ExecutableSlot.FromObject(input));
                 return;
             }
 
             var value = ReadSlotForTransfer(source);
             Values[source] = default;
             Trim(instruction.LiveExtent);
-            Values[instruction.LocalSlot] = value;
+            if (!instruction.StoresCapturedLocal) Values[instruction.LocalSlot] = value;
+            else StoreCapturedLocal(instruction.LocalSlot, value);
+        }
+
+        private void StoreCapturedLocal(int slot, ExecutableSlot value)
+        {
+            if (Values[slot].Reference is ExecutableCell cell) cell.Value = value.Object.RequireNotNull();
+            else Values[slot] = value;
         }
 
         private ExecutableSlot ReadSlotForTransfer(int source)
         {
             if (source < 0) return ExecutableSlot.FromObject(Read(source, 0));
+            // The operand pass never forwards a captured local into a
+            // consumer. Its LoadLocal reads the cell into a temporary.
             var value = Values[source];
             if (value.IsUnassigned) _ = Read(source, 0);
             return value;
@@ -512,7 +523,10 @@ internal sealed partial class LythonRuntime
             LiveExtent = instruction.ResultSlot;
             ref readonly var consumer = ref Code.Instructions[Index + 1];
             if (consumer.OpCode == ExecutableOpCode.StoreLocal)
-                Values[consumer.LocalSlot] = value;
+            {
+                if (!consumer.StoresCapturedLocal) Values[consumer.LocalSlot] = value;
+                else StoreCapturedLocal(consumer.LocalSlot, value);
+            }
             else if (consumer.OpCode == ExecutableOpCode.ApplyOperation)
                 StoreDefaultResult(Code, Values, consumer, value);
             else if (consumer.OpCode != ExecutableOpCode.PopTop)
@@ -580,7 +594,7 @@ internal sealed partial class LythonRuntime
     {
         var frame = function.EnterInvocationFrame(bound, span, enterFunctionCall: false);
         InitializeExecutableFrame(function.CodeObject, frame, bound, function.ClosureCells,
-            lookupOwner: function, returnConsumedByIteration: consumedByIteration);
+            lookupOwner: function, returnConsumedByIteration: consumedByIteration, continuingNative: true);
         frame.RestoreNativePosition(index, liveExtent, failure);
         return frame;
     }

@@ -172,6 +172,10 @@ internal readonly record struct ExecutableInstruction
         ? _primaryOperand : throw InvalidOperand(nameof(ConstantIndex));
     public int LocalSlot => OpCode is ExecutableOpCode.LoadLocal or ExecutableOpCode.StoreLocal
             ? _primaryOperand : throw InvalidOperand(nameof(LocalSlot));
+    // StoreLocal has only one input, leaving its second operand field free.
+    internal bool StoresCapturedLocal => _secondaryOperand != int.MaxValue;
+    internal ExecutableInstruction WithCapturedLocalStore()
+        => new(OpCode, Span, _primaryOperand, 0, _inputStart, _resultSlot, _liveExtent);
     public int ClosureSlot => OpCode is ExecutableOpCode.LoadClosure or ExecutableOpCode.StoreClosure
         ? _primaryOperand : throw InvalidOperand(nameof(ClosureSlot));
     internal bool HasClosureArithmetic => OpCode == ExecutableOpCode.LoadClosure && _secondaryOperand != int.MaxValue;
@@ -489,6 +493,7 @@ internal sealed partial class ExecutableCodeObject
         int lookupCacheCount,
         IReadOnlyList<ExecutableMatchCaseBinding> matchCases,
         bool requiresLocalVariableMirroring,
+        bool usesOnlyLexicalSlots,
         bool isFunctionScope,
         int initialOperandDepth,
         PyString? functionName,
@@ -546,14 +551,16 @@ internal sealed partial class ExecutableCodeObject
         PrepareNativeSegments(callSites);
         // Lexical/storage admission only. The native loop transfers at the
         // actual operation needing a frame, without a second opcode inventory.
-        CanRunNativeInstructions = IsFunctionScope && !RequiresLocalVariableMirroring && capturedLocalSlots.Count == 0
-            && EntryIndex < NativePrefixEnd;
+        UsesOnlyLexicalSlots = usesOnlyLexicalSlots;
+        CanRunNativeInstructions = IsFunctionScope && !RequiresLocalVariableMirroring && EntryIndex < NativePrefixEnd
+            && (capturedLocalSlots.Count == 0 ||
+                usesOnlyLexicalSlots && ValueStorageCapacity <= LythonRuntime.NativeValueCapacity);
     }
 
     public string Name { get; }
     internal PyString? FunctionName { get; }
     internal PyString? QualifiedName { get; init; }
-    internal bool UsesOnlyLexicalSlots { get; init; }
+    internal bool UsesOnlyLexicalSlots { get; }
     internal PyString? Docstring { get; }
 
     // Builder-owned arrays are immutable after preparation. Operand reads use

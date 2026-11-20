@@ -241,6 +241,12 @@ internal sealed partial class ExecutableScript
             var requiresLocalVariableMirroring =
                 moduleAnnotationNamespace || (_generator && generatorExpression is null && !_completeLexicalParent) ||
                 needsMirroring;
+            // A descendant that can observe a lexical namespace keeps the
+            // defining chain and the bridge to it.
+            var usesOnlyLexicalSlots = callable && resolvedNonlocals &&
+                !requiresLocalVariableMirroring &&
+                !_scopeFacts.RequiresClassCell && _buffers.MatchCases.Count == 0 &&
+                completeChildren;
 
             // The existing compilation owner funds the immutable function metadata.
             // A function and its body can share the same leading string literal.
@@ -264,19 +270,13 @@ internal sealed partial class ExecutableScript
                 _lookupCacheCount,
                 _buffers.MatchCases.ToArray(),
                 requiresLocalVariableMirroring,
+                usesOnlyLexicalSlots,
                 isFunctionScope: _parameterLayout is not null,
                 initialOperandDepth: generatorExpression is null ? 0 : 1,
                 functionName: callable ? name == "<lambda>" ? LambdaName : PyString.FromString(name) : null,
                 docstring: docstring)
             {
-                QualifiedName = qualifiedName,
-                // Code using only slots can own cells independently of an
-                // activation. A descendant that can still observe a lexical
-                // namespace keeps its defining chain and the bridge to it.
-                UsesOnlyLexicalSlots = callable && resolvedNonlocals &&
-                    !requiresLocalVariableMirroring &&
-                    !_scopeFacts.RequiresClassCell && _buffers.MatchCases.Count == 0 &&
-                    completeChildren
+                QualifiedName = qualifiedName
             };
             _moduleCode?.Add(code);
             _compilation.ReturnBuffers(_buffers);

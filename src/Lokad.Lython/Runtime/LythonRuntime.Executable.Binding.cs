@@ -400,17 +400,28 @@ internal sealed partial class LythonRuntime
         ExecutionContext context, LythonSourceSpan span, ref ExecutableWorkState parent, int[]? slots,
         ExecutionContext? frame = null)
     {
+        var cells = CaptureExecutableCells(codeObject, context, span, parent.Locals, parent.ClosureCells,
+            slots, out var transferred, frame);
+        if (transferred != 0) parent.Stack.TransferCapturedCellCharges(transferred);
+        return cells;
+    }
+
+    private static IReadOnlyList<ExecutableCell> CaptureExecutableCells(ExecutableCodeObject codeObject,
+        ExecutionContext context, LythonSourceSpan span, Span<ExecutableSlot> parentLocals,
+        IReadOnlyList<ExecutableCell>? parentCells, int[]? slots, out int transferred,
+        ExecutionContext? frame = null, bool inline = false)
+    {
+        transferred = 0;
         var names = codeObject.ClosureNames;
         if (names.Count == 0) return [];
-        var parentLocals = parent.Locals;
-        var parentCells = parent.ClosureCells;
-        ExecutableCell Resolve(int index)
+        ExecutableCell Resolve(int index, Span<ExecutableSlot> locals)
         {
             if (slots is not null)
             {
                 var slot = slots[index];
-                return slot >= 0 ? (ExecutableCell)parentLocals[slot].Reference!
-                    : parentCells![~slot];
+                if (slot < 0) return parentCells![~slot];
+                if (!inline) return (ExecutableCell)locals[slot].Reference!;
+                return locals[slot].Reference as ExecutableCell ?? new ExecutableCell(locals[slot].Object);
             }
             var name = names[index];
             ExecutableCell? cell = null;
@@ -423,8 +434,9 @@ internal sealed partial class LythonRuntime
             return cell.RequireNotNull();
         }
 
-        // Existing locals are funded by their frame. Only a comprehension's
-        // new namespace-backed cells and the capture array need admission.
+        // Frame cells are already funded. Inline locals remain plain operands
+        // until a definition first captures them. Admit those cells together
+        // with the capture array before exposing any binding.
         var newCells = 0;
         if (slots is null)
         {
@@ -432,7 +444,16 @@ internal sealed partial class LythonRuntime
             {
                 if (i != 0 && (i & 255) == 0) context.CheckExecution(span);
                 if (context.TryGetInlinedBinding(names[i], out _)) newCells++;
-                else _ = Resolve(i);
+                else _ = Resolve(i, parentLocals);
+            }
+        }
+        else if (inline)
+        {
+            for (var i = 0; i < slots.Length; i++)
+            {
+                if (i != 0 && (i & 255) == 0) context.CheckExecution(span);
+                var slot = slots[i];
+                if (slot >= 0 && parentLocals[slot].Reference is not ExecutableCell) newCells++;
             }
         }
 
@@ -446,8 +467,8 @@ internal sealed partial class LythonRuntime
             context.CheckExecution(span);
             if (names.Count == 1)
             {
-                var cell = Capture(0);
-                Publish(0, cell, ref parent.Stack);
+                var cell = Capture(0, parentLocals);
+                Publish(0, cell, parentLocals, ref transferred);
                 return cell;
             }
 
@@ -455,12 +476,12 @@ internal sealed partial class LythonRuntime
             for (var i = 0; i < cells.Length; i++)
             {
                 if (i != 0 && (i & 255) == 0) context.CheckExecution(span);
-                cells[i] = Capture(i);
+                cells[i] = Capture(i, parentLocals);
             }
             // Publish only after every allocation succeeds. Namespace-backed
             // cells observe later loop stores through the existing owner.
             for (var i = 0; i < cells.Length; i++)
-                Publish(i, cells[i], ref parent.Stack);
+                Publish(i, cells[i], parentLocals, ref transferred);
             return cells;
         }
         catch
@@ -469,17 +490,24 @@ internal sealed partial class LythonRuntime
             throw;
         }
 
-        ExecutableCell Capture(int index)
+        ExecutableCell Capture(int index, Span<ExecutableSlot> locals)
             => slots is null && context.TryGetInlinedBinding(names[index], out var binding)
-                ? new ExecutableCell(null, binding, names[index]) : Resolve(index);
+                ? new ExecutableCell(null, binding, names[index]) : Resolve(index, locals);
 
-        void Publish(int index, ExecutableCell cell, ref ExecutableValueStorage stack)
+        void Publish(int index, ExecutableCell cell, Span<ExecutableSlot> locals, ref int transferredCells)
         {
             if (cell.RetentionCharged) return;
-            if (slots is null && context.TryGetInlinedBinding(names[index], out var binding))
+            if (inline)
+            {
+                // First capture commits this cell to the execution owner.
+                var slot = slots![index];
+                System.Diagnostics.Debug.Assert(slot >= 0);
+                locals[slot].Object = cell;
+            }
+            else if (slots is null && context.TryGetInlinedBinding(names[index], out var binding))
                 binding.MirrorLocalStores = true;
             else
-                stack.TransferCapturedCellCharge();
+                transferredCells++;
             cell.RetentionCharged = true;
         }
     }

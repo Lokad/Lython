@@ -61,6 +61,34 @@ internal sealed partial class LythonRuntime
         return function;
     }
 
+    private static bool CanDefineWithoutInvocation(ExecutableCodeObject code, ExecutableCodeObject parentCode,
+        IReadOnlyList<ExecutableCell>? parentCells, ExecutionContext scope, LythonSourceSpan span, out int[]? slots)
+    {
+        slots = null;
+        return CanDefineLexically(code) && (code.ClosureNames.Count == 0 ||
+            TryGetStandaloneCaptures(code, parentCode, parentCells, scope, span, out slots));
+    }
+
+    private static bool TryGetStandaloneCaptures(ExecutableCodeObject code, ExecutableCodeObject parentCode,
+        IReadOnlyList<ExecutableCell>? parentCells, ExecutionContext scope, LythonSourceSpan span, out int[]? slots)
+    {
+        slots = null;
+        if (code.CaptureSources is not { } sources ||
+            !ReferenceEquals(sources.ParentLocalSlots, parentCode.LocalNameToSlot)) return false;
+
+        // Locally captured cells can stand alone in lexical work. Forwarded
+        // cells can still belong to a live namespace outside this work.
+        for (var i = 0; i < sources.Slots.Length; i++)
+        {
+            if ((i & 255) == 0) scope.CheckExecution(span);
+            var slot = sources.Slots[i];
+            if (slot < 0 && ReadCapturedCell(parentCells, ~slot) is not { HasNamespaceOwner: false })
+                return false;
+        }
+        slots = sources.Slots;
+        return true;
+    }
+
     internal sealed partial class ExecutionContext
     {
         private async ValueTask ExecutePreparedClassDefinitionAsync(ExecutableCreateClass create, int first, bool asynchronous)
@@ -81,28 +109,6 @@ internal sealed partial class LythonRuntime
                 _execution.Stack.RetireTo(first);
             }
             SyncExecutableLocalsFromContext(_execution.Code, _execution.Locals, this);
-        }
-
-        private static bool CanDefineWithoutInvocation(ExecutableCodeObject code, in ExecutableWorkState parent,
-            ExecutionContext scope, LythonSourceSpan span, out int[]? slots)
-        {
-            slots = null;
-            if (!CanDefineLexically(code)) return false;
-            if (code.ClosureNames.Count == 0) return true;
-            if (code.CaptureSources is not { } sources ||
-                !ReferenceEquals(sources.ParentLocalSlots, parent.Code.LocalNameToSlot)) return false;
-
-            // Prepared local slots already hold standalone cells. A forwarded
-            // cell can still belong to a live namespace outside this work.
-            for (var i = 0; i < sources.Slots.Length; i++)
-            {
-                if ((i & 255) == 0) scope.CheckExecution(span);
-                var slot = sources.Slots[i];
-                if (slot < 0 && ReadCapturedCell(parent.ClosureCells, ~slot) is not { HasNamespaceOwner: false })
-                    return false;
-            }
-            slots = sources.Slots;
-            return true;
         }
 
         private static void CreateBorrowedExecutableFunction(ref ExecutableWorkState execution,
