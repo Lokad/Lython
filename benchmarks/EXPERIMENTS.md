@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1214/B1215 factory attribution](results/2026-11-20-post-capture-factory-attribution/confirmation/README.md)
+locates default ownership and separate admission in eager, nested and
+postponed nested factories after inline captures. Scope promotion does
+not appear in these stacks. The first collection hit its inherited
+two-case capture cap with two complete profiles. The bounded correction
+completed all three on the same image and retained the original traces.
+
 [B1213 configuration scripts against CPython](results/2026-11-20-cpython-shared-executable-graph/README.md)
 finds the retained validator at 0.845–0.877× to result, 0.857–0.888×
 for compilation and 1.86–1.88× warm against CPython 3.13.16. Manifest warm

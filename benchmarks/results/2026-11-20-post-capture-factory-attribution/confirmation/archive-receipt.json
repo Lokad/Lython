@@ -1,0 +1,13 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "persistentTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 273047552,
+  "archiveSHA256": "05a2ec17792b617cfcf5a8bb1af28ee4f5cb546ed751851246039ca0bbf7d5b4",
+  "source": "B1215 post-capture factory attribution",
+  "performanceComparison": false,
+  "failure": null
+}

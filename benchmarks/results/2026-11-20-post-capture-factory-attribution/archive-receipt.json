@@ -1,0 +1,13 @@
+{
+  "complete": false,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "persistentTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 273678336,
+  "archiveSHA256": "dbc6baaee755e90a2240750e050ad7d0aaaaaa2c862dd623c092eb809774791d",
+  "source": "B1214 post-capture factory attribution",
+  "performanceComparison": false,
+  "failure": "Traceback (most recent call last):\n  File \"/home/lokad/lython-bench-checks/post-capture-factory-attribution-b1214-20261120/collect.py\", line 13, in <module>\n    subprocess.run(['python3',str(root/'ops-profile.py'),str(root/'guest-fixtures/profiles')],check=True)\n  File \"/usr/lib/python3.12/subprocess.py\", line 571, in run\n    raise CalledProcessError(retcode, process.args,\nsubprocess.CalledProcessError: Command '['python3', '/home/lokad/lython-bench-checks/post-capture-factory-attribution-b1214-20261120/ops-profile.py', '/home/lokad/lython-bench-checks/post-capture-factory-attribution-b1214-20261120/guest-fixtures/profiles']' returned non-zero exit status 1.\n"
+}
