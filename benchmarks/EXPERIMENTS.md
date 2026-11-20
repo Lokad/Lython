@@ -41,6 +41,11 @@ keeps the combined change private. Named formatting allocates 10.73% less
 and uses less CPU. Every two-width nested pairing uses 2.21–4.64% more CPU.
 Shipment warm and the unchanged invoice span zero.
 
+[Lowered default expressions](results/2026-11-20-lowered-default-expressions/README.md)
+deletes duplicate parameter records for ordinary definitions and lambdas.
+Compilation allocates 0.60–0.74% less on the two rule scripts. Warm allocation
+is effectively flat. This is a representation change with no timing claim.
+
 ## November 18–19, 0.11.0 compiler and call work
 
 - The retained formatting and function-default changes have paired evidence.
