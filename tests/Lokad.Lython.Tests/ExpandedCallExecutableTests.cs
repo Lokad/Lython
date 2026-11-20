@@ -93,6 +93,52 @@ public sealed class ExpandedCallExecutableTests
                 : LythonRuntime.ExecuteExecutableCodeObject(executable, context, default, null);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void DictionaryCopyHandlesSourceGrowthDuringAdmission(bool refuseReplacement)
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var owner = budget.CreateScope())
+        {
+            var hook = new AdmissionHookMemoryBudget(owner);
+            var context = new Context(new MockLythonHost(), new() { MemoryBudget = hook });
+            var span = new LythonSourceSpan(0, 1, 1, 1);
+            var dictionary = new PyDict(2, context.MemoryGovernor, span);
+            var first = PyString.FromString("first");
+            var second = PyString.FromString("second");
+            var added = PyString.FromString("added");
+            var alias = new PyList();
+            dictionary.SetItem(first, alias);
+            dictionary.SetItem(second, PyNone.Instance);
+            var otherStorage = budget.ReservedBytes - dictionary.CommittedStorageBytes;
+            hook.AfterGrowth = _ =>
+            {
+                hook.AfterGrowth = null;
+                dictionary.SetItem(added, alias);
+                if (refuseReplacement) hook.RefuseGrowth = _ => true;
+            };
+            if (refuseReplacement)
+            {
+                var failure = Assert.Throws<LythonRuntimeException>(() => new PyDict(dictionary, context.MemoryGovernor, span));
+                Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
+                Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
+                Assert.Equal(otherStorage + dictionary.CommittedStorageBytes, budget.ReservedBytes);
+            }
+            else
+            {
+                var copy = new PyDict(dictionary, context.MemoryGovernor, span);
+                Assert.Equal([first, second, added], copy.Keys.Cast<PyString>());
+                Assert.Same(added, copy.Keys.Last());
+                Assert.Same(alias, copy.GetItem(added));
+                Assert.True(copy.Remove(added));
+            }
+            Assert.Same(alias, dictionary.GetItem(added));
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     private sealed class ReentrantKeywords(AdmissionHookMemoryBudget hook, PyDict source, PyString added,
         PyString value, bool refuse, bool sharedKeys) : LythonRuntime.ICallable
     {

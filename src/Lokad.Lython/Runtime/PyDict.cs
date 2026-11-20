@@ -34,25 +34,32 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
     {
         try
         {
-            if (other._recordKeys is not null)
+            if (other._nativeItems is not null)
             {
-                other.CopyNativeStorage(_nativeItems!, _nativeValues, allocationSpan);
-                _nativeCount = other._nativeCount;
-                _nativeSequence = other._nativeSequence;
-            }
-            else if (other._nativeItems is not null)
-            {
-                other.MaterializeNativeValues(allocationSpan);
-                // Copy keys and values without rehashing or repackaging keys;
-                // stored hashes and insertion identities stay intact.
-                for (var offset = 0; offset < other._nativeItems.Length; offset += 4096)
+                // Admission can reenter and grow the source. Keep both owners
+                // funded and size the private copy before reading any entries.
+                if (other._nativeCount > _nativeItems!.Length)
                 {
-                    PyStructuralGuard.NoteWork(null, allocationSpan);
-                    Array.Copy(other._nativeItems, offset, _nativeItems!, offset,
-                        Math.Min(4096, other._nativeItems.Length - offset));
-                    if (_nativeValues is not null)
-                        Array.Copy(other._nativeValues!, offset, _nativeValues, offset,
-                            Math.Min(4096, other._nativeItems.Length - offset));
+                    EnsureNativeCapacity(other._nativeCount, governor, allocationSpan);
+                    if (other._nativeCount > _nativeItems.Length)
+                        throw RuntimeErrors.Runtime("dictionary changed size during copy", allocationSpan);
+                }
+                other.MaterializeNativeValues(allocationSpan);
+                if (other._recordKeys is not null || other._nativeItems.Length != _nativeItems.Length)
+                    other.CopyNativeStorage(_nativeItems, _nativeValues, allocationSpan);
+                else
+                {
+                    // Equal capacities preserve bucket positions and links.
+                    var context = PyStructuralGuard.AmbientContext;
+                    for (var offset = 0; offset < other._nativeItems.Length;)
+                    {
+                        context?.CheckExecution(allocationSpan);
+                        var count = Math.Min(4096, other._nativeItems.Length - offset);
+                        Array.Copy(other._nativeItems, offset, _nativeItems, offset, count);
+                        if (_nativeValues is not null)
+                            Array.Copy(other._nativeValues!, offset, _nativeValues, offset, count);
+                        offset += count;
+                    }
                 }
                 _nativeCount = other._nativeCount;
                 _nativeProtocolCount = other._nativeProtocolCount;

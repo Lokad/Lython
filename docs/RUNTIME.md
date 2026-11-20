@@ -534,6 +534,10 @@ Duplicates preserve insertion order and first-key identity. A new key or protoco
 mutation admits private backing before changing the record. Cache/layout storage
 remains funded for its existing execution/result lifetime, even if a constructed
 row is discarded. Dynamic keys and unpacking retain general dictionary semantics.
+Dictionary copies admit their destination before reading the current source.
+If admission lets the source grow, the copy admits replacement capacity and
+checks that the source fits before copying. The unpublished destination is
+released on refusal. Keys and values preserve their existing identities.
 
 Eligible `try`/`except` helpers use the same prefix through their normal body.
 Handler-only instructions do not require a lexical frame before that body runs.
