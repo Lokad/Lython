@@ -355,9 +355,9 @@ Executable code owns immutable keyword-default and annotation key layouts
 prepared during compilation. An executable function with evaluated annotation
 operands admits the callable and final annotation backing before allocating
 either. Refusal can arise from their combined estimate. Each definition admits
-its own mutable default containers before evaluating defaults. Function declarations and lambdas fill
-the final private tuple and dictionary as expressions complete, with one owner
-through suspension.
+its own default storage before evaluating defaults. Function declarations and
+lambdas fill the final private tuple and keyword value slots as expressions
+complete, with one owner through suspension.
 Fresh integers can stay unboxed until observed. The tuple preflights room
 for eventual scalar boxes, and a larger magnitude can require a further
 charge. A supplied allowance can refuse earlier because this storage is
@@ -930,12 +930,14 @@ Executable function bindings retain declaration inputs and prepared code without
 the original function body tree. The compilation owner funds the function name
 and leading string literal shared by instances of the same declaration. A
 function keeps independent metadata overrides and mutable defaults. Host-facing
-text projections have their own result ownership. A definition evaluates its defaults in the
-defining scope and fills the final Python tuple and keyword dictionary directly.
-Those containers remain distinct per function and reflect later mutation.
-Binding reads the current keyword default directly when the live dictionary
-still has the expected key in its prepared slot. Other dictionaries and
-structural key changes use the ordinary lookup.
+text projections have their own result ownership. A definition evaluates its
+defaults in the defining scope. With prepared keys, binding reads unpublished
+keyword defaults from the admitted value slots. The first read of
+`__kwdefaults__` publishes an independently mutable dictionary using those
+slots. Replacement or deletion can refund unpublished storage. A published
+dictionary keeps its owner for any aliases. Binding reads the live dictionary
+when exposed, using the prepared slot where its key layout still matches.
+Replacement dictionaries and structural key changes use ordinary lookup.
 Executable declarations evaluate decorators and defaults in the surrounding
 instruction stream. The same construction step handles yielding definitions,
 with private default storage owned by the operand stack until publication or
