@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1175 owned branch-state joins](results/2026-11-20-branch-state-ownership/README.md)
+cuts validator compile allocation by 6.77%. Validator timing spans zero
+with large duplicate compile spread. Eager compile CPU rises in every
+pairing. The timed source stays private for a changed-design confirmation.
+
 [B1174 positional defaults on observation](results/2026-11-20-lazy-positional-defaults/README.md)
 removes eager tuple shells in a private source pair. Factory allocations
 fall 4.81–8.02%, but ordinary compile-to-result and CPU when every tuple

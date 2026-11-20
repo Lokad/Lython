@@ -1,0 +1,71 @@
+{
+  "reference": "bbbf360cdff6ff11e00165c9cdea583b22b6b826",
+  "candidate": "9290558f0bfafc295e73a79b77a6ef42f3878908",
+  "verification": "Four CPython goldens per full 32-file image.",
+  "rows": [
+    {
+      "boundary": "compile-allocation",
+      "id": "scripts.annotated-rule-closures",
+      "referenceBytes": 57304,
+      "candidateBytes": 57304,
+      "changePct": 0.0
+    },
+    {
+      "boundary": "compile-allocation",
+      "id": "scripts.config-generated-guards.medium",
+      "referenceBytes": 3048406,
+      "candidateBytes": 2842070,
+      "changePct": -6.7686522070879
+    },
+    {
+      "boundary": "compile-allocation",
+      "id": "scripts.config-manifest.small",
+      "referenceBytes": 285144,
+      "candidateBytes": 284512,
+      "changePct": -0.22164239822686227
+    },
+    {
+      "boundary": "compile-allocation",
+      "id": "scripts.csv-invoice.large",
+      "referenceBytes": 168528,
+      "candidateBytes": 168528,
+      "changePct": 0.0
+    },
+    {
+      "boundary": "allocation",
+      "id": "scripts.annotated-rule-closures",
+      "referenceBytes": 1242728,
+      "candidateBytes": 1242728,
+      "changePct": 0.0,
+      "referencePeak": 2444313,
+      "candidatePeak": 2444313
+    },
+    {
+      "boundary": "allocation",
+      "id": "scripts.config-generated-guards.medium",
+      "referenceBytes": 75936,
+      "candidateBytes": 75936,
+      "changePct": 0.0,
+      "referencePeak": 94214,
+      "candidatePeak": 94214
+    },
+    {
+      "boundary": "allocation",
+      "id": "scripts.config-manifest.small",
+      "referenceBytes": 103024,
+      "candidateBytes": 103024,
+      "changePct": 0.0,
+      "referencePeak": 58255,
+      "candidatePeak": 58255
+    },
+    {
+      "boundary": "allocation",
+      "id": "scripts.csv-invoice.large",
+      "referenceBytes": 3672462,
+      "candidateBytes": 3672462,
+      "changePct": 0.0,
+      "referencePeak": 9432613,
+      "candidatePeak": 9432613
+    }
+  ]
+}
