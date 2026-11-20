@@ -249,7 +249,6 @@ internal sealed partial class LythonRuntime
             ExecutableSlot completedValue = default;
             Exception? completedError = null;
             ExecutionContext? frame = null;
-            ExecutableWorkState work = default;
             var functionEntered = false;
             var transferred = false;
             var unpacked = false;
@@ -259,45 +258,21 @@ internal sealed partial class LythonRuntime
                 var originalExtent = _execution.Stack.LiveExtent;
                 var returned = completion == CallCompletion.Call && site is not null
                     ? PrepareUnpackedCallReturn(ref _execution, site, start, out originalExtent) : default;
-                var native = function.TryStartBoundInvocation(bound, span, consumedByIteration,
-                    returned, out unpacked, out var nativeValue, out frame);
-                if (native)
+                var prepared = function.TryStartBoundInvocation(bound, span, consumedByIteration,
+                    returned, out unpacked, out completedValue, out frame);
+                if (!unpacked) _execution.Stack.RestoreNativeExtent(originalExtent);
+                if (prepared)
                 {
-                    if (!unpacked) _execution.Stack.RestoreNativeExtent(originalExtent);
-                    if (frame is null) { completedValue = nativeValue; goto Completed; }
+                    if (frame is null) goto Completed;
                     functionEntered = true;
-                    goto PreparedFrame;
-                }
-                if (function.CanDeferInvocationContext)
-                {
-                    var scope = function.DefinitionContext;
-                    scope.EnterFunctionCall(span);
-                    functionEntered = true;
-                    var entryException = State.CurrentException;
-                    try
-                    {
-                        work = CreateBorrowedFunctionWork(function, bound, consumedByIteration);
-                        var pause = ExecuteInstructionPrefix(ref work, scope, null, false, out _, out _, out var nextCall, returned);
-                        unpacked = pause == InstructionPause.UnpackedReturn;
-                        if (!unpacked) _execution.Stack.RestoreNativeExtent(originalExtent);
-                        if (unpacked || pause == InstructionPause.Boundary)
-                        {
-                            completedValue = work.ReturnValue;
-                            goto Completed;
-                        }
-                        frame = PromoteBorrowedInvocation(function, bound, ref work, span, entryException, pause, nextCall);
-                    }
-                    finally { State.SetCurrentException(entryException); }
                 }
                 else
                 {
-                    _execution.Stack.RestoreNativeExtent(originalExtent);
                     frame = function.EnterInvocationFrame(bound, span);
                     functionEntered = true;
                     InitializeExecutableFrame(function.CodeObject, frame, bound,
                         function.ClosureCells, lookupOwner: function, returnConsumedByIteration: consumedByIteration);
                 }
-            PreparedFrame:
                 frame.EnterExecutableSlots();
                 // Only a real child establishes a suspended caller. No reverse
                 // link or preparation packet is needed for completed prefixes.
@@ -310,8 +285,6 @@ internal sealed partial class LythonRuntime
                 if (TryTranslateCallableException(error, span, out var translated)) error = translated;
                 if (frame is not null && error is LythonRuntimeException runtimeError)
                     PyFunctionBinding.AnnotateException(runtimeError, frame, function.Name, span);
-                else if (functionEntered && error is LythonRuntimeException borrowedError)
-                    PyFunctionBinding.AnnotateException(borrowedError, function.DefinitionContext, function.Name, span);
                 completedError = error;
             }
             finally
@@ -320,19 +293,11 @@ internal sealed partial class LythonRuntime
                 {
                     try
                     {
-                        try
-                        {
-                            if (work.Code is not null) ReleaseBorrowedFunctionWork(ref work);
-                        }
-                        finally
-                        {
-                            if (functionEntered) State.LeaveFunctionCall();
-                            // A deferred prefix can write locals without ever
-                            // creating a frame. Clear the compiler workspace
-                            // before caching it.
-                            if (bound.Values is not null) ReturnBoundArguments(bound, function.CodeObject.ValueStorageCapacity);
-                            frame?.DetachExecutableExecution();
-                        }
+                        if (functionEntered) State.LeaveFunctionCall();
+                        // The prefix can write locally without creating a frame.
+                        // Clear the full workspace before caching it.
+                        if (bound.Values is not null) ReturnBoundArguments(bound, function.CodeObject.ValueStorageCapacity);
+                        frame?.DetachExecutableExecution();
                     }
                     finally { if (callEntered) LeaveInterpreterFrame(); }
                 }
@@ -342,18 +307,6 @@ internal sealed partial class LythonRuntime
                 FinishUnpackedCall(start, site!.UnpackedReturnCount);
             else ApplyCallResult(start, span, completion, completedValue, completedError);
             return this;
-        }
-
-        private static ExecutableWorkState CreateBorrowedFunctionWork(PyExecutableFunction function,
-            in BoundFunctionArguments bound, bool consumedByIteration)
-            => CreateExecutableWorkState(function.CodeObject, function.DefinitionContext, bound, function.ClosureCells,
-                lookupOwner: function, returnConsumedByIteration: consumedByIteration,
-                borrowedInvocation: true);
-
-        private static void ReleaseBorrowedFunctionWork(ref ExecutableWorkState work)
-        {
-            try { work.Stack.RetireTo(work.Code.FirstTemporarySlot); }
-            finally { work.Stack.ReleaseStorage(); }
         }
 
         private static ExecutionContext PromoteBorrowedInvocation(PyExecutableFunction function,
@@ -413,7 +366,7 @@ internal sealed partial class LythonRuntime
                     var operands = caller.Stack.Slice(start + site.ArgumentOffset, site.ArgumentCount).Span;
                     bound = function.BindCallOperands(operands, site.CallSpan, scope, null, site);
                     var returned = PrepareUnpackedCallReturn(ref caller, site, start, out var originalExtent);
-                    child = StartBorrowedLeaf(function, bound, site.CallSpan, CallResultConsumedByIteration(in caller, site),
+                    child = StartBorrowedInvocation(function, bound, site.CallSpan, CallResultConsumedByIteration(in caller, site),
                         returned, out value, out unpacked);
                     count = returned.Length;
                     if (!unpacked) caller.Stack.RestoreNativeExtent(originalExtent);
@@ -433,8 +386,7 @@ internal sealed partial class LythonRuntime
 
                 if (child is not null) return true;
                 if (unpacked) CompleteUnpackedCallReturn(ref caller, scope, start, count);
-                else PublishInstructionResult(ref caller, null, caller.Code.Instructions[caller.InstructionIndex],
-                    value.IsUnassigned ? ExecutableSlot.FromObject(PyNone.Instance) : value);
+                else PublishInstructionResult(ref caller, null, caller.Code.Instructions[caller.InstructionIndex], value);
                 return true;
             }
             catch (Exception error)
@@ -445,7 +397,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private static ExecutionContext? StartBorrowedLeaf(PyExecutableFunction function,
+        internal static ExecutionContext? StartBorrowedInvocation(PyExecutableFunction function,
             in BoundFunctionArguments bound, LythonSourceSpan span, bool consumedByIteration,
             Span<ExecutableSlot> destination, out ExecutableSlot value, out bool unpacked)
         {
@@ -456,10 +408,11 @@ internal sealed partial class LythonRuntime
             ExecutionContext? frame = null;
             try
             {
-                work = CreateBorrowedFunctionWork(function, bound, consumedByIteration);
+                work = CreateExecutableWorkState(function.CodeObject, scope, bound, function.ClosureCells,
+                    lookupOwner: function, returnConsumedByIteration: consumedByIteration, borrowedInvocation: true);
                 var pause = ExecuteInstructionPrefix(ref work, scope, null, false, out _, out _, out var nextCall, destination);
                 unpacked = pause == InstructionPause.UnpackedReturn;
-                value = work.ReturnValue;
+                value = work.ReturnValue.IsUnassigned ? ExecutableSlot.FromObject(PyNone.Instance) : work.ReturnValue;
                 if (unpacked || pause == InstructionPause.Boundary) return null;
                 return frame = PromoteBorrowedInvocation(function, bound, ref work, span, entryException, pause, nextCall);
             }
@@ -478,7 +431,11 @@ internal sealed partial class LythonRuntime
             {
                 try
                 {
-                    if (work.Code is not null) ReleaseBorrowedFunctionWork(ref work);
+                    if (work.Code is not null)
+                    {
+                        try { work.Stack.RetireTo(work.Code.FirstTemporarySlot); }
+                        finally { work.Stack.ReleaseStorage(); }
+                    }
                 }
                 finally
                 {

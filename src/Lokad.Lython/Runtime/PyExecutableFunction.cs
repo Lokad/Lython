@@ -107,13 +107,22 @@ internal sealed class PyExecutableFunction : PyFunctionBase
     internal bool TryStartBoundInvocation(in BoundFunctionArguments bound, LythonSourceSpan span, bool consumedByIteration,
         Span<LythonRuntime.ExecutableSlot> unpackedReturn, out bool unpacked, out LythonRuntime.ExecutableSlot result, out LythonRuntime.ExecutionContext? frame)
     {
+        if (CanRunNativePrefix)
+        {
+            StartInline(bound.Values.AsSpan(0, CodeObject.ValueStorageCapacity),
+                bound, span, consumedByIteration, unpackedReturn, out unpacked, out result, out frame);
+            return true;
+        }
+        if (CanDeferInvocationContext)
+        {
+            frame = LythonRuntime.ExecutionContext.StartBorrowedInvocation(this, bound, span, consumedByIteration,
+                unpackedReturn, out result, out unpacked);
+            return true;
+        }
         unpacked = false;
-        result = LythonRuntime.ExecutableSlot.FromObject(PyNone.Instance);
+        result = default;
         frame = null;
-        if (!CanRunNativePrefix) return false;
-        StartInline(bound.Values.AsSpan(0, CodeObject.ValueStorageCapacity),
-            bound, span, consumedByIteration, unpackedReturn, out unpacked, out result, out frame);
-        return true;
+        return false;
     }
 
     private void StartInline(Span<LythonRuntime.ExecutableSlot> values, BoundFunctionArguments? existing,

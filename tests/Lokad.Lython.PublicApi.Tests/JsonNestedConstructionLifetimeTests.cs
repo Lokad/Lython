@@ -5,21 +5,28 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class JsonNestedConstructionLifetimeTests
 {
     [Theory]
-    [InlineData("object_hook", "success")]
-    [InlineData("object_hook", "cancel")]
-    [InlineData("object_hook", "refuse")]
-    [InlineData("parse_int", "success")]
-    [InlineData("parse_int", "cancel")]
-    [InlineData("parse_int", "refuse")]
-    public async Task NestedContainersStayFundedThroughSuspendedCallbacks(string hook, string mode)
+    [InlineData("object_hook", "success", false)]
+    [InlineData("object_hook", "cancel", false)]
+    [InlineData("object_hook", "refuse", false)]
+    [InlineData("parse_int", "success", false)]
+    [InlineData("parse_int", "cancel", false)]
+    [InlineData("parse_int", "refuse", false)]
+    [InlineData("object_hook", "success", true)]
+    [InlineData("object_hook", "cancel", true)]
+    [InlineData("object_hook", "refuse", true)]
+    public async Task NestedContainersStayFundedThroughSuspendedCallbacks(string hook, string mode, bool beginsWithDefinition)
     {
         var document = new string('[', 8) + "{\"number\":7}" + new string(']', 8);
         var expected = new string('[', 8) + "{\"number\": \"v\"}" + new string(']', 8);
+        var prepare = beginsWithDefinition ? "def keep(alias=value): return alias" : "";
+        var readAlias = beginsWithDefinition ? "value = keep()" : "";
         var source = $$"""
             import json
             def convert(value):
+                {{prepare}}
                 with open('/value') as stream:
                     text = stream.read()
+                {{readAlias}}
                 if mode == 'refuse':
                     return 'x' * 8388608
                 if '{{hook}}' == 'parse_int':
