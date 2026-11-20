@@ -15,7 +15,7 @@ public sealed class EagerComprehensionExecutableTests
             string.Concat(Enumerable.Repeat("for value in (value+1,) ", 511)) + "]";
         var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.True(frontend.Diagnostics.All(d => d.Severity != LythonDiagnosticSeverity.Error));
-        var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(frontend.Script!).EntryPoint;
         var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(4 * 1024 * 1024) },regexProvider:Utf8RegexProvider.Instance);
         LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
         Assert.Equal(new BigInteger(511), Assert.Single(Assert.IsType<PyList>(context.Variables["result"])));
@@ -29,7 +29,7 @@ public sealed class EagerComprehensionExecutableTests
     public void HelperItemsUseInstructionsInTheCallerFrame(string expression)
     {
         var syntax = LythonFrontend.Compile("def collect(values,convert):\n    return " + expression,regexProvider:Utf8RegexProvider.Instance).Script!;
-        var module = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
+        var module = ExecutableScript.Compile(syntax).EntryPoint;
         var body = Assert.Single(module.FunctionBindings()).CodeObject!;
         Assert.False(body.RequiresLocalVariableMirroring);
         Assert.DoesNotContain(body.Constants, value => value is ExecutableCreateGeneratorExpression);
@@ -43,7 +43,7 @@ public sealed class EagerComprehensionExecutableTests
     public void DenialRestoresScopeAndPreservesThePreviousTarget(bool asynchronous)
     {
         var syntax = LythonFrontend.Compile("global target\ntarget=[value for value in range(10000)]",regexProvider:Utf8RegexProvider.Instance).Script!;
-        var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
+        var code = ExecutableScript.Compile(syntax).EntryPoint;
         var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(131072) },regexProvider:Utf8RegexProvider.Instance);
         var original = new PyList([true], context.MemoryGovernor, null);
         context.Variables["target"] = original;

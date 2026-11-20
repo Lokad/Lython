@@ -49,7 +49,7 @@ public sealed class NativeOperationAllocationTests
             : format.StartsWith('%') ? "return '" + format + "' % value"
             : "return f'{value:" + format + "}'";
         var frontend = LythonFrontend.Compile(source);
-        var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(frontend.Script!).EntryPoint;
         for (var pass = 0; pass < 3; pass++)
         {
             var budget = new LythonMemoryBudget(1024 * 1024);
@@ -94,7 +94,7 @@ public sealed class NativeOperationAllocationTests
     public async Task CancelledIntegerScratchAdmissionStopsBeforeDigitConstruction(bool asynchronous)
     {
         var frontend = LythonFrontend.Compile("return f'{value:d}'");
-        var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(frontend.Script!).EntryPoint;
         for (var pass = 0; pass < 3; pass++)
         {
             var budget = new LythonMemoryBudget(1024 * 1024);
@@ -191,7 +191,7 @@ public sealed class NativeOperationAllocationTests
         // Compilation and context setup are outside the measured operation.
         var source = NativeOperationSources.RefusedConstruction(operation).Replace("return len(", "return (");
         var frontend = LythonFrontend.Compile(source);
-        var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(frontend.Script!).EntryPoint;
         for (var pass = 0; pass < 3; pass++)
         {
             var budget = new LythonMemoryBudget(32768);
@@ -237,7 +237,7 @@ public sealed class NativeOperationAllocationTests
     public async Task IntegerBytesAvoidPerByteBigIntegerIntermediates(bool asynchronous)
     {
         var frontend = LythonFrontend.Compile("return (0x" + new string('f', 16384) + ").to_bytes(8192)");
-        var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(frontend.Script!).EntryPoint;
         for (var pass = 0; pass < 3; pass++)
         {
             var budget = new LythonMemoryBudget(32768);

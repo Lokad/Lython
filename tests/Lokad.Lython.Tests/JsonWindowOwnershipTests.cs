@@ -23,7 +23,7 @@ public sealed class JsonWindowOwnershipTests
             context.Variables["source"] = source;
             var hook = new PendingHook(source);
             context.Variables["hook"] = hook;
-            var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile("import json\nreturn json.loads(source, object_hook=hook)").Script!));
+            var code = ExecutableScript.Compile(LythonFrontend.Compile("import json\nreturn json.loads(source, object_hook=hook)").Script!);
             async Task<object?> Run() => await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context);
             var pending = Run();
             try
@@ -124,7 +124,7 @@ public sealed class JsonWindowOwnershipTests
             Assert.True(MemoryMarshal.TryGetArray(document.Utf8Bytes, out var original));
             var input = document.CopyOrBorrowUtf8Range(7, document.ByteLength - 14, governor, span);
             context.Variables["source"] = input;
-            var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile("import json\nreturn json.loads(source)").Script!));
+            var code = ExecutableScript.Compile(LythonFrontend.Compile("import json\nreturn json.loads(source)").Script!);
             var decoded = Assert.IsType<PyList>(asynchronous
                 ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context)
                 : LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null));

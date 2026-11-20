@@ -24,7 +24,7 @@ public sealed class FormattedStringExecutableTests
             var context = new Context(new MockLythonHost(), new() { MemoryBudget = owner });
             var frontend = LythonFrontend.Compile("def render(record):return " + expression);
             Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
-            LythonRuntime.ExecuteExecutableCodeObject(ExecutableScript.Compile(LoweredScript.Lower(frontend.Script!)).EntryPoint, context);
+            LythonRuntime.ExecuteExecutableCodeObject(ExecutableScript.Compile(frontend.Script!).EntryPoint, context);
             var function = Assert.IsType<PyExecutableFunction>(context.Variables["render"]);
             var span = new LythonSourceSpan(0, 1, 1, 1);
             var record = new PyDict(context.MemoryGovernor, span);
@@ -33,8 +33,7 @@ public sealed class FormattedStringExecutableTests
             record.SetItem(PyString.FromString("active"), true);
             record.SetItem(PyString.FromString("width"), new System.Numerics.BigInteger(9));
             record.SetItem(PyString.FromString("state"), PyString.FromString("ready", context.MemoryGovernor, span));
-            var call = Assert.Single(ExecutableScript.Compile(LoweredScript.Lower(
-                LythonFrontend.Compile("render(record)").Script!)).EntryPoint.CallSites);
+            var call = Assert.Single(ExecutableScript.Compile(LythonFrontend.Compile("render(record)").Script!).EntryPoint.CallSites);
             Assert.True(function.CodeObject.CanRunNativeInstructions);
             for (var pass = 0; pass < 2; pass++)
             {
@@ -63,7 +62,7 @@ public sealed class FormattedStringExecutableTests
     public void FormattedOutputDenialPreservesTargetAndReleasesReservations(bool asynchronous)
     {
         var syntax = LythonFrontend.Compile("global target\ntarget=f'{left}{right}'",regexProvider:Utf8RegexProvider.Instance).Script!;
-        var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
+        var code = ExecutableScript.Compile(syntax).EntryPoint;
         Context Create()
         {
             var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024 * 1024) },regexProvider:Utf8RegexProvider.Instance);
@@ -100,7 +99,7 @@ public sealed class FormattedStringExecutableTests
     public void OrdinaryFieldsDoNotForceFallbackOrLocalMirroring(string expression)
     {
         var syntax = LythonFrontend.Compile($"def render(value,width):\n    return {expression}",regexProvider:Utf8RegexProvider.Instance).Script!;
-        var code = ExecutableScript.Compile(LoweredScript.Lower(syntax));
+        var code = ExecutableScript.Compile(syntax);
         var body = Assert.Single(code.EntryPoint.FunctionBindings()).CodeObject;
         Assert.NotNull(body);
         Assert.False(body.RequiresLocalVariableMirroring);

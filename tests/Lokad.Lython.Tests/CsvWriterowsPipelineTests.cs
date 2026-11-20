@@ -25,7 +25,7 @@ public sealed class CsvWriterowsPipelineTests
     public async Task BulkCallsPreservePublicationAndOrderedPrefix(bool asynchronous, bool exposed, string shape)
     {
         var source = exposed ? "method=writer.writerows\nreturn method(rows)" : "return writer.writerows(rows)";
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!).EntryPoint;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         string outcome;
         string[] events;

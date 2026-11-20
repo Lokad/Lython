@@ -19,7 +19,7 @@ public sealed class IntegerAdditionAdmissionTests(ITestOutputHelper output)
         .GetMethod("SumAsync", BindingFlags.Static | BindingFlags.NonPublic)!
         .CreateDelegate<Func<object[], LythonSourceSpan, Context, ValueTask<object>>>();
     private static readonly ExecutableCodeObject Add = ExecutableScript.Compile(
-        LoweredScript.Lower(LythonFrontend.Compile("return left + right",regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
+        LythonFrontend.Compile("return left + right",regexProvider:Utf8RegexProvider.Instance).Script!).EntryPoint;
 
     public static IEnumerable<object[]> Denials()
     {

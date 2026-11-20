@@ -45,7 +45,7 @@ public sealed class IteratorAdapterFrameLifetimeTests
     private static async Task<object> Create(string expression,ILythonMemoryScope owner,Capture capture,bool asynchronous)
     {
         var source="import itertools\ndef make():\n unrelated='x'*8192\n capture(unrelated)\n class Local:pass\n return "+expression+"\nreturn make()";
-        var code=ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        var code=ExecutableScript.Compile(LythonFrontend.Compile(source).Script!).EntryPoint;
         var context=new Context(new MockLythonHost(),new LythonRunOptions{MemoryBudget=owner});
         context.Variables["capture"]=capture;
         return (asynchronous?await LythonRuntime.ExecuteExecutableCodeObjectAsync(code,context,default,null)

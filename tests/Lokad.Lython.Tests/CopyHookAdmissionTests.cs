@@ -17,7 +17,7 @@ public sealed class CopyHookAdmissionTests
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
         var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!).EntryPoint;
         await Execute(code, context, asynchronous);
         Assert.Equal(new BigInteger(7), context.Variables["answer"]);
         Assert.Equal(0, context.State.StructuralTraversal.Depth);
@@ -39,7 +39,7 @@ public sealed class CopyHookAdmissionTests
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
         var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!).EntryPoint;
         var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Execute(code, context, asynchronous));
         Assert.Equal(LythonFailureReason.InterpreterStackLimit, failure.Attribution?.Reason);
         Assert.True(failure.Attribution?.Limit is null or ExecutionState.MaxInterpreterDepth);
@@ -47,7 +47,7 @@ public sealed class CopyHookAdmissionTests
         Assert.Equal(0, context.State.StructuralTraversal.Depth);
         AssertUnwound(context);
         const string recovery = "answer=copy.deepcopy([1,[2]])";
-        code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(recovery,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
+        code = ExecutableScript.Compile(LythonFrontend.Compile(recovery,regexProvider:Utf8RegexProvider.Instance).Script!).EntryPoint;
         await Execute(code, context, asynchronous);
         Assert.Equal(0, context.State.StructuralTraversal.Depth);
         AssertUnwound(context);

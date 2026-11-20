@@ -37,7 +37,7 @@ public sealed class RecordFieldLookupOwnershipTests
             var frontend = LythonFrontend.Compile(helper
                 ? "def read(row):\n value = row['a']\n return value\nreturn read(row)"
                 : "for _ in range(1):\n value = row['a']\nreturn value");
-            var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script!)).EntryPoint;
+            var code = ExecutableScript.Compile(frontend.Script!).EntryPoint;
             var lookupCode = helper ? Assert.Single(code.FunctionBindings()).CodeObject : code;
             var changed = false;
             if (outcome == "refuse") hook.RefuseGrowth = bytes => bytes == 32L + 64L * lookupCode.LookupCacheCount;

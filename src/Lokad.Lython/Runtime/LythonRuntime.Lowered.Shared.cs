@@ -7,84 +7,7 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private delegate ValueTask<LoweredBlockFlow> LoweredStatementBlockExecutor(
-        IReadOnlyList<LoweredStatement> statements,
-        ExecutionContext context);
-
     private delegate ValueTask<object> LoweredExpressionEvaluator(LoweredExpression expression);
-
-    private static async ValueTask<LoweredBlockFlow> DispatchLoweredStatementAsync(
-        LoweredStatement statement,
-        ExecutionContext context,
-        ILoweredStatementExecution execution)
-    {
-        switch (statement)
-        {
-            case LoweredTypeAliasStatement alias:
-                ExecuteTypeAlias(alias, context);
-                return default;
-            case LoweredImportStatement importStatement:
-                await execution.ExecuteImportAsync(importStatement, context).ConfigureAwait(false);
-                return default;
-            case LoweredScopeDirectiveStatement:
-                return default;
-            case LoweredFunctionDefinitionStatement functionDefinition:
-                await execution.ExecuteFunctionDefinitionAsync(functionDefinition, context).ConfigureAwait(false);
-                return default;
-            case LoweredClassDefinitionStatement classDefinition:
-                await execution.ExecuteClassDefinitionAsync(classDefinition, context).ConfigureAwait(false);
-                return default;
-            case LoweredAssignmentStatement assignment:
-                await execution.ExecuteAssignmentAsync(assignment, context).ConfigureAwait(false);
-                return default;
-            case LoweredExpressionStatement expression:
-                _ = await execution.EvaluateExpressionAsync(expression.Expression, context).ConfigureAwait(false);
-                return default;
-            case LoweredIfStatement ifStatement:
-                await execution.ExecuteIfAsync(ifStatement, context).ConfigureAwait(false);
-                return default;
-            case LoweredForStatement forStatement:
-                await execution.ExecuteForAsync(forStatement, context).ConfigureAwait(false);
-                return default;
-            case LoweredWhileStatement whileStatement:
-                await execution.ExecuteWhileAsync(whileStatement, context).ConfigureAwait(false);
-                return default;
-            case LoweredMatchStatement matchStatement:
-                await execution.ExecuteMatchAsync(matchStatement, context).ConfigureAwait(false);
-                return default;
-            case LoweredWithStatement withStatement:
-                await execution.ExecuteWithAsync(withStatement, context).ConfigureAwait(false);
-                return default;
-            case LoweredTryStatement tryStatement:
-                await execution.ExecuteTryAsync(tryStatement, context).ConfigureAwait(false);
-                return default;
-            case LoweredPassStatement:
-                return default;
-            case LoweredBreakStatement:
-                throw new BreakSignal();
-            case LoweredContinueStatement:
-                throw new ContinueSignal();
-            case LoweredAssertStatement assertStatement:
-                await execution.ExecuteAssertAsync(assertStatement, context).ConfigureAwait(false);
-                return default;
-            case LoweredDeleteStatement deleteStatement:
-                await execution.ExecuteDeleteAsync(deleteStatement, context).ConfigureAwait(false);
-                return default;
-            case LoweredReturnStatement returnStatement:
-                if (returnStatement.Expression is null)
-                {
-                    return new LoweredBlockFlow(null, new ReturnSignal(PyNone.Instance));
-                }
-
-                var returnValue = await execution.EvaluateExpressionAsync(returnStatement.Expression, context).ConfigureAwait(false);
-                return new LoweredBlockFlow(null, new ReturnSignal(RuntimeValue(returnValue)));
-            case LoweredRaiseStatement raiseStatement:
-                await execution.ExecuteRaiseAsync(raiseStatement, context).ConfigureAwait(false);
-                return default;
-            default:
-                throw new InvalidOperationException($"Unknown lowered statement kind: {statement.GetType().Name}");
-        }
-    }
 
     private static async ValueTask<object> DispatchLoweredExpressionAsync(
         LoweredExpression expression,
@@ -209,187 +132,8 @@ internal sealed partial class LythonRuntime
         finally { builder.Release(); }
     }
 
-    private static async ValueTask<LoweredBlockFlow> ExecuteTryStatementCoreAsync(
-        LoweredTryStatement statement,
-        ExecutionContext context,
-        LoweredStatementBlockExecutor executeStatements,
-        LoweredExpressionEvaluator evaluateExpression)
-    {
-        ControlSignal? pendingControl = null;
-        ReturnSignal? pendingReturn = null;
-        LythonRuntimeException? pendingException = null;
-
-        var tryCompleted = false;
-        try
-        {
-            try
-            {
-                var tryFlow = await executeStatements(statement.TryBody, context).ConfigureAwait(false);
-                pendingControl = tryFlow.Control;
-                pendingReturn = tryFlow.Return;
-                tryCompleted = true;
-            }
-            catch (ReturnSignal signal)
-            {
-                pendingReturn = signal;
-            }
-            catch (LythonRuntimeException ex)
-            {
-                LoweredExceptClause? matchedClause = null;
-                var headerPreviousException = context.State.SetCurrentException(CreatePythonExceptionInstance(ex));
-                try
-                {
-                    foreach (var candidate in statement.ExceptClauses)
-                    {
-                        var matches = candidate.ExceptionType is { } header
-                            ? MatchesCaughtExceptionValue(await evaluateExpression(header).ConfigureAwait(false), ex.Identity, context, header.Span)
-                            : true;
-                        if (matches)
-                        {
-                            matchedClause = candidate;
-                            break;
-                        }
-                    }
-                }
-                catch (LythonRuntimeException handlerError)
-                {
-                    handlerError.PythonContext ??= CreatePythonExceptionInstance(ex);
-                    pendingException = handlerError;
-                }
-                finally
-                {
-                    context.State.SetCurrentException(headerPreviousException);
-                }
-
-                if (pendingException is null && matchedClause is not null)
-                {
-                    // Handler suites share the enclosing scope like CPython: only
-                    // the `as` variable is suite-local (deleted below). A child
-                    // context would hide every handler assignment from the code
-                    // after the statement, which the executable engine never does.
-                    var pyException = CreatePythonExceptionInstance(ex);
-                    if (matchedClause.Syntax.ExceptionVariableName is not null)
-                    {
-                        pyException.Adopt(context, statement.Span);
-                        StoreName(matchedClause.Syntax.ExceptionVariableName, pyException, context, statement.Span);
-                    }
-
-                    var previousException = context.State.SetCurrentException(pyException);
-                    var handlerVariableName = matchedClause.Syntax.ExceptionVariableName;
-                    try
-                    {
-                        var handlerFlow = await executeStatements(matchedClause.Body, context).ConfigureAwait(false);
-                        pendingControl = handlerFlow.Control;
-                        pendingReturn = handlerFlow.Return;
-                    }
-                    catch (LythonRuntimeException error)
-                    {
-                        if (!ReferenceEquals(error.OriginalPythonException, pyException))
-                            error.PythonContext ??= pyException;
-                        throw;
-                    }
-                    finally
-                    {
-                        if (handlerVariableName is not null)
-                        {
-                            _ = DeleteName(handlerVariableName, context, statement.Span);
-                        }
-
-                        context.State.SetCurrentException(previousException);
-                    }
-                }
-                else if (pendingException is null)
-                {
-                    pendingException = ex;
-                }
-            }
-
-            if (tryCompleted && pendingControl is null && pendingReturn is null && pendingException is null && statement.ElseBody is not null)
-            {
-                var elseFlow = await executeStatements(statement.ElseBody, context).ConfigureAwait(false);
-                pendingControl = elseFlow.Control;
-                pendingReturn = elseFlow.Return;
-            }
-        }
-        catch (ReturnSignal signal)
-        {
-            pendingReturn = signal;
-        }
-        catch (LythonRuntimeException error)
-        {
-            pendingException = error;
-        }
-        finally
-        {
-            if (statement.FinallyBody is not null)
-            {
-                // A finally suite runs with the pending exception active like
-                // CPython, so raises inside it chain the in-flight exception.
-                var inFlightException = pendingException is null
-                    ? null
-                    : CreatePythonExceptionInstance(pendingException);
-                var previousActiveException = inFlightException is null
-                    ? null
-                    : context.State.SetCurrentException(inFlightException);
-                try
-                {
-                    try
-                    {
-                        var finalFlow = await executeStatements(statement.FinallyBody, context).ConfigureAwait(false);
-                        if (finalFlow.Control is not null || finalFlow.Return is not null)
-                        {
-                            // Python's finally suite wins over every pending exit from try/except.
-                            pendingControl = finalFlow.Control;
-                            pendingReturn = finalFlow.Return;
-                            pendingException = null;
-                        }
-                    }
-                    catch (ReturnSignal signal)
-                    {
-                        pendingReturn = signal;
-                        pendingControl = null;
-                        pendingException = null;
-                    }
-                    catch (LythonRuntimeException ex)
-                    {
-                        pendingException = ex;
-                        pendingControl = null;
-                        pendingReturn = null;
-                    }
-                }
-                finally
-                {
-                    if (inFlightException is not null)
-                    {
-                        context.State.SetCurrentException(previousActiveException);
-                    }
-                }
-            }
-        }
-
-        if (pendingException is not null)
-        {
-            throw pendingException;
-        }
-
-        return new LoweredBlockFlow(pendingControl, pendingReturn);
-    }
-
-    private static PyFunctionBase CreateLoweredFunction(
-        LoweredFunctionDefinitionStatement functionDefinition,
-        ExecutionContext context,
-        FunctionDefaults defaults)
-    {
-        var code = functionDefinition.PreparedCode.RequireNotNull();
-        var closure = context.FunctionClosureContext;
-        var cells = code.ClosureNames.Count > 0
-            ? CaptureExecutableClosures(code, closure, functionDefinition.Span) : [];
-        return CreateFunctionValue(functionDefinition.ParameterLayout, code, closure, cells, defaults,
-            functionDefinition.Syntax.IsGenerator, context, functionDefinition.Span);
-    }
-
     private static object CreateNamedTupleClassType(
-        LoweredClassDefinitionStatement classDefinition,
+        ExecutableCreateClass classDefinition,
         ExecutionContext classContext,
         ExecutionContext definingContext)
     {
@@ -477,13 +221,13 @@ internal sealed partial class LythonRuntime
             created.Annotations = annotationMap;
         return created;
     }
-    private static async ValueTask<object> CreateLoweredClassType(
-        LoweredClassDefinitionStatement classDefinition,
+    private static async ValueTask<object> CreateClassType(
+        ExecutableCreateClass classDefinition,
         IReadOnlyList<PyType> resolvedBases,
         object[] baseTypes,
         CallArgumentValue[] classKeywords,
         ExecutionContext classContext,
-        ExecutionContext definingContext, bool asynchronous)
+        ExecutionContext definingContext, bool asynchronous, PyString? classDocstring)
     {
         // A bare typing.NamedTuple base builds the ordinary namedtuple type the
         // functional form returns instead of a plain class; anything beside the
@@ -531,14 +275,14 @@ internal sealed partial class LythonRuntime
                 annotations, total, definingContext, classDefinition.Span);
             if (members.TryGetValue("__module__", out var module)) typed.ModuleName = module;
             if (members.TryGetValue("__doc__", out var doc)) typed.Docstring = doc;
-            else if (LoweredStatement.LeadingDocstring(classDefinition.Body) is { } docstring)
-                typed.Docstring = docstring;
+            else if (classDocstring is not null)
+                typed.Docstring = classDocstring;
             return typed;
         }
 
         // Class docstrings follow the function rule; an explicit __doc__ assignment
         // in the body wins since it already ran. The entry rides the member charge.
-        if (LoweredStatement.LeadingDocstring(classDefinition.Body) is { } classDocstring &&
+        if (classDocstring is not null &&
             !classContext.Variables.ContainsKey("__doc__"))
         {
             classContext.Variables["__doc__"] = classDocstring;
@@ -776,53 +520,33 @@ internal sealed partial class LythonRuntime
         LythonCallableSignature.Create("__build_class__", []),
         static (_, _, _) => throw new InvalidOperationException("Class header expansion target cannot be invoked."));
 
-    private static async ValueTask ExecuteClassDefinitionAsync(LoweredClassDefinitionStatement definition,
-        ExecutionContext context, bool asynchronous, ReadOnlyMemory<ExecutableSlot> preparedDecorators = default,
-        CallExpansion.CallArgumentAccumulator? preparedHeader = null, ReadOnlyMemory<ExecutableSlot> directHeader = default,
-        int directBaseCount = 0)
+    private static async ValueTask ExecuteClassDefinitionAsync(ExecutableCreateClass definition,
+        ExecutionContext context, bool asynchronous, ReadOnlyMemory<ExecutableSlot> preparedDecorators,
+        CallExpansion.CallArgumentAccumulator? preparedHeader, ReadOnlyMemory<ExecutableSlot> directHeader)
     {
         var span = definition.Span;
         context.EnterInterpreterFrame(span);
         try
         {
-            var decoratorCount = definition.Decorators.Count;
-            using var storage = context.MemoryGovernor.ReserveTemporary(
-                decoratorCount == 0 ? 0 : EstimateObjectArrayBytes(decoratorCount), span);
-            object[] decorators;
-            if (decoratorCount == 0) decorators = [];
-            else if (preparedDecorators.IsEmpty)
-            {
-                decorators = asynchronous ? await EvaluateDecoratorsAsync(definition.Decorators, context).ConfigureAwait(false)
-                    : EvaluateDecorators(definition.Decorators, context);
-            }
-            else
-            {
-                context.CheckExecution(span);
-                decorators = new object[decoratorCount];
-                for (var i = 0; i < decorators.Length; i++)
-                {
-                    context.CheckExecution(span);
-                    decorators[i] = preparedDecorators.Span[i].Object.RequireNotNull();
-                }
-            }
-
+            using var storage = context.MemoryGovernor.ReserveTemporary(0, span);
             var typeScope = CreateTypeScope(definition.TypeParameters, context, span);
             var (baseTypes, keywords) = preparedHeader is not null
                 ? SplitClassHeaderArguments(preparedHeader.Arguments, context, storage, span)
                 : !directHeader.IsEmpty
-                    ? ReadDirectClassHeader(directHeader.Span, definition.HeaderArguments, directBaseCount, context, storage, span)
+                    ? ReadDirectClassHeader(directHeader.Span, definition.Syntax.HeaderArguments, definition.PreparedBaseCount, context, storage, span)
                     : await EvaluateClassHeaderArgumentsAsync(definition, typeScope.Annotations, storage, asynchronous).ConfigureAwait(false);
             var resolvedBases = AddGenericClassBase(definition, ResolveClassBases(baseTypes, span, context), context);
             ValidateClassKeywordArguments(keywords, span);
 
             var classContext = ExecutionContext.CreateClassBody(typeScope.Closure, definition.Syntax);
-            var flow = asynchronous ? await ExecuteStatementsAsync(definition.Body, classContext).ConfigureAwait(false)
-                : ExecuteStatements(definition.Body, classContext);
-            if (flow.Control is not null) throw new LythonRuntimeException("RuntimeError", "Loop control cannot escape a class body.", span);
-            if (flow.Return is not null) throw flow.Return;
+            ExecutionState.EnsureInterpreterStack(span);
+            InitializeExecutableFrame(definition.Body, classContext, default, null);
+            var returned = asynchronous ? await ExecuteInitializedFrameAsync(classContext).ConfigureAwait(false)
+                : ExecuteInitializedFrame(classContext);
+            if (returned is not null) throw new InvalidOperationException("A class suite returned a value.");
 
             await AttachGenericClassMetadataAsync(definition, typeScope, classContext, asynchronous, baseTypes).ConfigureAwait(false);
-            var type = await CreateLoweredClassType(definition, resolvedBases, baseTypes, keywords, classContext, context, asynchronous)
+            var type = await CreateClassType(definition, resolvedBases, baseTypes, keywords, classContext, context, asynchronous, definition.Body.Docstring)
                 .ConfigureAwait(false);
             if (classContext.ClassCell is { } classCell) classCell.Value = type;
             if (type is PyType defined)
@@ -830,22 +554,30 @@ internal sealed partial class LythonRuntime
                 if (asynchronous) await InvokeInitSubclassAsync(defined, keywords, span, context).ConfigureAwait(false);
                 else InvokeInitSubclass(defined, keywords, span, context);
             }
-            var decorated = asynchronous ? await ApplyDecoratorsAsync(type, decorators, span, context).ConfigureAwait(false)
-                : ApplyDecorators(type, decorators, span, context);
+            object decorated = type;
+            // The enclosing instruction retains the evaluated decorators until
+            // class construction and all decorator callbacks have finished.
+            for (var i = preparedDecorators.Length - 1; i >= 0; i--)
+            {
+                if (preparedDecorators.Span[i].Object is not ICallable decorator)
+                    throw new LythonRuntimeException("TypeError", "Decorator expression must evaluate to a callable.", span);
+                decorated = asynchronous ? await CallableInvocation.InvokeUnaryAsync(decorator, decorated, span, context).ConfigureAwait(false)
+                    : CallableInvocation.InvokeUnary(decorator, decorated, span, context);
+            }
             StoreName(definition.Syntax.Name, decorated, context, span);
         }
         finally { context.LeaveInterpreterFrame(); }
     }
 
     private static async ValueTask<(object[] Bases, CallArgumentValue[] Keywords)> EvaluateClassHeaderArgumentsAsync(
-        LoweredClassDefinitionStatement definition, ExecutionContext context,
+        ExecutableCreateClass definition, ExecutionContext context,
         MemoryGovernor.TemporaryMemoryReservation storage, bool asynchronous)
     {
-        if (definition.HeaderArguments.Count == 0) return ([], []);
+        if (definition.GenericHeaderArguments.Count == 0) return ([], []);
         var arguments = asynchronous
-            ? await CallExpansion.ExpandLoweredArgumentsAsync(definition.HeaderArguments, context,
+            ? await CallExpansion.ExpandLoweredArgumentsAsync(definition.GenericHeaderArguments, context,
                 EvaluateLoweredExpressionAsync, ClassHeaderExpansionTarget, storage, deferSingleStar: false).ConfigureAwait(false)
-            : CallExpansion.ExpandLoweredArguments(definition.HeaderArguments, context,
+            : CallExpansion.ExpandLoweredArguments(definition.GenericHeaderArguments, context,
                 EvaluateLoweredExpression, ClassHeaderExpansionTarget, storage, deferSingleStar: false);
         return SplitClassHeaderArguments(arguments, context, storage, definition.Span);
     }
@@ -881,7 +613,7 @@ internal sealed partial class LythonRuntime
     }
 
     private static (object[] Bases, CallArgumentValue[] Keywords) ReadDirectClassHeader(
-        ReadOnlySpan<ExecutableSlot> values, IReadOnlyList<LoweredCallArgument> header, int baseCount,
+        ReadOnlySpan<ExecutableSlot> values, IReadOnlyList<CallArgumentSyntax> header, int baseCount,
         ExecutionContext context, MemoryGovernor.TemporaryMemoryReservation storage, LythonSourceSpan span)
     {
         var (bases, keywords) = AllocateClassHeader(baseCount, values.Length - baseCount, context, storage, span);

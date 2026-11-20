@@ -20,7 +20,7 @@ internal sealed partial class LythonRuntime
             var value = await DispatchLoweredExpressionAsync(
                     expression,
                     context,
-                    AsynchronousLoweredStatementExecution.Instance)
+                    AsynchronousLoweredExpressionExecution.Instance)
                 .ConfigureAwait(false);
             return value;
         }
@@ -357,122 +357,6 @@ internal sealed partial class LythonRuntime
     {
         var operand = await EvaluateLoweredExpressionAsync(unary.Operand, context).ConfigureAwait(false);
         return await EvaluateUnaryOperatorAsync(unary.Unary.Operator, operand, context, unary.Span).ConfigureAwait(false);
-    }
-
-    private static async ValueTask ExecuteLoweredAssertStatementAsync(LoweredAssertStatement statement, ExecutionContext context)
-    {
-        if (await IsTruthyAsync(
-                await EvaluateLoweredExpressionAsync(statement.Condition, context).ConfigureAwait(false),
-                context,
-                statement.Condition.Span)
-            .ConfigureAwait(false))
-        {
-            return;
-        }
-
-        ThrowAssertionError(
-            statement.Message is null
-                ? null
-                : await EvaluateLoweredExpressionAsync(statement.Message, context).ConfigureAwait(false),
-            context,
-            statement.Span);
-    }
-
-    private static async ValueTask ExecuteLoweredDeleteStatementAsync(LoweredDeleteStatement statement, ExecutionContext context)
-    {
-        await ExecuteLoweredDeleteTargetAsync(statement.Target.Syntax, statement.Target, statement.Span, context).ConfigureAwait(false);
-    }
-
-    private static async ValueTask ExecuteLoweredDeleteTargetAsync(ExpressionSyntax syntax, LoweredExpression loweredTarget, LythonSourceSpan span, ExecutionContext context)
-    {
-        while (syntax is ParenthesizedExpressionSyntax parenthesized
-            && loweredTarget is LoweredParenthesizedExpression loweredParenthesized)
-        {
-            syntax = parenthesized.Inner;
-            loweredTarget = loweredParenthesized.Inner;
-        }
-
-        if (TryGetDeleteDisplayItems(loweredTarget, out var syntaxItems, out var loweredItems))
-        {
-            for (var i = 0; i < syntaxItems.Count; i++)
-            {
-                if (syntaxItems[i] is CollectionValueItemSyntax valueItem)
-                {
-                    await ExecuteLoweredDeleteTargetAsync(
-                        valueItem.Expression,
-                        loweredItems[i].Expression,
-                        valueItem.Span,
-                        context).ConfigureAwait(false);
-                }
-            }
-
-            return;
-        }
-
-        switch (syntax)
-        {
-            case IdentifierExpressionSyntax identifier:
-                if (!DeleteName(identifier.Name, context, span))
-                {
-                    throw MissingDeletedName(identifier.Name, context, span);
-                }
-
-                return;
-
-            case SubscriptExpressionSyntax:
-                if (loweredTarget is not LoweredSubscriptExpression subscript)
-                {
-                    break;
-                }
-
-                var target = await EvaluateLoweredExpressionAsync(subscript.Target, context).ConfigureAwait(false);
-                var index = await EvaluateLoweredExpressionAsync(subscript.Index, context).ConfigureAwait(false);
-                await ExecuteResolvedSubscriptDeletionAsync(target, index, span, context).ConfigureAwait(false);
-                return;
-
-            case SliceExpressionSyntax:
-                if (loweredTarget is not LoweredSliceExpression slice)
-                {
-                    break;
-                }
-
-                await ExecuteSliceDeletionAsync(
-                    await EvaluateLoweredExpressionAsync(slice.Target, context).ConfigureAwait(false),
-                    slice.Start is null ? null : await EvaluateLoweredExpressionAsync(slice.Start, context).ConfigureAwait(false),
-                    slice.End is null ? null : await EvaluateLoweredExpressionAsync(slice.End, context).ConfigureAwait(false),
-                    slice.Step is null ? null : await EvaluateLoweredExpressionAsync(slice.Step, context).ConfigureAwait(false),
-                    span, context).ConfigureAwait(false);
-                return;
-
-            case MemberExpressionSyntax memberSyntax:
-                if (loweredTarget is not LoweredMemberExpression member)
-                {
-                    break;
-                }
-
-                var memberTarget = await EvaluateLoweredExpressionAsync(member.Target, context).ConfigureAwait(false);
-                if (!await PyMemberAccess.TryDeleteAsync(memberTarget, memberSyntax.MemberName, context, span).ConfigureAwait(false))
-                {
-                    throw PyMemberAccess.CreateMissingMemberError(memberTarget, memberSyntax.MemberName, span, context, operation: MissingMemberOperation.Delete);
-                }
-
-                return;
-        }
-
-        throw new LythonRuntimeException("RuntimeError", "Unsupported delete target.", span);
-    }
-
-    private static async ValueTask ExecuteLoweredRaiseStatementAsync(LoweredRaiseStatement statement, ExecutionContext context)
-    {
-        if (statement.Expression is null)
-        {
-            ThrowReraisedException(statement.Span, context);
-            return;
-        }
-
-        var raised = await EvaluateLoweredExpressionAsync(statement.Expression, context).ConfigureAwait(false);
-        var cause = statement.CauseExpression is null ? null : await EvaluateLoweredExpressionAsync(statement.CauseExpression, context).ConfigureAwait(false);
-        ThrowRaisedValue(raised, statement.CauseExpression is not null, cause, context, statement.Span);
     }
 
     private static async ValueTask<object> EvaluateLoweredAssignmentExpressionAsync(LoweredAssignmentExpression assignment, ExecutionContext context)

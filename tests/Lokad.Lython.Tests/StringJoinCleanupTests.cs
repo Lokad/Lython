@@ -28,7 +28,7 @@ public sealed class StringJoinCleanupTests
             var first = PyString.FromString("abcd", governor, Span);
             var last = PyString.FromString("efgh", governor, Span);
             var parts = new PyList([first, last], governor, Span);
-            var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile("return '|'.join",regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
+            var code = ExecutableScript.Compile(LythonFrontend.Compile("return '|'.join",regexProvider:Utf8RegexProvider.Instance).Script!).EntryPoint;
             var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null));
             // Drain shell/slots remain live through the one complete final
             // output admission. Leave one byte too little.
@@ -76,7 +76,7 @@ public sealed class StringJoinCleanupTests
             var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
             var first = PyString.FromString("abcdefghij", context.MemoryGovernor, Span);
             var parts = new PyList([first, BigInteger.One], context.MemoryGovernor, Span);
-            var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile("return '|'.join",regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
+            var code = ExecutableScript.Compile(LythonFrontend.Compile("return '|'.join",regexProvider:Utf8RegexProvider.Instance).Script!).EntryPoint;
             var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null));
             var before = context.MemoryGovernor.CurrentCommittedBytes;
             CallArgumentValue[] arguments = [CallArgumentValue.Positional(parts)];

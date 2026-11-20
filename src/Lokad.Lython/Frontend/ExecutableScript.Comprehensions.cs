@@ -8,8 +8,8 @@ internal sealed partial class ExecutableScript
         {
             if (expression.PreparedCode is null)
             {
-                var builder = new Builder(FunctionParameterLayout.Create([]), this, GeneratorFacts(expression),
-                    completeLexicalParent: _completeLexicalParent, moduleCode: _moduleCode) { _generator = true };
+                var builder = new Builder(_compilation, FunctionParameterLayout.Create([]), this, GeneratorFacts(expression),
+                    completeLexicalParent: _completeLexicalParent, moduleCode: _moduleCode, generator: true);
                 expression.CompleteCompilation(builder.CompileCodeObject("<genexpr>", [], expression));
             }
             var code = expression.Code;
@@ -42,14 +42,14 @@ internal sealed partial class ExecutableScript
             block = CompileExpression(clauses[0].Iterable, block);
             EmitOperation(new ExecutableStartComprehension(kind, facts), span, block);
             AddInstruction(block, ExecutableInstruction.GetIter(clauses[0].Iterable.Span));
-            _comprehensionNames.Push(facts.LocalNames);
+            _buffers.ComprehensionNames.Push(facts.LocalNames);
             try
             {
                 block = CompileComprehensionBody(clauses, item, value, span, block, yielding: false);
                 EmitOperation(new ExecutableFinishComprehension(), span, block);
                 return block;
             }
-            finally { _comprehensionNames.Pop(); }
+            finally { _buffers.ComprehensionNames.Pop(); }
         }
 
         private int CompileComprehensionBody(IReadOnlyList<LoweredComprehensionClause> clauses,

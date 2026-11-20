@@ -18,8 +18,8 @@ public sealed class GeneratorExpressionAdmissionTests
         root.Variables["total"] = BigInteger.Zero;
         var frontend = LythonFrontend.Compile("(i for i in (7,) if (total:=i)<0)",regexProvider:Utf8RegexProvider.Instance);
         var expression = Assert.IsType<ExpressionStatementSyntax>(Assert.Single(frontend.Script!.Statements)).Expression;
-        var lowered = Assert.IsType<LoweredGeneratorExpression>(LoweredScript.LowerStandaloneExpression(expression));
-        _ = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script!));
+        var lowered = Assert.IsType<LoweredGeneratorExpression>(LoweredScript.LowerExpression(expression));
+        _ = ExecutableScript.Compile(frontend.Script!);
         var governor = root.MemoryGovernor;
         long held = 0;
         var acquired = new PausedOuter

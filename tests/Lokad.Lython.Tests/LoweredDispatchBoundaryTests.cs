@@ -58,13 +58,14 @@ public sealed class LoweredDispatchBoundaryTests
             """,regexProvider:Utf8RegexProvider.Instance);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
         var context = Context(new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(16384) });
+        // The test observes the namespace alias after the execution frame leaves.
+        context.MirrorLocalStores = true;
         var active = new PyException("ValueError", "outer", PyNone.Instance);
         context.State.SetCurrentException(active);
-        var statements = LoweredScript.Lower(frontend.Script.RequireNotNull()).Statements;
-        var signal = asynchronous
-            ? await Assert.ThrowsAsync<LythonRuntime.ReturnSignal>(async () => await LythonRuntime.ExecuteStatementsAsync(statements, context))
-            : Assert.Throws<LythonRuntime.ReturnSignal>(() => LythonRuntime.ExecuteStatements(statements, context));
-        var returned = Assert.IsType<PyList>(signal.Value);
+        var code = ExecutableScript.Compile(frontend.Script.RequireNotNull()).EntryPoint;
+        var result = asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context)
+            : LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
+        var returned = Assert.IsType<PyList>(result);
         Assert.Same(context.Variables["seen"], returned);
         Assert.Equal(new BigInteger[] { 0, 1, 2, 7 }, returned.ToArray().Cast<BigInteger>().ToArray());
         Assert.Same(active, context.State.CurrentException);
@@ -77,7 +78,8 @@ public sealed class LoweredDispatchBoundaryTests
     {
         var frontend = LythonFrontend.Compile(source + "\n",regexProvider:Utf8RegexProvider.Instance);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
-        return Assert.IsType<LoweredExpressionStatement>(Assert.Single(LoweredScript.Lower(frontend.Script.RequireNotNull()).Statements)).Expression;
+        var statement = Assert.IsType<ExpressionStatementSyntax>(Assert.Single(frontend.Script.RequireNotNull().Statements));
+        return LoweredScript.LowerExpression(statement.Expression);
     }
 
     private static LythonRuntime.ExecutionContext Context(LythonRunOptions options) => new(new MockLythonHost(), options,regexProvider:Utf8RegexProvider.Instance);

@@ -100,7 +100,7 @@ internal static class LoweredPatternPreparation
             switch (pattern)
             {
                 case MatchValuePatternSyntax value:
-                    return new LoweredValuePattern(value, LoweredScript.LowerStandaloneExpression(value.Expression));
+                    return new LoweredValuePattern(value, LoweredScript.LowerExpression(value.Expression));
                 case MatchSingletonPatternSyntax singleton: return new LoweredSingletonPattern(singleton);
                 case MatchCapturePatternSyntax capture: return new LoweredCapturePattern(pattern, Slot(pattern, capture.Name));
                 case MatchWildcardPatternSyntax: return new LoweredWildcardPattern(pattern);
@@ -111,7 +111,7 @@ internal static class LoweredPatternPreparation
                 case MatchSequencePatternSyntax sequence: return Sequence(sequence, sequence.Items);
                 case MatchMappingPatternSyntax mapping:
                     var items = mapping.Items.Select(item => new LoweredMappingItem(
-                        LoweredScript.LowerStandaloneExpression(item.Key), Lower(item.Pattern))).ToArray();
+                        LoweredScript.LowerExpression(item.Key), Lower(item.Pattern))).ToArray();
                     var keys = new object[items.Length];
                     var unique = new HashSet<object>(PyValueComparer.Instance);
                     for (var i = 0; i < items.Length; i++)
@@ -131,7 +131,7 @@ internal static class LoweredPatternPreparation
                     }
                     return new LoweredMappingPattern(mapping, items, Slot(pattern, mapping.RestName), keys);
                 case MatchClassPatternSyntax type:
-                    return new LoweredClassPattern(type, LoweredScript.LowerStandaloneExpression(type.ClassExpression),
+                    return new LoweredClassPattern(type, LoweredScript.LowerExpression(type.ClassExpression),
                         type.PositionalPatterns.Select(Lower).ToArray(),
                         type.KeywordPatterns.Select(item => new LoweredClassKeyword(item.Name, Lower(item.Pattern))).ToArray());
                 default: throw new InvalidOperationException($"Unknown pattern type: {pattern.GetType().Name}");

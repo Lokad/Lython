@@ -72,7 +72,7 @@ public sealed class DirectDictionaryGetTests
         LythonRuntime.ExecuteExecutableCodeObject(initial.EntryPoint, context, default, null);
         context.Variables["key"] = PyString.FromString("x", context.MemoryGovernor, null);
         var source = LythonFrontend.Compile("return d.get(key)\n",regexProvider:Utf8RegexProvider.Instance);
-        var code = ExecutableScript.Compile(LoweredScript.Lower(source.Script.RequireNotNull()));
+        var code = ExecutableScript.Compile(source.Script.RequireNotNull());
         var dictionary = Assert.IsType<PyDict>(context.Variables["d"]);
         var baseline = context.MemoryGovernor.CurrentAccountedBytes;
         using (context.MemoryGovernor.ReserveTemporary(limit - baseline, null))
@@ -93,7 +93,7 @@ public sealed class DirectDictionaryGetTests
     private static (ExecutableScript, LythonRuntime.ExecutionContext) Prepare(string source, LythonRunOptions? options = null)
     {
         var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
-        return (ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull())), new(new MockLythonHost(), options ?? new()));
+        return (ExecutableScript.Compile(frontend.Script.RequireNotNull()), new(new MockLythonHost(), options ?? new()));
     }
 
     private sealed class KeyProbe(object value) : LythonRuntime.ICallable

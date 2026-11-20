@@ -17,7 +17,7 @@ public sealed class JsonStringDispatchBoundaryTests
     public async Task StringScalarsAndPairsHooksPreserveEffectsAndUnwind(bool asynchronous, bool pairs)
     {
         var source = "import json\nreturn json.loads(source" + (pairs ? ",object_pairs_hook=hook)" : ")");
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!).EntryPoint;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         string[] fullEffects;
         using (var owner = budget.CreateScope())

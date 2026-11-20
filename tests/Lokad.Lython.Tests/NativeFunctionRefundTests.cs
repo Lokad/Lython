@@ -21,9 +21,8 @@ public sealed class NativeFunctionRefundTests
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = hook });
             var governor = context.MemoryGovernor;
             var span = new LythonSourceSpan(17, 4, 2, 5);
-            var definition = Assert.IsType<LoweredFunctionDefinitionStatement>(Assert.Single(
-                LoweredScript.Lower(LythonFrontend.Compile("def f(value,unused): return value.lower()").Script!).Statements));
-            var code = ExecutableScript.CompileClassFunction(definition);
+            var definition = ClassMethodCompiler.Compile("def f(value,unused): return value.lower()");
+            var code = definition.CodeObject;
             Assert.True(code.CanRunNativeInstructions);
             var function = new PyExecutableFunction(definition.ParameterLayout, code, context, [],
                 default);

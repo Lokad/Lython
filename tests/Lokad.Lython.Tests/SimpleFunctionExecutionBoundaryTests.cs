@@ -791,12 +791,12 @@ public sealed class SimpleFunctionExecutionBoundaryTests
                 var definition = LythonFrontend.Compile(
                     "def f(value,*,prefix=storedPrefix):return value.startswith(prefix)",regexProvider:Utf8RegexProvider.Instance);
                 LythonRuntime.ExecuteExecutableCodeObject(ExecutableScript.Compile(
-                    LoweredScript.Lower(definition.Script.RequireNotNull())).EntryPoint, context);
+                    definition.Script.RequireNotNull()).EntryPoint, context);
                 var function = Assert.IsType<PyExecutableFunction>(context.Variables["f"]);
                 var code = function.CodeObject;
                 var callFrontend = LythonFrontend.Compile("f(value)",regexProvider:Utf8RegexProvider.Instance);
                 var call = Assert.Single(ExecutableScript.Compile(
-                    LoweredScript.Lower(callFrontend.Script.RequireNotNull())).EntryPoint.CallSites);
+                    callFrontend.Script.RequireNotNull()).EntryPoint.CallSites);
                 Assert.True(code.CanRunNativeInstructions);
                 Assert.True(function.CanBindNativeArguments);
                 var baseline = budget.ReservedBytes;
@@ -824,7 +824,7 @@ public sealed class SimpleFunctionExecutionBoundaryTests
     {
         var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
-        var executable = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull()));
+        var executable = ExecutableScript.Compile(frontend.Script.RequireNotNull());
         var binding = Assert.Single(executable.EntryPoint.FunctionBindings());
         var code = binding.CodeObject.RequireNotNull();
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options,regexProvider:Utf8RegexProvider.Instance);

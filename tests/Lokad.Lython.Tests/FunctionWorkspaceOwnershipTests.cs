@@ -24,7 +24,7 @@ public sealed class FunctionWorkspaceOwnershipTests
             retire('retained')
             inspect_workspace()
             """);
-        var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script!));
+        var code = ExecutableScript.Compile(frontend.Script!);
         using var owner = new LythonMemoryBudget(1024 * 1024).CreateScope();
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
         var probe = new ClearedWorkspaceProbe();
@@ -144,7 +144,7 @@ public sealed class FunctionWorkspaceOwnershipTests
         var frontend = LythonFrontend.Compile(mirrored
             ? "namespace=globals()\ndef identity(value):\n class Snapshot:\n  saved=value\n return Snapshot.saved\n"
             : "namespace=globals()\ndef identity(value):return value\n");
-        var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script!));
+        var code = ExecutableScript.Compile(frontend.Script!);
         LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null);
         var function = Assert.IsType<PyExecutableFunction>(context.Variables["identity"]);
         var retained = PyString.FromString(new string('x', 16000), context.MemoryGovernor, Span);

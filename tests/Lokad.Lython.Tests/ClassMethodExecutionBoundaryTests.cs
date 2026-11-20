@@ -23,7 +23,7 @@ public sealed class ClassMethodExecutionBoundaryTests
     public async Task ClassFactoryMethodsKeepResultsAndCleanup(int width, bool asynchronous)
     {
         {
-            var (context, _, receiver, method, _) = await Define(width, "        return self\n", asynchronous);
+            var (context, _, receiver, method) = await Define(width, "        return self\n", asynchronous);
                 Assert.Same(receiver, await Invoke(method, Arguments(width), context, asynchronous));
             AssertUnwound(context);
         }
@@ -39,7 +39,7 @@ public sealed class ClassMethodExecutionBoundaryTests
     public async Task ClassFactoryMethodsCheckCancellation(int width, bool asynchronous)
     {
         using var cancellation = new CancellationTokenSource();
-        var (context, _, receiver, method, _) = await Define(width, "        return self\n", asynchronous, cancellation.Token);
+        var (context, _, receiver, method) = await Define(width, "        return self\n", asynchronous, cancellation.Token);
         cancellation.Cancel();
         var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Invoke(method, Arguments(width), context, asynchronous));
         Assert.Equal(LythonFailureReason.Cancelled, failure.Attribution?.Reason);
@@ -57,7 +57,7 @@ public sealed class ClassMethodExecutionBoundaryTests
     [InlineData(2, true)]
     public async Task ClassFactoryMethodsRollBackRejectedAdmission(int width, bool asynchronous)
     {
-        var (context, _, _, method, _) = await Define(width, "        return self\n", asynchronous);
+        var (context, _, _, method) = await Define(width, "        return self\n", asynchronous);
         var active = new PyException("ValueError", "outer", PyNone.Instance);
         context.State.SetCurrentException(active);
         var before = context.MemoryGovernor.CurrentAccountedBytes;
@@ -92,7 +92,7 @@ public sealed class ClassMethodExecutionBoundaryTests
         {
             var suffix = string.Concat(Enumerable.Range(0, width).Select(i => $", arg{i}"));
             var body = $"        local = [17]\n        return tap(self, __class__, local{suffix})\n";
-            var (context, type, receiver, method, _) = await Define(width, body, asynchronous);
+            var (context, type, receiver, method) = await Define(width, body, asynchronous);
             var active = new PyException("ValueError", "outer", PyNone.Instance);
             context.State.SetCurrentException(active);
             var arguments = Arguments(width);
@@ -140,7 +140,7 @@ public sealed class ClassMethodExecutionBoundaryTests
     public async Task RealAsyncBodyKeepsItsFrameAndArgumentsAcrossReentry(bool cancel)
     {
         using var cancellation = new CancellationTokenSource();
-        var (context, type, receiver, method, _) = await Define(1,
+        var (context, type, receiver, method) = await Define(1,
             "        return tap(self, __class__, arg0)\n    def identity(self, arg0):\n        return self\n", true, cancellation.Token);
         var active = new PyException("ValueError", "outer", PyNone.Instance);
         context.State.SetCurrentException(active);
@@ -186,7 +186,7 @@ public sealed class ClassMethodExecutionBoundaryTests
     public async Task SuperReadsTheFirstLocalAfterARealAsyncSuspension(bool cancel)
     {
         using var cancellation = new CancellationTokenSource();
-        var (context, type, original, method, _) = await Define(1,
+        var (context, type, original, method) = await Define(1,
             "        self = tap(arg0)\n        return super().__self__\n", true, cancellation.Token);
         var replacement = new PyInstance(type);
         var tap = new SuspendedTap(cancellation.Token);
@@ -233,7 +233,7 @@ public sealed class ClassMethodExecutionBoundaryTests
             // preload. Both calls still resolve the same replacement callable.
             var body = (suppressPreload ? "        global super\n" : "") +
                 "        nonlocal __class__\n        __class__=None\n        self=None\n        return super().answer\n";
-            var (context, type, receiver, method, _) = await Define(0, body, asynchronous);
+            var (context, type, receiver, method) = await Define(0, body, asynchronous);
             var result = new object();
             receiver.SetAttribute("answer", result);
             var tap = new ReplacementSuper(receiver, frame =>
@@ -267,7 +267,7 @@ public sealed class ClassMethodExecutionBoundaryTests
         {
             var body = (removeClass ? "        nonlocal __class__\n        del __class__\n" : "") +
                 "        del self\n        return super().answer\n";
-            var (context, _, receiver, method, _) = await Define(0, body, asynchronous);
+            var (context, _, receiver, method) = await Define(0, body, asynchronous);
             var tap = new ReplacementSuper(receiver, _ => throw new InvalidOperationException("Deleted preload reached the callable."));
             context.Variables["super"] = tap;
             var active = new PyException("ValueError", "outer", PyNone.Instance);
@@ -289,7 +289,7 @@ public sealed class ClassMethodExecutionBoundaryTests
     public async Task ReplacementSuperKeepsItsAsyncFrameAcrossReentry(bool cancel)
     {
         using var cancellation = new CancellationTokenSource();
-        var (context, type, receiver, method, _) = await Define(1,
+        var (context, type, receiver, method) = await Define(1,
             "        return super().answer\n    def identity(self,arg0):\n        return self\n", true, cancellation.Token);
         receiver.SetAttribute("answer", receiver);
         var tap = new ReplacementSuper(receiver, _ => { }, cancellation.Token, suspend: true);
@@ -343,7 +343,7 @@ public sealed class ClassMethodExecutionBoundaryTests
     [InlineData(true)]
     public async Task EagerComprehensionKeepsTheInvocationAndSeparateCapturedCells(bool asynchronous)
     {
-        var (context, type, original, method, _) = await Define(1,
+        var (context, type, original, method) = await Define(1,
             "        old=lambda:self\n        before(self)\n        values=[tap(self,old(),__class__,arg0) for self in [arg0]]\n        return values,self\n", asynchronous);
         var replacement = new PyInstance(type);
         Context? invocation = null;
@@ -377,7 +377,7 @@ public sealed class ClassMethodExecutionBoundaryTests
     public async Task EagerComprehensionRestoresItsBindingsAfterAsyncReentry(bool cancel)
     {
         using var cancellation = new CancellationTokenSource();
-        var (context, type, original, method, _) = await Define(1,
+        var (context, type, original, method) = await Define(1,
             "        before(self)\n        return [tap(self,__class__,arg0) for self in [arg0]]\n    def identity(self,arg0):\n        return self\n", true, cancellation.Token);
         var replacement = new PyInstance(type);
         Context? invocation = null;
@@ -427,7 +427,7 @@ public sealed class ClassMethodExecutionBoundaryTests
     public async Task GeneratorOuterAcquisitionUsesRealAsyncCallsAndIteratorIdentity(bool cancel)
     {
         using var cancellation = new CancellationTokenSource();
-        var (context, type, original, method, _) = await Define(1,
+        var (context, type, original, method) = await Define(1,
             "        before(self,arg0)\n        return (super().__self__ for _ in arg0)\n    def __iter__(self):\n        return tap(self)\n    def __next__(self):\n        return 1\n    def identity(self,arg0):\n        return self\n", true, cancellation.Token);
         var iterator = new PyInstance(type);
         Context? invocation = null;
@@ -470,7 +470,7 @@ public sealed class ClassMethodExecutionBoundaryTests
     [InlineData(true)]
     public async Task InvalidGeneratorOuterDoesNotRetainAnIteratorCharge(bool asynchronous)
     {
-        var (context, _, _, method, _) = await Define(1,
+        var (context, _, _, method) = await Define(1,
             "        return (item for item in arg0)\n", asynchronous);
         var before = context.MemoryGovernor.CurrentAccountedBytes;
         for (var i = 0; i < 3; i++)
@@ -554,30 +554,28 @@ public sealed class ClassMethodExecutionBoundaryTests
         }
     }
 
-    private async Task<(Context Context, PyType Type, PyInstance Receiver, PyBoundMethod Method, LoweredFunctionDefinitionStatement Definition)>
+    private async Task<(Context Context, PyType Type, PyInstance Receiver, PyBoundMethod Method)>
         Define(int width, string body, bool asynchronous, CancellationToken cancellation = default)
     {
         var suffix = string.Concat(Enumerable.Range(0, width).Select(i => $", arg{i}"));
         var frontend = LythonFrontend.Compile($"class C:\n    def f(self{suffix}):\n{body}\nreceiver = C()\n",regexProvider:Utf8RegexProvider.Instance);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
-        var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
+        var code = ExecutableScript.Compile(frontend.Script.RequireNotNull()).EntryPoint;
         var context = new Context(new MockLythonHost(), new LythonRunOptions
         {
             MemoryBudget = new LythonMemoryBudget(1024 * 1024),
             SourcePath = "/class-method.py", CancellationToken = cancellation
         },regexProvider:Utf8RegexProvider.Instance);
-        if (asynchronous) await LythonRuntime.ExecuteStatementsAsync(lowered.Statements, context);
-        else LythonRuntime.ExecuteExecutableCodeObject(ExecutableScript.Compile(lowered).EntryPoint, context, default, null);
+        if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
+        else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
         var type = Assert.IsType<PyType>(context.Variables["C"]);
         Assert.True(type.TryGetOwnMember("f", out var value));
         var function = Assert.IsType<PyExecutableFunction>(value);
         Assert.Same(type, function.OwnerType);
         var receiver = Assert.IsType<PyInstance>(context.Variables["receiver"]);
         var method = Assert.IsType<PyBoundMethod>(function.Bind(receiver));
-        var definition = Assert.Single(Assert.IsType<LoweredClassDefinitionStatement>(lowered.Statements[0]).Body
-            .OfType<LoweredFunctionDefinitionStatement>(), definition => definition.Syntax.DeclaredName == "f");
         AssertUnwound(context);
-        return (context, type, receiver, method, definition);
+        return (context, type, receiver, method);
     }
 
     private static object Local(Context frame, string name)

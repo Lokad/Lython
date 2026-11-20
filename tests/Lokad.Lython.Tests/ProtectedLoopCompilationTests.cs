@@ -14,7 +14,7 @@ public sealed class ProtectedLoopCompilationTests
     {
         var frontend = LythonFrontend.Compile(source, regexProvider: Utf8RegexProvider.Instance);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
-        var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(frontend.Script!).EntryPoint;
         Assert.Equal(crossesBoundary, code.Instructions.Any(i => i.OpCode == ExecutableOpCode.AbruptJump));
     }
 
@@ -27,7 +27,7 @@ public sealed class ProtectedLoopCompilationTests
                     if line.startswith('NEEDLE:'):
                         break
             """,regexProvider:Utf8RegexProvider.Instance);
-        var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(frontend.Script!).EntryPoint;
         Assert.False(code.RequiresLocalVariableMirroring);
     }
 

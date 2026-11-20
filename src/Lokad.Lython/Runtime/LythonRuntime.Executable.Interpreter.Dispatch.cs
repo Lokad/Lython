@@ -394,11 +394,6 @@ internal sealed partial class LythonRuntime
                     if (!invocation.TryRouteReturn(signal, instruction.Span)) return InstructionPause.Boundary;
                     jumped = true;
                 }
-                catch (ControlSignal signal)
-                {
-                    if (invocation is null || !invocation.TryRouteControl(signal, instruction.Span)) throw;
-                    jumped = true;
-                }
                 catch (LythonRuntimeException error)
                 {
                     if (!RouteInstructionFailure(error, scope, invocation, instruction.Span)) throw;

@@ -35,7 +35,7 @@ public sealed class CapturedScalarObservationTests
             context.Variables["payload"] = PyString.FromString("ALPHA BETA", context.MemoryGovernor, null);
             var observer = new ObserveCounter(hook);
             context.Variables["observe"] = observer;
-            var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!));
+            var code = ExecutableScript.Compile(LythonFrontend.Compile(source).Script!);
             try
             {
                 var result = asynchronous

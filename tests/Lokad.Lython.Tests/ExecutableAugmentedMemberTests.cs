@@ -11,7 +11,7 @@ public sealed class ExecutableAugmentedMemberTests
     public void MemberUpdatesUseExistingInstructionsWithoutMirroring()
     {
         var syntax = LythonFrontend.Compile("def run(receiver,value):\n receiver().total+=value",regexProvider:Utf8RegexProvider.Instance).Script!;
-        var code = Assert.Single(ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint.FunctionBindings()).CodeObject!;
+        var code = Assert.Single(ExecutableScript.Compile(syntax).EntryPoint.FunctionBindings()).CodeObject!;
         Assert.False(code.RequiresLocalVariableMirroring);
         Assert.Single(code.Instructions, i => i.OpCode is ExecutableOpCode.StoreMember or ExecutableOpCode.StoreMemberLast);
         Assert.Single(code.Instructions, i => i.OpCode == ExecutableOpCode.LoadMember);
@@ -27,7 +27,7 @@ public sealed class ExecutableAugmentedMemberTests
         using var rhs = new DenyCapacity(context.MemoryGovernor, limit);
         context.Variables["rhs"] = rhs;
         var syntax = LythonFrontend.Compile("class Box:\n def __getattr__(self,name): return 1\nbox=Box()\nbox.value+=rhs()",regexProvider:Utf8RegexProvider.Instance).Script!;
-        var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
+        var code = ExecutableScript.Compile(syntax).EntryPoint;
         try
         {
             LythonRuntimeException error;
@@ -53,7 +53,7 @@ public sealed class ExecutableAugmentedMemberTests
         var checkpoint = new Checkpoint();
         context.Variables["checkpoint"] = checkpoint;
         var syntax = LythonFrontend.Compile("class Box:\n @property\n def value(self): return checkpoint()\n @value.setter\n def value(self,value): checkpoint()\nbox=Box()\nbox.value+=checkpoint()",regexProvider:Utf8RegexProvider.Instance).Script!;
-        var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
+        var code = ExecutableScript.Compile(syntax).EntryPoint;
         if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
         else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
         Assert.Equal(asynchronous ? 0 : 3, checkpoint.SyncCalls);

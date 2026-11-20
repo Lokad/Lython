@@ -15,7 +15,7 @@ public sealed class LambdaExecutableTests
     public void ClosureCaptureTransfersAdmittedCellsOnlyAfterArrayAdmission(bool refuse)
     {
         var syntax = LythonFrontend.Compile("def outer(left, right):\n    return lambda:left+right",regexProvider:Utf8RegexProvider.Instance).Script!;
-        var module = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
+        var module = ExecutableScript.Compile(syntax).EntryPoint;
         var outer = Assert.Single(module.FunctionBindings()).CodeObject!;
         var lambda = Assert.Single(outer.Constants.OfType<ExecutableCreateLambda>()).CodeObject!;
         var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024 * 1024) },regexProvider:Utf8RegexProvider.Instance);
@@ -80,7 +80,7 @@ public sealed class LambdaExecutableTests
     public void LambdaBodiesAreExecutableWithoutForcedMirroring(string expression)
     {
         var syntax = LythonFrontend.Compile("result=" + expression,regexProvider:Utf8RegexProvider.Instance).Script!;
-        var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
+        var code = ExecutableScript.Compile(syntax).EntryPoint;
         Check(code);
         Assert.NotEmpty(code.Constants.OfType<ExecutableCreateLambda>());
 

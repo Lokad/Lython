@@ -168,7 +168,7 @@ public sealed class ConstructorOwnershipTests
     }
 
     private static ExecutableCodeObject Compile(string source)
-        => ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        => ExecutableScript.Compile(LythonFrontend.Compile(source).Script!).EntryPoint;
     private static void Execute(string source, Context context)
         => LythonRuntime.ExecuteExecutableCodeObject(Compile(source), context, default, null);
     private sealed class Arm(AdmissionHookMemoryBudget hook) : LythonRuntime.ICallable

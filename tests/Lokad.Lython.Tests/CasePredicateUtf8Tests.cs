@@ -70,8 +70,7 @@ public sealed class CasePredicateUtf8Tests
     [InlineData("isspace", false, true)]
     public async Task NativePredicateCallPreservesResultsAndCleanup(string method, bool expected, bool asynchronous)
     {
-        var code = ExecutableScript.Compile(LoweredScript.Lower(
-            LythonFrontend.Compile("return value." + method + "()",regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LythonFrontend.Compile("return value." + method + "()",regexProvider:Utf8RegexProvider.Instance).Script!).EntryPoint;
         var budget = new LythonMemoryBudget(1024 * 1024);
         using (var owner = budget.CreateScope())
         {

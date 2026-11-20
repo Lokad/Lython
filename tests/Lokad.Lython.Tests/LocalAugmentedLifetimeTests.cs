@@ -32,7 +32,7 @@ public sealed class LocalAugmentedLifetimeTests
             """;
         var frontend = LythonFrontend.Compile(source);
         Assert.NotNull(frontend.Script);
-        var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script)).EntryPoint;
+        var code = ExecutableScript.Compile(frontend.Script).EntryPoint;
         var budget = new LythonMemoryBudget(1024 * 1024);
         using var owner = budget.CreateScope();
         using var cancellation = new CancellationTokenSource();
@@ -101,7 +101,7 @@ public sealed class LocalAugmentedLifetimeTests
             observe()
             left=
             """.TrimEnd() + expression + "\nreturn left is previous\n";
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LythonFrontend.Compile(source).Script!).EntryPoint;
         var budget = new LythonMemoryBudget(1024 * 1024);
         using var owner = budget.CreateScope();
         using var cancellation = new CancellationTokenSource();

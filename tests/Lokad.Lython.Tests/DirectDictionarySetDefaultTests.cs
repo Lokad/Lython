@@ -16,7 +16,7 @@ public sealed class DirectDictionarySetDefaultTests
     {
         var syntax = LythonFrontend.Compile($"for items in [left,right]: result=items.setdefault(key(){(width == 2 ? ",fallback" : "")})\nreturn result");
         Assert.NotNull(syntax.Script);
-        var code = ExecutableScript.Compile(LoweredScript.Lower(syntax.Script!));
+        var code = ExecutableScript.Compile(syntax.Script!);
         var root = new LythonMemoryBudget(1024 * 1024);
         using var owner = root.CreateScope();
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });

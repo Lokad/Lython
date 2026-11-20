@@ -14,7 +14,7 @@ public sealed class ExecutableSliceStoreTests
     public void SliceHeadersUseExecutableStores(string source)
     {
         var syntax = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!;
-        var code = Assert.Single(ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint.FunctionBindings()).CodeObject!;
+        var code = Assert.Single(ExecutableScript.Compile(syntax).EntryPoint.FunctionBindings()).CodeObject!;
         Assert.Single(code.Instructions, i => i.OpCode is ExecutableOpCode.StoreSlice or ExecutableOpCode.StoreSliceLast);
     }
 
@@ -33,7 +33,7 @@ public sealed class ExecutableSliceStoreTests
         context.Variables["values"] = new PyList([BigInteger.One], context.MemoryGovernor, span);
         context.Variables["step"] = deny;
         var syntax = LythonFrontend.Compile("target[::step()]=values",regexProvider:Utf8RegexProvider.Instance).Script!;
-        var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
+        var code = ExecutableScript.Compile(syntax).EntryPoint;
         try
         {
             LythonRuntimeException error;

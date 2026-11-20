@@ -57,7 +57,7 @@ public sealed class CopyCallerContextTests
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
         var frontend = LythonFrontend.Compile(source);
         Assert.NotNull(frontend.Script);
-        var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script)).EntryPoint;
+        var code = ExecutableScript.Compile(frontend.Script).EntryPoint;
         LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
 
         var expiredBudget = new LythonMemoryBudget(1024 * 1024);

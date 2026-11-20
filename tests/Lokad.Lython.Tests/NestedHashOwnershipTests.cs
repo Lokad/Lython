@@ -23,7 +23,7 @@ public sealed class NestedHashOwnershipTests
             else source += "target=Row(Key(),Key())\n";
         }
         source += "try:hash(target)\nexcept BaseException:effects.append('caught')\nfinally:return 'hidden'\n";
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LythonFrontend.Compile(source).Script!).EntryPoint;
         foreach (var asynchronous in new[] { false, true })
         {
             var budget = new LythonMemoryBudget(1024 * 1024);
@@ -62,7 +62,7 @@ public sealed class NestedHashOwnershipTests
     public void GeneratedFieldSnapshotIsAdmittedBeforeAttributeCallbacks()
     {
         var source = "from dataclasses import dataclass\neffects=[]\n@dataclass(unsafe_hash=True)\nclass Row:\n a:int\n b:int\n def __getattribute__(self,name):\n  if name in ('a','b'):effects.append(name)\n  return object.__getattribute__(self,name)\ntarget=Row(1,2)\n";
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LythonFrontend.Compile(source).Script!).EntryPoint;
         var budget = new LythonMemoryBudget(1024 * 1024);
         using var owner = budget.CreateScope();
         var hook = new AdmissionHookMemoryBudget(owner);

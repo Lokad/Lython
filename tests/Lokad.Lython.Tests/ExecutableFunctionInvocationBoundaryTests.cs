@@ -101,7 +101,7 @@ public sealed class ExecutableFunctionInvocationBoundaryTests
             var tap = new RecordingTap(context, active, receiver, width);
             context.Variables["tap"] = tap;
             var function = new PyExecutableFunction(definition.ParameterLayout,
-                ExecutableScript.CompileClassFunction(definition), context, [], default);
+                definition.CodeObject, context, [], default);
             var result = asynchronous
                 ? await function.InvokeAsync(Arguments(width, receiver), CallSpan, context)
                 : function.Invoke(Arguments(width, receiver), CallSpan, context);
@@ -144,16 +144,11 @@ public sealed class ExecutableFunctionInvocationBoundaryTests
         var definition = Definition($"def f({parameters}):\n return self\n");
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options,regexProvider:Utf8RegexProvider.Instance);
         var function = new PyExecutableFunction(definition.ParameterLayout,
-            ExecutableScript.CompileClassFunction(definition), context, [], default);
+            definition.CodeObject, context, [], default);
         return (function, context);
     }
 
-    private static LoweredFunctionDefinitionStatement Definition(string source)
-    {
-        var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
-        Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
-        return Assert.IsType<LoweredFunctionDefinitionStatement>(Assert.Single(LoweredScript.Lower(frontend.Script.RequireNotNull()).Statements));
-    }
+    private static ExecutableCreateFunction Definition(string source) => ClassMethodCompiler.Compile(source);
 
     private static CallArgumentValue[] Arguments(int width, object receiver) =>
         new[] { CallArgumentValue.Positional(receiver) }.Concat(Enumerable.Range(0, width).Select(i => CallArgumentValue.Positional(i + 7))).ToArray();

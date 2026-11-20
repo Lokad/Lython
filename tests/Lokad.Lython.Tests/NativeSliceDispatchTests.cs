@@ -44,7 +44,7 @@ public sealed class NativeSliceDispatchTests
         var checkpoint = new Checkpoint();
         context.Variables["checkpoint"] = checkpoint;
         var syntax = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!;
-        var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
+        var code = ExecutableScript.Compile(syntax).EntryPoint;
         if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
         else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
         var calls = operation is "augmented" or "augmented-key" ? 2 : 1;
@@ -64,7 +64,7 @@ public sealed class NativeSliceDispatchTests
         var target = new PyList([BigInteger.Zero], context.MemoryGovernor, new(0, 0, 0, 0));
         context.Variables["target"] = target;
         var syntax = LythonFrontend.Compile("def source():\n yield from range(100000)\ntarget[:]=source()",regexProvider:Utf8RegexProvider.Instance).Script!;
-        var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
+        var code = ExecutableScript.Compile(syntax).EntryPoint;
         LythonRuntimeException error;
         if (asynchronous)
             error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context));

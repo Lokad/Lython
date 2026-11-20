@@ -316,7 +316,7 @@ public sealed class MethodBodyCompilationBoundaryTests
     {
         var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
-        var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
+        var code = ExecutableScript.Compile(frontend.Script.RequireNotNull()).EntryPoint;
         var context = new Context(new MockLythonHost(), new LythonRunOptions
         {
             MemoryBudget = new LythonMemoryBudget(1024 * 1024),
@@ -327,8 +327,8 @@ public sealed class MethodBodyCompilationBoundaryTests
         var tape = new Tape(context, active, cancellation);
         context.Variables["stamp"] = new Tape.Callback(tape, false);
         context.Variables["decorate"] = new Tape.Callback(tape, true);
-        if (asynchronous) await LythonRuntime.ExecuteStatementsAsync(lowered.Statements, context);
-        else LythonRuntime.ExecuteExecutableCodeObject(ExecutableScript.Compile(lowered).EntryPoint, context, default, null);
+        if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
+        else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
         var type = Assert.IsType<PyType>(context.Variables["Runner"]);
         var receiver = Assert.IsType<PyInstance>(context.Variables["runner"]);
         AssertUnwound(context);

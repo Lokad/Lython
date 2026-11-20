@@ -40,18 +40,6 @@ internal sealed partial class LythonRuntime
 
     private static long EstimateObjectArrayBytes(int count) => 32L + (16L * count);
 
-    internal abstract class ControlSignal : Exception
-    {
-    }
-
-    internal sealed class BreakSignal : ControlSignal
-    {
-    }
-
-    internal sealed class ContinueSignal : ControlSignal
-    {
-    }
-
     internal sealed class ReturnSignal : Exception
     {
         public ReturnSignal(object value)
@@ -61,9 +49,4 @@ internal sealed partial class LythonRuntime
 
         public object Value { get; }
     }
-
-    // Abrupt outcome of a lowered statement block, traveling as a value so
-    // ordinary returns never throw through block machinery. Both null means
-    // the block fell through; control and return never coexist.
-    internal readonly record struct LoweredBlockFlow(ControlSignal? Control, ReturnSignal? Return);
 }

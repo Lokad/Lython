@@ -116,7 +116,7 @@ internal sealed partial class ExecutableScript
                     }
 
                     var tupleBlock = currentBlock;
-                    var tupleStart = _blocks[currentBlock].Count;
+                    var tupleStart = _buffers.Blocks[currentBlock].Count;
                     foreach (var item in tuple.Items)
                     {
                         currentBlock = CompileExpression(item.Expression, currentBlock);
@@ -149,7 +149,7 @@ internal sealed partial class ExecutableScript
                         for (var i = 0; i < keys.Length; i++)
                         {
                             var item = dict.Items[i];
-                            keys[i] = _constants[InternConstant(((LoweredStringLiteralExpression)item.Key).Value)]!;
+                            keys[i] = _buffers.Constants[InternConstant(((LoweredStringLiteralExpression)item.Key).Value)]!;
                             currentBlock = CompileExpression(item.Value, currentBlock);
                         }
                         AddInstruction(currentBlock, ExecutableInstruction.MakeRecord(
@@ -169,7 +169,7 @@ internal sealed partial class ExecutableScript
                     // A repeated display can reuse its table if its evaluated
                     // names still supply the very same string keys.
                     var recordCache = dict.Items.Count > 1 &&
-                        (_parameterLayout is not null || _loops.Count != 0 || _comprehensionNames.Count != 0) &&
+                        (_parameterLayout is not null || _buffers.Loops.Count != 0 || _buffers.ComprehensionNames.Count != 0) &&
                         dict.Items.All(item => item.Key is LoweredIdentifierExpression or LoweredStringLiteralExpression)
                         ? AllocateLookupCache() : -1;
                     AddInstruction(currentBlock, ExecutableInstruction.MakeDict(dict.Items.Count, recordCache, dict.Span));
@@ -182,7 +182,7 @@ internal sealed partial class ExecutableScript
                     // storage. Generator expressions repeat within that frame;
                     // modules need facts only where their body can repeat.
                     AddInstruction(currentBlock, ExecutableInstruction.Subscript(subscript.Span,
-                        _parameterLayout is not null || _loops.Count != 0 || _comprehensionNames.Count != 0
+                        _parameterLayout is not null || _buffers.Loops.Count != 0 || _buffers.ComprehensionNames.Count != 0
                             ? AllocateLookupCache() : -1));
                     return currentBlock;
 
@@ -407,13 +407,13 @@ internal sealed partial class ExecutableScript
 
         private bool TryCompleteLiteralTuple(int block, int start, int count, LythonSourceSpan span)
         {
-            var instructions = _blocks[block];
+            var instructions = _buffers.Blocks[block];
             if (instructions.Count - start != count) return false;
             for (var index = start; index < instructions.Count; index++)
             {
                 var instruction = instructions[index];
                 if (instruction.OpCode != ExecutableOpCode.LoadConst
-                    || _constants[instruction.ConstantIndex] is not (PyNone or PyEllipsis or bool or BigInteger
+                    || _buffers.Constants[instruction.ConstantIndex] is not (PyNone or PyEllipsis or bool or BigInteger
                         or double or PyComplex or PyString or PyBytes or PyTuple)) return false;
             }
 
@@ -422,7 +422,7 @@ internal sealed partial class ExecutableScript
             // walk or executing an operator. Dynamic displays keep MakeTuple.
             var items = new object[count];
             for (var index = 0; index < items.Length; index++)
-                items[index] = _constants[instructions[start + index].ConstantIndex]!;
+                items[index] = _buffers.Constants[instructions[start + index].ConstantIndex]!;
             var value = count == 0 ? PyTuple.Empty : PyTuple.FromOwnedArray(items);
             instructions.RemoveRange(start, count);
             AddInstruction(block, ExecutableInstruction.LoadConst(InternConstant(value), span));

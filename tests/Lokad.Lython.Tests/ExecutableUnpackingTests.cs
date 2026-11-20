@@ -12,7 +12,7 @@ public sealed class ExecutableUnpackingTests
     public void OrdinaryNestedGroupsAndLeavesUseExecutableOperations()
     {
         var syntax = LythonFrontend.Compile("def run(values,box):\n first,(second,*rest),box.value=values\n return first,second,rest,box.value",regexProvider:Utf8RegexProvider.Instance).Script!;
-        var code = Assert.Single(ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint.FunctionBindings()).CodeObject!;
+        var code = Assert.Single(ExecutableScript.Compile(syntax).EntryPoint.FunctionBindings()).CodeObject!;
         Assert.Equal(2, code.Instructions.Where(i => i.OpCode == ExecutableOpCode.UnpackValues).Count());
         Assert.Single(code.Instructions, i => i.OpCode is ExecutableOpCode.StoreMember or ExecutableOpCode.StoreMemberLast);
     }
@@ -46,7 +46,7 @@ public sealed class ExecutableUnpackingTests
             _ => "def generate():\n outerSink.value,((yield 'sink').value,*rest)=outer\nnext(generate())",
         };
         var syntax = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!;
-        var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
+        var code = ExecutableScript.Compile(syntax).EntryPoint;
         try
         {
             LythonRuntimeException error;

@@ -142,7 +142,7 @@ public sealed class TextFileWriteCallBoundaryTests
     }
 
     private static ExecutableCodeObject Compile(string source)
-        => ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
+        => ExecutableScript.Compile(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!).EntryPoint;
 
     private static ValueTask<object?> Run(Context context, bool asynchronous)
         => asynchronous ? LythonRuntime.ExecuteExecutableCodeObjectAsync(Code, context)

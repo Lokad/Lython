@@ -235,11 +235,10 @@ public sealed class BoundBoxCleanupTests
         // The frame hangs off the closure's guards, so the closure itself
         // carries the zero recursion cap that trips frame entry.
         var closure = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxRecursionDepth = 0 },regexProvider:Utf8RegexProvider.Instance);
-        var definition = Assert.IsType<LoweredFunctionDefinitionStatement>(Assert.Single(
-            LoweredScript.Lower(LythonFrontend.Compile("def f(a,b):pass").Script!).Statements));
+        var definition = ClassMethodCompiler.Compile("def f(a,b):pass");
         var fun = new PyExecutableFunction(
             definition.ParameterLayout,
-            ExecutableScript.CompileClassFunction(definition),
+            definition.CodeObject,
             closure,
             [],
             default);

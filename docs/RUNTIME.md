@@ -25,9 +25,11 @@ and CLR copies or conversions can still complete before the next check.
 Cancellation returns an invalid script with `LA2011`. Dispose that script to
 release its compilation owner. Refused admission retains priority over cancellation.
 
-Module, function and imported suites emit executable instructions directly from
-validated statements. Class suites still prepare the lowered bodies they execute.
-Lazy expressions keep their lowered representation under the owning operation.
+Statement suites emit executable instructions directly from validated syntax.
+Class suites use the same engine with their live namespace. Lazy expressions
+keep their lowered representation under the owning operation. Sibling scopes
+reuse transient compiler buffers. Final instructions and capture maps belong
+to their compiled scope.
 Type alias declarations use a dedicated binding operation and retain their lazy
 value expression and defining namespace.
 
@@ -345,8 +347,8 @@ Ordinary call syntax also owns its positional/keyword expression partition, shar
 by static contract checks and return analysis. Inferred values belong to the
 current analysis state; `*` and `**` expansion is resolved again from that state.
 Assignment targets prepare their lowered receiver/index/bound reads and unpacking
-layouts once. Executable construction, retained lowered execution and asynchronous
-stores share that tree, including augmented assignment. Syntax construction does
+layouts once. Executable stores share that tree across synchronous and asynchronous
+execution, including augmented assignment. Syntax construction does
 not lower header expressions, and stores need no syntax-keyed read dictionary.
 Evaluation order, partial stores, nested diagnostic spans and suspended setter
 ownership remain unchanged.
@@ -420,8 +422,8 @@ until publication.
 Generator expressions use the same executable generator and
 protocols in class suites and annotations as at ordinary executable sites. Their
 frame and cursor storage is admitted at construction, which can reject a tight
-allowance earlier than deferred interpretation. Lowered class suites and annotations
-retain their evaluator for their remaining expressions.
+allowance earlier than deferred interpretation. Annotations and lazy type metadata
+retain their expression evaluator.
 Each abstract binding state caches resolutions by syntax-node identity and clears
 them when its facts change; clones and branch joins have independent caches.
 Container and callback queries inspect shared fact payloads
@@ -711,10 +713,10 @@ borrow survives suspension.
 The ordinary code is one instruction array with absolute branch and
 protected-suite ranges; temporary builder blocks are discarded. An explicit
 completion instruction distinguishes module completion from a guest return.
-The executable engine runs both public APIs and local imports, using local/closure
-slots, operand storage and resumable generator frames. Lowered evaluation remains
-for class suites, annotations, lazy type metadata and actual statement-opcode
-consumers. Adjacent operation results can complete a local store or an immediate discard
+The executable engine runs statement suites in both public APIs and local imports,
+using local and closure slots, operand storage and resumable generator frames.
+Lowered expression evaluation serves annotations, lazy type metadata and operations
+that retain expression trees. Adjacent operation results can complete a local store or an immediate discard
 without temporary publication. Discarded calls still perform their operation and
 admission; the original consumer checkpoint and pending input-cleanup continuation
 remain. Unobserved native scalar results need no object materialization.
@@ -811,17 +813,15 @@ Suspended generators keep their state until completion and own one context handl
 They initialize locals and cells through the shared executable-state constructor.
 Bound arguments copy directly into their admitted retained workspace before the
 call's binding storage returns. Complete lexical scopes need no blanket namespace
-mirroring; lowered class construction and incomplete scopes retain their namespace
-bridge. Nonlocal stores and deletions update captured cells even after the defining
+mirroring. Class construction and incomplete scopes retain their namespace bridge. Nonlocal stores and deletions update captured cells even after the defining
 workspace has detached; live defining frames read those same cells.
-Match patterns have one compile-owned lowered representation shared by executable
-code and class suites. Immutable literal keys, capture indexes and required working
+Match patterns use a compile-owned representation. Immutable literal keys, capture indexes and required working
 positions are prepared once. Captures stay private until a complete pattern succeeds;
 validated OR alternatives overwrite their own indexed slots. Executable frames admit
 and clear this working capacity, including scalar headroom, before guards or bodies
 run. This can refuse admission earlier than allocating scratch at the matching opcode.
-Lowered consumers use the existing temporary reservation. Dynamic mapping keys retain
-ordered key evaluation, duplicate checks, value extraction and subpattern execution.
+Dynamic mapping keys retain ordered key evaluation, duplicate checks, value
+extraction and subpattern execution.
 Class patterns retain only their actual expression and child patterns; no
 synthetic sequence or source-name dispatch table is prepared. Builtin match-self
 patterns borrow the whole subject and reuse existing instance/type checks.
@@ -915,18 +915,18 @@ and compiled keyword labels through rendering. The caller retains their
 owner across field callbacks and suspension. Expanded calls use their
 already-owned argument packet with the same renderer and template cache.
 
-Functions and generators defined in class suites have executable bodies prepared
-directly during compilation, including definitions inside compound suites.
-Class suites, decorators, defaults and annotations keep their evaluation order.
+Class bodies and their nested definitions are prepared during compilation.
+The class suite uses dynamic name operations against its live namespace,
+including namespace-aware annotation writes.
 Methods reuse lexical and class cells and retained namespaces. Nonlocals without
 known parent cell slots use the shared namespace lookup.
 
 Executable class statements evaluate decorators and ordinary header arguments
 in the defining instruction stream. Explicit arguments fill the final base and
-keyword arrays from the operand slots. Expanded headers keep their original
-keys and their owner through class construction and callbacks. Generic headers
-evaluate in the type-parameter scope. Executable statements and lowered class
-suites share class completion.
+keyword arrays from the operand slots. Decorators borrow their evaluated operands
+through class completion. Expanded headers keep their original keys and their
+owner through class construction and callbacks. Generic headers evaluate in
+the type-parameter scope.
 Static collection shapes widen after class construction and function
 definitions with decorators or potentially effectful eager annotations.
 Later reads can see mutations that those callbacks made through aliases.
@@ -1732,9 +1732,8 @@ supported random count/index/multiplication hooks, including randrange.
 Guest context managers capture type-level __enter__/__exit__ slots in Python
 order, binding descriptors asynchronously when needed. Instance shadows and
 __getattribute__ do not change those special slots. Only exceptional exit tests
-the result's Python truth protocol; ordinary exits ignore it. Lowered class bodies
-and executable code preserve the active exception during cleanup and restore the
-outer exception afterward. Native managers use the same async manager interface.
+the result's Python truth protocol. The instruction engine preserves the active
+exception during cleanup and restores the outer exception afterward. Native managers use the same async manager interface.
 
 SequenceMatcher borrows native indexed inputs; its supported general-iterable
 extension materializes governed storage. Same-object setters preserve caches.

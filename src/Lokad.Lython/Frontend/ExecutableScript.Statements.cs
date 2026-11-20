@@ -22,7 +22,7 @@ internal sealed partial class ExecutableScript
                     return null;
                 }
 
-                PythonTokenization.CheckCancellation(_compilationCancellation, index - firstStatement);
+                PythonTokenization.CheckCancellation(_compilation.CancellationToken, index - firstStatement);
                 current = CompileStatement(statements[index], current.Value);
             }
 
@@ -41,7 +41,7 @@ internal sealed partial class ExecutableScript
                     return currentBlock;
 
                 case ClassDefinitionStatementSyntax classDefinition:
-                    return CompileClassDefinition(LoweredScript.LowerClass(classDefinition, _compilationCancellation, _compilationGovernor), currentBlock);
+                    return CompileClassDefinition(classDefinition, currentBlock);
                 case FunctionDefinitionStatementSyntax functionDefinition:
                     return CompileFunctionDefinition(functionDefinition, currentBlock, _generator &&
                         StatementSyntaxTraversal.EnumerateDirectExpressions(functionDefinition).Any(GeneratorSyntaxFacts.ContainsYield));
@@ -105,7 +105,7 @@ internal sealed partial class ExecutableScript
 
                 case TypeAliasStatementSyntax alias:
                     InternModuleBinding(alias.Name);
-                    var binding = new LoweredTypeAliasStatement(alias, LoweredScript.LowerExpression(alias.Value));
+                    var binding = new LoweredTypeAlias(alias, LoweredScript.LowerExpression(alias.Value));
                     EmitOperation(new ExecutableBindTypeAlias(binding), alias.Span, currentBlock);
                     return currentBlock;
                 default:
@@ -239,7 +239,7 @@ internal sealed partial class ExecutableScript
         {
             if (target is LoweredNameStoreTarget name)
             {
-                foreach (var names in _comprehensionNames)
+                foreach (var names in _buffers.ComprehensionNames)
                 {
                     if (!names.Contains(name.Name)) continue;
                     AddInstruction(block, ExecutableInstruction.StoreGlobal(InternName(name.Name), span));
@@ -298,7 +298,7 @@ internal sealed partial class ExecutableScript
             AddInstruction(headBlock, ExecutableInstruction.ForNext(statement.ElseStatements is null ? exitBlock : elseBlock, statement.Iterable.Span));
             var targetExit = CompileStoreTarget(LoweredStoreTarget.FromLoop(statement.Target, statement.Iterable.Span), statement.Span, headBlock, statement.Span);
 
-            _loops.Push(new LoopContext(headBlock, exitBlock, HasIterator: true, _protectedDepth));
+            _buffers.Loops.Push(new LoopContext(headBlock, exitBlock, HasIterator: true, _protectedDepth));
             try
             {
                 var bodyExit = CompileStatements(statement.Body, targetExit);
@@ -309,7 +309,7 @@ internal sealed partial class ExecutableScript
             }
             finally
             {
-                _loops.Pop();
+                _buffers.Loops.Pop();
             }
 
             if (statement.ElseStatements is not null)
@@ -334,7 +334,7 @@ internal sealed partial class ExecutableScript
                 var startBlock = CreateBlock();
                 var exitBlock = CompileStatements(body, startBlock);
                 // Compiling a clause may append nested blocks; every one belongs to this protected range.
-                return new CompiledClause(startBlock, _blocks.Count - 1, exitBlock);
+                return new CompiledClause(startBlock, _buffers.Blocks.Count - 1, exitBlock);
             }
 
             CompiledClause? CompileOptionalClause(IReadOnlyList<StatementSyntax>? body)
@@ -342,7 +342,7 @@ internal sealed partial class ExecutableScript
 
             void ProtectWithFinally(CompiledClause clause, CompiledClause cleanup)
             {
-                _regions.Add(new ExecutableExceptionRegion(
+                _buffers.Regions.Add(new ExecutableExceptionRegion(
                     clause.StartBlock,
                     clause.EndBlock,
                     null,
@@ -387,8 +387,8 @@ internal sealed partial class ExecutableScript
                     selectionBlock = nextHeader;
                 }
                 AddInstruction(selectionBlock, ExecutableInstruction.ReraiseException(statement.Span));
-                var selectionEnd = _blocks.Count - 1;
-                _regions.Add(new ExecutableExceptionRegion(tryClause.StartBlock, tryClause.EndBlock, selectionStart, null, selectionStart, selectionEnd));
+                var selectionEnd = _buffers.Blocks.Count - 1;
+                _buffers.Regions.Add(new ExecutableExceptionRegion(tryClause.StartBlock, tryClause.EndBlock, selectionStart, null, selectionStart, selectionEnd));
                 if (finallyClause is { } cleanup)
                     ProtectWithFinally(new CompiledClause(selectionStart, selectionEnd, null), cleanup);
             }
@@ -399,7 +399,7 @@ internal sealed partial class ExecutableScript
                 foreach (var exceptClause in statement.ExceptClauses)
                 {
                     var handler = CompileClause(exceptClause.Body);
-                    _regions.Add(new ExecutableExceptionRegion(
+                    _buffers.Regions.Add(new ExecutableExceptionRegion(
                         tryClause.StartBlock,
                         tryClause.EndBlock,
                         handler.StartBlock,
@@ -426,7 +426,7 @@ internal sealed partial class ExecutableScript
 
             if (finallyClause is { } finallyRegion)
             {
-                _regions.Add(new ExecutableExceptionRegion(
+                _buffers.Regions.Add(new ExecutableExceptionRegion(
                     tryClause.StartBlock,
                     tryClause.EndBlock,
                     null,
@@ -500,12 +500,12 @@ internal sealed partial class ExecutableScript
             {
                 _protectedDepth--;
             }
-            var protectedEnd = _blocks.Count - 1;
+            var protectedEnd = _buffers.Blocks.Count - 1;
 
             var finallyBlock = CreateBlock();
             var afterBlock = CreateBlock();
 
-            _regions.Add(new ExecutableExceptionRegion(
+            _buffers.Regions.Add(new ExecutableExceptionRegion(
                 protectedStart,
                 protectedEnd,
                 null,
@@ -602,7 +602,7 @@ internal sealed partial class ExecutableScript
             conditionBlock = CompileExpression(statement.Condition, conditionBlock);
             AddInstruction(conditionBlock, ExecutableInstruction.JumpIfFalse(statement.ElseStatements is null ? exitBlock : elseBlock, statement.Condition.Span));
 
-            _loops.Push(new LoopContext(conditionEntry, exitBlock, HasIterator: false, _protectedDepth));
+            _buffers.Loops.Push(new LoopContext(conditionEntry, exitBlock, HasIterator: false, _protectedDepth));
             try
             {
                 var bodyExit = CompileStatements(statement.Body, conditionBlock);
@@ -613,7 +613,7 @@ internal sealed partial class ExecutableScript
             }
             finally
             {
-                _loops.Pop();
+                _buffers.Loops.Pop();
             }
 
             if (statement.ElseStatements is not null)
@@ -630,7 +630,7 @@ internal sealed partial class ExecutableScript
 
         private int? CompileBreakStatement(BreakStatementSyntax statement, int currentBlock)
         {
-            if (!_loops.TryPeek(out var loop))
+            if (!_buffers.Loops.TryPeek(out var loop))
             {
                 throw new InvalidOperationException("Executable IR lowering cannot emit break outside a loop.");
             }
@@ -655,7 +655,7 @@ internal sealed partial class ExecutableScript
 
         private int? CompileContinueStatement(ContinueStatementSyntax statement, int currentBlock)
         {
-            if (!_loops.TryPeek(out var loop))
+            if (!_buffers.Loops.TryPeek(out var loop))
             {
                 throw new InvalidOperationException("Executable IR lowering cannot emit continue outside a loop.");
             }

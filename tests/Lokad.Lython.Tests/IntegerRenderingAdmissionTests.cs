@@ -140,7 +140,7 @@ public sealed class IntegerRenderingAdmissionTests
     public async Task RenderingPreservesResultsAndArgumentEffects(string route, bool asynchronous)
     {
         var source = "return " + (route == "format" ? "f'{argument()}'" : route + "(argument())");
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!).EntryPoint;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using (var owner = budget.CreateScope())
         {

@@ -85,7 +85,7 @@ public sealed class StringPredicateCallTests(ITestOutputHelper output)
     }
 
     private static ExecutableCodeObject Compile(string source)
-        => ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
+        => ExecutableScript.Compile(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!).EntryPoint;
 
     private static void Unwound(Context context)
     {

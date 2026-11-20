@@ -32,7 +32,7 @@ effects.append(through(input))
         if (scopeShape != 0) source = "def main():\n" + string.Join('\n', source.Split('\n').Select(line => " " + line)) + "\nmain()\n";
         var frontend = LythonFrontend.Compile(source);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
-        var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull())).EntryPoint;
+        var code = ExecutableScript.Compile(frontend.Script.RequireNotNull()).EntryPoint;
         var budget = new LythonMemoryBudget(1024 * 1024);
         using var cancellation = new CancellationTokenSource();
         using (var owner = budget.CreateScope())

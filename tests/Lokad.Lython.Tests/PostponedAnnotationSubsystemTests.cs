@@ -13,7 +13,7 @@ public sealed class PostponedAnnotationSubsystemTests
         var frontend = LythonFrontend.Compile("from __future__ import annotations\ndef f[T](x:Missing)->list[T]:pass\n",regexProvider:Utf8RegexProvider.Instance);
         Assert.NotNull(frontend.Script);
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), null,regexProvider:Utf8RegexProvider.Instance);
-        LythonRuntime.ExecuteExecutableCodeObject(ExecutableScript.Compile(LoweredScript.Lower(frontend.Script)).EntryPoint, context);
+        LythonRuntime.ExecuteExecutableCodeObject(ExecutableScript.Compile(frontend.Script).EntryPoint, context);
         var function = Assert.IsAssignableFrom<PyFunctionBase>(context.Variables["f"]);
         Assert.True(function.TryGetMember("__annotations__", out var metadata));
         var annotations = Assert.IsType<PyDict>(metadata);

@@ -38,7 +38,7 @@ public sealed class RepresentativeLeaseTests
         context.MirrorLocalStores = true;
         var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
-        var script = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script!)).EntryPoint;
+        var script = ExecutableScript.Compile(frontend.Script!).EntryPoint;
         LythonRuntimeException error;
         try
         {
@@ -99,16 +99,17 @@ public sealed class RepresentativeLeaseTests
             "\nexcept ValueError:\n    pass\nreturn source.closed\n";
         var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
-        var script = LoweredScript.Lower(frontend.Script!);
+        var code = ExecutableScript.Compile(frontend.Script!).EntryPoint;
         var delayed = asynchronous ? new DelayedLythonHost() : null;
         var mock = asynchronous ? null : new MockLythonHost();
         ILythonHost host = (ILythonHost?)delayed ?? mock!;
         if (delayed is not null) delayed.SeedFile(path, input); else mock!.SeedFile(path, input);
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) },regexProvider:Utf8RegexProvider.Instance);
-        var flow = asynchronous ? await LythonRuntime.ExecuteStatementsAsync(script.Statements, context)
-            : LythonRuntime.ExecuteStatements(script.Statements, context);
-        Assert.NotNull(flow.Return);
-        Assert.Equal(true, flow.Return!.Value);
+        // Keep the escaped value visible to the test after the executable slots leave.
+        context.MirrorLocalStores = true;
+        var returned = asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context)
+            : LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
+        Assert.Equal(true, returned);
         if (delayed is not null) Assert.True(delayed.CompletedAsynchronously > 0);
         // A body conversion error leaves the Python CSV iterator resumable.
         // Its still-funded parser scratch is reclaimed on abandonment, rather

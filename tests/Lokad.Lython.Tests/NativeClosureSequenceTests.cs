@@ -44,7 +44,7 @@ public sealed class NativeClosureSequenceTests
             var changed = PyString.FromString("-new", context.MemoryGovernor, null);
             var armed = new RebindCaller(hook, changed);
             context.Variables["arm"] = armed;
-            var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!));
+            var code = ExecutableScript.Compile(LythonFrontend.Compile(source).Script!);
             try
             {
                 var result = asynchronous
@@ -79,7 +79,7 @@ public sealed class NativeClosureSequenceTests
         using (var owner = budget.CreateScope())
         {
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = owner });
-            var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!));
+            var code = ExecutableScript.Compile(LythonFrontend.Compile(source).Script!);
             try
             {
                 var function = Assert.IsType<PyExecutableFunction>(LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null));
@@ -130,7 +130,7 @@ public sealed class NativeClosureSequenceTests
             var payload = PyString.FromString(new string('A', 8192), context.MemoryGovernor, null);
             context.Variables["payload"] = payload;
             var frontend = LythonFrontend.Compile(source);
-            var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script!));
+            var code = ExecutableScript.Compile(frontend.Script!);
             var armed = new Arm(hook);
             context.Variables["arm"] = armed;
             try
@@ -194,7 +194,7 @@ public sealed class NativeClosureSequenceTests
             context.Variables["callback"] = callback;
             var arm = new ArmLateFrame(hook, callback);
             context.Variables["arm"] = arm;
-            var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!));
+            var code = ExecutableScript.Compile(LythonFrontend.Compile(source).Script!);
             try
             {
                 var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>

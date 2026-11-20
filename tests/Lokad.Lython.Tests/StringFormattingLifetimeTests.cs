@@ -14,7 +14,7 @@ public sealed class StringFormattingLifetimeTests
     public async Task PrecisionCopyRefusalIdentifiesFormattingSiteRatherThanInputCreation(bool asynchronous)
     {
         var syntax = LythonFrontend.Compile("global target\narm()\ntarget=format(value, '.1s')").Script!;
-        var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
+        var code = ExecutableScript.Compile(syntax).EntryPoint;
         var root = new LythonMemoryBudget(4 * 1024 * 1024);
         using (var owner = root.CreateScope())
         {
@@ -56,7 +56,7 @@ public sealed class StringFormattingLifetimeTests
             ? "global target\nformatter='{0}|{0}'.format\nassert formatter('')=='|'\narm()\ntarget=formatter(value)\nrecord()"
             : "global target\narm()\ntarget=format(value, '>8s')\nrecord()";
         var syntax = LythonFrontend.Compile(source).Script!;
-        var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
+        var code = ExecutableScript.Compile(syntax).EntryPoint;
         var root = new LythonMemoryBudget(4 * 1024 * 1024);
         using var cancellation = new CancellationTokenSource();
         using (var owner = root.CreateScope())

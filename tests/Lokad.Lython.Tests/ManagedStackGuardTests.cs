@@ -24,10 +24,9 @@ public sealed class ManagedStackGuardTests
         object left = new(), right = new();
         var expression = new LoweredBooleanLiteralExpression(new BooleanLiteralExpressionSyntax(true, span));
         var projected = new PyList([true]);
-        var definition = Assert.IsType<LoweredFunctionDefinitionStatement>(Assert.Single(
-            LoweredScript.Lower(LythonFrontend.Compile("def value():return 1").Script!).Statements));
+        var definition = ClassMethodCompiler.Compile("def value():return 1");
         var function = new PyExecutableFunction(definition.ParameterLayout,
-            ExecutableScript.CompileClassFunction(definition), context, [],
+            definition.CodeObject, context, [],
             default);
         Action enter = entry switch
         {

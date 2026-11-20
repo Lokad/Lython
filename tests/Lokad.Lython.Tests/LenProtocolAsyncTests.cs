@@ -22,7 +22,7 @@ public sealed class LenProtocolAsyncTests
         var callback = new LengthCallback();
         context.Variables["getsize"] = callback;
         var source = "class V:\n def __len__(self):return getsize()\nreturn len(V())";
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!).EntryPoint;
         var pending = LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context).AsTask();
         var origin = new LythonSourceSpan(1000, 5, 50, 1);
         try

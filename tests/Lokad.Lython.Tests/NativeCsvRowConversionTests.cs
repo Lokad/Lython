@@ -11,7 +11,7 @@ public sealed class NativeCsvRowConversionTests
 {
     private static readonly LythonSourceSpan Span = new(0, 0, 1, 1);
     private static readonly ExecutableCodeObject Code = ExecutableScript.Compile(
-        LoweredScript.Lower(LythonFrontend.Compile("return writer.writerow(row)",regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
+        LythonFrontend.Compile("return writer.writerow(row)",regexProvider:Utf8RegexProvider.Instance).Script!).EntryPoint;
 
     public static IEnumerable<object[]> Cases()
     {

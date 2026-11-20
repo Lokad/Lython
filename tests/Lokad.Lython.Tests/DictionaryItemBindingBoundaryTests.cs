@@ -22,7 +22,7 @@ public sealed class DictionaryItemBindingBoundaryTests
         var args = method == "__setitem__" ? "pick(),value()" : "pick()";
         if (extra) args += ",value()";
         var source = "global published\npublished=table." + method + "(" + args + ")\nreturn published";
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!).EntryPoint;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         foreach (var asynchronous in new[] { false, true })
         {

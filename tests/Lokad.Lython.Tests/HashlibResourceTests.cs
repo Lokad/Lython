@@ -12,7 +12,7 @@ public sealed class HashlibResourceTests
     public async Task OriginalsAndCopiesAreDisposedAtTheExecutionBoundary(bool asynchronous)
     {
         var frontend = LythonFrontend.Compile("import hashlib\nh=hashlib.sha256(b'abc')\nreturn [h,h.copy()]");
-        var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(frontend.Script!).EntryPoint;
         var budget = new LythonMemoryBudget(32768);
         using var owner = budget.CreateScope();
         var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });

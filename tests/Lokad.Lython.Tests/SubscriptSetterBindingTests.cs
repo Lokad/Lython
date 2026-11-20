@@ -21,7 +21,7 @@ public sealed class SubscriptSetterBindingTests
         context.Variables["box"] = receiver;
         context.Variables["payload"] = payload;
         var syntax = LythonFrontend.Compile("box[0]=payload",regexProvider:Utf8RegexProvider.Instance).Script!;
-        var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
+        var code = ExecutableScript.Compile(syntax).EntryPoint;
         var pending = LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context).AsTask();
         try
         {

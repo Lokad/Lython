@@ -19,7 +19,7 @@ public sealed class DictionaryReadBoundaryTests
     public async Task LookupEffectsAndErrorsUnwindAcrossModes(string label, int expected, string? exception)
     {
         const string source = "global published\npublished=table[pick()]\nreturn published";
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!).EntryPoint;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         foreach (var asynchronous in new[] { false, true })
         {

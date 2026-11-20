@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Run class suites on the same instruction engine as functions and modules.
+  Reuse transient compiler buffers across sibling scopes and remove the two
+  lowered statement interpreters.
 - Match Python CSV parsing after a closing quote. Default mode treats
   trailing text as part of the field, and strict mode reports the
   expected delimiter and quote. Escaped line endings keep the current

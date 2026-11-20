@@ -11,7 +11,7 @@ public sealed class SliceValueDispatchTests
 {
     private const string Source = "return mapping[stamp(1):stamp(5):stamp(2), stamp(9)]";
     private static readonly ExecutableCodeObject Code = ExecutableScript.Compile(
-        LoweredScript.Lower(LythonFrontend.Compile(Source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
+        LythonFrontend.Compile(Source,regexProvider:Utf8RegexProvider.Instance).Script!).EntryPoint;
 
     private static readonly string[] ExpectedCheckpoints =
     [

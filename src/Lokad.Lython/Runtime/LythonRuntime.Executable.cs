@@ -286,7 +286,6 @@ internal sealed partial class LythonRuntime
 
     private sealed record PendingReturn(object Value) : PendingAbruptSignal;
 
-    private sealed record PendingControl(ControlSignal Control) : PendingAbruptSignal;
 
     // One admitted array holds lookup facts. Entries retain immutable layout/key
     // or member receiver/value pairs; record entries never retain a row's values.

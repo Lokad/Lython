@@ -1,7 +1,7 @@
 namespace Lokad.Lython.Frontend;
 
 internal sealed record ExecutableStoreModuleAnnotation(string Name) : ExecutableOperation;
-internal sealed record ExecutableBindTypeAlias(LoweredTypeAliasStatement Alias) : ExecutableOperation;
+internal sealed record ExecutableBindTypeAlias(LoweredTypeAlias Alias) : ExecutableOperation;
 
 internal sealed partial class ExecutableScript
 {

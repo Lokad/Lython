@@ -184,7 +184,7 @@ public sealed class DictionaryViewTraversalOwnershipTests
         => LythonRuntime.ExecuteExecutableCodeObject(Compile("namespace=globals()\neffects=[]\nclass Value:\n def __eq__(self,other):effects.append('eq');return True\nvalue=Value()\nleft={'a':value}\nright={'a':Value()}\n"), context, default, null);
 
     private static ExecutableCodeObject Compile(string source)
-        => ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        => ExecutableScript.Compile(LythonFrontend.Compile(source).Script!).EntryPoint;
 
     private sealed class Observation { internal long Expected, AfterClear; }
 

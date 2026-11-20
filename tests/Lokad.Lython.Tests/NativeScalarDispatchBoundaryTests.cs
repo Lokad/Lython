@@ -17,7 +17,7 @@ public sealed class NativeScalarDispatchBoundaryTests
     public async Task MixedBooleanIntegerAdmissionRefusesBeforePublication(bool augmented)
     {
         var source = "pad()\nglobal left\n" + (augmented ? "left+=right\nreturn left" : "return left+right");
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!).EntryPoint;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         foreach (var asynchronous in new[] { false, true })
         {
@@ -83,7 +83,7 @@ public sealed class NativeScalarDispatchBoundaryTests
     public async Task StringConcatenationAdmissionRefusesBeforePublication(bool augmented)
     {
         var source = "pad()\nglobal left\n" + (augmented ? "left+=right\nreturn left" : "return left+right");
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!).EntryPoint;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         foreach (var asynchronous in new[] { false, true })
         {
@@ -114,7 +114,7 @@ public sealed class NativeScalarDispatchBoundaryTests
     public async Task ValuesErrorsPublicationAndCleanupMatchAcrossModes(
         string label, string source, object left, object right, object? expected, string? exception)
     {
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!).EntryPoint;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         foreach (var asynchronous in new[] { false, true })
         {

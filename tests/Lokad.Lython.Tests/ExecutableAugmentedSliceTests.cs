@@ -15,7 +15,7 @@ public sealed class ExecutableAugmentedSliceTests
     public void SliceUpdatesUseFrameOperandsWithoutFallbacks(string source)
     {
         var syntax = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!;
-        var code = Assert.Single(ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint.FunctionBindings()).CodeObject!;
+        var code = Assert.Single(ExecutableScript.Compile(syntax).EntryPoint.FunctionBindings()).CodeObject!;
         Assert.Single(code.Instructions, i => i.OpCode is ExecutableOpCode.StoreSlice or ExecutableOpCode.StoreSliceLast);
         Assert.Single(code.Instructions, i => i.OpCode == ExecutableOpCode.ReadRetainedSlice);
     }
@@ -27,7 +27,7 @@ public sealed class ExecutableAugmentedSliceTests
     public void YieldingOrdinaryStoresUseSharedOperations(string source, bool member)
     {
         var syntax = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!;
-        var code = Assert.Single(ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint.FunctionBindings()).CodeObject!;
+        var code = Assert.Single(ExecutableScript.Compile(syntax).EntryPoint.FunctionBindings()).CodeObject!;
         if (member) Assert.Single(code.Instructions, i => i.OpCode is ExecutableOpCode.StoreMember or ExecutableOpCode.StoreMemberLast);
         else Assert.Single(code.Instructions, i => i.OpCode is ExecutableOpCode.StoreSlice or ExecutableOpCode.StoreSliceLast);
     }
@@ -41,7 +41,7 @@ public sealed class ExecutableAugmentedSliceTests
         var checkpoint = new Checkpoint();
         context.Variables["checkpoint"] = checkpoint;
         var syntax = LythonFrontend.Compile("class Key:\n def __init__(self,value): self.value=value\n def __index__(self): return checkpoint(self.value)\nitems=[1,2,3]\nitems[Key(0):Key(1):Key(1)]+=checkpoint()",regexProvider:Utf8RegexProvider.Instance).Script!;
-        var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
+        var code = ExecutableScript.Compile(syntax).EntryPoint;
         if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
         else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
         Assert.Equal(asynchronous ? 0 : 7, checkpoint.SyncCalls);
@@ -62,7 +62,7 @@ public sealed class ExecutableAugmentedSliceTests
         using var rhs = new CapacityGate(context.MemoryGovernor, limit, deny);
         context.Variables["rhs"] = rhs;
         var syntax = LythonFrontend.Compile("items=[0,1,2]\nitems[1:2]+=rhs([0]*1024,items)",regexProvider:Utf8RegexProvider.Instance).Script!;
-        var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
+        var code = ExecutableScript.Compile(syntax).EntryPoint;
         try
         {
             if (deny)

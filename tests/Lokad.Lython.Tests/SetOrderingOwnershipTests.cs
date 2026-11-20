@@ -14,7 +14,7 @@ public sealed class SetOrderingOwnershipTests
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
         var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!).EntryPoint;
         await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
         var left = Assert.IsType<PySet>(context.Variables["left"]);
         var right = Assert.IsType<PySet>(context.Variables["right"]);
@@ -55,7 +55,7 @@ public sealed class SetOrderingOwnershipTests
             { MemoryBudget = owner, CancellationToken = cancellation.Token },regexProvider:Utf8RegexProvider.Instance);
         var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.True(frontend.Script is not null, string.Join("; ", frontend.Diagnostics.Select(d => d.Message)));
-        var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(frontend.Script!).EntryPoint;
         var pending = LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context).AsTask();
         Exception? failure;
         try

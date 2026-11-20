@@ -94,7 +94,7 @@ public sealed class DictionaryAggregationLifetimeTests
     {
         var parsed = LythonFrontend.Compile(source);
         Assert.NotNull(parsed.Script);
-        return ExecutableScript.Compile(LoweredScript.Lower(parsed.Script)).EntryPoint;
+        return ExecutableScript.Compile(parsed.Script).EntryPoint;
     }
 
     private sealed class DenyRemaining(MemoryGovernor governor, long limit) : LythonRuntime.ICallable, IDisposable

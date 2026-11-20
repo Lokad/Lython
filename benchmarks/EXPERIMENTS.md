@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1195 shared compiler buffers for class suites](results/2026-11-20-executable-class-suites/refinement/README.md)
+reuses transient buffers across sibling scopes and retains the single
+statement engine. Dataclass compilation allocates 8.03% more than master
+and compile-to-result elapsed rises 5.53–10.26%. Manifest compile allocation
+falls 5.98%. The remaining class cost is delivery debt.
+
 [B1194 executable class suites](results/2026-11-20-executable-class-suites/README.md)
 retires both lowered statement interpreters in the private prototype.
 Dataclass compile allocation rises 20.86% and compile-to-result elapsed rises

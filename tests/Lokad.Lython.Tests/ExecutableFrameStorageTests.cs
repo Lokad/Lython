@@ -18,7 +18,7 @@ public sealed class ExecutableFrameStorageTests(Xunit.Abstractions.ITestOutputHe
         var source = "effects.append(1)\n" + string.Join('\n', statements) + "\nreturn 7";
         var frontend = LythonFrontend.Compile(source);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
-        var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(frontend.Script!).EntryPoint;
         Assert.True((caches ? code.LookupCacheCount : code.LocalNames.Count) >= capacity);
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using (var owner = budget.CreateScope())
@@ -76,7 +76,7 @@ public sealed class ExecutableFrameStorageTests(Xunit.Abstractions.ITestOutputHe
         // storage and each repeated alias must remain funded.
         var source = $"def first({parameters}):return a0\nclass Worker:\n def run(self):return first({arguments})\nworker=Worker()\nworker.value=[7]";
         var frontend = LythonFrontend.Compile(source);
-        var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(frontend.Script!).EntryPoint;
         var budget = new LythonMemoryBudget(1024 * 1024);
         using (var owner = budget.CreateScope())
         {

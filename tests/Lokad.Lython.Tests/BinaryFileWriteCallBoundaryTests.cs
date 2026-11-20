@@ -27,7 +27,7 @@ public sealed class BinaryFileWriteCallBoundaryTests
     public async Task CallsPreserveEveryCheckpointAndPublishedPrefix(bool asynchronous, bool exposed, string shape)
     {
         var source = exposed ? "method=file.write\nreturn method(argument())" : "return file.write(argument())";
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!).EntryPoint;
         string outcome;
         string final;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
@@ -146,8 +146,8 @@ public sealed class BinaryFileWriteCallBoundaryTests
     }
 
     private static ExecutableCodeObject Compile(bool exposed)
-        => ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(
-            exposed ? "method=file.write\nreturn method(argument())" : "return file.write(argument())",regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
+        => ExecutableScript.Compile(LythonFrontend.Compile(
+            exposed ? "method=file.write\nreturn method(argument())" : "return file.write(argument())",regexProvider:Utf8RegexProvider.Instance).Script!).EntryPoint;
 
     private static Fixture Prepare(ILythonMemoryBudget owner, string shape)
     {

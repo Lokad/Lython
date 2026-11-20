@@ -113,7 +113,7 @@ public sealed class DirectIntegerTextCallTests
     }
 
     private static ExecutableCodeObject Compile(string source)
-        => ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
+        => ExecutableScript.Compile(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!).EntryPoint;
 
     private static async ValueTask<object?> Run(ExecutableCodeObject code, Context context, bool asynchronous)
         => asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context)

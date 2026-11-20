@@ -22,7 +22,7 @@ public sealed class EnumerableStateTests
         context.Variables["iter"] = context.State.BuiltinVariables["iter"];
         var parsed = LythonFrontend.Compile("class Source:\n    def __iter__(self):\n        probe()\n        return iter([1])\nreturn Source()\n",regexProvider:Utf8RegexProvider.Instance);
         Assert.Empty(parsed.Diagnostics);
-        var code = ExecutableScript.Compile(LoweredScript.Lower(parsed.Script!));
+        var code = ExecutableScript.Compile(parsed.Script!);
         var source = LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null);
         Assert.NotNull(source);
         if (asynchronous)

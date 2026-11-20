@@ -176,7 +176,7 @@ descend(12)
     }
 
     private static ExecutableCodeObject Compile(string source)
-        => ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        => ExecutableScript.Compile(LythonFrontend.Compile(source).Script!).EntryPoint;
 
     private static void Unwound(Context context)
     {

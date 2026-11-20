@@ -58,8 +58,8 @@ public sealed class JsonPropertyNameStorageTests
     {
         using var budget = new LythonMemoryBudget(1024 * 1024).CreateScope();
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = budget });
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(
-            "import json\nreturn json.loads(source)", regexProvider: Utf8RegexProvider.Instance).Script!));
+        var code = ExecutableScript.Compile(LythonFrontend.Compile(
+            "import json\nreturn json.loads(source)", regexProvider: Utf8RegexProvider.Instance).Script!);
         var bytes = Encoding.UTF8.GetBytes("""[{"alpha":1},{"\u0061lpha":2},{"café😀":3},{"caf\u00e9\ud83d\ude00":4},{"":5},{"":6}]""");
         context.Variables["source"] = PyString.FromOwnedUtf8(bytes, context.MemoryGovernor, null);
         async Task<PyList> Read() => Assert.IsType<PyList>(asynchronous

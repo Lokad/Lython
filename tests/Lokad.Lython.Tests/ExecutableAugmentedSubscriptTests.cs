@@ -14,7 +14,7 @@ public sealed class ExecutableAugmentedSubscriptTests
     public void UpdatesRetainOperandsWithoutPreparedReads(string source)
     {
         var syntax = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!;
-        var code = Assert.Single(ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint.FunctionBindings()).CodeObject!;
+        var code = Assert.Single(ExecutableScript.Compile(syntax).EntryPoint.FunctionBindings()).CodeObject!;
         Assert.Single(code.Instructions, i => i.OpCode is ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast);
         Assert.Single(code.Instructions, i => i.OpCode == ExecutableOpCode.ReadRetainedSubscript);
     }
@@ -23,7 +23,7 @@ public sealed class ExecutableAugmentedSubscriptTests
     public void YieldingOrdinaryStoreSharesTheSubscriptStore()
     {
         var syntax = LythonFrontend.Compile("def run(items,key,value):\n (yield items)[(yield key)]=value",regexProvider:Utf8RegexProvider.Instance).Script!;
-        var code = Assert.Single(ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint.FunctionBindings()).CodeObject!;
+        var code = Assert.Single(ExecutableScript.Compile(syntax).EntryPoint.FunctionBindings()).CodeObject!;
         Assert.Single(code.Instructions, i => i.OpCode is ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast);
     }
 
@@ -36,7 +36,7 @@ public sealed class ExecutableAugmentedSubscriptTests
         var checkpoint = new Checkpoint();
         context.Variables["checkpoint"] = checkpoint;
         var syntax = LythonFrontend.Compile("class Box:\n def __getitem__(self,key): return checkpoint(key)\n def __setitem__(self,key,value): checkpoint(key,value)\nbox=Box()\nkey=[]\nbox[key]+=checkpoint()",regexProvider:Utf8RegexProvider.Instance).Script!;
-        var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
+        var code = ExecutableScript.Compile(syntax).EntryPoint;
         if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
         else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
         Assert.Equal(asynchronous ? 0 : 3, checkpoint.SyncCalls);
@@ -58,7 +58,7 @@ public sealed class ExecutableAugmentedSubscriptTests
         using var rhs = new CapacityGate(context.MemoryGovernor, limit, deny);
         context.Variables["rhs"] = rhs;
         var syntax = LythonFrontend.Compile("items=[[1]]\nitems[0]+=rhs([0]*1024,items)",regexProvider:Utf8RegexProvider.Instance).Script!;
-        var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
+        var code = ExecutableScript.Compile(syntax).EntryPoint;
         try
         {
             if (deny)

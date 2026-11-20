@@ -129,7 +129,7 @@ public sealed class UserSliceMutationOwnershipTests
         Assert.True(IsAlive(weak));
         var before = fixture.Root.MemoryGovernor.CurrentCommittedBytes;
         var deletion = LythonFrontend.Compile("del target.saved\n",regexProvider:Utf8RegexProvider.Instance);
-        await LythonRuntime.ExecuteStatementsAsync(LoweredScript.Lower(deletion.Script.RequireNotNull()).Statements, fixture.Root);
+        await LythonRuntime.ExecuteExecutableCodeObjectAsync(ExecutableScript.Compile(deletion.Script.RequireNotNull()).EntryPoint, fixture.Root);
         Collect();
         Assert.False(IsAlive(weak));
         // Actual CLR reachability ends; reusable attribute capacity stays funded
@@ -203,7 +203,7 @@ public sealed class UserSliceMutationOwnershipTests
         var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
         await LythonRuntime.ExecuteExecutableCodeObjectAsync(
-            ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull())).EntryPoint, root);
+            ExecutableScript.Compile(frontend.Script.RequireNotNull()).EntryPoint, root);
         var active = new PyException("ValueError", "outer", PyNone.Instance);
         root.State.SetCurrentException(active);
         return new(root, Assert.IsType<PyInstance>(root.Variables["target"]),

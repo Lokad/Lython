@@ -78,14 +78,14 @@ public sealed class ExceptionShellStorageTests
     public async Task NativeCleanupDoesNotNeedRoomForAnotherGuestException(bool asynchronous)
     {
         var context = Root();
-        using var pressure = context.MemoryGovernor.ReserveTemporary(4096 - context.MemoryGovernor.CurrentAccountedBytes, Span);
-        var manager = new CleanupManager();
-        var syntax = LythonFrontend.Compile("1 / 0",regexProvider:Utf8RegexProvider.Instance).Script!;
-        var body = LoweredScript.Lower(syntax).Statements;
+        using var manager = new CleanupManager(context.MemoryGovernor);
+        context.Variables["manager"] = manager;
+        var syntax = LythonFrontend.Compile("with manager:\n    1 / 0", regexProvider: Utf8RegexProvider.Instance).Script!;
+        var code = ExecutableScript.Compile(syntax).EntryPoint;
         if (asynchronous)
             await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
-                await PyContextManagers.ExecuteWithAsync(manager, null, body, Span, Span, context));
-        else Assert.Throws<LythonRuntimeException>(() => PyContextManagers.ExecuteWith(manager, null, body, Span, Span, context));
+                await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context));
+        else Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ExecuteExecutableCodeObject(code, context));
         Assert.True(manager.Closed);
         Assert.NotNull(manager.Exception);
         Assert.Null(manager.Exception!.OwnerMemoryGovernor);
@@ -97,16 +97,24 @@ public sealed class ExceptionShellStorageTests
     private static WeakReference<PyException> Drop(LythonRuntime.ExecutionContext context)
         => new(PyException.CreateOwned(PythonExceptionIdentity.FromRuntimeTypeName("ValueError"), "", PyNone.Instance, context, Span));
 
-    private sealed class CleanupManager : IPyContextManager
+    private sealed class CleanupManager(MemoryGovernor governor) : IPyContextManager, IDisposable
     {
+        private MemoryGovernor.TemporaryMemoryReservation? _pressure;
         internal bool Closed { get; private set; }
         internal PyException? Exception { get; private set; }
-        public object Enter() => PyNone.Instance;
+        public object Enter()
+        {
+            // Use the remaining allowance once the protected frame is ready.
+            _pressure = governor.ReserveTemporary(4096 - governor.CurrentAccountedBytes, Span);
+            return PyNone.Instance;
+        }
         public bool Exit(object exceptionType, object exceptionValue, object traceback)
         {
             Closed = true;
             Exception = exceptionValue as PyException;
             return false;
         }
+
+        public void Dispose() => _pressure?.Dispose();
     }
 }

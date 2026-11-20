@@ -28,7 +28,7 @@ public sealed class RawDescriptorGetDispatchTests
         getter.Payload = payload;
         context.Variables["box"] = receiver;
         var syntax = LythonFrontend.Compile("return box.value",regexProvider:Utf8RegexProvider.Instance).Script!;
-        var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
+        var code = ExecutableScript.Compile(syntax).EntryPoint;
         if (asynchronous)
         {
             var pending = LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context).AsTask();
@@ -70,7 +70,7 @@ public sealed class RawDescriptorGetDispatchTests
         var type = new PyType("Box", [objectType], new() { ["value"] = descriptor }, context.MemoryGovernor, Span);
         context.Variables["box"] = new PyInstance(type, context.MemoryGovernor, Span);
         var syntax = LythonFrontend.Compile("return box.value",regexProvider:Utf8RegexProvider.Instance).Script!;
-        var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
+        var code = ExecutableScript.Compile(syntax).EntryPoint;
         LythonRuntimeException error;
         if (asynchronous)
             error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context));

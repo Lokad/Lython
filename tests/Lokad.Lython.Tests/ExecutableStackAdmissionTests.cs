@@ -149,7 +149,7 @@ public sealed class ExecutableStackAdmissionTests
     {
         var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.NotNull(frontend.Script);
-        return ExecutableScript.Compile(LoweredScript.Lower(frontend.Script)).EntryPoint;
+        return ExecutableScript.Compile(frontend.Script).EntryPoint;
     }
 
     private sealed class FillBudget(LythonMemoryBudget budget, long headroom = 64) : ICallable

@@ -292,7 +292,7 @@ public sealed class JsonStringEmissionAdmissionTests(ITestOutputHelper output)
     private static LythonRuntime.ICallable Load(Context context, string route)
     {
         var target = route switch { "dumps" => "json.dumps", "encode" => "json.JSONEncoder().encode", _ => "json.JSONEncoder().iterencode" };
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile("import json\nreturn " + target,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LythonFrontend.Compile("import json\nreturn " + target,regexProvider:Utf8RegexProvider.Instance).Script!).EntryPoint;
         return Assert.IsAssignableFrom<LythonRuntime.ICallable>(LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null));
     }
 }

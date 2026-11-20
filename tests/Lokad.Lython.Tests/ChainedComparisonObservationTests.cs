@@ -86,7 +86,7 @@ public sealed class ChainedComparisonObservationTests
     private static async Task Run(Context context, bool asynchronous, bool chained)
     {
         var source = chained ? "return left < 1 < tail()" : "return left < 1";
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!).EntryPoint;
         if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
         else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
     }

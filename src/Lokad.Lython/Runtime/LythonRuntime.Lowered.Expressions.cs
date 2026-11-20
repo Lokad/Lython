@@ -20,7 +20,7 @@ internal sealed partial class LythonRuntime
         try
         {
             ExecutionState.EnsureInterpreterStack(expression.Span);
-            return DispatchLoweredExpressionAsync(expression, context, SynchronousLoweredStatementExecution.Instance).GetAwaiter().GetResult();
+            return DispatchLoweredExpressionAsync(expression, context, SynchronousLoweredExpressionExecution.Instance).GetAwaiter().GetResult();
         }
         catch (LythonRuntimeException ex)
         {
@@ -342,116 +342,6 @@ internal sealed partial class LythonRuntime
     {
         var operand = EvaluateLoweredExpression(unary.Operand, context);
         return EvaluateLoweredUnaryOperator(unary, operand, context);
-    }
-
-    private static void ExecuteLoweredAssertStatement(LoweredAssertStatement statement, ExecutionContext context)
-    {
-        if (IsTruthy(EvaluateLoweredExpression(statement.Condition, context), context, statement.Condition.Span))
-        {
-            return;
-        }
-
-        ThrowAssertionError(
-            statement.Message is null ? null : EvaluateLoweredExpression(statement.Message, context),
-            context,
-            statement.Span);
-    }
-
-    private static void ExecuteLoweredDeleteStatement(LoweredDeleteStatement statement, ExecutionContext context)
-    {
-        ExecuteLoweredDeleteTarget(statement.Target.Syntax, statement.Target, statement.Span, context);
-    }
-
-    private static void ExecuteLoweredDeleteTarget(ExpressionSyntax syntax, LoweredExpression loweredTarget, LythonSourceSpan span, ExecutionContext context)
-    {
-        while (syntax is ParenthesizedExpressionSyntax parenthesized
-            && loweredTarget is LoweredParenthesizedExpression loweredParenthesized)
-        {
-            syntax = parenthesized.Inner;
-            loweredTarget = loweredParenthesized.Inner;
-        }
-
-        if (TryGetDeleteDisplayItems(loweredTarget, out var syntaxItems, out var loweredItems))
-        {
-            for (var i = 0; i < syntaxItems.Count; i++)
-            {
-                if (syntaxItems[i] is CollectionValueItemSyntax valueItem)
-                {
-                    ExecuteLoweredDeleteTarget(
-                        valueItem.Expression,
-                        loweredItems[i].Expression,
-                        valueItem.Span,
-                        context);
-                }
-            }
-
-            return;
-        }
-
-        switch (syntax)
-        {
-            case IdentifierExpressionSyntax identifier:
-                if (!DeleteName(identifier.Name, context, span))
-                {
-                    throw MissingDeletedName(identifier.Name, context, span);
-                }
-
-                return;
-
-            case SubscriptExpressionSyntax:
-                if (loweredTarget is not LoweredSubscriptExpression subscript)
-                {
-                    break;
-                }
-
-                var target = EvaluateLoweredExpression(subscript.Target, context);
-                var index = EvaluateLoweredExpression(subscript.Index, context);
-                DeleteSubscriptValue(target, index, span, context);
-                return;
-
-            case SliceExpressionSyntax:
-                if (loweredTarget is not LoweredSliceExpression slice)
-                {
-                    break;
-                }
-
-                ExecuteSliceDeletion(
-                    EvaluateLoweredExpression(slice.Target, context),
-                    slice.Start is null ? null : EvaluateLoweredExpression(slice.Start, context),
-                    slice.End is null ? null : EvaluateLoweredExpression(slice.End, context),
-                    slice.Step is null ? null : EvaluateLoweredExpression(slice.Step, context),
-                    span, context);
-                return;
-
-            case MemberExpressionSyntax memberSyntax:
-                if (loweredTarget is not LoweredMemberExpression member)
-                {
-                    break;
-                }
-
-                var memberTarget = EvaluateLoweredExpression(member.Target, context);
-                if (!PyMemberAccess.TryDelete(memberTarget, memberSyntax.MemberName, context, span))
-                {
-                    throw PyMemberAccess.CreateMissingMemberError(memberTarget, memberSyntax.MemberName, span, context, operation: MissingMemberOperation.Delete);
-                }
-
-                return;
-        }
-
-        throw new LythonRuntimeException("RuntimeError", "Unsupported delete target.", span);
-    }
-
-    private static void ExecuteLoweredRaiseStatement(LoweredRaiseStatement statement, ExecutionContext context)
-    {
-        if (statement.Expression is null)
-        {
-            ThrowReraisedException(statement.Span, context);
-            return;
-        }
-
-        var raised = EvaluateLoweredExpression(statement.Expression, context);
-        var cause = statement.CauseExpression is null ? null : EvaluateLoweredExpression(statement.CauseExpression, context);
-        ThrowRaisedValue(raised, statement.CauseExpression is not null, cause, context, statement.Span);
     }
 
     private static void ThrowRaisedValue(object raised, bool hasCause, object? cause, ExecutionContext context, LythonSourceSpan span)

@@ -157,7 +157,7 @@ public sealed class SynchronousGeneratorAdvanceTests
     private static ExecutableCodeObject GeneratorCode(string body)
     {
         var script = LythonFrontend.Compile("def values():\n" + body,regexProvider:Utf8RegexProvider.Instance).Script!;
-        return Assert.Single(ExecutableScript.Compile(LoweredScript.Lower(script)).EntryPoint.FunctionBindings()).CodeObject!;
+        return Assert.Single(ExecutableScript.Compile(script).EntryPoint.FunctionBindings()).CodeObject!;
     }
 
     private sealed class Probe : ICallable

@@ -13,7 +13,7 @@ public sealed class ListConstructionHandoffTests
     // Complete records frozen on19cd6654 before runtime changes.
     private static readonly LythonSourceSpan Span = new(0, 0, 1, 1);
     private static readonly ExecutableCodeObject Code = ExecutableScript.Compile(
-        LoweredScript.Lower(LythonFrontend.Compile("return list(source)",regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
+        LythonFrontend.Compile("return list(source)",regexProvider:Utf8RegexProvider.Instance).Script!).EntryPoint;
 
     public static IEnumerable<object[]> Cases()
     {

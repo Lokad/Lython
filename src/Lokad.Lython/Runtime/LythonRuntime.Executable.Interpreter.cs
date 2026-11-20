@@ -711,11 +711,6 @@ internal sealed partial class LythonRuntime
                             if (!TryRouteReturn(signal, operationSpan)) return null;
                             jumped = true;
                         }
-                        catch (ControlSignal signal)
-                        {
-                            if (!TryRouteControl(signal, operationSpan)) throw;
-                            jumped = true;
-                        }
                         catch (LythonRuntimeException error)
                         {
                             if (!TryRouteRuntimeException(error, operationSpan)) throw;

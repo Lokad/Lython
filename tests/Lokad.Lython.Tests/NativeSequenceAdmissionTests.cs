@@ -21,7 +21,7 @@ public sealed class NativeSequenceAdmissionTests
             context.Variables["arm"] = arm;
             context.Variables["mark"] = mark;
             const string source = "def fold(count):\n for item in range(count):mark()\narm()\nfold(3)";
-            var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!));
+            var code = ExecutableScript.Compile(LythonFrontend.Compile(source).Script!);
             var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
             {
                 if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context);
@@ -56,7 +56,7 @@ public sealed class NativeSequenceAdmissionTests
             context.Variables["mark"] = mark;
             context.Variables["source"] = source;
             const string script = "arm()\nfor item in source:mark()";
-            var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(script).Script!));
+            var code = ExecutableScript.Compile(LythonFrontend.Compile(script).Script!);
             var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
             {
                 if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context);

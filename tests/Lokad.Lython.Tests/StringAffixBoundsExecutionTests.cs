@@ -16,7 +16,7 @@ public sealed class StringAffixBoundsExecutionTests
     public async Task NativeAndCompletedGuestBoundsCompleteWithoutSuspension(string source)
     {
         var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
-        var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull()));
+        var code = ExecutableScript.Compile(frontend.Script.RequireNotNull());
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var pending = LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context);
         Assert.True(pending.IsCompletedSuccessfully);

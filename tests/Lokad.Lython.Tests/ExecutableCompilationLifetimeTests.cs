@@ -17,13 +17,13 @@ public sealed class ExecutableCompilationLifetimeTests
     [InlineData(true, "class Box:\n value=7\nprint(Box.value)", "7\n")]
     [InlineData(false, "print(__annotations__)\nvalue:int=1\nprint(__annotations__['value'] is int,value)", "{}\nTrue 1\n")]
     [InlineData(true, "print(__annotations__)\nvalue:int=1\nprint(__annotations__['value'] is int,value)", "{}\nTrue 1\n")]
-    public async Task ExecutableProgramDoesNotKeepUnusedLoweredModuleAlive(bool asynchronous, string source, string expected)
+    public async Task ExecutableProgramDoesNotKeepSyntaxRootAlive(bool asynchronous, string source, string expected)
     {
-        var (program, lowered) = Compile(source);
+        var (program, syntaxRoot) = Compile(source);
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
-        Assert.False(lowered.TryGetTarget(out _));
+        Assert.False(syntaxRoot.TryGetTarget(out _));
 
         var runtime = new LythonRuntime();
         using var result = asynchronous
@@ -35,10 +35,9 @@ public sealed class ExecutableCompilationLifetimeTests
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static (ExecutableScript Program, WeakReference<LoweredScript> Lowered) Compile(string source)
+    private static (ExecutableScript Program, WeakReference<ScriptSyntax> Syntax) Compile(string source)
     {
         var syntax = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script.RequireNotNull();
-        var lowered = LoweredScript.Lower(syntax);
-        return (ExecutableScript.Compile(lowered), new WeakReference<LoweredScript>(lowered));
+        return (ExecutableScript.Compile(syntax), new WeakReference<ScriptSyntax>(syntax));
     }
 }

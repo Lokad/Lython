@@ -193,7 +193,7 @@ public sealed class OwnedFunctionLocalsTests
 
     private static PyExecutableFunction Define(Context context)
     {
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(Definition,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LythonFrontend.Compile(Definition,regexProvider:Utf8RegexProvider.Instance).Script!).EntryPoint;
         LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
         return Assert.IsType<PyExecutableFunction>(context.Variables["f"]);
     }

@@ -144,7 +144,7 @@ internal sealed partial class LythonRuntime
                     break;
                 case ExecutableStoreModuleAnnotation annotation when invocation is not null:
                     var value = execution.Stack.TakeValue(instruction.InputStart, instruction.LiveExtent);
-                    pending = StoreAnnotationEntryAsync(ResolveName("__annotations__", span, context),
+                    pending = StoreAnnotationEntryAsync(ResolveVariableAnnotationMapping(context, span),
                         annotation.Name, value, context, span, asynchronous);
                     break;
                 case ExecutableStartFunctionDefaults start:

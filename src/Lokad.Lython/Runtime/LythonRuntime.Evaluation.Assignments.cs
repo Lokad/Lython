@@ -132,14 +132,6 @@ internal sealed partial class LythonRuntime
     private static object CreateLambda(LambdaExpressionSyntax lambda, ExecutionContext context)
         => CreateLoweredLambda(lambda.PreparedCallable.RequireNotNull(), context);
 
-    private sealed record AugmentedAssignmentTargetReference(object CurrentValue, Action<object> Store, Func<object, ValueTask>? AsyncStore = null)
-    {
-        public ValueTask StoreValueAsync(object value)
-        {
-            if (AsyncStore is not null) return AsyncStore(value);
-            Store(value); return ValueTask.CompletedTask;
-        }
-    }
 
     private static void InvokeItemMutation(
         PyInstance instance,
@@ -485,33 +477,6 @@ internal sealed partial class LythonRuntime
         }
 
         throw new LythonRuntimeException("TypeError", "Object does not support slice deletion.", span);
-    }
-
-    private static void ExecuteWithStatement(
-        LoweredWithStatement statement,
-        ExecutionContext context)
-    {
-        _ = PyContextManagers.ExecuteWith(
-            EvaluateLoweredExpression(statement.ContextExpression, context),
-            statement.Target,
-            statement.Body,
-            statement.Span,
-            statement.ContextExpression.Span,
-            context);
-    }
-
-    private static async ValueTask ExecuteWithStatementAsync(
-        LoweredWithStatement statement,
-        ExecutionContext context)
-    {
-        _ = await PyContextManagers.ExecuteWithAsync(
-                await EvaluateLoweredExpressionAsync(statement.ContextExpression, context).ConfigureAwait(false),
-                statement.Target,
-                statement.Body,
-                statement.Span,
-                statement.ContextExpression.Span,
-                context)
-            .ConfigureAwait(false);
     }
 
     private static object EvaluateAugmentedAssignment(

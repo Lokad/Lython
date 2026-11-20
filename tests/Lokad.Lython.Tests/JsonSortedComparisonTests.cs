@@ -58,7 +58,7 @@ public sealed class JsonSortedComparisonTests
     {
         var frontend = LythonFrontend.Compile(source);
         Assert.NotNull(frontend.Script);
-        var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(frontend.Script!).EntryPoint;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using (var owner = budget.CreateScope())
         {

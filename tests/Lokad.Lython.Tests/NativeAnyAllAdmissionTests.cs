@@ -17,8 +17,7 @@ public sealed class NativeAnyAllAdmissionTests(ITestOutputHelper output)
     [InlineData("all", true)]
     public async Task RangeRefusalPrecedesMutationAndKeepsItsAliasesFunded(string operation, bool denied)
     {
-        var code = ExecutableScript.Compile(LoweredScript.Lower(
-            LythonFrontend.Compile("target[0]=" + operation + "(arm(values))\nreturn target[0]",regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LythonFrontend.Compile("target[0]=" + operation + "(arm(values))\nreturn target[0]",regexProvider:Utf8RegexProvider.Instance).Script!).EntryPoint;
         foreach (var asynchronous in new[] { false, true })
         {
             const long limit = 4 * 1024 * 1024;

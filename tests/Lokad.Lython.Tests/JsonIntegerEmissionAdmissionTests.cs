@@ -25,7 +25,7 @@ public sealed class JsonIntegerEmissionAdmissionTests
     public async Task NumericKeysPreserveRenderedTextAndChunks(bool iterator, bool asynchronous)
     {
         var source = "import json\nreturn " + (iterator ? "list(json.JSONEncoder().iterencode(source))" : "json.dumps(source)");
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!).EntryPoint;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         string[] chunks;
         using (var owner = budget.CreateScope())
@@ -234,7 +234,7 @@ public sealed class JsonIntegerEmissionAdmissionTests
     private static LythonRuntime.ICallable Load(Context context, string route)
     {
         var target = route switch { "dumps" => "json.dumps", "encode" => "json.JSONEncoder().encode", _ => "json.JSONEncoder().iterencode" };
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile("import json\nreturn " + target,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LythonFrontend.Compile("import json\nreturn " + target,regexProvider:Utf8RegexProvider.Instance).Script!).EntryPoint;
         return Assert.IsAssignableFrom<LythonRuntime.ICallable>(LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null));
     }
 }

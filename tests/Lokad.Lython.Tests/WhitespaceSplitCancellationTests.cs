@@ -144,7 +144,7 @@ public sealed class WhitespaceSplitCancellationTests
                 count = Count()
                 """);
             Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
-            await LythonRuntime.ExecuteStatementsAsync(LoweredScript.Lower(frontend.Script.RequireNotNull()).Statements, context);
+            await LythonRuntime.ExecuteExecutableCodeObjectAsync(ExecutableScript.Compile(frontend.Script.RequireNotNull()).EntryPoint, context);
             var input = PyString.FromString(Word + " " + Word, context.MemoryGovernor, Span);
             var separator = PyString.FromString(" ");
             var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>

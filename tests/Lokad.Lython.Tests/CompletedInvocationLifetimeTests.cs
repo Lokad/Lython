@@ -66,7 +66,7 @@ public sealed class CompletedInvocationLifetimeTests
             return outer()
             """;
         var syntax = LythonFrontend.Compile(source).Script!;
-        var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
+        var code = ExecutableScript.Compile(syntax).EntryPoint;
         var root = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
         var observer = new Observer();
         root.Variables["observe"] = observer;

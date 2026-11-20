@@ -36,7 +36,7 @@ public sealed class PreparedFunctionExecutionTests
         var syntax = LythonFrontend.Compile(source);
         Assert.NotNull(syntax.Script);
         Assert.DoesNotContain(syntax.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
-        var code = ExecutableScript.Compile(LoweredScript.Lower(syntax.Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(syntax.Script!).EntryPoint;
         var budget = new LythonMemoryBudget(1024 * 1024);
         using var owner = budget.CreateScope();
         var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });

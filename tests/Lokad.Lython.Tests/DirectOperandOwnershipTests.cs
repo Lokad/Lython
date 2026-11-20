@@ -51,7 +51,7 @@ public sealed class DirectOperandOwnershipTests
                 .Replace("result=place(receiver,token,rhs)", "place=prepare(receiver,token,rhs)\nresult=place()");
         var frontend = LythonFrontend.Compile(program);
         Assert.NotNull(frontend.Script);
-        var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script)).EntryPoint;
+        var code = ExecutableScript.Compile(frontend.Script).EntryPoint;
         var ownerCode = captured ? code.FunctionBindings().Single(binding => binding.CodeObject?.Name == "prepare").CodeObject! : code;
         var place = ownerCode.FunctionBindings().Single(binding => binding.CodeObject?.Name == "place").CodeObject!;
         var store = Assert.Single(place.Instructions, instruction => instruction.OpCode == ExecutableOpCode.StoreSubscript);

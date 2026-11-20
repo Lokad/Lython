@@ -83,7 +83,7 @@ public sealed class JsonByteOwnershipTests
             var hook = new PendingHook(original);
             context.Variables["source"] = source;
             context.Variables["hook"] = hook;
-            var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile("import json\nreturn json.loads(source,object_hook=hook)").Script!));
+            var code = ExecutableScript.Compile(LythonFrontend.Compile("import json\nreturn json.loads(source,object_hook=hook)").Script!);
             var pending = LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context).AsTask();
             try
             {

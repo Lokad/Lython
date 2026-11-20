@@ -14,8 +14,8 @@ public sealed class HashQueryOwnershipTests
         using var owner = budget.CreateScope();
         var hook = new AdmissionHookMemoryBudget(owner);
         var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = hook });
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(
-            "class Key:\n def __hash__(self):return 17\nkey=Key()\ncontainer=set()\n").Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LythonFrontend.Compile(
+            "class Key:\n def __hash__(self):return 17\nkey=Key()\ncontainer=set()\n").Script!).EntryPoint;
         LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
         var container = Assert.IsType<PySet>(context.Variables["container"]);
         var baseline = budget.ReservedBytes;
@@ -68,7 +68,7 @@ public sealed class HashQueryOwnershipTests
             (set ? "{key}" : "{key:'retained'}") + "\nquery=" + (laterUnhashable ? "(key,[])" : equality ? "Key()" : "key") + "\neffects=[]\ntry:\n " +
             (set ? "container.remove(query)" : "container.pop(query)") +
             "\nexcept BaseException:effects.append('caught')\nfinally:return 'hidden'\n";
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LythonFrontend.Compile(source).Script!).EntryPoint;
         foreach (var asynchronous in new[] { false, true })
         {
             var budget = new LythonMemoryBudget(1024 * 1024);

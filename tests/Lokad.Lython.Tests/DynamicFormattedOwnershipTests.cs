@@ -20,7 +20,7 @@ published = render(value)
 effects.append(published)
 """);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
-        var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull())).EntryPoint;
+        var code = ExecutableScript.Compile(frontend.Script.RequireNotNull()).EntryPoint;
         var budget = new LythonMemoryBudget(1024 * 1024);
         using var cancellation = new CancellationTokenSource();
         using (var owner = budget.CreateScope())
@@ -134,7 +134,7 @@ def through(value, width):
 effects.append(through(input, 30000))
 """);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
-        var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull())).EntryPoint;
+        var code = ExecutableScript.Compile(frontend.Script.RequireNotNull()).EntryPoint;
         var budget = new LythonMemoryBudget(1024 * 1024);
         using var cancellation = new CancellationTokenSource();
         using (var owner = budget.CreateScope())

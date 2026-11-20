@@ -273,13 +273,14 @@ specific to that frozen source/image.
 
 </details>
 
-## Improvements within Lython
+## Changes within Lython
 
 These are separate source-pair observations; they cannot be added or substituted
 for the CPython ratios above.
 
 | Change | Established outcome | Limits / evidence |
 | --- | --- | --- |
+| Consolidate class suites onto executable instructions | Removes both lowered statement interpreters. Compiler buffer reuse recovers part of the cold cost and reduces manifest compile allocation by 5.98%. | The 49-class dataclass script takes 5.53–10.26% longer from compile to result and 0.88–1.75% longer warm. Its accounted execution peak matches. [B1195](../benchmarks/results/2026-11-20-executable-class-suites/refinement/README.md). |
 | Emit ordinary statement suites directly | Managed allocation during compilation falls 0.11–2.45% across five workloads. With longer quiet batches validator compilation takes 9.75–13.73% less time, with lower CPU. | The first compile-only run spanned zero. Warm allocation and accounted peaks match. Eager warm timing remains mixed. [B1191](../benchmarks/results/2026-11-20-direct-statement-emission/README.md) · [B1192](../benchmarks/results/2026-11-20-direct-statement-emission/confirmation/README.md). |
 | Prepare named `str.format` argument indices once | The file-backed named shipment allocates 15.69% less warm and takes 1.67–3.79% less time warm and 5.37–6.19% less from compile to result, with lower CPU. | The tested compiled report retains 224 additional bytes. The positional shipment control takes 0.12–2.45% more elapsed with mixed CPU. [B1189](../benchmarks/results/2026-11-20-prepared-format-keywords/README.md). |
 | Consolidate executable function declaration metadata | Three annotation scripts retain 5.08–13.97% fewer managed bytes after compilation. A generated suite of 128 annotated definitions retains 10.89% fewer. | Isolated retained-memory diagnostic with matching warm allocation and accounted peaks. CPU and elapsed are unmeasured. [B1187](../benchmarks/results/2026-11-20-executable-definition-retention/README.md). |

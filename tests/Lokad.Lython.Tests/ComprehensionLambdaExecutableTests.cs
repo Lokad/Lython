@@ -21,7 +21,7 @@ public sealed class ComprehensionLambdaExecutableTests
     public void BodiesAndCallerStayExecutableWithoutFallbackMirroring(string source)
     {
         var syntax = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script.RequireNotNull();
-        Check(ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint);
+        Check(ExecutableScript.Compile(syntax).EntryPoint);
 
         static void Check(ExecutableCodeObject code)
         {
@@ -38,7 +38,7 @@ public sealed class ComprehensionLambdaExecutableTests
     public async Task EscapedBodiesUseCompiledClosuresWithoutMirroringTheCaller(bool asynchronous)
     {
         var syntax = LythonFrontend.Compile("global result\nresult=[lambda:value for value in range(3)]",regexProvider:Utf8RegexProvider.Instance).Script.RequireNotNull();
-        var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
+        var code = ExecutableScript.Compile(syntax).EntryPoint;
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
         else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
@@ -64,7 +64,7 @@ public sealed class ComprehensionLambdaExecutableTests
     {
         const long cap = 1024 * 1024;
         var syntax = LythonFrontend.Compile("def make(offset):return [lambda:(offset,value) for value in range(2)]",regexProvider:Utf8RegexProvider.Instance).Script.RequireNotNull();
-        var module = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
+        var module = ExecutableScript.Compile(syntax).EntryPoint;
         var outer = Assert.Single(module.FunctionBindings()).CodeObject.RequireNotNull();
         var lambda = Assert.Single(outer.Constants.OfType<ExecutableCreateLambda>()).CodeObject.RequireNotNull();
         var facts = Assert.Single(outer.Constants.OfType<ExecutableStartComprehension>()).ScopeFacts;
@@ -135,7 +135,7 @@ public sealed class ComprehensionLambdaExecutableTests
     public void RefusedConstructionRestoresBindingsAndThePriorTarget(bool asynchronous)
     {
         var syntax = LythonFrontend.Compile("global target\ntarget=[lambda:value for value in range(10000)]",regexProvider:Utf8RegexProvider.Instance).Script.RequireNotNull();
-        var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
+        var code = ExecutableScript.Compile(syntax).EntryPoint;
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) },regexProvider:Utf8RegexProvider.Instance);
         var original = new PyList([true], context.MemoryGovernor, null);
         context.Variables["target"] = original;

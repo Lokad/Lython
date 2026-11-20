@@ -28,15 +28,6 @@ internal sealed partial class LythonRuntime
             return false;
         }
 
-        private bool TryRouteControl(ControlSignal signal, LythonSourceSpan span)
-        {
-            if (TryHandleAbrupt(_execution.Code, this, ref _execution.Stack, _execution.InstructionIndex,
-                new PendingControl(signal), span, ref _pendingAbrupt, ref _execution.InstructionIndex, out _))
-                return true;
-
-            return false;
-        }
-
         private bool TryRouteRuntimeException(LythonRuntimeException ex, LythonSourceSpan span)
         {
             var previousActive = State.CurrentException;

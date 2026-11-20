@@ -85,7 +85,7 @@ public sealed class ManagedHashBoundaryTests
         using var cancellation = new CancellationTokenSource();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
         { MemoryBudget = owner, CancellationToken = cancellation.Token });
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile("class Key:pass\nkey=Key()\n").Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LythonFrontend.Compile("class Key:pass\nkey=Key()\n").Script!).EntryPoint;
         LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
         var key = Assert.IsType<PyInstance>(context.Variables["key"]);
         var native = new NativeHash(cancellation, cancel, budget.LimitBytes!.Value);

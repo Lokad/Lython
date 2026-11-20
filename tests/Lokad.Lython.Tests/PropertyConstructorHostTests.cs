@@ -135,7 +135,7 @@ public sealed class PropertyConstructorHostTests
         var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
         await LythonRuntime.ExecuteExecutableCodeObjectAsync(
-            ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull())).EntryPoint, root);
+            ExecutableScript.Compile(frontend.Script.RequireNotNull()).EntryPoint, root);
         root.State.SetCurrentException(active);
         var run = Assert.IsAssignableFrom<PyFunctionBase>(root.Variables["run"]);
         var alias = Assert.IsAssignableFrom<PyFunctionBase>(root.Variables["alias"]);
@@ -211,7 +211,7 @@ public sealed class PropertyConstructorHostTests
         var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
         await LythonRuntime.ExecuteExecutableCodeObjectAsync(
-            ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull())).EntryPoint, root);
+            ExecutableScript.Compile(frontend.Script.RequireNotNull()).EntryPoint, root);
         var build = Assert.IsAssignableFrom<PyFunctionBase>(root.Variables["build"]);
         var alias = Assert.IsAssignableFrom<PyFunctionBase>(root.Variables["alias"]);
         root.State.SetCurrentException(active);

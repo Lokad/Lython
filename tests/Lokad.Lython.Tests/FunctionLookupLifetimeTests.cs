@@ -120,6 +120,6 @@ public sealed class FunctionLookupLifetimeTests
     {
         var frontend = LythonFrontend.Compile(source);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
-        return ExecutableScript.Compile(LoweredScript.Lower(frontend.Script!)).EntryPoint;
+        return ExecutableScript.Compile(frontend.Script!).EntryPoint;
     }
 }

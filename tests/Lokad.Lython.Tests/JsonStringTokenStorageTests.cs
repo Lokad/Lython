@@ -168,7 +168,7 @@ public sealed class JsonStringTokenStorageTests
     }
 
     private static (ExecutableScript, LythonRuntime.ExecutionContext) Prepare(string source, LythonRunOptions? options = null)
-        => (ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)), new(new MockLythonHost(), options ?? new()));
+        => (ExecutableScript.Compile(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!), new(new MockLythonHost(), options ?? new()));
 
     private static void AssertUnwound(LythonRuntime.ExecutionContext context)
     {

@@ -30,7 +30,7 @@ public sealed class FunctoolsCacheBorrowTests
             enabled[0]=True
             f(E())
             """;
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LythonFrontend.Compile(source).Script!).EntryPoint;
         var budget = new LythonMemoryBudget();
         using (var owner = budget.CreateScope())
         {

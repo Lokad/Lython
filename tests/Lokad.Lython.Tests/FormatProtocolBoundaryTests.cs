@@ -29,7 +29,7 @@ public sealed class FormatProtocolBoundaryTests
     public async Task FormattingPreservesEffectsAndCleanup(string label, string expression, bool fails, bool descriptor)
     {
         var source = "global published\npublished=" + expression + "\nreturn published";
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!).EntryPoint;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         foreach (var asynchronous in new[] { false, true })
         {

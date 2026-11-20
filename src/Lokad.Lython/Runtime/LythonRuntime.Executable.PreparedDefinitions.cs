@@ -44,16 +44,14 @@ internal sealed partial class LythonRuntime
     {
         private async ValueTask ExecutePreparedClassDefinitionAsync(ExecutableCreateClass create, int first, bool asynchronous)
         {
-            var definition = create.Definition;
-            var decorators = _execution.Stack.Slice(first, definition.Decorators.Count);
+            var decorators = _execution.Stack.Slice(first, create.Syntax.Decorators.Count);
             var headerStart = first + decorators.Length;
             var header = create.ExpandedHeader
                 ? (CallExpansion.CallArgumentAccumulator)_execution.Stack[headerStart] : null;
             var directHeader = _execution.Stack.Slice(headerStart, create.DirectHeaderCount);
             try
             {
-                await ExecuteClassDefinitionAsync(definition, this, asynchronous, decorators, header,
-                    directHeader, create.PreparedBaseCount).ConfigureAwait(false);
+                await ExecuteClassDefinitionAsync(create, this, asynchronous, decorators, header, directHeader).ConfigureAwait(false);
             }
             finally
             {
@@ -102,10 +100,11 @@ internal sealed partial class LythonRuntime
                 var next = first + operation.DecoratorCount;
                 var defaults = layout.Defaults.Length == 0 ? null : (PendingFunctionDefaults)execution.Stack[next++];
 
+                var typeScope = context.IsClassBody ? CreateTypeScope(operation.TypeParameters, context, span) : default;
                 var cells = invocation is null
                     ? CaptureExecutableCells(code, context, span, ref execution, borrowedCaptures)
-                    : CaptureExecutableClosures(code, context, span);
-                var typeScope = CreateTypeScope(operation.TypeParameters, context, span);
+                    : CaptureExecutableClosures(code, context.IsClassBody ? typeScope.Closure.FunctionClosureContext : context, span);
+                if (!context.IsClassBody) typeScope = CreateTypeScope(operation.TypeParameters, context, span);
                 var closure = invocation is null ? GetGlobalContext(context)
                     : SelectDefinitionClosure(code, typeScope.Closure, cells);
                 ReadOnlySpan<ExecutableSlot> annotations = operation.AnnotationOperandCount != 0

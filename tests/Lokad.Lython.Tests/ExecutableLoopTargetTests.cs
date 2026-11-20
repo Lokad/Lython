@@ -14,7 +14,7 @@ public sealed class ExecutableLoopTargetTests
     public void LoopGroupsUseExecutableOperations(string source)
     {
         var syntax = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!;
-        var code = Assert.Single(ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint.FunctionBindings()).CodeObject!;
+        var code = Assert.Single(ExecutableScript.Compile(syntax).EntryPoint.FunctionBindings()).CodeObject!;
         Assert.Single(code.Instructions, i => i.OpCode == ExecutableOpCode.UnpackValues);
     }
 
@@ -44,7 +44,7 @@ public sealed class ExecutableLoopTargetTests
         var source = comprehension ? "[None for " + target + " in [" + input + "]]"
             : "for " + target + " in [" + input + "]: pass";
         var syntax = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!;
-        var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
+        var code = ExecutableScript.Compile(syntax).EntryPoint;
         try
         {
             LythonRuntimeException error;

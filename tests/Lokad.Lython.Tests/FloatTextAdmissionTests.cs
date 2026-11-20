@@ -129,8 +129,7 @@ public sealed class FloatTextAdmissionTests
     [MemberData(nameof(RefusalCases))]
     public async Task RefusalPrecedesAssignmentAndUnwindsTheExecutableFrame(bool bytes, bool asynchronous, bool shared)
     {
-        var code = ExecutableScript.Compile(LoweredScript.Lower(
-            LythonFrontend.Compile("target = float(source)\nreturn target",regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LythonFrontend.Compile("target = float(source)\nreturn target",regexProvider:Utf8RegexProvider.Instance).Script!).EntryPoint;
         const long limit = 1024 * 1024;
         var budget = new LythonMemoryBudget(limit);
         using var owner = budget.CreateScope();
@@ -199,7 +198,7 @@ public sealed class FloatTextAdmissionTests
     [InlineData(true, true)]
     public async Task OrdinaryNativeConversionPreservesResultsAndCleanup(bool bytes, bool asynchronous)
     {
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile("return float(value)",regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LythonFrontend.Compile("return float(value)",regexProvider:Utf8RegexProvider.Instance).Script!).EntryPoint;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         {
             using (var owner = budget.CreateScope())

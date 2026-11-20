@@ -62,7 +62,7 @@ public sealed class ExecutableCallTransferTests
     {
         var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
-        return (ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull())),
+        return (ExecutableScript.Compile(frontend.Script.RequireNotNull()),
             new(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) }));
     }
 

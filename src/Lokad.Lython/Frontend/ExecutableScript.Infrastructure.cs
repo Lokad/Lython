@@ -56,16 +56,28 @@ internal sealed partial class ExecutableScript
 
     private sealed partial class Builder
     {
+        // These mappings are immutable after construction. A lone block can
+        // target only itself and is always reachable from its entry.
+        private static readonly int[] SingleEntryBlock = [0];
+
+        private ExecutableBlockTargets PrepareBlockTargets(int entryBlock)
+        {
+            if (_buffers.Blocks.Count == 1) return new(SingleEntryBlock, SingleEntryBlock);
+
+            var jumpTargets = ResolveJumpTargets();
+            return new(RetainReachableBlocks(entryBlock, jumpTargets), jumpTargets);
+        }
+
         private int CreateBlock()
         {
-            var index = _blocks.Count;
-            _blocks.Add([]);
+            var index = _buffers.Blocks.Count;
+            _buffers.Blocks.Add(index == 0 ? _buffers.EntryBlock : []);
             return index;
         }
 
         private void AddInstruction(int blockIndex, ExecutableInstruction instruction)
         {
-            var instructions = _blocks[blockIndex];
+            var instructions = _buffers.Blocks[blockIndex];
             if (instruction.OpCode == ExecutableOpCode.JumpIfFalse && instructions.Count != 0
                 && instructions[^1] is { OpCode: ExecutableOpCode.Binary } previous
                 && LythonRuntime.IsScalarComparison(previous.BinaryOperator) && previous.Span == instruction.Span)
@@ -80,7 +92,7 @@ internal sealed partial class ExecutableScript
 
         private bool IsTerminated(int blockIndex)
         {
-            var instructions = _blocks[blockIndex];
+            var instructions = _buffers.Blocks[blockIndex];
             if (instructions.Count == 0)
             {
                 return false;
@@ -91,8 +103,9 @@ internal sealed partial class ExecutableScript
 
         private IReadOnlyList<ExecutableExceptionRegion> NormalizeRegions(ExecutableBlockTargets targets)
         {
-            var normalized = new List<ExecutableExceptionRegion>(_regions.Count);
-            foreach (var region in _regions)
+            if (_buffers.Regions.Count == 0) return [];
+            var normalized = new List<ExecutableExceptionRegion>(_buffers.Regions.Count);
+            foreach (var region in _buffers.Regions)
             {
                 var firstProtected = FirstAtOrAfter(targets.Compacted[region.ProtectedStartIndex]);
                 var afterLastProtected = FirstAfter(targets.Compacted[region.ProtectedEndIndex]);
@@ -136,7 +149,7 @@ internal sealed partial class ExecutableScript
 
         private int[] RetainReachableBlocks(int entryBlockIndex, int[] jumpTargets)
         {
-            var indexMap = new int[_blocks.Count];
+            var indexMap = new int[_buffers.Blocks.Count];
             var pending = new Stack<int>();
             pending.Push(entryBlockIndex);
 
@@ -149,10 +162,10 @@ internal sealed partial class ExecutableScript
                 }
                 indexMap[blockIndex] = 1;
 
-                var block = _blocks[blockIndex];
+                var block = _buffers.Blocks[blockIndex];
                 if (block.Count == 0)
                 {
-                    if (blockIndex + 1 < _blocks.Count)
+                    if (blockIndex + 1 < _buffers.Blocks.Count)
                     {
                         pending.Push(blockIndex + 1);
                     }
@@ -182,7 +195,7 @@ internal sealed partial class ExecutableScript
                     }
                 }
 
-                foreach (var region in _regions)
+                foreach (var region in _buffers.Regions)
                 {
                     if (blockIndex < region.ProtectedStartIndex || blockIndex > region.ProtectedEndIndex)
                     {
@@ -205,7 +218,7 @@ internal sealed partial class ExecutableScript
                     not ExecutableOpCode.Return and
                     not ExecutableOpCode.ReturnNone and
                     not ExecutableOpCode.ReraiseException &&
-                    blockIndex + 1 < _blocks.Count)
+                    blockIndex + 1 < _buffers.Blocks.Count)
                 {
                     pending.Push(blockIndex + 1);
                 }
@@ -223,20 +236,20 @@ internal sealed partial class ExecutableScript
                     indexMap[original] = ~count;
                     continue;
                 }
-                _blocks[count] = _blocks[original];
+                _buffers.Blocks[count] = _buffers.Blocks[original];
                 indexMap[original] = count++;
             }
 
-            _blocks.RemoveRange(count, _blocks.Count - count);
+            _buffers.Blocks.RemoveRange(count, _buffers.Blocks.Count - count);
             return indexMap;
         }
 
         private int[] ResolveJumpTargets()
         {
-            var successors = new int[_blocks.Count];
+            var successors = new int[_buffers.Blocks.Count];
             for (var i = 0; i < successors.Length; i++)
             {
-                var instructions = _blocks[i];
+                var instructions = _buffers.Blocks[i];
                 successors[i] = instructions.Count == 1 && instructions[0].OpCode == ExecutableOpCode.Jump
                     ? instructions[0].TargetIndex : -1;
             }
@@ -250,8 +263,8 @@ internal sealed partial class ExecutableScript
                 return index;
             }
 
-            index = _locals.Count;
-            _locals.Add(name);
+            index = _buffers.Locals.Count;
+            _buffers.Locals.Add(name);
             _localIndexes.Add(name, index);
             return index;
         }
@@ -261,7 +274,7 @@ internal sealed partial class ExecutableScript
 
         private void CompileLoadIdentifier(string name, LythonSourceSpan span, int currentBlock)
         {
-            if (_comprehensionNames.Any(names => names.Contains(name)))
+            if (_buffers.ComprehensionNames.Any(names => names.Contains(name)))
             {
                 AddInstruction(currentBlock, ExecutableInstruction.LoadName(InternName(name), span));
             }
@@ -308,7 +321,9 @@ internal sealed partial class ExecutableScript
                 return;
             }
 
-            AddInstruction(currentBlock, ExecutableInstruction.StoreLocal(InternLocal(name), span));
+            AddInstruction(currentBlock, _classBody
+                ? ExecutableInstruction.StoreName(InternName(name), span)
+                : ExecutableInstruction.StoreLocal(InternLocal(name), span));
         }
 
         private int InternSyntheticLocal(string prefix) => InternLocal($"<{prefix}:{_syntheticLocalCounter++}>");
@@ -320,22 +335,22 @@ internal sealed partial class ExecutableScript
                 return index;
             }
 
-            index = _closures.Count;
-            _closures.Add(name);
+            index = _buffers.Closures.Count;
+            _buffers.Closures.Add(name);
             _closureIndexes.Add(name, index);
             return index;
         }
 
         private int InternName(string name)
         {
-            if (_nameIndexes.TryGetValue(name, out var index))
+            if (_buffers.NameIndexes.TryGetValue(name, out var index))
             {
                 return index;
             }
 
-            index = _names.Count;
-            _names.Add(name);
-            _nameIndexes.Add(name, index);
+            index = _buffers.Names.Count;
+            _buffers.Names.Add(name);
+            _buffers.NameIndexes.Add(name, index);
             return index;
         }
 
@@ -348,20 +363,20 @@ internal sealed partial class ExecutableScript
                     return existingNull;
                 }
 
-                var nullIndex = _constants.Count;
-                _constants.Add(null);
+                var nullIndex = _buffers.Constants.Count;
+                _buffers.Constants.Add(null);
                 _nullConstantIndex = nullIndex;
                 return nullIndex;
             }
 
-            if (_constantIndexes.TryGetValue(value, out var existing))
+            if (_buffers.ConstantIndexes.TryGetValue(value, out var existing))
             {
                 return existing;
             }
 
-            var index = _constants.Count;
-            _constants.Add(value);
-            _constantIndexes.Add(value, index);
+            var index = _buffers.Constants.Count;
+            _buffers.Constants.Add(value);
+            _buffers.ConstantIndexes.Add(value, index);
             return index;
         }
 
@@ -371,7 +386,7 @@ internal sealed partial class ExecutableScript
             // Modules register declarations only while compiling actual stores;
             // unreachable declarations need no slots. Existing namespace bridges
             // keep these slots live through StoreName and dictionary mutations.
-            if (_parameterLayout is null && IsLocalBindingName(name)) InternLocal(name);
+            if (_parameterLayout is null && !_classBody && IsLocalBindingName(name)) InternLocal(name);
         }
 
         private int InternImport(ImportStatementSyntax importStatement)
@@ -379,8 +394,8 @@ internal sealed partial class ExecutableScript
             if (_parameterLayout is null)
                 foreach (var name in ImportSyntaxFacts.EnumerateBindingNames(importStatement))
                     InternModuleBinding(name);
-            _imports.Add(importStatement);
-            return _imports.Count - 1;
+            _buffers.Imports.Add(importStatement);
+            return _buffers.Imports.Count - 1;
         }
 
         private int AllocateLookupCache() => _lookupCacheCount++;
@@ -390,10 +405,10 @@ internal sealed partial class ExecutableScript
             var arguments = call.Arguments.Select(argument => argument.Form).ToArray();
             var formatKeywords = call.Target is LoweredMemberExpression { Member.MemberName: "format" }
                 ? PrepareFormatKeywordIndices(arguments, call.Span) : null;
-            _callSites.Add(formatKeywords is null
+            _buffers.CallSites.Add(formatKeywords is null
                 ? new ExecutableCallSite(arguments.Length, arguments, call.Target.Span, call.Span, hasReceiver)
                 : new ExecutableNamedFormatCallSite(arguments.Length, arguments, call.Target.Span, call.Span, hasReceiver, formatKeywords));
-            return _callSites.Count - 1;
+            return _buffers.CallSites.Count - 1;
         }
 
         private Dictionary<string, int>? PrepareFormatKeywordIndices(CallArgumentForm[] arguments, LythonSourceSpan span)
@@ -401,7 +416,7 @@ internal sealed partial class ExecutableScript
             var firstKeyword = 0;
             while (firstKeyword < arguments.Length && arguments[firstKeyword].Kind == CallArgumentKind.Positional)
             {
-                PythonTokenization.CheckCancellation(_compilationCancellation, firstKeyword);
+                PythonTokenization.CheckCancellation(_compilation.CancellationToken, firstKeyword);
                 firstKeyword++;
             }
             if (firstKeyword == arguments.Length) return null;
@@ -409,12 +424,12 @@ internal sealed partial class ExecutableScript
             // The code owner funds one index for ordinary named format calls.
             // The runtime borrows it only when the actual receiver is a string.
             var bytes = checked(64L + 64L * (arguments.Length - firstKeyword));
-            using var storage = _compilationGovernor?.ReserveTemporary(bytes, span);
-            PythonTokenization.CheckCancellation(_compilationCancellation, 0);
+            using var storage = _compilation.Governor?.ReserveTemporary(bytes, span);
+            PythonTokenization.CheckCancellation(_compilation.CancellationToken, 0);
             var indices = new Dictionary<string, int>(arguments.Length - firstKeyword, StringComparer.Ordinal);
             for (var i = firstKeyword; i < arguments.Length; i++)
             {
-                PythonTokenization.CheckCancellation(_compilationCancellation, i - firstKeyword);
+                PythonTokenization.CheckCancellation(_compilation.CancellationToken, i - firstKeyword);
                 var argument = arguments[i];
                 if (argument.Kind != CallArgumentKind.Keyword || !indices.TryAdd(argument.KeywordName!, i)) return null;
             }
@@ -436,7 +451,7 @@ internal sealed partial class ExecutableScript
 
             codeObject.DefinitionAnnotationKeys = PyDict.RecordKeys.PrepareDefinition(annotations.Length,
                 annotations, static (inputs, index) => inputs[index].Key,
-                _compilationCancellation, functionDefinition.Span);
+                _compilation.CancellationToken, functionDefinition.Span);
             return codeObject;
         }
 
@@ -445,10 +460,9 @@ internal sealed partial class ExecutableScript
             ScopeDirectiveFacts scopeFacts, IReadOnlySet<string>? typeParameterNames = null,
             bool generator = false, PyString? qualifiedName = null, LoweredLambdaExpression? lambda = null)
         {
-            return new Builder(parameterLayout, this, scopeFacts,
+            return new Builder(_compilation, parameterLayout, this, scopeFacts,
                 completeLexicalParent: _completeLexicalParent && typeParameterNames is null,
-                moduleCode: _moduleCode, typeParameterNames: typeParameterNames)
-                { _generator = generator }
+                moduleCode: _moduleCode, typeParameterNames: typeParameterNames, generator: generator)
                 .CompileCodeObject(name, body, qualifiedName: qualifiedName, lambda: lambda);
         }
 
@@ -463,7 +477,7 @@ internal sealed partial class ExecutableScript
 
                 // The iteration scope can bind the name even at module scope
                 // or when the enclosing function declared it global.
-                foreach (var names in parent._comprehensionNames)
+                foreach (var names in parent._buffers.ComprehensionNames)
                     if (names.Contains(name)) return true;
 
                 if (parent._parameterLayout is null || parent._scopeFacts.IsGlobal(name)) return false;
@@ -476,8 +490,8 @@ internal sealed partial class ExecutableScript
         {
             var localBindings = pattern.Bindings.Select(binding =>
                 _localIndexes.TryGetValue(binding.Name, out var slot) ? slot : -1).ToArray();
-            _matchCases.Add(new ExecutableMatchCaseBinding(pattern, span, localBindings));
-            return _matchCases.Count - 1;
+            _buffers.MatchCases.Add(new ExecutableMatchCaseBinding(pattern, span, localBindings));
+            return _buffers.MatchCases.Count - 1;
         }
 
         private sealed class ConstantValueComparer : IEqualityComparer<object>
@@ -514,7 +528,7 @@ internal sealed partial class ExecutableScript
         // A for-loop owns one iterator slot on the value stack above the loop-entry
         // depth; while-loops own none. A break out of a for-loop must pop that
         // slot otherwise the abandoned iterator roots charges forever.
-        private readonly record struct LoopContext(
+        internal readonly record struct LoopContext(
             int ContinueBlockIndex,
             int BreakBlockIndex,
             bool HasIterator,

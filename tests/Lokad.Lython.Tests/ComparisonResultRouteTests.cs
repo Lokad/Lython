@@ -39,8 +39,8 @@ public sealed class ComparisonResultRouteTests
         var frontend = LythonFrontend.Compile(final ? "return 0 < 1 < operand" : "return operand < 1 < tail()",regexProvider:Utf8RegexProvider.Instance);
         var script = frontend.Script.RequireNotNull();
         var syntax = Assert.IsType<ReturnStatementSyntax>(Assert.Single(script.Statements)).Expression.RequireNotNull();
-        var lowered = LoweredScript.LowerStandaloneExpression(syntax);
-        var code = ExecutableScript.Compile(LoweredScript.Lower(script)).EntryPoint;
+        var lowered = LoweredScript.LowerExpression(syntax);
+        var code = ExecutableScript.Compile(script).EntryPoint;
         var result = route switch
         {
             "syntax" => Invoke("EvaluateExpression", syntax, context),

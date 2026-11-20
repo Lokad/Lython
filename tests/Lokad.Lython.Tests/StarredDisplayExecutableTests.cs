@@ -14,7 +14,7 @@ public sealed class StarredDisplayExecutableTests
     public void SetAndDictionaryExpansionDoNotForceFallbackOrMirroring(string expression)
     {
         var syntax = LythonFrontend.Compile($"def combine(left,right,marker):\n    before=marker+1\n    return {expression}",regexProvider:Utf8RegexProvider.Instance).Script!;
-        var code = ExecutableScript.Compile(LoweredScript.Lower(syntax));
+        var code = ExecutableScript.Compile(syntax);
         var body = Assert.Single(code.EntryPoint.FunctionBindings()).CodeObject;
         Assert.NotNull(body);
         Assert.False(body.RequiresLocalVariableMirroring);
@@ -27,7 +27,7 @@ public sealed class StarredDisplayExecutableTests
     public void TupleFinalConversionRefusesBeforeAssignment(bool asynchronous)
     {
         var syntax = LythonFrontend.Compile("global target\ntarget=(*source,)",regexProvider:Utf8RegexProvider.Instance).Script!;
-        var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
+        var code = ExecutableScript.Compile(syntax).EntryPoint;
         Context Create()
         {
             var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024 * 1024) },regexProvider:Utf8RegexProvider.Instance);
@@ -64,7 +64,7 @@ public sealed class StarredDisplayExecutableTests
     public void DeniedGrowthLeavesTheOriginalTargetUnchanged(bool asynchronous, bool tuple)
     {
         var syntax = LythonFrontend.Compile("global target\ntarget=" + (tuple ? "(1,*range(10000),2)" : "[1,*range(10000),2]"),regexProvider:Utf8RegexProvider.Instance).Script!;
-        var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
+        var code = ExecutableScript.Compile(syntax).EntryPoint;
         var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(131072) },regexProvider:Utf8RegexProvider.Instance);
         var original = new PyList(new object[] { new BigInteger(17) }, context.MemoryGovernor, null);
         context.Variables["target"] = original;
@@ -86,7 +86,7 @@ public sealed class StarredDisplayExecutableTests
     public void ExpandedDisplaysPreservePublicationAndUnwindBothDrivers(bool tuple)
     {
         var syntax = LythonFrontend.Compile("global target\ntarget=" + (tuple ? "(0,*range(3),4)" : "[0,*range(3),4]"),regexProvider:Utf8RegexProvider.Instance).Script!;
-        var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
+        var code = ExecutableScript.Compile(syntax).EntryPoint;
         Context Context() => new(new MockLythonHost(), new LythonRunOptions { });
         void Run(Context context, bool asynchronous)
         {
@@ -110,7 +110,7 @@ def combine(left, right, marker):
 print(combine([1], [2], 3))
 """,regexProvider:Utf8RegexProvider.Instance);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
-        var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script!));
+        var code = ExecutableScript.Compile(frontend.Script!);
         var body = Assert.Single(code.EntryPoint.FunctionBindings()).CodeObject;
         Assert.NotNull(body);
         Assert.False(body.RequiresLocalVariableMirroring);

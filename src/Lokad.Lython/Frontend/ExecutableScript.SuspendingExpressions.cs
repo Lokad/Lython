@@ -67,7 +67,7 @@ internal sealed partial class ExecutableScript
             }
             var append = parts.Count > 1;
             var startBlock = block;
-            var startIndex = _blocks[block].Count;
+            var startIndex = _buffers.Blocks[block].Count;
             var initialCapacity = 0;
             // Fill the construction descriptor after this existing parts walk;
             // prepared specifiers are parsed once and no old constant is kept.
@@ -90,7 +90,7 @@ internal sealed partial class ExecutableScript
                         block = CompileFormattedParts(field.FormatSpecifierParts, span, block);
                     var prepared = field.FormatSpecifierParts is null
                         ? LythonRuntime.PrepareConstantFormatSpecifier(
-                            field.FormatSpecifier is { } specifier ? specifier.Utf8Span : default, span, _compilationCancellation)
+                            field.FormatSpecifier is { } specifier ? specifier.Utf8Span : default, span, _compilation.CancellationToken)
                         : null;
                     initialCapacity = Math.Min(256, initialCapacity + Math.Min(256, prepared?.Width ?? 0));
                     AddInstruction(block, ExecutableInstruction.FormatField(InternConstant(
@@ -103,7 +103,7 @@ internal sealed partial class ExecutableScript
                 // through the builder's ordinary admitted growth.
                 if (initialCapacity != 0)
                     initialCapacity = (int)System.Numerics.BitOperations.RoundUpToPowerOf2((uint)Math.Max(8, initialCapacity));
-                _blocks[startBlock][startIndex] = ExecutableInstruction.StartFormattedString(initialCapacity, span);
+                _buffers.Blocks[startBlock][startIndex] = ExecutableInstruction.StartFormattedString(initialCapacity, span);
                 AddInstruction(block, ExecutableInstruction.FinishFormattedString(span));
             }
             return block;

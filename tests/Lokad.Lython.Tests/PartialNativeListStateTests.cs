@@ -81,7 +81,7 @@ public sealed class PartialNativeListStateTests
         var source = $"def values():\n    yield 'x' * 16000\n    for i in range({count - 1}):\n        yield i\n    probe()\n    yield None\nreturn list(values())\n";
         var parsed = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.Empty(parsed.Diagnostics);
-        var code = ExecutableScript.Compile(LoweredScript.Lower(parsed.Script!));
+        var code = ExecutableScript.Compile(parsed.Script!);
         var result = asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context)
             : LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null);
         var produced = Assert.IsType<PyList>(result);

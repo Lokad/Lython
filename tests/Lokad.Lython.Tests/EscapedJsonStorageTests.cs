@@ -132,7 +132,7 @@ public sealed class EscapedJsonStorageTests
 
     private static LythonRuntime.ICallable Load(Context context)
     {
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile("import json\nreturn json.loads",regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LythonFrontend.Compile("import json\nreturn json.loads",regexProvider:Utf8RegexProvider.Instance).Script!).EntryPoint;
         return Assert.IsAssignableFrom<LythonRuntime.ICallable>(LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null));
     }
 

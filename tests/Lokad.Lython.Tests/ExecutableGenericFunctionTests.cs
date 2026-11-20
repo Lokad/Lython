@@ -23,7 +23,7 @@ public sealed class ExecutableGenericFunctionTests
         var syntax = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.NotNull(syntax.Script);
         Assert.DoesNotContain(syntax.Diagnostics, diagnostic => diagnostic.Severity == LythonDiagnosticSeverity.Error);
-        var code = ExecutableScript.Compile(LoweredScript.Lower(syntax.Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(syntax.Script!).EntryPoint;
         foreach (var asynchronous in new[] { false, true })
         {
             var budget = new LythonMemoryBudget(4 * 1024 * 1024);

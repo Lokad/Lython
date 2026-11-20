@@ -61,25 +61,6 @@ internal abstract record LoweredStoreTarget(LythonSourceSpan Span)
     private static LoweredExpression? Lower(ExpressionSyntax? value)
         => value is null ? null : LoweredScript.LowerExpression(value);
 
-    internal IEnumerable<LoweredExpression> EnumerateReads()
-    {
-        switch (this)
-        {
-            case LoweredMemberStoreTarget member: yield return member.Receiver; break;
-            case LoweredSubscriptStoreTarget item:
-                yield return item.Receiver; yield return item.Index; break;
-            case LoweredSliceStoreTarget slice:
-                yield return slice.Receiver;
-                if (slice.Start is not null) yield return slice.Start;
-                if (slice.End is not null) yield return slice.End;
-                if (slice.Step is not null) yield return slice.Step;
-                break;
-            case LoweredUnpackingStoreTarget group:
-                foreach (var child in group.Items)
-                    foreach (var read in child.EnumerateReads()) yield return read;
-                break;
-        }
-    }
 }
 
 internal sealed record LoweredNameStoreTarget(string Name, LythonSourceSpan Span) : LoweredStoreTarget(Span);

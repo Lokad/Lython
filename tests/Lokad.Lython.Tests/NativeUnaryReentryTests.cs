@@ -48,7 +48,7 @@ public sealed class NativeUnaryReentryTests
     }
 
     private static ExecutableCodeObject Compile(string source)
-        => ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        => ExecutableScript.Compile(LythonFrontend.Compile(source).Script!).EntryPoint;
 
     private sealed class Arm(Action action) : LythonRuntime.ICallable
     {

@@ -155,8 +155,6 @@ internal sealed partial class LythonRuntime
                 throw exception.Exception;
             case PendingReturn returned:
                 throw new ReturnSignal(returned.Value);
-            case PendingControl control:
-                throw control.Control;
             default:
                 throw new InvalidOperationException($"Unknown pending abrupt signal: {pending.GetType().Name}");
         }
@@ -512,7 +510,7 @@ internal sealed partial class LythonRuntime
         {
             if ((i & 63) == 0) context.CheckExecution(context.CurrentInstructionSpan);
             // Compiler slots belong to this frame, rather than the guest
-            // namespace. Fallback statements cannot rebind or delete them.
+            // namespace. Guest bindings cannot rebind or delete them.
             if (codeObject.LocalNames[i].StartsWith('<')) continue;
             context.Variables.TryGetValue(codeObject.LocalNames[i], out var value);
             WriteLocalValue(locals, i, value);

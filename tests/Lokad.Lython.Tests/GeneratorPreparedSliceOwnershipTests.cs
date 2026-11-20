@@ -117,7 +117,7 @@ public sealed class GeneratorPreparedSliceOwnershipTests
     {
         var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
-        var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
+        var syntax = frontend.Script.RequireNotNull();
         var root = new Context(new MockLythonHost(), new LythonRunOptions
         {
             MemoryBudget = new LythonMemoryBudget(1024 * 1024),             SourcePath = "/generator-slice.py", CancellationToken = cancellation
@@ -127,7 +127,7 @@ public sealed class GeneratorPreparedSliceOwnershipTests
         var tape = new Tape(root, cancellation);
         root.Variables["gettap"] = new Callback(tape, "get");
         root.Variables["storetap"] = new Callback(tape, "store");
-        var code = ExecutableScript.Compile(lowered).EntryPoint;
+        var code = ExecutableScript.Compile(syntax).EntryPoint;
         if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, root);
         else LythonRuntime.ExecuteExecutableCodeObject(code, root, default, null);
         AssertUnwound(root);

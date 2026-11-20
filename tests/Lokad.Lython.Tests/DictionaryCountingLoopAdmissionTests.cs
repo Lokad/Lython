@@ -48,7 +48,7 @@ public sealed class DictionaryCountingLoopAdmissionTests
             context.Variables["mark"] = mark;
             var frontend = LythonFrontend.Compile(source);
             Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
-            var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script!));
+            var code = ExecutableScript.Compile(frontend.Script!);
             Assert.Contains(code.EntryPoint.Instructions, i => i.OpCode == ExecutableOpCode.ForNextDictionaryAccumulation);
             var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
             {
@@ -109,7 +109,7 @@ public sealed class DictionaryCountingLoopAdmissionTests
             context.Variables["mark"] = mark;
             var frontend = LythonFrontend.Compile(source);
             Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
-            var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script!));
+            var code = ExecutableScript.Compile(frontend.Script!);
             var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
             {
                 if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context);
@@ -157,7 +157,7 @@ public sealed class DictionaryCountingLoopAdmissionTests
             context.Variables["arm"] = arm;
             context.Variables["mark"] = mark;
             var frontend = LythonFrontend.Compile(source);
-            var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script!));
+            var code = ExecutableScript.Compile(frontend.Script!);
             Assert.Contains(code.EntryPoint.Instructions, i => i.OpCode == ExecutableOpCode.ForNextDictionaryAccumulation);
             try
             {

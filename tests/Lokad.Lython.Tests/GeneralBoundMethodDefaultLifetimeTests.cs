@@ -13,8 +13,8 @@ public sealed class GeneralBoundMethodDefaultLifetimeTests
     public async Task ProtocolDefaultsKeepTheReceiverOwnedBeforeBodyEntry(bool cancel)
     {
         const string source = "class Key:\n def __hash__(self):return hash('value')\n def __eq__(self,other):\n  tap()\n  return other=='value'\nclass Box:\n def method(self,*,value):return self,value\nbox=Box()\nBox.method.__kwdefaults__={Key():value}\nmethod=box.method";
-        var definition = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
-        var call = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile("return method()",regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
+        var definition = ExecutableScript.Compile(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!).EntryPoint;
+        var call = ExecutableScript.Compile(LythonFrontend.Compile("return method()",regexProvider:Utf8RegexProvider.Instance).Script!).EntryPoint;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
@@ -75,7 +75,7 @@ def target(first,*,value):return first,value
 target.__kwdefaults__={Key():value}
 return target(first=value)
 """;
-        var definition = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        var definition = ExecutableScript.Compile(LythonFrontend.Compile(source).Script!).EntryPoint;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = owner });

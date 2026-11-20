@@ -120,7 +120,7 @@ public sealed class CounterTraversalOwnershipTests
         => LythonRuntime.ExecuteExecutableCodeObject(Compile("namespace=globals()\nfrom collections import Counter\neffects=[]\nclass Count:\n def __eq__(self,other):effects.append('eq');return True\ncount=Count()\nleft=Counter(a=count)\nright=Counter(a=Count())\n"), context, default, null);
 
     private static ExecutableCodeObject Compile(string source)
-        => ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        => ExecutableScript.Compile(LythonFrontend.Compile(source).Script!).EntryPoint;
 
     private sealed class Observation { internal long Expected, AfterClear; }
 

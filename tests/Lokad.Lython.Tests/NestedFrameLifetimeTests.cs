@@ -26,7 +26,7 @@ public sealed class NestedFrameLifetimeTests
             "result=outer(9)\nreturn result()\n";
         var frontend = LythonFrontend.Compile(source);
         Assert.NotNull(frontend.Script);
-        var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script)).EntryPoint;
+        var code = ExecutableScript.Compile(frontend.Script).EntryPoint;
         var budget = new LythonMemoryBudget(1024 * 1024);
         using var owner = budget.CreateScope();
         using var cancellation = new CancellationTokenSource();

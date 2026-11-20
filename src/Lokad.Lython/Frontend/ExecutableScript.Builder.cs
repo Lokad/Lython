@@ -17,14 +17,12 @@ internal sealed partial class ExecutableScript
 
     public ExecutableCodeObject EntryPoint { get; }
 
-    internal static ExecutableScript Compile(LoweredScript lowered)
-        => Compile(lowered.Syntax);
-
     public static ExecutableScript Compile(ScriptSyntax script, CancellationToken cancellationToken = default, MemoryGovernor? governor = null)
     {
+        var compilation = new Compilation(cancellationToken, governor);
         List<ExecutableCodeObject> moduleCode = [];
-        var entryPoint = new Builder(null, null, ScopeDirectiveFactsCollector.ForModule(script), completeLexicalParent: true,
-            moduleCode: moduleCode, compilationCancellation: cancellationToken, compilationGovernor: governor)
+        var entryPoint = new Builder(compilation, null, null, ScopeDirectiveFactsCollector.ForModule(script),
+            completeLexicalParent: true, moduleCode: moduleCode)
             .CompileCodeObject("<module>", script.Statements);
         // Actual executable sites have supplied their lexical capture facts.
         // Remaining callables belong to retained lowered consumers or lazy
@@ -35,13 +33,14 @@ internal sealed partial class ExecutableScript
             switch (syntax)
             {
                 case LambdaExpressionSyntax lambdaSyntax:
-                    var lambda = lambdaSyntax.PreparedCallable ?? (LoweredLambdaExpression)LoweredScript.LowerStandaloneExpression(lambdaSyntax);
-                    if (lambda.PreparedCode is null) CompileNamespaceLambda(lambda, cancellationToken, governor);
+                    var lambda = lambdaSyntax.PreparedCallable ?? (LoweredLambdaExpression)LoweredScript.LowerExpression(lambdaSyntax);
+                    if (lambda.PreparedCode is null) CompileNamespaceLambda(lambda, compilation);
                     break;
                 case GeneratorExpressionSyntax generatorSyntax:
-                    var generator = generatorSyntax.PreparedCallable ?? (LoweredGeneratorExpression)LoweredScript.LowerStandaloneExpression(generatorSyntax);
+                    var generator = generatorSyntax.PreparedCallable ?? (LoweredGeneratorExpression)LoweredScript.LowerExpression(generatorSyntax);
                     if (generator.PreparedCode is null)
-                        generator.CompleteCompilation(new Builder(FunctionParameterLayout.Create([]), true, GeneratorFacts(generator), cancellationToken, governor)
+                        generator.CompleteCompilation(new Builder(compilation, FunctionParameterLayout.Create([]), null,
+                                GeneratorFacts(generator), generator: true)
                             .CompileCodeObject("<genexpr>", [], generator));
                     break;
                 default: throw new InvalidOperationException("Unexpected prepared callable syntax.");
@@ -55,73 +54,112 @@ internal sealed partial class ExecutableScript
     private static ScopeDirectiveFacts GeneratorFacts(LoweredGeneratorExpression expression)
         => expression.ScopeFacts with { LocalNames = new HashSet<string>(expression.ScopeFacts.LocalNames, StringComparer.Ordinal) { ".0" } };
 
-    private static void CompileNamespaceLambda(LoweredLambdaExpression lambda, CancellationToken cancellationToken, MemoryGovernor? governor)
-        => lambda.CompleteCompilation(new Builder(lambda.ParameterLayout, lambda.IsGenerator, lambda.ScopeFacts, cancellationToken, governor)
+    private static void CompileNamespaceLambda(LoweredLambdaExpression lambda, Compilation compilation)
+        => lambda.CompleteCompilation(new Builder(compilation, lambda.ParameterLayout, null, lambda.ScopeFacts, generator: lambda.IsGenerator)
             .CompileCodeObject("<lambda>", [], qualifiedName: lambda.Lambda.PreparedQualifiedName, lambda: lambda), namespaceClosure: true);
 
-    internal static ExecutableCodeObject CompileClassFunction(LoweredFunctionDefinitionStatement function)
-        => CompileClassFunction(function.Syntax, default, null);
+    // Recursive emission has one active buffer set per builder. A compilation
+    // keeps one spare for the next sibling. Only final arrays and per-scope
+    // capture maps escape compilation.
+    private sealed class Compilation(CancellationToken cancellationToken, MemoryGovernor? governor)
+    {
+        private Builder.Buffers? _spare;
 
-    internal static ExecutableCodeObject CompileClassFunction(FunctionDefinitionStatementSyntax function,
-        CancellationToken cancellationToken, MemoryGovernor? governor)
-        => new Builder(function.ParameterLayout, function.IsGenerator, ScopeDirectiveFactsCollector.ForFunction(function), cancellationToken, governor)
-            .CompileCodeObject(function.DeclaredName, function.Body, qualifiedName: function.PreparedQualifiedName);
+        internal CancellationToken CancellationToken { get; } = cancellationToken;
+        internal MemoryGovernor? Governor { get; } = governor;
+
+        internal Builder.Buffers TakeBuffers()
+        {
+            var buffers = _spare;
+            _spare = null;
+            return buffers ?? new Builder.Buffers();
+        }
+
+        internal void ReturnBuffers(Builder.Buffers buffers)
+        {
+            if (_spare is not null) return;
+            buffers.Clear();
+            _spare = buffers;
+        }
+    }
 
     private sealed partial class Builder
     {
         private static readonly PyString LambdaName = PyString.FromString("<lambda>");
         private static readonly LythonSourceSpan EmptySpan = new(0, 0, 0, 0);
 
-        private readonly List<object?> _constants = [];
-        private readonly Dictionary<object, int> _constantIndexes = new(ConstantValueComparer.Instance);
+        internal sealed class Buffers
+        {
+            internal readonly List<object?> Constants = [];
+            internal readonly Dictionary<object, int> ConstantIndexes = new(ConstantValueComparer.Instance);
+            internal readonly List<string> Names = [];
+            internal readonly Dictionary<string, int> NameIndexes = new(StringComparer.Ordinal);
+            internal readonly List<string> Locals = [];
+            internal readonly List<string> Closures = [];
+            internal readonly List<ExecutableInstruction> EntryBlock = [];
+            internal readonly List<List<ExecutableInstruction>> Blocks = [];
+            internal readonly List<ExecutableExceptionRegion> Regions = [];
+            internal readonly List<ImportStatementSyntax> Imports = [];
+            internal readonly List<ExecutableCallSite> CallSites = [];
+            internal readonly List<ExecutableMatchCaseBinding> MatchCases = [];
+            internal readonly Stack<LoopContext> Loops = [];
+            internal readonly Stack<IReadOnlySet<string>> ComprehensionNames = [];
+
+            internal void Clear()
+            {
+                Constants.Clear();
+                ConstantIndexes.Clear();
+                Names.Clear();
+                NameIndexes.Clear();
+                Locals.Clear();
+                Closures.Clear();
+                EntryBlock.Clear();
+                Blocks.Clear();
+                Regions.Clear();
+                Imports.Clear();
+                CallSites.Clear();
+                MatchCases.Clear();
+                Loops.Clear();
+                ComprehensionNames.Clear();
+            }
+        }
+
+        private readonly Compilation _compilation;
+        private readonly Buffers _buffers;
         private int? _nullConstantIndex;
-        private readonly List<string> _names = [];
-        private readonly List<string> _locals = [];
-        private readonly List<string> _closures = [];
-        private readonly Dictionary<string, int> _nameIndexes = new(StringComparer.Ordinal);
+        // These maps become code metadata, including the identity used to
+        // select a prepared capture layout at execution.
         private readonly Dictionary<string, int> _localIndexes = new(StringComparer.Ordinal);
         private readonly Dictionary<string, int> _closureIndexes = new(StringComparer.Ordinal);
-        private readonly List<List<ExecutableInstruction>> _blocks = [];
-        private readonly List<ExecutableExceptionRegion> _regions = [];
-        private readonly List<ImportStatementSyntax> _imports = [];
-        private readonly List<ExecutableCallSite> _callSites = [];
         private int _lookupCacheCount;
-        private readonly List<ExecutableMatchCaseBinding> _matchCases = [];
-        private readonly Stack<LoopContext> _loops = [];
-        private readonly Stack<IReadOnlySet<string>> _comprehensionNames = [];
         private int _protectedDepth;
-        private bool _generator;
+        private readonly bool _generator;
         private int _syntheticLocalCounter;
 
         private readonly FunctionParameterLayout? _parameterLayout;
         private readonly Builder? _lexicalParent;
         private readonly IReadOnlySet<string>? _typeParameterNames;
         private readonly bool _completeLexicalParent;
+        private readonly bool _classBody;
         private readonly ScopeDirectiveFacts _scopeFacts;
         private readonly List<ExecutableCodeObject>? _moduleCode;
-        private readonly CancellationToken _compilationCancellation;
-        private readonly MemoryGovernor? _compilationGovernor;
-
-        internal Builder(FunctionParameterLayout parameterLayout, bool generator, ScopeDirectiveFacts scopeFacts,
-            CancellationToken cancellationToken, MemoryGovernor? governor)
-            : this(parameterLayout, null, scopeFacts, compilationCancellation: cancellationToken, compilationGovernor: governor)
-        {
-            _generator = generator;
-        }
 
         internal Builder(
+            Compilation compilation,
             FunctionParameterLayout? parameterLayout,
             Builder? lexicalParent,
             ScopeDirectiveFacts scopeFacts,
             bool completeLexicalParent = false,
             List<ExecutableCodeObject>? moduleCode = null,
             IReadOnlySet<string>? typeParameterNames = null,
-            CancellationToken compilationCancellation = default,
-            MemoryGovernor? compilationGovernor = null)
+            bool generator = false,
+            bool classBody = false)
         {
+            _compilation = compilation;
+            _buffers = compilation.TakeBuffers();
+            _generator = generator;
+            _classBody = classBody;
             _moduleCode = moduleCode;
-            _compilationCancellation = lexicalParent?._compilationCancellation ?? compilationCancellation;
-            _compilationGovernor = lexicalParent?._compilationGovernor ?? compilationGovernor;
             _scopeFacts = scopeFacts;
             _parameterLayout = parameterLayout;
             // Only enclosing executable compilation supplies complete lexical
@@ -169,7 +207,7 @@ internal sealed partial class ExecutableScript
             }
 
             var callable = _parameterLayout is not null && generatorExpression is null;
-            var docstring = callable && statements.Count > 0 &&
+            var docstring = (callable || _classBody) && statements.Count > 0 &&
                 statements[0] is ExpressionStatementSyntax { Expression: StringLiteralExpressionSyntax literal }
                 ? PyString.FromString(literal.Value) : null;
             var entryBlock = CreateBlock();
@@ -192,8 +230,7 @@ internal sealed partial class ExecutableScript
                 AddInstruction(finalBlock, ExecutableInstruction.ReturnNone(EmptySpan));
             }
 
-            var jumpTargets = ResolveJumpTargets();
-            var blockTargets = new ExecutableBlockTargets(RetainReachableBlocks(entryBlock, jumpTargets), jumpTargets);
+            var blockTargets = PrepareBlockTargets(entryBlock);
             var normalizedRegions = NormalizeRegions(blockTargets);
             var (capturedLocalSlots, containsCallable, needsMirroring, completeChildren) = PrepareDeclarations();
             // Annotation values can retain functions or deferred generators after
@@ -210,22 +247,22 @@ internal sealed partial class ExecutableScript
             // This builder is single-use; its completed slot maps become code metadata.
             var code = new ExecutableCodeObject(
                 name,
-                _constants.ToArray(),
-                _names.ToArray(),
-                _locals.ToArray(),
+                _buffers.Constants.ToArray(),
+                _buffers.Names.ToArray(),
+                _buffers.Locals.ToArray(),
                 _localIndexes,
                 capturedLocalSlots,
-                _closures.ToArray(),
+                _buffers.Closures.ToArray(),
                 _closureIndexes,
                 _scopeFacts,
-                _blocks,
+                _buffers.Blocks,
                 0,
                 blockTargets,
                 normalizedRegions,
-                _imports.ToArray(),
-                _callSites.ToArray(),
+                _buffers.Imports.ToArray(),
+                _buffers.CallSites.ToArray(),
                 _lookupCacheCount,
-                _matchCases.ToArray(),
+                _buffers.MatchCases.ToArray(),
                 requiresLocalVariableMirroring,
                 isFunctionScope: _parameterLayout is not null,
                 initialOperandDepth: generatorExpression is null ? 0 : 1,
@@ -238,10 +275,11 @@ internal sealed partial class ExecutableScript
                 // namespace keeps its defining chain and the bridge to it.
                 UsesOnlyLexicalSlots = callable && resolvedNonlocals &&
                     !requiresLocalVariableMirroring &&
-                    !_scopeFacts.RequiresClassCell && _matchCases.Count == 0 &&
+                    !_scopeFacts.RequiresClassCell && _buffers.MatchCases.Count == 0 &&
                     completeChildren
             };
             _moduleCode?.Add(code);
+            _compilation.ReturnBuffers(_buffers);
             return code;
         }
 
@@ -251,12 +289,12 @@ internal sealed partial class ExecutableScript
             var needsMirroring = false;
             var completeChildren = true;
             HashSet<int>? captured = null;
-            var firstLambda = _constants.Count;
-            var firstGenerator = _constants.Count;
-            for (var index = 0; index < _constants.Count; index++)
+            var firstLambda = _buffers.Constants.Count;
+            var firstGenerator = _buffers.Constants.Count;
+            for (var index = 0; index < _buffers.Constants.Count; index++)
             {
-                if ((index & 1023) == 0) PythonTokenization.CheckCancellation(_compilationCancellation, 0);
-                switch (_constants[index])
+                if ((index & 1023) == 0) PythonTokenization.CheckCancellation(_compilation.CancellationToken, 0);
+                switch (_buffers.Constants[index])
                 {
                     case ExecutableCreateFunction function:
                         PrepareChild(function.CodeObject);
@@ -275,15 +313,15 @@ internal sealed partial class ExecutableScript
 
             // Forwarded cells contribute to locals() snapshots. Preserve the
             // declaration order of named functions, lambdas and generators.
-            for (var index = firstLambda; index < _constants.Count; index++)
+            for (var index = firstLambda; index < _buffers.Constants.Count; index++)
             {
-                if ((index & 1023) == 0) PythonTokenization.CheckCancellation(_compilationCancellation, 0);
-                if (_constants[index] is ExecutableCreateLambda lambda) PrepareChild(lambda.CodeObject);
+                if ((index & 1023) == 0) PythonTokenization.CheckCancellation(_compilation.CancellationToken, 0);
+                if (_buffers.Constants[index] is ExecutableCreateLambda lambda) PrepareChild(lambda.CodeObject);
             }
-            for (var index = firstGenerator; index < _constants.Count; index++)
+            for (var index = firstGenerator; index < _buffers.Constants.Count; index++)
             {
-                if ((index & 1023) == 0) PythonTokenization.CheckCancellation(_compilationCancellation, 0);
-                if (_constants[index] is not ExecutableCreateGeneratorExpression generator) continue;
+                if ((index & 1023) == 0) PythonTokenization.CheckCancellation(_compilation.CancellationToken, 0);
+                if (_buffers.Constants[index] is not ExecutableCreateGeneratorExpression generator) continue;
                 completeChildren = false;
                 PrepareChild(generator.CodeObject);
             }
@@ -306,7 +344,7 @@ internal sealed partial class ExecutableScript
                 var resolved = true;
                 for (var i = 0; i < names.Count; i++)
                 {
-                    if ((i & 255) == 0) PythonTokenization.CheckCancellation(_compilationCancellation, sourceStart);
+                    if ((i & 255) == 0) PythonTokenization.CheckCancellation(_compilation.CancellationToken, sourceStart);
                     var name = names[i];
                     if (_localIndexes.TryGetValue(name, out var slot)) (captured ??= []).Add(slot);
                     else if (!_closureIndexes.ContainsKey(name))
@@ -316,7 +354,7 @@ internal sealed partial class ExecutableScript
                     }
                 }
                 if (resolved && child.CaptureSources is null && _moduleCode is not null)
-                    child.PrepareCaptureSources(_localIndexes, _closureIndexes, _compilationGovernor, _compilationCancellation);
+                    child.PrepareCaptureSources(_localIndexes, _closureIndexes, _compilation.Governor, _compilation.CancellationToken);
             }
         }
 

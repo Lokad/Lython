@@ -115,29 +115,34 @@ while True:
         Assert.Contains("execution canceled", result.Failure.Message, StringComparison.Ordinal);
     }
 
-    [Fact]
-    public async Task RunAsync_HostCancellationToken_CancelsAsyncHostOperation()
+    [Theory]
+    [InlineData("value = open('/input.txt').read()")]
+    [InlineData("class Reader:\n    with open('/input.txt') as source:\n        value = source.read()")]
+    public async Task RunAsync_HostCancellationToken_CancelsAsyncHostOperation(string source)
     {
         using var cts = new CancellationTokenSource();
         var host = new BlockingReadHost();
+        var budget = new LythonMemoryBudget(1024 * 1024);
 
         var runTask = new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
-            """
-value = open("/input.txt").read()
-""",
+            source,
             host,
-            cancellationToken: cts.Token);
+            new LythonRunOptions { MemoryBudget = budget },
+            cts.Token);
 
         await host.ReadStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
         Assert.False(runTask.IsCompleted);
         cts.Cancel();
 
-        var result = await runTask.WaitAsync(TimeSpan.FromSeconds(5));
-
-        Assert.False(result.Success);
-        Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("execution canceled", result.Failure.Message, StringComparison.Ordinal);
+        using (var result = await runTask.WaitAsync(TimeSpan.FromSeconds(5)))
+        {
+            Assert.False(result.Success);
+            Assert.NotNull(result.Failure);
+            Assert.Equal("RuntimeError", result.Failure.RequireNotNull().ExceptionType);
+            Assert.Contains("execution canceled", result.Failure.Message, StringComparison.Ordinal);
+            Assert.Equal(1, host.CloseCalls);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [Fact]
@@ -471,6 +476,7 @@ text = str(data)
         private readonly MockLythonHost _inner = new();
         public BlockingReadHost() => _inner.SeedFile("/input.txt", "input");
         public TaskCompletionSource ReadStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public int CloseCalls { get; private set; }
 
         public string Cwd => _inner.Cwd;
 
@@ -494,9 +500,16 @@ text = str(data)
             {
                 CompletesSynchronously = false,
                 Read = async (_, current) =>
-            {
-                ReadStarted.TrySetResult(); await Task.Delay(Timeout.InfiniteTimeSpan, current); return 0;
-            }
+                {
+                    ReadStarted.TrySetResult();
+                    await Task.Delay(Timeout.InfiniteTimeSpan, current);
+                    return 0;
+                },
+                Close = async () =>
+                {
+                    await file.DisposeAsync();
+                    CloseCalls++;
+                },
             };
         }
 

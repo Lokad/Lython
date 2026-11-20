@@ -28,7 +28,7 @@ public sealed class DictionaryViewAdmissionTests
         using (var fill = new Pad(dict, budget, limit, shared))
         {
             context.Variables["fill"] = fill;
-            var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile($"global published\npublished=fill().{method}()\nreturn published",regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
+            var code = ExecutableScript.Compile(LythonFrontend.Compile($"global published\npublished=fill().{method}()\nreturn published",regexProvider:Utf8RegexProvider.Instance).Script!).EntryPoint;
             var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
             {
                 if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);

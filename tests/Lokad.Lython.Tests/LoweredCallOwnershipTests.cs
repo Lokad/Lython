@@ -16,8 +16,8 @@ public sealed class LoweredCallOwnershipTests
     {
         const int count = 64;
         var source = "return consume(" + (expanded ? "*items" : string.Join(", ", Enumerable.Repeat("None", count))) + ")";
-        var script = LoweredScript.Lower(LythonFrontend.Compile(source).Script!);
-        var expression = Assert.IsType<LoweredReturnStatement>(Assert.Single(script.Statements)).Expression!;
+        var script = LythonFrontend.Compile(source).Script!;
+        var expression = LoweredScript.LowerExpression(Assert.IsType<ReturnStatementSyntax>(Assert.Single(script.Statements)).Expression!);
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using (var owner = budget.CreateScope())
         {
@@ -60,8 +60,8 @@ public sealed class LoweredCallOwnershipTests
         const int count = 64;
         const long limit = 4 * 1024 * 1024;
         var source = "return consume(effect(), " + string.Join(", ", Enumerable.Repeat("None", count - 1)) + ")";
-        var script = LoweredScript.Lower(LythonFrontend.Compile(source).Script!);
-        var expression = Assert.IsType<LoweredReturnStatement>(Assert.Single(script.Statements)).Expression!;
+        var script = LythonFrontend.Compile(source).Script!;
+        var expression = LoweredScript.LowerExpression(Assert.IsType<ReturnStatementSyntax>(Assert.Single(script.Statements)).Expression!);
         var budget = new LythonMemoryBudget(limit);
         using (var owner = budget.CreateScope())
         {

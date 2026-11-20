@@ -1,7 +1,7 @@
 # B1194 Executable class suites
 
 The private prototype `c1d49c4da` runs class suites on the existing instruction
-engine with the live metaclass namespace. It removes both lowered statement
+engine with the live class namespace. It removes both lowered statement
 interpreters, their statement types and their duplicate protected-suite
 cleanup. It retains lowered evaluation for expressions that use it. The patch
 adds 111 and removes 2,296 production lines relative to `2dad15d55`.

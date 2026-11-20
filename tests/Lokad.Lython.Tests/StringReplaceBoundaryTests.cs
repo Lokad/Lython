@@ -53,7 +53,7 @@ public sealed class StringReplaceBoundaryTests
     public async Task EveryCallCheckpointPreservesEffectsAndUnwinds(bool asynchronous, bool hooks)
     {
         var source = hooks ? "return source.replace(old(),replacement())" : "return source.replace('a','bb')";
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!).EntryPoint;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         string[] fullEffects;
         using (var owner = budget.CreateScope())

@@ -112,7 +112,7 @@ public sealed class AsyncExecutableFunctionTests
     {
         var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.NotNull(frontend.Script);
-        var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script)).EntryPoint;
+        var code = ExecutableScript.Compile(frontend.Script).EntryPoint;
         var context = new Context(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var capture = new Capture();
         context.Variables["record"] = capture;

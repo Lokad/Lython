@@ -22,7 +22,7 @@ public sealed class ComparisonBranchOwnershipTests
                 "try:\n if Left()<0:effects.append('branch')\nexcept MemoryError:\n effects.append('suppressed')\nfinally:\n pass\n";
             var frontend = LythonFrontend.Compile(source);
             Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
-            var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull())).EntryPoint;
+            var code = ExecutableScript.Compile(frontend.Script.RequireNotNull()).EntryPoint;
             var budget = new LythonMemoryBudget(1024 * 1024);
             using var cancellation = new CancellationTokenSource();
             using (var owner = budget.CreateScope())

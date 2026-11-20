@@ -11,7 +11,7 @@ public sealed class ExecutableSubscriptStoreTests
     public void OrdinaryStoreHeadersAreExecutableWithoutLoopTargetEvaluation()
     {
         var syntax = LythonFrontend.Compile("def run(container,key,value):\n container[key]=value",regexProvider:Utf8RegexProvider.Instance).Script!;
-        var module = ExecutableScript.Compile(LoweredScript.Lower(syntax));
+        var module = ExecutableScript.Compile(syntax);
         var code = Assert.Single(module.EntryPoint.FunctionBindings()).CodeObject!;
         Assert.Single(code.Instructions, i => i.OpCode is ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast);
     }
@@ -30,7 +30,7 @@ public sealed class ExecutableSubscriptStoreTests
         context.Variables["value"] = true;
         context.Variables["key"] = deny;
         var syntax = LythonFrontend.Compile("container[key()]=value",regexProvider:Utf8RegexProvider.Instance).Script!;
-        var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
+        var code = ExecutableScript.Compile(syntax).EntryPoint;
         try
         {
             LythonRuntimeException error;

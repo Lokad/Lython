@@ -28,7 +28,7 @@ public sealed class InstructionFailureRoutingTests
             ? "namespace = globals()\ntry:\n raise KeyError('inner')\nexcept KeyError as caught:\n " + call + "\n effects.append(1)\n"
             : call + "\neffects.append(1)\n");
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
-        var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull())).EntryPoint;
+        var code = ExecutableScript.Compile(frontend.Script.RequireNotNull()).EntryPoint;
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
         using var cancellation = new CancellationTokenSource();
         using (var owner = budget.CreateScope())

@@ -13,23 +13,15 @@ internal sealed partial class LythonRuntime
         else context.Variables["__annotations__"] = annotations;
     }
 
-    private static async ValueTask StoreVariableAnnotationAsync(LoweredAnnotatedAssignmentStatement statement,
-        ExecutionContext context, bool asynchronous)
+    private static object ResolveVariableAnnotationMapping(ExecutionContext context, LythonSourceSpan span)
     {
-        if (context.ParentContext is not null && !context.IsClassBody) return;
-        var text = statement.Annotation.Syntax.PostponedAnnotation;
-        if (text is not null && !statement.Assignment.IsSimple) return;
-        var annotation = text is not null ? text
-            : await EvaluateTypeExpressionAsync(statement.Annotation, context, asynchronous).ConfigureAwait(false);
-        if (!statement.Assignment.IsSimple || statement.Assignment.Target is not NameAssignmentTargetSyntax name) return;
         // Annotation stores use LOAD_NAME semantics, even when the class body
         // declares __annotations__ global/nonlocal. The implicit lookup checks
         // the class mapping, then module globals; it does not capture a closure.
-        var annotations = context.IsClassBody
+        return context.IsClassBody
             ? context.Variables.TryGetValue("__annotations__", out var localAnnotations) ? localAnnotations
-                : ResolveName("__annotations__", statement.Span, GetGlobalContext(context))
-            : ResolveName("__annotations__", statement.Span, context);
-        await StoreAnnotationEntryAsync(annotations, name.Name, annotation, context, statement.Span, asynchronous).ConfigureAwait(false);
+                : ResolveName("__annotations__", span, GetGlobalContext(context))
+            : ResolveName("__annotations__", span, context);
     }
 
     private static async ValueTask StoreAnnotationEntryAsync(object annotations, string name, object annotation,
@@ -42,12 +34,5 @@ internal sealed partial class LythonRuntime
         if (asynchronous)
             await SetHeaderSubscriptAsync(annotations, key, annotation, span, context).ConfigureAwait(false);
         else SetSubscriptValue(annotations, key, annotation, span, context);
-    }
-
-    private static async ValueTask EvaluateAnnotationTargetReadsAsync(LoweredAnnotatedAssignmentStatement statement,
-        ExecutionContext context, bool asynchronous)
-    {
-        foreach (var read in statement.Target.EnumerateReads())
-            await EvaluateTypeExpressionAsync(read, context, asynchronous).ConfigureAwait(false);
     }
 }

@@ -30,7 +30,7 @@ public sealed class NativeItemMutationDispatchTests
         var action = operation switch { "set" or "immutable-set" => "values[key]=7", "delete" or "immutable-delete" => "del values[key]", _ => "values[key]+=7" };
         var source = "class Key:\n" + hook + "key=Key()\n" + (immutable ? "values=(0,1,2)\n" : deque ? "from collections import deque\nvalues=deque([0,1,2])\n" : "values=[0,1,2]\n") + action;
         var syntax = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!;
-        var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
+        var code = ExecutableScript.Compile(syntax).EntryPoint;
         if (immutable)
         {
             LythonRuntimeException error;
@@ -65,7 +65,7 @@ public sealed class NativeItemMutationDispatchTests
         context.Variables["fund"] = fund;
         context.Variables["ready"] = ready;
         var syntax = LythonFrontend.Compile("class Key:\n def __index__(self):\n  fund()\n  scratch=[0]*1024\n  ready()\n  return 0\nkey=Key()\ntarget[key]=1",regexProvider:Utf8RegexProvider.Instance).Script!;
-        var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
+        var code = ExecutableScript.Compile(syntax).EntryPoint;
         try
         {
             if (denied)

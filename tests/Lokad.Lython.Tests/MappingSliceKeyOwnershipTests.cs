@@ -146,7 +146,7 @@ public sealed class MappingSliceKeyOwnershipTests
         // its entry frame has ended; retain that live namespace explicitly.
         root.MirrorLocalStores = true;
         await LythonRuntime.ExecuteExecutableCodeObjectAsync(
-            ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull())).EntryPoint, root);
+            ExecutableScript.Compile(frontend.Script.RequireNotNull()).EntryPoint, root);
         return root;
     }
 

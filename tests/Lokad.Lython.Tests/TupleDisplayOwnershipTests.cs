@@ -106,7 +106,7 @@ public sealed class TupleDisplayOwnershipTests
     {
         var script = LythonFrontend.Compile("(*items,)").Script!;
         var expression = Assert.IsType<ExpressionStatementSyntax>(Assert.Single(script.Statements)).Expression;
-        var lowered = LoweredScript.LowerStandaloneExpression(expression);
+        var lowered = LoweredScript.LowerExpression(expression);
         return route switch
         {
             "syntax" => ValueTask.FromResult(typeof(LythonRuntime)

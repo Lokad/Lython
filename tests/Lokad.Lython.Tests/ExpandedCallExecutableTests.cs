@@ -16,7 +16,7 @@ public sealed class ExpandedCallExecutableTests
     public void OrdinaryExpansionDoesNotForceFallbackOrLocalMirroring(string expression)
     {
         var syntax = LythonFrontend.Compile($"def invoke(target,values,keywords,marker):\n    return {expression}",regexProvider:Utf8RegexProvider.Instance).Script!;
-        var code = ExecutableScript.Compile(LoweredScript.Lower(syntax));
+        var code = ExecutableScript.Compile(syntax);
         var body = Assert.Single(code.EntryPoint.FunctionBindings()).CodeObject;
         Assert.NotNull(body);
         Assert.False(body.RequiresLocalVariableMirroring);
@@ -51,7 +51,7 @@ public sealed class ExpandedCallExecutableTests
         var source = new ReentrantKeywords(hook, dictionary, added, value, refuse, sharedKeys);
         context.Variables["prepare"] = source;
         var syntax = LythonFrontend.Compile("def collect(tag,/,**kw): return kw\nreturn collect(17, **prepare())").Script!;
-        var executable = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
+        var executable = ExecutableScript.Compile(syntax).EntryPoint;
         try
         {
             if (refuse)

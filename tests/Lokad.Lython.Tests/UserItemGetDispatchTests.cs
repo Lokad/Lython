@@ -23,7 +23,7 @@ public sealed class UserItemGetDispatchTests
             ? "class Box:\n @property\n def __getitem__(self):\n  checkpoint()\n  def get(key):\n   checkpoint()\n   return key\n  return get\nbox=Box()\nresult=box[key]"
             : "class Box:\n def __getitem__(self,key):\n  checkpoint()\n  return key\nbox=Box()\nresult=box[key]";
         var syntax = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!;
-        var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
+        var code = ExecutableScript.Compile(syntax).EntryPoint;
         if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
         else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
         var calls = descriptor ? 2 : 1;

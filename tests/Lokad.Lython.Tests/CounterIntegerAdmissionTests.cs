@@ -13,7 +13,7 @@ public sealed class CounterIntegerAdmissionTests(ITestOutputHelper output)
 {
     private static readonly LythonSourceSpan Span = new(2, 3, 4, 5);
     private static readonly ExecutableCodeObject Add = ExecutableScript.Compile(
-        LoweredScript.Lower(LythonFrontend.Compile("return counts + other",regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
+        LythonFrontend.Compile("return counts + other",regexProvider:Utf8RegexProvider.Instance).Script!).EntryPoint;
 
     public static IEnumerable<object[]> AdmissionCases()
     {

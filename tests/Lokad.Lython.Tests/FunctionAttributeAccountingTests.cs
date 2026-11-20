@@ -121,7 +121,7 @@ public sealed class FunctionAttributeAccountingTests
     private static PyExecutableFunction Function(LythonRuntime.ExecutionContext context, string source = "def f():pass\nreturn f")
     {
         var syntax = LythonFrontend.Compile(source).Script!;
-        var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
+        var code = ExecutableScript.Compile(syntax).EntryPoint;
         return Assert.IsType<PyExecutableFunction>(
             LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null));
     }

@@ -24,7 +24,7 @@ public sealed class LiveGlobalNamespaceHostTests
     {
         var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
-        var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull())).EntryPoint;
+        var code = ExecutableScript.Compile(frontend.Script.RequireNotNull()).EntryPoint;
         await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, root);
     }
 

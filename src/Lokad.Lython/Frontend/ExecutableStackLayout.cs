@@ -62,14 +62,17 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
         IReadOnlyList<ExecutableExceptionRegion> regions, ExecutableBlockTargets targets,
         int entryBlock, int initialDepth, int firstTemporarySlot)
     {
+        if (initialDepth < 0 || (uint)entryBlock >= (uint)blocks.Count)
+            throw new InvalidOperationException("Invalid executable entry operand depth.");
         var depths = new int?[blocks.Count];
-        var pending = new Queue<int>();
+        Queue<int>? pending = null;
         var maximum = initialDepth;
         // Generator expressions arrive with their acquired outer cursor. Other
         // guest values never expose the interpreter's private temporary wrappers.
         var lastOwnedTemporarySlot = initialDepth == 0 ? -1 : checked(firstTemporarySlot + initialDepth - 1);
-        Enter(entryBlock, initialDepth);
-        while (pending.TryDequeue(out var blockIndex))
+        depths[entryBlock] = initialDepth;
+        var blockIndex = entryBlock;
+        do
         {
             var depth = depths[blockIndex]!.Value;
             foreach (var region in regions)
@@ -159,7 +162,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
             // An unterminated executable block completes its invocation; the
             // existing interpreter never falls through to the next stored block.
         CompleteBlock:;
-        }
+        } while (pending is not null && pending.TryDequeue(out blockIndex));
         return new(maximum, depths, firstTemporarySlot, lastOwnedTemporarySlot);
 
         void Enter(int block, int depth)
@@ -173,7 +176,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
                 return;
             }
             depths[block] = depth;
-            pending.Enqueue(block);
+            (pending ??= new Queue<int>()).Enqueue(block);
         }
     }
 
@@ -351,7 +354,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
         ExecutableStoreDictionaryItem item => (item.Unpacking ? 1 : 2, 0),
         ExecutableCreateFunction function => (function.InputCount, 1),
         ExecutableCreateLambda lambda => (lambda.InputCount, 1),
-        ExecutableCreateClass type => (checked(type.Definition.Decorators.Count +
+        ExecutableCreateClass type => (checked(type.Syntax.Decorators.Count +
             (type.ExpandedHeader ? 1 : type.DirectHeaderCount)), 0),
         _ => throw new InvalidOperationException($"Unknown prepared operand effect: {operation.GetType().Name}.")
     };

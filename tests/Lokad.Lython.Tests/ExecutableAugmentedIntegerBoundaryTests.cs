@@ -195,7 +195,7 @@ public sealed class ExecutableAugmentedIntegerBoundaryTests
     {
         var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
-        var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull()));
+        var code = ExecutableScript.Compile(frontend.Script.RequireNotNull());
         if (asynchronous) LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context).GetAwaiter().GetResult();
         else LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null);
     }

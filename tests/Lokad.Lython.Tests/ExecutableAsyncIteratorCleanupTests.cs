@@ -22,7 +22,7 @@ public sealed class ExecutableAsyncIteratorCleanupTests
         var iterable = new CancellingSource(context.MemoryGovernor, cancellation);
         context.Variables["source"] = iterable;
         var syntax = LythonFrontend.Compile("for item in source:pass",regexProvider:Utf8RegexProvider.Instance).Script!;
-        var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
+        var code = ExecutableScript.Compile(syntax).EntryPoint;
         var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
         {
             if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
@@ -247,9 +247,8 @@ public sealed class ExecutableAsyncIteratorCleanupTests
     {
         var frontend = LythonFrontend.Compile("def scan(source):\n" + body,regexProvider:Utf8RegexProvider.Instance);
         Assert.NotNull(frontend.Script);
-        var lowered = LoweredScript.Lower(frontend.Script);
-        var definition = Assert.Single(lowered.Statements.OfType<LoweredFunctionDefinitionStatement>());
-        var code = Assert.Single(ExecutableScript.Compile(lowered).EntryPoint.FunctionBindings()).CodeObject;
+        var definition = Assert.IsType<FunctionDefinitionStatementSyntax>(Assert.Single(frontend.Script.Statements));
+        var code = Assert.Single(ExecutableScript.Compile(frontend.Script).EntryPoint.FunctionBindings()).CodeObject;
         if (sources.Length > 1) context.Variables["inner"] = sources[1];
         var function = new PyGeneratorFunction(definition.ParameterLayout, code, context, default);
         return Assert.IsType<LythonRuntime.PyGenerator>(

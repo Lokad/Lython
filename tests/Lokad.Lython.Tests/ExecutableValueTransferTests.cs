@@ -100,7 +100,7 @@ public sealed class ExecutableValueTransferTests
         Assert.Empty(parsed.Diagnostics);
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) },regexProvider:Utf8RegexProvider.Instance);
         context.Variables.Clear();
-        return (ExecutableScript.Compile(LoweredScript.Lower(parsed.Script!)), context);
+        return (ExecutableScript.Compile(parsed.Script!), context);
     }
 
     private static object? Run(ExecutableScript code, LythonRuntime.ExecutionContext context)

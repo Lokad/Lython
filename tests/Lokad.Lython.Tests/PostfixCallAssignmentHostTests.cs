@@ -60,7 +60,7 @@ public sealed class PostfixCallAssignmentHostTests
             SourcePath = "/postfix-store.py", MemoryBudget = new LythonMemoryBudget(1024 * 1024),
             CancellationToken = cancellation.Token
         },regexProvider:Utf8RegexProvider.Instance);
-        await LythonRuntime.ExecuteStatementsAsync(LoweredScript.Lower(frontend.Script.RequireNotNull()).Statements, root);
+        await LythonRuntime.ExecuteExecutableCodeObjectAsync(ExecutableScript.Compile(frontend.Script.RequireNotNull()).EntryPoint, root);
         var runner = Assert.IsType<PyInstance>(root.Variables["runner"]);
         var actualTarget = Assert.IsType<PyInstance>(root.Variables["target"]);
         var active = new PyException("ValueError", "outer", PyNone.Instance);

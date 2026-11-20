@@ -176,9 +176,9 @@ public sealed class CallBindingSubsystemTests
         using var loweredStorage = context.MemoryGovernor.ReserveTemporary(0, Span);
         var lowered = CallExpansion.ExpandLoweredArguments(
             [
-                new LoweredCallArgument(CallArgumentForm.Positional, LoweredScript.LowerStandaloneExpression(new StringLiteralExpressionSyntax("head", Span))),
-                new LoweredCallArgument(CallArgumentForm.StarredList, LoweredScript.LowerStandaloneExpression(new IdentifierExpressionSyntax("items", Span))),
-                new LoweredCallArgument(CallArgumentForm.StarredDictionary, LoweredScript.LowerStandaloneExpression(new IdentifierExpressionSyntax("mapping", Span))),
+                new LoweredCallArgument(CallArgumentForm.Positional, LoweredScript.LowerExpression(new StringLiteralExpressionSyntax("head", Span))),
+                new LoweredCallArgument(CallArgumentForm.StarredList, LoweredScript.LowerExpression(new IdentifierExpressionSyntax("items", Span))),
+                new LoweredCallArgument(CallArgumentForm.StarredDictionary, LoweredScript.LowerExpression(new IdentifierExpressionSyntax("mapping", Span))),
             ],
             context,
             InvokeEvaluateLoweredExpression,
@@ -202,7 +202,7 @@ public sealed class CallBindingSubsystemTests
             UnnamedExpansionTarget, rawStorage));
         using var loweredStorage = context.MemoryGovernor.ReserveTemporary(0, Span);
         var loweredEx = Assert.Throws<LythonRuntimeException>(() => CallExpansion.ExpandLoweredArguments(
-            [new LoweredCallArgument(CallArgumentForm.StarredDictionary, LoweredScript.LowerStandaloneExpression(new IdentifierExpressionSyntax("mapping", Span)))],
+            [new LoweredCallArgument(CallArgumentForm.StarredDictionary, LoweredScript.LowerExpression(new IdentifierExpressionSyntax("mapping", Span)))],
             context,
             InvokeEvaluateLoweredExpression,
             UnnamedExpansionTarget, loweredStorage));

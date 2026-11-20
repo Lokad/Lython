@@ -165,9 +165,8 @@ public sealed class CasedSplitOwnershipTests
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new()
             { MemoryBudget = owner, CancellationToken = cancellation.Token });
             var span = new LythonSourceSpan(0, 1, 1, 1);
-            var definition = Assert.IsType<LoweredFunctionDefinitionStatement>(Assert.Single(
-                LoweredScript.Lower(LythonFrontend.Compile("def words(value):return value.lower().split()").Script!).Statements));
-            var code = ExecutableScript.CompileClassFunction(definition);
+            var definition = ClassMethodCompiler.Compile("def words(value):return value.lower().split()");
+            var code = definition.CodeObject;
             var function = new PyExecutableFunction(definition.ParameterLayout, code, context, [],
                 default);
             var input = PyString.FromString("A ß C D E F G H I J K", context.MemoryGovernor, span);
@@ -298,7 +297,7 @@ public sealed class CasedSplitOwnershipTests
             var source = definition + "for word in " + iterable + ":\n effects.append(word)";
             var frontend = LythonFrontend.Compile(source);
             Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
-            var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull())).EntryPoint;
+            var code = ExecutableScript.Compile(frontend.Script.RequireNotNull()).EntryPoint;
             var budget = new LythonMemoryBudget(1024 * 1024);
             using var cancellation = new CancellationTokenSource();
             using (var owner = budget.CreateScope())
@@ -374,7 +373,7 @@ public sealed class CasedSplitOwnershipTests
         {
             var frontend = LythonFrontend.Compile(source);
             Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
-            var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull())).EntryPoint;
+            var code = ExecutableScript.Compile(frontend.Script.RequireNotNull()).EntryPoint;
             var budget = new LythonMemoryBudget(1024 * 1024);
             using var cancellation = new CancellationTokenSource();
             using (var owner = budget.CreateScope())

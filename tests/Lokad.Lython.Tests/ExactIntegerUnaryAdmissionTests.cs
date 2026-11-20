@@ -18,7 +18,7 @@ public sealed class ExactIntegerUnaryAdmissionTests
     {
         var expression = token == "abs" ? "abs(seed)" : token + "seed";
         var syntax = LythonFrontend.Compile("global entered,target\nentered=True\ntarget=" + expression,regexProvider:Utf8RegexProvider.Instance).Script!;
-        var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
+        var code = ExecutableScript.Compile(syntax).EntryPoint;
         const long limit = 1024 * 1024;
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) },regexProvider:Utf8RegexProvider.Instance);

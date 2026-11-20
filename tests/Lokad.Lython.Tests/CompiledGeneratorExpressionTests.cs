@@ -129,7 +129,7 @@ public sealed class CompiledGeneratorExpressionTests
     {
         var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.NotNull(frontend.Script);
-        return ExecutableScript.Compile(LoweredScript.Lower(frontend.Script)).EntryPoint;
+        return ExecutableScript.Compile(frontend.Script).EntryPoint;
     }
 
     private sealed class PausedOuter : IPyAsyncIterableValue, IEnumerable<object>, IAsyncEnumerable<object>, IAsyncEnumerator<object>

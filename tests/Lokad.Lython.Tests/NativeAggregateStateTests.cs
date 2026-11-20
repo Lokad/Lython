@@ -170,7 +170,7 @@ public sealed class NativeAggregateStateTests
     {
         var parsed = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.Empty(parsed.Diagnostics);
-        return ExecutableScript.Compile(LoweredScript.Lower(parsed.Script!));
+        return ExecutableScript.Compile(parsed.Script!);
     }
 
     private static LythonRuntime.ExecutionContext Context(ILythonMemoryBudget? owner = null)

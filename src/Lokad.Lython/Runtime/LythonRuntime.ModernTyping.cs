@@ -50,7 +50,7 @@ internal sealed partial class LythonRuntime
         return false;
     }
 
-    private static void ExecuteTypeAlias(LoweredTypeAliasStatement alias, ExecutionContext context)
+    private static void ExecuteTypeAlias(LoweredTypeAlias alias, ExecutionContext context)
     {
         var scope = CreateTypeScope(alias.TypeParameters, context, alias.Span, alias: true);
         StoreName(alias.Syntax.Name, new PyTypeAlias(alias.Syntax.DeclaredName, scope.Parameters, alias.Value, scope.Annotations, alias.Span), context, alias.Span);
@@ -146,7 +146,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static async ValueTask AttachGenericClassMetadataAsync(LoweredClassDefinitionStatement definition, TypeScope scope,
+    private static async ValueTask AttachGenericClassMetadataAsync(ExecutableCreateClass definition, TypeScope scope,
         ExecutionContext classContext, bool asynchronous, object[] baseTypes)
     {
         if (definition.TypeParameters is null) return;
@@ -170,7 +170,7 @@ internal sealed partial class LythonRuntime
         return generic;
     }
 
-    private static IReadOnlyList<PyType> AddGenericClassBase(LoweredClassDefinitionStatement definition, IReadOnlyList<PyType> bases, ExecutionContext context)
+    private static IReadOnlyList<PyType> AddGenericClassBase(ExecutableCreateClass definition, IReadOnlyList<PyType> bases, ExecutionContext context)
     {
         if (definition.TypeParameters is null) return bases;
         var generic = GetTypingGeneric(context, definition.Span);

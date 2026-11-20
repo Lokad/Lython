@@ -22,7 +22,7 @@ public sealed class JsonDefaultDumpsBoundaryTests
     public async Task DefaultCallPreservesEffectsErrorsAndUnwind(bool asynchronous, string shape)
     {
         const string source = "import json\nreturn json.dumps(make())";
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!).EntryPoint;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         string[] effects;
         string outcome;

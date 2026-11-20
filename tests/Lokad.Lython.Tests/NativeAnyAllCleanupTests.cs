@@ -34,7 +34,7 @@ public sealed class NativeAnyAllCleanupTests
         if (cleanupFails) source.CleanupFailure = new InvalidOperationException("native cleanup failed");
         context.Variables["source"] = source;
         var syntax = LythonFrontend.Compile("return " + (all ? "all" : "any") + "(source)",regexProvider:Utf8RegexProvider.Instance).Script!;
-        var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
+        var code = ExecutableScript.Compile(syntax).EntryPoint;
         var baseline = budget.ReservedBytes;
         var pending = LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context).AsTask();
         Exception? failure = null;
