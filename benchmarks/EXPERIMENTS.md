@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1191 direct statement emission](results/2026-11-20-direct-statement-emission/README.md)
+removes ordinary lowered statement suites and the generic executable statement
+fallback. Validator compilation allocates 2.45% less and warm allocation is
+unchanged. Eager warm has a noisy adverse control, and manifest compile-to-result
+CPU rises slightly. A longer comparison will check both before integration.
+
 [B1190 shipment comparison against CPython](results/2026-11-20-cpython-named-shipment/README.md)
 measures named and positional report variants and a warm CSV invoice on
 the retained B1189 source. Named shipment takes 1.14–1.19× as long warm,

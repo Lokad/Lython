@@ -1,0 +1,87 @@
+{
+  "reference": "b418fa7d8be3e9ca0c1b255a15c7332cf8b3e96a",
+  "candidate": "2131039a498fb2b0955295afe037855ea3a5f8c3",
+  "verification": "Five CPython goldens per full 32-file image.",
+  "rows": [
+    {
+      "boundary": "compile-allocation",
+      "id": "scripts.annotated-rule-closures",
+      "referenceBytes": 56376,
+      "candidateBytes": 55392,
+      "changePct": -1.7454235845040467
+    },
+    {
+      "boundary": "compile-allocation",
+      "id": "scripts.config-generated-guards.medium",
+      "referenceBytes": 2787846,
+      "candidateBytes": 2719494,
+      "changePct": -2.451785356866909
+    },
+    {
+      "boundary": "compile-allocation",
+      "id": "scripts.config-manifest.small",
+      "referenceBytes": 281632,
+      "candidateBytes": 278328,
+      "changePct": -1.1731621406658288
+    },
+    {
+      "boundary": "compile-allocation",
+      "id": "scripts.csv-invoice.large",
+      "referenceBytes": 165504,
+      "candidateBytes": 163256,
+      "changePct": -1.3582753286929594
+    },
+    {
+      "boundary": "compile-allocation",
+      "id": "scripts.dataclass-inherited-configuration.generated",
+      "referenceBytes": 638224,
+      "candidateBytes": 637504,
+      "changePct": -0.11281305623104254
+    },
+    {
+      "boundary": "allocation",
+      "id": "scripts.annotated-rule-closures",
+      "referenceBytes": 1046120,
+      "candidateBytes": 1046120,
+      "changePct": 0.0,
+      "referencePeak": 2444313,
+      "candidatePeak": 2444313
+    },
+    {
+      "boundary": "allocation",
+      "id": "scripts.config-generated-guards.medium",
+      "referenceBytes": 75936,
+      "candidateBytes": 75936,
+      "changePct": 0.0,
+      "referencePeak": 94214,
+      "candidatePeak": 94214
+    },
+    {
+      "boundary": "allocation",
+      "id": "scripts.config-manifest.small",
+      "referenceBytes": 103024,
+      "candidateBytes": 103024,
+      "changePct": 0.0,
+      "referencePeak": 58255,
+      "candidatePeak": 58255
+    },
+    {
+      "boundary": "allocation",
+      "id": "scripts.csv-invoice.large",
+      "referenceBytes": 3672462,
+      "candidateBytes": 3672462,
+      "changePct": 0.0,
+      "referencePeak": 9432613,
+      "candidatePeak": 9432613
+    },
+    {
+      "boundary": "allocation",
+      "id": "scripts.dataclass-inherited-configuration.generated",
+      "referenceBytes": 423056,
+      "candidateBytes": 423056,
+      "changePct": 0.0,
+      "referencePeak": 285027,
+      "candidatePeak": 285027
+    }
+  ]
+}
