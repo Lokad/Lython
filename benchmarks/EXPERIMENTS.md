@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1218 factory defaults against CPython](results/2026-11-20-cpython-default-operand-storage/README.md)
+records 2.33–2.36× warm for eager nested factories and 2.38–2.47× for
+postponed nested factories. The latter compile in 0.637–0.641× CPython's
+elapsed and reach their result in 2.25–2.40× with a 6.19% Lython control
+spread. Warm CSV invoice is 1.04–1.06×. All 100 verified batches passed.
+
 [B1216/B1217 final default storage](results/2026-11-20-default-operand-storage/README.md)
 eliminates the heap owner for unpublished defaults. Three factory scripts
 allocate 7.62–10.96% less with matching accounted peaks. Eager rules

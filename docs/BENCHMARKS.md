@@ -4,13 +4,13 @@
 | --- | --- | ---: | ---: | ---: | --- |
 | Unannotated rule closures | 2,048 inputs / 4,096 definitions | 2.307–2.321 ms | 0.683–0.688 ms | 3.35–3.40× | B1122 diagnostic. Controls L/C 0.61 / 0.70%. IQR ≤0.74%. |
 | Annotated rule closures | 2,048 inputs / 2,048 definitions | 1.057 ms | 0.428–0.434 ms | 2.44–2.47× | B1203 diagnostic. Controls L/C 0.05 / 1.26%. IQR ≤2.76%. |
-| Nested annotated factories | 2,048 inputs / 4,096 definitions | 1.386–1.498 ms | 0.595–0.607 ms | 2.28–2.52× | B1208 diagnostic. Controls L/C 8.04 / 2.04%. IQR ≤2.57%. |
+| Nested annotated factories | 2,048 inputs / 4,096 definitions | 1.426–1.440 ms | 0.610–0.612 ms | 2.33–2.36× | B1218 diagnostic. Controls L/C 0.99 / 0.43%. IQR ≤1.02%. |
 | Postponed annotated rules | 2,048 inputs / 2,048 definitions | 0.967–0.975 ms | 0.397–0.398 ms | 2.43–2.46× | B1203 diagnostic. Controls L/C 0.79 / 0.47%. IQR ≤1.48%. |
-| Postponed nested factories | 2,048 inputs / 4,096 definitions | 2.051–2.117 ms | 0.577–0.590 ms | 3.47–3.67× | B1156 diagnostic. Controls L/C 3.22 / 2.39%. IQR ≤1.50%. |
+| Postponed nested factories | 2,048 inputs / 4,096 definitions | 1.344–1.388 ms | 0.562–0.564 ms | 2.38–2.47× | B1218 diagnostic. Controls L/C 3.26 / 0.44%. IQR ≤1.79%. |
 | Captured rule closures | 2,048 inputs / 4,096 returned closures | 2.437–2.454 ms | 0.776–0.790 ms | 3.09–3.16× | B1122 diagnostic. Controls L/C 0.71 / 1.69%. IQR ≤1.69%. |
 | Inline forwarding with dynamic keys | 1,024 records / 26,112 B | 1.894–1.913 ms | 1.139–1.159 ms | 1.63–1.68× | B1102 diagnostic. Controls L/C 1.01 / 1.74%. IQR ≤2.35%. |
 | Expanded forwarding report | 1,024 records / 26,112 B | 1.533–1.543 ms | 1.173–1.189 ms | 1.29–1.32× | B1180 diagnostic. Controls L/C 0.62 / 1.38%. IQR ≤4.03%. |
-| CSV invoice | 4,096 data records / 127,031 B | 6.693–6.709 ms | 6.385–6.406 ms | 1.04–1.05× | B1208 diagnostic. Controls L/C 0.24 / 0.33%. IQR ≤1.31%. |
+| CSV invoice | 4,096 data records / 127,031 B | 6.610–6.679 ms | 6.307–6.352 ms | 1.04–1.06× | B1218 diagnostic. Controls L/C 1.04 / 0.72%. IQR ≤2.85%. |
 | Retained nonlocal siblings | 240 factories / 720 returned closures | 0.169–0.170 ms | 0.188–0.190 ms | 0.89–0.90× | B1109 diagnostic. Controls L/C 0.57 / 0.89%. IQR ≤2.72%. |
 | Shipment report with named format selectors | 3,072 records / 189,441 B | 3.786–3.842 ms | 3.233–3.314 ms | 1.14–1.19× | B1190 diagnostic. Controls L/C 1.48 / 2.50%. IQR ≤3.48%. |
 | Shipment report with positional format selectors | 3,072 records / 189,441 B | 3.737–3.750 ms | 2.861–2.893 ms | 1.29–1.31× | B1190 diagnostic. Controls L/C 0.35 / 1.13%. IQR ≤3.50%. |
@@ -22,12 +22,18 @@
 the combinations of two process medians per engine, not confidence intervals.
 Controls L/C report the difference between the two Lython/CPython medians.
 
+B1218 measures nested factories and the warm invoice at
+**a8a7c6ba2 / frozen 9741634b1** on **2026-11-20 UTC**. Both machine
+checks and all 100 batches passed. Postponed compile-to-result has a 6.19%
+Lython control spread. Eager nested compile and compile-to-result remain
+at B1208.
+
 B1213 measures the generated validator across all three boundaries and the
 warm manifest at **645a0fcd1 / frozen 356a93e25** on **2026-11-20 UTC**.
 Both machine checks and all 80 batches passed. The manifest compilation
 and compile-to-result rows remain at B1130.
 
-B1208 measures nested factories across warm, compilation and
+B1208 measures earlier nested factories across warm, compilation and
 compile-to-result, plus warm invoice at **ef171a35b / frozen 7f583edfa**
 on **2026-11-20 UTC**. Both machine checks and all 80 batches passed.
 The nested warm and compile-to-result controls vary by 8.04% and 8.50%.
@@ -65,6 +71,7 @@ Earlier rows ran **2026-11-19 UTC**. All use stock **CPython 3.13.16** on the qu
 uses duplicate processes per engine. Each row describes its measured revision.
 B1122 passed the measured scripts' output and file checks. Its source
 predates the generator-lambda and iterator-cleanup fixture corrections.
+[B1218 observations](../benchmarks/results/2026-11-20-cpython-default-operand-storage/README.md) ·
 [B1213 observations](../benchmarks/results/2026-11-20-cpython-shared-executable-graph/README.md) ·
 [B1208 observations](../benchmarks/results/2026-11-20-cpython-inline-captured-factories/README.md) ·
 [B1203 observations](../benchmarks/results/2026-11-20-cpython-inline-lexical-definitions/README.md) ·
@@ -113,8 +120,8 @@ The table compares workload latency under different containment boundaries.
 | Inherited dataclass definitions | Compile-to-result | 0.434–0.442 ms | 5.684–5.739 ms | 0.076–0.078× | B1200 diagnostic. Controls L/C 2.01 / 0.96%. IQR ≤1.26%. |
 | Postponed annotated rules | Compilation only | 0.02514–0.02533 ms | 0.03518–0.03539 ms | 0.71–0.72× | B1156 diagnostic. Controls L/C 0.77 / 0.58%. IQR ≤1.42%. |
 | Postponed annotated rules | Compile-to-result | 1.531–1.599 ms | 0.429–0.436 ms | 3.51–3.73× | B1156 diagnostic. Controls L/C 4.44 / 1.68%. IQR ≤2.52%. |
-| Postponed nested factories | Compilation only | 0.03018–0.03026 ms | 0.04285–0.04312 ms | 0.70–0.71× | B1156 diagnostic. Controls L/C 0.27 / 0.62%. IQR ≤0.96%. |
-| Postponed nested factories | Compile-to-result | 2.103–2.146 ms | 0.624–0.637 ms | 3.30–3.44× | B1156 diagnostic. Controls L/C 2.02 / 2.20%. IQR ≤2.47%. |
+| Postponed nested factories | Compilation only | 0.02655–0.02666 ms | 0.04157–0.04169 ms | 0.637–0.641× | B1218 diagnostic. Controls L/C 0.43 / 0.30%. IQR ≤2.16%. |
+| Postponed nested factories | Compile-to-result | 1.375–1.460 ms | 0.608–0.612 ms | 2.25–2.40× | B1218 diagnostic. Controls L/C 6.19 / 0.50%. IQR ≤5.96%. |
 | Captured rule closures | Compilation only | 0.03460–0.03524 ms | 0.04742–0.04748 ms | 0.73–0.74× | B1122 diagnostic. Controls L/C 1.86 / 0.14%. IQR ≤1.31%. |
 | Captured rule closures | Compile-to-result | 2.519–2.523 ms | 0.830–0.839 ms | 3.00–3.04× | B1122 diagnostic. Controls L/C 0.15 / 1.09%. IQR ≤1.51%. |
 | Inline forwarding with dynamic keys | Compilation only | 0.05339–0.05370 ms | 0.06049–0.06111 ms | 0.87–0.89× | B1102 diagnostic. Controls L/C 0.57 / 1.01%. IQR ≤1.53%. |
