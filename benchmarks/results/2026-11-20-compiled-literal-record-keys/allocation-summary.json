@@ -1,0 +1,29 @@
+[
+  {
+    "case": "scripts.json-normalized-records.large",
+    "previousAllocatedBytes": 3351666,
+    "candidateAllocatedBytes": 3351450,
+    "allocationChangePercent": -0.0064445562296455705,
+    "previousAccountedPeak": 5555037,
+    "candidateAccountedPeak": 5554429,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.config-manifest.helper-guards",
+    "previousAllocatedBytes": 114632,
+    "candidateAllocatedBytes": 113320,
+    "allocationChangePercent": -1.1445320678344584,
+    "previousAccountedPeak": 61015,
+    "candidateAccountedPeak": 58839,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.config-generated-guards.medium.bad-0",
+    "previousAllocatedBytes": 66984,
+    "candidateAllocatedBytes": 66984,
+    "allocationChangePercent": 0.0,
+    "previousAccountedPeak": 92830,
+    "candidateAccountedPeak": 92830,
+    "budgetReturnedToBaseline": true
+  }
+]

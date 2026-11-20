@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1249/B1250 compilation-owned dictionary keys](results/2026-11-20-compiled-literal-record-keys/README.md)
+remove first-use table construction for distinct literal keys. Warm
+JSON normalization improves 2.29–4.20% initially and 3.62–4.31%
+on repeat with lower CPU. The initial validator compile-to-result
+slowdown remains unresolved after the more variable repeat.
+
 [B1248 retained dictionary operations against CPython](results/2026-11-20-cpython-native-text-dict-keys/README.md)
 puts the validator at 1.80–1.85× warm, 0.894–0.907× compilation and
 0.868–0.881× compile-to-result on `c62457d49`. The alternating shipment
