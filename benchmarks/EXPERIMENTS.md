@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1229 factory and invoice checkpoint against CPython](results/2026-11-20-cpython-prepared-entry-progress/README.md)
+records 2.31–2.42× eager nested warm and 2.31–2.48× postponed nested warm.
+Postponed compile-only is 0.628–0.653× and compile-to-result is 2.21–2.34×.
+The warm invoice is 1.04–1.10× with a 5.04% Lython process spread.
+
 [B1227/B1228 private lexical definition admission](results/2026-11-20-private-lexical-definition/README.md)
 removes one budget resize per capturing factory and postpones cell
 publication until the complete definition is funded. A longer repeat

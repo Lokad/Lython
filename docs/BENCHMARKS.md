@@ -4,13 +4,13 @@
 | --- | --- | ---: | ---: | ---: | --- |
 | Unannotated rule closures | 2,048 inputs / 4,096 definitions | 2.307–2.321 ms | 0.683–0.688 ms | 3.35–3.40× | B1122 diagnostic. Controls L/C 0.61 / 0.70%. IQR ≤0.74%. |
 | Annotated rule closures | 2,048 inputs / 2,048 definitions | 1.057 ms | 0.428–0.434 ms | 2.44–2.47× | B1203 diagnostic. Controls L/C 0.05 / 1.26%. IQR ≤2.76%. |
-| Nested annotated factories | 2,048 inputs / 4,096 definitions | 1.426–1.440 ms | 0.610–0.612 ms | 2.33–2.36× | B1218 diagnostic. Controls L/C 0.99 / 0.43%. IQR ≤1.02%. |
+| Nested annotated factories | 2,048 inputs / 4,096 definitions | 1.460–1.506 ms | 0.623–0.632 ms | 2.31–2.42× | B1229 diagnostic. Controls L/C 3.16 / 1.51%. IQR ≤2.22%. |
 | Postponed annotated rules | 2,048 inputs / 2,048 definitions | 0.967–0.975 ms | 0.397–0.398 ms | 2.43–2.46× | B1203 diagnostic. Controls L/C 0.79 / 0.47%. IQR ≤1.48%. |
-| Postponed nested factories | 2,048 inputs / 4,096 definitions | 1.344–1.388 ms | 0.562–0.564 ms | 2.38–2.47× | B1218 diagnostic. Controls L/C 3.26 / 0.44%. IQR ≤1.79%. |
+| Postponed nested factories | 2,048 inputs / 4,096 definitions | 1.387–1.446 ms | 0.583–0.599 ms | 2.31–2.48× | B1229 diagnostic. Controls L/C 4.28 / 2.76%. IQR ≤0.93%. |
 | Captured rule closures | 2,048 inputs / 4,096 returned closures | 2.437–2.454 ms | 0.776–0.790 ms | 3.09–3.16× | B1122 diagnostic. Controls L/C 0.71 / 1.69%. IQR ≤1.69%. |
 | Inline forwarding with dynamic keys | 1,024 records / 26,112 B | 1.894–1.913 ms | 1.139–1.159 ms | 1.63–1.68× | B1102 diagnostic. Controls L/C 1.01 / 1.74%. IQR ≤2.35%. |
 | Expanded forwarding report | 1,024 records / 26,112 B | 1.533–1.543 ms | 1.173–1.189 ms | 1.29–1.32× | B1180 diagnostic. Controls L/C 0.62 / 1.38%. IQR ≤4.03%. |
-| CSV invoice | 4,096 data records / 127,031 B | 6.610–6.679 ms | 6.307–6.352 ms | 1.04–1.06× | B1218 diagnostic. Controls L/C 1.04 / 0.72%. IQR ≤2.85%. |
+| CSV invoice | 4,096 data records / 127,031 B | 6.877–7.224 ms | 6.588–6.618 ms | 1.04–1.10× | B1229 diagnostic. Controls L/C 5.04 / 0.45%. IQR ≤1.30%. |
 | Retained nonlocal siblings | 240 factories / 720 returned closures | 0.169–0.170 ms | 0.188–0.190 ms | 0.89–0.90× | B1109 diagnostic. Controls L/C 0.57 / 0.89%. IQR ≤2.72%. |
 | Shipment report with named format selectors | 3,072 records / 189,441 B | 3.786–3.842 ms | 3.233–3.314 ms | 1.14–1.19× | B1190 diagnostic. Controls L/C 1.48 / 2.50%. IQR ≤3.48%. |
 | Shipment report with positional format selectors | 3,072 records / 189,441 B | 3.737–3.750 ms | 2.861–2.893 ms | 1.29–1.31× | B1190 diagnostic. Controls L/C 0.35 / 1.13%. IQR ≤3.50%. |
@@ -22,15 +22,14 @@
 the combinations of two process medians per engine, not confidence intervals.
 Controls L/C report the difference between the two Lython/CPython medians.
 
+B1229 measures nested factories and the warm invoice at
+**46ccc2efa / frozen eaf4d65c1** on **2026-11-20 UTC**. Both machine
+checks and all 100 batches passed. The warm invoice has a 5.04% Lython
+control spread. Eager nested compile and compile-to-result remain at B1208.
+
 B1222 measures inherited dataclasses and the warm manifest at
 **72a1426dd / frozen 842c2c8f9** on **2026-11-20 UTC**. Both machine
 checks and all 80 batches passed.
-
-B1218 measures nested factories and the warm invoice at
-**a8a7c6ba2 / frozen 9741634b1** on **2026-11-20 UTC**. Both machine
-checks and all 100 batches passed. Postponed compile-to-result has a 6.19%
-Lython control spread. Eager nested compile and compile-to-result remain
-at B1208.
 
 B1213 measures the generated validator across all three boundaries and the
 earlier warm manifest at **645a0fcd1 / frozen 356a93e25** on **2026-11-20 UTC**.
@@ -75,6 +74,7 @@ Earlier rows ran **2026-11-19 UTC**. All use stock **CPython 3.13.16** on the qu
 uses duplicate processes per engine. Each row describes its measured revision.
 B1122 passed the measured scripts' output and file checks. Its source
 predates the generator-lambda and iterator-cleanup fixture corrections.
+[B1229 observations](../benchmarks/results/2026-11-20-cpython-prepared-entry-progress/README.md) ·
 [B1222 observations](../benchmarks/results/2026-11-20-cpython-direct-declaration-operands/README.md) ·
 [B1218 observations](../benchmarks/results/2026-11-20-cpython-default-operand-storage/README.md) ·
 [B1213 observations](../benchmarks/results/2026-11-20-cpython-shared-executable-graph/README.md) ·
@@ -125,8 +125,8 @@ The table compares workload latency under different containment boundaries.
 | Inherited dataclass definitions | Compile-to-result | 0.420–0.430 ms | 5.496–5.725 ms | 0.073–0.078× | B1222 diagnostic. Controls L/C 2.37 / 4.17%. IQR ≤1.71%. |
 | Postponed annotated rules | Compilation only | 0.02514–0.02533 ms | 0.03518–0.03539 ms | 0.71–0.72× | B1156 diagnostic. Controls L/C 0.77 / 0.58%. IQR ≤1.42%. |
 | Postponed annotated rules | Compile-to-result | 1.531–1.599 ms | 0.429–0.436 ms | 3.51–3.73× | B1156 diagnostic. Controls L/C 4.44 / 1.68%. IQR ≤2.52%. |
-| Postponed nested factories | Compilation only | 0.02655–0.02666 ms | 0.04157–0.04169 ms | 0.637–0.641× | B1218 diagnostic. Controls L/C 0.43 / 0.30%. IQR ≤2.16%. |
-| Postponed nested factories | Compile-to-result | 1.375–1.460 ms | 0.608–0.612 ms | 2.25–2.40× | B1218 diagnostic. Controls L/C 6.19 / 0.50%. IQR ≤5.96%. |
+| Postponed nested factories | Compilation only | 0.02708–0.02797 ms | 0.04281–0.04315 ms | 0.628–0.653× | B1229 diagnostic. Controls L/C 3.27 / 0.80%. IQR ≤1.51%. |
+| Postponed nested factories | Compile-to-result | 1.421–1.474 ms | 0.630–0.644 ms | 2.21–2.34× | B1229 diagnostic. Controls L/C 3.71 / 2.23%. IQR ≤1.73%. |
 | Captured rule closures | Compilation only | 0.03460–0.03524 ms | 0.04742–0.04748 ms | 0.73–0.74× | B1122 diagnostic. Controls L/C 1.86 / 0.14%. IQR ≤1.31%. |
 | Captured rule closures | Compile-to-result | 2.519–2.523 ms | 0.830–0.839 ms | 3.00–3.04× | B1122 diagnostic. Controls L/C 0.15 / 1.09%. IQR ≤1.51%. |
 | Inline forwarding with dynamic keys | Compilation only | 0.05339–0.05370 ms | 0.06049–0.06111 ms | 0.87–0.89× | B1102 diagnostic. Controls L/C 0.57 / 1.01%. IQR ≤1.53%. |
@@ -313,6 +313,7 @@ for the CPython ratios above.
 
 | Change | Established outcome | Limits / evidence |
 | --- | --- | --- |
+| Combine native body admission and drop argument rescans | Warm eager nested elapsed falls 1.08–2.76%. Postponed elapsed falls 0.37–3.98% with lower process CPU. | Async remains inconclusive. The initial invoice CPU increase does not recur with longer batches. Accounted peaks match. [B1225/B1226](../benchmarks/results/2026-11-20-prepared-entry-progress/README.md). |
 | Store declaration operands directly | Inherited dataclass compilation takes 5.77–6.95% less time and compile-to-result takes 1.95–6.69% less time, with lower CPU. Compile allocation falls 0.97% in that case. | Dataclass warm elapsed spans zero. The original 1.99–3.97% manifest compile-to-result increase does not recur in the longer repeat. Eager warm controls vary. [B1220](../benchmarks/results/2026-11-20-direct-declaration-operands/README.md) · [B1221](../benchmarks/results/2026-11-20-direct-declaration-operands/confirmation/README.md). |
 | Keep function defaults in final storage | Warm allocation falls 7.62–10.96% across three factory scripts. Eager rules run 0.91–2.99% sooner warm and 1.88–5.18% sooner to result. Postponed nested factories run 3.93–7.21% sooner warm. CPU supports these lanes. | Eager nested warm remains inconclusive in the repeat. Compile-only eager CPU rises 0.02–2.09% with mixed elapsed. Accounted peaks match. [B1216](../benchmarks/results/2026-11-20-default-operand-storage/README.md) · [B1217](../benchmarks/results/2026-11-20-default-operand-storage/confirmation/README.md). |
 | Share executable reachability and operand layout | Generated validator compile-to-result elapsed falls 6.57–10.22% and CPU falls 7.87–10.74%. The compiler no longer builds an intermediate compacted block graph. | Validator warm elapsed rises 0.42–2.11% and CPU rises 0.85–1.44%. The two reference compiler processes differ by 10.60%. Manifest compile-to-result elapsed rises 0.11–1.06% with mixed CPU. [B1212](../benchmarks/results/2026-11-20-shared-executable-graph/README.md). |
