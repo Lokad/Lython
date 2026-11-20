@@ -25,6 +25,12 @@ allocation falls 11.24% and compile-to-result improves slightly. Ordinary
 warm CPU rises 1.72–2.88%. Other warm timings remain uncertain. The revised
 cleanup route needs separate confirmation.
 
+[B1165 default cleanup refinement](results/2026-11-20-frame-default-refinement/README.md)
+keeps frame-owned defaults private. Ordinary warm CPU spans zero after
+restoring the native prefix's cleanup. Eager and computed defaults still
+have adverse CPU pairings, with retained allocation savings. B1164 and
+B1165 preserve the original and revised source pairs.
+
 ## November 18–19, 0.11.0 compiler and call work
 
 - The retained formatting and function-default changes have paired evidence.
