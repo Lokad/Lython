@@ -1,0 +1,13 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "persistentTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 258510848,
+  "archiveSHA256": "15c927d45e6e2f33b57db1dd08ee740f3e7536ab0e3e21cdcc262aa7dbc90c74",
+  "source": "B1219 current annotation demand attribution",
+  "performanceComparison": false,
+  "failure": null
+}

@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1219 current annotation demand](results/2026-11-20-current-annotation-demand-attribution/README.md)
+locates the annotation prepass on eight eager compiler stacks, one
+dataclass stack and none in the manifest. The manifest has 296
+abstract-interpreter stacks and 260 executable-construction stacks
+with overlapping ancestry. Keep annotation demand in its current pass
+and examine duplicated work in the larger phases.
+
 [B1218 factory defaults against CPython](results/2026-11-20-cpython-default-operand-storage/README.md)
 records 2.33–2.36× warm for eager nested factories and 2.38–2.47× for
 postponed nested factories. The latter compile in 0.637–0.641× CPython's
