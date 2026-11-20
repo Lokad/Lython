@@ -165,6 +165,63 @@ return TEMPLATE.format_map({'x':Node()})
         Assert.Equal(baseline, budget.ReservedBytes);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task OrdinaryFormatKeepsEvaluatedOperandsDuringFieldCallbacks(bool cancel)
+    {
+        const string source = """
+            record = {'later': 'before'}
+            class Field:
+                def __format__(self, spec):
+                    with open('lookup.txt', 'a') as target:
+                        target.write(spec)
+                    record['later'] = 'after'
+                    return 'first'
+            return '{0:mark}:{4}:{row[later]}'.format(Field(), 1, 2, 3, 4 + 1, row=record)
+            """;
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
+        var baseline = budget.ReservedBytes;
+        var host = new DelayedLythonHost();
+        host.SeedFile("/lookup.txt", "");
+        var entered = cancel ? host.PauseWriteUntilCancellation("/lookup.txt") : null;
+        using var cancellation = new CancellationTokenSource();
+        var pending = script.RunAsync(host, cancellationToken: cancellation.Token);
+        try
+        {
+            if (entered is not null)
+            {
+                Assert.Same(entered, await Task.WhenAny(entered, pending).WaitAsync(TimeSpan.FromSeconds(5)));
+                Assert.False(pending.IsCompleted);
+                Assert.True(budget.ReservedBytes > baseline);
+                cancellation.Cancel();
+            }
+            using var result = await pending.WaitAsync(TimeSpan.FromSeconds(5));
+            if (cancel)
+            {
+                Assert.False(result.Success);
+                Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
+                Assert.Equal("", host.ReadText("/lookup.txt"));
+            }
+            else
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal("first:5:after", result.ReturnValue);
+                Assert.Equal("mark", host.ReadText("/lookup.txt"));
+                Assert.True(host.CompletedAsynchronously > 0);
+            }
+        }
+        finally
+        {
+            cancellation.Cancel();
+            using var drained = await pending.WaitAsync(TimeSpan.FromSeconds(5));
+        }
+        Assert.Equal(1, host.ClosedFileCount);
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
     [Fact]
     public async Task RefusedLookupCannotPublishOrContinue()
     {

@@ -286,6 +286,11 @@ internal sealed partial class LythonRuntime
 
         private ValueTask<object> InvokeExecutableGeneralTargetAsync(ExecutableCallSite call, int start, object target, bool asynchronous)
         {
+            if (target is StringMembers.MethodFormatCallable format)
+            {
+                var operands = _execution.Stack.Slice(start + call.ArgumentOffset, call.ArgumentCount);
+                return InvokeFormatFromOperands(format, call, operands, this, asynchronous);
+            }
             if (target is ReceiverMethod method)
                 target = method.Bind(_execution.Stack[start]);
             // Constructors can consume the same packet across __new__/__init__

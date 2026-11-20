@@ -62,31 +62,22 @@ internal sealed partial class LythonRuntime
                     }, StrRemoveSuffixSignature),
                     "partition" => CreatePartitionMethod("partition", PyStringOps.Partition, StrPartitionSignature),
                     "rpartition" => CreatePartitionMethod("rpartition", PyStringOps.RPartition, StrRpartitionSignature),
-                    "format" => CreateFormattingMethod(false),
-                    "format_map" => CreateFormattingMethod(true),
+                    "format" => new MethodFormatCallable(text),
+                    "format_map" => CreateFormatMappingMethod(),
                     _ => MissingMemberValue.Instance,
                 };
 
                 return !ReferenceEquals(value, MissingMemberValue.Instance);
 
-                ICallable CreateFormattingMethod(bool mapping)
+                ICallable CreateFormatMappingMethod()
                 {
                     PyStringOps.FormatTemplate? prepared = null;
-                    PyStringOps.FormatTemplate Prepare(ExecutionContext context, LythonSourceSpan span)
-                    {
-                        context.CheckExecution(span);
-                        if (!ReferenceEquals(prepared?.Owner, context.MemoryGovernor))
-                            prepared = PyStringOps.PrepareFormatTemplate(text, context.MemoryGovernor, span, context.State.CancellationToken);
-                        return prepared!;
-                    }
-                    return mapping
-                        ? BoundCallable.Create(
-                            (arguments, span, context) => FormatMappingAsync(text, arguments[0], span, context, false, Prepare(context, span)).GetAwaiter().GetResult(),
-                            StrFormatMapSignature,
-                            (arguments, span, context) => FormatMappingAsync(text, arguments[0], span, context, true, Prepare(context, span)))
-                        : new CustomMethodCallable(
-                            (arguments, span, context) => FormatStringAsync(text, arguments, span, context, false, Prepare(context, span)).GetAwaiter().GetResult(),
-                            (arguments, span, context) => FormatStringAsync(text, arguments, span, context, true, Prepare(context, span)));
+                    return BoundCallable.Create(
+                        (arguments, span, context) => FormatMappingAsync(text, arguments[0], span, context, false,
+                            PrepareFormat(text, ref prepared, span, context)).GetAwaiter().GetResult(),
+                        StrFormatMapSignature,
+                        (arguments, span, context) => FormatMappingAsync(text, arguments[0], span, context, true,
+                            PrepareFormat(text, ref prepared, span, context)));
                 }
 
                 BoundCallable CreatePartitionMethod(
@@ -117,16 +108,20 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private static ValueTask<object> FormatStringAsync(PyString text, CallArgumentValue[] arguments,
+        private static ValueTask<object> FormatStringAsync(PyString text, MethodFormatArguments arguments,
             LythonSourceSpan span, ExecutionContext context, bool asynchronous, PyStringOps.FormatTemplate prepared)
         {
-            var positionalCount = 0;
+            var positionalCount = arguments.Length;
             var firstKeyword = arguments.Length;
-            for (var i = 0; i < arguments.Length; i++)
+            if (!arguments.KnownPositional)
             {
-                if ((i & 1023) == 0) context.CheckExecution(span);
-                if (arguments[i].IsPositional) positionalCount++;
-                else if (firstKeyword == arguments.Length) firstKeyword = i;
+                for (var i = 0; i < arguments.Length; i++)
+                {
+                    if ((i & 1023) == 0) context.CheckExecution(span);
+                    if (arguments.KeywordAt(i) is null) continue;
+                    positionalCount--;
+                    if (firstKeyword == arguments.Length) firstKeyword = i;
+                }
             }
 
             var keywordCount = arguments.Length - positionalCount;
@@ -150,17 +145,17 @@ internal sealed partial class LythonRuntime
                     for (var i = 0; i < arguments.Length; i++)
                     {
                         if ((i & 1023) == 0) context.CheckExecution(span);
-                        var argument = arguments[i];
-                        if (argument.IsPositional)
+                        var keyword = arguments.KeywordAt(i);
+                        if (keyword is null)
                         {
                             if (positionalIndices is not null) positionalIndices[positionalIndex++] = i;
                         }
-                        else if (!keywords.TryAdd(argument.KeywordName, i))
-                            throw CallErrors.MultipleValues(PythonCallableKind.Method, "str.format", argument.KeywordName, span);
+                        else if (!keywords.TryAdd(keyword, i))
+                            throw CallErrors.MultipleValues(PythonCallableKind.Method, "str.format", keyword, span);
                     }
                 }
 
-                // The invocation owns the original packet until formatting and
+                // The caller owns the original arguments until formatting and
                 // all its callbacks complete. Only the indices need a new lease.
                 return new MethodFormatOperation(arguments, positionalCount, positionalIndices, keywords, null,
                     span, context, asynchronous, text.ByteLength).RunAsync(text, prepared, indexStorage);
@@ -170,7 +165,7 @@ internal sealed partial class LythonRuntime
 
         private static ValueTask<object> FormatMappingAsync(PyString text, object mapping,
             LythonSourceSpan span, ExecutionContext context, bool asynchronous, PyStringOps.FormatTemplate prepared)
-            => new MethodFormatOperation([], 0, null, null, mapping, span, context, asynchronous, text.ByteLength)
+            => new MethodFormatOperation(default, 0, null, null, mapping, span, context, asynchronous, text.ByteLength)
                 .RunAsync(text, prepared);
 
         private sealed class StringTranslateMemberProvider : IStringMemberProvider

@@ -1,6 +1,7 @@
 using System.Numerics;
 using System.Globalization;
 using System.Text;
+using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
@@ -9,8 +10,73 @@ internal sealed partial class LythonRuntime
 {
     internal static partial class StringMembers
     {
+        internal sealed class MethodFormatCallable(PyString text) : ICallable
+        {
+            private PyStringOps.FormatTemplate? _template;
+
+            public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+                => Invoke(new MethodFormatArguments(arguments), span, context, false).GetAwaiter().GetResult();
+
+            public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+                => Invoke(new MethodFormatArguments(arguments), span, context, true);
+
+            internal ValueTask<object> InvokeFromOperands(Memory<ExecutableSlot> values, ExecutableCallSite call,
+                ExecutionContext context, bool asynchronous)
+                => Invoke(new MethodFormatArguments(values, call), call.CallSpan, context, asynchronous);
+
+            private ValueTask<object> Invoke(MethodFormatArguments arguments, LythonSourceSpan span,
+                ExecutionContext context, bool asynchronous)
+                => FormatStringAsync(text, arguments, span, context, asynchronous,
+                    PrepareFormat(text, ref _template, span, context));
+        }
+
+        private static PyStringOps.FormatTemplate PrepareFormat(PyString text, ref PyStringOps.FormatTemplate? prepared,
+            LythonSourceSpan span, ExecutionContext context)
+        {
+            context.CheckExecution(span);
+            if (!ReferenceEquals(prepared?.Owner, context.MemoryGovernor))
+                prepared = PyStringOps.PrepareFormatTemplate(text, context.MemoryGovernor, span, context.State.CancellationToken);
+            return prepared!;
+        }
+
+        // An ordinary call has evaluated values and immutable labels already.
+        // The caller keeps those slots or its expanded packet alive until all
+        // format fields and their callbacks have completed.
+        private readonly struct MethodFormatArguments
+        {
+            private readonly Memory<ExecutableSlot> _operands;
+            private readonly ExecutableCallSite? _call;
+            private readonly CallArgumentValue[]? _expanded;
+
+            internal MethodFormatArguments(Memory<ExecutableSlot> operands, ExecutableCallSite call)
+            {
+                _operands = operands;
+                _call = call;
+            }
+
+            internal MethodFormatArguments(CallArgumentValue[] expanded) => _expanded = expanded;
+
+            internal int Length => _call is not null ? _operands.Length : _expanded?.Length ?? 0;
+            internal bool KnownPositional => _call is { IsPositionalOnly: true };
+
+            internal object ValueAt(int index) => _call is not null
+                ? _operands.Span[index].Object.RequireNotNull() : _expanded![index].Value;
+
+            internal string? KeywordAt(int index)
+            {
+                if (_call is not null)
+                {
+                    var label = _call.Arguments[index];
+                    return label.Kind == CallArgumentKind.Keyword ? label.KeywordName : null;
+                }
+
+                var argument = _expanded![index];
+                return argument.IsKeyword ? argument.KeywordName : null;
+            }
+        }
+
         private static PyString? JoinPreparedPositionalText(PyStringOps.FormatPart[] parts,
-            CallArgumentValue[] arguments, ExecutionContext context, LythonSourceSpan span)
+            MethodFormatArguments arguments, ExecutionContext context, LythonSourceSpan span)
         {
             long length = 0;
             foreach (var part in parts)
@@ -19,7 +85,7 @@ internal sealed partial class LythonRuntime
                 if (part.Field is { } field)
                 {
                     if ((ulong)field.Position >= (ulong)arguments.Length ||
-                        arguments[(int)field.Position].Value is not PyString text) return null;
+                        arguments.ValueAt((int)field.Position) is not PyString text) return null;
                     length += text.ByteLength;
                 }
                 else length += part.Literal.Length;
@@ -42,7 +108,7 @@ internal sealed partial class LythonRuntime
                 {
                     context.CheckExecution(span);
                     var source = part.Field is { } field
-                        ? ((PyString)arguments[(int)field.Position].Value).Utf8Span
+                        ? ((PyString)arguments.ValueAt((int)field.Position)).Utf8Span
                         : part.Literal.Span;
                     PyStringOps.CopyJoinBytes(source, destination, context, span);
                     destination = destination[source.Length..];
@@ -56,7 +122,7 @@ internal sealed partial class LythonRuntime
 
         // One invocation owns its arguments and expanded-spec scratch.
         // Cached layouts retain none of these values or the execution token.
-        private sealed class MethodFormatOperation(CallArgumentValue[] arguments, int positionalCount,
+        private sealed class MethodFormatOperation(MethodFormatArguments arguments, int positionalCount,
             int[]? positionalIndices, Dictionary<string, int>? keywords,
             object? mapping, LythonSourceSpan span, ExecutionContext context, bool asynchronous, int templateBytes)
         {
@@ -90,7 +156,7 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            private object PositionalValue(int index) => arguments[positionalIndices?[index] ?? index].Value;
+            private object PositionalValue(int index) => arguments.ValueAt(positionalIndices?[index] ?? index);
 
             private async ValueTask AppendTemplateAsync(PyStringOps.FormatTemplate template, GovernedByteBuilder output)
             {
@@ -120,7 +186,7 @@ internal sealed partial class LythonRuntime
                             ? await ReadLoweredSubscriptAsync(mapping, key, span, context).ConfigureAwait(false)
                             : ReadSubscriptValue(mapping, key, span, context);
                     }
-                    else if (keywords is not null && keywords.TryGetValue(keyword, out var argument)) selected = arguments[argument].Value;
+                    else if (keywords is not null && keywords.TryGetValue(keyword, out var argument)) selected = arguments.ValueAt(argument);
                     else throw new KeyNotFoundException(keyword);
                     context.CheckExecution(span);
 

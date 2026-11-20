@@ -139,7 +139,7 @@ internal sealed partial class LythonRuntime
             var pending = method.InvokeAsync(receiver, arguments, span, context);
             if (pending.IsCompleted) return new(pending.GetAwaiter().GetResult());
             transferred = true;
-            return CompleteReceiverMethodAsync(pending, span, context);
+            return CompletePendingGuardedCallAsync(pending, span, context);
         }
         catch (Exception error) when (TryTranslateCallableException(error, span, out var translated)) { throw translated; }
         finally { if (!transferred) context.LeaveInterpreterFrame(); }
@@ -147,7 +147,7 @@ internal sealed partial class LythonRuntime
 
     // Only genuine suspension retains the guarded call. Completed native
     // operations use the ordinary synchronous cleanup and publication order.
-    private static async ValueTask<object> CompleteReceiverMethodAsync(ValueTask<object> pending,
+    private static async ValueTask<object> CompletePendingGuardedCallAsync(ValueTask<object> pending,
         LythonSourceSpan span, ExecutionContext context)
     {
         try { return await pending.ConfigureAwait(false); }

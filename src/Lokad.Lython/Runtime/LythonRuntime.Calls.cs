@@ -144,6 +144,23 @@ internal sealed partial class LythonRuntime
         finally { context.LeaveInterpreterFrame(); }
     }
 
+    private static ValueTask<object> InvokeFormatFromOperands(StringMembers.MethodFormatCallable method,
+        ExecutableCallSite call, Memory<ExecutableSlot> operands, ExecutionContext context, bool asynchronous)
+    {
+        var span = call.CallSpan;
+        context.EnterInterpreterFrame(span);
+        var transferred = false;
+        try
+        {
+            var result = method.InvokeFromOperands(operands, call, context, asynchronous);
+            if (!asynchronous || result.IsCompleted) return new(result.GetAwaiter().GetResult());
+            transferred = true;
+            return CompletePendingGuardedCallAsync(result, span, context);
+        }
+        catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
+        finally { if (!transferred) context.LeaveInterpreterFrame(); }
+    }
+
     private static async ValueTask<object> InitializePreparedConstructorAsync(PyInstance instance,
         CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
     {
