@@ -1,4 +1,5 @@
 using Lokad.Lython.Frontend;
+using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
@@ -32,7 +33,8 @@ internal sealed partial class LythonRuntime
                     try
                     {
                         value = CreateInlineDefinition(instruction, function.CodeObject, function.ParameterLayout,
-                            function.IsGenerator, PythonCallableKind.Function, function.InputCount, functionCaptures);
+                            function.IsGenerator, PythonCallableKind.Function, function.InputCount, functionCaptures,
+                            function.PostponedAnnotations);
                     }
                     finally { _scope.LeaveInterpreterFrame(); }
                     Publish(instruction, value);
@@ -50,7 +52,7 @@ internal sealed partial class LythonRuntime
 
         private PyFunctionBase CreateInlineDefinition(in ExecutableInstruction instruction,
             ExecutableCodeObject code, FunctionParameterLayout layout, bool generator, PythonCallableKind kind,
-            int inputCount, int[]? captures)
+            int inputCount, int[]? captures, PyString[]? postponedAnnotations = null)
         {
             var first = instruction.InputStart;
             try
@@ -58,7 +60,7 @@ internal sealed partial class LythonRuntime
                 IReadOnlyList<ExecutableCell> cells = captures is null ? [] :
                     CaptureExecutableCells(code, _scope, instruction.Span, Values, _cells, captures, out _, inline: true);
                 return CreateLexicalFunctionValue(layout, code, cells, generator, _scope, instruction.Span, kind,
-                    Values.Slice(first, inputCount));
+                    Values.Slice(first, inputCount), postponedAnnotations);
             }
             finally { Trim(first); }
         }

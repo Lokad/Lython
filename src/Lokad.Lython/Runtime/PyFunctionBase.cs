@@ -327,11 +327,25 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
 
     private object ReadAnnotations()
     {
-        if (_annotations is object?[] values)
+        if (_annotations is object?[] prepared)
         {
             var span = PyStructuralGuard.AmbientSpan;
             _closure.CheckExecution(span);
-            _annotations = CodeObject.DefinitionAnnotationKeys!.AdoptPreparedValues(values, _closure.MemoryGovernor, span);
+            var keys = CodeObject.DefinitionAnnotationKeys!;
+            var values = prepared;
+            if (prepared is PyString[] postponed)
+            {
+                // The definition has funded the final record. The compiler's
+                // immutable payload never becomes guest-owned mutable storage.
+                values = new object?[keys.PreparedValueCapacity];
+                for (var i = 0; i < postponed.Length; i++)
+                {
+                    if ((i & 63) == 0) _closure.CheckExecution(span);
+                    values[i] = postponed[i];
+                }
+                _closure.CheckExecution(span);
+            }
+            _annotations = keys.AdoptPreparedValues(values, _closure.MemoryGovernor, span);
         }
         return _annotations ??= new PyDict(_closure.MemoryGovernor);
     }
@@ -340,7 +354,9 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
     {
         var previous = _annotations;
         _annotations = value;
-        if (previous is object?[] values)
+        if (previous is PyString[])
+            _closure.MemoryGovernor.Release(PyDict.RecordKeys.RecordBytes(CodeObject.DefinitionAnnotationKeys!.PreparedValueCapacity));
+        else if (previous is object?[] values)
             PyDict.RecordKeys.RefundPreparedValues(values, _closure.MemoryGovernor);
     }
 

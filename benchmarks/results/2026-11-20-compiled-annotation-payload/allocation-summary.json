@@ -1,0 +1,38 @@
+[
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+    "previousAllocatedBytes": 1390176,
+    "candidateAllocatedBytes": 1275544,
+    "allocationChangePercent": -8.24586239440186,
+    "previousAccountedPeak": 2968481,
+    "candidateAccountedPeak": 2968481,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.annotated-rule-closures.observed.postponed",
+    "previousAllocatedBytes": 1193712,
+    "candidateAllocatedBytes": 1193712,
+    "allocationChangePercent": 0.0,
+    "previousAccountedPeak": 2444364,
+    "candidateAccountedPeak": 2444364,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories",
+    "previousAllocatedBytes": 1390072,
+    "candidateAllocatedBytes": 1390072,
+    "allocationChangePercent": 0.0,
+    "previousAccountedPeak": 2968425,
+    "candidateAccountedPeak": 2968425,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.csv-invoice.large",
+    "previousAllocatedBytes": 3672470,
+    "candidateAllocatedBytes": 3672476,
+    "allocationChangePercent": 0.00016337778117048174,
+    "previousAccountedPeak": 9432613,
+    "candidateAccountedPeak": 9432613,
+    "budgetReturnedToBaseline": true
+  }
+]

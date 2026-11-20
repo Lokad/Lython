@@ -1,5 +1,6 @@
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Calls;
+using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
@@ -12,11 +13,11 @@ internal sealed partial class LythonRuntime
     private static PyFunctionBase CreateFunctionValue(FunctionParameterLayout layout, ExecutableCodeObject code,
         ExecutionContext closure, IReadOnlyList<ExecutableCell> cells, FunctionDefaults defaults,
         bool generator, ExecutionContext context, LythonSourceSpan span, PythonCallableKind kind = PythonCallableKind.Function,
-        ReadOnlySpan<ExecutableSlot> annotations = default)
+        ReadOnlySpan<ExecutableSlot> annotations = default, PyString[]? postponedAnnotations = null)
     {
         // The callable and its final annotation backing are still private.
         // Admit both before allocation and transfer the combined charge once.
-        var keys = annotations.IsEmpty ? null : code.DefinitionAnnotationKeys.RequireNotNull();
+        var keys = annotations.IsEmpty && postponedAnnotations is null ? null : code.DefinitionAnnotationKeys.RequireNotNull();
         var capacity = keys?.PreparedValueCapacity ?? 0;
         var bytes = keys is null ? FunctionValueBytes : checked(FunctionValueBytes + PyDict.RecordKeys.RecordBytes(capacity));
         var governor = context.MemoryGovernor;
@@ -29,7 +30,8 @@ internal sealed partial class LythonRuntime
                 : new PyExecutableFunction(layout, code, closure, cells, defaults, kind);
             ChargeClosureRetention(closure, governor, span);
             if (keys is not null)
-                function.AttachAdmittedAnnotations(keys.CopyAnnotationValues(annotations, capacity, context, span), context);
+                function.AttachAdmittedAnnotations(postponedAnnotations ??
+                    keys.CopyAnnotationValues(annotations, capacity, context, span), context);
             governor.Commit(bytes);
             return function;
         }
@@ -51,12 +53,12 @@ internal sealed partial class LythonRuntime
     // order. Only the caller retires the storage the operands came from.
     private static PyFunctionBase CreateLexicalFunctionValue(FunctionParameterLayout layout, ExecutableCodeObject code,
         IReadOnlyList<ExecutableCell> cells, bool generator, ExecutionContext scope, LythonSourceSpan span,
-        PythonCallableKind kind, Span<ExecutableSlot> operands)
+        PythonCallableKind kind, Span<ExecutableSlot> operands, PyString[]? postponedAnnotations = null)
     {
         var firstAnnotation = layout.DefaultStorageCount;
         var defaults = operands[..firstAnnotation];
         var function = CreateFunctionValue(layout, code, GetGlobalContext(scope), cells, ReadExecutableDefaults(layout, defaults),
-            generator, scope, span, kind, operands[firstAnnotation..]);
+            generator, scope, span, kind, operands[firstAnnotation..], postponedAnnotations);
         defaults.Clear();
         return function;
     }
@@ -122,7 +124,8 @@ internal sealed partial class LythonRuntime
             {
                 var cells = CaptureExecutableCells(operation.CodeObject, scope, span, ref execution, captures);
                 function = CreateLexicalFunctionValue(operation.ParameterLayout, operation.CodeObject, cells, operation.IsGenerator,
-                    scope, span, PythonCallableKind.Function, execution.Stack.Slice(first, operation.InputCount).Span);
+                    scope, span, PythonCallableKind.Function, execution.Stack.Slice(first, operation.InputCount).Span,
+                    operation.PostponedAnnotations);
             }
             finally { RetireExecutableDefinition(ref execution, scope, first); }
             PublishInstructionResult(ref execution, null, instruction, function);
@@ -152,7 +155,8 @@ internal sealed partial class LythonRuntime
                 ReadOnlySpan<ExecutableSlot> annotations = operation.AnnotationOperandCount != 0
                     ? execution.Stack.Slice(next, operation.AnnotationOperandCount).Span : default;
                 function = CreateFunctionValue(layout, code, closure, cells, ReadExecutableDefaults(layout, defaults),
-                    operation.IsGenerator, context, span, annotations: annotations);
+                    operation.IsGenerator, context, span, annotations: annotations,
+                    postponedAnnotations: operation.PostponedAnnotations);
                 var metadata = ValueTask.CompletedTask;
                 if (operation.AnnotationOperandCount == 0 &&
                     (operation.DeferredAnnotations.Length != 0 || operation.TypeParameters is not null || HasTypeParameterScope(context)))

@@ -6,6 +6,27 @@ public sealed partial class PostponedAnnotationTests
 {
     public static IEnumerable<object[]> Cases()
     {
+        yield return ["factory_metadata_replacement_and_aliases", """
+            from __future__ import annotations
+            def make():
+                def rule(left: Token, right: Token) -> Token:
+                    return left
+                return rule
+            first, replaced, discarded, last = make(), make(), make(), make()
+            replaced.__annotations__ = {'left': 'override'}
+            del discarded.__annotations__
+            alias = first.__annotations__
+            alias['right'] = 'changed'
+            first.__annotations__ = {}
+            assert first.__annotations__ == {}
+            assert replaced.__annotations__ == {'left': 'override'}
+            assert discarded.__annotations__ == {}
+            assert alias == {'left': 'Token', 'right': 'changed', 'return': 'Token'}
+            remaining = last.__annotations__
+            assert remaining == {'left': 'Token', 'right': 'Token', 'return': 'Token'}
+            assert remaining['left'] is remaining['right'] and remaining['left'] is alias['left']
+            print('ok')
+            """, "ok\n"];
         yield return new object[] { "function_kinds", "from __future__ import annotations\ndef f(a: Missing, /, b: list[int]=[], *args: tuple[X,...], c: \"Forward\"=9, **kw: dict[str,Y]) -> Result:pass\nprint(f.__annotations__)\n", "{'b': 'list[int]', 'a': 'Missing', 'args': 'tuple[X, ...]', 'c': \"'Forward'\", 'kw': 'dict[str, Y]', 'return': 'Result'}\n" };
         yield return new object[] { "decorator_metadata", "from __future__ import annotations\ndef deco(f):print(f.__annotations__);return f\n@deco\ndef f(x: Missing)->Other:pass\n", "{'x': 'Missing', 'return': 'Other'}\n" };
         yield return new object[] { "module_and_class", "from __future__ import annotations\nprint(__annotations__)\nx: Missing=7\nclass C:\n print(__annotations__)\n y: Other=8\nprint(__annotations__,C.__annotations__,x,C.y)\n", "{}\n{}\n{'x': 'Missing'} {'y': 'Other'} 7 8\n" };

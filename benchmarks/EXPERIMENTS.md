@@ -6,6 +6,16 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1238/B1239 compiled postponed annotation payloads](results/2026-11-20-compiled-annotation-payload/README.md)
+remove annotation loads and a private array from each postponed definition.
+Nested warm elapsed is 3.63–6.19% lower with supporting CPU and 8.25%
+less allocation. The read-every-dictionary and invoice adverse observations
+do not recur in the exact-image repeat. Both campaigns are preserved.
+
+[Direct UTF-8 regex group copies](results/2026-11-20-regex-group-copy/README.md)
+reuse governed construction. The local 4,096-scalar diagnostic allocates
+11.53% less when reading short groups, with equal accounted peaks.
+
 [B1236/B1237 prepared format mapping keys](results/2026-11-20-prepared-format-map-keys/README.md)
 remove per-field key construction on exact mapping hits. The retained
 refinement improves warm shipment elapsed 9.54–12.52% with lower CPU and

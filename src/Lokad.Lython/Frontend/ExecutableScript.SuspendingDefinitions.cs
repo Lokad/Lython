@@ -7,7 +7,7 @@ internal sealed record ExecutableStartFunctionDefaults(FunctionParameterLayout L
 internal sealed record ExecutableAppendFunctionDefault(int StorageDepth, int Index) : ExecutableOperation;
 internal sealed record ExecutableCreateFunction(ExecutableCodeObject CodeObject, FunctionParameterLayout ParameterLayout,
     int DecoratorCount, bool IsGenerator, int AnnotationOperandCount, LoweredFunctionAnnotation[] DeferredAnnotations,
-    IReadOnlyList<LoweredTypeParameter>? TypeParameters) : ExecutableOperation
+    IReadOnlyList<LoweredTypeParameter>? TypeParameters, PyString[]? PostponedAnnotations) : ExecutableOperation
 {
     internal int InputCount => checked(DecoratorCount + AnnotationOperandCount + ParameterLayout.DefaultStorageCount);
 }
@@ -55,16 +55,36 @@ internal sealed partial class ExecutableScript
             foreach (var decorator in definition.Decorators) block = CompileExpression(decorator, block);
             block = CompileFunctionDefaults(definition.Parameters,
                 definition.ParameterLayout, definition.Span, block);
-            foreach (var (_, expression) in annotations)
+            PyString[]? postponed = null;
+            // Lexical preparation attaches postponed text to every annotation in the declaration.
+            if (annotations.Length != 0 && annotations[0].Expression.PostponedAnnotation is not null)
             {
-                if (expression.PostponedAnnotation is { } text)
-                    AddInstruction(block, ExecutableInstruction.LoadConst(InternConstant(text), expression.Span));
-                else block = CompileExpression(expression, block);
+                var bytes = 32L + 16L * annotations.Length;
+                var governor = _compilation.Governor;
+                governor?.Reserve(bytes, definition.Span);
+                try
+                {
+                    _compilation.CancellationToken.ThrowIfCancellationRequested();
+                    postponed = new PyString[annotations.Length];
+                    for (var i = 0; i < postponed.Length; i++)
+                    {
+                        if ((i & 63) == 0) _compilation.CancellationToken.ThrowIfCancellationRequested();
+                        var text = annotations[i].Expression.PostponedAnnotation.RequireNotNull();
+                        postponed[i] = (PyString)_buffers.Constants[InternConstant(text)]!;
+                    }
+                    governor?.Commit(bytes);
+                }
+                catch { governor?.ReleaseReserved(bytes); throw; }
+            }
+            else
+            {
+                foreach (var (_, expression) in annotations) block = CompileExpression(expression, block);
             }
             // The creation operation retains lowered annotations only when
             // it still evaluates them in the definition's type scope.
             EmitDefinition(new ExecutableCreateFunction(code, definition.ParameterLayout, definition.Decorators.Count,
-                definition.IsGenerator, annotations.Length, deferredAnnotations, typeParameters), definition.Span, block);
+                definition.IsGenerator, postponed is null ? annotations.Length : 0,
+                deferredAnnotations, typeParameters, postponed), definition.Span, block);
             // Module declarations update their live namespace and optional slot.
             var name = definition.Name;
             if (_parameterLayout is null)

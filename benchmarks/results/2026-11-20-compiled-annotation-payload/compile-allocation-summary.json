@@ -1,0 +1,26 @@
+[
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+    "referenceBytes": 69672,
+    "candidateBytes": 69624,
+    "changePercent": -0.06889424733035332
+  },
+  {
+    "case": "scripts.annotated-rule-closures.observed.postponed",
+    "referenceBytes": 64520,
+    "candidateBytes": 63416,
+    "changePercent": -1.71109733415995
+  },
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories",
+    "referenceBytes": 63800,
+    "candidateBytes": 63824,
+    "changePercent": 0.037617554858937474
+  },
+  {
+    "case": "scripts.csv-invoice.large",
+    "referenceBytes": 150896,
+    "candidateBytes": 150912,
+    "changePercent": 0.010603329445446619
+  }
+]
