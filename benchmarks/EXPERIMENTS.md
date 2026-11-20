@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1210 compact call-site metadata](results/2026-11-20-positional-call-sites/README.md)
+removes positional argument-form arrays. Compilation allocates
+1.19–1.95% less and manifest compilation improves 0.32–2.64%
+with lower CPU. Compile-to-result elapsed spans zero. Eager and named
+shipment warm CPU move adversely. Keep the initial source and controls
+while testing a prepared positional flag with the same compact suffix.
+
 [B1209 current compilation attribution](results/2026-11-20-current-cold-compiler-attribution/README.md)
 captures 993 manifest and 1,071 validator stacks with compiler ancestry.
 Call emission occurs on 65 and 101 stacks. Select removal of per-operand

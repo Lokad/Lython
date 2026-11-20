@@ -1,0 +1,66 @@
+[
+  {
+    "case": "scripts.config-generated-guards.medium",
+    "boundary": "compile",
+    "referenceBytes": 2493032.25,
+    "candidateBytes": 2444536.625,
+    "changePercent": -1.945246596789918
+  },
+  {
+    "case": "scripts.config-manifest.small",
+    "boundary": "compile",
+    "referenceBytes": 243088,
+    "candidateBytes": 239728,
+    "changePercent": -1.38221549397749
+  },
+  {
+    "case": "scripts.annotated-rule-closures",
+    "boundary": "compile",
+    "referenceBytes": 51760,
+    "candidateBytes": 51144,
+    "changePercent": -1.1901081916537826
+  },
+  {
+    "case": "scripts.report-render.named-format-selectors.large",
+    "boundary": "compile",
+    "referenceBytes": 57816,
+    "candidateBytes": 56888,
+    "changePercent": -1.605092016050924
+  },
+  {
+    "case": "scripts.config-generated-guards.medium",
+    "boundary": "warm",
+    "referenceBytes": 75936,
+    "candidateBytes": 75936,
+    "changePercent": 0.0,
+    "referencePeakBytes": 94214,
+    "candidatePeakBytes": 94214
+  },
+  {
+    "case": "scripts.config-manifest.small",
+    "boundary": "warm",
+    "referenceBytes": 103024,
+    "candidateBytes": 103024,
+    "changePercent": 0.0,
+    "referencePeakBytes": 58255,
+    "candidatePeakBytes": 58255
+  },
+  {
+    "case": "scripts.annotated-rule-closures",
+    "boundary": "warm",
+    "referenceBytes": 1045984,
+    "candidateBytes": 1045984,
+    "changePercent": 0.0,
+    "referencePeakBytes": 2444081,
+    "candidatePeakBytes": 2444081
+  },
+  {
+    "case": "scripts.report-render.named-format-selectors.large",
+    "boundary": "warm",
+    "referenceBytes": 3772358,
+    "candidateBytes": 3771024,
+    "changePercent": -0.035362497408786275,
+    "referencePeakBytes": 3497481,
+    "candidatePeakBytes": 3497481
+  }
+]
