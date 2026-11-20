@@ -102,7 +102,10 @@ internal static partial class StaticBindingEngine
                 break;
 
             case DeleteStatementSyntax deleteStatement:
-                RemoveDeleteTargetBindings(deleteStatement.Target, bindings);
+                StatementSyntaxTraversal.VisitDeletionTargets(deleteStatement.Target, bindings, static (state, target) =>
+                {
+                    if (target is IdentifierExpressionSyntax name) state.Remove(name.Name);
+                });
                 break;
 
             case FunctionDefinitionStatementSyntax functionDefinition:
@@ -178,40 +181,6 @@ internal static partial class StaticBindingEngine
             case MemberAssignmentTargetSyntax { Target: IdentifierExpressionSyntax memberIdentifier }:
                 bindings.Remove(memberIdentifier.Name);
                 break;
-        }
-    }
-
-    private static void RemoveDeleteTargetBindings(ExpressionSyntax target, AbstractState bindings)
-    {
-        while (target is ParenthesizedExpressionSyntax parenthesized)
-        {
-            target = parenthesized.Inner;
-        }
-
-        if (target is IdentifierExpressionSyntax identifier)
-        {
-            bindings.Remove(identifier.Name);
-            return;
-        }
-
-        var items = target switch
-        {
-            TupleLiteralExpressionSyntax tuple => tuple.Items,
-            ListLiteralExpressionSyntax list => list.Items,
-            _ => null,
-        };
-
-        if (items is null)
-        {
-            return;
-        }
-
-        foreach (var item in items)
-        {
-            if (!item.IsUnpacking)
-            {
-                RemoveDeleteTargetBindings(item.Expression, bindings);
-            }
         }
     }
 

@@ -85,7 +85,7 @@ internal static class StaticNameBindingDiagnostics
     {
         foreach (var expression in StatementSyntaxTraversal.EnumerateDirectExpressions(statement))
         {
-            if (statement is TryStatementSyntax) continue;
+            if (statement is TryStatementSyntax or DeleteStatementSyntax) continue;
             // Alias values and type-parameter bounds/defaults run lazily in
             // their annotation scope, after the declaration has bound its name.
             if (statement is TypeAliasStatementSyntax) continue;
@@ -222,11 +222,16 @@ internal static class StaticNameBindingDiagnostics
                 }
 
             case DeleteStatementSyntax deleteStatement:
-                foreach (var deletedName in DeleteTargetNames(deleteStatement.Target))
+                StatementSyntaxTraversal.VisitDeletionTargets(deleteStatement.Target, (context, localNames, maybeAssigned),
+                    static (state, target) =>
+                    {
+                        if (target is not IdentifierExpressionSyntax)
+                            AnalyzeExpression(target, state.context, state.localNames, state.maybeAssigned);
+                    });
+                StatementSyntaxTraversal.VisitDeletionTargets(deleteStatement.Target, maybeAssigned, static (assigned, target) =>
                 {
-                    maybeAssigned.Remove(deletedName);
-                }
-
+                    if (target is IdentifierExpressionSyntax name) assigned.Remove(name.Name);
+                });
                 break;
 
             case FunctionDefinitionStatementSyntax functionDefinition:
@@ -282,45 +287,6 @@ internal static class StaticNameBindingDiagnostics
                     }
                     break;
                 }
-        }
-
-        static IEnumerable<string> DeleteTargetNames(ExpressionSyntax target)
-        {
-            while (target is ParenthesizedExpressionSyntax parenthesized)
-            {
-                target = parenthesized.Inner;
-            }
-
-            if (target is IdentifierExpressionSyntax identifier)
-            {
-                yield return identifier.Name;
-                yield break;
-            }
-
-            var items = target switch
-            {
-                TupleLiteralExpressionSyntax tuple => tuple.Items,
-                ListLiteralExpressionSyntax list => list.Items,
-                _ => null,
-            };
-
-            if (items is null)
-            {
-                yield break;
-            }
-
-            foreach (var item in items)
-            {
-                if (item.IsUnpacking)
-                {
-                    continue;
-                }
-
-                foreach (var nestedName in DeleteTargetNames(item.Expression))
-                {
-                    yield return nestedName;
-                }
-            }
         }
     }
 

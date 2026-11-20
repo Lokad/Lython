@@ -8,6 +8,8 @@ public sealed class DeleteExecutionTests
     {
         { "module-name", "value=7\ndel value\ntry:print(value)\nexcept NameError:print('missing')", "missing\n" },
         { "helper-local", "def clear(flag):\n value=7\n if flag:del value\n try:return value\n except UnboundLocalError:return 'missing'\nprint(clear(False),clear(True))", "7 missing\n" },
+        { "grouped-deletion-binds-locals", "left='module-left'\nright='module-right'\ndef drop():\n try:del (left,[right])\n except UnboundLocalError:return 'local'\n return 'deleted'\nprint(drop(),left,right)", "local module-left module-right\n" },
+        { "unbound-deletion-is-catchable", "value=7\ndef drop():\n try:del value\n except UnboundLocalError:return 'local'\n return 'deleted'\nprint(drop(),value)", "local 7\n" },
         { "global-name", "value=7\ndef clear():\n global value\n del value\nclear()\ntry:print(value)\nexcept NameError:print('missing')", "missing\n" },
         { "member-protocol", "events=[]\nclass Box:\n def __delattr__(self,name):events.append(name)\nbox=Box()\ndef receiver():events.append('base');return box\ndel receiver().value\nprint(events)", "['base', 'value']\n" },
         { "item-protocol-order", "events=[]\nclass Box:\n def __delitem__(self,key):events.append(('delete',key))\nbox=Box()\ndef receiver():events.append('base');return box\ndef key():events.append('key');return 7\ndel receiver()[key()]\nprint(events)", "['base', 'key', ('delete', 7)]\n" },

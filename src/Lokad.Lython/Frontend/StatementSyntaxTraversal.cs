@@ -6,6 +6,26 @@ internal static class StatementSyntaxTraversal
     public static DirectExpressions EnumerateDirectExpressions(StatementSyntax statement) => new(statement);
     public static ChildBodies EnumerateChildBodies(StatementSyntax statement) => new(statement);
 
+    // Names bind in their lexical scope. Receivers and keys in other
+    // targets are ordinary expression reads.
+    internal static void VisitDeletionTargets<T>(ExpressionSyntax target, T state, Action<T, ExpressionSyntax> visit)
+    {
+        while (target is ParenthesizedExpressionSyntax parenthesized) target = parenthesized.Inner;
+        var items = target switch
+        {
+            TupleLiteralExpressionSyntax tuple => tuple.Items,
+            ListLiteralExpressionSyntax list => list.Items,
+            _ => null,
+        };
+        if (items is null)
+        {
+            visit(state, target);
+            return;
+        }
+        foreach (var item in items)
+            if (!item.IsUnpacking) VisitDeletionTargets(item.Expression, state, visit);
+    }
+
     internal readonly struct DirectExpressions(StatementSyntax statement)
     {
         public ExpressionEnumerator GetEnumerator() => new(statement);

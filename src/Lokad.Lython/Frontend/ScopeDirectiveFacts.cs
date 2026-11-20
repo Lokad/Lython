@@ -205,8 +205,11 @@ internal static class ScopeDirectiveFactsCollector
                     }
                     continue;
 
-                case DeleteStatementSyntax { Target: IdentifierExpressionSyntax deleted }:
-                    names.Add(deleted.Name);
+                case DeleteStatementSyntax deletion:
+                    StatementSyntaxTraversal.VisitDeletionTargets(deletion.Target, names, static (bindings, target) =>
+                    {
+                        if (target is IdentifierExpressionSyntax name) bindings.Add(name.Name);
+                    });
                     break;
 
                 case FunctionDefinitionStatementSyntax functionDefinition:

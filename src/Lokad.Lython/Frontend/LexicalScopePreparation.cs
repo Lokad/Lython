@@ -273,7 +273,12 @@ internal static class LexicalScopePreparation
             if (statement is DeleteStatementSyntax deleted)
             {
                 // A bare deleted name is a binding, not a lexical read.
-                PushDeletedTargetReads(deleted.Target, scope);
+                StatementSyntaxTraversal.VisitDeletionTargets(deleted.Target, (scope, pending), static (state, target) =>
+                {
+                    if (target is IdentifierExpressionSyntax) return;
+                    foreach (var read in ExpressionSyntaxTraversal.EnumerateChildren(target))
+                        state.pending.Push((read, state.scope));
+                });
                 return;
             }
             if (postponed && statement is FunctionDefinitionStatementSyntax function)
@@ -288,21 +293,6 @@ internal static class LexicalScopePreparation
                     ReferenceEquals(expression, annotation.Annotation))) pending.Push((expression, scope));
             if (statement is MatchStatementSyntax match)
                 foreach (var item in match.Cases) PushPatternReads(item.Pattern, scope);
-        }
-
-        void PushDeletedTargetReads(ExpressionSyntax target, Scope scope)
-        {
-            target = Unwrap(target);
-            if (target is IdentifierExpressionSyntax) return;
-            if (target is TupleLiteralExpressionSyntax tuple)
-            {
-                foreach (var item in tuple.Items) PushDeletedTargetReads(item.Expression, scope);
-            }
-            else if (target is ListLiteralExpressionSyntax list)
-            {
-                foreach (var item in list.Items) PushDeletedTargetReads(item.Expression, scope);
-            }
-            else foreach (var read in ExpressionSyntaxTraversal.EnumerateChildren(target)) pending.Push((read, scope));
         }
 
         void PushPatternReads(PatternSyntax pattern, Scope scope)

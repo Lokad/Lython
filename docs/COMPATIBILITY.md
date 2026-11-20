@@ -38,7 +38,10 @@ effects, short-circuiting, closures and exception cleanup under both APIs.
 Cells targeted by nested `nonlocal` declarations use runtime unbound-name checks:
 callbacks can rebind them after deletion or exception-handler cleanup. This is
 conservative even when the nested callable is never invoked or only reads its
-declared nonlocal. Ordinary certainly unbound locals retain compile diagnostics.
+declared nonlocal. Ordinary value reads of certainly unbound locals retain
+compile diagnostics. A bare name in `del`, including within tuple or list
+targets, binds in its lexical scope. Deleting an unbound local raises a
+catchable `UnboundLocalError` at runtime.
 
 Top-level `return` is an embedding extension: it ends the script and projects a
 value to the host. Python async syntax and `except*` are excluded. `RunAsync`
