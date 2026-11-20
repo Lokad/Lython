@@ -813,6 +813,30 @@ public sealed class RegexProviderContractTests
     }
 
     [Fact]
+    public void FrontendCancelsDuringCaptureAdmissionAndClosesThePreparedSubject()
+    {
+        var budget = new AdmissionGateBudget();
+        using var cancellation = new CancellationTokenSource();
+        using var provider = new CooperatingProvider
+        {
+            ExpectedToken = cancellation.Token,
+            OnPrepare = (_, _) => budget.OnNextResizeGrowth = cancellation.Cancel,
+        };
+        var engine = new LythonEngine(provider);
+        using (var script = engine.Compile("import re\np=re.compile('x')\nreturn p.match('x').group()", budget, cancellation.Token))
+        {
+            Assert.True(cancellation.IsCancellationRequested);
+            Assert.False(script.IsValid);
+            Assert.Equal("LA2011", Assert.Single(script.Diagnostics).Code);
+            using var result = script.Run(new MockLythonHost());
+            Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
+            Assert.True(provider.CleanupFinished);
+            Assert.Equal(1, provider.ClosedPatterns);
+        }
+        Assert.Equal(0, budget.Root.ReservedBytes);
+    }
+
+    [Fact]
     public async Task PurgeAndEvictionKeepRetainedPatternsAndPendingCursorsAlive()
     {
         var budget = new LythonMemoryBudget(8 * 1024 * 1024);

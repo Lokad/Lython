@@ -325,7 +325,7 @@ internal static class StaticRegexReturnResolver
         var analysis = bindings.AnalysisContext!;
         var token = analysis.CancellationToken;
         using var inputStorage = analysis.MemoryGovernor?.ReserveTemporary(32L + 3L * text.Length, span);
-        token.ThrowIfCancellationRequested();
+        if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
         var input = Encoding.UTF8.GetBytes(text);
         var length = PyString.CountUtf8Units(input, false, token, span);
         var window = LythonRuntime.RegexCompiler.CreateWindow(input, length, pos, endPos, token, span);
@@ -334,7 +334,7 @@ internal static class StaticRegexReturnResolver
             analysis.MemoryGovernor?.Budget ?? new LythonMemoryBudget(), token), analysis.MemoryGovernor, token, span,
             operationName: "Regex constant-subject preparation");
         using var storage = analysis.MemoryGovernor?.ReserveTemporary(checked(32L + 16L * captureSlotCount), span);
-        token.ThrowIfCancellationRequested();
+        if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
         var captures = new LythonRegexCapture?[captureSlotCount];
         if (!LythonRuntime.RegexCompiler.TryMatch(subject, operation, captures, out var lastIndex,
             analysis.MemoryGovernor, token, span, operationName: "Regex constant matching")) return false;
