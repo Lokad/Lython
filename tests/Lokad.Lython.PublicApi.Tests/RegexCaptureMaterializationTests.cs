@@ -8,6 +8,35 @@ public sealed class RegexCaptureMaterializationTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task FindAllAndSplitRetainWholeSubjectCaptures(bool asynchronous)
+    {
+        const string source = """
+            import re
+            text = ''.join(['prefix-', 'café😀-suffix'])
+            plain, single, named, multiple = [re.findall(pattern, text)
+                for pattern in (r'.+', r'(.+)', r'(?P<all>.+)', r'(.+)()')]
+            split = re.split(r'(?=(.*))', text, maxsplit=1)
+            print(plain[0] is text, single[0] is text, named[0] is text, multiple[0][0] is text)
+            print(split[1] is text, split[2] is text, multiple[0][1] == '')
+            print(re.compile(r'(.+)').findall(text, 7, 12), re.split(r'(-)|(x)', text, maxsplit=1))
+            """;
+        // CPython 3.13.2 output.
+        const string expected = "True True True True\nTrue True True\n['café😀'] ['prefi', None, 'x', '-café😀-suffix']\n";
+        var allowance = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, allowance);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
+        var baseline = allowance.ReservedBytes;
+        using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(expected, result.StandardOutput);
+        }
+        Assert.Equal(baseline, allowance.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task RetainedRangesSurviveAdvancesDisposalAndPurge(bool asynchronous)
     {
         const string source = """

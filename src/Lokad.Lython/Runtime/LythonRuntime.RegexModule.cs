@@ -8,6 +8,17 @@ internal sealed partial class LythonRuntime
 {
     internal readonly record struct ReCaptureRange(int StartByte, int EndByte, int Start, int End);
 
+    private static PyString MaterializeRegexRange(PyString subject, int start, int end, MemoryGovernor governor,
+        ExecutionContext? context, LythonSourceSpan? span)
+    {
+        governor.ThrowIfAdmissionFailed();
+        context?.CheckExecution(span);
+        if (start < 0 || start == end) return PyString.Empty;
+        var length = end - start;
+        if (length == subject.ByteLength) return subject;
+        return PyString.CopyFromUtf8(subject.Utf8Span.Slice(start, length), governor, span, context);
+    }
+
     // Retained matches own immutable ranges over their already-funded subject.
     // Current group access owns any new string, independently of cursor scratch.
     internal sealed class ReMatchObject(RePatternObject pattern, PyString input, int pos, int endPos,
@@ -37,13 +48,9 @@ internal sealed partial class LythonRuntime
         internal PyString MaterializeGroup(int index, ExecutionContext? context, LythonSourceSpan? span)
         {
             context ??= PyStructuralGuard.AmbientContext;
-            var governor = context?.MemoryGovernor ?? owner;
-            governor.ThrowIfAdmissionFailed();
-            context?.CheckExecution(span);
-            var bytes = GroupBytes(index);
-            if (bytes.IsEmpty) return PyString.Empty;
-            if (bytes.Length == String.ByteLength) return String;
-            return PyString.CopyFromUtf8(bytes, governor, span, context);
+            var capture = Captures[index];
+            return MaterializeRegexRange(String, capture.StartByte, capture.EndByte,
+                context?.MemoryGovernor ?? owner, context, span);
         }
     }
 

@@ -139,8 +139,9 @@ internal sealed partial class LythonRuntime
                 range.Pos, range.EndPos, token, span);
         }
 
-        private static ReadOnlyMemory<byte> CaptureBytes(RegexSubjectRange range, LythonRegexCapture capture)
-            => range.Original.Utf8Bytes.Slice(capture.StartByte, capture.EndByte - capture.StartByte);
+        private static PyString ReadSubjectRange(RegexSubjectRange range, int start, int end,
+            ExecutionContext context, LythonSourceSpan span)
+            => MaterializeRegexRange(range.Original, start, end, context.MemoryGovernor, context, span);
 
         private static void ProjectScalarBounds(RegexSubjectRange range, LythonRegexWindow window, ReCaptureRange[] captures,
             ref RegexScalarPosition previous, Span<long> coordinates, ExecutionContext context, LythonSourceSpan span,
@@ -242,10 +243,12 @@ internal sealed partial class LythonRuntime
                 if (pattern.CaptureSlotCount <= 2)
                 {
                     var slot = pattern.CaptureSlotCount == 1 ? 0 : 1;
-                    result.Add(match.Captures[slot] is { } capture ? CreateUtf8String(CaptureBytes(range, capture), context, span) : PyString.Empty);
+                    result.Add(match.Captures[slot] is { } capture
+                        ? ReadSubjectRange(range, capture.StartByte, capture.EndByte, context, span) : PyString.Empty);
                 }
                 else result.Add(CreateTuple(pattern.CaptureSlotCount - 1,
-                    i => match.Captures[i + 1] is { } capture ? CreateUtf8String(CaptureBytes(range, capture), context, span) : PyString.Empty,
+                    i => match.Captures[i + 1] is { } capture
+                        ? ReadSubjectRange(range, capture.StartByte, capture.EndByte, context, span) : PyString.Empty,
                     context, span));
             }
             return result;
@@ -291,20 +294,19 @@ internal sealed partial class LythonRuntime
                     var match = subject;
                     context.CheckExecution(span);
                     var whole = match.Captures[0]!.Value;
-                    result.Add(CreateUtf8String(range.Original.Utf8Bytes.Slice(lastByte, whole.StartByte - lastByte), context, span));
+                    result.Add(ReadSubjectRange(range, lastByte, whole.StartByte, context, span));
                     for (var i = 1; i < match.Captures.Length; i++)
                     {
                         context.CheckExecution(span);
                         result.Add(match.Captures[i] is { } capture
-                            ? CreateUtf8String(CaptureBytes(range, capture), context, span) : PyNone.Instance);
+                            ? ReadSubjectRange(range, capture.StartByte, capture.EndByte, context, span) : PyNone.Instance);
                     }
                     lastByte = whole.EndByte;
                     splits++;
                 }
             }
             context.CheckExecution(span);
-            result.Add(window.StartByte == 0 && window.EndByte == range.Original.ByteLength && lastByte == 0
-                ? range.Original : CreateUtf8String(range.Original.Utf8Bytes.Slice(lastByte, window.EndByte - lastByte), context, span));
+            result.Add(ReadSubjectRange(range, lastByte, window.EndByte, context, span));
             return result;
         }
 
