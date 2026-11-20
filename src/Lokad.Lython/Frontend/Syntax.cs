@@ -449,9 +449,9 @@ internal abstract record ExpressionSyntax(
     LythonSourceSpan Span)
 {
     internal ScopeDirectiveFacts? PreparedComprehensionScopeFacts { get; set; }
-    // Filled once by the frontend for annotation roots in future-annotations
-    // modules. Execution copies the text without evaluating the expression.
-    public string? PostponedAnnotationText { get; internal set; }
+    // A compiled Python string for an annotation in a future-annotations
+    // module. The code owner funds the immutable spelling and its scalar index.
+    public PyString? PostponedAnnotation { get; internal set; }
 }
 
 internal sealed record YieldExpressionSyntax(ExpressionSyntax? Value, bool Delegated,

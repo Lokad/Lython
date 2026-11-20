@@ -1,6 +1,5 @@
 namespace Lokad.Lython.Frontend;
 
-internal sealed record ExecutablePostponedAnnotation(string Text) : ExecutableOperation;
 internal sealed record ExecutableStoreModuleAnnotation(string Name) : ExecutableOperation;
 
 internal sealed partial class ExecutableScript
@@ -11,10 +10,10 @@ internal sealed partial class ExecutableScript
         {
             var name = statement.Assignment.IsSimple && statement.Assignment.Target is NameAssignmentTargetSyntax target
                 ? target.Name : null;
-            if (statement.Annotation.Syntax.PostponedAnnotationText is { } text)
+            if (statement.Annotation.Syntax.PostponedAnnotation is { } text)
             {
                 if (name is null) return block;
-                EmitOperation(new ExecutablePostponedAnnotation(text), statement.Annotation.Span, block);
+                AddInstruction(block, ExecutableInstruction.LoadConst(InternConstant(text), statement.Annotation.Span));
                 EmitOperation(new ExecutableStoreModuleAnnotation(name), statement.Span, block);
                 return block;
             }

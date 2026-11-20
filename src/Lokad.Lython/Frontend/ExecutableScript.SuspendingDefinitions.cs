@@ -26,15 +26,19 @@ internal sealed partial class ExecutableScript
             var binding = PrepareFunctionBinding(definition);
             foreach (var decorator in definition.Decorators) block = CompileExpression(decorator, block);
             block = CompileFunctionDefaults(definition.Parameters, binding.ParameterLayout, definition.Span, block);
-            // Future annotations already carry their source spelling. Their
-            // mode belongs to this definition and needs no execution-time test.
             if ((!_completeLexicalParent && !yielding) || definition.TypeParameters is not null ||
-                binding.Annotations.Length == 0 || binding.Annotations[0].Expression.Syntax.PostponedAnnotationText is not null)
+                binding.Annotations.Length == 0)
             {
                 EmitDefinition(block);
                 return block;
             }
-            foreach (var annotation in binding.Annotations) block = CompileExpression(annotation.Expression, block);
+            foreach (var annotation in binding.Annotations)
+            {
+                var expression = annotation.Expression;
+                if (expression.Syntax.PostponedAnnotation is { } text)
+                    AddInstruction(block, ExecutableInstruction.LoadConst(InternConstant(text), expression.Span));
+                else block = CompileExpression(expression, block);
+            }
             EmitDefinition(block, annotationsOnStack: true);
             return block;
 

@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime;
+using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Frontend;
 
@@ -89,8 +90,8 @@ internal static class PostponedAnnotationText
 
         void Store(ExpressionSyntax expression)
         {
-            if (expression.PostponedAnnotationText is not null) return;
-            expression.PostponedAnnotationText = new Writer(source, governor, cancellationToken).Format(expression);
+            if (expression.PostponedAnnotation is not null) return;
+            expression.PostponedAnnotation = new Writer(source, governor, cancellationToken).FormatLiteral(expression);
         }
     }
 
@@ -105,10 +106,41 @@ internal static class PostponedAnnotationText
         private static Fragment E(ExpressionSyntax expression, int minimum = 1) => new(expression, null, minimum);
         private static Fragment T(string text) => new(null, text);
 
-        public string Format(ExpressionSyntax expression, int minimum = 1)
+        public PyString FormatLiteral(ExpressionSyntax expression)
         {
             _span = expression.Span;
             using var storage = governor?.ReserveTemporary(0, _span);
+            Render(expression, 1, storage);
+            // Keep the UTF-16 builder and its final copy funded during encoding.
+            var text = _text.ToString();
+            var bytes = PyString.EstimateApproximateBytes(0) + 3L * text.Length;
+            storage?.Grow(bytes, _span);
+            PythonTokenization.CheckCancellation(cancellationToken, _span.Start);
+            var result = PyString.FromString(text);
+            var scalars = result.GetCharacterCount(cancellationToken, _span);
+            if (scalars != result.ByteLength)
+            {
+                var indexBytes = 32L + 4L * (scalars + 1L);
+                storage?.Grow(indexBytes, _span);
+                result.PrepareCompiledRuneIndex(scalars, cancellationToken, _span);
+                bytes += indexBytes;
+            }
+            storage?.Commit(bytes);
+            return result;
+        }
+
+        public string Format(ExpressionSyntax expression, int minimum)
+        {
+            _span = expression.Span;
+            using var storage = governor?.ReserveTemporary(0, _span);
+            Render(expression, minimum, storage);
+            var result = _text.ToString();
+            storage?.Commit(result.Length == 0 ? 0 : 32L + 2L * result.Length);
+            return result;
+        }
+
+        private void Render(ExpressionSyntax expression, int minimum, MemoryGovernor.TemporaryMemoryReservation? storage)
+        {
             var funded = 0;
             _pending.Push(E(expression, minimum));
             while (_pending.TryPop(out var fragment))
@@ -120,9 +152,7 @@ internal static class PostponedAnnotationText
                 }
                 else Emit(fragment.Expression!, fragment.Minimum);
             }
-            var result = _text.ToString();
-            storage?.Commit(result.Length == 0 ? 0 : 32L + 2L * result.Length);
-            return result;
+            PythonTokenization.CheckCancellation(cancellationToken, _span.Start);
         }
 
         // Fund a complete replacement, final UTF-16 string and construction overlap.

@@ -988,14 +988,28 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         }
     }
 
-    private int[] BuildRuneByteOffsets(int count, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
+    // The code owner has admitted a scalar index before this value can be
+    // shared by executions. No run has to allocate or own that cache.
+    internal void PrepareCompiledRuneIndex(int count, CancellationToken token, LythonSourceSpan span)
     {
+        System.Diagnostics.Debug.Assert(_metadata is null && count != _byteLength);
+        _metadata = new RuneIndexCache(null, BuildRuneByteOffsets(count, null, span, token));
+    }
+
+    private int[] BuildRuneByteOffsets(int count, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span,
+        CancellationToken cancellationToken = default)
+    {
+        if (cancellationToken.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
         context?.CheckExecution(span);
         var offsets = new int[count + 1];
         var runeIndex = 0;
         for (var byteIndex = 0; byteIndex < _byteLength;)
         {
-            if ((runeIndex & 1023) == 0) context?.CheckExecution(span);
+            if ((runeIndex & 1023) == 0)
+            {
+                if (cancellationToken.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
+                context?.CheckExecution(span);
+            }
             offsets[runeIndex++] = byteIndex;
             byteIndex += GetRuneLengthAtByteIndex(byteIndex);
         }

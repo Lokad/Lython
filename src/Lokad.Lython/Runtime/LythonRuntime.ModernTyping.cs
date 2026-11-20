@@ -151,8 +151,8 @@ internal sealed partial class LythonRuntime
             foreach (var input in inputs)
             {
                 var expression = input.Expression;
-                var value = expression.Syntax.PostponedAnnotationText is { } text
-                    ? CreatePostponedAnnotationValue(text, expression.Span, definingContext)
+                var value = expression.Syntax.PostponedAnnotation is { } text
+                    ? text
                     : await EvaluateTypeExpressionAsync(expression, scope.Annotations, asynchronous).ConfigureAwait(false);
                 annotations.AddDefinitionValue(input.Key, value, definingContext, expression.Span);
             }

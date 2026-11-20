@@ -126,13 +126,10 @@ public sealed partial class PostponedAnnotationTests : LifetimeScenario
         }
     }
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task MetadataAdmissionPrecedesDecoratorPublication(bool collection)
+    [Fact]
+    public async Task MetadataAdmissionPrecedesDecoratorPublication()
     {
-        var declaration = collection ? "def f(" + string.Join(',', Enumerable.Range(0, 1000).Select(i => $"x{i}:T")) + "):pass"
-            : "def f(x:" + new string('T', 131072) + "):pass";
+        var declaration = "def f(" + string.Join(',', Enumerable.Range(0, 1000).Select(i => $"x{i}:T")) + "):pass";
         var source = "from __future__ import annotations\ndef deco(f):print('decorator');return f\n@deco\n" + declaration;
         var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid);
@@ -143,6 +140,39 @@ public sealed partial class PostponedAnnotationTests : LifetimeScenario
             Assert.Equal("MemoryError", result.Failure?.ExceptionType);
             Assert.Empty(result.StandardOutput);
         }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RepeatedPostponedTextUsesTheCompilationOwner(bool asynchronous)
+    {
+        const int length = 32_768;
+        var spelling = new string('λ', length);
+        var source = "from __future__ import annotations\n" +
+            "def factory():\n def f(x:" + spelling + "):pass\n return f\n" +
+            "a=factory().__annotations__['x']\nb=factory().__annotations__['x']\n" +
+            "print(len(a), a is b, a[-1])\nreturn a[-2:]";
+        var compilation = new LythonMemoryBudget(16 * 1024 * 1024);
+        var execution = new LythonMemoryBudget(65_536);
+        var projection = new LythonMemoryBudget(65_536);
+        using var script = new LythonEngine().Compile(source, compilation);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics));
+        var baseline = compilation.ReservedBytes;
+        var options = new LythonRunOptions { MemoryBudget = execution, ResultMemoryBudget = projection };
+        using var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options)
+            : script.Run(new MockLythonHost(), options);
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("32768 True λ\n", result.StandardOutput);
+        Assert.Equal(0, execution.ReservedBytes);
+        Assert.Equal(baseline, compilation.ReservedBytes);
+
+        script.Dispose();
+        Assert.Equal(0, compilation.ReservedBytes);
+        Assert.True(projection.ReservedBytes > 0);
+        Assert.Equal("λλ", result.ReturnValue);
+        result.Dispose();
+        Assert.Equal(0, projection.ReservedBytes);
     }
 
     [Theory]
