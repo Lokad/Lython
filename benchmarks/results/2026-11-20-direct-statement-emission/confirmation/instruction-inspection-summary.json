@@ -1,0 +1,87 @@
+{
+  "scripts.annotated-rule-closures": {
+    "sameCanonicalInstructionShape": true,
+    "rootInstructionCount": 29,
+    "matchingFieldNames": [
+      "name",
+      "usesLexicalSlots",
+      "mirrors",
+      "runsNative",
+      "names",
+      "locals",
+      "closures",
+      "instructions",
+      "regions",
+      "constants",
+      "codeChildren"
+    ]
+  },
+  "scripts.config-generated-guards.medium": {
+    "sameCanonicalInstructionShape": true,
+    "rootInstructionCount": 39,
+    "matchingFieldNames": [
+      "name",
+      "usesLexicalSlots",
+      "mirrors",
+      "runsNative",
+      "names",
+      "locals",
+      "closures",
+      "instructions",
+      "regions",
+      "constants",
+      "codeChildren"
+    ]
+  },
+  "scripts.config-manifest.small": {
+    "sameCanonicalInstructionShape": true,
+    "rootInstructionCount": 17,
+    "matchingFieldNames": [
+      "name",
+      "usesLexicalSlots",
+      "mirrors",
+      "runsNative",
+      "names",
+      "locals",
+      "closures",
+      "instructions",
+      "regions",
+      "constants",
+      "codeChildren"
+    ]
+  },
+  "scripts.csv-invoice.large": {
+    "sameCanonicalInstructionShape": true,
+    "rootInstructionCount": 111,
+    "matchingFieldNames": [
+      "name",
+      "usesLexicalSlots",
+      "mirrors",
+      "runsNative",
+      "names",
+      "locals",
+      "closures",
+      "instructions",
+      "regions",
+      "constants",
+      "codeChildren"
+    ]
+  },
+  "scripts.dataclass-inherited-configuration.generated": {
+    "sameCanonicalInstructionShape": true,
+    "rootInstructionCount": 252,
+    "matchingFieldNames": [
+      "name",
+      "usesLexicalSlots",
+      "mirrors",
+      "runsNative",
+      "names",
+      "locals",
+      "closures",
+      "instructions",
+      "regions",
+      "constants",
+      "codeChildren"
+    ]
+  }
+}

@@ -1,0 +1,138 @@
+{
+  "complete": true,
+  "elapsedSeconds": 338.9421255872585,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "staging": {
+    "retiredOnly": [],
+    "alreadyAbsent": [],
+    "freshIdleLease": true,
+    "allHashesPathsOwnershipLinksAndAliasesVerified": true,
+    "canonicalArchiveAndCurrentImagesPreserved": true,
+    "freeBeforeBytes": 180060160,
+    "freeAfterBytes": 179777536
+  },
+  "rows": [
+    {
+      "case": "scripts.config-generated-guards.medium",
+      "lane": "compile",
+      "elapsedMilliseconds": {
+        "reference-control": 2.0240672169657423,
+        "candidate-control": 1.770882501529052,
+        "reference": 2.052744069291338,
+        "candidate": 1.8266753732503886
+      },
+      "cpuMilliseconds": {
+        "reference-control": 2.0228384991843393,
+        "candidate-control": 1.7889908256880733,
+        "reference": 2.0629921259842523,
+        "candidate": 1.8195956454121305
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 1.0902496932016843,
+        "candidate-control": 1.1040553463540275,
+        "reference": 0.6245652813445993,
+        "candidate": 2.3075262214917154
+      },
+      "elapsedChangePercent": [
+        -13.730964905897514,
+        -12.508710842925307,
+        -11.012999595170891,
+        -9.752237576934908
+      ],
+      "cpuChangePercent": [
+        -13.281742418936915,
+        -11.79822634834331,
+        -11.560372891387994,
+        -10.047408819545488
+      ],
+      "referenceSpreadPercent": 1.4167934782613134,
+      "candidateSpreadPercent": 3.150568808103471
+    },
+    {
+      "case": "scripts.config-manifest.small",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "reference-control": 0.42881651267605636,
+        "candidate-control": 0.4233277903225806,
+        "reference": 0.4237261142740951,
+        "candidate": 0.4220877243087083
+      },
+      "cpuMilliseconds": {
+        "reference-control": 0.5150905432595574,
+        "candidate-control": 0.5080645161290323,
+        "reference": 0.508336722244815,
+        "candidate": 0.5076351630210483
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 2.209147280934186,
+        "candidate-control": 1.4176952043911053,
+        "reference": 0.8894626974694334,
+        "candidate": 0.995888745759667
+      },
+      "elapsedChangePercent": [
+        -1.569153278486557,
+        -1.279969915156265,
+        -0.3866624949924624,
+        -0.09400505139903759
+      ],
+      "cpuChangePercent": [
+        -1.4473921791168132,
+        -1.3640372983871107,
+        -0.13801073049938273,
+        -0.053548387096780115
+      ],
+      "referenceSpreadPercent": 1.2013416757855166,
+      "candidateSpreadPercent": 0.29379343261008994
+    },
+    {
+      "case": "scripts.annotated-rule-closures",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 1.4280192616609784,
+        "reference": 1.4206601248581159,
+        "candidate-control": 1.3849637884187083,
+        "reference-control": 1.3736989912568305
+      },
+      "cpuMilliseconds": {
+        "candidate": 1.4334470989761092,
+        "reference": 1.4188422247446084,
+        "candidate-control": 1.3919821826280623,
+        "reference-control": 1.377049180327869
+      },
+      "elapsedIQRPercent": {
+        "candidate": 1.254620580442933,
+        "reference": 0.6571581721490003,
+        "candidate-control": 2.2820507326555757,
+        "reference-control": 1.305967772736346
+      },
+      "elapsedChangePercent": [
+        -2.5126584335555036,
+        0.5180082606737191,
+        0.8200338817728525,
+        3.9543066384906567
+      ],
+      "cpuChangePercent": [
+        -1.8930957683741756,
+        1.029351535836187,
+        1.0844204051330797,
+        4.095563139931735
+      ],
+      "referenceSpreadPercent": 3.418589800253069,
+      "candidateSpreadPercent": 3.1087797097878678
+    }
+  ],
+  "CPythonRefreshed": false,
+  "retentionDecision": "retained",
+  "reference": "b418fa7d8be3e9ca0c1b255a15c7332cf8b3e96a",
+  "candidate": "2131039a498fb2b0955295afe037855ea3a5f8c3",
+  "cores": {
+    "reference": "c7791d33d8bccab325f1dc859f786b46db60dec0974cc0d248459bac384c9fc5",
+    "candidate": "1ede47b0b40a7edcfb85ebb8222fbdd1b6beffb0312bddaa6024c3060bd89190"
+  },
+  "archiveSHA256": "52659d054d51a485cfd247d30c161242ebb4ed496e73bbb57c1cd2dd6ca4f383",
+  "verifiedBatches": 84,
+  "measuredCore": "../measured-core.dll.gz",
+  "referenceCore": "../reference-core.dll.gz",
+  "comparedInstructionShapeForFiveWorkloads": true
+}

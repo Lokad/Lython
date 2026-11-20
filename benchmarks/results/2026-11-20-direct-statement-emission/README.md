@@ -20,8 +20,9 @@ All five measured workloads allocate less during compilation. Warm allocation
 and accounted peaks match. The validator's compile-only reference duplicate
 spread is 4.63%. Eager warm's reference spread is 5.46%. The manifest's wider
 process CPU rises slightly in every compile-to-result pairing while elapsed
-falls. The invoice control moves in the other direction. Keep the candidate
-private pending a longer comparison of these disputed lanes.
+falls. The invoice control moves in the other direction. This comparison
+kept the candidate private pending a longer comparison of disputed lanes.
+[B1192 confirmation and retention](confirmation/README.md).
 
 The quiet Azure F4as_v7 ran Ubuntu 24.04.4 and .NET 11 RC3 on 2026-11-20 UTC.
 The reference is `b418fa7d8`. Each process warmed for at least 10 seconds,

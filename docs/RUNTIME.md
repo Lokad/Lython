@@ -25,6 +25,12 @@ and CLR copies or conversions can still complete before the next check.
 Cancellation returns an invalid script with `LA2011`. Dispose that script to
 release its compilation owner. Refused admission retains priority over cancellation.
 
+Module, function and imported suites emit executable instructions directly from
+validated statements. Class suites still prepare the lowered bodies they execute.
+Lazy expressions keep their lowered representation under the owning operation.
+Type alias declarations use a dedicated binding operation and retain their lazy
+value expression and defining namespace.
+
 Hosts can throw [`LythonHostException`](../src/Lokad.Lython/Host/LythonHostException.cs)
 with a contained diagnostic safe for guest code. Its failure kinds map missing,
 permission, wrong-kind, existing, unsupported, broken-pipe and transport outcomes
@@ -909,12 +915,11 @@ and compiled keyword labels through rendering. The caller retains their
 owner across field callbacks and suspension. Expanded calls use their
 already-owned argument packet with the same renderer and template cache.
 
-Functions and generators defined in class suites have executable bodies prepared once
-during compilation, including definitions inside compound suites. Class suites,
-decorators, defaults and annotations keep their existing evaluation order. Methods
-reuse lexical/class cells and retained namespaces; nonlocals without known parent
-cell slots use the shared namespace lookup. Unused lowered method bodies are
-discarded. Other real lowered consumers remain.
+Functions and generators defined in class suites have executable bodies prepared
+directly during compilation, including definitions inside compound suites.
+Class suites, decorators, defaults and annotations keep their evaluation order.
+Methods reuse lexical and class cells and retained namespaces. Nonlocals without
+known parent cell slots use the shared namespace lookup.
 
 Executable class statements evaluate decorators and ordinary header arguments
 in the defining instruction stream. Explicit arguments fill the final base and
