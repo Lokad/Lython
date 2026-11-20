@@ -1,0 +1,8 @@
+reference
+[('instruction growth', 30.4)]
+[('AddInstruction', 30.4), ('InternConstant', 12.6), ('CompileLoadIdentifier', 12.2), ('CompileClassDefinition', 11.3), ('InternName', 0.3)]
+[('Lokad.Lython.Frontend.ExecutableInstruction[]', 30.4), ('Entry[System.Object,System.Int32][]', 7.4), ('System.Func`2[System.Collections.Generic.IReadOnlySet`1[System.String],System.Boolean]', 7.4), ('Lokad.Lython.Frontend.ExecutableCreateClass', 6.8), ('<>c__DisplayClass56_0', 4.8), ('System.SZGenericArrayEnumerator`1[Lokad.Lython.Frontend.LoweredCallArgument]', 4.5), ('System.Object[]', 3.1), ('System.Int32[]', 2.1), ('Entry[System.String,System.Int32][]', 0.3)]
+candidate
+[('body code construction', 206.0), ('opcode finalization', 78.1), ('instruction growth', 10.3), ('lowered expression prep', 7.5)]
+[('ctor', 107.2), ('CompileClassDefinition', 33.4), ('CompileCodeObject', 28.4), ('Linearize', 24.2), ('InternName', 21.1), ('CompileLoadIdentifier', 16.1), ('InternConstant', 14.6), ('CreateBlock', 14.4), ('NormalizeRegions', 12.2), ('AddInstruction', 10.3)]
+[('Lokad.Lython.Frontend.ExecutableInstruction[]', 31.9), ('System.Collections.Generic.Dictionary`2[System.String,System.Int32]', 27.7), ('System.Int32[]', 25.6), ('Lokad.Lython.Frontend.ExecutableCodeObject', 18.2), ('Builder', 18.2), ('System.Collections.Generic.List`1[System.String]', 12.5), ('System.Object[]', 12.5), ('System.String[]', 12.1), ('System.Func`2[System.Collections.Generic.IReadOnlySet`1[System.String],System.Boolean]', 11.8), ('System.Collections.Generic.List`1[Lokad.Lython.Frontend.ExecutableInstruction][]', 10.9)]

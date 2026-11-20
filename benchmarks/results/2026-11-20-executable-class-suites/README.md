@@ -61,5 +61,6 @@ condition and use the timing as diagnostic evidence. The run was not repeated.
 [Original service status](terminal-status.json) ·
 [Recovery receipt](archive-receipt.json) · [Observations](observations.tgz) ·
 [Checks, source patch and procedures](checks-and-procedures.tar.xz) ·
+[Local compilation attribution and refinement](compilation-attribution/README.md) ·
 [Candidate core](measured-core.dll.gz) ·
 [Reference core](../2026-11-20-direct-statement-emission/measured-core.dll.gz).

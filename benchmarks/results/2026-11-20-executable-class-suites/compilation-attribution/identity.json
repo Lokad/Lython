@@ -1,0 +1,12 @@
+{
+  "reference": {
+    "coreSHA256": "1ede47b0b40a7edcfb85ebb8222fbdd1b6beffb0312bddaa6024c3060bd89190",
+    "traceSHA256": "b1f5fa8e6d0d754969ef2208480df2bbc2d642529706ae86c43b0bff358da585",
+    "samples": 18309
+  },
+  "candidate": {
+    "coreSHA256": "d61357917bb84e0d76e54aa91a009c70a3e2dfec8c6ea464ec97bb2296474a7e",
+    "traceSHA256": "2073cea4ac76b61036b659e599c96e170180488403a2220f5c3b08b2bd26bc7a",
+    "samples": 21550
+  }
+}
