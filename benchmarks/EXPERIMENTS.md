@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1185 direct annotation storage](results/2026-11-20-final-function-annotations/README.md)
+removes the final copy in a private source pair. The refined owner allocates
+less, but eager warm CPU rises 2.69–3.76% and compile-to-result elapsed rises
+4.90–6.11%. The initial allocation increase is preserved as well.
+
 [B1184 annotated factories against CPython](results/2026-11-20-cpython-keyword-default-factories/README.md)
 refreshes both factories and the invoice control at the retained binder
 checkpoint. Factory warm ratios remain 3.34–3.54× and 3.45–3.51×.
