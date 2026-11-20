@@ -201,7 +201,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
     // Checked locals keep their original spans in cold metadata; neither branch
     // initialization facts nor their invalidation inventories are needed.
     internal static List<(int Block, int Instruction, int Input, LythonSourceSpan Span)> ForwardValues(
-        ExecutableCodeObject code, List<List<ExecutableInstruction>> blocks)
+        ExecutableCodeObject code, List<List<ExecutableInstruction>> blocks, ExecutableCallSite[] sites)
     {
         var reads = new List<(int Block, int Instruction, int Input, LythonSourceSpan Span)>();
         for (var block = 0; block < blocks.Count; block++)
@@ -211,6 +211,10 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
             for (var index = 0; index < instructions.Count; index++)
             {
                 var instruction = instructions[index];
+                // Site facts use original adjacency, before forwarding can
+                // remove or rewrite the instructions supplying operands.
+                if (instruction.OpCode is ExecutableOpCode.Call or ExecutableOpCode.LoadCallMember)
+                    code.PrepareCallSite(instructions, index, instruction, sites);
                 if (instruction.OpCode == ExecutableOpCode.StoreLocal && code.CapturedLocalSlots.Count != 0 &&
                     code.CapturedLocalSlots.Contains(instruction.LocalSlot))
                     instruction = instruction.WithCapturedLocalStore();

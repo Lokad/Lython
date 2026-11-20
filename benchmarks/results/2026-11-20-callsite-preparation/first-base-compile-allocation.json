@@ -1,0 +1,26 @@
+[
+  {
+    "case": "scripts.config-generated-guards.medium",
+    "previousAllocatedBytes": 2398635.625,
+    "candidateAllocatedBytes": 2327493.125,
+    "allocationChangePercent": -2.965956948963433
+  },
+  {
+    "case": "scripts.config-manifest.helper-guards",
+    "previousAllocatedBytes": 421632,
+    "candidateAllocatedBytes": 418081.25,
+    "allocationChangePercent": -0.8421443343958668
+  },
+  {
+    "case": "scripts.config-manifest.small",
+    "previousAllocatedBytes": 235432,
+    "candidateAllocatedBytes": 232488,
+    "allocationChangePercent": -1.2504672262054428
+  },
+  {
+    "case": "scripts.report-forwarding.expanded",
+    "previousAllocatedBytes": 98024,
+    "candidateAllocatedBytes": 97432,
+    "allocationChangePercent": -0.6039337305149717
+  }
+]

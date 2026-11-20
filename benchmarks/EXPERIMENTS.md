@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1241/B1242 call-site preparation](results/2026-11-20-callsite-preparation/README.md)
+removes two block scans and redundant call-site clones. Generated
+validator compilation is 2.70–6.27% faster with lower CPU. Both
+compile-to-result cases span zero. Warm forwarding remains uncertain
+after the repeat, and the initial adverse control is preserved.
+
 [B1240 postponed factories and mapping report against CPython](results/2026-11-20-cpython-postponed-annotation-payload/README.md)
 measures delivered `785640f8e` against CPython 3.13.16. Postponed nested
 factory warm is 2.16–2.26× and compile-to-result is 2.06–2.15×.
