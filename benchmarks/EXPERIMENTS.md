@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1203 factory delivery against CPython](results/2026-11-20-cpython-inline-lexical-definitions/README.md)
+refreshes the three factory workloads and invoice. Eager rules take
+2.44–2.47× warm and 2.31–2.36× from compile to result. Nested factories
+take 2.99–3.05× warm, postponed rules 2.43–2.46× and invoice 1.04–1.06×.
+
 [B1201 and B1202 lexical definition construction](results/2026-11-20-inline-lexical-definitions/README.md)
 keep eligible factory definitions in existing inline slots and share
 construction across operand storage. The retained source cuts eager and
