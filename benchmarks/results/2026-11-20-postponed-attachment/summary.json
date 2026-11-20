@@ -1,0 +1,115 @@
+{
+  "reference": "c1c15c008de0de4f2ef22a070577de347dda1a4c",
+  "candidate": "4deab5e868fdff2b58909ca7b263851be5b5f716",
+  "verification": "Six CPython goldens per full 32-file image.",
+  "preRebaseFocusedTests": {
+    "windowsNet11": 359,
+    "ubuntuNet10": 359
+  },
+  "measuredReference": "8643ebfd890d5900b6fb8e3c2afd76d1a2fdcd65",
+  "rows": [
+    {
+      "boundary": "compile-allocation",
+      "id": "scripts.annotated-rule-closures",
+      "referenceBytes": 57392,
+      "candidateBytes": 57304,
+      "changePct": -0.15333147477000209
+    },
+    {
+      "boundary": "compile-allocation",
+      "id": "scripts.csv-invoice.large",
+      "referenceBytes": 168616,
+      "candidateBytes": 168528,
+      "changePct": -0.05218959054893446
+    },
+    {
+      "boundary": "compile-allocation",
+      "id": "scripts.annotated-rule-closures.postponed",
+      "referenceBytes": 64160,
+      "candidateBytes": 63784,
+      "changePct": -0.586034912718203
+    },
+    {
+      "boundary": "compile-allocation",
+      "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "referenceBytes": 76440,
+      "candidateBytes": 76064,
+      "changePct": -0.4918890633176298
+    },
+    {
+      "boundary": "compile-allocation",
+      "id": "scripts.annotated-rule-closures.observed.postponed",
+      "referenceBytes": 71232,
+      "candidateBytes": 70848,
+      "changePct": -0.5390835579514808
+    },
+    {
+      "boundary": "compile-allocation",
+      "id": "scripts.config-generated-guards.medium",
+      "referenceBytes": 3048494,
+      "candidateBytes": 3048406,
+      "changePct": -0.0028866712547204187
+    },
+    {
+      "boundary": "allocation",
+      "id": "scripts.annotated-rule-closures",
+      "referenceBytes": 1242728,
+      "candidateBytes": 1242728,
+      "changePct": 0.0,
+      "referencePeak": 2444313,
+      "candidatePeak": 2444313
+    },
+    {
+      "boundary": "allocation",
+      "id": "scripts.csv-invoice.large",
+      "referenceBytes": 3672462,
+      "candidateBytes": 3672462,
+      "changePct": 0.0,
+      "referencePeak": 9432613,
+      "candidatePeak": 9432613
+    },
+    {
+      "boundary": "allocation",
+      "id": "scripts.annotated-rule-closures.postponed",
+      "referenceBytes": 1242832,
+      "candidateBytes": 1242832,
+      "changePct": 0.0,
+      "referencePeak": 2444369,
+      "candidatePeak": 2444369
+    },
+    {
+      "boundary": "allocation",
+      "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "referenceBytes": 1701600,
+      "candidateBytes": 1701600,
+      "changePct": 0.0,
+      "referencePeak": 2968713,
+      "candidatePeak": 2968713
+    },
+    {
+      "boundary": "allocation",
+      "id": "scripts.annotated-rule-closures.observed.postponed",
+      "referenceBytes": 1505016,
+      "candidateBytes": 1505016,
+      "changePct": 0.0,
+      "referencePeak": 2444596,
+      "candidatePeak": 2444596
+    },
+    {
+      "boundary": "allocation",
+      "id": "scripts.config-generated-guards.medium",
+      "referenceBytes": 75816,
+      "candidateBytes": 75816,
+      "changePct": 0.0,
+      "referencePeak": 94214,
+      "candidatePeak": 94214
+    }
+  ],
+  "retentionDecision": "retained",
+  "integratedFocusedTests": {
+    "windowsNet11": 385,
+    "ubuntuNet10": 385
+  },
+  "elapsedMeasured": false,
+  "cpuMeasured": false
+}

@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Postponed annotation text attachment](results/2026-11-20-postponed-attachment/README.md)
+removes a suite traversal and redundant future-import query. The three
+affected scripts allocate 0.49–0.59% less during compilation. Warm
+allocation and accounted peaks match. Timing remains unmeasured.
+
 [B1172 native UTF-8 format specs](results/2026-11-20-utf8-format-specifiers/README.md)
 removes the expanded-spec conversion and scratch lease. Nested reports allocate
 15.21–15.28% less and run 5.50–10.93% faster with supporting CPU. Shipment and
