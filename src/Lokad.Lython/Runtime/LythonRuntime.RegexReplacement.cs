@@ -267,7 +267,7 @@ internal sealed partial class LythonRuntime
             if (!PyStringOps.IsIdentifier(key, context, span))
                 throw ReplacementError($"bad character in group name {PyRendering.ToReprPyString(key, new(context)).AsString()}",
                     template, nameStart, context, span);
-            if (pattern.NamedGroups.TryGetValue(key, out index)) return index;
+            if (pattern.TryGetNamedGroup(key, context, span, out index)) return index;
             throw new LythonRuntimeException("IndexError", $"unknown group name '{key.AsString()}'", span);
         }
 

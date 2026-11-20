@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Numerics;
 using System.Text;
 using System.Runtime.InteropServices;
 using Lokad.Lython.Tests.Harness;
@@ -399,8 +400,19 @@ public sealed class RegexProviderContractTests
             import re
             p=re.compile('(?P<é>.(?P<tail>))')
             m=p.match('😀')
+            names=p.groupindex
+            assert names is not p.groupindex
+            assert type(names).__name__ == 'mappingproxy'
+            try:
+                names['é'] = 3
+            except TypeError:
+                pass
+            else:
+                raise AssertionError('groupindex allowed mutation')
             re.purge()
-            print(p.groupindex,m.groupdict(),m.lastgroup,m.span('é'))
+            assert list(names) == ['é', 'tail']
+            assert repr(names) == "mappingproxy({'é': 1, 'tail': 2})"
+            print(names,m.groupdict(),m.lastgroup,m.span('é'))
             return m.expand(r'<\g<é>:\g<tail>>')
             """, budget))
         {
@@ -422,6 +434,69 @@ public sealed class RegexProviderContractTests
         }
         Assert.Equal(provider.Compilations, provider.ClosedPatterns);
         Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Fact]
+    public void PatternWithoutNamedGroupsReturnsIndependentEmptyDictionaries()
+    {
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var provider = new CooperatingProvider();
+        using (var script = new LythonEngine(provider).Compile("""
+            import re
+            p = re.compile('x')
+            names = p.groupindex
+            assert type(names) is dict
+            assert names is not p.groupindex
+            names['new'] = 1
+            assert p.groupindex == {}
+            """, budget))
+        {
+            var baseline = budget.ReservedBytes;
+            using (var result = script.Run(new MockLythonHost()))
+                Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Fact]
+    public void RefusedGroupIndexViewLeavesTheCompiledPatternOwnerUsable()
+    {
+        var budget = new AdmissionGateBudget();
+        using var provider = new CooperatingProvider
+        {
+            CaptureSlots = 2,
+            GroupNames = [new("name"u8.ToArray(), 1)]
+        };
+        using (var script = new LythonEngine(provider).Compile("""
+            import re,time
+            p=re.compile('(?P<name>x)')
+            time.time()
+            return p.groupindex['name']
+            """, budget))
+        {
+            Assert.True(script.IsValid);
+            var baseline = budget.Root.ReservedBytes;
+            using (var refused = script.Run(new AdmissionGateHost(budget, 0)))
+            {
+                Assert.False(refused.Success);
+                Assert.Equal(LythonFailureReason.SharedMemoryAllowance, refused.FailureAttribution?.Reason);
+                Assert.True(refused.DeniedReservationBytes > 0);
+            }
+            Assert.Equal(baseline, budget.Root.ReservedBytes);
+            Assert.Equal(0, provider.ClosedPatterns);
+
+            budget.Gate(1024 * 1024);
+            using (var result = script.Run(new MockLythonHost()))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal(BigInteger.One, result.ReturnValue);
+            }
+            Assert.Equal(baseline, budget.Root.ReservedBytes);
+            Assert.Equal(1, provider.Compilations);
+        }
+        Assert.Equal(1, provider.ClosedPatterns);
+        Assert.Equal(0, budget.Root.ReservedBytes);
     }
 
     [Theory]

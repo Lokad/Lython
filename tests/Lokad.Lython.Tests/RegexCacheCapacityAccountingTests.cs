@@ -10,7 +10,7 @@ public sealed class RegexCacheCapacityAccountingTests
     private static LythonRuntime.RePatternObject Pattern() => new(
         PyString.FromString("a"), 32,
         Utf8RegexProvider.Instance.Compile("a"u8.ToArray(), new(32, false), new LythonMemoryBudget(), default), 1,
-        new Dictionary<PyString, int>());
+        new PyDict());
 
     [Theory]
     [InlineData(1)]

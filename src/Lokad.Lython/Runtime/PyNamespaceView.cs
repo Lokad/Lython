@@ -152,7 +152,7 @@ internal sealed class PyMappingProxy : IPySubscriptableValue, IPyIterableValue, 
         try { builder.AppendAscii("mappingproxy("); builder.Append(PyRendering.ToReprPyString(Dictionary, context)); builder.Append((byte)')'); return builder.ToPyStringAndRelease(); }
         finally { builder.Release(); }
     }
-    public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+    public PyString RenderInterpolated(PyRenderingContext context) => PyRendering.ToReprPyString(Dictionary, context);
     internal static void UnwrapComparison(ref object left, ref object right)
     {
         if (left is not (PyDict or PyMappingProxy or PyDefaultDict or PyCounter or PyChainMap) ||

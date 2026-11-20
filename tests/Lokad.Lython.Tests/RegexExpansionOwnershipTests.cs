@@ -138,7 +138,7 @@ public sealed class RegexExpansionOwnershipTests
         // directly so a VM checkpoint cannot hide missing native cancellation.
         var pattern = LythonRuntime.RegexCompiler.CreatePattern([PyString.FromString(patternText)], "re.compile", Span,
             context);
-        Assert.True(LythonRuntime.RePatternMembers.TryGetMember(pattern, "match", out var callable));
+        Assert.True(pattern.TryGetMember("match", context, Span, out var callable));
         return Assert.IsType<LythonRuntime.ReMatchObject>(Assert.IsAssignableFrom<LythonRuntime.ICallable>(callable).Invoke(
             [CallArgumentValue.Positional(PyString.FromString(text ?? new string('x', 4096), context.MemoryGovernor, Span))], Span, context));
     }

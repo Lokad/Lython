@@ -2458,6 +2458,8 @@ Dynamic programs remain execution-owned until cleanup, including programs
 evicted from the cache; many distinct patterns can reject early.
 Runtime group names are copied once under the pattern owner and shared by named
 lookup, `groupdict`, `groupindex` and `lastgroup`; capture order stays unchanged.
+Each `groupindex` access returns a read-only view for named groups or a fresh
+empty dictionary when the pattern has no named groups.
 One UTF-8 parser handles `match.expand` and template substitution, including Python
 numeric/named references, octal escapes and error precedence. Each operation parses
 once into a temporary literal/capture plan, even with no matches or negative count.

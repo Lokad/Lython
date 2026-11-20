@@ -30,7 +30,7 @@ internal sealed partial class LythonRuntime
         public int EndPos { get; } = endPos;
         public ReCaptureRange[] Captures { get; } = captures;
         public int CaptureSlotCount => Captures.Length;
-        public IReadOnlyDictionary<PyString, int> NamedGroups => Pattern.NamedGroups;
+        public PyDict NamedGroups => Pattern.NamedGroups;
         public int? LastCapturedIndex { get; } = lastIndex;
         public int Start => Captures[0].Start;
         public int End => Captures[0].End;
@@ -59,8 +59,19 @@ internal sealed partial class LythonRuntime
         int Flags,
         ILythonRegexPattern Regex,
         int CaptureSlotCount,
-        IReadOnlyDictionary<PyString, int> NamedGroups) : IPyRenderableValue
+        PyDict NamedGroups) : IPyRenderableValue, IPyContextualDynamicAttributes
     {
+        public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
+            => RePatternMembers.TryGetMember(this, name, context, span, out value);
+
+        internal bool TryGetNamedGroup(PyString name, ExecutionContext? context, LythonSourceSpan span, out int index)
+        {
+            var found = context is null ? NamedGroups.TryGetValue(name, out var value)
+                : NamedGroups.TryGetValue(name, out value, context, span);
+            index = found ? (int)(BigInteger)value! : -1;
+            return found;
+        }
+
         public PyString RenderPython(PyRenderingContext context)
         {
             var renderedPattern = PyRendering.ToReprPyString(Pattern, context).AsString();
