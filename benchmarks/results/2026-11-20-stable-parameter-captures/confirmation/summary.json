@@ -1,0 +1,128 @@
+{
+  "complete": true,
+  "elapsedSeconds": 367.9855209598318,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "staging": {
+    "retiredOnly": [],
+    "alreadyAbsent": [],
+    "freshIdleLease": true,
+    "allHashesPathsOwnershipLinksAndAliasesVerified": true,
+    "canonicalArchiveAndCurrentImagesPreserved": true,
+    "freeBeforeBytes": 247988224,
+    "freeAfterBytes": 247947264
+  },
+  "rows": [
+    {
+      "case": "scripts.annotated-rule-closures.nested-factories",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 1.3327932180851065,
+        "candidate-control": 1.3888461276005548,
+        "reference": 1.3426919349593496,
+        "candidate": 1.407082711673699
+      },
+      "cpuMilliseconds": {
+        "reference-control": 1.3430851063829787,
+        "candidate-control": 1.4008321775312067,
+        "reference": 1.3414634146341462,
+        "candidate": 1.4205344585091422
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.7425308091060119,
+        "candidate-control": 0.27709893357646764,
+        "reference": 0.1665179059329615,
+        "candidate": 0.5233906521666547
+      },
+      "elapsedChangePercent": [
+        3.437437243756336,
+        4.205671874289885,
+        4.795647835353911,
+        5.573969958770353
+      ],
+      "cpuChangePercent": [
+        4.299583911234395,
+        4.425671415962684,
+        5.766526019690588,
+        5.894386907045157
+      ],
+      "referenceSpreadPercent": 0.7427046251379466,
+      "candidateSpreadPercent": 1.3130744803710348
+    },
+    {
+      "case": "scripts.annotated-rule-closures.observed.postponed",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 1.3430212226666667,
+        "reference": 1.399765029288703,
+        "candidate-control": 1.3683300068212823,
+        "reference-control": 1.3655691432469304
+      },
+      "cpuMilliseconds": {
+        "candidate": 1.3466666666666667,
+        "reference": 1.408647140864714,
+        "candidate-control": 1.364256480218281,
+        "reference-control": 1.364256480218281
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.2684435613639453,
+        "reference": 0.27341060228912656,
+        "candidate-control": 0.5678326114446529,
+        "reference-control": 0.22412954658463471
+      },
+      "elapsedChangePercent": [
+        -4.05380942049044,
+        -2.2457356634630665,
+        -1.6511738487771654,
+        0.2021767691519072
+      ],
+      "cpuChangePercent": [
+        -4.400000000000004,
+        -3.1512973944051947,
+        -1.2893333333333312,
+        0.0
+      ],
+      "referenceSpreadPercent": 2.504148999769029,
+      "candidateSpreadPercent": 1.8844664348909745
+    },
+    {
+      "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 1.1949233723404256,
+        "candidate-control": 1.1921927556346381,
+        "reference": 1.1998364115523465,
+        "candidate": 1.1666438913551402
+      },
+      "cpuMilliseconds": {
+        "reference-control": 1.2056737588652482,
+        "candidate-control": 1.1981020166073548,
+        "reference": 1.203369434416366,
+        "candidate": 1.1682242990654206
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.692772941226202,
+        "candidate-control": 0.40835328191319303,
+        "reference": 0.42846354411463444,
+        "candidate": 0.43190274055262573
+      },
+      "elapsedChangePercent": [
+        -2.7664204784602187,
+        -2.3666355215645307,
+        -0.6370581726069746,
+        -0.22851814342196297
+      ],
+      "cpuChangePercent": [
+        -3.1061022539856986,
+        -2.9205607476635587,
+        -0.6280092108017388,
+        -0.437722419928821
+      ],
+      "referenceSpreadPercent": 0.411159353448598,
+      "candidateSpreadPercent": 2.1899454039759236
+    }
+  ],
+  "retentionDecisionPending": false,
+  "CPythonRefreshed": false,
+  "decision": "Private candidate. The eager factory regresses in the exact-image repeat."
+}

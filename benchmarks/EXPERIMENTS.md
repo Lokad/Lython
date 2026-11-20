@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1243/B1244 stable parameter captures](results/2026-11-20-stable-parameter-captures/README.md)
+holds proven stable parameters directly. Postponed and eager factories
+allocate 8.99% and 8.25% less. The repeat improves postponed elapsed
+0.23–2.77% and slows eager elapsed 3.44–5.57%, with supporting CPU.
+The candidate stays private.
+
 [B1241/B1242 call-site preparation](results/2026-11-20-callsite-preparation/README.md)
 removes two block scans and redundant call-site clones. Generated
 validator compilation is 2.70–6.27% faster with lower CPU. Both
