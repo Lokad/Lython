@@ -31,11 +31,11 @@ internal sealed partial class LythonRuntime
         }
 
         private static PyStringOps.FormatTemplate PrepareFormat(PyString text, ref PyStringOps.FormatTemplate? prepared,
-            LythonSourceSpan span, ExecutionContext context)
+            LythonSourceSpan span, ExecutionContext context, bool mapping = false)
         {
             context.CheckExecution(span);
             if (!ReferenceEquals(prepared?.Owner, context.MemoryGovernor))
-                prepared = PyStringOps.PrepareFormatTemplate(text, context.MemoryGovernor, span, context.State.CancellationToken);
+                prepared = PyStringOps.PrepareFormatTemplate(text, context.MemoryGovernor, span, context.State.CancellationToken, mapping);
             return prepared!;
         }
 
@@ -160,6 +160,14 @@ internal sealed partial class LythonRuntime
 
             private object PositionalValue(int index) => arguments.ValueAt(positionalIndices?[index] ?? index);
 
+            private ValueTask<object> ReadExposedKeyAsync(object target, PyString preparedKey)
+            {
+                // Generic subscript protocols and errors can retain the lookup key.
+                var key = PyString.CopyFromUtf8(preparedKey.Utf8Span, context.MemoryGovernor, span, context);
+                return asynchronous ? ReadLoweredSubscriptAsync(target, key, span, context)
+                    : new(ReadSubscriptValue(target, key, span, context));
+            }
+
             private async ValueTask AppendTemplateAsync(PyStringOps.FormatTemplate template, GovernedByteBuilder output,
                 GovernedByteBuilder? expandedSpec)
             {
@@ -174,7 +182,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     object selected;
-                    if (field.Keyword is not { } keyword)
+                    if (field.Name is not { } name)
                     {
                         if (mapping is not null) throw new InvalidOperationException("Format string contains positional fields");
                         var position = field.Position;
@@ -184,13 +192,14 @@ internal sealed partial class LythonRuntime
                     }
                     else if (mapping is not null)
                     {
-                        var key = PyString.FromString(keyword, context.MemoryGovernor, span);
-                        selected = asynchronous
-                            ? await ReadLoweredSubscriptAsync(mapping, key, span, context).ConfigureAwait(false)
-                            : ReadSubscriptValue(mapping, key, span, context);
+                        var key = (PyString)name;
+                        if (mapping is PyDict dictionary &&
+                            dictionary.TryReadNativeStringValue(key, context, span, out var value))
+                            selected = value;
+                        else selected = await ReadExposedKeyAsync(mapping, key).ConfigureAwait(false);
                     }
-                    else if (keywords is not null && keywords.TryGetValue(keyword, out var argument)) selected = arguments.ValueAt(argument);
-                    else throw new KeyNotFoundException(keyword);
+                    else if (keywords is not null && keywords.TryGetValue((string)name, out var argument)) selected = arguments.ValueAt(argument);
+                    else throw new KeyNotFoundException((string)name);
                     context.CheckExecution(span);
 
                     if (field.Accesses.Length != 0)
@@ -214,22 +223,18 @@ internal sealed partial class LythonRuntime
                                 }
                                 case PyStringOps.FormatAccessKind.Error:
                                     throw new InvalidOperationException((string)access.Value!);
+                                case PyStringOps.FormatAccessKind.StringIndex:
+                                {
+                                    var key = (PyString)access.Value!;
+                                    if (selected is PyDict dictionary &&
+                                        dictionary.TryReadNativeStringValue(key, context, span, out var value))
+                                        selected = value;
+                                    else selected = await ReadExposedKeyAsync(selected, key).ConfigureAwait(false);
+                                    break;
+                                }
                                 default:
                                 {
-                                    object key;
-                                    if (access.Kind == PyStringOps.FormatAccessKind.StringIndex)
-                                    {
-                                        var preparedKey = (PyString)access.Value!;
-                                        if (selected is PyDict dictionary &&
-                                            dictionary.TryReadNativeStringValue(preparedKey, context, span, out var value))
-                                        {
-                                            selected = value;
-                                            break;
-                                        }
-                                        // Generic subscript protocols and errors can expose the lookup key.
-                                        key = PyString.CopyFromUtf8(preparedKey.Utf8Span, context.MemoryGovernor, span, context);
-                                    }
-                                    else key = new BigInteger(access.Index);
+                                    var key = new BigInteger(access.Index);
                                     selected = asynchronous
                                         ? await ReadLoweredSubscriptAsync(selected, key, span, context).ConfigureAwait(false)
                                         : ReadSubscriptValue(selected, key, span, context);

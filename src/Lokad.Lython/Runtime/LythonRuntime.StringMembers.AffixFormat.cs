@@ -74,10 +74,10 @@ internal sealed partial class LythonRuntime
                     PyStringOps.FormatTemplate? prepared = null;
                     return BoundCallable.Create(
                         (arguments, span, context) => FormatMappingAsync(text, arguments[0], span, context, false,
-                            PrepareFormat(text, ref prepared, span, context)).GetAwaiter().GetResult(),
+                            PrepareFormat(text, ref prepared, span, context, mapping: true)).GetAwaiter().GetResult(),
                         StrFormatMapSignature,
                         (arguments, span, context) => FormatMappingAsync(text, arguments[0], span, context, true,
-                            PrepareFormat(text, ref prepared, span, context)));
+                            PrepareFormat(text, ref prepared, span, context, mapping: true)));
                 }
 
                 BoundCallable CreatePartitionMethod(

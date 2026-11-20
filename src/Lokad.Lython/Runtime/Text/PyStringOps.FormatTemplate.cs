@@ -15,19 +15,20 @@ internal static partial class PyStringOps
 
     internal readonly record struct FormatAccess(FormatAccessKind Kind, object? Value, long Index = 0);
 
-    internal sealed record FormatField(long Position, string? Keyword, FormatAccess[] Accesses, Rune? Conversion,
+    // Ordinary named arguments use CLR labels; mapping fields use the same UTF-8 keys as bracket access.
+    internal sealed record FormatField(long Position, object? Name, FormatAccess[] Accesses, Rune? Conversion,
         PyString? Spec, FormatTemplate? NestedSpec, bool RecursiveSpec,
         LythonRuntime.InterpolatedFormatSpecifier? PreparedSpec);
 
     internal static FormatTemplate PrepareFormatTemplate(PyString template, MemoryGovernor governor,
-        LythonSourceSpan? span, CancellationToken token)
+        LythonSourceSpan? span, CancellationToken token, bool mapping = false)
     {
         var bytes = EstimateFormatTemplateBytes(template, token);
         governor.Reserve(bytes, span);
         try
         {
             var nextPosition = 0;
-            var result = ParseFormatTemplate(template.Utf8Bytes, 0, governor, span, token, ref nextPosition);
+            var result = ParseFormatTemplate(template.Utf8Bytes, 0, governor, span, token, mapping, ref nextPosition);
             governor.Commit(bytes);
             return result;
         }
@@ -52,13 +53,13 @@ internal static partial class PyStringOps
             }
         }
         // Two supported levels, list growth/replacement overlap, part/field
-        // records, UTF-16 names and UTF-8 specs and native spec descriptors. Potential
+        // records, field names, UTF-8 specs and native spec descriptors. Potential
         // access markers cover the access-array overlap and a private UTF-8 key.
         return checked(512L + 8L * source.Length + 384L * braces + 224L * accessMarkers);
     }
 
     private static FormatTemplate ParseFormatTemplate(ReadOnlyMemory<byte> source, int depth,
-        MemoryGovernor? owner, LythonSourceSpan? span, CancellationToken token, ref int nextPosition)
+        MemoryGovernor? owner, LythonSourceSpan? span, CancellationToken token, bool mapping, ref int nextPosition)
     {
         var parts = new List<FormatPart>();
         var isPositionalText = true;
@@ -102,11 +103,11 @@ internal static partial class PyStringOps
             }
             try
             {
-                var field = ParseFormatField(source[(i + 1)..close], depth, owner, span, token, ref nextPosition);
+                var field = ParseFormatField(source[(i + 1)..close], depth, owner, span, token, mapping, ref nextPosition);
                 parts.Add(new(default, field));
                 hasNestedSpecs |= field.NestedSpec is not null;
                 isPositionalText = isPositionalText && field is
-                    { Keyword: null, Accesses.Length: 0, Conversion: null, NestedSpec: null, RecursiveSpec: false }
+                    { Name: null, Accesses.Length: 0, Conversion: null, NestedSpec: null, RecursiveSpec: false }
                     && field.Spec is null;
             }
             // Store grammar failures at their original execution position.
@@ -123,7 +124,7 @@ internal static partial class PyStringOps
         return new(parts.ToArray(), owner, isPositionalText, hasNestedSpecs);
     }
     private static FormatField ParseFormatField(ReadOnlyMemory<byte> fieldBytes, int depth,
-        MemoryGovernor? owner, LythonSourceSpan? span, CancellationToken token, ref int nextPosition)
+        MemoryGovernor? owner, LythonSourceSpan? span, CancellationToken token, bool mapping, ref int nextPosition)
     {
         var end = fieldBytes.Length;
 
@@ -219,7 +220,7 @@ internal static partial class PyStringOps
         }
 
         var position = -1L;
-        string? keyword = null;
+        object? name = null;
         // Only successful fields reach later selections. Sharing numbering
         // across nested templates preserves the order in which fields use it.
         if (rootEnd == 0)
@@ -238,7 +239,7 @@ internal static partial class PyStringOps
                 nextPosition = -1;
                 position = explicitPosition;
             }
-            else keyword = Encoding.UTF8.GetString(root);
+            else name = mapping ? PrepareFormatKey(root, span, token) : Encoding.UTF8.GetString(root);
         }
 
         PyString? spec = null;
@@ -250,12 +251,12 @@ internal static partial class PyStringOps
             if (rawSpec.Span.Contains((byte)'{') || rawSpec.Span.Contains((byte)'}'))
             {
                 recursive = depth >= 1;
-                if (!recursive) nested = ParseFormatTemplate(rawSpec, depth + 1, owner, span, token, ref nextPosition);
+                if (!recursive) nested = ParseFormatTemplate(rawSpec, depth + 1, owner, span, token, mapping, ref nextPosition);
             }
             else spec = PyString.CopyFromUtf8(rawSpec.Span, governor: null, span);
         }
         var prepared = LythonRuntime.PrepareConstantFormatSpecifier(spec is null ? default : spec.Utf8Span, span ?? new(0, 0, 0, 0), token);
-        return new(position, keyword, accesses?.ToArray() ?? [], conversion, spec, nested, recursive, prepared);
+        return new(position, name, accesses?.ToArray() ?? [], conversion, spec, nested, recursive, prepared);
     }
 
     private static FormatAccess PrepareFormatAccess(ReadOnlySpan<byte> bytes, bool member,
@@ -267,11 +268,16 @@ internal static partial class PyStringOps
         {
             if (TryParseFormatIndex(bytes, out var index, token))
                 return new(FormatAccessKind.IntegerIndex, null, index);
-            var key = PyString.CopyFromUtf8(bytes, null, span);
-            _ = key.GetHashCode(token, span);
-            return new(FormatAccessKind.StringIndex, key);
+            return new(FormatAccessKind.StringIndex, PrepareFormatKey(bytes, span, token));
         }
         catch (InvalidOperationException error) { return new(FormatAccessKind.Error, error.Message); }
+    }
+
+    private static PyString PrepareFormatKey(ReadOnlySpan<byte> bytes, LythonSourceSpan? span, CancellationToken token)
+    {
+        var key = PyString.CopyFromUtf8(bytes, null, span, cancellationToken: token);
+        _ = key.GetHashCode(token, span);
+        return key;
     }
 
     private static bool IsFormatFieldDelimiter(byte value)

@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1236/B1237 prepared format mapping keys](results/2026-11-20-prepared-format-map-keys/README.md)
+remove per-field key construction on exact mapping hits. The retained
+refinement improves warm shipment elapsed 9.54–12.52% with lower CPU and
+11.50% less CLR allocation. The original named-control slowdown and the
+inconclusive refinement control are both preserved.
+
 [B1230 isolated lexical capture admission](results/2026-11-20-private-lexical-definition/refinement/README.md)
 keeps capture preflight out of ordinary callable construction. The
 postponed regression narrows to 1.14–4.61% on elapsed and recurs on CPU.

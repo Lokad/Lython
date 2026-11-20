@@ -1,0 +1,20 @@
+[
+  {
+    "case": "scripts.report-render.format-map.large",
+    "referenceAllocated": 4491894,
+    "candidateAllocated": 3975184,
+    "allocationChangePercent": -11.503165479862165,
+    "referenceAccountedPeak": 4726513,
+    "candidateAccountedPeak": 3500785,
+    "accountedPeakChangePercent": -25.933029275493368
+  },
+  {
+    "case": "scripts.report-render.named-format-selectors.large",
+    "referenceAllocated": 3770458,
+    "candidateAllocated": 3770438,
+    "allocationChangePercent": -0.0005304395381156013,
+    "referenceAccountedPeak": 3497481,
+    "candidateAccountedPeak": 3497481,
+    "accountedPeakChangePercent": 0.0
+  }
+]

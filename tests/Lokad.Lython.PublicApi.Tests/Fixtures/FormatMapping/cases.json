@@ -15,6 +15,11 @@
     "output": "ok\nliteral {x}\nliteral\n"
   },
   {
+    "name": "prepared-keys-stay-private",
+    "source": "keys=[]\nclass Mapping:\n def __getitem__(self,key):\n  keys.append(key)\n  return key.upper()\nrender='{café}:{café}'.format_map\nprint(render({'café':'exact'}))\nprint(render(Mapping()))\nprint(keys[0] is keys[1])",
+    "output": "exact:exact\nCAFÉ:CAFÉ\nFalse\n"
+  },
+  {
     "name": "dictionary-stays-live",
     "source": "mapping={}\nclass Value:\n def __format__(self,spec):\n  mapping['next']='changed'\n  return 'first'\nmapping['first']=Value()\nmapping['next']='old'\nprint('{first}:{next}'.format_map(mapping))",
     "output": "first:changed\n"
