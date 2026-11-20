@@ -52,6 +52,11 @@ layouts. Inherited dataclass elapsed falls 7.75–11.67% warm and
 5.26–7.39% compile-to-result with lower CPU. Warm allocation falls 12.25%.
 The registry control's small CPU increase remains in the record.
 
+[B1168 dataclasses and factories against CPython](results/2026-11-20-cpython-dataclasses-and-factories/README.md)
+refreshes factory and invoice rows at `ab2aa9554` and adds repeated
+dataclass construction. Factory warm times remain over 3× CPython. The
+dataclass result includes CPython's per-class generated method setup.
+
 ## November 18–19, 0.11.0 compiler and call work
 
 - The retained formatting and function-default changes have paired evidence.
