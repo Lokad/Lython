@@ -3,14 +3,14 @@
 | Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
 | Unannotated rule closures | 2,048 inputs / 4,096 definitions | 2.307–2.321 ms | 0.683–0.688 ms | 3.35–3.40× | B1122 diagnostic. Controls L/C 0.61 / 0.70%. IQR ≤0.74%. |
-| Annotated rule closures | 2,048 inputs / 2,048 definitions | 1.509–1.519 ms | 0.408–0.421 ms | 3.58–3.72× | B1168 diagnostic. Controls L/C 0.66 / 3.20%. IQR ≤3.92%. |
-| Nested annotated factories | 2,048 inputs / 4,096 definitions | 1.981–2.010 ms | 0.579–0.591 ms | 3.35–3.47× | B1168 diagnostic. Controls L/C 1.46 / 2.10%. IQR ≤3.53%. |
+| Annotated rule closures | 2,048 inputs / 2,048 definitions | 1.434–1.491 ms | 0.421–0.429 ms | 3.34–3.54× | B1184 diagnostic. Controls L/C 3.96 / 1.86%. IQR ≤2.80%. |
+| Nested annotated factories | 2,048 inputs / 4,096 definitions | 2.054–2.063 ms | 0.588–0.595 ms | 3.45–3.51× | B1184 diagnostic. Controls L/C 0.46 / 1.25%. IQR ≤2.87%. |
 | Postponed annotated rules | 2,048 inputs / 2,048 definitions | 1.486–1.569 ms | 0.406–0.407 ms | 3.65–3.86× | B1156 diagnostic. Controls L/C 5.61 / 0.28%. IQR ≤2.34%. Gap size uncertain. |
 | Postponed nested factories | 2,048 inputs / 4,096 definitions | 2.051–2.117 ms | 0.577–0.590 ms | 3.47–3.67× | B1156 diagnostic. Controls L/C 3.22 / 2.39%. IQR ≤1.50%. |
 | Captured rule closures | 2,048 inputs / 4,096 returned closures | 2.437–2.454 ms | 0.776–0.790 ms | 3.09–3.16× | B1122 diagnostic. Controls L/C 0.71 / 1.69%. IQR ≤1.69%. |
 | Inline forwarding with dynamic keys | 1,024 records / 26,112 B | 1.894–1.913 ms | 1.139–1.159 ms | 1.63–1.68× | B1102 diagnostic. Controls L/C 1.01 / 1.74%. IQR ≤2.35%. |
 | Expanded forwarding report | 1,024 records / 26,112 B | 1.533–1.543 ms | 1.173–1.189 ms | 1.29–1.32× | B1180 diagnostic. Controls L/C 0.62 / 1.38%. IQR ≤4.03%. |
-| CSV invoice | 4,096 data records / 127,031 B | 6.685–6.790 ms | 6.285–6.302 ms | 1.06–1.08× | B1180 diagnostic. Controls L/C 1.57 / 0.27%. IQR ≤3.53%. |
+| CSV invoice | 4,096 data records / 127,031 B | 6.793–6.815 ms | 6.441–6.457 ms | 1.05–1.06× | B1184 diagnostic. Controls L/C 0.32 / 0.26%. IQR ≤1.49%. |
 | Retained nonlocal siblings | 240 factories / 720 returned closures | 0.169–0.170 ms | 0.188–0.190 ms | 0.89–0.90× | B1109 diagnostic. Controls L/C 0.57 / 0.89%. IQR ≤2.72%. |
 | Shipment report with format selectors | 3,072 records / 189,441 B | 3.812–3.827 ms | 3.067–3.124 ms | 1.22–1.25× | B1173 diagnostic. Controls L/C 0.40 / 1.86%. IQR ≤4.91%. |
 | Generated validator | 96 guards / 1,714 B JSON | 0.081 ms | 0.043–0.044 ms | 1.83–1.87× | B1173 diagnostic. Controls L/C 0.57 / 1.49%. IQR ≤3.66%. |
@@ -21,14 +21,16 @@
 the combinations of two process medians per engine, not confidence intervals.
 Controls L/C report the difference between the two Lython/CPython medians.
 
-B1180 measures forwarding and warm invoice at **c3684d4d1 / frozen
+B1184 measures eager and nested factories and warm invoice at **605b3cd50 /
+frozen 848cbf783** on **2026-11-20 UTC**. Both machine checks and all 140
+batches passed. B1180 measures forwarding and the earlier warm invoice at **c3684d4d1 / frozen
 289380214** on **2026-11-20 UTC**. Both machine checks and all 80 batches
 passed. B1173 measures shipment, validator and the earlier forwarding and invoice at
 **c1c15c008 / frozen 8643ebfd8** on **2026-11-20 UTC**. It uses the same
 source-verified core as B1172. Both machine checks and all 200 batches passed.
 The original archive-floor failure and subsequent verification are recorded.
-B1168 measures inherited dataclasses and eager and nested factories at
-**ab2aa9554** on the same date. Its earlier warm invoice result and the
+B1168 measures inherited dataclasses at **ab2aa9554** on the same date.
+Its earlier factory and warm invoice results and the
 earlier B1162 report and B1136 validator results remain in their linked records.
 B1130 measures the manifest at **a472eb2a4 / frozen e18ee460**.
 B1156 measures postponed factory variants at **551fde44e**, using the
@@ -44,6 +46,7 @@ Earlier rows ran **2026-11-19 UTC**. All use stock **CPython 3.13.16** on the qu
 uses duplicate processes per engine. Each row describes its measured revision.
 B1122 passed the measured scripts' output and file checks. Its source
 predates the generator-lambda and iterator-cleanup fixture corrections.
+[B1184 observations](../benchmarks/results/2026-11-20-cpython-keyword-default-factories/README.md) ·
 [B1180 observations](../benchmarks/results/2026-11-20-cpython-expanded-forwarding/README.md) ·
 [B1173 observations](../benchmarks/results/2026-11-20-cpython-reports-validator/README.md) ·
 [B1168 observations](../benchmarks/results/2026-11-20-cpython-dataclasses-and-factories/README.md) ·
@@ -77,10 +80,10 @@ The table compares workload latency under different containment boundaries.
 | --- | --- | ---: | ---: | ---: | --- |
 | Unannotated rule closures | Compilation only | 0.03072–0.03102 ms | 0.04189–0.04201 ms | 0.73–0.74× | B1122 diagnostic. Controls L/C 1.00 / 0.30%. IQR ≤0.44%. |
 | Unannotated rule closures | Compile-to-result | 2.372–2.375 ms | 0.728–0.729 ms | 3.25–3.26× | B1122 diagnostic. Controls L/C 0.13 / 0.20%. IQR ≤1.60%. |
-| Annotated rule closures | Compilation only | 0.02080–0.02117 ms | 0.03121–0.03122 ms | 0.67–0.68× | B1168 diagnostic. Controls L/C 1.76 / 0.03%. IQR ≤0.69%. |
-| Annotated rule closures | Compile-to-result | 1.538–1.545 ms | 0.443–0.450 ms | 3.42–3.49× | B1168 diagnostic. Controls L/C 0.46 / 1.54%. IQR ≤5.27%. |
-| Nested annotated factories | Compilation only | 0.02533–0.02565 ms | 0.03857–0.03901 ms | 0.65–0.67× | B1168 diagnostic. Controls L/C 1.27 / 1.15%. IQR ≤4.33%. |
-| Nested annotated factories | Compile-to-result | 2.035–2.061 ms | 0.629–0.630 ms | 3.23–3.28× | B1168 diagnostic. Controls L/C 1.28 / 0.19%. IQR ≤2.55%. |
+| Annotated rule closures | Compilation only | 0.02141–0.02142 ms | 0.03213–0.03220 ms | 0.66–0.67× | B1184 diagnostic. Controls L/C 0.08 / 0.19%. IQR ≤3.97%. |
+| Annotated rule closures | Compile-to-result | 1.468–1.515 ms | 0.448–0.478 ms | 3.07–3.38× | B1184 diagnostic. Controls L/C 3.14 / 6.75%. IQR ≤3.51%. Gap size uncertain. |
+| Nested annotated factories | Compilation only | 0.02587–0.02632 ms | 0.03905–0.03949 ms | 0.65–0.67× | B1184 diagnostic. Controls L/C 1.74 / 1.13%. IQR ≤2.91%. |
+| Nested annotated factories | Compile-to-result | 2.100–2.111 ms | 0.625–0.644 ms | 3.26–3.38× | B1184 diagnostic. Controls L/C 0.52 / 3.12%. IQR ≤2.86%. |
 | Inherited dataclass definitions | Compilation only | 0.20449–0.22414 ms | 0.44817–0.45178 ms | 0.45–0.50× | B1168 diagnostic. Lython's duplicate spread is 9.61%. |
 | Inherited dataclass definitions | Compile-to-result | 0.410–0.429 ms | 5.484–5.551 ms | 0.074–0.078× | B1168 diagnostic. Controls L/C 4.72 / 1.21%. IQR ≤2.75%. |
 | Postponed annotated rules | Compilation only | 0.02514–0.02533 ms | 0.03518–0.03539 ms | 0.71–0.72× | B1156 diagnostic. Controls L/C 0.77 / 0.58%. IQR ≤1.42%. |
@@ -271,6 +274,7 @@ for the CPython ratios above.
 
 | Change | Established outcome | Limits / evidence |
 | --- | --- | --- |
+| Bind unpublished keyword defaults from final value slots | Three factory scripts allocate 11.55–19.24% less with the same accounted peaks. | The quiet factory, dictionary-read and invoice timing ranges span zero. The prior binder’s CPU increases remain in B1182. [B1183](../benchmarks/results/2026-11-20-prepared-keyword-default-binding/README.md). |
 | Reuse evaluated dictionary display keys | Expanded forwarding takes 13.66–14.24% less warm elapsed and 12.62–15.38% less CPU, with 31.75% less managed allocation. | Rebuilt-key elapsed rises 0.20–0.51%. The initial adverse invoice result does not repeat in the invoice-only run. [B1179](../benchmarks/results/2026-11-20-dynamic-record-layout/README.md). |
 | Keep evaluated numeric call operands in their slots | The in-memory invoice removes 24.91% of warm allocation and takes 2.24–4.43% less elapsed time. | Eager rule and file-backed invoice timing spans zero. [B1178](../benchmarks/results/2026-11-20-call-operand-publication/README.md). |
 | Prepared executable lambda bindings | A generated table of 128 lambdas retains 37.39% fewer managed bytes after compilation. A stable sort with one key lambda retains 5.66% fewer. | `9b14997e4` versus `5f42f319c`, retained at `68215bac8`. Warm allocation is flat for both workloads. Retained bytes were measured in isolated processes after collection. [Lambda binding diagnostic](../benchmarks/results/2026-11-20-executable-lambda-binding/README.md). |

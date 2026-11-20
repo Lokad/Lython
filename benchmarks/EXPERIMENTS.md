@@ -6,6 +6,23 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1184 annotated factories against CPython](results/2026-11-20-cpython-keyword-default-factories/README.md)
+refreshes both factories and the invoice control at the retained binder
+checkpoint. Factory warm ratios remain 3.34–3.54× and 3.45–3.51×.
+Compilation alone is about 0.66×. The eager compile-to-result CPython
+controls differ by 6.75%.
+
+[B1183 prepared keyword-default binding](results/2026-11-20-prepared-keyword-default-binding/README.md)
+retains value backing in place of eager dictionaries and selects it once per bind.
+Three factory scripts allocate 11.55–19.24% less with equal accounted peaks.
+The repeated dictionary read and invoice controls show mixed timing, as do both
+timed factory cases.
+
+[B1182 deferred keyword-default dictionaries](results/2026-11-20-deferred-keyword-defaults/README.md)
+uses the original private binder. Eager factories and the read-every-dictionary
+control use more CPU across all pairings. Ordinary compile-to-result takes less
+elapsed time. The revised binder preserves the allocation reduction.
+
 [B1176 owned statement joins](results/2026-11-20-statement-join-confirmation/README.md)
 retains the broader branch-map reuse. Validator compilation allocates
 6.77% less and compile-to-result takes 0.43–2.55% less time with lower
