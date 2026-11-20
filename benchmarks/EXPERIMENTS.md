@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1200 lexical delivery against CPython](results/2026-11-20-cpython-lexical-class-cells/README.md)
+refreshes the class, eager-rule and invoice workloads. Dataclasses take
+0.076–0.078× from compile to result. Eager rules take 3.30–3.47× warm, and
+the file-backed invoice takes 1.07–1.08× warm.
+
 [B1199 lexical class cells](results/2026-11-20-lexical-class-cells/README.md)
 removes the dedicated class-cell scans. Dataclass compile allocation falls
 11.10% and compile elapsed falls 6.92–10.61% with lower CPU. Compile-to-result
