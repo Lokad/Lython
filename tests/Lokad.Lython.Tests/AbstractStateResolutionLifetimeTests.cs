@@ -45,7 +45,7 @@ public sealed class AbstractStateResolutionLifetimeTests
         var left = state.Clone();
         var right = state.Clone();
         right.Set("value", AbstractValue.Integer(2, Span));
-        state.MergeFrom(left, right);
+        state.TakeJoinedBranches(left, right);
         Assert.True(StaticAbstractValueResolver.TryResolve(Read, state, out var joined));
         Assert.Equal(AbstractValueKind.IntegerType, joined.Kind);
     }
@@ -72,6 +72,50 @@ public sealed class AbstractStateResolutionLifetimeTests
         Assert.False(left.TryGetSequenceLength("left", out _));
         Assert.True(right.TryGetSequenceLength("right", out _));
         AssertInteger(right, 2);
+    }
+
+    [Fact]
+    public void DeferredBodyDropsMutableBindingsWithoutChangingItsParentOrSibling()
+    {
+        var state = new AbstractState();
+        state.Set("value", AbstractValue.Integer(1, Span));
+        state.Set("items", AbstractValue.List([AbstractValue.String("text", Span)], Span));
+        var sibling = state.Clone();
+        var deferred = state.CloneForDeferredBody();
+        Assert.False(deferred.TryGet("items", out _));
+        Assert.False(deferred.TryGetSequenceLength("items", out _));
+
+        state.InvalidateMutableSequenceFacts();
+        state.Set("value", AbstractValue.Integer(2, Span));
+        Assert.True(sibling.TryGet("items", out var previous));
+        Assert.Equal(AbstractValueKind.List, previous.Kind);
+        Assert.True(sibling.TryGetSequenceLength("items", out var bounds));
+        Assert.Equal(AbstractSequenceLengthBounds.Exact(1), bounds);
+        AssertInteger(sibling, 1);
+        AssertInteger(deferred, 1);
+        AssertInteger(state, 2);
+    }
+
+    [Fact]
+    public void BranchTransferKeepsSurvivingSnapshotIndependentAcrossAJoin()
+    {
+        var state = new AbstractState();
+        state.Set("value", AbstractValue.Integer(1, Span));
+        state.Set("text", AbstractValue.String("abc", Span));
+        var branch = state.Clone();
+        var later = branch.Clone();
+        branch.Remove("text");
+        branch.Set("value", AbstractValue.Integer(2, Span));
+
+        state.TakeBranchResult(branch);
+        AssertInteger(state, 2);
+        AssertInteger(branch, 1);
+        AssertInteger(later, 1);
+        branch.JoinBranch(state);
+        Assert.False(branch.TryGetSequenceLength("text", out _));
+        Assert.True(later.TryGetSequenceLength("text", out var bounds));
+        Assert.Equal(AbstractSequenceLengthBounds.Exact(3), bounds);
+        AssertInteger(later, 1);
     }
 
     private static void AssertInteger(AbstractState state, int expected)

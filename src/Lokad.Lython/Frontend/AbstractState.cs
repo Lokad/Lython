@@ -318,35 +318,12 @@ internal sealed class AbstractState
         }
     }
 
-    public void MergeFrom(AbstractState left, AbstractState right)
+    // The left continuation is complete. Its maps become the destination's
+    // maps after the join. The right branch keeps its original facts.
+    public void TakeJoinedBranches(AbstractState left, AbstractState right)
     {
-        _containerFactsInvalidated |= left._containerFactsInvalidated || right._containerFactsInvalidated;
-        _values.Clear();
-        foreach (var (name, leftValue) in left._values)
-        {
-            if (right._values.TryGetValue(name, out var rightValue))
-            {
-                _values[name] = AbstractValue.Join(leftValue, rightValue, leftValue.Span, AnalysisContext);
-            }
-        }
-
-        _sequenceLengths.Clear();
-        foreach (var (name, leftBounds) in left._sequenceLengths)
-        {
-            if (right._sequenceLengths.TryGetValue(name, out var rightBounds))
-            {
-                _sequenceLengths[name] = AbstractSequenceLengthBounds.Union(leftBounds, rightBounds);
-            }
-        }
-
-        InvalidateCachedFacts();
-    }
-
-    public static AbstractState Merge(AbstractState left, AbstractState right)
-    {
-        var merged = new AbstractState(left.AnalysisContext);
-        merged.MergeFrom(left, right);
-        return merged;
+        left.JoinBranch(right);
+        TakeBranchResult(left);
     }
 
     public bool TryGetCachedAbstractValue(ExpressionSyntax expression, out AbstractValueResolution resolution)

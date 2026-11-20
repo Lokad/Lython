@@ -113,7 +113,7 @@ internal static class StaticConditionRefinements
         Apply(left, !assumedTruth, rightBindings);
         Apply(right, assumedTruth, rightBindings);
 
-        bindings.MergeFrom(shortCircuitBindings, rightBindings);
+        bindings.TakeJoinedBranches(shortCircuitBindings, rightBindings);
     }
 
     private static void ApplyNoneComparison(
@@ -213,9 +213,8 @@ internal static class StaticConditionRefinements
                 comparison.Operands[i + 1],
                 assumedTruth: false,
                 failedComparison);
-            failedPaths = failedPaths is null
-                ? failedComparison
-                : AbstractState.Merge(failedPaths, failedComparison);
+            if (failedPaths is null) failedPaths = failedComparison;
+            else failedPaths.JoinBranch(failedComparison);
 
             TryApplyLengthComparison(
                 comparison.Operands[i],

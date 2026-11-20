@@ -1,0 +1,54 @@
+{
+  "complete": true,
+  "elapsedSeconds": 93.22837338130921,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "staging": {
+    "retiredOnly": [],
+    "alreadyAbsent": [],
+    "freshIdleLease": true,
+    "allHashesPathsOwnershipLinksAndAliasesVerified": true,
+    "canonicalArchiveAndCurrentImagesPreserved": true,
+    "freeBeforeBytes": 243871744,
+    "freeAfterBytes": 243830784
+  },
+  "rows": [
+    {
+      "case": "scripts.config-manifest.helper-guards",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "candidate": 0.5416200517774342,
+        "reference": 0.5471549613302397,
+        "candidate-control": 0.5401279745762712,
+        "reference-control": 0.5451515050115652
+      },
+      "cpuMilliseconds": {
+        "candidate": 0.6259659969088099,
+        "reference": 0.634184068058778,
+        "candidate-control": 0.6240369799691834,
+        "reference-control": 0.6399383191981495
+      },
+      "elapsedIQRPercent": {
+        "candidate": 3.4324650983006673,
+        "reference": 2.602798983956057,
+        "candidate-control": 2.8311265461654287,
+        "reference-control": 2.4463345764227498
+      },
+      "elapsedChangePercent": [
+        -1.284277261579525,
+        -1.0115798894245631,
+        -0.9214925372328264,
+        -0.6477929899608381
+      ],
+      "cpuChangePercent": [
+        -2.4848237325263867,
+        -2.183385784249803,
+        -1.6000225487616926,
+        -1.2958495118181368
+      ],
+      "referenceSpreadPercent": 0.3675045010894662,
+      "candidateSpreadPercent": 0.2762451254878284
+    }
+  ],
+  "CPythonRefreshed": false
+}

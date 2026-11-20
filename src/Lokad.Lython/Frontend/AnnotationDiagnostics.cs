@@ -106,14 +106,17 @@ internal static class AnnotationDiagnostics
             // A loop may execute zero times, so facts from its body must be joined with entry facts.
             var bodyBindings = bindings.Clone();
             AnalyzeStatements(body, diagnostics, bodyBindings, returnAnnotation, lastChecks, exportBindings: true);
-            var merged = AbstractState.Merge(bindings, bodyBindings);
-            if (elseStatements is not null)
+            if (elseStatements is null)
             {
-                var elseBindings = bindings.Clone();
-                AnalyzeStatements(elseStatements, diagnostics, elseBindings, returnAnnotation, lastChecks, exportBindings: true);
-                merged = AbstractState.Merge(merged, elseBindings);
+                bindings.JoinBranch(bodyBindings);
+                return;
             }
 
+            var merged = bindings.Clone();
+            merged.JoinBranch(bodyBindings);
+            var elseBindings = bindings.Clone();
+            AnalyzeStatements(elseStatements, diagnostics, elseBindings, returnAnnotation, lastChecks, exportBindings: true);
+            merged.JoinBranch(elseBindings);
             bindings.TakeBranchResult(merged);
         }
 
@@ -152,18 +155,16 @@ internal static class AnnotationDiagnostics
                 {
                     var thenBindings = bindings.Clone();
                     AnalyzeStatements(ifStatement.ThenStatements, diagnostics, thenBindings, returnAnnotation, lastChecks, exportBindings: true);
-                    AbstractState elseBindings;
                     if (ifStatement.ElseStatements is not null)
                     {
-                        elseBindings = bindings.Clone();
+                        var elseBindings = bindings.Clone();
                         AnalyzeStatements(ifStatement.ElseStatements, diagnostics, elseBindings, returnAnnotation, lastChecks, exportBindings: true);
+                        bindings.TakeJoinedBranches(thenBindings, elseBindings);
                     }
                     else
                     {
-                        elseBindings = bindings.Clone();
+                        bindings.TakeJoinedBranches(thenBindings, bindings);
                     }
-
-                    bindings.MergeFrom(thenBindings, elseBindings);
                     break;
                 }
 
@@ -194,20 +195,16 @@ internal static class AnnotationDiagnostics
 
             case MatchStatementSyntax matchStatement:
                 {
-                    var merged = bindings.Clone();
-                    var hasCase = false;
+                    AbstractState? merged = null;
                     foreach (var matchCase in matchStatement.Cases)
                     {
                         var caseBindings = bindings.Clone();
                         AnalyzeStatements(matchCase.Body, diagnostics, caseBindings, returnAnnotation, lastChecks, exportBindings: true);
-                        merged = hasCase ? AbstractState.Merge(merged, caseBindings) : caseBindings;
-                        hasCase = true;
+                        if (merged is null) merged = caseBindings;
+                        else merged.JoinBranch(caseBindings);
                     }
 
-                    if (hasCase)
-                    {
-                        bindings.TakeBranchResult(AbstractState.Merge(bindings, merged));
-                    }
+                    if (merged is not null) bindings.JoinBranch(merged);
                     break;
                 }
 
@@ -217,20 +214,20 @@ internal static class AnnotationDiagnostics
                     var merged = bindings.Clone();
                     var tryBindings = bindings.Clone();
                     AnalyzeStatements(tryStatement.TryBody, diagnostics, tryBindings, returnAnnotation, lastChecks, exportBindings: true);
-                    merged = AbstractState.Merge(merged, tryBindings);
+                    merged.JoinBranch(tryBindings);
 
                     foreach (var exceptClause in tryStatement.ExceptClauses)
                     {
                         var exceptBindings = bindings.Clone();
                         AnalyzeStatements(exceptClause.Body, diagnostics, exceptBindings, returnAnnotation, lastChecks, exportBindings: true);
-                        merged = AbstractState.Merge(merged, exceptBindings);
+                        merged.JoinBranch(exceptBindings);
                     }
 
                     if (tryStatement.ElseBody is not null)
                     {
                         var elseBindings = tryBindings.Clone();
                         AnalyzeStatements(tryStatement.ElseBody, diagnostics, elseBindings, returnAnnotation, lastChecks, exportBindings: true);
-                        merged = AbstractState.Merge(merged, elseBindings);
+                        merged.JoinBranch(elseBindings);
                     }
 
                     if (tryStatement.FinallyBody is not null)

@@ -345,7 +345,7 @@ internal static partial class StaticBindingEngine
                         }
                         else
                         {
-                            bindings.MergeFrom(thenBindings, elseBindings);
+                            bindings.TakeJoinedBranches(thenBindings, elseBindings);
                         }
 
                         break;

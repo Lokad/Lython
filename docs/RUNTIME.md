@@ -17,16 +17,18 @@ Reuse compiled programs for repeated inputs when useful.
 
 Compilation observes its token during indentation checks, tokenization, ordinary
 parsing, literal decoding, container/callback fact inspection and provider work,
-and between later compiler phases.
-Lexical-fact discovery and statement lowering also check the token. Class
-methods and deferred callables use the same compilation token and memory owner
+and between later compiler phases. Lexical-fact discovery and statement
+lowering also check the token. Class methods and deferred callables use the
+same compilation token and memory owner
 as the enclosing source, including during imports. Individual expression walks
 and CLR copies or conversions can still complete before the next check.
 Cancellation returns an invalid script with `LA2011`. Dispose that script to
 release its compilation owner. Refused admission retains priority over cancellation.
 
-Statement suites and ordinary expressions emit executable instructions directly
-from validated syntax. Class suites use the same engine with their live namespace.
+Abstract analysis preserves common bindings when control-flow paths join and
+reuses a completed path's maps. Statement suites and ordinary expressions emit
+executable instructions directly from validated syntax. Class suites use the same
+engine with their live namespace.
 Runtime-evaluated expressions in type scopes and lazy metadata keep their lowered
 representation under the owning operation. Sibling scopes reuse transient compiler
 buffers. Final instructions and capture maps belong to their compiled scope.

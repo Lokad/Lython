@@ -164,7 +164,7 @@ internal static partial class StaticAbstractInterpreter
                         }
                         else
                         {
-                            bindings.MergeFrom(bindings.Clone(), rightBindings);
+                            bindings.JoinBranch(rightBindings);
                         }
                     }
                 }
@@ -207,7 +207,7 @@ internal static partial class StaticAbstractInterpreter
                     var alternativeBindings = bindings.Clone();
                     StaticConditionRefinements.Apply(conditional.Condition, assumedTruth: false, alternativeBindings);
                     AnalyzeExpression(conditional.Alternative, diagnostics, alternativeBindings);
-                    bindings.MergeFrom(consequentBindings, alternativeBindings);
+                    bindings.TakeJoinedBranches(consequentBindings, alternativeBindings);
                 }
 
                 return;
