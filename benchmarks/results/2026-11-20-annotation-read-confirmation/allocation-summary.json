@@ -1,0 +1,58 @@
+[
+  {
+    "case": "scripts.rule-default-closures",
+    "referenceBytes": 1650320,
+    "candidateBytes": 1650320,
+    "changePercent": 0.0,
+    "referencePeak": 2917959,
+    "candidatePeak": 2917959
+  },
+  {
+    "case": "scripts.annotated-rule-closures",
+    "referenceBytes": 1046120,
+    "candidateBytes": 1046104,
+    "changePercent": -0.0015294612472738223,
+    "referencePeak": 2444313,
+    "candidatePeak": 2444289
+  },
+  {
+    "case": "scripts.annotated-rule-closures.observed",
+    "referenceBytes": 1308424,
+    "candidateBytes": 1308408,
+    "changePercent": -0.0012228451939155782,
+    "referencePeak": 2444540,
+    "candidatePeak": 2444516
+  },
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories",
+    "referenceBytes": 1505008,
+    "candidateBytes": 1504872,
+    "changePercent": -0.009036496815961748,
+    "referencePeak": 2968657,
+    "candidatePeak": 2968633
+  },
+  {
+    "case": "scripts.csv-invoice.large",
+    "referenceBytes": 3672412,
+    "candidateBytes": 3672468,
+    "changePercent": 0.0015248833736603018,
+    "referencePeak": 9432613,
+    "candidatePeak": 9432613
+  },
+  {
+    "case": "scripts.annotated-rule-closures.postponed",
+    "referenceBytes": 1046224,
+    "candidateBytes": 1046088,
+    "changePercent": -0.012999128293744722,
+    "referencePeak": 2444369,
+    "candidatePeak": 2444345
+  },
+  {
+    "case": "scripts.annotated-rule-closures.callback-effects",
+    "referenceBytes": 1097536,
+    "candidateBytes": 1097536,
+    "changePercent": 0.0,
+    "referencePeak": 1553105,
+    "candidatePeak": 1553105
+  }
+]

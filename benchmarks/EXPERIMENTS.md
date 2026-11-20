@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1188 grouped annotation confirmation](results/2026-11-20-annotation-read-confirmation/README.md)
+rechecks the design after consolidating declaration metadata. Eager warm
+elapsed and CPU span zero. Callback CPU rises 1.35–1.69% across all
+pairings. The prototype remains private.
+
 [B1187 executable declaration retention](results/2026-11-20-executable-definition-retention/README.md)
 retains the prepared declaration once and drops emitted annotations' lowered
 trees from the operation. The three annotation scripts retain 5.08–13.97%
