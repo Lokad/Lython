@@ -46,6 +46,12 @@ deletes duplicate parameter records for ordinary definitions and lambdas.
 Compilation allocates 0.60–0.74% less on the two rule scripts. Warm allocation
 is effectively flat. This is a representation change with no timing claim.
 
+[B1167 generated dataclass defaults](results/2026-11-20-generated-dataclass-defaults/README.md)
+removes the intermediate default map and shares generated binary-method
+layouts. Inherited dataclass elapsed falls 7.75–11.67% warm and
+5.26–7.39% compile-to-result with lower CPU. Warm allocation falls 12.25%.
+The registry control's small CPU increase remains in the record.
+
 ## November 18–19, 0.11.0 compiler and call work
 
 - The retained formatting and function-default changes have paired evidence.

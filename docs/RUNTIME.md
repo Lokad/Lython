@@ -344,6 +344,9 @@ Executable local slots use that same prepared parameter order,
 then append body locals. Mutable defaults, keyword-name values, attributes and closures
 remain function-owned. Native generated definitions admit their layout before
 allocation and keep its construction overlap funded through default creation.
+Generated dataclass initializers feed admitted parameter values directly into
+the final default containers. Generated equality and ordering methods share
+one immutable parameter layout.
 Executable code owns immutable keyword-default and annotation key layouts
 prepared during compilation. Each definition admits its own mutable default
 containers before evaluating defaults. Function declarations and lambdas fill
