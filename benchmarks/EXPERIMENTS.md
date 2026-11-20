@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1225/B1226 prepared function entry](results/2026-11-20-prepared-entry-progress/README.md)
+removes binding rescans and keeps the recursion admission at native body
+entry. Both synchronous factory elapsed ranges improve. Postponed factory
+CPU falls. Async remains uncertain, and the initial adverse invoice CPU
+result does not recur with longer batches on the same images.
+
 [B1224 nested factories after final default storage](results/2026-11-20-current-nested-factory-profile/README.md)
 keeps the incomplete local profiler starts and the successful quiet-VM
 CPU captures. Default storage, callable shells and captures still appear

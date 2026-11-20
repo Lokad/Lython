@@ -1,0 +1,126 @@
+{
+  "reference": [
+    {
+      "id": "scripts.annotated-rule-closures.nested-factories",
+      "asynchronous": false,
+      "allocatedBytesPerInvocation": [
+        1390064,
+        1390064,
+        1390064
+      ],
+      "peakExecutionMemoryBytes": 2968425,
+      "compiledReservedBytes": 74618,
+      "compilationMillisecondsDiagnostic": 199.9881,
+      "compilationAllocatedBytesDiagnostic": 104968,
+      "firstInvocationMillisecondsDiagnostic": 178.704,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "asynchronous": false,
+      "allocatedBytesPerInvocation": [
+        1390168,
+        1390168,
+        1390168
+      ],
+      "peakExecutionMemoryBytes": 2968481,
+      "compiledReservedBytes": 78526,
+      "compilationMillisecondsDiagnostic": 117.4435,
+      "compilationAllocatedBytesDiagnostic": 1361024,
+      "firstInvocationMillisecondsDiagnostic": 16.0435,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "id": "scripts.csv-invoice.large",
+      "asynchronous": false,
+      "allocatedBytesPerInvocation": [
+        3672546,
+        3672288,
+        3672546
+      ],
+      "peakExecutionMemoryBytes": 9432613,
+      "compiledReservedBytes": 150080,
+      "compilationMillisecondsDiagnostic": 40.0272,
+      "compilationAllocatedBytesDiagnostic": 154120,
+      "firstInvocationMillisecondsDiagnostic": 111.2013,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "id": "scripts.report-forwarding.expanded",
+      "asynchronous": false,
+      "allocatedBytesPerInvocation": [
+        1654288,
+        1654602,
+        1654294
+      ],
+      "peakExecutionMemoryBytes": 2976186,
+      "compiledReservedBytes": 106880,
+      "compilationMillisecondsDiagnostic": 5.4695,
+      "compilationAllocatedBytesDiagnostic": 101400,
+      "firstInvocationMillisecondsDiagnostic": 52.6858,
+      "sharedBudgetBaselineRestored": true
+    }
+  ],
+  "candidate": [
+    {
+      "id": "scripts.annotated-rule-closures.nested-factories",
+      "asynchronous": false,
+      "allocatedBytesPerInvocation": [
+        1390064,
+        1390064,
+        1390064
+      ],
+      "peakExecutionMemoryBytes": 2968425,
+      "compiledReservedBytes": 74618,
+      "compilationMillisecondsDiagnostic": 106.0042,
+      "compilationAllocatedBytesDiagnostic": 104968,
+      "firstInvocationMillisecondsDiagnostic": 112.1215,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "asynchronous": false,
+      "allocatedBytesPerInvocation": [
+        1390168,
+        1390168,
+        1390168
+      ],
+      "peakExecutionMemoryBytes": 2968481,
+      "compiledReservedBytes": 78526,
+      "compilationMillisecondsDiagnostic": 60.1032,
+      "compilationAllocatedBytesDiagnostic": 1373216,
+      "firstInvocationMillisecondsDiagnostic": 6.9668,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "id": "scripts.csv-invoice.large",
+      "asynchronous": false,
+      "allocatedBytesPerInvocation": [
+        3672546,
+        3678444,
+        3672546
+      ],
+      "peakExecutionMemoryBytes": 9432613,
+      "compiledReservedBytes": 150080,
+      "compilationMillisecondsDiagnostic": 27.4038,
+      "compilationAllocatedBytesDiagnostic": 154120,
+      "firstInvocationMillisecondsDiagnostic": 100.1596,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "id": "scripts.report-forwarding.expanded",
+      "asynchronous": false,
+      "allocatedBytesPerInvocation": [
+        1654288,
+        1654288,
+        1654608
+      ],
+      "peakExecutionMemoryBytes": 2976186,
+      "compiledReservedBytes": 106880,
+      "compilationMillisecondsDiagnostic": 6.7795,
+      "compilationAllocatedBytesDiagnostic": 101400,
+      "firstInvocationMillisecondsDiagnostic": 38.9044,
+      "sharedBudgetBaselineRestored": true
+    }
+  ]
+}

@@ -985,11 +985,12 @@ Ordinary calls to executable functions with slot-local storage advance one expli
 caller/callee chain, including keyword and variadic signatures. The shared binder
 writes final invocation storage and observes live defaults. Flat positional
 operands fill those slots directly; supplied keyword and variadic forms are
-parsed separately before the same default completion. Native and owned calls
-share that binder, including keyword-only defaults. Completed binding
-enters the body directly; genuinely pending default lookup retains call admission,
-caller operands and bound storage until completion or failure. It then enters the
-same body transition, without recursively starting another instruction driver.
+parsed separately before the same default completion, which starts after the
+supplied positional prefix. Native and owned calls share that binder. Completed
+binding enters the body directly. Genuinely pending keyword-default lookup
+resumes at its first unresolved parameter and reads live defaults in order. It
+retains call admission, caller operands and bound storage until completion or
+failure, then uses the same body transition.
 Eligible functions and ordinary methods defer lexical contexts independently of
 signature shape. Slot-only factories can construct closures from standalone
 cells in the admitted work state. The compiled parent slot map supplies both
@@ -1164,9 +1165,11 @@ receiver-prefixed arrays, funded by their execution/result owner. Escaping guest
 values use their ordinary retained owners. There are no thread-local argument pools or callable-type switches
 in the shared callback helpers. A bound
 function body reuses its call admission rather than adding a second logical
-nesting charge. Raw protocols retain function-depth and managed-stack protection;
-module entries own interpreter admission. Managed stack checks, large-stack
-workers and configured recursion bounds remain active. Compiler
+nesting charge. Each native body enters function recursion at its managed stack
+boundary and owns that admission through exit or transfer to its continuation.
+Raw protocols retain function-depth and managed-stack protection. Module entries
+own interpreter admission. Managed stack checks, large-stack workers and
+configured recursion bounds remain active. Compiler
 capture facts determine eligibility independently of lexical placement. Defining
 closure chains remain retained; scope-sensitive operations promote before they
 observe function locals or invoke guest protocols. Incoming cells retain their
