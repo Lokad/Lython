@@ -435,7 +435,7 @@ internal sealed partial class LythonRuntime
 
                 case ExecutableOpCode.MakeDict:
                     PublishInstructionResult(instruction,
-                        ExecuteExecutableMakeDict(ref _execution.Stack, instruction.InputStart, instruction.PairCount, instruction.Span, this));
+                        ExecuteExecutableMakeDict(ref _execution.Stack, _execution.Code, instruction, this));
                     break;
 
                 case ExecutableOpCode.MakeRecord:

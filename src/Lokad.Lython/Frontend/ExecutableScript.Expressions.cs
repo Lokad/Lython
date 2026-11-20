@@ -163,7 +163,13 @@ internal sealed partial class ExecutableScript
                         currentBlock = CompileExpression(item.Key, currentBlock);
                         currentBlock = CompileExpression(item.Value, currentBlock);
                     }
-                    AddInstruction(currentBlock, ExecutableInstruction.MakeDict(dict.Items.Count, dict.Span));
+                    // A repeated display can reuse its table if its evaluated
+                    // names still supply the very same string keys.
+                    var recordCache = dict.Items.Count > 1 &&
+                        (_parameterLayout is not null || _loops.Count != 0 || _comprehensionNames.Count != 0) &&
+                        dict.Items.All(item => item.Key is LoweredIdentifierExpression or LoweredStringLiteralExpression)
+                        ? AllocateLookupCache() : -1;
+                    AddInstruction(currentBlock, ExecutableInstruction.MakeDict(dict.Items.Count, recordCache, dict.Span));
                     return currentBlock;
 
                 case LoweredSubscriptExpression subscript:

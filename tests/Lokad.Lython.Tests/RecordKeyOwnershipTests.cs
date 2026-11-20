@@ -10,6 +10,86 @@ public sealed class RecordKeyOwnershipTests
 {
     private static readonly LythonSourceSpan Span = new(0, 1, 1, 1);
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RepeatedDisplaysPreserveEvaluatedKeyIdentitiesAndIndependentValues(bool asynchronous)
+    {
+        const string source = """
+            def record(key, other, value):
+                return {key: value, other: value + 10}
+
+            first = ''.join(['long', ' title'])
+            equal = ''.join(['long', ' title'])
+            other = ''.join(['end', ' point'])
+            keys = [first, first, equal, other]
+            direct = []
+            called = []
+            for value, key in enumerate(keys):
+                direct.append({key: value, other: value + 10})
+                called.append(record(key, other, value))
+
+            def forward(**fields):
+                fields[other] = 20
+                return fields
+
+            for rows in [direct, called]:
+                assert list(rows[0])[0] is first
+                assert list(rows[1])[0] is first
+                assert list(rows[2])[0] is equal
+                assert rows[3] == {other: 13}
+                assert rows[1] == {first: 1, other: 11}
+                rows[0].clear()
+                assert rows[1] == {first: 1, other: 11}
+                assert forward(**rows[1]) == {first: 1, other: 20}
+                assert list(rows[1]) == [first, other]
+                assert rows[1][other] == 11
+            return [direct, called]
+            """;
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join(", ", script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        using (var result = asynchronous
+            ? await script.RunAsync(new MockLythonHost())
+            : script.Run(new MockLythonHost()))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.True(budget.ReservedBytes > baseline);
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
+    [Fact]
+    public void CancellationDuringCachedDisplayAdmissionReleasesTheUnpublishedRow()
+    {
+        var root = new LythonMemoryBudget(1024 * 1024);
+        using var cancellation = new CancellationTokenSource();
+        using (var owner = root.CreateScope())
+        {
+            var hooked = new AdmissionHook(owner);
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new()
+            {
+                MemoryBudget = hooked, CancellationToken = cancellation.Token,
+            });
+            var (first, _, a, b) = Records(context);
+            var layout = context.State.JsonRecordLayout!;
+            LythonRuntime.ExecutableSlot[] inputs =
+            [
+                LythonRuntime.ExecutableSlot.FromObject(a), LythonRuntime.ExecutableSlot.FromInteger(7),
+                LythonRuntime.ExecutableSlot.FromObject(b), LythonRuntime.ExecutableSlot.FromInteger(8),
+            ];
+            var before = root.ReservedBytes;
+            hooked.Admitted = cancellation.Cancel;
+            var error = Assert.Throws<LythonRuntimeException>(() => layout.TryCreateDisplay(inputs, context, Span));
+            Assert.Equal(LythonFailureReason.Cancelled, error.Attribution?.Reason);
+            Assert.Equal(before, root.ReservedBytes);
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            Assert.Equal([BigInteger.One, new BigInteger(2)], first.Values.Cast<BigInteger>());
+        }
+        Assert.Equal(0, root.ReservedBytes);
+    }
+
     [Fact]
     public void RefusedInsertionPreservesBothRowsAndCleanupNeedsNoAdmission()
     {

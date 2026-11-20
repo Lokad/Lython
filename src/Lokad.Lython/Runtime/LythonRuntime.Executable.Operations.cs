@@ -7,9 +7,16 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private static PyDict ExecuteExecutableMakeDict(ref ExecutableValueStorage stack, int start, int pairCount, LythonSourceSpan span, ExecutionContext context)
+    private static PyDict ExecuteExecutableMakeDict(ref ExecutableValueStorage stack, ExecutableCodeObject code,
+        in ExecutableInstruction instruction, ExecutionContext context)
     {
-        var dictionary = CreateSlotDictionary(stack.Values.AsSpan(start, checked(pairCount * 2)), context, span);
+        var start = instruction.InputStart;
+        var inputs = stack.Values.AsSpan(start, checked(instruction.PairCount * 2));
+        var cacheIndex = instruction.LookupCacheIndex;
+        var span = instruction.Span;
+        var dictionary = cacheIndex >= 0 && inputs[0].Reference is PyString
+            ? CreateSlotDictionary(inputs, ref stack.GetLookupCaches(code.LookupCacheCount, span)[cacheIndex], context, span)
+            : CreateSlotDictionary(inputs, context, span);
         try { stack.RetireTo(start); return dictionary; }
         catch { dictionary.DiscardUnpublishedStorage(); throw; }
     }

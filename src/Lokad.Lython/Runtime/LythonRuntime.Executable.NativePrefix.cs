@@ -277,8 +277,12 @@ internal sealed partial class LythonRuntime
             var inputs = Values.Slice(instruction.InputStart,
                 dictionary ? checked(2 * instruction.PairCount) : instruction.ItemCount);
             if (!CanConstructClosedSlotKeys(inputs, dictionary ? 2 : 1, _scope, instruction.Span)) return false;
-            object value = dictionary ? CreateSlotDictionary(inputs, _scope, instruction.Span)
-                : CreateSlotSet(inputs, _scope, instruction.Span);
+            object value;
+            if (!dictionary) value = CreateSlotSet(inputs, _scope, instruction.Span);
+            else if (instruction.LookupCacheIndex >= 0 && inputs[0].Reference is PyString)
+                value = CreateSlotDictionary(inputs, ref _function.GetLookupCaches(instruction.Span)[instruction.LookupCacheIndex],
+                    _scope, instruction.Span);
+            else value = CreateSlotDictionary(inputs, _scope, instruction.Span);
             try
             {
                 Trim(instruction.InputStart);

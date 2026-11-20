@@ -120,6 +120,33 @@ internal sealed partial class PyDict
 
         internal int AnnotationCapacity => NativeCapacity(Count);
 
+        internal PyDict? TryCreateDisplay(Span<LythonRuntime.ExecutableSlot> inputs,
+            LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        {
+            if (!ReferenceEquals(_owner, context.MemoryGovernor) || Count != inputs.Length / 2) return null;
+            for (var i = 0; i < Count; i++)
+            {
+                context.CheckExecution(span);
+                if (!ReferenceEquals(_keys[i].Key, inputs[2 * i].Reference)) return null;
+            }
+
+            // Already-evaluated operands survive admission and cannot be
+            // replaced by reentrant changes to the originating local names.
+            var record = CreateRecord(context, span, Count);
+            try
+            {
+                for (var i = 0; i < Count; i++)
+                {
+                    context.CheckExecution(span);
+                    record._nativeValues![i] = inputs[2 * i + 1].Object.RequireNotNull();
+                }
+                context.CheckExecution(span);
+                record._nativeCount = Count;
+                return record;
+            }
+            catch { record.DiscardUnpublishedStorage(); throw; }
+        }
+
         // The caller admitted both the values and eventual dictionary shell.
         // Hold only the values until Python reads __annotations__.
         internal object?[] CopyAnnotationValues(ReadOnlySpan<LythonRuntime.ExecutableSlot> evaluated,

@@ -176,6 +176,22 @@ internal sealed partial class LythonRuntime
         catch { dictionary.DiscardUnpublishedStorage(); throw; }
     }
 
+    private static PyDict CreateSlotDictionary(Span<ExecutableSlot> inputs, ref ExecutableLookupCache cache,
+        ExecutionContext context, LythonSourceSpan span)
+    {
+        if (cache.Target is PyDict.RecordKeys keys && keys.TryCreateDisplay(inputs, context, span) is { } record)
+            return record;
+        var dictionary = CreateSlotDictionary(inputs, context, span);
+        try
+        {
+            // The general build preserves protocol order and first-key identity.
+            // A duplicate display has no one-to-one key/value layout to reuse.
+            if (dictionary.Count == inputs.Length / 2) CacheRecordKeys(ref cache, dictionary, context, span);
+            return dictionary;
+        }
+        catch { dictionary.DiscardUnpublishedStorage(); throw; }
+    }
+
     private static PyDict CreateSlotRecord(Span<ExecutableSlot> values, PyTuple keys,
         ref ExecutableLookupCache cache, ExecutionContext context, LythonSourceSpan span)
     {
