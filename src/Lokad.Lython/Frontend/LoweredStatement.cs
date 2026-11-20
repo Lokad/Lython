@@ -43,11 +43,6 @@ internal sealed record LoweredScopeDirectiveStatement(
     public override LoweredStatementKind Kind => LoweredStatementKind.Other;
 }
 
-internal sealed record LoweredFunctionParameter(
-    string Name,
-    FunctionParameterKind Kind,
-    LoweredExpression? DefaultValue);
-
 internal readonly record struct LoweredFunctionAnnotation(PyString Key, LoweredExpression Expression);
 
 internal sealed record LoweredFunctionDefinitionStatement(

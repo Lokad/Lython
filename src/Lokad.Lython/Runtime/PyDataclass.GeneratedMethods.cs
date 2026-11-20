@@ -7,14 +7,8 @@ namespace Lokad.Lython.Runtime;
 
 internal static partial class PyDataclass
 {
-    private static readonly LoweredFunctionParameter[] BinaryProtocolParameters =
-    [
-        new("self", FunctionParameterKind.Positional, null),
-        new("other", FunctionParameterKind.Positional, null)
-    ];
-
-    private static readonly IReadOnlyDictionary<string, object> EmptyDefaultValues =
-        new Dictionary<string, object>(StringComparer.Ordinal);
+    private static readonly FunctionParameterLayout BinaryProtocolLayout = FunctionParameterLayout.Create(
+        [new("self", FunctionParameterKind.Positional), new("other", FunctionParameterKind.Positional)]);
 
     internal sealed class DataclassInitMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes
     {
@@ -49,7 +43,8 @@ internal static partial class PyDataclass
 
         public PyString? ModuleName => _moduleName;
 
-        public DataclassInitMethod(PyType declaringType, IReadOnlyList<DataclassFieldSpec> fields, PyString? moduleName, LythonRuntime.ExecutionContext context)
+        public DataclassInitMethod(PyType declaringType, IReadOnlyList<DataclassFieldSpec> fields,
+            PyString? moduleName, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
         {
             var typeName = declaringType.Name;
             _typeName = typeName;
@@ -57,36 +52,30 @@ internal static partial class PyDataclass
             _fields = fields;
             _moduleName = moduleName;
 
-            var parameters = new List<LoweredFunctionParameter>(fields.Count + 1)
+            var capacity = checked(fields.Count + 1);
+            using var parameterStorage = context.MemoryGovernor.ReserveTemporary(64L + 32L * capacity, span);
+            context.CheckExecution(span);
+            var parameters = new List<GeneratedFunctionParameter>(capacity)
             {
-                new("self", FunctionParameterKind.Positional, null)
+                new("self", FunctionParameterKind.Positional)
             };
-            var defaultCount = fields.Count(static field => field.HasDefault || field.HasDefaultFactory);
-            using var defaultStorage = defaultCount == 0 ? null
-                : context.MemoryGovernor.ReserveTemporary(64L + 64L * defaultCount, null);
-            var defaults = new Dictionary<string, object>(defaultCount, StringComparer.Ordinal);
             foreach (var field in fields)
             {
+                context.CheckExecution(span);
                 if (field.Kind == DataclassFieldKind.ClassVar || !field.Init)
                 {
                     continue;
                 }
 
-                parameters.Add(new LoweredFunctionParameter(
+                var defaultValue = field.HasDefaultFactory ? DefaultFactorySentinel
+                    : field.HasDefault ? field.DefaultValue : null;
+                parameters.Add(new(
                     field.Name,
                     field.KwOnly ? FunctionParameterKind.KeywordOnly : FunctionParameterKind.Positional,
-                    null));
-                if (field.HasDefaultFactory)
-                {
-                    defaults[field.Name] = DefaultFactorySentinel;
-                }
-                else if (field.HasDefault)
-                {
-                    defaults[field.Name] = field.DefaultValue;
-                }
+                    defaultValue));
             }
 
-            _bindingPlan = FunctionBindingPlan.CreateDynamic($"{typeName}.__init__", PythonCallableKind.Function, parameters, defaults, context);
+            _bindingPlan = LythonRuntime.CreateGeneratedBindingPlan($"{typeName}.__init__", parameters, context, span);
         }
 
         public object Bind(object self) => new PyBoundMethod(self, this);
@@ -282,7 +271,7 @@ internal static partial class PyDataclass
         }
 
         private readonly FunctionBindingPlan _bindingPlan =
-            FunctionBindingPlan.CreateDynamic($"{typeName}.__eq__", PythonCallableKind.Function, BinaryProtocolParameters, EmptyDefaultValues);
+            new($"{typeName}.__eq__", PythonCallableKind.Function, BinaryProtocolLayout, default);
 
         public object Bind(object self) => new PyBoundMethod(self, this);
 
@@ -396,11 +385,7 @@ internal static partial class PyDataclass
                 DataclassOrderOperation.GreaterEqual => "ge",
                 _ => throw new InvalidOperationException("Unsupported dataclass order operation.")
             };
-            _bindingPlan = FunctionBindingPlan.CreateDynamic(
-                $"{typeName}.__{operationName}__",
-                PythonCallableKind.Function,
-                BinaryProtocolParameters,
-                EmptyDefaultValues);
+            _bindingPlan = new($"{typeName}.__{operationName}__", PythonCallableKind.Function, BinaryProtocolLayout, default);
         }
 
         public object Bind(object self) => new PyBoundMethod(self, this);

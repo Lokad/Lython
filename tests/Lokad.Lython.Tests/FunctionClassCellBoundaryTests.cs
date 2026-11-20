@@ -144,13 +144,14 @@ public sealed class FunctionClassCellBoundaryTests
         finally { frame.LeaveFunctionCall(); }
     }
 
-    private static Context Enter(Context closure, IReadOnlyList<LoweredFunctionParameter> parameters,
+    private static Context Enter(Context closure, IReadOnlyList<GeneratedFunctionParameter> parameters,
         object[] values, bool mirror, PyType? owner = null, ScopeDirectiveFacts? facts = null)
         => PyFunctionBinding.EnterInvocationFrame(closure, facts ?? ScopeDirectiveFacts.Empty with { RequiresClassCell = true },
-            FunctionBindingPlan.CreateDynamic("f", PythonCallableKind.Function, parameters, new Dictionary<string, object>()),
+            new FunctionBindingPlan("f", PythonCallableKind.Function,
+                FunctionParameterLayout.Create(parameters), default),
             new BoundFunctionArguments(values.Select(LythonRuntime.ExecutableSlot.FromObject).ToArray(), default), mirror, owner, Span);
 
-    private static LoweredFunctionParameter Parameter(string name, FunctionParameterKind kind) => new(name, kind, null);
+    private static GeneratedFunctionParameter Parameter(string name, FunctionParameterKind kind) => new(name, kind);
     private static Context Root() => new(new MockLythonHost(), new LythonRunOptions { SourcePath = "/root.py"},regexProvider:Utf8RegexProvider.Instance);
     private static Context ClassClosure()
     {

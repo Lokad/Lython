@@ -3,6 +3,9 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Frontend;
 
+// Generated signatures already have the actual default values.
+internal readonly record struct GeneratedFunctionParameter(string Name, FunctionParameterKind Kind, object? DefaultValue = null);
+
 // One definition-owned names/index table describes binding order. Defaults and
 // annotations remain with their own consumers, never this immutable signature.
 internal sealed class FunctionParameterLayout
@@ -53,7 +56,7 @@ internal sealed class FunctionParameterLayout
         PythonTokenization.CheckCancellation(cancellationToken, 0);
     }
 
-    public static FunctionParameterLayout Create(IReadOnlyList<LoweredFunctionParameter> parameters,
+    public static FunctionParameterLayout Create(IReadOnlyList<GeneratedFunctionParameter> parameters,
         CancellationToken cancellationToken = default)
         => Create(parameters, static parameter => (parameter.Name, parameter.Kind, parameter.DefaultValue is not null),
             cancellationToken);
@@ -131,7 +134,7 @@ internal sealed class FunctionParameterLayout
 
     // Compiled metadata uses the coarse source estimate. Generated definitions
     // still admit this conservative estimate before constructing their tables.
-    public static long EstimateBytes(IReadOnlyList<LoweredFunctionParameter> parameters)
+    public static long EstimateBytes(IReadOnlyList<GeneratedFunctionParameter> parameters)
     {
         if (parameters.Count == 0) return 0;
         var bytes = 256L + 256L * parameters.Count;

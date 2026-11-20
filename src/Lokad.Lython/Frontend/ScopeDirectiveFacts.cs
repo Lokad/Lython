@@ -45,16 +45,13 @@ internal sealed record ScopeDirectiveFacts(
 internal static class ScopeDirectiveFactsCollector
 {
     public static ScopeDirectiveFacts ForModule(ScriptSyntax script)
-        => script.PreparedScopeFacts ??= ForFunction([], script.Statements, includeClassCellRequirement: false);
+        => script.PreparedScopeFacts ??= ForSuite(script.Statements);
 
-    public static ScopeDirectiveFacts ForFunction(
-        IReadOnlyList<LoweredFunctionParameter> parameters,
-        IReadOnlyList<StatementSyntax> body,
-        bool includeClassCellRequirement = true)
-        => CollectFunctionBindings(parameters.Select(parameter => parameter.Name), body, includeClassCellRequirement);
+    public static ScopeDirectiveFacts ForSuite(IReadOnlyList<StatementSyntax> body)
+        => CollectFunctionBindings([], body);
 
     private static ScopeDirectiveFacts CollectFunctionBindings(IEnumerable<string> parameterNames,
-        IReadOnlyList<StatementSyntax> body, bool includeClassCellRequirement = true)
+        IReadOnlyList<StatementSyntax> body)
     {
         var globalNames = new HashSet<string>(StringComparer.Ordinal);
         var nonlocalNames = new HashSet<string>(StringComparer.Ordinal);
@@ -70,11 +67,7 @@ internal static class ScopeDirectiveFactsCollector
 
         return new ScopeDirectiveFacts(globalNames, nonlocalNames, localNames, bindings.ToArray())
         {
-            ContainsVariableAnnotations = containsAnnotations,
-            ClassCellRequirement = includeClassCellRequirement
-                ? !globalNames.Contains("__class__") && !localNames.Contains("__class__") &&
-                    ClassCellSyntaxFacts.ReferencesFromFunction(body)
-                : null
+            ContainsVariableAnnotations = containsAnnotations
         };
     }
 
@@ -89,7 +82,7 @@ internal static class ScopeDirectiveFactsCollector
     }
 
     internal static ScopeDirectiveFacts ForClassBindings(ClassDefinitionStatementSyntax definition)
-        => definition.PreparedScopeFacts ??= ForFunction([], definition.Body, includeClassCellRequirement: false);
+        => definition.PreparedScopeFacts ??= ForSuite(definition.Body);
 
     public static ScopeDirectiveFacts ForFunction(FunctionDefinitionStatementSyntax functionDefinition)
     {
@@ -102,7 +95,7 @@ internal static class ScopeDirectiveFactsCollector
 
     internal static ScopeDirectiveFacts ForFunctionBindings(FunctionDefinitionStatementSyntax definition)
         => definition.PreparedScopeFacts ??= CollectFunctionBindings(definition.Parameters.Select(p => p.Name),
-            definition.Body, includeClassCellRequirement: false);
+            definition.Body);
 
     private static bool ResolveClassCellRequirement(ScopeDirectiveFacts facts, IReadOnlyList<StatementSyntax> body)
         => !facts.IsGlobal("__class__") && !facts.LocalNames.Contains("__class__") &&
@@ -117,9 +110,6 @@ internal static class ScopeDirectiveFactsCollector
         CollectExpressionBindings(lambda.Body, localNames);
         return localNames;
     }
-
-    public static ScopeDirectiveFacts ForLambda(IReadOnlyList<LoweredFunctionParameter> parameters, ExpressionSyntax body)
-        => CollectLambdaBindings(parameters.Select(parameter => parameter.Name), body);
 
     private static ScopeDirectiveFacts CollectLambdaBindings(IEnumerable<string> parameterNames, ExpressionSyntax body)
     {

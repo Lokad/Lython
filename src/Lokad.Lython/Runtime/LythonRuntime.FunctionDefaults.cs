@@ -55,6 +55,23 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    internal static FunctionBindingPlan CreateGeneratedBindingPlan(string name,
+        IReadOnlyList<GeneratedFunctionParameter> parameters, ExecutionContext context, LythonSourceSpan span)
+    {
+        var bytes = FunctionParameterLayout.EstimateBytes(parameters);
+        using var storage = context.MemoryGovernor.ReserveTemporary(bytes, span);
+        context.CheckExecution(span);
+        var layout = FunctionParameterLayout.Create(parameters, context.State.CancellationToken);
+        using var pending = layout.Defaults.Length == 0 ? null : new PendingFunctionDefaults(layout, context, span);
+        if (pending is not null)
+            foreach (var slot in layout.Defaults)
+                pending.Add(slot, ExecutableSlot.FromObject(parameters[slot.ParameterIndex].DefaultValue), span);
+        var plan = new FunctionBindingPlan(name, PythonCallableKind.Function, layout, pending?.Values ?? default);
+        storage.Commit(bytes);
+        pending?.Publish();
+        return plan;
+    }
+
     private static ValueTask<PendingFunctionDefaults?> EvaluateFunctionDefaults(
         LoweredExpression[] defaults, FunctionParameterLayout layout,
         ExecutionContext context, LythonSourceSpan span, bool asynchronous)

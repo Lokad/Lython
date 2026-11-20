@@ -31,54 +31,6 @@ internal class FunctionBindingPlan
         KeywordDefaults = defaults.Keywords;
     }
 
-    private static FunctionDefaults CreateGeneratedDefaults(FunctionParameterLayout layout,
-        IReadOnlyDictionary<string, object> defaultValues, LythonRuntime.ExecutionContext? context)
-    {
-        var governor = context?.MemoryGovernor;
-        PyTuple? positional = null;
-        PyDict? keywords = null;
-        try
-        {
-            var firstDefault = layout.PositionalCount;
-            while (firstDefault > 0 && defaultValues.ContainsKey(layout.NameAt(firstDefault - 1))) firstDefault--;
-            var count = layout.PositionalCount - firstDefault;
-            if (count != 0)
-            {
-                var items = Enumerable.Range(firstDefault, count).Select(i => defaultValues[layout.NameAt(i)]);
-                positional = governor is null ? new PyTuple(items) : new PyTuple(items, governor);
-            }
-
-            for (var i = 0; i < layout.KeywordOnlyCount; i++)
-            {
-                if (!defaultValues.TryGetValue(layout.NameAt(layout.PositionalCount + i), out var value)) continue;
-                keywords ??= governor is null ? new PyDict() : new PyDict(governor);
-                keywords.SetItem(layout.KeywordDefaultName(i), value);
-            }
-            return new(positional, keywords);
-        }
-        catch
-        {
-            // These values have not escaped the constructor. Refunding only
-            // their new storage preserves funding for the supplied default values.
-            if (governor is not null) new FunctionDefaults(positional, keywords).RefundUnpublished(governor);
-            throw;
-        }
-    }
-
-    // Native generated definitions have no compiled owner. Admit their immutable
-    // tables through successful default construction, preserving full rollback.
-    public static FunctionBindingPlan CreateDynamic(string callableName, PythonCallableKind callableKind,
-        IReadOnlyList<LoweredFunctionParameter> parameters, IReadOnlyDictionary<string, object> defaultValues,
-        LythonRuntime.ExecutionContext? context = null)
-    {
-        var bytes = FunctionParameterLayout.EstimateBytes(parameters);
-        using var storage = context?.MemoryGovernor.ReserveTemporary(bytes, null);
-        var layout = FunctionParameterLayout.Create(parameters, context?.State.CancellationToken ?? default);
-        var result = new FunctionBindingPlan(callableName, callableKind, layout, CreateGeneratedDefaults(layout, defaultValues, context));
-        storage?.Commit(bytes);
-        return result;
-    }
-
     public string CallableName { get; }
 
     public PythonCallableKind CallableKind { get; }

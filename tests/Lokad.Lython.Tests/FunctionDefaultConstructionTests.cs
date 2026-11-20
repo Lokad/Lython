@@ -7,16 +7,18 @@ namespace Lokad.Lython.Tests;
 
 public sealed class FunctionDefaultConstructionTests
 {
+    private static readonly LythonSourceSpan Span = new(0, 1, 1, 1);
+
     [Fact]
     public void DefaultContainerStorageAddsToTheSameParameterLayout()
     {
         var parameters = Enumerable.Range(0, 8)
-            .Select(i => new LoweredFunctionParameter("a" + i, FunctionParameterKind.Positional, null)).ToArray();
+            .Select(i => new GeneratedFunctionParameter("a" + i, FunctionParameterKind.Positional)).ToArray();
         var requiredContext = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var defaultContext = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
-        _ = FunctionBindingPlan.CreateDynamic("f", PythonCallableKind.Function, parameters, new Dictionary<string, object>(), requiredContext);
-        var defaults = parameters.ToDictionary(p => p.Name, _ => (object)0);
-        var plan = FunctionBindingPlan.CreateDynamic("f", PythonCallableKind.Function, parameters, defaults, defaultContext);
+        _ = LythonRuntime.CreateGeneratedBindingPlan("f", parameters, requiredContext, Span);
+        var defaults = parameters.Select(parameter => parameter with { DefaultValue = 0 }).ToArray();
+        var plan = LythonRuntime.CreateGeneratedBindingPlan("f", defaults, defaultContext, Span);
         Assert.True(plan.TryGetDefaultMetadata("__defaults__", out var tuple));
         Assert.Equal(parameters.Length, Assert.IsType<PyTuple>(tuple).Count);
         Assert.True(defaultContext.MemoryGovernor.CurrentCommittedBytes > requiredContext.MemoryGovernor.CurrentCommittedBytes);
@@ -27,7 +29,7 @@ public sealed class FunctionDefaultConstructionTests
     {
         var denials = 0;
         var completed = 0;
-        foreach (var available in new[] { 0, 64, 512, 768, 4096 })
+        foreach (var available in new[] { 0, 64, 768, 900, 1024, 4096 })
         {
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
                 new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024 * 1024) },regexProvider:Utf8RegexProvider.Instance);
@@ -40,9 +42,9 @@ public sealed class FunctionDefaultConstructionTests
             FunctionBindingPlan? plan = null;
             try
             {
-                plan = FunctionBindingPlan.CreateDynamic("f", PythonCallableKind.Function,
-                    [new("a", FunctionParameterKind.Positional, null), new("b", FunctionParameterKind.KeywordOnly, null)],
-                    new Dictionary<string, object> { ["a"] = supplied, ["b"] = supplied }, context);
+                plan = LythonRuntime.CreateGeneratedBindingPlan("f",
+                    [new("a", FunctionParameterKind.Positional, supplied), new("b", FunctionParameterKind.KeywordOnly, supplied)],
+                    context, Span);
                 Assert.True(plan.TryGetPositionalDefault(0, out var positional));
                 Assert.Same(supplied, positional.Object);
                 Assert.True(plan.KeywordDefaultStorage!.TryGetValue(plan.KeywordDefaultName(0), out var keyword));

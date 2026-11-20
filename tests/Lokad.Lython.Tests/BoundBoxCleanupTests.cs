@@ -17,14 +17,11 @@ public sealed class BoundBoxCleanupTests
 {
     private static readonly LythonSourceSpan Span = new(0, 0, 0, 0);
 
-    private static FunctionBindingPlan TwoParameterPlan() => FunctionBindingPlan.CreateDynamic(
-        "f",
-        PythonCallableKind.Function,
-        [
-            new LoweredFunctionParameter("a", FunctionParameterKind.Positional, null),
-            new LoweredFunctionParameter("b", FunctionParameterKind.Positional, null),
-        ],
-        new Dictionary<string, object>());
+    private static FunctionBindingPlan Plan(string name, params GeneratedFunctionParameter[] parameters)
+        => new(name, PythonCallableKind.Function, FunctionParameterLayout.Create(parameters), default);
+
+    private static FunctionBindingPlan TwoParameterPlan() => Plan("f",
+        new("a", FunctionParameterKind.Positional), new("b", FunctionParameterKind.Positional));
 
     [Fact]
     public void FailingBindsReturnRentedBox()
@@ -56,9 +53,7 @@ public sealed class BoundBoxCleanupTests
         using (var owner = budget.CreateScope())
         {
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
-            var plan = FunctionBindingPlan.CreateDynamic("f", PythonCallableKind.Function,
-                [new("items", FunctionParameterKind.VariadicList, null),
-                    new("key", FunctionParameterKind.KeywordOnly, null)], new Dictionary<string, object>());
+            var plan = Plan("f", new("items", FunctionParameterKind.VariadicList), new("key", FunctionParameterKind.KeywordOnly));
             var alias = new object();
             var slots = new Slot[2];
             var before = budget.ReservedBytes;
@@ -94,8 +89,7 @@ public sealed class BoundBoxCleanupTests
             var hook = new AdmissionHookMemoryBudget(owner);
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
                 new LythonRunOptions { MemoryBudget = hook, CancellationToken = cancellation.Token });
-            var plan = FunctionBindingPlan.CreateDynamic("f", PythonCallableKind.Function,
-                [new("items", FunctionParameterKind.VariadicList, null)], new Dictionary<string, object>());
+            var plan = Plan("f", new GeneratedFunctionParameter("items", FunctionParameterKind.VariadicList));
             var slots = new Slot[1];
             var before = budget.ReservedBytes;
             if (cancelOnAdmission) hook.AfterGrowth = _ => cancellation.Cancel();
@@ -126,9 +120,7 @@ public sealed class BoundBoxCleanupTests
         using (var owner = budget.CreateScope())
         {
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
-            var plan = FunctionBindingPlan.CreateDynamic("f", PythonCallableKind.Function,
-                [new("required", FunctionParameterKind.KeywordOnly, null),
-                    new("kw", FunctionParameterKind.VariadicDictionary, null)], new Dictionary<string, object>());
+            var plan = Plan("f", new("required", FunctionParameterKind.KeywordOnly), new("kw", FunctionParameterKind.VariadicDictionary));
             var borrowed = PyString.FromString("original", context.MemoryGovernor, Span);
             var slots = new Slot[2];
             var before = budget.ReservedBytes;
@@ -163,8 +155,7 @@ public sealed class BoundBoxCleanupTests
             var hook = new AdmissionHookMemoryBudget(owner);
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
                 new LythonRunOptions { MemoryBudget = hook, CancellationToken = cancellation.Token });
-            var plan = FunctionBindingPlan.CreateDynamic("f", PythonCallableKind.Function,
-                [new("kw", FunctionParameterKind.VariadicDictionary, null)], new Dictionary<string, object>());
+            var plan = Plan("f", new GeneratedFunctionParameter("kw", FunctionParameterKind.VariadicDictionary));
             var slots = new Slot[1];
             var before = budget.ReservedBytes;
             if (cancelOnAdmission) hook.AfterGrowth = _ => cancellation.Cancel();
@@ -244,15 +235,10 @@ public sealed class BoundBoxCleanupTests
         // The frame hangs off the closure's guards, so the closure itself
         // carries the zero recursion cap that trips frame entry.
         var closure = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxRecursionDepth = 0 },regexProvider:Utf8RegexProvider.Instance);
-        var parameters = new List<LoweredFunctionParameter>
-        {
-            new("a", FunctionParameterKind.Positional, null),
-            new("b", FunctionParameterKind.Positional, null),
-        };
         var definition = Assert.IsType<LoweredFunctionDefinitionStatement>(Assert.Single(
             LoweredScript.Lower(LythonFrontend.Compile("def f(a,b):pass").Script!).Statements));
         var fun = new PyExecutableFunction(
-            FunctionParameterLayout.Create(parameters),
+            definition.ParameterLayout,
             ExecutableScript.CompileClassFunction(definition),
             closure,
             [],
@@ -284,16 +270,9 @@ public sealed class BoundBoxCleanupTests
             new("y", PyNone.Instance, DataclassFieldKind.Normal, false, PyNone.Instance, false, PyNone.Instance, true, true, true, null, false, new PyDataclassFieldObject { Name="y", Metadata=PyNone.Instance }, true),
         };
         var type = new PyType("P", [], new Dictionary<string, object>());
-        var init = new PyDataclass.DataclassInitMethod(type, fields, null, context);
-        var plan = FunctionBindingPlan.CreateDynamic(
-            "P.__init__",
-            PythonCallableKind.Function,
-            [
-                new LoweredFunctionParameter("self", FunctionParameterKind.Positional, null),
-                new LoweredFunctionParameter("x", FunctionParameterKind.Positional, null),
-                new LoweredFunctionParameter("y", FunctionParameterKind.Positional, null),
-            ],
-            new Dictionary<string, object>());
+        var init = new PyDataclass.DataclassInitMethod(type, fields, null, context, Span);
+        var plan = Plan("P.__init__", new("self", FunctionParameterKind.Positional),
+            new("x", FunctionParameterKind.Positional), new("y", FunctionParameterKind.Positional));
         var box = LythonRuntime.BindFunctionArguments(
             [CallArgumentValue.Positional(1), CallArgumentValue.Positional(2), CallArgumentValue.Positional(3)],
             Span, plan, context);
