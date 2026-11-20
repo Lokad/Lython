@@ -79,6 +79,57 @@ public sealed class ExceptionProtocolTests
         Assert.Equal(baseline, budget.ReservedBytes);
     }
 
+    [Fact]
+    public async Task JumpOnlyProtectedEntryRetainsCursorAndDrainsCancelledRead()
+    {
+        const string source = """
+            def consume():
+                source = open('/data')
+                for index in range(2):
+                    with source:
+                        while True:
+                            return f'{index}:{source.read()}'
+            print(consume())
+            """;
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join(", ", script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        var host = new DelayedLythonHost();
+        host.SeedFile("/data", "payload");
+        var entered = host.PauseReadUntilCancellation("/data");
+        using var cancellation = new CancellationTokenSource();
+        var pending = script.RunAsync(host, cancellationToken: cancellation.Token);
+        try
+        {
+            Assert.Same(entered, await Task.WhenAny(entered, pending).WaitAsync(TimeSpan.FromSeconds(5)));
+            Assert.False(pending.IsCompleted);
+            Assert.True(budget.ReservedBytes > baseline);
+            cancellation.Cancel();
+
+            using var result = await pending.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
+            Assert.Empty(result.StandardOutput);
+            Assert.Equal(1, host.ClosedFileCount);
+        }
+        finally
+        {
+            cancellation.Cancel();
+            using var drained = await pending.WaitAsync(TimeSpan.FromSeconds(5));
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+
+        var ready = new DelayedLythonHost();
+        ready.SeedFile("/data", "payload");
+        using (var result = await script.RunAsync(ready))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("0:payload\n", result.StandardOutput);
+        }
+        Assert.Equal(1, ready.ClosedFileCount);
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
     [Theory]
     [InlineData("None", 0)]
     [InlineData("False", 0)]

@@ -6,6 +6,16 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1212 shared executable graph discovery](results/2026-11-20-shared-executable-graph/README.md)
+removes separate reachability and region normalization from protected and
+ordinary suites. Validator compile-to-result elapsed falls 6.57–10.22%
+with lower CPU. Compile-only improves in each pairing with a 10.60%
+reference spread. Validator warm elapsed and CPU rise, and the manifest
+compile-to-result elapsed increase is small with mixed CPU. Retain for
+the simplification and whole-validator result. The initial region-free
+prototype left validator compilation allocation effectively flat and is
+included with the original observations.
+
 [B1211 compact call-site refinement](results/2026-11-20-positional-call-sites/refinement/README.md)
 retains the positional flag in the private variant. Local compile allocation
 savings repeat. Manifest compile elapsed spans zero and eager warm controls

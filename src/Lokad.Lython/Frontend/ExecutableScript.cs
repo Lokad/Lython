@@ -486,7 +486,7 @@ internal sealed partial class ExecutableCodeObject
         ScopeDirectiveFacts scopeFacts,
         List<List<ExecutableInstruction>> blocks,
         int entryBlockIndex,
-        ExecutableBlockTargets blockTargets,
+        int[] jumpTargets,
         IReadOnlyList<ExecutableExceptionRegion> exceptionRegions,
         IReadOnlyList<ImportStatementSyntax> imports,
         ExecutableCallSite[] callSites,
@@ -497,7 +497,8 @@ internal sealed partial class ExecutableCodeObject
         bool isFunctionScope,
         int initialOperandDepth,
         PyString? functionName,
-        PyString? docstring)
+        PyString? docstring,
+        CancellationToken cancellationToken)
     {
         Name = name;
         FunctionName = functionName;
@@ -522,26 +523,40 @@ internal sealed partial class ExecutableCodeObject
         var reads = ExecutableStackLayout.ForwardValues(this, blocks);
         // Assign physical positions after forwarding. Both execution forms use
         // this final layout, including at a dynamic-operation transition.
+        var regionsByEntry = exceptionRegions.Count == 0 ? [] :
+            exceptionRegions.OrderBy(region => region.ProtectedStartIndex).ToArray();
         var operandLayout = ExecutableStackLayout.Prepare(blocks, constants, callSites,
-            exceptionRegions, blockTargets, entryBlockIndex, initialOperandDepth, FirstTemporarySlot);
+            regionsByEntry, jumpTargets, entryBlockIndex, initialOperandDepth, FirstTemporarySlot, cancellationToken);
         OperandCapacity = operandLayout.MaximumDepth;
         LastOwnedTemporarySlot = operandLayout.LastOwnedTemporarySlot;
-        Instructions = ExecutableStackLayout.Linearize(blocks, operandLayout, blockTargets, out var offsets);
-        _operandReadSpans = reads.Select(read => new ExecutableOperandSpan(
-            ((long)(offsets[read.Block] + read.Instruction) << 2) | (uint)read.Input, read.Span)).ToArray();
+        Instructions = ExecutableStackLayout.Linearize(blocks, operandLayout, jumpTargets, cancellationToken, out var offsets);
+        _operandReadSpans = reads.Where(read => operandLayout.EntryDepths[read.Block].HasValue)
+            .Select(read => new ExecutableOperandSpan(
+                ((long)(offsets[read.Block] + read.Instruction) << 2) | (uint)read.Input, read.Span)).ToArray();
         EntryIndex = offsets[entryBlockIndex];
-        ExceptionRegions = exceptionRegions
+        // Original block widths preserve inner-first unwinding, including
+        // ranges that become physically equal after unreachable blocks vanish.
+        ExceptionRegions = regionsByEntry
             .Where(region => operandLayout.EntryDepths[region.ProtectedStartIndex].HasValue)
-            .Select(region => region with
-        {
-            StackDepth = checked(FirstTemporarySlot + operandLayout.EntryDepths[region.ProtectedStartIndex]!.Value),
-            ProtectedStartIndex = offsets[region.ProtectedStartIndex],
-            ProtectedEndIndex = offsets[region.ProtectedEndIndex + 1] - 1,
-            ExceptIndex = region.ExceptIndex is int handler ? offsets[handler] : null,
-            FinallyIndex = region.FinallyIndex is int cleanup ? offsets[cleanup] : null,
-            SuiteStartIndex = region.SuiteStartIndex is int start ? offsets[start] : null,
-            SuiteEndIndex = region.SuiteEndIndex is int end ? offsets[end + 1] - 1 : null
-        }).ToArray();
+            .OrderBy(region => region.ProtectedEndIndex - region.ProtectedStartIndex)
+            .Select(region =>
+            {
+                // A suite may have no remaining instructions. Keep its bounds
+                // paired, since runtime routing tests containment in this suite.
+                var suiteStart = region.SuiteStartIndex is int start ? offsets[start] : (int?)null;
+                var suiteEnd = region.SuiteEndIndex is int end ? offsets[end + 1] - 1 : (int?)null;
+                if (suiteStart > suiteEnd) suiteStart = suiteEnd = null;
+                return region with
+                {
+                    StackDepth = checked(FirstTemporarySlot + operandLayout.EntryDepths[region.ProtectedStartIndex]!.Value),
+                    ProtectedStartIndex = offsets[region.ProtectedStartIndex],
+                    ProtectedEndIndex = offsets[region.ProtectedEndIndex + 1] - 1,
+                    ExceptIndex = region.ExceptIndex is int handler ? offsets[jumpTargets[handler]] : null,
+                    FinallyIndex = region.FinallyIndex is int cleanup ? offsets[jumpTargets[cleanup]] : null,
+                    SuiteStartIndex = suiteStart,
+                    SuiteEndIndex = suiteEnd
+                };
+            }).ToArray();
         // Native work can precede cleanup without owning its routing state.
         // A physical instruction frontier also covers normal fallthrough and
         // jumps: transfer once before entering any finally suite.

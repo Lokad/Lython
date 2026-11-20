@@ -1,0 +1,42 @@
+{
+  "reference": {
+    "scripts.config-generated-guards.medium": {
+      "totalInstructions": 2927,
+      "jumps": 386,
+      "complete": 1,
+      "protectedRegions": 97
+    },
+    "scripts.config-manifest.small": {
+      "totalInstructions": 263,
+      "jumps": 16,
+      "complete": 1,
+      "protectedRegions": 3
+    },
+    "scripts.annotated-rule-closures": {
+      "totalInstructions": 45,
+      "jumps": 2,
+      "complete": 1,
+      "protectedRegions": 0
+    }
+  },
+  "candidate": {
+    "scripts.config-generated-guards.medium": {
+      "totalInstructions": 2927,
+      "jumps": 386,
+      "complete": 1,
+      "protectedRegions": 97
+    },
+    "scripts.config-manifest.small": {
+      "totalInstructions": 263,
+      "jumps": 16,
+      "complete": 1,
+      "protectedRegions": 3
+    },
+    "scripts.annotated-rule-closures": {
+      "totalInstructions": 45,
+      "jumps": 2,
+      "complete": 1,
+      "protectedRegions": 0
+    }
+  }
+}

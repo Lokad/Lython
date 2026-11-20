@@ -431,10 +431,13 @@ trace guest storage. Shared syntax walks use value enumerators for
 ordinary fields/lists and the existing nested walkers for recursive target/header
 shapes; no retained child-edge cache is built. Exception header expressions
 execute through those instructions; bare handlers need no second type-name resolver.
-Compiler preparation owns one mutable instruction list per block through target
-normalization, operand forwarding and slot layout. The reachability map compacts
-the builder's block list in original order and translates protected range endpoints.
-Only final linearization creates the retained instruction array.
+Compiler preparation owns one mutable instruction list per block through
+jump threading, operand forwarding and slot layout. Operand layout discovers
+reachable blocks through ordinary and exceptional edges. Protected entries keep
+their incoming operand depth for handlers, including entries that contain only
+a jump. Final linearization skips unreachable blocks in original order, creates
+the retained instruction array and maps protected ranges to instruction offsets.
+Original block widths keep nested cleanup ordered innermost first.
 Instructions store an opcode, source span, opcode metadata and compiler-prepared
 storage positions. The opcode determines each metadata operand's domain;
 operand projections and control-flow retargeting keep explicit validity checks.

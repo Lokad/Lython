@@ -11,13 +11,14 @@ internal sealed partial class ExecutableScript
 {
     // A successor of -1 denotes a block that is not a single ordinary jump.
     // Completed targets are nonnegative; negative markers index the current path.
-    internal static int[] ResolveJumpTargets(ReadOnlySpan<int> successors)
+    internal static int[] ResolveJumpTargets(ReadOnlySpan<int> successors, CancellationToken token = default)
     {
         var targets = new int[successors.Length];
         Array.Fill(targets, -1);
         var path = new int[successors.Length];
         for (var start = 0; start < successors.Length; start++)
         {
+            PythonTokenization.CheckCancellation(token, start);
             if (targets[start] >= 0)
                 continue;
 
@@ -25,6 +26,7 @@ internal sealed partial class ExecutableScript
             var current = start;
             while (targets[current] == -1)
             {
+                PythonTokenization.CheckCancellation(token, length);
                 targets[current] = -2 - length;
                 path[length++] = current;
                 var next = successors[current];
@@ -60,14 +62,6 @@ internal sealed partial class ExecutableScript
         // target only itself and is always reachable from its entry.
         private static readonly int[] SingleEntryBlock = [0];
 
-        private ExecutableBlockTargets PrepareBlockTargets(int entryBlock)
-        {
-            if (_buffers.Blocks.Count == 1) return new(SingleEntryBlock, SingleEntryBlock);
-
-            var jumpTargets = ResolveJumpTargets();
-            return new(RetainReachableBlocks(entryBlock, jumpTargets), jumpTargets);
-        }
-
         private int CreateBlock()
         {
             var index = _buffers.Blocks.Count;
@@ -101,159 +95,28 @@ internal sealed partial class ExecutableScript
             return instructions[^1].OpCode is ExecutableOpCode.Jump or ExecutableOpCode.AbruptJump or ExecutableOpCode.Return or ExecutableOpCode.ReturnNone or ExecutableOpCode.ReraiseException;
         }
 
-        private IReadOnlyList<ExecutableExceptionRegion> NormalizeRegions(ExecutableBlockTargets targets)
+        private int[] PrepareJumpTargets()
         {
-            if (_buffers.Regions.Count == 0) return [];
-            var normalized = new List<ExecutableExceptionRegion>(_buffers.Regions.Count);
-            foreach (var region in _buffers.Regions)
-            {
-                var firstProtected = FirstAtOrAfter(targets.Compacted[region.ProtectedStartIndex]);
-                var afterLastProtected = FirstAfter(targets.Compacted[region.ProtectedEndIndex]);
-                if (firstProtected == afterLastProtected)
-                {
-                    continue;
-                }
+            if (_buffers.Blocks.Count == 1) return SingleEntryBlock;
 
-                int? suiteStart = null;
-                int? suiteEnd = null;
-                if (region.SuiteStartIndex is int suiteStartOriginal &&
-                    region.SuiteEndIndex is int suiteEndOriginal)
-                {
-                    var firstSuite = FirstAtOrAfter(targets.Compacted[suiteStartOriginal]);
-                    var afterLastSuite = FirstAfter(targets.Compacted[suiteEndOriginal]);
-                    if (firstSuite != afterLastSuite)
-                    {
-                        suiteStart = firstSuite;
-                        suiteEnd = afterLastSuite - 1;
-                    }
-                }
-
-                normalized.Add(new ExecutableExceptionRegion(
-                    firstProtected,
-                    afterLastProtected - 1,
-                    region.ExceptIndex is int exceptBlock ? targets.Follow(exceptBlock) : null,
-                    region.FinallyIndex is int finallyBlock ? targets.Follow(finallyBlock) : null,
-                    suiteStart,
-                    suiteEnd, region.CleanupId));
-            }
-
-            // Runtime unwinding consumes applicable regions from the narrowest
-            // protected range outward, without rescanning the region table.
-            return normalized
-                .OrderBy(region => region.ProtectedEndIndex - region.ProtectedStartIndex)
-                .ToArray();
-
-            static int FirstAtOrAfter(int index) => index >= 0 ? index : ~index;
-            static int FirstAfter(int index) => index >= 0 ? index + 1 : ~index;
-        }
-
-        private int[] RetainReachableBlocks(int entryBlockIndex, int[] jumpTargets)
-        {
-            var indexMap = new int[_buffers.Blocks.Count];
-            var pending = new Stack<int>();
-            pending.Push(entryBlockIndex);
-
-            while (pending.Count > 0)
-            {
-                var blockIndex = pending.Pop();
-                if (indexMap[blockIndex] != 0)
-                {
-                    continue;
-                }
-                indexMap[blockIndex] = 1;
-
-                var block = _buffers.Blocks[blockIndex];
-                if (block.Count == 0)
-                {
-                    if (blockIndex + 1 < _buffers.Blocks.Count)
-                    {
-                        pending.Push(blockIndex + 1);
-                    }
-                    continue;
-                }
-
-                foreach (var instruction in block)
-                {
-                    switch (instruction.OpCode)
-                    {
-                        // Unwinding depends on the original target's region.
-                        // Threading through its jump could leave that region
-                        // and run cleanup before a loop iterator is discarded.
-                        case ExecutableOpCode.AbruptJump:
-                            pending.Push(instruction.TargetIndex);
-                            break;
-                        case ExecutableOpCode.Jump:
-                        case ExecutableOpCode.JumpIfFalse:
-                        case ExecutableOpCode.CompareJumpIfFalse:
-                        case ExecutableOpCode.ForNext:
-                        case ExecutableOpCode.EndFinally:
-                            pending.Push(jumpTargets[instruction.TargetIndex]);
-                            break;
-                        case ExecutableOpCode.MatchCase:
-                            pending.Push(jumpTargets[instruction.FailureIndex]);
-                            break;
-                    }
-                }
-
-                foreach (var region in _buffers.Regions)
-                {
-                    if (blockIndex < region.ProtectedStartIndex || blockIndex > region.ProtectedEndIndex)
-                    {
-                        continue;
-                    }
-
-                    if (region.ExceptIndex is int exceptBlock)
-                    {
-                        pending.Push(exceptBlock);
-                    }
-
-                    if (region.FinallyIndex is int finallyBlock)
-                    {
-                        pending.Push(finallyBlock);
-                    }
-                }
-
-                var last = block[^1];
-                if (last.OpCode is not ExecutableOpCode.Jump and
-                    not ExecutableOpCode.Return and
-                    not ExecutableOpCode.ReturnNone and
-                    not ExecutableOpCode.ReraiseException &&
-                    blockIndex + 1 < _buffers.Blocks.Count)
-                {
-                    pending.Push(blockIndex + 1);
-                }
-            }
-
-            // Compact in original order so every protected range stays contiguous.
-            // Reuse the visit map for destination indexes. An unreachable block
-            // stores the complement of its insertion position so a range endpoint
-            // still maps directly without making it a valid branch target.
-            var count = 0;
-            for (var original = 0; original < indexMap.Length; original++)
-            {
-                if (indexMap[original] == 0)
-                {
-                    indexMap[original] = ~count;
-                    continue;
-                }
-                _buffers.Blocks[count] = _buffers.Blocks[original];
-                indexMap[original] = count++;
-            }
-
-            _buffers.Blocks.RemoveRange(count, _buffers.Blocks.Count - count);
-            return indexMap;
-        }
-
-        private int[] ResolveJumpTargets()
-        {
+            var token = _compilation.CancellationToken;
             var successors = new int[_buffers.Blocks.Count];
             for (var i = 0; i < successors.Length; i++)
             {
+                PythonTokenization.CheckCancellation(token, i);
                 var instructions = _buffers.Blocks[i];
                 successors[i] = instructions.Count == 1 && instructions[0].OpCode == ExecutableOpCode.Jump
                     ? instructions[0].TargetIndex : -1;
             }
-            return ExecutableScript.ResolveJumpTargets(successors);
+            // The structured emitter enters each protected clause at its first
+            // block. Its incoming operand depth belongs to all associated
+            // handlers, even if this block consists only of a jump.
+            for (var i = 0; i < _buffers.Regions.Count; i++)
+            {
+                PythonTokenization.CheckCancellation(token, i);
+                successors[_buffers.Regions[i].ProtectedStartIndex] = -1;
+            }
+            return ExecutableScript.ResolveJumpTargets(successors, token);
         }
 
         private int InternLocal(string name)

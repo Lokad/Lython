@@ -2,41 +2,38 @@ using System.Numerics;
 
 namespace Lokad.Lython.Frontend;
 
-// Keep original branch IDs in the blocks. Both operand analysis and final
-// emission resolve them without writing intermediate branch instructions.
-internal readonly record struct ExecutableBlockTargets(int[] Compacted, int[] Threaded)
-{
-    // Abrupt jumps must encounter the destination's original protected region.
-    internal int Map(int original) => Compacted[original] is var target && target >= 0
-        ? target : throw new InvalidOperationException("Executable target is unreachable.");
-
-    internal int Follow(int original) => Map(Threaded[original]);
-}
-
 // Operand shapes are a compiler invariant. Guest iteration, expansion and
 // suspension change values, never the number of executable operand slots.
 internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepths, int FirstTemporarySlot,
     int LastOwnedTemporarySlot)
 {
     internal static ExecutableInstruction[] Linearize(IReadOnlyList<List<ExecutableInstruction>> blocks,
-        ExecutableStackLayout layout, ExecutableBlockTargets targets, out int[] offsets)
+        ExecutableStackLayout layout, int[] jumpTargets, CancellationToken token, out int[] offsets)
     {
         offsets = new int[blocks.Count + 1];
         for (var i = 0; i < blocks.Count; i++)
-            offsets[i + 1] = checked(offsets[i] + blocks[i].Count + (Completes(blocks[i]) ? 1 : 0));
+        {
+            PythonTokenization.CheckCancellation(token, i);
+            offsets[i + 1] = offsets[i];
+            if (layout.EntryDepths[i].HasValue)
+                offsets[i + 1] = checked(offsets[i] + blocks[i].Count + (Completes(blocks[i]) ? 1 : 0));
+        }
         var instructions = new ExecutableInstruction[offsets[^1]];
         for (var i = 0; i < blocks.Count; i++)
         {
+            PythonTokenization.CheckCancellation(token, i);
+            if (!layout.EntryDepths[i].HasValue) continue;
             var source = blocks[i];
             for (var j = 0; j < source.Count; j++)
             {
+                PythonTokenization.CheckCancellation(token, j);
                 var instruction = source[j];
                 instructions[offsets[i] + j] = instruction.OpCode switch
                 {
-                    ExecutableOpCode.AbruptJump => instruction.WithTargetIndex(offsets[targets.Map(instruction.TargetIndex)]),
+                    ExecutableOpCode.AbruptJump => instruction.WithTargetIndex(offsets[instruction.TargetIndex]),
                     ExecutableOpCode.Jump or ExecutableOpCode.JumpIfFalse or ExecutableOpCode.CompareJumpIfFalse or
-                        ExecutableOpCode.ForNext or ExecutableOpCode.EndFinally => instruction.WithTargetIndex(offsets[targets.Follow(instruction.TargetIndex)]),
-                    ExecutableOpCode.MatchCase => instruction.WithFailureIndex(offsets[targets.Follow(instruction.FailureIndex)]),
+                        ExecutableOpCode.ForNext or ExecutableOpCode.EndFinally => instruction.WithTargetIndex(offsets[jumpTargets[instruction.TargetIndex]]),
+                    ExecutableOpCode.MatchCase => instruction.WithFailureIndex(offsets[jumpTargets[instruction.FailureIndex]]),
                     _ => instruction
                 };
             }
@@ -59,8 +56,8 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
 
     internal static ExecutableStackLayout Prepare(IReadOnlyList<List<ExecutableInstruction>> blocks,
         IReadOnlyList<object?> constants, IReadOnlyList<ExecutableCallSite> calls,
-        IReadOnlyList<ExecutableExceptionRegion> regions, ExecutableBlockTargets targets,
-        int entryBlock, int initialDepth, int firstTemporarySlot)
+        ExecutableExceptionRegion[] regions, int[] jumpTargets,
+        int entryBlock, int initialDepth, int firstTemporarySlot, CancellationToken token)
     {
         if (initialDepth < 0 || (uint)entryBlock >= (uint)blocks.Count)
             throw new InvalidOperationException("Invalid executable entry operand depth.");
@@ -74,17 +71,23 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
         var blockIndex = entryBlock;
         do
         {
+            PythonTokenization.CheckCancellation(token, 0);
             var depth = depths[blockIndex]!.Value;
-            foreach (var region in regions)
+            if (regions.Length != 0)
             {
-                if (region.ProtectedStartIndex != blockIndex) continue;
-                if (region.ExceptIndex is int except) Enter(except, depth);
-                if (region.FinallyIndex is int cleanup) Enter(cleanup, depth);
+                for (var i = FirstProtectedRegion(regions, blockIndex);
+                     i < regions.Length && regions[i].ProtectedStartIndex == blockIndex; i++)
+                {
+                    var region = regions[i];
+                    if (region.ExceptIndex is int except) Enter(jumpTargets[except], depth);
+                    if (region.FinallyIndex is int cleanup) Enter(jumpTargets[cleanup], depth);
+                }
             }
 
             var instructions = blocks[blockIndex];
             for (var instructionIndex = 0; instructionIndex < instructions.Count; instructionIndex++)
             {
+                PythonTokenization.CheckCancellation(token, instructionIndex);
                 var instruction = instructions[instructionIndex];
                 var (pop, push, minimum) = Effect(instruction, constants, calls, firstTemporarySlot);
                 if (depth < minimum)
@@ -135,21 +138,21 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
                 switch (instruction.OpCode)
                 {
                     case ExecutableOpCode.ForNext:
-                        Enter(targets.Follow(instruction.TargetIndex), depth - 2);
+                        Enter(jumpTargets[instruction.TargetIndex], depth - 2);
                         break;
                     case ExecutableOpCode.JumpIfFalse:
                     case ExecutableOpCode.CompareJumpIfFalse:
-                        Enter(targets.Follow(instruction.TargetIndex), depth);
+                        Enter(jumpTargets[instruction.TargetIndex], depth);
                         break;
                     case ExecutableOpCode.MatchCase:
-                        Enter(targets.Follow(instruction.FailureIndex), depth);
+                        Enter(jumpTargets[instruction.FailureIndex], depth);
                         break;
                     case ExecutableOpCode.AbruptJump:
-                        Enter(targets.Map(instruction.TargetIndex), depth - (instruction.DiscardIterator ? 1 : 0));
+                        Enter(instruction.TargetIndex, depth - (instruction.DiscardIterator ? 1 : 0));
                         goto CompleteBlock;
                     case ExecutableOpCode.Jump:
                     case ExecutableOpCode.EndFinally:
-                        Enter(targets.Follow(instruction.TargetIndex), depth);
+                        Enter(jumpTargets[instruction.TargetIndex], depth);
                         goto CompleteBlock;
                     case ExecutableOpCode.Return:
                     case ExecutableOpCode.ReturnNone:
@@ -178,6 +181,19 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
             depths[block] = depth;
             (pending ??= new Queue<int>()).Enqueue(block);
         }
+    }
+
+    private static int FirstProtectedRegion(ExecutableExceptionRegion[] regions, int block)
+    {
+        var start = 0;
+        var end = regions.Length;
+        while (start < end)
+        {
+            var middle = start + (end - start) / 2;
+            if (regions[middle].ProtectedStartIndex < block) start = middle + 1;
+            else end = middle;
+        }
+        return start;
     }
 
     // Forward adjacent pure leaf inputs before assigning physical positions.

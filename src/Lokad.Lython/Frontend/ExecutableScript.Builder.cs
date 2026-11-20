@@ -230,8 +230,7 @@ internal sealed partial class ExecutableScript
                 AddInstruction(finalBlock, ExecutableInstruction.ReturnNone(EmptySpan));
             }
 
-            var blockTargets = PrepareBlockTargets(entryBlock);
-            var normalizedRegions = NormalizeRegions(blockTargets);
+            var jumpTargets = PrepareJumpTargets();
             var (capturedLocalSlots, containsCallable, needsMirroring, completeChildren) = PrepareDeclarations();
             // Annotation values can retain functions or deferred generators after
             // module slots leave. Keep their existing global namespace lifetime
@@ -263,8 +262,8 @@ internal sealed partial class ExecutableScript
                 _scopeFacts,
                 _buffers.Blocks,
                 0,
-                blockTargets,
-                normalizedRegions,
+                jumpTargets,
+                _buffers.Regions,
                 _buffers.Imports.ToArray(),
                 _buffers.CallSites.ToArray(),
                 _lookupCacheCount,
@@ -274,7 +273,8 @@ internal sealed partial class ExecutableScript
                 isFunctionScope: _parameterLayout is not null,
                 initialOperandDepth: generatorExpression is null ? 0 : 1,
                 functionName: callable ? name == "<lambda>" ? LambdaName : PyString.FromString(name) : null,
-                docstring: docstring)
+                docstring: docstring,
+                cancellationToken: _compilation.CancellationToken)
             {
                 QualifiedName = qualifiedName
             };
