@@ -570,6 +570,10 @@ original conditions retained. Current comparisons belong in
   warm and compile-to-result elapsed and CPU fall. The unchanged invoice
   also moves favorably. Shipment warm results are inconclusive and all
   three format workloads allocate less. [Source pair](results/2026-11-20-method-format-operands/README.md).
+- B1161 keeps the unified native dictionary copy prototype private.
+  Forwarding timing spans zero and positional invoice CPU rises. The
+  source-growth correction for `dict.copy()` ships independently.
+  [Snapshot prototype](results/2026-11-20-native-keyword-snapshots/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
