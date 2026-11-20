@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1162 representative CPython checkpoint](results/2026-11-20-representative-cpython/README.md)
+refreshes four scripts at `e6e1f964c`. Warm eager rules remain the largest
+gap at 3.69–3.75× CPython. Invoice is 1.05–1.09×. Shipment compile-to-result
+remains less precise than the other updated rows. Timings include guest I/O
+and result cleanup where applicable.
+
 ## November 18–19, 0.11.0 compiler and call work
 
 - The retained formatting and function-default changes have paired evidence.
