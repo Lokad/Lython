@@ -385,13 +385,8 @@ internal sealed partial class LythonRuntime
                 }
                 else
                 {
-                    var argument = call.ArgumentCount == 1 && !call.HasReceiver
-                        ? Values[start + call.ArgumentOffset].Object : null;
-                    var closed = false;
-                    var operation = argument is not null ? SelectNativeUnaryOperation(target, argument, out closed) : null;
-                    if (operation is not null && closed)
+                    if (TryInvokeUnaryBuiltin(call, target, Values, start, _scope, allowProtocol: false, out result))
                     {
-                        result = InvokeSingleInput(argument!, operation, call.CallSpan, _scope);
                         if (result.Reference is LythonRuntimeException failure)
                         {
                             if (Code.ExceptionRegions.Count == 0) throw failure;

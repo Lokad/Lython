@@ -66,13 +66,26 @@ internal sealed partial class LythonRuntime
         => TryMachineInteger(value, out var small) ? ExecutableSlot.FromInteger(small)
             : ExecutableSlot.FromObject(value);
 
-    // A closed operation cannot invoke guest protocols. Ordinary framed calls
-    // retain len's broader selection and its original error/protocol behavior.
-    private static Func<object, LythonSourceSpan, ExecutionContext, ExecutableSlot>? SelectNativeUnaryOperation(
-        object? target, object? value, out bool closed)
+    // A function call keeps the existing argument slot. Only builtin
+    // candidates have an object operand for selecting this operation.
+    private static bool TryInvokeUnaryBuiltin(ExecutableCallSite call, object target, Span<ExecutableSlot> values,
+        int start, ExecutionContext scope, bool allowProtocol, out ExecutableSlot result)
     {
-        closed = true;
-        if (target is not BuiltinCallable builtin) return null;
+        result = default;
+        if (!call.IsPositionalOnly || call.HasReceiver || call.ArgumentCount != 1 || target is not BuiltinCallable builtin)
+            return false;
+
+        var value = values[start + call.ArgumentOffset].Object;
+        var operation = SelectNativeUnaryOperation(builtin, value, allowProtocol);
+        if (operation is null) return false;
+        result = InvokeSingleInput(value!, operation, call.CallSpan, scope);
+        return true;
+    }
+
+    // Ordinary framed calls retain len's broader error/protocol behavior.
+    private static Func<object, LythonSourceSpan, ExecutionContext, ExecutableSlot>? SelectNativeUnaryOperation(
+        BuiltinCallable builtin, object? value, bool allowProtocol)
+    {
         switch (builtin.Name)
         {
             case "int" when value is PyString or PyBytes:
@@ -81,20 +94,17 @@ internal sealed partial class LythonRuntime
                 return FloatTextOperation;
             case "str" when value is BigInteger or PyString:
                 return NativeStrOperation;
-            case "abs" when ExecutionContext.IsAbsoluteBuiltin(target) &&
+            case "abs" when ExecutionContext.IsAbsoluteBuiltin(builtin) &&
                 value is BigInteger or double or bool:
                 return AbsoluteOperation;
-            case "sum" when ExecutionContext.IsSumBuiltin(target) && value is PyBytes:
+            case "sum" when ExecutionContext.IsSumBuiltin(builtin) && value is PyBytes:
                 return SumBytesOperation;
-            case "len" when ExecutionContext.IsLengthBuiltin(target):
+            case "len" when ExecutionContext.IsLengthBuiltin(builtin):
                 if (value is PyString or PyBytes or PyList or PyTuple or PyDict or PySet or PyRange or PyDeque)
                 {
                     return LengthOperation;
                 }
-                // Keep the ordinary call's original wider selection, but never
-                // claim that an unknown value cannot invoke a guest protocol.
-                closed = false;
-                return value is not null and not PyInstance ? LengthOperation : null;
+                return allowProtocol && value is not null and not PyInstance ? LengthOperation : null;
             default:
                 return null;
         }

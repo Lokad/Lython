@@ -114,14 +114,10 @@ internal sealed partial class LythonRuntime
                 catch { execution.Stack.RetireTo(start); throw; }
             }
 
-            var argument = call.ArgumentCount == 0 ? null : execution.Stack[start + call.ArgumentOffset];
-            var closed = false;
-            var unary = call.IsPositionalOnly && call.ArgumentCount == 1
-                ? SelectNativeUnaryOperation(target, argument, out closed) : null;
-            if (unary is null || invocation is null && !closed) return false;
             try
             {
-                var result = InvokeSingleInput(argument!, unary, call.CallSpan, scope);
+                if (!TryInvokeUnaryBuiltin(call, target, execution.Stack.Values, start, scope,
+                    allowProtocol: invocation is not null, out var result)) return false;
                 if (result.Reference is LythonRuntimeException failure)
                 {
                     execution.Stack.RetireTo(start);
