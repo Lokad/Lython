@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1248 retained dictionary operations against CPython](results/2026-11-20-cpython-native-text-dict-keys/README.md)
+puts the validator at 1.80–1.85× warm, 0.894–0.907× compilation and
+0.868–0.881× compile-to-result on `c62457d49`. The alternating shipment
+is 1.325–1.364× warm. Two initial staging failures and all 112 timed
+batches are archived.
+
 [B1246/B1247 direct string-key dictionary operations](results/2026-11-20-direct-native-text-dict-keys/README.md)
 skip generic hash and protocol dispatch for closed reads and private
 records. The validator and alternating shipment improve with lower CPU.

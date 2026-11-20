@@ -1,0 +1,9 @@
+{
+  "live": false,
+  "service": "MainPID=0\nResult=exit-code\nExecMainStatus=1\nActiveState=failed\nSubState=failed\n",
+  "exitCode": "1",
+  "receipt": null,
+  "remainingWorkers": "",
+  "remainingTrace": true,
+  "journal": "Nov 20 19:01:22 lython-bench systemd[1]: Started lython-b1248-native-text-dict-keys-cpython-20261120.service - /bin/sh /home/lokad/lython-bench-checks/native-text-dict-keys-cpython-b1248-20261120/run.sh.\nNov 20 19:01:26 lython-bench sh[4156483]: Initial machine gate passed; a campaign still needs every sampling gate.\nNov 20 19:01:26 lython-bench sh[4156482]: Traceback (most recent call last):\nNov 20 19:01:26 lython-bench sh[4156482]:   File \"/home/lokad/lython-bench-checks/native-text-dict-keys-cpython-b1248-20261120/collect.py\", line 119, in <module>\nNov 20 19:01:26 lython-bench sh[4156482]:     workers=[Worker(label,cases[case_id],'warm',stack)for label in labels]\nNov 20 19:01:26 lython-bench sh[4156482]:              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nNov 20 19:01:26 lython-bench sh[4156482]:   File \"/home/lokad/lython-bench-checks/native-text-dict-keys-cpython-b1248-20261120/collect.py\", line 51, in __init__\nNov 20 19:01:26 lython-bench sh[4156482]:     for name, sha in identity['auxiliaryFiles'].items():\nNov 20 19:01:26 lython-bench sh[4156482]:                      ~~~~~~~~^^^^^^^^^^^^^^^^^^\nNov 20 19:01:26 lython-bench sh[4156482]: KeyError: 'auxiliaryFiles'\nNov 20 19:01:26 lython-bench systemd[1]: lython-b1248-native-text-dict-keys-cpython-20261120.service: Main process exited, code=exited, status=1/FAILURE\nNov 20 19:01:26 lython-bench systemd[1]: lython-b1248-native-text-dict-keys-cpython-20261120.service: Failed with result 'exit-code'.\n"
+}
