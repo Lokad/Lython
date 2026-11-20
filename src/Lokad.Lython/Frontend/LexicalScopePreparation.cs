@@ -8,7 +8,7 @@ internal static class LexicalScopePreparation
 {
     private sealed record Scope(Scope? Parent, ScopeDirectiveFacts Facts,
         bool Function = false, bool Class = false, bool Positional = false, bool Annotation = false,
-        string? DeclarationName = null, bool UseLocalsQualifier = false)
+        string? DeclarationName = null, bool UseLocalsQualifier = false, bool Inlined = false)
     {
         public bool IsModule => !Function && !Class && !Annotation && (Parent?.IsModule ?? true);
 
@@ -30,8 +30,9 @@ internal static class LexicalScopePreparation
                 : string.Concat(enclosing, separator, name);
         }
 
-        public bool CanPreload => Function && Positional &&
-            !Facts.IsGlobal("__class__") && !Facts.LocalNames.Contains("__class__") &&
+        private bool ShadowsClass => Facts.IsGlobal("__class__") || Facts.LocalNames.Contains("__class__");
+
+        public bool CanPreload => Function && Positional && !ShadowsClass &&
             HasEnclosingClassBinding() && SuperIsImplicitGlobal();
 
         public bool HasEnclosingClassBinding()
@@ -43,6 +44,28 @@ internal static class LexicalScopePreparation
                 if (scope.Facts.LocalNames.Contains("__class__")) return true;
             }
             return false;
+        }
+
+        public void RequireClassCell(bool implicitUse = false)
+        {
+            // An inlined comprehension can shadow the name without adding a
+            // frame. A direct super read in a class suite has no receiver.
+            if (implicitUse && !Function && !Annotation) return;
+            if (Facts.RequiresClassCell || ShadowsClass || !HasEnclosingClassBinding()) return;
+
+            // Capture into each intervening callable. A nested class suite can
+            // read an enclosing cell, while its methods request its own cell.
+            for (var scope = this; scope.Parent is { } enclosing; scope = enclosing)
+            {
+                if (scope.Class || scope.Function && !scope.Inlined)
+                    scope.Facts.RequiresClassCell = true;
+                if (enclosing.Class)
+                {
+                    enclosing.Facts.CreatesClassCell = true;
+                    return;
+                }
+                if (enclosing.Facts.LocalNames.Contains("__class__")) return;
+            }
         }
 
         private bool SuperIsImplicitGlobal()
@@ -133,7 +156,7 @@ internal static class LexicalScopePreparation
                     PushTypeParameters(alias.TypeParameters, alias.DeclaredName, alias.Span, scope, aliasScope);
                     continue;
                 }
-                foreach (var expression in ReadExpressions(statement, postponed)) pending.Push((expression, scope));
+                PushStatementReads(statement, scope);
                 if (statement is FunctionDefinitionStatementSyntax function)
                 {
                     requiresAnnotationChecks |= function.ReturnAnnotation is not null ||
@@ -150,7 +173,7 @@ internal static class LexicalScopePreparation
                     if (!ReferenceEquals(enclosing, scope))
                         function.PreparedTypeParameterNames = enclosing.Facts.LocalNames;
                     PushTypeParameters(function.TypeParameters, function.DeclaredName, function.Span, scope, enclosing);
-                    var facts = ScopeDirectiveFactsCollector.ForFunctionBindings(function);
+                    var facts = ScopeDirectiveFactsCollector.PrepareFunction(function);
                     var parameters = function.PrepareParameterLayout(cancellationToken);
                     var qualified = scope.Facts.IsGlobal(function.Name) ? null
                         : scope.QualifyDeclaration(function.DeclaredName, qualifiedNameWorkspace, function.Span, cancellationToken);
@@ -158,9 +181,7 @@ internal static class LexicalScopePreparation
                     var functionScope = new Scope(enclosing, facts,
                         Function: true, Positional: parameters.PositionalCount != 0,
                         DeclarationName: qualified ?? function.DeclaredName, UseLocalsQualifier: true);
-                    function.PreparedScopeFacts = facts with { RequiresClassCell =
-                        !facts.IsGlobal("__class__") && !facts.LocalNames.Contains("__class__") &&
-                        functionScope.HasEnclosingClassBinding() && ClassCellSyntaxFacts.ReferencesFromFunction(function.Body, postponed) };
+                    if (facts.IsNonlocal("__class__")) functionScope.RequireClassCell();
                     PushStatements(function.Body, functionScope);
                 }
                 else if (statement is ClassDefinitionStatementSyntax definition)
@@ -169,15 +190,25 @@ internal static class LexicalScopePreparation
                     PushTypeParameters(definition.TypeParameters, definition.DeclaredName, definition.Span, scope, enclosing);
                     var qualified = scope.Facts.IsGlobal(definition.Name) ? null
                         : scope.QualifyDeclaration(definition.DeclaredName, qualifiedNameWorkspace, definition.Span, cancellationToken);
-                    PushStatements(definition.Body, new Scope(enclosing,
-                        ScopeDirectiveFactsCollector.ForClass(definition), Class: true,
-                        DeclarationName: qualified ?? definition.DeclaredName));
+                    var facts = ScopeDirectiveFactsCollector.PrepareClass(definition);
+                    var classScope = new Scope(enclosing, facts, Class: true,
+                        DeclarationName: qualified ?? definition.DeclaredName);
+                    if (facts.IsNonlocal("__class__")) classScope.RequireClassCell();
+                    PushStatements(definition.Body, classScope);
                 }
                 else foreach (var body in StatementSyntaxTraversal.EnumerateChildBodies(statement)) PushStatements(body, scope);
                 continue;
             }
             var node = (ExpressionSyntax)syntax;
-            if (node is IdentifierExpressionSyntax { Name: "super" } && scope.IsModule) moduleUsesSuper = true;
+            if (node is IdentifierExpressionSyntax identifier)
+            {
+                if (identifier.Name == "__class__") scope.RequireClassCell();
+                else if (identifier.Name == "super")
+                {
+                    if (scope.IsModule) moduleUsesSuper = true;
+                    else scope.RequireClassCell(implicitUse: true);
+                }
+            }
             if (node is MemberExpressionSyntax member && member.MemberName != "__class__" &&
                 !moduleUsesSuper && scope.CanPreload &&
                 Unwrap(member.Target) is CallExpressionSyntax { Arguments.Count: 0 } call &&
@@ -188,14 +219,13 @@ internal static class LexicalScopePreparation
                 (callables ??= []).Add(lambda);
                 foreach (var parameter in lambda.Parameters)
                     if (parameter.DefaultValue is { } value) pending.Push((value, scope));
-                var facts = ScopeDirectiveFactsCollector.ForLambda(lambda);
+                var facts = ScopeDirectiveFactsCollector.PrepareLambda(lambda);
                 var parameters = lambda.PrepareParameterLayout(cancellationToken);
                 var qualified = scope.QualifyDeclaration("<lambda>", qualifiedNameWorkspace, lambda.Span, cancellationToken);
                 lambda.PreparedQualifiedName = PrepareQualifiedName(qualified, lambda.Span);
                 var lambdaScope = new Scope(scope, facts, Function: true,
                     Positional: parameters.PositionalCount != 0,
                     DeclarationName: qualified ?? "<lambda>", UseLocalsQualifier: true);
-                lambda.PreparedScopeFacts = facts with { RequiresClassCell = facts.RequiresClassCell && lambdaScope.HasEnclosingClassBinding() };
                 pending.Push((lambda.Body, lambdaScope));
             }
             else if (ComprehensionSyntaxFacts.TryGetParts(node, out var items, out var clauses, out var generator))
@@ -211,12 +241,8 @@ internal static class LexicalScopePreparation
                 var generatorName = generator
                     ? scope.QualifyDeclaration("<genexpr>", qualifiedNameWorkspace, node.Span, cancellationToken) ?? "<genexpr>" : null;
                 var bodyScope = new Scope(scope, facts, Function: generator || scope.Function,
-                    Positional: generator || scope.Positional, DeclarationName: generatorName);
-                if (generator)
-                    facts = facts with { RequiresClassCell = !facts.LocalNames.Contains("__class__") && bodyScope.HasEnclosingClassBinding() &&
-                        ComprehensionSyntaxFacts.BodyReferencesClass(items, clauses) };
+                    Positional: generator || scope.Positional, DeclarationName: generatorName, Inlined: !generator);
                 node.PreparedComprehensionScopeFacts = facts;
-                bodyScope = bodyScope with { Facts = facts };
                 foreach (var item in items) pending.Push((item, bodyScope));
                 for (var i = 0; i < clauses.Count; i++)
                 {
@@ -240,6 +266,75 @@ internal static class LexicalScopePreparation
         void PushStatements(IReadOnlyList<StatementSyntax> statements, Scope scope)
         {
             foreach (var statement in statements) pending.Push((statement, scope));
+        }
+
+        void PushStatementReads(StatementSyntax statement, Scope scope)
+        {
+            if (statement is DeleteStatementSyntax deleted)
+            {
+                // A bare deleted name is a binding, not a lexical read.
+                PushDeletedTargetReads(deleted.Target, scope);
+                return;
+            }
+            if (postponed && statement is FunctionDefinitionStatementSyntax function)
+            {
+                foreach (var decorator in function.Decorators) pending.Push((decorator, scope));
+                foreach (var parameter in function.Parameters)
+                    if (parameter.DefaultValue is { } value) pending.Push((value, scope));
+                return;
+            }
+            foreach (var expression in StatementSyntaxTraversal.EnumerateDirectExpressions(statement))
+                if (!(postponed && statement is AnnotatedAssignmentStatementSyntax annotation &&
+                    ReferenceEquals(expression, annotation.Annotation))) pending.Push((expression, scope));
+            if (statement is MatchStatementSyntax match)
+                foreach (var item in match.Cases) PushPatternReads(item.Pattern, scope);
+        }
+
+        void PushDeletedTargetReads(ExpressionSyntax target, Scope scope)
+        {
+            target = Unwrap(target);
+            if (target is IdentifierExpressionSyntax) return;
+            if (target is TupleLiteralExpressionSyntax tuple)
+            {
+                foreach (var item in tuple.Items) PushDeletedTargetReads(item.Expression, scope);
+            }
+            else if (target is ListLiteralExpressionSyntax list)
+            {
+                foreach (var item in list.Items) PushDeletedTargetReads(item.Expression, scope);
+            }
+            else foreach (var read in ExpressionSyntaxTraversal.EnumerateChildren(target)) pending.Push((read, scope));
+        }
+
+        void PushPatternReads(PatternSyntax pattern, Scope scope)
+        {
+            PythonTokenization.CheckCancellation(cancellationToken, pattern.Span.Start);
+            switch (pattern)
+            {
+                case MatchValuePatternSyntax value:
+                    pending.Push((value.Expression, scope));
+                    break;
+                case MatchMappingPatternSyntax mapping:
+                    foreach (var item in mapping.Items)
+                    {
+                        pending.Push((item.Key, scope));
+                        PushPatternReads(item.Pattern, scope);
+                    }
+                    break;
+                case MatchClassPatternSyntax type:
+                    pending.Push((type.ClassExpression, scope));
+                    foreach (var item in type.PositionalPatterns) PushPatternReads(item, scope);
+                    foreach (var item in type.KeywordPatterns) PushPatternReads(item.Pattern, scope);
+                    break;
+                case MatchSequencePatternSyntax sequence:
+                    foreach (var item in sequence.Items) PushPatternReads(item, scope);
+                    break;
+                case MatchOrPatternSyntax alternatives:
+                    foreach (var item in alternatives.Patterns) PushPatternReads(item, scope);
+                    break;
+                case MatchAsPatternSyntax alias:
+                    PushPatternReads(alias.Pattern, scope);
+                    break;
+            }
         }
 
         PyString? PrepareQualifiedName(string? qualified, LythonSourceSpan span)
@@ -294,42 +389,6 @@ internal static class LexicalScopePreparation
     {
         while (expression is ParenthesizedExpressionSyntax parentheses) expression = parentheses.Inner;
         return expression;
-    }
-
-    internal static IEnumerable<ExpressionSyntax> ReadExpressions(StatementSyntax statement, bool postponedAnnotations)
-    {
-        if (statement is DeleteStatementSyntax deleted)
-        {
-            foreach (var read in DeletedTargetReads(deleted.Target)) yield return read;
-            yield break;
-        }
-        if (postponedAnnotations && statement is FunctionDefinitionStatementSyntax function)
-        {
-            foreach (var decorator in function.Decorators) yield return decorator;
-            foreach (var parameter in function.Parameters)
-                if (parameter.DefaultValue is { } value) yield return value;
-            yield break;
-        }
-        foreach (var expression in StatementSyntaxTraversal.EnumerateDirectExpressions(statement))
-            if (!(postponedAnnotations && statement is AnnotatedAssignmentStatementSyntax annotation &&
-                ReferenceEquals(expression, annotation.Annotation))) yield return expression;
-    }
-
-    private static IEnumerable<ExpressionSyntax> DeletedTargetReads(ExpressionSyntax target)
-    {
-        target = Unwrap(target);
-        if (target is IdentifierExpressionSyntax) yield break;
-        if (target is TupleLiteralExpressionSyntax tuple)
-        {
-            foreach (var item in tuple.Items)
-                foreach (var read in DeletedTargetReads(item.Expression)) yield return read;
-        }
-        else if (target is ListLiteralExpressionSyntax list)
-        {
-            foreach (var item in list.Items)
-                foreach (var read in DeletedTargetReads(item.Expression)) yield return read;
-        }
-        else foreach (var read in ExpressionSyntaxTraversal.EnumerateChildren(target)) yield return read;
     }
 
 }

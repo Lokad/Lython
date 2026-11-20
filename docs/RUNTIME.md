@@ -384,12 +384,10 @@ an unconditional exit create no slots. Live namespace writes and deletion update
 the same bindings. Module declarations also keep their backing namespace values
 after the executable frame ends, independently of its relinquished slot capacity.
 Module facts also pass through lowering into instruction construction. The lexical
-preparation walk decides implicit `super` preloads after seeing later declarations;
-module bindings never supply lexical class cells to child functions.
-Module preparation keeps binding facts without computing a class-cell capture;
-function and class scopes retain their own capture requirements.
-Class creation reads its prepared own-cell requirement; it does not repeat lexical
-syntax analysis at execution. Each created class still owns its fresh cell.
+preparation walk records class-cell demand from lexical reads and nonlocal
+directives. It decides implicit `super` preloads after seeing later declarations.
+The module supplies binding facts. Each class creates a fresh cell when its
+descendants require one. Its suite can separately capture an enclosing cell.
 Builtin object slot descriptors keep their original defining class when assigned
 to another class, directly or through descriptor wrappers. Aliases preserve the
 original `__objclass__`; ordinary binding still selects the actual receiver.

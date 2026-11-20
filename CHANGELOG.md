@@ -2,6 +2,8 @@
 
 ## 0.11.0 - Unreleased
 
+- Prepare class-cell capture in the lexical walk. Include reads in lazy
+  type expressions and match patterns, and respect comprehension shadowing.
 - Keep `str.format` renderer state in the continuation and reuse one
   admitted scratch buffer across expanded specs.
 

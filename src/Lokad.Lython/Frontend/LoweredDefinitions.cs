@@ -4,7 +4,7 @@ namespace Lokad.Lython.Frontend;
 
 internal sealed record LoweredTypeParameter(TypeParameterSyntax Syntax, LoweredExpression? Bound, LoweredExpression? Default);
 
-internal readonly record struct LoweredFunctionAnnotation(PyString Key, LoweredExpression Expression);
+internal readonly record struct LoweredFunctionAnnotation(PyString Key, ExpressionSyntax Syntax, LoweredExpression? Expression);
 
 internal sealed record LoweredTypeAlias(TypeAliasStatementSyntax Syntax, LoweredExpression Value)
 {

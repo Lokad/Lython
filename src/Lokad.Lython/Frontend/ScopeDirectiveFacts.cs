@@ -8,19 +8,16 @@ internal sealed record ScopeDirectiveFacts(
 {
     // A free __class__ cell is required only by lexical reads in this function
     // or an enclosed scope. A neighboring method does not supply that demand.
-    public bool RequiresClassCell
-    {
-        get => ClassCellRequirement.GetValueOrDefault();
-        init => ClassCellRequirement = value;
-    }
-
-    // A class-cell scan may need a child's bindings before lexical preparation
-    // knows that child's enclosing scope. The bindings are complete at that point.
-    internal bool? ClassCellRequirement { get; init; }
+    public bool RequiresClassCell { get; set; }
 
     // A class's own implicit cell is distinct from an enclosing cell captured
     // by its suite. Prepare this lexical requirement before execution too.
-    public bool CreatesClassCell { get; init; }
+    public bool CreatesClassCell { get; set; }
+
+    internal static ScopeDirectiveFacts ClassCellScope { get; } = new(
+        new HashSet<string>(StringComparer.Ordinal),
+        new HashSet<string>(StringComparer.Ordinal),
+        new HashSet<string>(["__class__"], StringComparer.Ordinal), ["__class__"]);
 
     // Lexical setup includes dead branches and excludes nested definition bodies.
     public bool ContainsVariableAnnotations { get; init; }
@@ -71,35 +68,16 @@ internal static class ScopeDirectiveFactsCollector
         };
     }
 
-    public static ScopeDirectiveFacts ForClass(ClassDefinitionStatementSyntax definition)
-    {
-        var facts = ForClassBindings(definition);
-        return facts.ClassCellRequirement.HasValue ? facts : definition.PreparedScopeFacts = facts with
-        {
-            RequiresClassCell = ResolveClassCellRequirement(facts, definition.Body),
-            CreatesClassCell = ClassCellSyntaxFacts.RequiresCell(definition)
-        };
-    }
+    public static ScopeDirectiveFacts ForClass(ClassDefinitionStatementSyntax definition) => definition.PreparedScopeFacts.RequireNotNull();
 
-    internal static ScopeDirectiveFacts ForClassBindings(ClassDefinitionStatementSyntax definition)
-        => definition.PreparedScopeFacts ??= ForSuite(definition.Body);
+    internal static ScopeDirectiveFacts PrepareClass(ClassDefinitionStatementSyntax definition)
+        => definition.PreparedScopeFacts = ForSuite(definition.Body);
 
-    public static ScopeDirectiveFacts ForFunction(FunctionDefinitionStatementSyntax functionDefinition)
-    {
-        var facts = ForFunctionBindings(functionDefinition);
-        return facts.ClassCellRequirement.HasValue ? facts : functionDefinition.PreparedScopeFacts = facts with
-        {
-            RequiresClassCell = ResolveClassCellRequirement(facts, functionDefinition.Body)
-        };
-    }
+    public static ScopeDirectiveFacts ForFunction(FunctionDefinitionStatementSyntax definition) => definition.PreparedScopeFacts.RequireNotNull();
 
-    internal static ScopeDirectiveFacts ForFunctionBindings(FunctionDefinitionStatementSyntax definition)
-        => definition.PreparedScopeFacts ??= CollectFunctionBindings(definition.Parameters.Select(p => p.Name),
+    internal static ScopeDirectiveFacts PrepareFunction(FunctionDefinitionStatementSyntax definition)
+        => definition.PreparedScopeFacts = CollectFunctionBindings(definition.Parameters.Select(p => p.Name),
             definition.Body);
-
-    private static bool ResolveClassCellRequirement(ScopeDirectiveFacts facts, IReadOnlyList<StatementSyntax> body)
-        => !facts.IsGlobal("__class__") && !facts.LocalNames.Contains("__class__") &&
-            ClassCellSyntaxFacts.ReferencesFromFunction(body);
 
     public static IReadOnlySet<string> CollectLambdaLocalNames(LambdaExpressionSyntax lambda)
     {
@@ -116,17 +94,16 @@ internal static class ScopeDirectiveFactsCollector
         var bindings = parameterNames.ToList();
         CollectExpressionBindings(body, bindings);
         var locals = CompactLocalBindings(bindings, EmptyNames, EmptyNames);
-        return new ScopeDirectiveFacts(EmptyNames, EmptyNames, locals, bindings.ToArray())
-        {
-            RequiresClassCell = !locals.Contains("__class__") && ClassCellSyntaxFacts.ReferencesFromExpression(body)
-        };
+        return new ScopeDirectiveFacts(EmptyNames, EmptyNames, locals, bindings.ToArray());
     }
 
     public static ScopeDirectiveFacts ForLambda(LambdaExpressionSyntax lambda)
     {
-        return lambda.PreparedScopeFacts ??= CollectLambdaBindings(
-            lambda.Parameters.Select(parameter => parameter.Name), lambda.Body);
+        return lambda.PreparedScopeFacts.RequireNotNull();
     }
+
+    internal static ScopeDirectiveFacts PrepareLambda(LambdaExpressionSyntax lambda)
+        => lambda.PreparedScopeFacts = CollectLambdaBindings(lambda.Parameters.Select(parameter => parameter.Name), lambda.Body);
 
     private static readonly IReadOnlySet<string> EmptyNames = new HashSet<string>(StringComparer.Ordinal);
 

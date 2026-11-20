@@ -131,11 +131,10 @@ internal sealed partial class LythonRuntime
         {
             foreach (var input in inputs)
             {
-                var expression = input.Expression;
-                var value = expression.Syntax.PostponedAnnotation is { } text
+                var value = input.Syntax.PostponedAnnotation is { } text
                     ? text
-                    : await EvaluateTypeExpressionAsync(expression, scope.Annotations, asynchronous).ConfigureAwait(false);
-                annotations.AddDefinitionValue(input.Key, value, definingContext, expression.Span);
+                    : await EvaluateTypeExpressionAsync(input.Expression.RequireNotNull(), scope.Annotations, asynchronous).ConfigureAwait(false);
+                annotations.AddDefinitionValue(input.Key, value, definingContext, input.Syntax.Span);
             }
             function.TrySetMember("__annotations__", annotations);
         }

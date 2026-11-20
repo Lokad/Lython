@@ -229,6 +229,62 @@ public sealed class ImplicitClassCellTests
         };
         yield return new object[]
         {
+            "LazyTypeExpressionsCanBeTheOnlyCellUsers",
+            """
+            class Direct:
+             type Owner=__class__
+            class Method:
+             def get(self):
+              type Owner=__class__
+              return Owner
+            class Bound:
+             def identify[T:__class__](self):return T
+            print(Direct.Owner.__value__ is Direct,Method().get().__value__ is Method)
+            print(Bound.identify.__type_params__[0].__bound__ is Bound)
+            """,
+            "True True\nTrue\n"
+        };
+        yield return new object[]
+        {
+            "PatternReadsCanBeTheOnlyCellUsers",
+            """
+            class C:
+             constant=7
+             def value(self,item):
+              match item:
+               case __class__.constant: return True
+               case _: return False
+             def mapping(self,item):
+              match item:
+               case {__class__.constant: x}: return x
+             def instance(self,item):
+              match item:
+               case __class__(): return True
+               case _: return False
+            c=C()
+            print(c.value(7),c.value(8),c.mapping({7:'yes'}),c.instance(c))
+            """,
+            "True False yes True\n"
+        };
+        yield return new object[]
+        {
+            "ComprehensionShadowDoesNotSupplyAnOuterCell",
+            """
+            __class__='global'
+            class C:
+             def shadow(self):
+              values=[super for __class__ in [1]]
+              return '__class__' in locals(),len(values)
+             def make(self):
+              class D:
+               values=[__class__ for _ in [1]]
+              return D.values,'__class__' in locals()
+            print(C().shadow(),C().make())
+            """,
+            "(False, 1) (['global'], False)\n"
+        };
+        yield return new object[]
+        {
             "NestedClassSuiteCapturesEmptyEnclosingCell",
             """
             __class__='global'

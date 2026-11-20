@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1199 lexical class cells](results/2026-11-20-lexical-class-cells/README.md)
+removes the dedicated class-cell scans. Dataclass compile allocation falls
+11.10% and compile elapsed falls 6.92–10.61% with lower CPU. Compile-to-result
+CPU and the validator and manifest timings remain mixed. The eager warm control
+moves despite identical allocation.
+
 [B1198 inline format continuation](results/2026-11-20-inline-format-continuation/README.md)
 removes the per-call renderer object and reuses one expanded-spec buffer.
 Both shipment workloads allocate about 7.8% less. Positional warm elapsed

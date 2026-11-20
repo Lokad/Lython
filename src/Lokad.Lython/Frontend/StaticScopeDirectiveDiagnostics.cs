@@ -6,7 +6,7 @@ internal static class StaticScopeDirectiveDiagnostics
     {
         private readonly List<ScopeDirectiveFacts> _scopes = [];
 
-        public int Depth => _scopes.Count(facts => !ReferenceEquals(facts, ClassCellSyntaxFacts.Scope));
+        public int Depth => _scopes.Count(facts => !ReferenceEquals(facts, ScopeDirectiveFacts.ClassCellScope));
 
         public ScopeDirectiveFacts? FindBinding(string name)
         {
@@ -64,7 +64,7 @@ internal static class StaticScopeDirectiveDiagnostics
                             new HashSet<string>(StringComparer.Ordinal), context);
                     }
 
-                    enclosingFunctions.Enter(ClassCellSyntaxFacts.Scope);
+                    enclosingFunctions.Enter(ScopeDirectiveFacts.ClassCellScope);
                     try
                     {
                         classFacts.ContainsDirectivesInBody = AnalyzeStatements(classDefinition.Body, context, enclosingFunctions);
@@ -138,7 +138,7 @@ internal static class StaticScopeDirectiveDiagnostics
             {
                 context.AddError("LA3205", $"No enclosing function binding exists for nonlocal name '{name}'.", span);
             }
-            else if (!ReferenceEquals(target, ClassCellSyntaxFacts.Scope))
+            else if (!ReferenceEquals(target, ScopeDirectiveFacts.ClassCellScope))
             {
                 (target.NestedNonlocalNames ??= new(StringComparer.Ordinal)).Add(name);
             }

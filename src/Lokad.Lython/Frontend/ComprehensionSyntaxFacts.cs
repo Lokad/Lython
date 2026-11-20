@@ -41,16 +41,4 @@ internal static class ComprehensionSyntaxFacts
         }
     }
 
-    public static bool BodyReferencesClass(IReadOnlyList<ExpressionSyntax> items, IReadOnlyList<ComprehensionClauseSyntax> clauses)
-    {
-        if (items.Any(ClassCellSyntaxFacts.ReferencesFromExpression)) return true;
-        for (var i = 0; i < clauses.Count; i++)
-        {
-            var clause = clauses[i];
-            if (i != 0 && ClassCellSyntaxFacts.ReferencesFromExpression(clause.Iterable)) return true;
-            if (clause.Condition is { } condition && ClassCellSyntaxFacts.ReferencesFromExpression(condition)) return true;
-            if (AssignmentTargetFacts.Reads(clause.Target).Any(ClassCellSyntaxFacts.ReferencesFromExpression)) return true;
-        }
-        return false;
-    }
 }

@@ -40,7 +40,8 @@ internal sealed partial class ExecutableScript
             var annotations = emitAnnotations ? PrepareFunctionAnnotations(definition,
                 static (key, expression) => (Key: key, Expression: expression)) : [];
             var deferredAnnotations = emitAnnotations ? [] : PrepareFunctionAnnotations(definition,
-                static (key, expression) => new LoweredFunctionAnnotation(key, LoweredScript.LowerExpression(expression)));
+                static (key, expression) => new LoweredFunctionAnnotation(key, expression,
+                    expression.PostponedAnnotation is null ? LoweredScript.LowerExpression(expression) : null));
             code.DefinitionAnnotationKeys = emitAnnotations
                 ? PyDict.RecordKeys.PrepareDefinition(annotations.Length, annotations, static (inputs, index) => inputs[index].Key,
                     _compilation.CancellationToken, definition.Span)
