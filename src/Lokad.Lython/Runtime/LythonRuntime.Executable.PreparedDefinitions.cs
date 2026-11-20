@@ -40,6 +40,27 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    private static bool CanDefineLexically(ExecutableCodeObject code)
+        => code.UsesOnlyLexicalSlots && !code.ScopeFacts.RequiresClassCell;
+
+    private static bool NeedsDefinitionContext(ExecutableCreateFunction operation, ExecutionContext scope)
+        => operation.DecoratorCount != 0 || operation.DeferredAnnotations.Length != 0 ||
+            operation.TypeParameters is not null || HasTypeParameterScope(scope);
+
+    // Inline and array-backed lexical calls have the same owner and operand
+    // order. Only the caller retires the storage the operands came from.
+    private static PyFunctionBase CreateLexicalFunctionValue(FunctionParameterLayout layout, ExecutableCodeObject code,
+        IReadOnlyList<ExecutableCell> cells, bool generator, ExecutionContext scope, LythonSourceSpan span,
+        PythonCallableKind kind, ReadOnlySpan<ExecutableSlot> operands)
+    {
+        var firstAnnotation = layout.Defaults.Length == 0 ? 0 : 1;
+        var defaults = firstAnnotation == 0 ? null : (PendingFunctionDefaults)operands[0].Reference!;
+        var function = CreateFunctionValue(layout, code, GetGlobalContext(scope), cells, defaults?.Values ?? default,
+            generator, scope, span, kind, operands[firstAnnotation..]);
+        defaults?.Publish();
+        return function;
+    }
+
     internal sealed partial class ExecutionContext
     {
         private async ValueTask ExecutePreparedClassDefinitionAsync(ExecutableCreateClass create, int first, bool asynchronous)
@@ -66,7 +87,7 @@ internal sealed partial class LythonRuntime
             ExecutionContext scope, LythonSourceSpan span, out int[]? slots)
         {
             slots = null;
-            if (!code.UsesOnlyLexicalSlots || code.ScopeFacts.RequiresClassCell) return false;
+            if (!CanDefineLexically(code)) return false;
             if (code.ClosureNames.Count == 0) return true;
             if (code.CaptureSources is not { } sources ||
                 !ReferenceEquals(sources.ParentLocalSlots, parent.Code.LocalNameToSlot)) return false;
@@ -84,9 +105,25 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
+        private static void CreateBorrowedExecutableFunction(ref ExecutableWorkState execution,
+            ExecutionContext scope, ExecutableCreateFunction operation, in ExecutableInstruction instruction, int[]? captures)
+        {
+            var span = instruction.Span;
+            var first = instruction.InputStart;
+            scope.EnterInterpreterFrame(span);
+            PyFunctionBase function;
+            try
+            {
+                var cells = CaptureExecutableCells(operation.CodeObject, scope, span, ref execution, captures);
+                function = CreateLexicalFunctionValue(operation.ParameterLayout, operation.CodeObject, cells, operation.IsGenerator,
+                    scope, span, PythonCallableKind.Function, execution.Stack.Slice(first, operation.InputCount).Span);
+            }
+            finally { RetireExecutableDefinition(ref execution, scope, first); }
+            PublishInstructionResult(ref execution, null, instruction, function);
+        }
+
         private static ValueTask CreateExecutableFunction(ref ExecutableWorkState execution,
-            ExecutionContext context, ExecutionContext? invocation, ExecutableCreateFunction operation,
-            in ExecutableInstruction instruction, bool asynchronous, int[]? borrowedCaptures)
+            ExecutionContext context, ExecutableCreateFunction operation, in ExecutableInstruction instruction, bool asynchronous)
         {
             var span = instruction.Span;
             var first = instruction.InputStart;
@@ -101,12 +138,9 @@ internal sealed partial class LythonRuntime
                 var defaults = layout.Defaults.Length == 0 ? null : (PendingFunctionDefaults)execution.Stack[next++];
 
                 var typeScope = context.IsClassBody ? CreateTypeScope(operation.TypeParameters, context, span) : default;
-                var cells = invocation is null
-                    ? CaptureExecutableCells(code, context, span, ref execution, borrowedCaptures)
-                    : CaptureExecutableClosures(code, context.IsClassBody ? typeScope.Closure.FunctionClosureContext : context, span);
+                var cells = CaptureExecutableClosures(code, context.IsClassBody ? typeScope.Closure.FunctionClosureContext : context, span);
                 if (!context.IsClassBody) typeScope = CreateTypeScope(operation.TypeParameters, context, span);
-                var closure = invocation is null ? GetGlobalContext(context)
-                    : SelectDefinitionClosure(code, typeScope.Closure, cells);
+                var closure = SelectDefinitionClosure(code, typeScope.Closure, cells);
                 ReadOnlySpan<ExecutableSlot> annotations = operation.AnnotationOperandCount != 0
                     ? execution.Stack.Slice(next, operation.AnnotationOperandCount).Span : default;
                 function = CreateFunctionValue(layout, code, closure, cells, defaults?.Values ?? default,
@@ -121,7 +155,7 @@ internal sealed partial class LythonRuntime
 
                 if (operation.DecoratorCount != 0 || !metadata.IsCompletedSuccessfully)
                 {
-                    var completion = invocation!.FinishExecutableFunctionAsync(operation.DecoratorCount, function, defaults, metadata,
+                    var completion = context.FinishExecutableFunctionAsync(operation.DecoratorCount, function, defaults, metadata,
                         instruction, asynchronous);
                     transferred = true;
                     return completion;
@@ -134,7 +168,7 @@ internal sealed partial class LythonRuntime
             {
                 if (!transferred) RetireExecutableDefinition(ref execution, context, first);
             }
-            PublishInstructionResult(ref execution, invocation, instruction, function);
+            PublishInstructionResult(ref execution, context, instruction, function);
             return ValueTask.CompletedTask;
         }
 

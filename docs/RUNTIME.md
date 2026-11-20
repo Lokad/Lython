@@ -408,11 +408,11 @@ definition point; generator expressions acquire their outer iterator immediately
 Executable sites reuse their enclosing builder's capture facts. Remaining lowered
 consumers use their live namespace closure. Calls use the same executable/native
 function machinery; there is no separate interpreted function backend or runtime
-callable compilation. Eligible local definitions construct their function in the
-call's current executable slots before an invocation context is required. Defaults
-and annotations use the same preflight, publication order and definition-owned
-lookup cache. Operations that need a scope or can suspend transfer their current
-slots and pending default storage to the owning frame.
+callable compilation. Eligible short factories evaluate defaults and construct
+functions and lambdas in their inline slots. Inline and array-backed lexical
+calls share construction, preflight and publication order. Operations that
+need a scope or can suspend transfer their current slots and pending default
+storage to the owning frame.
 Completed definitions publish through the compiler's ordinary binding stores.
 Local slots can receive the completed value directly. Module declarations
 retain their live namespace entries, and decorators can observe prior bindings

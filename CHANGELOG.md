@@ -2,6 +2,8 @@
 
 ## 0.11.0 - Unreleased
 
+- Complete eligible lexical function and lambda definitions in their inline
+  operand slots. Share default ownership and callable construction across callers.
 - Prepare class-cell capture in the lexical walk. Include reads in lazy
   type expressions and match patterns, and respect comprehension shadowing.
 - Keep `str.format` renderer state in the continuation and reuse one

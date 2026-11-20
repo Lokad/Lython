@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1201 and B1202 lexical definition construction](results/2026-11-20-inline-lexical-definitions/README.md)
+keep eligible factory definitions in existing inline slots and share
+construction across operand storage. The retained source cuts eager and
+postponed warm elapsed by 24.75–29.42% and nested elapsed by 9.03–13.39%
+with lower CPU. The CSV control spans zero on confirmation.
+
 [B1200 lexical delivery against CPython](results/2026-11-20-cpython-lexical-class-cells/README.md)
 refreshes the class, eager-rule and invoice workloads. Dataclasses take
 0.076–0.078× from compile to result. Eager rules take 3.30–3.47× warm, and

@@ -149,6 +149,58 @@ print(list(gen()), list(gen(n=2)))
         Assert.Equal(0, budget.ReservedBytes);
     }
 
+    [Fact]
+    public async Task FactoryTransfersPreparedDefaultsAtSuspension()
+    {
+        const string source = """
+            events = []
+            def read():
+                events.append('read')
+                with open('/value.txt') as stream:
+                    return int(stream.read())
+            def factory(seed):
+                def f(items=[seed], *, value=read()):
+                    return [items, value]
+                return f
+            first = factory(7)
+            print(first(), first.__defaults__[0] is first()[0], events)
+            """;
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        var paused = new DelayedLythonHost();
+        paused.SeedFile("/value.txt", "21");
+        var entered = paused.PauseReadUntilCancellation("/value.txt");
+        using var cancellation = new CancellationTokenSource();
+        var pending = script.RunAsync(paused, cancellationToken: cancellation.Token);
+        try
+        {
+            var first = await Task.WhenAny(entered, pending).WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.Same(entered, first);
+            Assert.False(pending.IsCompleted);
+            Assert.True(budget.ReservedBytes > baseline);
+        }
+        finally
+        {
+            cancellation.Cancel();
+            using var cancelled = await pending.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.Equal(LythonFailureReason.Cancelled, cancelled.FailureAttribution?.Reason);
+            Assert.Empty(cancelled.StandardOutput);
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+
+        var fresh = new DelayedLythonHost();
+        fresh.SeedFile("/value.txt", "21");
+        using (var result = await script.RunAsync(fresh))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("[[7], 21] True ['read']\n", result.StandardOutput);
+            Assert.True(fresh.CompletedAsynchronously > 0);
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
     private sealed class HeldTiming : ILythonTiming
     {
         internal TaskCompletionSource Entered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);

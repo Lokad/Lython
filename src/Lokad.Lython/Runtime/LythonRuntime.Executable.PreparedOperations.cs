@@ -159,16 +159,13 @@ internal sealed partial class LythonRuntime
                         break;
                     }
                 case ExecutableCreateFunction function:
-                    int[]? functionCaptures = null;
                     if (invocation is null)
                     {
-                        if (function.TypeParameters is not null ||
-                            function.DecoratorCount != 0 || function.DeferredAnnotations.Length != 0 ||
-                            HasTypeParameterScope(scope) || !CanDefineWithoutInvocation(function.CodeObject,
-                                in execution, scope, span, out functionCaptures)) return false;
+                        if (NeedsDefinitionContext(function, scope) || !CanDefineWithoutInvocation(function.CodeObject,
+                                in execution, scope, span, out var captures)) return false;
+                        CreateBorrowedExecutableFunction(ref execution, scope, function, instruction, captures);
                     }
-                    pending = CreateExecutableFunction(ref execution, context, invocation, function, instruction,
-                        asynchronous, functionCaptures);
+                    else pending = CreateExecutableFunction(ref execution, invocation, function, instruction, asynchronous);
                     break;
                 case ExecutableCreateLambda lambda:
                     {
@@ -178,16 +175,21 @@ internal sealed partial class LythonRuntime
                             lambda.CodeObject, in execution, scope, span, out lambdaCaptures)))
                             return false;
                         var first = instruction.InputStart;
-                        var defaults = lambda.InputCount == 0 ? null : (PendingFunctionDefaults)execution.Stack[first];
                         PyFunctionBase function;
                         try
                         {
-                            function = invocation is null
-                                ? CreateFunctionValue(binding.Layout, binding.CodeObject, GetGlobalContext(context),
-                                    CaptureExecutableCells(lambda.CodeObject, context, span, ref execution, lambdaCaptures),
-                                    defaults?.Values ?? default, binding.IsGenerator, context, span, PythonCallableKind.Lambda)
-                                : CreateLambdaFunction(binding, defaults?.Values ?? default, context, span);
-                            defaults?.Publish();
+                            if (invocation is null)
+                            {
+                                var cells = CaptureExecutableCells(lambda.CodeObject, context, span, ref execution, lambdaCaptures);
+                                function = CreateLexicalFunctionValue(binding.Layout, binding.CodeObject, cells, binding.IsGenerator,
+                                    context, span, PythonCallableKind.Lambda, execution.Stack.Slice(first, lambda.InputCount).Span);
+                            }
+                            else
+                            {
+                                var defaults = lambda.InputCount == 0 ? null : (PendingFunctionDefaults)execution.Stack[first];
+                                function = CreateLambdaFunction(binding, defaults?.Values ?? default, invocation, span);
+                                defaults?.Publish();
+                            }
                         }
                         finally { execution.Stack.RetireTo(instruction.ResultSlot); }
                         PublishInstructionResult(ref execution, invocation, instruction, function);
