@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1222 dataclass delivery against CPython](results/2026-11-20-cpython-direct-declaration-operands/README.md)
+records 0.433–0.443× compile, 0.073–0.078× compile-to-result
+and 0.039–0.042× warm for the generated dataclass workload. Manifest
+warm is 1.22–1.25×. Keep these revision-specific external observations
+separate from the controlled compiler source comparison.
+
 [Original UTF-8 regex window bounds](results/2026-11-20-regex-window-boundaries/README.md)
 uses the nearer subject end and an already located boundary. For a
 32,768-scalar mixed-width suffix, the isolated coordinate step falls
