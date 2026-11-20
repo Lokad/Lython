@@ -228,9 +228,6 @@ internal sealed partial class LythonRuntime
             return subject.Match(mode, range) ? CreateMatchObject(pattern, range, subject, context, span) : PyNone.Instance;
         }
 
-        internal static PyRegexFindIterator CreateFindIterMatches(RePatternObject pattern, RegexSubjectRange range,
-            ExecutionContext context, LythonSourceSpan span) => new(pattern, range, context, span);
-
         internal static PyList CreateFindAllResult(RePatternObject pattern, RegexSubjectRange range,
             LythonSourceSpan span, ExecutionContext context)
         {

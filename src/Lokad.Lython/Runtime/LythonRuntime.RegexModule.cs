@@ -154,10 +154,7 @@ internal sealed partial class LythonRuntime
         {
             context.CheckExecution(span);
             var inputs = RegexCompiler.CreatePatternAndRange(arguments, "re.finditer(pattern, string[, flags][, pos][, endpos])", span, context);
-            // Finditer shells charge per live instance like other iterator factories.
-            PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-            var findIter = RegexMatcher.CreateFindIterMatches(inputs.Pattern, inputs.Range, context, span);
-            return findIter;
+            return PyRegexFindIterator.Create(inputs.Pattern, inputs.Range, context, span);
         }
 
         private object Substitute(object[] arguments, LythonSourceSpan span, ExecutionContext context)

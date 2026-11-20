@@ -17,9 +17,15 @@ internal sealed partial class LythonRuntime
         private bool _finished;
         internal PyRegexFindIterator? NextResource;
 
-        public PyRegexFindIterator(RePatternObject pattern, RegexSubjectRange range, ExecutionContext context, LythonSourceSpan span)
+        internal static PyRegexFindIterator Create(RePatternObject pattern, RegexSubjectRange range,
+            ExecutionContext context, LythonSourceSpan span)
         {
             ChargeIteratorValue(context.MemoryGovernor, span);
+            return new(pattern, range, context, span);
+        }
+
+        private PyRegexFindIterator(RePatternObject pattern, RegexSubjectRange range, ExecutionContext context, LythonSourceSpan span)
+        {
             _pattern = pattern; _range = range; _context = context; _span = span;
         }
 
@@ -386,10 +392,7 @@ internal sealed partial class LythonRuntime
                 text,
                 bound.Assigned[1] ? RegexCompiler.ParsePosition(arguments[1], span, context) : 0,
                 bound.Assigned[2] ? RegexCompiler.ParsePosition(arguments[2], span, context) : text.Length);
-            // Finditer shells charge per live instance like other iterator factories.
-            PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-            var findIter = RegexMatcher.CreateFindIterMatches(pattern, range, context, span);
-            return findIter;
+            return PyRegexFindIterator.Create(pattern, range, context, span);
         }
 
         private static object ExecuteSub(RePatternObject pattern, BoundBuiltinArguments bound, LythonSourceSpan span, ExecutionContext context, RegexSubstitutionMode mode)
