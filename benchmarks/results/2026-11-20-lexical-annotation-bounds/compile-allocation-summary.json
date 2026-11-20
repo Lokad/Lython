@@ -1,0 +1,26 @@
+[
+  {
+    "case": "scripts.annotated-rule-closures",
+    "referenceBytes": 56984,
+    "candidateBytes": 56544,
+    "changePercent": -0.7721465674575323
+  },
+  {
+    "case": "scripts.config-generated-guards.medium",
+    "referenceBytes": 2842070,
+    "candidateBytes": 2842086,
+    "changePercent": 0.0005629699479703376
+  },
+  {
+    "case": "scripts.config-manifest.small",
+    "referenceBytes": 283648,
+    "candidateBytes": 283752,
+    "changePercent": 0.036665162454863065
+  },
+  {
+    "case": "scripts.csv-invoice.large",
+    "referenceBytes": 166800,
+    "candidateBytes": 166824,
+    "changePercent": 0.014388489208627675
+  }
+]
