@@ -138,14 +138,10 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         // bound calls borrow charged capacity until materialization and cleanup
         // finish. An idle loan stays funded until execution cleanup or eviction.
         var state = new LythonRuntime.NativeExecution(this, values, consumedByIteration, unpackedReturn.Length);
-        var entered = false;
-        var transferred = false;
         BoundFunctionArguments owned = existing.GetValueOrDefault();
         var rented = false;
         try
         {
-            Closure.EnterFunctionCall(span);
-            entered = true;
             if (state.Run(span, out result, unpackedReturn))
             {
                 unpacked = state.ReturnedUnpacked;
@@ -162,7 +158,6 @@ internal sealed class PyExecutableFunction : PyFunctionBase
             frame = LythonRuntime.CreateNativeContinuation(this, owned, span, state.Index, state.LiveExtent,
                 consumedByIteration, state.Failure);
             state.TransferOwnership(frame);
-            transferred = true;
         }
         catch (LythonRuntimeException error)
         {
@@ -174,12 +169,8 @@ internal sealed class PyExecutableFunction : PyFunctionBase
             try { state.Dispose(); }
             finally
             {
-                try { if (entered && !transferred) Closure.LeaveFunctionCall(); }
-                finally
-                {
-                    if (rented && !transferred) LythonRuntime.ReturnBoundArguments(owned, CodeObject.ValueStorageCapacity);
-
-                }
+                if (rented && !state.OwnershipTransferred)
+                    LythonRuntime.ReturnBoundArguments(owned, CodeObject.ValueStorageCapacity);
             }
         }
     }

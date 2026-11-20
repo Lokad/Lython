@@ -26,17 +26,19 @@ internal sealed partial class LythonRuntime
         internal bool ReturnedUnpacked => _unpackedTupleStart >= 0;
         internal int Index = function.CodeObject.EntryIndex;
         internal int LiveExtent = function.CodeObject.FirstTemporarySlot;
-        private bool _transferred;
+        private bool _entered;
+        internal bool OwnershipTransferred { get; private set; }
         private ExecutionContext? _preparedChild;
         private MemoryGovernor? _preparedChildOwner;
         internal LythonRuntimeException? Failure { get; private set; }
 
         internal bool Run(LythonSourceSpan entrySpan, out ExecutableSlot result, Span<ExecutableSlot> unpackedReturn = default)
         {
-            // The call boundary owns logical interpreter admission, and
-            // StartInline owns function admission. Like an ordinary bound body,
-            // validate this managed stack entry without charging nesting twice.
-            ExecutionState.EnsureInterpreterStack(entrySpan);
+            // EnterFunctionCall also validates the physical stack. Enter at
+            // this managed body boundary and keep the admission with the work
+            // until it exits or transfers to the continuation.
+            _scope.EnterFunctionCall(entrySpan);
+            _entered = true;
             var previous = _scope.State.CurrentException;
             try
             {
@@ -569,11 +571,11 @@ internal sealed partial class LythonRuntime
                 _preparedChild = null;
                 _preparedChildOwner = null;
             }
-            _transferred = true;
+            OwnershipTransferred = true;
         }
         internal void Dispose()
         {
-            if (_transferred) return;
+            if (OwnershipTransferred) return;
             try
             {
                 if (_preparedChild is { } child)
@@ -583,7 +585,15 @@ internal sealed partial class LythonRuntime
                     finally { _scope.LeaveInterpreterFrame(); }
                 }
             }
-            finally { Trim(Code.FirstTemporarySlot); }
+            finally
+            {
+                try { Trim(Code.FirstTemporarySlot); }
+                finally
+                {
+                    if (_entered) _scope.LeaveFunctionCall();
+                    _entered = false;
+                }
+            }
         }
     }
 
