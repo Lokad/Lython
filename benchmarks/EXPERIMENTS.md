@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1240 postponed factories and mapping report against CPython](results/2026-11-20-cpython-postponed-annotation-payload/README.md)
+measures delivered `785640f8e` against CPython 3.13.16. Postponed nested
+factory warm is 2.16–2.26× and compile-to-result is 2.06–2.15×.
+The mapping report is 1.25–1.31× warm. All 112 batches passed.
+
 [B1238/B1239 compiled postponed annotation payloads](results/2026-11-20-compiled-annotation-payload/README.md)
 remove annotation loads and a private array from each postponed definition.
 Nested warm elapsed is 3.63–6.19% lower with supporting CPU and 8.25%

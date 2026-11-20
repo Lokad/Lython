@@ -6,13 +6,14 @@
 | Annotated rule closures | 2,048 inputs / 2,048 definitions | 1.057 ms | 0.428–0.434 ms | 2.44–2.47× | B1203 diagnostic. Controls L/C 0.05 / 1.26%. IQR ≤2.76%. |
 | Nested annotated factories | 2,048 inputs / 4,096 definitions | 1.460–1.506 ms | 0.623–0.632 ms | 2.31–2.42× | B1229 diagnostic. Controls L/C 3.16 / 1.51%. IQR ≤2.22%. |
 | Postponed annotated rules | 2,048 inputs / 2,048 definitions | 0.967–0.975 ms | 0.397–0.398 ms | 2.43–2.46× | B1203 diagnostic. Controls L/C 0.79 / 0.47%. IQR ≤1.48%. |
-| Postponed nested factories | 2,048 inputs / 4,096 definitions | 1.387–1.446 ms | 0.583–0.599 ms | 2.31–2.48× | B1229 diagnostic. Controls L/C 4.28 / 2.76%. IQR ≤0.93%. |
+| Postponed nested factories | 2,048 inputs / 4,096 definitions | 1.163–1.214 ms | 0.5362–0.5376 ms | 2.16–2.26× | B1240 diagnostic. Controls L/C 4.35 / 0.27%. IQR ≤2.72%. |
 | Captured rule closures | 2,048 inputs / 4,096 returned closures | 2.437–2.454 ms | 0.776–0.790 ms | 3.09–3.16× | B1122 diagnostic. Controls L/C 0.71 / 1.69%. IQR ≤1.69%. |
 | Inline forwarding with dynamic keys | 1,024 records / 26,112 B | 1.894–1.913 ms | 1.139–1.159 ms | 1.63–1.68× | B1102 diagnostic. Controls L/C 1.01 / 1.74%. IQR ≤2.35%. |
 | Expanded forwarding report | 1,024 records / 26,112 B | 1.533–1.543 ms | 1.173–1.189 ms | 1.29–1.32× | B1180 diagnostic. Controls L/C 0.62 / 1.38%. IQR ≤4.03%. |
 | CSV invoice | 4,096 data records / 127,031 B | 6.877–7.224 ms | 6.588–6.618 ms | 1.04–1.10× | B1229 diagnostic. Controls L/C 5.04 / 0.45%. IQR ≤1.30%. |
 | Retained nonlocal siblings | 240 factories / 720 returned closures | 0.169–0.170 ms | 0.188–0.190 ms | 0.89–0.90× | B1109 diagnostic. Controls L/C 0.57 / 0.89%. IQR ≤2.72%. |
 | Shipment report with named format selectors | 3,072 records / 189,441 B | 3.732–3.755 ms | 3.357–3.410 ms | 1.09–1.12× | B1233 diagnostic. Controls L/C 0.62 / 1.56%. IQR ≤2.71%. |
+| Shipment report using `str.format_map` | 3,072 records / 189,441 B | 3.622–3.724 ms | 2.851–2.900 ms | 1.25–1.31× | B1240 diagnostic. Controls L/C 2.83 / 1.72%. IQR ≤4.94%. |
 | Shipment report with wide records | 3,072 records / 1,329,057 B | 6.504–6.536 ms | 12.600–13.123 ms | 0.496–0.519× | B1233 diagnostic. Controls L/C 0.49 / 4.15%. IQR ≤4.60%. |
 | Shipment report with positional format selectors | 3,072 records / 189,441 B | 3.737–3.750 ms | 2.861–2.893 ms | 1.29–1.31× | B1190 diagnostic. Controls L/C 0.35 / 1.13%. IQR ≤3.50%. |
 | Generated validator | 96 guards / 1,714 B JSON | 0.08372–0.08402 ms | 0.04481–0.04509 ms | 1.86–1.88× | B1213 diagnostic. Controls L/C 0.36 / 0.62%. IQR ≤2.70%. |
@@ -22,6 +23,11 @@
 **Ratio = Lython elapsed / CPython elapsed. Above one means slower.** Ranges cover
 the combinations of two process medians per engine, not confidence intervals.
 Controls L/C report the difference between the two Lython/CPython medians.
+
+B1240 measures postponed nested factories and the mapping shipment at
+**785640f8e** on **2026-11-20 UTC**. Both machine checks and all 112
+batches passed. The factory also measures compilation and compile-to-result.
+[B1240 observations](../benchmarks/results/2026-11-20-cpython-postponed-annotation-payload/README.md).
 
 B1233 measures the named and wide shipment reports at
 **d61cfc85b / frozen 11de545f6** on **2026-11-20 UTC**. The wide records
@@ -132,8 +138,8 @@ The table compares workload latency under different containment boundaries.
 | Inherited dataclass definitions | Compile-to-result | 0.420–0.430 ms | 5.496–5.725 ms | 0.073–0.078× | B1222 diagnostic. Controls L/C 2.37 / 4.17%. IQR ≤1.71%. |
 | Postponed annotated rules | Compilation only | 0.02514–0.02533 ms | 0.03518–0.03539 ms | 0.71–0.72× | B1156 diagnostic. Controls L/C 0.77 / 0.58%. IQR ≤1.42%. |
 | Postponed annotated rules | Compile-to-result | 1.531–1.599 ms | 0.429–0.436 ms | 3.51–3.73× | B1156 diagnostic. Controls L/C 4.44 / 1.68%. IQR ≤2.52%. |
-| Postponed nested factories | Compilation only | 0.02708–0.02797 ms | 0.04281–0.04315 ms | 0.628–0.653× | B1229 diagnostic. Controls L/C 3.27 / 0.80%. IQR ≤1.51%. |
-| Postponed nested factories | Compile-to-result | 1.421–1.474 ms | 0.630–0.644 ms | 2.21–2.34× | B1229 diagnostic. Controls L/C 3.71 / 2.23%. IQR ≤1.73%. |
+| Postponed nested factories | Compilation only | 0.02519–0.02552 ms | 0.04000–0.04005 ms | 0.629–0.638× | B1240 diagnostic. Controls L/C 1.30 / 0.14%. IQR ≤1.01%. |
+| Postponed nested factories | Compile-to-result | 1.195–1.241 ms | 0.5782–0.5810 ms | 2.06–2.15× | B1240 diagnostic. Controls L/C 3.83 / 0.49%. IQR ≤0.69%. |
 | Captured rule closures | Compilation only | 0.03460–0.03524 ms | 0.04742–0.04748 ms | 0.73–0.74× | B1122 diagnostic. Controls L/C 1.86 / 0.14%. IQR ≤1.31%. |
 | Captured rule closures | Compile-to-result | 2.519–2.523 ms | 0.830–0.839 ms | 3.00–3.04× | B1122 diagnostic. Controls L/C 0.15 / 1.09%. IQR ≤1.51%. |
 | Inline forwarding with dynamic keys | Compilation only | 0.05339–0.05370 ms | 0.06049–0.06111 ms | 0.87–0.89× | B1102 diagnostic. Controls L/C 0.57 / 1.01%. IQR ≤1.53%. |
