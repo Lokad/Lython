@@ -9,6 +9,29 @@ internal sealed partial class ExecutableScript
 {
     private sealed partial class Builder
     {
+        private PyDict.RecordKeys? PrepareLiteralRecordKeys(DictLiteralExpressionSyntax expression)
+        {
+            var items = expression.Items;
+            if (items.Count == 0) return null;
+            var names = items.Count > 1 ? new HashSet<string>(StringComparer.Ordinal) : null;
+            foreach (var item in items)
+            {
+                PythonTokenization.CheckCancellation(_compilation.CancellationToken, expression.Span.Start);
+                if (item.IsUnpacking || item.Key is not StringLiteralExpressionSyntax literal ||
+                    names?.Add(literal.Value) == false) return null;
+            }
+
+            // Use the constant pool's key identities. The final key table
+            // shares the compilation owner, like a declaration key table.
+            return PyDict.RecordKeys.PrepareDefinition(items.Count, (Builder: this, Items: items),
+                static (state, index) =>
+                {
+                    var literal = (StringLiteralExpressionSyntax)state.Items[index].Key;
+                    var builder = state.Builder;
+                    return (PyString)builder._buffers.Constants[builder.InternConstant(PyString.FromString(literal.Value))]!;
+                }, _compilation.CancellationToken, expression.Span);
+        }
+
         private int CompileExpression(LoweredExpression expression, int currentBlock)
             => CompileExpression(expression.Syntax, currentBlock);
 
@@ -140,20 +163,11 @@ internal sealed partial class ExecutableScript
                     return currentBlock;
 
                 case DictLiteralExpressionSyntax dict:
-                    if (dict.Items.Count != 0 && dict.Items.All(item => !item.IsUnpacking && item.Key is StringLiteralExpressionSyntax))
+                    if (PrepareLiteralRecordKeys(dict) is { } keys)
                     {
-                        // Immutable keys belong to compiled storage, as literal
-                        // tuples do. Preserve the constant pool's key identities;
-                        // repeated records evaluate and transport only values.
-                        var keys = new object[dict.Items.Count];
-                        for (var i = 0; i < keys.Length; i++)
-                        {
-                            var item = dict.Items[i];
-                            keys[i] = _buffers.Constants[InternConstant(PyString.FromString(((StringLiteralExpressionSyntax)item.Key).Value))]!;
+                        foreach (var item in dict.Items)
                             currentBlock = CompileExpression(item.Value, currentBlock);
-                        }
-                        AddInstruction(currentBlock, ExecutableInstruction.MakeRecord(
-                            InternConstant(PyTuple.FromOwnedArray(keys)), AllocateLookupCache(), dict.Span));
+                        AddInstruction(currentBlock, ExecutableInstruction.MakeRecord(InternConstant(keys), dict.Span));
                         return currentBlock;
                     }
                     if (dict.Items.Any(item => item.IsUnpacking))

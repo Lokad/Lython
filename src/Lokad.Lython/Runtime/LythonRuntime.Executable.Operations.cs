@@ -31,10 +31,9 @@ internal sealed partial class LythonRuntime
     private static PyDict ExecuteExecutableMakeRecord(ref ExecutableValueStorage stack, ExecutableCodeObject code,
         in ExecutableInstruction instruction, ExecutionContext context)
     {
-        var keys = (PyTuple)code.Constants[instruction.ConstantIndex]!;
-        var caches = stack.GetLookupCaches(code.LookupCacheCount, instruction.Span);
-        var dictionary = CreateSlotRecord(stack.Values.AsSpan(instruction.InputStart, keys.Count), keys,
-            ref caches[instruction.LookupCacheIndex], context, instruction.Span);
+        var keys = (PyDict.RecordKeys)code.Constants[instruction.ConstantIndex]!;
+        var dictionary = keys.CreateDisplay(stack.Values.AsSpan(instruction.InputStart, keys.Count), keyAndValue: false,
+            context, instruction.Span);
         try { stack.RetireTo(instruction.InputStart); return dictionary; }
         catch { dictionary.DiscardUnpublishedStorage(); throw; }
     }

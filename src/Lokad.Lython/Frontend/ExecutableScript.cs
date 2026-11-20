@@ -190,7 +190,7 @@ internal readonly record struct ExecutableInstruction
         or ExecutableOpCode.DeleteName or ExecutableOpCode.DeleteMember
         ? _primaryOperand : throw InvalidOperand(nameof(NameIndex));
     public int LookupCacheIndex => OpCode == ExecutableOpCode.Subscript ? _primaryOperand
-        : OpCode is ExecutableOpCode.LoadMember or ExecutableOpCode.LoadCallMember or ExecutableOpCode.MakeDict or ExecutableOpCode.MakeRecord
+        : OpCode is ExecutableOpCode.LoadMember or ExecutableOpCode.LoadCallMember or ExecutableOpCode.MakeDict
             ? _secondaryOperand : throw InvalidOperand(nameof(LookupCacheIndex));
     public bool DiscardIterator => OpCode == ExecutableOpCode.AbruptJump
         ? _secondaryOperand != 0 : throw InvalidOperand("ItemCount");
@@ -324,8 +324,8 @@ internal readonly record struct ExecutableInstruction
     public static ExecutableInstruction MakeDict(int pairCount, int cacheIndex, LythonSourceSpan span)
         => new(ExecutableOpCode.MakeDict, span, pairCount, cacheIndex);
 
-    public static ExecutableInstruction MakeRecord(int keysIndex, int cacheIndex, LythonSourceSpan span)
-        => new(ExecutableOpCode.MakeRecord, span, keysIndex, cacheIndex);
+    public static ExecutableInstruction MakeRecord(int keysIndex, LythonSourceSpan span)
+        => new(ExecutableOpCode.MakeRecord, span, keysIndex);
 
     public static ExecutableInstruction ResolveContextManager(LythonSourceSpan span)
         => new(ExecutableOpCode.ResolveContextManager, span);

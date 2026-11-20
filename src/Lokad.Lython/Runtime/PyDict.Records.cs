@@ -146,7 +146,12 @@ internal sealed partial class PyDict
                 context.CheckExecution(span);
                 if (!ReferenceEquals(_keys[i].Key, inputs[2 * i].Reference)) return null;
             }
+            return CreateDisplay(inputs, keyAndValue: true, context, span);
+        }
 
+        internal PyDict CreateDisplay(Span<LythonRuntime.ExecutableSlot> inputs, bool keyAndValue,
+            LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        {
             // Already-evaluated operands survive admission and cannot be
             // replaced by reentrant changes to the originating local names.
             var record = CreateRecord(context, span, Count);
@@ -155,7 +160,7 @@ internal sealed partial class PyDict
                 for (var i = 0; i < Count; i++)
                 {
                     context.CheckExecution(span);
-                    record._nativeValues![i] = inputs[2 * i + 1].Object.RequireNotNull();
+                    record._nativeValues![i] = inputs[keyAndValue ? 2 * i + 1 : i].Object.RequireNotNull();
                 }
                 context.CheckExecution(span);
                 record._nativeCount = Count;

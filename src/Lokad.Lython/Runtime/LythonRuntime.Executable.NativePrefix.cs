@@ -271,10 +271,9 @@ internal sealed partial class LythonRuntime
         {
             if (instruction.OpCode == ExecutableOpCode.MakeRecord)
             {
-                var keys = (PyTuple)Code.Constants[instruction.ConstantIndex]!;
-                var caches = _function.GetLookupCaches(instruction.Span);
-                var record = CreateSlotRecord(Values.Slice(instruction.InputStart, keys.Count), keys,
-                    ref caches[instruction.LookupCacheIndex], _scope, instruction.Span);
+                var keys = (PyDict.RecordKeys)Code.Constants[instruction.ConstantIndex]!;
+                var record = keys.CreateDisplay(Values.Slice(instruction.InputStart, keys.Count), keyAndValue: false,
+                    _scope, instruction.Span);
                 try { Trim(instruction.InputStart); Publish(instruction, record); return true; }
                 catch { record.DiscardUnpublishedStorage(); throw; }
             }

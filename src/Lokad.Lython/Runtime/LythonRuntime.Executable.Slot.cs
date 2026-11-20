@@ -217,30 +217,6 @@ internal sealed partial class LythonRuntime
         catch { dictionary.DiscardUnpublishedStorage(); throw; }
     }
 
-    private static PyDict CreateSlotRecord(Span<ExecutableSlot> values, PyTuple keys,
-        ref ExecutableLookupCache cache, ExecutionContext context, LythonSourceSpan span)
-    {
-        var dictionary = CreateCachedRecord(cache, values.Length, context, span);
-        try
-        {
-            for (var i = 0; i < values.Length; i++)
-            {
-                context.CheckExecution(span);
-                dictionary.SetRecordItem((PyString)keys[i], values[i].Object.RequireNotNull(), context, span);
-            }
-            CacheRecordKeys(ref cache, dictionary, context, span);
-            context.CheckExecution(span);
-            return dictionary;
-        }
-        catch { dictionary.DiscardUnpublishedStorage(); throw; }
-    }
-
-    private static PyDict CreateCachedRecord(in ExecutableLookupCache cache, int count,
-        ExecutionContext context, LythonSourceSpan span)
-        => cache.Target is PyDict.RecordKeys layout
-            ? layout.CreateRecord(context, span, count)
-            : new PyDict(count, context.MemoryGovernor, span);
-
     private static void CacheRecordKeys(ref ExecutableLookupCache cache, PyDict dictionary,
         ExecutionContext context, LythonSourceSpan span)
     {
