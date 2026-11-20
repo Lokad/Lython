@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1196 executable classes against CPython](results/2026-11-20-cpython-executable-classes/README.md)
+measures the class-suite delivery. The inherited dataclass script takes
+0.080–0.082× as long from compile to result. Eager rules run 3.30–3.42× as
+long warm, and invoice runs 1.04–1.07× as long warm. B1195 measures the
+class engine's regression within Lython.
+
 [B1195 shared compiler buffers for class suites](results/2026-11-20-executable-class-suites/refinement/README.md)
 reuses transient buffers across sibling scopes and retains the single
 statement engine. Dataclass compilation allocates 8.03% more than master
