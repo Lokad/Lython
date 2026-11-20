@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1213 configuration scripts against CPython](results/2026-11-20-cpython-shared-executable-graph/README.md)
+finds the retained validator at 0.845–0.877× to result, 0.857–0.888×
+for compilation and 1.86–1.88× warm against CPython 3.13.16. Manifest warm
+is 1.22–1.24×. All 80 verified batches passed on the frozen B1212 image.
+
 [B1212 shared executable graph discovery](results/2026-11-20-shared-executable-graph/README.md)
 removes separate reachability and region normalization from protected and
 ordinary suites. Validator compile-to-result elapsed falls 6.57–10.22%
