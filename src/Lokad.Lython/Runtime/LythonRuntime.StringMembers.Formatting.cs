@@ -58,6 +58,7 @@ internal sealed partial class LythonRuntime
 
             internal int Length => _call is not null ? _operands.Length : _expanded?.Length ?? 0;
             internal bool KnownPositional => _call is { IsPositionalOnly: true };
+            internal Dictionary<string, int>? PreparedKeywordIndices => (_call as ExecutableNamedFormatCallSite)?.KeywordIndices;
 
             internal object ValueAt(int index) => _call is not null
                 ? _operands.Span[index].Object.RequireNotNull() : _expanded![index].Value;

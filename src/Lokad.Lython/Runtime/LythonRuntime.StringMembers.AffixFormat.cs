@@ -111,6 +111,10 @@ internal sealed partial class LythonRuntime
         private static ValueTask<object> FormatStringAsync(PyString text, MethodFormatArguments arguments,
             LythonSourceSpan span, ExecutionContext context, bool asynchronous, PyStringOps.FormatTemplate prepared)
         {
+            if (arguments.PreparedKeywordIndices is { } compiledKeywords)
+                return new MethodFormatOperation(arguments, arguments.Length - compiledKeywords.Count, null, compiledKeywords,
+                    null, span, context, asynchronous).RunAsync(text, prepared);
+
             var positionalCount = arguments.Length;
             var firstKeyword = arguments.Length;
             if (!arguments.KnownPositional)

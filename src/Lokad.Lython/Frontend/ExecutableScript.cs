@@ -441,7 +441,7 @@ internal sealed record ExecutableExceptionRegion(
     int? CleanupId = null,
     int StackDepth = 0);
 
-internal sealed record ExecutableCallSite(
+internal record ExecutableCallSite(
     int ArgumentCount,
     CallArgumentForm[] Arguments,
     LythonSourceSpan TargetSpan,
@@ -457,6 +457,10 @@ internal sealed record ExecutableCallSite(
     public int TargetOffset => HasReceiver ? 1 : 0;
     public int ArgumentOffset => TargetOffset + 1;
 }
+
+internal sealed record ExecutableNamedFormatCallSite(int ArgumentCount, CallArgumentForm[] Arguments,
+    LythonSourceSpan TargetSpan, LythonSourceSpan CallSpan, bool HasReceiver, Dictionary<string, int> KeywordIndices)
+    : ExecutableCallSite(ArgumentCount, Arguments, TargetSpan, CallSpan, HasReceiver);
 
 internal sealed record ExecutableMatchCaseBinding(
     LoweredRootPattern Pattern,

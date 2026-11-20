@@ -387,13 +387,39 @@ internal sealed partial class ExecutableScript
 
         private int InternCallSite(LoweredCallExpression call, bool hasReceiver)
         {
-            _callSites.Add(new ExecutableCallSite(
-                call.Arguments.Count,
-                call.Arguments.Select(argument => argument.Form).ToArray(),
-                call.Target.Span,
-                call.Span,
-                hasReceiver));
+            var arguments = call.Arguments.Select(argument => argument.Form).ToArray();
+            var formatKeywords = call.Target is LoweredMemberExpression { Member.MemberName: "format" }
+                ? PrepareFormatKeywordIndices(arguments, call.Span) : null;
+            _callSites.Add(formatKeywords is null
+                ? new ExecutableCallSite(arguments.Length, arguments, call.Target.Span, call.Span, hasReceiver)
+                : new ExecutableNamedFormatCallSite(arguments.Length, arguments, call.Target.Span, call.Span, hasReceiver, formatKeywords));
             return _callSites.Count - 1;
+        }
+
+        private Dictionary<string, int>? PrepareFormatKeywordIndices(CallArgumentForm[] arguments, LythonSourceSpan span)
+        {
+            var firstKeyword = 0;
+            while (firstKeyword < arguments.Length && arguments[firstKeyword].Kind == CallArgumentKind.Positional)
+            {
+                PythonTokenization.CheckCancellation(_compilationCancellation, firstKeyword);
+                firstKeyword++;
+            }
+            if (firstKeyword == arguments.Length) return null;
+
+            // The code owner funds one index for ordinary named format calls.
+            // The runtime borrows it only when the actual receiver is a string.
+            var bytes = checked(64L + 64L * (arguments.Length - firstKeyword));
+            using var storage = _compilationGovernor?.ReserveTemporary(bytes, span);
+            PythonTokenization.CheckCancellation(_compilationCancellation, 0);
+            var indices = new Dictionary<string, int>(arguments.Length - firstKeyword, StringComparer.Ordinal);
+            for (var i = firstKeyword; i < arguments.Length; i++)
+            {
+                PythonTokenization.CheckCancellation(_compilationCancellation, i - firstKeyword);
+                var argument = arguments[i];
+                if (argument.Kind != CallArgumentKind.Keyword || !indices.TryAdd(argument.KeywordName!, i)) return null;
+            }
+            storage?.Commit(bytes);
+            return indices;
         }
 
         private ExecutableCodeObject PrepareFunctionCode(LoweredFunctionDefinitionStatement functionDefinition)
