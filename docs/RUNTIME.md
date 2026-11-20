@@ -1340,20 +1340,17 @@ Preparation admits conservative capacity, metadata and replacement overlap befor
 allocation, including estimated selector metadata. Its charge remains until
 execution/result cleanup. Many distinct one-use methods or long access chains
 can reject earlier.
-Method argument copies and expanded nested specifications have operation-owned
-storage, funded until all callbacks settle. Final strings and user hook return
-strings keep their own ownership. RunAsync awaits actual lookup and formatting
-hooks. Preparation, execution, long numeric-spec scans and resumed callbacks observe
-the current token. Cached grammar errors are raised at their original field position,
-after earlier lookups/hooks; native-invalid specs still reach custom formatters.
+A format invocation reuses one admitted UTF-8 buffer for nested specifications.
+Builtin fields borrow those bytes synchronously. A custom `__format__` hook
+receives an owned specification after binding, which can survive the callback
+and later fields. RunAsync awaits lookup, formatting and cleanup. Preparation,
+numeric-spec parsing and resumed callbacks observe the current token.
+Cached grammar errors are raised at their original field position after earlier
+lookups and hooks. Custom and datetime formatters receive the raw specification.
 
-Constant f-string specifications keep an immutable native layout with the compiled
-program, funded by its compilation owner. The existing formatter reuses it without
-per-field grammar parsing or descriptor allocation. Value-dependent checks remain
-at execution; custom and date formatters receive the original raw specification.
-Invalid native grammar can still reach a custom formatter. Method layouts share
-this native spec parser; dynamic specifications use it at their actual operation.
-Layouts retain no execution token, callback state or separate cache owner.
+Constant f-string specifications keep their UTF-8 text and an immutable layout
+under the compilation owner. Method layouts and dynamic specifications share the
+same byte grammar. The renderer applies value-dependent checks at execution.
 
 Multi-part f-strings use their literal bytes and static widths to plan modest
 initial builder storage, shared by ordinary execution and native helpers. Larger

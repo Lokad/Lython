@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1172 native UTF-8 format specs](results/2026-11-20-utf8-format-specifiers/README.md)
+removes the expanded-spec conversion and scratch lease. Nested reports allocate
+15.21–15.28% less and run 5.50–10.93% faster with supporting CPU. Shipment and
+named formatting elapsed span zero. Invoice also moves and remains a control.
+
 [B1162 representative CPython checkpoint](results/2026-11-20-representative-cpython/README.md)
 refreshes four scripts at `e6e1f964c`. Warm eager rules remain the largest
 gap at 3.69–3.75× CPython. Invoice is 1.05–1.09×. Shipment compile-to-result
