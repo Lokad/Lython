@@ -118,7 +118,24 @@ internal sealed partial class PyDict
             catch { owner.ReleaseReserved(bytes); throw; }
         }
 
-        internal int AnnotationCapacity => NativeCapacity(Count);
+        internal int PreparedValueCapacity => NativeCapacity(Count);
+
+        internal object?[] CreatePreparedValues(LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        {
+            System.Diagnostics.Debug.Assert(_owner is null);
+            var capacity = PreparedValueCapacity;
+            var bytes = RecordBytes(capacity);
+            var owner = context.MemoryGovernor;
+            owner.Reserve(bytes, span);
+            try
+            {
+                context.CheckExecution(span);
+                var values = new object?[capacity];
+                owner.Commit(bytes);
+                return values;
+            }
+            catch { owner.ReleaseReserved(bytes); throw; }
+        }
 
         internal PyDict? TryCreateDisplay(Span<LythonRuntime.ExecutableSlot> inputs,
             LythonRuntime.ExecutionContext context, LythonSourceSpan span)
@@ -152,7 +169,7 @@ internal sealed partial class PyDict
         internal object?[] CopyAnnotationValues(ReadOnlySpan<LythonRuntime.ExecutableSlot> evaluated,
             int capacity, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
         {
-            System.Diagnostics.Debug.Assert(_owner is null && Count != 0 && evaluated.Length == Count && capacity == AnnotationCapacity);
+            System.Diagnostics.Debug.Assert(_owner is null && Count != 0 && evaluated.Length == Count && capacity == PreparedValueCapacity);
             context.CheckExecution(span);
             var values = new object?[capacity];
             for (var i = 0; i < evaluated.Length; i++)
@@ -164,7 +181,7 @@ internal sealed partial class PyDict
             return values;
         }
 
-        internal PyDict AdoptAnnotationValues(object?[] values, MemoryGovernor owner, LythonSourceSpan? span)
+        internal PyDict AdoptPreparedValues(object?[] values, MemoryGovernor owner, LythonSourceSpan? span)
             => new(_keys, this, _sequence, 0, owner, span)
             {
                 _nativeValues = values,
@@ -172,7 +189,7 @@ internal sealed partial class PyDict
                 _nativeCommittedBytes = RecordBytes(values.Length),
             };
 
-        internal static void RefundAnnotationValues(object?[] values, MemoryGovernor owner)
+        internal static void RefundPreparedValues(object?[] values, MemoryGovernor owner)
             => owner.Release(RecordBytes(values.Length));
 
         internal static long RecordBytes(int capacity)

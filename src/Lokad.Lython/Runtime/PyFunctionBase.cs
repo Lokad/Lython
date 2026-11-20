@@ -223,7 +223,7 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
 
     public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
     {
-        if (TryGetDefaultMetadata(name, out value)) return true;
+        if (TryGetDefaultMetadata(name, _closure, out value)) return true;
         if (name == "__dict__") { value = _customAttributes ??= new PyDict(_closure.MemoryGovernor); return true; }
         value = name switch
         {
@@ -265,7 +265,7 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
 
     public bool TrySetMember(string name, object value)
     {
-        if (TrySetDefaultMetadata(name, value)) return true;
+        if (TrySetDefaultMetadata(name, value, _closure.MemoryGovernor)) return true;
         switch (name)
         {
             case "__dict__":
@@ -290,7 +290,7 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
 
     public bool TryDeleteMember(string name, LythonSourceSpan? span)
     {
-        if (TrySetDefaultMetadata(name, PyNone.Instance, span)) return true;
+        if (TrySetDefaultMetadata(name, PyNone.Instance, _closure.MemoryGovernor, span)) return true;
         if (name is "__name__" or "__qualname__" or "__dict__")
             throw new LythonRuntimeException("TypeError", $"cannot delete {name}", span);
         if (name is "__doc__" or "__module__") return TrySetMember(name, PyNone.Instance);
@@ -331,7 +331,7 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
         {
             var span = PyStructuralGuard.AmbientSpan;
             _closure.CheckExecution(span);
-            _annotations = CodeObject.DefinitionAnnotationKeys!.AdoptAnnotationValues(values, _closure.MemoryGovernor, span);
+            _annotations = CodeObject.DefinitionAnnotationKeys!.AdoptPreparedValues(values, _closure.MemoryGovernor, span);
         }
         return _annotations ??= new PyDict(_closure.MemoryGovernor);
     }
@@ -341,7 +341,7 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
         var previous = _annotations;
         _annotations = value;
         if (previous is object?[] values)
-            PyDict.RecordKeys.RefundAnnotationValues(values, _closure.MemoryGovernor);
+            PyDict.RecordKeys.RefundPreparedValues(values, _closure.MemoryGovernor);
     }
 
     public PyString RenderPython(PyRenderingContext context) => PyString.FromString($"<function {Name}>");

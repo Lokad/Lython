@@ -173,25 +173,11 @@ internal sealed partial class LythonRuntime
                 throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, parameterName, span);
             }
 
-            for (var k = 0; k < plan.KeywordOnlyCount; k++)
+            if (plan.KeywordOnlyCount != 0)
             {
-                var i = plan.PositionalCount + k;
-                if (!values[i].IsUnassigned)
-                {
-                    continue;
-                }
-
-                var keywordDefaults = plan.KeywordDefaultStorage;
-                // Exact native dictionaries finish synchronously. A protocol lookup
-                // defers this and the remaining defaults in their original order.
-                if (deferProtocolDefaults && keywordDefaults is { HasProtocolKeys: true }) break;
-                if (keywordDefaults is not null && plan.TryGetKeywordDefault(keywordDefaults, k, out var defaultValue, context, span))
-                {
-                    values[i].Object = defaultValue;
-                    continue;
-                }
-
-                throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, plan.NameAt(i), span);
+                if (plan.PreparedKeywordDefaults is { } preparedDefaults)
+                    plan.FillPreparedKeywordDefaults(preparedDefaults, values, context, span);
+                else CompleteLiveKeywordDefaults(values, span, plan, context, deferProtocolDefaults);
             }
 
             if (plan.VariadicDictionaryIndex >= 0)
@@ -221,6 +207,27 @@ internal sealed partial class LythonRuntime
                 try { extraKeywords.DiscardUnpublishedStorage(); }
                 finally { context.MemoryGovernor.Release(syntheticKeyBytes); }
             }
+        }
+    }
+
+    private static void CompleteLiveKeywordDefaults(Span<ExecutableSlot> values, LythonSourceSpan span,
+        FunctionBindingPlan plan, ExecutionContext context, bool deferProtocolDefaults)
+    {
+        for (var k = 0; k < plan.KeywordOnlyCount; k++)
+        {
+            var i = plan.PositionalCount + k;
+            if (!values[i].IsUnassigned) continue;
+
+            var keywordDefaults = plan.KeywordDefaultStorage;
+            // A protocol lookup defers this and the remaining defaults
+            // in their original order.
+            if (deferProtocolDefaults && keywordDefaults is { HasProtocolKeys: true }) return;
+            if (keywordDefaults is not null && plan.TryGetKeywordDefault(keywordDefaults, k, out var defaultValue, context, span))
+            {
+                values[i].Object = defaultValue;
+                continue;
+            }
+            throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, plan.NameAt(i), span);
         }
     }
 

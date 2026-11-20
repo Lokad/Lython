@@ -3,12 +3,13 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-internal readonly record struct FunctionDefaults(PyTuple? Positional, PyDict? Keywords)
+internal readonly record struct FunctionDefaults(PyTuple? Positional, object? Keywords)
 {
     internal void RefundUnpublished(MemoryGovernor governor)
     {
         if (Positional is not null) governor.RefundUnpublishedValue(Positional);
-        if (Keywords is not null) governor.RefundUnpublishedValue(Keywords);
+        if (Keywords is object?[] values) PyDict.RecordKeys.RefundPreparedValues(values, governor);
+        else if (Keywords is not null) governor.RefundUnpublishedValue(Keywords);
     }
 }
 
@@ -17,6 +18,7 @@ internal readonly record struct FunctionDefaults(PyTuple? Positional, PyDict? Ke
 internal class FunctionBindingPlan
 {
     private readonly FunctionParameterLayout _layout;
+    private object? _keywordDefaults;
 
     public FunctionBindingPlan(
         string callableName,
@@ -28,7 +30,7 @@ internal class FunctionBindingPlan
         CallableName = callableName;
         CallableKind = callableKind;
         PositionalDefaults = defaults.Positional;
-        KeywordDefaults = defaults.Keywords;
+        _keywordDefaults = defaults.Keywords;
     }
 
     public string CallableName { get; }
@@ -64,8 +66,26 @@ internal class FunctionBindingPlan
     public int VariadicDictionaryIndex => _layout.VariadicDictionaryIndex;
 
     public object? PositionalDefaults { get; private set; }
-    public object? KeywordDefaults { get; private set; }
     public PyString KeywordDefaultName(int index) => _layout.KeywordDefaultName(index);
+
+    internal object?[]? PreparedKeywordDefaults => _keywordDefaults as object?[];
+
+    internal void FillPreparedKeywordDefaults(object?[] defaults, Span<LythonRuntime.ExecutableSlot> bound,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        // The original slots cannot invoke guest code. Borrow them after
+        // supplied-argument binding, which can replace defaults on reentry.
+        for (var k = 0; k < KeywordOnlyCount; k++)
+        {
+            ref var target = ref bound[PositionalCount + k];
+            if (!target.IsUnassigned) continue;
+            context.CheckExecution(span);
+            var position = _layout.KeywordDefaultAt(k).RecordPosition;
+            if (position < 0)
+                throw CallErrors.MissingArgument(CallableKind, CallableName, NameAt(PositionalCount + k), span);
+            target.Object = defaults[position].RequireNotNull();
+        }
+    }
 
     internal bool TryGetKeywordDefault(PyDict dictionary, int index, [MaybeNullWhen(false)] out object value,
         LythonRuntime.ExecutionContext context, LythonSourceSpan span)
@@ -87,7 +107,7 @@ internal class FunctionBindingPlan
         LythonSourceSpan span, out int index)
         => _layout.TryGetNativeKeywordIndex(key, context, span, out index);
 
-    public PyDict? KeywordDefaultStorage => KeywordDefaults switch
+    public PyDict? KeywordDefaultStorage => _keywordDefaults switch
     {
         PyDict dictionary => dictionary,
         PyDefaultDict dictionary => dictionary.InnerDict,
@@ -112,18 +132,29 @@ internal class FunctionBindingPlan
         return false;
     }
 
-    public bool TryGetDefaultMetadata(string name, out object value)
+    public bool TryGetDefaultMetadata(string name, LythonRuntime.ExecutionContext context, out object value)
     {
         value = name switch
         {
             "__defaults__" => PositionalDefaults ?? PyNone.Instance,
-            "__kwdefaults__" => KeywordDefaults ?? PyNone.Instance,
+            "__kwdefaults__" => ReadKeywordDefaults(context),
             _ => PyNone.Instance,
         };
         return name is "__defaults__" or "__kwdefaults__";
     }
 
-    public bool TrySetDefaultMetadata(string name, object value, LythonSourceSpan? span = null)
+    private object ReadKeywordDefaults(LythonRuntime.ExecutionContext context)
+    {
+        if (_keywordDefaults is object?[] values)
+        {
+            var span = PyStructuralGuard.AmbientSpan;
+            context.CheckExecution(span);
+            _keywordDefaults = _layout.PreparedKeywordDefaultKeys!.AdoptPreparedValues(values, context.MemoryGovernor, span);
+        }
+        return _keywordDefaults ?? PyNone.Instance;
+    }
+
+    public bool TrySetDefaultMetadata(string name, object value, MemoryGovernor governor, LythonSourceSpan? span = null)
     {
         if (name == "__defaults__")
         {
@@ -136,7 +167,9 @@ internal class FunctionBindingPlan
         {
             if (value is not (PyNone or PyDict or PyDefaultDict or PyCounter))
                 throw new LythonRuntimeException("TypeError", "__kwdefaults__ must be set to a dict object", span);
-            KeywordDefaults = value is PyNone ? null : value;
+            var previous = _keywordDefaults;
+            _keywordDefaults = value is PyNone ? null : value;
+            if (previous is object?[] values) PyDict.RecordKeys.RefundPreparedValues(values, governor);
             return true;
         }
         return false;

@@ -144,7 +144,7 @@ internal sealed partial class LythonRuntime
                         annotation.Name, value, context, span, asynchronous);
                     break;
                 case ExecutableStartFunctionDefaults start:
-                    var owner = new PendingFunctionDefaults(start.Layout, context, span, start.KeywordKeys);
+                    var owner = new PendingFunctionDefaults(start.Layout, context, span);
                     try { PublishInstructionResult(ref execution, invocation, instruction, owner); }
                     catch { owner.Dispose(); throw; }
                     break;

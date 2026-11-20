@@ -19,9 +19,53 @@ public sealed class FunctionDefaultConstructionTests
         _ = LythonRuntime.CreateGeneratedBindingPlan("f", parameters, requiredContext, Span);
         var defaults = parameters.Select(parameter => parameter with { DefaultValue = 0 }).ToArray();
         var plan = LythonRuntime.CreateGeneratedBindingPlan("f", defaults, defaultContext, Span);
-        Assert.True(plan.TryGetDefaultMetadata("__defaults__", out var tuple));
+        Assert.True(plan.TryGetDefaultMetadata("__defaults__", defaultContext, out var tuple));
         Assert.Equal(parameters.Length, Assert.IsType<PyTuple>(tuple).Count);
         Assert.True(defaultContext.MemoryGovernor.CurrentCommittedBytes > requiredContext.MemoryGovernor.CurrentCommittedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ReplacingKeywordDefaultsRefundsOnlyUnobservedStorage(bool observe)
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var owner = budget.CreateScope())
+        {
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = owner });
+            var layout = FunctionParameterLayout.Create(
+                [new("first", FunctionParameterKind.KeywordOnly, 1),
+                 new("required", FunctionParameterKind.KeywordOnly),
+                 new("last", FunctionParameterKind.KeywordOnly, 3)]);
+            layout.PrepareKeywordDefaultKeys(default, Span);
+            var before = budget.ReservedBytes;
+            var values = layout.PreparedKeywordDefaultKeys!.CreatePreparedValues(context, Span);
+            object first = new BigInteger(1);
+            object last = new BigInteger(3);
+            values[0] = first;
+            values[1] = last;
+            var plan = new FunctionBindingPlan("f", PythonCallableKind.Function, layout, new(null, values));
+            var admitted = budget.ReservedBytes;
+            Assert.True(admitted > before);
+            LythonRuntime.ExecutableSlot[] bound = [default, LythonRuntime.ExecutableSlot.FromInteger(2), default];
+            plan.FillPreparedKeywordDefaults(values, bound, context, Span);
+            Assert.Same(first, bound[0].Object);
+            Assert.Same(last, bound[2].Object);
+
+            PyDict? alias = null;
+            if (observe)
+            {
+                Assert.True(plan.TryGetDefaultMetadata("__kwdefaults__", context, out var metadata));
+                alias = Assert.IsType<PyDict>(metadata);
+                Assert.Equal(admitted, budget.ReservedBytes);
+            }
+            Assert.True(plan.TrySetDefaultMetadata("__kwdefaults__", PyNone.Instance, context.MemoryGovernor));
+            Assert.Null(plan.PreparedKeywordDefaults);
+            Assert.Null(plan.KeywordDefaultStorage);
+            Assert.Equal(observe ? admitted : before, budget.ReservedBytes);
+            if (alias is not null) Assert.Same(first, alias.GetItem(layout.KeywordDefaultName(0)));
+        }
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [Fact]

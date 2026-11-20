@@ -2,7 +2,7 @@ using Lokad.Lython.Runtime;
 
 namespace Lokad.Lython.Frontend;
 
-internal sealed record ExecutableStartFunctionDefaults(FunctionParameterLayout Layout, PyDict.RecordKeys? KeywordKeys) : ExecutableOperation;
+internal sealed record ExecutableStartFunctionDefaults(FunctionParameterLayout Layout) : ExecutableOperation;
 internal sealed record ExecutableAppendFunctionDefault(FunctionParameterLayout.DefaultSlot Default) : ExecutableOperation;
 internal sealed record ExecutableCreateFunction(ExecutableFunctionBinding Binding, bool AnnotationsOnStack = false) : ExecutableOperation
 {
@@ -77,11 +77,8 @@ internal sealed partial class ExecutableScript
             FunctionParameterLayout layout, LythonSourceSpan span, int block)
         {
             if (layout.Defaults.Length == 0) return block;
-            var keys = PyDict.RecordKeys.PrepareDefinition(layout.Defaults.Length - layout.PositionalDefaultCount,
-                layout, static (parameters, index) => parameters.KeywordDefaultName(
-                    parameters.Defaults[parameters.PositionalDefaultCount + index].KeywordIndex),
-                _compilationCancellation, span);
-            EmitOperation(new ExecutableStartFunctionDefaults(layout, keys), span, block);
+            layout.PrepareKeywordDefaultKeys(_compilationCancellation, span);
+            EmitOperation(new ExecutableStartFunctionDefaults(layout), span, block);
             for (var i = 0; i < defaults.Length; i++)
             {
                 var expression = defaults[i];

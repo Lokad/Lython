@@ -17,6 +17,15 @@ internal sealed class FunctionParameterLayout
     private readonly record struct NativeKeyword(PyString Key, int Slot);
     private readonly NativeKeyword[] _nativeKeywords;
     private readonly KeywordDefault[] _keywordDefaults;
+    internal PyDict.RecordKeys? PreparedKeywordDefaultKeys { get; private set; }
+
+    internal void PrepareKeywordDefaultKeys(CancellationToken cancellationToken, LythonSourceSpan span)
+    {
+        PreparedKeywordDefaultKeys ??= PyDict.RecordKeys.PrepareDefinition(Defaults.Length - PositionalDefaultCount,
+            this, static (parameters, index) => parameters.KeywordDefaultName(
+                parameters.Defaults[parameters.PositionalDefaultCount + index].KeywordIndex),
+            cancellationToken, span);
+    }
 
     private FunctionParameterLayout(string[] names, Dictionary<string, int> indices, DefaultSlot[] defaults,
         int positionalDefaultCount,

@@ -4,18 +4,17 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    // Build the final default containers privately. The defining operation
-    // owns them until a decorator or a binding can expose the function.
+    // Build the final default storage privately. The defining operation owns
+    // it until a decorator or a binding can expose the function.
     private sealed class PendingFunctionDefaults : ExecutableTemporaryValue
     {
         private readonly FunctionParameterLayout _layout;
         private readonly ExecutionContext _context;
         private int _position;
         private PyTuple? _positional;
-        private PyDict? _keywords;
+        private object? _keywords;
 
-        internal PendingFunctionDefaults(FunctionParameterLayout layout, ExecutionContext context, LythonSourceSpan span,
-            PyDict.RecordKeys? keywordKeys = null)
+        internal PendingFunctionDefaults(FunctionParameterLayout layout, ExecutionContext context, LythonSourceSpan span)
         {
             _layout = layout;
             _context = context;
@@ -27,8 +26,9 @@ internal sealed partial class LythonRuntime
                 if (positionalCount != 0)
                     _positional = PyTuple.CreateDefaultStorage(positionalCount, context, span);
                 if (keywordCount != 0)
-                    _keywords = keywordKeys?.CreateRecord(context, span, keywordCount)
-                        ?? new PyDict(keywordCount, context.MemoryGovernor, span);
+                    _keywords = layout.PreparedKeywordDefaultKeys is { } keys
+                        ? keys.CreatePreparedValues(context, span)
+                        : new PyDict(keywordCount, context.MemoryGovernor, span);
             }
             catch { Dispose(); throw; }
         }
@@ -38,7 +38,12 @@ internal sealed partial class LythonRuntime
         internal void Add(FunctionParameterLayout.DefaultSlot slot, ExecutableSlot value, LythonSourceSpan span)
         {
             if (slot.KeywordIndex < 0) _positional!.SetPrivateDefault(_position++, value, _context, span);
-            else _keywords!.AddDefinitionValue(_layout.KeywordDefaultName(slot.KeywordIndex), RuntimeValue(value.Object), _context, span);
+            else if (_keywords is object?[] values)
+            {
+                _context.CheckExecution(span);
+                values[_layout.KeywordDefaultAt(slot.KeywordIndex).RecordPosition] = RuntimeValue(value.Object);
+            }
+            else ((PyDict)_keywords!).AddDefinitionValue(_layout.KeywordDefaultName(slot.KeywordIndex), RuntimeValue(value.Object), _context, span);
         }
 
         internal void Publish()

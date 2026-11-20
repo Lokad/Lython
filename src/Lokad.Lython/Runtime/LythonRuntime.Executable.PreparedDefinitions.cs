@@ -17,7 +17,7 @@ internal sealed partial class LythonRuntime
         // The callable and its final annotation backing are still private.
         // Admit both before allocation and transfer the combined charge once.
         var keys = annotations.IsEmpty ? null : code.DefinitionAnnotationKeys.RequireNotNull();
-        var capacity = keys?.AnnotationCapacity ?? 0;
+        var capacity = keys?.PreparedValueCapacity ?? 0;
         var bytes = keys is null ? FunctionValueBytes : checked(FunctionValueBytes + PyDict.RecordKeys.RecordBytes(capacity));
         var governor = context.MemoryGovernor;
         governor.Reserve(bytes, span);
