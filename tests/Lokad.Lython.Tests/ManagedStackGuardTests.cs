@@ -22,7 +22,7 @@ public sealed class ManagedStackGuardTests
         var state = new StructuralGuardState();
         var span = new LythonSourceSpan(4, 2, 1, 1);
         object left = new(), right = new();
-        var expression = new LoweredCapturedExpression(new BooleanLiteralExpressionSyntax(true, span), true);
+        var expression = new LoweredBooleanLiteralExpression(new BooleanLiteralExpressionSyntax(true, span));
         var projected = new PyList([true]);
         var definition = Assert.IsType<LoweredFunctionDefinitionStatement>(Assert.Single(
             LoweredScript.Lower(LythonFrontend.Compile("def value():return 1").Script!).Statements));

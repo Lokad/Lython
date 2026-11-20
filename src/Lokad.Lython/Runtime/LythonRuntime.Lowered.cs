@@ -69,48 +69,6 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static void ExecuteLoweredClassDefinition(LoweredClassDefinitionStatement classDefinition, ExecutionContext context)
-    {
-        context.EnterInterpreterFrame(classDefinition.Span);
-        try
-        {
-            using var decoratorStorage = context.MemoryGovernor.ReserveTemporary(EstimateObjectArrayBytes(classDefinition.Decorators.Count), classDefinition.Span);
-            var decorators = EvaluateDecorators(classDefinition.Decorators, context);
-            var typeScope = CreateTypeScope(classDefinition.TypeParameters, context, classDefinition.Span);
-            var header = EvaluateClassHeaderArgumentsAsync(classDefinition, typeScope.Annotations, decoratorStorage, false).GetAwaiter().GetResult();
-            var baseTypes = header.Bases;
-            var classKeywordArguments = header.Keywords;
-
-            var resolvedBases = AddGenericClassBase(classDefinition, ResolveClassBases(baseTypes, classDefinition.Span, context), context);
-            ValidateClassKeywordArguments(classKeywordArguments, classDefinition.Span);
-
-            var classContext = ExecutionContext.CreateClassBody(typeScope.Closure, classDefinition.Syntax);
-            var classFlow = ExecuteStatements(classDefinition.Body, classContext);
-            if (classFlow.Control is not null)
-            {
-                throw new LythonRuntimeException("RuntimeError", "Loop control cannot escape a class body.", classDefinition.Span);
-            }
-
-            if (classFlow.Return is not null)
-            {
-                throw classFlow.Return;
-            }
-
-            AttachGenericClassMetadataAsync(classDefinition, typeScope, classContext, false, baseTypes).GetAwaiter().GetResult();
-            var type = CreateLoweredClassType(classDefinition, resolvedBases, baseTypes, classKeywordArguments, classContext, context,false).GetAwaiter().GetResult();
-            if (classContext.ClassCell is { } classCell) classCell.Value = type;
-            if (type is PyType defined)
-            {
-                InvokeInitSubclass(defined, classKeywordArguments, classDefinition.Span, context);
-            }
-            StoreName(classDefinition.Syntax.Name, ApplyDecorators(type, decorators, classDefinition.Span, context), context, classDefinition.Span);
-        }
-        finally
-        {
-            context.LeaveInterpreterFrame();
-        }
-    }
-
     private static object[] EvaluateDecorators(IReadOnlyList<LoweredExpression> expressions, ExecutionContext context)
     {
         var values = new object[expressions.Count];

@@ -194,7 +194,7 @@ internal sealed partial class LythonRuntime
                     PublishInstructionResult(ref execution, invocation, instruction, new CallExpansion.CallArgumentAccumulator(header.Count, context, ClassHeaderExpansionTarget));
                     break;
                 case ExecutableCreateClass create when invocation is not null:
-                    pending = invocation.ExecutePreparedClassDefinitionAsync(create, instruction.InputStart, span, asynchronous);
+                    pending = invocation.ExecutePreparedClassDefinitionAsync(create, instruction.InputStart, asynchronous);
                     break;
                 case ExecutableOperation when invocation is null: return false;
                 default: throw new InvalidOperationException("Unknown prepared operation.");

@@ -30,6 +30,20 @@ public sealed class ClassHeaderUnpackingTests
     }
 
     [Fact]
+    public async Task SubclassHookReceivesTheOriginalExpandedKeyword()
+    {
+        await AssertOutput("""
+            key = ''.join(('trace', '_label'))
+            class Base:
+                def __init_subclass__(cls, **options):
+                    cls.first_label = next(iter(options))
+            class Item(Base, **{key: 7}):
+                pass
+            print(Item.first_label is key)
+            """, "True\n");
+    }
+
+    [Fact]
     public async Task MappingKeysAreDrainedBeforeValuesAndDuplicatesSkipTheValue()
     {
         await AssertOutput("""

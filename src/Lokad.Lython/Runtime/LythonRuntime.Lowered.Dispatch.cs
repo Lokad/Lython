@@ -132,7 +132,7 @@ internal sealed partial class LythonRuntime
 
         public ValueTask ExecuteClassDefinitionAsync(LoweredClassDefinitionStatement statement, ExecutionContext context)
         {
-            ExecuteLoweredClassDefinition(statement, context);
+            LythonRuntime.ExecuteClassDefinitionAsync(statement, context, false).GetAwaiter().GetResult();
             return ValueTask.CompletedTask;
         }
 
@@ -270,7 +270,7 @@ internal sealed partial class LythonRuntime
             => ExecuteLoweredFunctionDefinitionAsync(statement, context);
 
         public ValueTask ExecuteClassDefinitionAsync(LoweredClassDefinitionStatement statement, ExecutionContext context)
-            => ExecuteLoweredClassDefinitionAsync(statement, context);
+            => LythonRuntime.ExecuteClassDefinitionAsync(statement, context, true);
 
         public ValueTask ExecuteAssignmentAsync(LoweredAssignmentStatement statement, ExecutionContext context)
             => ExecuteLoweredAssignmentAsync(statement, context);

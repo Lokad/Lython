@@ -86,7 +86,8 @@ internal sealed partial class ExecutableScript
         private int CompileSuspendingClass(LoweredClassDefinitionStatement definition, int block)
         {
             foreach (var decorator in definition.Decorators) block = CompileExpression(decorator, block);
-            if (definition.TypeParameters is null)
+            var expandedHeader = definition.TypeParameters is null && definition.HeaderArguments.Count != 0;
+            if (expandedHeader)
             {
                 EmitOperation(new ExecutableStartClassHeader(definition.HeaderArguments.Count), definition.Span, block);
                 foreach (var argument in definition.HeaderArguments)
@@ -95,7 +96,7 @@ internal sealed partial class ExecutableScript
                     EmitOperation(new ExecutableAppendCall(argument.Form), argument.Expression.Span, block);
                 }
             }
-            EmitOperation(new ExecutableCreateClass(definition, definition.TypeParameters is null), definition.Span, block);
+            EmitOperation(new ExecutableCreateClass(definition, expandedHeader), definition.Span, block);
             return block;
         }
     }

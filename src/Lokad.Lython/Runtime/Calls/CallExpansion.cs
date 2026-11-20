@@ -590,6 +590,8 @@ internal static class CallExpansion
             new("TypeError", (CallsiteCallableName(_target!, context) ?? "call") +
                 " got multiple values for keyword argument '" + name + "'", span);
 
+        internal ReadOnlySpan<CallArgumentValue> Arguments => _values.AsSpan(0, _count);
+
         public CallArgumentValue[] ToArray()
         {
             _ = Context;
@@ -647,9 +649,9 @@ internal static class CallExpansion
                 // suspension. The caller owns the accumulator through cleanup.
                 return asynchronous
                     ? await LythonRuntime.InvokeBorrowedCallableTargetAsync(_target!, targetSpan, callSpan,
-                        _values.AsSpan(0, _count), Context).ConfigureAwait(false)
+                        Arguments, Context).ConfigureAwait(false)
                     : LythonRuntime.InvokeBorrowedCallableTarget(_target!, targetSpan, callSpan,
-                        _values.AsSpan(0, _count), Context);
+                        Arguments, Context);
             }
             return asynchronous
                 ? await LythonRuntime.InvokeCallableTargetAsync(_target!, targetSpan, callSpan, Context,

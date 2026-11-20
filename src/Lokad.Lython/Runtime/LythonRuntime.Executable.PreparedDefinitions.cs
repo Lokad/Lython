@@ -37,34 +37,22 @@ internal sealed partial class LythonRuntime
 
     internal sealed partial class ExecutionContext
     {
-        private async ValueTask ExecutePreparedClassDefinitionAsync(ExecutableCreateClass create, int first, LythonSourceSpan span, bool asynchronous)
+        private async ValueTask ExecutePreparedClassDefinitionAsync(ExecutableCreateClass create, int first, bool asynchronous)
         {
             var definition = create.Definition;
-            var decoratorCount = definition.Decorators.Count;
-            using var accumulator = create.ExpandedHeader
-                ? (CallExpansion.CallArgumentAccumulator)_execution.Stack.TakeValue(first + decoratorCount, first + decoratorCount)
-                : null;
-            using var storage = MemoryGovernor.ReserveTemporary(256L + 128L * decoratorCount, span);
-            var decorators = new LoweredExpression[decoratorCount];
-            for (var i = decorators.Length - 1; i >= 0; i--)
-                decorators[i] = new LoweredCapturedExpression(definition.Decorators[i].Syntax, _execution.Stack.TakeValue(first + i, first + i));
-            definition = definition with { Decorators = decorators };
-            if (accumulator is not null)
+            var decorators = _execution.Stack.Slice(first, definition.Decorators.Count);
+            var header = create.ExpandedHeader
+                ? (CallExpansion.CallArgumentAccumulator)_execution.Stack[first + decorators.Length] : null;
+            try
             {
-                var arguments = accumulator.ToArray();
-                storage.Grow(128L * arguments.Length, span);
-                var headers = new LoweredCallArgument[arguments.Length];
-                for (var i = 0; i < arguments.Length; i++)
-                {
-                    var argument = arguments[i];
-                    if (argument.IsKeyword) storage.Grow(2L * argument.KeywordName.Length, span);
-                    headers[i] = new LoweredCallArgument(argument.IsKeyword ? CallArgumentForm.Keyword(argument.KeywordName) : CallArgumentForm.Positional,
-                        new LoweredCapturedExpression(definition.HeaderArguments[0].Expression.Syntax, argument.Value));
-                }
-                definition = definition with { HeaderArguments = headers };
+                await ExecuteClassDefinitionAsync(definition, this, asynchronous, decorators, header).ConfigureAwait(false);
             }
-            if (asynchronous) await ExecuteLoweredClassDefinitionAsync(definition, this).ConfigureAwait(false);
-            else ExecuteLoweredClassDefinition(definition, this);
+            finally
+            {
+                // Keep the operand owner and its exact expanded arguments live
+                // through all class and decorator callbacks, then retire once.
+                _execution.Stack.RetireTo(first);
+            }
             SyncExecutableLocalsFromContext(_execution.Code, _execution.Locals, this);
         }
 

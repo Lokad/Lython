@@ -59,52 +59,6 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static async ValueTask ExecuteLoweredClassDefinitionAsync(LoweredClassDefinitionStatement classDefinition, ExecutionContext context)
-    {
-        context.EnterInterpreterFrame(classDefinition.Span);
-        try
-        {
-            using var decoratorStorage = context.MemoryGovernor.ReserveTemporary(EstimateObjectArrayBytes(classDefinition.Decorators.Count), classDefinition.Span);
-            var decorators = await EvaluateDecoratorsAsync(classDefinition.Decorators, context).ConfigureAwait(false);
-            var typeScope = CreateTypeScope(classDefinition.TypeParameters, context, classDefinition.Span);
-            var header = await EvaluateClassHeaderArgumentsAsync(classDefinition, typeScope.Annotations, decoratorStorage, true).ConfigureAwait(false);
-            var baseTypes = header.Bases;
-            var classKeywordArguments = header.Keywords;
-
-            var resolvedBases = AddGenericClassBase(classDefinition, ResolveClassBases(baseTypes, classDefinition.Span, context), context);
-            ValidateClassKeywordArguments(classKeywordArguments, classDefinition.Span);
-
-            var classContext = ExecutionContext.CreateClassBody(typeScope.Closure, classDefinition.Syntax);
-            var classFlow = await ExecuteStatementsAsync(classDefinition.Body, classContext).ConfigureAwait(false);
-            if (classFlow.Control is not null)
-            {
-                throw new LythonRuntimeException("RuntimeError", "Loop control cannot escape a class body.", classDefinition.Span);
-            }
-
-            if (classFlow.Return is not null)
-            {
-                throw classFlow.Return;
-            }
-
-            await AttachGenericClassMetadataAsync(classDefinition, typeScope, classContext, true, baseTypes).ConfigureAwait(false);
-            var type = await CreateLoweredClassType(classDefinition, resolvedBases, baseTypes, classKeywordArguments, classContext, context,true).ConfigureAwait(false);
-            if (classContext.ClassCell is { } classCell) classCell.Value = type;
-            if (type is PyType defined)
-            {
-                await InvokeInitSubclassAsync(defined, classKeywordArguments, classDefinition.Span, context).ConfigureAwait(false);
-            }
-            StoreName(
-                classDefinition.Syntax.Name,
-                await ApplyDecoratorsAsync(type, decorators, classDefinition.Span, context).ConfigureAwait(false),
-                context,
-                classDefinition.Span);
-        }
-        finally
-        {
-            context.LeaveInterpreterFrame();
-        }
-    }
-
     private static async ValueTask<object[]> EvaluateDecoratorsAsync(IReadOnlyList<LoweredExpression> expressions, ExecutionContext context)
     {
         var values = new object[expressions.Count];

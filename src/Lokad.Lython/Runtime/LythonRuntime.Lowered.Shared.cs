@@ -95,8 +95,6 @@ internal sealed partial class LythonRuntime
     {
         switch (expression)
         {
-            case LoweredCapturedExpression captured:
-                return captured.Value;
             case LoweredUnpackedTypeExpression unpacked:
                 var unpackedValue = await execution.EvaluateExpressionAsync(unpacked.Value, context).ConfigureAwait(false);
                 return await execution.UnpackAnnotationAsync(unpackedValue, context, unpacked.Span).ConfigureAwait(false);
@@ -780,33 +778,104 @@ internal sealed partial class LythonRuntime
         LythonCallableSignature.Create("__build_class__", []),
         static (_, _, _) => throw new InvalidOperationException("Class header expansion target cannot be invoked."));
 
+    private static async ValueTask ExecuteClassDefinitionAsync(LoweredClassDefinitionStatement definition,
+        ExecutionContext context, bool asynchronous, ReadOnlyMemory<ExecutableSlot> preparedDecorators = default,
+        CallExpansion.CallArgumentAccumulator? preparedHeader = null)
+    {
+        var span = definition.Span;
+        context.EnterInterpreterFrame(span);
+        try
+        {
+            var decoratorCount = definition.Decorators.Count;
+            using var storage = context.MemoryGovernor.ReserveTemporary(
+                decoratorCount == 0 ? 0 : EstimateObjectArrayBytes(decoratorCount), span);
+            object[] decorators;
+            if (decoratorCount == 0) decorators = [];
+            else if (preparedDecorators.IsEmpty)
+            {
+                decorators = asynchronous ? await EvaluateDecoratorsAsync(definition.Decorators, context).ConfigureAwait(false)
+                    : EvaluateDecorators(definition.Decorators, context);
+            }
+            else
+            {
+                context.CheckExecution(span);
+                decorators = new object[decoratorCount];
+                for (var i = 0; i < decorators.Length; i++)
+                {
+                    context.CheckExecution(span);
+                    decorators[i] = preparedDecorators.Span[i].Object.RequireNotNull();
+                }
+            }
+
+            var typeScope = CreateTypeScope(definition.TypeParameters, context, span);
+            var (baseTypes, keywords) = preparedHeader is not null
+                ? SplitClassHeaderArguments(preparedHeader.Arguments, context, storage, span)
+                : await EvaluateClassHeaderArgumentsAsync(definition, typeScope.Annotations, storage, asynchronous).ConfigureAwait(false);
+            var resolvedBases = AddGenericClassBase(definition, ResolveClassBases(baseTypes, span, context), context);
+            ValidateClassKeywordArguments(keywords, span);
+
+            var classContext = ExecutionContext.CreateClassBody(typeScope.Closure, definition.Syntax);
+            var flow = asynchronous ? await ExecuteStatementsAsync(definition.Body, classContext).ConfigureAwait(false)
+                : ExecuteStatements(definition.Body, classContext);
+            if (flow.Control is not null) throw new LythonRuntimeException("RuntimeError", "Loop control cannot escape a class body.", span);
+            if (flow.Return is not null) throw flow.Return;
+
+            await AttachGenericClassMetadataAsync(definition, typeScope, classContext, asynchronous, baseTypes).ConfigureAwait(false);
+            var type = await CreateLoweredClassType(definition, resolvedBases, baseTypes, keywords, classContext, context, asynchronous)
+                .ConfigureAwait(false);
+            if (classContext.ClassCell is { } classCell) classCell.Value = type;
+            if (type is PyType defined)
+            {
+                if (asynchronous) await InvokeInitSubclassAsync(defined, keywords, span, context).ConfigureAwait(false);
+                else InvokeInitSubclass(defined, keywords, span, context);
+            }
+            var decorated = asynchronous ? await ApplyDecoratorsAsync(type, decorators, span, context).ConfigureAwait(false)
+                : ApplyDecorators(type, decorators, span, context);
+            StoreName(definition.Syntax.Name, decorated, context, span);
+        }
+        finally { context.LeaveInterpreterFrame(); }
+    }
+
     private static async ValueTask<(object[] Bases, CallArgumentValue[] Keywords)> EvaluateClassHeaderArgumentsAsync(
         LoweredClassDefinitionStatement definition, ExecutionContext context,
         MemoryGovernor.TemporaryMemoryReservation storage, bool asynchronous)
     {
+        if (definition.HeaderArguments.Count == 0) return ([], []);
         var arguments = asynchronous
             ? await CallExpansion.ExpandLoweredArgumentsAsync(definition.HeaderArguments, context,
                 EvaluateLoweredExpressionAsync, ClassHeaderExpansionTarget, storage, deferSingleStar: false).ConfigureAwait(false)
             : CallExpansion.ExpandLoweredArguments(definition.HeaderArguments, context,
                 EvaluateLoweredExpression, ClassHeaderExpansionTarget, storage, deferSingleStar: false);
+        return SplitClassHeaderArguments(arguments, context, storage, definition.Span);
+    }
 
-        var positionalCount = arguments.Count(argument => argument.IsPositional);
+    private static (object[] Bases, CallArgumentValue[] Keywords) SplitClassHeaderArguments(
+        ReadOnlySpan<CallArgumentValue> arguments, ExecutionContext context,
+        MemoryGovernor.TemporaryMemoryReservation storage, LythonSourceSpan span)
+    {
+        if (arguments.IsEmpty) return ([], []);
+        var positionalCount = 0;
+        for (var i = 0; i < arguments.Length; i++)
+        {
+            if ((i & 1023) == 0) context.CheckExecution(span);
+            if (arguments[i].IsPositional) positionalCount++;
+        }
         var keywordCount = arguments.Length - positionalCount;
-        if (arguments.Length > 0)
-            storage.Grow(EstimateObjectArrayBytes(positionalCount) + 64L + 32L * keywordCount, definition.Span);
-        var bases = new object[positionalCount];
-        var keywords = new CallArgumentValue[keywordCount];
+        storage.Grow(EstimateObjectArrayBytes(positionalCount) + 64L + 32L * keywordCount, span);
+        context.CheckExecution(span);
+        object[] bases = positionalCount == 0 ? [] : new object[positionalCount];
+        CallArgumentValue[] keywords = keywordCount == 0 ? [] : new CallArgumentValue[keywordCount];
         var baseIndex = 0;
         var keywordIndex = 0;
         foreach (var argument in arguments)
         {
-            context.CheckExecution(definition.Span);
+            context.CheckExecution(span);
             if (argument.IsPositional) bases[baseIndex++] = argument.Value;
             else
             {
-                // Dynamic ** names are CLR text retained across the class
-                // suite and subclass hook, beyond the expansion's scratch.
-                storage.Grow(2L * argument.KeywordName.Length, definition.Span);
+                // Dynamic ** names survive header evaluation and remain
+                // funded through class construction and subclass callbacks.
+                storage.Grow(2L * argument.KeywordName.Length, span);
                 keywords[keywordIndex++] = argument;
             }
         }
