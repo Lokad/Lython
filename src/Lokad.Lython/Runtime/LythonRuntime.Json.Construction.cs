@@ -7,13 +7,15 @@ internal sealed partial class LythonRuntime
 {
     private sealed partial class JsonModule
     {
-        private struct JsonDecodeFrame(object result, PyDict.RecordKeys? expected, int position, bool isObject)
+        private struct JsonDecodeFrame(object result, (PyDict.RecordKeys? Keys, bool PlainNames) expected,
+            int position, bool isObject)
         {
             internal object Result = result;
-            internal PyDict.RecordKeys? Expected = expected;
+            internal (PyDict.RecordKeys? Keys, bool PlainNames) Expected = expected;
             internal PyString? Key;
             internal int Position = position;
             internal bool IsObject = isObject;
+            internal bool PlainNames = true;
         }
 
         // Shallow documents need no frame allocation. Deeper construction owns
@@ -71,12 +73,12 @@ internal sealed partial class LythonRuntime
                 if (old is not null) state.Working!.Shrink(checked(32L + 48L * old.Length));
             }
 
-            var expected = isObject ? context.State.JsonRecordLayout : null;
+            var expected = isObject ? context.State.JsonRecordLayout : default;
             var bytesView = state.Input.Utf8Span;
             var position = SkipJsonWhitespace(bytesView, opening + 1, context, state.Span);
             var capacity = position < bytesView.Length && bytesView[position] == (byte)'"' ? 4 : 0;
             object result = isObject && state.Options.ObjectPairsHook is null
-                ? expected is not null && capacity != 0 ? expected.CreateRecord(context, state.Span, capacity)
+                ? expected.Keys is { } keys && capacity != 0 ? keys.CreateRecord(context, state.Span, capacity)
                     : new PyDict(capacity, context.MemoryGovernor, state.Span)
                 : new PyList([], context.MemoryGovernor, state.Span);
             JsonFrames(ref state)[state.Depth++] = new(result, expected, position, isObject);
@@ -135,7 +137,7 @@ internal sealed partial class LythonRuntime
                 {
                     if (frame.IsObject)
                         context.State.JsonRecordLayout = frame.Result is PyDict dictionary
-                            ? dictionary.ShareRecordKeys(context, span) : frame.Expected;
+                            ? (dictionary.ShareRecordKeys(context, span), frame.PlainNames) : frame.Expected;
                     var value = frame.Result;
                     var end = position + 1;
                     var hook = frame.IsObject ? options.ObjectPairsHook ?? options.ObjectHook : null;
@@ -161,7 +163,8 @@ internal sealed partial class LythonRuntime
                 if (frame.IsObject)
                 {
                     var property = ReadJsonObjectKey(input, options, position, context, span, frame.Expected,
-                        frame.Result is PyDict dictionary ? dictionary.Count : ((PyList)frame.Result).Count);
+                        frame.Result is PyDict dictionary ? dictionary.Count : ((PyList)frame.Result).Count,
+                        ref frame.PlainNames);
                     frame.Key = property.Value;
                     position = EnsureJsonColon(bytes, property.End, input, span, context) + 1;
                 }

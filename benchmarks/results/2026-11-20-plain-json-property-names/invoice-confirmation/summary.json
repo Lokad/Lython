@@ -1,0 +1,55 @@
+{
+  "complete": true,
+  "elapsedSeconds": 80.8543590400368,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "staging": {
+    "retiredOnly": [],
+    "alreadyAbsent": [],
+    "freshIdleLease": true,
+    "allHashesPathsOwnershipLinksAndAliasesVerified": true,
+    "canonicalArchiveAndCurrentImagesPreserved": true,
+    "freeBeforeBytes": 246386688,
+    "freeAfterBytes": 246345728
+  },
+  "rows": [
+    {
+      "case": "scripts.csv-invoice.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 6.728988559322034,
+        "candidate-control": 6.696755033057851,
+        "reference": 6.657521239669421,
+        "candidate": 6.629079537815126
+      },
+      "cpuMilliseconds": {
+        "reference-control": 6.864406779661017,
+        "candidate-control": 6.859504132231405,
+        "reference": 6.694214876033058,
+        "candidate": 6.806722689075631
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 1.641840360197195,
+        "candidate-control": 0.9806338806803324,
+        "reference": 0.8888541359802142,
+        "candidate": 1.844164924654945
+      },
+      "elapsedChangePercent": [
+        -1.484755407534455,
+        -0.47902483382183947,
+        -0.4272115826656764,
+        0.5893153318783595
+      ],
+      "cpuChangePercent": [
+        -0.8403361344537785,
+        -0.07142128354250543,
+        1.680672268907557,
+        2.4691358024691246
+      ],
+      "referenceSpreadPercent": 1.0734824130453902,
+      "candidateSpreadPercent": 1.0208882674687336
+    }
+  ],
+  "retentionDecisionPending": false,
+  "CPythonRefreshed": false
+}

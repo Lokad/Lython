@@ -9,6 +9,10 @@ namespace Lokad.Lython.Tests;
 
 public sealed class JsonStringTokenStorageTests
 {
+    private delegate (PyString, int) ScanString(PyString input, bool strict, int position,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span, out bool escaped,
+        PyDict.RecordKeys? expected, int expectedPosition);
+
     [Fact]
     public void ErrorCoordinateScanObservesCancellationWithoutAdmittingPayloadStorage()
     {
@@ -53,13 +57,13 @@ public sealed class JsonStringTokenStorageTests
             // entry check. Escapes advance by two and can skip modulo checks.
             var method = typeof(LythonRuntime).GetNestedType("JsonModule", BindingFlags.NonPublic)!
                 .GetMethod("ReadJsonString", BindingFlags.NonPublic | BindingFlags.Static)!;
-            var scan = method.CreateDelegate<Func<PyString, bool, int, LythonRuntime.ExecutionContext,
-                LythonSourceSpan, PyDict.RecordKeys?, int, (PyString, int)>>();
+            var scan = method.CreateDelegate<ScanString>();
             Assert.True(budget.TryReserve(1024 * 1024 - budget.ReservedBytes, out var blocker));
             using (blocker)
             {
                 cancellation.Cancel();
-                var failure = Assert.Throws<LythonRuntimeException>(() => scan(source, true, 0, context, new(0, 0, 0, 0), null, 0));
+                var failure = Assert.Throws<LythonRuntimeException>(() =>
+                    scan(source, true, 0, context, new(0, 0, 0, 0), out _, null, 0));
                 Assert.Equal(LythonFailureReason.Cancelled, failure.Attribution?.Reason);
                 Assert.Null(context.MemoryGovernor.AdmissionFailure);
             }

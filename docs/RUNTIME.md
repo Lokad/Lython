@@ -2275,9 +2275,11 @@ only additional storage. If a callback fills that capacity, the pending write
 fails before publication; it does not retry or grow unadmitted backing. Refusal
 raised during a refund also stops the write and preserves its original attribution.
 JSON and CSV records can share immutable keys through their existing batch/cache
-owner. Their value capacity grows from actual fields, independently of a previous
-wide layout. Value updates, deletions and clear need no metadata admission;
-deletion leaves an empty value slot. Adding a key first admits private replacement
+owner. After a strict JSON decode of unescaped keys, a bounded UTF-8 comparison
+can consume an exact expected key directly from the next object. Other keys use
+the ordinary string decoder. Value capacity grows from actual fields,
+independently of a previous wide layout. Value updates, deletions and clear need
+no metadata admission. Deletion leaves an empty value slot. Adding a key first admits private replacement
 storage while the original layout and values remain funded. Protocol-key mutation
 conservatively makes metadata private before guest equality, so it may refuse
 earlier than an ordinary value update. Shared keys retain their funding after

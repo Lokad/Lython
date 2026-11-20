@@ -108,7 +108,7 @@ internal sealed partial class LythonRuntime
             var first = bytes[position];
             if (first == (byte)'"')
             {
-                var (value, stringEnd) = ReadJsonString(input, (bool)options.Strict, position, context, span);
+                var (value, stringEnd) = ReadJsonString(input, (bool)options.Strict, position, context, span, out _);
                 result = (value, stringEnd);
                 return true;
             }
@@ -173,12 +173,14 @@ internal sealed partial class LythonRuntime
             ValueTask<object> converted, int end)
             => (await converted.ConfigureAwait(false), end);
 
-        private static (PyString Value, int End) ReadJsonString(PyString input, bool strict, int position, ExecutionContext context, LythonSourceSpan span, PyDict.RecordKeys? expectedPropertyNames = null, int expectedPosition = 0)
+        private static (PyString Value, int End) ReadJsonString(PyString input, bool strict, int position,
+            ExecutionContext context, LythonSourceSpan span, out bool escaped,
+            PyDict.RecordKeys? expectedPropertyNames = null, int expectedPosition = 0)
         {
             var original = input.Utf8Span;
             var end = position + 1;
             var reduction = 0;
-            var escaped = false;
+            escaped = false;
             var closed = false;
             var unpairedSurrogate = false;
             var nextCheck = position + Math.Min(1024, original.Length - position);
@@ -316,10 +318,23 @@ internal sealed partial class LythonRuntime
         }
 
         // Keys share the enclosing decoder admission, with no callback.
-        private static (PyString Value, int End) ReadJsonObjectKey(PyString input, JsonLoadOptions options, int position, ExecutionContext context, LythonSourceSpan span, PyDict.RecordKeys? expected, int expectedPosition)
+        private static (PyString Value, int End) ReadJsonObjectKey(PyString input, JsonLoadOptions options,
+            int position, ExecutionContext context, LythonSourceSpan span,
+            (PyDict.RecordKeys? Keys, bool PlainNames) expected, int expectedPosition, ref bool plainNames)
         {
             context.CheckExecution(span);
-            return ReadJsonString(input, (bool)options.Strict, position, context, span, expected, expectedPosition);
+            // A strict decode of an unescaped name proves its UTF-8 contains
+            // neither syntax bytes nor raw controls. An exact name and closing
+            // quote can consume the token without lexing or validating it again.
+            if (expected.PlainNames && expected.Keys?.MatchDelimitedName(input.Utf8Span[(position + 1)..],
+                expectedPosition, (byte)'"', context, span) is { } key)
+                return (key, position + 2 + key.ByteLength);
+
+            var strict = (bool)options.Strict;
+            var property = ReadJsonString(input, strict, position, context, span, out var escaped,
+                expected.Keys, expectedPosition);
+            plainNames &= strict && !escaped;
+            return property;
         }
 
         private static int NextJsonContainerToken(PyString input, int valueEnd, bool isObject,

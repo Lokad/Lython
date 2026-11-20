@@ -25,7 +25,7 @@ public sealed class JsonPropertyNameStorageTests
             {
                 var first = new PyDict(context.MemoryGovernor, span);
                 first.SetItem(retained, PyNone.Instance);
-                state.JsonRecordLayout = first.ShareRecordKeys(context, span);
+                state.JsonRecordLayout = (first.ShareRecordKeys(context, span), false);
             }
             var snapshot = state.JsonRecordLayout;
             var replacement = new PyDict(context.MemoryGovernor, span);
@@ -36,12 +36,12 @@ public sealed class JsonPropertyNameStorageTests
             using (blocker)
             {
                 var failure = Assert.Throws<LythonRuntimeException>(() =>
-                    state.JsonRecordLayout = replacement.ShareRecordKeys(context, span));
+                    state.JsonRecordLayout = (replacement.ShareRecordKeys(context, span), false));
                 Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
                 Assert.Same(failure, context.MemoryGovernor.AdmissionFailure);
                 Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
                 Assert.Equal(limit, budget.ReservedBytes);
-                Assert.Same(snapshot, state.JsonRecordLayout);
+                Assert.Equal(snapshot, state.JsonRecordLayout);
                 Assert.Equal(2, replacement.Count);
                 Assert.Same(retained, replacement.Keys.First());
                 Assert.Equal("retained-name", retained.AsString());

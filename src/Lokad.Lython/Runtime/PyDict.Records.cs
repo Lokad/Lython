@@ -232,6 +232,16 @@ internal sealed partial class PyDict
             }
         }
 
+        internal PyString? MatchDelimitedName(ReadOnlySpan<byte> source, int position, byte delimiter,
+            LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        {
+            if ((uint)position >= (uint)Count) return null;
+            var key = (PyString)_keys[position].Key!;
+            var length = key.ByteLength;
+            return length < source.Length && source[length] == delimiter &&
+                EqualNativeText(key, source[..length], context, span) ? key : null;
+        }
+
         internal PyString? FindName(ReadOnlySpan<byte> bytes, int position,
             LythonRuntime.ExecutionContext context, LythonSourceSpan span)
         {

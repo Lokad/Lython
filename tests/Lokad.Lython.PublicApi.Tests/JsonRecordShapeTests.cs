@@ -5,6 +5,43 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class JsonRecordShapeTests
 {
     [Theory]
+    [InlineData("{\"é😀\":0}", true, "{\"é😀\" 1}", "Expecting ':' delimiter\n6 True\n")]
+    [InlineData("{\"a\\\"b\":0}", true, "{\"a\"b\":1}", "Expecting ':' delimiter\n4 True\n")]
+    [InlineData("{\"a\\\\b\":0}", true, "{\"a\\b\":1}", "{\"a\\b\":1}\n")]
+    [InlineData("{\"a\u0000b\":0}", false, "{\"a\u0000b\":1}", "Invalid control character at\n3 True\n")]
+    [InlineData("{\"\":0,\"é😀\":1}", true, "{\"\":2,\"é😀\":3,\"\\u00e9😀\":4}", "{\"\":2,\"é😀\":4}\n")]
+    [InlineData("{\"é😀\":0}", true, "{\"é😀\\q\":1}", "Invalid \\escape\n4 True\n")]
+    public async Task PreviousRecordNamesPreserveStringSyntaxAndStrictness(
+        string primer, bool primerStrict, string document, string output)
+    {
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var script = new LythonEngine().Compile("""
+            import json
+            json.loads(primer, strict=primer_strict)
+            try:
+                row = json.loads(document)
+                print(json.dumps(row, ensure_ascii=False, separators=(',', ':')))
+            except json.JSONDecodeError as error:
+                print(error.msg)
+                print(error.pos, error.doc is document)
+            """, budget);
+        Assert.True(script.IsValid);
+        var baseline = budget.ReservedBytes;
+        var options = new LythonRunOptions { Globals = new Dictionary<string, object?>
+            { ["primer"] = primer, ["primer_strict"] = primerStrict, ["document"] = document } };
+        foreach (var asynchronous in new[] { false, true })
+        {
+            using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options)
+                : script.Run(new MockLythonHost(), options))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal(output, result.StandardOutput);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+    }
+
+    [Theory]
     [MemberData(nameof(Programs))]
     public async Task ChangingRecordsPreservePythonValuesOrderAndOwnedResults(string name, string source, string expected, bool readsFile, bool asynchronous)
     {
