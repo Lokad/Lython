@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1220/B1221 direct declaration operands](results/2026-11-20-direct-declaration-operands/README.md)
+removes structural hashing of per-site declaration metadata. Dataclass
+compilation takes 5.77–6.95% less elapsed and compile-to-result takes
+1.95–6.69% less, with lower CPU. The initial adverse manifest
+compile-to-result timing does not recur in the longer repeat. Keep
+both observations and the inconclusive warm controls.
+
 [B1219 current annotation demand](results/2026-11-20-current-annotation-demand-attribution/README.md)
 locates the annotation prepass on eight eager compiler stacks, one
 dataclass stack and none in the manifest. The manifest has 296

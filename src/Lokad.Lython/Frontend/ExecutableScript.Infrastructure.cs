@@ -217,29 +217,19 @@ internal sealed partial class ExecutableScript
             return index;
         }
 
-        private int InternConstant(object? value)
+        private int InternConstant(object value)
         {
-            if (value is null)
-            {
-                if (_nullConstantIndex is { } existingNull)
-                {
-                    return existingNull;
-                }
+            if (_buffers.ConstantIndexes.TryGetValue(value, out var existing)) return existing;
 
-                var nullIndex = _buffers.Constants.Count;
-                _buffers.Constants.Add(null);
-                _nullConstantIndex = nullIndex;
-                return nullIndex;
-            }
+            var index = AppendConstant(value);
+            _buffers.ConstantIndexes.Add(value, index);
+            return index;
+        }
 
-            if (_buffers.ConstantIndexes.TryGetValue(value, out var existing))
-            {
-                return existing;
-            }
-
+        private int AppendConstant(object value)
+        {
             var index = _buffers.Constants.Count;
             _buffers.Constants.Add(value);
-            _buffers.ConstantIndexes.Add(value, index);
             return index;
         }
 
@@ -349,37 +339,6 @@ internal sealed partial class ExecutableScript
                 _localIndexes.TryGetValue(binding.Name, out var slot) ? slot : -1).ToArray();
             _buffers.MatchCases.Add(new ExecutableMatchCaseBinding(pattern, span, localBindings));
             return _buffers.MatchCases.Count - 1;
-        }
-
-        private sealed class ConstantValueComparer : IEqualityComparer<object>
-        {
-            public static readonly ConstantValueComparer Instance = new();
-
-            public new bool Equals(object? left, object? right)
-            {
-                if (left is byte[] leftBytes && right is byte[] rightBytes)
-                {
-                    return leftBytes.AsSpan().SequenceEqual(rightBytes);
-                }
-
-                return object.Equals(left, right);
-            }
-
-            public int GetHashCode(object value)
-            {
-                if (value is not byte[] bytes)
-                {
-                    return value.GetHashCode();
-                }
-
-                var hash = new HashCode();
-                foreach (var item in bytes)
-                {
-                    hash.Add(item);
-                }
-
-                return hash.ToHashCode();
-            }
         }
 
         // A for-loop owns one iterator slot on the value stack above the loop-entry

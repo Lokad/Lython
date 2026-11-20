@@ -15,7 +15,7 @@ internal sealed partial class ExecutableScript
             }
             var code = expression.Code;
             block = CompileExpression(syntax.Clauses[0].Iterable, block);
-            EmitOperation(new ExecutableCreateGeneratorExpression(code, syntax.Clauses[0].Iterable.Span, joinedTrimmedSplit), expression.Span, block);
+            EmitDefinition(new ExecutableCreateGeneratorExpression(code, syntax.Clauses[0].Iterable.Span, joinedTrimmedSplit), expression.Span, block);
             return block;
         }
 

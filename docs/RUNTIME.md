@@ -438,6 +438,9 @@ their incoming operand depth for handlers, including entries that contain only
 a jump. Final linearization skips unreachable blocks in original order, creates
 the retained instruction array and maps protected ranges to instruction offsets.
 Original block widths keep nested cleanup ordered innermost first.
+Declaration operands keep the body or deferred binding owned by their
+site. Literal values and reusable instructions share interned operands
+within the code object.
 Instructions store an opcode, source span, opcode metadata and compiler-prepared
 storage positions. The opcode determines each metadata operand's domain;
 operand projections and control-flow retargeting keep explicit validity checks.

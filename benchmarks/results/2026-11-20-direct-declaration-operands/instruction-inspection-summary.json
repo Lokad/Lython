@@ -1,0 +1,41 @@
+{
+  "scripts.dataclass-inherited-configuration.generated": {
+    "equivalent": true,
+    "reference": {
+      "code": 51,
+      "instructions": 503,
+      "constants": 195
+    },
+    "candidate": {
+      "code": 51,
+      "instructions": 503,
+      "constants": 195
+    }
+  },
+  "scripts.config-manifest.small": {
+    "equivalent": true,
+    "reference": {
+      "code": 7,
+      "instructions": 263,
+      "constants": 57
+    },
+    "candidate": {
+      "code": 7,
+      "instructions": 263,
+      "constants": 57
+    }
+  },
+  "scripts.annotated-rule-closures": {
+    "equivalent": true,
+    "reference": {
+      "code": 3,
+      "instructions": 45,
+      "constants": 10
+    },
+    "candidate": {
+      "code": 3,
+      "instructions": 45,
+      "constants": 10
+    }
+  }
+}

@@ -91,7 +91,7 @@ internal sealed partial class ExecutableScript
         internal sealed class Buffers
         {
             internal readonly List<object?> Constants = [];
-            internal readonly Dictionary<object, int> ConstantIndexes = new(ConstantValueComparer.Instance);
+            internal readonly Dictionary<object, int> ConstantIndexes = [];
             internal readonly List<string> Names = [];
             internal readonly Dictionary<string, int> NameIndexes = new(StringComparer.Ordinal);
             internal readonly List<string> Locals = [];
@@ -126,7 +126,6 @@ internal sealed partial class ExecutableScript
 
         private readonly Compilation _compilation;
         private readonly Buffers _buffers;
-        private int? _nullConstantIndex;
         // These maps become code metadata, including the identity used to
         // select a prepared capture layout at execution.
         private readonly Dictionary<string, int> _localIndexes = new(StringComparer.Ordinal);

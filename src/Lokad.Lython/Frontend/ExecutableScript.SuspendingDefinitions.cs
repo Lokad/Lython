@@ -32,6 +32,11 @@ internal sealed partial class ExecutableScript
 {
     private sealed partial class Builder
     {
+        // Each declaration owns its prepared body or deferred binding.
+        // Intern guest values and reusable operations elsewhere.
+        private void EmitDefinition(ExecutableOperation operation, LythonSourceSpan span, int block)
+            => AddInstruction(block, ExecutableInstruction.ApplyOperation(AppendConstant(operation), span));
+
         private int CompileFunctionDefinition(FunctionDefinitionStatementSyntax definition, int block, bool yielding)
         {
             var typeParameters = LoweredScript.LowerTypeParameters(definition.TypeParameters);
@@ -58,7 +63,7 @@ internal sealed partial class ExecutableScript
             }
             // The creation operation retains lowered annotations only when
             // it still evaluates them in the definition's type scope.
-            EmitOperation(new ExecutableCreateFunction(code, definition.ParameterLayout, definition.Decorators.Count,
+            EmitDefinition(new ExecutableCreateFunction(code, definition.ParameterLayout, definition.Decorators.Count,
                 definition.IsGenerator, annotations.Length, deferredAnnotations, typeParameters), definition.Span, block);
             // Module declarations update their live namespace and optional slot.
             var name = definition.Name;
@@ -114,7 +119,7 @@ internal sealed partial class ExecutableScript
                 lambda.CompleteCompilation(CompileFunctionCode("<lambda>", lambda.ParameterLayout,
                     [], lambda.ScopeFacts, generator: lambda.IsGenerator,
                     qualifiedName: lambda.Lambda.PreparedQualifiedName, lambda: lambda));
-            EmitOperation(new ExecutableCreateLambda(lambda.Binding), lambda.Span, block);
+            EmitDefinition(new ExecutableCreateLambda(lambda.Binding), lambda.Span, block);
             return block;
         }
 
@@ -160,7 +165,7 @@ internal sealed partial class ExecutableScript
                     else if (argument.Form.Kind == CallArgumentKind.Positional) baseCount++;
                 }
             }
-            EmitOperation(new ExecutableCreateClass(syntax, body, typeParameters, genericHeader, expandedHeader, baseCount), syntax.Span, block);
+            EmitDefinition(new ExecutableCreateClass(syntax, body, typeParameters, genericHeader, expandedHeader, baseCount), syntax.Span, block);
             return block;
         }
     }

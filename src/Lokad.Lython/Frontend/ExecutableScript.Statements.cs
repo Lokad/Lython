@@ -106,7 +106,7 @@ internal sealed partial class ExecutableScript
                 case TypeAliasStatementSyntax alias:
                     InternModuleBinding(alias.Name);
                     var binding = new LoweredTypeAlias(alias, LoweredScript.LowerExpression(alias.Value));
-                    EmitOperation(new ExecutableBindTypeAlias(binding), alias.Span, currentBlock);
+                    EmitDefinition(new ExecutableBindTypeAlias(binding), alias.Span, currentBlock);
                     return currentBlock;
                 default:
                     throw new InvalidOperationException($"Unknown statement syntax: {statement.GetType().Name}.");

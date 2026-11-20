@@ -1,0 +1,92 @@
+{
+  "complete": true,
+  "elapsedSeconds": 153.93012836016715,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "staging": {
+    "retiredOnly": [],
+    "alreadyAbsent": [],
+    "freshIdleLease": true,
+    "allHashesPathsOwnershipLinksAndAliasesVerified": true,
+    "canonicalArchiveAndCurrentImagesPreserved": true,
+    "freeBeforeBytes": 251949056,
+    "freeAfterBytes": 246194176
+  },
+  "rows": [
+    {
+      "case": "scripts.config-manifest.small",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "reference-control": 0.4156373276081425,
+        "candidate-control": 0.41697246819338424,
+        "reference": 0.425915090391909,
+        "candidate": 0.4138634933837429
+      },
+      "cpuMilliseconds": {
+        "reference-control": 0.5025445292620866,
+        "candidate-control": 0.5025445292620866,
+        "reference": 0.5120101137800254,
+        "candidate": 0.4977945809703844
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 1.5153654115956905,
+        "candidate-control": 1.4359703058847946,
+        "reference": 0.5715812259862063,
+        "candidate": 2.295291746684009
+      },
+      "elapsedChangePercent": [
+        -2.8295773688311265,
+        -2.0996255827179455,
+        -0.4267745235028375,
+        0.3212273048056158
+      ],
+      "cpuChangePercent": [
+        -2.77641640800641,
+        -1.8487104577011304,
+        -0.945179584120992,
+        0.0
+      ],
+      "referenceSpreadPercent": 2.4727718376286623,
+      "candidateSpreadPercent": 0.751207791782349
+    },
+    {
+      "case": "scripts.config-manifest.small",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 0.1953742097791798,
+        "candidate-control": 0.19250151386675166,
+        "reference": 0.1932550744680851,
+        "candidate": 0.1938682690611216
+      },
+      "cpuMilliseconds": {
+        "reference-control": 0.2555205047318612,
+        "candidate-control": 0.25183296142811606,
+        "reference": 0.2514506769825919,
+        "candidate": 0.2520478890989288
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 2.9694017827101358,
+        "candidate-control": 2.2776799461772783,
+        "reference": 1.226910047115525,
+        "candidate": 2.0745797212297976
+      },
+      "elapsedChangePercent": [
+        -1.4703557422829694,
+        -0.7707981108459938,
+        -0.3899305637420025,
+        0.3172980552900162
+      ],
+      "cpuChangePercent": [
+        -1.4431496633175445,
+        -1.3590359946167752,
+        0.15203158333538802,
+        0.23750666472783788
+      ],
+      "referenceSpreadPercent": 1.0965483400254383,
+      "candidateSpreadPercent": 0.7099971147842554
+    }
+  ],
+  "CPythonRefreshed": false,
+  "retained": true,
+  "retentionReason": "Store unique declarations directly. Both dataclass cold boundaries improve on both clocks. Manifest adverse compile-to-result timing did not repeat."
+}

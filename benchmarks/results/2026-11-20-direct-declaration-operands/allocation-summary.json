@@ -1,0 +1,50 @@
+[
+  {
+    "case": "scripts.dataclass-inherited-configuration.generated",
+    "boundary": "compile",
+    "referenceBytes": 614160,
+    "candidateBytes": 608184,
+    "changePercent": -0.9730363423212207
+  },
+  {
+    "case": "scripts.config-manifest.small",
+    "boundary": "compile",
+    "referenceBytes": 244192,
+    "candidateBytes": 243752,
+    "changePercent": -0.18018608308216777
+  },
+  {
+    "case": "scripts.annotated-rule-closures",
+    "boundary": "compile",
+    "referenceBytes": 52608,
+    "candidateBytes": 52584,
+    "changePercent": -0.045620437956206406
+  },
+  {
+    "case": "scripts.dataclass-inherited-configuration.generated",
+    "boundary": "warm",
+    "referenceBytes": 421504,
+    "candidateBytes": 421504,
+    "changePercent": 0.0,
+    "referencePeakBytes": 285027,
+    "candidatePeakBytes": 285027
+  },
+  {
+    "case": "scripts.config-manifest.small",
+    "boundary": "warm",
+    "referenceBytes": 103024,
+    "candidateBytes": 103024,
+    "changePercent": 0.0,
+    "referencePeakBytes": 58255,
+    "candidatePeakBytes": 58255
+  },
+  {
+    "case": "scripts.annotated-rule-closures",
+    "boundary": "warm",
+    "referenceBytes": 931296,
+    "candidateBytes": 931296,
+    "changePercent": 0.0,
+    "referencePeakBytes": 2444081,
+    "candidatePeakBytes": 2444081
+  }
+]
