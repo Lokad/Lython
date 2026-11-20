@@ -485,7 +485,7 @@ internal sealed partial class LythonRuntime
     {
         using var defaults = await EvaluateFunctionDefaults(lambda.DefaultValues, lambda.ParameterLayout, context, lambda.Span, true)
             .ConfigureAwait(false);
-        var function = CreateLambdaFunction(lambda, defaults?.Values ?? default, context);
+        var function = CreateLambdaFunction(lambda.Binding, defaults?.Values ?? default, context, lambda.Span);
         defaults?.Publish();
         return function;
     }

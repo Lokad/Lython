@@ -169,21 +169,21 @@ internal sealed partial class LythonRuntime
                     break;
                 case ExecutableCreateLambda lambda:
                     {
+                        var binding = lambda.Binding;
                         int[]? lambdaCaptures = null;
-                        if (invocation is null && (lambda.Expression.NamespaceClosure || !CanDefineWithoutInvocation(
+                        if (invocation is null && (binding.NamespaceClosure || !CanDefineWithoutInvocation(
                             lambda.CodeObject, in execution, scope, span, out lambdaCaptures)))
                             return false;
-                        var layout = lambda.Expression.ParameterLayout;
                         var first = instruction.InputStart;
                         var defaults = lambda.InputCount == 0 ? null : (PendingFunctionDefaults)execution.Stack[first];
                         PyFunctionBase function;
                         try
                         {
                             function = invocation is null
-                                ? CreateFunctionValue(layout, lambda.CodeObject, GetGlobalContext(context),
+                                ? CreateFunctionValue(binding.Layout, binding.CodeObject, GetGlobalContext(context),
                                     CaptureExecutableCells(lambda.CodeObject, context, span, ref execution, lambdaCaptures),
-                                    defaults?.Values ?? default, lambda.Expression.IsGenerator, context, span, PythonCallableKind.Lambda)
-                                : CreateLambdaFunction(lambda.Expression, defaults?.Values ?? default, context);
+                                    defaults?.Values ?? default, binding.IsGenerator, context, span, PythonCallableKind.Lambda)
+                                : CreateLambdaFunction(binding, defaults?.Values ?? default, context, span);
                             defaults?.Publish();
                         }
                         finally { execution.Stack.RetireTo(instruction.ResultSlot); }

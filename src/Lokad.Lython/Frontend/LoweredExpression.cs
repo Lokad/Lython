@@ -332,7 +332,8 @@ internal sealed record LoweredLambdaExpression : LoweredExpression
     internal IReadOnlyList<LoweredStatement> FunctionBody => _body.RequireNotNull();
     internal ExecutableCodeObject? PreparedCode { get; private set; }
     public ExecutableCodeObject Code => PreparedCode.RequireNotNull();
-    internal bool NamespaceClosure { get; private set; }
+    private bool NamespaceClosure { get; set; }
+    internal ExecutableLambdaBinding Binding => new(Code, ParameterLayout, IsGenerator, NamespaceClosure);
 
     internal void CompleteCompilation(ExecutableCodeObject code, bool namespaceClosure = false)
     {

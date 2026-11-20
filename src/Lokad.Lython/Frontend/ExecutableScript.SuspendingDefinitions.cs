@@ -9,10 +9,13 @@ internal sealed record ExecutableCreateFunction(ExecutableFunctionBinding Bindin
     internal int InputCount => checked(Binding.DecoratorCount + (AnnotationsOnStack ? Binding.Annotations.Length : 0) +
         (Binding.ParameterLayout.Defaults.Length == 0 ? 0 : 1));
 }
-internal sealed record ExecutableCreateLambda(LoweredLambdaExpression Expression) : ExecutableOperation
+internal readonly record struct ExecutableLambdaBinding(
+    ExecutableCodeObject CodeObject, FunctionParameterLayout Layout, bool IsGenerator, bool NamespaceClosure);
+
+internal sealed record ExecutableCreateLambda(ExecutableLambdaBinding Binding) : ExecutableOperation
 {
-    internal ExecutableCodeObject CodeObject => Expression.Code;
-    internal int InputCount => Expression.ParameterLayout.Defaults.Length == 0 ? 0 : 1;
+    internal ExecutableCodeObject CodeObject => Binding.CodeObject;
+    internal int InputCount => Binding.Layout.Defaults.Length == 0 ? 0 : 1;
 }
 internal sealed record ExecutableStartClassHeader(int Count) : ExecutableOperation;
 internal sealed record ExecutableCreateClass(LoweredClassDefinitionStatement Definition, bool ExpandedHeader,
@@ -66,7 +69,7 @@ internal sealed partial class ExecutableScript
                 lambda.CompleteCompilation(CompileFunctionCode("<lambda>", lambda.ParameterLayout,
                     lambda.FunctionBody, lambda.ScopeFacts, generator: lambda.IsGenerator,
                     qualifiedName: lambda.Lambda.PreparedQualifiedName));
-            EmitOperation(new ExecutableCreateLambda(lambda), lambda.Span, block);
+            EmitOperation(new ExecutableCreateLambda(lambda.Binding), lambda.Span, block);
             return block;
         }
 
