@@ -585,6 +585,8 @@ when identity or an object representation is observed. Wider integers retain
 the exact-integer path. Compiled return and completion storage carries the same
 slots; cleanup that can observe a returning alias publishes its original identity
 before routing through finally. Public/callback results retain their object ABI.
+Unary builtin selection checks the callable before reading its operand as an
+object. Ordinary helper calls can bind already-evaluated numeric slots directly.
 Exact-range iteration also publishes directly into these slots in ordinary,
 persistent and asynchronous execution. Observing an item still establishes its
 stable Python identity; custom iterators and wider bounds keep the general path.
