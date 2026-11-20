@@ -1,0 +1,50 @@
+[
+  {
+    "case": "scripts.rule-default-closures",
+    "referenceBytes": 2043536,
+    "candidateBytes": 1650320,
+    "changePercent": -19.241941419187135,
+    "referencePeak": 2917959,
+    "candidatePeak": 2917959
+  },
+  {
+    "case": "scripts.annotated-rule-closures",
+    "referenceBytes": 1242728,
+    "candidateBytes": 1046120,
+    "changePercent": -15.82067837853497,
+    "referencePeak": 2444313,
+    "candidatePeak": 2444313
+  },
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories",
+    "referenceBytes": 1701616,
+    "candidateBytes": 1505008,
+    "changePercent": -11.554193190473061,
+    "referencePeak": 2968657,
+    "candidatePeak": 2968657
+  },
+  {
+    "case": "scripts.csv-invoice.large",
+    "referenceBytes": 3672348,
+    "candidateBytes": 3672462,
+    "changePercent": 0.003104280966836903,
+    "referencePeak": 9432613,
+    "candidatePeak": 9432613
+  },
+  {
+    "case": "scripts.dataclass-inherited-configuration.generated",
+    "referenceBytes": 422936,
+    "candidateBytes": 423448,
+    "changePercent": 0.12105850530577111,
+    "referencePeak": 285027,
+    "candidatePeak": 285027
+  },
+  {
+    "case": "scripts.rule-default-closures.keyword-observed",
+    "referenceBytes": 2289392,
+    "candidateBytes": 2289392,
+    "changePercent": 0.0,
+    "referencePeak": 3049551,
+    "candidatePeak": 3049551
+  }
+]
