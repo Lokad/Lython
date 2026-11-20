@@ -469,7 +469,6 @@ internal sealed record ExecutableFunctionBinding(
     bool IsGenerator)
 {
     public required FunctionParameterLayout ParameterLayout { get; init; }
-    public PyDict.RecordKeys? AnnotationKeys { get; init; }
 
 }
 
@@ -484,6 +483,7 @@ internal sealed record ExecutableCaptureSources(IReadOnlyDictionary<string, int>
 
 internal sealed partial class ExecutableCodeObject
 {
+    internal PyDict.RecordKeys? DefinitionAnnotationKeys { get; set; }
 
     public ExecutableCodeObject(
         string name,

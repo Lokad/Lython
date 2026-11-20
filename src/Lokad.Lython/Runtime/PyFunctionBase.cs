@@ -231,7 +231,7 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
             "__qualname__" => _assignedQualName ?? CodeObject.QualifiedName ?? CodeObject.FunctionName.RequireNotNull(),
             "__module__" => _assignedModule ?? (TryGetModuleName(out var moduleName) ? moduleName : (object)PyNone.Instance),
             "__doc__" => _docstring ?? PyNone.Instance,
-            "__annotations__" => _annotations ??= new PyDict(_closure.MemoryGovernor),
+            "__annotations__" => ReadAnnotations(),
             "__type_params__" => _typeParameters,
             _ => null,
         };
@@ -278,7 +278,7 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
             case "__annotations__":
                 if (value is not (PyNone or PyDict or PyDefaultDict or PyCounter))
                     throw new LythonRuntimeException("TypeError", "__annotations__ must be set to a dict object", null);
-                _annotations = value is PyNone ? null : value;
+                ReplaceAnnotations(value is PyNone ? null : value);
                 break;
             case "__type_params__": _typeParameters = value; break;
             default:
@@ -301,7 +301,7 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
         if (name == "__annotations__")
         {
             removed = _annotations is not null;
-            _annotations = null;
+            ReplaceAnnotations(null);
         }
         else if (name == "__type_params__")
         {
@@ -317,6 +317,32 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
             finally { if (!mayEscape) governor.RefundUnpublishedValue(key); }
         }
         return removed || name == "__annotations__";
+    }
+
+    internal void AttachPreparedAnnotations(ReadOnlySpan<LythonRuntime.ExecutableSlot> evaluated,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        System.Diagnostics.Debug.Assert(_annotations is null && ReferenceEquals(_closure.MemoryGovernor, context.MemoryGovernor));
+        _annotations = CodeObject.DefinitionAnnotationKeys!.PrepareAnnotationValues(evaluated, context, span);
+    }
+
+    private object ReadAnnotations()
+    {
+        if (_annotations is object?[] values)
+        {
+            var span = PyStructuralGuard.AmbientSpan;
+            _closure.CheckExecution(span);
+            _annotations = CodeObject.DefinitionAnnotationKeys!.AdoptAnnotationValues(values, _closure.MemoryGovernor, span);
+        }
+        return _annotations ??= new PyDict(_closure.MemoryGovernor);
+    }
+
+    private void ReplaceAnnotations(object? value)
+    {
+        var previous = _annotations;
+        _annotations = value;
+        if (previous is object?[] values)
+            PyDict.RecordKeys.RefundAnnotationValues(values, _closure.MemoryGovernor);
     }
 
     public PyString RenderPython(PyRenderingContext context) => PyString.FromString($"<function {Name}>");

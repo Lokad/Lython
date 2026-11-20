@@ -112,7 +112,7 @@ internal sealed partial class LythonRuntime
     private static ValueTask AttachTypeMetadataAsync(PyFunctionBase function,
         LoweredFunctionAnnotation[] inputs, bool hasTypeParameters, LythonSourceSpan span,
         TypeScope scope, ExecutionContext definingContext, bool asynchronous,
-        ReadOnlyMemory<ExecutableSlot> evaluated = default, PyDict.RecordKeys? annotationKeys = null)
+        PyDict.RecordKeys? annotationKeys = null)
     {
         if (hasTypeParameters)
             function.TrySetMember("__type_params__", scope.Parameters);
@@ -121,26 +121,7 @@ internal sealed partial class LythonRuntime
 
         var annotations = annotationKeys?.CreateRecord(definingContext, span, inputs.Length)
             ?? new PyDict(inputs.Length, definingContext.MemoryGovernor, span);
-        if (evaluated.IsEmpty && inputs.Length != 0)
-            return EvaluateFunctionAnnotationsAsync(function, annotations, inputs, scope, definingContext, asynchronous);
-
-        try
-        {
-            for (var i = 0; i < inputs.Length; i++)
-            {
-                var input = inputs[i];
-                var value = RuntimeValue(evaluated.Span[i].Object.RequireNotNull());
-                var annotationSpan = input.Expression.Span;
-                annotations.AddDefinitionValue(input.Key, value, definingContext, annotationSpan);
-            }
-            function.TrySetMember("__annotations__", annotations);
-        }
-        catch
-        {
-            annotations.DiscardUnpublishedStorage();
-            throw;
-        }
-        return ValueTask.CompletedTask;
+        return EvaluateFunctionAnnotationsAsync(function, annotations, inputs, scope, definingContext, asynchronous);
     }
 
     private static async ValueTask EvaluateFunctionAnnotationsAsync(PyFunctionBase function, PyDict annotations,

@@ -83,9 +83,44 @@ public sealed class FunctionAttributeAccountingTests
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
-    private static PyExecutableFunction Function(LythonRuntime.ExecutionContext context)
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AnnotationDeletionRefundsOnlyUnpublishedStorage(bool readFirst)
     {
-        var syntax = LythonFrontend.Compile("def f():pass\nreturn f").Script!;
+        const long limit = 1024 * 1024;
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) });
+        const string source = "def make():\n def f(value:int)->int:return value\n return f\nreturn make()";
+        var function = Function(context, source);
+        var padding = limit - context.MemoryGovernor.CurrentAccountedBytes;
+        context.MemoryGovernor.Reserve(padding, null);
+        context.MemoryGovernor.Commit(padding);
+
+        PyDict? annotations = null;
+        if (readFirst)
+        {
+            Assert.True(function.TryGetMember("__annotations__", out var value));
+            annotations = Assert.IsType<PyDict>(value);
+            Assert.True(function.TryGetMember("__annotations__", out var observed));
+            Assert.Same(annotations, observed);
+            Assert.Equal(limit, context.MemoryGovernor.CurrentAccountedBytes);
+        }
+
+        Assert.True(function.TryDeleteMember("__annotations__", null));
+        if (readFirst)
+        {
+            Assert.Equal(limit, context.MemoryGovernor.CurrentAccountedBytes);
+            Assert.Equal(2, annotations!.Count);
+        }
+        else Assert.InRange(context.MemoryGovernor.CurrentAccountedBytes, 0, limit - 1);
+        Assert.Null(context.MemoryGovernor.AdmissionFailure);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+    }
+
+    private static PyExecutableFunction Function(LythonRuntime.ExecutionContext context, string source = "def f():pass\nreturn f")
+    {
+        var syntax = LythonFrontend.Compile(source).Script!;
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
         return Assert.IsType<PyExecutableFunction>(
             LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null));

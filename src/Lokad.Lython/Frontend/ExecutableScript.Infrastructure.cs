@@ -407,17 +407,16 @@ internal sealed partial class ExecutableScript
                 functionDefinition.ScopeFacts, typeParameterNames, functionDefinition.Syntax.IsGenerator,
                 qualifiedName: functionDefinition.Syntax.PreparedQualifiedName);
 
-            var binding = new ExecutableFunctionBinding(
+            codeObject.DefinitionAnnotationKeys = PyDict.RecordKeys.PrepareDefinition(functionDefinition.Annotations.Length,
+                functionDefinition.Annotations, static (inputs, index) => inputs[index].Key,
+                _compilationCancellation, functionDefinition.Span);
+            return new ExecutableFunctionBinding(
                 functionDefinition.Syntax.Name, functionDefinition.Span,
                 functionDefinition.Decorators.Count, functionDefinition.Annotations,
                 functionDefinition.TypeParameters, codeObject, functionDefinition.Syntax.IsGenerator)
             {
                 ParameterLayout = functionDefinition.ParameterLayout,
-                AnnotationKeys = PyDict.RecordKeys.PrepareDefinition(functionDefinition.Annotations.Length,
-                    functionDefinition.Annotations, static (inputs, index) => inputs[index].Key,
-                    _compilationCancellation, functionDefinition.Span)
             };
-            return binding;
         }
 
         private ExecutableCodeObject CompileFunctionCode(string name,

@@ -106,11 +106,12 @@ internal sealed partial class LythonRuntime
                 function = CreateFunctionValue(layout, binding.CodeObject, closure, cells, defaults?.Values ?? default,
                     binding.IsGenerator, context, span);
                 var metadata = ValueTask.CompletedTask;
-                if (binding.Annotations.Length != 0 || binding.TypeParameters is not null || HasTypeParameterScope(context))
+                if (operation.AnnotationsOnStack)
+                    function.AttachPreparedAnnotations(execution.Stack.Slice(next, binding.Annotations.Length).Span, context, span);
+                else if (binding.Annotations.Length != 0 || binding.TypeParameters is not null || HasTypeParameterScope(context))
                 {
-                    var evaluated = operation.AnnotationsOnStack ? execution.Stack.Slice(next, binding.Annotations.Length) : default;
                     metadata = AttachTypeMetadataAsync(function, binding.Annotations, binding.TypeParameters is not null,
-                        span, typeScope, context, asynchronous, evaluated, binding.AnnotationKeys);
+                        span, typeScope, context, asynchronous, binding.CodeObject.DefinitionAnnotationKeys);
                 }
 
                 if (binding.DecoratorCount != 0 || !metadata.IsCompletedSuccessfully)
