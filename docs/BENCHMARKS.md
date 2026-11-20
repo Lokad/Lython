@@ -9,8 +9,8 @@
 | Postponed nested factories | 2,048 inputs / 4,096 definitions | 2.051–2.117 ms | 0.577–0.590 ms | 3.47–3.67× | B1156 diagnostic. Controls L/C 3.22 / 2.39%. IQR ≤1.50%. |
 | Captured rule closures | 2,048 inputs / 4,096 returned closures | 2.437–2.454 ms | 0.776–0.790 ms | 3.09–3.16× | B1122 diagnostic. Controls L/C 0.71 / 1.69%. IQR ≤1.69%. |
 | Inline forwarding with dynamic keys | 1,024 records / 26,112 B | 1.894–1.913 ms | 1.139–1.159 ms | 1.63–1.68× | B1102 diagnostic. Controls L/C 1.01 / 1.74%. IQR ≤2.35%. |
-| Expanded forwarding report | 1,024 records / 26,112 B | 1.775–1.822 ms | 1.154–1.169 ms | 1.52–1.58× | B1173 diagnostic. Controls L/C 2.67 / 1.37%. IQR ≤0.95%. |
-| CSV invoice | 4,096 data records / 127,031 B | 6.435–6.455 ms | 6.079–6.091 ms | 1.06× | B1173 diagnostic. Controls L/C 0.30 / 0.20%. IQR ≤1.65%. |
+| Expanded forwarding report | 1,024 records / 26,112 B | 1.533–1.543 ms | 1.173–1.189 ms | 1.29–1.32× | B1180 diagnostic. Controls L/C 0.62 / 1.38%. IQR ≤4.03%. |
+| CSV invoice | 4,096 data records / 127,031 B | 6.685–6.790 ms | 6.285–6.302 ms | 1.06–1.08× | B1180 diagnostic. Controls L/C 1.57 / 0.27%. IQR ≤3.53%. |
 | Retained nonlocal siblings | 240 factories / 720 returned closures | 0.169–0.170 ms | 0.188–0.190 ms | 0.89–0.90× | B1109 diagnostic. Controls L/C 0.57 / 0.89%. IQR ≤2.72%. |
 | Shipment report with format selectors | 3,072 records / 189,441 B | 3.812–3.827 ms | 3.067–3.124 ms | 1.22–1.25× | B1173 diagnostic. Controls L/C 0.40 / 1.86%. IQR ≤4.91%. |
 | Generated validator | 96 guards / 1,714 B JSON | 0.081 ms | 0.043–0.044 ms | 1.83–1.87× | B1173 diagnostic. Controls L/C 0.57 / 1.49%. IQR ≤3.66%. |
@@ -21,7 +21,9 @@
 the combinations of two process medians per engine, not confidence intervals.
 Controls L/C report the difference between the two Lython/CPython medians.
 
-B1173 measures shipment, forwarding, validator and warm invoice at
+B1180 measures forwarding and warm invoice at **c3684d4d1 / frozen
+289380214** on **2026-11-20 UTC**. Both machine checks and all 80 batches
+passed. B1173 measures shipment, validator and the earlier forwarding and invoice at
 **c1c15c008 / frozen 8643ebfd8** on **2026-11-20 UTC**. It uses the same
 source-verified core as B1172. Both machine checks and all 200 batches passed.
 The original archive-floor failure and subsequent verification are recorded.
@@ -42,6 +44,7 @@ Earlier rows ran **2026-11-19 UTC**. All use stock **CPython 3.13.16** on the qu
 uses duplicate processes per engine. Each row describes its measured revision.
 B1122 passed the measured scripts' output and file checks. Its source
 predates the generator-lambda and iterator-cleanup fixture corrections.
+[B1180 observations](../benchmarks/results/2026-11-20-cpython-expanded-forwarding/README.md) ·
 [B1173 observations](../benchmarks/results/2026-11-20-cpython-reports-validator/README.md) ·
 [B1168 observations](../benchmarks/results/2026-11-20-cpython-dataclasses-and-factories/README.md) ·
 [B1162 observations](../benchmarks/results/2026-11-20-representative-cpython/README.md) ·
@@ -88,8 +91,8 @@ The table compares workload latency under different containment boundaries.
 | Captured rule closures | Compile-to-result | 2.519–2.523 ms | 0.830–0.839 ms | 3.00–3.04× | B1122 diagnostic. Controls L/C 0.15 / 1.09%. IQR ≤1.51%. |
 | Inline forwarding with dynamic keys | Compilation only | 0.05339–0.05370 ms | 0.06049–0.06111 ms | 0.87–0.89× | B1102 diagnostic. Controls L/C 0.57 / 1.01%. IQR ≤1.53%. |
 | Inline forwarding with dynamic keys | Compile-to-result | 2.003–2.012 ms | 1.285–1.298 ms | 1.54–1.57× | B1102 diagnostic. Controls L/C 0.47 / 1.00%. IQR ≤1.66%. |
-| Expanded forwarding report | Compilation only | 0.04374 ms | 0.06121–0.06165 ms | 0.71× | B1173 diagnostic. Controls L/C 0.00 / 0.73%. IQR ≤0.92%. |
-| Expanded forwarding report | Compile-to-result | 1.869–1.942 ms | 1.303–1.307 ms | 1.43–1.49× | B1173 diagnostic. Controls L/C 3.94 / 0.29%. IQR ≤1.93%. |
+| Expanded forwarding report | Compilation only | 0.04385–0.04448 ms | 0.06131–0.06261 ms | 0.70–0.73× | B1180 diagnostic. Controls L/C 1.45 / 2.12%. IQR ≤4.25%. |
+| Expanded forwarding report | Compile-to-result | 1.611–1.638 ms | 1.318 ms | 1.22–1.24× | B1180 diagnostic. Controls L/C 1.65 / 0.00%. IQR ≤3.60%. |
 | CSV invoice | Compilation only | 0.07780–0.07865 ms | 0.09355–0.09493 ms | 0.82–0.84× | B1143 diagnostic. Controls L/C 1.08 / 1.48%. IQR ≤1.10%. |
 | CSV invoice | Compile-to-result | 6.625–6.737 ms | 6.367–6.465 ms | 1.02–1.06× | B1143 diagnostic. Controls L/C 1.69 / 1.53%. IQR ≤0.76%. |
 | Generated validator | Compilation only | 2.04870–2.05688 ms | 1.82118–1.83917 ms | 1.11–1.13× | B1173 diagnostic. Controls L/C 0.40 / 0.99%. IQR ≤3.10%. |
