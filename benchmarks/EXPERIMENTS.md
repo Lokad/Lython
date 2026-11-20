@@ -12,6 +12,13 @@ gap at 3.69–3.75× CPython. Invoice is 1.05–1.09×. Shipment compile-to-resu
 remains less precise than the other updated rows. Timings include guest I/O
 and result cleanup where applicable.
 
+[B1163 funded function annotations](results/2026-11-20-owned-annotation-values/README.md)
+retains final annotation values in the existing metadata field until first
+read. Nested factories take 7.08–7.55% less warm time with supporting CPU.
+Reading every definition allocates the same amount and has inconclusive
+timing. Accounted peaks match. The original prototype's adverse timings
+remain in its own record.
+
 ## November 18–19, 0.11.0 compiler and call work
 
 - The retained formatting and function-default changes have paired evidence.
