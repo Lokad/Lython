@@ -548,6 +548,10 @@ original conditions retained. Current comparisons belong in
   Warm elapsed is 3.47–3.86× and compilation alone is 0.70–0.72×.
   The ordinary warm Lython workers differ by 5.61%.
   [CPython comparison](results/2026-11-20-postponed-factories-cpython/README.md).
+- `9d13432fb` uses one ordered class-header list across parsing and
+  lowering. Generated inherited dataclass compilation allocates 2.93%
+  less. Warm allocation and accounted peaks match on all three cases.
+  [Class header checks](results/2026-11-20-ordered-class-headers/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
