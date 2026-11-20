@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1190 shipment comparison against CPython](results/2026-11-20-cpython-named-shipment/README.md)
+measures named and positional report variants and a warm CSV invoice on
+the retained B1189 source. Named shipment takes 1.14–1.19× as long warm,
+0.74–0.76× to compile and 1.16–1.21× from compile to result.
+
 [B1189 prepared named format arguments](results/2026-11-20-prepared-format-keywords/README.md)
 moves the ordinary named index from execution to the compiled call site.
 The file-backed named report allocates 15.69% less warm and takes 5.37–6.19%
