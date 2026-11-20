@@ -2,6 +2,7 @@
 
 | Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| JSON normalization | 3,072 records / 189,441 B | 2.762–2.813 ms | 2.505–2.544 ms | 1.086–1.123× | B1253 diagnostic repeat. Initial B1252 is 1.143–1.158×. Repeat controls L/C 1.82 / 1.59%. IQR ≤12.50%. |
 | Unannotated rule closures | 2,048 inputs / 4,096 definitions | 2.307–2.321 ms | 0.683–0.688 ms | 3.35–3.40× | B1122 diagnostic. Controls L/C 0.61 / 0.70%. IQR ≤0.74%. |
 | Annotated rule closures | 2,048 inputs / 2,048 definitions | 1.057 ms | 0.428–0.434 ms | 2.44–2.47× | B1203 diagnostic. Controls L/C 0.05 / 1.26%. IQR ≤2.76%. |
 | Nested annotated factories | 2,048 inputs / 4,096 definitions | 1.460–1.506 ms | 0.623–0.632 ms | 2.31–2.42× | B1229 diagnostic. Controls L/C 3.16 / 1.51%. IQR ≤2.22%. |
@@ -17,7 +18,7 @@
 | Shipment report with wide records | 3,072 records / 1,329,057 B | 6.504–6.536 ms | 12.600–13.123 ms | 0.496–0.519× | B1233 diagnostic. Controls L/C 0.49 / 4.15%. IQR ≤4.60%. |
 | Shipment report with positional format selectors | 3,072 records / 189,441 B | 3.737–3.750 ms | 2.861–2.893 ms | 1.29–1.31× | B1190 diagnostic. Controls L/C 0.35 / 1.13%. IQR ≤3.50%. |
 | Generated validator | 96 guards / 1,714 B JSON | 0.08372–0.08402 ms | 0.04481–0.04509 ms | 1.86–1.88× | B1213 diagnostic. Controls L/C 0.36 / 0.62%. IQR ≤2.70%. |
-| Generated validator, successful integer parses | 96 guards / 1,714 B JSON | 0.07333–0.07371 ms | 0.03980–0.04074 ms | 1.80–1.85× | B1248 diagnostic. Controls L/C 0.52 / 2.36%. IQR ≤1.42%. |
+| Generated validator, successful integer parses | 96 guards / 1,714 B JSON | 0.07285–0.07347 ms | 0.03984–0.04005 ms | 1.819–1.844× | B1252 diagnostic. Controls L/C 0.86 / 0.54%. IQR ≤1.01%. |
 | Shipment report with alternating record shapes | 3,072 records / 759,222 B | 8.840–8.953 ms | 6.564–6.674 ms | 1.325–1.364× | B1248 diagnostic. Controls L/C 1.28 / 1.68%. IQR ≤4.68%. |
 | Inherited dataclass definitions | 1 base and 48 subclasses, 48 instances | 0.198–0.204 ms | 4.881–5.089 ms | 0.039–0.042× | B1222 diagnostic. Controls L/C 3.19 / 4.26%. Includes class construction and decoration. |
 | Configuration manifest | 4 targets / 833 B across 2 files | 0.19562–0.19898 ms | 0.15924–0.16073 ms | 1.22–1.25× | B1222 diagnostic. Controls L/C 1.72 / 0.94%. IQR ≤3.03%. |
@@ -25,6 +26,13 @@
 **Ratio = Lython elapsed / CPython elapsed. Above one means slower.** Ranges cover
 the combinations of two process medians per engine, not confidence intervals.
 Controls L/C report the difference between the two Lython/CPython medians.
+
+B1252 and B1253 measure JSON normalization at **5901c06bd**, retained
+as `ea04028b5` alongside the regex correction, against **CPython
+3.13.16** on **2026-11-20 UTC**. The confirmation separates phase
+workers to check the variable initial compile-to-result result.
+B1252 also measures the warm validator. Both collections used the
+quiet Azure F4as_v7 and passed all 168 batches. [B1252/B1253 observations](../benchmarks/results/2026-11-20-cpython-json-normalization/README.md).
 
 B1248 measures the validator without malformed fields and the alternating
 shipment at **c62457d49** against **CPython 3.13.16** on **2026-11-20 UTC**.
@@ -135,6 +143,8 @@ The table compares workload latency under different containment boundaries.
 
 | Workload | Phase | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| JSON normalization | Compilation only | 0.03536–0.03571 ms | 0.05254–0.05284 ms | 0.669–0.680× | B1252 diagnostic. Controls L/C 1.01 / 0.57%. IQR ≤0.86%. |
+| JSON normalization | Compile-to-result | 2.771–2.801 ms | 2.813–3.007 ms | 0.922–0.996× | B1253 diagnostic. The initial lane spans parity. Repeat CPython spread 6.88% and IQR up to 13.99%. |
 | Unannotated rule closures | Compilation only | 0.03072–0.03102 ms | 0.04189–0.04201 ms | 0.73–0.74× | B1122 diagnostic. Controls L/C 1.00 / 0.30%. IQR ≤0.44%. |
 | Unannotated rule closures | Compile-to-result | 2.372–2.375 ms | 0.728–0.729 ms | 3.25–3.26× | B1122 diagnostic. Controls L/C 0.13 / 0.20%. IQR ≤1.60%. |
 | Annotated rule closures | Compilation only | 0.01992–0.02021 ms | 0.03225–0.03236 ms | 0.615–0.627× | B1203 diagnostic. Controls L/C 1.49 / 0.36%. IQR ≤1.10%. |
@@ -335,6 +345,7 @@ for the CPython ratios above.
 
 | Change | Established outcome | Limits / evidence |
 | --- | --- | --- |
+| Keep native dictionary cursors in encoder frames | JSON normalization improves 2.35–7.07% warm with lower process CPU and 11.00% less CLR allocation. Accounted peaks match. | The manifest is slightly faster with no CPU gain. Validator elapsed and CPU span zero. [B1251](../benchmarks/results/2026-11-20-native-dict-item-cursor/README.md). |
 | Prepare literal dictionary keys during compilation | JSON normalization improves 2.29–4.20% warm initially and 3.62–4.31% on repeat with lower process CPU. The guarded manifest uses 2,176 fewer accounted bytes. | The manifest's elapsed benefit is inconclusive. The validator control initially slows and spans zero on repeat. [B1249/B1250](../benchmarks/results/2026-11-20-compiled-literal-record-keys/README.md). |
 | Direct native string-key dictionary operations | The validator improves 4.10–4.43% warm initially and 2.49–4.73% on repeat. The alternating JSON shipment improves 3.29–4.40% warm. CPU falls on both. | Named-selector timing is adverse initially and spans zero on repeat. Guarded manifest elapsed spans zero. Local accounted peaks match. [B1246/B1247](../benchmarks/results/2026-11-20-direct-native-text-dict-keys/README.md). |
 | Prepare call sites during operand forwarding | Generated validator compilation is 2.70–6.27% faster with lower CPU. Local compile allocation falls 0.36–1.01% across four scripts. | Both compile-to-result ranges span zero. Forwarding warm impact remains unresolved after an exact-image repeat. [B1241/B1242](../benchmarks/results/2026-11-20-callsite-preparation/README.md). |

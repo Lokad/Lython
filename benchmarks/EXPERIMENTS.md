@@ -6,6 +6,17 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1252/B1253 JSON normalization against CPython](results/2026-11-20-cpython-json-normalization/README.md)
+keeps both phase boundaries and controls. Warm Lython takes 1.09–1.16×
+CPython elapsed across the two campaigns. The original compile-to-result
+spans parity with 18.34% CPython spread. The separated-phase repeat
+reduces that spread to 6.88% and still leaves high within-process variation.
+
+[B1251 dictionary item cursors in JSON encoder frames](results/2026-11-20-native-dict-item-cursor/README.md)
+remove the two native per-object iterator allocations. JSON normalization
+improves 2.35–7.07% warm with lower CPU and 11.00% less CLR allocation.
+The validator spans zero and the manifest's CPU does not improve.
+
 [B1249/B1250 compilation-owned dictionary keys](results/2026-11-20-compiled-literal-record-keys/README.md)
 remove first-use table construction for distinct literal keys. Warm
 JSON normalization improves 2.29–4.20% initially and 3.62–4.31%
