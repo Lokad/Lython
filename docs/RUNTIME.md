@@ -641,9 +641,13 @@ to the existing linear runner before entering another CLR call chain. It reuses
 logical depth state and adds no guest recursion limit or counter. Managed stack
 admission remains active; deep calls can acquire ordinary frame storage earlier.
 
-Incoming captured cells retain their definition-owned identity. Creating new
-captured locals, protected suites, mirrored namespaces and special lexical scopes
-use ordinary frames. Native and ordinary calls share canonical operators and
+Eligible ordinary calls and guest callbacks share the same entry from final
+bound slots. They can execute before allocating a frame. A context-sensitive
+operation promotes the live invocation before it runs. Incoming captured cells
+retain their definition-owned identity. Lexical-only bodies can also create
+standalone cells in borrowed work. Protected suites, mirrored namespaces and
+special lexical scopes use ordinary frames. Native and ordinary calls share
+canonical operators and
 receiver declarations; dynamic protocols stop before their operation and transfer
 the current PC and live values into the existing frame runner. They may then
 genuinely suspend. Defaults, bindings and earlier work are never replayed.
@@ -2366,9 +2370,11 @@ adopted. Frontend constant matching uses the prepared pattern and its effective
 flags. Runtime looks up that pattern under its original normalized options.
 Invalid provider metadata fails explicitly (including a compilation exception
 for a broken host contract);
-ordinary guest pattern errors retain their Python diagnostics. Prepared subjects
-provide match/search/fullmatch and finditer progression. Lython owns captured
-splitting, template/callable substitution, expansion and public scalar offsets;
+ordinary guest pattern errors retain their Python diagnostics. The last-closed
+index must name a participating capture whenever any positive group participated.
+Prepared subjects provide match/search/fullmatch and finditer progression.
+Lython owns captured splitting, template/callable substitution, expansion and
+public scalar offsets;
 providers expose no replacement or split dialect.
 
 The per-execution 512-entry pattern cache compares immutable UTF-8 content and

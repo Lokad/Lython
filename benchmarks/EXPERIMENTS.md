@@ -552,6 +552,11 @@ original conditions retained. Current comparisons belong in
   lowering. Generated inherited dataclass compilation allocates 2.93%
   less. Warm allocation and accounted peaks match on all three cases.
   [Class header checks](results/2026-11-20-ordered-class-headers/README.md).
+- B1157 merges the borrowed entry for callbacks, the linear call driver
+  and leaf calls. JSON hook warm CPU falls 8.02–10.33% and allocation
+  falls 28.84%. Sorting uses less CPU and allocates 21.66% less.
+  Captured rules and invoice timing remain inconclusive.
+  [Shared bound entry](results/2026-11-20-shared-bound-entry/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup
