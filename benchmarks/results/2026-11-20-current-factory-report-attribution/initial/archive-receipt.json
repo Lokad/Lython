@@ -1,0 +1,13 @@
+{
+  "complete": false,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "persistentTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 242388992,
+  "archiveSHA256": "bee8c33a883ce13f50778471e0b350248221bdeef77fb624d8a50f20d4460724",
+  "source": "B1204 current factory and report CPU attribution",
+  "performanceComparison": false,
+  "failure": "Traceback (most recent call last):\n  File \"/home/lokad/lython-bench-checks/remaining-runtime-attribution-b1204-20261120/collect.py\", line 13, in <module>\n    subprocess.run(['python3',str(root/'ops-profile.py'),str(root/'guest-fixtures/profiles')],check=True)\n  File \"/usr/lib/python3.12/subprocess.py\", line 571, in run\n    raise CalledProcessError(retcode, process.args,\nsubprocess.CalledProcessError: Command '['python3', '/home/lokad/lython-bench-checks/remaining-runtime-attribution-b1204-20261120/ops-profile.py', '/home/lokad/lython-bench-checks/remaining-runtime-attribution-b1204-20261120/guest-fixtures/profiles']' returned non-zero exit status 1.\n"
+}

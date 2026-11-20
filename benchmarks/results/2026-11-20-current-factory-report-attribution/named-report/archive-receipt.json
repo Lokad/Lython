@@ -1,0 +1,13 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "persistentTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 241451008,
+  "archiveSHA256": "e6f82ee8e9106ac8ba7991aaf38a14d7ad3ef949684780cc1ab6a037049ecc99",
+  "source": "B1204 named report CPU attribution recovery",
+  "performanceComparison": false,
+  "failure": null
+}

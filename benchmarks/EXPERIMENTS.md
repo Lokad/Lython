@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1204 factory and report attribution](results/2026-11-20-current-factory-report-attribution/README.md)
+locates current work in both reports and the eager factory. Named shipment
+has 380 formatting ancestry samples. The original capture limit interrupted
+its first profile and the separate recovery completed it.
+
 [B1203 factory delivery against CPython](results/2026-11-20-cpython-inline-lexical-definitions/README.md)
 refreshes the three factory workloads and invoice. Eager rules take
 2.44–2.47× warm and 2.31–2.36× from compile to result. Nested factories
