@@ -131,6 +131,8 @@ internal sealed partial class LythonRuntime
                 governor?.ThrowIfAdmissionFailed();
                 if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
                 if (captures[i] is not { } value) continue;
+                if (i != 0 && lastIndex is null)
+                    return "Regex provider returned inconsistent capture metadata.";
                 if (value.StartByte < 0 || value.EndByte < value.StartByte || value.EndByte > input.Length ||
                     value.StartByte < input.Length && (input[value.StartByte] & 0xc0) == 0x80 ||
                     value.EndByte < input.Length && (input[value.EndByte] & 0xc0) == 0x80)

@@ -1328,6 +1328,7 @@ public sealed class RegexProviderContractTests
     [InlineData("match", 2, 3, null, "outside its window")]
     [InlineData("fullmatch", 0, 2, null, "outside its window")]
     [InlineData("search", 0, 2, 1, "inconsistent capture metadata")]
+    [InlineData("search", 0, 2, null, "inconsistent capture metadata", 2)]
     [InlineData("search", 0, 2, 1, "capture outside its window", 3)]
     public async Task InvalidProviderMatchCannotSupplyACompilerFact(string mode, int start, int end,
         int? lastIndex, string message, int? groupEnd = null)
@@ -1545,6 +1546,7 @@ public sealed class RegexProviderContractTests
                     token.ThrowIfCancellationRequested();
                     captures[i] = new(0, input.Length);
                 }
+                if (captures.Length > 1) lastIndex = captures.Length - 1;
                 return true;
             }
             public ILythonRegexCursor Find(CancellationToken token)

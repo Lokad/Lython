@@ -97,9 +97,10 @@ public interface ILythonRegexSubject : IDisposable
     /// <summary>Matches once and writes all capture slots, including null for unmatched groups.</summary>
     /// <remarks>
     /// The buffer length equals the pattern's CaptureSlotCount. On success slot zero
-    /// participates and lastIndex identifies the last-closed participating positive group,
-    /// or is null. Buffer contents are unspecified on false or failure. Finish all
-    /// writes before returning; the caller may immediately reuse or retain its data.
+    /// participates and lastIndex identifies the last-closed participating positive group.
+    /// Use null only when no positive group participated. Buffer contents are unspecified
+    /// on false or failure. Finish all writes before returning so the caller can
+    /// immediately reuse or retain its data.
     /// </remarks>
     bool TryMatch(LythonRegexMatchMode mode, Span<LythonRegexCapture?> captures, out int? lastIndex,
         CancellationToken cancellationToken);
