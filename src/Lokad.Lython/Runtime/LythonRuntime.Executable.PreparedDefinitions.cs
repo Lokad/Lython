@@ -11,28 +11,33 @@ internal sealed partial class LythonRuntime
 
     private static PyFunctionBase CreateFunctionValue(FunctionParameterLayout layout, ExecutableCodeObject code,
         ExecutionContext closure, IReadOnlyList<ExecutableCell> cells, FunctionDefaults defaults,
-        bool generator, ExecutionContext context, LythonSourceSpan span, PythonCallableKind kind = PythonCallableKind.Function)
+        bool generator, ExecutionContext context, LythonSourceSpan span, PythonCallableKind kind = PythonCallableKind.Function,
+        ReadOnlySpan<ExecutableSlot> annotations = default)
     {
-        // Constructor storage has a fixed estimate and one owner. No separate
-        // reservation object needs to survive the synchronous construction.
+        // The callable and its final annotation backing are still private.
+        // Admit both before allocation and transfer the combined charge once.
+        var keys = annotations.IsEmpty ? null : code.DefinitionAnnotationKeys.RequireNotNull();
+        var capacity = keys?.AnnotationCapacity ?? 0;
+        var bytes = keys is null ? FunctionValueBytes : checked(FunctionValueBytes + PyDict.RecordKeys.RecordBytes(capacity));
         var governor = context.MemoryGovernor;
-        governor.Reserve(FunctionValueBytes, span);
-        PyFunctionBase function;
+        governor.Reserve(bytes, span);
         try
         {
             context.CheckExecution(span);
-            function = generator
+            PyFunctionBase function = generator
                 ? new PyGeneratorFunction(layout, code, closure, defaults, cells, kind)
                 : new PyExecutableFunction(layout, code, closure, cells, defaults, kind);
-            governor.Commit(FunctionValueBytes);
+            ChargeClosureRetention(closure, governor, span);
+            if (keys is not null)
+                function.AttachAdmittedAnnotations(keys.CopyAnnotationValues(annotations, capacity, context, span), context);
+            governor.Commit(bytes);
+            return function;
         }
         catch
         {
-            governor.ReleaseReserved(FunctionValueBytes);
+            governor.ReleaseReserved(bytes);
             throw;
         }
-        ChargeClosureRetention(closure, governor, span);
-        return function;
     }
 
     internal sealed partial class ExecutionContext
@@ -103,12 +108,13 @@ internal sealed partial class LythonRuntime
                 var typeScope = CreateTypeScope(binding.TypeParameters, context, span);
                 var closure = invocation is null ? GetGlobalContext(context)
                     : SelectDefinitionClosure(binding.CodeObject, typeScope.Closure, cells);
+                ReadOnlySpan<ExecutableSlot> annotations = operation.AnnotationsOnStack
+                    ? execution.Stack.Slice(next, binding.Annotations.Length).Span : default;
                 function = CreateFunctionValue(layout, binding.CodeObject, closure, cells, defaults?.Values ?? default,
-                    binding.IsGenerator, context, span);
+                    binding.IsGenerator, context, span, annotations: annotations);
                 var metadata = ValueTask.CompletedTask;
-                if (operation.AnnotationsOnStack)
-                    function.AttachPreparedAnnotations(execution.Stack.Slice(next, binding.Annotations.Length).Span, context, span);
-                else if (binding.Annotations.Length != 0 || binding.TypeParameters is not null || HasTypeParameterScope(context))
+                if (!operation.AnnotationsOnStack &&
+                    (binding.Annotations.Length != 0 || binding.TypeParameters is not null || HasTypeParameterScope(context)))
                 {
                     metadata = AttachTypeMetadataAsync(function, binding.Annotations, binding.TypeParameters is not null,
                         span, typeScope, context, asynchronous, binding.CodeObject.DefinitionAnnotationKeys);

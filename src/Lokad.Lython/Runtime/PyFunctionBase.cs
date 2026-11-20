@@ -319,11 +319,10 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
         return removed || name == "__annotations__";
     }
 
-    internal void AttachPreparedAnnotations(ReadOnlySpan<LythonRuntime.ExecutableSlot> evaluated,
-        LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    internal void AttachAdmittedAnnotations(object?[] values, LythonRuntime.ExecutionContext context)
     {
         System.Diagnostics.Debug.Assert(_annotations is null && ReferenceEquals(_closure.MemoryGovernor, context.MemoryGovernor));
-        _annotations = CodeObject.DefinitionAnnotationKeys!.PrepareAnnotationValues(evaluated, context, span);
+        _annotations = values;
     }
 
     private object ReadAnnotations()

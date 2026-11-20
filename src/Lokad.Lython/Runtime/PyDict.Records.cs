@@ -118,31 +118,23 @@ internal sealed partial class PyDict
             catch { owner.ReleaseReserved(bytes); throw; }
         }
 
-        // The function already retains the compiled keys. Admit the final
-        // values and eventual dictionary shell together and hold only the
-        // values until Python reads __annotations__.
-        internal object?[] PrepareAnnotationValues(ReadOnlySpan<LythonRuntime.ExecutableSlot> evaluated,
-            LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        internal int AnnotationCapacity => NativeCapacity(Count);
+
+        // The caller admitted both the values and eventual dictionary shell.
+        // Hold only the values until Python reads __annotations__.
+        internal object?[] CopyAnnotationValues(ReadOnlySpan<LythonRuntime.ExecutableSlot> evaluated,
+            int capacity, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
         {
-            System.Diagnostics.Debug.Assert(_owner is null && Count != 0 && evaluated.Length == Count);
-            var capacity = NativeCapacity(Count);
-            var bytes = RecordBytes(capacity);
-            var owner = context.MemoryGovernor;
-            owner.Reserve(bytes, span);
-            try
+            System.Diagnostics.Debug.Assert(_owner is null && Count != 0 && evaluated.Length == Count && capacity == AnnotationCapacity);
+            context.CheckExecution(span);
+            var values = new object?[capacity];
+            for (var i = 0; i < evaluated.Length; i++)
             {
-                context.CheckExecution(span);
-                var values = new object?[capacity];
-                for (var i = 0; i < evaluated.Length; i++)
-                {
-                    if (i != 0 && (i & 63) == 0) context.CheckExecution(span);
-                    values[i] = LythonRuntime.RuntimeValue(evaluated[i].Object.RequireNotNull());
-                }
-                context.CheckExecution(span);
-                owner.Commit(bytes);
-                return values;
+                if (i != 0 && (i & 63) == 0) context.CheckExecution(span);
+                values[i] = LythonRuntime.RuntimeValue(evaluated[i].Object.RequireNotNull());
             }
-            catch { owner.ReleaseReserved(bytes); throw; }
+            context.CheckExecution(span);
+            return values;
         }
 
         internal PyDict AdoptAnnotationValues(object?[] values, MemoryGovernor owner, LythonSourceSpan? span)
@@ -156,7 +148,7 @@ internal sealed partial class PyDict
         internal static void RefundAnnotationValues(object?[] values, MemoryGovernor owner)
             => owner.Release(RecordBytes(values.Length));
 
-        private static long RecordBytes(int capacity)
+        internal static long RecordBytes(int capacity)
             => checked(NativeShellBytes + (capacity == 0 ? 0 : 32L + 72L * capacity));
 
         // The caller transfers an exclusively owned, already-funded CSV row.
