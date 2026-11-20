@@ -338,6 +338,7 @@ internal sealed partial class LythonRuntime
             using var subject = Prepare(pattern, range, window, context, span);
             using var cursor = subject.Find();
             var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
+            PyString? soleReplacement = null;
             var lastByte = 0;
             long replaced = 0;
             PyString result;
@@ -348,28 +349,41 @@ internal sealed partial class LythonRuntime
                 {
                     var match = subject;
                     context.CheckExecution(span);
-                    ReMatchObject? projected = null;
-                    if (plan is null) projected = CreateMatchObject(pattern, range, match, context, span);
+                    var projected = isTemplate ? null : CreateMatchObject(pattern, range, match, context, span);
                     var whole = match.Captures[0]!.Value;
+                    if (soleReplacement is not null)
+                    {
+                        AppendRegexBytes(builder, soleReplacement.Utf8Span, context, span);
+                        soleReplacement = null;
+                    }
                     AppendRegexBytes(builder, range.Original.Utf8Span[lastByte..whole.StartByte], context, span);
                     if (plan is not null) plan.AppendTo(builder, range, match.Captures, context, span);
                     else
                     {
-                        var value = asynchronous
-                            ? await InvokeCallableTargetAsync(replacement, span, span, context,
-                                [CallArgumentValue.Positional(projected!)]).ConfigureAwait(false)
-                            : InvokeCallableTarget(replacement, span, span, context,
-                                () => [CallArgumentValue.Positional(projected!)]);
-                        context.CheckExecution(span);
-                        if (!PyStringOps.TryAsString(value, out var text))
-                            throw RuntimeErrors.Type("Regex replacement callable must return a string.", span);
-                        AppendRegexBytes(builder, text.Utf8Span, context, span);
+                        var text = template;
+                        if (!isTemplate)
+                        {
+                            var value = asynchronous
+                                ? await InvokeCallableTargetAsync(replacement, span, span, context,
+                                    [CallArgumentValue.Positional(projected!)]).ConfigureAwait(false)
+                                : InvokeCallableTarget(replacement, span, span, context,
+                                    () => [CallArgumentValue.Positional(projected!)]);
+                            context.CheckExecution(span);
+                            if (!PyStringOps.TryAsString(value, out text))
+                                throw RuntimeErrors.Type("Regex replacement callable must return a string.", span);
+                        }
+                        // Python returns the single replacement object when
+                        // it is the only piece, even if it is empty.
+                        if (replaced == 0 && whole.StartByte == 0 && whole.EndByte == range.Original.ByteLength)
+                            soleReplacement = text;
+                        else AppendRegexBytes(builder, text!.Utf8Span, context, span);
                     }
                     lastByte = whole.EndByte;
                     replaced++;
                 }
                 context.CheckExecution(span);
                 if (replaced == 0) result = range.Original;
+                else if (soleReplacement is not null) result = soleReplacement;
                 else
                 {
                     AppendRegexBytes(builder, range.Original.Utf8Span[lastByte..], context, span);

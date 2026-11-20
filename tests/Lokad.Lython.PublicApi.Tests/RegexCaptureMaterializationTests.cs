@@ -8,6 +8,40 @@ public sealed class RegexCaptureMaterializationTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task SubstitutionRetainsASoleWholeSubjectReplacement(bool asynchronous)
+    {
+        const string source = """
+            import re
+            text = ''.join(['alpha-', 'café😀-omega'])
+            literal = ''.join(['new-', 'café😀-text'])
+            print(re.sub(r'^.*$', literal, text) is literal)
+            print(re.sub(r'^.*$', lambda m: m.string, text) is text)
+            result, count = re.subn(r'^.*$', lambda m: literal, text)
+            print(result is literal, count)
+            one = re.sub(r'.*', lambda m: literal, text, count=1)
+            many = re.sub(r'.*', lambda m: literal, text)
+            print(one is literal, many == literal * 2, many is literal)
+            unchanged = re.sub(r'$', '', text)
+            print(unchanged == text, unchanged is text)
+            expanded = re.fullmatch(r'.+', text).expand(literal)
+            print(expanded is literal, expanded == literal)
+            """;
+        const string expected = "True\nTrue\nTrue 1\nTrue True False\nTrue False\nFalse True\n";
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
+        var baseline = budget.ReservedBytes;
+        using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(expected, result.StandardOutput);
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task FindAllAndSplitRetainWholeSubjectCaptures(bool asynchronous)
     {
         const string source = """

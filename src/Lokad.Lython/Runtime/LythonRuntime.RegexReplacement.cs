@@ -66,6 +66,8 @@ internal sealed partial class LythonRuntime
             ExecutionContext context, LythonSourceSpan span)
         {
             using var plan = CompileReplacementTemplate(match.Pattern, template, context, span);
+            if (plan is null)
+                return PyString.CopyFromUtf8(template.Utf8Span, context.MemoryGovernor, span, context);
             var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
             try
             {
@@ -77,7 +79,8 @@ internal sealed partial class LythonRuntime
             finally { builder.Release(); }
         }
 
-        internal static RegexReplacementPlan CompileReplacementTemplate(RePatternObject pattern, PyString template,
+        // Unescaped text is already in its final UTF-8 representation.
+        internal static RegexReplacementPlan? CompileReplacementTemplate(RePatternObject pattern, PyString template,
             ExecutionContext context, LythonSourceSpan span)
         {
             context.CheckExecution(span);
@@ -90,6 +93,7 @@ internal sealed partial class LythonRuntime
                 slashes += chunk.Count((byte)'\\');
                 offset += chunk.Length;
             }
+            if (slashes == 0) return null;
             var capacityLong = 1L + 2L * slashes;
             if (capacityLong > int.MaxValue) throw RuntimeErrors.Runtime("replacement template program is too large.", span);
             var capacity = (int)capacityLong;
