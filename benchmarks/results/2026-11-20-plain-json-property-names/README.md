@@ -13,7 +13,7 @@ parsing. No extra key cache or memory allowance is needed.
 | Named shipment report | 3,072 three-field objects | −7.51% to −2.15% | −6.84% to −1.70% |
 | Wide shipment report | 3,072 24-field objects | −6.00% to −5.81% | −6.14% to −5.08% |
 | Alternating shipment report | 3,072 alternating wide and narrow objects | −2.11% to +0.38% | −3.63% to 0.00% |
-| Invoice control, original | 5,120 CSV data rows | +0.32% to +5.26% | +0.85% to +6.25% |
+| Invoice control, original | 4,096 CSV records | +0.32% to +5.26% | +0.85% to +6.25% |
 | Invoice control, exact-image repeat | Same CSV | −1.48% to +0.59% | −0.84% to +2.47% |
 
 The named report and the wide report improve on both clocks. The alternating
