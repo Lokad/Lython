@@ -509,10 +509,10 @@ internal sealed partial class LythonRuntime
             Values[instruction.ResultSlot] = default;
             LiveExtent = instruction.ResultSlot;
             ref readonly var consumer = ref Code.Instructions[Index + 1];
+            // Preparing function defaults transfers to the ordinary frame
+            // before evaluating an operand that can feed a default store.
             if (consumer.OpCode == ExecutableOpCode.StoreLocal)
                 Values[consumer.LocalSlot] = value;
-            else if (consumer.OpCode == ExecutableOpCode.ApplyOperation)
-                StoreDefaultResult(Code, Values, consumer, value);
             else if (consumer.OpCode != ExecutableOpCode.PopTop)
                 throw new InvalidOperationException("Invalid prepared result consumer.");
             else if (value.IsUnassigned) _ = value.Object.RequireNotNull();
