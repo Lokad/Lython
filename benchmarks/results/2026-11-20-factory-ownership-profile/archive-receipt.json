@@ -1,0 +1,13 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "persistentTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 177410048,
+  "archiveSHA256": "be21e2baae640b68006c0371038845ba3de3e03453c0a9b0774b5e2eba7813f2",
+  "source": "B1170 retained factory ownership and dispatch attribution",
+  "performanceComparison": false,
+  "failure": null
+}

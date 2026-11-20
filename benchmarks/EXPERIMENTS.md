@@ -62,6 +62,10 @@ retains one preflight for the private function and annotation backing.
 The read-every-definition and compile-to-result tasks improve with lower
 CPU. Eager warm includes adverse pairings and nested warm spans zero.
 
+[B1170 factory ownership profile](results/2026-11-20-factory-ownership-profile/README.md)
+identifies separable positional and keyword default admissions in both
+hot factory workloads. The capture and generic binder groups remain small.
+
 ## November 18–19, 0.11.0 compiler and call work
 
 - The retained formatting and function-default changes have paired evidence.
