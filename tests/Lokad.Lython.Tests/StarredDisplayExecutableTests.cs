@@ -17,7 +17,6 @@ public sealed class StarredDisplayExecutableTests
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax));
         var body = Assert.Single(code.EntryPoint.FunctionBindings()).CodeObject;
         Assert.NotNull(body);
-        Assert.Empty(body.StatementFallbacks);
         Assert.False(body.RequiresLocalVariableMirroring);
         Assert.False(code.EntryPoint.RequiresLocalVariableMirroring);
     }
@@ -114,7 +113,6 @@ print(combine([1], [2], 3))
         var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script!));
         var body = Assert.Single(code.EntryPoint.FunctionBindings()).CodeObject;
         Assert.NotNull(body);
-        Assert.Empty(body.StatementFallbacks);
         Assert.False(body.RequiresLocalVariableMirroring);
         Assert.False(code.EntryPoint.RequiresLocalVariableMirroring);
     }

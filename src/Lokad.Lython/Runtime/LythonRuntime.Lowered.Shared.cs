@@ -81,8 +81,6 @@ internal sealed partial class LythonRuntime
             case LoweredRaiseStatement raiseStatement:
                 await execution.ExecuteRaiseAsync(raiseStatement, context).ConfigureAwait(false);
                 return default;
-            case LoweredOtherStatement other:
-                throw new InvalidOperationException($"Generic lowered statement fallback reached for supported execution: {other.Syntax.GetType().Name}");
             default:
                 throw new InvalidOperationException($"Unknown lowered statement kind: {statement.GetType().Name}");
         }

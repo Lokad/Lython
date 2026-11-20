@@ -13,7 +13,6 @@ public sealed class RaiseExecutionTests
     public void OrdinaryRaiseStaysExecutableWithoutMirroring(string source)
     {
         var code = Compile(source);
-        Assert.Empty(code.StatementFallbacks);
         Assert.False(code.RequiresLocalVariableMirroring);
     }
 
@@ -22,7 +21,6 @@ public sealed class RaiseExecutionTests
     {
         var code = Compile("def fail(value):\n raise value\nreturn fail(error)");
         var helper = Assert.IsType<ExecutableCodeObject>(Assert.Single(code.FunctionBindings()).CodeObject);
-        Assert.Empty(helper.StatementFallbacks);
         Assert.False(helper.RequiresLocalVariableMirroring);
     }
 

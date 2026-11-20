@@ -360,24 +360,6 @@ internal sealed partial class LythonRuntime
             return value;
         }
 
-        private void ExecuteDefinitionOrFallback(in ExecutableInstruction instruction)
-        {
-            switch (instruction.OpCode)
-            {
-                case ExecutableOpCode.Import:
-                    ExecuteExecutableImport(_execution.Code, _execution.Code.Imports[instruction.ImportIndex], _execution.Locals, this);
-                    break;
-
-                case ExecutableOpCode.ExecuteFallbackStatement:
-                    DispatchLoweredStatementAsync(
-                        _execution.Code.StatementFallbacks[instruction.StatementFallbackIndex],
-                        this,
-                        SynchronousLoweredStatementExecution.Instance).GetAwaiter().GetResult();
-                    SyncExecutableLocalsFromContext(_execution.Code, _execution.Locals, this);
-                    break;
-            }
-        }
-
         private bool TryReadMemberCache(ExecutableInstruction instruction, object target, out object value)
         {
             if (!CanCacheRuntimeMemberReceiver(target))

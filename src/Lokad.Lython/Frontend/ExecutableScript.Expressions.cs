@@ -9,6 +9,9 @@ internal sealed partial class ExecutableScript
 {
     private sealed partial class Builder
     {
+        private int CompileExpression(ExpressionSyntax expression, int currentBlock)
+            => CompileExpression(LoweredScript.LowerExpression(expression), currentBlock);
+
         private int CompileExpression(LoweredExpression expression, int currentBlock)
         {
             switch (expression)

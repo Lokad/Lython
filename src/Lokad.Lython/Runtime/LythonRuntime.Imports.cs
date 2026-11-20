@@ -512,7 +512,7 @@ internal sealed partial class LythonRuntime
 
         var cancellationToken = context.State.CancellationToken;
         var governor = context.MemoryGovernor;
-        var executable = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script, cancellationToken, governor), cancellationToken, governor);
+        var executable = ExecutableScript.Compile(frontend.Script, cancellationToken, governor);
         var moduleContext = ExecutionContext.CreateModule(context, path, moduleName);
         // Exports and escaped functions share this module dictionary after its
         // executable slots leave. Do not depend on incidental opcode fallbacks.

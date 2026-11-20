@@ -30,16 +30,19 @@ internal sealed partial class ExecutableScript
 {
     private sealed partial class Builder
     {
-        private int CompileFunctionDefinition(LoweredFunctionDefinitionStatement definition, int block, bool yielding)
+        private int CompileFunctionDefinition(FunctionDefinitionStatementSyntax definition, int block, bool yielding)
         {
-            var code = PrepareFunctionCode(definition);
+            var annotations = LoweredScript.LowerFunctionAnnotations(definition);
+            var typeParameters = LoweredScript.LowerTypeParameters(definition.TypeParameters);
+            var code = PrepareFunctionCode(definition, annotations);
             foreach (var decorator in definition.Decorators) block = CompileExpression(decorator, block);
-            block = CompileFunctionDefaults(definition.DefaultValues, definition.ParameterLayout, definition.Span, block);
+            block = CompileFunctionDefaults(LoweredScript.LowerDefaults(definition.Parameters, definition.ParameterLayout),
+                definition.ParameterLayout, definition.Span, block);
             var annotationOperandCount = (_completeLexicalParent || yielding) && definition.TypeParameters is null
-                ? definition.Annotations.Length : 0;
+                ? annotations.Length : 0;
             if (annotationOperandCount != 0)
             {
-                foreach (var annotation in definition.Annotations)
+                foreach (var annotation in annotations)
                 {
                     var expression = annotation.Expression;
                     if (expression.Syntax.PostponedAnnotation is { } text)
@@ -50,10 +53,10 @@ internal sealed partial class ExecutableScript
             // The creation operation retains lowered annotations only when
             // it still evaluates them in the definition's type scope.
             EmitOperation(new ExecutableCreateFunction(code, definition.ParameterLayout, definition.Decorators.Count,
-                definition.Syntax.IsGenerator, annotationOperandCount,
-                annotationOperandCount == 0 ? definition.Annotations : [], definition.TypeParameters), definition.Span, block);
+                definition.IsGenerator, annotationOperandCount,
+                annotationOperandCount == 0 ? annotations : [], typeParameters), definition.Span, block);
             // Module declarations update their live namespace and optional slot.
-            var name = definition.Syntax.Name;
+            var name = definition.Name;
             if (_parameterLayout is null)
                 AddInstruction(block, ExecutableInstruction.StoreName(InternName(name), definition.Span));
             else
@@ -66,8 +69,8 @@ internal sealed partial class ExecutableScript
             block = CompileFunctionDefaults(lambda.DefaultValues, lambda.ParameterLayout, lambda.Span, block);
             if (lambda.PreparedCode is null)
                 lambda.CompleteCompilation(CompileFunctionCode("<lambda>", lambda.ParameterLayout,
-                    lambda.FunctionBody, lambda.ScopeFacts, generator: lambda.IsGenerator,
-                    qualifiedName: lambda.Lambda.PreparedQualifiedName));
+                    [], lambda.ScopeFacts, generator: lambda.IsGenerator,
+                    qualifiedName: lambda.Lambda.PreparedQualifiedName, lambda: lambda));
             EmitOperation(new ExecutableCreateLambda(lambda.Binding), lambda.Span, block);
             return block;
         }

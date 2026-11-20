@@ -15,7 +15,6 @@ public sealed class ModuleAnnotationExecutionTests
     public void OrdinaryModuleDeclarationsDoNotRequireFallbackOrMirroring(string source)
     {
         var code = Compile(source);
-        Assert.Empty(code.StatementFallbacks);
         Assert.False(code.RequiresLocalVariableMirroring);
     }
 

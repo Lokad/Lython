@@ -149,12 +149,13 @@ internal sealed partial class LythonRuntime
                                 return InstructionPause.Boundary;
                             }
                             break;
-                        case ExecutableOpCode.Import or ExecutableOpCode.ExecuteFallbackStatement:
+                        case ExecutableOpCode.Import:
                             if (invocation is null) return InstructionPause.ContextRequired;
-                            if (!asynchronous) invocation!.ExecuteDefinitionOrFallback(instruction);
+                            var import = execution.Code.Imports[instruction.ImportIndex];
+                            if (!asynchronous) ExecuteExecutableImport(execution.Code, import, execution.Locals, invocation);
                             else
                             {
-                                pending = WithoutJump(invocation!.ExecuteDefinitionOrFallbackAsync(instruction));
+                                pending = WithoutJump(ExecuteImportAsync(import, invocation));
                                 if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
                                 _ = ConsumeOperation(ref pending);
                             }

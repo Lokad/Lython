@@ -12,7 +12,6 @@ public sealed class ExecutableAugmentedMemberTests
     {
         var syntax = LythonFrontend.Compile("def run(receiver,value):\n receiver().total+=value",regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = Assert.Single(ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint.FunctionBindings()).CodeObject!;
-        Assert.Empty(code.StatementFallbacks);
         Assert.False(code.RequiresLocalVariableMirroring);
         Assert.Single(code.Instructions, i => i.OpCode is ExecutableOpCode.StoreMember or ExecutableOpCode.StoreMemberLast);
         Assert.Single(code.Instructions, i => i.OpCode == ExecutableOpCode.LoadMember);

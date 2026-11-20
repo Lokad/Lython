@@ -1,10 +1,5 @@
 namespace Lokad.Lython.Frontend;
 
-internal sealed class GeneratorLoweringException(string message, LythonSourceSpan span) : Exception("Unsupported generator suspension: " + message)
-{
-    public LythonSourceSpan Span { get; } = span;
-}
-
 internal static class GeneratorSyntaxFacts
 {
     public static bool ContainsYield(ExpressionSyntax expression)

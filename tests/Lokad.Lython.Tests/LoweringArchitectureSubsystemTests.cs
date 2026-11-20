@@ -136,8 +136,7 @@ else:
 
         var lambdaAssignment = Assert.IsType<LoweredNameAssignmentStatement>(lowered.Statements[0]);
         var lambda = Assert.IsType<LoweredLambdaExpression>(lambdaAssignment.Expression);
-        Assert.IsType<LoweredBinaryExpression>(Assert.IsType<LoweredReturnStatement>(
-            Assert.Single(lambda.FunctionBody)).Expression);
+        Assert.IsType<LoweredBinaryExpression>(lambda.Body);
         Assert.Equal(FunctionParameterKind.KeywordOnly, lambda.Lambda.Parameters[1].Kind);
 
         var assertStatement = Assert.IsType<LoweredAssertStatement>(lowered.Statements[1]);
@@ -280,7 +279,6 @@ match pathlib.Path("/docs/guide.md"):
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var matchStatement = Assert.IsType<LoweredMatchStatement>(lowered.Statements[1]);
         Assert.IsType<LoweredCallExpression>(matchStatement.Subject);
-        Assert.DoesNotContain(FlattenStatements(lowered.Statements), statement => statement is LoweredOtherStatement);
     }
 
     [Fact]
@@ -301,7 +299,6 @@ assert values[0].startswith("v")
 """,regexProvider:Utf8RegexProvider.Instance);
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
-        Assert.DoesNotContain(FlattenStatements(lowered.Statements), statement => statement is LoweredOtherStatement);
     }
 
     [Fact]
@@ -324,7 +321,6 @@ result = helper(*["a", "b"], suffix="?")
 """,regexProvider:Utf8RegexProvider.Instance);
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
-        Assert.DoesNotContain(FlattenStatements(lowered.Statements), statement => statement is LoweredOtherStatement);
     }
 
     [Fact]
@@ -1447,7 +1443,7 @@ return helper(payload["items"]) + "|" + text
                 }
                 break;
             case LoweredLambdaExpression { PreparedCode: null } lambda:
-                foreach (var nested in FlattenExpressions(lambda.FunctionBody)) yield return nested;
+                foreach (var nested in FlattenExpressions(lambda.Body)) yield return nested;
                 break;
         }
     }

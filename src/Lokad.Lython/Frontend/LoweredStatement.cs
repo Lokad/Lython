@@ -247,9 +247,3 @@ internal sealed record LoweredRaiseStatement(
 {
     public override LoweredStatementKind Kind => LoweredStatementKind.Other;
 }
-
-internal sealed record LoweredOtherStatement(
-    StatementSyntax Syntax) : LoweredStatement(Syntax.Span)
-{
-    public override LoweredStatementKind Kind => LoweredStatementKind.Other;
-}

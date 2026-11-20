@@ -374,12 +374,12 @@ internal sealed partial class ExecutableScript
             if (_parameterLayout is null && IsLocalBindingName(name)) InternLocal(name);
         }
 
-        private int InternImport(LoweredImportStatement importStatement)
+        private int InternImport(ImportStatementSyntax importStatement)
         {
             if (_parameterLayout is null)
-                foreach (var name in ImportSyntaxFacts.EnumerateBindingNames(importStatement.Syntax))
+                foreach (var name in ImportSyntaxFacts.EnumerateBindingNames(importStatement))
                     InternModuleBinding(name);
-            _imports.Add(importStatement.Syntax);
+            _imports.Add(importStatement);
             return _imports.Count - 1;
         }
 
@@ -422,33 +422,34 @@ internal sealed partial class ExecutableScript
             return indices;
         }
 
-        private ExecutableCodeObject PrepareFunctionCode(LoweredFunctionDefinitionStatement functionDefinition)
+        private ExecutableCodeObject PrepareFunctionCode(FunctionDefinitionStatementSyntax functionDefinition,
+            LoweredFunctionAnnotation[] annotations)
         {
-            InternModuleBinding(functionDefinition.Syntax.Name);
-            var typeParameterNames = functionDefinition.Syntax.PreparedTypeParameterNames;
+            InternModuleBinding(functionDefinition.Name);
+            var typeParameterNames = functionDefinition.PreparedTypeParameterNames;
             if (typeParameterNames is null && functionDefinition.TypeParameters is { Count: > 0 } typeParameters)
-                typeParameterNames = typeParameters.Select(static p => p.Syntax.Name).ToHashSet(StringComparer.Ordinal);
-            var codeObject = CompileFunctionCode(functionDefinition.Syntax.DeclaredName,
+                typeParameterNames = typeParameters.Select(static p => p.Name).ToHashSet(StringComparer.Ordinal);
+            var codeObject = CompileFunctionCode(functionDefinition.DeclaredName,
                 functionDefinition.ParameterLayout, functionDefinition.Body,
-                functionDefinition.ScopeFacts, typeParameterNames, functionDefinition.Syntax.IsGenerator,
-                qualifiedName: functionDefinition.Syntax.PreparedQualifiedName);
+                ScopeDirectiveFactsCollector.ForFunction(functionDefinition), typeParameterNames, functionDefinition.IsGenerator,
+                qualifiedName: functionDefinition.PreparedQualifiedName);
 
-            codeObject.DefinitionAnnotationKeys = PyDict.RecordKeys.PrepareDefinition(functionDefinition.Annotations.Length,
-                functionDefinition.Annotations, static (inputs, index) => inputs[index].Key,
+            codeObject.DefinitionAnnotationKeys = PyDict.RecordKeys.PrepareDefinition(annotations.Length,
+                annotations, static (inputs, index) => inputs[index].Key,
                 _compilationCancellation, functionDefinition.Span);
             return codeObject;
         }
 
         private ExecutableCodeObject CompileFunctionCode(string name,
-            FunctionParameterLayout parameterLayout, IReadOnlyList<LoweredStatement> body,
+            FunctionParameterLayout parameterLayout, IReadOnlyList<StatementSyntax> body,
             ScopeDirectiveFacts scopeFacts, IReadOnlySet<string>? typeParameterNames = null,
-            bool generator = false, PyString? qualifiedName = null)
+            bool generator = false, PyString? qualifiedName = null, LoweredLambdaExpression? lambda = null)
         {
             return new Builder(parameterLayout, this, scopeFacts,
                 completeLexicalParent: _completeLexicalParent && typeParameterNames is null,
                 moduleCode: _moduleCode, typeParameterNames: typeParameterNames)
                 { _generator = generator }
-                .CompileCodeObject(name, body, qualifiedName: qualifiedName);
+                .CompileCodeObject(name, body, qualifiedName: qualifiedName, lambda: lambda);
         }
 
         // A child is compiled while its parent's active comprehensions and
@@ -471,31 +472,12 @@ internal sealed partial class ExecutableScript
             return false;
         }
 
-        private int InternMatchCase(LoweredMatchCase matchCase)
+        private int InternMatchCase(LoweredRootPattern pattern, LythonSourceSpan span)
         {
-            var localBindings = matchCase.Pattern.Bindings.Select(binding =>
+            var localBindings = pattern.Bindings.Select(binding =>
                 _localIndexes.TryGetValue(binding.Name, out var slot) ? slot : -1).ToArray();
-            _matchCases.Add(new ExecutableMatchCaseBinding(matchCase.Pattern, matchCase.Syntax.Span, localBindings));
+            _matchCases.Add(new ExecutableMatchCaseBinding(pattern, span, localBindings));
             return _matchCases.Count - 1;
-        }
-
-        private int InternStatementFallback(LoweredStatement statement)
-        {
-            if (statement is LoweredClassDefinitionStatement definition) InternModuleBinding(definition.Syntax.Name);
-            else if (statement is LoweredTypeAliasStatement alias) InternModuleBinding(alias.Syntax.Name);
-            StatementSyntax? syntax = statement switch
-            {
-                LoweredClassDefinitionStatement item => item.Syntax,
-                LoweredAssertStatement item => item.Syntax,
-                LoweredDeleteStatement item => item.Syntax,
-                LoweredRaiseStatement item => item.Syntax,
-                LoweredAssignmentStatement item => item.Syntax,
-                _ => null,
-            };
-            if (_generator && syntax is not null && StatementSyntaxTraversal.EnumerateDirectExpressions(syntax).Any(GeneratorSyntaxFacts.ContainsYield))
-                throw new GeneratorLoweringException("Suspension in this statement is not supported.", statement.Span);
-            _statementFallbacks.Add(statement);
-            return _statementFallbacks.Count - 1;
         }
 
         private sealed class ConstantValueComparer : IEqualityComparer<object>

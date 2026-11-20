@@ -102,24 +102,8 @@ public sealed class LythonEngine
         var diagnostics = frontend.Diagnostics;
         var isValid = diagnostics.All(static d => d.Severity != LythonDiagnosticSeverity.Error);
         var script = frontend.Script;
-        ExecutableScript? executableScript = null;
-        try
-        {
-            if (isValid && script is not null)
-            {
-                var loweredScript = LoweredScript.Lower(script, cancellationToken, governor);
-                governor.ThrowIfAdmissionFailed();
-                PythonTokenization.CheckCancellation(cancellationToken, 0);
-                // Invalid source never executes. Other compiler defects surface
-                // rather than selecting an alternate execution engine.
-                executableScript = ExecutableScript.Compile(loweredScript, cancellationToken, governor);
-            }
-        }
-        catch (GeneratorLoweringException exception)
-        {
-            diagnostics = diagnostics.Append(new LythonDiagnostic("LA2000", exception.Message, LythonDiagnosticSeverity.Error, exception.Span)).ToArray();
-            isValid = false;
-        }
+        // Invalid source never executes. Unexpected compiler defects surface.
+        var executableScript = isValid && script is not null ? ExecutableScript.Compile(script, cancellationToken, governor) : null;
         governor.ThrowIfAdmissionFailed();
         PythonTokenization.CheckCancellation(cancellationToken, 0);
         // Only the code object's real lowered consumers survive compilation.

@@ -16,7 +16,6 @@ public sealed class DeleteExecutionTests
     public void OrdinaryDeletionStaysExecutableWithoutMirroring(string source)
     {
         var code = Compile(source);
-        Assert.Empty(code.StatementFallbacks);
         Assert.False(code.RequiresLocalVariableMirroring);
     }
 
@@ -25,7 +24,6 @@ public sealed class DeleteExecutionTests
     {
         var code = Compile("def clear(values):\n del values[0]\n return values\nreturn clear([7])");
         var helper = Assert.IsType<ExecutableCodeObject>(Assert.Single(code.FunctionBindings()).CodeObject);
-        Assert.Empty(helper.StatementFallbacks);
         Assert.False(helper.RequiresLocalVariableMirroring);
     }
 

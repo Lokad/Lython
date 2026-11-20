@@ -4,7 +4,7 @@ internal sealed partial class ExecutableScript
 {
     private sealed partial class Builder
     {
-        private int CompileAssert(LoweredAssertStatement statement, int block)
+        private int CompileAssert(AssertStatementSyntax statement, int block)
         {
             block = CompileExpression(statement.Condition, block);
             var failure = CreateBlock();
@@ -18,7 +18,7 @@ internal sealed partial class ExecutableScript
             return after;
         }
 
-        private int CompileRaise(LoweredRaiseStatement statement, int block)
+        private int CompileRaise(RaiseStatementSyntax statement, int block)
         {
             if (statement.Expression is null)
                 AddInstruction(block, ExecutableInstruction.ReraiseException(statement.Span));
@@ -56,30 +56,30 @@ internal sealed partial class ExecutableScript
                     AddInstruction(block, ExecutableInstruction.DeleteName(InternName(name.Name), expression.Span));
                     break;
                 case MemberExpressionSyntax member:
-                    block = CompileExpression(LoweredScript.LowerExpression(member.Target), block);
+                    block = CompileExpression(member.Target, block);
                     AddInstruction(block, ExecutableInstruction.DeleteMember(InternName(member.MemberName), expression.Span));
                     break;
                 case SubscriptExpressionSyntax item:
-                    block = CompileExpression(LoweredScript.LowerExpression(item.Target), block);
-                    block = CompileExpression(LoweredScript.LowerExpression(item.Index), block);
+                    block = CompileExpression(item.Target, block);
+                    block = CompileExpression(item.Index, block);
                     AddInstruction(block, ExecutableInstruction.DeleteSubscript(expression.Span));
                     break;
                 case SliceExpressionSyntax slice:
-                    block = CompileExpression(LoweredScript.LowerExpression(slice.Target), block);
+                    block = CompileExpression(slice.Target, block);
                     var parts = ExecutableSliceParts.None;
                     if (slice.Start is not null)
                     {
-                        block = CompileExpression(LoweredScript.LowerExpression(slice.Start), block);
+                        block = CompileExpression(slice.Start, block);
                         parts |= ExecutableSliceParts.Start;
                     }
                     if (slice.End is not null)
                     {
-                        block = CompileExpression(LoweredScript.LowerExpression(slice.End), block);
+                        block = CompileExpression(slice.End, block);
                         parts |= ExecutableSliceParts.End;
                     }
                     if (slice.Step is not null)
                     {
-                        block = CompileExpression(LoweredScript.LowerExpression(slice.Step), block);
+                        block = CompileExpression(slice.Step, block);
                         parts |= ExecutableSliceParts.Step;
                     }
                     AddInstruction(block, ExecutableInstruction.DeleteSlice(parts, expression.Span));

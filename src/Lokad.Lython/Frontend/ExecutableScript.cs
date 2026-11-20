@@ -9,7 +9,6 @@ namespace Lokad.Lython.Frontend;
 internal enum ExecutableOpCode
 {
     Import,
-    ExecuteFallbackStatement,
     LoadConst,
     LoadLocal,
     LoadClosure,
@@ -168,7 +167,6 @@ internal readonly record struct ExecutableInstruction
             _inputStart, _resultSlot, ~_liveExtent);
 
     public int ImportIndex => ReadPrimaryOperand(ExecutableOpCode.Import, nameof(ImportIndex));
-    public int StatementFallbackIndex => ReadPrimaryOperand(ExecutableOpCode.ExecuteFallbackStatement, nameof(StatementFallbackIndex));
     public int ConstantIndex => OpCode is ExecutableOpCode.LoadConst or ExecutableOpCode.ApplyOperation
         or ExecutableOpCode.AppendFormattedText or ExecutableOpCode.FormatField or ExecutableOpCode.MakeRecord
         ? _primaryOperand : throw InvalidOperand(nameof(ConstantIndex));
@@ -226,9 +224,6 @@ internal readonly record struct ExecutableInstruction
 
     public static ExecutableInstruction Import(int importIndex, LythonSourceSpan span)
         => new(ExecutableOpCode.Import, span, importIndex);
-
-    public static ExecutableInstruction ExecuteFallbackStatement(int statementIndex, LythonSourceSpan span)
-        => new(ExecutableOpCode.ExecuteFallbackStatement, span, statementIndex);
 
     public static ExecutableInstruction ApplyOperation(int constantIndex, LythonSourceSpan span)
         => new(ExecutableOpCode.ApplyOperation, span, constantIndex);
@@ -493,7 +488,6 @@ internal sealed partial class ExecutableCodeObject
         ExecutableCallSite[] callSites,
         int lookupCacheCount,
         IReadOnlyList<ExecutableMatchCaseBinding> matchCases,
-        IReadOnlyList<LoweredStatement> statementFallbacks,
         bool requiresLocalVariableMirroring,
         bool isFunctionScope,
         int initialOperandDepth,
@@ -517,7 +511,6 @@ internal sealed partial class ExecutableCodeObject
         LookupCacheCount = lookupCacheCount;
         MatchCases = matchCases;
         PatternStorageCount = matchCases.Select(item => item.Pattern.StorageCount).DefaultIfEmpty(0).Max();
-        StatementFallbacks = statementFallbacks;
         RequiresLocalVariableMirroring = requiresLocalVariableMirroring;
         IsFunctionScope = isFunctionScope;
         PrepareCallResults(blocks, callSites);
@@ -636,8 +629,6 @@ internal sealed partial class ExecutableCodeObject
 
 
     public IReadOnlyList<ExecutableMatchCaseBinding> MatchCases { get; }
-
-    public IReadOnlyList<LoweredStatement> StatementFallbacks { get; }
 
     public bool RequiresLocalVariableMirroring { get; }
 

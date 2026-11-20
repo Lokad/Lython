@@ -17,16 +17,19 @@ internal sealed partial class ExecutableScript
 
     public ExecutableCodeObject EntryPoint { get; }
 
-    public static ExecutableScript Compile(LoweredScript lowered, CancellationToken cancellationToken = default, MemoryGovernor? governor = null)
+    internal static ExecutableScript Compile(LoweredScript lowered)
+        => Compile(lowered.Syntax);
+
+    public static ExecutableScript Compile(ScriptSyntax script, CancellationToken cancellationToken = default, MemoryGovernor? governor = null)
     {
         List<ExecutableCodeObject> moduleCode = [];
-        var entryPoint = new Builder(null, null, ScopeDirectiveFactsCollector.ForModule(lowered.Syntax), completeLexicalParent: true,
+        var entryPoint = new Builder(null, null, ScopeDirectiveFactsCollector.ForModule(script), completeLexicalParent: true,
             moduleCode: moduleCode, compilationCancellation: cancellationToken, compilationGovernor: governor)
-            .CompileCodeObject("<module>", lowered.Statements);
+            .CompileCodeObject("<module>", script.Statements);
         // Actual executable sites have supplied their lexical capture facts.
         // Remaining callables belong to retained lowered consumers or lazy
         // annotations. Prepare their namespace code without evaluating them.
-        foreach (var syntax in lowered.Syntax.PreparedCallables)
+        foreach (var syntax in script.PreparedCallables)
         {
             PythonTokenization.CheckCancellation(cancellationToken, 0);
             switch (syntax)
@@ -46,7 +49,7 @@ internal sealed partial class ExecutableScript
         }
         foreach (var code in moduleCode) code.PrepareModuleGlobals(entryPoint, cancellationToken);
         return new ExecutableScript(entryPoint.ScopeFacts.ContainsVariableAnnotations
-            ? lowered.Syntax.Statements[0].Span : null, entryPoint);
+            ? script.Statements[0].Span : null, entryPoint);
     }
 
     private static ScopeDirectiveFacts GeneratorFacts(LoweredGeneratorExpression expression)
@@ -54,12 +57,15 @@ internal sealed partial class ExecutableScript
 
     private static void CompileNamespaceLambda(LoweredLambdaExpression lambda, CancellationToken cancellationToken, MemoryGovernor? governor)
         => lambda.CompleteCompilation(new Builder(lambda.ParameterLayout, lambda.IsGenerator, lambda.ScopeFacts, cancellationToken, governor)
-            .CompileCodeObject("<lambda>", lambda.FunctionBody, qualifiedName: lambda.Lambda.PreparedQualifiedName), namespaceClosure: true);
+            .CompileCodeObject("<lambda>", [], qualifiedName: lambda.Lambda.PreparedQualifiedName, lambda: lambda), namespaceClosure: true);
 
-    internal static ExecutableCodeObject CompileClassFunction(LoweredFunctionDefinitionStatement function,
-        CancellationToken cancellationToken = default, MemoryGovernor? governor = null)
-        => new Builder(function.ParameterLayout, function.Syntax.IsGenerator, function.ScopeFacts, cancellationToken, governor)
-            .CompileCodeObject(function.Syntax.DeclaredName, function.Body, qualifiedName: function.Syntax.PreparedQualifiedName);
+    internal static ExecutableCodeObject CompileClassFunction(LoweredFunctionDefinitionStatement function)
+        => CompileClassFunction(function.Syntax, default, null);
+
+    internal static ExecutableCodeObject CompileClassFunction(FunctionDefinitionStatementSyntax function,
+        CancellationToken cancellationToken, MemoryGovernor? governor)
+        => new Builder(function.ParameterLayout, function.IsGenerator, ScopeDirectiveFactsCollector.ForFunction(function), cancellationToken, governor)
+            .CompileCodeObject(function.DeclaredName, function.Body, qualifiedName: function.PreparedQualifiedName);
 
     private sealed partial class Builder
     {
@@ -81,7 +87,6 @@ internal sealed partial class ExecutableScript
         private readonly List<ExecutableCallSite> _callSites = [];
         private int _lookupCacheCount;
         private readonly List<ExecutableMatchCaseBinding> _matchCases = [];
-        private readonly List<LoweredStatement> _statementFallbacks = [];
         private readonly Stack<LoopContext> _loops = [];
         private readonly Stack<IReadOnlySet<string>> _comprehensionNames = [];
         private int _protectedDepth;
@@ -127,8 +132,9 @@ internal sealed partial class ExecutableScript
             _typeParameterNames = typeParameterNames;
         }
 
-        public ExecutableCodeObject CompileCodeObject(string name, IReadOnlyList<LoweredStatement> statements,
-            LoweredGeneratorExpression? generatorExpression = null, PyString? qualifiedName = null)
+        public ExecutableCodeObject CompileCodeObject(string name, IReadOnlyList<StatementSyntax> statements,
+            LoweredGeneratorExpression? generatorExpression = null, PyString? qualifiedName = null,
+            LoweredLambdaExpression? lambda = null)
         {
             // A lexical super read also requests the hidden free __class__ cell.
             // Ordinary enclosing locals must be retained like explicit reads.
@@ -162,10 +168,22 @@ internal sealed partial class ExecutableScript
                 }
             }
 
+            var callable = _parameterLayout is not null && generatorExpression is null;
+            var docstring = callable && statements.Count > 0 &&
+                statements[0] is ExpressionStatementSyntax { Expression: StringLiteralExpressionSyntax literal }
+                ? PyString.FromString(literal.Value) : null;
             var entryBlock = CreateBlock();
-            var exitBlock = generatorExpression is null ? CompileStatements(statements, entryBlock)
-                : CompileComprehensionBody(generatorExpression.Clauses, generatorExpression.ItemExpression,
+            int? exitBlock;
+            if (generatorExpression is not null)
+                exitBlock = CompileComprehensionBody(generatorExpression.Clauses, generatorExpression.ItemExpression,
                     null, generatorExpression.Span, entryBlock, yielding: true);
+            else if (lambda is not null)
+            {
+                var resultBlock = CompileExpression(lambda.Body, entryBlock);
+                AddInstruction(resultBlock, ExecutableInstruction.Return(lambda.Span));
+                exitBlock = null;
+            }
+            else exitBlock = CompileStatements(statements, entryBlock, docstring is null ? 0 : 1);
             // Module completion is distinct from an executed top-level return:
             // imports reject the latter. The interpreter already ends naturally
             // at an unterminated final block. Functions still return Python None.
@@ -185,12 +203,10 @@ internal sealed partial class ExecutableScript
                 _scopeFacts.ContainsVariableAnnotations && containsCallable;
             var requiresLocalVariableMirroring =
                 moduleAnnotationNamespace || (_generator && generatorExpression is null && !_completeLexicalParent) ||
-                _statementFallbacks.Count != 0 || needsMirroring;
+                needsMirroring;
 
             // The existing compilation owner funds the immutable function metadata.
             // A function and its body can share the same leading string literal.
-            var callable = _parameterLayout is not null && generatorExpression is null;
-
             // This builder is single-use; its completed slot maps become code metadata.
             var code = new ExecutableCodeObject(
                 name,
@@ -210,12 +226,11 @@ internal sealed partial class ExecutableScript
                 _callSites.ToArray(),
                 _lookupCacheCount,
                 _matchCases.ToArray(),
-                _statementFallbacks.ToArray(),
                 requiresLocalVariableMirroring,
                 isFunctionScope: _parameterLayout is not null,
                 initialOperandDepth: generatorExpression is null ? 0 : 1,
                 functionName: callable ? name == "<lambda>" ? LambdaName : PyString.FromString(name) : null,
-                docstring: callable ? LoweredStatement.LeadingDocstring(statements) : null)
+                docstring: docstring)
             {
                 QualifiedName = qualifiedName,
                 // Code using only slots can own cells independently of an
@@ -246,7 +261,7 @@ internal sealed partial class ExecutableScript
                     case ExecutableCreateFunction function:
                         PrepareChild(function.CodeObject);
                         break;
-                    case ExecutableCreateClass:
+                    case ExecutableCreateClass or ExecutableBindTypeAlias:
                         needsMirroring = true;
                         break;
                     case ExecutableCreateLambda:

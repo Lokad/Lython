@@ -318,7 +318,7 @@ internal sealed record LoweredLambdaExpression : LoweredExpression
         // Lazy annotation expressions reach lowering outside the statement
         // yield-validation walk. Classify each lambda from its own body.
         IsGenerator = GeneratorSyntaxFacts.ContainsYield(lambda.Body);
-        _body = [new LoweredReturnStatement(new ReturnStatementSyntax(lambda.Body, lambda.Span), body)];
+        _body = body;
         lambda.PreparedCallable = this;
     }
 
@@ -328,8 +328,8 @@ internal sealed record LoweredLambdaExpression : LoweredExpression
     public ScopeDirectiveFacts ScopeFacts { get; }
     public override ExpressionSyntax Syntax => Lambda;
     public bool IsGenerator { get; }
-    private IReadOnlyList<LoweredStatement>? _body;
-    internal IReadOnlyList<LoweredStatement> FunctionBody => _body.RequireNotNull();
+    private LoweredExpression? _body;
+    internal LoweredExpression Body => _body.RequireNotNull();
     internal ExecutableCodeObject? PreparedCode { get; private set; }
     public ExecutableCodeObject Code => PreparedCode.RequireNotNull();
     private bool NamespaceClosure { get; set; }

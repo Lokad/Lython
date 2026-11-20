@@ -17,7 +17,6 @@ public sealed class CompiledGeneratorExpressionTests
         var operation = Assert.Single(parent.Constants.OfType<ExecutableCreateGeneratorExpression>());
         var child = operation.CodeObject;
         Assert.Equal("<genexpr>", child.Name);
-        Assert.Empty(child.StatementFallbacks);
         Assert.False(module.RequiresLocalVariableMirroring);
         Assert.False(parent.RequiresLocalVariableMirroring);
         Assert.False(child.RequiresLocalVariableMirroring);

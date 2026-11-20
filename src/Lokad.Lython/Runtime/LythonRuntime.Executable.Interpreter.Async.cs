@@ -117,24 +117,6 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private async ValueTask ExecuteDefinitionOrFallbackAsync(ExecutableInstruction instruction)
-        {
-            switch (instruction.OpCode)
-            {
-                case ExecutableOpCode.Import:
-                    var import = _execution.Code.Imports[instruction.ImportIndex];
-                    await ExecuteImportAsync(import, this).ConfigureAwait(false);
-                    // Import stores update their bound slots directly. Copying
-                    // the whole namespace would erase unrelated unmirrored locals.
-                    return;
-                default:
-                    await DispatchLoweredStatementAsync(_execution.Code.StatementFallbacks[instruction.StatementFallbackIndex],
-                        this, AsynchronousLoweredStatementExecution.Instance).ConfigureAwait(false);
-                    break;
-            }
-            SyncExecutableLocalsFromContext(_execution.Code, _execution.Locals, this);
-        }
-
         private async ValueTask<bool> ExecuteContextManagerAsync(ExecutableInstruction instruction)
         {
             if (instruction.OpCode == ExecutableOpCode.ResolveContextManager)

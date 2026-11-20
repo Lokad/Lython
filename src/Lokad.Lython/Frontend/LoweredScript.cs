@@ -36,13 +36,7 @@ internal sealed class LoweredScript
         for (var index = 0; index < lowered.Length; index++)
         {
             PythonTokenization.CheckCancellation(cancellationToken, index);
-            var item = LowerStatement(statements[index], cancellationToken, governor, classScope);
-            if (classScope && item is LoweredFunctionDefinitionStatement function)
-            {
-                var code = ExecutableScript.CompileClassFunction(function, cancellationToken, governor);
-                item = function with { PreparedCode = code, Body = [] };
-            }
-            lowered[index] = item;
+            lowered[index] = LowerStatement(statements[index], cancellationToken, governor, classScope);
         }
 
         return lowered;
@@ -52,13 +46,23 @@ internal sealed class LoweredScript
         => parameters?.Select(parameter => new LoweredTypeParameter(parameter, parameter.Bound is null ? null : LowerExpression(parameter.Bound),
             parameter.Default is null ? null : LowerExpression(parameter.Default))).ToArray();
 
-    private static LoweredFunctionDefinitionStatement LowerFunction(FunctionDefinitionStatementSyntax definition,
+    internal static LoweredClassDefinitionStatement LowerClass(ClassDefinitionStatementSyntax definition,
         CancellationToken cancellationToken, MemoryGovernor? governor)
+        => new(definition, definition.Decorators.Select(LowerExpression).ToArray(),
+            definition.HeaderArguments.Select(argument =>
+                new LoweredCallArgument(argument.Form, LowerExpression(argument.Expression))).ToArray(),
+            LowerStatements(definition.Body, cancellationToken, governor, classScope: true));
+
+    private static LoweredFunctionDefinitionStatement LowerFunction(FunctionDefinitionStatementSyntax definition,
+        CancellationToken cancellationToken, MemoryGovernor? governor, bool classScope)
     {
         var decorators = definition.Decorators.Select(LowerExpression).ToArray();
         var defaults = LowerDefaults(definition.Parameters, definition.ParameterLayout);
         return new(definition, decorators, defaults, LowerFunctionAnnotations(definition),
-            LowerStatements(definition.Body, cancellationToken, governor), ScopeDirectiveFactsCollector.ForFunction(definition));
+            classScope ? [] : LowerStatements(definition.Body, cancellationToken, governor), ScopeDirectiveFactsCollector.ForFunction(definition))
+        {
+            PreparedCode = classScope ? ExecutableScript.CompileClassFunction(definition, cancellationToken, governor) : null,
+        };
     }
 
     // The shared layout owns names, kinds and binding order. Lower only the
@@ -73,7 +77,7 @@ internal sealed class LoweredScript
         return expressions;
     }
 
-    private static LoweredFunctionAnnotation[] LowerFunctionAnnotations(FunctionDefinitionStatementSyntax definition)
+    internal static LoweredFunctionAnnotation[] LowerFunctionAnnotations(FunctionDefinitionStatementSyntax definition)
     {
         var count = definition.ReturnAnnotation is null ? 0 : 1;
         var positionalCount = 0;
@@ -116,13 +120,8 @@ internal sealed class LoweredScript
             TypeAliasStatementSyntax alias => new LoweredTypeAliasStatement(alias, LowerExpression(alias.Value)),
             ImportStatementSyntax importStatement => new LoweredImportStatement(importStatement),
             ScopeDirectiveStatementSyntax scopeDirective => new LoweredScopeDirectiveStatement(scopeDirective),
-            FunctionDefinitionStatementSyntax functionDefinition => LowerFunction(functionDefinition, cancellationToken, governor),
-            ClassDefinitionStatementSyntax classDefinition => new LoweredClassDefinitionStatement(
-                classDefinition,
-                classDefinition.Decorators.Select(LowerExpression).ToArray(),
-                classDefinition.HeaderArguments.Select(argument =>
-                    new LoweredCallArgument(argument.Form, LowerExpression(argument.Expression))).ToArray(),
-                LowerStatements(classDefinition.Body, cancellationToken, governor, classScope: true)),
+            FunctionDefinitionStatementSyntax functionDefinition => LowerFunction(functionDefinition, cancellationToken, governor, classScope),
+            ClassDefinitionStatementSyntax classDefinition => LowerClass(classDefinition, cancellationToken, governor),
             AssignmentStatementSyntax assignment
                 => new LoweredNameAssignmentStatement(
                     assignment,
@@ -211,7 +210,7 @@ internal sealed class LoweredScript
                 raiseStatement,
                 raiseStatement.Expression is null ? null : LowerExpression(raiseStatement.Expression),
                 raiseStatement.CauseExpression is null ? null : LowerExpression(raiseStatement.CauseExpression)),
-            _ => new LoweredOtherStatement(statement)
+            _ => throw new InvalidOperationException($"Unknown statement syntax: {statement.GetType().Name}.")
         };
     }
 

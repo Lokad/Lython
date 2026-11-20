@@ -287,7 +287,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
             ExecutableOpCode.Slice => (1 + BitOperations.PopCount((uint)instruction.SliceParts), 1),
             ExecutableOpCode.MakeSlice => (BitOperations.PopCount((uint)instruction.SliceParts), 1),
             ExecutableOpCode.ForNext => (0, 1),
-            ExecutableOpCode.Import or ExecutableOpCode.ExecuteFallbackStatement or
+            ExecutableOpCode.Import or
                 ExecutableOpCode.PreloadImplicitSuperArguments or ExecutableOpCode.Jump or ExecutableOpCode.AbruptJump or
                 ExecutableOpCode.BindException or ExecutableOpCode.ReraiseException or ExecutableOpCode.ClearException or
                 ExecutableOpCode.EndFinally or ExecutableOpCode.ReturnNone => (0, 0),
@@ -347,6 +347,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
         ExecutableCallWithKeywordMapping call => (checked(call.PositionalCount + 2), 1),
         ExecutableFinishTuple or ExecutableStartCall or ExecutableCreateGeneratorExpression => (1, 1),
         ExecutableAppendDisplay or ExecutableAppendCall or ExecutableAppendFunctionDefault or ExecutableStoreModuleAnnotation => (1, 0),
+        ExecutableBindTypeAlias => (0, 0),
         ExecutableStoreDictionaryItem item => (item.Unpacking ? 1 : 2, 0),
         ExecutableCreateFunction function => (function.InputCount, 1),
         ExecutableCreateLambda lambda => (lambda.InputCount, 1),
