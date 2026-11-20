@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1227/B1228 private lexical definition admission](results/2026-11-20-private-lexical-definition/README.md)
+removes one budget resize per capturing factory and postpones cell
+publication until the complete definition is funded. A longer repeat
+confirms 6.63–10.00% lower sibling elapsed and 3.72–10.39% higher postponed
+factory elapsed. CPU supports both. The invoice repeat spans zero.
+
 [B1225/B1226 prepared function entry](results/2026-11-20-prepared-entry-progress/README.md)
 removes binding rescans and keeps the recursion admission at native body
 entry. Both synchronous factory elapsed ranges improve. Postponed factory

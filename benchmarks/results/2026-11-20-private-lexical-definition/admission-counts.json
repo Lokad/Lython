@@ -1,0 +1,90 @@
+{
+  "reference": [
+    {
+      "id": "scripts.annotated-rule-closures.nested-factories",
+      "asynchronous": false,
+      "PositiveReservations": 0,
+      "PositiveResizes": 10265,
+      "bytesBeforeResultDisposal": 126
+    },
+    {
+      "id": "scripts.annotated-rule-closures.nested-factories",
+      "asynchronous": true,
+      "PositiveReservations": 0,
+      "PositiveResizes": 10265,
+      "bytesBeforeResultDisposal": 126
+    },
+    {
+      "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "asynchronous": false,
+      "PositiveReservations": 0,
+      "PositiveResizes": 10265,
+      "bytesBeforeResultDisposal": 126
+    },
+    {
+      "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "asynchronous": true,
+      "PositiveReservations": 0,
+      "PositiveResizes": 10265,
+      "bytesBeforeResultDisposal": 126
+    },
+    {
+      "id": "scripts.retained-nonlocal-factories",
+      "asynchronous": false,
+      "PositiveReservations": 0,
+      "PositiveResizes": 1221,
+      "bytesBeforeResultDisposal": 66
+    },
+    {
+      "id": "scripts.retained-nonlocal-factories",
+      "asynchronous": true,
+      "PositiveReservations": 0,
+      "PositiveResizes": 1221,
+      "bytesBeforeResultDisposal": 66
+    }
+  ],
+  "candidate": [
+    {
+      "id": "scripts.annotated-rule-closures.nested-factories",
+      "asynchronous": false,
+      "PositiveReservations": 0,
+      "PositiveResizes": 8217,
+      "bytesBeforeResultDisposal": 126
+    },
+    {
+      "id": "scripts.annotated-rule-closures.nested-factories",
+      "asynchronous": true,
+      "PositiveReservations": 0,
+      "PositiveResizes": 8217,
+      "bytesBeforeResultDisposal": 126
+    },
+    {
+      "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "asynchronous": false,
+      "PositiveReservations": 0,
+      "PositiveResizes": 8217,
+      "bytesBeforeResultDisposal": 126
+    },
+    {
+      "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "asynchronous": true,
+      "PositiveReservations": 0,
+      "PositiveResizes": 8217,
+      "bytesBeforeResultDisposal": 126
+    },
+    {
+      "id": "scripts.retained-nonlocal-factories",
+      "asynchronous": false,
+      "PositiveReservations": 0,
+      "PositiveResizes": 981,
+      "bytesBeforeResultDisposal": 66
+    },
+    {
+      "id": "scripts.retained-nonlocal-factories",
+      "asynchronous": true,
+      "PositiveReservations": 0,
+      "PositiveResizes": 981,
+      "bytesBeforeResultDisposal": 66
+    }
+  ]
+}
