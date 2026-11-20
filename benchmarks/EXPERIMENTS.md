@@ -566,6 +566,10 @@ original conditions retained. Current comparisons belong in
   workloads. Both formatting reports still carry generic call packaging.
   Defaults, annotations and instruction dispatch remain visible in the
   factory cases. [Profile](results/2026-11-20-retained-dispatch-profile/README.md).
+- B1160 borrows ordinary method-format operands directly. Expanded forwarding
+  warm and compile-to-result elapsed and CPU fall. The unchanged invoice
+  also moves favorably. Shipment warm results are inconclusive and all
+  three format workloads allocate less. [Source pair](results/2026-11-20-method-format-operands/README.md).
 - The compiler profiles led to summarized abstract-value effects and direct
   postfix result storage. Separate source pairs establish compilation
   gains with CPU support. The archive retains both the short B1013 warmup

@@ -886,6 +886,11 @@ span. Abandoned cursors finish cleanup before another guest instruction or handl
 runs. Both APIs use the same identity-based member-cache eligibility rules;
 mutable descriptors and guest protocols retain their normal resolution.
 
+Ordinary executable `str.format` calls borrow the evaluated operand slots
+and compiled keyword labels through rendering. The caller retains their
+owner across field callbacks and suspension. Expanded calls use their
+already-owned argument packet with the same renderer and template cache.
+
 Functions and generators defined in class suites have executable bodies prepared once
 during compilation, including definitions inside compound suites. Class suites,
 decorators, defaults and annotations keep their existing evaluation order. Methods
@@ -899,6 +904,9 @@ keyword arrays from the operand slots. Expanded headers keep their original
 keys and their owner through class construction and callbacks. Generic headers
 evaluate in the type-parameter scope. Executable statements and lowered class
 suites share class completion.
+Static collection shapes widen after class construction and function
+definitions with decorators or potentially effectful eager annotations.
+Later reads can see mutations that those callbacks made through aliases.
 
 Executable function bindings retain declaration inputs and prepared code without
 the original function body tree. The compilation owner funds the function name
