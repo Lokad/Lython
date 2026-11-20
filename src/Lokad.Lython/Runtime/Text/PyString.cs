@@ -417,7 +417,8 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
     }
 
     internal static PyString CopyFromUtf8(ReadOnlySpan<byte> utf8, MemoryGovernor? governor,
-        LythonSourceSpan? allocationSpan, LythonRuntime.ExecutionContext? context = null)
+        LythonSourceSpan? allocationSpan, LythonRuntime.ExecutionContext? context = null,
+        CancellationToken cancellationToken = default)
     {
         if (utf8.IsEmpty) return Empty;
         context ??= PyStructuralGuard.AmbientContext;
@@ -426,6 +427,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         try
         {
             context?.CheckExecution(allocationSpan);
+            if (cancellationToken.IsCancellationRequested) throw RuntimeErrors.Cancelled(allocationSpan);
             var result = CreateReservedUtf8(utf8.Length, governor);
             var destination = result.UnpublishedUtf8;
             for (var offset = 0; offset < utf8.Length;)
@@ -434,6 +436,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
                 utf8.Slice(offset, length).CopyTo(destination[offset..]);
                 offset += length;
                 context?.CheckExecution(allocationSpan);
+                if (cancellationToken.IsCancellationRequested) throw RuntimeErrors.Cancelled(allocationSpan);
             }
             result.CompleteUnpublishedUtf8(utf8.Length);
             governor?.Commit(charge);

@@ -8,6 +8,22 @@ namespace Lokad.Lython.Tests;
 public sealed class PyStringPrimitiveTests
 {
     [Fact]
+    public void CancelledUtf8CopyReleasesItsReservationWithoutAnExecutionContext()
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var owner = budget.CreateScope();
+        var governor = new MemoryGovernor(owner);
+        var span = new LythonSourceSpan(0, 1, 1, 1);
+
+        var error = Assert.Throws<LythonRuntimeException>(() => PyString.CopyFromUtf8("é"u8, governor, span,
+            cancellationToken: new CancellationToken(canceled: true)));
+
+        Assert.Equal(LythonFailureReason.Cancelled, error.Attribution?.Reason);
+        Assert.Equal(0, governor.CurrentCommittedBytes);
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Fact]
     public void SplitCopiesRemainFundedAfterTheSourceOwnerEnds()
     {
         var root = new LythonMemoryBudget(1024 * 1024);

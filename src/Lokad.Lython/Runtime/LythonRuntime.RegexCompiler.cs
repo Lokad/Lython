@@ -228,8 +228,8 @@ internal sealed partial class LythonRuntime
                         offset += width;
                     }
                     // Group names are borrowed from the provider until the handle closes.
-                    var name = governor is null ? PyString.FromUtf8(entry.Name.ToArray())
-                        : PyString.CopyFromUtf8(entry.Name.Span, governor, span);
+                    var name = PyString.CopyFromUtf8(input, governor, span, cancellationToken: token);
+                    _ = name.GetHashCode(token, span);
                     if (!names.TryAdd(name, entry.Index))
                         throw RuntimeErrors.Runtime("Regex provider returned duplicate group names.", span);
                     previous = entry.Index;
