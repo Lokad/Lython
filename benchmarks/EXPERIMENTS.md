@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1208 captured factory delivery against CPython](results/2026-11-20-cpython-inline-captured-factories/README.md)
+records the retained source. Its nested factories take 2.28–2.52× warm
+and 2.20–2.40× compile-to-result. The duplicate Lython processes differ
+by more than 8% in both lanes. Compilation is 0.596–0.608× and invoice
+warm is 1.04–1.05×. Keep these external diagnostics separate from the
+controlled Lython source pair.
+
 [B1206 captured lexical factories](results/2026-11-20-inline-captured-factories/README.md)
 reduces nested warm elapsed 17.87–20.13% with lower CPU. Postponed and CSV
 invoice controls move adversely. [B1207](results/2026-11-20-inline-captured-factories/refinement/README.md)
