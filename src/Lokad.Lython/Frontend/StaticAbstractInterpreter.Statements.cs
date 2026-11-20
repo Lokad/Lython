@@ -107,15 +107,13 @@ internal static partial class StaticAbstractInterpreter
                 var forBodyBindings = bindings.Clone();
                 StaticBindingEngine.BindLoopTargetFromIterable(forStatement.Target, forStatement.Iterable, forBodyBindings);
                 AnalyzeStatements(forStatement.Body, diagnostics, forBodyBindings);
-                var forMergedBindings = AbstractState.Merge(bindings, forBodyBindings);
-                if (forStatement.ElseStatements is not null)
+                var forElseBindings = forStatement.ElseStatements is null ? null : bindings.Clone();
+                bindings.JoinBranch(forBodyBindings);
+                if (forElseBindings is not null)
                 {
-                    var forElseBindings = bindings.Clone();
-                    AnalyzeStatements(forStatement.ElseStatements, diagnostics, forElseBindings);
-                    forMergedBindings = AbstractState.Merge(forMergedBindings, forElseBindings);
+                    AnalyzeStatements(forStatement.ElseStatements!, diagnostics, forElseBindings);
+                    bindings.JoinBranch(forElseBindings);
                 }
-
-                bindings.TakeBranchResult(forMergedBindings);
                 return;
             }
 
@@ -129,43 +127,38 @@ internal static partial class StaticAbstractInterpreter
                     AnalyzeStatements(whileStatement.Body, diagnostics, whileBodyBindings);
                 }
 
-                var whileMergedBindings = AbstractState.Merge(bindings, whileBodyBindings);
-                if (whileStatement.ElseStatements is not null)
+                var whileElseBindings = whileStatement.ElseStatements is null ? null : bindings.Clone();
+                bindings.JoinBranch(whileBodyBindings);
+                if (whileElseBindings is not null)
                 {
-                    var whileElseBindings = bindings.Clone();
                     StaticConditionRefinements.Apply(whileStatement.Condition, assumedTruth: false, whileElseBindings);
-                    AnalyzeStatements(whileStatement.ElseStatements, diagnostics, whileElseBindings);
-                    whileMergedBindings = AbstractState.Merge(whileMergedBindings, whileElseBindings);
+                    AnalyzeStatements(whileStatement.ElseStatements!, diagnostics, whileElseBindings);
+                    bindings.JoinBranch(whileElseBindings);
                 }
-
-                bindings.TakeBranchResult(whileMergedBindings);
                 return;
             }
 
             case MatchStatementSyntax matchStatement:
             {
                 AnalyzeExpression(matchStatement.Subject, diagnostics, bindings);
-                var mergedMatchBindings = bindings.Clone();
-                var hasMatchCase = false;
+                AbstractState? mergedMatchBindings = null;
                 foreach (var matchCase in matchStatement.Cases)
                 {
                     var caseBindings = bindings.Clone();
                     if (matchCase.Guard is not null)
                     {
                         AnalyzeExpression(matchCase.Guard, diagnostics, caseBindings);
-                        bindings.TakeBranchResult(AbstractState.Merge(bindings, caseBindings));
+                        bindings.JoinBranch(caseBindings);
                         StaticConditionRefinements.Apply(matchCase.Guard, assumedTruth: true, caseBindings);
                     }
 
                     AnalyzeStatements(matchCase.Body, diagnostics, caseBindings);
-                    mergedMatchBindings = hasMatchCase ? AbstractState.Merge(mergedMatchBindings, caseBindings) : caseBindings;
-                    hasMatchCase = true;
+                    if (mergedMatchBindings is null) mergedMatchBindings = caseBindings;
+                    else mergedMatchBindings.JoinBranch(caseBindings);
                 }
 
-                if (hasMatchCase)
-                {
-                    bindings.TakeBranchResult(AbstractState.Merge(bindings, mergedMatchBindings));
-                }
+                if (mergedMatchBindings is not null)
+                    bindings.JoinBranch(mergedMatchBindings);
 
                 return;
             }
