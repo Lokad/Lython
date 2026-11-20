@@ -926,8 +926,10 @@ Static collection shapes widen after class construction and function
 definitions with decorators or potentially effectful eager annotations.
 Later reads can see mutations that those callbacks made through aliases.
 
-Executable function bindings retain declaration inputs and prepared code without
-the original function body tree. The compilation owner funds the function name
+Each executable function declaration stores its prepared code and binding
+layout in the creation operation. Emitted annotations leave an operand count
+and prepared keys. Annotations still evaluated in the defining type scope
+retain their lowered expressions. The compilation owner funds the function name
 and leading string literal shared by instances of the same declaration. A
 function keeps independent metadata overrides and mutable defaults. Host-facing
 text projections have their own result ownership. A definition evaluates its

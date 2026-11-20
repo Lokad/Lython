@@ -1,0 +1,10 @@
+{
+  "reference": "848cbf783f9f8cbaf133afb6150d96f7ac532004",
+  "measuredCandidate": "fc1f75c0b0678d9e2797719f23502afd31da3202",
+  "retained": "fb690cc0e",
+  "measuredCoreSha256": "b46a85ae3020aecb1a66707b418064feb7311a0a89c758f93481ffbbe125e2d0",
+  "casesSHA256": "2fbc77e0e3aeb852425e327ca58399854843ba79219f7ace87d189f1ad7e0cf4",
+  "isolatedFocusedChecksPerPlatform": 989,
+  "integratedFocusedChecksPerPlatform": 1091,
+  "quietTimingMeasured": false
+}

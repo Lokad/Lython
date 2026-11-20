@@ -274,6 +274,7 @@ for the CPython ratios above.
 
 | Change | Established outcome | Limits / evidence |
 | --- | --- | --- |
+| Consolidate executable function declaration metadata | Three annotation scripts retain 5.08–13.97% fewer managed bytes after compilation. A generated suite of 128 annotated definitions retains 10.89% fewer. | Isolated retained-memory diagnostic with matching warm allocation and accounted peaks. CPU and elapsed are unmeasured. [B1187](../benchmarks/results/2026-11-20-executable-definition-retention/README.md). |
 | Bind unpublished keyword defaults from final value slots | Three factory scripts allocate 11.55–19.24% less with the same accounted peaks. | The quiet factory, dictionary-read and invoice timing ranges span zero. The prior binder’s CPU increases remain in B1182. [B1183](../benchmarks/results/2026-11-20-prepared-keyword-default-binding/README.md). |
 | Reuse evaluated dictionary display keys | Expanded forwarding takes 13.66–14.24% less warm elapsed and 12.62–15.38% less CPU, with 31.75% less managed allocation. | Rebuilt-key elapsed rises 0.20–0.51%. The initial adverse invoice result does not repeat in the invoice-only run. [B1179](../benchmarks/results/2026-11-20-dynamic-record-layout/README.md). |
 | Keep evaluated numeric call operands in their slots | The in-memory invoice removes 24.91% of warm allocation and takes 2.24–4.43% less elapsed time. | Eager rule and file-backed invoice timing spans zero. [B1178](../benchmarks/results/2026-11-20-call-operand-publication/README.md). |

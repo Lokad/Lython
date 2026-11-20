@@ -6,6 +6,17 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1187 executable declaration retention](results/2026-11-20-executable-definition-retention/README.md)
+retains the prepared declaration once and drops emitted annotations' lowered
+trees from the operation. The three annotation scripts retain 5.08–13.97%
+fewer managed bytes. Warm allocation and accounted peaks match.
+
+[B1186 grouped annotation reads](results/2026-11-20-grouped-annotation-reads/README.md)
+removes per-annotation instruction dispatch in a private source pair. Eager
+warm elapsed falls 2.82–3.91% with lower CPU. Nested and postponed factories
+have mixed results. The callback control uses up to 9.80% more CPU with
+substantial duplicate spread. This needs a focused confirmation.
+
 [B1185 direct annotation storage](results/2026-11-20-final-function-annotations/README.md)
 removes the final copy in a private source pair. The refined owner allocates
 less, but eager warm CPU rises 2.69–3.76% and compile-to-result elapsed rises

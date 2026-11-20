@@ -1,0 +1,162 @@
+[
+  {
+    "repetition": 1,
+    "case": "scripts.annotated-rule-closures",
+    "metric": "liveBytes",
+    "referenceBytes": 10872,
+    "candidateBytes": 10320,
+    "changePercent": -5.077262693156737
+  },
+  {
+    "repetition": 1,
+    "case": "scripts.annotated-rule-closures",
+    "metric": "allocatedBytes",
+    "referenceBytes": 56992,
+    "candidateBytes": 56912,
+    "changePercent": -0.14037057832678723
+  },
+  {
+    "repetition": 1,
+    "case": "scripts.csv-invoice.large",
+    "metric": "liveBytes",
+    "referenceBytes": 22336,
+    "candidateBytes": 22256,
+    "changePercent": -0.3581661891117527
+  },
+  {
+    "repetition": 1,
+    "case": "scripts.csv-invoice.large",
+    "metric": "allocatedBytes",
+    "referenceBytes": 166824.375,
+    "candidateBytes": 166744.375,
+    "changePercent": -0.04795462293804009
+  },
+  {
+    "repetition": 1,
+    "case": "scripts.annotated-rule-closures.postponed",
+    "metric": "liveBytes",
+    "referenceBytes": 11448,
+    "candidateBytes": 10696,
+    "changePercent": -6.56883298392732
+  },
+  {
+    "repetition": 1,
+    "case": "scripts.annotated-rule-closures.postponed",
+    "metric": "allocatedBytes",
+    "referenceBytes": 63288,
+    "candidateBytes": 63208,
+    "changePercent": -0.12640626975097824
+  },
+  {
+    "repetition": 1,
+    "case": "scripts.annotated-rule-closures.callback-effects",
+    "metric": "liveBytes",
+    "referenceBytes": 16896,
+    "candidateBytes": 14536,
+    "changePercent": -13.967803030303028
+  },
+  {
+    "repetition": 1,
+    "case": "scripts.annotated-rule-closures.callback-effects",
+    "metric": "allocatedBytes",
+    "referenceBytes": 89536,
+    "candidateBytes": 89416,
+    "changePercent": -0.134024303073621
+  },
+  {
+    "repetition": 1,
+    "case": "scripts.annotations.retained-definition-suite",
+    "metric": "liveBytes",
+    "referenceBytes": 498328,
+    "candidateBytes": 444048,
+    "changePercent": -10.892424266748002
+  },
+  {
+    "repetition": 1,
+    "case": "scripts.annotations.retained-definition-suite",
+    "metric": "allocatedBytes",
+    "referenceBytes": 3599968.5,
+    "candidateBytes": 3594845.625,
+    "changePercent": -0.14230332848745864
+  },
+  {
+    "repetition": 2,
+    "case": "scripts.annotated-rule-closures",
+    "metric": "liveBytes",
+    "referenceBytes": 10872,
+    "candidateBytes": 10320,
+    "changePercent": -5.077262693156737
+  },
+  {
+    "repetition": 2,
+    "case": "scripts.annotated-rule-closures",
+    "metric": "allocatedBytes",
+    "referenceBytes": 56992,
+    "candidateBytes": 56912,
+    "changePercent": -0.14037057832678723
+  },
+  {
+    "repetition": 2,
+    "case": "scripts.csv-invoice.large",
+    "metric": "liveBytes",
+    "referenceBytes": 22336,
+    "candidateBytes": 22256,
+    "changePercent": -0.3581661891117527
+  },
+  {
+    "repetition": 2,
+    "case": "scripts.csv-invoice.large",
+    "metric": "allocatedBytes",
+    "referenceBytes": 166824.375,
+    "candidateBytes": 166744.375,
+    "changePercent": -0.04795462293804009
+  },
+  {
+    "repetition": 2,
+    "case": "scripts.annotated-rule-closures.postponed",
+    "metric": "liveBytes",
+    "referenceBytes": 11448,
+    "candidateBytes": 10696,
+    "changePercent": -6.56883298392732
+  },
+  {
+    "repetition": 2,
+    "case": "scripts.annotated-rule-closures.postponed",
+    "metric": "allocatedBytes",
+    "referenceBytes": 63288,
+    "candidateBytes": 63208,
+    "changePercent": -0.12640626975097824
+  },
+  {
+    "repetition": 2,
+    "case": "scripts.annotated-rule-closures.callback-effects",
+    "metric": "liveBytes",
+    "referenceBytes": 16896,
+    "candidateBytes": 14536,
+    "changePercent": -13.967803030303028
+  },
+  {
+    "repetition": 2,
+    "case": "scripts.annotated-rule-closures.callback-effects",
+    "metric": "allocatedBytes",
+    "referenceBytes": 89536,
+    "candidateBytes": 89416,
+    "changePercent": -0.134024303073621
+  },
+  {
+    "repetition": 2,
+    "case": "scripts.annotations.retained-definition-suite",
+    "metric": "liveBytes",
+    "referenceBytes": 498328,
+    "candidateBytes": 444048,
+    "changePercent": -10.892424266748002
+  },
+  {
+    "repetition": 2,
+    "case": "scripts.annotations.retained-definition-suite",
+    "metric": "allocatedBytes",
+    "referenceBytes": 3599968.5,
+    "candidateBytes": 3594784.875,
+    "changePercent": -0.14399084325321665
+  }
+]

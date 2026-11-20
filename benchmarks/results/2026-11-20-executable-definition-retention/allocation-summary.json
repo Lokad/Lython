@@ -1,0 +1,42 @@
+[
+  {
+    "case": "scripts.annotated-rule-closures",
+    "referenceBytes": 1046120,
+    "candidateBytes": 1046120,
+    "changePercent": 0.0,
+    "referencePeak": 2444313,
+    "candidatePeak": 2444313
+  },
+  {
+    "case": "scripts.csv-invoice.large",
+    "referenceBytes": 3672462,
+    "candidateBytes": 3672462,
+    "changePercent": 0.0,
+    "referencePeak": 9432613,
+    "candidatePeak": 9432613
+  },
+  {
+    "case": "scripts.annotated-rule-closures.postponed",
+    "referenceBytes": 1046224,
+    "candidateBytes": 1046224,
+    "changePercent": 0.0,
+    "referencePeak": 2444369,
+    "candidatePeak": 2444369
+  },
+  {
+    "case": "scripts.annotated-rule-closures.callback-effects",
+    "referenceBytes": 1097656,
+    "candidateBytes": 1097656,
+    "changePercent": 0.0,
+    "referencePeak": 1553105,
+    "candidatePeak": 1553105
+  },
+  {
+    "case": "scripts.annotations.retained-definition-suite",
+    "referenceBytes": 67520,
+    "candidateBytes": 67520,
+    "changePercent": 0.0,
+    "referencePeak": 158280,
+    "candidatePeak": 158280
+  }
+]
