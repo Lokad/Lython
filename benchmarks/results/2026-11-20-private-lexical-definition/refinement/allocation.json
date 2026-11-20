@@ -1,0 +1,66 @@
+{
+  "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+  "rows": [
+    {
+      "id": "scripts.annotated-rule-closures.nested-factories",
+      "asynchronous": false,
+      "allocatedBytesPerInvocation": [
+        1390064,
+        1390064,
+        1390064
+      ],
+      "peakExecutionMemoryBytes": 2968425,
+      "compiledReservedBytes": 74618,
+      "compilationMillisecondsDiagnostic": 102.7228,
+      "compilationAllocatedBytesDiagnostic": 104968,
+      "firstInvocationMillisecondsDiagnostic": 83.2077,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "asynchronous": false,
+      "allocatedBytesPerInvocation": [
+        1390168,
+        1390168,
+        1390168
+      ],
+      "peakExecutionMemoryBytes": 2968481,
+      "compiledReservedBytes": 78526,
+      "compilationMillisecondsDiagnostic": 70.438,
+      "compilationAllocatedBytesDiagnostic": 1361136,
+      "firstInvocationMillisecondsDiagnostic": 4.1287,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "id": "scripts.csv-invoice.large",
+      "asynchronous": false,
+      "allocatedBytesPerInvocation": [
+        3672490,
+        3672546,
+        3672288
+      ],
+      "peakExecutionMemoryBytes": 9432613,
+      "compiledReservedBytes": 150080,
+      "compilationMillisecondsDiagnostic": 28.6102,
+      "compilationAllocatedBytesDiagnostic": 154120,
+      "firstInvocationMillisecondsDiagnostic": 116.3847,
+      "sharedBudgetBaselineRestored": true
+    },
+    {
+      "id": "scripts.retained-nonlocal-factories",
+      "asynchronous": false,
+      "allocatedBytesPerInvocation": [
+        193288,
+        193372,
+        193288
+      ],
+      "peakExecutionMemoryBytes": 180053,
+      "compiledReservedBytes": 88079,
+      "compilationMillisecondsDiagnostic": 12.9099,
+      "compilationAllocatedBytesDiagnostic": 91272,
+      "firstInvocationMillisecondsDiagnostic": 8.7026,
+      "sharedBudgetBaselineRestored": true
+    }
+  ],
+  "boundary": "Complete warm runs including mediated I/O/reset, all output/file checks and result cleanup; compilation/startup/final cache teardown excluded. Process-wide CLR allocation counters, no forced GC. Compilation and first invocation clocks are local diagnostic observations, not a controlled CPU/source timing comparison."
+}

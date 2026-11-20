@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1230 isolated lexical capture admission](results/2026-11-20-private-lexical-definition/refinement/README.md)
+keeps capture preflight out of ordinary callable construction. The
+postponed regression narrows to 1.14–4.61% on elapsed and recurs on CPU.
+Siblings still improve. Both prototypes stay private and all original
+source pairs and adverse results remain available.
+
 [B1229 factory and invoice checkpoint against CPython](results/2026-11-20-cpython-prepared-entry-progress/README.md)
 records 2.31–2.42× eager nested warm and 2.31–2.48× postponed nested warm.
 Postponed compile-only is 0.628–0.653× and compile-to-result is 2.21–2.34×.
