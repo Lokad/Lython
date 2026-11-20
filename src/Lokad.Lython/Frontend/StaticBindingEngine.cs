@@ -6,22 +6,15 @@ internal static partial class StaticBindingEngine
     public static void UpdateBindings(StatementSyntax statement, AbstractState bindings)
     {
         var mutatedReceivers = CollectMutatedReceiverNames(statement, bindings);
-        // Aliases to mutable sequences are not tracked. Any known mutating path therefore invalidates
-        // all sequence-shape facts before this statement establishes new bindings.
-        // Descriptor and item setters may also mutate captured sequences.
-        if (mutatedReceivers?.Any(bindings.IsKnownMutableSequence) == true ||
-            AssignmentMayMutateSequenceFacts(statement))
+        // Class suites, construction hooks and assignments can mutate collection
+        // aliases without a direct call on the affected binding. Widen both kinds
+        // of facts in one pass before establishing new bindings.
+        if (statement is ClassDefinitionStatementSyntax || AssignmentMayMutateCollections(statement) ||
+            mutatedReceivers?.Any(bindings.IsKnownMutableSequence) == true)
         {
-            bindings.InvalidateMutableSequenceFacts();
+            bindings.InvalidateCollectionFacts();
         }
-
-        if (mutatedReceivers is not null || statement is
-            SubscriptAssignmentStatementSyntax or SliceAssignmentStatementSyntax or
-            MemberAssignmentStatementSyntax or AugmentedAssignmentStatementSyntax or
-            DeleteStatementSyntax or UnpackingAssignmentStatementSyntax or
-            AnnotatedAssignmentStatementSyntax { Target: not NameAssignmentTargetSyntax } ||
-            statement is ChainedAssignmentStatementSyntax chainedMutation &&
-                chainedMutation.Targets.Any(target => target is not NameAssignmentTargetSyntax))
+        else if (mutatedReceivers is not null)
         {
             bindings.InvalidateDictionaryFacts();
         }
@@ -156,7 +149,7 @@ internal static partial class StaticBindingEngine
         }
     }
 
-    private static bool AssignmentMayMutateSequenceFacts(StatementSyntax statement)
+    private static bool AssignmentMayMutateCollections(StatementSyntax statement)
     {
         return statement is SubscriptAssignmentStatementSyntax or SliceAssignmentStatementSyntax or
             MemberAssignmentStatementSyntax or AugmentedAssignmentStatementSyntax or DeleteStatementSyntax or

@@ -137,6 +137,22 @@ public sealed class ClassHeaderUnpackingTests
     }
 
     [Fact]
+    public async Task SubclassHookCanMutateCollectionsBeforeLaterReads()
+    {
+        await AssertOutput("""
+            seen = []
+            labels = {}
+            class Base:
+                def __init_subclass__(cls):
+                    seen.append('subclass')
+                    labels['name'] = cls.__name__
+            class Item(Base):
+                pass
+            print(seen[0], labels['name'])
+            """, "subclass Item\n");
+    }
+
+    [Fact]
     public async Task GenericHeadersExpandInsideTheirTypeParameterScope()
     {
         await AssertOutput("""
