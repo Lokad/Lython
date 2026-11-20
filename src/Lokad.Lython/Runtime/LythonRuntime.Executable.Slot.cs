@@ -221,7 +221,6 @@ internal sealed partial class LythonRuntime
         ref ExecutableLookupCache cache, ExecutionContext context, LythonSourceSpan span)
     {
         var dictionary = CreateCachedRecord(cache, values.Length, context, span);
-        using var ambient = PyStructuralGuard.PushAmbient(context, span);
         try
         {
             for (var i = 0; i < values.Length; i++)

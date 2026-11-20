@@ -165,15 +165,17 @@ internal sealed partial class LythonRuntime
                     var capacity = checked(names.Count + (row.Length > names.Count ? 1 : 0));
                     var record = _recordKeys?.CreateRecord(_context, _span, capacity)
                         ?? new PyDict(capacity, _context.MemoryGovernor, _span);
-                    using var ambient = PyStructuralGuard.PushAmbient(_context, _span);
                     for (var i = 0; i < names.Count; i++)
                     {
                         _context.CheckExecution(_span);
                         record.SetRecordItem((PyString)names[i], i < row.Length ? row[i] : _restValue, _context, _span);
                     }
                     if (row.Length > names.Count)
+                    {
+                        using var ambient = PyStructuralGuard.PushAmbient(_context, _span);
                         record.SetItem(ValidateDictionaryKey(_restKey, _span),
                             RestFields(row, new BigInteger(names.Count)));
+                    }
                     _recordKeys = record.ShareRecordKeys(_context, _span);
                     return PyIterationResult.Yield(record);
                 }

@@ -13,8 +13,7 @@ internal sealed partial class PyDict
     {
         if (_nativeItems is null || _nativeValues is null || HasProtocolKeys
             || !ReferenceEquals(_memoryGovernor, context.MemoryGovernor) || increment.GetByteCount() >= 8) return false;
-        context.CheckExecution(querySpan);
-        var hash = MixNativeHash(LythonRuntime.ComputeStructuralHashCode(key, querySpan, context));
+        var hash = HashNativeString(key, context, querySpan);
         var index = FindNativeIndex(key, hash, context, querySpan);
         return TryAccumulateAt(index, key, hash, fallback, increment);
     }

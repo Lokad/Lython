@@ -52,6 +52,12 @@ internal sealed partial class PyDict
         return MixNativeHash(PyValueComparer.Instance.GetHashCode(key));
     }
 
+    private static uint HashNativeString(PyString key, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        context.CheckExecution(span);
+        return MixNativeHash(PyValueComparer.NormalizeHash(key.GetHashCode(context.State.CancellationToken, span)));
+    }
+
     private static uint MixNativeHash(int normalized)
     {
         var hash = unchecked((uint)normalized);
@@ -108,14 +114,16 @@ internal sealed partial class PyDict
         }
     }
 
-    internal void EnsureNativeCapacity(int targetCount, MemoryGovernor? governor, LythonSourceSpan? span)
+    internal void EnsureNativeCapacity(int targetCount, MemoryGovernor? governor, LythonSourceSpan? span,
+        LythonRuntime.ExecutionContext? context = null)
     {
         var previous = _nativeItems!;
         if (_recordKeys is null && targetCount <= previous.Length) return;
         var capacity = NativeCapacity(Math.Max(targetCount, _recordKeys is null ? previous.Length : _nativeValues!.Length));
         using var replacement = governor?.ReserveTemporary(checked(96L + NativeSlotBytes * capacity), span);
         governor?.ThrowIfAdmissionFailed();
-        PyStructuralGuard.AmbientContext?.CheckExecution(span);
+        context ??= PyStructuralGuard.AmbientContext;
+        context?.CheckExecution(span);
         // An admission callback can already have made this record private.
         if (_recordKeys is null && targetCount <= _nativeItems!.Length) return;
         previous = _nativeItems!;
@@ -123,7 +131,7 @@ internal sealed partial class PyDict
         var shared = _recordKeys is not null;
         var items = new NativeKey[capacity];
         var values = _keysOnly ? null : new object?[capacity];
-        CopyNativeStorage(items, values, span);
+        CopyNativeStorage(items, values, span, context);
         _nativeItems = items;
         _nativeValues = values;
         _recordKeys = null;
@@ -138,12 +146,13 @@ internal sealed partial class PyDict
         }
     }
 
-    private void CopyNativeStorage(NativeKey[] items, object?[]? values, LythonSourceSpan? span)
+    private void CopyNativeStorage(NativeKey[] items, object?[]? values, LythonSourceSpan? span,
+        LythonRuntime.ExecutionContext? context = null)
     {
         var destination = 0;
         for (var index = 0; index < NativeExtent; index++)
         {
-            PyStructuralGuard.NoteWork(null, span);
+            PyStructuralGuard.NoteWork(context, span);
             if (!IsNativeLive(index)) continue;
             var source = _nativeItems![index];
             LinkNativeKey(items, destination, source);
@@ -233,9 +242,10 @@ internal sealed partial class PyDict
         return _nativeCount != before;
     }
 
-    private void AppendNativeItem(object key, object value, uint hash, bool protocol = false)
+    private void AppendNativeItem(object key, object value, uint hash, bool protocol = false,
+        LythonRuntime.ExecutionContext? context = null)
     {
-        do { EnsureNativeCapacity(checked(_nativeCount + 1), _memoryGovernor, _allocationSpan); }
+        do { EnsureNativeCapacity(checked(_nativeCount + 1), _memoryGovernor, _allocationSpan, context); }
         while (_recordKeys is not null || _nativeCount == _nativeItems!.Length);
         var items = _nativeItems!;
         var index = _nativeCount;
@@ -432,12 +442,12 @@ internal sealed partial class PyDict
     // Copying publishes aliases, while shared record metadata must remain
     // immutable. Materialize before either boundary. The existing value-slot
     // allowance already funds these boxes; no callback/admission is required.
-    private void MaterializeNativeValues(LythonSourceSpan? span)
+    private void MaterializeNativeValues(LythonSourceSpan? span, LythonRuntime.ExecutionContext? context = null)
     {
         if (_recordKeys is not null || _nativeValues is null) return;
         for (var index = 0; index < _nativeCount; index++)
         {
-            PyStructuralGuard.NoteWork(null, span);
+            PyStructuralGuard.NoteWork(context, span);
             _ = ReadNativeValue(index);
         }
     }

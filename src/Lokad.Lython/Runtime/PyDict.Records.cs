@@ -40,7 +40,7 @@ internal sealed partial class PyDict
         if (ReferenceEquals(cached.Target, layout) && ReferenceEquals(cached.Value, key)) index = cached.Position;
         else
         {
-            var hash = MixNativeHash(LythonRuntime.ComputeStructuralHashCode(key, span, context));
+            var hash = HashNativeString(key, context, span);
             index = FindNativeIndex(key, hash, context, span);
             if (index < 0)
             {
@@ -268,14 +268,14 @@ internal sealed partial class PyDict
         if (_nativeCount == 0) return null;
         if (_recordKeys is { } shared && shared.Count == _nativeCount) return shared;
         if (!CanShareRecordKeys(context, span)) return null;
-        if (_recordKeys is not null) EnsureNativeCapacity(_nativeCount, _memoryGovernor, span);
+        if (_recordKeys is not null) EnsureNativeCapacity(_nativeCount, _memoryGovernor, span, context);
         using var storage = context.MemoryGovernor.ReserveTemporary(64, span);
         context.CheckExecution(span);
         // Admission can alter reachable data. Reuse a layout already established
         // by that callback, or validate the current private keys before freezing.
         if (_recordKeys is { } current) return current;
         if (!CanShareRecordKeys(context, span)) return null;
-        MaterializeNativeValues(span);
+        MaterializeNativeValues(span, context);
         var layout = new RecordKeys(this);
         _recordKeys = layout;
         // Transfer the existing key funding to the batch/cache lifetime without
@@ -313,12 +313,12 @@ internal sealed partial class PyDict
     internal void SetRecordItem(PyString key, object value, LythonRuntime.ExecutionContext context,
         LythonSourceSpan span)
     {
-        context.CheckExecution(span);
         // Builders call this only before publishing their record. Ordered
         // prefixes fill directly; duplicates and mismatches use normal mutation.
         if (_recordKeys is not null && _nativeCount < _recordKeys.Count &&
             ReferenceEquals(_nativeItems![_nativeCount].Key, key))
         {
+            context.CheckExecution(span);
             EnsureRecordValueCapacity(checked(_nativeCount + 1), context, span);
             if (_nativeValues![_nativeCount] is null)
             {
@@ -327,7 +327,7 @@ internal sealed partial class PyDict
                 return;
             }
         }
-        SetItem(key, value);
+        WritePrivateNativeString(key, value, context, span, replaceExisting: true);
     }
 
     private void EnsureRecordValueCapacity(int targetCount, LythonRuntime.ExecutionContext context, LythonSourceSpan span)

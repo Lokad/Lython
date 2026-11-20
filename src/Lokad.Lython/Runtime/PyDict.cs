@@ -142,9 +142,9 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
     internal bool TryWriteKeyWithoutAdmission(object key, object value, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         var governor = context.MemoryGovernor;
-        if (key is not PyString || _nativeItems is null || HasProtocolKeys ||
+        if (key is not PyString text || _nativeItems is null || HasProtocolKeys ||
             !ReferenceEquals(_memoryGovernor, governor)) return false;
-        var hash = MixNativeHash(LythonRuntime.ComputeStructuralHashCode(key, span, context));
+        var hash = HashNativeString(text, context, span);
         var index = FindNativeIndex(key, hash, context, span);
         if (index < 0 && (_recordKeys is not null || _nativeCount == _nativeItems.Length)) return false;
         var before = _nativeCount;
@@ -199,12 +199,15 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
         LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         if (_nativeItems is null) return TryGetBridgeValue(key, context, span, out value);
-        // Own provenance here. Native string queries cannot invoke guest
-        // protocols or structural traversal and already have context explicitly.
-        using var ambient = CanReadKeySynchronously(key)
-            ? default : PyStructuralGuard.PushAmbient(context, span);
-        var (hash, protocol) = PrepareQueryKey(key, context, span);
-        var index = ResolveNativeKey(key, hash, protocol, context, span);
+        int index;
+        if (key is PyString text && !HasProtocolKeys)
+            index = FindNativeIndex(text, HashNativeString(text, context, span), context, span);
+        else
+        {
+            using var ambient = PyStructuralGuard.PushAmbient(context, span);
+            var (hash, protocol) = PrepareQueryKey(key, context, span);
+            index = ResolveNativeKey(key, hash, protocol, context, span);
+        }
         value = index < 0 ? PyNone.Instance : ReadNativeValue(index);
         return index >= 0;
     }
@@ -277,13 +280,23 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
         finally { if (!mayEscape && Count == before) governor.RefundUnpublishedValue(key); }
     }
 
-    // The call binder's private dictionary has only native string keys.
     internal bool TryAddNativeString(PyString key, object value, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        => WritePrivateNativeString(key, value, context, span, replaceExisting: false);
+
+    // A builder owns its dictionary exclusively until publication. The input
+    // key and every existing key are native strings. No guest comparison can
+    // run, and admission cannot change this table during its own construction.
+    private bool WritePrivateNativeString(PyString key, object value, LythonRuntime.ExecutionContext context,
+        LythonSourceSpan span, bool replaceExisting)
     {
-        var before = _nativeCount;
-        var hash = MixNativeHash(LythonRuntime.ComputeStructuralHashCode(key, span, context));
-        SetNativeValue(key, value, hash, protocol: false, context, span, replaceExisting: false);
-        if (_nativeCount == before) return false;
+        var hash = HashNativeString(key, context, span);
+        var index = FindNativeIndex(key, hash, context, span);
+        if (index >= 0)
+        {
+            if (replaceExisting) StoreNativeValue(index, value);
+            return false;
+        }
+        AppendNativeItem(key, value, hash, context: context);
         _version++;
         return true;
     }
