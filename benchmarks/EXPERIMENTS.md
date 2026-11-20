@@ -57,6 +57,11 @@ refreshes factory and invoice rows at `ab2aa9554` and adds repeated
 dataclass construction. Factory warm times remain over 3× CPython. The
 dataclass result includes CPython's per-class generated method setup.
 
+[B1169 combined function and annotation admission](results/2026-11-20-funded-definition-construction/README.md)
+retains one preflight for the private function and annotation backing.
+The read-every-definition and compile-to-result tasks improve with lower
+CPU. Eager warm includes adverse pairings and nested warm spans zero.
+
 ## November 18–19, 0.11.0 compiler and call work
 
 - The retained formatting and function-default changes have paired evidence.

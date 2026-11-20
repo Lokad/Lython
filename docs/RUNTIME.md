@@ -348,8 +348,10 @@ Generated dataclass initializers feed admitted parameter values directly into
 the final default containers. Generated equality and ordering methods share
 one immutable parameter layout.
 Executable code owns immutable keyword-default and annotation key layouts
-prepared during compilation. Each definition admits its own mutable default
-containers before evaluating defaults. Function declarations and lambdas fill
+prepared during compilation. An executable function with evaluated annotation
+operands admits the callable and final annotation backing before allocating
+either. Refusal can arise from their combined estimate. Each definition admits
+its own mutable default containers before evaluating defaults. Function declarations and lambdas fill
 the final private tuple and dictionary as expressions complete, with one owner
 through suspension.
 Fresh integers can stay unboxed until observed. The tuple preflights room
