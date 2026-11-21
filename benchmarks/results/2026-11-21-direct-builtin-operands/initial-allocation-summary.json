@@ -1,0 +1,47 @@
+[
+  {
+    "case": "scripts.json-lines-shipment.explicit-wide-options.large",
+    "previousAllocatedBytes": 7858618,
+    "candidateAllocatedBytes": 7860448,
+    "allocationChangePercent": 0.023286537149402875,
+    "previousAccountedPeak": 6158116,
+    "candidateAccountedPeak": 6158116,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.measurement-tolerance.explicit-options",
+    "previousAllocatedBytes": 1519624,
+    "candidateAllocatedBytes": 1028104,
+    "allocationChangePercent": -32.34484319805425,
+    "previousAccountedPeak": 1924,
+    "candidateAccountedPeak": 1924,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.json-lines-shipment.expanded-options.large",
+    "previousAllocatedBytes": 9062914,
+    "candidateAllocatedBytes": 9063342,
+    "allocationChangePercent": 0.004722542881907543,
+    "previousAccountedPeak": 6489776,
+    "candidateAccountedPeak": 6489776,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.json-lines-shipment.explicit-options.large",
+    "previousAllocatedBytes": 7539124,
+    "candidateAllocatedBytes": 7539212,
+    "allocationChangePercent": 0.001167244364208564,
+    "previousAccountedPeak": 6157892,
+    "candidateAccountedPeak": 6157892,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.report-forwarding.expanded",
+    "previousAllocatedBytes": 1654296,
+    "candidateAllocatedBytes": 1654044,
+    "allocationChangePercent": -0.01523306590839324,
+    "previousAccountedPeak": 2976186,
+    "candidateAccountedPeak": 2976186,
+    "budgetReturnedToBaseline": true
+  }
+]

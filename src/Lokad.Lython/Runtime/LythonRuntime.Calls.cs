@@ -577,7 +577,16 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private abstract class BoundArgumentsCallable : ISpanCallable
+    // These callables finish binding before any pending work starts.
+    // The executable caller funds their final values through completion.
+    private interface IOperandBoundCallable : ISpanCallable
+    {
+        LythonCallableSignature BindingSignature { get; }
+        ValueTask<object> InvokeFromOperands(Span<ExecutableSlot> operands, ExecutableCallSite call,
+            ExecutionContext context, bool asynchronous);
+    }
+
+    private abstract class BoundArgumentsCallable : IOperandBoundCallable
     {
         private readonly PythonCallableKind _callableKind;
 
@@ -611,6 +620,22 @@ internal sealed partial class LythonRuntime
             return PreservePresence
                 ? InvokeBoundWithPresenceAsync(CallBinder.BindNamedArgumentsWithPresence(arguments, span, Signature, _callableKind), span, context)
                 : InvokeBoundAsync(CallBinder.BindNamedArguments(arguments, span, Signature, _callableKind), span, context);
+        }
+
+        LythonCallableSignature IOperandBoundCallable.BindingSignature => Signature;
+
+        ValueTask<object> IOperandBoundCallable.InvokeFromOperands(Span<ExecutableSlot> operands, ExecutableCallSite call,
+            ExecutionContext context, bool asynchronous)
+        {
+            context.CheckExecution(call.CallSpan);
+            var preservePresence = PreservePresence;
+            var bound = CallBinder.BindExecutableArguments(operands, call, Signature, _callableKind,
+                context, preservePresence);
+            if (asynchronous)
+                return preservePresence ? InvokeBoundWithPresenceAsync(bound, call.CallSpan, context)
+                    : InvokeBoundAsync(bound.Values, call.CallSpan, context);
+            return new(preservePresence ? InvokeBoundWithPresence(bound, call.CallSpan, context)
+                : InvokeBound(bound.Values, call.CallSpan, context));
         }
 
         /// <summary>Whether calls bind with assignment tracking so omitted arguments stay distinguishable from explicit values.</summary>

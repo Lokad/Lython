@@ -303,6 +303,26 @@ internal sealed partial class LythonRuntime
 
         private async ValueTask<object> InvokeOwnedExecutableTargetAsync(ExecutableCallSite call, int start, object target, bool asynchronous)
         {
+            if (target is IOperandBoundCallable bound && _preparedCallValue is not PyInstance)
+            {
+                // Binding finishes over the original operands. Pending builtin
+                // work owns only the final argument values and presence data.
+                var capacity = bound.BindingSignature.Parameters is NamedCallableParameterLayout named
+                    ? Math.Max(call.ArgumentCount, named.ParameterNames.Length) : call.ArgumentCount;
+                using var bindingStorage = ReserveCallArgumentStorage(capacity, this, call.CallSpan);
+                CheckExecution(call.CallSpan);
+                EnterInterpreterFrame(call.CallSpan);
+                try
+                {
+                    var pending = bound.InvokeFromOperands(
+                        _execution.Stack.Slice(start + call.ArgumentOffset, call.ArgumentCount).Span,
+                        call, this, asynchronous);
+                    return RuntimeValue(await pending.ConfigureAwait(false));
+                }
+                catch (Exception error) when (TryTranslateCallableException(error, call.CallSpan, out var translated)) { throw translated; }
+                finally { LeaveInterpreterFrame(); }
+            }
+
             using var storage = ReserveCallArgumentStorage(call.ArgumentCount, this, call.CallSpan);
             var arguments = new CallArgumentValue[call.ArgumentCount];
             try

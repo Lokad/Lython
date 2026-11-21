@@ -9,7 +9,9 @@ public sealed class JsonDictionaryCallbackLifetimeTests
     [InlineData(true)]
     [InlineData(false, true)]
     [InlineData(true, true)]
-    public async Task DictionaryDefaultKeepsOwnersThroughHostIoAndCleanup(bool cancel, bool expanded = false)
+    [InlineData(false, false, true)]
+    [InlineData(true, false, true)]
+    public async Task DictionaryDefaultKeepsOwnersThroughHostIoAndCleanup(bool cancel, bool expanded = false, bool wide = false)
     {
         const string source = """
 import json
@@ -19,9 +21,12 @@ def replacement(value):
  return payload
 return json.dumps({'value':{1}},default=replacement)
 """;
-        var expected = "{\"value\": \"" + new string('a', 4096) + "\"}";
+        var separator = wide ? ":" : ": ";
+        var expected = "{\"value\"" + separator + "\"" + new string('a', 4096) + "\"}";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        var scriptSource = expanded
+        var scriptSource = wide
+            ? source.Replace("default=replacement", "default=replacement,ensure_ascii=False,check_circular=True,separators=(',', ':')", StringComparison.Ordinal)
+            : expanded
             ? source.Replace("default=replacement", "**{'default': replacement}", StringComparison.Ordinal)
             : source;
         using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(scriptSource, budget);

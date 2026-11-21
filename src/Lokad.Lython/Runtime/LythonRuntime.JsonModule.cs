@@ -4,6 +4,7 @@ using System.Numerics;
 using System.Text.Encodings.Web;
 using System.Text;
 using System.Text.Json;
+using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 
@@ -39,7 +40,7 @@ internal sealed partial class LythonRuntime
         // Module entry points accept extra keywords at binding so custom
         // cls=... constructors receive them; standard shapes bind exactly
         // like BuiltinCallable, and every introspection answer matches it.
-        private sealed class JsonModuleCallable : ISpanCallable, IPyRenderableValue, IPyDynamicAttributes, IPyContextualDynamicAttributes, IPyBoundEngineMethod, IPyHashableValue
+        private sealed class JsonModuleCallable : IOperandBoundCallable, IPyRenderableValue, IPyDynamicAttributes, IPyContextualDynamicAttributes, IPyBoundEngineMethod, IPyHashableValue
         {
             private readonly LythonCallableSignature _signature;
             private readonly Func<BoundBuiltinArguments, IReadOnlyList<KeyValuePair<string, object>>, LythonSourceSpan, ExecutionContext, object> _implementation;
@@ -76,10 +77,8 @@ internal sealed partial class LythonRuntime
                 {
                     return Instance.DumpsDefault(arguments[0].Value, span, context, asynchronous: false).GetAwaiter().GetResult();
                 }
-                var extras = CollectExtraArguments(arguments);
-                var bound = CallBinder.BindNamedArgumentsWithPresence(arguments, span, _signature, PythonCallableKind.Builtin);
-                var result = _implementation(bound, extras, span, context);
-                return result;
+                return InvokeOptions(new CallBinder.PacketInputs(arguments), span, context, asynchronous: false)
+                    .GetAwaiter().GetResult();
             }
 
             public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -96,9 +95,25 @@ internal sealed partial class LythonRuntime
                 {
                     return Instance.DumpsDefault(arguments[0].Value, span, context, asynchronous: true);
                 }
-                var extras = CollectExtraArguments(arguments);
-                var bound = CallBinder.BindNamedArgumentsWithPresence(arguments, span, _signature, PythonCallableKind.Builtin);
-                return _asyncImplementation is null
+                return InvokeOptions(new CallBinder.PacketInputs(arguments), span, context, asynchronous: true);
+            }
+
+            LythonCallableSignature IOperandBoundCallable.BindingSignature => _signature;
+
+            ValueTask<object> IOperandBoundCallable.InvokeFromOperands(Span<ExecutableSlot> operands,
+                ExecutableCallSite call, ExecutionContext context, bool asynchronous)
+            {
+                return InvokeOptions(new CallBinder.OperandInputs(operands, call.Arguments, context),
+                    call.CallSpan, context, asynchronous);
+            }
+
+            private ValueTask<object> InvokeOptions<T>(T arguments, LythonSourceSpan span,
+                ExecutionContext context, bool asynchronous)
+                where T : CallBinder.IBindingInputs, allows ref struct
+            {
+                var bound = CallBinder.BindNamedArgumentsWithExtras(arguments, span, _signature,
+                    PythonCallableKind.Builtin, out var extras);
+                return !asynchronous || _asyncImplementation is null
                     ? new(_implementation(bound, extras, span, context))
                     : _asyncImplementation(bound, extras, span, context);
             }
@@ -108,26 +123,6 @@ internal sealed partial class LythonRuntime
             private bool IsDefaultCall(ReadOnlySpan<CallArgumentValue> arguments, LythonCallableSignature signature)
                 => ReferenceEquals(_signature, signature) &&
                     arguments.Length == 1 && arguments[0].IsPositional;
-
-            // All four signatures allow extra keywords. The ordinary binder
-            // snapshots known values before any suspension; only constructor
-            // forwarding needs a separate collection of unknown keywords.
-            private IReadOnlyList<KeyValuePair<string, object>> CollectExtraArguments(ReadOnlySpan<CallArgumentValue> arguments)
-            {
-                var known = (NamedCallableParameterLayout)_signature.Parameters;
-                List<KeyValuePair<string, object>>? extras = null;
-                foreach (var argument in arguments)
-                {
-                    if (argument.IsPositional || (argument.KeywordName is not null && known.ParameterIndices.ContainsKey(argument.KeywordName)))
-                    {
-                        continue;
-                    }
-
-                    (extras ??= []).Add(new KeyValuePair<string, object>(argument.KeywordName ?? string.Empty, argument.Value));
-                }
-
-                return extras is null ? Array.Empty<KeyValuePair<string, object>>() : extras;
-            }
 
             public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
             {

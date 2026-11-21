@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1276 wide builtin operand binding](results/2026-11-21-direct-builtin-operands/README.md)
+removes the ordinary wide argument packet and combines JSON extra-keyword
+collection with binding. Wide JSON export runs 2.39–5.09% sooner warm with
+3.16–5.20% lower CPU and 6.57% lower local allocation. The tolerance script
+allocates 32.34% less with inconclusive timing. Short JSON CPU varies.
+The first local candidate's adverse elapsed observations remain recorded.
+
 [B1275 deferred subgroup coordinates](results/2026-11-21-observed-regex-coordinates/README.md)
 removes long-lived projection scratch, with stable local allocation
 after sharing each window. The quiet comparison favors text-only
