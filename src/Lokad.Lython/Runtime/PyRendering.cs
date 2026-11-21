@@ -366,13 +366,59 @@ internal static class PyRendering
     }
 
     internal static void AppendStringLiteral(GovernedByteBuilder builder, PyString text,
-        LythonRuntime.ExecutionContext execution, LythonSourceSpan? span)
+        LythonRuntime.ExecutionContext execution, LythonSourceSpan? span, int? maximumCharacters = null)
     {
         var source = text.Utf8Span;
+        var quote = FindStringLiteralQuote(source, execution, span);
+        if (maximumCharacters is not int maximum)
+        {
+            AppendQuotedString(builder, source, quote, execution, span);
+            return;
+        }
+        var start = builder.WrittenSpan.Length;
+        // Escaping never shortens the scalar count. Rendering at most this
+        // many source scalars supplies the whole requested repr prefix.
+        var prefix = source[..StringPrefixBytes(source, maximum)];
+        AppendQuotedString(builder, prefix, quote, execution, span);
+        builder.Truncate(start + StringPrefixBytes(builder.WrittenSpan[start..], maximum));
+    }
+
+    private static int StringPrefixBytes(ReadOnlySpan<byte> source, int characters)
+    {
+        var end = 0;
+        while (end < source.Length && characters-- > 0)
+        {
+            Rune.DecodeFromUtf8(source[end..], out _, out var width);
+            end += width;
+        }
+        return end;
+    }
+
+    private static byte FindStringLiteralQuote(ReadOnlySpan<byte> source, LythonRuntime.ExecutionContext execution,
+        LythonSourceSpan? span)
+    {
         // Like CPython, a string holding a single quote but no double quote
         // renders wrapped in double quotes with its singles left bare;
-        // strings holding both, neither, or only doubles keep single quotes.
-        var quote = source.IndexOf((byte)'\'') >= 0 && source.IndexOf((byte)'"') < 0 ? (byte)'"' : (byte)'\'';
+        // these may appear beyond the bounded output prefix.
+        const int chunkSize = 4096;
+        if (source.Length <= chunkSize)
+            return source.Contains((byte)'\'') && !source.Contains((byte)'"') ? (byte)'"' : (byte)'\'';
+
+        var single = false;
+        while (!source.IsEmpty)
+        {
+            execution.State.CheckExecution(span);
+            var chunk = source[..Math.Min(chunkSize, source.Length)];
+            if (chunk.Contains((byte)'"')) return (byte)'\'';
+            single |= chunk.Contains((byte)'\'');
+            source = source[chunk.Length..];
+        }
+        return single ? (byte)'"' : (byte)'\'';
+    }
+
+    private static void AppendQuotedString(GovernedByteBuilder builder, ReadOnlySpan<byte> source, byte quote,
+        LythonRuntime.ExecutionContext execution, LythonSourceSpan? span)
+    {
         Span<byte> escape = stackalloc byte[10];
         long nextCheck = 0;
         builder.Append(quote);

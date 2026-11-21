@@ -61,6 +61,18 @@ internal sealed partial class LythonRuntime
         int CaptureSlotCount,
         PyDict NamedGroups) : IPyRenderableValue, IPyContextualDynamicAttributes
     {
+        private static readonly (int Mask, string Name)[] DisplayFlags =
+        [
+            (RegexCompiler.PythonIgnoreCaseFlag, "re.IGNORECASE"),
+            (RegexCompiler.PythonLocaleFlag, "re.LOCALE"),
+            (RegexCompiler.PythonMultilineFlag, "re.MULTILINE"),
+            (RegexCompiler.PythonDotAllFlag, "re.DOTALL"),
+            (RegexCompiler.PythonUnicodeFlag, "re.UNICODE"),
+            (RegexCompiler.PythonVerboseFlag, "re.VERBOSE"),
+            (RegexCompiler.RegexDebugFlag, "re.DEBUG"),
+            (RegexCompiler.PythonAsciiFlag, "re.ASCII"),
+        ];
+
         public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
             => RePatternMembers.TryGetMember(this, name, context, span, out value);
 
@@ -74,11 +86,38 @@ internal sealed partial class LythonRuntime
 
         public PyString RenderPython(PyRenderingContext context)
         {
-            var renderedPattern = PyRendering.ToReprPyString(Pattern, context).AsString();
-            var rendered = Flags == RegexCompiler.PythonUnicodeFlag
-                ? $"re.compile({renderedPattern})"
-                : $"re.compile({renderedPattern}, {Flags})";
-            return PyString.FromString(rendered);
+            var execution = context.Context;
+            var span = PyStructuralGuard.AmbientSpan;
+            var builder = new GovernedByteBuilder(execution.MemoryGovernor, span);
+            try
+            {
+                builder.AppendAscii("re.compile(");
+                PyRendering.AppendStringLiteral(builder, Pattern, execution, span, maximumCharacters: 200);
+                const int characterFlags = RegexCompiler.PythonLocaleFlag | RegexCompiler.PythonUnicodeFlag | RegexCompiler.PythonAsciiFlag;
+                var flags = Flags;
+                if ((flags & characterFlags) == RegexCompiler.PythonUnicodeFlag)
+                    flags &= ~RegexCompiler.PythonUnicodeFlag;
+                var separator = ", ";
+                foreach (var (mask, name) in DisplayFlags)
+                {
+                    if ((flags & mask) == 0) continue;
+                    builder.AppendAscii(separator);
+                    builder.AppendAscii(name);
+                    separator = "|";
+                    flags &= ~mask;
+                }
+                if (flags != 0)
+                {
+                    builder.AppendAscii(separator);
+                    builder.AppendAscii("0x");
+                    Span<byte> digits = stackalloc byte[8];
+                    unchecked((uint)flags).TryFormat(digits, out var written, "x", System.Globalization.CultureInfo.InvariantCulture);
+                    builder.Append(digits[..written]);
+                }
+                builder.Append((byte)')');
+                return builder.ToPyStringAndRelease();
+            }
+            finally { builder.Release(); }
         }
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);

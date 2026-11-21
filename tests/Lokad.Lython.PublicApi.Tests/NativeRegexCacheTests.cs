@@ -5,6 +5,25 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class NativeRegexCacheTests
 {
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task PatternRepresentationUsesEffectiveFlagsAndScalarPrefix(bool asynchronous)
+    {
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
+            import re
+            assert repr(re.compile('(?im)é')) == "re.compile('(?im)é', re.IGNORECASE|re.MULTILINE)"
+            assert str(re.compile('a', 1026)) == "re.compile('a', re.IGNORECASE|0x400)"
+            assert repr(re.compile('x', re.ASCII | re.DOTALL)) == "re.compile('x', re.DOTALL|re.ASCII)"
+            for pattern in ['é😀'*110, '\t'*120, 'a'*210+"'", 'a'*210+"'"+'"', 'é'*198, 'é'*199]:
+                assert repr(re.compile(pattern)) == 're.compile(' + repr(pattern)[:200] + ')'
+            """);
+        Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Message)));
+        var host = new MockLythonHost();
+        using var result = asynchronous ? await script.RunAsync(host) : script.Run(host);
+        Assert.True(result.Success, result.Failure?.Message);
+    }
+
+    [Theory]
     [InlineData("alpha")]
     [InlineData("é")]
     [InlineData("😀")]
