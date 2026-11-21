@@ -1,6 +1,8 @@
 namespace Lokad.Lython;
 
 /// <summary>Optional host-mediated UTF-8 standard-input capability.</summary>
+/// <remarks>Keep the returned memory stable until the next read on this
+/// input. Lython copies retained text into execution-owned storage.</remarks>
 public interface ILythonTextInput
 {
     /// <summary>Reads all remaining input bytes, returning an empty buffer at end of stream.</summary>

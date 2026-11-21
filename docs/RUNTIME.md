@@ -2231,6 +2231,8 @@ String-backed lexers borrow immutable UTF-8 input; a first write admits the full
 writable backing before changing it. Truncating a borrowed stream can retain its
 original input until that owner's lifetime ends. Token output remains admitted,
 and stdin's partially consumed line is shared with ordinary stdin reads.
+Host stdin buffers may be reused on subsequent reads. Lython copies borrowed
+UTF-8 into admitted string storage so earlier lines and their views stay stable.
 
 CSV writers render each row into admitted UTF-8 storage before invoking the sink
 or publishing buffered history. Field conversion uses Python string protocols;

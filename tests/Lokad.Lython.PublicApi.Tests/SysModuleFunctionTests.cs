@@ -236,6 +236,49 @@ __lython_file.close()
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RetainedStandardInputSurvivesHostBufferReuse(bool asynchronous)
+    {
+        var host = new MockLythonHost();
+        host.SetStandardInput(new ReusingTextInput());
+        var budget = new LythonMemoryBudget();
+        using var script = new LythonEngine().Compile("""
+            import sys
+            first = sys.stdin.readline()
+            second = sys.stdin.readline()
+            print(first + second, end="")
+            """, budget);
+        Assert.True(script.IsValid);
+        var baseline = budget.ReservedBytes;
+        using (var result = asynchronous ? await script.RunAsync(host) : script.Run(host))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("first\nlater\n", result.StandardOutput);
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
+    private sealed class ReusingTextInput : ILythonTextInput, ILythonSynchronousHostCapability
+    {
+        private readonly byte[] _buffer = new byte[6];
+        private bool _first = true;
+
+        public bool CompletesSynchronously => true;
+
+        public ValueTask<ReadOnlyMemory<byte>?> ReadLineUtf8Async(CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            (_first ? "first\n"u8 : "later\n"u8).CopyTo(_buffer);
+            _first = false;
+            return ValueTask.FromResult<ReadOnlyMemory<byte>?>(_buffer.AsMemory());
+        }
+
+        public ValueTask<ReadOnlyMemory<byte>> ReadToEndUtf8Async(CancellationToken cancellationToken)
+            => throw new NotSupportedException();
+    }
+
+    [Theory]
     [InlineData("sys.settrace(None)", "sys.settrace(...) is not supported by Lython.")]
     [InlineData("sys.setprofile(None)", "sys.setprofile(...) is not supported by Lython.")]
     [InlineData("sys.setrecursionlimit(1000)", "sys.setrecursionlimit(...) is not supported by Lython")]

@@ -274,7 +274,10 @@ internal sealed partial class LythonRuntime
         if (IsUnchangedUtf8Text(utf8.Span, newline))
         {
             guards?.CheckExecution(span);
-            var result = PyString.FromUtf8(utf8, governor, span);
+            // The decoder receives borrowed memory. Even a whole array can
+            // belong to a host stream that refills it on the next read.
+            var result = PyString.CopyFromUtf8(utf8.Span, governor, span,
+                cancellationToken: guards?.CancellationToken ?? default);
             try { guards?.CheckExecution(span); return result; }
             catch { governor.RefundUnpublishedValue(result); throw; }
         }

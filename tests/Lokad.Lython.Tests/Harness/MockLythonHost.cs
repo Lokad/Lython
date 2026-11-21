@@ -15,7 +15,7 @@ internal sealed partial class MockLythonHost : ILythonHost, ILythonSynchronousHo
     private readonly MockTextOutput _stdout = new();
     private readonly MockTextOutput _stderr = new();
     private ILythonTextOutput? _stderrOverride;
-    private MockTextInput? _stdin;
+    private ILythonTextInput? _stdin;
     private readonly MockSubprocessRunner _subprocess = new();
     private ILythonTiming? _timing;
 
@@ -350,6 +350,8 @@ internal sealed partial class MockLythonHost : ILythonHost, ILythonSynchronousHo
     {
         _stdin = new MockTextInput(text);
     }
+
+    public void SetStandardInput(ILythonTextInput input) => _stdin = input;
 
     public string CapturedStandardOutput() => _stdout.Text;
 

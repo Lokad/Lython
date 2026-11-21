@@ -2,6 +2,7 @@
 
 ## 0.11.0 - Unreleased
 
+- Preserve retained input text when a host reuses its UTF-8 read buffer.
 - Complete eligible lexical function and lambda definitions in their inline
   operand slots. Share default ownership and callable construction across callers.
 - Read function names and docstrings from compiled metadata. Admit storage
