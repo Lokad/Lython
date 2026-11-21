@@ -38,6 +38,39 @@ public sealed class OrdinaryMethodCallTests
     }
 
     [Fact]
+    public async Task NestedCallKeepsSelectedMethodThroughSuspendingArgument()
+    {
+        const string source = """
+            class Receiver:
+                def consume(self, value):
+                    return 'old:' + value
+            def replacement(self, value):
+                return 'new:' + value
+            def argument():
+                Receiver.consume = replacement
+                with open('/pending.txt') as stream:
+                    return stream.read()
+            def invoke(receiver):
+                return receiver.consume(argument())
+            receiver = Receiver()
+            print(invoke(receiver), receiver.consume('next'))
+            """;
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        var host = new DelayedLythonHost();
+        host.SeedFile("/pending.txt", "value");
+        using (var result = await script.RunAsync(host))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("old:value new:next\n", result.StandardOutput);
+        }
+        Assert.True(host.CompletedAsynchronously > 0);
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
+    [Fact]
     public async Task CancellationDuringArgumentReadAwaitsCleanupAndReusesBudget()
     {
         const string source = """

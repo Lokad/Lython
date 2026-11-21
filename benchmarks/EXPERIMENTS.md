@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1297 native-only instance lookup](results/2026-11-21-native-only-method-lookup/README.md)
+keeps ordinary method callers on their existing native slots. The
+invoice runs 8.94–9.57% faster warm and allocates 29.92% less. The
+nested relay runs 27.59–31.51% faster and allocates 71.72% less.
+The direct-method regression does not recur. Retain the refinement.
+All 84 batches pass.
+
 [B1295 native caller instance lookup](results/2026-11-21-native-method-lookup/README.md)
 removes caller-context creation for nested plain methods. The relay
 runs 32.36–35.03% faster and the method invoice 10.94–12.52% faster.

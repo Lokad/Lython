@@ -124,10 +124,12 @@ internal sealed partial class LythonRuntime
                     {
                         var receiver = Read(instruction.InputStart, 0);
                         var name = Code.Names[instruction.NameIndex];
-                        var method = ResolveBuiltinReceiverMethod(receiver, name);
-                        if (method is null) return false;
+                        object? target = receiver is PyInstance instance &&
+                            PyAttributeLookup.TryResolveInstanceFunctionForCall(instance, name, out var function)
+                            ? function : ResolveBuiltinReceiverMethod(receiver, name);
+                        if (target is null) return false;
                         Put(instruction.ResultSlot, instruction.ResultSlot + 1, receiver);
-                        Put(instruction.ResultSlot + 1, instruction.LiveExtent, method);
+                        Put(instruction.ResultSlot + 1, instruction.LiveExtent, target);
                         break;
                     }
                     case ExecutableOpCode.Call:

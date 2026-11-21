@@ -1,0 +1,176 @@
+{
+  "complete": true,
+  "elapsedSeconds": 168.13994371099398,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "staging": {
+    "retiredOnly": [
+      {
+        "paths": [
+          "native-method-lookup-b1295-20261121/candidate/Lokad.Lython.dll",
+          "direct-method-control-b1296-20261121/candidate/Lokad.Lython.dll"
+        ],
+        "links": 2,
+        "bytes": 5710848,
+        "sha256": "28b54cfcf2eeddd8ea13d83ff02f163f1fb9ac8bc791f00e41cca37a44602488",
+        "archives": {
+          "native-method-lookup-b1295-20261121/observations.tgz": "39d22ff892b818f6aedceb3676330430fb6524fb9b9ae5fa9ab7ba206d3d18e0",
+          "direct-method-control-b1296-20261121/observations.tgz": "1b0d0f51c8b783dda1af237daba9d24682a1887c45a9d80504da24dc979b98e3"
+        },
+        "optional": false
+      },
+      {
+        "paths": [
+          "direct-positional-methods-b1294-20261121/confirmation/confirmation.json"
+        ],
+        "links": 1,
+        "bytes": 264153,
+        "sha256": "dcaf05835d334c07dbd025a8c15d563b72cff70dddc308d3eb627dc6df96b057",
+        "archives": {
+          "direct-positional-methods-b1294-20261121/observations.tgz": "6110b856e2e100674aa625b4df8adc505abf905189566177964417bc89a56526"
+        },
+        "optional": false
+      },
+      {
+        "paths": [
+          "native-method-lookup-b1295-20261121/confirmation/confirmation.json"
+        ],
+        "links": 1,
+        "bytes": 271350,
+        "sha256": "175e793c4b38cb882fa848e02ea770f4ff6c0f00f632f7e69b5f542bcde6aae1",
+        "archives": {
+          "native-method-lookup-b1295-20261121/observations.tgz": "39d22ff892b818f6aedceb3676330430fb6524fb9b9ae5fa9ab7ba206d3d18e0"
+        },
+        "optional": false
+      }
+    ],
+    "alreadyAbsent": [],
+    "freshIdleLease": true,
+    "allHashesPathsOwnershipLinksAndAliasesVerified": true,
+    "canonicalArchiveAndCurrentImagesPreserved": true,
+    "freeBeforeBytes": 176525312,
+    "freeAfterBytes": 176844800
+  },
+  "rows": [
+    {
+      "case": "scripts.policy-method-relay",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 0.8537028950131234,
+        "reference": 1.2115625288640595,
+        "candidate-control": 0.8773362765100671,
+        "reference-control": 1.2464976057692307
+      },
+      "cpuMilliseconds": {
+        "candidate": 0.8661417322834646,
+        "reference": 1.2104283054003724,
+        "candidate-control": 0.8859060402684564,
+        "reference-control": 1.25
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.3059848407248878,
+        "reference": 0.8303114239669518,
+        "candidate-control": 0.18066829091814474,
+        "reference-control": 0.29403987484900596
+      },
+      "elapsedChangePercent": [
+        -31.51187045511479,
+        -29.61588755169322,
+        -29.537033815865797,
+        -27.586380759675468
+      ],
+      "cpuChangePercent": [
+        -30.708661417322837,
+        -29.12751677852349,
+        -28.443367655966078,
+        -26.810531750129062
+      ],
+      "referenceSpreadPercent": 2.8834728767920703,
+      "candidateSpreadPercent": 2.7683379821009435
+    },
+    {
+      "case": "scripts.csv-invoice.method-policy",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 8.215717294871794,
+        "candidate-control": 7.4813290348837205,
+        "reference": 8.226977493506492,
+        "candidate": 7.439388517241379
+      },
+      "cpuMilliseconds": {
+        "reference-control": 8.461538461538462,
+        "candidate-control": 7.558139534883721,
+        "reference": 8.441558441558442,
+        "candidate": 7.586206896551724
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.9580159026924967,
+        "candidate-control": 0.372158956205356,
+        "reference": 0.628876789670169,
+        "candidate": 0.8321156496731735
+      },
+      "elapsedChangePercent": [
+        -9.573248217668684,
+        -9.449312211789419,
+        -9.06345567629555,
+        -8.938820965108851
+      ],
+      "cpuChangePercent": [
+        -10.676532769556024,
+        -10.465116279069775,
+        -10.344827586206895,
+        -10.132625994694965
+      ],
+      "referenceSpreadPercent": 0.1370567928588029,
+      "candidateSpreadPercent": 0.5637629698346913
+    },
+    {
+      "case": "scripts.fully-supplied-methods",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 0.673406794633643,
+        "reference": 0.701661111827957,
+        "candidate-control": 0.6673926903292181,
+        "reference-control": 0.6864311224707135
+      },
+      "cpuMilliseconds": {
+        "candidate": 0.6707946336429309,
+        "reference": 0.7096774193548387,
+        "candidate-control": 0.668724279835391,
+        "reference-control": 0.6815761448349308
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.7652459564292883,
+        "reference": 0.4160367776354282,
+        "candidate-control": 0.23249957748558553,
+        "reference-control": 0.27271374381184366
+      },
+      "elapsedChangePercent": [
+        -4.883899210184717,
+        -4.026775421642837,
+        -2.773538599614944,
+        -1.8973976282123162
+      ],
+      "cpuChangePercent": [
+        -5.770669659558547,
+        -5.4789379866779235,
+        -1.8856095679012363,
+        -1.581849845201233
+      ],
+      "referenceSpreadPercent": 2.2187206929699332,
+      "candidateSpreadPercent": 0.9011342784498
+    }
+  ],
+  "CPythonRefreshed": false,
+  "collection": "B1297",
+  "sourceRevision": "acb41ad0056beb49649868aab6b24ee07d2b2e59 versus 8f210d9678dfe64af54890205605f554bfc746fc",
+  "verifiedTimedBatches": 84,
+  "coreSHA256": {
+    "reference": "dfbed0b60f887d5ce911fe40e670fef86bbb0cd6206e838a75d2f138878a5ca0",
+    "reference-control": "dfbed0b60f887d5ce911fe40e670fef86bbb0cd6206e838a75d2f138878a5ca0",
+    "candidate": "c6c7681c0584f8599858a41eda14d179d8cf8b9b2b29c478ccd86007f659fa1e",
+    "candidate-control": "c6c7681c0584f8599858a41eda14d179d8cf8b9b2b29c478ccd86007f659fa1e"
+  },
+  "archiveSHA256": "759c93df499dadb1ca690ebbab0bddeb8f4ec6e073b5bbdc7df9c2a0366e4227",
+  "retentionDecision": "Retain native-only ordinary method lookup. Large elapsed, CPU and allocation gains persist on both affected workloads. The direct-method regression from the original shared lookup does not recur."
+}
