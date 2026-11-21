@@ -3,8 +3,10 @@
 Measured `b140244f0` against `406388271` on November 21, 2026 UTC on
 Azure F4as_v7, Ubuntu 24.04.4 and .NET 11 RC3. The candidate adds
 casefold to the pinned Python mappings. It removes the separate
-fold lookup, CLR expansion encoding, growing builder and final
-copy. Admission now covers the conservative final capacity up front.
+fold lookup, CLR expansion encoding and growing builder. The previous
+builder transferred its final backing to the result. The new writer
+admits the conservative final capacity once and avoids replacement
+copies during growth.
 [Initial casing prototype and observations](../README.md).
 
 | Complete warm text report | Elapsed change | Process CPU change |

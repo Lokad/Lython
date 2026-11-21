@@ -171,7 +171,7 @@
       "candidateSpreadPercent": 0.5255569372544677
     }
   ],
-  "retentionDecisionPending": true,
+  "retentionDecisionPending": false,
   "CPythonRefreshed": false,
   "collection": "B1273",
   "reference": "406388271d896d517deb9547852bea8f40fda060",
@@ -180,5 +180,6 @@
   "coreSHA256": "8b64914ecd6e0983d5078997995810c0e6dd22c6c439e614daf5b1b59b5df53a",
   "archiveSHA256": "64677c588b80294e5030dfede61285925e2711d95019e29977e9b3879aa16170",
   "candidateDllBytes": 5701632,
-  "referenceDllBytes": 5683712
+  "referenceDllBytes": 5683712,
+  "retainedSource": "b42c4d508"
 }
