@@ -1,0 +1,47 @@
+[
+  {
+    "case": "scripts.annotated-rule-closures",
+    "referenceAllocation": 849344,
+    "candidateAllocation": 849344,
+    "allocationChangePercent": 0.0,
+    "referenceAccountedPeak": 2444081,
+    "candidateAccountedPeak": 2444081,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories",
+    "referenceAllocation": 1226192,
+    "candidateAllocation": 1226192,
+    "allocationChangePercent": 0.0,
+    "referenceAccountedPeak": 2968425,
+    "candidateAccountedPeak": 2968425,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+    "referenceAllocation": 1111664,
+    "candidateAllocation": 1111664,
+    "allocationChangePercent": 0.0,
+    "referenceAccountedPeak": 2968481,
+    "candidateAccountedPeak": 2968481,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.ordinary-fully-supplied-helper",
+    "referenceAllocation": 142808,
+    "candidateAllocation": 142808,
+    "allocationChangePercent": 0.0,
+    "referenceAccountedPeak": 1255,
+    "candidateAccountedPeak": 1255,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.annotated-rule-closures.observed",
+    "referenceAllocation": 1111648,
+    "candidateAllocation": 1111528,
+    "allocationChangePercent": -0.010794783960388354,
+    "referenceAccountedPeak": 2444308,
+    "candidateAccountedPeak": 2444308,
+    "budgetReturnedToBaseline": true
+  }
+]

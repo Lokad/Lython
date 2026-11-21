@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1291 eager annotations inside callable creation](results/2026-11-21-annotations-in-creation/README.md)
+removes four eager reads and their operand staging without an extra
+opcode. Allocation is effectively flat. Eager rules run faster across
+all pairings, with 8.50% reference spread. Candidate workers for the
+unchanged helper differ by 15.05%. All 140 batches pass. A targeted
+confirmation covers both warm lanes and eager time to result.
+
 [B1290 packed eager annotation reads](results/2026-11-21-packed-eager-annotations/README.md)
 replaces four reads and four staged annotation operands with one
 operation and one owner slot. Eager rules run 13.12–14.79% slower

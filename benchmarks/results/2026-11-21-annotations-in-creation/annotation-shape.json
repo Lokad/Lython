@@ -1,0 +1,286 @@
+{
+  "reference": {
+    "coreSHA256": "3e221d5bf31af373a30173c5fcbd6883bbc2dadb57d9ba7445fd704ee0b62491",
+    "rows": [
+      {
+        "id": "scripts.annotated-rule-closures",
+        "definitions": [
+          {
+            "Name": "<module>",
+            "instructions": 29,
+            "ValueStorageCapacity": 8,
+            "packedReads": 0,
+            "eagerOperandSlots": 0
+          },
+          {
+            "Name": "compile_rule",
+            "instructions": 13,
+            "ValueStorageCapacity": 8,
+            "packedReads": 0,
+            "eagerOperandSlots": 4
+          },
+          {
+            "Name": "evaluate",
+            "instructions": 3,
+            "ValueStorageCapacity": 7,
+            "packedReads": 0,
+            "eagerOperandSlots": 0
+          }
+        ]
+      },
+      {
+        "id": "scripts.annotated-rule-closures.nested-factories",
+        "definitions": [
+          {
+            "Name": "<module>",
+            "instructions": 34,
+            "ValueStorageCapacity": 9,
+            "packedReads": 0,
+            "eagerOperandSlots": 0
+          },
+          {
+            "Name": "for_policy",
+            "instructions": 3,
+            "ValueStorageCapacity": 6,
+            "packedReads": 0,
+            "eagerOperandSlots": 0
+          },
+          {
+            "Name": "compile_rule",
+            "instructions": 12,
+            "ValueStorageCapacity": 8,
+            "packedReads": 0,
+            "eagerOperandSlots": 4
+          },
+          {
+            "Name": "evaluate",
+            "instructions": 3,
+            "ValueStorageCapacity": 7,
+            "packedReads": 0,
+            "eagerOperandSlots": 0
+          }
+        ]
+      },
+      {
+        "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+        "definitions": [
+          {
+            "Name": "<module>",
+            "instructions": 35,
+            "ValueStorageCapacity": 10,
+            "packedReads": 0,
+            "eagerOperandSlots": 0
+          },
+          {
+            "Name": "for_policy",
+            "instructions": 3,
+            "ValueStorageCapacity": 6,
+            "packedReads": 0,
+            "eagerOperandSlots": 0
+          },
+          {
+            "Name": "compile_rule",
+            "instructions": 8,
+            "ValueStorageCapacity": 6,
+            "packedReads": 0,
+            "eagerOperandSlots": 0
+          },
+          {
+            "Name": "evaluate",
+            "instructions": 3,
+            "ValueStorageCapacity": 7,
+            "packedReads": 0,
+            "eagerOperandSlots": 0
+          }
+        ]
+      },
+      {
+        "id": "scripts.ordinary-fully-supplied-helper",
+        "definitions": [
+          {
+            "Name": "<module>",
+            "instructions": 25,
+            "ValueStorageCapacity": 9,
+            "packedReads": 0,
+            "eagerOperandSlots": 0
+          },
+          {
+            "Name": "evaluate",
+            "instructions": 3,
+            "ValueStorageCapacity": 7,
+            "packedReads": 0,
+            "eagerOperandSlots": 0
+          }
+        ]
+      },
+      {
+        "id": "scripts.annotated-rule-closures.observed",
+        "definitions": [
+          {
+            "Name": "<module>",
+            "instructions": 37,
+            "ValueStorageCapacity": 10,
+            "packedReads": 0,
+            "eagerOperandSlots": 0
+          },
+          {
+            "Name": "compile_rule",
+            "instructions": 13,
+            "ValueStorageCapacity": 8,
+            "packedReads": 0,
+            "eagerOperandSlots": 4
+          },
+          {
+            "Name": "evaluate",
+            "instructions": 3,
+            "ValueStorageCapacity": 7,
+            "packedReads": 0,
+            "eagerOperandSlots": 0
+          }
+        ]
+      }
+    ]
+  },
+  "candidate": {
+    "coreSHA256": "53cdf0d831d315ffc0da0f329edd430ebae904d0987f4264b0b0787ab123233d",
+    "rows": [
+      {
+        "id": "scripts.annotated-rule-closures",
+        "definitions": [
+          {
+            "Name": "<module>",
+            "instructions": 29,
+            "ValueStorageCapacity": 8,
+            "packedReads": 0,
+            "eagerOperandSlots": 0
+          },
+          {
+            "Name": "compile_rule",
+            "instructions": 9,
+            "ValueStorageCapacity": 6,
+            "packedReads": 4,
+            "eagerOperandSlots": 0
+          },
+          {
+            "Name": "evaluate",
+            "instructions": 3,
+            "ValueStorageCapacity": 7,
+            "packedReads": 0,
+            "eagerOperandSlots": 0
+          }
+        ]
+      },
+      {
+        "id": "scripts.annotated-rule-closures.nested-factories",
+        "definitions": [
+          {
+            "Name": "<module>",
+            "instructions": 34,
+            "ValueStorageCapacity": 9,
+            "packedReads": 0,
+            "eagerOperandSlots": 0
+          },
+          {
+            "Name": "for_policy",
+            "instructions": 3,
+            "ValueStorageCapacity": 6,
+            "packedReads": 0,
+            "eagerOperandSlots": 0
+          },
+          {
+            "Name": "compile_rule",
+            "instructions": 8,
+            "ValueStorageCapacity": 6,
+            "packedReads": 4,
+            "eagerOperandSlots": 0
+          },
+          {
+            "Name": "evaluate",
+            "instructions": 3,
+            "ValueStorageCapacity": 7,
+            "packedReads": 0,
+            "eagerOperandSlots": 0
+          }
+        ]
+      },
+      {
+        "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+        "definitions": [
+          {
+            "Name": "<module>",
+            "instructions": 35,
+            "ValueStorageCapacity": 10,
+            "packedReads": 0,
+            "eagerOperandSlots": 0
+          },
+          {
+            "Name": "for_policy",
+            "instructions": 3,
+            "ValueStorageCapacity": 6,
+            "packedReads": 0,
+            "eagerOperandSlots": 0
+          },
+          {
+            "Name": "compile_rule",
+            "instructions": 8,
+            "ValueStorageCapacity": 6,
+            "packedReads": 0,
+            "eagerOperandSlots": 0
+          },
+          {
+            "Name": "evaluate",
+            "instructions": 3,
+            "ValueStorageCapacity": 7,
+            "packedReads": 0,
+            "eagerOperandSlots": 0
+          }
+        ]
+      },
+      {
+        "id": "scripts.ordinary-fully-supplied-helper",
+        "definitions": [
+          {
+            "Name": "<module>",
+            "instructions": 25,
+            "ValueStorageCapacity": 9,
+            "packedReads": 0,
+            "eagerOperandSlots": 0
+          },
+          {
+            "Name": "evaluate",
+            "instructions": 3,
+            "ValueStorageCapacity": 7,
+            "packedReads": 0,
+            "eagerOperandSlots": 0
+          }
+        ]
+      },
+      {
+        "id": "scripts.annotated-rule-closures.observed",
+        "definitions": [
+          {
+            "Name": "<module>",
+            "instructions": 37,
+            "ValueStorageCapacity": 10,
+            "packedReads": 0,
+            "eagerOperandSlots": 0
+          },
+          {
+            "Name": "compile_rule",
+            "instructions": 9,
+            "ValueStorageCapacity": 6,
+            "packedReads": 4,
+            "eagerOperandSlots": 0
+          },
+          {
+            "Name": "evaluate",
+            "instructions": 3,
+            "ValueStorageCapacity": 7,
+            "packedReads": 0,
+            "eagerOperandSlots": 0
+          }
+        ]
+      }
+    ]
+  }
+}
