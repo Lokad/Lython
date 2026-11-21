@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Numerics;
+using System.Text;
 
 namespace Lokad.Lython.Runtime.Numbers;
 
@@ -330,44 +331,55 @@ internal static class PyNumberOps
 
     public static BigInteger BitwiseNot(BigInteger integer) => ~integer;
 
+    // Enough for an invariant round-trip binary64, including sign, decimal
+    // point, exponent and Python's explicit .0 for fixed integer values.
+    internal const int FloatRenderCapacity = 32;
+
     public static string RenderFloat(double value)
     {
-        if (double.IsNaN(value))
+        Span<byte> bytes = stackalloc byte[FloatRenderCapacity];
+        return Encoding.UTF8.GetString(bytes[..WriteFloatUtf8(value, bytes)]);
+    }
+
+    internal static int WriteFloatUtf8(double value, Span<byte> output)
+    {
+        if (!double.IsFinite(value))
         {
-            return "nan";
+            var spelling = double.IsNaN(value) ? "nan"u8 : double.IsNegative(value) ? "-inf"u8 : "inf"u8;
+            spelling.CopyTo(output);
+            return spelling.Length;
+        }
+        if (!value.TryFormat(output, out var length, "R", CultureInfo.InvariantCulture))
+            throw new InvalidOperationException("Float formatting exceeded its fixed buffer.");
+
+        var rendered = output[..length];
+        var exponent = rendered.IndexOf((byte)'E');
+        if (exponent >= 0)
+        {
+            rendered[exponent] = (byte)'e';
+            return length;
+        }
+        if (rendered.Contains((byte)'.')) return length;
+
+        var firstDigit = rendered[0] == (byte)'-' ? 1 : 0;
+        if (length - firstDigit != 17)
+        {
+            ".0"u8.CopyTo(output[length..]);
+            return length + 2;
         }
 
-        if (double.IsPositiveInfinity(value))
+        // Invariant BCL round-trip keeps some 17-digit integers in fixed
+        // notation. CPython prints a scientific exponent starting at 1e16.
+        var end = length;
+        while (end > firstDigit + 1 && output[end - 1] == (byte)'0') end--;
+        if (end > firstDigit + 1)
         {
-            return "inf";
+            output[(firstDigit + 1)..end].CopyTo(output[(firstDigit + 2)..]);
+            output[firstDigit + 1] = (byte)'.';
+            end++;
         }
-
-        if (double.IsNegativeInfinity(value))
-        {
-            return "-inf";
-        }
-
-        var rendered = value.ToString("R", CultureInfo.InvariantCulture).Replace('E', 'e');
-        var sign = string.Empty;
-        if (rendered.StartsWith('-'))
-        {
-            sign = "-";
-            rendered = rendered[1..];
-        }
-
-        if (!rendered.Contains('e', StringComparison.Ordinal))
-        {
-            // BCL round-trip stays fixed through 1e17; CPython repr switches
-            // at 1e16, which surfaces here as exactly a 17-digit integer.
-            var point = rendered.IndexOf('.');
-            if (point < 0 && rendered.Length == 17)
-            {
-                var mantissa = (rendered[0] + "." + rendered[1..]).TrimEnd('0').TrimEnd('.');
-                return sign + mantissa + "e+16";
-            }
-        }
-
-        return sign + (rendered.Contains('.') || rendered.Contains('e') ? rendered : rendered + ".0");
+        "e+16"u8.CopyTo(output[end..]);
+        return end + 4;
     }
 
     public static int GetHashCode(PyNumber number)

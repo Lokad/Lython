@@ -99,7 +99,7 @@ internal static class PyRendering
                 PyNone => PyStringOps.NoneLiteral,
                 bool boolean => boolean ? TrueLiteral : FalseLiteral,
                 _ when PyNumberOps.TryAsInteger(value, out var integer) => RenderInteger(integer, context),
-                double floating => PyString.FromString(Numbers.PyNumberOps.RenderFloat(floating), context.Context.MemoryGovernor),
+                double floating => RenderFloating(floating, context),
                 LythonRuntime.DictKeysView view => JoinRenderedReprValues("dict_keys([", view, "])", context),
                 LythonRuntime.DictValuesView view => JoinRenderedReprValues("dict_values([", view, "])", context),
                 LythonRuntime.DictItemsView view => JoinRenderedReprValues("dict_items([", view, "])", context),
@@ -131,7 +131,7 @@ internal static class PyRendering
                 PyNone => PyStringOps.NoneLiteral,
                 bool boolean => boolean ? TrueLiteral : FalseLiteral,
                 _ when PyNumberOps.TryAsInteger(value, out var integer) => RenderInteger(integer, context),
-                double floating => PyString.FromString(Numbers.PyNumberOps.RenderFloat(floating), context.Context.MemoryGovernor),
+                double floating => RenderFloating(floating, context),
                 LythonRuntime.DictKeysView view => JoinRenderedReprValues("dict_keys([", view, "])", context),
                 LythonRuntime.DictValuesView view => JoinRenderedReprValues("dict_values([", view, "])", context),
                 LythonRuntime.DictItemsView view => JoinRenderedReprValues("dict_items([", view, "])", context),
@@ -146,6 +146,13 @@ internal static class PyRendering
         {
             context.Context.LeaveInterpreterFrame();
         }
+    }
+
+    private static PyString RenderFloating(double value, PyRenderingContext context)
+    {
+        Span<byte> bytes = stackalloc byte[PyNumberOps.FloatRenderCapacity];
+        var length = PyNumberOps.WriteFloatUtf8(value, bytes);
+        return PyString.CopyFromUtf8(bytes[..length], context.Context.MemoryGovernor, null);
     }
 
     private static PyString RenderInteger(BigInteger value, PyRenderingContext context)
@@ -320,7 +327,7 @@ internal static class PyRendering
                 PyNone => PyStringOps.NoneLiteral,
                 bool boolean => boolean ? TrueLiteral : FalseLiteral,
                 _ when PyNumberOps.TryAsInteger(value, out var integer) => RenderInteger(integer, context),
-                double floating => PyString.FromString(Numbers.PyNumberOps.RenderFloat(floating), context.Context.MemoryGovernor),
+                double floating => RenderFloating(floating, context),
                 LythonRuntime.DictKeysView view => RenderReprSequence(view, "dict_keys([", "])", "dict_keys([...])", context, activeContainers),
                 LythonRuntime.DictValuesView view => RenderReprSequence(view, "dict_values([", "])", "dict_values([...])", context, activeContainers),
                 LythonRuntime.DictItemsView view => RenderReprSequence(view, "dict_items([", "])", "dict_items([...])", context, activeContainers),

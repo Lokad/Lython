@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1279 direct UTF-8 float output](results/2026-11-21-direct-float-output/README.md)
+shares one round-trip float formatter with guest repr and finite JSON.
+The numeric JSON and text exports run 5.81–9.97% and 4.37–7.56% sooner
+with lower process CPU. Allocation falls 23.83% and 15.33%, respectively,
+with equal accounted peaks. Integer JSON and invoice CPU remain mixed.
+
 [B1278 CSV restock exports against CPython](results/2026-11-21-cpython-csv-restock-checkpoint/README.md)
 places ordinary export at 0.733–0.766× warm, 0.604–0.611× compilation
 and 0.758–0.760× to result against stock CPython 3.13.16. The custom

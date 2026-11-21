@@ -1413,6 +1413,10 @@ integer digits and finite fixed/scientific float fields use admitted span storag
 without intermediate CLR strings. Integer base conversion is linear in digit
 count. .NET 10 uses an admitted character bridge for decimal integers; .NET 11
 formats them directly into UTF-8. Scratch and final output overlap remain funded.
+Default float repr and finite JSON numbers share a bounded UTF-8 round-trip
+formatter. The formatter applies Python's decimal point and exponent rules
+before transferring digits into governed text or JSON output. JSON evaluates
+the `allow_nan` truth protocol for nonfinite values and awaits actual suspension.
 General/default/percentage float and Decimal fields retain their rounding/notation
 algorithms, then encode ungrouped ASCII into the end of the final admitted output
 window. They share the same sign, grouping and padding writer as native byte digits,

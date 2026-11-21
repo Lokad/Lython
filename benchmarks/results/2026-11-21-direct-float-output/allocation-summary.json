@@ -1,0 +1,38 @@
+[
+  {
+    "case": "scripts.measurement-export.finite-json",
+    "previousAllocatedBytes": 5384596,
+    "candidateAllocatedBytes": 4101588,
+    "allocationChangePercent": -23.827377207129373,
+    "previousAccountedPeak": 5489413,
+    "candidateAccountedPeak": 5489413,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.measurement-export.finite-repr",
+    "previousAllocatedBytes": 8365588,
+    "candidateAllocatedBytes": 7083308,
+    "allocationChangePercent": -15.328031932722485,
+    "previousAccountedPeak": 10215062,
+    "candidateAccountedPeak": 10215062,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.measurement-export.integer-json",
+    "previousAllocatedBytes": 3120310,
+    "candidateAllocatedBytes": 3120320,
+    "allocationChangePercent": 0.00032048097784453944,
+    "previousAccountedPeak": 5403687,
+    "candidateAccountedPeak": 5403687,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.csv-invoice.large",
+    "previousAllocatedBytes": 3671542,
+    "candidateAllocatedBytes": 3671726,
+    "allocationChangePercent": 0.00501151832117408,
+    "previousAccountedPeak": 9432613,
+    "candidateAccountedPeak": 9432613,
+    "budgetReturnedToBaseline": true
+  }
+]
