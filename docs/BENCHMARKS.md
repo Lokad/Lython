@@ -407,6 +407,7 @@ for the CPython ratios above.
 
 | Change | Established outcome | Limits / evidence |
 | --- | --- | --- |
+| Store one prepared keyword default inline | Eager factories run 1.28–4.87% sooner warm and allocate 6.68% less. Postponed factories run 2.35–5.92% sooner and allocate 7.37% less. | Postponed time to result spans zero. Observation of every default dictionary leaves allocation unchanged. [B1305](../benchmarks/results/2026-11-21-inline-keyword-default/README.md). |
 | Keep single regex match scratch local | Small per-record fullmatches take 1.89–4.02% less warm time and allocate 3.61% less. | Wide-match timing spans zero. Cursor elapsed rises 0.46–1.17% with mixed CPU. [B1303](../benchmarks/results/2026-11-21-regex-local-one-shot/README.md). |
 | Read plain CSV fields from admitted line ranges | The policy invoice runs 0.88–3.67% sooner warm and the free-function invoice 2.12–3.26% sooner. | Accounted peaks match. The fully quoted invoice takes 0.25–1.17% longer. [B1302](../benchmarks/results/2026-11-21-csv-literal-record-ranges/README.md). |
 | Resolve ordinary instance methods in native callers | CSV policy invoice runs 8.94–9.57% sooner warm and allocates 29.92% less. The method relay runs 27.59–31.51% sooner and allocates 71.72% less. | The broader version regressed on direct methods. That regression did not recur on the retained native-only version. [B1297](../benchmarks/results/2026-11-21-native-only-method-lookup/README.md). |

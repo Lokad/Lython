@@ -973,16 +973,18 @@ and leading string literal shared by instances of the same declaration. A
 function keeps independent metadata overrides and mutable defaults. Host-facing
 text projections have their own result ownership. A definition evaluates its
 defaults in the defining scope. With prepared keys, binding reads unpublished
-keyword defaults from the admitted value slots. The first read of
-`__kwdefaults__` publishes an independently mutable dictionary using those
-slots. Replacement or deletion can refund unpublished storage. A published
+keyword defaults directly. A compiled definition with one keyword-only default
+holds its value inline and pre-admits the eventual record. Other prepared
+definitions keep an admitted value array. The first read of `__kwdefaults__`
+publishes an independently mutable dictionary and transfers the existing
+admission. Replacement or deletion can refund unpublished storage. A published
 dictionary keeps its owner for any aliases. Binding reads the live dictionary
 when exposed, using the prepared slot where its key layout still matches.
 Replacement dictionaries and structural key changes use ordinary lookup.
 Executable declarations evaluate decorators and defaults in the surrounding
-instruction stream. The compiler places the final positional tuple and
-prepared keyword values in private operands before any default expression
-runs. Each expression writes to its prepared destination. Those operands
+instruction stream. The compiler places the admitted positional tuple and
+keyword storage in private operands before any default expression runs.
+Each expression writes to its prepared destination. Those operands
 carry ownership through suspension and relinquish it at publication or
 cleanup. Ordinary and yielding definitions share construction and the
 prepared Python annotation order. The defining source selects eager evaluation or

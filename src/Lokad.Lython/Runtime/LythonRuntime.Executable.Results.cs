@@ -56,12 +56,18 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static void StoreDefaultResult(ExecutableCodeObject code, ReadOnlySpan<ExecutableSlot> slots,
+    private static void StoreDefaultResult(ExecutableCodeObject code, Span<ExecutableSlot> slots,
         in ExecutableInstruction consumer, ExecutableSlot value, ExecutionState state)
     {
         var append = (ExecutableAppendFunctionDefault)code.Constants[consumer.ConstantIndex]!;
-        var destination = slots[consumer.InputStart].Reference;
-        if (destination is PyTuple positional) positional.SetPrivateDefault(append.Index, value, state, consumer.Span);
-        else StorePreparedKeywordDefault((object?[])destination!, append.Index, value, state, consumer.Span);
+        ref var destination = ref slots[consumer.InputStart];
+        if (destination.HasPrivateKeywordDefault)
+        {
+            state.CheckExecution(consumer.Span);
+            destination = ExecutableSlot.OwnPrivateKeywordDefault(RuntimeValue(value.Object));
+        }
+        else if (destination.Reference is PyTuple positional)
+            positional.SetPrivateDefault(append.Index, value, state, consumer.Span);
+        else StorePreparedKeywordDefault((object?[])destination.Reference!, append.Index, value, state, consumer.Span);
     }
 }

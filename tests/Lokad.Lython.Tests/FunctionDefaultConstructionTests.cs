@@ -48,7 +48,7 @@ public sealed class FunctionDefaultConstructionTests
             var admitted = budget.ReservedBytes;
             Assert.True(admitted > before);
             LythonRuntime.ExecutableSlot[] bound = [default, LythonRuntime.ExecutableSlot.FromInteger(2), default];
-            plan.FillPreparedKeywordDefaults(values, bound, context, Span);
+            Assert.True(plan.TryFillPreparedKeywordDefaults(bound, context, Span));
             Assert.Same(first, bound[0].Object);
             Assert.Same(last, bound[2].Object);
 
@@ -60,7 +60,7 @@ public sealed class FunctionDefaultConstructionTests
                 Assert.Equal(admitted, budget.ReservedBytes);
             }
             Assert.True(plan.TrySetDefaultMetadata("__kwdefaults__", PyNone.Instance, context.MemoryGovernor));
-            Assert.Null(plan.PreparedKeywordDefaults);
+            Assert.False(plan.TryFillPreparedKeywordDefaults(bound, context, Span));
             Assert.Null(plan.KeywordDefaultStorage);
             Assert.Equal(observe ? admitted : before, budget.ReservedBytes);
             if (alias is not null) Assert.Same(first, alias.GetItem(layout.KeywordDefaultName(0)));

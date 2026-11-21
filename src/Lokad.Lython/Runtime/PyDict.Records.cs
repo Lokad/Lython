@@ -120,6 +120,8 @@ internal sealed partial class PyDict
 
         internal int PreparedValueCapacity => NativeCapacity(Count);
 
+        internal static readonly long SinglePreparedValueBytes = RecordBytes(NativeCapacity(1));
+
         internal object?[] CreatePreparedValues(LythonRuntime.ExecutionContext context, LythonSourceSpan span)
         {
             System.Diagnostics.Debug.Assert(_owner is null);
@@ -193,6 +195,14 @@ internal sealed partial class PyDict
                 _nativeCount = Count,
                 _nativeCommittedBytes = RecordBytes(values.Length),
             };
+
+        internal PyDict AdoptPreparedValue(object value, MemoryGovernor owner, LythonSourceSpan? span)
+        {
+            System.Diagnostics.Debug.Assert(Count == 1);
+            var values = new object?[PreparedValueCapacity];
+            values[0] = value;
+            return AdoptPreparedValues(values, owner, span);
+        }
 
         internal static void RefundPreparedValues(object?[] values, MemoryGovernor owner)
             => owner.Release(RecordBytes(values.Length));

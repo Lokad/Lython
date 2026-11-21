@@ -6,7 +6,7 @@ namespace Lokad.Lython.Runtime;
 internal sealed partial class LythonRuntime
 {
     private static FunctionDefaults AllocateFunctionDefaults(FunctionParameterLayout layout, ExecutionContext context,
-        LythonSourceSpan span)
+        LythonSourceSpan span, bool inlineSingleKeyword = false)
     {
         context.CheckExecution(span);
         var positional = layout.PositionalDefaultCount == 0
@@ -14,6 +14,19 @@ internal sealed partial class LythonRuntime
         try
         {
             var keywordCount = layout.Defaults.Length - layout.PositionalDefaultCount;
+            if (inlineSingleKeyword && keywordCount == 1)
+            {
+                var bytes = PyDict.RecordKeys.SinglePreparedValueBytes;
+                var governor = context.MemoryGovernor;
+                governor.Reserve(bytes, span);
+                try
+                {
+                    context.CheckExecution(span);
+                    governor.Commit(bytes);
+                    return new(positional, PyNone.Instance, InlineKeyword: true);
+                }
+                catch { governor.ReleaseReserved(bytes); throw; }
+            }
             object? keywords = keywordCount == 0 ? null : layout.PreparedKeywordDefaultKeys is { } keys
                 ? keys.CreatePreparedValues(context, span) : new PyDict(keywordCount, context.MemoryGovernor, span);
             return new(positional, keywords);
@@ -30,18 +43,20 @@ internal sealed partial class LythonRuntime
     private static void StartExecutableDefaults(FunctionParameterLayout layout, Span<ExecutableSlot> operands,
         ExecutionContext context, LythonSourceSpan span)
     {
-        var defaults = AllocateFunctionDefaults(layout, context, span);
-        System.Diagnostics.Debug.Assert(defaults.Keywords is null or object?[]);
+        var defaults = AllocateFunctionDefaults(layout, context, span, inlineSingleKeyword: true);
         var next = 0;
         if (defaults.Positional is { } positional) operands[next++] = ExecutableSlot.OwnPrivateDefault(positional);
-        if (defaults.Keywords is { } keywords) operands[next] = ExecutableSlot.OwnPrivateDefault(keywords);
+        if (defaults.Keywords is { } keywords)
+            operands[next] = defaults.InlineKeyword ? ExecutableSlot.OwnPrivateKeywordDefault(keywords)
+                : ExecutableSlot.OwnPrivateDefault(keywords);
     }
 
     private static FunctionDefaults ReadExecutableDefaults(FunctionParameterLayout layout, ReadOnlySpan<ExecutableSlot> operands)
     {
         System.Diagnostics.Debug.Assert(operands.Length == layout.DefaultStorageCount);
+        var keyword = layout.HasKeywordDefaults ? operands[^1] : default;
         return new(layout.PositionalDefaultCount == 0 ? null : (PyTuple)operands[0].Reference!,
-            layout.HasKeywordDefaults ? operands[^1].Reference : null);
+            keyword.Reference, keyword.HasPrivateKeywordDefault);
     }
 
     private static void StorePreparedKeywordDefault(object?[] values, int index, ExecutableSlot value,

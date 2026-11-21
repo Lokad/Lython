@@ -7,6 +7,39 @@ public sealed class PreparedFunctionDefaultsTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task KeywordDefaultCanBeADictionaryAndKeepItsIdentity(bool asynchronous)
+    {
+        const string source = """
+            def factory(value):
+                def read(*, required, item=value):
+                    return item
+                return read
+            payload = {'item': 7}
+            first = factory(payload)
+            second = factory(payload)
+            assert first(required=None) is payload
+            observed = first.__kwdefaults__
+            assert observed is first.__kwdefaults__
+            assert observed['item'] is payload
+            first.__kwdefaults__ = {'item': 9}
+            assert first(required=None) == 9
+            assert observed['item'] is second(required=None)
+            second.__kwdefaults__ = payload
+            assert second(required=None) == 7
+            """;
+        var budget = new LythonMemoryBudget();
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        var host = new MockLythonHost();
+        using (var result = asynchronous ? await script.RunAsync(host) : script.Run(host))
+            Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task LocalFactoryDefaultsStayOwnedAcrossSuspension(bool cancel)
     {
         const string source = """

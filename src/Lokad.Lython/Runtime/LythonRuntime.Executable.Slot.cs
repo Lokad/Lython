@@ -16,6 +16,7 @@ internal sealed partial class LythonRuntime
         // Integer value, double bits, an immutable tuple's positive item offset,
         // or the private-default marker paired with its admitted final storage.
         private const long PrivateDefault = -1;
+        private const long PrivateKeywordDefault = -2;
         private long _integer;
 
         internal object? Object
@@ -24,7 +25,7 @@ internal sealed partial class LythonRuntime
             {
                 if (ReferenceEquals(_value, UnpublishedInteger)) return PublishInteger();
                 if (ReferenceEquals(_value, UnpublishedDouble)) return PublishDouble();
-                System.Diagnostics.Debug.Assert(!HasPrivateDefault);
+                System.Diagnostics.Debug.Assert(!HasPrivateDefault && !HasPrivateKeywordDefault);
                 return _integer == 0 ? _value : PublishTupleBorrow();
             }
             set { _value = value; _integer = 0; }
@@ -36,9 +37,15 @@ internal sealed partial class LythonRuntime
 
         internal readonly bool IsUnpublishedInteger => ReferenceEquals(_value, UnpublishedInteger);
         private readonly bool HasPrivateDefault => _integer == PrivateDefault && _value is PyTuple or object?[] or PyDict;
-        internal readonly bool RequiresRetirement => _value is PyIteration.Cursor or ExecutableTemporaryValue || HasPrivateDefault;
+        internal readonly bool HasPrivateKeywordDefault => _integer == PrivateKeywordDefault &&
+            !IsUnpublishedInteger && !ReferenceEquals(_value, UnpublishedDouble);
+        internal readonly bool RequiresRetirement => _value is PyIteration.Cursor or ExecutableTemporaryValue ||
+            HasPrivateDefault || HasPrivateKeywordDefault;
 
         internal static ExecutableSlot OwnPrivateDefault(object storage) => new() { _value = storage, _integer = PrivateDefault };
+
+        internal static ExecutableSlot OwnPrivateKeywordDefault(object value)
+            => new() { _value = value, _integer = PrivateKeywordDefault };
 
         internal void RetireTemporary(MemoryGovernor governor)
         {
@@ -55,6 +62,11 @@ internal sealed partial class LythonRuntime
                 this = default;
                 if (storage is object?[] keywordValues) PyDict.RecordKeys.RefundPreparedValues(keywordValues, governor);
                 else governor.RefundUnpublishedValue(storage!);
+            }
+            else if (HasPrivateKeywordDefault)
+            {
+                this = default;
+                governor.Release(PyDict.RecordKeys.SinglePreparedValueBytes);
             }
         }
 

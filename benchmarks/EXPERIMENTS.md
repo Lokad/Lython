@@ -12,6 +12,12 @@ hook allocates 4.48% less and textwrap with a retaining predicate
 allocates 21.22% less. Native numeric allocation matches. Funded
 immutable-byte decoding and callback refusal checks pass.
 
+[B1305 inline storage for one prepared keyword default](results/2026-11-21-inline-keyword-default/README.md)
+eliminates the private value array from ordinary factory definitions.
+Eager and postponed warm CPU and allocation fall. The helper and
+postponed time-to-result controls span zero. Retain the change.
+All 140 timed batches pass.
+
 [B1304 direct checked layout into the executable tape](results/2026-11-21-direct-tape-layout/README.md)
 eliminates an instruction pass when all blocks are reachable. The
 validator reaches its result 0.91–2.68% sooner and uses less CPU.

@@ -181,12 +181,8 @@ internal sealed partial class LythonRuntime
             }
 
             var firstProtocolDefault = -1;
-            if (plan.KeywordOnlyCount != 0)
-            {
-                if (plan.PreparedKeywordDefaults is { } preparedDefaults)
-                    plan.FillPreparedKeywordDefaults(preparedDefaults, values, context, span);
-                else firstProtocolDefault = CompleteLiveKeywordDefaults(values, span, plan, context, deferProtocolDefaults);
-            }
+            if (plan.KeywordOnlyCount != 0 && !plan.TryFillPreparedKeywordDefaults(values, context, span))
+                firstProtocolDefault = CompleteLiveKeywordDefaults(values, span, plan, context, deferProtocolDefaults);
 
             if (plan.VariadicDictionaryIndex >= 0)
             {
