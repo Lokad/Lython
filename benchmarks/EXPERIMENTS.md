@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1299 inline single-match regex scratch](results/2026-11-21-regex-inline-one-shot/README.md)
+removes the temporary heap capture array and wrapper from small matches.
+The per-record script allocates 3.61% less. Its local elapsed improves,
+while the wide control is unstable. Keep the prototype private pending
+a controlled comparison and a decision on the extra route.
+
 [B1297 native-only instance lookup](results/2026-11-21-native-only-method-lookup/README.md)
 keeps ordinary method callers on their existing native slots. The
 invoice runs 8.94–9.57% faster warm and allocates 29.92% less. The

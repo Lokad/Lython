@@ -1,0 +1,83 @@
+{
+  "collection": "B1299",
+  "reference": "d51891009",
+  "candidate": "168cdf7a4",
+  "verifiedTimedBatches": 60,
+  "qualifiedElapsed": false,
+  "allocation": [
+    {
+      "case": "scripts.regex.single-match-records",
+      "reference": 6522144,
+      "candidate": 6286624,
+      "allocationChangePercent": -3.6110824906656513,
+      "referenceAccountedPeak": 508741,
+      "candidateAccountedPeak": 508741,
+      "allowanceRestored": true
+    },
+    {
+      "case": "scripts.regex.cursor-records",
+      "reference": 754656,
+      "candidate": 754550,
+      "allocationChangePercent": -0.014046134927703235,
+      "referenceAccountedPeak": 523428,
+      "candidateAccountedPeak": 523428,
+      "allowanceRestored": true
+    },
+    {
+      "case": "scripts.regex.wide-single-match",
+      "reference": 3818872,
+      "candidate": 3818872,
+      "allocationChangePercent": 0.0,
+      "referenceAccountedPeak": 342325,
+      "candidateAccountedPeak": 342325,
+      "allowanceRestored": true
+    }
+  ],
+  "elapsed": [
+    {
+      "case": "scripts.regex.single-match-records",
+      "localChangePercent": [
+        -4.960222345876863,
+        -3.7899346461160333,
+        -3.2513825544700947,
+        -2.0600527790846423
+      ],
+      "processMediansMilliseconds": {
+        "reference": 2.095401111111111,
+        "candidate": 1.9914645569620255,
+        "reference-control": 2.0699129032258066,
+        "candidate-control": 2.0272716049382717
+      }
+    },
+    {
+      "case": "scripts.regex.cursor-records",
+      "localChangePercent": [
+        -0.21262183735520912,
+        0.04848618715613817,
+        0.6923668635577362,
+        0.9558429211435238
+      ],
+      "processMediansMilliseconds": {
+        "reference": 1.7498617647058823,
+        "candidate": 1.7619772277227723,
+        "reference-control": 1.7452949494949495,
+        "candidate-control": 1.7461411764705883
+      }
+    },
+    {
+      "case": "scripts.regex.wide-single-match",
+      "localChangePercent": [
+        -4.703408856473679,
+        9.402260840017963,
+        18.040534328902403,
+        35.512731057672674
+      ],
+      "processMediansMilliseconds": {
+        "reference": 1.9388941176470589,
+        "candidate": 2.121194,
+        "reference-control": 1.565309756097561,
+        "candidate-control": 1.8477
+      }
+    }
+  ]
+}
