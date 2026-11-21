@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1258 the retained callback path against CPython](results/2026-11-21-cpython-callback-text/README.md)
+measures the complete map-based text report at 1.277–1.330× warm,
+0.710–0.713× compilation and 1.229–1.245× compile-to-result.
+Separate phase workers complete all 84 batches.
+
 [B1256/B1257 exact positional callback entry](results/2026-11-21-native-callback-entry/README.md)
 removes callback workspace rental for native completion. The exact
 repeat improves the map-based text report 6.00–10.07% warm with lower
