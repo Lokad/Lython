@@ -2,8 +2,8 @@
 
 November 21, 2026 UTC. The Windows .NET 11 RC3 worker uses frozen
 `837fae29b`, with the same production source as `d09acaf69`.
-The map-based text report processes 1,024 lines and 35,840 bytes
-through the comparison host. All 32 frozen image files and the
+The map-based text report processes 1,024 three-line groups
+and 35,840 bytes through the comparison host. All 32 frozen image files and the
 CPython output and file goldens verified. The worker completed 768
 verified reports around the six-second sample window and joined.
 

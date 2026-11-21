@@ -3,7 +3,7 @@
 | Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
 | JSON Lines export with expanded options | 3,072 records / 189,441 B | 6.503–6.598 ms | 6.534–6.571 ms | 0.990–1.010× | B1261 diagnostic. Spans parity. Controls L/C 1.47 / 0.57%. IQR ≤1.78%. |
-| Map-based text report | 1,024 lines / 35,840 B | 1.539–1.581 ms | 1.188–1.205 ms | 1.277–1.330× | B1258 diagnostic. Controls L/C 2.74 / 1.38%. IQR ≤0.90%. |
+| Map-based text report | 3,072 lines / 35,840 B | 1.539–1.581 ms | 1.188–1.205 ms | 1.277–1.330× | B1258 diagnostic. Controls L/C 2.74 / 1.38%. IQR ≤0.90%. |
 | JSON normalization | 3,072 records / 189,441 B | 2.762–2.813 ms | 2.505–2.544 ms | 1.086–1.123× | B1253 diagnostic repeat. Initial B1252 is 1.143–1.158×. Repeat controls L/C 1.82 / 1.59%. IQR ≤12.50%. |
 | Unannotated rule closures | 2,048 inputs / 4,096 definitions | 2.307–2.321 ms | 0.683–0.688 ms | 3.35–3.40× | B1122 diagnostic. Controls L/C 0.61 / 0.70%. IQR ≤0.74%. |
 | Annotated rule closures | 2,048 inputs / 2,048 definitions | 1.057 ms | 0.428–0.434 ms | 2.44–2.47× | B1203 diagnostic. Controls L/C 0.05 / 1.26%. IQR ≤2.76%. |
