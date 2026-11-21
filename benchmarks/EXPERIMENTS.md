@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1286 joint lexical admission](results/2026-11-21-joint-lexical-admission/README.md)
+keeps the prototype private. It removes 2,048 allowance growths per
+nested factory. Postponed factories reach the result 3.08–7.12% sooner
+with 1.43–7.49% lower process CPU. The fully supplied helper takes
+1.36–3.67% longer with 1.47–4.78% higher CPU and equal allocation.
+Eager timings span zero. All 140 batches pass.
+
 [B1285 current factories against CPython](results/2026-11-21-cpython-current-factories/README.md)
 measures `256c5e651` against CPython 3.13.16. Postponed factories
 take 2.096–2.137× as long warm, 0.566–0.575× for compilation and

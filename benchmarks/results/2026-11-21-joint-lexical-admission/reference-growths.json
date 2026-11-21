@@ -1,0 +1,22 @@
+[
+  {
+    "id": "scripts.annotated-rule-closures",
+    "Growths": 6169,
+    "baseline": 63610
+  },
+  {
+    "id": "scripts.annotated-rule-closures.nested-factories",
+    "Growths": 10265,
+    "baseline": 74618
+  },
+  {
+    "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+    "Growths": 10265,
+    "baseline": 78622
+  },
+  {
+    "id": "scripts.ordinary-fully-supplied-helper",
+    "Growths": 7,
+    "baseline": 49856
+  }
+]

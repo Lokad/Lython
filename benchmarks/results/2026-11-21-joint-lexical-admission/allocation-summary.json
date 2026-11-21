@@ -1,0 +1,65 @@
+[
+  {
+    "case": "scripts.annotated-rule-closures",
+    "previousAllocation": 849344,
+    "candidateAllocation": 849344,
+    "allocationChangePercent": 0.0,
+    "previousAccountedPeak": 2444081,
+    "candidateAccountedPeak": 2444081,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories",
+    "previousAllocation": 1226192,
+    "candidateAllocation": 1226192,
+    "allocationChangePercent": 0.0,
+    "previousAccountedPeak": 2968425,
+    "candidateAccountedPeak": 2968425,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+    "previousAllocation": 1111664,
+    "candidateAllocation": 1111664,
+    "allocationChangePercent": 0.0,
+    "previousAccountedPeak": 2968481,
+    "candidateAccountedPeak": 2968481,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.csv-invoice.large",
+    "previousAllocation": 3672464,
+    "candidateAllocation": 3672598,
+    "allocationChangePercent": 0.0036487764073278584,
+    "previousAccountedPeak": 9432613,
+    "candidateAccountedPeak": 9432613,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.dataclass-keyword-configuration.generated",
+    "previousAllocation": 417552,
+    "candidateAllocation": 417552,
+    "allocationChangePercent": 0.0,
+    "previousAccountedPeak": 304611,
+    "candidateAccountedPeak": 304611,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.factory-wrapper-metadata",
+    "previousAllocation": 7224256,
+    "candidateAllocation": 7173752,
+    "allocationChangePercent": -0.6990892903020018,
+    "previousAccountedPeak": 5351118,
+    "candidateAccountedPeak": 5351118,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.ordinary-fully-supplied-helper",
+    "previousAllocation": 142688,
+    "candidateAllocation": 142688,
+    "allocationChangePercent": 0.0,
+    "previousAccountedPeak": 1255,
+    "candidateAccountedPeak": 1255,
+    "budgetReturnedToBaseline": true
+  }
+]
