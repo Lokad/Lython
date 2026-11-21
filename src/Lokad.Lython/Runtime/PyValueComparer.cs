@@ -14,8 +14,12 @@ internal sealed class PyValueComparer : IEqualityComparer<object>
     {
         // Identity never scans storage; preserve the original table shortcut.
         if (ReferenceEquals(x, y)) return x is not null;
-        return context is not null && x is PyString leftText && y is PyString rightText
-            ? leftText.Equals(rightText, context, span) : Equals(x, y);
+        if (context is not null && x is PyString leftText && y is PyString rightText)
+            return leftText.Equals(rightText, context, span);
+        if (x is LythonRuntime.RePatternObject leftPattern && y is LythonRuntime.RePatternObject rightPattern)
+            return leftPattern.HasSameProgram(rightPattern, context ?? PyStructuralGuard.AmbientContext,
+                span ?? PyStructuralGuard.AmbientSpan);
+        return Equals(x, y);
     }
 
     public new bool Equals(object? x, object? y)

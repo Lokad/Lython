@@ -23,6 +23,9 @@
   diagnostics so supplementary characters keep Python's length and arity.
 - Use the compiled regex lookup to own provider patterns, releasing each
   handle before refunding its compilation scope.
+- Compare and hash compiled regex patterns across cache purge. Providers can
+  supply exact program keys when distinct compiler options produce the same
+  source and effective flags.
 - Parse a shared postfix prefix for assignment targets and expression
   statements, removing repeated speculative parses.
 - Match Python function `__annotations__` assignment. `None` clears the

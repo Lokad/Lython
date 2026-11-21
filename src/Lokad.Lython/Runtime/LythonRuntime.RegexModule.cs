@@ -72,13 +72,50 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    internal sealed record RePatternObject(
-        PyString Pattern,
-        int Flags,
-        ILythonRegexPattern Regex,
-        int CaptureSlotCount,
-        PyDict NamedGroups) : IPyRenderableValue, IPyContextualDynamicAttributes
+    internal sealed class RePatternObject(
+        PyString pattern, int flags, ILythonRegexPattern regex, int captureSlotCount, PyDict namedGroups,
+        LythonRegexOptions options)
+        : IPyRenderableValue, IPyContextualDynamicAttributes, IPyHashableValue
     {
+        public PyString Pattern { get; } = pattern;
+        public int Flags { get; } = flags;
+        public ILythonRegexPattern Regex { get; } = regex;
+        public int CaptureSlotCount { get; } = captureSlotCount;
+        public PyDict NamedGroups { get; } = namedGroups;
+        private LythonRegexOptions Options { get; } = options;
+
+        // Pattern creation already hashed the text under the active token.
+        public int GetPyHashCode() => HashCode.Combine(Pattern.GetHashCode(), Flags);
+
+        internal bool HasSameProgram(RePatternObject other, ExecutionContext? context, LythonSourceSpan? span)
+        {
+            context?.CheckExecution(span);
+            if (ReferenceEquals(this, other)) return true;
+            if (Flags != other.Flags || !Pattern.Equals(other.Pattern, context, span)) return false;
+            if (Options == other.Options || ReferenceEquals(Regex, other.Regex)) return true;
+            return RegexCompiler.ProviderCall(() => CompareProgramKeys(other, context, span),
+                context?.MemoryGovernor, context?.State.CancellationToken ?? default, span, Pattern);
+        }
+
+        private bool CompareProgramKeys(RePatternObject other, ExecutionContext? context, LythonSourceSpan? span)
+        {
+            if (Regex.ProgramEqualityKey is not { } left || other.Regex.ProgramEqualityKey is not { } right)
+                throw RuntimeErrors.Capability("Regex provider does not supply compiled program equality for these options.", span);
+            if (left.Length != right.Length) return false;
+
+            var a = left.Span;
+            var b = right.Span;
+            for (var i = 0; i < a.Length;)
+            {
+                context?.CheckExecution(span);
+                var count = Math.Min(4096, a.Length - i);
+                if (!a.Slice(i, count).SequenceEqual(b.Slice(i, count))) return false;
+                i += count;
+            }
+            context?.CheckExecution(span);
+            return true;
+        }
+
         private static readonly (int Mask, string Name)[] DisplayFlags =
         [
             (RegexCompiler.PythonIgnoreCaseFlag, "re.IGNORECASE"),

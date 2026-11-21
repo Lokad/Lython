@@ -75,6 +75,9 @@ internal static class PyEquality
             return leftPath.Value.Equals(rightPath.Value, PyStructuralGuard.AmbientContext, PyStructuralGuard.AmbientSpan);
         }
 
+        if (left is LythonRuntime.RePatternObject leftPattern && right is LythonRuntime.RePatternObject rightPattern)
+            return leftPattern.HasSameProgram(rightPattern, PyStructuralGuard.AmbientContext, PyStructuralGuard.AmbientSpan);
+
         if (left is PyList leftList && right is PyList rightList)
         {
             using (PyStructuralGuard.EnterPair(left, right, null))

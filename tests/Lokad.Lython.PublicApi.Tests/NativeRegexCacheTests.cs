@@ -59,7 +59,9 @@ public sealed class NativeRegexCacheTests
             b=re.compile(('x'+pattern)[1:])
             print(a is b,a.pattern==pattern,a.fullmatch(pattern) is not None)
             re.purge()
-            print(a is re.compile(pattern),a.fullmatch(pattern).group()==pattern)
+            c=re.compile(pattern)
+            print(a is c,a.fullmatch(pattern).group()==pattern)
+            print(a==c,hash(a)==hash(c),{a:'old'}[c])
             """, budget);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -68,7 +70,7 @@ public sealed class NativeRegexCacheTests
             using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
             {
                 Assert.True(result.Success, result.Failure?.Message);
-                Assert.Equal("True True True\nFalse True\n", result.StandardOutput);
+                Assert.Equal("True True True\nFalse True\nTrue True old\n", result.StandardOutput);
                 Assert.True(budget.ReservedBytes > baseline);
             }
             Assert.Equal(baseline, budget.ReservedBytes);

@@ -357,7 +357,7 @@ internal sealed partial class LythonRuntime
                 // strings. Give those values the current run's governor rather
                 // than sharing an analysis governor across concurrent runs.
                 var names = CopyRuntimeNamedGroups(compiled, captureSlotCount, context, token, span, pattern);
-                var result = new RePatternObject(pattern, flags, compiled, captureSlotCount, names);
+                var result = new RePatternObject(pattern, flags, compiled, captureSlotCount, names, options);
                 storage.Commit(wrapperBytes);
                 cache.Add(pattern, options, result, context.MemoryGovernor, span);
                 if (artifact is null) context.State.TrackRegexPattern(compiled);

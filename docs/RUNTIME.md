@@ -2489,6 +2489,15 @@ Each `groupindex` access returns a read-only view for named groups or a fresh
 empty dictionary when the pattern has no named groups.
 The module exports the same `re.Pattern` and `re.Match` type objects returned
 by `type()` for patterns and matches.
+Compiled patterns hash their original UTF-8 text and effective flags.
+Equality also compares the compiled program. Patterns compiled from identical
+source and options compare equal after cache purge and recompilation. When
+distinct options produce the same effective flags, a provider can supply an
+immutable `ProgramEqualityKey` that distinguishes the exact Python programs.
+The pattern owner funds the key, and comparison borrows it in cancellable
+chunks. Comparing ambiguous patterns without a key reports a provider
+capability error. The bundled optional adapter still lacks this metadata.
+
 Matches compare and hash by object identity. A retained match remains a valid
 dictionary key after iteration ends or the compiled-pattern cache is purged.
 One UTF-8 parser handles `match.expand` and template substitution, including Python

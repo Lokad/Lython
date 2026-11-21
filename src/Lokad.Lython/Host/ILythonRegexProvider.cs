@@ -60,6 +60,21 @@ public interface ILythonRegexPattern : IDisposable
     /// </remarks>
     IReadOnlyList<LythonRegexNamedGroup> NamedGroups { get; }
 
+    /// <summary>Gets an optional immutable key for Python compiled-program equality.</summary>
+    /// <remarks>
+    /// Lython first compares original pattern text and effective flags. Among
+    /// handles compiled by this provider with those facts equal, keys must compare
+    /// equal exactly when Python's compiled programs compare equal. Supply a
+    /// complete key, independent of matching accelerators, allocation layout
+    /// and compilation cache state. A digest alone cannot prove equality.
+    /// The key is prepared during compilation under its token and funded by
+    /// the pattern owner. Reading it must be constant time. The bytes are
+    /// borrowed only while the pattern handle is alive. Equal inputs and
+    /// options must compile to equal keys. Providers that omit this metadata
+    /// allow Lython to prove identity for identical inputs and options.
+    /// </remarks>
+    ReadOnlyMemory<byte>? ProgramEqualityKey => null;
+
     /// <summary>Prepares an original UTF-8 subject with Python scalar pos/endpos bounds.</summary>
     /// <remarks>
     /// The caller supplies valid UTF-8 and keeps its bytes unchanged and funded

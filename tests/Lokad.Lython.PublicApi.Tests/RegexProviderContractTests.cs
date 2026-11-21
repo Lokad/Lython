@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Collections;
 using System.Numerics;
 using System.Text;
@@ -8,6 +9,111 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class RegexProviderContractTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CompiledPatternEqualityUsesProgramAndSourceWithSameEffectiveFlags(bool asynchronous)
+    {
+        using var provider = new CooperatingProvider
+        {
+            ProgramKeyFactory = (source, options) => options.Verbose || source.Span.SequenceEqual("a"u8)
+                ? "literal a"u8.ToArray() : "literal space a space"u8.ToArray()
+        };
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var script = new LythonEngine(provider).Compile("""
+            import re
+            class Flag:
+                def __init__(self, verbose): self.verbose = verbose
+                def __and__(self, other): return 64 if other == 64 and self.verbose else 0
+                def __or__(self, other): return 32
+                def __ror__(self, other): return 32
+            p = re.compile('a', Flag(False))
+            q = re.compile('a', Flag(True))
+            r = re.compile(' a ', Flag(False))
+            s = re.compile(' a ', Flag(True))
+            keys = {p: 'same', q: 'value', r: 'spaced', s: 'trimmed'}
+            re.purge()
+            t = re.compile('a', Flag(False))
+            print(p == q, r == s, p == s, [p] == [q], p is t)
+            print(hash(p) == hash(q), len(keys), len({t,p,q,r,s}), keys[t], keys[r], keys[s])
+            """, budget);
+        Assert.True(script.IsValid, string.Join(", ", script.Diagnostics.Select(d => d.Message)));
+        var baseline = budget.ReservedBytes;
+        using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("True False False True False\nTrue 3 3 value spaced trimmed\n", result.StandardOutput);
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+        script.Dispose();
+        Assert.Equal(provider.Compilations, provider.ClosedPatterns);
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task ProgramEqualityHonorsCancellationOrReportsUnavailableKey(bool asynchronous, bool provideKey)
+    {
+        using var cancellation = new CancellationTokenSource();
+        using var provider = new CooperatingProvider();
+        if (provideKey)
+        {
+            var memory = new CancellingProgramKey("literal a"u8.ToArray(), cancellation);
+            provider.ProgramKeyFactory = (_, options) => options.Verbose
+                ? memory.Borrow() : "literal a"u8.ToArray();
+        }
+
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var script = new LythonEngine(provider).Compile("""
+            import re
+            class Flag:
+                def __and__(self, other): return 64 if other == 64 else 0
+                def __or__(self, other): return 32
+                def __ror__(self, other): return 32
+            a = re.compile(pattern)
+            b = re.compile(pattern, Flag())
+            print({a: 1}[b])
+            """, budget);
+        Assert.True(script.IsValid);
+        var baseline = budget.ReservedBytes;
+        var options = new LythonRunOptions
+        {
+            Globals = new Dictionary<string, object?> { ["pattern"] = "a" },
+            CancellationToken = cancellation.Token
+        };
+        using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options, cancellation.Token)
+            : script.Run(new MockLythonHost(), options))
+        {
+            Assert.False(result.Success);
+            Assert.Equal(provideKey ? LythonFailureReason.Cancelled : LythonFailureReason.HostCapabilityUnavailable,
+                result.FailureAttribution?.Reason);
+            Assert.Empty(result.StandardOutput);
+        }
+        Assert.Equal(provideKey, cancellation.IsCancellationRequested);
+        Assert.Equal(baseline, budget.ReservedBytes);
+        script.Dispose();
+        Assert.Equal(provider.Compilations, provider.ClosedPatterns);
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    // Cancel after the provider returns the borrowed range but before the
+    // first comparison chunk, exercising the active dictionary-probe context.
+    private sealed class CancellingProgramKey(byte[] bytes, CancellationTokenSource cancellation) : MemoryManager<byte>
+    {
+        internal ReadOnlyMemory<byte> Borrow() => CreateMemory(bytes.Length);
+        public override Span<byte> GetSpan()
+        {
+            cancellation.Cancel();
+            return bytes;
+        }
+        public override MemoryHandle Pin(int elementIndex = 0) => throw new NotSupportedException();
+        public override void Unpin() { }
+        protected override void Dispose(bool disposing) { }
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -1519,6 +1625,7 @@ public sealed class RegexProviderContractTests
         internal IReadOnlyList<LythonRegexNamedGroup>? GroupListOverride;
         internal Action<ReadOnlyMemory<byte>, LythonRegexWindow>? OnPrepare;
         internal Func<ReadOnlyMemory<byte>, LythonRegexWindow, FixtureMatch?>? MatchFactory;
+        internal Func<ReadOnlyMemory<byte>, LythonRegexOptions, ReadOnlyMemory<byte>?>? ProgramKeyFactory;
         internal LythonRegexCapture[]? CursorMatches;
 
         private static void Reserve(ILythonMemoryBudget owner, long bytes)
@@ -1562,19 +1669,21 @@ public sealed class RegexProviderContractTests
                 catch { retained.Dispose(); throw; }
                 if (cacheOwner is not null) { _cached = (flags, slots, retained); retained = null; }
             }
-            var result = new Pattern(this, flags, slots, retained);
+            var result = new Pattern(this, flags, slots, retained, ProgramKeyFactory?.Invoke(pattern, options));
             Compilations++;
             OnCompileReturn?.Invoke();
             if (CancelOnReturnStage == "compile") CancelOnReturn?.Cancel();
             return result;
         }
 
-        private sealed class Pattern(CooperatingProvider provider, int flags, int slots, ILythonMemoryScope? retained) : ILythonRegexPattern
+        private sealed class Pattern(CooperatingProvider provider, int flags, int slots, ILythonMemoryScope? retained,
+            ReadOnlyMemory<byte>? programKey) : ILythonRegexPattern
         {
             private bool _disposed;
             private readonly LythonRegexNamedGroup[] _names = provider.GroupNames
                 .Select(entry => new LythonRegexNamedGroup(entry.Name.ToArray(), entry.Index)).ToArray();
             internal int ActiveSubjects;
+            public ReadOnlyMemory<byte>? ProgramEqualityKey => programKey;
             public int Flags
             {
                 get { provider.OnReadFlags?.Invoke(); return flags; }
