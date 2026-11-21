@@ -121,6 +121,35 @@ def sample(flag: bool = "oops") -> int:
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA1082");
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task EagerRegexAnnotationsCreateGenericAliasesWithoutAProvider(bool asynchronous)
+    {
+        using var compiled = new LythonEngine().Compile("""
+            import re
+            from typing import get_origin, get_args
+
+            def replace(match: re.Match[str]) -> re.Pattern[str] | None:
+                return None
+
+            match = replace.__annotations__['match']
+            pattern = get_args(replace.__annotations__['return'])[0]
+            assert type(match) is type(list[str])
+            assert type(pattern) is type(list[str])
+            assert get_origin(match) is re.Match
+            assert get_origin(pattern) is re.Pattern
+            assert get_args(match) == (str,) and get_args(pattern) == (str,)
+            assert re.Match[str] == match and re.Pattern[str] == pattern
+            assert repr(match) == 're.Match[str]'
+            assert repr(pattern) == 're.Pattern[str]'
+            """);
+        Assert.True(compiled.IsValid, string.Join(" | ", compiled.Diagnostics.Select(d => d.Message)));
+        var host = new MockLythonHost();
+        using var result = asynchronous ? await compiled.RunAsync(host) : compiled.Run(host);
+        Assert.True(result.Success, result.Failure?.Message);
+    }
+
     [Fact]
     public void AnnotationDiagnostics_UseAbstractValueFlowForProvableMismatches()
     {

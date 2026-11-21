@@ -101,6 +101,10 @@ internal static class PyIndexing
         if (context is not null && target is PyType type)
             return LythonRuntime.ReadTypeSubscriptAsync(type, index, context, span, false).GetAwaiter().GetResult();
 
+        if (context is not null && target is PyBuiltinRuntimeType runtimeType &&
+            (ReferenceEquals(runtimeType, PyType.RegexPatternType) || ReferenceEquals(runtimeType, PyType.RegexMatchType)))
+            return PyGenericAlias.Create(runtimeType, index, context.MemoryGovernor, span);
+
         if (index is PySlice slice)
         {
             return ReadSlice(target, slice.StartBound, slice.StopBound, slice.StepBound, span, context);

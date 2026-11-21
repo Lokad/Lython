@@ -2379,6 +2379,8 @@ to `LythonEngine`. One provider handles frontend validation/capture analysis,
 runtime `re` and imports, and must outlive its users. Core exposes no backend
 types or Utf8Regex dependency. Missing functionality fails explicitly, without
 silently choosing another dialect. Native `fnmatch`/`glob` need no regex provider.
+`re.Pattern[str]` and `re.Match[str]` are runtime generic aliases and can
+be evaluated in annotations without a provider.
 Lython validates that each new pattern's capture slot count includes slot zero
 and fits a managed array before using it for storage or matching. Executions
 borrowing a frontend-compiled pattern reuse its validated count. An invalid
