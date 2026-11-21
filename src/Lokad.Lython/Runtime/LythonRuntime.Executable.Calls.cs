@@ -104,7 +104,7 @@ internal sealed partial class LythonRuntime
                 !type.TryLookupInMro("__class_getitem__", 0, out var raw, out _)) return false;
             if (raw is PyInstance descriptor &&
                 descriptor.Type.TryLookupInMro("__get__", 0, out var getter, out _) &&
-                getter is PyExecutableFunction { SupportsDirectPositional: true } function)
+                getter is PyExecutableFunction { SupportsPositionalBinding: true } function)
             {
                 _execution.Stack.PublishValue(start, start + 1, receiver);
                 _execution.Stack.PublishValue(start + 1, start + 2, key);
@@ -136,7 +136,7 @@ internal sealed partial class LythonRuntime
                 function = method;
                 receiver = bound.Receiver;
             }
-            if (function is not { SupportsDirectPositional: true }) return false;
+            if (function is not { SupportsPositionalBinding: true }) return false;
             _preparedCallValue = null;
             next = BeginFunctionCall(function, receiver, null, start, span,
                 CallCompletion.TypeSubscription, asynchronous);

@@ -6,7 +6,6 @@ namespace Lokad.Lython.Runtime;
 
 internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue, IPyBindableCallable, LythonRuntime.ISpanCallable, IClassOwnedMember, IPyMutableDynamicAttributes, IPyDeletableDynamicAttributes, IPyHashableValue
 {
-    private readonly int? _storageCapacity;
     private readonly LythonRuntime.ExecutionContext _closure;
     // Compiled names and docstrings can be read directly. Explicit overrides
     // use separately admitted storage and stay separate from __dict__.
@@ -28,15 +27,11 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
         FunctionParameterLayout parameterLayout,
         LythonRuntime.ExecutionContext closure,
         FunctionDefaults defaults,
-        PythonCallableKind callableKind = PythonCallableKind.Function,
-        int? storageCapacity = null)
+        PythonCallableKind callableKind = PythonCallableKind.Function)
         : base(codeObject.Name, callableKind, parameterLayout, defaults)
     {
         CodeObject = codeObject;
-        _storageCapacity = storageCapacity;
         _closure = closure;
-        SupportsPositionalBinding = KeywordOnlyCount == 0 &&
-            VariadicListIndex < 0 && VariadicDictionaryIndex < 0;
     }
 
     internal ExecutableCodeObject CodeObject { get; }
@@ -46,8 +41,6 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
     public int GetPyHashCode() => RuntimeHelpers.GetHashCode(this);
 
     protected LythonRuntime.ExecutionContext Closure => _closure;
-
-    internal bool SupportsPositionalBinding { get; }
 
     // Lowered operand calls bind invocation-owned values. The executable
     // runner and exact positional callback entry can start in native slots.
@@ -71,11 +64,11 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
 
     internal BoundFunctionArguments BindCallOperands(ReadOnlySpan<LythonRuntime.ExecutableSlot> arguments, LythonSourceSpan span,
         LythonRuntime.ExecutionContext context, object? receiver, ExecutableCallSite? callSite)
-        => LythonRuntime.BindFunctionArguments([], span, this, context, receiver, callSite, arguments, storageCapacity: _storageCapacity);
+        => LythonRuntime.BindFunctionArguments([], span, this, context, receiver, callSite, arguments, storageCapacity: CodeObject.ValueStorageCapacity);
 
     internal ValueTask<BoundFunctionArguments> BindCallOperandsAsync(ReadOnlySpan<LythonRuntime.ExecutableSlot> arguments, LythonSourceSpan span,
         LythonRuntime.ExecutionContext context, object? receiver, ExecutableCallSite? callSite)
-        => LythonRuntime.BindFunctionArgumentsAsync([], span, this, context, receiver, callSite, arguments, _storageCapacity);
+        => LythonRuntime.BindFunctionArgumentsAsync([], span, this, context, receiver, callSite, arguments, CodeObject.ValueStorageCapacity);
 
     // No defaults, receiver insertion or dynamic binding during the borrow.
     internal bool CanBorrowPositionalArguments(int count, object? receiver)
@@ -94,7 +87,7 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
         PyDict keywords, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         context.CheckExecution(span);
-        var storage = LythonRuntime.RentFunctionArgumentStorage(this, span, context, _storageCapacity);
+        var storage = LythonRuntime.RentFunctionArgumentStorage(this, span, context, CodeObject.ValueStorageCapacity);
         try
         {
             var slot = 0;
@@ -132,7 +125,7 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
             executable.TryStartPositionalCallback(arguments, receiver, span, out var result, out var frame, out var owned))
             return frame is null ? result.Object.RequireNotNull() : InvokeBound(owned, span, frame);
 
-        var boundArguments = LythonRuntime.BindFunctionArguments(arguments, span, this, context, receiver, storageCapacity: _storageCapacity);
+        var boundArguments = LythonRuntime.BindFunctionArguments(arguments, span, this, context, receiver, storageCapacity: CodeObject.ValueStorageCapacity);
         return InvokeBound(boundArguments, span);
     }
 
@@ -163,7 +156,7 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
                 // One relinquishment covers native success, entry failure and
                 // a framed body. A throwing refund must never return it again.
                 if (frame?.RetainsBoundWorkspace(boundArguments.Values) != true)
-                    LythonRuntime.ReturnBoundArguments(boundArguments, _storageCapacity ?? boundArguments.ParameterCount);
+                    LythonRuntime.ReturnBoundArguments(boundArguments, CodeObject.ValueStorageCapacity);
             }
         }
     }
@@ -184,7 +177,7 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
                 executable.TryStartPositionalCallback(arguments, receiver, span, out var result, out var frame, out var owned))
                 return frame is null ? new(result.Object.RequireNotNull()) : InvokeBoundAsync(owned, span, frame);
 
-            var binding = LythonRuntime.BindFunctionArgumentsAsync(arguments, span, this, context, receiver, storageCapacity: _storageCapacity);
+            var binding = LythonRuntime.BindFunctionArgumentsAsync(arguments, span, this, context, receiver, storageCapacity: CodeObject.ValueStorageCapacity);
             return binding.IsCompletedSuccessfully ? InvokeBoundAsync(binding.Result, span) : BindAndInvokeAsync(binding, span);
         }
         catch (Exception error) { return ValueTask.FromException<object>(error); }
@@ -218,7 +211,7 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
             finally
             {
                 if (frame?.RetainsBoundWorkspace(boundArguments.Values) != true)
-                    LythonRuntime.ReturnBoundArguments(boundArguments, _storageCapacity ?? boundArguments.ParameterCount);
+                    LythonRuntime.ReturnBoundArguments(boundArguments, CodeObject.ValueStorageCapacity);
             }
         }
     }

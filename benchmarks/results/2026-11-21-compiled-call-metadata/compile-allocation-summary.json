@@ -1,0 +1,51 @@
+[
+  {
+    "case": "scripts.annotated-rule-closures",
+    "referenceAllocatedBytes": 90248,
+    "candidateAllocatedBytes": 90272,
+    "referenceAccountedBytes": 63610,
+    "candidateAccountedBytes": 63610
+  },
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories",
+    "referenceAllocatedBytes": 59960,
+    "candidateAllocatedBytes": 59992,
+    "referenceAccountedBytes": 74618,
+    "candidateAccountedBytes": 74618
+  },
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+    "referenceAllocatedBytes": 1357160,
+    "candidateAllocatedBytes": 1358648,
+    "referenceAccountedBytes": 78622,
+    "candidateAccountedBytes": 78622
+  },
+  {
+    "case": "scripts.csv-invoice.large",
+    "referenceAllocatedBytes": 154384,
+    "candidateAllocatedBytes": 154408,
+    "referenceAccountedBytes": 150080,
+    "candidateAccountedBytes": 150080
+  },
+  {
+    "case": "scripts.dataclass-keyword-configuration.generated",
+    "referenceAllocatedBytes": 604344,
+    "candidateAllocatedBytes": 604752,
+    "referenceAccountedBytes": 479168,
+    "candidateAccountedBytes": 479168
+  },
+  {
+    "case": "scripts.factory-wrapper-metadata",
+    "referenceAllocatedBytes": 55728,
+    "candidateAllocatedBytes": 55760,
+    "referenceAccountedBytes": 71424,
+    "candidateAccountedBytes": 71424
+  },
+  {
+    "case": "scripts.ordinary-fully-supplied-helper",
+    "referenceAllocatedBytes": 31560,
+    "candidateAllocatedBytes": 31576,
+    "referenceAccountedBytes": 49856,
+    "candidateAccountedBytes": 49856
+  }
+]

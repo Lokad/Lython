@@ -390,6 +390,7 @@ for the CPython ratios above.
 
 | Change | Established outcome | Limits / evidence |
 | --- | --- | --- |
+| Share compiled call shape and workspace extents | Postponed factories run 2.81–5.04% sooner warm with 1.77–4.20% lower process CPU. Factory allocation falls 3.72–5.57%. | Eager nested, fully supplied and dataclass controls span zero. Postponed time to result remains inconclusive. [B1284](../benchmarks/results/2026-11-21-compiled-call-metadata/README.md). |
 | Admit function attribute overrides on first write | Local factory allocation falls 5.28–7.71%. Postponed time to result is 0.31–8.00% sooner. | Reference spread is 5.98% and CPU spans zero. Warm timing is mixed. The wrapper control allocates 0.69% more and its accounted peak rises 131,072 bytes. [B1283](../benchmarks/results/2026-11-21-direct-function-override-admission/README.md). |
 | Record source lines during literal scanning | Removes the second pass over accepted string literals. Template compilation uses 1.88–2.50% less process CPU. | Template compile elapsed touches zero. Both time-to-result measurements and the inherited dataclass control span zero. [B1280](../benchmarks/results/2026-11-21-compiler-literal-newlines/README.md). |
 | Write default float repr and finite JSON in UTF-8 | Numeric JSON export runs 5.81–9.97% sooner and the text export 4.37–7.56% sooner, with lower CPU. Local CLR allocation falls 23.83% and 15.33%. | Accounted peaks match. Integer JSON and invoice control CPU span or touch zero. [B1279](../benchmarks/results/2026-11-21-direct-float-output/README.md). |

@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1284 compiled call metadata](results/2026-11-21-compiled-call-metadata/README.md)
+removes per-callable copies of positional eligibility and work-buffer
+capacity. Postponed factories run 2.81–5.04% sooner warm with lower
+CPU. Local factory allocation falls 3.72–5.57%. Time to result and all
+three controls span zero. All 140 timed batches pass.
+
 [B1283 direct function override admission](results/2026-11-21-direct-function-override-admission/README.md)
 retains the refined layout. Local factory allocation falls 5.28–7.71%
 and the postponed factory reaches its result 0.31–8.00% sooner. CPU

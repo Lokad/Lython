@@ -1,0 +1,65 @@
+[
+  {
+    "case": "scripts.annotated-rule-closures",
+    "previousAllocation": 882128,
+    "candidateAllocation": 849344,
+    "allocationChangePercent": -3.7164674514356233,
+    "previousAccountedPeak": 2444081,
+    "candidateAccountedPeak": 2444081,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories",
+    "previousAllocation": 1291744,
+    "candidateAllocation": 1226192,
+    "allocationChangePercent": -5.074689721802461,
+    "previousAccountedPeak": 2968425,
+    "candidateAccountedPeak": 2968425,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+    "previousAllocation": 1177216,
+    "candidateAllocation": 1111664,
+    "allocationChangePercent": -5.5683918669131245,
+    "previousAccountedPeak": 2968481,
+    "candidateAccountedPeak": 2968481,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.csv-invoice.large",
+    "previousAllocation": 3672546,
+    "candidateAllocation": 3672514,
+    "allocationChangePercent": -0.000871330134466497,
+    "previousAccountedPeak": 9432613,
+    "candidateAccountedPeak": 9432613,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.dataclass-keyword-configuration.generated",
+    "previousAllocation": 417552,
+    "candidateAllocation": 417552,
+    "allocationChangePercent": 0.0,
+    "previousAccountedPeak": 304611,
+    "candidateAccountedPeak": 304611,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.factory-wrapper-metadata",
+    "previousAllocation": 7258908,
+    "candidateAllocation": 7173584,
+    "allocationChangePercent": -1.175438509483795,
+    "previousAccountedPeak": 5351118,
+    "candidateAccountedPeak": 5351118,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.ordinary-fully-supplied-helper",
+    "previousAllocation": 142704,
+    "candidateAllocation": 142688,
+    "allocationChangePercent": -0.01121201928466764,
+    "previousAccountedPeak": 1255,
+    "candidateAccountedPeak": 1255,
+    "budgetReturnedToBaseline": true
+  }
+]

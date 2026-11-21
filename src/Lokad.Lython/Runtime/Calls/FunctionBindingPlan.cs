@@ -38,6 +38,7 @@ internal class FunctionBindingPlan
     public PythonCallableKind CallableKind { get; }
 
     public int PositionalCount => _layout.PositionalCount;
+    internal bool SupportsPositionalBinding => _layout.SupportsPositionalBinding;
 
     public int ParameterCount => _layout.ParameterCount;
 

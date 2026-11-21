@@ -42,6 +42,8 @@ internal sealed class FunctionParameterLayout
         NamedLayoutCount = positionalCount + keywordOnlyCount;
         VariadicListIndex = variadicListIndex;
         VariadicDictionaryIndex = variadicDictionaryIndex;
+        SupportsPositionalBinding = keywordOnlyCount == 0 &&
+            variadicListIndex < 0 && variadicDictionaryIndex < 0;
 
         var keywordCount = NamedLayoutCount - positionalOnlyCount;
         _keywordDefaults = keywordOnlyCount == 0 ? [] : new KeywordDefault[keywordOnlyCount];
@@ -181,6 +183,7 @@ internal sealed class FunctionParameterLayout
     internal bool HasKeywordDefaults => Defaults.Length > PositionalDefaultCount;
     internal int DefaultStorageCount => (PositionalDefaultCount == 0 ? 0 : 1) + (HasKeywordDefaults ? 1 : 0);
     internal int PositionalDefaultCount { get; }
+    internal bool SupportsPositionalBinding { get; }
 
     public int PositionalCount { get; }
     public int KeywordOnlyCount { get; }

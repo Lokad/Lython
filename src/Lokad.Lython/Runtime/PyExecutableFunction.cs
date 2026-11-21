@@ -32,14 +32,11 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         IReadOnlyList<LythonRuntime.ExecutableCell> closureCells,
         FunctionDefaults defaults,
         PythonCallableKind callableKind = PythonCallableKind.Function)
-        : base(codeObject, parameterLayout, closure, defaults, callableKind,
-            storageCapacity: codeObject.ValueStorageCapacity)
+        : base(codeObject, parameterLayout, closure, defaults, callableKind)
     {
         _closureCells = closureCells;
-        SupportsDirectPositional = SupportsPositionalBinding;
     }
 
-    internal bool SupportsDirectPositional { get; }
     // Compiler parameter slots are the binding-layout prefix. The invocation
     // owns the full local-capacity array through completion. Captures use
     // separate cells; mirrored namespaces and exposed locals copy values,
@@ -112,7 +109,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         frame = null;
         owned = default;
         var first = receiver is null ? 0 : 1;
-        if (!CanStartInline || !SupportsDirectPositional || arguments.Length != PositionalCount - first)
+        if (!CanStartInline || !SupportsPositionalBinding || arguments.Length != PositionalCount - first)
             return false;
 
         NativeValues buffer = default;

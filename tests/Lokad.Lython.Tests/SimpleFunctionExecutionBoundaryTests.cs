@@ -659,7 +659,7 @@ public sealed class SimpleFunctionExecutionBoundaryTests
     private static object Invoke(PyExecutableFunction function, CallArgumentValue[] arguments,
         LythonRuntime.ExecutionContext context, Driver driver)
     {
-        Assert.True(function.SupportsDirectPositional);
+        Assert.True(function.SupportsPositionalBinding);
         var values = arguments.Select(argument => LythonRuntime.ExecutableSlot.FromObject(argument.Value)).ToArray();
         return driver switch
         {

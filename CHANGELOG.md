@@ -6,6 +6,8 @@
   operand slots. Share default ownership and callable construction across callers.
 - Read function names and docstrings from compiled metadata. Admit storage
   for standard attribute overrides on the first write.
+- Share positional binding eligibility and checked work-buffer extents
+  through compiled metadata.
 - Prepare class-cell capture in the lexical walk. Include reads in lazy
   type expressions and match patterns, and respect comprehension shadowing.
 - Keep `str.format` renderer state in the continuation and reuse one

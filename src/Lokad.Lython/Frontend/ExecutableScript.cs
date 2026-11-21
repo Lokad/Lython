@@ -527,6 +527,8 @@ internal sealed partial class ExecutableCodeObject
         var operandLayout = ExecutableStackLayout.Prepare(blocks, constants, callSites,
             regionsByEntry, jumpTargets, entryBlockIndex, initialOperandDepth, FirstTemporarySlot, cancellationToken);
         OperandCapacity = operandLayout.MaximumDepth;
+        PatternStorageStart = checked(FirstTemporarySlot + Math.Max(4, OperandCapacity));
+        ValueStorageCapacity = checked(PatternStorageStart + PatternStorageCount);
         LastOwnedTemporarySlot = operandLayout.LastOwnedTemporarySlot;
         Instructions = ExecutableStackLayout.Linearize(blocks, operandLayout, jumpTargets, cancellationToken, out var offsets);
         _operandReadSpans = reads.Where(read => operandLayout.EntryDepths[read.Block].HasValue)
@@ -657,8 +659,8 @@ internal sealed partial class ExecutableCodeObject
     public int FirstTemporarySlot { get; }
     public int LastOwnedTemporarySlot { get; }
     public int PatternStorageCount { get; }
-    public int PatternStorageStart => checked(FirstTemporarySlot + Math.Max(4, OperandCapacity));
-    public int ValueStorageCapacity => checked(PatternStorageStart + PatternStorageCount);
+    public int PatternStorageStart { get; }
+    public int ValueStorageCapacity { get; }
 
     public bool CanRunNativeInstructions { get; }
 

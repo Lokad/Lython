@@ -425,7 +425,7 @@ internal sealed partial class LythonRuntime
                 receiver = bound.Receiver;
             }
             if (function is null || !function.CanStartInline) return false;
-            var borrow = call.IsPositionalOnly && function.SupportsDirectPositional
+            var borrow = call.IsPositionalOnly
                 && function.CanBorrowPositionalArguments(call.ArgumentCount, receiver);
             if (!borrow && !function.CanBindNativeArguments) return false;
             _scope.EnterInterpreterFrame(call.CallSpan);

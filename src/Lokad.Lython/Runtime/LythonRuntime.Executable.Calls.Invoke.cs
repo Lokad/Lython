@@ -31,7 +31,7 @@ internal sealed partial class LythonRuntime
             }
             if (function is not null && function.CanStartInline && invocation is not null)
             {
-                var borrow = call.IsPositionalOnly && function.SupportsDirectPositional
+                var borrow = call.IsPositionalOnly
                     && function.CanBorrowPositionalArguments(call.ArgumentCount, functionReceiver);
                 if (!borrow && !function.CanBindNativeArguments) return false;
                 var callEntered = false;

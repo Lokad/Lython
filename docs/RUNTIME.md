@@ -360,7 +360,9 @@ Evaluation order, partial stores, nested diagnostic spans and suspended setter
 ownership remain unchanged.
 Executable local slots use that same prepared parameter order,
 then append body locals. Mutable defaults, keyword-name values, attributes and closures
-remain function-owned. Native generated definitions admit their layout before
+remain function-owned. The shared parameter layout owns positional binding
+eligibility. The compiled code object owns checked work-buffer extents.
+Native generated definitions admit their layout before
 allocation and keep its construction overlap funded through default creation.
 Generated dataclass initializers feed admitted parameter values directly into
 the final default containers. Generated equality and ordering methods share
