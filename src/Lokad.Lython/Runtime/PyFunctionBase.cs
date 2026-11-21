@@ -8,15 +8,20 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
 {
     private readonly int? _storageCapacity;
     private readonly LythonRuntime.ExecutionContext _closure;
-    // Standard attributes have fixed storage in the funded function wrapper.
-    // Explicit overrides shadow the compiled defaults.
-    private object? _assignedName;
-    private object? _assignedQualName;
-    private object? _assignedModule;
-    private object? _docstring;
+    // Compiled names and docstrings can be read directly. Explicit overrides
+    // use separately admitted storage and stay separate from __dict__.
+    private StandardOverrides? _standardOverrides;
     private object? _annotations;
     private object? _typeParameters;
     private PyDict? _customAttributes;
+
+    private sealed class StandardOverrides
+    {
+        internal object? Name;
+        internal object? QualifiedName;
+        internal object? Module;
+        internal object? Docstring;
+    }
 
     protected PyFunctionBase(
         ExecutableCodeObject codeObject,
@@ -30,7 +35,6 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
         CodeObject = codeObject;
         _storageCapacity = storageCapacity;
         _closure = closure;
-        _docstring = codeObject.Docstring;
         SupportsPositionalBinding = KeywordOnlyCount == 0 &&
             VariadicListIndex < 0 && VariadicDictionaryIndex < 0;
     }
@@ -238,10 +242,10 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
         if (name == "__dict__") { value = _customAttributes ??= new PyDict(_closure.MemoryGovernor); return true; }
         value = name switch
         {
-            "__name__" => _assignedName ?? CodeObject.FunctionName.RequireNotNull(),
-            "__qualname__" => _assignedQualName ?? CodeObject.QualifiedName ?? CodeObject.FunctionName.RequireNotNull(),
-            "__module__" => _assignedModule ?? (TryGetModuleName(out var moduleName) ? moduleName : (object)PyNone.Instance),
-            "__doc__" => _docstring ?? PyNone.Instance,
+            "__name__" => _standardOverrides?.Name ?? CodeObject.FunctionName.RequireNotNull(),
+            "__qualname__" => _standardOverrides?.QualifiedName ?? CodeObject.QualifiedName ?? CodeObject.FunctionName.RequireNotNull(),
+            "__module__" => _standardOverrides?.Module ?? (TryGetModuleName(out var moduleName) ? moduleName : (object)PyNone.Instance),
+            "__doc__" => _standardOverrides?.Docstring ?? CodeObject.Docstring ?? (object)PyNone.Instance,
             "__annotations__" => ReadAnnotations(),
             "__type_params__" => _typeParameters,
             _ => null,
@@ -282,10 +286,10 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
             case "__dict__":
                 _customAttributes = value as PyDict ?? throw new LythonRuntimeException("TypeError", "__dict__ must be set to a dictionary", null);
                 break;
-            case "__name__": _assignedName = value; break;
-            case "__qualname__": _assignedQualName = value; break;
-            case "__module__": _assignedModule = value; break;
-            case "__doc__": _docstring = value; break;
+            case "__name__": GetStandardOverrides().Name = value; break;
+            case "__qualname__": GetStandardOverrides().QualifiedName = value; break;
+            case "__module__": GetStandardOverrides().Module = value; break;
+            case "__doc__": GetStandardOverrides().Docstring = value; break;
             case "__annotations__":
                 if (value is not (PyNone or PyDict or PyDefaultDict or PyCounter))
                     throw new LythonRuntimeException("TypeError", "__annotations__ must be set to a dict object", null);
@@ -297,6 +301,35 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
                 break;
         }
         return true;
+    }
+
+    private StandardOverrides GetStandardOverrides()
+    {
+        if (_standardOverrides is { } existing) return existing;
+        const long bytes = 64;
+        var span = PyStructuralGuard.AmbientSpan;
+        var governor = _closure.MemoryGovernor;
+        governor.Reserve(bytes, span);
+        try
+        {
+            _closure.CheckExecution(span);
+            if (_standardOverrides is null)
+            {
+                var overrides = new StandardOverrides();
+                governor.Commit(bytes);
+                return _standardOverrides = overrides;
+            }
+        }
+        catch
+        {
+            governor.ReleaseReserved(bytes);
+            throw;
+        }
+        // A reentrant caller established the record while admission ran.
+        // Refund the redundant allowance before changing an existing value.
+        governor.ReleaseReserved(bytes);
+        _closure.CheckExecution(span);
+        return _standardOverrides.RequireNotNull();
     }
 
     public bool TryDeleteMember(string name, LythonSourceSpan? span)

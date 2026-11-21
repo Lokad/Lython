@@ -1,0 +1,224 @@
+{
+  "complete": true,
+  "elapsedSeconds": 273.5866448478773,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "staging": {
+    "retiredOnly": [
+      {
+        "paths": [
+          "callable-standard-overrides-b1282-20261121/candidate/Lokad.Lython.dll"
+        ],
+        "links": 1,
+        "bytes": 5708800,
+        "sha256": "1a0364f9738f3e88f066af123da34be7429af498a25c266477d3b30b6bf87721",
+        "archives": {
+          "callable-standard-overrides-b1282-20261121/observations.tgz": "69e2ecc350663cfedf54f02670e7320020dfc9e585a73a44d89a748783431801"
+        },
+        "verifiedCanonicalGitImage": "benchmarks/results/2026-11-21-callable-standard-overrides/candidate-core.dll.gz"
+      }
+    ],
+    "alreadyAbsent": [],
+    "freshIdleLease": true,
+    "allHashesPathsOwnershipLinksAndAliasesVerified": true,
+    "canonicalArchiveAndCurrentImagesPreserved": true,
+    "freeBeforeBytes": 185479168,
+    "freeAfterBytes": 185253888
+  },
+  "rows": [
+    {
+      "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 1.1864196295620437,
+        "reference": 1.212154561205273,
+        "candidate-control": 1.218711127340824,
+        "reference-control": 1.1793395652173913
+      },
+      "cpuMilliseconds": {
+        "candidate": 1.1861313868613137,
+        "reference": 1.224105461393597,
+        "candidate-control": 1.2172284644194757,
+        "reference-control": 1.1956521739130435
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.2865459047208284,
+        "reference": 0.3626508557223868,
+        "candidate-control": 0.43934976667234765,
+        "reference-control": 0.6189239973785278
+      },
+      "elapsedChangePercent": [
+        -2.1230734484586344,
+        0.5409018243541119,
+        0.6003414583438893,
+        3.3384415553102675
+      ],
+      "cpuChangePercent": [
+        -3.1021897810219246,
+        -0.7962840079628553,
+        -0.5617977528089901,
+        1.8045624787197845
+      ],
+      "referenceSpreadPercent": 2.782489196131821,
+      "candidateSpreadPercent": 2.7217602418379006
+    },
+    {
+      "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "reference-control": 1.2232576242990654,
+        "candidate-control": 1.1927818897058824,
+        "reference": 1.2964350399201596,
+        "candidate": 1.2194348836772984
+      },
+      "cpuMilliseconds": {
+        "reference-control": 1.233644859813084,
+        "candidate-control": 1.2132352941176472,
+        "reference": 1.2974051896207586,
+        "candidate": 1.2382739212007505
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.7486518734549332,
+        "candidate-control": 0.6723752044135445,
+        "reference": 0.5229407272704463,
+        "candidate": 0.5667162348860014
+      },
+      "elapsedChangePercent": [
+        -7.995244422015979,
+        -5.939376356844173,
+        -2.491358646601183,
+        -0.3125049495569243
+      ],
+      "cpuChangePercent": [
+        -6.487556561085972,
+        -4.557656227449847,
+        -1.6544117647058654,
+        0.37523452157599557
+      ],
+      "referenceSpreadPercent": 5.982175313481108,
+      "candidateSpreadPercent": 2.234523696363966
+    },
+    {
+      "case": "scripts.annotated-rule-closures.nested-factories",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 1.3212279102040816,
+        "reference": 1.3760641183932347,
+        "candidate-control": 1.3748637669491524,
+        "reference-control": 1.343133414784394
+      },
+      "cpuMilliseconds": {
+        "candidate": 1.326530612244898,
+        "reference": 1.3953488372093024,
+        "candidate-control": 1.3771186440677965,
+        "reference-control": 1.3552361396303902
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.37660660921735534,
+        "reference": 0.3156120601391214,
+        "candidate-control": 0.2281720676738033,
+        "reference-control": 0.36789841391648964
+      },
+      "elapsedChangePercent": [
+        -3.9850038567376345,
+        -1.630925441895048,
+        -0.08723077856894745,
+        2.3624125359022363
+      ],
+      "cpuChangePercent": [
+        -4.931972789115635,
+        -2.1181199752628332,
+        -1.3064971751412524,
+        1.6146635850025515
+      ],
+      "referenceSpreadPercent": 2.451782023018678,
+      "candidateSpreadPercent": 4.059546148762938
+    },
+    {
+      "case": "scripts.factory-wrapper-metadata",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 4.522925489655172,
+        "candidate-control": 4.674084438848921,
+        "reference": 4.658434086330936,
+        "candidate": 4.623014307142857
+      },
+      "cpuMilliseconds": {
+        "reference-control": 4.551724137931035,
+        "candidate-control": 4.676258992805756,
+        "reference": 4.676258992805756,
+        "candidate": 4.642857142857143
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.6553190666359677,
+        "candidate-control": 0.16106890025999832,
+        "reference": 0.37954806433255506,
+        "candidate": 0.1154350433911166
+      },
+      "elapsedChangePercent": [
+        -0.7603365966260989,
+        0.3359573673889171,
+        2.21292209470636,
+        3.3420614498178125
+      ],
+      "cpuChangePercent": [
+        -0.7142857142857117,
+        0.0,
+        2.002164502164505,
+        2.735993023762817
+      ],
+      "referenceSpreadPercent": 2.996038669787926,
+      "candidateSpreadPercent": 1.1046933518496171
+    },
+    {
+      "case": "scripts.dataclass-keyword-configuration.generated",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 0.1880754629036951,
+        "reference": 0.18870482474526928,
+        "candidate-control": 0.1889531084725887,
+        "reference-control": 0.19349070196897375
+      },
+      "cpuMilliseconds": {
+        "candidate": 0.18911841722432354,
+        "reference": 0.18631732168850074,
+        "candidate-control": 0.1876282615068895,
+        "reference-control": 0.19391408114558475
+      },
+      "elapsedIQRPercent": {
+        "candidate": 1.5983417232071075,
+        "reference": 0.3720939536303484,
+        "candidate-control": 0.22461911610858723,
+        "reference-control": 0.4968457802082596
+      },
+      "elapsedChangePercent": [
+        -2.7987076434024205,
+        -2.345122246294118,
+        -0.33351656081065384,
+        0.13157253803901536
+      ],
+      "cpuChangePercent": [
+        -3.24154883521639,
+        -2.4730869944719402,
+        0.7036059806508455,
+        1.5034004946173907
+      ],
+      "referenceSpreadPercent": 2.536171096931339,
+      "candidateSpreadPercent": 0.46664543866787866
+    }
+  ],
+  "CPythonRefreshed": false,
+  "collection": "B1283",
+  "reference": "a3d0bfc343df9e3454a0b41b712bd67267402718",
+  "referenceImageSource": "da805131a5f5e482b46734f141c2cda94bf7e14e",
+  "candidate": "a887d3e8a13f1e2d16c8efc34e1eeb698b2b9cca",
+  "verifiedTimedBatches": 140,
+  "coreSHA256": {
+    "reference": "6f3bfd6e9105c3d0430356b4eca424267891f7e59aacfb4e62c6ae9d21b57e14",
+    "reference-control": "6f3bfd6e9105c3d0430356b4eca424267891f7e59aacfb4e62c6ae9d21b57e14",
+    "candidate": "20b2ac20a8a126f3ec902efb6270e596b36a968785bfc1dab510931ef5c7a8ec",
+    "candidate-control": "20b2ac20a8a126f3ec902efb6270e596b36a968785bfc1dab510931ef5c7a8ec"
+  },
+  "archiveSHA256": "a022997b9d9ea1e2fb30abc95ddc52b75f833cfee84beaab8e11eced525c439d",
+  "retentionDecision": "Retain the refined layout. The three complete factory scripts allocate 5.28\u20137.71% less. Postponed compile to result is 0.31\u20138.00% sooner, with a 5.98% reference control spread and mixed CPU. B1282 also measured an elapsed gain at that boundary. Warm factory CPU and elapsed span zero, as do the wrapper and dataclass controls. The wrapper's extra CLR allocation and accounted capacity remain real costs when metadata is written. Preserve B1282's adverse timing and reassess if this cost recurs on a representative wrapper-heavy script."
+}

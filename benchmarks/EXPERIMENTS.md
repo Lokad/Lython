@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1283 direct function override admission](results/2026-11-21-direct-function-override-admission/README.md)
+retains the refined layout. Local factory allocation falls 5.28–7.71%
+and the postponed factory reaches its result 0.31–8.00% sooner. CPU
+spans zero. Warm timing is mixed. Direct admission limits the wrapper
+allocation increase to 0.69%. All 140 timed batches pass.
+
 [B1282 standard function attribute storage](results/2026-11-21-callable-standard-overrides/README.md)
 keeps the first allocate-on-write layout private. Factories allocate
 5.28–7.71% less and postponed time to result falls 2.71–2.96%.

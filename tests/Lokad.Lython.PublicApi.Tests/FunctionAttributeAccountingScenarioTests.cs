@@ -12,6 +12,52 @@ namespace Lokad.Lython.PublicApi.Tests;
 /// </summary>
 public sealed class FunctionAttributeAccountingScenarioTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FunctionOverrideStorageIsAdmittedOnceBeforeMutation(bool alreadyAssigned)
+    {
+        using var script = new LythonEngine().Compile("""
+            import time
+            def f():
+                "original"
+            if already_assigned:
+                f.__doc__ = 'previous'
+            time.time()
+            try:
+                f.__doc__ = 'updated'
+            except MemoryError:
+                return False
+            return f.__doc__ == 'updated'
+            """);
+        Assert.True(script.IsValid);
+        foreach (var asynchronous in new[] { false, true })
+        {
+            var budget = new AdmissionGateBudget();
+            var host = new AdmissionGateHost(budget, 0);
+            var options = new LythonRunOptions
+            {
+                MemoryBudget = budget,
+                Globals = new Dictionary<string, object?> { ["already_assigned"] = alreadyAssigned },
+            };
+            using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
+            {
+                if (alreadyAssigned)
+                {
+                    Assert.True(result.Success, result.Failure?.Message);
+                    Assert.Equal(true, result.ReturnValue);
+                }
+                else
+                {
+                    Assert.False(result.Success);
+                    Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+                    Assert.True(result.DeniedReservationBytes > 0);
+                }
+            }
+            Assert.Equal(0, budget.Root.ReservedBytes);
+        }
+    }
+
     [Fact]
     public async Task ManyFunctionAttributesStayCharged()
     {

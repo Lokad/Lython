@@ -1,0 +1,56 @@
+[
+  {
+    "case": "scripts.annotated-rule-closures",
+    "previousAllocation": 931304,
+    "candidateAllocation": 882128,
+    "allocationChangePercent": -5.280338106568849,
+    "previousAccountedPeak": 2444081,
+    "candidateAccountedPeak": 2444081,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories",
+    "previousAllocation": 1390072,
+    "candidateAllocation": 1291744,
+    "allocationChangePercent": -7.073590432725785,
+    "previousAccountedPeak": 2968425,
+    "candidateAccountedPeak": 2968425,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+    "previousAllocation": 1275544,
+    "candidateAllocation": 1177216,
+    "allocationChangePercent": -7.708710949994668,
+    "previousAccountedPeak": 2968481,
+    "candidateAccountedPeak": 2968481,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.csv-invoice.large",
+    "previousAllocation": 3672594,
+    "candidateAllocation": 3672546,
+    "allocationChangePercent": -0.0013069781195529373,
+    "previousAccountedPeak": 9432613,
+    "candidateAccountedPeak": 9432613,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.dataclass-keyword-configuration.generated",
+    "previousAllocation": 417552,
+    "candidateAllocation": 417552,
+    "allocationChangePercent": 0.0,
+    "previousAccountedPeak": 304611,
+    "candidateAccountedPeak": 304611,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.factory-wrapper-metadata",
+    "previousAllocation": 7157280,
+    "candidateAllocation": 7206384,
+    "allocationChangePercent": 0.6860706860706944,
+    "previousAccountedPeak": 5220046,
+    "candidateAccountedPeak": 5351118,
+    "budgetReturnedToBaseline": true
+  }
+]
