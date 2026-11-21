@@ -168,7 +168,7 @@ internal sealed partial class LythonRuntime
         {
             context.CheckExecution(span);
             builder.AppendAscii(prefix);
-            if (source is PyString text) PyRendering.AppendStringLiteral(builder, text, context, span);
+            if (source is PyString text) PyRendering.AppendStringLiteral(builder, text.Utf8Span, context, span);
             else ((PyBytes)source).AppendLiteral(builder, context, span);
 
             // Admit the CLR message while the UTF-8 builder and any parsing

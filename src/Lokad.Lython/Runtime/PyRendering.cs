@@ -325,7 +325,7 @@ internal static class PyRendering
                 LythonRuntime.DictValuesView view => RenderReprSequence(view, "dict_values([", "])", "dict_values([...])", context, activeContainers),
                 LythonRuntime.DictItemsView view => RenderReprSequence(view, "dict_items([", "])", "dict_items([...])", context, activeContainers),
                 PyException exception => RenderExceptionRepr(exception, context),
-                LythonRuntime.ReMatchObject match => RenderMatchRepr(match, context, activeContainers),
+                LythonRuntime.ReMatchObject match => RenderMatchRepr(match, context),
                 IPyRenderableValue renderable => renderable.RenderPython(context),
                 _ => RenderOpaqueObject()
             };
@@ -338,19 +338,21 @@ internal static class PyRendering
 
     private static PyString RenderOpaqueObject() => ObjectLiteral;
 
-    private static PyString RenderMatchRepr(
-        LythonRuntime.ReMatchObject match,
-        PyRenderingContext context,
-        HashSet<object>? activeContainers)
+    private static PyString RenderMatchRepr(LythonRuntime.ReMatchObject match, PyRenderingContext context)
     {
-        var builder = new GovernedByteBuilder(context.Context.MemoryGovernor);
+        var execution = context.Context;
+        var span = PyStructuralGuard.AmbientSpan;
+        using var builder = new GovernedByteBuilder(execution.MemoryGovernor, span);
+        Span<byte> digits = stackalloc byte[10];
         builder.AppendAscii("<re.Match object; span=(");
-        builder.AppendString(match.Start.ToString());
+        ((uint)match.Start).TryFormat(digits, out var written);
+        builder.Append(digits[..written]);
         builder.AppendAscii(", ");
-        builder.AppendString(match.End.ToString());
+        ((uint)match.End).TryFormat(digits, out written);
+        builder.Append(digits[..written]);
         builder.AppendAscii("), match=");
-        builder.Append(ToReprPyStringCore(match.MaterializeGroup(0, context.Context, PyStructuralGuard.AmbientSpan), context, activeContainers));
-        builder.AppendAscii(">");
+        AppendStringLiteral(builder, match.GroupBytes(0), execution, span, maximumCharacters: 50);
+        builder.Append((byte)'>');
         return builder.ToPyStringAndRelease();
     }
 
@@ -359,16 +361,15 @@ internal static class PyRendering
         var builder = new GovernedByteBuilder(context.Context.MemoryGovernor);
         try
         {
-            AppendStringLiteral(builder, text, context.Context, null);
+            AppendStringLiteral(builder, text.Utf8Span, context.Context, null);
             return builder.ToPyStringAndRelease();
         }
         finally { builder.Release(); }
     }
 
-    internal static void AppendStringLiteral(GovernedByteBuilder builder, PyString text,
+    internal static void AppendStringLiteral(GovernedByteBuilder builder, ReadOnlySpan<byte> source,
         LythonRuntime.ExecutionContext execution, LythonSourceSpan? span, int? maximumCharacters = null)
     {
-        var source = text.Utf8Span;
         var quote = FindStringLiteralQuote(source, execution, span);
         if (maximumCharacters is not int maximum)
         {

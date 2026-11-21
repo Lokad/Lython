@@ -7,6 +7,27 @@ public sealed class NativeRegexCacheTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task MatchRepresentationUsesBoundedCaptureAndScalarOffsets(bool asynchronous)
+    {
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
+            import re
+            pattern = re.compile('[^!]*')
+            for capture in ['', 'é😀'*35, '\t'*45, 'a'*60+"'", 'a'*60+"'"+'"']:
+                match = pattern.match('é!' + capture + '!', 2)
+                expected = '<re.Match object; span=(2, ' + str(2 + len(capture)) + '), match=' + repr(capture)[:50] + '>'
+                assert repr(match) == expected
+                assert str(match) == expected
+                assert match.group() == capture
+            """);
+        Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Message)));
+        var host = new MockLythonHost();
+        using var result = asynchronous ? await script.RunAsync(host) : script.Run(host);
+        Assert.True(result.Success, result.Failure?.Message);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task PatternRepresentationUsesEffectiveFlagsAndScalarPrefix(bool asynchronous)
     {
         using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""

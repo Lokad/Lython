@@ -92,7 +92,7 @@ internal sealed partial class LythonRuntime
             try
             {
                 builder.AppendAscii("re.compile(");
-                PyRendering.AppendStringLiteral(builder, Pattern, execution, span, maximumCharacters: 200);
+                PyRendering.AppendStringLiteral(builder, Pattern.Utf8Span, execution, span, maximumCharacters: 200);
                 const int characterFlags = RegexCompiler.PythonLocaleFlag | RegexCompiler.PythonUnicodeFlag | RegexCompiler.PythonAsciiFlag;
                 var flags = Flags;
                 if ((flags & characterFlags) == RegexCompiler.PythonUnicodeFlag)
