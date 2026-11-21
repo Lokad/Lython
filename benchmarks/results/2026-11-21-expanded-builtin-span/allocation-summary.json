@@ -1,0 +1,29 @@
+[
+  {
+    "case": "scripts.json-lines-shipment.expanded-options.large",
+    "previousAllocatedBytes": 9529788,
+    "candidateAllocatedBytes": 9062844,
+    "allocationChangePercent": -4.899836176838357,
+    "previousAccountedPeak": 6489904,
+    "candidateAccountedPeak": 6489776,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.json-lines-shipment.explicit-options.large",
+    "previousAllocatedBytes": 7540558,
+    "candidateAllocatedBytes": 7539894,
+    "allocationChangePercent": -0.00880571437816835,
+    "previousAccountedPeak": 6157892,
+    "candidateAccountedPeak": 6157892,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.report-forwarding.expanded",
+    "previousAllocatedBytes": 1654414,
+    "candidateAllocatedBytes": 1654016,
+    "allocationChangePercent": -0.02405685638540156,
+    "previousAccountedPeak": 2976186,
+    "candidateAccountedPeak": 2976186,
+    "budgetReturnedToBaseline": true
+  }
+]

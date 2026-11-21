@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1260 expanded builtin argument spans](results/2026-11-21-expanded-builtin-span/README.md)
+removes the final argument packet copy for existing span-based binders.
+The complete JSON Lines export allocates 4.90% less and uses
+2.46–4.61% less process CPU. Expanded elapsed reaches near zero and
+the explicit-keyword control moves adversely on elapsed with mixed CPU.
+
 [B1259 shared annotation boundaries](results/2026-11-21-shared-annotation-boundaries/README.md)
 removes the annotation prepass and duplicate lexical demand discovery.
 The unannotated validator compiles 1.46–4.17% faster with lower CPU.
