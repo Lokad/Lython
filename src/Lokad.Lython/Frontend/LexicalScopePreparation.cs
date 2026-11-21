@@ -105,13 +105,13 @@ internal static class LexicalScopePreparation
         }
     }
 
-    public static void Prepare(ScriptSyntax script, string source, Runtime.MemoryGovernor? governor = null,
+    public static void Prepare(ScriptSyntax script, string source, bool needsExpressionWalk, Runtime.MemoryGovernor? governor = null,
         CancellationToken cancellationToken = default)
     {
         var postponed = script.Statements.OfType<ImportStatementSyntax>().Any(import =>
             import.ModuleName == "__future__" && import.ImportedMembers?.Any(member => member.Name == "annotations") == true);
         // A module owns bindings, not an enclosing class-cell capture.
-        var moduleFacts = ScopeDirectiveFactsCollector.ForSuite(script.Statements);
+        var moduleFacts = ScopeDirectiveFactsCollector.ForSuite(script.Statements, needsExpressionWalk);
         var moduleUsesSuper = moduleFacts.LocalNames.Contains("super") || moduleFacts.IsGlobal("super");
         List<CallExpressionSyntax>? preloads = null;
         List<ExpressionSyntax>? callables = null;
@@ -149,7 +149,7 @@ internal static class LexicalScopePreparation
                     PushTypeParameters(alias.TypeParameters, alias.DeclaredName, alias.Span, scope, aliasScope);
                     continue;
                 }
-                PushStatementReads(statement, scope);
+                if (needsExpressionWalk) PushStatementReads(statement, scope);
                 if (statement is FunctionDefinitionStatementSyntax function)
                 {
                     if (postponed)
@@ -164,7 +164,7 @@ internal static class LexicalScopePreparation
                     if (!ReferenceEquals(enclosing, scope))
                         function.PreparedTypeParameterNames = enclosing.Facts.LocalNames;
                     PushTypeParameters(function.TypeParameters, function.DeclaredName, function.Span, scope, enclosing);
-                    var facts = ScopeDirectiveFactsCollector.PrepareFunction(function);
+                    var facts = ScopeDirectiveFactsCollector.PrepareFunction(function, needsExpressionWalk);
                     var parameters = function.PrepareParameterLayout(cancellationToken);
                     var qualified = scope.Facts.IsGlobal(function.Name) ? null
                         : scope.QualifyDeclaration(function.DeclaredName, qualifiedNameWorkspace, function.Span, cancellationToken);
@@ -181,7 +181,7 @@ internal static class LexicalScopePreparation
                     PushTypeParameters(definition.TypeParameters, definition.DeclaredName, definition.Span, scope, enclosing);
                     var qualified = scope.Facts.IsGlobal(definition.Name) ? null
                         : scope.QualifyDeclaration(definition.DeclaredName, qualifiedNameWorkspace, definition.Span, cancellationToken);
-                    var facts = ScopeDirectiveFactsCollector.PrepareClass(definition);
+                    var facts = ScopeDirectiveFactsCollector.PrepareClass(definition, needsExpressionWalk);
                     var classScope = new Scope(enclosing, facts, Class: true,
                         DeclarationName: qualified ?? definition.DeclaredName);
                     if (facts.IsNonlocal("__class__")) classScope.RequireClassCell();

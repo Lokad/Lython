@@ -44,11 +44,11 @@ internal static class ScopeDirectiveFactsCollector
     public static ScopeDirectiveFacts ForModule(ScriptSyntax script)
         => script.PreparedScopeFacts ??= ForSuite(script.Statements);
 
-    public static ScopeDirectiveFacts ForSuite(IReadOnlyList<StatementSyntax> body)
-        => CollectFunctionBindings([], body);
+    public static ScopeDirectiveFacts ForSuite(IReadOnlyList<StatementSyntax> body, bool collectExpressionBindings = true)
+        => CollectFunctionBindings([], body, collectExpressionBindings);
 
     private static ScopeDirectiveFacts CollectFunctionBindings(IEnumerable<string> parameterNames,
-        IReadOnlyList<StatementSyntax> body)
+        IReadOnlyList<StatementSyntax> body, bool collectExpressionBindings)
     {
         var globalNames = new HashSet<string>(StringComparer.Ordinal);
         var nonlocalNames = new HashSet<string>(StringComparer.Ordinal);
@@ -59,7 +59,7 @@ internal static class ScopeDirectiveFactsCollector
             bindings.Add(name);
         }
 
-        var containsAnnotations = CollectScopeBindings(body, bindings, globalNames, nonlocalNames);
+        var containsAnnotations = CollectScopeBindings(body, bindings, globalNames, nonlocalNames, collectExpressionBindings);
         var localNames = CompactLocalBindings(bindings, globalNames, nonlocalNames);
 
         return new ScopeDirectiveFacts(globalNames, nonlocalNames, localNames, bindings.ToArray())
@@ -70,14 +70,14 @@ internal static class ScopeDirectiveFactsCollector
 
     public static ScopeDirectiveFacts ForClass(ClassDefinitionStatementSyntax definition) => definition.PreparedScopeFacts.RequireNotNull();
 
-    internal static ScopeDirectiveFacts PrepareClass(ClassDefinitionStatementSyntax definition)
-        => definition.PreparedScopeFacts = ForSuite(definition.Body);
+    internal static ScopeDirectiveFacts PrepareClass(ClassDefinitionStatementSyntax definition, bool collectExpressionBindings)
+        => definition.PreparedScopeFacts = ForSuite(definition.Body, collectExpressionBindings);
 
     public static ScopeDirectiveFacts ForFunction(FunctionDefinitionStatementSyntax definition) => definition.PreparedScopeFacts.RequireNotNull();
 
-    internal static ScopeDirectiveFacts PrepareFunction(FunctionDefinitionStatementSyntax definition)
+    internal static ScopeDirectiveFacts PrepareFunction(FunctionDefinitionStatementSyntax definition, bool collectExpressionBindings)
         => definition.PreparedScopeFacts = CollectFunctionBindings(definition.Parameters.Select(p => p.Name),
-            definition.Body);
+            definition.Body, collectExpressionBindings);
 
     public static IReadOnlySet<string> CollectLambdaLocalNames(LambdaExpressionSyntax lambda)
     {
@@ -125,7 +125,7 @@ internal static class ScopeDirectiveFactsCollector
     }
 
     private static bool CollectScopeBindings(IReadOnlyList<StatementSyntax> statements, ICollection<string> names,
-        HashSet<string> globalNames, HashSet<string> nonlocalNames)
+        HashSet<string> globalNames, HashSet<string> nonlocalNames, bool collectExpressionBindings)
     {
         var containsAnnotations = false;
         foreach (var statement in statements)
@@ -175,24 +175,24 @@ internal static class ScopeDirectiveFactsCollector
                     break;
 
                 case WithStatementSyntax withStatement:
-                    foreach (var expression in StatementSyntaxTraversal.EnumerateDirectExpressions(withStatement))
-                        CollectExpressionBindings(expression, names);
+                    CollectDirectBindings(withStatement);
                     foreach (var boundName in withStatement.BoundNames) names.Add(boundName);
-                    containsAnnotations |= CollectScopeBindings(withStatement.Body, names, globalNames, nonlocalNames);
+                    containsAnnotations |= CollectScopeBindings(withStatement.Body, names, globalNames, nonlocalNames, collectExpressionBindings);
                     continue;
 
                 case TryStatementSyntax tryStatement:
-                    containsAnnotations |= CollectScopeBindings(tryStatement.TryBody, names, globalNames, nonlocalNames);
+                    containsAnnotations |= CollectScopeBindings(tryStatement.TryBody, names, globalNames, nonlocalNames, collectExpressionBindings);
                     foreach (var exceptClause in tryStatement.ExceptClauses)
                     {
-                        if (exceptClause.ExceptionTypeExpression is not null) CollectExpressionBindings(exceptClause.ExceptionTypeExpression, names);
+                        if (collectExpressionBindings && exceptClause.ExceptionTypeExpression is not null)
+                            CollectExpressionBindings(exceptClause.ExceptionTypeExpression, names);
                         if (exceptClause.ExceptionVariableName is not null) names.Add(exceptClause.ExceptionVariableName);
-                        containsAnnotations |= CollectScopeBindings(exceptClause.Body, names, globalNames, nonlocalNames);
+                        containsAnnotations |= CollectScopeBindings(exceptClause.Body, names, globalNames, nonlocalNames, collectExpressionBindings);
                     }
                     if (tryStatement.ElseBody is not null)
-                        containsAnnotations |= CollectScopeBindings(tryStatement.ElseBody, names, globalNames, nonlocalNames);
+                        containsAnnotations |= CollectScopeBindings(tryStatement.ElseBody, names, globalNames, nonlocalNames, collectExpressionBindings);
                     if (tryStatement.FinallyBody is not null)
-                        containsAnnotations |= CollectScopeBindings(tryStatement.FinallyBody, names, globalNames, nonlocalNames);
+                        containsAnnotations |= CollectScopeBindings(tryStatement.FinallyBody, names, globalNames, nonlocalNames, collectExpressionBindings);
                     continue;
 
                 case MatchStatementSyntax matchStatement:
@@ -201,7 +201,7 @@ internal static class ScopeDirectiveFactsCollector
                     {
                         CollectPatternBindings(matchCase.Pattern, names);
                         if (matchCase.Guard is not null) CollectExpressionBindings(matchCase.Guard, names);
-                        containsAnnotations |= CollectScopeBindings(matchCase.Body, names, globalNames, nonlocalNames);
+                        containsAnnotations |= CollectScopeBindings(matchCase.Body, names, globalNames, nonlocalNames, collectExpressionBindings);
                     }
                     continue;
 
@@ -214,29 +214,33 @@ internal static class ScopeDirectiveFactsCollector
 
                 case FunctionDefinitionStatementSyntax functionDefinition:
                     names.Add(functionDefinition.Name);
-                    foreach (var expression in StatementSyntaxTraversal.EnumerateDirectExpressions(functionDefinition))
-                        CollectExpressionBindings(expression, names);
+                    CollectDirectBindings(functionDefinition);
                     continue;
 
                 case ClassDefinitionStatementSyntax classDefinition:
                     names.Add(classDefinition.Name);
-                    foreach (var expression in StatementSyntaxTraversal.EnumerateDirectExpressions(classDefinition))
-                        CollectExpressionBindings(expression, names);
+                    CollectDirectBindings(classDefinition);
                     continue;
 
             }
 
-            foreach (var expression in StatementSyntaxTraversal.EnumerateDirectExpressions(statement))
-                CollectExpressionBindings(expression, names);
+            CollectDirectBindings(statement);
 
             foreach (var body in StatementSyntaxTraversal.EnumerateChildBodies(statement))
             {
                 // Keep collecting bindings after finding an annotation.
-                containsAnnotations |= CollectScopeBindings(body, names, globalNames, nonlocalNames);
+                containsAnnotations |= CollectScopeBindings(body, names, globalNames, nonlocalNames, collectExpressionBindings);
             }
         }
 
         return containsAnnotations;
+
+        void CollectDirectBindings(StatementSyntax statement)
+        {
+            if (!collectExpressionBindings) return;
+            foreach (var expression in StatementSyntaxTraversal.EnumerateDirectExpressions(statement))
+                CollectExpressionBindings(expression, names);
+        }
 
         static void CollectAssignmentTargetBindings(AssignmentTargetSyntax target, ICollection<string> names)
         {

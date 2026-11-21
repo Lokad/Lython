@@ -45,7 +45,8 @@ internal static class LythonFrontend
         }
 
         var syntaxDiagnostics = SyntaxValidityDiagnostics.Analyze(parsed.Script, out var hasScopeDirectives,
-            out var potentialMutations, out var annotationChecks, out var importsRegex, cancellationToken);
+            out var potentialMutations, out var annotationChecks, out var importsRegex,
+            out var needsLexicalExpressionWalk, cancellationToken);
         governor?.ThrowIfAdmissionFailed();
         PythonTokenization.CheckCancellation(cancellationToken, 0);
         if (syntaxDiagnostics.Count > 0)
@@ -55,7 +56,7 @@ internal static class LythonFrontend
 
         // Parsing/name rewriting is finished. Prepare the immutable lexical facts
         // once for analysis, lowering and the remaining runtime scope consumers.
-        LexicalScopePreparation.Prepare(parsed.Script, source, governor, cancellationToken);
+        LexicalScopePreparation.Prepare(parsed.Script, source, needsLexicalExpressionWalk, governor, cancellationToken);
         PythonTokenization.CheckCancellation(cancellationToken, 0);
 
         using var analysis = new StaticAnalysisContext(parsed.Script, regexProvider, governor, cancellationToken, regexPrograms, potentialMutations);

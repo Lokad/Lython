@@ -22,12 +22,13 @@ internal static class SyntaxValidityDiagnostics
     public static IReadOnlyList<LythonDiagnostic> Analyze(ScriptSyntax script, out bool hasScopeDirectives,
         out Dictionary<StatementSyntax, List<CallExpressionSyntax>>? potentialMutations,
         out Dictionary<IReadOnlyList<StatementSyntax>, int>? annotationChecks, out bool importsRegex,
-        CancellationToken cancellationToken)
+        out bool needsLexicalExpressionWalk, CancellationToken cancellationToken)
     {
         var diagnostics = new List<LythonDiagnostic>();
         var hasYield = false;
         var hasModernTypes = false;
         var hasFutureImport = false;
+        var hasLexicalExpressions = false;
         hasScopeDirectives = false;
         var suites = new List<SuiteVisit> { new(script.Statements, 0, -1, lexicalScope: true, annotatedReturn: false) };
         var expressions = new Stack<ExpressionVisit>();
@@ -75,7 +76,11 @@ internal static class SyntaxValidityDiagnostics
                     parameter.Annotation is not null && parameter.DefaultValue is not null);
             }
             if (statement is MatchStatementSyntax match)
+            {
+                // Pattern reads are separate from direct expressions.
+                hasLexicalExpressions = true;
                 foreach (var matchCase in match.Cases) PatternNames(matchCase.Pattern);
+            }
             if (statement is ClassDefinitionStatementSyntax type)
             {
                 Unique(type.HeaderArguments.Where(a => a.Kind == CallArgumentKind.Keyword).Select(a => a.KeywordName),
@@ -122,6 +127,9 @@ internal static class SyntaxValidityDiagnostics
         if (hasYield) diagnostics.AddRange(GeneratorSyntaxFacts.Prepare(script, cancellationToken));
         if (hasModernTypes) diagnostics.AddRange(ModernTypeSyntaxFacts.Validate(script));
         if (hasFutureImport) diagnostics.AddRange(PostponedAnnotationText.Validate(script));
+        // Lazy generic expressions can contain lexical work beyond the
+        // direct statement and expression visits.
+        needsLexicalExpressionWalk = hasLexicalExpressions || hasModernTypes;
         return diagnostics;
 
         void Error(string message, LythonSourceSpan span)
@@ -158,9 +166,11 @@ internal static class SyntaxValidityDiagnostics
                     continue;
                 }
                 PythonTokenization.CheckCancellation(cancellationToken, expression.Span.Start);
+                hasLexicalExpressions |= expression is IdentifierExpressionSyntax { Name: "super" or "__class__" };
                 hasYield |= expression is YieldExpressionSyntax;
                 if (expression is AssignmentExpressionSyntax assignment)
                 {
+                    hasLexicalExpressions = true;
                     if (iterable) Error("Assignment expressions are forbidden in comprehension iterables.", assignment.Span);
                     else if (targets?.Contains(assignment.Name) == true) Error("Assignment expression rebinds a comprehension iteration target.", assignment.Span);
                 }
@@ -175,6 +185,7 @@ internal static class SyntaxValidityDiagnostics
                 }
                 if (expression is LambdaExpressionSyntax lambda)
                 {
+                    hasLexicalExpressions = true;
                     Parameters(lambda.Parameters, lambda.Span);
                     foreach (var parameter in lambda.Parameters)
                         if (parameter.DefaultValue is not null) expressions.Push(new(parameter.DefaultValue, targets, iterable, InLambda: true));
@@ -191,6 +202,7 @@ internal static class SyntaxValidityDiagnostics
                 };
                 if (clauses is not null)
                 {
+                    hasLexicalExpressions = true;
                     var nestedTargets = targets is null ? new HashSet<string>(StringComparer.Ordinal)
                         : new HashSet<string>(targets, StringComparer.Ordinal);
                     foreach (var clause in clauses) AddTargetNames(clause.Target, nestedTargets);
