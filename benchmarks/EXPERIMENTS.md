@@ -6,6 +6,16 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Current map-based text report attribution](results/2026-11-21-current-text-report-attribution/README.md)
+shows file acquisition and scalar casing in a managed residency
+trace on Windows. A separate baseline audit finds 49 scalar casing
+differences from CPython 3.13.2.
+
+[B1271 compiler checkpoint against CPython](results/2026-11-21-cpython-compiler-checkpoint/README.md)
+places the generated validator at 1.786–1.824× warm, 0.795–0.811×
+compilation and 0.795–0.806× to result. Independent phase workers
+pass all 84 observations.
+
 [B1270 sparse abstract invalidation](results/2026-11-21-sparse-abstract-invalidation/README.md)
 removes the full key snapshot and stages actual writes. Dataclass
 compilation improves 2.44–4.84% with lower CPU. The generated validator's

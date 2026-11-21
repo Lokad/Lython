@@ -1,0 +1,117 @@
+{
+  "Thread (23864)": {
+    "duration": {
+      "total": 6020.11474609375
+    },
+    "nearest": {},
+    "inclusive": {}
+  },
+  "Thread (240644)": {
+    "duration": {
+      "total": 6020.10400390625
+    },
+    "nearest": {},
+    "inclusive": {}
+  },
+  "Thread (241656)": {
+    "duration": {
+      "total": 6020.11181640625
+    },
+    "nearest": {},
+    "inclusive": {}
+  },
+  "Thread (241576)": {
+    "duration": {
+      "total": 6020.1132191650395
+    },
+    "nearest": {},
+    "inclusive": {}
+  },
+  "Thread (149408)": {
+    "duration": {
+      "total": 6020.11328125
+    },
+    "nearest": {},
+    "inclusive": {}
+  },
+  "Thread (190472)": {
+    "duration": {
+      "total": 6020.096469140625
+    },
+    "nearest": {},
+    "inclusive": {}
+  },
+  "Thread (110144)": {
+    "duration": {
+      "total": 6020.092400099182,
+      "guest": 4815.308062815294
+    },
+    "nearest": {
+      "Runtime.OpenedByteFile+<OpenAsync>d__7.MoveNext": 3678.7057956140593,
+      "Runtime.Text.PyStringOps.MapCaseRune": 957.9287489927317,
+      "Runtime.OpenedByteFile+<ReadAsync>d__12.MoveNext": 59.640497781564264,
+      "Runtime.OpenedByteFile+<WriteAsync>d__13.MoveNext": 34.82609963378843,
+      "Runtime.HostOperation+<AwaitAsync>d__5.MoveNext": 28.6650993955611,
+      "Runtime.LythonRuntime+ICallable.InvokeBorrowed": 15.842000886153983,
+      "Runtime.LythonRuntime+ExecutionContext+TextFileHandle+<OpenAsync>d__35.MoveNext": 6.880800198364341,
+      "Runtime.MemoryGovernor.Reserve": 5.414799933433642,
+      "Runtime.Text.PyStringOps.BuildSplitResult": 5.019099883270428,
+      "Runtime.PathOps.RequireContainedPath": 3.941899865722462,
+      "Runtime.LythonRuntime+ExecutionContext.ExecuteInstructionPrefix": 3.7213200883865767,
+      "Runtime.PyExecutableFunction.TryStartPositionalCallback": 3.647499789428366,
+      "Runtime.LythonRuntime+ExecutionContext.TryExecuteDictionaryLoop": 3.6357999063488933,
+      "Runtime.Text.PyStringOps.WriteCaseUtf8": 2.212599992752075,
+      "Runtime.LythonRuntime+ExecutionContext+TextFileWriteState.WriteAsync": 1.9321000576019287,
+      "Runtime.LythonRuntime.ResolveName": 1.7627999782562256,
+      "Runtime.LythonRuntime+ExecutableValueStorage.RetireTo": 1.5311000347137451,
+      "Runtime.PyMapIterator.TryMoveNext": 7.831561106286244e-07
+    },
+    "inclusive": {
+      "Runtime.LythonRuntime+ExecutionContext.ExecuteInstructionPrefix": 4815.308062815294,
+      "Runtime.LythonRuntime+ExecutionContext.Execute": 4815.308062815294,
+      "Runtime.ExecutionThreads+WorkItem.Execute": 4815.308062815294,
+      "Runtime.LythonRuntime+<>c__DisplayClass745_0.<Run>b__0": 4815.308062815294,
+      "Runtime.ExecutionThreads+Worker.Run": 4815.308062815294,
+      "Runtime.LythonRuntime+ExecutionContext.ExecuteOrdinaryCall": 3707.302596621902,
+      "Runtime.LythonRuntime+ExecutionContext.InvokeExecutableGeneralTargetAsync": 3705.3704965643,
+      "Runtime.LythonRuntime+ICallable.InvokeBorrowed": 3705.3704965643,
+      "Runtime.LythonRuntime+ExecutionContext+TextFileHandle+<OpenAsync>d__35.MoveNext": 3689.528495678146,
+      "Runtime.LythonRuntime.Open": 3689.528495678146,
+      "Runtime.OpenedByteFile+<OpenAsync>d__7.MoveNext": 3682.6476954797818,
+      "Runtime.LythonRuntime+ExecutionContext.ExecuteForNext": 1033.8632471563367,
+      "Runtime.PyMapIterator.TryMoveNext": 1033.8632471563367,
+      "Runtime.PyExecutableFunction.TryStartPositionalCallback": 968.8079486581826,
+      "Runtime.LythonRuntime+NativeExecution.Run": 965.1604488687542,
+      "Runtime.LythonRuntime+NativeExecution.RunCore": 965.1604488687542,
+      "Runtime.Text.PyStringOps.BuildSplitResult": 965.1604488687542,
+      "Runtime.PyExecutableFunction.StartInline": 965.1604488687542,
+      "Runtime.LythonRuntime+NativeExecution.Call": 965.1604488687542,
+      "Runtime.Text.PyStringOps.WriteCaseUtf8": 960.1413489854838,
+      "Runtime.Text.PyStringOps.CreateSplitFragment": 960.1413489854838,
+      "Runtime.Text.PyStringOps.MapCaseRune": 957.9287489927317,
+      "Runtime.LythonRuntime+ExecutionContext.ExecuteStructure": 63.49119902934953,
+      "Runtime.LythonRuntime+ExecutionContext+TextFileHandle+<CloseAsync>d__44.MoveNext": 63.49119902934953,
+      "Runtime.LythonRuntime+ExecutionContext+TextFileHandle.Exit": 63.49119902934953,
+      "Runtime.LythonRuntime+ExecutionContext+ChunkedTextFileReadState+<PullCoreAsync>d__80.MoveNext": 59.640497781564264,
+      "Runtime.LythonRuntime+ExecutionContext+ChunkedTextFileReadState.Refill": 59.640497781564264,
+      "Runtime.OpenedByteFile+<ReadAsync>d__12.MoveNext": 59.640497781564264,
+      "Runtime.LythonRuntime+ExecutionContext+TextFileWriteState+<PublishBufferedAsync>d__28.MoveNext": 34.82609963378843,
+      "Runtime.OpenedByteFile+<WriteAsync>d__13.MoveNext": 34.82609963378843,
+      "Runtime.LythonRuntime+ExecutionContext+TextFileWriteState+<FlushAsync>d__27.MoveNext": 34.82609963378843,
+      "Runtime.OpenedByteFile+<CloseAsync>d__16.MoveNext": 28.6650993955611,
+      "Runtime.LythonRuntime+ExecutionContext+TextFileHandle+<CompleteCloseAsync>d__45.MoveNext": 28.6650993955611,
+      "Runtime.HostOperation+<AwaitAsync>d__5.MoveNext": 28.6650993955611,
+      "Runtime.MemoryGovernor.Reserve": 5.414799933433642,
+      "Runtime.LythonRuntime+ExecutionContext.TryExecuteDictionaryLoop": 5.166899941062638,
+      "Runtime.LythonRuntime+ExecutionContext+ChunkedTextFileReadState.CreateWindowValue": 4.250099980354207,
+      "Runtime.PathOps.RequireContainedPath": 3.941899865722462,
+      "Runtime.LythonRuntime+ExecutionContext+TextFileWriteState.WriteAsync": 1.9321000576019287,
+      "Runtime.LythonRuntime+TextFileHandleMembers.Write": 1.9321000576019287,
+      "Runtime.LythonRuntime.ResolveName": 1.7627999782562256,
+      "Runtime.LythonRuntime+ExecutableValueStorage.RetireTo": 1.5311000347137451,
+      "Runtime.Text.GovernedByteBuilder.Grow": 1.1646999530794346,
+      "Runtime.LythonRuntime+ExecutionContext+ChunkedTextFileReadState.AppendRange": 1.1646999530794346,
+      "Runtime.Text.PyString.CopyFromUtf8": 1.128600001335144
+    }
+  }
+}
