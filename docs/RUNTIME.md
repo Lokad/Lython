@@ -2431,6 +2431,12 @@ The named-group list must fit the remaining slots before Lython reserves
 dictionary storage. List access uses the same provider failure handling in
 compilation and execution.
 
+Single matches keep capture scratch within the provider operation and result
+projection. Small capture sets use managed inline storage. Larger capture and
+coordinate buffers are admitted before allocation. Iteration keeps reusable
+scratch with the cursor until cleanup. Escaping matches own their final ranges
+and retain the funded original subject.
+
 Filename matching reads the original UTF-8 inputs with scalar cursors; it creates
 no whole-string rune arrays or per-character string cache. `?` and character
 ranges operate on Unicode scalars. Iterative star backtracking and class scans

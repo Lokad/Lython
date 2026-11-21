@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1303 local scratch for single regex matches](results/2026-11-21-regex-local-one-shot/README.md)
+removes the iteration wrapper from a single match. The small-match script
+uses 2.55–4.69% less process CPU and allocates 3.61% less. Both wide
+controls span zero on elapsed and CPU. Cursor elapsed increases
+0.46–1.17% with mixed CPU. Retain the lifetime change and record the
+cursor cost. All 112 batches pass.
+
 [B1302 direct ranges for native CSV records](results/2026-11-21-csv-literal-record-ranges/README.md)
 avoids copying plain fields into a compacted line. The policy invoice
 runs 0.88–3.67% faster warm and the free-function invoice 2.12–3.26%

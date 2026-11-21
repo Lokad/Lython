@@ -150,6 +150,32 @@ public sealed class RegexCaptureMaterializationTests
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task WideSingleMatchRetainsScalarsAndOriginalSubject(bool asynchronous)
+    {
+        const string source = """
+            import re
+            subject = 'é' + '😀' * 40 + 'tail'
+            pattern = re.compile('(?<=(é))' + '(😀)' * 40 + '(z)?')
+            match = pattern.match(subject, 1, 41)
+            re.purge()
+            print(match.regs[0], match.regs[1], match.regs[41], match.regs[-1])
+            print(match.lastindex, match.string is subject, match.group(1), match.group(41))
+            """;
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("(1, 41) (0, 1) (40, 41) (-1, -1)\n41 True é 😀\n", result.StandardOutput);
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
+    [Theory]
     [InlineData(false, false)]
     [InlineData(true, false)]
     [InlineData(false, true)]
