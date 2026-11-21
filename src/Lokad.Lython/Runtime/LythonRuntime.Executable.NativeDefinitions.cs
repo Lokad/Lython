@@ -34,7 +34,7 @@ internal sealed partial class LythonRuntime
                     {
                         value = CreateInlineDefinition(instruction, function.CodeObject, function.ParameterLayout,
                             function.IsGenerator, PythonCallableKind.Function, function.InputCount, functionCaptures,
-                            function.PostponedAnnotations);
+                            function.PostponedAnnotations, function.EagerAnnotationReads);
                     }
                     finally { _scope.LeaveInterpreterFrame(); }
                     Publish(instruction, value);
@@ -52,17 +52,26 @@ internal sealed partial class LythonRuntime
 
         private PyFunctionBase CreateInlineDefinition(in ExecutableInstruction instruction,
             ExecutableCodeObject code, FunctionParameterLayout layout, bool generator, PythonCallableKind kind,
-            int inputCount, int[]? captures, PyString[]? postponedAnnotations = null)
+            int inputCount, int[]? captures, PyString[]? postponedAnnotations = null, ExecutableInstruction[]? eagerReads = null)
         {
             var first = instruction.InputStart;
+            object?[]? preparedAnnotations = null;
             try
             {
+                if (eagerReads is not null)
+                    preparedAnnotations = ReadEagerFunctionAnnotations(eagerReads, Code, code, _scope, instruction.Span);
                 IReadOnlyList<ExecutableCell> cells = captures is null ? [] :
                     CaptureExecutableCells(code, _scope, instruction.Span, Values, _cells, captures, out _, inline: true);
-                return CreateLexicalFunctionValue(layout, code, cells, generator, _scope, instruction.Span, kind,
-                    Values.Slice(first, inputCount), postponedAnnotations);
+                var function = CreateLexicalFunctionValue(layout, code, cells, generator, _scope, instruction.Span, kind,
+                    Values.Slice(first, inputCount), postponedAnnotations, preparedAnnotations);
+                preparedAnnotations = null;
+                return function;
             }
-            finally { Trim(first); }
+            finally
+            {
+                try { RefundEagerFunctionAnnotations(preparedAnnotations, _scope); }
+                finally { Trim(first); }
+            }
         }
     }
 }

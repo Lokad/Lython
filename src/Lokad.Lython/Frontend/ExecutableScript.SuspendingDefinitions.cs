@@ -7,7 +7,8 @@ internal sealed record ExecutableStartFunctionDefaults(FunctionParameterLayout L
 internal sealed record ExecutableAppendFunctionDefault(int StorageDepth, int Index) : ExecutableOperation;
 internal sealed record ExecutableCreateFunction(ExecutableCodeObject CodeObject, FunctionParameterLayout ParameterLayout,
     int DecoratorCount, bool IsGenerator, int AnnotationOperandCount, LoweredFunctionAnnotation[] DeferredAnnotations,
-    IReadOnlyList<LoweredTypeParameter>? TypeParameters, PyString[]? PostponedAnnotations) : ExecutableOperation
+    IReadOnlyList<LoweredTypeParameter>? TypeParameters, PyString[]? PostponedAnnotations,
+    ExecutableInstruction[]? EagerAnnotationReads) : ExecutableOperation
 {
     internal int InputCount => checked(DecoratorCount + AnnotationOperandCount + ParameterLayout.DefaultStorageCount);
 }
@@ -56,6 +57,7 @@ internal sealed partial class ExecutableScript
             block = CompileFunctionDefaults(definition.Parameters,
                 definition.ParameterLayout, definition.Span, block);
             PyString[]? postponed = null;
+            ExecutableInstruction[]? reads = null;
             // Lexical preparation attaches postponed text to every annotation in the declaration.
             if (annotations.Length != 0 && annotations[0].Expression.PostponedAnnotation is not null)
             {
@@ -78,13 +80,16 @@ internal sealed partial class ExecutableScript
             }
             else
             {
+                var firstBlock = block;
+                var first = _buffers.Blocks[block].Count;
                 foreach (var (_, expression) in annotations) block = CompileExpression(expression, block);
+                if (firstBlock == block) reads = PackFunctionAnnotationReads(block, first, annotations.Length);
             }
             // The creation operation retains lowered annotations only when
             // it still evaluates them in the definition's type scope.
             EmitDefinition(new ExecutableCreateFunction(code, definition.ParameterLayout, definition.Decorators.Count,
-                definition.IsGenerator, postponed is null ? annotations.Length : 0,
-                deferredAnnotations, typeParameters, postponed), definition.Span, block);
+                definition.IsGenerator, postponed is null && reads is null ? annotations.Length : 0,
+                deferredAnnotations, typeParameters, postponed, reads), definition.Span, block);
             // Module declarations update their live namespace and optional slot.
             var name = definition.Name;
             if (_parameterLayout is null)
@@ -92,6 +97,25 @@ internal sealed partial class ExecutableScript
             else
                 CompileStoreBoundName(name, definition.Span, block);
             return block;
+        }
+
+        private ExecutableInstruction[]? PackFunctionAnnotationReads(int block, int first, int count)
+        {
+            if (count < 2) return null;
+            var instructions = _buffers.Blocks[block];
+            if (instructions.Count - first != count) return null;
+            for (var i = first; i < instructions.Count; i++)
+            {
+                if ((i & 63) == 0) _compilation.CancellationToken.ThrowIfCancellationRequested();
+                if (instructions[i].OpCode is not (ExecutableOpCode.LoadGlobal or ExecutableOpCode.LoadConst)) return null;
+            }
+
+            // Definition creation consumes these direct reads before capture
+            // admission. Nontrivial expressions keep their executable route.
+            var reads = new ExecutableInstruction[count];
+            instructions.CopyTo(first, reads, 0, count);
+            instructions.RemoveRange(first, count);
+            return reads;
         }
 
         private static T[] PrepareFunctionAnnotations<T>(FunctionDefinitionStatementSyntax definition,

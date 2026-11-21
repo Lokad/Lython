@@ -118,6 +118,43 @@ public sealed class FunctionAttributeAccountingTests
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FailedEagerAnnotationReadRefundsPrivateDefinition(bool asynchronous)
+    {
+        const string source = """
+            Alias = int
+            def make():
+                def f(value: str, other: Alias) -> int: return value
+                return f
+            return make
+            """;
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var owner = budget.CreateScope())
+        {
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
+                new LythonRunOptions { MemoryBudget = owner });
+            var factory = Function(context, source);
+            var globals = factory.DefinitionContext.Variables;
+            globals["Alias"] = PyNone.Instance;
+            var call = new LythonSourceSpan(0, 1, 1, 1);
+            _ = asynchronous ? await factory.InvokeAsync([], call, context) : factory.Invoke([], call, context);
+            Assert.True(globals.Remove("Alias"));
+            var before = context.MemoryGovernor.CurrentAccountedBytes;
+
+            var error = asynchronous
+                ? await Assert.ThrowsAsync<LythonRuntimeException>(async () => await factory.InvokeAsync([], call, context))
+                : Assert.Throws<LythonRuntimeException>(() => factory.Invoke([], call, context));
+
+            Assert.Equal("NameError", error.ExceptionType);
+            Assert.Equal(source.ReplaceLineEndings("\n").IndexOf("Alias)", StringComparison.Ordinal), error.Span?.Start);
+            Assert.Equal(before, context.MemoryGovernor.CurrentAccountedBytes);
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     private static PyExecutableFunction Function(LythonRuntime.ExecutionContext context, string source = "def f():pass\nreturn f")
     {
         var syntax = LythonFrontend.Compile(source).Script!;
