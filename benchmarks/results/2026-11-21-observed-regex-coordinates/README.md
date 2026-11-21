@@ -25,9 +25,8 @@ shared-window refinement brings those allocations back to baseline.
 Its wide-register script allocates 4.75% less. Budget baselines restore.
 The local timing initially favored replacement callbacks and whole
 offsets, while subgroup spans and group-text extraction slowed.
-The shared-window trial favors group text and callbacks but has
-a 23.8% subgroup-span reference spread. The local timing therefore
-does not establish the subgroup-span impact.
+The shared-window trial favors group text and callbacks. Its 23.8%
+subgroup-span reference spread leaves that impact uncertain.
 
 ## Quiet confirmation
 
@@ -56,8 +55,19 @@ consistently runs slower with higher CPU and stable controls. The
 ASCII and wide-register results also run slower. A further design
 needs to avoid repeated positioning work or the added retained window
 indirection while preserving efficient access to original-subject
-coordinates. The smaller CLR allocation in the wide-register script
-does not establish a CPU improvement.
+coordinates. The wide-register allocation reduction coexists with
+higher process CPU.
+
+## Repeated register reads
+
+A separate probe on the reference finds that it constructs a fresh
+`m.regs` tuple on each read. CPython 3.13.2 preserves the tuple's
+identity. The independent correction caches the first completed,
+funded tuple on the match and keeps the existing projection path.
+It matches the CPython probe and passes 479 focused Release checks
+per platform. The retained-match regression checks repeated reads
+after cursor disposal and cache purge on both execution APIs.
+[Identity checks](registers-identity-checks.tar.xz).
 
 [Local results](summary.json) · [Quiet comparison](quiet-summary.json)
 · [Raw observations](observations.tgz)

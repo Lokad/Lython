@@ -80,6 +80,9 @@ public sealed class RegexCaptureMaterializationTests
             matches = list(pattern.finditer(source))
             re.purge()
             assert all(m.string is source for m in matches)
+            regs = matches[0].regs
+            assert matches[0].regs is regs
+            assert matches[1].regs is not regs
             marker = []
             assert matches[0].groups(marker)[2] is marker
             assert matches[1].groupdict(marker)['head'] is marker

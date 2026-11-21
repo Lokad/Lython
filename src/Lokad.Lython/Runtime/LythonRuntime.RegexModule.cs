@@ -24,6 +24,8 @@ internal sealed partial class LythonRuntime
     internal sealed class ReMatchObject(RePatternObject pattern, PyString input, int pos, int endPos,
         ReCaptureRange[] captures, int? lastIndex, MemoryGovernor owner) : IPyContextualDynamicAttributes
     {
+        private PyTuple? _registers;
+
         public RePatternObject Pattern { get; } = pattern;
         public PyString String { get; } = input;
         public int Pos { get; } = pos;
@@ -37,6 +39,20 @@ internal sealed partial class LythonRuntime
 
         public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
             => ReMatchMembers.TryGetMember(this, name, context, span, out value);
+
+        internal PyTuple ReadRegisters(ExecutionContext context, LythonSourceSpan span)
+        {
+            context.CheckExecution(span);
+            if (_registers is { } cached) return cached;
+            var projection = CreateTuple(Captures.Length, i =>
+            {
+                var capture = Captures[i];
+                return CreateTuple(2, j => new BigInteger(j == 0 ? capture.Start : capture.End), context, span);
+            }, context, span);
+            // The immutable tuple and its contents stay funded by execution.
+            // Publish it only after every coordinate has been materialized.
+            return _registers ??= projection;
+        }
 
         internal ReadOnlySpan<byte> GroupBytes(int index)
         {

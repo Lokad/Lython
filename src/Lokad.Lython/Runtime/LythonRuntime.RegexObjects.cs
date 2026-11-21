@@ -126,15 +126,11 @@ internal sealed partial class LythonRuntime
                 "endpos" => new BigInteger(match.EndPos),
                 "lastindex" => LastIndex(match),
                 "lastgroup" => LastGroup(match, context, span),
-                "regs" => Registers(match, context, span),
+                "regs" => match.ReadRegisters(context, span),
                 _ => MissingMemberValue.Instance,
             };
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-
-        private static object Registers(ReMatchObject match, ExecutionContext context, LythonSourceSpan span)
-            => CreateTuple(match.CaptureSlotCount, i =>
-                CreateTuple(2, j => new BigInteger(j == 0 ? match.Captures[i].Start : match.Captures[i].End), context, span), context, span);
 
         private static object Groups(ReMatchObject match, object defaultValue, ExecutionContext context, LythonSourceSpan span)
             => CreateTuple(match.CaptureSlotCount - 1,

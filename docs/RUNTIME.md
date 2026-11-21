@@ -2528,9 +2528,10 @@ Forward and backward scans observe current cancellation; no dense subject index
 is retained. Arbitrary far captures can still require long walks.
 
 Python matches retain immutable byte/scalar ranges and their original funded
-subject through cursor advances, disposal and cache purge. Position access,
-including `regs`, needs no group-text copy. Partial group strings are admitted
-and copied on access; empty groups use the empty string and full-subject groups
+subject through cursor advances, disposal and cache purge. Position access
+needs no group-text copy. The first `regs` access builds and funds the immutable
+coordinate tuple. Later reads return that same tuple. Partial group strings are
+admitted and copied on access; empty groups use the empty string and full-subject groups
 reuse the original string. Group copies are not cached. Admission refusal can
 therefore occur at group access; it remains terminal and cannot be hidden by
 guest exception handling. Expansion reads the retained ranges directly.
