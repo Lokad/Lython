@@ -3,7 +3,7 @@
 | Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
 | JSON Lines export with expanded options | 3,072 records / 189,441 B | 6.503–6.598 ms | 6.534–6.571 ms | 0.990–1.010× | B1261 diagnostic. Spans parity. Controls L/C 1.47 / 0.57%. IQR ≤1.78%. |
-| Map-based text report | 3,072 lines / 35,840 B | 1.539–1.581 ms | 1.188–1.205 ms | 1.277–1.330× | B1258 diagnostic. Controls L/C 2.74 / 1.38%. IQR ≤0.90%. |
+| Map-based text report | 3,072 lines / 35,840 B | 1.440–1.495 ms | 1.217–1.220 ms | 1.181–1.228× | B1274 diagnostic. Controls L/C 3.84 / 0.20%. IQR ≤0.75%. |
 | JSON normalization | 3,072 records / 189,441 B | 2.762–2.813 ms | 2.505–2.544 ms | 1.086–1.123× | B1253 diagnostic repeat. Initial B1252 is 1.143–1.158×. Repeat controls L/C 1.82 / 1.59%. IQR ≤12.50%. |
 | Unannotated rule closures | 2,048 inputs / 4,096 definitions | 2.307–2.321 ms | 0.683–0.688 ms | 3.35–3.40× | B1122 diagnostic. Controls L/C 0.61 / 0.70%. IQR ≤0.74%. |
 | Annotated rule closures | 2,048 inputs / 2,048 definitions | 1.057 ms | 0.428–0.434 ms | 2.44–2.47× | B1203 diagnostic. Controls L/C 0.05 / 1.26%. IQR ≤2.76%. |
@@ -28,6 +28,13 @@
 **Ratio = Lython elapsed / CPython elapsed. Above one means slower.** Ranges cover
 the combinations of two process medians per engine, not confidence intervals.
 Controls L/C report the difference between the two Lython/CPython medians.
+
+B1274 measures the map-based text report at **b140244f0**,
+production-equivalent to **b42c4d508**, against **CPython 3.13.16**
+on **2026-11-21 UTC**. Independent phase workers passed all 84
+batches on the quiet Azure F4as_v7 running Ubuntu 24.04.4 and
+.NET 11 RC3.
+[B1274 checkpoint](../benchmarks/results/2026-11-21-cpython-casing-checkpoint/README.md).
 
 B1271 measures the validator with successful integer parses at **406388271**,
 production-equivalent to **6e972677e**, against **CPython 3.13.16** on
@@ -168,8 +175,8 @@ The table compares workload latency under different containment boundaries.
 | --- | --- | ---: | ---: | ---: | --- |
 | JSON Lines export with expanded options | Compilation only | 0.02975–0.02978 ms | 0.04436–0.04453 ms | 0.668–0.671× | B1261 diagnostic. Controls L/C 0.10 / 0.38%. IQR ≤0.78%. |
 | JSON Lines export with expanded options | Compile-to-result | 6.619–6.621 ms | 6.603–6.686 ms | 0.990–1.003× | B1261 diagnostic. Spans parity. Controls L/C 0.03 / 1.26%. IQR ≤1.09%. |
-| Map-based text report | Compilation only | 0.02961–0.02966 ms | 0.04158–0.04173 ms | 0.710–0.713× | B1258 diagnostic. Controls L/C 0.15 / 0.34%. IQR ≤0.77%. |
-| Map-based text report | Compile-to-result | 1.622–1.633 ms | 1.311–1.320 ms | 1.229–1.245× | B1258 diagnostic. Controls L/C 0.64 / 0.68%. IQR ≤0.57%. |
+| Map-based text report | Compilation only | 0.02582–0.02682 ms | 0.04141–0.04188 ms | 0.616–0.648× | B1274 diagnostic. Controls L/C 3.89 / 1.15%. IQR ≤0.57%. |
+| Map-based text report | Compile-to-result | 1.505–1.580 ms | 1.291–1.316 ms | 1.144–1.223× | B1274 diagnostic. Controls L/C 4.94 / 1.94%. IQR ≤0.83%. |
 | JSON normalization | Compilation only | 0.03536–0.03571 ms | 0.05254–0.05284 ms | 0.669–0.680× | B1252 diagnostic. Controls L/C 1.01 / 0.57%. IQR ≤0.86%. |
 | JSON normalization | Compile-to-result | 2.771–2.801 ms | 2.813–3.007 ms | 0.922–0.996× | B1253 diagnostic. The initial lane spans parity. Repeat CPython spread 6.88% and IQR up to 13.99%. |
 | Unannotated rule closures | Compilation only | 0.03072–0.03102 ms | 0.04189–0.04201 ms | 0.73–0.74× | B1122 diagnostic. Controls L/C 1.00 / 0.30%. IQR ≤0.44%. |

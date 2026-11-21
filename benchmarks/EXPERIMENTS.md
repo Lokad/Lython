@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1274 text report at the casing checkpoint](results/2026-11-21-cpython-casing-checkpoint/README.md)
+places Lython at 1.181–1.228× CPython warm, 0.616–0.648× compilation
+and 1.144–1.223× to result. All 84 independent phase batches pass.
+Earlier timing and controls remain tied to B1258.
+
 [B1272 and B1273 pinned UTF-8 casing](results/2026-11-21-pinned-unicode-casing/fold/README.md)
 replace platform mappings and the standalone casefold builder. The
 final original text report runs 6.24–9.78% sooner warm, mixed
