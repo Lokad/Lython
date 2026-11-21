@@ -1,0 +1,38 @@
+[
+  {
+    "case": "4-values-0-branches",
+    "referenceBytes": 24808,
+    "candidateBytes": 24184,
+    "changePercent": -2.5153176394711374
+  },
+  {
+    "case": "4-values-48-branches",
+    "referenceBytes": 298960,
+    "candidateBytes": 267424,
+    "changePercent": -10.548568370350553
+  },
+  {
+    "case": "32-values-0-branches",
+    "referenceBytes": 69840,
+    "candidateBytes": 68736,
+    "changePercent": -1.58075601374571
+  },
+  {
+    "case": "32-values-48-branches",
+    "referenceBytes": 585288,
+    "candidateBytes": 379192,
+    "changePercent": -35.21274996241167
+  },
+  {
+    "case": "256-values-0-branches",
+    "referenceBytes": 482680.125,
+    "candidateBytes": 453752,
+    "changePercent": -5.993228952611219
+  },
+  {
+    "case": "256-values-48-branches",
+    "referenceBytes": 3333504,
+    "candidateBytes": 1490704,
+    "changePercent": -55.281169604116265
+  }
+]

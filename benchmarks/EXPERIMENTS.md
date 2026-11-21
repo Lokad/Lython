@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1289 structurally shared abstract-state forks](results/2026-11-21-abstract-fork-sharing/README.md)
+eliminates full map copies and reduces dense scalar compile allocation
+55.28%. Representative compilation takes 3.05–8.62% longer and dense
+scalar compilation takes 111.60–117.47% longer. Validator time to result
+also rises. Keep the implementation private. All 140 batches pass.
+
 [B1288 JSON escape measurements](results/2026-11-21-json-escape-descriptors/README.md)
 reuses the first four decoded escapes during output fill. The escaped
 report runs 0.25–1.91% faster with mixed CPU and tight duplicate
