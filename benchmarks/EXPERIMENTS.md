@@ -11,6 +11,8 @@ eliminates full map copies and reduces dense scalar compile allocation
 55.28%. Representative compilation takes 3.05–8.62% longer and dense
 scalar compilation takes 111.60–117.47% longer. Validator time to result
 also rises. Keep the implementation private. All 140 batches pass.
+The follow-up counts two copied value facts per validator fork and no
+dataclass joins. [Fork-shape probe](results/2026-11-21-abstract-fork-sharing/fork-shape/README.md).
 
 [B1288 JSON escape measurements](results/2026-11-21-json-escape-descriptors/README.md)
 reuses the first four decoded escapes during output fill. The escaped

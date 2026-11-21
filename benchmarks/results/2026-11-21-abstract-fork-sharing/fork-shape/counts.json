@@ -1,0 +1,73 @@
+{
+  "reference": "c67b28f80",
+  "coreSHA256": "83d67e6ed29a9f5e964a7791787971e775bc51f30d46f3ca7ec1041d98ce16b0",
+  "purpose": "Instrumented single public compile. Counts only, no CPU or elapsed claims.",
+  "budgetReturnedToBaseline": true,
+  "rows": [
+    {
+      "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "counts": {
+        "Forks": 8,
+        "CopiedValues": 9,
+        "CopiedLengths": 0,
+        "Joins": 1,
+        "LeftValues": 2,
+        "RightValues": 2,
+        "ValuePairs": 1,
+        "SharedValuePairs": 1,
+        "SharedScalarPairs": 1,
+        "LengthPairs": 0,
+        "SharedLengthPairs": 0
+      }
+    },
+    {
+      "id": "scripts.dataclass-inherited-configuration.generated",
+      "counts": {
+        "Forks": 99,
+        "CopiedValues": 197,
+        "CopiedLengths": 1,
+        "Joins": 0,
+        "LeftValues": 0,
+        "RightValues": 0,
+        "ValuePairs": 0,
+        "SharedValuePairs": 0,
+        "SharedScalarPairs": 0,
+        "LengthPairs": 0,
+        "SharedLengthPairs": 0
+      }
+    },
+    {
+      "id": "scripts.config-generated-guards.medium.bad-0",
+      "counts": {
+        "Forks": 193,
+        "CopiedValues": 386,
+        "CopiedLengths": 1,
+        "Joins": 192,
+        "LeftValues": 385,
+        "RightValues": 384,
+        "ValuePairs": 384,
+        "SharedValuePairs": 192,
+        "SharedScalarPairs": 0,
+        "LengthPairs": 0,
+        "SharedLengthPairs": 0
+      }
+    },
+    {
+      "id": "compile-many-live-scalar-facts",
+      "counts": {
+        "Forks": 147,
+        "CopiedValues": 36960,
+        "CopiedLengths": 0,
+        "Joins": 96,
+        "LeftValues": 24624,
+        "RightValues": 24624,
+        "ValuePairs": 24624,
+        "SharedValuePairs": 24528,
+        "SharedScalarPairs": 24528,
+        "LengthPairs": 0,
+        "SharedLengthPairs": 0
+      }
+    }
+  ],
+  "catalogSHA256": "137846706cb52245d5fb90aa977ad3de07501f72c25aa74fd2d3199972bdee8e"
+}
