@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1281 compound function defaults](results/2026-11-21-compound-function-defaults/README.md)
+keeps the shared tuple backing private. Both nested factory scripts run
+2.12–5.46% sooner warm with lower CPU, and the postponed case reaches
+its result 2.51–5.66% sooner. The invoice and default metadata observer
+allocate more and use more CPU. All 224 timed batches pass.
+
 [B1280 literal newline scanning](results/2026-11-21-compiler-literal-newlines/README.md)
 collects source positions during the existing scan for string termination.
 Template compilation uses 1.88–2.50% less process CPU. Validator

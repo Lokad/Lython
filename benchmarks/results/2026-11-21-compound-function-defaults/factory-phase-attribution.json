@@ -1,0 +1,239 @@
+{
+  "revision": "7e5cdd6e8",
+  "boundary": "Local synchronous warm invocation wall time with output verification and disposal, excluding compilation. Sampled phases instrument the worker and include clock overhead.",
+  "phases": [
+    "bind function arguments",
+    "allocate default containers",
+    "create funded callable",
+    "capture on native creation",
+    "native fully supplied calls",
+    "native calls through binder"
+  ],
+  "controlCore": "bc5401d695bfc13f2693a77afb2c982dde35035a0e019ef98dfb35051242309f",
+  "instrumentedCore": "39ac163008f570e2d29c5e0abcafed28f8dd6d4d078331f3b3346b6a6f469a31",
+  "catalogSHA256": "77a938258bb235e443d953954e143305515413b11d2cb51caceddc17fc59b0a2",
+  "controls": "Two processes per image executed in reference, diagnostic, diagnostic, reference order. All four sources match isolated CPython stdout. Evaluation and code owners refund after every invocation and compile disposal.",
+  "decision": "Use the call counts and broad attribution to prioritize construction and ownership. Instrumentation perturbs elapsed and phase medians do not establish unaided time or expected gains. Skip a binder-only split.",
+  "rows": [
+    {
+      "id": "scripts.annotated-rule-closures",
+      "controlMicroseconds": [
+        995.3390625,
+        988.4421875
+      ],
+      "instrumented": [
+        {
+          "invocationMicroseconds": 1132.721875,
+          "averageCounts": [
+            2048,
+            2048,
+            2049,
+            2048,
+            2048,
+            2048
+          ],
+          "phaseMicroseconds": [
+            57.32799218368344,
+            119.25823155837811,
+            137.23395212506105,
+            29.41436248168051
+          ],
+          "phasePercent": [
+            5.061082817322959,
+            10.528465476874288,
+            12.115414662143879,
+            2.5967859481552353
+          ]
+        },
+        {
+          "invocationMicroseconds": 1450.815625,
+          "averageCounts": [
+            2048,
+            2048,
+            2049,
+            2048,
+            2048,
+            2048
+          ],
+          "phaseMicroseconds": [
+            60.029311187103076,
+            142.16941866145578,
+            148.74518808011723,
+            33.81651196873474
+          ],
+          "phasePercent": [
+            4.1376250815539075,
+            9.79927540148017,
+            10.25252178960488,
+            2.330862129275368
+          ]
+        }
+      ]
+    },
+    {
+      "id": "scripts.annotated-rule-closures.nested-factories",
+      "controlMicroseconds": [
+        1491.2984375,
+        1488.46875
+      ],
+      "instrumented": [
+        {
+          "invocationMicroseconds": 1809.2375,
+          "averageCounts": [
+            2048,
+            2048,
+            4097,
+            4096,
+            4096,
+            2048
+          ],
+          "phaseMicroseconds": [
+            67.93317049340499,
+            126.761895456766,
+            248.7607177734375,
+            283.66925518925524
+          ],
+          "phasePercent": [
+            3.7547956248643413,
+            7.0063712175303685,
+            13.749478317436903,
+            15.678939618997243
+          ]
+        },
+        {
+          "invocationMicroseconds": 2584.4328125,
+          "averageCounts": [
+            2048,
+            2048,
+            4097,
+            4096,
+            4096,
+            2048
+          ],
+          "phaseMicroseconds": [
+            78.43829995114803,
+            167.08158280410356,
+            322.4787109375,
+            317.17743589743594
+          ],
+          "phasePercent": [
+            3.035029565162976,
+            6.464922670691543,
+            12.477736290058807,
+            12.27261294483491
+          ]
+        }
+      ]
+    },
+    {
+      "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "controlMicroseconds": [
+        1413.3296875,
+        1357.0046875
+      ],
+      "instrumented": [
+        {
+          "invocationMicroseconds": 1409.8109375,
+          "averageCounts": [
+            2048,
+            2048,
+            4097,
+            4096,
+            4096,
+            2048
+          ],
+          "phaseMicroseconds": [
+            63.73111871030777,
+            146.371470444553,
+            250.16105957031252,
+            143.03492063492064
+          ],
+          "phasePercent": [
+            4.520543642775347,
+            10.38234748725327,
+            17.74429839606153,
+            10.145681015112755
+          ]
+        },
+        {
+          "invocationMicroseconds": 1270.3515625,
+          "averageCounts": [
+            2048,
+            2048,
+            4097,
+            4096,
+            4096,
+            2048
+          ],
+          "phaseMicroseconds": [
+            56.92779677576942,
+            134.5657059110894,
+            221.454052734375,
+            134.03272283272284
+          ],
+          "phasePercent": [
+            4.481263175977667,
+            10.592792568875153,
+            17.432501306847882,
+            10.550837011523953
+          ]
+        }
+      ]
+    },
+    {
+      "id": "scripts.ordinary-fully-supplied-helper",
+      "controlMicroseconds": [
+        383.9359375,
+        345.3765625
+      ],
+      "instrumented": [
+        {
+          "invocationMicroseconds": 446.1359375,
+          "averageCounts": [
+            0,
+            0,
+            1,
+            0,
+            2048,
+            0
+          ],
+          "phaseMicroseconds": [
+            0,
+            0,
+            0.6000000000000001,
+            0
+          ],
+          "phasePercent": [
+            0.0,
+            0.0,
+            0.13448815698690492,
+            0.0
+          ]
+        },
+        {
+          "invocationMicroseconds": 351.7234375,
+          "averageCounts": [
+            0,
+            0,
+            1,
+            0,
+            2048,
+            0
+          ],
+          "phaseMicroseconds": [
+            0,
+            0,
+            0.6000000000000001,
+            0
+          ],
+          "phasePercent": [
+            0.0,
+            0.0,
+            0.1705885750078853,
+            0.0
+          ]
+        }
+      ]
+    }
+  ]
+}
