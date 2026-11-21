@@ -11,7 +11,11 @@ removes four eager reads and their operand staging without an extra
 opcode. Allocation is effectively flat. Eager rules run faster across
 all pairings, with 8.50% reference spread. Candidate workers for the
 unchanged helper differ by 15.05%. All 140 batches pass. A targeted
-confirmation covers both warm lanes and eager time to result.
+[B1292 confirmation](results/2026-11-21-annotations-in-creation/confirmation/README.md)
+retains the integrated reads. Eager rules are 0.39–4.81% faster warm
+with mixed CPU and 4.19% reference spread. Time to result falls
+1.74–7.65% with lower CPU. The helper's earlier regression does not
+recur. All 84 confirmation batches pass.
 
 [B1290 packed eager annotation reads](results/2026-11-21-packed-eager-annotations/README.md)
 replaces four reads and four staged annotation operands with one

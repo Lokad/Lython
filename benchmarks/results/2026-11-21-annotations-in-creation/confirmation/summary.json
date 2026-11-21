@@ -1,0 +1,137 @@
+{
+  "complete": true,
+  "elapsedSeconds": 166.41667420091107,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "staging": {
+    "retiredOnly": [],
+    "alreadyAbsent": [],
+    "freshIdleLease": true,
+    "allHashesPathsOwnershipLinksAndAliasesVerified": true,
+    "canonicalArchiveAndCurrentImagesPreserved": true,
+    "freeBeforeBytes": 177537024,
+    "freeAfterBytes": 177496064
+  },
+  "rows": [
+    {
+      "case": "scripts.ordinary-fully-supplied-helper",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 0.38105724794359574,
+        "reference": 0.3708245615735462,
+        "candidate-control": 0.3786731568855317,
+        "reference-control": 0.3878496718377088
+      },
+      "cpuMilliseconds": {
+        "candidate": 0.381903642773208,
+        "reference": 0.37058152793614596,
+        "candidate-control": 0.37768739105171417,
+        "reference-control": 0.3878281622911695
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.32179171008161644,
+        "reference": 0.3437684738941206,
+        "candidate-control": 0.6219728786852208,
+        "reference-control": 0.5659841481099367
+      },
+      "elapsedChangePercent": [
+        -2.3659978642490365,
+        -1.7513032464174016,
+        2.1165252049866856,
+        2.7594413721217625
+      ],
+      "cpuChangePercent": [
+        -2.614758861127253,
+        -1.5276145710928501,
+        1.9174898314933353,
+        3.055229142185656
+      ],
+      "referenceSpreadPercent": 4.59114957000657,
+      "candidateSpreadPercent": 0.6295907208402118
+    },
+    {
+      "case": "scripts.annotated-rule-closures",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 0.9792519640179909,
+        "candidate-control": 0.9711905543964232,
+        "reference": 1.0202516210691823,
+        "candidate": 0.9753920269058295
+      },
+      "cpuMilliseconds": {
+        "reference-control": 0.974512743628186,
+        "candidate-control": 0.9687034277198212,
+        "reference": 1.022012578616352,
+        "candidate": 0.9865470852017937
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.7333001449902767,
+        "candidate-control": 0.5030618602734575,
+        "reference": 0.31067091044447814,
+        "candidate": 0.5179209948754223
+      },
+      "elapsedChangePercent": [
+        -4.808722246512587,
+        -4.396914764648141,
+        -0.8232211849226956,
+        -0.3941720061835352
+      ],
+      "cpuChangePercent": [
+        -5.216095380029795,
+        -3.470162124870635,
+        -0.5961251862891204,
+        1.2349085891686595
+      ],
+      "referenceSpreadPercent": 4.186834293695441,
+      "candidateSpreadPercent": 0.43261052018956914
+    },
+    {
+      "case": "scripts.annotated-rule-closures",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "candidate": 0.9768216666666667,
+        "reference": 0.9941566432926829,
+        "candidate-control": 0.9359553376251789,
+        "reference-control": 1.0135403535825547
+      },
+      "cpuMilliseconds": {
+        "candidate": 0.9821428571428572,
+        "reference": 0.9908536585365854,
+        "candidate-control": 0.944206008583691,
+        "reference-control": 1.02803738317757
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.5022236689155409,
+        "reference": 0.5715479138235979,
+        "candidate-control": 0.5515374809688699,
+        "reference-control": 0.8819835652519292
+      },
+      "elapsedChangePercent": [
+        -7.654852190456596,
+        -5.854339561091615,
+        -3.622814502264138,
+        -1.7436866456579936
+      ],
+      "cpuChangePercent": [
+        -8.154506437768227,
+        -4.707824364476732,
+        -4.464285714285698,
+        -0.879120879120876
+      ],
+      "referenceSpreadPercent": 1.9497641966835566,
+      "candidateSpreadPercent": 4.366269136856338
+    }
+  ],
+  "CPythonRefreshed": false,
+  "collection": "B1292",
+  "sourceRevision": "256c5e651246419cb17aa9f6048ec7e88b465e6d versus 595798ffaf263abbd88491d040986bc453bb5f2f",
+  "verifiedTimedBatches": 84,
+  "coreSHA256": {
+    "reference": "3e221d5bf31af373a30173c5fcbd6883bbc2dadb57d9ba7445fd704ee0b62491",
+    "reference-control": "3e221d5bf31af373a30173c5fcbd6883bbc2dadb57d9ba7445fd704ee0b62491",
+    "candidate": "53cdf0d831d315ffc0da0f329edd430ebae904d0987f4264b0b0787ab123233d",
+    "candidate-control": "53cdf0d831d315ffc0da0f329edd430ebae904d0987f4264b0b0787ab123233d"
+  },
+  "archiveSHA256": "3221ffc921a4a453faca1934a32ec22042f4522b0983e5394a4526ce982558b4",
+  "retentionDecision": "Retain integrated annotation reads. Warm eager elapsed is directionally favorable across both runs. Time to result improves with lower CPU. The unchanged helper regression did not recur."
+}

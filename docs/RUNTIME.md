@@ -957,9 +957,12 @@ definitions with decorators or potentially effectful eager annotations.
 Later reads can see mutations that those callbacks made through aliases.
 
 Each executable function declaration stores its prepared code and binding
-layout in the creation operation. Emitted annotations leave an operand count
-and prepared keys. Annotations still evaluated in the defining type scope
-retain their lowered expressions. The compilation owner funds the function name
+layout in the creation operation. Groups of eager global and constant reads
+write into the final annotation record after decorators and defaults are
+evaluated. The callable and record are admitted before these reads, and a
+failed read refunds the private record. Other eager expressions leave an
+operand count and prepared keys. Annotations still evaluated in the defining
+type scope retain their lowered expressions. The compilation owner funds the function name
 and leading string literal shared by instances of the same declaration. A
 function keeps independent metadata overrides and mutable defaults. Host-facing
 text projections have their own result ownership. A definition evaluates its

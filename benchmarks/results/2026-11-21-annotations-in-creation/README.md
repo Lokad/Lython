@@ -40,6 +40,8 @@ timed batches. Keep the prototype private pending confirmation of
 both lanes and eager time to result. The nested cases and the
 annotation observer leave smaller elapsed effects unresolved.
 
+[B1292 confirmation and retention decision](confirmation/README.md).
+
 Windows .NET 11 and Ubuntu .NET 10 each pass 363 white-box and 455
 public Release checks. The new failed-read regression preserves the
 name-error span and refunds the unpublished definition. Both complete
