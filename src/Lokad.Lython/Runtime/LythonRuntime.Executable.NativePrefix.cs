@@ -425,9 +425,9 @@ internal sealed partial class LythonRuntime
                 receiver = bound.Receiver;
             }
             if (function is null || !function.CanStartInline) return false;
-            var borrow = call.IsPositionalOnly
-                && function.CanBorrowPositionalArguments(call.ArgumentCount, receiver);
-            if (!borrow && !function.CanBindNativeArguments) return false;
+            var completePositional = call.IsPositionalOnly
+                && function.HasCompletePositionalSupply(call.ArgumentCount, receiver);
+            if (!completePositional && !function.CanBindNativeArguments) return false;
             _scope.EnterInterpreterFrame(call.CallSpan);
             var entered = true;
             try
@@ -435,7 +435,7 @@ internal sealed partial class LythonRuntime
                 var arguments = Values.Slice(start + call.ArgumentOffset, call.ArgumentCount);
                 function.StartNativeCall(call, arguments, receiver, _scope, call.CallSpan,
                     call.ConsumedByIteration || _consumedByIteration && call.ReturnedDirectly,
-                    borrow, default, out _, out var childValue, out var child);
+                    completePositional, default, out _, out var childValue, out var child);
                 result = childValue;
                 if (child is not null)
                 {

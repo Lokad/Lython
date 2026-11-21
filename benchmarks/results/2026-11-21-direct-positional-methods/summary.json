@@ -1,0 +1,168 @@
+{
+  "complete": true,
+  "elapsedSeconds": 167.5468889460899,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "staging": {
+    "retiredOnly": [
+      {
+        "paths": [
+          "native-callback-entry-b1256-20261121-space-audited/candidate/Lokad.Lython.dll",
+          "native-callback-entry-confirm-b1257-20261121/candidate/Lokad.Lython.dll",
+          "native-callback-text-cpython-b1258-20261121/candidate/Lokad.Lython.dll"
+        ],
+        "links": 3,
+        "bytes": 5682176,
+        "sha256": "f33be6fcc3b776a96787f67b4b121fe9c1a2a2de608685c0c75d3eed4d282d9d",
+        "archives": {
+          "native-callback-entry-b1256-20261121-space-audited/observations.tgz": "a37689a15df875a62ce7c1e67c72b9b42304411123dd5c35b8b1f9d74f42d731",
+          "native-callback-entry-confirm-b1257-20261121/observations.tgz": "b751a1a5f1da62b2a0dc16416e93e04aa71c10e502b949c21d3526da18fda4fe",
+          "native-callback-text-cpython-b1258-20261121/observations.tgz": "a60e934f0c2d146aff9a99165a714bf002899cab3fca5bbc9031c8f4185ebd0f"
+        },
+        "optional": false
+      },
+      {
+        "paths": [
+          "annotations-in-creation-b1291-20261121/candidate/Lokad.Lython.dll",
+          "annotations-in-creation-confirm-b1292-20261121/candidate/Lokad.Lython.dll"
+        ],
+        "links": 2,
+        "bytes": 5710848,
+        "sha256": "53cdf0d831d315ffc0da0f329edd430ebae904d0987f4264b0b0787ab123233d",
+        "archives": {
+          "annotations-in-creation-b1291-20261121/observations.tgz": "c8cc5c2cb2e4b4cdef13b92c421d6971089fce0f9adb6d6cc974af9e0c5b81ae",
+          "annotations-in-creation-confirm-b1292-20261121/observations.tgz": "3221ffc921a4a453faca1934a32ec22042f4522b0983e5394a4526ce982558b4"
+        },
+        "optional": false
+      }
+    ],
+    "alreadyAbsent": [],
+    "freshIdleLease": true,
+    "allHashesPathsOwnershipLinksAndAliasesVerified": true,
+    "canonicalArchiveAndCurrentImagesPreserved": true,
+    "freeBeforeBytes": 177070080,
+    "freeAfterBytes": 176828416
+  },
+  "rows": [
+    {
+      "case": "scripts.fully-supplied-methods",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 0.6570968721047331,
+        "reference": 0.725659229213483,
+        "candidate-control": 0.6796225042016807,
+        "reference-control": 0.6954634914529915
+      },
+      "cpuMilliseconds": {
+        "candidate": 0.6545820745216515,
+        "reference": 0.7303370786516854,
+        "candidate-control": 0.6827731092436975,
+        "reference-control": 0.6944444444444444
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.4906988918024485,
+        "reference": 0.3399994847614205,
+        "candidate-control": 0.43758466297861714,
+        "reference-control": 0.1470100426231618
+      },
+      "elapsedChangePercent": [
+        -9.448285689560143,
+        -6.344124508924109,
+        -5.516697830981931,
+        -2.277759716504335
+      ],
+      "cpuChangePercent": [
+        -10.37260825780464,
+        -6.512605042016806,
+        -5.740181268882183,
+        -1.680672268907557
+      ],
+      "referenceSpreadPercent": 4.341814938035826,
+      "candidateSpreadPercent": 3.428053465662706
+    },
+    {
+      "case": "scripts.csv-invoice.method-policy",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 8.388739618421052,
+        "candidate-control": 8.388307644736843,
+        "reference": 8.372971623376623,
+        "candidate": 8.452850454545455
+      },
+      "cpuMilliseconds": {
+        "reference-control": 8.552631578947368,
+        "candidate-control": 8.421052631578947,
+        "reference": 8.571428571428571,
+        "candidate": 8.571428571428571
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.6712772896623529,
+        "candidate-control": 0.7071661203802205,
+        "reference": 0.6581609534693147,
+        "candidate": 0.960378715557697
+      },
+      "elapsedChangePercent": [
+        -0.00514944680438667,
+        0.18316103350217716,
+        0.7642487315212332,
+        0.9540081438448533
+      ],
+      "cpuChangePercent": [
+        -1.7543859649122862,
+        -1.538461538461544,
+        0.0,
+        0.219780219780219
+      ],
+      "referenceSpreadPercent": 0.18832017775394227,
+      "candidateSpreadPercent": 0.7694378001158464
+    },
+    {
+      "case": "scripts.ordinary-fully-supplied-helper",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 0.37645416317016317,
+        "reference": 0.37655900116414437,
+        "candidate-control": 0.38229137742504404,
+        "reference-control": 0.3888324727707959
+      },
+      "cpuMilliseconds": {
+        "candidate": 0.372960372960373,
+        "reference": 0.3783469150174622,
+        "candidate-control": 0.3821281599059377,
+        "reference-control": 0.3889886295631359
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.09802330711535436,
+        "reference": 0.7735157056740097,
+        "candidate-control": 0.42458595527306214,
+        "reference-control": 0.6873984128723852
+      },
+      "elapsedChangePercent": [
+        -3.1834557212842007,
+        -1.6822399886358363,
+        -0.027841053767696522,
+        1.5223049357943497
+      ],
+      "cpuChangePercent": [
+        -4.120494889725668,
+        -1.763668430335108,
+        -1.4237045006275761,
+        0.9994121105232123
+      ],
+      "referenceSpreadPercent": 3.259375441486645,
+      "candidateSpreadPercent": 1.5505776867295262
+    }
+  ],
+  "CPythonRefreshed": false,
+  "collection": "B1294",
+  "sourceRevision": "8ff3a3371d2480f373eae877093e32fbbd16b7a4 versus ec3e76b89780ef1fac6721059ba3e9dcc69b8387",
+  "verifiedTimedBatches": 84,
+  "coreSHA256": {
+    "reference": "4a926136f58038d172b420d1408f6071985f070bceeb0c188409cc182d1af2a1",
+    "reference-control": "4a926136f58038d172b420d1408f6071985f070bceeb0c188409cc182d1af2a1",
+    "candidate": "dfbed0b60f887d5ce911fe40e670fef86bbb0cd6206e838a75d2f138878a5ca0",
+    "candidate-control": "dfbed0b60f887d5ce911fe40e670fef86bbb0cd6206e838a75d2f138878a5ca0"
+  },
+  "archiveSHA256": "6110b856e2e100674aa625b4df8adc505abf905189566177964417bc89a56526",
+  "retentionDecision": "Retain direct positional receiver fill. The affected method script improves across all quiet elapsed and CPU pairings. The method invoice is effectively flat, the free function spans zero, and accounting and allocation match."
+}

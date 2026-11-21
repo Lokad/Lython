@@ -73,9 +73,9 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
         LythonRuntime.ExecutionContext context, object? receiver, ExecutableCallSite? callSite)
         => LythonRuntime.BindFunctionArgumentsAsync([], span, this, context, receiver, callSite, arguments, CodeObject.ValueStorageCapacity);
 
-    // No defaults, receiver insertion or dynamic binding during the borrow.
-    internal bool CanBorrowPositionalArguments(int count, object? receiver)
-        => receiver is null && SupportsPositionalBinding && count == PositionalCount;
+    // A complete positional supply needs no live defaults or dynamic binding.
+    internal bool HasCompletePositionalSupply(int count, object? receiver)
+        => SupportsPositionalBinding && count == PositionalCount - (receiver is null ? 0 : 1);
 
     internal bool CanTakeExpandedKeywords(int positionalCount, object? receiver)
         => KeywordOnlyCount == 0 && VariadicListIndex < 0 &&

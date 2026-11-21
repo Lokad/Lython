@@ -351,7 +351,7 @@ internal sealed partial class LythonRuntime
             // another explicit call. A later context takes over dynamic work.
             if (!site.IsPositionalOnly || site.HasReceiver || target is not PyExecutableFunction function ||
                 function.CodeObject.CallSites.Count != 0 || !function.CanDeferInvocationContext ||
-                !function.CanBorrowPositionalArguments(site.ArgumentCount, null))
+                !function.HasCompletePositionalSupply(site.ArgumentCount, null))
                 return false;
 
             scope.EnterInterpreterFrame(site.CallSpan);

@@ -1,0 +1,38 @@
+[
+  {
+    "case": "scripts.fully-supplied-methods",
+    "reference": 342272,
+    "candidate": 342272,
+    "allocationChangePercent": 0.0,
+    "referenceAccountedPeak": 1981,
+    "candidateAccountedPeak": 1981,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy",
+    "reference": 5806238,
+    "candidate": 5806238,
+    "allocationChangePercent": 0.0,
+    "referenceAccountedPeak": 9433214,
+    "candidateAccountedPeak": 9433214,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.ordinary-fully-supplied-helper",
+    "reference": 142808,
+    "candidate": 142808,
+    "allocationChangePercent": 0.0,
+    "referenceAccountedPeak": 1255,
+    "candidateAccountedPeak": 1255,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.csv-invoice.large",
+    "reference": 3672430,
+    "candidate": 3672430,
+    "allocationChangePercent": 0.0,
+    "referenceAccountedPeak": 9432613,
+    "candidateAccountedPeak": 9432613,
+    "allowanceRestored": true
+  }
+]

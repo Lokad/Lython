@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1294 direct positional receiver binding](results/2026-11-21-direct-positional-methods/README.md)
+removes the general binder from fully supplied methods. The method
+workload runs 2.28–9.45% faster warm with lower CPU. The method invoice
+stays within 1% and the free-function control spans zero. Allocation
+and accounted peaks match. Retain the direct fill. All 84 batches pass.
+
 [B1293 funded UTF-8 windows for regex captures](results/2026-11-21-funded-regex-windows/README.md)
 reuses execution-owned subject payloads for eligible partial values.
 Warm allocation falls 5.42% on log extraction, 19.57% on log splitting

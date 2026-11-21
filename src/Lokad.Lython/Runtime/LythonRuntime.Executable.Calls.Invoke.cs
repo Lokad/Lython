@@ -31,9 +31,9 @@ internal sealed partial class LythonRuntime
             }
             if (function is not null && function.CanStartInline && invocation is not null)
             {
-                var borrow = call.IsPositionalOnly
-                    && function.CanBorrowPositionalArguments(call.ArgumentCount, functionReceiver);
-                if (!borrow && !function.CanBindNativeArguments) return false;
+                var completePositional = call.IsPositionalOnly
+                    && function.HasCompletePositionalSupply(call.ArgumentCount, functionReceiver);
+                if (!completePositional && !function.CanBindNativeArguments) return false;
                 var callEntered = false;
                 try
                 {
@@ -43,7 +43,7 @@ internal sealed partial class LythonRuntime
                     var arguments = execution.Stack.Slice(start + call.ArgumentOffset, call.ArgumentCount).Span;
                     var unpackedReturn = PrepareUnpackedCallReturn(ref execution, call, start, out var originalExtent);
                     function.StartNativeCall(call, arguments, functionReceiver, scope, call.CallSpan,
-                        CallResultConsumedByIteration(in execution, call), borrow, unpackedReturn,
+                        CallResultConsumedByIteration(in execution, call), completePositional, unpackedReturn,
                         out var unpacked, out var value, out var frame);
                     if (!unpacked) execution.Stack.RestoreNativeExtent(originalExtent);
                     if (frame is not null)

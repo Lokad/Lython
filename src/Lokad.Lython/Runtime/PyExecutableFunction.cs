@@ -75,7 +75,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal void StartNativeCall(ExecutableCallSite call, ReadOnlySpan<LythonRuntime.ExecutableSlot> arguments, object? receiver,
         LythonRuntime.ExecutionContext context, LythonSourceSpan span, bool consumedByIteration,
-        bool borrow, Span<LythonRuntime.ExecutableSlot> unpackedReturn, out bool unpacked,
+        bool completePositional, Span<LythonRuntime.ExecutableSlot> unpackedReturn, out bool unpacked,
         out LythonRuntime.ExecutableSlot result, out LythonRuntime.ExecutionContext? frame)
     {
         // Both executable callers select eligibility before entry. Starting a
@@ -87,9 +87,11 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         // This span is private to the synchronous prefix and cannot escape. Its
         // live values transfer before suspension; stack exit ends the remaining
         // references. Owned callback arrays keep their ordinary full clear.
-        if (borrow)
+        if (completePositional)
         {
-            arguments.CopyTo(values!);
+            var first = 0;
+            if (receiver is not null) values[first++].Object = receiver;
+            arguments.CopyTo(values[first..]);
         }
         else LythonRuntime.BindFunctionArgumentsInto(values[..ParameterCount],
             [], span, this, context, receiver: receiver, callSite: call, operands: arguments);
@@ -108,13 +110,12 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         result = default;
         frame = null;
         owned = default;
-        var first = receiver is null ? 0 : 1;
-        if (!CanStartInline || !SupportsPositionalBinding || arguments.Length != PositionalCount - first)
-            return false;
+        if (!CanStartInline || !HasCompletePositionalSupply(arguments.Length, receiver)) return false;
 
         NativeValues buffer = default;
         Span<LythonRuntime.ExecutableSlot> values = buffer;
-        if (receiver is not null) values[0].Object = receiver;
+        var first = 0;
+        if (receiver is not null) values[first++].Object = receiver;
         for (var i = 0; i < arguments.Length; i++)
         {
             if (!arguments[i].IsPositional) return false;

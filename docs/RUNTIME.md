@@ -804,6 +804,9 @@ Ordinary calls borrow their existing operands; zero-argument declarations have a
 fixed-arity invocation without empty argument-memory transport. Exposed methods retain a distinct bound value
 with its receiver and metadata. Fixed zero-argument values reuse their existing
 wrapper and raw argument validation; other shapes use the ordinary binder.
+Fully supplied positional Python calls fill the final managed slots directly,
+including the selected receiver for a method. Calls that need keyword or
+default binding use the general binder.
 Suspended protocols keep the receiver and operands funded until completion
 and cleanup. Custom string index, width and line-ending truth callbacks can suspend
 under RunAsync. Native no-argument and helper operations remain shared.
