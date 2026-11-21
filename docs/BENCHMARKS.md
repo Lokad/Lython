@@ -16,6 +16,7 @@
 | Inline forwarding with dynamic keys | 1,024 records / 26,112 B | 1.894–1.913 ms | 1.139–1.159 ms | 1.63–1.68× | B1102 diagnostic. Controls L/C 1.01 / 1.74%. IQR ≤2.35%. |
 | Expanded forwarding report | 1,024 records / 26,112 B | 1.533–1.543 ms | 1.173–1.189 ms | 1.29–1.32× | B1180 diagnostic. Controls L/C 0.62 / 1.38%. IQR ≤4.03%. |
 | CSV invoice | 4,096 data records / 127,031 B | 6.877–7.224 ms | 6.588–6.618 ms | 1.04–1.10× | B1229 diagnostic. Controls L/C 5.04 / 0.45%. IQR ≤1.30%. |
+| CSV invoice with policy methods | 4,096 data records / 127,031 B | 7.402–7.434 ms | 6.054–6.144 ms | 1.205–1.228× | B1298 diagnostic. Controls L/C 0.43 / 1.50%. IQR ≤0.84%. |
 | Retained nonlocal siblings | 240 factories / 720 returned closures | 0.169–0.170 ms | 0.188–0.190 ms | 0.89–0.90× | B1109 diagnostic. Controls L/C 0.57 / 0.89%. IQR ≤2.72%. |
 | Shipment report with named format selectors | 3,072 records / 189,441 B | 3.732–3.755 ms | 3.357–3.410 ms | 1.09–1.12× | B1233 diagnostic. Controls L/C 0.62 / 1.56%. IQR ≤2.71%. |
 | Shipment report using `str.format_map` | 3,072 records / 189,441 B | 3.622–3.724 ms | 2.851–2.900 ms | 1.25–1.31× | B1240 diagnostic. Controls L/C 2.83 / 1.72%. IQR ≤4.94%. |
@@ -30,6 +31,13 @@
 **Ratio = Lython elapsed / CPython elapsed. Above one means slower.** Ranges cover
 the combinations of two process medians per engine, not confidence intervals.
 Controls L/C report the difference between the two Lython/CPython medians.
+
+B1298 measures the CSV policy invoice at **8f210d967**, with the same
+production source as **d51891009**, against **CPython 3.13.16** on
+**2026-11-21 UTC**. All 84 batches passed on the quiet Azure F4as_v7
+with Ubuntu 24.04.4 and .NET 11 RC3. Warm and compile-to-result runs
+include mediated RAM-backed file I/O and prior-result cleanup.
+[B1298 checkpoint](../benchmarks/results/2026-11-21-cpython-method-invoice/README.md).
 
 B1285 measures the nested factories at **256c5e651** against
 **CPython 3.13.16** on **2026-11-21 UTC**. Independent warm,
@@ -217,6 +225,8 @@ The table compares workload latency under different containment boundaries.
 | Expanded forwarding report | Compile-to-result | 1.611–1.638 ms | 1.318 ms | 1.22–1.24× | B1180 diagnostic. Controls L/C 1.65 / 0.00%. IQR ≤3.60%. |
 | CSV invoice | Compilation only | 0.07780–0.07865 ms | 0.09355–0.09493 ms | 0.82–0.84× | B1143 diagnostic. Controls L/C 1.08 / 1.48%. IQR ≤1.10%. |
 | CSV invoice | Compile-to-result | 6.625–6.737 ms | 6.367–6.465 ms | 1.02–1.06× | B1143 diagnostic. Controls L/C 1.69 / 1.53%. IQR ≤0.76%. |
+| CSV invoice with policy methods | Compilation only | 0.05971–0.05991 ms | 0.09793–0.09849 ms | 0.606–0.612× | B1298 diagnostic. Controls L/C 0.34 / 0.57%. IQR ≤0.55%. |
+| CSV invoice with policy methods | Compile-to-result | 7.469–7.556 ms | 6.416–6.480 ms | 1.153–1.178× | B1298 diagnostic. Controls L/C 1.17 / 1.00%. IQR ≤0.72%. |
 | Generated validator | Compilation only | 1.63857–1.66815 ms | 1.87953–1.91107 ms | 0.857–0.888× | B1213 diagnostic. Controls L/C 1.81 / 1.68%. IQR ≤3.44%. |
 | Generated validator | Compile-to-result | 1.763–1.794 ms | 2.046–2.086 ms | 0.845–0.877× | B1213 diagnostic. Controls L/C 1.75 / 1.98%. IQR ≤3.16%. |
 | Generated validator, successful integer parses | Compilation only | 1.415–1.436 ms | 1.770–1.781 ms | 0.795–0.811× | B1271 diagnostic. Controls L/C 1.45 / 0.61%. IQR ≤0.76%. |
@@ -397,6 +407,7 @@ for the CPython ratios above.
 
 | Change | Established outcome | Limits / evidence |
 | --- | --- | --- |
+| Resolve ordinary instance methods in native callers | CSV policy invoice runs 8.94–9.57% sooner warm and allocates 29.92% less. The method relay runs 27.59–31.51% sooner and allocates 71.72% less. | The broader version regressed on direct methods. That regression did not recur on the retained native-only version. [B1297](../benchmarks/results/2026-11-21-native-only-method-lookup/README.md). |
 | Share compiled call shape and workspace extents | Postponed factories run 2.81–5.04% sooner warm with 1.77–4.20% lower process CPU. Factory allocation falls 3.72–5.57%. | Eager nested, fully supplied and dataclass controls span zero. Postponed time to result remains inconclusive. [B1284](../benchmarks/results/2026-11-21-compiled-call-metadata/README.md). |
 | Admit function attribute overrides on first write | Local factory allocation falls 5.28–7.71%. Postponed time to result is 0.31–8.00% sooner. | Reference spread is 5.98% and CPU spans zero. Warm timing is mixed. The wrapper control allocates 0.69% more and its accounted peak rises 131,072 bytes. [B1283](../benchmarks/results/2026-11-21-direct-function-override-admission/README.md). |
 | Record source lines during literal scanning | Removes the second pass over accepted string literals. Template compilation uses 1.88–2.50% less process CPU. | Template compile elapsed touches zero. Both time-to-result measurements and the inherited dataclass control span zero. [B1280](../benchmarks/results/2026-11-21-compiler-literal-newlines/README.md). |
