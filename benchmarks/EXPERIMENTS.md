@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1287 single-pass JSON string validation](results/2026-11-21-json-string-validation/README.md)
+keeps the measured prototype private. Normalization runs 1.03–2.51%
+faster and the plain report 2.68–7.04% faster, both with lower CPU.
+The escaped report takes 2.23–4.18% longer and uses more CPU across
+all pairings. The text control spans zero. All 140 batches pass.
+
 [Compiler branch-prefix copy](results/2026-11-21-compiler-branch-prefix-copy/README.md)
 keeps the prototype private. Bulk copying retains the layout stage.
 Local validator timing is inconclusive with unstable identical-image
