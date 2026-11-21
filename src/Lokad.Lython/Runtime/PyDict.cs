@@ -591,17 +591,18 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
 
     public PyString RenderInterpolated(PyRenderingContext context) => PyRendering.ToReprPyString(this, context);
 
-    public IEnumerator<KeyValuePair<object, object>> GetEnumerator()
-        => EnumerateItems(new ItemCursor(this)).GetEnumerator();
+    public ItemEnumerator GetEnumerator() => new(this);
 
-    private static IEnumerable<KeyValuePair<object, object>> EnumerateItems(ItemCursor cursor)
+    public struct ItemEnumerator(PyDict dictionary) : IEnumerator<KeyValuePair<object, object>>
     {
-        try
-        {
-            while (cursor.MoveNext(out var pair))
-                yield return pair;
-        }
-        finally { cursor.Dispose(); }
+        private ItemCursor _cursor = new(dictionary);
+        private KeyValuePair<object, object> _current;
+
+        public readonly KeyValuePair<object, object> Current => _current;
+        readonly object System.Collections.IEnumerator.Current => _current;
+        public bool MoveNext() => _cursor.MoveNext(out _current);
+        public readonly void Dispose() => _cursor.Dispose();
+        readonly void System.Collections.IEnumerator.Reset() => throw new NotSupportedException();
     }
 
     internal struct ItemCursor(PyDict dictionary)
@@ -628,9 +629,10 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
             return false;
         }
 
-        internal void Dispose() => _bridge?.Dispose();
+        internal readonly void Dispose() => _bridge?.Dispose();
     }
 
+    IEnumerator<KeyValuePair<object, object>> IEnumerable<KeyValuePair<object, object>>.GetEnumerator() => GetEnumerator();
     System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
 
     internal void DiscardUnpublishedStorage()
