@@ -6,11 +6,18 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1301 retained CSV invoice attribution](results/2026-11-21-retained-invoice-attribution/README.md)
+finds 224 samples in CSV input and parsing, 83 in finalization, 31 in
+row adoption and 10 in text line acquisition. Overlapping stacks and
+unresolved frames limit attribution. Test direct field ranges in the
+already admitted line buffer before changing header validation.
+
 [B1299 inline single-match regex scratch](results/2026-11-21-regex-inline-one-shot/README.md)
 removes the temporary heap capture array and wrapper from small matches.
-The per-record script allocates 3.61% less. Its local elapsed improves,
-while the wide control is unstable. Keep the prototype private pending
-a controlled comparison and a decision on the extra route.
+The per-record script allocates 3.61% less. The quiet repeat confirms
+small-match CPU falls and wide-match CPU rises. Keep the narrow route
+private and refine common single-match ownership.
+[B1300](results/2026-11-21-regex-inline-one-shot/confirmation/README.md).
 
 [B1297 native-only instance lookup](results/2026-11-21-native-only-method-lookup/README.md)
 keeps ordinary method callers on their existing native slots. The

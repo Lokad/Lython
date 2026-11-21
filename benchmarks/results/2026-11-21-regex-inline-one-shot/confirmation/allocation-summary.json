@@ -1,0 +1,29 @@
+[
+  {
+    "case": "scripts.regex.single-match-records",
+    "reference": 6522144,
+    "candidate": 6286624,
+    "allocationChangePercent": -3.6110824906656513,
+    "referenceAccountedPeak": 508741,
+    "candidateAccountedPeak": 508741,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.regex.cursor-records",
+    "reference": 754656,
+    "candidate": 754550,
+    "allocationChangePercent": -0.014046134927703235,
+    "referenceAccountedPeak": 523428,
+    "candidateAccountedPeak": 523428,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.regex.wide-single-match",
+    "reference": 3818872,
+    "candidate": 3818872,
+    "allocationChangePercent": 0.0,
+    "referenceAccountedPeak": 342325,
+    "candidateAccountedPeak": 342325,
+    "allowanceRestored": true
+  }
+]

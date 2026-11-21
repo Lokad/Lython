@@ -27,6 +27,7 @@ The wide control has large duplicate-worker spreads, and the
 developer-machine elapsed data leave its effect unresolved. Keep the
 prototype private pending a controlled comparison and a decision on
 whether the current narrow scratch change justifies a separate route.
+[B1300 quiet comparison and decision](confirmation/README.md).
 
 Windows .NET 11 and Ubuntu .NET 10 each pass 67 white-box and 422
 public Release checks. These cover provider results, original-subject

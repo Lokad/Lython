@@ -1,0 +1,13 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "persistentTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 176533504,
+  "archiveSHA256": "5fe2d922604f8411634995946b16e15a3a7e329d15afb0ded058b1e8affcf896",
+  "source": "Retained CSV policy invoice CPU attribution",
+  "performanceComparison": false,
+  "failure": null
+}
