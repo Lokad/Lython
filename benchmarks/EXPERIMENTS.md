@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1275 deferred subgroup coordinates](results/2026-11-21-observed-regex-coordinates/README.md)
+removes long-lived projection scratch, with stable local allocation
+after sharing each window. The quiet comparison favors text-only
+callbacks. Subgroup spans, the ASCII control and wide registers are
+slower with higher CPU. Keep both variants private.
+
 [B1274 text report at the casing checkpoint](results/2026-11-21-cpython-casing-checkpoint/README.md)
 places Lython at 1.181–1.228× CPython warm, 0.616–0.648× compilation
 and 1.144–1.223× to result. All 84 independent phase batches pass.

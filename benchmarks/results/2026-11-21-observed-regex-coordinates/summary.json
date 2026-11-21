@@ -1,0 +1,389 @@
+{
+  "method": "Windows .NET 11 RC3 local process elapsed diagnostic, current optional adapter 0.4.0, no quiet CPU or CPython timing comparison",
+  "candidates": [
+    {
+      "stage": "inline-window",
+      "measuredSource": "e4713ce4a19bd160213b42be38007c6f36281692",
+      "reference": "b140244f0030b679dbbd8681f3c302c3ae15281f",
+      "coreSHA256": "dd5cbfdef4682e311ab842fbe3b9fc1fd48a2e8ff6b8a37fd1f3057fd651126f",
+      "completeImageFiles": 32,
+      "verifiedTimedBatches": 120,
+      "timing": [
+        {
+          "case": "scripts.regex-unicode-groups",
+          "medianMilliseconds": {
+            "reference": 11.3120875,
+            "candidate": 12.8242875,
+            "reference-control": 11.35663125,
+            "candidate-control": 11.5554125
+          },
+          "changePercent": [
+            1.7503540057268285,
+            2.151017661417476,
+            12.923341593925585,
+            13.368001264134488
+          ],
+          "warmSeconds": {
+            "reference": 1.6568649006076157,
+            "candidate": 1.6711436002515256,
+            "reference-control": 1.6351789995096624,
+            "candidate-control": 1.6241822000592947
+          }
+        },
+        {
+          "case": "scripts.regex-unicode-callback-text",
+          "medianMilliseconds": {
+            "reference": 11.5856,
+            "candidate": 10.59690625,
+            "reference-control": 11.00833125,
+            "candidate-control": 10.39294375
+          },
+          "changePercent": [
+            -10.294298525756107,
+            -8.533815684988255,
+            -5.5901978785385715,
+            -3.7373966194921615
+          ],
+          "warmSeconds": {
+            "candidate": 1.5997232990339398,
+            "reference-control": 1.634532599709928,
+            "candidate-control": 1.5430381991900504,
+            "reference": 1.6686422997154295
+          }
+        },
+        {
+          "case": "scripts.regex-unicode-spans",
+          "medianMilliseconds": {
+            "reference": 10.082,
+            "candidate": 10.2319125,
+            "reference-control": 10.070275,
+            "candidate-control": 10.60703125
+          },
+          "changePercent": [
+            1.486932156318188,
+            1.6050951935274727,
+            5.2076100972029415,
+            5.330105185806744
+          ],
+          "warmSeconds": {
+            "reference-control": 1.6316360998898745,
+            "candidate-control": 1.7704173997044563,
+            "reference": 1.572762900032103,
+            "candidate": 1.6653624000027776
+          }
+        },
+        {
+          "case": "scripts.regex-unicode-whole-offsets",
+          "medianMilliseconds": {
+            "reference": 10.0771375,
+            "candidate": 9.5143875,
+            "reference-control": 10.65535625,
+            "candidate-control": 9.6294
+          },
+          "changePercent": [
+            -10.707936208139458,
+            -9.62854949124765,
+            -5.584423155881312,
+            -4.443102021779488
+          ],
+          "warmSeconds": {
+            "candidate-control": 1.5598720009438694,
+            "reference": 1.5583625994622707,
+            "candidate": 1.6425519003532827,
+            "reference-control": 1.6205965001136065
+          }
+        },
+        {
+          "case": "scripts.regex-ascii-groups",
+          "medianMilliseconds": {
+            "reference": 9.6513,
+            "candidate": 8.78358125,
+            "reference-control": 8.7821,
+            "candidate-control": 8.7356
+          },
+          "changePercent": [
+            -9.487841016236164,
+            -8.990692963642221,
+            -0.5294861137996598,
+            0.01686669475409186
+          ],
+          "warmSeconds": {
+            "reference": 1.7247079005464911,
+            "candidate": 1.6684093992225826,
+            "reference-control": 1.6515991995111108,
+            "candidate-control": 1.635803799610585
+          }
+        },
+        {
+          "case": "scripts.regex-unicode-wide-registers",
+          "medianMilliseconds": {
+            "reference": 1.6949625,
+            "candidate": 1.73488125,
+            "reference-control": 1.74063125,
+            "candidate-control": 1.70170625
+          },
+          "changePercent": [
+            -2.236257679505649,
+            -0.3303399269661611,
+            0.3978701593693179,
+            2.355140600455763
+          ],
+          "warmSeconds": {
+            "candidate": 1.5144654009491205,
+            "reference-control": 1.580640699248761,
+            "candidate-control": 1.5588510991074145,
+            "reference": 1.730063400696963
+          }
+        }
+      ],
+      "allocation": [
+        {
+          "case": "scripts.regex-unicode-groups",
+          "previousAllocatedBytes": 3413084,
+          "candidateAllocatedBytes": 3462132,
+          "allocationChangePercent": 1.4370580976032166,
+          "previousAccountedPeak": 2089005,
+          "candidateAccountedPeak": 2088909,
+          "budgetReturnedToBaseline": true
+        },
+        {
+          "case": "scripts.regex-unicode-callback-text",
+          "previousAllocatedBytes": 4986672,
+          "candidateAllocatedBytes": 5035720,
+          "allocationChangePercent": 0.9835818357413428,
+          "previousAccountedPeak": 2165118,
+          "candidateAccountedPeak": 2165118,
+          "budgetReturnedToBaseline": true
+        },
+        {
+          "case": "scripts.regex-unicode-spans",
+          "previousAllocatedBytes": 3363608,
+          "candidateAllocatedBytes": 3412656,
+          "allocationChangePercent": 1.4581960799237015,
+          "previousAccountedPeak": 1463813,
+          "candidateAccountedPeak": 1463717,
+          "budgetReturnedToBaseline": true
+        },
+        {
+          "case": "scripts.regex-unicode-whole-offsets",
+          "previousAllocatedBytes": 3363552,
+          "candidateAllocatedBytes": 3326464,
+          "allocationChangePercent": -1.1026438717165687,
+          "previousAccountedPeak": 1463701,
+          "candidateAccountedPeak": 1463605,
+          "budgetReturnedToBaseline": true
+        },
+        {
+          "case": "scripts.regex-ascii-groups",
+          "previousAllocatedBytes": 3103848,
+          "candidateAllocatedBytes": 3152984,
+          "allocationChangePercent": 1.58306721205419,
+          "previousAccountedPeak": 2075085,
+          "candidateAccountedPeak": 2075085,
+          "budgetReturnedToBaseline": true
+        },
+        {
+          "case": "scripts.regex-unicode-wide-registers",
+          "previousAllocatedBytes": 2453568,
+          "candidateAllocatedBytes": 2339120,
+          "allocationChangePercent": -4.664553825286277,
+          "previousAccountedPeak": 1366521,
+          "candidateAccountedPeak": 1365705,
+          "budgetReturnedToBaseline": true
+        }
+      ]
+    },
+    {
+      "stage": "shared-window",
+      "measuredSource": "5526a5aa9efa90667519be5655be3e3d6d97b58a",
+      "reference": "b140244f0030b679dbbd8681f3c302c3ae15281f",
+      "coreSHA256": "a97524c63c8024381325dc38703e8189800dde55f6e92dc6d6d393b97315de35",
+      "completeImageFiles": 32,
+      "verifiedTimedBatches": 120,
+      "timing": [
+        {
+          "case": "scripts.regex-unicode-groups",
+          "medianMilliseconds": {
+            "reference": 10.79218125,
+            "candidate": 10.45371875,
+            "reference-control": 10.7231,
+            "candidate-control": 10.61
+          },
+          "changePercent": [
+            -3.1361825024945778,
+            -2.512158331079639,
+            -1.6880855295124064,
+            -1.0547323068888725
+          ],
+          "warmSeconds": {
+            "reference": 1.6498524993658066,
+            "candidate": 1.6360833002254367,
+            "reference-control": 1.66747389966622,
+            "candidate-control": 1.6569500998593867
+          }
+        },
+        {
+          "case": "scripts.regex-unicode-callback-text",
+          "medianMilliseconds": {
+            "reference": 10.85710625,
+            "candidate": 10.61854375,
+            "reference-control": 10.7809,
+            "candidate-control": 10.3864625
+          },
+          "changePercent": [
+            -4.334891260735329,
+            -3.658669498835909,
+            -2.1972935928484483,
+            -1.5059619326772355
+          ],
+          "warmSeconds": {
+            "candidate": 1.647314500529319,
+            "reference-control": 1.700688200071454,
+            "candidate-control": 1.5249486002139747,
+            "reference": 1.6501229996792972
+          }
+        },
+        {
+          "case": "scripts.regex-unicode-spans",
+          "medianMilliseconds": {
+            "reference": 14.17434375,
+            "candidate": 12.9956875,
+            "reference-control": 11.45360625,
+            "candidate-control": 12.22170625
+          },
+          "changePercent": [
+            -13.775858229768135,
+            -8.31542024652816,
+            6.706184787869773,
+            13.46371803203905
+          ],
+          "warmSeconds": {
+            "reference-control": 1.5686092991381884,
+            "candidate-control": 1.5920277005061507,
+            "reference": 1.61026749946177,
+            "candidate": 1.6026428998447955
+          }
+        },
+        {
+          "case": "scripts.regex-unicode-whole-offsets",
+          "medianMilliseconds": {
+            "reference": 9.5997125,
+            "candidate": 9.15604375,
+            "reference-control": 10.1251375,
+            "candidate-control": 9.77506875
+          },
+          "changePercent": [
+            -9.57116631749444,
+            -4.621687889090431,
+            -3.457422183155523,
+            1.8266823094962525
+          ],
+          "warmSeconds": {
+            "candidate-control": 1.5421186001040041,
+            "reference": 1.6783269993029535,
+            "candidate": 1.5502879000268877,
+            "reference-control": 1.676182399969548
+          }
+        },
+        {
+          "case": "scripts.regex-ascii-groups",
+          "medianMilliseconds": {
+            "reference": 8.73994375,
+            "candidate": 8.739875,
+            "reference-control": 8.8941875,
+            "candidate-control": 8.80935
+          },
+          "changePercent": [
+            -1.7349814134230868,
+            -0.9538532890159934,
+            -0.0007866183349358735,
+            0.7941269644899052
+          ],
+          "warmSeconds": {
+            "reference": 1.619117099326104,
+            "candidate": 1.61903109960258,
+            "reference-control": 1.5858930004760623,
+            "candidate-control": 1.6158279003575444
+          }
+        },
+        {
+          "case": "scripts.regex-unicode-wide-registers",
+          "medianMilliseconds": {
+            "reference": 1.7168625,
+            "candidate": 1.774325,
+            "reference-control": 1.71678125,
+            "candidate-control": 1.7384125
+          },
+          "changePercent": [
+            1.2551966159200179,
+            1.2599887143455168,
+            3.3469482850257304,
+            3.3518393796530654
+          ],
+          "warmSeconds": {
+            "candidate": 1.5460355994291604,
+            "reference-control": 1.5188880003988743,
+            "candidate-control": 1.543573800008744,
+            "reference": 1.7460595988668501
+          }
+        }
+      ],
+      "allocation": [
+        {
+          "case": "scripts.regex-unicode-groups",
+          "previousAllocatedBytes": 3412664,
+          "candidateAllocatedBytes": 3412616,
+          "allocationChangePercent": -0.0014065258109208223,
+          "previousAccountedPeak": 2089005,
+          "candidateAccountedPeak": 2088973,
+          "budgetReturnedToBaseline": true
+        },
+        {
+          "case": "scripts.regex-unicode-callback-text",
+          "previousAllocatedBytes": 4986672,
+          "candidateAllocatedBytes": 4986624,
+          "allocationChangePercent": -0.0009625658154321926,
+          "previousAccountedPeak": 2165118,
+          "candidateAccountedPeak": 2165182,
+          "budgetReturnedToBaseline": true
+        },
+        {
+          "case": "scripts.regex-unicode-spans",
+          "previousAllocatedBytes": 3364028,
+          "candidateAllocatedBytes": 3363980,
+          "allocationChangePercent": -0.0014268608941381267,
+          "previousAccountedPeak": 1463813,
+          "candidateAccountedPeak": 1463781,
+          "budgetReturnedToBaseline": true
+        },
+        {
+          "case": "scripts.regex-unicode-whole-offsets",
+          "previousAllocatedBytes": 3191820,
+          "candidateAllocatedBytes": 3191360,
+          "allocationChangePercent": -0.01441184026668152,
+          "previousAccountedPeak": 1463701,
+          "candidateAccountedPeak": 1463669,
+          "budgetReturnedToBaseline": true
+        },
+        {
+          "case": "scripts.regex-ascii-groups",
+          "previousAllocatedBytes": 3103848,
+          "candidateAllocatedBytes": 3103888,
+          "allocationChangePercent": 0.0012887229013713863,
+          "previousAccountedPeak": 2075085,
+          "candidateAccountedPeak": 2075149,
+          "budgetReturnedToBaseline": true
+        },
+        {
+          "case": "scripts.regex-unicode-wide-registers",
+          "previousAllocatedBytes": 2453568,
+          "candidateAllocatedBytes": 2337128,
+          "allocationChangePercent": -4.745741711662365,
+          "previousAccountedPeak": 1366521,
+          "candidateAccountedPeak": 1365769,
+          "budgetReturnedToBaseline": true
+        }
+      ]
+    }
+  ]
+}
