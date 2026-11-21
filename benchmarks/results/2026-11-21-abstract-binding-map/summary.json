@@ -1,0 +1,146 @@
+{
+  "complete": true,
+  "elapsedSeconds": 275.2259793970734,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "staging": {
+    "retiredOnly": [
+      {
+        "archives": {
+          "instruction-scratch-b1265-20261121/observations.tgz": "08f9d57e8021b45bda04a56fd48606b4b2a7d502f0e1a80a238a5a8f594e40cb",
+          "instruction-scratch-b1266-20261121/observations.tgz": "31a26d0c05a7c7fa0e141c9aa57d11a0e3f90e3e01de0b794fc287a011db2c7e",
+          "instruction-scratch-refined-b1267-20261121/observations.tgz": "df6ffaff8192f2c1ce1495f9f6ce91d448ae90c7fe1a19dc26a4ea2b16161943",
+          "parser-endpoint-spans-b1268-20261121/observations.tgz": "9d600d0417111a1fc3e8c63de637a9cfa32984b11052072654da769867bd8e7a"
+        },
+        "paths": [
+          "instruction-scratch-b1265-20261121/reference/Lokad.Lython.dll",
+          "instruction-scratch-b1266-20261121/reference/Lokad.Lython.dll",
+          "instruction-scratch-refined-b1267-20261121/reference/Lokad.Lython.dll",
+          "parser-endpoint-spans-b1268-20261121/reference/Lokad.Lython.dll"
+        ],
+        "bytes": 5683200,
+        "links": 4,
+        "sha256": "1ab64da0c0d11b13c551f0f74d0d790447c653d572dccafe6dff4a5aa1bb13bb",
+        "verifiedCanonicalGitImage": "benchmarks/results/2026-11-21-instruction-scratch/reference-core.dll.gz"
+      }
+    ],
+    "alreadyAbsent": [],
+    "freshIdleLease": true,
+    "allHashesPathsOwnershipLinksAndAliasesVerified": true,
+    "canonicalArchiveAndCurrentImagesPreserved": true,
+    "freeBeforeBytes": 187858944,
+    "freeAfterBytes": 187781120
+  },
+  "rows": [
+    {
+      "case": "scripts.config-generated-guards.medium.bad-0",
+      "lane": "compile",
+      "elapsedMilliseconds": {
+        "candidate": 1.400103037701975,
+        "reference": 1.4156058770053477,
+        "candidate-control": 1.4199841433691756,
+        "reference-control": 1.4163740757042254
+      },
+      "cpuMilliseconds": {
+        "candidate": 1.4183123877917416,
+        "reference": 1.4260249554367204,
+        "candidate-control": 1.4336917562724014,
+        "reference-control": 1.426056338028169
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.8134771260846004,
+        "reference": 0.36867045850374863,
+        "candidate-control": 1.178735775978273,
+        "reference-control": 0.6561293826458012
+      },
+      "elapsedChangePercent": [
+        -1.14878112225828,
+        -1.0951380998903693,
+        0.2548809475459546,
+        0.30928568713559645
+      ],
+      "cpuChangePercent": [
+        -0.5430325597889807,
+        -0.5408438061041299,
+        0.535421921323942,
+        0.5376344086021279
+      ],
+      "referenceSpreadPercent": 0.05426642481187738,
+      "candidateSpreadPercent": 1.4199744684385562
+    },
+    {
+      "case": "scripts.config-generated-guards.medium.bad-0",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "reference-control": 1.5778112429149798,
+        "candidate-control": 1.5484720722891565,
+        "reference": 1.576351466395112,
+        "candidate": 1.5612937822580644
+      },
+      "cpuMilliseconds": {
+        "reference-control": 1.639676113360324,
+        "candidate-control": 1.606425702811245,
+        "reference": 1.629327902240326,
+        "candidate": 1.6330645161290323
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.8961757372407918,
+        "candidate-control": 1.1063791978010733,
+        "reference": 0.8196556442687403,
+        "candidate": 1.0815100001663807
+      },
+      "elapsedChangePercent": [
+        -1.859485458578658,
+        -1.7686026689029966,
+        -1.046859105047293,
+        -0.9552237846729872
+      ],
+      "cpuChangePercent": [
+        -2.027864544598146,
+        -1.4056224899598457,
+        -0.40322580645161255,
+        0.2293346774193461
+      ],
+      "referenceSpreadPercent": 0.09260476175443344,
+      "candidateSpreadPercent": 0.828023326888494
+    },
+    {
+      "case": "scripts.dataclass-inherited-configuration.generated",
+      "lane": "compile",
+      "elapsedMilliseconds": {
+        "candidate": 0.18810877399232245,
+        "reference": 0.18861736515794436,
+        "candidate-control": 0.187017250357313,
+        "reference-control": 0.19060051739860812
+      },
+      "cpuMilliseconds": {
+        "candidate": 0.1895393474088292,
+        "reference": 0.1885902876001886,
+        "candidate-control": 0.18818484992853743,
+        "reference-control": 0.19198464122870174
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.6873231693024889,
+        "reference": 0.5365619611043363,
+        "candidate-control": 1.1964068830876269,
+        "reference-control": 0.737873489505648
+      },
+      "elapsedChangePercent": [
+        -1.8799880977244832,
+        -1.3073119844027592,
+        -0.8483390695715909,
+        -0.26964175074549734
+      ],
+      "cpuChangePercent": [
+        -1.979216293473085,
+        -1.273692418426109,
+        -0.21498332539302556,
+        0.5032389635316825
+      ],
+      "referenceSpreadPercent": 1.0514155146866377,
+      "candidateSpreadPercent": 0.5836486382534201
+    }
+  ],
+  "CPythonRefreshed": false,
+  "decision": "Keep private. The combined entry increases allocation 41.51% in the large scalar-only state control."
+}

@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1269 unified abstract binding map](results/2026-11-21-abstract-binding-map/README.md)
+removes a branch-state map and join pass. Representative elapsed gains
+are small with mixed CPU, and the scalar-heavy compile control allocates
+41.51% more. Keep the wider entry layout private.
+
 [Abstract interpretation state allocation](results/2026-11-21-abstract-state-costs/README.md)
 separates branch-state copies, invalidation snapshots and static argument
 partitions. State copies account for about 29% of abstract analysis
