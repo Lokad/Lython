@@ -7,7 +7,9 @@ public sealed class JsonDictionaryCallbackLifetimeTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task DictionaryDefaultKeepsOwnersThroughHostIoAndCleanup(bool cancel)
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task DictionaryDefaultKeepsOwnersThroughHostIoAndCleanup(bool cancel, bool expanded = false)
     {
         const string source = """
 import json
@@ -19,7 +21,10 @@ return json.dumps({'value':{1}},default=replacement)
 """;
         var expected = "{\"value\": \"" + new string('a', 4096) + "\"}";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
+        var scriptSource = expanded
+            ? source.Replace("default=replacement", "**{'default': replacement}", StringComparison.Ordinal)
+            : source;
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(scriptSource, budget);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost(); host.SeedFile("/callback.txt", "before");

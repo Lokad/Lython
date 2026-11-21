@@ -643,7 +643,7 @@ internal static class CallExpansion
         internal async ValueTask<object> InvokeAsync(LythonSourceSpan targetSpan, LythonSourceSpan callSpan, bool asynchronous)
         {
             await FinishDeferredStarAsync(asynchronous).ConfigureAwait(false);
-            if (_bindsNativeKeywords)
+            if (_target is LythonRuntime.ISpanCallable)
             {
                 // Binding consumes the live prefix into owned slots before
                 // suspension. The caller owns the accumulator through cleanup.

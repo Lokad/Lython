@@ -556,6 +556,16 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    // Expanded calls give these consumers the accumulator's live prefix.
+    // A pending operation must own any argument storage it still needs.
+    internal interface ISpanCallable : ICallable
+    {
+        abstract object ICallable.InvokeBorrowed(ReadOnlySpan<CallArgumentValue> arguments,
+            LythonSourceSpan span, ExecutionContext context);
+        abstract ValueTask<object> ICallable.InvokeBorrowedAsync(ReadOnlySpan<CallArgumentValue> arguments,
+            LythonSourceSpan span, ExecutionContext context);
+    }
+
     internal static async ValueTask<object> CompleteBorrowedArguments(ValueTask<object> pending,
         CallArgumentValue[] owned, MemoryGovernor.TemporaryMemoryReservation? storage)
     {
@@ -567,7 +577,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private abstract class BoundArgumentsCallable : ICallable
+    private abstract class BoundArgumentsCallable : ISpanCallable
     {
         private readonly PythonCallableKind _callableKind;
 

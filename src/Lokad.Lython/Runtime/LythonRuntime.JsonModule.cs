@@ -39,7 +39,7 @@ internal sealed partial class LythonRuntime
         // Module entry points accept extra keywords at binding so custom
         // cls=... constructors receive them; standard shapes bind exactly
         // like BuiltinCallable, and every introspection answer matches it.
-        private sealed class JsonModuleCallable : ICallable, IPyRenderableValue, IPyDynamicAttributes, IPyContextualDynamicAttributes, IPyBoundEngineMethod, IPyHashableValue
+        private sealed class JsonModuleCallable : ISpanCallable, IPyRenderableValue, IPyDynamicAttributes, IPyContextualDynamicAttributes, IPyBoundEngineMethod, IPyHashableValue
         {
             private readonly LythonCallableSignature _signature;
             private readonly Func<BoundBuiltinArguments, IReadOnlyList<KeyValuePair<string, object>>, LythonSourceSpan, ExecutionContext, object> _implementation;

@@ -4,7 +4,7 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PyBoundMethod : IPyRenderableValue, LythonRuntime.ICallable, IPyDynamicAttributes, IPyHashableValue
+internal sealed class PyBoundMethod : IPyRenderableValue, LythonRuntime.ISpanCallable, IPyDynamicAttributes, IPyHashableValue
 {
     private readonly object _self;
     private readonly LythonRuntime.ICallable _function;
