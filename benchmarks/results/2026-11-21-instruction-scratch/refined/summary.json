@@ -1,0 +1,142 @@
+{
+  "complete": true,
+  "elapsedSeconds": 275.8241118998267,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "staging": {
+    "retiredOnly": [
+      {
+        "archives": {
+          "instruction-scratch-b1265-20261121/observations.tgz": "08f9d57e8021b45bda04a56fd48606b4b2a7d502f0e1a80a238a5a8f594e40cb",
+          "instruction-scratch-b1266-20261121/observations.tgz": "31a26d0c05a7c7fa0e141c9aa57d11a0e3f90e3e01de0b794fc287a011db2c7e"
+        },
+        "paths": [
+          "instruction-scratch-b1265-20261121/candidate/Lokad.Lython.dll",
+          "instruction-scratch-b1266-20261121/candidate/Lokad.Lython.dll"
+        ],
+        "bytes": 5684224,
+        "links": 2,
+        "sha256": "8d39e810d3fa7a7d17da8e090e183837c2417f3ba5e09177f07781b77016bf37",
+        "verifiedCanonicalGitImage": "benchmarks/results/2026-11-21-instruction-scratch/candidate-core.dll.gz"
+      }
+    ],
+    "alreadyAbsent": [],
+    "freshIdleLease": true,
+    "allHashesPathsOwnershipLinksAndAliasesVerified": true,
+    "canonicalArchiveAndCurrentImagesPreserved": true,
+    "freeBeforeBytes": 189005824,
+    "freeAfterBytes": 188928000
+  },
+  "rows": [
+    {
+      "case": "scripts.config-generated-guards.medium.bad-0",
+      "lane": "compile",
+      "elapsedMilliseconds": {
+        "candidate": 1.4415302974910396,
+        "reference": 1.396635132508834,
+        "candidate-control": 1.4544139440433212,
+        "reference-control": 1.3965387847222221
+      },
+      "cpuMilliseconds": {
+        "candidate": 1.4516129032258065,
+        "reference": 1.3957597173144876,
+        "candidate-control": 1.4620938628158846,
+        "reference-control": 1.4062500000000002
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.8625681350732393,
+        "reference": 0.48935719095219155,
+        "candidate-control": 0.9983336235925392,
+        "reference-control": 0.6692687180958958
+      },
+      "elapsedChangePercent": [
+        3.2145235313935316,
+        3.2216443439317954,
+        4.1370011529565875,
+        4.1441856076063655
+      ],
+      "cpuChangePercent": [
+        3.2258064516129004,
+        3.971119133573997,
+        4.001633319722342,
+        4.75254763972035
+      ],
+      "referenceSpreadPercent": 0.006899041234365022,
+      "candidateSpreadPercent": 0.8937478854732062
+    },
+    {
+      "case": "scripts.config-generated-guards.medium.bad-0",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "reference-control": 1.6319085375,
+        "candidate-control": 1.5889767187500001,
+        "reference": 1.6475540210970465,
+        "candidate": 1.5792456008146638
+      },
+      "cpuMilliseconds": {
+        "reference-control": 1.6875000000000002,
+        "candidate-control": 1.6458333333333333,
+        "reference": 1.708860759493671,
+        "candidate": 1.6496945010183302
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 1.3502978589366412,
+        "candidate-control": 0.15036314808605647,
+        "reference": 1.0962856757892783,
+        "candidate": 1.207985898136766
+      },
+      "elapsedChangePercent": [
+        -4.14605041216789,
+        -3.5554101168738583,
+        -3.227076485917102,
+        -2.6307735858634107
+      ],
+      "cpuChangePercent": [
+        -3.688271604938287,
+        -3.462321792260692,
+        -2.469135802469158,
+        -2.2403258655804503
+      ],
+      "referenceSpreadPercent": 0.9587230679615644,
+      "candidateSpreadPercent": 0.6161877500444835
+    },
+    {
+      "case": "scripts.dataclass-inherited-configuration.generated",
+      "lane": "compile",
+      "elapsedMilliseconds": {
+        "candidate": 0.19215220608108108,
+        "reference": 0.1931028771516152,
+        "candidate-control": 0.19171935055528733,
+        "reference-control": 0.1912509872381411
+      },
+      "cpuMilliseconds": {
+        "candidate": 0.19305019305019305,
+        "reference": 0.1933506248526291,
+        "candidate-control": 0.19314340898116852,
+        "reference-control": 0.190223934505177
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.7408393177975754,
+        "reference": 1.2097283648457136,
+        "candidate-control": 1.7581502642829434,
+        "reference-control": 0.7922176763722564
+      },
+      "elapsedChangePercent": [
+        -0.7164712492821135,
+        -0.49231326045323653,
+        0.2448945879495179,
+        0.47122310632456976
+      ],
+      "cpuChangePercent": [
+        -0.1553818626989334,
+        -0.10717103791028082,
+        1.4857533844875537,
+        1.5347566454168016
+      ],
+      "referenceSpreadPercent": 0.9683034530787449,
+      "candidateSpreadPercent": 0.22577560613472603
+    }
+  ],
+  "CPythonRefreshed": false,
+  "decision": "Keep both prototypes private. The branch lookup refinement preserves time-to-result and allocation gains and leaves the compile-only regression."
+}

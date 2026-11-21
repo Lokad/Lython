@@ -1,0 +1,51 @@
+{
+  "compileRows": [
+    {
+      "workload": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "referenceBytes": 67008,
+      "candidateBytes": 67496,
+      "changePercent": 0.7282712511938794
+    },
+    {
+      "workload": "scripts.dataclass-inherited-configuration.generated",
+      "referenceBytes": 598984,
+      "candidateBytes": 598416,
+      "changePercent": -0.09482724079441507
+    },
+    {
+      "workload": "scripts.config-generated-guards.medium.bad-0",
+      "referenceBytes": 2277540.5,
+      "candidateBytes": 2172290.375,
+      "changePercent": -4.6212185908439345
+    }
+  ],
+  "warmRows": [
+    {
+      "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "previousAllocatedBytes": 1275544,
+      "candidateAllocatedBytes": 1275544,
+      "allocationChangePercent": 0.0,
+      "previousAccountedPeak": 2968481,
+      "candidateAccountedPeak": 2968481,
+      "budgetReturnedToBaseline": true
+    },
+    {
+      "case": "scripts.dataclass-inherited-configuration.generated",
+      "previousAllocatedBytes": 409872,
+      "candidateAllocatedBytes": 409872,
+      "allocationChangePercent": 0.0,
+      "previousAccountedPeak": 285027,
+      "candidateAccountedPeak": 285027,
+      "budgetReturnedToBaseline": true
+    },
+    {
+      "case": "scripts.config-generated-guards.medium.bad-0",
+      "previousAllocatedBytes": 66984,
+      "candidateAllocatedBytes": 66984,
+      "allocationChangePercent": 0.0,
+      "previousAccountedPeak": 92830,
+      "candidateAccountedPeak": 92830,
+      "budgetReturnedToBaseline": true
+    }
+  ]
+}

@@ -84,12 +84,32 @@ Time to result is 1.36–4.84% faster with 2.18–4.68% less process CPU.
 The two boundaries reproduce different outcomes. Their measurements
 do not isolate the cause of that difference.
 
-Keep `18ac5adee` private. The reduction in managed allocation and
-time to result makes a source refinement worthwhile. Emission currently
-materializes a block span before checking the opcode. Only the comparison
-jump fold reads that span. Move the lookup into that branch and compare
-the two validator boundaries and an annotated control. Keep the current
-production storage through this experiment.
+B1267 tests `477940108` against the same `b190476cd` reference.
+The refinement limits the block span lookup to a conditional jump that
+can fold a preceding comparison. All 84 timed batches, both quiet
+gates and joined cleanup pass in 276 seconds. The three CPython golden
+checks, instruction metadata and 1,400 focused Release tests per
+platform pass on the revised source. Validator compile allocation
+falls 4.62%. Warm allocation and accounted execution peaks
+match on all three scripts.
+
+| Lane | B1267 elapsed change | B1267 process CPU change |
+| --- | ---: | ---: |
+| Validator compilation | +3.21 to +4.14% | +3.23 to +4.75% |
+| Validator compile-to-result | −4.15 to −2.63% | −3.69 to −2.24% |
+| Dataclass compilation | −0.72 to +0.47% | −0.16 to +1.53% |
+
+Keep both versions private. The whole-script benefit repeats on this
+validator with its included I/O and cleanup. The compiler still consumes
+more wall time and CPU when measured on its own. The prototype adds a
+private allocation structure. Keep the existing compiler representation
+until shared scratch can remove added emission work or replace more of
+the compiler pipeline. B1267 retired only the two aliases of the earlier
+candidate after verifying its committed binary, both archives and every
+remote alias.
+
+[Refined timings](refined/summary.json) · [Refined allocation](refined/allocation-summary.json)
+· [Refined source and checks](refined/checks-and-procedures.tar.xz).
 
 [Phase samples](phases.json) · [Construction allocations](construction-phases.json)
 · [Whole-script allocation](allocation-summary.json) · [Instruction inspection](inspection-summary.json)

@@ -6,12 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
-[B1265/B1266 compiler instruction scratch](results/2026-11-21-instruction-scratch/README.md)
+[B1265–B1267 compiler instruction scratch](results/2026-11-21-instruction-scratch/README.md)
 attributes 338 KB per validator compile to provisional instruction
-list growth. Shared scratch reduces complete compile allocation 5.09%.
-Both comparisons find lower time to result and a slower compiler.
-The tested source stays private while one redundant emission lookup
-is removed and reassessed.
+list growth. Shared scratch reduces complete compile allocation
+roughly 5%. All three comparisons find faster time to result and a
+slower compiler. The narrower emission path leaves the tradeoff,
+so both variants stay private.
 
 [B1263/B1264 lexical expression traversals](results/2026-11-21-lexical-expression-traversals/README.md)
 removes two expression revisits in ordinary scripts. Validator
