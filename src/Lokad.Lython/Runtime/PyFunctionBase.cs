@@ -125,16 +125,22 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
         LythonRuntime.ExecutionContext context, object? receiver = null)
     {
         context.CheckExecution(span);
+        if (this is PyExecutableFunction executable &&
+            executable.TryStartPositionalCallback(arguments, receiver, span, out var result, out var frame, out var owned))
+            return frame is null ? result.Object.RequireNotNull() : InvokeBound(owned, span, frame);
+
         var boundArguments = LythonRuntime.BindFunctionArguments(arguments, span, this, context, receiver, storageCapacity: _storageCapacity);
         return InvokeBound(boundArguments, span);
     }
 
-    internal object InvokeBound(BoundFunctionArguments boundArguments, LythonSourceSpan span)
+    internal object InvokeBound(BoundFunctionArguments boundArguments, LythonSourceSpan span,
+        LythonRuntime.ExecutionContext? initializedFrame = null)
     {
-        LythonRuntime.ExecutionContext? frame = null;
+        var frame = initializedFrame;
         try
         {
-            var prepared = TryStartBoundInvocation(boundArguments, span, out var result, out frame);
+            LythonRuntime.ExecutableSlot result = default;
+            var prepared = frame is not null || TryStartBoundInvocation(boundArguments, span, out result, out frame);
             if (prepared && frame is null) return result.Object.RequireNotNull();
             frame ??= EnterInvocationFrame(boundArguments, span);
             try { return prepared ? LythonRuntime.ExecuteInitializedFrame(frame) ?? PyNone.Instance
@@ -171,6 +177,10 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
         try
         {
             context.CheckExecution(span);
+            if (this is PyExecutableFunction executable &&
+                executable.TryStartPositionalCallback(arguments, receiver, span, out var result, out var frame, out var owned))
+                return frame is null ? new(result.Object.RequireNotNull()) : InvokeBoundAsync(owned, span, frame);
+
             var binding = LythonRuntime.BindFunctionArgumentsAsync(arguments, span, this, context, receiver, storageCapacity: _storageCapacity);
             return binding.IsCompletedSuccessfully ? InvokeBoundAsync(binding.Result, span) : BindAndInvokeAsync(binding, span);
         }
@@ -180,12 +190,14 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
     private async ValueTask<object> BindAndInvokeAsync(ValueTask<BoundFunctionArguments> binding, LythonSourceSpan span)
         => await InvokeBoundAsync(await binding.ConfigureAwait(false), span).ConfigureAwait(false);
 
-    internal async ValueTask<object> InvokeBoundAsync(BoundFunctionArguments boundArguments, LythonSourceSpan span)
+    internal async ValueTask<object> InvokeBoundAsync(BoundFunctionArguments boundArguments, LythonSourceSpan span,
+        LythonRuntime.ExecutionContext? initializedFrame = null)
     {
-        LythonRuntime.ExecutionContext? frame = null;
+        var frame = initializedFrame;
         try
         {
-            var prepared = TryStartBoundInvocation(boundArguments, span, out var result, out frame);
+            LythonRuntime.ExecutableSlot result = default;
+            var prepared = frame is not null || TryStartBoundInvocation(boundArguments, span, out result, out frame);
             if (prepared && frame is null) return result.Object.RequireNotNull();
             frame ??= EnterInvocationFrame(boundArguments, span);
             try { return prepared ? await LythonRuntime.ExecuteInitializedFrameAsync(frame).ConfigureAwait(false) ?? PyNone.Instance
