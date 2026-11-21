@@ -5,7 +5,7 @@ on November 21, 2026 UTC. The Azure F4as_v7 runs Ubuntu 24.04.4 and .NET
 11 RC3. The exact worker image comes from the callback change retained
 at `d6a360e23`. [Measured source pair](../2026-11-21-native-callback-entry/README.md).
 
-The report reads 1,024 lines from a 35,840-byte file. A Python function
+The report reads 1,024 three-line groups from a 35,840-byte file. A Python function
 passed to `map` normalizes and splits each line. The script aggregates
 6,144 words and writes an ordered report. Both workers validate stdout
 and the output file.

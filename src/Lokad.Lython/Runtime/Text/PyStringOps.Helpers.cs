@@ -236,15 +236,9 @@ internal static partial class PyStringOps
             {
                 CaseMapping.Capitalize => offset == 0 ? CaseMapping.Title : CaseMapping.Lower,
                 CaseMapping.Title => previousWasCased ? CaseMapping.Lower : CaseMapping.Title,
-                CaseMapping.Swap => GetRuneCase(rune) switch
-                {
-                    RuneCase.Upper => CaseMapping.Lower,
-                    RuneCase.Lower => CaseMapping.Upper,
-                    _ => CaseMapping.Swap,
-                },
                 _ => mapping,
             };
-            written = checked(written + WriteCaseRune(rune, selected, source, offset,
+            written = checked(written + WriteCaseRune(rune, selected, source, offset, consumed,
                 output[written..], context, span));
             if (mapping == CaseMapping.Title)
                 previousWasCased = SigmaPropertyContains(rune.Value, SigmaCasedRanges);
@@ -253,19 +247,39 @@ internal static partial class PyStringOps
         return written;
     }
 
-    private static int WriteCaseRune(Rune rune, CaseMapping mapping, ReadOnlySpan<byte> source,
-        int offset, Span<byte> output, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
+    private static int WriteCaseRune(Rune rune, CaseMapping mapping, ReadOnlySpan<byte> source, int offset,
+        int consumed, Span<byte> output, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
     {
-        var mapped = MapCaseRune(rune, mapping, source, offset, context, span, out var expansion);
-        if (expansion.IsEmpty) return mapped.EncodeToUtf8(output);
-        expansion.CopyTo(output);
-        return expansion.Length;
+        var scalar = rune.Value;
+        if (scalar == 0x03a3 && (mapping is CaseMapping.Lower or CaseMapping.Swap)
+            && HasPrecedingSigmaCasedRune(source[..offset], context, span)
+            && !HasFollowingSigmaCasedRune(source[(offset + consumed)..], context, span))
+        {
+            "ς"u8.CopyTo(output);
+            return 2;
+        }
+        var pageMap = CasePageIndexes;
+        var page = scalar / CasePageSize;
+        if (page < pageMap.Length)
+        {
+            var row = CasePages[pageMap[page] * CasePageSize + scalar % CasePageSize];
+            var result = CaseResultOffsets[row + (int)mapping];
+            if (result != 0)
+            {
+                var encoded = CaseUtf8Results;
+                var width = encoded[result];
+                encoded.Slice(result + 1, width).CopyTo(output);
+                return width;
+            }
+        }
+        source.Slice(offset, consumed).CopyTo(output);
+        return consumed;
     }
 
     private static void WriteAsciiCase(ReadOnlySpan<byte> input, Span<byte> output,
         CaseMapping mapping, int sourceOffset, ref bool previousWasCased)
     {
-        if (mapping == CaseMapping.Lower) Ascii.ToLower(input, output, out _);
+        if (mapping is CaseMapping.Lower or CaseMapping.Fold) Ascii.ToLower(input, output, out _);
         else if (mapping == CaseMapping.Upper) Ascii.ToUpper(input, output, out _);
         else for (var index = 0; index < input.Length; index++)
         {
@@ -296,42 +310,6 @@ internal static partial class PyStringOps
             result.OwnerMemoryGovernor?.RefundUnpublishedValue(result);
             throw;
         }
-    }
-
-    private static Rune MapCaseRune(Rune rune, CaseMapping mapping,
-        ReadOnlySpan<byte> source, int offset, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span,
-        out ReadOnlySpan<byte> expansion)
-    {
-        expansion = default;
-        if (mapping == CaseMapping.Swap) return rune;
-        if (mapping == CaseMapping.Lower)
-        {
-            if (rune.Value == 0x0130) { expansion = "i\u0307"u8; return rune; }
-            return rune.Value == 0x03A3
-                ? new Rune(HasPrecedingSigmaCasedRune(source[..offset], context, span)
-                    && !HasFollowingSigmaCasedRune(source[(offset + rune.Utf8SequenceLength)..], context, span) ? 0x03C2 : 0x03C3)
-                : PreservePython313Case(rune, Rune.ToLowerInvariant(rune));
-        }
-        expansion = GetCaseExpansion(rune, mapping);
-        if (!expansion.IsEmpty) return rune;
-        return mapping == CaseMapping.Title ? new Rune(rune.Value switch
-        {
-            // Unicode's four titlecase digraph triples have distinct title and
-            // uppercase scalars. Full multi-scalar mappings stay in the table.
-            0x01C4 or 0x01C5 or 0x01C6 => 0x01C5,
-            0x01C7 or 0x01C8 or 0x01C9 => 0x01C8,
-            0x01CA or 0x01CB or 0x01CC => 0x01CB,
-            0x01F1 or 0x01F2 or 0x01F3 => 0x01F2,
-            _ => PreservePython313Case(rune, Rune.ToUpperInvariant(rune)).Value,
-        }) : PreservePython313Case(rune, Rune.ToUpperInvariant(rune));
-    }
-
-    private static Rune PreservePython313Case(Rune original, Rune mapped)
-    {
-        // Platform Unicode updates can add pairs involving characters that
-        // Python 3.13 leaves unchanged, including an already-assigned partner.
-        return original != mapped && (IsUnassignedInPython313(original.Value) || IsUnassignedInPython313(mapped.Value))
-            ? original : mapped;
     }
 
     private static bool CheckAllRunes(PyString value, Func<Rune, bool> predicate,
@@ -651,7 +629,8 @@ internal static partial class PyStringOps
         Lower,
         Upper,
         Title,
+        Swap,
+        Fold,
         Capitalize,
-        Swap
     }
 }

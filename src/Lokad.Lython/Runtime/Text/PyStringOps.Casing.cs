@@ -79,6 +79,9 @@ internal static partial class PyStringOps
     public static PyString SwapCase(PyString value, LythonRuntime.ExecutionContext? context = null, LythonSourceSpan? span = null)
         => MapCase(value, CaseMapping.Swap, context, span);
 
+    public static PyString CaseFold(PyString value, LythonRuntime.ExecutionContext? context = null, LythonSourceSpan? span = null)
+        => MapCase(value, CaseMapping.Fold, context, span);
+
     public static PyString Title(PyString value, LythonRuntime.ExecutionContext? context = null, LythonSourceSpan? span = null)
         => MapCase(value, CaseMapping.Title, context, span);
 }

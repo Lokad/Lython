@@ -194,9 +194,8 @@ expansion, padding and search bounds, and truth conversion for `splitlines`.
 Padding, search and stripping parameters are positional-only, following Python.
 
 Whitespace and line splitting follow Python's text rules, distinct from ASCII
-byte whitespace. Casing includes expansion and contextual final sigma. New
-Unicode 16/17 case pairs stay unchanged as in Python 3.13's Unicode 15.1 data,
-including older characters whose partner was newly assigned. String
+byte whitespace. Text casing and casefold use Python 3.13's Unicode 15.1
+mappings, including full expansions and contextual final sigma in casing. String
 classification polls cancellation while scanning; `isidentifier` tests structure,
 so `'for'.isidentifier()` is `True`. Bytes expose their contained construction/indexing/method surface, including
 `__bytes__` and type-based `__index__` conversion. `bytearray` is not provided.

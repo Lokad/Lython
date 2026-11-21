@@ -7,6 +7,24 @@ public sealed class ContextualCasingExecutionTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task UnicodeCasingAndFoldUsePythonMappings(bool asynchronous)
+    {
+        const string source = "for text in ['ıσ', 'აᲐ', 'ı ა', 'ΣΟΣ ς ß']:\n"
+            + " print(text.lower(), text.upper(), text.title(), text.capitalize(), text.swapcase(), text.casefold(), text.upper().split())";
+        const string expected = "ıσ IΣ Iσ Iσ IΣ ıσ ['IΣ']\n"
+            + "აა ᲐᲐ აა აა Აა აა ['ᲐᲐ']\n"
+            + "ı ა I Ა I ა I ა I Ა ı ა ['I', 'Ა']\n"
+            + "σος ς ß ΣΟΣ Σ SS Σος Σ Ss Σος ς ß σος Σ SS σοσ σ ss ['ΣΟΣ', 'Σ', 'SS']\n";
+        using var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid);
+        using var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost());
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(expected, result.StandardOutput);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task LaterPlatformCasePairsRemainUnchangedAsInPython313(bool asynchronous)
     {
         // Independent CPython 3.13 golden: none of these characters has a
@@ -52,6 +70,8 @@ public sealed class ContextualCasingExecutionTests
     [InlineData(true, "title", "Aς")]
     [InlineData(false, "swapcase", "aς")]
     [InlineData(true, "swapcase", "aς")]
+    [InlineData(false, "casefold", "aσ")]
+    [InlineData(true, "casefold", "aσ")]
     [InlineData(false, "upper", "AΣ")]
     [InlineData(true, "upper", "AΣ")]
     public async Task RetainedCasingResultsKeepTheirFunding(bool asynchronous, string method, string expected)

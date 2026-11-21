@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1272 and B1273 pinned UTF-8 casing](results/2026-11-21-pinned-unicode-casing/fold/README.md)
+replace platform mappings and the standalone casefold builder. The
+final original text report runs 6.24–9.78% sooner warm, mixed
+lowercase 11.73–14.04% and mixed casefold 7.84–15.81%, with lower
+process CPU. The ASCII control is 0.45–3.68% slower in the final
+comparison. Casefold CLR allocation falls 9.48% and accounted peak
+rises 1.70%.
+
 [Current map-based text report attribution](results/2026-11-21-current-text-report-attribution/README.md)
 shows file acquisition and scalar casing in a managed residency
 trace on Windows. A separate baseline audit finds 49 scalar casing

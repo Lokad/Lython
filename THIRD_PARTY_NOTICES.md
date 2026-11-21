@@ -42,7 +42,9 @@ Source: https://github.com/python/cpython/blob/24d048d3601c2f1d41fa357897c1c91bb
 The intervals of characters assigned after Python 3.13's Unicode 15.1 data in
 `src/Lokad.Lython/Runtime/Text/PyStringOps.Printable.cs` are derived from the
 Unicode Character Database 17.0.0 and CPython 3.13. They keep Python printability
-and simple case mappings stable across supported platform Unicode versions.
+stable across supported platform Unicode versions. The casing tables in
+`src/Lokad.Lython/Runtime/Text/PyStringOps.CaseMappings.cs` use the Unicode 15.1
+mappings from CPython 3.13.
 
 Source: https://www.unicode.org/Public/17.0.0/ucd/UnicodeData.txt
 

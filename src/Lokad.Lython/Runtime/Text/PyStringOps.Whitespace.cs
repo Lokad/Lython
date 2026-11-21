@@ -539,7 +539,7 @@ internal static partial class PyStringOps
                 else
                 {
                     var output = encodedBytes.Slice(state.Written, state.MaximumCaseWidth);
-                    state.Written += WriteCaseRune(rune, mapping, source, position, output, context, span);
+                    state.Written += WriteCaseRune(rune, mapping, source, position, width, output, context, span);
                 }
             }
             state.Position += width;
