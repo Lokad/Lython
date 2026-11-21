@@ -187,14 +187,16 @@ internal static class StaticRegexReturnResolver
         [MaybeNullWhen(false)] out AbstractRegexPatternSummary summary,
         out bool flagsKnown)
     {
-        flagsKnown = TryGetRegexOptions(arguments, flagsPosition, flagsKeyword, bindings, out var patternFlags);
+        flagsKnown = false;
         if (!TryGetArgument(arguments, patternPosition, patternKeyword, bindings, out var patternExpression, out var patternValue))
         {
             summary = default;
             return false;
         }
 
-        if (allowCompiledPattern && patternValue.Kind == AbstractValueKind.RegexPattern)
+        var compiledPattern = allowCompiledPattern && patternValue.Kind == AbstractValueKind.RegexPattern;
+        flagsKnown = TryGetRegexOptions(arguments, flagsPosition, flagsKeyword, bindings, compiledPattern, out var patternFlags);
+        if (compiledPattern)
         {
             flagsKnown &= patternFlags == 0;
             summary = patternValue.RequireRegexPatternSummary();
@@ -221,13 +223,19 @@ internal static class StaticRegexReturnResolver
         int flagsPosition,
         string flagsKeyword,
         AbstractState bindings,
+        bool allowNone,
         out int options)
     {
-        if (!TryGetArgument(arguments, flagsPosition, flagsKeyword, bindings, out _, out var flagsValue) ||
-            flagsValue.Kind == AbstractValueKind.None)
+        if (!TryGetArgument(arguments, flagsPosition, flagsKeyword, bindings, out _, out var flagsValue))
         {
             options = 0;
             return true;
+        }
+
+        if (flagsValue.Kind == AbstractValueKind.None)
+        {
+            options = 0;
+            return allowNone;
         }
 
         if (flagsValue.TryGetInt32(out var flags) && flags >= 0)

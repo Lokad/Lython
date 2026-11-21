@@ -381,28 +381,27 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private static object? ReadModuleFlags(object[] arguments, int flagsIndex)
-            => arguments.Length > flagsIndex && arguments[flagsIndex] is not PyNone ? arguments[flagsIndex] : null;
-
-        internal static RegexPatternRange CreatePatternAndRange(object[] arguments, string signature, LythonSourceSpan span, ExecutionContext context)
+        internal static RegexPatternRange CreatePatternAndRange(BoundBuiltinArguments bound, string signature, LythonSourceSpan span, ExecutionContext context)
         {
-            if (arguments.Length is < 2 or > 5 || !PyStringOps.TryAsString(arguments[1], out var text))
+            var arguments = bound.Values;
+            if (!PyStringOps.TryAsString(arguments[1], out var text))
             {
                 throw new LythonRuntimeException("TypeError", $"{signature} expects pattern, string, optional flags, pos, and endpos.", span);
             }
 
-            var flags = ReadModuleFlags(arguments, 2);
+            var flags = bound.Assigned[2] ? arguments[2] : null;
             CheckFlagsHashable(flags, span);
-            var pos = arguments.Length >= 4 ? ParseOptionalPosition(arguments[3], 0, span, context) : 0;
-            var endPos = arguments.Length >= 5 ? ParseOptionalPosition(arguments[4], text.Length, span, context) : text.Length;
+            var pos = ParseOptionalPosition(arguments[3], 0, span, context);
+            var endPos = ParseOptionalPosition(arguments[4], text.Length, span, context);
 
             var matchRange = CreateSubjectRange(text, pos, endPos);
             return new RegexPatternRange(ResolvePattern(arguments[0], flags, span, context), matchRange);
         }
 
-        internal static RegexSubstituteInputs CreateSubstituteInputs(object[] arguments, string signature, LythonSourceSpan span, ExecutionContext context)
+        internal static RegexSubstituteInputs CreateSubstituteInputs(BoundBuiltinArguments bound, string signature, LythonSourceSpan span, ExecutionContext context)
         {
-            if (arguments.Length is < 3 or > 7 || !PyStringOps.TryAsString(arguments[2], out var text))
+            var arguments = bound.Values;
+            if (!PyStringOps.TryAsString(arguments[2], out var text))
             {
                 throw new LythonRuntimeException("TypeError", $"{signature} expects pattern, replacement, text, optional count, flags, pos, and endpos.", span);
             }
@@ -413,34 +412,31 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", $"{signature} expects replacement to be a string or callable.", span);
             }
 
-            var count = arguments.Length >= 4
-                ? ParseOptionalIntOrDefault(arguments[3], 0, "count", signature, span, context)
-                : 0;
-            var pos = arguments.Length >= 6 ? ParseOptionalPosition(arguments[5], 0, span, context) : 0;
-            var endPos = arguments.Length >= 7 ? ParseOptionalPosition(arguments[6], text.Length, span, context) : text.Length;
+            var count = ParseOptionalIntOrDefault(arguments[3], 0, "count", signature, span, context);
+            var pos = ParseOptionalPosition(arguments[5], 0, span, context);
+            var endPos = ParseOptionalPosition(arguments[6], text.Length, span, context);
 
-            var flags = ReadModuleFlags(arguments, 4);
+            var flags = bound.Assigned[4] ? arguments[4] : null;
             CheckFlagsHashable(flags, span);
             var pattern = ResolvePattern(arguments[0], flags, span, context);
             return new RegexSubstituteInputs(pattern, replacement, CreateSubjectRange(text, pos, endPos), count);
         }
 
-        internal static RegexSplitInputs CreateSplitInputs(object[] arguments, string signature, LythonSourceSpan span, ExecutionContext context)
+        internal static RegexSplitInputs CreateSplitInputs(BoundBuiltinArguments bound, string signature, LythonSourceSpan span, ExecutionContext context)
         {
-            if (arguments.Length is < 2 or > 6 || !PyStringOps.TryAsString(arguments[1], out var text))
+            var arguments = bound.Values;
+            if (!PyStringOps.TryAsString(arguments[1], out var text))
             {
                 throw new LythonRuntimeException("TypeError", $"{signature} expects pattern, string, optional maxsplit, flags, pos, and endpos.", span);
             }
 
-            var pos = arguments.Length >= 5 ? ParseOptionalPosition(arguments[4], 0, span, context) : 0;
-            var endPos = arguments.Length >= 6 ? ParseOptionalPosition(arguments[5], text.Length, span, context) : text.Length;
+            var pos = ParseOptionalPosition(arguments[4], 0, span, context);
+            var endPos = ParseOptionalPosition(arguments[5], text.Length, span, context);
 
-            var flags = ReadModuleFlags(arguments, 3);
+            var flags = bound.Assigned[3] ? arguments[3] : null;
             CheckFlagsHashable(flags, span);
             var pattern = ResolvePattern(arguments[0], flags, span, context);
-            var maxSplit = arguments.Length >= 3
-                ? ParseOptionalIntOrDefault(arguments[2], 0, "maxsplit", signature, span, context)
-                : 0;
+            var maxSplit = ParseOptionalIntOrDefault(arguments[2], 0, "maxsplit", signature, span, context);
             return new RegexSplitInputs(pattern, CreateSubjectRange(text, pos, endPos), maxSplit);
         }
 

@@ -2383,6 +2383,9 @@ types or Utf8Regex dependency. Missing functionality fails explicitly, without
 silently choosing another dialect. Native `fnmatch`/`glob` need no regex provider.
 `re.Pattern[str]` and `re.Match[str]` are runtime generic aliases and can
 be evaluated in annotations without a provider.
+Module regex calls distinguish omitted flags from an explicit `None`.
+Text patterns raise `TypeError` for `flags=None`, and compiled patterns
+accept it as a false flag value.
 Compiled pattern representations show effective flag names and cap the
 quoted string representation at 200 Unicode scalars. They build the
 result in governed UTF-8 storage. Match representations quote up to

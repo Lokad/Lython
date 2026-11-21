@@ -98,6 +98,61 @@ return re.error is re.PatternError
         Assert.True(result.Success, result.Failure?.Message);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ModuleRegexFlagsDistinguishExplicitNoneFromOmission(bool asynchronous)
+    {
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
+            import re
+            pattern = re.compile('a')
+            def check(pattern, flags):
+                calls = (
+                    (re.search, (pattern, 'a')),
+                    (re.match, (pattern, 'a')),
+                    (re.fullmatch, (pattern, 'a')),
+                    (re.findall, (pattern, 'a')),
+                    (re.finditer, (pattern, 'a')),
+                    (re.split, (pattern, 'a')),
+                    (re.sub, (pattern, 'x', 'a')),
+                    (re.subn, (pattern, 'x', 'a')),
+                )
+                for call, args in calls:
+                    call(*args)
+                    try:
+                        call(*args, flags=flags)
+                    except TypeError:
+                        assert isinstance(pattern, str)
+                    else:
+                        assert isinstance(pattern, re.Pattern)
+            check('a', None)
+            check(pattern, None)
+            """);
+        Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Message)));
+        var host = new MockLythonHost();
+        using var result = asynchronous ? await script.RunAsync(host) : script.Run(host);
+        Assert.True(result.Success, result.Failure?.Message);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task LiteralNoneFlagsFailBeforeAProviderIsNeeded(bool asynchronous)
+    {
+        using var script = new LythonEngine().Compile("""
+            import re
+            try:
+                re.search('a', 'a', flags=None)
+            except TypeError:
+                print('invalid flags')
+            """);
+        Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Message)));
+        var host = new MockLythonHost();
+        using var result = asynchronous ? await script.RunAsync(host) : script.Run(host);
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("invalid flags\n", result.StandardOutput);
+    }
+
     [Fact]
     public void MultiFileCompiledPatternFixture_RunsSuccessfully()
     {

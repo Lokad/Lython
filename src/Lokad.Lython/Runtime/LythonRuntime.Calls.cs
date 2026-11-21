@@ -2818,17 +2818,17 @@ internal sealed partial class LythonRuntime
         private readonly Func<BoundBuiltinArguments, LythonSourceSpan, ExecutionContext, object>? _syncPresence;
         private BuiltinCallable(LythonCallableSignature signature,
             Func<BoundBuiltinArguments, LythonSourceSpan, ExecutionContext, object> sync,
-            Func<BoundBuiltinArguments, LythonSourceSpan, ExecutionContext, ValueTask<object>> async)
+            Func<BoundBuiltinArguments, LythonSourceSpan, ExecutionContext, ValueTask<object>>? async)
             : this(signature, static (object[] _, LythonSourceSpan __, ExecutionContext ___) => throw new InvalidOperationException("Missing argument presence"), null)
         { _presence = async; _syncPresence = sync; }
-        protected override bool PreservePresence => _presence is not null;
+        protected override bool PreservePresence => _syncPresence is not null;
         protected override object InvokeBoundWithPresence(BoundBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context)
             => _syncPresence!(arguments, span, context);
         protected override ValueTask<object> InvokeBoundWithPresenceAsync(BoundBuiltinArguments arguments, LythonSourceSpan span, ExecutionContext context)
-            => _presence!(arguments, span, context);
+            => _presence is null ? new(_syncPresence!(arguments, span, context)) : _presence(arguments, span, context);
         public static BuiltinCallable CreateWithPresence(LythonCallableSignature signature,
             Func<BoundBuiltinArguments, LythonSourceSpan, ExecutionContext, object> sync,
-            Func<BoundBuiltinArguments, LythonSourceSpan, ExecutionContext, ValueTask<object>> async)
+            Func<BoundBuiltinArguments, LythonSourceSpan, ExecutionContext, ValueTask<object>>? async = null)
             => new(signature, sync, async);
 
         public static BuiltinCallable Create(LythonCallableSignature signature, Func<object[], LythonSourceSpan, ExecutionContext, object> implementation)
