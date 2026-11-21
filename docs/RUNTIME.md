@@ -2215,8 +2215,11 @@ and stdin's partially consumed line is shared with ordinary stdin reads.
 
 CSV writers render each row into admitted UTF-8 storage before invoking the sink
 or publishing buffered history. Field conversion uses Python string protocols;
-RunAsync awaits guest conversions and sink callbacks. Native escaping checks
-cancellation. Buffered writers retain rendered rows and their capacity until the
+RunAsync awaits guest conversions and sink callbacks. Each writer prepares
+immutable UTF-8 search data for its dialect. Field validation sizes escaping before
+admitting the row buffer's field window. Rendering copies bounded byte runs and
+checks cancellation through scanning, admission and copying. Buffered writers
+retain rendered rows and their capacity until the
 execution owner ends; getvalue admits an independent result and omits the final
 terminator. Readers consume borrowed UTF-8 lines directly and stage decoded record
 bytes and field boundaries, without whole-line decoding or field re-encoding.

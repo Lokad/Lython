@@ -60,7 +60,7 @@ public sealed class CsvWriterowsPipelineTests
     {
         var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
         var trace = new Trace(context.MemoryGovernor, shape == "callback-fail");
-        context.Variables["writer"] = new LythonRuntime.CsvWriterObject(CsvWriterowCallBoundaryTests.Options(), trace, context.MemoryGovernor, Span);
+        context.Variables["writer"] = new LythonRuntime.CsvWriterObject(CsvWriterowCallBoundaryTests.Options(), trace, context, Span);
         var text = PyString.FromString("a", context.MemoryGovernor, Span);
         var row = new PyList([text], context.MemoryGovernor, Span);
         var count = shape == "empty" ? 0 : shape == "wide" ? 65 : 3;

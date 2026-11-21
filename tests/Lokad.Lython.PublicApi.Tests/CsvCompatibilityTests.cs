@@ -137,6 +137,35 @@ __lython_file.close()
         Assert.Equal("\"\"\n", host.ReadText("/empty.csv"));
     }
 
+    [Theory]
+    [InlineData("QUOTE_MINIMAL", true, "«", "««λ", "«§«§λ 🌚«§··§plain 🌚§«plain 🌙«λ🌙\n")]
+    [InlineData("QUOTE_MINIMAL", false, "«", "·«λ", "«§«§λ 🌚«§··§plain 🌚§«plain 🌙«λ🌙\n")]
+    [InlineData("QUOTE_NONE", false, "", "·«·λ", "§·§·λ 🌚§··§plain 🌚§plain ·🌙λ🌙\n")]
+    public async Task CsvWriterPreservesUnicodeSpecialsAcrossSearchAndCopyWindows(string mode, bool doubleQuote,
+        string openingQuote, string escapedTail, string rest)
+    {
+        var source = $$"""
+import csv
+with open("/rows.csv", "w", newline="") as output:
+    writer = csv.writer(output, delimiter="§", quotechar="«", escapechar="·", lineterminator="λ🌙\n",
+                        quoting=csv.{{mode}}, doublequote={{(doubleQuote ? "True" : "False")}})
+    writer.writerow(["a" * 4095 + "🌚«λ" + "x" * 4100, "§λ 🌚", "·", "plain 🌚", "plain 🌙"])
+""";
+        var expected = openingQuote + new string('a', 4095) + "🌚" + escapedTail + new string('x', 4100) + rest;
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join(", ", script.Diagnostics.Select(diagnostic => diagnostic.Message)));
+        var baseline = budget.ReservedBytes;
+        foreach (var asynchronous in new[] { false, true })
+        {
+            var host = new MockLythonHost();
+            using (var result = asynchronous ? await script.RunAsync(host) : script.Run(host))
+                Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(expected, host.ReadText("/rows.csv"));
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+    }
+
     [Fact]
     public void DictReader_HandlesHeadersExplicitFieldnamesRestValuesAndIteration()
     {

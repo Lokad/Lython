@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1277 bulk CSV field output](results/2026-11-21-bulk-csv-field-output/README.md)
+replaces repeated scalar scans and appends with prepared dialect searches
+and an admitted field window. The ordinary export runs 33.77–36.29%
+sooner, the Unicode escaped export 19.49–23.32% sooner, and the short
+export 8.72–10.08% sooner, with lower process CPU. Escaped export
+allocation falls 5.07% and its accounted peak rises 604 bytes.
+
 [B1276 wide builtin operand binding](results/2026-11-21-direct-builtin-operands/README.md)
 removes the ordinary wide argument packet and combines JSON extra-keyword
 collection with binding. Wide JSON export runs 2.39–5.09% sooner warm with

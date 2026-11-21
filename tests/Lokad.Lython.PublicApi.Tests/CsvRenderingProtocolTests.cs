@@ -87,17 +87,22 @@ public sealed class CsvRenderingProtocolTests
     [InlineData(true)]
     public async Task CancellationInterruptsEnteredNativeRendering(bool asynchronous)
     {
-        using var script = new LythonEngine().Compile("import csv\nvalue='"+new string('x',65536)+"'\ncsv.writer().writerow([value])\nprint('finished')");
+        var source = "import csv\nfirst='" + new string('x',8192) + "'\nvalue='" + new string('x',65536) +
+            "'\nwith open('/rows.csv','w',newline='') as output:\n csv.writer(output).writerow([first,value])\nprint('finished')";
+        using var script = new LythonEngine().Compile(source);
+        var host = new MockLythonHost();
         using var cancellation = new CancellationTokenSource();
         var budget = new CancelOnCapacity(cancellation);
-        using(var result=asynchronous ? await script.RunAsync(new MockLythonHost(),new LythonRunOptions {MemoryBudget=budget},cancellation.Token)
-            : script.Run(new MockLythonHost(),new LythonRunOptions {MemoryBudget=budget,CancellationToken=cancellation.Token}))
+        using(var result=asynchronous ? await script.RunAsync(host,new LythonRunOptions {MemoryBudget=budget},cancellation.Token)
+            : script.Run(host,new LythonRunOptions {MemoryBudget=budget,CancellationToken=cancellation.Token}))
         {
             Assert.True(budget.Triggered);
             Assert.Equal(LythonFailureReason.Cancelled,result.FailureAttribution?.Reason);
             Assert.Empty(result.StandardOutput);
-            // A complete output would require at least 64 KiB; growth stopped early.
+            // The first field entered rendering. Cancellation prevents
+            // admitting the second field or publishing any of the row.
             Assert.True(budget.Root.PeakBytes<65536);
+            Assert.Empty(host.ReadText("/rows.csv"));
         }
         Assert.Equal(0,budget.Root.ReservedBytes);
     }
@@ -111,7 +116,9 @@ public sealed class CsvRenderingProtocolTests
         private bool Reserve(ILythonMemoryBudget owner,long bytes,[NotNullWhen(true)] out ILythonMemoryReservation? reservation)
         {
             if(!owner.TryReserve(bytes,out var inner)){reservation=null;return false;}
-            reservation=new Admission(this,inner);return true;
+            reservation=new Admission(this,inner);
+            Grew(0,bytes);
+            return true;
         }
         private void Grew(long previous,long next)
         {

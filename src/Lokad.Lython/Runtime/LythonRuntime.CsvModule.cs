@@ -107,7 +107,7 @@ internal sealed partial class LythonRuntime
         }
 
         private static CsvWriterObject CreateWriter(CsvOptions options, object? write, LythonSourceSpan span, ExecutionContext context)
-            => new(options, write, context.MemoryGovernor, span);
+            => new(options, write, context, span);
 
         private static async ValueTask<object> NormalizeFieldNamesAsync(object value, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {

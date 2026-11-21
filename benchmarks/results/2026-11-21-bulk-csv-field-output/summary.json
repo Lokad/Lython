@@ -1,0 +1,188 @@
+{
+  "complete": true,
+  "elapsedSeconds": 221.80661165900528,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "staging": {
+    "retiredOnly": [
+      {
+        "paths": [
+          "direct-builtin-operands-b1276-20261121/reference/Lokad.Lython.dll"
+        ],
+        "links": 1,
+        "bytes": 5701632,
+        "sha256": "e7c4bd1bcb65831cf69983b846d81d85fcd446e54a9f74c46a7e36f27fb15d7d",
+        "archives": {
+          "direct-builtin-operands-b1276-20261121/observations.tgz": "874476982e57670bdaff954ef2b278a26ecab4e616d36ab20f8187ce7922f4c6"
+        },
+        "verifiedCanonicalGitImage": "benchmarks/results/2026-11-21-direct-builtin-operands/reference-core.dll.gz"
+      }
+    ],
+    "alreadyAbsent": [],
+    "freshIdleLease": true,
+    "allHashesPathsOwnershipLinksAndAliasesVerified": true,
+    "canonicalArchiveAndCurrentImagesPreserved": true,
+    "freeBeforeBytes": 187478016,
+    "freeAfterBytes": 186179584
+  },
+  "rows": [
+    {
+      "case": "scripts.csv-restock-export.ordinary",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 3.781291228915663,
+        "reference": 5.9349474814814815,
+        "candidate-control": 3.8969842264150945,
+        "reference-control": 5.88391762962963
+      },
+      "cpuMilliseconds": {
+        "candidate": 3.975903614457831,
+        "reference": 6.203703703703704,
+        "candidate-control": 4.088050314465408,
+        "reference-control": 6.111111111111112
+      },
+      "elapsedIQRPercent": {
+        "candidate": 1.1283348444509866,
+        "reference": 0.39304124829162695,
+        "candidate-control": 1.426656011886706,
+        "reference-control": 1.6005732568857438
+      },
+      "elapsedChangePercent": [
+        -36.28770531307588,
+        -35.73514336988295,
+        -34.33835364887965,
+        -33.76888543117836
+      ],
+      "cpuChangePercent": [
+        -35.910807408739444,
+        -34.93975903614459,
+        -34.10306955787104,
+        -33.10463121783877
+      ],
+      "referenceSpreadPercent": 0.867276788425464,
+      "candidateSpreadPercent": 3.059616160075773
+    },
+    {
+      "case": "scripts.csv-restock-export.escaped",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 5.830299572727274,
+        "candidate-control": 4.693781585185185,
+        "reference": 5.98222120754717,
+        "candidate": 4.5871197391304355
+      },
+      "cpuMilliseconds": {
+        "reference-control": 6.090909090909092,
+        "candidate-control": 4.888888888888888,
+        "reference": 6.226415094339623,
+        "candidate": 4.855072463768116
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.652733495202135,
+        "candidate-control": 1.650424836160768,
+        "reference": 0.44691593761644305,
+        "candidate": 0.9526726571896749
+      },
+      "elapsedChangePercent": [
+        -23.320793732212287,
+        -21.537813090838053,
+        -21.32274367876621,
+        -19.4933034463348
+      ],
+      "cpuChangePercent": [
+        -22.024593763724198,
+        -21.48148148148149,
+        -20.28985507246377,
+        -19.73466003316752
+      ],
+      "referenceSpreadPercent": 2.605726051034307,
+      "candidateSpreadPercent": 2.3252466061626897
+    },
+    {
+      "case": "scripts.csv-restock-export.short",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 3.4555612,
+        "reference": 3.78554826035503,
+        "candidate-control": 3.445466827027027,
+        "reference-control": 3.8317914790419167
+      },
+      "cpuMilliseconds": {
+        "candidate": 3.5135135135135136,
+        "reference": 3.8461538461538463,
+        "candidate-control": 3.567567567567568,
+        "reference-control": 3.9520958083832336
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.22715565572106763,
+        "reference": 0.3449620304348375,
+        "candidate-control": 0.49746963798635735,
+        "reference-control": 0.9716656243546768
+      },
+      "elapsedChangePercent": [
+        -10.082089647307335,
+        -9.818652217891245,
+        -8.98367713045899,
+        -8.717021621699839
+      ],
+      "cpuChangePercent": [
+        -11.097461097461093,
+        -9.72972972972972,
+        -8.64864864864865,
+        -7.243243243243236
+      ],
+      "referenceSpreadPercent": 1.2215725571690372,
+      "candidateSpreadPercent": 0.2929754799491979
+    },
+    {
+      "case": "scripts.csv-invoice.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 6.544921424242425,
+        "candidate-control": 6.390371217821782,
+        "reference": 6.44814733,
+        "candidate": 6.28754987254902
+      },
+      "cpuMilliseconds": {
+        "reference-control": 6.666666666666667,
+        "candidate-control": 6.534653465346535,
+        "reference": 6.6,
+        "candidate": 6.470588235294118
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.35334760699593515,
+        "candidate-control": 0.4607856083378913,
+        "reference": 0.3366096320258691,
+        "candidate": 0.3108696349061315
+      },
+      "elapsedChangePercent": [
+        -3.9323856622647813,
+        -2.4905984499423717,
+        -2.3613760410963525,
+        -0.8960110435041524
+      ],
+      "cpuChangePercent": [
+        -2.941176470588236,
+        -1.980198019801982,
+        -1.9607843137254832,
+        -0.9900990099009799
+      ],
+      "referenceSpreadPercent": 1.5008046387554375,
+      "candidateSpreadPercent": 1.6353165757248656
+    }
+  ],
+  "CPythonRefreshed": false,
+  "collection": "B1277",
+  "reference": "54b909bb1e711e79e4a31c5d1c6bff36944f55fd",
+  "referenceImageSource": "5232caad5",
+  "candidate": "9bf720efa60fee2f854c36c063a8d2bbfe68a242",
+  "verifiedTimedBatches": 112,
+  "coreSHA256": {
+    "reference": "1194951e6c331a15cd02849fb03ac7da4ba6d1bde391e13b5999e6690f78c5b8",
+    "reference-control": "1194951e6c331a15cd02849fb03ac7da4ba6d1bde391e13b5999e6690f78c5b8",
+    "candidate": "8d6ad5352c0e476cbef064282570683e64f13fa469a10669e19a7062428806c0",
+    "candidate-control": "8d6ad5352c0e476cbef064282570683e64f13fa469a10669e19a7062428806c0"
+  },
+  "archiveSHA256": "b7e78489c8c070ac6526c79b92ad14efdf0b71c14e43d885518c2c59ee1f07d0",
+  "decision": "Retain shared bulk UTF-8 field emission. Three complete exports improve elapsed and CPU with near-flat or lower allocations. The custom-dialect accounted peak grows 604 bytes."
+}

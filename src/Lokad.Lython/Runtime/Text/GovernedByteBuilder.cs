@@ -74,9 +74,9 @@ internal sealed class GovernedByteBuilder : ExecutableTemporaryValue
 
     // Admission precedes the host's write borrow. Do not resize/release until
     // that actual operation completes, then publish only its validated count.
-    internal Memory<byte> GetWriteWindow(int count)
+    internal Memory<byte> GetWriteWindow(int count, CancellationToken cancellationToken = default)
     {
-        EnsureAdditionalCapacity(count);
+        EnsureAdditionalCapacity(count, cancellationToken);
         return _buffer.AsMemory(_length, count);
     }
 
@@ -229,7 +229,7 @@ internal sealed class GovernedByteBuilder : ExecutableTemporaryValue
 
     public override void Dispose() => Release();
 
-    private void EnsureAdditionalCapacity(int additionalBytes)
+    private void EnsureAdditionalCapacity(int additionalBytes, CancellationToken cancellationToken = default)
     {
         if (additionalBytes <= 0)
         {
@@ -249,10 +249,10 @@ internal sealed class GovernedByteBuilder : ExecutableTemporaryValue
             return;
         }
 
-        Grow(requiredCapacity);
+        Grow(requiredCapacity, cancellationToken);
     }
 
-    private void Grow(int requiredCapacity)
+    private void Grow(int requiredCapacity, CancellationToken cancellationToken)
     {
         var doubledCapacity = _buffer.Length == 0
             ? 8L
@@ -274,6 +274,7 @@ internal sealed class GovernedByteBuilder : ExecutableTemporaryValue
         byte[] expanded;
         try
         {
+            if (cancellationToken.IsCancellationRequested) throw RuntimeErrors.Cancelled(_allocationSpan);
             expanded = new byte[newCapacity];
             _buffer.AsSpan(0, _length).CopyTo(expanded);
             _memoryGovernor?.Commit(newCapacity);

@@ -43,7 +43,7 @@ public sealed class NativeCsvRowConversionTests
     {
         var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
         var sink = new Sink(context.MemoryGovernor);
-        var writer = new LythonRuntime.CsvWriterObject(CsvWriterowCallBoundaryTests.Options(), sink, context.MemoryGovernor, Span);
+        var writer = new LythonRuntime.CsvWriterObject(CsvWriterowCallBoundaryTests.Options(), sink, context, Span);
         var text = PyString.FromString("a", context.MemoryGovernor, Span);
         var count = shape.StartsWith("empty", StringComparison.Ordinal) ? 0
             : shape.StartsWith("wide", StringComparison.Ordinal) ? 65 : 2;

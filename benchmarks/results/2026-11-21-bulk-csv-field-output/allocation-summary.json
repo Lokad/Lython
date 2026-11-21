@@ -1,0 +1,38 @@
+[
+  {
+    "case": "scripts.csv-restock-export.ordinary",
+    "previousAllocatedBytes": 4142156,
+    "candidateAllocatedBytes": 4106182,
+    "allocationChangePercent": -0.8684849146193385,
+    "previousAccountedPeak": 4641585,
+    "candidateAccountedPeak": 4641647,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.csv-restock-export.escaped",
+    "previousAllocatedBytes": 4434206,
+    "candidateAllocatedBytes": 4209358,
+    "allocationChangePercent": -5.070761259174694,
+    "previousAccountedPeak": 4647903,
+    "candidateAccountedPeak": 4648507,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.csv-restock-export.short",
+    "previousAllocatedBytes": 3069406,
+    "candidateAllocatedBytes": 3069526,
+    "allocationChangePercent": 0.0039095512291309475,
+    "previousAccountedPeak": 4091823,
+    "candidateAccountedPeak": 4091823,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.csv-invoice.large",
+    "previousAllocatedBytes": 3671854,
+    "candidateAllocatedBytes": 3672454,
+    "allocationChangePercent": 0.01634051898578015,
+    "previousAccountedPeak": 9432613,
+    "candidateAccountedPeak": 9432613,
+    "budgetReturnedToBaseline": true
+  }
+]

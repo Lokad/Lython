@@ -55,7 +55,7 @@ public sealed class CsvTextWriterAccountingTests
         LythonSourceSpan span, CapturingWrite callback)
         => new(new LythonRuntime.CsvOptions(PyStringOps.CommaLiteral, PyString.FromString("\""),
             LythonRuntime.CsvQuotingMode.Minimal, true, null, false, PyString.FromString("\n"), false),
-            callback, context.MemoryGovernor, span);
+            callback, context, span);
 
     private sealed class CapturingWrite : LythonRuntime.ICallable
     {

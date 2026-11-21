@@ -106,7 +106,7 @@ public sealed class CsvWriterowCallBoundaryTests
         {
             var (context, writer, argument, sink) = Prepare(owner, "row");
             var otherSink = new Sink(context.MemoryGovernor);
-            var other = new Writer(Options(), otherSink, context.MemoryGovernor, Span);
+            var other = new Writer(Options(), otherSink, context, Span);
             argument.Release = new(TaskCreationOptions.RunContinuationsAsynchronously);
             var pending = Run(Compile("return writer.writerow(argument())"), context, true).AsTask();
             try
@@ -192,7 +192,7 @@ public sealed class CsvWriterowCallBoundaryTests
     {
         var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
         var sink = new Sink(context.MemoryGovernor);
-        var writer = new Writer(Options(), history ? null : sink, context.MemoryGovernor, Span);
+        var writer = new Writer(Options(), history ? null : sink, context, Span);
         object row = shape switch
         {
             "scalar" => PyNone.Instance,

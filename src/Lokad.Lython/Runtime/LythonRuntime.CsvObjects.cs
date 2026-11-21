@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Globalization;
 using System.Numerics;
 using System.Text.Encodings.Web;
@@ -253,16 +254,27 @@ internal sealed partial class LythonRuntime
 
     internal sealed class CsvWriterObject
     {
-        public CsvWriterObject(CsvOptions options, object? writeTarget, MemoryGovernor governor, LythonSourceSpan span)
+        public CsvWriterObject(CsvOptions options, object? writeTarget, ExecutionContext context, LythonSourceSpan span)
         {
-            // Own the shell beside the governed row history.
-            governor.Reserve(128L, span);
-            governor.Commit(128L);
-            MemoryGovernor = governor;
-            Options = options;
-            WriteTarget = writeTarget;
+            // Custom search data has at most 256 distinct lead bytes.
+            var standard = CsvWriterMembers.UsesStandardFieldSearch(options);
+            var bytes = standard ? 128L : 640L;
+            var governor = context.MemoryGovernor;
+            governor.Reserve(bytes, span);
+            try
+            {
+                context.CheckExecution(span);
+                FieldSearch = CsvWriterMembers.PrepareFieldSearch(options, standard, context, span);
+                context.CheckExecution(span);
+                MemoryGovernor = governor;
+                Options = options;
+                WriteTarget = writeTarget;
+                governor.Commit(bytes);
+            }
+            catch { governor.ReleaseReserved(bytes); throw; }
         }
 
+        internal readonly SearchValues<byte> FieldSearch;
         public readonly CsvOptions Options;
         // Native immutable handle or a callable captured once from a guest stream.
         public readonly object? WriteTarget;

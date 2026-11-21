@@ -13,7 +13,7 @@ public sealed class CsvWriterHistoryAccountingTests
     private static LythonRuntime.CsvWriterObject Writer(LythonRuntime.ExecutionContext context, bool unquoted=false)
         => new(new LythonRuntime.CsvOptions(PyStringOps.CommaLiteral,PyString.FromString("\""),
             unquoted ? LythonRuntime.CsvQuotingMode.None : LythonRuntime.CsvQuotingMode.Minimal,
-            true,null,false,PyString.FromString("\n"),false),null,context.MemoryGovernor,Span);
+            true,null,false,PyString.FromString("\n"),false),null,context,Span);
 
     [Fact]
     public void DeniedRenderingNeverPublishesHistory()
