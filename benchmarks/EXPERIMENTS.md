@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1307 retained factories and CSV invoice against CPython](results/2026-11-21-cpython-retained-checkpoint/README.md)
+refreshes three warm workloads on `4337b7765`. Both factory ratios
+remain above 2×. The CSV policy invoice takes 1.178–1.199× as long.
+Postponed compilation takes 0.570–0.577× as long, while the
+time-to-result ratio has a 9.44% Lython control spread.
+
 [B1306 explicit UTF-8 ownership](results/2026-11-21-explicit-utf8-ownership/README.md)
 deletes array-shape ownership inference. The retaining JSON number
 hook allocates 4.48% less and textwrap with a retaining predicate

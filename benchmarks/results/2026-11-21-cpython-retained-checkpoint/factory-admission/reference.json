@@ -1,0 +1,370 @@
+[
+  {
+    "id": "scripts.annotated-rule-closures.nested-factories",
+    "Growths": 10265,
+    "baseline": 74618,
+    "sources": [
+      {
+        "site": "LythonRuntime.CreateFunctionValue",
+        "bytes": 160,
+        "count": 2049
+      },
+      {
+        "site": "LythonRuntime.CaptureExecutableCells",
+        "bytes": 96,
+        "count": 2048
+      },
+      {
+        "site": "PyTuple.CreateDefaultStorage",
+        "bytes": 152,
+        "count": 2048
+      },
+      {
+        "site": "RecordKeys.CreatePreparedValues",
+        "bytes": 368,
+        "count": 2048
+      },
+      {
+        "site": "LythonRuntime.ReadEagerFunctionAnnotations",
+        "bytes": 672,
+        "count": 2048
+      },
+      {
+        "site": "GovernedByteBuilder.Grow",
+        "bytes": 8,
+        "count": 6
+      },
+      {
+        "site": "PyString.FromTransferredUtf8",
+        "bytes": 128,
+        "count": 5
+      },
+      {
+        "site": "ExecutableValueStorage..ctor",
+        "bytes": 248,
+        "count": 1
+      },
+      {
+        "site": "LythonRuntime.ChargeClosureRetention",
+        "bytes": 704,
+        "count": 1
+      },
+      {
+        "site": "LythonRuntime.Range",
+        "bytes": 64,
+        "count": 1
+      },
+      {
+        "site": "LythonRuntime.ChargeClosureRetention",
+        "bytes": 32,
+        "count": 1
+      },
+      {
+        "site": "PyList..ctor",
+        "bytes": 64,
+        "count": 1
+      },
+      {
+        "site": "PyList.EnsureCapacity",
+        "bytes": 704,
+        "count": 1
+      },
+      {
+        "site": "PyString.CopyFromUtf8",
+        "bytes": 135,
+        "count": 1
+      },
+      {
+        "site": "GovernedByteBuilder.Grow",
+        "bytes": 16,
+        "count": 1
+      },
+      {
+        "site": "GovernedByteBuilder.Grow",
+        "bytes": 32,
+        "count": 1
+      },
+      {
+        "site": "GovernedByteBuilder.Grow",
+        "bytes": 64,
+        "count": 1
+      },
+      {
+        "site": "GovernedByteBuilder.Grow",
+        "bytes": 46,
+        "count": 1
+      },
+      {
+        "site": "GovernedByteBuilder.Grow",
+        "bytes": 92,
+        "count": 1
+      },
+      {
+        "site": "ProjectionBudget.Reserve",
+        "bytes": 126,
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+    "Growths": 10265,
+    "baseline": 78622,
+    "sources": [
+      {
+        "site": "LythonRuntime.CreateFunctionValue",
+        "bytes": 160,
+        "count": 2049
+      },
+      {
+        "site": "LythonRuntime.CaptureExecutableCells",
+        "bytes": 96,
+        "count": 2048
+      },
+      {
+        "site": "PyTuple.CreateDefaultStorage",
+        "bytes": 152,
+        "count": 2048
+      },
+      {
+        "site": "RecordKeys.CreatePreparedValues",
+        "bytes": 368,
+        "count": 2048
+      },
+      {
+        "site": "LythonRuntime.CreateFunctionValue",
+        "bytes": 672,
+        "count": 2048
+      },
+      {
+        "site": "GovernedByteBuilder.Grow",
+        "bytes": 8,
+        "count": 6
+      },
+      {
+        "site": "PyString.FromTransferredUtf8",
+        "bytes": 128,
+        "count": 5
+      },
+      {
+        "site": "ExecutableValueStorage..ctor",
+        "bytes": 272,
+        "count": 1
+      },
+      {
+        "site": "LythonRuntime.ChargeClosureRetention",
+        "bytes": 736,
+        "count": 1
+      },
+      {
+        "site": "LythonRuntime.Range",
+        "bytes": 64,
+        "count": 1
+      },
+      {
+        "site": "LythonRuntime.ChargeClosureRetention",
+        "bytes": 32,
+        "count": 1
+      },
+      {
+        "site": "PyList..ctor",
+        "bytes": 64,
+        "count": 1
+      },
+      {
+        "site": "PyList.EnsureCapacity",
+        "bytes": 704,
+        "count": 1
+      },
+      {
+        "site": "PyString.CopyFromUtf8",
+        "bytes": 135,
+        "count": 1
+      },
+      {
+        "site": "GovernedByteBuilder.Grow",
+        "bytes": 16,
+        "count": 1
+      },
+      {
+        "site": "GovernedByteBuilder.Grow",
+        "bytes": 32,
+        "count": 1
+      },
+      {
+        "site": "GovernedByteBuilder.Grow",
+        "bytes": 64,
+        "count": 1
+      },
+      {
+        "site": "GovernedByteBuilder.Grow",
+        "bytes": 46,
+        "count": 1
+      },
+      {
+        "site": "GovernedByteBuilder.Grow",
+        "bytes": 92,
+        "count": 1
+      },
+      {
+        "site": "ProjectionBudget.Reserve",
+        "bytes": 126,
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "scripts.factory-observed-defaults",
+    "Growths": 10266,
+    "baseline": 85534,
+    "sources": [
+      {
+        "site": "LythonRuntime.CreateFunctionValue",
+        "bytes": 160,
+        "count": 2049
+      },
+      {
+        "site": "LythonRuntime.CaptureExecutableCells",
+        "bytes": 96,
+        "count": 2048
+      },
+      {
+        "site": "PyTuple.CreateDefaultStorage",
+        "bytes": 152,
+        "count": 2048
+      },
+      {
+        "site": "RecordKeys.CreatePreparedValues",
+        "bytes": 368,
+        "count": 2048
+      },
+      {
+        "site": "LythonRuntime.CreateFunctionValue",
+        "bytes": 672,
+        "count": 2048
+      },
+      {
+        "site": "GovernedByteBuilder.Grow",
+        "bytes": 8,
+        "count": 6
+      },
+      {
+        "site": "PyString.FromTransferredUtf8",
+        "bytes": 128,
+        "count": 5
+      },
+      {
+        "site": "ExecutableValueStorage..ctor",
+        "bytes": 320,
+        "count": 1
+      },
+      {
+        "site": "LythonRuntime.ChargeClosureRetention",
+        "bytes": 736,
+        "count": 1
+      },
+      {
+        "site": "LythonRuntime.Range",
+        "bytes": 64,
+        "count": 1
+      },
+      {
+        "site": "LythonRuntime.ChargeClosureRetention",
+        "bytes": 32,
+        "count": 1
+      },
+      {
+        "site": "ExecutableValueStorage.GetLookupCaches",
+        "bytes": 288,
+        "count": 1
+      },
+      {
+        "site": "PyList..ctor",
+        "bytes": 64,
+        "count": 1
+      },
+      {
+        "site": "PyList.EnsureCapacity",
+        "bytes": 704,
+        "count": 1
+      },
+      {
+        "site": "PyString.CopyFromUtf8",
+        "bytes": 135,
+        "count": 1
+      },
+      {
+        "site": "GovernedByteBuilder.Grow",
+        "bytes": 16,
+        "count": 1
+      },
+      {
+        "site": "GovernedByteBuilder.Grow",
+        "bytes": 32,
+        "count": 1
+      },
+      {
+        "site": "GovernedByteBuilder.Grow",
+        "bytes": 64,
+        "count": 1
+      },
+      {
+        "site": "GovernedByteBuilder.Grow",
+        "bytes": 46,
+        "count": 1
+      },
+      {
+        "site": "GovernedByteBuilder.Grow",
+        "bytes": 92,
+        "count": 1
+      },
+      {
+        "site": "ProjectionBudget.Reserve",
+        "bytes": 126,
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "scripts.ordinary-fully-supplied-helper",
+    "Growths": 7,
+    "baseline": 49856,
+    "sources": [
+      {
+        "site": "ExecutableValueStorage..ctor",
+        "bytes": 248,
+        "count": 1
+      },
+      {
+        "site": "LythonRuntime.CreateFunctionValue",
+        "bytes": 160,
+        "count": 1
+      },
+      {
+        "site": "LythonRuntime.ChargeClosureRetention",
+        "bytes": 640,
+        "count": 1
+      },
+      {
+        "site": "LythonRuntime.Range",
+        "bytes": 64,
+        "count": 1
+      },
+      {
+        "site": "PyString.CopyFromUtf8",
+        "bytes": 135,
+        "count": 1
+      },
+      {
+        "site": "GovernedByteBuilder.Grow",
+        "bytes": 8,
+        "count": 1
+      },
+      {
+        "site": "ProjectionBudget.Reserve",
+        "bytes": 48,
+        "count": 1
+      }
+    ]
+  }
+]

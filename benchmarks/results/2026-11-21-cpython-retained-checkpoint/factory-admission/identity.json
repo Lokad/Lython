@@ -1,0 +1,24 @@
+{
+  "snapshot": "4337b7765",
+  "prior": "3a6accc97",
+  "workerImages": {
+    "reference": {
+      "Lokad.Lython.dll": "1df8c9f4a22f76e439ef92d0d7ef247e2f4f5c6d196c512370a4f0c6f86d7688",
+      "Probe.deps.json": "0ed402d1995caf3a7e34425f6c0271d44768c07ac318ffd6977335dae727f029",
+      "Probe.dll": "5a3941f200140f63d8c45ca7a3f2b6dc1267e16343876d09a60b782648051dbd",
+      "Probe.exe": "df125884a79820d3be5dd57bf0693ab0a4afb05602c85187601ef7934d66e56c",
+      "Probe.pdb": "b98df68934c6cef28716b50b5488f7371d4bd7c6daf5ca559011ff7653d395c3",
+      "Probe.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0"
+    },
+    "current": {
+      "Lokad.Lython.dll": "ea5b7878f0b6c8b0564979bda4ee6cc0b98a48378841059fd206eb711e8a9499",
+      "Probe.deps.json": "0ed402d1995caf3a7e34425f6c0271d44768c07ac318ffd6977335dae727f029",
+      "Probe.dll": "5a3941f200140f63d8c45ca7a3f2b6dc1267e16343876d09a60b782648051dbd",
+      "Probe.exe": "df125884a79820d3be5dd57bf0693ab0a4afb05602c85187601ef7934d66e56c",
+      "Probe.pdb": "b98df68934c6cef28716b50b5488f7371d4bd7c6daf5ca559011ff7653d395c3",
+      "Probe.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0"
+    }
+  },
+  "catalogSha256": "1c0fde03740fc2c1ef75447c42b0b4dd5ad128efd971a9fda13a9bed70cfff9e",
+  "method": "Observed managed callers of successful host allowance growth. Stack capture perturbs execution; no CPU or timing inference."
+}
