@@ -4,11 +4,24 @@ namespace Lokad.Lython.Frontend;
 // uncalled bodies. Keep them independent of abstract-value/runtime analysis.
 internal static class SyntaxValidityDiagnostics
 {
+    private struct SuiteVisit(IReadOnlyList<StatementSyntax> statements, int loopDepth, int parent,
+        bool lexicalScope, bool annotatedReturn)
+    {
+        public readonly IReadOnlyList<StatementSyntax> Statements = statements;
+        public readonly int LoopDepth = loopDepth;
+        public readonly int Parent = parent;
+        public readonly bool LexicalScope = lexicalScope;
+        public readonly bool AnnotatedReturn = annotatedReturn;
+        public int NextStatement = statements.Count - 1;
+        public int LastAnnotationCheck = -1;
+    }
+
     private readonly record struct ExpressionVisit(ExpressionSyntax Expression, HashSet<string>? Targets,
         bool Iterable, bool InLambda = false, bool RecordCall = false);
 
     public static IReadOnlyList<LythonDiagnostic> Analyze(ScriptSyntax script, out bool hasScopeDirectives,
         out Dictionary<StatementSyntax, List<CallExpressionSyntax>>? potentialMutations,
+        out Dictionary<IReadOnlyList<StatementSyntax>, int>? annotationChecks, out bool importsRegex,
         CancellationToken cancellationToken)
     {
         var diagnostics = new List<LythonDiagnostic>();
@@ -16,22 +29,50 @@ internal static class SyntaxValidityDiagnostics
         var hasModernTypes = false;
         var hasFutureImport = false;
         hasScopeDirectives = false;
-        var statements = new Stack<(StatementSyntax Statement, int LoopDepth)>();
+        var suites = new List<SuiteVisit> { new(script.Statements, 0, -1, lexicalScope: true, annotatedReturn: false) };
         var expressions = new Stack<ExpressionVisit>();
         potentialMutations = null;
+        annotationChecks = null;
+        importsRegex = false;
         HashSet<string>? seenNames = null;
-        foreach (var statement in script.Statements) statements.Push((statement, 0));
-        while (statements.TryPop(out var work))
+        while (suites.Count != 0)
         {
-            var (statement, loopDepth) = work;
+            var current = suites.Count - 1;
+            var work = suites[current];
+            if (work.NextStatement < 0)
+            {
+                suites.RemoveAt(current);
+                if (importsRegex || work.LastAnnotationCheck < 0) continue;
+                if (work.LexicalScope)
+                {
+                    var checks = annotationChecks ??= new(ReferenceEqualityComparer.Instance);
+                    checks[work.Statements] = Math.Max(checks.GetValueOrDefault(work.Statements, -1), work.LastAnnotationCheck);
+                }
+                if (work.Parent >= 0)
+                {
+                    // Any child check makes its containing statement relevant
+                    // in the parent's independent annotation flow.
+                    var parent = suites[work.Parent];
+                    parent.LastAnnotationCheck = Math.Max(parent.LastAnnotationCheck, parent.NextStatement + 1);
+                    suites[work.Parent] = parent;
+                }
+                continue;
+            }
+
+            var statementIndex = work.NextStatement--;
+            var statement = work.Statements[statementIndex];
             PythonTokenization.CheckCancellation(cancellationToken, statement.Span.Start);
             hasScopeDirectives |= statement is ScopeDirectiveStatementSyntax;
-            if (statement is BreakStatementSyntax or ContinueStatementSyntax && loopDepth == 0)
+            if (statement is BreakStatementSyntax or ContinueStatementSyntax && work.LoopDepth == 0)
                 Error("Loop control requires an enclosing loop in the same scope.", statement.Span);
+            var checksAnnotation = statement is AnnotatedAssignmentStatementSyntax { Expression: not null }
+                || work.AnnotatedReturn && statement is ReturnStatementSyntax;
             if (statement is FunctionDefinitionStatementSyntax function)
             {
                 Parameters(function.Parameters, function.Span);
                 hasModernTypes |= function.TypeParameters is not null;
+                checksAnnotation = function.Parameters.Any(static parameter =>
+                    parameter.Annotation is not null && parameter.DefaultValue is not null);
             }
             if (statement is MatchStatementSyntax match)
                 foreach (var matchCase in match.Cases) PatternNames(matchCase.Pattern);
@@ -42,7 +83,13 @@ internal static class SyntaxValidityDiagnostics
                 hasModernTypes |= type.TypeParameters is not null;
             }
             hasModernTypes |= statement is TypeAliasStatementSyntax;
-            hasFutureImport |= statement is ImportStatementSyntax { ModuleName: "__future__", ImportedMembers: not null };
+            if (statement is ImportStatementSyntax import)
+            {
+                hasFutureImport |= import.ModuleName == "__future__" && import.ImportedMembers is not null;
+                importsRegex |= import.ModuleName == "re" || import.ModuleName.StartsWith("re.", StringComparison.Ordinal);
+            }
+            if (checksAnnotation) work.LastAnnotationCheck = Math.Max(work.LastAnnotationCheck, statementIndex);
+            suites[current] = work;
             List<CallExpressionSyntax>? calls = null;
             foreach (var expression in StatementSyntaxTraversal.EnumerateDirectExpressions(statement))
                 Expressions(expression, ref calls);
@@ -53,11 +100,20 @@ internal static class SyntaxValidityDiagnostics
                 var depth = statement switch
                 {
                     FunctionDefinitionStatementSyntax or ClassDefinitionStatementSyntax => 0,
-                    ForStatementSyntax loop when ReferenceEquals(body, loop.Body) => loopDepth + 1,
-                    WhileStatementSyntax loop when ReferenceEquals(body, loop.Body) => loopDepth + 1,
-                    _ => loopDepth
+                    ForStatementSyntax loop when ReferenceEquals(body, loop.Body) => work.LoopDepth + 1,
+                    WhileStatementSyntax loop when ReferenceEquals(body, loop.Body) => work.LoopDepth + 1,
+                    _ => work.LoopDepth
                 };
-                foreach (var child in body) statements.Push((child, depth));
+                var annotatedReturn = statement switch
+                {
+                    FunctionDefinitionStatementSyntax child => child.ReturnAnnotation is not null,
+                    ClassDefinitionStatementSyntax => false,
+                    _ => work.AnnotatedReturn
+                };
+                // Push child suites in source order and read from the end,
+                // preserving the validator's existing diagnostic order.
+                suites.Add(new SuiteVisit(body, depth, current,
+                    statement is FunctionDefinitionStatementSyntax or ClassDefinitionStatementSyntax, annotatedReturn));
             }
         }
         // These validators can report only on the syntax discovered above/below.

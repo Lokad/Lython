@@ -18,59 +18,24 @@ internal static class AnnotationDiagnostics
         Set = 1 << 9,
     }
 
-    public static IReadOnlyList<LythonDiagnostic> Analyze(ScriptSyntax script, StaticAnalysisContext? context = null)
+    public static IReadOnlyList<LythonDiagnostic> Analyze(ScriptSyntax script,
+        IReadOnlyDictionary<IReadOnlyList<StatementSyntax>, int>? lastChecks, bool importsRegex,
+        StaticAnalysisContext context)
     {
         // Annotation flow deliberately visits dead branches. It cannot share
         // the ordinary analyzer's refined bindings, but no later check can use
         // facts produced after an isolated scope's final annotation-dependent
         // statement. Control-flow bodies still export their complete exit facts.
-        // The shared lexical walk already establishes demand across dead and
-        // deferred scopes. Only actual annotation checks need last-use facts;
-        // regex flow always consumes complete bodies.
-        Dictionary<IReadOnlyList<StatementSyntax>, int>? lastChecks = null;
-        if (!script.ImportsRegex)
-        {
-            if (!script.RequiresAnnotationChecks) return [];
-            lastChecks = new(ReferenceEqualityComparer.Instance);
-            if (Prepare(script.Statements, annotatedReturn: false) < 0) return [];
-        }
+        // Only isolated scopes with actual checks need last-use facts.
+        // Regex flow always consumes complete bodies.
+        if (lastChecks is null && !importsRegex) return [];
         var diagnostics = new List<LythonDiagnostic>();
         // Constant regex analysis also consumes this conservative flow, even
         // in dead/deferred scopes. Retain it in full when regex bindings can
         // enter the script; aliases and rebinding need the original analysis.
         AnalyzeStatements(script.Statements, diagnostics, new AbstractState(context), returnAnnotation: null,
-            lastChecks);
+            importsRegex ? null : lastChecks);
         return diagnostics;
-
-        int Prepare(IReadOnlyList<StatementSyntax> statements, bool annotatedReturn)
-        {
-            var last = -1;
-            for (var i = 0; i < statements.Count; i++)
-            {
-                var statement = statements[i];
-                context?.MemoryGovernor?.ThrowIfAdmissionFailed();
-                PythonTokenization.CheckCancellation(context?.CancellationToken ?? default, statement.Span.Start);
-                bool needed;
-                if (statement is FunctionDefinitionStatementSyntax function)
-                {
-                    needed = Prepare(function.Body, function.ReturnAnnotation is not null) >= 0;
-                    needed |= function.Parameters.Any(parameter => parameter.Annotation is not null && parameter.DefaultValue is not null);
-                }
-                else if (statement is ClassDefinitionStatementSyntax definition)
-                    needed = Prepare(definition.Body, annotatedReturn: false) >= 0;
-                else
-                {
-                    needed = statement is AnnotatedAssignmentStatementSyntax { Expression: not null }
-                        || annotatedReturn && statement is ReturnStatementSyntax;
-                    foreach (var body in StatementSyntaxTraversal.EnumerateChildBodies(statement))
-                        needed |= Prepare(body, annotatedReturn) >= 0;
-                }
-                if (needed) last = i;
-            }
-            lastChecks![statements] = lastChecks.TryGetValue(statements, out var previous)
-                ? Math.Max(previous, last) : last;
-            return last;
-        }
     }
 
     private static void AnalyzeStatements(
@@ -82,7 +47,7 @@ internal static class AnnotationDiagnostics
         bool exportBindings = false)
     {
         exportBindings |= lastChecks is null;
-        var last = exportBindings ? statements.Count - 1 : lastChecks![statements];
+        var last = exportBindings ? statements.Count - 1 : lastChecks!.GetValueOrDefault(statements, -1);
         for (var i = 0; i <= last; i++)
         {
             var statement = statements[i];

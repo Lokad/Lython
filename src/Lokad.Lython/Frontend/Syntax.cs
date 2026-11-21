@@ -12,8 +12,6 @@ internal sealed record ScriptSyntax(
 {
     internal ScopeDirectiveFacts? PreparedScopeFacts { get; set; }
     internal IReadOnlyList<ExpressionSyntax> PreparedCallables { get; set; } = [];
-    internal bool RequiresAnnotationChecks { get; set; }
-    internal bool ImportsRegex { get; set; }
 }
 
 internal abstract record StatementSyntax(

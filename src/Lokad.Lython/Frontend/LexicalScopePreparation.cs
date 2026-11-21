@@ -115,8 +115,6 @@ internal static class LexicalScopePreparation
         var moduleUsesSuper = moduleFacts.LocalNames.Contains("super") || moduleFacts.IsGlobal("super");
         List<CallExpressionSyntax>? preloads = null;
         List<ExpressionSyntax>? callables = null;
-        var requiresAnnotationChecks = false;
-        var importsRegex = false;
         // Module bindings do not supply lexical class cells to child functions.
         var root = new Scope(null, ScopeDirectiveFacts.Empty);
         using var qualifiedNameWorkspace = governor?.ReserveTemporary(0, null);
@@ -129,13 +127,8 @@ internal static class LexicalScopePreparation
             {
                 governor?.ThrowIfAdmissionFailed();
                 PythonTokenization.CheckCancellation(cancellationToken, statement.Span.Start);
-                if (statement is AnnotatedAssignmentStatementSyntax annotated)
-                {
-                    requiresAnnotationChecks |= annotated.Expression is not null;
-                    if (postponed) PostponedAnnotationText.Attach(annotated.Annotation, source, governor, cancellationToken);
-                }
-                importsRegex |= statement is ImportStatementSyntax import &&
-                    (import.ModuleName == "re" || import.ModuleName.StartsWith("re.", StringComparison.Ordinal));
+                if (postponed && statement is AnnotatedAssignmentStatementSyntax annotated)
+                    PostponedAnnotationText.Attach(annotated.Annotation, source, governor, cancellationToken);
                 // Even a later declaration in a sibling function affects the
                 // module symbol table. Decide candidate tags after this walk.
                 if (statement is ScopeDirectiveStatementSyntax { Kind: ScopeDirectiveKind.Global } directive &&
@@ -159,8 +152,6 @@ internal static class LexicalScopePreparation
                 PushStatementReads(statement, scope);
                 if (statement is FunctionDefinitionStatementSyntax function)
                 {
-                    requiresAnnotationChecks |= function.ReturnAnnotation is not null ||
-                        function.Parameters.Any(static parameter => parameter.Annotation is not null && parameter.DefaultValue is not null);
                     if (postponed)
                     {
                         foreach (var parameter in function.Parameters)
@@ -260,8 +251,6 @@ internal static class LexicalScopePreparation
 
         script.PreparedScopeFacts = moduleFacts;
         script.PreparedCallables = callables ?? [];
-        script.RequiresAnnotationChecks = requiresAnnotationChecks;
-        script.ImportsRegex = importsRegex;
 
         void PushStatements(IReadOnlyList<StatementSyntax> statements, Scope scope)
         {

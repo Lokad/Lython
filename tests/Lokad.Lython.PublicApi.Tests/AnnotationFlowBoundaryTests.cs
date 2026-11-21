@@ -32,6 +32,33 @@ public sealed class AnnotationFlowBoundaryTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
+    [Fact]
+    public void ChecksAcrossSiblingSuitesAndLexicalScopesKeepSourceOrder()
+    {
+        using var script = new LythonEngine().Compile("""
+            def outer() -> int:
+                try:
+                    def hidden(value: int = 'wrong'): pass
+                except ValueError:
+                    return 'wrong'
+                else:
+                    return 1
+                finally:
+                    class Inner:
+                        message: int = 'wrong'
+            class Tail:
+                def check() -> str:
+                    return 42
+            """);
+
+        Assert.False(script.IsValid);
+        var diagnostics = script.Diagnostics
+            .Where(diagnostic => diagnostic.Code is "LA1080" or "LA1081" or "LA1082")
+            .Select(diagnostic => (diagnostic.Code, diagnostic.Span?.Line)).ToArray();
+        Assert.Equal(new (string, int?)[] { ("LA1081", 3), ("LA1082", 5), ("LA1080", 10), ("LA1082", 13) },
+            diagnostics);
+    }
+
     public static TheoryData<string, string> ValidFlow => new()
     {
         { "value = 'old'\nfor item in [1]:\n    value = item\nresult: int = value\nprint(result)", "1\n" },
