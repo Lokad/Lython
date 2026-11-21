@@ -519,7 +519,7 @@ internal sealed partial class ExecutableCodeObject
         PatternStorageCount = matchCases.Select(item => item.Pattern.StorageCount).DefaultIfEmpty(0).Max();
         RequiresLocalVariableMirroring = requiresLocalVariableMirroring;
         IsFunctionScope = isFunctionScope;
-        var reads = ExecutableStackLayout.ForwardValues(this, blocks, callSites);
+        var reads = ExecutableStackLayout.ForwardValues(this, blocks, callSites, cancellationToken);
         // Assign physical positions after forwarding. Both execution forms use
         // this final layout, including at a dynamic-operation transition.
         var regionsByEntry = exceptionRegions.Count == 0 ? [] :

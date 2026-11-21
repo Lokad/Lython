@@ -201,15 +201,17 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
     // Checked locals keep their original spans in cold metadata; neither branch
     // initialization facts nor their invalidation inventories are needed.
     internal static List<(int Block, int Instruction, int Input, LythonSourceSpan Span)> ForwardValues(
-        ExecutableCodeObject code, List<List<ExecutableInstruction>> blocks, ExecutableCallSite[] sites)
+        ExecutableCodeObject code, List<List<ExecutableInstruction>> blocks, ExecutableCallSite[] sites, CancellationToken token)
     {
         var reads = new List<(int Block, int Instruction, int Input, LythonSourceSpan Span)>();
         for (var block = 0; block < blocks.Count; block++)
         {
+            PythonTokenization.CheckCancellation(token, block);
             var instructions = blocks[block];
             var kept = 0;
             for (var index = 0; index < instructions.Count; index++)
             {
+                PythonTokenization.CheckCancellation(token, index);
                 var instruction = instructions[index];
                 // Site facts use original adjacency, before forwarding can
                 // remove or rewrite the instructions supplying operands.
