@@ -67,7 +67,7 @@ internal sealed partial class Parser
                     return new ListComprehensionExpressionSyntax(
                         item,
                         clauses,
-                        Merge(SpanOf(openBracket), SpanOf(closeComprehension)));
+                        Merge(openBracket, closeComprehension));
                 }
 
                 if (CurrentToken != Token.Comma)
@@ -91,7 +91,7 @@ internal sealed partial class Parser
             return null;
         }
 
-        return new ListLiteralExpressionSyntax(items, Merge(SpanOf(openBracket), SpanOf(closeBracket)));
+        return new ListLiteralExpressionSyntax(items, Merge(openBracket, closeBracket));
     }
 
     private ExpressionSyntax? ParseTupleOrParenthesized()
@@ -108,7 +108,7 @@ internal sealed partial class Parser
         if (CurrentToken == Token.CloseParen)
         {
             var closeEmpty = ReadToken();
-            return new TupleLiteralExpressionSyntax(Array.Empty<CollectionDisplayItemSyntax>(), Merge(SpanOf(openParen), SpanOf(closeEmpty)));
+            return new TupleLiteralExpressionSyntax(Array.Empty<CollectionDisplayItemSyntax>(), Merge(openParen, closeEmpty));
         }
 
         var firstIsUnpacking = CurrentToken == Token.Star;
@@ -150,7 +150,7 @@ internal sealed partial class Parser
                 return new GeneratorExpressionSyntax(
                     first,
                     clauses,
-                    Merge(SpanOf(openParen), SpanOf(closeComprehension)));
+                    Merge(openParen, closeComprehension));
             }
 
             SkipGroupedExpressionTrivia();
@@ -160,7 +160,7 @@ internal sealed partial class Parser
                 return null;
             }
 
-            return new ParenthesizedExpressionSyntax(first, Merge(first.Span, SpanOf(closeParen)));
+            return new ParenthesizedExpressionSyntax(first, Merge(first.Span, closeParen));
         }
 
         var items = new List<CollectionDisplayItemSyntax>
@@ -210,6 +210,6 @@ internal sealed partial class Parser
             return null;
         }
 
-        return new TupleLiteralExpressionSyntax(items, Merge(SpanOf(openParen), SpanOf(closeTuple)));
+        return new TupleLiteralExpressionSyntax(items, Merge(openParen, closeTuple));
     }
 }

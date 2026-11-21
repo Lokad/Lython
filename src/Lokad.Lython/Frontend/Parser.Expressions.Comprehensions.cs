@@ -60,7 +60,7 @@ internal sealed partial class Parser
                 parsedTarget,
                 iterable,
                 condition,
-                Merge(SpanOf(forToken), (condition ?? iterable).Span)));
+                Merge(forToken, (condition ?? iterable).Span)));
 
             SkipGroupedExpressionTrivia();
             if (CurrentToken != Token.For)

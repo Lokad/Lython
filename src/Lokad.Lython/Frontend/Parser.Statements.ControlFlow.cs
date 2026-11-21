@@ -18,7 +18,7 @@ internal sealed partial class Parser
             return null;
         }
 
-        return new ReturnStatementSyntax(expression, Merge(SpanOf(returnToken), expression.Span));
+        return new ReturnStatementSyntax(expression, Merge(returnToken, expression.Span));
     }
 
     private StatementSyntax? ParseRaiseStatement()
@@ -51,7 +51,7 @@ internal sealed partial class Parser
             causeSpan = causeExpression.Span;
         }
 
-        return new RaiseStatementSyntax(expression, causeExpression, Merge(SpanOf(raiseToken), causeSpan));
+        return new RaiseStatementSyntax(expression, causeExpression, Merge(raiseToken, causeSpan));
     }
 
     private StatementSyntax? ParseAssertStatement()
@@ -79,7 +79,7 @@ internal sealed partial class Parser
         return new AssertStatementSyntax(
             condition,
             message,
-            Merge(SpanOf(assertToken), (message ?? condition).Span));
+            Merge(assertToken, (message ?? condition).Span));
     }
 
     private StatementSyntax? ParseDeleteStatement()
@@ -119,9 +119,9 @@ internal sealed partial class Parser
         target = UnwrapParenthesizedTarget(target);
         return target switch
         {
-            IdentifierExpressionSyntax or SubscriptExpressionSyntax or SliceExpressionSyntax or MemberExpressionSyntax => new DeleteStatementSyntax(target, Merge(SpanOf(delToken), target.Span)),
-            TupleLiteralExpressionSyntax tuple when IsSupportedDeleteDisplay(tuple.Items) => new DeleteStatementSyntax(target, Merge(SpanOf(delToken), target.Span)),
-            ListLiteralExpressionSyntax list when IsSupportedDeleteDisplay(list.Items) => new DeleteStatementSyntax(target, Merge(SpanOf(delToken), target.Span)),
+            IdentifierExpressionSyntax or SubscriptExpressionSyntax or SliceExpressionSyntax or MemberExpressionSyntax => new DeleteStatementSyntax(target, Merge(delToken, target.Span)),
+            TupleLiteralExpressionSyntax tuple when IsSupportedDeleteDisplay(tuple.Items) => new DeleteStatementSyntax(target, Merge(delToken, target.Span)),
+            ListLiteralExpressionSyntax list when IsSupportedDeleteDisplay(list.Items) => new DeleteStatementSyntax(target, Merge(delToken, target.Span)),
             _ => AddUnsupportedDeleteTarget(target, "delete target")
         };
     }
@@ -199,7 +199,7 @@ internal sealed partial class Parser
         var exceptClauses = new List<ExceptClauseSyntax>();
         IReadOnlyList<StatementSyntax>? elseBody = null;
         IReadOnlyList<StatementSyntax>? finallyBody = null;
-        var span = Merge(SpanOf(tryToken), tryBody[^1].Span);
+        var span = Merge(tryToken, tryBody[^1].Span);
 
         while (CurrentToken == Token.Except)
         {
@@ -249,7 +249,7 @@ internal sealed partial class Parser
                 return null;
             }
 
-            var clauseSpan = Merge(SpanOf(exceptToken), body[^1].Span);
+            var clauseSpan = Merge(exceptToken, body[^1].Span);
             exceptClauses.Add(new ExceptClauseSyntax(exceptionVariable, body, clauseSpan, exceptionTypeExpression));
             span = Merge(span, body[^1].Span);
         }

@@ -63,7 +63,7 @@ internal sealed partial class Parser
             return null;
         }
         var value = ParseExpression();
-        return value is null ? null : new TypeAliasStatementSyntax(IdentifierText(nameToken), parameters, value, Merge(SpanOf(typeToken), value.Span))
+        return value is null ? null : new TypeAliasStatementSyntax(IdentifierText(nameToken), parameters, value, Merge(typeToken, value.Span))
         {
             OriginalName = IdentifierText(nameToken) == RawIdentifierText(nameToken) ? null : RawIdentifierText(nameToken)
         };

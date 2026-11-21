@@ -406,7 +406,7 @@ internal sealed partial class Parser
                 return null;
             }
 
-            return new UnaryExpressionSyntax(UnaryOperatorSyntax.Not, operand, Merge(SpanOf(notToken), operand.Span));
+            return new UnaryExpressionSyntax(UnaryOperatorSyntax.Not, operand, Merge(notToken, operand.Span));
         }
 
         return ParseComparisonExpression();
@@ -431,7 +431,7 @@ internal sealed partial class Parser
             return new UnaryExpressionSyntax(
                 _tokens.Tokens[operatorToken].Token == Token.Plus ? UnaryOperatorSyntax.Plus : UnaryOperatorSyntax.Minus,
                 operand,
-                Merge(SpanOf(operatorToken), operand.Span));
+                Merge(operatorToken, operand.Span));
         }
 
         if (CurrentToken == Token.Tilde)
@@ -448,7 +448,7 @@ internal sealed partial class Parser
                 return null;
             }
 
-            return new UnaryExpressionSyntax(UnaryOperatorSyntax.BitwiseNot, operand, Merge(SpanOf(operatorToken), operand.Span));
+            return new UnaryExpressionSyntax(UnaryOperatorSyntax.BitwiseNot, operand, Merge(operatorToken, operand.Span));
         }
 
         return ParsePowerExpression();

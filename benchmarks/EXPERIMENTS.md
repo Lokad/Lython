@@ -6,6 +6,16 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1268 parser spans from token endpoints](results/2026-11-21-parser-endpoint-spans/README.md)
+removes intermediate source span allocations. Validator compilation
+allocates 2.42% less, and time to result improves 2.66–4.14% with
+lower CPU. Standalone validator compile elapsed is mixed and CPU
+rises slightly. Both exact images preserve diagnostics and code spans.
+
+[Utf8Regex dev.116](results/2026-11-21-regex-dev116-boundary/README.md)
+verifies the new immutable packages on both Windows targets.
+The reversed anchored window and managed-code blockers persist.
+
 [B1265–B1267 compiler instruction scratch](results/2026-11-21-instruction-scratch/README.md)
 attributes 338 KB per validator compile to provisional instruction
 list growth. Shared scratch reduces complete compile allocation

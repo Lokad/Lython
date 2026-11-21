@@ -1,0 +1,70 @@
+{
+  "compile": [
+    {
+      "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "referenceBytes": 67008,
+      "candidateBytes": 66464,
+      "changePercent": -0.8118433619866305
+    },
+    {
+      "case": "scripts.dataclass-inherited-configuration.generated",
+      "referenceBytes": 598984,
+      "candidateBytes": 587848,
+      "changePercent": -1.859148157546775
+    },
+    {
+      "case": "scripts.config-generated-guards.medium.bad-0",
+      "referenceBytes": 2277163.5,
+      "candidateBytes": 2222098.25,
+      "changePercent": -2.418150914503947
+    }
+  ],
+  "warm": [
+    {
+      "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "previousAllocatedBytes": 1275544,
+      "candidateAllocatedBytes": 1275544,
+      "allocationChangePercent": 0.0,
+      "previousAccountedPeak": 2968481,
+      "candidateAccountedPeak": 2968481,
+      "budgetReturnedToBaseline": true
+    },
+    {
+      "case": "scripts.dataclass-inherited-configuration.generated",
+      "previousAllocatedBytes": 409872,
+      "candidateAllocatedBytes": 409872,
+      "allocationChangePercent": 0.0,
+      "previousAccountedPeak": 285027,
+      "candidateAccountedPeak": 285027,
+      "budgetReturnedToBaseline": true
+    },
+    {
+      "case": "scripts.config-generated-guards.medium.bad-0",
+      "previousAllocatedBytes": 66984,
+      "candidateAllocatedBytes": 66984,
+      "allocationChangePercent": 0.0,
+      "previousAccountedPeak": 92830,
+      "candidateAccountedPeak": 92830,
+      "budgetReturnedToBaseline": true
+    }
+  ],
+  "diagnostics": 253,
+  "inspection": 57,
+  "parsing": [
+    {
+      "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "referenceBytes": 10320,
+      "candidateBytes": 9776
+    },
+    {
+      "case": "scripts.dataclass-inherited-configuration.generated",
+      "referenceBytes": 108904,
+      "candidateBytes": 97768
+    },
+    {
+      "case": "scripts.config-generated-guards.medium.bad-0",
+      "referenceBytes": 637904,
+      "candidateBytes": 572720
+    }
+  ]
+}

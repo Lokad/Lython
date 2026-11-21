@@ -304,7 +304,7 @@ internal sealed partial class Parser
         }
 
         IReadOnlyList<StatementSyntax>? elseStatements = null;
-        LythonSourceSpan span = Merge(SpanOf(ifToken), thenStatements[^1].Span);
+        LythonSourceSpan span = Merge(ifToken, thenStatements[^1].Span);
 
         // Elif clauses read as a flat chain but execute as nested statements:
         // collect them first, then fold back-to-front so every clause (and a
@@ -343,7 +343,7 @@ internal sealed partial class Parser
                     return null;
                 }
 
-                elifClauses.Add((elifCondition, elifBody, Merge(SpanOf(elifToken), elifBody[^1].Span)));
+                elifClauses.Add((elifCondition, elifBody, Merge(elifToken, elifBody[^1].Span)));
             }
 
             IReadOnlyList<StatementSyntax>? elifTail = null;

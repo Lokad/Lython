@@ -13,7 +13,7 @@ public sealed class TokenSourceCoordinatesTests
         foreach (var token in tokens.Tokens)
         {
             tokens.LineOfPosition(token.Start, out var line, out var column);
-            Assert.Equal(new LythonSourceSpan(token.Start, token.Length, line, column), tokens.SpanOf(token));
+            Assert.Equal(new LythonSourceSpan(token.Start, token.Length, line, column), tokens.SpanOf(token, token.Length));
         }
     }
 }

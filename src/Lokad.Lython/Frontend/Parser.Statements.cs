@@ -60,7 +60,7 @@ internal sealed partial class Parser
             iterable,
             elseStatements,
             body,
-            Merge(SpanOf(forToken), (elseStatements ?? body)[^1].Span));
+            Merge(forToken, (elseStatements ?? body)[^1].Span));
     }
 
     private StatementSyntax? ParseWhileStatement()
@@ -102,7 +102,7 @@ internal sealed partial class Parser
             }
         }
 
-        return new WhileStatementSyntax(condition, elseStatements, body, Merge(SpanOf(whileToken), (elseStatements ?? body)[^1].Span));
+        return new WhileStatementSyntax(condition, elseStatements, body, Merge(whileToken, (elseStatements ?? body)[^1].Span));
     }
 
     private StatementSyntax? ParseFunctionDefinition(IReadOnlyList<ExpressionSyntax> decorators)
@@ -166,7 +166,7 @@ internal sealed partial class Parser
             parameters,
             returnAnnotation,
             body,
-            Merge(SpanOf(defToken), body[^1].Span), typeParameters)
+            Merge(defToken, body[^1].Span), typeParameters)
         {
             OriginalName = IdentifierText(nameToken) == RawIdentifierText(nameToken) ? null : RawIdentifierText(nameToken)
         };
@@ -224,7 +224,7 @@ internal sealed partial class Parser
             return false;
         }
 
-        if (TryConvertDataclassDecorator(expression, Merge(SpanOf(atToken), SpanOf(endToken)), out var parsedDataclass))
+        if (TryConvertDataclassDecorator(expression, Merge(atToken, endToken), out var parsedDataclass))
         {
             if (parsedDataclass is not null)
             {
@@ -383,7 +383,7 @@ internal sealed partial class Parser
                 decorators,
                 headerArguments,
                 body,
-                Merge(SpanOf(classToken), body[^1].Span), typeParameters)
+                Merge(classToken, body[^1].Span), typeParameters)
             {
                 OriginalName = bindingName == declaredName ? null : declaredName
             };

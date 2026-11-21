@@ -451,21 +451,41 @@ internal sealed partial class Parser
     private LythonSourceSpan SpanOf(int tokenIndex)
     {
         var token = _tokens.Tokens[tokenIndex];
-        if (_spanSourceTokens is not { } original) return _tokens.SpanOf(token);
+        return SpanFromToken(token, token.Length);
+    }
+
+    private LythonSourceSpan SpanFromToken(SourceToken token, int length)
+    {
+        if (_spanSourceTokens is not { } original) return _tokens.SpanOf(token, length);
 
         var start = token.Start + _spanOffset;
         original.LineOfPosition(start, out var line, out var column);
-        return new LythonSourceSpan(start, token.Length, line, column);
+        return new LythonSourceSpan(start, length, line, column);
     }
 
     private LythonSourceSpan Merge(int leftTokenIndex, int rightTokenIndex)
     {
-        return Merge(SpanOf(leftTokenIndex), SpanOf(rightTokenIndex));
+        var left = _tokens.Tokens[leftTokenIndex];
+        var right = _tokens.Tokens[rightTokenIndex];
+        var first = left.Start <= right.Start ? left : right;
+        var end = Math.Max(left.Start + left.Length, right.Start + right.Length);
+        return SpanFromToken(first, end - first.Start);
     }
 
-    private LythonSourceSpan Merge(int leftTokenIndex, LythonSourceSpan rightSpan)
+    private LythonSourceSpan Merge(int leftTokenIndex, LythonSourceSpan right)
+        => MergeTokenAndSpan(_tokens.Tokens[leftTokenIndex], right, tokenFirstOnTie: true);
+
+    private LythonSourceSpan Merge(LythonSourceSpan left, int rightTokenIndex)
+        => MergeTokenAndSpan(_tokens.Tokens[rightTokenIndex], left, tokenFirstOnTie: false);
+
+    private LythonSourceSpan MergeTokenAndSpan(SourceToken token, LythonSourceSpan span, bool tokenFirstOnTie)
     {
-        return Merge(SpanOf(leftTokenIndex), rightSpan);
+        var start = token.Start + _spanOffset;
+        var end = Math.Max(start + token.Length, span.Start + span.Length);
+        // Use the same left-endpoint tie break as a merge of two existing spans.
+        if (start < span.Start || (start == span.Start && tokenFirstOnTie))
+            return SpanFromToken(token, end - start);
+        return span with { Length = end - span.Start };
     }
 
     private static LythonSourceSpan Merge(LythonSourceSpan left, LythonSourceSpan right)

@@ -48,7 +48,7 @@ internal sealed partial class Parser
         return new MemberExpressionSyntax(
             target,
             IdentifierText(memberToken),
-            Merge(target.Span, SpanOf(memberToken)));
+            Merge(target.Span, memberToken));
     }
 
     private CallExpressionSyntax? ParseCallPostfix(ExpressionSyntax target)
@@ -56,7 +56,7 @@ internal sealed partial class Parser
         var arguments = ParseCallArguments(out var closeParenToken);
         return arguments is null
             ? null
-            : new CallExpressionSyntax(target, arguments, Merge(target.Span, SpanOf(closeParenToken)));
+            : new CallExpressionSyntax(target, arguments, Merge(target.Span, closeParenToken));
     }
 
     private IReadOnlyList<CallArgumentSyntax>? ParseCallArguments(out int closeParenToken)
@@ -209,7 +209,7 @@ internal sealed partial class Parser
             return null;
         }
 
-        var span = Merge(target.Span, SpanOf(closeBracketToken));
+        var span = Merge(target.Span, closeBracketToken);
         if (items is null && first is SliceValueExpressionSyntax slice)
             return new SliceExpressionSyntax(target, slice.Start, slice.End, slice.Step, span);
 
@@ -276,6 +276,6 @@ internal sealed partial class Parser
             AddDiagnostic("LA1100", "Assignment expressions in slice bounds require parentheses.", firstToken);
             return null;
         }
-        return new SliceValueExpressionSyntax(start, end, step, Merge(SpanOf(firstToken), lastSpan));
+        return new SliceValueExpressionSyntax(start, end, step, Merge(firstToken, lastSpan));
     }
 }

@@ -193,7 +193,7 @@ internal sealed partial class Parser
             ];
         }
 
-        return ((WithStatementSyntax)nestedBody[0]) with { Span = Merge(SpanOf(withToken), body[^1].Span) };
+        return ((WithStatementSyntax)nestedBody[0]) with { Span = Merge(withToken, body[^1].Span) };
     }
 
     private bool LooksLikeGroupedWithItems()
@@ -420,7 +420,7 @@ internal sealed partial class Parser
         return new ChainedAssignmentStatementSyntax(
             targets,
             currentExpression,
-            Merge(SpanOf(startToken), currentExpression.Span));
+            Merge(startToken, currentExpression.Span));
     }
 
     private StatementSyntax CreateAssignmentStatement(AssignmentTargetSyntax target, ExpressionSyntax expression)

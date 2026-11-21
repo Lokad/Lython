@@ -315,7 +315,9 @@ Control-flow suites continue to export their full bindings, and constant regex
 analysis retains conservative bindings across dead and deferred scopes.
 
 Compilation tokenizes/parses source, validates the subset, computes scope facts,
-lowers constructs, and builds executable instructions. Abstract statement and
+lowers constructs, and builds executable instructions. Parser ranges use
+token endpoints to create each final source span directly. Formatted fields
+map their retained offsets to the original normalized source. Abstract statement and
 expression checks select syntax directly and share the existing binding state;
 their branch, short-circuit and diagnostic order remains explicit.
 Name-binding diagnostics use the prepared local-name sets and check each

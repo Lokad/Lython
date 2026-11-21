@@ -1,0 +1,140 @@
+{
+  "complete": true,
+  "elapsedSeconds": 275.52739380998537,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "staging": {
+    "retiredOnly": [
+      {
+        "archives": {
+          "instruction-scratch-refined-b1267-20261121/observations.tgz": "df6ffaff8192f2c1ce1495f9f6ce91d448ae90c7fe1a19dc26a4ea2b16161943"
+        },
+        "paths": [
+          "instruction-scratch-refined-b1267-20261121/candidate/Lokad.Lython.dll"
+        ],
+        "bytes": 5684224,
+        "links": 1,
+        "sha256": "1437c7a3ecc156a092fadc318141ec4811dac09d47b58605eb25c4321ce466bf",
+        "verifiedCanonicalGitImage": "benchmarks/results/2026-11-21-instruction-scratch/refined/candidate-core.dll.gz"
+      }
+    ],
+    "alreadyAbsent": [],
+    "freshIdleLease": true,
+    "allHashesPathsOwnershipLinksAndAliasesVerified": true,
+    "canonicalArchiveAndCurrentImagesPreserved": true,
+    "freeBeforeBytes": 188403712,
+    "freeAfterBytes": 188325888
+  },
+  "rows": [
+    {
+      "case": "scripts.config-generated-guards.medium.bad-0",
+      "lane": "compile",
+      "elapsedMilliseconds": {
+        "candidate": 1.3943266056338028,
+        "reference": 1.3868608832752614,
+        "candidate-control": 1.4112308188277087,
+        "reference-control": 1.4091484027777779
+      },
+      "cpuMilliseconds": {
+        "candidate": 1.4084507042253522,
+        "reference": 1.3937282229965158,
+        "candidate-control": 1.4209591474245118,
+        "reference-control": 1.4062500000000002
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.3682083715528661,
+        "reference": 1.3553800737623916,
+        "candidate-control": 1.7599012064284554,
+        "reference-control": 0.9120807400569044
+      },
+      "elapsedChangePercent": [
+        -1.0518265581366482,
+        0.14777833518639927,
+        0.538318042463648,
+        1.7572011617267957
+      ],
+      "cpuChangePercent": [
+        0.15649452269170805,
+        1.0459838168541458,
+        1.0563380281690238,
+        1.9538188277087087
+      ],
+      "referenceSpreadPercent": 1.6070479578226715,
+      "candidateSpreadPercent": 1.2123567839560812
+    },
+    {
+      "case": "scripts.config-generated-guards.medium.bad-0",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "reference-control": 1.6207055115303983,
+        "candidate-control": 1.553672562,
+        "reference": 1.613321919148936,
+        "candidate": 1.5704649469387755
+      },
+      "cpuMilliseconds": {
+        "reference-control": 1.6771488469601679,
+        "candidate-control": 1.62,
+        "reference": 1.6808510638297873,
+        "candidate": 1.6326530612244898
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.9813540723857624,
+        "candidate-control": 0.7023057667925894,
+        "reference": 0.9342973828829271,
+        "candidate": 0.732460519842119
+      },
+      "elapsedChangePercent": [
+        -4.136035143553041,
+        -3.6973003615051847,
+        -3.099919401408202,
+        -2.6564426914108097
+      ],
+      "cpuChangePercent": [
+        -3.6202531645569636,
+        -3.4074999999999966,
+        -2.867476104365796,
+        -2.6530612244898055
+      ],
+      "referenceSpreadPercent": 0.45766392273138834,
+      "candidateSpreadPercent": 1.0808187870138486
+    },
+    {
+      "case": "scripts.dataclass-inherited-configuration.generated",
+      "lane": "compile",
+      "elapsedMilliseconds": {
+        "candidate": 0.187097714319304,
+        "reference": 0.18962456189349114,
+        "candidate-control": 0.1883118513161015,
+        "reference-control": 0.19091442498805541
+      },
+      "cpuMilliseconds": {
+        "candidate": 0.1881025158711498,
+        "reference": 0.1893491124260355,
+        "candidate-control": 0.18970832345269148,
+        "reference-control": 0.19111323459149548
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.44250727485122787,
+        "reference": 0.9726027003312901,
+        "candidate-control": 1.5915689714022152,
+        "reference-control": 0.7791519668905381
+      },
+      "elapsedChangePercent": [
+        -1.9991735401817867,
+        -1.3632147870003775,
+        -1.3325528871130254,
+        -0.6922682189910434
+      ],
+      "cpuChangePercent": [
+        -1.5753585704208817,
+        -0.7351197533791987,
+        -0.6583588055490197,
+        0.1897083234526864
+      ],
+      "referenceSpreadPercent": 0.6802194197230493,
+      "candidateSpreadPercent": 0.648932030631566
+    }
+  ],
+  "CPythonRefreshed": false,
+  "decision": "Retain direct span construction. Preserve the compile-only CPU increase and mixed elapsed for the generated validator."
+}

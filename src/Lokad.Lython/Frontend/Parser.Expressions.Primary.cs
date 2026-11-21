@@ -65,7 +65,7 @@ internal sealed partial class Parser
             var firstDot = ReadToken();
             ReadToken();
             var lastDot = ReadToken();
-            return new EllipsisLiteralExpressionSyntax(Merge(SpanOf(firstDot), SpanOf(lastDot)));
+            return new EllipsisLiteralExpressionSyntax(Merge(firstDot, lastDot));
         }
 
         if (IsNameToken(CurrentToken))
@@ -181,7 +181,7 @@ internal sealed partial class Parser
                 offset += piece.Length;
             }
         }
-        return new BytesLiteralExpressionSyntax(combined, Merge(SpanOf(firstToken), SpanOf(lastToken)));
+        return new BytesLiteralExpressionSyntax(combined, Merge(firstToken, lastToken));
     }
 
     // Adjacent literal pieces fold left-to-right exactly like CPython implicit
@@ -254,7 +254,8 @@ internal sealed partial class Parser
                     firstToken = prefixToken;
                 }
 
-                if (!TryParseFormattedStringLiteral(prefix, _tokens.GetString(stringToken), SpanOf(stringToken).Start, out var segmentParts, out var formattedMessage))
+                var start = _tokens.Tokens[stringToken].Start + _spanOffset;
+                if (!TryParseFormattedStringLiteral(prefix, _tokens.GetString(stringToken), start, out var segmentParts, out var formattedMessage))
                 {
                     AddDiagnostic(StringLiteralDiagnosticCode(formattedMessage), formattedMessage, prefixToken);
                     return null;
@@ -281,7 +282,7 @@ internal sealed partial class Parser
         {
             return new StringLiteralExpressionSyntax(
                 text,
-                Merge(SpanOf(firstToken), SpanOf(lastToken)));
+                Merge(firstToken, lastToken));
         }
 
         if (text.Length > 0)
@@ -291,7 +292,7 @@ internal sealed partial class Parser
 
         return new FormattedStringExpressionSyntax(
             parts,
-            Merge(SpanOf(firstToken), SpanOf(lastToken)));
+            Merge(firstToken, lastToken));
     }
 
     private ExpressionSyntax? ParseLambdaExpression()
@@ -328,6 +329,6 @@ internal sealed partial class Parser
             return null;
         }
 
-        return new LambdaExpressionSyntax(parameters, body, Merge(SpanOf(lambdaToken), body.Span));
+        return new LambdaExpressionSyntax(parameters, body, Merge(lambdaToken, body.Span));
     }
 }

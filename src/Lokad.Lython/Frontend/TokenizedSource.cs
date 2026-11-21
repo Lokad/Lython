@@ -23,8 +23,8 @@ internal sealed class TokenizedSource(string buffer, IReadOnlyList<SourceToken> 
         return Buffer.AsSpan(token.Start, token.Length);
     }
 
-    public LythonSourceSpan SpanOf(SourceToken token)
-        => new(token.Start, token.Length, token.LineIndex + 1, Column(token.Start, token.LineIndex));
+    public LythonSourceSpan SpanOf(SourceToken token, int length)
+        => new(token.Start, length, token.LineIndex + 1, Column(token.Start, token.LineIndex));
 
     public void LineOfPosition(int position, out int line, out int column)
     {

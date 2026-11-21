@@ -81,7 +81,7 @@ internal sealed partial class Parser
             }
         }
 
-        return new MatchStatementSyntax(subject, cases, Merge(SpanOf(matchToken), cases[^1].Span));
+        return new MatchStatementSyntax(subject, cases, Merge(matchToken, cases[^1].Span));
     }
 
     private static bool FindIrrefutableCapture(PatternSyntax pattern, out string? name)
@@ -144,7 +144,7 @@ internal sealed partial class Parser
             return null;
         }
 
-        return new MatchCaseSyntax(pattern, guard, body, Merge(SpanOf(caseToken), body[^1].Span));
+        return new MatchCaseSyntax(pattern, guard, body, Merge(caseToken, body[^1].Span));
     }
 
     private PatternSyntax? ParseCasePattern()
@@ -198,7 +198,7 @@ internal sealed partial class Parser
                 return null;
             }
 
-            pattern = new MatchAsPatternSyntax(pattern, name, Merge(pattern.Span, SpanOf(nameToken)))
+            pattern = new MatchAsPatternSyntax(pattern, name, Merge(pattern.Span, nameToken))
             {
                 OriginalBindingName = name == RawIdentifierText(nameToken) ? null : RawIdentifierText(nameToken)
             };
@@ -317,7 +317,7 @@ internal sealed partial class Parser
         if (CurrentToken == Token.CloseParen)
         {
             var closeEmpty = ReadToken();
-            return new MatchSequencePatternSyntax(Array.Empty<PatternSyntax>(), Merge(SpanOf(openParen), SpanOf(closeEmpty)));
+            return new MatchSequencePatternSyntax(Array.Empty<PatternSyntax>(), Merge(openParen, closeEmpty));
         }
 
         var first = ParseMaybeStarPattern();
@@ -368,7 +368,7 @@ internal sealed partial class Parser
             return null;
         }
 
-        return new MatchSequencePatternSyntax(items, Merge(SpanOf(openParen), SpanOf(closeTuple)));
+        return new MatchSequencePatternSyntax(items, Merge(openParen, closeTuple));
     }
 
     private PatternSyntax? ParseBracketSequencePattern()
@@ -411,7 +411,7 @@ internal sealed partial class Parser
             return null;
         }
 
-        return new MatchSequencePatternSyntax(items, Merge(SpanOf(openBracket), SpanOf(closeBracket)));
+        return new MatchSequencePatternSyntax(items, Merge(openBracket, closeBracket));
     }
 
     private PatternSyntax? ParseMaybeStarPattern()
@@ -430,8 +430,8 @@ internal sealed partial class Parser
 
         var name = IdentifierText(targetToken);
         return name == "_"
-            ? new MatchStarPatternSyntax(null, Merge(SpanOf(starToken), SpanOf(targetToken)))
-            : new MatchStarPatternSyntax(name, Merge(SpanOf(starToken), SpanOf(targetToken)))
+            ? new MatchStarPatternSyntax(null, Merge(starToken, targetToken))
+            : new MatchStarPatternSyntax(name, Merge(starToken, targetToken))
             {
                 OriginalBindingName = name == RawIdentifierText(targetToken) ? null : RawIdentifierText(targetToken)
             };
@@ -529,7 +529,7 @@ internal sealed partial class Parser
             return null;
         }
 
-        return new MatchMappingPatternSyntax(items, restName, Merge(SpanOf(openBrace), SpanOf(closeBrace)))
+        return new MatchMappingPatternSyntax(items, restName, Merge(openBrace, closeBrace))
         {
             OriginalBindingName = originalRestName
         };
@@ -601,7 +601,7 @@ internal sealed partial class Parser
             classExpression,
             positionalPatterns,
             keywordPatterns,
-            Merge(classExpression.Span, SpanOf(closeParen)));
+            Merge(classExpression.Span, closeParen));
     }
 
     private ExpressionSyntax? ParseMappingPatternKey()
@@ -687,7 +687,7 @@ internal sealed partial class Parser
             expression = new MemberExpressionSyntax(
                 expression,
                 IdentifierText(memberToken),
-                Merge(expression.Span, SpanOf(memberToken)));
+                Merge(expression.Span, memberToken));
         }
 
         return expression;

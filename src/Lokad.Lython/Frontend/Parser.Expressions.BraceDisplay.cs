@@ -69,10 +69,10 @@ internal sealed partial class Parser
             return _displayKind == BraceDisplayKind.Set
                 ? new SetLiteralExpressionSyntax(
                     _setItems,
-                    Merge(_parser.SpanOf(_openBrace), _parser.SpanOf(closeBrace)))
+                    _parser.Merge(_openBrace, closeBrace))
                 : new DictLiteralExpressionSyntax(
                     _dictionaryItems,
-                    Merge(_parser.SpanOf(_openBrace), _parser.SpanOf(closeBrace)));
+                    _parser.Merge(_openBrace, closeBrace));
         }
 
         private bool TryParseDisplayItem(out ExpressionSyntax? completedComprehension)
@@ -217,7 +217,7 @@ internal sealed partial class Parser
             _displayKind = BraceDisplayKind.Dictionary;
             _dictionaryItems.Add(new DictionaryUnpackingItemSyntax(
                 mapping,
-                Merge(_parser.SpanOf(unpackToken), mapping.Span)));
+                _parser.Merge(unpackToken, mapping.Span)));
             _parser.SkipGroupedExpressionTrivia();
             return true;
         }
@@ -248,7 +248,7 @@ internal sealed partial class Parser
                 key,
                 value,
                 clauses,
-                Merge(_parser.SpanOf(_openBrace), _parser.SpanOf(closeComprehension)));
+                _parser.Merge(_openBrace, closeComprehension));
         }
 
         private ExpressionSyntax? ParseSetComprehension(ExpressionSyntax item)
@@ -268,7 +268,7 @@ internal sealed partial class Parser
             return new SetComprehensionExpressionSyntax(
                 item,
                 clauses,
-                Merge(_parser.SpanOf(_openBrace), _parser.SpanOf(closeComprehension)));
+                _parser.Merge(_openBrace, closeComprehension));
         }
 
         private void AddUnexpectedEndDiagnostic()
