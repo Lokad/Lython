@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1288 JSON escape measurements](results/2026-11-21-json-escape-descriptors/README.md)
+reuses the first four decoded escapes during output fill. The escaped
+report runs 0.25–1.91% faster with mixed CPU and tight duplicate
+controls. The plain report and normalization gains are inconclusive.
+JSON Lines and unchanged text both move favorably. Keep the
+refinement private. All 140 batches pass.
+
 [B1287 single-pass JSON string validation](results/2026-11-21-json-string-validation/README.md)
 keeps the measured prototype private. Normalization runs 1.03–2.51%
 faster and the plain report 2.68–7.04% faster, both with lower CPU.
