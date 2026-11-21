@@ -1155,12 +1155,13 @@ Scope-sensitive protected work and functions creating captured local cells retai
 their lexical frames; eligible protected prefixes can defer materialization.
 Native dictionary writes remain context-free only when funded capacity needs no
 growth or key protocol; growth establishes a context before admission.
-Mirrored/lowered functions and native/protocol callbacks use their general
-invocation routes. Short executable calls and shared native callback helpers pass
-managed stack arguments through the same borrowed entry on the callable contract.
-Function, builtin and JSON binding consume values into invocation-owned storage
-before any default lookup or body can suspend. Bound receivers follow the same
-rules. Wide calls and prepared constructors keep caller-owned packets through
+Short executable calls and shared callback helpers pass managed stack arguments
+through the borrowed entry on the callable contract. Eligible Python callbacks
+with every positional parameter supplied start in the existing native slots.
+They reserve owned workspace before transferring to the general runner.
+General function, builtin and JSON binding own any values needed through
+default lookup or body suspension. Bound receivers follow the same rules.
+Wide calls and prepared constructors keep caller-owned packets through
 actual completion and then clear them. Initializers copy genuinely escaping inputs
 into admitted owned storage. Non-function bound wrappers supply fresh retainable
 receiver-prefixed arrays, funded by their execution/result owner. Escaping guest

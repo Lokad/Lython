@@ -345,6 +345,7 @@ for the CPython ratios above.
 
 | Change | Established outcome | Limits / evidence |
 | --- | --- | --- |
+| Start exact positional callbacks in native slots | The map-based text report runs 6.00–10.07% sooner warm on repeat with 5.61–8.89% lower CPU. | The initial text reference spread was 16.19%. Map and ordinary JSON elapsed span zero. [B1256/B1257](../benchmarks/results/2026-11-21-native-callback-entry/README.md). |
 | Enumerate typed dictionaries with the existing cursor | Sorted JSON normalization improves 1.16–4.09% warm with lower CPU and 6.19% less CLR allocation. Accounted peaks match. | The first sorted timing and both unsorted controls are inconclusive. [B1254/B1255](../benchmarks/results/2026-11-20-direct-dict-enumeration/README.md). |
 | Keep native dictionary cursors in encoder frames | JSON normalization improves 2.35–7.07% warm with lower process CPU and 11.00% less CLR allocation. Accounted peaks match. | The manifest is slightly faster with no CPU gain. Validator elapsed and CPU span zero. [B1251](../benchmarks/results/2026-11-20-native-dict-item-cursor/README.md). |
 | Prepare literal dictionary keys during compilation | JSON normalization improves 2.29–4.20% warm initially and 3.62–4.31% on repeat with lower process CPU. The guarded manifest uses 2,176 fewer accounted bytes. | The manifest's elapsed benefit is inconclusive. The validator control initially slows and spans zero on repeat. [B1249/B1250](../benchmarks/results/2026-11-20-compiled-literal-record-keys/README.md). |

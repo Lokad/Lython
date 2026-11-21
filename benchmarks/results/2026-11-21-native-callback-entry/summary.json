@@ -1,0 +1,387 @@
+{
+  "complete": true,
+  "elapsedSeconds": 277.59545485675335,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "staging": {
+    "retiredOnly": [
+      {
+        "archives": {
+          "function-binding-owner-b1023-20261119/observations.tgz": "08b0d04cdd5bf98366e9b82a172e0dfc03eb934015bfdd8a0b299666a394c411",
+          "function-binding-confirmation-b1024-20261119/observations.tgz": "cc10b5437d05a64d84dc33ba0902d5fbe3dcb38259fede8e76ba67eb622df1c6"
+        },
+        "paths": [
+          "function-binding-confirmation-b1024-20261119/candidate/Lokad.Lython.dll",
+          "function-binding-owner-b1023-20261119/candidate/Lokad.Lython.dll"
+        ],
+        "bytes": 5775872,
+        "links": 2,
+        "sha256": "ca63ac385fc4aa62717061d9e74bf784fe2dd5867575840874e40a34a8d09fc5",
+        "verifiedCanonicalGitImage": "benchmarks/results/2026-11-19-function-binding-ownership/prototype-core.dll.gz"
+      },
+      {
+        "archives": {
+          "grouped-definition-admission-confirmation-b1035-20261119/observations.tgz": "33340004985fa54d603538bcaea66dca09053c7fa8e79fb609a0f9650e328e89",
+          "grouped-definition-admission-b1034-20261119/observations.tgz": "52b51e761d5e253aa4e2ca72ba51c888c1b756b92b6b5d7414969d1ef7fc18fd"
+        },
+        "paths": [
+          "grouped-definition-admission-b1034-20261119/candidate/Lokad.Lython.dll",
+          "grouped-definition-admission-confirmation-b1035-20261119/candidate/Lokad.Lython.dll"
+        ],
+        "bytes": 5782016,
+        "links": 2,
+        "sha256": "34f75af0d1e27ce3947894b405322f7d42a5edde170437b6e3c8318e7306635f",
+        "verifiedCanonicalGitImage": "benchmarks/results/2026-11-19-grouped-definition-admission/measured-core.dll.gz"
+      },
+      {
+        "archives": {
+          "native-keyword-copy-b1036-20261119/observations.tgz": "3243429888349efa26dd75a5fbd66807a65f4f195d212bc258e2075c4fa3ae42",
+          "native-keyword-copy-confirmation-b1037-20261119/observations.tgz": "78f620b0036711bdbf2395632ec2a2881d978e057ad72fe2ca943c0def73ba08"
+        },
+        "paths": [
+          "native-keyword-copy-b1036-20261119/candidate/Lokad.Lython.dll",
+          "native-keyword-copy-confirmation-b1037-20261119/candidate/Lokad.Lython.dll"
+        ],
+        "bytes": 5781504,
+        "links": 2,
+        "sha256": "9fe26c48781077ee6e16b6e6cce2a2e7522c9be63311a514ad776b72016336d9",
+        "verifiedCanonicalGitImage": "benchmarks/results/2026-11-19-native-keyword-copy/measured-core.dll.gz"
+      },
+      {
+        "archives": {
+          "lexical-qualified-names-b1049-20261119/observations.tgz": "50cb3d596e6b10a64c598593b2bc691cfcd190c55bc309068e1ad8f74aa29dff",
+          "lexical-qualified-names-confirmation-b1050-20261119/observations.tgz": "1c625141ab7894da08fc38bd66528ebaf539b32b83aae37e655b984deb088990"
+        },
+        "paths": [
+          "lexical-qualified-names-b1049-20261119/candidate/Lokad.Lython.dll",
+          "lexical-qualified-names-confirmation-b1050-20261119/candidate/Lokad.Lython.dll"
+        ],
+        "bytes": 5780480,
+        "links": 2,
+        "sha256": "3cce2a3d237f850b9beb7c52d5da0db4834264601e9c1ad1b3b08014af51ccac",
+        "verifiedCanonicalGitImage": "benchmarks/results/2026-11-19-lexical-qualified-names/measured-core.dll.gz"
+      },
+      {
+        "archives": {
+          "standalone-capture-cells-b1053-20261119/observations.tgz": "a42925ee93431e278910627f9da976be37929a816d628bb0f066a43b419d6767",
+          "shared-lexical-names-confirmation-b1052-20261119/observations.tgz": "bfb96a11852db99b4b83f87392d48942cbc31b25bf752b15463332ef0f7eba7a",
+          "shared-lexical-names-b1051-20261119/observations.tgz": "7178da8ac616860a47bb550dbc55b1fe5b3c493d44f06510b1daea9c345db4a2"
+        },
+        "paths": [
+          "shared-lexical-names-b1051-20261119/candidate/Lokad.Lython.dll",
+          "shared-lexical-names-confirmation-b1052-20261119/candidate/Lokad.Lython.dll",
+          "standalone-capture-cells-b1053-20261119/reference/Lokad.Lython.dll"
+        ],
+        "bytes": 5781504,
+        "links": 3,
+        "sha256": "1192deaea0978978a3a66e50c569944055e6b4c31f438f87acc7c9590a6bbf94",
+        "verifiedCanonicalGitImage": "benchmarks/results/2026-11-19-compiled-qualified-names/measured-core.dll.gz"
+      },
+      {
+        "archives": {
+          "prepared-format-keywords-b1189-20261120/observations.tgz": "e3381c6381202d313db955ce42f64870953a428995114b0b408fb333edeb2148",
+          "named-shipment-cpython-b1190-20261120/observations.tgz": "b4a4e81a0391cbe477468f1eee558a9187af1b80c61d74796a26dcfd0510354f"
+        },
+        "paths": [
+          "named-shipment-cpython-b1190-20261120/candidate/Lokad.Lython.dll",
+          "prepared-format-keywords-b1189-20261120/candidate/Lokad.Lython.dll"
+        ],
+        "bytes": 5806080,
+        "links": 2,
+        "sha256": "c842394b134fc6a5c0cb0b98c6950267a89d1e6accdba54d0cc41fce1d180eab",
+        "verifiedCanonicalGitImage": "benchmarks/results/2026-11-20-prepared-format-keywords/measured-core.dll.gz"
+      },
+      {
+        "archives": {
+          "direct-statement-emission-b1191-20261120/observations.tgz": "99d0dbd555824550b903050264b3b34014aefdf765a6187a15a5b406a4287be6",
+          "direct-statement-emission-b1192-20261120/observations.tgz": "52659d054d51a485cfd247d30c161242ebb4ed496e73bbb57c1cd2dd6ca4f383"
+        },
+        "paths": [
+          "direct-statement-emission-b1191-20261120/reference/Lokad.Lython.dll",
+          "direct-statement-emission-b1192-20261120/reference/Lokad.Lython.dll"
+        ],
+        "bytes": 5806592,
+        "links": 2,
+        "sha256": "c7791d33d8bccab325f1dc859f786b46db60dec0974cc0d248459bac384c9fc5",
+        "verifiedCanonicalGitImage": "benchmarks/results/2026-11-20-direct-statement-emission/reference-core.dll.gz"
+      },
+      {
+        "archives": {
+          "class-delivery-cpython-b1196-20261120/observations.tgz": "9cda0e5be3ad843af11af8a957bba346da586d92ba6e5e96002e5d4a6b754409",
+          "eager-expression-emission-b1197-20261120/observations.tgz": "6c5180aa485733c4c59b87ea680acc3174a4f017d633d7336abb14f98c52b925",
+          "executable-class-workspace-b1195-20261120/observations.tgz": "5325f4a45c2030ed01ad332da6ec4f1bd9b14cc4afaff297d489c915d1885e9d"
+        },
+        "paths": [
+          "class-delivery-cpython-b1196-20261120/candidate/Lokad.Lython.dll",
+          "eager-expression-emission-b1197-20261120/reference/Lokad.Lython.dll",
+          "executable-class-workspace-b1195-20261120/candidate/Lokad.Lython.dll"
+        ],
+        "bytes": 5678592,
+        "links": 3,
+        "sha256": "3b594144237560dd86802ef6d5e2024826bdcbddd7a1622bc1a35302142779c9",
+        "verifiedCanonicalGitImage": "benchmarks/results/2026-11-20-executable-class-suites/refinement/measured-core.dll.gz"
+      },
+      {
+        "archives": {
+          "eager-expression-emission-b1197-20261120/observations.tgz": "6c5180aa485733c4c59b87ea680acc3174a4f017d633d7336abb14f98c52b925",
+          "format-continuation-scratch-b1198-20261120/observations.tgz": "317a553ccef9a64df6aea790a41f893623af829468878ef7bc28372b7ef7839d"
+        },
+        "paths": [
+          "eager-expression-emission-b1197-20261120/candidate/Lokad.Lython.dll",
+          "format-continuation-scratch-b1198-20261120/reference/Lokad.Lython.dll"
+        ],
+        "bytes": 5679616,
+        "links": 2,
+        "sha256": "cf8fcdf330395a04908d08bf50a5e88c26227966ab4a6108c519f84d8b4676ff",
+        "verifiedCanonicalGitImage": "benchmarks/results/2026-11-20-eager-expression-emission/measured-core.dll.gz"
+      },
+      {
+        "archives": {
+          "single-lexical-class-cells-b1199-20261120/observations.tgz": "0ea8734b36e9fb0169e379da9d16b6de7d3c1e51dabf9051d4e1f7e4177ebe8a",
+          "format-continuation-scratch-b1198-20261120/observations.tgz": "317a553ccef9a64df6aea790a41f893623af829468878ef7bc28372b7ef7839d"
+        },
+        "paths": [
+          "format-continuation-scratch-b1198-20261120/candidate/Lokad.Lython.dll",
+          "single-lexical-class-cells-b1199-20261120/reference/Lokad.Lython.dll"
+        ],
+        "bytes": 5680128,
+        "links": 2,
+        "sha256": "daa5b8461cc5466be982dbf6f06506e5149cd4d30811951d316645db66e0b292",
+        "verifiedCanonicalGitImage": "benchmarks/results/2026-11-20-inline-format-continuation/measured-core.dll.gz"
+      },
+      {
+        "archives": {
+          "single-lexical-class-cells-b1199-20261120/observations.tgz": "0ea8734b36e9fb0169e379da9d16b6de7d3c1e51dabf9051d4e1f7e4177ebe8a",
+          "shared-lexical-definitions-b1202-20261120/observations.tgz": "22c5e6c575fa94872734e0707af5f4e93ecbf357dfcdcf8fa61ae453d4183c91",
+          "lexical-delivery-cpython-b1200-20261120/observations.tgz": "09b57a584a534d6180efa68628ca9ccdb83a00689ea82ae25e7dc01cfa8d4288",
+          "inline-lexical-definitions-b1201-20261120/observations.tgz": "86e8d5dd574b8fd66aa26378b026663d1a1f700e0daad57f116c15619514454c"
+        },
+        "paths": [
+          "inline-lexical-definitions-b1201-20261120/reference/Lokad.Lython.dll",
+          "lexical-delivery-cpython-b1200-20261120/candidate/Lokad.Lython.dll",
+          "shared-lexical-definitions-b1202-20261120/reference/Lokad.Lython.dll",
+          "single-lexical-class-cells-b1199-20261120/candidate/Lokad.Lython.dll"
+        ],
+        "bytes": 5674496,
+        "links": 4,
+        "sha256": "1d4a45c156d892a8f884a25f774e5fe378d7e9aa7b12cb35f34de3092bbe41c7",
+        "verifiedCanonicalGitImage": "benchmarks/results/2026-11-20-lexical-class-cells/measured-core.dll.gz"
+      },
+      {
+        "archives": {
+          "positional-call-sites-refined-b1211-20261120/observations.tgz": "97d916275686ea479ff5e27724a7ccfae20df489188135de94f1a27f69c45217",
+          "prepared-captured-stores-b1207-20261120/observations.tgz": "3e0c200363d4e7d9ee4bab8025911d61abf03c5068af83ea25356630e85ed30e",
+          "cold-compiler-attribution-b1209-20261120/observations.tgz": "6576e2e6187f19b4893f93bb26df21293d91e44715b8cd53f0d92f24814f3952",
+          "positional-call-sites-b1210-20261120/observations.tgz": "6438723739e9b28885329526ac774d309a9e86b66b8358168ba4718406d7685f",
+          "shared-executable-graph-b1212-20261120/observations.tgz": "e7947c91c120088604e8e07f57e60960905f9d3d9ba7f1991c67d78d3af78aec",
+          "captured-factory-delivery-cpython-b1208-20261120/observations.tgz": "d22d51e85b68afbb4f6833a440fb503afd16592b62a2ddc301f09478df1d27cd"
+        },
+        "paths": [
+          "captured-factory-delivery-cpython-b1208-20261120/candidate/Lokad.Lython.dll",
+          "cold-compiler-attribution-b1209-20261120/candidate/Lokad.Lython.dll",
+          "positional-call-sites-b1210-20261120/reference/Lokad.Lython.dll",
+          "positional-call-sites-refined-b1211-20261120/reference/Lokad.Lython.dll",
+          "prepared-captured-stores-b1207-20261120/candidate/Lokad.Lython.dll",
+          "shared-executable-graph-b1212-20261120/reference/Lokad.Lython.dll"
+        ],
+        "bytes": 5677568,
+        "links": 6,
+        "sha256": "00f545e4fef3b89f402b5e3c9da23351d9354046e0dd2f2f08ea984b130d9277",
+        "verifiedCanonicalGitImage": "benchmarks/results/2026-11-20-inline-captured-factories/refinement/measured-candidate-core.dll.gz"
+      },
+      {
+        "archives": {
+          "default-operand-storage-b1216-20261120/observations.tgz": "dc17e17a895489036598c9d8739a33c5aa8e946b99edf26cc341e850668662c9",
+          "declaration-operands-manifest-confirmation-b1221-20261120/observations.tgz": "0e3a5e8a06719f81ade14f9b0cddd74feea132584aff078539966c7d741a5940",
+          "annotation-demand-attribution-b1219-20261120/observations.tgz": "15c927d45e6e2f33b57db1dd08ee740f3e7536ab0e3e21cdcc262aa7dbc90c74",
+          "direct-declaration-operands-b1220-20261120/observations.tgz": "e2bf6c32a530262d936475d43904630ddda183d72285b5091aea23d55c84a765",
+          "default-storage-delivery-cpython-b1218-20261120/observations.tgz": "d8ba66b3991edc92a7dda0eeab126ef1d39797179336d0da7516470267364d32"
+        },
+        "paths": [
+          "annotation-demand-attribution-b1219-20261120/candidate/Lokad.Lython.dll",
+          "declaration-operands-manifest-confirmation-b1221-20261120/reference/Lokad.Lython.dll",
+          "default-operand-storage-b1216-20261120/candidate/Lokad.Lython.dll",
+          "default-storage-delivery-cpython-b1218-20261120/candidate/Lokad.Lython.dll",
+          "direct-declaration-operands-b1220-20261120/reference/Lokad.Lython.dll"
+        ],
+        "bytes": 5676544,
+        "links": 5,
+        "sha256": "7dd6191e51886944e986754f342370deefcc518020a4ecf96d3b5a807b97c2e9",
+        "verifiedCanonicalGitImage": "benchmarks/results/2026-11-20-default-operand-storage/measured-candidate-core.dll.gz"
+      },
+      {
+        "archives": {
+          "direct-declaration-delivery-cpython-b1222-20261120/observations.tgz": "980bef07e0e5755f78b612b0627cda76da3466bbfb6c92b572d6e89b66134959",
+          "direct-declaration-operands-b1220-20261120/observations.tgz": "e2bf6c32a530262d936475d43904630ddda183d72285b5091aea23d55c84a765",
+          "nested-factories-current-attribution-b1224-20261120/observations.tgz": "96d42a43f8f6ea13d9b758bfc38892613f2ab40acd13dc221f253c7d87c2ba68"
+        },
+        "paths": [
+          "direct-declaration-delivery-cpython-b1222-20261120/candidate/Lokad.Lython.dll",
+          "direct-declaration-operands-b1220-20261120/candidate/Lokad.Lython.dll",
+          "nested-factories-current-attribution-b1224-20261120/candidate/Lokad.Lython.dll"
+        ],
+        "bytes": 5676032,
+        "links": 3,
+        "sha256": "ed041879096d2bd47474ffa531e3a717403301185445e4ea95dc0e6a1af5fe85",
+        "verifiedCanonicalGitImage": "benchmarks/results/2026-11-20-direct-declaration-operands/measured-candidate-core.dll.gz"
+      },
+      {
+        "archives": {
+          "lexical-definition-delivery-cpython-b1229-20261120/observations.tgz": "2bab00d21ba498e7adc6553a991153523e5f2f84366ace08bedebc2b4bd6a784",
+          "lexical-definition-admission-b1227-20261120/observations.tgz": "51538c9de3474461006d3ea590e56e2c2600a6b6942c756e69946ffb6695dbef",
+          "private-json-property-layout-control-b1232-20261120/observations.tgz": "8656c7a681e58c76fa79ed5e10684d2204713a154104f6567825f4a33acb859f",
+          "lexical-definition-confirmation-b1228-20261120/observations.tgz": "72c39b3222cbac7591af09120e7295fdbc1878fade83344beb7444d7df6233aa",
+          "private-json-property-layout-b1231-20261120/observations.tgz": "221378d8c6147e892ece718982a9f1e8657647700df928618db83783d73e8263",
+          "prepared-entry-confirmation-b1226-20261120/observations.tgz": "17fa25ee6cd2b5686828cc5182fdda8c52d68af8047b0630aa7b55a61d7e0f00",
+          "prepared-entry-progress-b1225-20261120/observations.tgz": "32bfbbe8aa91f1e32454eff536ccef9e9137405fa0a8224461cab61243b00327",
+          "private-lexical-definition-refined-b1230-20261120/observations.tgz": "e73a6aa2d741ee57c67a0864bffcbb7c8ea85446f5dd04df78340b4a7bb72a79"
+        },
+        "paths": [
+          "lexical-definition-admission-b1227-20261120/reference/Lokad.Lython.dll",
+          "lexical-definition-confirmation-b1228-20261120/reference/Lokad.Lython.dll",
+          "lexical-definition-delivery-cpython-b1229-20261120/candidate/Lokad.Lython.dll",
+          "prepared-entry-confirmation-b1226-20261120/candidate/Lokad.Lython.dll",
+          "prepared-entry-progress-b1225-20261120/candidate/Lokad.Lython.dll",
+          "private-json-property-layout-b1231-20261120/reference/Lokad.Lython.dll",
+          "private-json-property-layout-control-b1232-20261120/reference/Lokad.Lython.dll",
+          "private-lexical-definition-refined-b1230-20261120/reference/Lokad.Lython.dll"
+        ],
+        "bytes": 5677056,
+        "links": 8,
+        "sha256": "d837d7e49802ff3f8401237c8de4fdef659e9527db9a9c0546eb47dcaa29be37",
+        "verifiedCanonicalGitImage": "benchmarks/results/2026-11-20-prepared-entry-progress/measured-candidate-core.dll.gz"
+      },
+      {
+        "archives": {
+          "compiled-literal-record-keys-confirm-b1250-20261120/observations.tgz": "6752e30e83da50d5cc2f32396280ee9c37ef27e9910144ff88900a9b783f87ac",
+          "compiled-literal-record-keys-b1249-20261120/observations.tgz": "8bbe76b3a0445b51755dd22bc69bedf5084c19b6f331203a00e7d8799dc6a2d8"
+        },
+        "paths": [
+          "compiled-literal-record-keys-b1249-20261120/candidate/Lokad.Lython.dll",
+          "compiled-literal-record-keys-confirm-b1250-20261120/candidate/Lokad.Lython.dll"
+        ],
+        "bytes": 5679104,
+        "links": 2,
+        "sha256": "0a8057b8a07ed62804ae75218aa5cdc1ff3165c6ac1c6cd294afb3d4c50d326b",
+        "verifiedCanonicalGitImage": "benchmarks/results/2026-11-20-compiled-literal-record-keys/measured-candidate-core.dll.gz"
+      }
+    ],
+    "alreadyAbsent": [],
+    "freshIdleLease": true,
+    "allHashesPathsOwnershipLinksAndAliasesVerified": true,
+    "canonicalArchiveAndCurrentImagesPreserved": true,
+    "freeBeforeBytes": 135180288,
+    "freeAfterBytes": 214376448
+  },
+  "rows": [
+    {
+      "case": "scripts.json-normalized-records.map-callback.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 2.522233151315789,
+        "reference": 2.5135066171617164,
+        "candidate-control": 2.5095620491803277,
+        "reference-control": 2.591264945578231
+      },
+      "cpuMilliseconds": {
+        "candidate": 2.7960526315789473,
+        "reference": 2.8052805280528053,
+        "candidate-control": 2.7868852459016393,
+        "reference-control": 2.857142857142857
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.5612900122168518,
+        "reference": 0.5541619005297436,
+        "candidate-control": 0.7663015593113235,
+        "reference-control": 0.35550913808290174
+      },
+      "elapsedChangePercent": [
+        -3.1530120660692162,
+        -2.6640191455620466,
+        -0.1569348556497152,
+        0.3471856447279542
+      ],
+      "cpuChangePercent": [
+        -2.4590163934426257,
+        -2.1381578947368474,
+        -0.6557377049180357,
+        -0.3289473684210509
+      ],
+      "referenceSpreadPercent": 3.093619403489778,
+      "candidateSpreadPercent": 0.5049128846844164
+    },
+    {
+      "case": "scripts.text-summary-helpers.map-callback.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 1.6959035350877192,
+        "candidate-control": 1.5311354027777777,
+        "reference": 1.9705426952141054,
+        "candidate": 1.5731845696969697
+      },
+      "cpuMilliseconds": {
+        "reference-control": 1.7543859649122808,
+        "candidate-control": 1.5873015873015872,
+        "reference": 2.0151133501259446,
+        "candidate": 1.6161616161616161
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.5120604007790674,
+        "candidate-control": 1.0342739054848904,
+        "reference": 0.6346848919434253,
+        "candidate": 0.7712860117608424
+      },
+      "elapsedChangePercent": [
+        -22.298795834443197,
+        -20.16490819925937,
+        -9.715654746920432,
+        -7.236199633512874
+      ],
+      "cpuChangePercent": [
+        -21.23015873015873,
+        -19.797979797979803,
+        -9.523809523809534,
+        -7.878787878787885
+      ],
+      "referenceSpreadPercent": 16.19426780145139,
+      "candidateSpreadPercent": 2.7462735720764186
+    },
+    {
+      "case": "scripts.json-normalized-records.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 2.724529434163701,
+        "reference": 2.7760160654545456,
+        "candidate-control": 2.772771701818182,
+        "reference-control": 2.7400471000000004
+      },
+      "cpuMilliseconds": {
+        "candidate": 2.9893238434163703,
+        "reference": 3.0545454545454542,
+        "candidate-control": 3.0545454545454542,
+        "reference-control": 3.0357142857142856
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.22148517648424454,
+        "reference": 0.35432104350227395,
+        "candidate-control": 0.399616940957639,
+        "reference-control": 0.380694707244782
+      },
+      "elapsedChangePercent": [
+        -1.8546950045267185,
+        -0.5663284341462349,
+        -0.116871212553038,
+        1.1943080036172171
+      ],
+      "cpuChangePercent": [
+        -2.1352313167259607,
+        -1.5281557462842654,
+        0.0,
+        0.6203208556149642
+      ],
+      "referenceSpreadPercent": 1.3127134002384633,
+      "candidateSpreadPercent": 1.7706642126730676
+    }
+  ],
+  "CPythonRefreshed": false
+}

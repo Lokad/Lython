@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1256/B1257 exact positional callback entry](results/2026-11-21-native-callback-entry/README.md)
+removes callback workspace rental for native completion. The exact
+repeat improves the map-based text report 6.00–10.07% warm with lower
+CPU and a smaller reference spread. Map JSON elapsed and the direct
+JSON control span zero. Both preflight refusals remain archived.
+
 [Utf8Regex dev.115](results/2026-11-21-regex-dev115-boundary/README.md)
 verifies the immutable preview on both targets. The producer's Lython
 replay passes Windows and Linux. Direct probes still reproduce the
