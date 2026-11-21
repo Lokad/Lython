@@ -7,10 +7,13 @@ public sealed class RegexCacheCapacityAccountingTests
 {
     // Reuse an already constructed pattern so these controls isolate cache
     // storage funding from compiled-pattern ownership and collection timing.
-    private static LythonRuntime.RePatternObject Pattern() => new(
-        PyString.FromString("a"), 32,
-        Utf8RegexProvider.Instance.Compile("a"u8.ToArray(), new(32, false), new LythonMemoryBudget(), default), 1,
-        new PyDict());
+    private static LythonRuntime.RePatternObject Pattern()
+    {
+        var options = new LythonRegexOptions(32, false);
+        return new(PyString.FromString("a"), 32,
+            Utf8RegexProvider.Instance.Compile("a"u8.ToArray(), options, new LythonMemoryBudget(), default), 1,
+            new PyDict(), options);
+    }
 
     [Theory]
     [InlineData(1)]
