@@ -1,0 +1,140 @@
+{
+  "complete": true,
+  "elapsedSeconds": 275.68002608790994,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "staging": {
+    "retiredOnly": [
+      {
+        "archives": {
+          "abstract-binding-map-b1269-20261121/observations.tgz": "5dd8490dc1402f536ff69807b9119dafa198de13b066ed7c0f3b8c1646304eae"
+        },
+        "paths": [
+          "abstract-binding-map-b1269-20261121/candidate/Lokad.Lython.dll"
+        ],
+        "bytes": 5684736,
+        "links": 1,
+        "sha256": "90b20aa1ce2ce06e2a82638ebf31cf5ba54bba420b3397b0db3999dd130f7972",
+        "verifiedCanonicalGitImage": "benchmarks/results/2026-11-21-abstract-binding-map/candidate-core.dll.gz"
+      }
+    ],
+    "alreadyAbsent": [],
+    "freshIdleLease": true,
+    "allHashesPathsOwnershipLinksAndAliasesVerified": true,
+    "canonicalArchiveAndCurrentImagesPreserved": true,
+    "freeBeforeBytes": 187297792,
+    "freeAfterBytes": 187219968
+  },
+  "rows": [
+    {
+      "case": "scripts.config-generated-guards.medium.bad-0",
+      "lane": "compile",
+      "elapsedMilliseconds": {
+        "candidate": 1.4200780035273368,
+        "reference": 1.4043418621291448,
+        "candidate-control": 1.4391108109090909,
+        "reference-control": 1.423485925531915
+      },
+      "cpuMilliseconds": {
+        "candidate": 1.4285714285714286,
+        "reference": 1.4136125654450264,
+        "candidate-control": 1.4363636363636365,
+        "reference-control": 1.4184397163120568
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.9339335320413232,
+        "reference": 0.38701750707475485,
+        "candidate-control": 0.6065793561369119,
+        "reference-control": 1.1661146442790917
+      },
+      "elapsedChangePercent": [
+        -0.2394067931022703,
+        1.0976494461184982,
+        1.1205349511075768,
+        2.4758180125195706
+      ],
+      "cpuChangePercent": [
+        0.7142857142857117,
+        1.058201058201047,
+        1.2636363636363779,
+        1.6094276094275939
+      ],
+      "referenceSpreadPercent": 1.3632053504226915,
+      "candidateSpreadPercent": 1.3402649244955933
+    },
+    {
+      "case": "scripts.config-generated-guards.medium.bad-0",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "reference-control": 1.6035807218813907,
+        "candidate-control": 1.5630816680080482,
+        "reference": 1.5765888621399178,
+        "candidate": 1.5625542373225152
+      },
+      "cpuMilliseconds": {
+        "reference-control": 1.6564417177914113,
+        "candidate-control": 1.6297786720321932,
+        "reference": 1.625514403292181,
+        "candidate": 1.622718052738337
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 1.3725953127141077,
+        "candidate-control": 1.3879331847514444,
+        "reference": 0.8816606481273827,
+        "candidate": 0.5525006107082155
+      },
+      "elapsedChangePercent": [
+        -2.5584296442988763,
+        -2.5255388344795793,
+        -0.8901892658529365,
+        -0.8567353516335419
+      ],
+      "cpuChangePercent": [
+        -2.0359101495004084,
+        -1.6096579476861272,
+        -0.17202865432509595,
+        0.26233349463871125
+      ],
+      "referenceSpreadPercent": 1.712041762418437,
+      "candidateSpreadPercent": 0.03375439219548415
+    },
+    {
+      "case": "scripts.dataclass-inherited-configuration.generated",
+      "lane": "compile",
+      "elapsedMilliseconds": {
+        "candidate": 0.18426830912433922,
+        "reference": 0.18971060164319248,
+        "candidate-control": 0.18507325559179869,
+        "reference-control": 0.19364551879882813
+      },
+      "cpuMilliseconds": {
+        "candidate": 0.186164100206849,
+        "reference": 0.19014084507042253,
+        "candidate-control": 0.1863932898415657,
+        "reference-control": 0.1953125
+      },
+      "elapsedIQRPercent": {
+        "candidate": 1.1187414645691403,
+        "reference": 1.2390927222070136,
+        "candidate-control": 1.580839353613642,
+        "reference-control": 0.5386579780430888
+      },
+      "elapsedChangePercent": [
+        -4.842461489765004,
+        -4.426781089592313,
+        -2.8687339936273593,
+        -2.4444316823767798
+      ],
+      "cpuChangePercent": [
+        -4.683980694093304,
+        -4.566635601118363,
+        -2.09147322454607,
+        -1.9709364536950713
+      ],
+      "referenceSpreadPercent": 2.0741682971605613,
+      "candidateSpreadPercent": 0.4368339142442057
+    }
+  ],
+  "CPythonRefreshed": false,
+  "decision": "Retain deletion of full invalidation snapshots. Keep the dense-rewrite allocation cost, mixed validator results and compile-only CPU increase in the record."
+}

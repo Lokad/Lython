@@ -118,6 +118,32 @@ public sealed class AbstractStateResolutionLifetimeTests
         AssertInteger(later, 1);
     }
 
+    [Fact]
+    public void ContainerInvalidationWidensAliasesAndPreservesIndependentLengthFacts()
+    {
+        var state = new AbstractState();
+        var item = AbstractValue.Integer(1, Span);
+        var list = AbstractValue.List([item], Span);
+        var nestedRead = new IdentifierExpressionSyntax("nested", Span);
+        state.Set("nested", AbstractValue.Tuple([list], Span));
+        state.Set("mapping", AbstractValue.Dict([new(item, list)], Span));
+        state.Set("items", list);
+        state.SetSequenceLength("lengthOnly", AbstractSequenceLengthBounds.Exact(2));
+        Assert.True(StaticAbstractValueResolver.TryResolve(nestedRead, state, out var before));
+        Assert.Equal(AbstractValueKind.List, before.RequireSequenceItems()[0].Kind);
+
+        state.InvalidateCollectionFacts();
+
+        Assert.True(StaticAbstractValueResolver.TryResolve(nestedRead, state, out var after));
+        Assert.Equal(AbstractValueKind.ListType, after.RequireSequenceItems()[0].Kind);
+        Assert.True(state.TryGet("items", out var widened));
+        Assert.Equal(AbstractValueKind.ListType, widened.Kind);
+        Assert.False(state.TryGetSequenceLength("items", out _));
+        Assert.False(state.TryGet("mapping", out _));
+        Assert.True(state.TryGetSequenceLength("lengthOnly", out var bounds));
+        Assert.Equal(AbstractSequenceLengthBounds.Exact(2), bounds);
+    }
+
     private static void AssertInteger(AbstractState state, int expected)
     {
         Assert.True(StaticAbstractValueResolver.TryResolve(Read, state, out var value));

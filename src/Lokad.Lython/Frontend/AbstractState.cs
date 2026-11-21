@@ -142,14 +142,15 @@ internal sealed class AbstractState
     {
         _containerFactsInvalidated = true;
         var changed = false;
+        List<(string Name, AbstractValue Value)>? rewrites = null;
         try
         {
-            foreach (var name in _values.Keys.ToArray())
+            foreach (var (name, value) in _values)
             {
                 AnalysisContext?.CheckExecution();
-                var value = _values[name];
                 if (dictionaries && (value.Facts & AbstractValueFacts.Dictionary) != 0)
                 {
+                    // Remove preserves active dictionary enumerators on .NET 10/11.
                     _values.Remove(name);
                     _sequenceLengths.Remove(name);
                     changed = true;
@@ -161,11 +162,21 @@ internal sealed class AbstractState
                 var widened = ForgetMutableSequenceContents(value, ref remainingTupleWork);
                 if (widened.Kind != value.Kind || !widened.HasSamePayload(value))
                 {
-                    _values[name] = widened;
-                    changed = true;
+                    (rewrites ??= []).Add((name, widened));
                 }
                 if (value.Kind is AbstractValueKind.List or AbstractValueKind.ListType or AbstractValueKind.CollectionsDeque)
                     changed |= _sequenceLengths.Remove(name);
+            }
+
+            // Apply actual value replacements after enumeration.
+            if (rewrites is not null)
+            {
+                foreach (var (name, value) in rewrites)
+                {
+                    AnalysisContext?.CheckExecution();
+                    _values[name] = value;
+                    changed = true;
+                }
             }
         }
         finally

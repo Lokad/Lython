@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1270 sparse abstract invalidation](results/2026-11-21-sparse-abstract-invalidation/README.md)
+removes the full key snapshot and stages actual writes. Dataclass
+compilation improves 2.44–4.84% with lower CPU. The generated validator's
+compile-only CPU rises slightly. A dense rewrite control adds 1.96%
+compile allocation.
+
 [B1269 unified abstract binding map](results/2026-11-21-abstract-binding-map/README.md)
 removes a branch-state map and join pass. Representative elapsed gains
 are small with mixed CPU, and the scalar-heavy compile control allocates
