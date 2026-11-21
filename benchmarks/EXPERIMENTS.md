@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Abstract interpretation state allocation](results/2026-11-21-abstract-state-costs/README.md)
+separates branch-state copies, invalidation snapshots and static argument
+partitions. State copies account for about 29% of abstract analysis
+allocation on the validator and dataclass. Preserve independently
+tracked value and length facts when evaluating a replacement.
+
 [B1268 parser spans from token endpoints](results/2026-11-21-parser-endpoint-spans/README.md)
 removes intermediate source span allocations. Validator compilation
 allocates 2.42% less, and time to result improves 2.66–4.14% with

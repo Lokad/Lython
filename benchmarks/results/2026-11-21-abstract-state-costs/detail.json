@@ -1,0 +1,347 @@
+{
+  "coreSha256": "b129b39283f28089ba51209eba857f4ffe2c5bc1355b11fb8794811bfbecaf9d",
+  "phases": [
+    "tokenization",
+    "parsing",
+    "syntax validation",
+    "lexical preparation",
+    "annotation diagnostics",
+    "abstract interpretation",
+    "name-binding diagnostics",
+    "analysis finalization",
+    "executable construction"
+  ],
+  "stateCostKinds": [
+    "invalidation requests",
+    "key snapshot allocation",
+    "snapshotted bindings",
+    "rewritten bindings",
+    "state clones",
+    "state clone allocation",
+    "cloned bindings and lengths",
+    "concrete call partition allocation",
+    "resolved concrete call partitions",
+    "partitioned raw arguments"
+  ],
+  "boundary": "Local Windows Release decomposition following the shipped phases on normalized valid sources with admitted compiler ownership. Entry normalization, public wrapper creation and owner setup/cleanup are excluded. Each stage is invoked directly, so JIT/tiering and timing boundaries differ from public compilation. Instrumented allocation and shape evidence for abstract interpretation only.",
+  "rows": [
+    {
+      "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "sourceCharacters": 465,
+      "samples": [
+        {
+          "allocatedBytes": [
+            4792,
+            9776,
+            4912,
+            8624,
+            3136,
+            7664,
+            1856,
+            80,
+            25024
+          ],
+          "stateCosts": [
+            7,
+            344,
+            16,
+            0,
+            5,
+            2400,
+            6,
+            200,
+            6,
+            7
+          ]
+        },
+        {
+          "allocatedBytes": [
+            4792,
+            9776,
+            4912,
+            8624,
+            3136,
+            7664,
+            2113,
+            80,
+            25024
+          ],
+          "stateCosts": [
+            7,
+            344,
+            16,
+            0,
+            5,
+            2400,
+            6,
+            200,
+            6,
+            7
+          ]
+        },
+        {
+          "allocatedBytes": [
+            4792,
+            9776,
+            4912,
+            8624,
+            3136,
+            7664,
+            1856,
+            80,
+            25024
+          ],
+          "stateCosts": [
+            7,
+            344,
+            16,
+            0,
+            5,
+            2400,
+            6,
+            200,
+            6,
+            7
+          ]
+        },
+        {
+          "allocatedBytes": [
+            4792,
+            9776,
+            4912,
+            8624,
+            3136,
+            7664,
+            1856,
+            80,
+            25024
+          ],
+          "stateCosts": [
+            7,
+            344,
+            16,
+            0,
+            5,
+            2400,
+            6,
+            200,
+            6,
+            7
+          ]
+        }
+      ]
+    },
+    {
+      "id": "scripts.dataclass-inherited-configuration.generated",
+      "sourceCharacters": 3978,
+      "samples": [
+        {
+          "allocatedBytes": [
+            68256,
+            97768,
+            47352,
+            89192,
+            40176,
+            85416,
+            2000,
+            80,
+            157008
+          ],
+          "stateCosts": [
+            99,
+            3992,
+            199,
+            1,
+            50,
+            24184,
+            101,
+            1600,
+            50,
+            50
+          ]
+        },
+        {
+          "allocatedBytes": [
+            68256,
+            97768,
+            47352,
+            89192,
+            40176,
+            85416,
+            2000,
+            80,
+            157008
+          ],
+          "stateCosts": [
+            99,
+            3992,
+            199,
+            1,
+            50,
+            24184,
+            101,
+            1600,
+            50,
+            50
+          ]
+        },
+        {
+          "allocatedBytes": [
+            68256,
+            97768,
+            47352,
+            89192,
+            40176,
+            85416,
+            2000,
+            80,
+            157008
+          ],
+          "stateCosts": [
+            99,
+            3992,
+            199,
+            1,
+            50,
+            24184,
+            101,
+            1600,
+            50,
+            50
+          ]
+        },
+        {
+          "allocatedBytes": [
+            68256,
+            97768,
+            47352,
+            89192,
+            40176,
+            85416,
+            2000,
+            80,
+            157008
+          ],
+          "stateCosts": [
+            99,
+            3992,
+            199,
+            1,
+            50,
+            24184,
+            101,
+            1600,
+            50,
+            50
+          ]
+        }
+      ]
+    },
+    {
+      "id": "scripts.config-generated-guards.medium.bad-0",
+      "sourceCharacters": 23531,
+      "samples": [
+        {
+          "allocatedBytes": [
+            271192,
+            572720,
+            131288,
+            42792,
+            200,
+            322088,
+            152280,
+            0,
+            756615.3333333334
+          ],
+          "stateCosts": [
+            586,
+            28080,
+            1170,
+            2,
+            193,
+            92824,
+            387,
+            13296,
+            392,
+            489
+          ]
+        },
+        {
+          "allocatedBytes": [
+            271192,
+            572720,
+            131288,
+            42792,
+            200,
+            322088,
+            152280,
+            0,
+            722711.5
+          ],
+          "stateCosts": [
+            586,
+            28080,
+            1170,
+            2,
+            193,
+            92824,
+            387,
+            13296,
+            392,
+            489
+          ]
+        },
+        {
+          "allocatedBytes": [
+            271192,
+            572720,
+            131288,
+            42792,
+            200,
+            321441.3333333333,
+            152280,
+            0,
+            719792
+          ],
+          "stateCosts": [
+            586,
+            28080,
+            1170,
+            2,
+            193,
+            92824,
+            387,
+            13296,
+            392,
+            489
+          ]
+        },
+        {
+          "allocatedBytes": [
+            271192,
+            572720,
+            131288,
+            42792,
+            200,
+            318208,
+            152280,
+            0,
+            719764
+          ],
+          "stateCosts": [
+            586,
+            28080,
+            1170,
+            2,
+            193,
+            92824,
+            387,
+            13296,
+            392,
+            489
+          ]
+        }
+      ]
+    }
+  ]
+}
