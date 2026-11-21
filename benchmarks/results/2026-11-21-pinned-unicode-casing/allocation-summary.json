@@ -1,0 +1,29 @@
+[
+  {
+    "case": "scripts.text-summary-helpers.map-callback.large",
+    "previousAllocatedBytes": 1043240,
+    "candidateAllocatedBytes": 1043240,
+    "allocationChangePercent": 0.0,
+    "previousAccountedPeak": 1971272,
+    "candidateAccountedPeak": 1971272,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.text-summary-helpers.map-callback.large.mixed-unicode",
+    "previousAllocatedBytes": 1804680,
+    "candidateAllocatedBytes": 1804854,
+    "allocationChangePercent": 0.009641598510534699,
+    "previousAccountedPeak": 3646020,
+    "candidateAccountedPeak": 3646020,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.text-summary-helpers.map-callback.large.ascii",
+    "previousAllocatedBytes": 1043296,
+    "candidateAllocatedBytes": 1043240,
+    "allocationChangePercent": -0.005367604208206256,
+    "previousAccountedPeak": 1967176,
+    "candidateAccountedPeak": 1967176,
+    "budgetReturnedToBaseline": true
+  }
+]
