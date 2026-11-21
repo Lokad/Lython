@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1262 current factory and validator profiles](results/2026-11-21-current-runtime-costs/README.md)
+separates warm work and validator compilation. Factory stacks resolve
+dispatch and admission for live functions, defaults and captures. Warm
+validator samples include file acquisition and fixture work. The
+compile lane resolves 159 nearest lexical-preparation frames.
+
 [B1261 expanded JSON Lines export against CPython](results/2026-11-21-cpython-expanded-builtin/README.md)
 measures separate warm, compile-to-result and compile phases. The first
 two span parity. Compilation takes 0.668–0.671× CPython elapsed.
