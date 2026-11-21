@@ -1,0 +1,107 @@
+{
+  "collection": "B1293",
+  "reference": "151b05134",
+  "candidate": "d05150e9d",
+  "verifiedTimedBatches": 80,
+  "qualifiedElapsed": false,
+  "allocation": [
+    {
+      "case": "diagnostic.regex.group-copy.short.4096",
+      "reference": 2070128,
+      "candidate": 2070184,
+      "allocationChangePercent": 0.0027051467348826463,
+      "referenceAccountedPeak": 1349349,
+      "candidateAccountedPeak": 1349349,
+      "allowanceRestored": true
+    },
+    {
+      "case": "diagnostic.regex.group-copy.interior.4096",
+      "reference": 11121504,
+      "candidate": 6733352,
+      "allocationChangePercent": -39.456462003700224,
+      "referenceAccountedPeak": 5459155,
+      "candidateAccountedPeak": 1176275,
+      "allowanceRestored": true
+    },
+    {
+      "case": "scripts.regex.log-messages",
+      "reference": 908098,
+      "candidate": 858890,
+      "allocationChangePercent": -5.418798411625181,
+      "referenceAccountedPeak": 178379,
+      "candidateAccountedPeak": 132331,
+      "allowanceRestored": true
+    },
+    {
+      "case": "scripts.regex.log-split",
+      "reference": 272048,
+      "candidate": 218800,
+      "allocationChangePercent": -19.573016526495323,
+      "referenceAccountedPeak": 152919,
+      "candidateAccountedPeak": 103671,
+      "allowanceRestored": true
+    }
+  ],
+  "elapsed": [
+    {
+      "case": "diagnostic.regex.group-copy.short.4096",
+      "localChangePercent": [
+        -2.120602458495935,
+        2.1265919289972235,
+        2.765851311637424,
+        7.225079278704416
+      ],
+      "processMediansMilliseconds": {
+        "reference": 3.47340350877193,
+        "candidate": 3.3997464285714285,
+        "reference-control": 3.3082452830188678,
+        "candidate-control": 3.5472686274509804
+      }
+    },
+    {
+      "case": "diagnostic.regex.group-copy.interior.4096",
+      "localChangePercent": [
+        -7.152681748395051,
+        -0.5848560886334786,
+        3.609106852232502,
+        10.938198993860503
+      ],
+      "processMediansMilliseconds": {
+        "reference": 54.21276666666666,
+        "candidate": 53.8957,
+        "reference-control": 48.58173333333334,
+        "candidate-control": 50.3351
+      }
+    },
+    {
+      "case": "scripts.regex.log-messages",
+      "localChangePercent": [
+        -26.96433878356267,
+        -25.249448597074455,
+        -2.0141398139908895,
+        0.2865854378779398
+      ],
+      "processMediansMilliseconds": {
+        "reference": 3.673915094339623,
+        "candidate": 3.6844439999999996,
+        "reference-control": 4.928985714285714,
+        "candidate-control": 3.5999173076923077
+      }
+    },
+    {
+      "case": "scripts.regex.log-split",
+      "localChangePercent": [
+        -4.680501424529293,
+        -0.5250468953913012,
+        2.1057425821657816,
+        6.557043489168746
+      ],
+      "processMediansMilliseconds": {
+        "reference": 0.32028246153846157,
+        "candidate": 0.32702678571428573,
+        "reference-control": 0.30690302114803625,
+        "candidate-control": 0.3052916363636364
+      }
+    }
+  ]
+}

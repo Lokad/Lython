@@ -114,6 +114,42 @@ public sealed class RegexCaptureMaterializationTests
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CommandOwnedCaptureReusesFundedPayloadAfterMatchCleanup(bool asynchronous)
+    {
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var provider = new CompetingProvider(budget);
+        using var script = new LythonEngine(provider).Compile("""
+            import re
+            def read_capture():
+                m = re.search(pattern, text)
+                re.purge()
+                return m.group(1)
+            capture = read_capture()
+            assert capture is not text
+            assert capture.startswith('éé') and capture.endswith('éé')
+            return len(capture)
+            """, budget);
+        Assert.True(script.IsValid);
+        var baseline = budget.ReservedBytes;
+        var options = new LythonRunOptions
+        {
+            Globals = new Dictionary<string, object?> { ["pattern"] = "!(?P<body>.+)!", ["text"] = $"!{new string('é', 8192)}!" }
+        };
+        provider.Compete = true;
+        using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
+        {
+            Assert.True(provider.SubjectClosed);
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(new System.Numerics.BigInteger(8192), result.ReturnValue);
+        }
+        Assert.Equal(baseline + provider.HeldBytes, budget.ReservedBytes);
+        provider.Dispose();
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
+    [Theory]
     [InlineData(false, false)]
     [InlineData(true, false)]
     [InlineData(false, true)]
@@ -122,9 +158,10 @@ public sealed class RegexCaptureMaterializationTests
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
         using var provider = new CompetingProvider(budget);
+        var body = new string('é', 8192);
         using var script = new LythonEngine(provider).Compile("""
             import re
-            m = re.search(pattern, text)
+            m = re.search(pattern, SUBJECT)
             positions = m.regs
             selected = m.group
             try:
@@ -133,13 +170,12 @@ public sealed class RegexCaptureMaterializationTests
                 print('must not run')
             finally:
                 return 'must fail'
-            """.Replace("CALL", exposed ? "selected(1)" : "m.group(1)", StringComparison.Ordinal), budget);
+            """.Replace("SUBJECT", $"'!{body}!'", StringComparison.Ordinal).Replace("CALL", exposed ? "selected(1)" : "m.group(1)", StringComparison.Ordinal), budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
-        var body = new string('é', 8192);
         var options = new LythonRunOptions
         {
-            Globals = new Dictionary<string, object?> { ["pattern"] = "!(?P<body>.+)!", ["text"] = "!" + body + "!" }
+            Globals = new Dictionary<string, object?> { ["pattern"] = "!(?P<body>.+)!" }
         };
         provider.Compete = true;
         using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
@@ -162,7 +198,7 @@ public sealed class RegexCaptureMaterializationTests
     }
 
     // Model another host user claiming the same allowance after native matching
-    // has closed. Match metadata fits; a later substantial group copy does not.
+    // has closed. Match metadata fits; the compiled subject's group copy does not.
     private sealed class CompetingProvider(LythonMemoryBudget budget) : ILythonRegexProvider, IDisposable
     {
         private ILythonMemoryReservation? _held;

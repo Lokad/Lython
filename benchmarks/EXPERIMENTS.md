@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1293 funded UTF-8 windows for regex captures](results/2026-11-21-funded-regex-windows/README.md)
+reuses execution-owned subject payloads for eligible partial values.
+Warm allocation falls 5.42% on log extraction, 19.57% on log splitting
+and 39.46% on the overlapping-capture diagnostic. Accounted peaks
+also drop. Retain for copy and allocation removal. Local elapsed
+timing remains inconclusive. All 80 batches pass.
+
 [B1291 eager annotations inside callable creation](results/2026-11-21-annotations-in-creation/README.md)
 removes four eager reads and their operand staging without an extra
 opcode. Allocation is effectively flat. Eager rules run faster across

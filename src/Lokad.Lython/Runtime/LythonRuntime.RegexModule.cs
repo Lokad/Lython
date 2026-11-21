@@ -16,7 +16,7 @@ internal sealed partial class LythonRuntime
         if (start < 0 || start == end) return PyString.Empty;
         var length = end - start;
         if (length == subject.ByteLength) return subject;
-        return PyString.CopyFromUtf8(subject.Utf8Span.Slice(start, length), governor, span, context);
+        return subject.CopyOrBorrowUtf8Range(start, length, governor, span, context);
     }
 
     // Retained matches own immutable ranges over their already-funded subject.

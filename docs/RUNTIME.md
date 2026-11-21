@@ -2509,6 +2509,11 @@ capability error. The bundled optional adapter still lacks this metadata.
 
 Matches compare and hash by object identity. A retained match remains a valid
 dictionary key after iteration ends or the compiled-pattern cache is purged.
+Partial capture strings and split segments can share immutable UTF-8 already
+funded by the current execution. Each view funds its own shell and the backing
+stays charged to that owner. A small surviving capture can keep a larger
+subject funded until the owner ends. Short values use inline storage, and
+partial values from other owners use independent payloads.
 One UTF-8 parser handles `match.expand` and template substitution, including Python
 numeric/named references, octal escapes and error precedence. Each operation parses
 once into a temporary literal/capture plan, even with no matches or negative count.

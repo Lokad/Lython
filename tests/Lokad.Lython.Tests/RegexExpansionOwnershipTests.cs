@@ -39,8 +39,10 @@ public sealed class RegexExpansionOwnershipTests
         Assert.Equal(0, root.ReservedBytes);
     }
 
-    [Fact]
-    public void GroupCopyObservesCancellationAfterAdmissionAndRefundsScratch()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void GroupAccessObservesCancellationAfterAdmissionAndRefundsScratch(bool commandOwnedSubject)
     {
         var root = new LythonMemoryBudget(1024 * 1024);
         using var cancellation = new CancellationTokenSource();
@@ -52,10 +54,10 @@ public sealed class RegexExpansionOwnershipTests
                 MemoryBudget = hooked, CancellationToken = cancellation.Token,
             }, regexProvider: Utf8RegexProvider.Instance);
             var text = "!" + new string('x', 4096) + "!";
-            var match = Match(context, "!(x+)!", text);
+            var match = Match(context, "!(x+)!", text, commandOwnedSubject);
             using var compiled = match.Pattern.Regex;
             var before = root.ReservedBytes;
-            hooked.Admitted = bytes => { if (bytes >= 4096) cancellation.Cancel(); };
+            hooked.Admitted = bytes => { if (bytes > 0) cancellation.Cancel(); };
             var error = Assert.Throws<LythonRuntimeException>(() => match.MaterializeGroup(1, context, Span));
             Assert.Equal(LythonFailureReason.Cancelled, error.Attribution?.Reason);
             Assert.True(cancellation.IsCancellationRequested);
@@ -132,15 +134,17 @@ public sealed class RegexExpansionOwnershipTests
         Assert.Equal(0, root.ReservedBytes);
     }
 
-    private static LythonRuntime.ReMatchObject Match(LythonRuntime.ExecutionContext context, string patternText = "(x+)", string? text = null)
+    private static LythonRuntime.ReMatchObject Match(LythonRuntime.ExecutionContext context, string patternText = "(x+)", string? text = null, bool commandOwnedSubject = true)
     {
         // Use the real regex boundary and funded native captures; call expansion
         // directly so a VM checkpoint cannot hide missing native cancellation.
         var pattern = LythonRuntime.RegexCompiler.CreatePattern([PyString.FromString(patternText)], "re.compile", Span,
             context);
         Assert.True(pattern.TryGetMember("match", context, Span, out var callable));
+        text ??= new string('x', 4096);
+        var subject = commandOwnedSubject ? PyString.FromString(text, context.MemoryGovernor, Span) : PyString.FromString(text);
         return Assert.IsType<LythonRuntime.ReMatchObject>(Assert.IsAssignableFrom<LythonRuntime.ICallable>(callable).Invoke(
-            [CallArgumentValue.Positional(PyString.FromString(text ?? new string('x', 4096), context.MemoryGovernor, Span))], Span, context));
+            [CallArgumentValue.Positional(subject)], Span, context));
     }
 
     private sealed class AdmissionHook(ILythonMemoryBudget inner) : ILythonMemoryBudget
