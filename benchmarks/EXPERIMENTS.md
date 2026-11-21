@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Compiler branch-prefix copy](results/2026-11-21-compiler-branch-prefix-copy/README.md)
+keeps the prototype private. Bulk copying retains the layout stage.
+Local validator timing is inconclusive with unstable identical-image
+controls. A corrected prototype preserves branch targets after a terminal
+assertion. The original timing and instruction difference are archived.
+
 [B1286 joint lexical admission](results/2026-11-21-joint-lexical-admission/README.md)
 keeps the prototype private. It removes 2,048 allowance growths per
 nested factory. Postponed factories reach the result 3.08–7.12% sooner
