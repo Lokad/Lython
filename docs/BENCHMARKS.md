@@ -2,6 +2,7 @@
 
 | Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| JSON Lines export with expanded options | 3,072 records / 189,441 B | 6.503–6.598 ms | 6.534–6.571 ms | 0.990–1.010× | B1261 diagnostic. Spans parity. Controls L/C 1.47 / 0.57%. IQR ≤1.78%. |
 | Map-based text report | 1,024 lines / 35,840 B | 1.539–1.581 ms | 1.188–1.205 ms | 1.277–1.330× | B1258 diagnostic. Controls L/C 2.74 / 1.38%. IQR ≤0.90%. |
 | JSON normalization | 3,072 records / 189,441 B | 2.762–2.813 ms | 2.505–2.544 ms | 1.086–1.123× | B1253 diagnostic repeat. Initial B1252 is 1.143–1.158×. Repeat controls L/C 1.82 / 1.59%. IQR ≤12.50%. |
 | Unannotated rule closures | 2,048 inputs / 4,096 definitions | 2.307–2.321 ms | 0.683–0.688 ms | 3.35–3.40× | B1122 diagnostic. Controls L/C 0.61 / 0.70%. IQR ≤0.74%. |
@@ -27,6 +28,12 @@
 **Ratio = Lython elapsed / CPython elapsed. Above one means slower.** Ranges cover
 the combinations of two process medians per engine, not confidence intervals.
 Controls L/C report the difference between the two Lython/CPython medians.
+
+B1261 measures the expanded-options JSON Lines export at **3ab6f6c81**,
+with the runtime change retained at `8785193bb`, against **CPython 3.13.16**
+on **2026-11-21 UTC**. Independent warm, compilation and compile-to-result
+workers completed all 84 batches on the quiet Azure F4as_v7.
+[B1261 observations](../benchmarks/results/2026-11-21-cpython-expanded-builtin/README.md).
 
 B1258 measures the map-based text report at **8ad55d9d5**, with the
 callback change retained at `d6a360e23`, against **CPython 3.13.16** on
@@ -150,6 +157,8 @@ The table compares workload latency under different containment boundaries.
 
 | Workload | Phase | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| JSON Lines export with expanded options | Compilation only | 0.02975–0.02978 ms | 0.04436–0.04453 ms | 0.668–0.671× | B1261 diagnostic. Controls L/C 0.10 / 0.38%. IQR ≤0.78%. |
+| JSON Lines export with expanded options | Compile-to-result | 6.619–6.621 ms | 6.603–6.686 ms | 0.990–1.003× | B1261 diagnostic. Spans parity. Controls L/C 0.03 / 1.26%. IQR ≤1.09%. |
 | Map-based text report | Compilation only | 0.02961–0.02966 ms | 0.04158–0.04173 ms | 0.710–0.713× | B1258 diagnostic. Controls L/C 0.15 / 0.34%. IQR ≤0.77%. |
 | Map-based text report | Compile-to-result | 1.622–1.633 ms | 1.311–1.320 ms | 1.229–1.245× | B1258 diagnostic. Controls L/C 0.64 / 0.68%. IQR ≤0.57%. |
 | JSON normalization | Compilation only | 0.03536–0.03571 ms | 0.05254–0.05284 ms | 0.669–0.680× | B1252 diagnostic. Controls L/C 1.01 / 0.57%. IQR ≤0.86%. |

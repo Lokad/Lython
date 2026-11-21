@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1261 expanded JSON Lines export against CPython](results/2026-11-21-cpython-expanded-builtin/README.md)
+measures separate warm, compile-to-result and compile phases. The first
+two span parity. Compilation takes 0.668–0.671× CPython elapsed.
+All 84 batches pass.
+
 [B1260 expanded builtin argument spans](results/2026-11-21-expanded-builtin-span/README.md)
 removes the final argument packet copy for existing span-based binders.
 The complete JSON Lines export allocates 4.90% less and uses
