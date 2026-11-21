@@ -6,6 +6,19 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1308 mixed-default admission](results/2026-11-21-joint-default-preflight/README.md)
+combines 2,048 pairs of requests in each factory run at equal accounted
+peaks. The postponed factories use 1.03–5.00% less warm CPU, with
+mixed eager and metadata-observer results. The unchanged helper uses
+2.71–3.45% less CPU. Keep the variant private because the comparison
+does not isolate a CPU gain. All 112 timed batches and focused checks pass.
+
+[Utf8Regex dev.117](results/2026-11-21-regex-dev117-boundary/README.md)
+matches the producer's four 405-pass replay receipts. Direct probes
+confirm original-subject lookbehind and last-close capture metadata.
+Reversed anchored windows, managed estimates and exact program keys
+remain open for final adapter qualification.
+
 [B1307 retained factories and CSV invoice against CPython](results/2026-11-21-cpython-retained-checkpoint/README.md)
 refreshes three warm workloads on `4337b7765`. Both factory ratios
 remain above 2×. The CSV policy invoice takes 1.178–1.199× as long.

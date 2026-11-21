@@ -1,0 +1,34 @@
+{
+  "source": "6e526180871b24dae910319482c4a47980e16c04",
+  "reference": "4337b7765",
+  "workerFiles": {
+    "Lokad.Lython.dll": "ca2474c24504e80550ea8aa838495eafe30d753e5b5e7c16d4dcfd51a0cb2d4f",
+    "Probe.deps.json": "0ed402d1995caf3a7e34425f6c0271d44768c07ac318ffd6977335dae727f029",
+    "Probe.dll": "5a3941f200140f63d8c45ca7a3f2b6dc1267e16343876d09a60b782648051dbd",
+    "Probe.exe": "df125884a79820d3be5dd57bf0693ab0a4afb05602c85187601ef7934d66e56c",
+    "Probe.pdb": "b98df68934c6cef28716b50b5488f7371d4bd7c6daf5ca559011ff7653d395c3",
+    "Probe.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0"
+  },
+  "rows": [
+    {
+      "case": "scripts.annotated-rule-closures.nested-factories",
+      "previous": 10265,
+      "prototype": 8217
+    },
+    {
+      "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "previous": 10265,
+      "prototype": 8217
+    },
+    {
+      "case": "scripts.factory-observed-defaults",
+      "previous": 10266,
+      "prototype": 8218
+    },
+    {
+      "case": "scripts.ordinary-fully-supplied-helper",
+      "previous": 7,
+      "prototype": 7
+    }
+  ]
+}
