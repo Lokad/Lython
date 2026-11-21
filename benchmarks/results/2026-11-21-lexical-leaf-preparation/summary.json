@@ -1,0 +1,186 @@
+{
+  "complete": true,
+  "elapsedSeconds": 218.98093165224418,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "staging": {
+    "retiredOnly": [
+      {
+        "paths": [
+          "joint-default-preflight-b1308-20261121/candidate/Lokad.Lython.dll"
+        ],
+        "links": 1,
+        "bytes": 5713920,
+        "sha256": "ca2474c24504e80550ea8aa838495eafe30d753e5b5e7c16d4dcfd51a0cb2d4f",
+        "archives": {
+          "joint-default-preflight-b1308-20261121/observations.tgz": "5a03c9f2fae1f0680302f4e70df7cb70d52bf6db932cdc0d1d7e46e734a4984d"
+        },
+        "optional": false
+      }
+    ],
+    "alreadyAbsent": [],
+    "freshIdleLease": true,
+    "allHashesPathsOwnershipLinksAndAliasesVerified": true,
+    "canonicalArchiveAndCurrentImagesPreserved": true,
+    "freeBeforeBytes": 177930240,
+    "freeAfterBytes": 177852416
+  },
+  "rows": [
+    {
+      "case": "scripts.config-generated-guards.medium.bad-0",
+      "lane": "compile",
+      "elapsedMilliseconds": {
+        "candidate": 1.4105895166297118,
+        "reference": 1.4258197242888404,
+        "candidate-control": 1.4297155776805253,
+        "reference-control": 1.4324426008771929
+      },
+      "cpuMilliseconds": {
+        "candidate": 1.4190687361419068,
+        "reference": 1.4442013129102844,
+        "candidate-control": 1.4442013129102844,
+        "reference-control": 1.469298245614035
+      },
+      "elapsedIQRPercent": {
+        "candidate": 1.7550201117970023,
+        "reference": 0.6783050365649831,
+        "candidate-control": 0.5113857024758455,
+        "reference-control": 2.3909505690888038
+      },
+      "elapsedChangePercent": [
+        -1.5255818441938795,
+        -1.068172041646076,
+        -0.1903757396629846,
+        0.27323604277027513
+      ],
+      "cpuChangePercent": [
+        -3.4186054207896333,
+        -1.7402405429013057,
+        -1.7080897481955737,
+        0.0
+      ],
+      "referenceSpreadPercent": 0.4644960702627321,
+      "candidateSpreadPercent": 1.3558913365889103
+    },
+    {
+      "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "lane": "compile",
+      "elapsedMilliseconds": {
+        "reference-control": 0.022930300339726803,
+        "candidate-control": 0.022633325449154022,
+        "reference": 0.02287744704317076,
+        "candidate": 0.022905376114144796
+      },
+      "cpuMilliseconds": {
+        "reference-control": 0.023002335621770828,
+        "candidate-control": 0.022675736961451247,
+        "reference": 0.02275830678197542,
+        "candidate": 0.02289941870706359
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.37460860486402997,
+        "candidate-control": 0.23232699379517693,
+        "reference": 0.388630280742694,
+        "candidate": 0.6114005562377482
+      },
+      "elapsedChangePercent": [
+        -1.2951199337684738,
+        -1.0670840743552845,
+        -0.10869559147825836,
+        0.12208123975254725
+      ],
+      "cpuChangePercent": [
+        -1.4198499912785767,
+        -0.44741941166109855,
+        -0.36281179138322184,
+        0.6200457988374097
+      ],
+      "referenceSpreadPercent": 0.23102794842582153,
+      "candidateSpreadPercent": 1.2019915747773613
+    },
+    {
+      "case": "scripts.dataclass-inherited-configuration.generated",
+      "lane": "compile",
+      "elapsedMilliseconds": {
+        "candidate": 0.189426538215635,
+        "reference": 0.1834251877307583,
+        "candidate-control": 0.18676754173862983,
+        "reference-control": 0.1862645059749344
+      },
+      "cpuMilliseconds": {
+        "candidate": 0.1888985759953502,
+        "reference": 0.1846066458392502,
+        "candidate-control": 0.18710420264824412,
+        "reference-control": 0.18944914019236375
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.4217095732729932,
+        "reference": 0.6536452430733731,
+        "candidate-control": 0.7376038029288531,
+        "reference-control": 1.3620781846821175
+      },
+      "elapsedChangePercent": [
+        0.27006528219772896,
+        1.697603214391319,
+        1.8221892256027772,
+        3.2718246382202443
+      ],
+      "cpuChangePercent": [
+        -1.2377662636729903,
+        -0.29061319383899553,
+        1.3529073114565415,
+        2.3249055507120087
+      ],
+      "referenceSpreadPercent": 1.547943485462766,
+      "candidateSpreadPercent": 1.4236930315901786
+    },
+    {
+      "case": "scripts.config-generated-guards.medium.bad-0",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "reference-control": 1.562970349127182,
+        "candidate-control": 1.5543281881188118,
+        "reference": 1.5479237543424318,
+        "candidate": 1.5572719724310777
+      },
+      "cpuMilliseconds": {
+        "reference-control": 1.6458852867830425,
+        "candidate-control": 1.6336633663366338,
+        "reference": 1.6129032258064515,
+        "candidate": 1.6290726817042607
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.8530280863802547,
+        "candidate-control": 1.7156863166638898,
+        "reference": 0.9159641590377029,
+        "candidate": 0.6221449363581413
+      },
+      "elapsedChangePercent": [
+        -0.5529318590846155,
+        -0.36458635951004403,
+        0.4137434908155768,
+        0.6039198030536763
+      ],
+      "cpuChangePercent": [
+        -1.02149312675629,
+        -0.7425742574257432,
+        1.0025062656641603,
+        1.2871287128713105
+      ],
+      "referenceSpreadPercent": 0.972050124726076,
+      "candidateSpreadPercent": 0.18939271221920517
+    }
+  ],
+  "CPythonRefreshed": false,
+  "collection": "B1309",
+  "sourceRevision": "4337b776518b377c327af3cf073bea1fc1d769ca versus b8359d01a3f49d2e76f09db6d7d3cae88aff15ca",
+  "verifiedTimedBatches": 112,
+  "coreSHA256": {
+    "reference": "ea5b7878f0b6c8b0564979bda4ee6cc0b98a48378841059fd206eb711e8a9499",
+    "reference-control": "ea5b7878f0b6c8b0564979bda4ee6cc0b98a48378841059fd206eb711e8a9499",
+    "candidate": "d389505ef959d9251af5d642be2fa8f789ac8eda7743ce5e215c02bf659b992f",
+    "candidate-control": "d389505ef959d9251af5d642be2fa8f789ac8eda7743ce5e215c02bf659b992f"
+  },
+  "archiveSHA256": "f9309e0e9dbbfb06ef305169ab69f44136c5eaf231a868d198e3d605d65be529",
+  "retentionDecision": "Keep the leaf-suite prototype private. The allocation reduction and validator compile CPU direction are useful. Time to result is inconclusive and inherited dataclass compile elapsed is adverse. Revisit as a broader pass deletion with explicit cancellation and stable controls."
+}

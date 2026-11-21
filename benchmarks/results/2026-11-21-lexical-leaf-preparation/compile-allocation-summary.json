@@ -1,0 +1,115 @@
+{
+  "roles": [
+    "reference",
+    "candidate",
+    "candidate",
+    "reference"
+  ],
+  "rows": [
+    {
+      "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "allocatedBytes": [
+        66200,
+        65960,
+        65960,
+        66200
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        172.9125,
+        184.14375,
+        185.98125,
+        205.0046875
+      ]
+    },
+    {
+      "id": "scripts.dataclass-inherited-configuration.generated",
+      "allocatedBytes": [
+        582512,
+        580512,
+        580512,
+        582512
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        1638.7625,
+        1527.975,
+        1274.6609375,
+        2483.2125
+      ]
+    },
+    {
+      "id": "scripts.config-generated-guards.medium.bad-0",
+      "allocatedBytes": [
+        2177108.25,
+        2149645.5,
+        2146568,
+        2174144.625
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        2074.728125,
+        1999.0390625,
+        2100.421875,
+        2878.7203125
+      ]
+    },
+    {
+      "id": "assertion-tail-with-handler",
+      "allocatedBytes": [
+        25696,
+        25536,
+        25536,
+        25696
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        10.3140625,
+        10.1703125,
+        25.0078125,
+        26.459375
+      ]
+    },
+    {
+      "id": "dead-heavy-control",
+      "allocatedBytes": [
+        873408,
+        840416,
+        840416,
+        873408
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        460.3984375,
+        367.5765625,
+        517.184375,
+        498.7703125
+      ]
+    },
+    {
+      "id": "nested-definition-in-protected-suite",
+      "allocatedBytes": [
+        34896,
+        34656,
+        34656,
+        34896
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        27.3484375,
+        14.33125,
+        13.771875,
+        13.9640625
+      ]
+    },
+    {
+      "id": "postponed-module-annotation",
+      "allocatedBytes": [
+        16384,
+        16304,
+        16304,
+        16384
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        31.7609375,
+        8.634375,
+        8.3234375,
+        26.6515625
+      ]
+    }
+  ]
+}

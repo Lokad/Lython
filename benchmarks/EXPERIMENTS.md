@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1309 leaf-suite preparation](results/2026-11-21-lexical-leaf-preparation/README.md)
+removes the second lexical walk through leaf suites with no deferred
+work. The exact code objects and compile refunds match. The validator
+allocates less to compile, time to result spans zero and dataclass
+compile elapsed increases 0.27–3.27%. Keep this variant private.
+
 [B1308 mixed-default admission](results/2026-11-21-joint-default-preflight/README.md)
 combines 2,048 pairs of requests in each factory run at equal accounted
 peaks. The postponed factories use 1.03–5.00% less warm CPU, with
