@@ -51,9 +51,9 @@ public sealed class FunctionAttributeAccountingTests
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) },regexProvider:Utf8RegexProvider.Instance);
         var moduleName = PyString.FromString("original");
         context.Variables["__name__"] = moduleName;
-        var function = Function(context);
+        var function = Function(context, "def f():\n 'original doc'\n return None\nreturn f");
         Assert.True(function.TryGetMember(name, out var before));
-        Assert.Same(name == "__module__" ? (object)moduleName : PyNone.Instance, before);
+        Assert.Same(name == "__module__" ? moduleName : function.CodeObject.Docstring, Assert.IsType<PyString>(before));
         var padding = limit - context.MemoryGovernor.CurrentAccountedBytes;
         context.MemoryGovernor.Reserve(padding, null);
         context.MemoryGovernor.Commit(padding);

@@ -383,8 +383,9 @@ definition, so its finished defaults transfer before the first decorator call.
 Binding uses the live tuple and holds selected values through keyword lookup
 and suspension.
 Compiled names and docstrings stay with the code object. A function admits
-storage for standard attribute overrides on its first write and reuses it
-for later writes. Its guest-visible `__dict__` remains a separate mapping.
+storage on the first standard attribute write that needs it and reuses it
+for later writes. Resetting `__doc__` or `__module__` to `None` needs no
+additional allowance. The guest-visible `__dict__` remains a separate mapping.
 A published dictionary admits replacement capacity before a mutation
 requiring private keys.
 One scope walk collects directives, local bindings

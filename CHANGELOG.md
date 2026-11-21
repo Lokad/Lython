@@ -5,7 +5,8 @@
 - Complete eligible lexical function and lambda definitions in their inline
   operand slots. Share default ownership and callable construction across callers.
 - Read function names and docstrings from compiled metadata. Admit storage
-  for standard attribute overrides on the first write.
+  when writing a standard attribute override. Reset docstrings and module
+  names without allocating replacement storage.
 - Share positional binding eligibility and checked work-buffer extents
   through compiled metadata.
 - Prepare class-cell capture in the lexical walk. Include reads in lazy

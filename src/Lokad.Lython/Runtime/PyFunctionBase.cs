@@ -10,6 +10,9 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
     // Compiled names and docstrings can be read directly. Explicit overrides
     // use separately admitted storage and stay separate from __dict__.
     private StandardOverrides? _standardOverrides;
+    // Resetting metadata needs no replacement storage.
+    private bool _moduleCleared;
+    private bool _docstringCleared;
     private object? _annotations;
     private object? _typeParameters;
     private PyDict? _customAttributes;
@@ -237,8 +240,10 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
         {
             "__name__" => _standardOverrides?.Name ?? CodeObject.FunctionName.RequireNotNull(),
             "__qualname__" => _standardOverrides?.QualifiedName ?? CodeObject.QualifiedName ?? CodeObject.FunctionName.RequireNotNull(),
-            "__module__" => _standardOverrides?.Module ?? (TryGetModuleName(out var moduleName) ? moduleName : (object)PyNone.Instance),
-            "__doc__" => _standardOverrides?.Docstring ?? CodeObject.Docstring ?? (object)PyNone.Instance,
+            "__module__" => _standardOverrides?.Module ??
+                (!_moduleCleared && TryGetModuleName(out var moduleName) ? moduleName : (object)PyNone.Instance),
+            "__doc__" => _standardOverrides?.Docstring ??
+                (_docstringCleared ? PyNone.Instance : CodeObject.Docstring ?? (object)PyNone.Instance),
             "__annotations__" => ReadAnnotations(),
             "__type_params__" => _typeParameters,
             _ => null,
@@ -281,8 +286,22 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
                 break;
             case "__name__": GetStandardOverrides().Name = value; break;
             case "__qualname__": GetStandardOverrides().QualifiedName = value; break;
-            case "__module__": GetStandardOverrides().Module = value; break;
-            case "__doc__": GetStandardOverrides().Docstring = value; break;
+            case "__module__":
+                if (value is PyNone)
+                {
+                    _moduleCleared = true;
+                    if (_standardOverrides is { } overrides) overrides.Module = null;
+                }
+                else GetStandardOverrides().Module = value;
+                break;
+            case "__doc__":
+                if (value is PyNone)
+                {
+                    _docstringCleared = true;
+                    if (_standardOverrides is { } overrides) overrides.Docstring = null;
+                }
+                else GetStandardOverrides().Docstring = value;
+                break;
             case "__annotations__":
                 if (value is not (PyNone or PyDict or PyDefaultDict or PyCounter))
                     throw new LythonRuntimeException("TypeError", "__annotations__ must be set to a dict object", null);
