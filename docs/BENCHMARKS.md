@@ -2,6 +2,8 @@
 
 | Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| CSV restock export | 3,072 records / 182,437 B | 3.759–3.907 ms | 5.102–5.129 ms | 0.733–0.766× | B1278 diagnostic. Controls L/C 3.92 / 0.52%. IQR ≤0.80%. |
+| CSV restock export with Unicode escaping | 3,072 records / 170,917 B | 4.507–4.525 ms | 5.714–5.798 ms | 0.777–0.792× | B1278 diagnostic. Controls L/C 0.41 / 1.48%. IQR ≤0.78%. |
 | JSON Lines export with expanded options | 3,072 records / 189,441 B | 6.503–6.598 ms | 6.534–6.571 ms | 0.990–1.010× | B1261 diagnostic. Spans parity. Controls L/C 1.47 / 0.57%. IQR ≤1.78%. |
 | Map-based text report | 3,072 lines / 35,840 B | 1.440–1.495 ms | 1.217–1.220 ms | 1.181–1.228× | B1274 diagnostic. Controls L/C 3.84 / 0.20%. IQR ≤0.75%. |
 | JSON normalization | 3,072 records / 189,441 B | 2.762–2.813 ms | 2.505–2.544 ms | 1.086–1.123× | B1253 diagnostic repeat. Initial B1252 is 1.143–1.158×. Repeat controls L/C 1.82 / 1.59%. IQR ≤12.50%. |
@@ -28,6 +30,13 @@
 **Ratio = Lython elapsed / CPython elapsed. Above one means slower.** Ranges cover
 the combinations of two process medians per engine, not confidence intervals.
 Controls L/C report the difference between the two Lython/CPython medians.
+
+B1278 measures the CSV restock exports at **9bf720efa**,
+production-equivalent to **7cc150d96**, against **CPython 3.13.16**
+on **2026-11-21 UTC**. All 112 batches passed on the quiet Azure
+F4as_v7 running Ubuntu 24.04.4 and .NET 11 RC3. Separate phase workers
+measure compilation and time to result for the ordinary export.
+[B1278 checkpoint](../benchmarks/results/2026-11-21-cpython-csv-restock-checkpoint/README.md).
 
 B1274 measures the map-based text report at **b140244f0**,
 production-equivalent to **b42c4d508**, against **CPython 3.13.16**
@@ -173,6 +182,8 @@ The table compares workload latency under different containment boundaries.
 
 | Workload | Phase | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| CSV restock export | Compilation only | 0.02747–0.02770 ms | 0.04536–0.04552 ms | 0.604–0.611× | B1278 diagnostic. Controls L/C 0.83 / 0.35%. IQR ≤1.11%. |
+| CSV restock export | Compile-to-result | 3.961–3.967 ms | 5.221–5.225 ms | 0.758–0.760× | B1278 diagnostic. Controls L/C 0.15 / 0.06%. IQR ≤1.84%. |
 | JSON Lines export with expanded options | Compilation only | 0.02975–0.02978 ms | 0.04436–0.04453 ms | 0.668–0.671× | B1261 diagnostic. Controls L/C 0.10 / 0.38%. IQR ≤0.78%. |
 | JSON Lines export with expanded options | Compile-to-result | 6.619–6.621 ms | 6.603–6.686 ms | 0.990–1.003× | B1261 diagnostic. Spans parity. Controls L/C 0.03 / 1.26%. IQR ≤1.09%. |
 | Map-based text report | Compilation only | 0.02582–0.02682 ms | 0.04141–0.04188 ms | 0.616–0.648× | B1274 diagnostic. Controls L/C 3.89 / 1.15%. IQR ≤0.57%. |

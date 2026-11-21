@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1278 CSV restock exports against CPython](results/2026-11-21-cpython-csv-restock-checkpoint/README.md)
+places ordinary export at 0.733–0.766× warm, 0.604–0.611× compilation
+and 0.758–0.760× to result against stock CPython 3.13.16. The custom
+Unicode dialect is 0.777–0.792× warm. All 112 phase batches passed.
+
 [B1277 bulk CSV field output](results/2026-11-21-bulk-csv-field-output/README.md)
 replaces repeated scalar scans and appends with prepared dialect searches
 and an admitted field window. The ordinary export runs 33.77–36.29%
