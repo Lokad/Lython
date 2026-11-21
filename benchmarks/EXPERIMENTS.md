@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1285 current factories against CPython](results/2026-11-21-cpython-current-factories/README.md)
+measures `256c5e651` against CPython 3.13.16. Postponed factories
+take 2.096–2.137× as long warm, 0.566–0.575× for compilation and
+2.011–2.120× to result. Eager nested factories take 2.310–2.395×
+as long warm. All 112 batches pass with distinct phase workers.
+
 [B1284 compiled call metadata](results/2026-11-21-compiled-call-metadata/README.md)
 removes per-callable copies of positional eligibility and work-buffer
 capacity. Postponed factories run 2.81–5.04% sooner warm with lower
