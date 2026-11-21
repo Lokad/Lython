@@ -1,0 +1,35 @@
+{
+  "inspectionCoreSHA256": {
+    "reference": "1ab64da0c0d11b13c551f0f74d0d790447c653d572dccafe6dff4a5aa1bb13bb",
+    "candidate": "8d39e810d3fa7a7d17da8e090e183837c2417f3ba5e09177f07781b77016bf37"
+  },
+  "cases": [
+    {
+      "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "codeObjects": 4,
+      "instructionCount": 49
+    },
+    {
+      "id": "scripts.dataclass-inherited-configuration.generated",
+      "codeObjects": 51,
+      "instructionCount": 503
+    },
+    {
+      "id": "scripts.config-generated-guards.medium.bad-0",
+      "codeObjects": 2,
+      "instructionCount": 2927
+    }
+  ],
+  "compared": [
+    "instruction backing fields and spans",
+    "physical code and exception entries",
+    "cold operand read spans",
+    "ordinary call argument positions",
+    "native prefix and local/capture layout"
+  ],
+  "referenceCandidateAgreement": true,
+  "rawSHA256": {
+    "reference": "b70f77b8bc0293838e30e84b057d6fbb456ee8eb93ea3574e3e6e88d3916f2a3",
+    "candidate": "53d649f8021286c1c9f36cdb9257d01d0f376d7f4abc2a2abfc3378ccb40d151"
+  }
+}

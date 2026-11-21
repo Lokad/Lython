@@ -1,0 +1,91 @@
+{
+  "complete": true,
+  "elapsedSeconds": 236.9581819549203,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "staging": {
+    "retiredOnly": [],
+    "alreadyAbsent": [],
+    "freshIdleLease": true,
+    "allHashesPathsOwnershipLinksAndAliasesVerified": true,
+    "canonicalArchiveAndCurrentImagesPreserved": true,
+    "freeBeforeBytes": 189435904,
+    "freeAfterBytes": 189394944
+  },
+  "rows": [
+    {
+      "case": "scripts.config-generated-guards.medium.bad-0",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "reference-control": 1.6356908740601501,
+        "candidate-control": 1.572955114130435,
+        "reference": 1.6529986431226766,
+        "candidate": 1.6134110900735292
+      },
+      "cpuMilliseconds": {
+        "reference-control": 1.7105263157894737,
+        "candidate-control": 1.6304347826086958,
+        "reference": 1.7100371747211898,
+        "candidate": 1.6727941176470589
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.6192484632723413,
+        "candidate-control": 0.4928125436675891,
+        "reference": 3.1636499700493577,
+        "candidate": 1.3971146191176171
+      },
+      "elapsedChangePercent": [
+        -4.842322728168225,
+        -3.8354288652348467,
+        -2.394893257405384,
+        -1.3621023593117898
+      ],
+      "cpuChangePercent": [
+        -4.682274247491636,
+        -4.655009451795844,
+        -2.2058823529411686,
+        -2.177909207161133
+      ],
+      "referenceSpreadPercent": 1.0581320307525344,
+      "candidateSpreadPercent": 2.5719726888366656
+    },
+    {
+      "case": "scripts.config-generated-guards.medium.bad-0",
+      "lane": "compile",
+      "elapsedMilliseconds": {
+        "candidate": 1.438691113452188,
+        "reference": 1.3810727116564419,
+        "candidate-control": 1.4468624016129032,
+        "reference-control": 1.402847674050633
+      },
+      "cpuMilliseconds": {
+        "candidate": 1.4424635332252838,
+        "reference": 1.3803680981595092,
+        "candidate-control": 1.4516129032258065,
+        "reference-control": 1.4082278481012658
+      },
+      "elapsedIQRPercent": {
+        "candidate": 1.4519543756421456,
+        "reference": 0.5020157443898686,
+        "candidate-control": 0.5983578332313012,
+        "reference-control": 0.8371990480980731
+      },
+      "elapsedChangePercent": [
+        2.5550485676081536,
+        3.1375272152806444,
+        4.17200349477902,
+        4.763665909925474
+      ],
+      "cpuChangePercent": [
+        2.4311183144246407,
+        3.080826386371882,
+        4.498469295876117,
+        5.161290322580636
+      ],
+      "referenceSpreadPercent": 1.576670236867872,
+      "candidateSpreadPercent": 0.5679668195842202
+    }
+  ],
+  "CPythonRefreshed": false,
+  "decision": "Keep 18ac5adee private. Validate one refinement that skips the unnecessary block lookup on ordinary instruction appends."
+}

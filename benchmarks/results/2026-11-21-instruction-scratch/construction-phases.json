@@ -1,0 +1,477 @@
+{
+  "coreSha256": "41ff650e7c0fcbb5e19512539367a7bec79efe84bf9125a08ebf6ec1f9d7dcf5",
+  "phases": [
+    "tokenization",
+    "parsing",
+    "syntax validation",
+    "lexical preparation",
+    "annotation diagnostics",
+    "abstract interpretation",
+    "name-binding diagnostics",
+    "analysis finalization",
+    "executable construction"
+  ],
+  "constructionStages": [
+    "jump targets",
+    "declarations",
+    "operand forwarding",
+    "entry-region sort",
+    "operand layout",
+    "linearization",
+    "read spans and physical exception regions",
+    "native segment preparation",
+    "block list creation",
+    "instruction list capacity growth"
+  ],
+  "constructionShape": [
+    "code objects",
+    "blocks",
+    "exception regions",
+    "emitted instructions",
+    "block capacity",
+    "single instruction blocks",
+    "empty blocks",
+    "pure jump blocks"
+  ],
+  "boundary": "Local Windows Release decomposition following the shipped phases on normalized valid sources with admitted compiler ownership. Entry normalization, public wrapper creation and owner setup/cleanup are excluded. Each stage is invoked directly, so JIT/tiering and timing boundaries differ from public compilation. Instrumented source for attribution. Allocations and code shape only.",
+  "rows": [
+    {
+      "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "sourceCharacters": 465,
+      "samples": [
+        {
+          "allocatedBytes": [
+            4792,
+            10320,
+            4912,
+            8624,
+            3136,
+            7664,
+            1856,
+            80,
+            25024
+          ],
+          "constructionBytes": [
+            120,
+            296,
+            672,
+            0,
+            384,
+            1800,
+            2528,
+            0,
+            288,
+            4968
+          ],
+          "constructionShape": [
+            4,
+            6,
+            0,
+            60,
+            84,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "allocatedBytes": [
+            4792,
+            10320,
+            4912,
+            8624,
+            3136,
+            7664,
+            1856,
+            80,
+            25024
+          ],
+          "constructionBytes": [
+            120,
+            296,
+            672,
+            0,
+            384,
+            1800,
+            2528,
+            0,
+            288,
+            4968
+          ],
+          "constructionShape": [
+            4,
+            6,
+            0,
+            60,
+            84,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "allocatedBytes": [
+            4792,
+            10320,
+            4912,
+            8624,
+            3136,
+            7664,
+            1856,
+            80,
+            25024
+          ],
+          "constructionBytes": [
+            120,
+            296,
+            672,
+            0,
+            384,
+            1800,
+            2528,
+            0,
+            288,
+            4968
+          ],
+          "constructionShape": [
+            4,
+            6,
+            0,
+            60,
+            84,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "allocatedBytes": [
+            4792,
+            10320,
+            4912,
+            8624,
+            3136,
+            7664,
+            1856,
+            80,
+            25024
+          ],
+          "constructionBytes": [
+            120,
+            296,
+            672,
+            0,
+            384,
+            1800,
+            2528,
+            0,
+            288,
+            4968
+          ],
+          "constructionShape": [
+            4,
+            6,
+            0,
+            60,
+            84,
+            0,
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "id": "scripts.dataclass-inherited-configuration.generated",
+      "sourceCharacters": 3978,
+      "samples": [
+        {
+          "allocatedBytes": [
+            68256,
+            108904,
+            47352,
+            89192,
+            40176,
+            85416,
+            2000,
+            80,
+            157008
+          ],
+          "constructionBytes": [
+            120,
+            0,
+            1752,
+            0,
+            3768,
+            18960,
+            29416,
+            0,
+            176,
+            17160
+          ],
+          "constructionShape": [
+            51,
+            53,
+            0,
+            454,
+            468,
+            2,
+            0,
+            1
+          ]
+        },
+        {
+          "allocatedBytes": [
+            68256,
+            108904,
+            47352,
+            89192,
+            40176,
+            85416,
+            2000,
+            80,
+            157008
+          ],
+          "constructionBytes": [
+            120,
+            0,
+            1752,
+            0,
+            3768,
+            18960,
+            29416,
+            0,
+            176,
+            17160
+          ],
+          "constructionShape": [
+            51,
+            53,
+            0,
+            454,
+            468,
+            2,
+            0,
+            1
+          ]
+        },
+        {
+          "allocatedBytes": [
+            68256,
+            108904,
+            47352,
+            89192,
+            40176,
+            85416,
+            2000,
+            80,
+            157008
+          ],
+          "constructionBytes": [
+            120,
+            0,
+            1752,
+            0,
+            3768,
+            18960,
+            29416,
+            0,
+            176,
+            17160
+          ],
+          "constructionShape": [
+            51,
+            53,
+            0,
+            454,
+            468,
+            2,
+            0,
+            1
+          ]
+        },
+        {
+          "allocatedBytes": [
+            68256,
+            108904,
+            47352,
+            89192,
+            40176,
+            85416,
+            2000,
+            80,
+            157008
+          ],
+          "constructionBytes": [
+            120,
+            0,
+            1752,
+            0,
+            3768,
+            18960,
+            29416,
+            0,
+            176,
+            17160
+          ],
+          "constructionShape": [
+            51,
+            53,
+            0,
+            454,
+            468,
+            2,
+            0,
+            1
+          ]
+        }
+      ]
+    },
+    {
+      "id": "scripts.config-generated-guards.medium.bad-0",
+      "sourceCharacters": 23531,
+      "samples": [
+        {
+          "allocatedBytes": [
+            271192,
+            637904,
+            131288,
+            42792,
+            200,
+            319994.875,
+            152280,
+            0,
+            720890
+          ],
+          "constructionBytes": [
+            5976,
+            0,
+            49520,
+            2720,
+            4168,
+            95712,
+            21373.5,
+            0,
+            23864,
+            338336
+          ],
+          "constructionShape": [
+            2,
+            485,
+            97,
+            3889,
+            5820,
+            96,
+            0,
+            0
+          ]
+        },
+        {
+          "allocatedBytes": [
+            271192,
+            637904,
+            131288,
+            42792,
+            200,
+            318208,
+            150473.75,
+            0,
+            720871
+          ],
+          "constructionBytes": [
+            5976,
+            0,
+            49520,
+            2720,
+            4168,
+            95712,
+            21373.5,
+            0,
+            23864,
+            338336
+          ],
+          "constructionShape": [
+            2,
+            485,
+            97,
+            3889,
+            5820,
+            96,
+            0,
+            0
+          ]
+        },
+        {
+          "allocatedBytes": [
+            271192,
+            637904,
+            131288,
+            42792,
+            200,
+            318553.625,
+            140720,
+            0,
+            721148.75
+          ],
+          "constructionBytes": [
+            5976,
+            0,
+            49520,
+            2720,
+            4168,
+            95712,
+            21642.875,
+            0,
+            23864,
+            338336
+          ],
+          "constructionShape": [
+            2,
+            485,
+            97,
+            3889,
+            5820,
+            96,
+            0,
+            0
+          ]
+        },
+        {
+          "allocatedBytes": [
+            271192,
+            637904,
+            131288,
+            42778.25,
+            200,
+            318196.125,
+            140708.75,
+            0,
+            720838.75
+          ],
+          "constructionBytes": [
+            5976,
+            0,
+            49520,
+            2720,
+            4168,
+            95712,
+            21373.5,
+            0,
+            23864,
+            338336
+          ],
+          "constructionShape": [
+            2,
+            485,
+            97,
+            3889,
+            5820,
+            96,
+            0,
+            0
+          ]
+        }
+      ]
+    }
+  ]
+}
