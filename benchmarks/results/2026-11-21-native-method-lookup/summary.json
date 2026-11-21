@@ -1,0 +1,174 @@
+{
+  "complete": true,
+  "elapsedSeconds": 169.18032726319507,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "staging": {
+    "retiredOnly": [
+      {
+        "paths": [
+          "direct-positional-methods-b1294-20261121/reference/Lokad.Lython.dll"
+        ],
+        "links": 1,
+        "bytes": 5710848,
+        "sha256": "4a926136f58038d172b420d1408f6071985f070bceeb0c188409cc182d1af2a1",
+        "archives": {
+          "direct-positional-methods-b1294-20261121/observations.tgz": "6110b856e2e100674aa625b4df8adc505abf905189566177964417bc89a56526"
+        },
+        "optional": false
+      },
+      {
+        "paths": [
+          "packed-eager-annotation-reads-b1290-20261121/confirmation/confirmation.json"
+        ],
+        "links": 1,
+        "bytes": 512913,
+        "sha256": "dc447d3eb67fb425d867875f1332ea52c056aed2b4826a98a0758f1422e2d3d8",
+        "archives": {
+          "packed-eager-annotation-reads-b1290-20261121/observations.tgz": "a8f4f61d60462284bc58f59c7baaa1da9b076792fae8fbb02a7303fe332cf295"
+        },
+        "optional": false
+      },
+      {
+        "paths": [
+          "annotations-in-creation-confirm-b1292-20261121/confirmation/confirmation.json"
+        ],
+        "links": 1,
+        "bytes": 254903,
+        "sha256": "f9709ae5c697844828bc83a2e079886bd953e7183bfdf8ef564f79fdcfebe6d0",
+        "archives": {
+          "annotations-in-creation-confirm-b1292-20261121/observations.tgz": "3221ffc921a4a453faca1934a32ec22042f4522b0983e5394a4526ce982558b4"
+        },
+        "optional": false
+      }
+    ],
+    "alreadyAbsent": [],
+    "freshIdleLease": true,
+    "allHashesPathsOwnershipLinksAndAliasesVerified": true,
+    "canonicalArchiveAndCurrentImagesPreserved": true,
+    "freeBeforeBytes": 176418816,
+    "freeAfterBytes": 176799744
+  },
+  "rows": [
+    {
+      "case": "scripts.policy-method-relay",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 0.8506920051612904,
+        "reference": 1.281529130177515,
+        "candidate-control": 0.8326596777493607,
+        "reference-control": 1.2577626978557506
+      },
+      "cpuMilliseconds": {
+        "candidate": 0.8516129032258065,
+        "reference": 1.2820512820512822,
+        "candidate-control": 0.8312020460358056,
+        "reference-control": 1.2865497076023393
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.39586337288751655,
+        "reference": 0.187239720243652,
+        "candidate-control": 0.7782516090690206,
+        "reference-control": 0.5641635893148691
+      },
+      "elapsedChangePercent": [
+        -35.02608265845488,
+        -33.79834851447819,
+        -33.61898804099332,
+        -32.364665718616024
+      ],
+      "cpuChangePercent": [
+        -35.39293187630784,
+        -35.16624040920717,
+        -33.80645161290323,
+        -33.5741935483871
+      ],
+      "referenceSpreadPercent": 1.8895799948815295,
+      "candidateSpreadPercent": 2.1656299558866943
+    },
+    {
+      "case": "scripts.csv-invoice.method-policy",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 8.275991844155843,
+        "candidate-control": 7.370807275862069,
+        "reference": 8.394723636363635,
+        "candidate": 7.343804045454546
+      },
+      "cpuMilliseconds": {
+        "reference-control": 8.441558441558442,
+        "candidate-control": 7.471264367816092,
+        "reference": 8.571428571428571,
+        "candidate": 7.500000000000001
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 1.0108334454869032,
+        "candidate-control": 0.7154335734397566,
+        "reference": 0.8126860359967772,
+        "candidate": 0.5344859698022941
+      },
+      "elapsedChangePercent": [
+        -12.518811058374734,
+        -12.197141976970405,
+        -11.26375927206319,
+        -10.937475354485482
+      ],
+      "cpuChangePercent": [
+        -12.835249042145591,
+        -12.49999999999999,
+        -11.494252873563227,
+        -11.153846153846148
+      ],
+      "referenceSpreadPercent": 1.4346533254697924,
+      "candidateSpreadPercent": 0.36770085694532995
+    },
+    {
+      "case": "scripts.csv-invoice.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 6.333621921568628,
+        "reference": 6.265957578431372,
+        "candidate-control": 6.379179039603961,
+        "reference-control": 6.397455838383838
+      },
+      "cpuMilliseconds": {
+        "candidate": 6.372549019607843,
+        "reference": 6.372549019607843,
+        "candidate-control": 6.534653465346535,
+        "reference-control": 6.565656565656567
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.5047880666539809,
+        "reference": 0.625255746045589,
+        "candidate-control": 0.4596745939326353,
+        "reference-control": 0.5815595463479403
+      },
+      "elapsedChangePercent": [
+        -0.9978016015712909,
+        -0.28568854934830634,
+        1.079872346569477,
+        1.8069299026587382
+      ],
+      "cpuChangePercent": [
+        -2.941176470588258,
+        -0.4722010662604803,
+        0.0,
+        2.5437928408225563
+      ],
+      "referenceSpreadPercent": 2.0986139517622515,
+      "candidateSpreadPercent": 0.7192901407675034
+    }
+  ],
+  "CPythonRefreshed": false,
+  "collection": "B1295",
+  "sourceRevision": "acb41ad0056beb49649868aab6b24ee07d2b2e59 versus e8a74e81f9b2319385827b9bcd88f997a3cb8134",
+  "verifiedTimedBatches": 84,
+  "coreSHA256": {
+    "reference": "dfbed0b60f887d5ce911fe40e670fef86bbb0cd6206e838a75d2f138878a5ca0",
+    "reference-control": "dfbed0b60f887d5ce911fe40e670fef86bbb0cd6206e838a75d2f138878a5ca0",
+    "candidate": "28b54cfcf2eeddd8ea13d83ff02f163f1fb9ac8bc791f00e41cca37a44602488",
+    "candidate-control": "28b54cfcf2eeddd8ea13d83ff02f163f1fb9ac8bc791f00e41cca37a44602488"
+  },
+  "archiveSHA256": "39d22ff892b818f6aedceb3676330430fb6524fb9b9ae5fa9ab7ba206d3d18e0",
+  "retentionDecision": "Keep the shared-dispatch variant private after B1296 confirms an adverse direct-method control. Continue with native-only lookup."
+}

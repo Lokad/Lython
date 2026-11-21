@@ -1,0 +1,78 @@
+{
+  "complete": true,
+  "elapsedSeconds": 58.784634690731764,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "staging": {
+    "retiredOnly": [
+      {
+        "paths": [
+          "annotations-in-creation-b1291-20261121/confirmation/confirmation.json"
+        ],
+        "bytes": 427445,
+        "links": 1,
+        "optional": false,
+        "sha256": "9b447f438c705807f315c4d43f0bff263fa9d63b1c3602bc384716a6708b0e60",
+        "archives": {
+          "annotations-in-creation-b1291-20261121/observations.tgz": "c8cc5c2cb2e4b4cdef13b92c421d6971089fce0f9adb6d6cc974af9e0c5b81ae"
+        }
+      }
+    ],
+    "alreadyAbsent": [],
+    "freshIdleLease": true,
+    "allHashesPathsOwnershipLinksAndAliasesVerified": true,
+    "canonicalArchiveAndCurrentImagesPreserved": true,
+    "freeBeforeBytes": 176377856,
+    "freeAfterBytes": 176762880
+  },
+  "rows": [
+    {
+      "case": "scripts.fully-supplied-methods",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 0.7237389810055865,
+        "reference": 0.6628656425661914,
+        "candidate-control": 0.7101512494481236,
+        "reference-control": 0.6695261345755694
+      },
+      "cpuMilliseconds": {
+        "candidate": 0.7262569832402235,
+        "reference": 0.6619144602851323,
+        "candidate-control": 0.7064017660044151,
+        "reference-control": 0.6728778467908904
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.6101516848597132,
+        "reference": 0.6735962615420813,
+        "candidate-control": 0.41514420601181284,
+        "reference-control": 0.2962389984649703
+      },
+      "elapsedChangePercent": [
+        6.067741462894127,
+        7.133513014624282,
+        8.097196454382495,
+        9.18336002507727
+      ],
+      "cpuChangePercent": [
+        4.982170147733056,
+        6.721005264051638,
+        7.932960893854735,
+        9.720670391061459
+      ],
+      "referenceSpreadPercent": 1.0048027204416332,
+      "candidateSpreadPercent": 1.9133574105547613
+    }
+  ],
+  "CPythonRefreshed": false,
+  "collection": "B1296",
+  "sourceRevision": "acb41ad0056beb49649868aab6b24ee07d2b2e59 versus e8a74e81f9b2319385827b9bcd88f997a3cb8134",
+  "verifiedTimedBatches": 28,
+  "coreSHA256": {
+    "reference": "dfbed0b60f887d5ce911fe40e670fef86bbb0cd6206e838a75d2f138878a5ca0",
+    "reference-control": "dfbed0b60f887d5ce911fe40e670fef86bbb0cd6206e838a75d2f138878a5ca0",
+    "candidate": "28b54cfcf2eeddd8ea13d83ff02f163f1fb9ac8bc791f00e41cca37a44602488",
+    "candidate-control": "28b54cfcf2eeddd8ea13d83ff02f163f1fb9ac8bc791f00e41cca37a44602488"
+  },
+  "archiveSHA256": "1b0d0f51c8b783dda1af237daba9d24682a1887c45a9d80504da24dc979b98e3",
+  "retentionDecision": "Keep the measured trial private. Direct module-scope methods regress on elapsed and CPU across all pairings with tight controls. Try native-only call-member resolution without changing the framed dispatcher."
+}

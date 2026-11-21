@@ -20,7 +20,7 @@ request. Compilation, startup and final teardown have separate clocks.
 | Complete warm workload | Elapsed change | Wider CPU change | Reference / candidate elapsed spread |
 | --- | ---: | ---: | ---: |
 | Fully supplied calls through an attribute and stored method | −9.45% to −2.28% | −10.37% to −1.68% | 4.34% / 3.43% |
-| CSV invoice with policy methods, 1,024 rows | −0.01% to +0.95% | −1.75% to +0.22% | 0.19% / 0.77% |
+| CSV invoice with policy methods, 4,096 data rows / 127,031 B | −0.01% to +0.95% | −1.75% to +0.22% | 0.19% / 0.77% |
 | Fully supplied free function | −3.18% to +1.52% | −4.12% to +1.00% | 3.26% / 1.55% |
 
 Retain the direct fill. The method script improves in both clocks.

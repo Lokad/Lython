@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1295 native caller instance lookup](results/2026-11-21-native-method-lookup/README.md)
+removes caller-context creation for nested plain methods. The relay
+runs 32.36–35.03% faster and the method invoice 10.94–12.52% faster.
+[B1296](results/2026-11-21-native-method-lookup/confirmation/README.md)
+confirms a 6.07–9.18% elapsed regression for direct methods. Keep the
+shared-dispatch variant private and isolate the native caller change.
+
 [B1294 direct positional receiver binding](results/2026-11-21-direct-positional-methods/README.md)
 removes the general binder from fully supplied methods. The method
 workload runs 2.28–9.45% faster warm with lower CPU. The method invoice
