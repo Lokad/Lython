@@ -1,0 +1,85 @@
+{
+  "roles": [
+    "reference",
+    "candidate",
+    "candidate",
+    "reference"
+  ],
+  "rows": [
+    {
+      "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "allocatedBytes": [
+        66200,
+        66232,
+        66232,
+        66200
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        204.65,
+        154.890625,
+        223.121875,
+        162.5203125
+      ]
+    },
+    {
+      "id": "scripts.dataclass-inherited-configuration.generated",
+      "allocatedBytes": [
+        582512,
+        582920,
+        582920,
+        582512
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        1834.2046875,
+        1407.0203125,
+        1866.090625,
+        1393.2859375
+      ]
+    },
+    {
+      "id": "scripts.config-generated-guards.medium.bad-0",
+      "allocatedBytes": [
+        2169881.25,
+        2172220.125,
+        2169870.5,
+        2175574.75
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        2735.3984375,
+        2280.084375,
+        4181.4078125,
+        2523.7296875
+      ]
+    },
+    {
+      "id": "assertion-tail-with-handler",
+      "allocatedBytes": [
+        25728,
+        26208,
+        26208,
+        25696
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        11.8171875,
+        16.7390625,
+        21.921875,
+        28.68125
+      ]
+    },
+    {
+      "id": "dead-heavy-control",
+      "allocatedBytes": [
+        873408,
+        890032,
+        890032,
+        873408
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        548.984375,
+        459.5421875,
+        677.9828125,
+        691.7046875
+      ]
+    }
+  ]
+}

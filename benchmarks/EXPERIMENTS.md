@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1304 direct checked layout into the executable tape](results/2026-11-21-direct-tape-layout/README.md)
+eliminates an instruction pass when all blocks are reachable. The
+validator reaches its result 0.91–2.68% sooner and uses less CPU.
+Keep this version private. Its dead-block path requires an additional
+tape allocation and relocation pass. Match all 61 inspected code
+objects and preserve the 112 timed batches and failed setup conditions.
+
 [B1303 local scratch for single regex matches](results/2026-11-21-regex-local-one-shot/README.md)
 removes the iteration wrapper from a single match. The small-match script
 uses 2.55–4.69% less process CPU and allocates 3.61% less. Both wide
