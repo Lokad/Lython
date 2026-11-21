@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1302 direct ranges for native CSV records](results/2026-11-21-csv-literal-record-ranges/README.md)
+avoids copying plain fields into a compacted line. The policy invoice
+runs 0.88–3.67% faster warm and the free-function invoice 2.12–3.26%
+faster, both with lower CPU. The fully quoted control takes 0.25–1.17%
+longer. Retain the change with that cost recorded. All 84 batches pass.
+
 [B1301 retained CSV invoice attribution](results/2026-11-21-retained-invoice-attribution/README.md)
 finds 224 samples in CSV input and parsing, 83 in finalization, 31 in
 row adoption and 10 in text line acquisition. Overlapping stacks and

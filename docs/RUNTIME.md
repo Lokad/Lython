@@ -2240,8 +2240,11 @@ admitting the row buffer's field window. Rendering copies bounded byte runs and
 checks cancellation through scanning, admission and copying. Buffered writers
 retain rendered rows and their capacity until the
 execution owner ends; getvalue admits an independent result and omits the final
-terminator. Readers consume borrowed UTF-8 lines directly and stage decoded record
-bytes and field boundaries, without whole-line decoding or field re-encoding.
+terminator. Readers consume borrowed UTF-8 lines directly. When the dialect and
+line allow it, the parser records untransformed fields as ranges in the admitted
+line buffer. It resumes the general parser at the first field that needs
+transformation or more scratch. Both paths avoid whole-line decoding and field
+re-encoding.
 Text-field storage is admitted as a batch before constructing the final row; each
 returned string owns a copy before scratch is reused. Non-numeric quoting converts
 unquoted numbers at the field boundary, preserving error and source-consumption

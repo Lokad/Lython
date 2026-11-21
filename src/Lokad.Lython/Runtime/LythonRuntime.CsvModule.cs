@@ -512,6 +512,7 @@ internal sealed partial class LythonRuntime
         private readonly SearchValues<byte> _fieldStartBytes;
         private readonly SearchValues<byte> _unquotedBytes;
         private readonly SearchValues<byte> _quotedBytes;
+        private readonly int _literalDelimiter;
         private int _fieldStart;
         private long _stringBytes;
         private int _payloadBytes;
@@ -535,11 +536,74 @@ internal sealed partial class LythonRuntime
         internal void FeedOwnedLine(int before)
         {
             var line = _record.WrittenSpan[before..];
+            if (before == 0 && _state == FieldState.RecordStart && _literalDelimiter >= 0 && _fields.Capacity != 0)
+            {
+                DescribeLiteralRecord(line);
+                return;
+            }
             _record.Truncate(before);
             // CSV decoding only removes syntax bytes. Writes stay behind the
             // consumed input, and the already-admitted backing cannot grow.
             // Truncate/FinishRecord retain it until this Feed has completed.
             Feed(line);
+        }
+
+        private void DescribeLiteralRecord(ReadOnlySpan<byte> line)
+        {
+            if (_readyRecord is not null) throw new InvalidOperationException("CSV input advanced before consuming its record.");
+            // Already-funded plain fields keep their original byte offsets.
+            // If the next field needs transformation or more scratch, the
+            // general parser continues at that field without repeating the
+            // prefix. The admitted buffer keeps those earlier ranges live.
+            var start = 0;
+            var offset = 0;
+            for (; offset < line.Length;)
+            {
+                _context.CheckExecution(_span);
+                var width = Math.Min(4096, line.Length - offset);
+                var relative = line.Slice(offset, width).IndexOfAny(_fieldStartBytes);
+                if (relative < 0) { offset += width; continue; }
+                offset += relative;
+
+                var marker = line[offset];
+                if (marker is (byte)'\r' or (byte)'\n')
+                {
+                    if (offset == 0 || TryDescribeLiteralField(start, offset - start))
+                    {
+                        ValidateRecordEnd(line[(offset + 1)..]);
+                        EmitRecord();
+                        return;
+                    }
+                    break;
+                }
+                if (marker == _literalDelimiter)
+                {
+                    if (!TryDescribeLiteralField(start, offset - start)) break;
+                    start = ++offset;
+                }
+                else if (offset == start) break; // A quote can introduce this field.
+                else offset++; // Within a bare field the quote is literal.
+
+            }
+            if (offset == line.Length && TryDescribeLiteralField(start, offset - start))
+                EmitRecord();
+            else
+                ResumeRecordAtField(line, start);
+        }
+
+        private void ResumeRecordAtField(ReadOnlySpan<byte> line, int start)
+        {
+            _record.Truncate(start);
+            _fieldStart = start;
+            _state = FieldState.FieldStart;
+            Feed(line[start..]);
+        }
+
+        private bool TryDescribeLiteralField(int start, int length)
+        {
+            if (_fields.Count == _fields.Capacity) return false;
+            DescribeField(start, length, converted: null);
+            return true;
         }
 
         public CsvRecordParser(CsvOptions options, ExecutionContext context, LythonSourceSpan span)
@@ -553,6 +617,8 @@ internal sealed partial class LythonRuntime
             var delimiter = options.Delimiter.Utf8Span;
             var quote = _activeQuote is { } q ? q.Utf8Span : default;
             var escape = options.EscapeChar is { } e ? e.Utf8Span : default;
+            _literalDelimiter = delimiter.Length == 1 && escape.IsEmpty && !options.SkipInitialSpace &&
+                options.Quoting != CsvQuotingMode.NonNumeric ? delimiter[0] : -1;
             // The dialect is fixed for the reader. These sets find lead bytes;
             // the parser checks the full scalars before interpreting syntax.
             Span<byte> unquoted = stackalloc byte[5];
@@ -754,22 +820,33 @@ internal sealed partial class LythonRuntime
                 converted = ParseOwnedFloatText(payload, _context, _span);
             }
             EnsureListCapacity(_fields);
-            _fields.Add(new CsvField(_fieldStart, length, converted));
+            DescribeField(_fieldStart, length, converted);
+            _fieldStart = _record.Length;
+            _state = FieldState.FieldStart;
+            _fieldWasQuoted = false;
+        }
+
+        private void DescribeField(int start, int length, object? converted)
+        {
+            _fields.Add(new CsvField(start, length, converted));
             if (converted is null && length != 0)
             {
                 _stringBytes = checked(_stringBytes + PyString.EstimateApproximateBytes(length));
                 if (length > PyString.InlineUtf8Capacity)
                     _payloadBytes = checked(_payloadBytes + length);
             }
-            _fieldStart = _record.Length;
-            _state = FieldState.FieldStart;
-            _fieldWasQuoted = false;
         }
 
         private void FinishRecord(ReadOnlySpan<byte> remainder = default)
         {
             if (!(_state == FieldState.RecordStart && _record.Length == _fieldStart && _fields.Count == 0))
                 FinishField();
+            ValidateRecordEnd(remainder);
+            EmitRecord();
+        }
+
+        private void ValidateRecordEnd(ReadOnlySpan<byte> remainder)
+        {
             // CPython accepts trailing CR/LF in an iterator item, but another
             // unquoted record belongs in a separate item. Validate before any
             // row is published, after this field's numeric conversion/errors.
@@ -781,6 +858,10 @@ internal sealed partial class LythonRuntime
                     throw CsvError("new-line character seen in unquoted field - do you need to open the file with newline=''?", _span);
                 offset += count;
             }
+        }
+
+        private void EmitRecord()
+        {
             // Admit all ordinary field payloads once, while working bytes and
             // old capacities remain funded. The private array includes headroom
             // for adoption by csv.reader; each value keeps independent funding.
@@ -834,13 +915,18 @@ internal sealed partial class LythonRuntime
         // starts clean. Completed result ownership is independent of scratch.
         public void ResetRecord()
         {
-            _fields.Clear();
+            ResetFields();
             _record.Truncate(0);
             _fieldStart = 0;
-            _stringBytes = 0;
-            _payloadBytes = 0;
             _state = FieldState.RecordStart;
             _fieldWasQuoted = false;
+        }
+
+        private void ResetFields()
+        {
+            _fields.Clear();
+            _stringBytes = 0;
+            _payloadBytes = 0;
         }
 
         private void ReleaseRowScratch()

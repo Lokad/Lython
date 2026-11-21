@@ -71,6 +71,33 @@ public sealed class CsvNativeInputTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task RetainedNativeRowsSurviveQuotesAndChangesInWidth(bool asynchronous)
+    {
+        await AssertFile(asynchronous,
+            "first,a\nprefix-é,\"two\npieces\",z\none,two,three,four,five,six\nbare\"quote,,last\n\nfinal,", """
+            import csv
+            with open('/input.csv', newline='') as source:
+                reader = csv.reader(source)
+                saved = None
+                for row in reader:
+                    if reader.line_num == 3:
+                        saved = row
+                    print(row, reader.line_num)
+                print(saved)
+            """, """
+            ['first', 'a'] 1
+            ['prefix-é', 'two\npieces', 'z'] 3
+            ['one', 'two', 'three', 'four', 'five', 'six'] 4
+            ['bare"quote', '', 'last'] 5
+            [] 6
+            ['final', ''] 7
+            ['prefix-é', 'two\npieces', 'z']
+            """.ReplaceLineEndings("\n") + "\n");
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task EmbeddedRecordDelimiterRejectsTheWholeItemAndNextPullRecovers(bool asynchronous)
     {
         await AssertFile(asynchronous, "a,b\rc,d\r\nlast,row\n", """
