@@ -2489,6 +2489,8 @@ Each `groupindex` access returns a read-only view for named groups or a fresh
 empty dictionary when the pattern has no named groups.
 The module exports the same `re.Pattern` and `re.Match` type objects returned
 by `type()` for patterns and matches.
+Matches compare and hash by object identity. A retained match remains a valid
+dictionary key after iteration ends or the compiled-pattern cache is purged.
 One UTF-8 parser handles `match.expand` and template substitution, including Python
 numeric/named references, octal escapes and error precedence. Each operation parses
 once into a temporary literal/capture plan, even with no matches or negative count.

@@ -183,6 +183,24 @@ public sealed class RegexMatchIndexTests
             """, string.Concat(Enumerable.Repeat("positional only\n", 5)));
     }
 
+    [Fact]
+    public async Task MatchKeysUseIdentityAndSurviveIteratorExhaustionAndPurge()
+    {
+        await AssertBothModes("""
+            import re
+            cursor = re.finditer(r'😀(?P<letter>é)', 'a😀é')
+            first = next(cursor)
+            original = hash(first)
+            second = re.search(r'😀(?P<letter>é)', 'a😀é')
+            keys = {first: 'first', second: 'second'}
+            print(next(cursor, None))
+            re.purge()
+            print(first == second, first == first, hash(first) == original)
+            print(len(keys), len({first, first, second}), keys[first], keys[second])
+            print(first.span(), first.group('letter'), second.span())
+            """, "None\nFalse True True\n2 2 first second\n(1, 3) é (1, 3)\n");
+    }
+
     private static async Task AssertBothModes(string source, string expected)
     {
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);

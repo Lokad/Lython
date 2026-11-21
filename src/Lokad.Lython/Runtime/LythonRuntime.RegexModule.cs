@@ -22,7 +22,7 @@ internal sealed partial class LythonRuntime
     // Retained matches own immutable ranges over their already-funded subject.
     // Current group access owns any new string, independently of cursor scratch.
     internal sealed class ReMatchObject(RePatternObject pattern, PyString input, int pos, int endPos,
-        ReCaptureRange[] captures, int? lastIndex, MemoryGovernor owner) : IPyContextualDynamicAttributes
+        ReCaptureRange[] captures, int? lastIndex, MemoryGovernor owner) : IPyContextualDynamicAttributes, IPyHashableValue
     {
         private PyTuple? _registers;
 
@@ -36,6 +36,8 @@ internal sealed partial class LythonRuntime
         public int? LastCapturedIndex { get; } = lastIndex;
         public int Start => Captures[0].Start;
         public int End => Captures[0].End;
+
+        public int GetPyHashCode() => System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(this);
 
         public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
             => ReMatchMembers.TryGetMember(this, name, context, span, out value);
