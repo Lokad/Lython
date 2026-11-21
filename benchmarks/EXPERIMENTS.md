@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1259 shared annotation boundaries](results/2026-11-21-shared-annotation-boundaries/README.md)
+removes the annotation prepass and duplicate lexical demand discovery.
+The unannotated validator compiles 1.46–4.17% faster with lower CPU.
+Inherited dataclass compilation spans zero and the other annotated
+lanes have mixed CPU. Local warm allocation and accounted peaks match.
+
 [B1258 the retained callback path against CPython](results/2026-11-21-cpython-callback-text/README.md)
 measures the complete map-based text report at 1.277–1.330× warm,
 0.710–0.713× compilation and 1.229–1.245× compile-to-result.

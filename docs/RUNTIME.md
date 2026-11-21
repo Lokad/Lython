@@ -306,11 +306,11 @@ tuple arrays and retained scalars, so results remain funded after compilation
 cleanup. Literal identity and per-run admission thresholds can change.
 
 Annotation diagnostics retain conservative branch facts, including unreachable
-checks, independently of the main analyzer's refined flow. Shared lexical
-preparation identifies annotation demand and regex imports; ordinary scripts
-need no extra annotation-demand walk or binding setup. Non-regex lexical
-scopes omit binding analysis after their final relevant annotation check. Constant
-regex analysis retains its full conservative bindings across dead/deferred scopes.
+checks, independently of the main analyzer's refined flow. Syntax validation
+records the last relevant check in each lexical scope and detects regex imports.
+Lexical scopes without regex can skip binding analysis after that check.
+Control-flow suites continue to export their full bindings, and constant regex
+analysis retains conservative bindings across dead and deferred scopes.
 
 Compilation tokenizes/parses source, validates the subset, computes scope facts,
 lowers constructs, and builds executable instructions. Abstract statement and
