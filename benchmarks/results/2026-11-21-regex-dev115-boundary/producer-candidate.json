@@ -1,0 +1,690 @@
+{
+  "SchemaVersion": 2,
+  "PackageVersion": "0.5.0-dev.115",
+  "SourceRevision": "050c51480f0a299476d263c014a2a1bb113ba792",
+  "CleanSource": true,
+  "Configuration": "Release",
+  "TargetFrameworks": [
+    "net10.0",
+    "net11.0"
+  ],
+  "StartedAtUtc": "2026-11-20T20:07:45.4904088Z",
+  "CompletedAtUtc": "2026-11-20T20:11:49.8629485Z",
+  "QualificationScope": "Selected Core/adapter candidate; detached package fixtures (Category!=SourceOnly), exact provenance and restore identities. Source/layout/historical-snapshot guards remain in source CI. Other platforms, broader profiles, downstream adoption, performance and publication are separate acceptance steps.",
+  "Published": false,
+  "BuildCount": 3,
+  "PackCountPerPackage": 1,
+  "Packages": [
+    {
+      "Id": "Lokad.Utf8Regex",
+      "Version": "0.5.0-dev.115",
+      "TargetFramework": "net10.0",
+      "RelativePath": "feed/Lokad.Utf8Regex.0.5.0-dev.115.nupkg",
+      "PackageSha256": "D2FDC080FDD72AF3D378EE793FE54DEAB5E5250FB3B7677EEE573848F54A017F",
+      "PackageSha512Base64": "GME9TboRtRNJUKnXqHBCQuntbA984HmR6olYDYXAyHLDvOjVYmQoII5t6QL6oXiQ6RNrv7g45TwseZdvSH7E7Q==",
+      "AssemblySha256": "725E88D74A3D7686962CA9A955FE27C7C7B598F49EAC046472AE42D5058FB067",
+      "SymbolRelativePath": "feed/Lokad.Utf8Regex.0.5.0-dev.115.snupkg",
+      "SymbolSha256": "CAA8C780DE784C8418EAB5D362A5E55ECD1A93F18282E40D789363603940801D",
+      "PdbSha256": "BC5B91A44EF5931711334DBB8D95710DE4F252FA7DE957B25863FBDBCAE2E927"
+    },
+    {
+      "Id": "Lokad.Utf8Regex",
+      "Version": "0.5.0-dev.115",
+      "TargetFramework": "net11.0",
+      "RelativePath": "feed/Lokad.Utf8Regex.0.5.0-dev.115.nupkg",
+      "PackageSha256": "D2FDC080FDD72AF3D378EE793FE54DEAB5E5250FB3B7677EEE573848F54A017F",
+      "PackageSha512Base64": "GME9TboRtRNJUKnXqHBCQuntbA984HmR6olYDYXAyHLDvOjVYmQoII5t6QL6oXiQ6RNrv7g45TwseZdvSH7E7Q==",
+      "AssemblySha256": "E29A5A4A62FB2E586D10D556C604C05865076FBEBAFE93A3575D6396BC48C1C0",
+      "SymbolRelativePath": "feed/Lokad.Utf8Regex.0.5.0-dev.115.snupkg",
+      "SymbolSha256": "CAA8C780DE784C8418EAB5D362A5E55ECD1A93F18282E40D789363603940801D",
+      "PdbSha256": "63D876577F838C02BA97643AE5BFD9A871C657603DD94AAC3820BF8BB801477B"
+    },
+    {
+      "Id": "Lokad.Utf8Regex.PythonRe",
+      "Version": "0.5.0-dev.115",
+      "TargetFramework": "net10.0",
+      "RelativePath": "feed/Lokad.Utf8Regex.PythonRe.0.5.0-dev.115.nupkg",
+      "PackageSha256": "C2D19CD981BB5A9B2C812D81764E454C76DC1C3589210949108A6CD0FF0B1485",
+      "PackageSha512Base64": "9qjT2MjoSBpIkZzyoiCAW42bUhYizzZ0RsBVag+1j+HOgb+Dovq5hQ9qYPomvfxxRBDHHRRiVGIp5Gimk00xwQ==",
+      "AssemblySha256": "4AEF481841C39B09B4FE1DAA6186913A9B872AC925F69ECA1697EA7D14D0BB4A",
+      "SymbolRelativePath": "feed/Lokad.Utf8Regex.PythonRe.0.5.0-dev.115.snupkg",
+      "SymbolSha256": "120A4F60704742A442023A650064DAEB1E927F815F794A23889BE0E16048DEC0",
+      "PdbSha256": "F4A779AE37C693D3B7F270064F8AEE88F31CD45F8D68C517C9B812CDF5F1A5A7"
+    },
+    {
+      "Id": "Lokad.Utf8Regex.PythonRe",
+      "Version": "0.5.0-dev.115",
+      "TargetFramework": "net11.0",
+      "RelativePath": "feed/Lokad.Utf8Regex.PythonRe.0.5.0-dev.115.nupkg",
+      "PackageSha256": "C2D19CD981BB5A9B2C812D81764E454C76DC1C3589210949108A6CD0FF0B1485",
+      "PackageSha512Base64": "9qjT2MjoSBpIkZzyoiCAW42bUhYizzZ0RsBVag+1j+HOgb+Dovq5hQ9qYPomvfxxRBDHHRRiVGIp5Gimk00xwQ==",
+      "AssemblySha256": "C9BA707D94EFD1397FDD4F6D6F02604725B20F84190A433DA4B9A3A214567956",
+      "SymbolRelativePath": "feed/Lokad.Utf8Regex.PythonRe.0.5.0-dev.115.snupkg",
+      "SymbolSha256": "120A4F60704742A442023A650064DAEB1E927F815F794A23889BE0E16048DEC0",
+      "PdbSha256": "267DCB510B8866D1117517EBC3536942B5992D23CF59C7EC4F692301005DA449"
+    },
+    {
+      "Id": "Lokad.Utf8Regex.Pcre2",
+      "Version": "0.5.0-dev.115",
+      "TargetFramework": "net10.0",
+      "RelativePath": "feed/Lokad.Utf8Regex.Pcre2.0.5.0-dev.115.nupkg",
+      "PackageSha256": "54D9C6BF1687B2E5C88279C1F2D7489CE93377F63F962801BAFE0F7073E241C0",
+      "PackageSha512Base64": "mPNczmUhFqF2d84hmZHBD6hnR7db6yKnPaedMAYfItULZLc9F6HXJf+6psnpM/5nJbcU24wSE3Il6UhKk047SQ==",
+      "AssemblySha256": "ACFA883A5E066B8731447BB14339262C51EAFA10C03318DFDB27F100E6C11D51",
+      "SymbolRelativePath": "feed/Lokad.Utf8Regex.Pcre2.0.5.0-dev.115.snupkg",
+      "SymbolSha256": "D23F209322E023A1AFE4F3A4AB283C9F0DA92660D6F7EBAF8C357A88667262E9",
+      "PdbSha256": "8B5D37BD95961CE03E37381F001E16A0D2D402C9E36B3892FBA78E39259EBB42"
+    },
+    {
+      "Id": "Lokad.Utf8Regex.Pcre2",
+      "Version": "0.5.0-dev.115",
+      "TargetFramework": "net11.0",
+      "RelativePath": "feed/Lokad.Utf8Regex.Pcre2.0.5.0-dev.115.nupkg",
+      "PackageSha256": "54D9C6BF1687B2E5C88279C1F2D7489CE93377F63F962801BAFE0F7073E241C0",
+      "PackageSha512Base64": "mPNczmUhFqF2d84hmZHBD6hnR7db6yKnPaedMAYfItULZLc9F6HXJf+6psnpM/5nJbcU24wSE3Il6UhKk047SQ==",
+      "AssemblySha256": "E9F520A7175ABBCD2617BCC232CE5E192E8DB25C3F5AD51C7135E424F24E3046",
+      "SymbolRelativePath": "feed/Lokad.Utf8Regex.Pcre2.0.5.0-dev.115.snupkg",
+      "SymbolSha256": "D23F209322E023A1AFE4F3A4AB283C9F0DA92660D6F7EBAF8C357A88667262E9",
+      "PdbSha256": "827AB1E47CBC7C5E98B55514BCFA2E5B92B120C79E5E5DA3B37995454263B364"
+    },
+    {
+      "Id": "Lokad.Utf8Regex.Posix",
+      "Version": "0.5.0-dev.115",
+      "TargetFramework": "net10.0",
+      "RelativePath": "feed/Lokad.Utf8Regex.Posix.0.5.0-dev.115.nupkg",
+      "PackageSha256": "CF84C9853E81860F2988952DC715D7CAF6B06EAD05487536F1C4D41EB33249E4",
+      "PackageSha512Base64": "NvyC5RKgrvhf39AvBYvVnhuiPEZ37/BCoL5JAzFqk21jeGhlwpVoKfFrTE+mnvF46yNy9ZO8Z4ri7zg1mbKpLA==",
+      "AssemblySha256": "133726F302A246D09F22B1B96DE4EBD0273CAB80E596C861DC1C23F4EA4CAC1E",
+      "SymbolRelativePath": "feed/Lokad.Utf8Regex.Posix.0.5.0-dev.115.snupkg",
+      "SymbolSha256": "3FE96B8D11206A555F270710B2EBAEEBBCD43913B0B312780E78CC4C615BCC36",
+      "PdbSha256": "78E375CEA8D7D74C839FCA521D4868B2BD26E4A6B29F2D9BB4834B6F3E9F73CD"
+    },
+    {
+      "Id": "Lokad.Utf8Regex.Posix",
+      "Version": "0.5.0-dev.115",
+      "TargetFramework": "net11.0",
+      "RelativePath": "feed/Lokad.Utf8Regex.Posix.0.5.0-dev.115.nupkg",
+      "PackageSha256": "CF84C9853E81860F2988952DC715D7CAF6B06EAD05487536F1C4D41EB33249E4",
+      "PackageSha512Base64": "NvyC5RKgrvhf39AvBYvVnhuiPEZ37/BCoL5JAzFqk21jeGhlwpVoKfFrTE+mnvF46yNy9ZO8Z4ri7zg1mbKpLA==",
+      "AssemblySha256": "B2B59DB26FCBC5BA199D3585E86069A8D68139896A8BC2A49508686BC5F558CF",
+      "SymbolRelativePath": "feed/Lokad.Utf8Regex.Posix.0.5.0-dev.115.snupkg",
+      "SymbolSha256": "3FE96B8D11206A555F270710B2EBAEEBBCD43913B0B312780E78CC4C615BCC36",
+      "PdbSha256": "4217B4F94FCC52BDCF6E344C5D4658467B5E181980BD41E43AA7F1CE5DE9AB9E"
+    }
+  ],
+  "Consumers": [
+    {
+      "TestProject": "Lokad.Utf8Regex.Tests",
+      "TargetFramework": "net10.0",
+      "Total": 39633,
+      "Passed": 39633,
+      "Failed": 0,
+      "ProjectReferences": 0,
+      "Packages": [
+        {
+          "Id": "Lokad.Utf8Regex",
+          "Version": "0.5.0-dev.115",
+          "PackageSha256": "D2FDC080FDD72AF3D378EE793FE54DEAB5E5250FB3B7677EEE573848F54A017F",
+          "PackageSha512Base64": "GME9TboRtRNJUKnXqHBCQuntbA984HmR6olYDYXAyHLDvOjVYmQoII5t6QL6oXiQ6RNrv7g45TwseZdvSH7E7Q==",
+          "AssemblySha256": "725E88D74A3D7686962CA9A955FE27C7C7B598F49EAC046472AE42D5058FB067"
+        }
+      ],
+      "LinkedSources": [
+        {
+          "Source": "tests\\Common\\AssemblyDependencyInventory.cs",
+          "RelativePath": "consumers/core/net10.0/linked-source/Common\\AssemblyDependencyInventory.cs",
+          "Sha256": "2CCE360A4466D6D7B4B3039BCF3B6D655FB08F2DD288FE7BF43F6AF6F4B372F5"
+        },
+        {
+          "Source": "tests\\Common\\PublicApiSnapshot.cs",
+          "RelativePath": "consumers/core/net10.0/linked-source/Common\\PublicApiSnapshot.cs",
+          "Sha256": "859B2465349C812C8796DAF24B05D160B749D90B40C5B06F4E78C6F16C0E22A5"
+        },
+        {
+          "Source": "bench\\Lokad.Utf8Regex.Benchmarks\\Utf8MatchInspection.cs",
+          "RelativePath": "consumers/core/net10.0/linked-source/BenchmarkTooling\\Utf8MatchInspection.cs",
+          "Sha256": "3E0D93933472DB055EFD69C5B2CF14C11304034EF1B678CD81BBF3DC384C5845"
+        },
+        {
+          "Source": "bench\\Lokad.Utf8Regex.Benchmarks\\Utf8SearchDiagnosticReports.cs",
+          "RelativePath": "consumers/core/net10.0/linked-source/BenchmarkTooling\\Utf8SearchDiagnosticReports.cs",
+          "Sha256": "675207FD4483773A3F30F376ABAABD3B63A8213A6D15F4E9A71A5B7A7CFED868"
+        }
+      ],
+      "ResultsRelativePath": "consumers/core/net10.0/results/qualified.trx",
+      "ResultsSha256": "D991F91D591146DC74635E8A6135C336A86A7D893A400ED346D70F4BC703ED31",
+      "LockRelativePath": "consumers/core/net10.0/tests/packages.lock.json",
+      "LockSha256": "0529AB184180F42650711ECA5C82099F671BE71F317B0B326F26CF479439AC28"
+    },
+    {
+      "TestProject": "Lokad.Utf8Regex.Tests",
+      "TargetFramework": "net11.0",
+      "Total": 39633,
+      "Passed": 39633,
+      "Failed": 0,
+      "ProjectReferences": 0,
+      "Packages": [
+        {
+          "Id": "Lokad.Utf8Regex",
+          "Version": "0.5.0-dev.115",
+          "PackageSha256": "D2FDC080FDD72AF3D378EE793FE54DEAB5E5250FB3B7677EEE573848F54A017F",
+          "PackageSha512Base64": "GME9TboRtRNJUKnXqHBCQuntbA984HmR6olYDYXAyHLDvOjVYmQoII5t6QL6oXiQ6RNrv7g45TwseZdvSH7E7Q==",
+          "AssemblySha256": "E29A5A4A62FB2E586D10D556C604C05865076FBEBAFE93A3575D6396BC48C1C0"
+        }
+      ],
+      "LinkedSources": [
+        {
+          "Source": "tests\\Common\\AssemblyDependencyInventory.cs",
+          "RelativePath": "consumers/core/net11.0/linked-source/Common\\AssemblyDependencyInventory.cs",
+          "Sha256": "2CCE360A4466D6D7B4B3039BCF3B6D655FB08F2DD288FE7BF43F6AF6F4B372F5"
+        },
+        {
+          "Source": "tests\\Common\\PublicApiSnapshot.cs",
+          "RelativePath": "consumers/core/net11.0/linked-source/Common\\PublicApiSnapshot.cs",
+          "Sha256": "859B2465349C812C8796DAF24B05D160B749D90B40C5B06F4E78C6F16C0E22A5"
+        },
+        {
+          "Source": "bench\\Lokad.Utf8Regex.Benchmarks\\Utf8MatchInspection.cs",
+          "RelativePath": "consumers/core/net11.0/linked-source/BenchmarkTooling\\Utf8MatchInspection.cs",
+          "Sha256": "3E0D93933472DB055EFD69C5B2CF14C11304034EF1B678CD81BBF3DC384C5845"
+        },
+        {
+          "Source": "bench\\Lokad.Utf8Regex.Benchmarks\\Utf8SearchDiagnosticReports.cs",
+          "RelativePath": "consumers/core/net11.0/linked-source/BenchmarkTooling\\Utf8SearchDiagnosticReports.cs",
+          "Sha256": "675207FD4483773A3F30F376ABAABD3B63A8213A6D15F4E9A71A5B7A7CFED868"
+        }
+      ],
+      "ResultsRelativePath": "consumers/core/net11.0/results/qualified.trx",
+      "ResultsSha256": "9812B3A1AACE5AE3B09F9EE25DED433930C6543EBFEF73642399CD0725074B5B",
+      "LockRelativePath": "consumers/core/net11.0/tests/packages.lock.json",
+      "LockSha256": "BFAEA2B2A06738CA148284541E802D14517D8AB709F43D0C227AACEE4CC39328"
+    },
+    {
+      "TestProject": "Lokad.Utf8Regex.DiffTests",
+      "TargetFramework": "net10.0",
+      "Total": 1373,
+      "Passed": 1373,
+      "Failed": 0,
+      "ProjectReferences": 0,
+      "Packages": [
+        {
+          "Id": "Lokad.Utf8Regex",
+          "Version": "0.5.0-dev.115",
+          "PackageSha256": "D2FDC080FDD72AF3D378EE793FE54DEAB5E5250FB3B7677EEE573848F54A017F",
+          "PackageSha512Base64": "GME9TboRtRNJUKnXqHBCQuntbA984HmR6olYDYXAyHLDvOjVYmQoII5t6QL6oXiQ6RNrv7g45TwseZdvSH7E7Q==",
+          "AssemblySha256": "725E88D74A3D7686962CA9A955FE27C7C7B598F49EAC046472AE42D5058FB067"
+        }
+      ],
+      "LinkedSources": [
+        {
+          "Source": "tests\\Lokad.Utf8Regex.Tests\\Utf8MatchSequence.cs",
+          "RelativePath": "consumers/diff/net10.0/linked-source/Common\\Utf8MatchSequence.cs",
+          "Sha256": "E171FAA47F2A33311C0BE0EBF977E925A1B10E2FBBDE38734C183CBCF2B7343D"
+        }
+      ],
+      "ResultsRelativePath": "consumers/diff/net10.0/results/qualified.trx",
+      "ResultsSha256": "9D2790499E5C6B9CE5DA19103BDDAD4807782CF618E141302D44AB70B891C3D3",
+      "LockRelativePath": "consumers/diff/net10.0/tests/packages.lock.json",
+      "LockSha256": "0529AB184180F42650711ECA5C82099F671BE71F317B0B326F26CF479439AC28"
+    },
+    {
+      "TestProject": "Lokad.Utf8Regex.DiffTests",
+      "TargetFramework": "net11.0",
+      "Total": 1373,
+      "Passed": 1373,
+      "Failed": 0,
+      "ProjectReferences": 0,
+      "Packages": [
+        {
+          "Id": "Lokad.Utf8Regex",
+          "Version": "0.5.0-dev.115",
+          "PackageSha256": "D2FDC080FDD72AF3D378EE793FE54DEAB5E5250FB3B7677EEE573848F54A017F",
+          "PackageSha512Base64": "GME9TboRtRNJUKnXqHBCQuntbA984HmR6olYDYXAyHLDvOjVYmQoII5t6QL6oXiQ6RNrv7g45TwseZdvSH7E7Q==",
+          "AssemblySha256": "E29A5A4A62FB2E586D10D556C604C05865076FBEBAFE93A3575D6396BC48C1C0"
+        }
+      ],
+      "LinkedSources": [
+        {
+          "Source": "tests\\Lokad.Utf8Regex.Tests\\Utf8MatchSequence.cs",
+          "RelativePath": "consumers/diff/net11.0/linked-source/Common\\Utf8MatchSequence.cs",
+          "Sha256": "E171FAA47F2A33311C0BE0EBF977E925A1B10E2FBBDE38734C183CBCF2B7343D"
+        }
+      ],
+      "ResultsRelativePath": "consumers/diff/net11.0/results/qualified.trx",
+      "ResultsSha256": "95111B6D949A38D4F1757C8E22C4D7A2B9A003D77663F6631D0F8DD435B9AD83",
+      "LockRelativePath": "consumers/diff/net11.0/tests/packages.lock.json",
+      "LockSha256": "BFAEA2B2A06738CA148284541E802D14517D8AB709F43D0C227AACEE4CC39328"
+    },
+    {
+      "TestProject": "Lokad.Utf8Regex.PythonRe.Tests",
+      "TargetFramework": "net10.0",
+      "Total": 4551,
+      "Passed": 4551,
+      "Failed": 0,
+      "ProjectReferences": 0,
+      "Packages": [
+        {
+          "Id": "Lokad.Utf8Regex",
+          "Version": "0.5.0-dev.115",
+          "PackageSha256": "D2FDC080FDD72AF3D378EE793FE54DEAB5E5250FB3B7677EEE573848F54A017F",
+          "PackageSha512Base64": "GME9TboRtRNJUKnXqHBCQuntbA984HmR6olYDYXAyHLDvOjVYmQoII5t6QL6oXiQ6RNrv7g45TwseZdvSH7E7Q==",
+          "AssemblySha256": "725E88D74A3D7686962CA9A955FE27C7C7B598F49EAC046472AE42D5058FB067"
+        },
+        {
+          "Id": "Lokad.Utf8Regex.PythonRe",
+          "Version": "0.5.0-dev.115",
+          "PackageSha256": "C2D19CD981BB5A9B2C812D81764E454C76DC1C3589210949108A6CD0FF0B1485",
+          "PackageSha512Base64": "9qjT2MjoSBpIkZzyoiCAW42bUhYizzZ0RsBVag+1j+HOgb+Dovq5hQ9qYPomvfxxRBDHHRRiVGIp5Gimk00xwQ==",
+          "AssemblySha256": "4AEF481841C39B09B4FE1DAA6186913A9B872AC925F69ECA1697EA7D14D0BB4A"
+        }
+      ],
+      "LinkedSources": [
+        {
+          "Source": "tests\\Common\\AssemblyDependencyInventory.cs",
+          "RelativePath": "consumers/pythonre/net10.0/linked-source/Common\\AssemblyDependencyInventory.cs",
+          "Sha256": "2CCE360A4466D6D7B4B3039BCF3B6D655FB08F2DD288FE7BF43F6AF6F4B372F5"
+        },
+        {
+          "Source": "tests\\Common\\PublicApiSnapshot.cs",
+          "RelativePath": "consumers/pythonre/net10.0/linked-source/Common\\PublicApiSnapshot.cs",
+          "Sha256": "859B2465349C812C8796DAF24B05D160B749D90B40C5B06F4E78C6F16C0E22A5"
+        },
+        {
+          "Source": "tests\\Common\\ProfileDifferential.cs",
+          "RelativePath": "consumers/pythonre/net10.0/linked-source/Common\\ProfileDifferential.cs",
+          "Sha256": "F7D2F24B4389B77D3961FD4F8CFE60C7C3E82A9BC8A003D3A81E36A768C02AC7"
+        },
+        {
+          "Source": "bench\\Lokad.Utf8Regex.Benchmarks\\PythonReDotNetReference.cs",
+          "RelativePath": "consumers/pythonre/net10.0/linked-source/PythonReDotNetReference.cs",
+          "Sha256": "0B2DEFCFA17D8CD1D92FFCFA96818FC334D05309DC9A1C77D1C392C5A8825E8A"
+        },
+        {
+          "Source": "bench\\Lokad.Utf8Regex.Benchmarks\\PythonReBenchmarkCatalog.cs",
+          "RelativePath": "consumers/pythonre/net10.0/linked-source/PythonReBenchmarkCatalog.cs",
+          "Sha256": "3C48B11DD419E41F80D8F04CD66C08C15597CB3E4B6A7BE5FB53A5DD5D5E0CFE"
+        },
+        {
+          "Source": "bench\\Lokad.Utf8Regex.Benchmarks\\BenchmarkProcessorScope.cs",
+          "RelativePath": "consumers/pythonre/net10.0/linked-source/BenchmarkProcessorScope.cs",
+          "Sha256": "02E83570C97AA076E282F86B6453CD773CC931D59E5EF95A972D64F265E53A30"
+        },
+        {
+          "Source": "bench\\Lokad.Utf8Regex.Benchmarks\\BenchmarkDataFiles.cs",
+          "RelativePath": "consumers/pythonre/net10.0/linked-source/BenchmarkDataFiles.cs",
+          "Sha256": "E196CAB5596D3884867EB672EDAD60C2BDE6872CB1CA70C316410C76553E749C"
+        },
+        {
+          "Source": "bench\\Lokad.Utf8Regex.Benchmarks\\BenchmarkSubjectDefinitions.cs",
+          "RelativePath": "consumers/pythonre/net10.0/linked-source/BenchmarkSubjectDefinitions.cs",
+          "Sha256": "408F74743AD06D087669A9DF07EEE8F323DFC6FC841D45FA3D59FC1BAAB52DF2"
+        },
+        {
+          "Source": "bench\\Lokad.Utf8Regex.Benchmarks\\PythonReQualificationFreshness.cs",
+          "RelativePath": "consumers/pythonre/net10.0/linked-source/PythonReQualificationFreshness.cs",
+          "Sha256": "E278CBCF209895BAA4DE2F4160B8B5338D757FC241149F4387A357E68C97EDF3"
+        }
+      ],
+      "ResultsRelativePath": "consumers/pythonre/net10.0/results/qualified.trx",
+      "ResultsSha256": "67524CE3AB17F5C50D54193FDAEDA18A5570BA44D4D174F4F4E1E53F884248E4",
+      "LockRelativePath": "consumers/pythonre/net10.0/tests/packages.lock.json",
+      "LockSha256": "598D342AAEDC9A7F6742EA51713BA646590B11C2EEEF002263A4F5F45675FC04"
+    },
+    {
+      "TestProject": "Lokad.Utf8Regex.PythonRe.Tests",
+      "TargetFramework": "net11.0",
+      "Total": 4551,
+      "Passed": 4551,
+      "Failed": 0,
+      "ProjectReferences": 0,
+      "Packages": [
+        {
+          "Id": "Lokad.Utf8Regex",
+          "Version": "0.5.0-dev.115",
+          "PackageSha256": "D2FDC080FDD72AF3D378EE793FE54DEAB5E5250FB3B7677EEE573848F54A017F",
+          "PackageSha512Base64": "GME9TboRtRNJUKnXqHBCQuntbA984HmR6olYDYXAyHLDvOjVYmQoII5t6QL6oXiQ6RNrv7g45TwseZdvSH7E7Q==",
+          "AssemblySha256": "E29A5A4A62FB2E586D10D556C604C05865076FBEBAFE93A3575D6396BC48C1C0"
+        },
+        {
+          "Id": "Lokad.Utf8Regex.PythonRe",
+          "Version": "0.5.0-dev.115",
+          "PackageSha256": "C2D19CD981BB5A9B2C812D81764E454C76DC1C3589210949108A6CD0FF0B1485",
+          "PackageSha512Base64": "9qjT2MjoSBpIkZzyoiCAW42bUhYizzZ0RsBVag+1j+HOgb+Dovq5hQ9qYPomvfxxRBDHHRRiVGIp5Gimk00xwQ==",
+          "AssemblySha256": "C9BA707D94EFD1397FDD4F6D6F02604725B20F84190A433DA4B9A3A214567956"
+        }
+      ],
+      "LinkedSources": [
+        {
+          "Source": "tests\\Common\\AssemblyDependencyInventory.cs",
+          "RelativePath": "consumers/pythonre/net11.0/linked-source/Common\\AssemblyDependencyInventory.cs",
+          "Sha256": "2CCE360A4466D6D7B4B3039BCF3B6D655FB08F2DD288FE7BF43F6AF6F4B372F5"
+        },
+        {
+          "Source": "tests\\Common\\PublicApiSnapshot.cs",
+          "RelativePath": "consumers/pythonre/net11.0/linked-source/Common\\PublicApiSnapshot.cs",
+          "Sha256": "859B2465349C812C8796DAF24B05D160B749D90B40C5B06F4E78C6F16C0E22A5"
+        },
+        {
+          "Source": "tests\\Common\\ProfileDifferential.cs",
+          "RelativePath": "consumers/pythonre/net11.0/linked-source/Common\\ProfileDifferential.cs",
+          "Sha256": "F7D2F24B4389B77D3961FD4F8CFE60C7C3E82A9BC8A003D3A81E36A768C02AC7"
+        },
+        {
+          "Source": "bench\\Lokad.Utf8Regex.Benchmarks\\PythonReDotNetReference.cs",
+          "RelativePath": "consumers/pythonre/net11.0/linked-source/PythonReDotNetReference.cs",
+          "Sha256": "0B2DEFCFA17D8CD1D92FFCFA96818FC334D05309DC9A1C77D1C392C5A8825E8A"
+        },
+        {
+          "Source": "bench\\Lokad.Utf8Regex.Benchmarks\\PythonReBenchmarkCatalog.cs",
+          "RelativePath": "consumers/pythonre/net11.0/linked-source/PythonReBenchmarkCatalog.cs",
+          "Sha256": "3C48B11DD419E41F80D8F04CD66C08C15597CB3E4B6A7BE5FB53A5DD5D5E0CFE"
+        },
+        {
+          "Source": "bench\\Lokad.Utf8Regex.Benchmarks\\BenchmarkProcessorScope.cs",
+          "RelativePath": "consumers/pythonre/net11.0/linked-source/BenchmarkProcessorScope.cs",
+          "Sha256": "02E83570C97AA076E282F86B6453CD773CC931D59E5EF95A972D64F265E53A30"
+        },
+        {
+          "Source": "bench\\Lokad.Utf8Regex.Benchmarks\\BenchmarkDataFiles.cs",
+          "RelativePath": "consumers/pythonre/net11.0/linked-source/BenchmarkDataFiles.cs",
+          "Sha256": "E196CAB5596D3884867EB672EDAD60C2BDE6872CB1CA70C316410C76553E749C"
+        },
+        {
+          "Source": "bench\\Lokad.Utf8Regex.Benchmarks\\BenchmarkSubjectDefinitions.cs",
+          "RelativePath": "consumers/pythonre/net11.0/linked-source/BenchmarkSubjectDefinitions.cs",
+          "Sha256": "408F74743AD06D087669A9DF07EEE8F323DFC6FC841D45FA3D59FC1BAAB52DF2"
+        },
+        {
+          "Source": "bench\\Lokad.Utf8Regex.Benchmarks\\PythonReQualificationFreshness.cs",
+          "RelativePath": "consumers/pythonre/net11.0/linked-source/PythonReQualificationFreshness.cs",
+          "Sha256": "E278CBCF209895BAA4DE2F4160B8B5338D757FC241149F4387A357E68C97EDF3"
+        }
+      ],
+      "ResultsRelativePath": "consumers/pythonre/net11.0/results/qualified.trx",
+      "ResultsSha256": "813D0BE2285014CE7C74C823BFBC13308E7065DD0A85CCE03FB4B2FAA95A6393",
+      "LockRelativePath": "consumers/pythonre/net11.0/tests/packages.lock.json",
+      "LockSha256": "023742F6E5B5C7CD30F48D34F9C567C0CCD8E7597736CEF355A2B71D91112D09"
+    },
+    {
+      "TestProject": "Lokad.Utf8Regex.Pcre2.Tests",
+      "TargetFramework": "net10.0",
+      "Total": 6325,
+      "Passed": 6325,
+      "Failed": 0,
+      "ProjectReferences": 0,
+      "Packages": [
+        {
+          "Id": "Lokad.Utf8Regex",
+          "Version": "0.5.0-dev.115",
+          "PackageSha256": "D2FDC080FDD72AF3D378EE793FE54DEAB5E5250FB3B7677EEE573848F54A017F",
+          "PackageSha512Base64": "GME9TboRtRNJUKnXqHBCQuntbA984HmR6olYDYXAyHLDvOjVYmQoII5t6QL6oXiQ6RNrv7g45TwseZdvSH7E7Q==",
+          "AssemblySha256": "725E88D74A3D7686962CA9A955FE27C7C7B598F49EAC046472AE42D5058FB067"
+        },
+        {
+          "Id": "Lokad.Utf8Regex.Pcre2",
+          "Version": "0.5.0-dev.115",
+          "PackageSha256": "54D9C6BF1687B2E5C88279C1F2D7489CE93377F63F962801BAFE0F7073E241C0",
+          "PackageSha512Base64": "mPNczmUhFqF2d84hmZHBD6hnR7db6yKnPaedMAYfItULZLc9F6HXJf+6psnpM/5nJbcU24wSE3Il6UhKk047SQ==",
+          "AssemblySha256": "ACFA883A5E066B8731447BB14339262C51EAFA10C03318DFDB27F100E6C11D51"
+        }
+      ],
+      "LinkedSources": [
+        {
+          "Source": "tests\\Common\\AssemblyDependencyInventory.cs",
+          "RelativePath": "consumers/pcre2/net10.0/linked-source/Common\\AssemblyDependencyInventory.cs",
+          "Sha256": "2CCE360A4466D6D7B4B3039BCF3B6D655FB08F2DD288FE7BF43F6AF6F4B372F5"
+        },
+        {
+          "Source": "tests\\Common\\PublicApiSnapshot.cs",
+          "RelativePath": "consumers/pcre2/net10.0/linked-source/Common\\PublicApiSnapshot.cs",
+          "Sha256": "859B2465349C812C8796DAF24B05D160B749D90B40C5B06F4E78C6F16C0E22A5"
+        },
+        {
+          "Source": "tests\\Common\\ProfileDifferential.cs",
+          "RelativePath": "consumers/pcre2/net10.0/linked-source/Common\\ProfileDifferential.cs",
+          "Sha256": "F7D2F24B4389B77D3961FD4F8CFE60C7C3E82A9BC8A003D3A81E36A768C02AC7"
+        }
+      ],
+      "ResultsRelativePath": "consumers/pcre2/net10.0/results/qualified.trx",
+      "ResultsSha256": "967F6B49CB0D7485CAE38AB64E865DA7127E9F6A7B130CB803BDB83CF7A7EA66",
+      "LockRelativePath": "consumers/pcre2/net10.0/tests/packages.lock.json",
+      "LockSha256": "AC25B93CB3359C68446D8C4FA33585FA6709038144549E8D2F2D3D4F3F96CC91"
+    },
+    {
+      "TestProject": "Lokad.Utf8Regex.Pcre2.Tests",
+      "TargetFramework": "net11.0",
+      "Total": 6325,
+      "Passed": 6325,
+      "Failed": 0,
+      "ProjectReferences": 0,
+      "Packages": [
+        {
+          "Id": "Lokad.Utf8Regex",
+          "Version": "0.5.0-dev.115",
+          "PackageSha256": "D2FDC080FDD72AF3D378EE793FE54DEAB5E5250FB3B7677EEE573848F54A017F",
+          "PackageSha512Base64": "GME9TboRtRNJUKnXqHBCQuntbA984HmR6olYDYXAyHLDvOjVYmQoII5t6QL6oXiQ6RNrv7g45TwseZdvSH7E7Q==",
+          "AssemblySha256": "E29A5A4A62FB2E586D10D556C604C05865076FBEBAFE93A3575D6396BC48C1C0"
+        },
+        {
+          "Id": "Lokad.Utf8Regex.Pcre2",
+          "Version": "0.5.0-dev.115",
+          "PackageSha256": "54D9C6BF1687B2E5C88279C1F2D7489CE93377F63F962801BAFE0F7073E241C0",
+          "PackageSha512Base64": "mPNczmUhFqF2d84hmZHBD6hnR7db6yKnPaedMAYfItULZLc9F6HXJf+6psnpM/5nJbcU24wSE3Il6UhKk047SQ==",
+          "AssemblySha256": "E9F520A7175ABBCD2617BCC232CE5E192E8DB25C3F5AD51C7135E424F24E3046"
+        }
+      ],
+      "LinkedSources": [
+        {
+          "Source": "tests\\Common\\AssemblyDependencyInventory.cs",
+          "RelativePath": "consumers/pcre2/net11.0/linked-source/Common\\AssemblyDependencyInventory.cs",
+          "Sha256": "2CCE360A4466D6D7B4B3039BCF3B6D655FB08F2DD288FE7BF43F6AF6F4B372F5"
+        },
+        {
+          "Source": "tests\\Common\\PublicApiSnapshot.cs",
+          "RelativePath": "consumers/pcre2/net11.0/linked-source/Common\\PublicApiSnapshot.cs",
+          "Sha256": "859B2465349C812C8796DAF24B05D160B749D90B40C5B06F4E78C6F16C0E22A5"
+        },
+        {
+          "Source": "tests\\Common\\ProfileDifferential.cs",
+          "RelativePath": "consumers/pcre2/net11.0/linked-source/Common\\ProfileDifferential.cs",
+          "Sha256": "F7D2F24B4389B77D3961FD4F8CFE60C7C3E82A9BC8A003D3A81E36A768C02AC7"
+        }
+      ],
+      "ResultsRelativePath": "consumers/pcre2/net11.0/results/qualified.trx",
+      "ResultsSha256": "F875DEA37EAF26E027E820771F96C871A3B63AFAD6C51815B86F33899CD97C12",
+      "LockRelativePath": "consumers/pcre2/net11.0/tests/packages.lock.json",
+      "LockSha256": "0DC9A29B347F99380C319A5D81D7CAE03FB94B75F8ED804A089B2CF7A9AE3E07"
+    },
+    {
+      "TestProject": "Lokad.Utf8Regex.Posix.Tests",
+      "TargetFramework": "net10.0",
+      "Total": 601,
+      "Passed": 601,
+      "Failed": 0,
+      "ProjectReferences": 0,
+      "Packages": [
+        {
+          "Id": "Lokad.Utf8Regex",
+          "Version": "0.5.0-dev.115",
+          "PackageSha256": "D2FDC080FDD72AF3D378EE793FE54DEAB5E5250FB3B7677EEE573848F54A017F",
+          "PackageSha512Base64": "GME9TboRtRNJUKnXqHBCQuntbA984HmR6olYDYXAyHLDvOjVYmQoII5t6QL6oXiQ6RNrv7g45TwseZdvSH7E7Q==",
+          "AssemblySha256": "725E88D74A3D7686962CA9A955FE27C7C7B598F49EAC046472AE42D5058FB067"
+        },
+        {
+          "Id": "Lokad.Utf8Regex.Posix",
+          "Version": "0.5.0-dev.115",
+          "PackageSha256": "CF84C9853E81860F2988952DC715D7CAF6B06EAD05487536F1C4D41EB33249E4",
+          "PackageSha512Base64": "NvyC5RKgrvhf39AvBYvVnhuiPEZ37/BCoL5JAzFqk21jeGhlwpVoKfFrTE+mnvF46yNy9ZO8Z4ri7zg1mbKpLA==",
+          "AssemblySha256": "133726F302A246D09F22B1B96DE4EBD0273CAB80E596C861DC1C23F4EA4CAC1E"
+        }
+      ],
+      "LinkedSources": [
+        {
+          "Source": "tests\\Common\\PublicApiSnapshot.cs",
+          "RelativePath": "consumers/posix/net10.0/linked-source/Common\\PublicApiSnapshot.cs",
+          "Sha256": "859B2465349C812C8796DAF24B05D160B749D90B40C5B06F4E78C6F16C0E22A5"
+        },
+        {
+          "Source": "tests\\Common\\ProfileDifferential.cs",
+          "RelativePath": "consumers/posix/net10.0/linked-source/Common\\ProfileDifferential.cs",
+          "Sha256": "F7D2F24B4389B77D3961FD4F8CFE60C7C3E82A9BC8A003D3A81E36A768C02AC7"
+        },
+        {
+          "Source": "tests\\Common\\AssemblyDependencyInventory.cs",
+          "RelativePath": "consumers/posix/net10.0/linked-source/Common\\AssemblyDependencyInventory.cs",
+          "Sha256": "2CCE360A4466D6D7B4B3039BCF3B6D655FB08F2DD288FE7BF43F6AF6F4B372F5"
+        },
+        {
+          "Source": "bench\\Lokad.Utf8Regex.Benchmarks\\PosixBenchmarkCatalog.cs",
+          "RelativePath": "consumers/posix/net10.0/linked-source/SourceOnly\\PosixBenchmarkCatalog.cs",
+          "Sha256": "535D243985DFB8BC5C6E59297A042F99A5DE567AE364DE5E895C1A7AA0A535BB"
+        }
+      ],
+      "ResultsRelativePath": "consumers/posix/net10.0/results/qualified.trx",
+      "ResultsSha256": "9086E03622BB363B23B1D140F866A7765B3F4526C9836C7EA416982630B6590B",
+      "LockRelativePath": "consumers/posix/net10.0/tests/packages.lock.json",
+      "LockSha256": "DE17EDEDEE1B0826A65D94F14BEF51B573A1BF853738D136192F9EA329336917"
+    },
+    {
+      "TestProject": "Lokad.Utf8Regex.Posix.Tests",
+      "TargetFramework": "net11.0",
+      "Total": 601,
+      "Passed": 601,
+      "Failed": 0,
+      "ProjectReferences": 0,
+      "Packages": [
+        {
+          "Id": "Lokad.Utf8Regex",
+          "Version": "0.5.0-dev.115",
+          "PackageSha256": "D2FDC080FDD72AF3D378EE793FE54DEAB5E5250FB3B7677EEE573848F54A017F",
+          "PackageSha512Base64": "GME9TboRtRNJUKnXqHBCQuntbA984HmR6olYDYXAyHLDvOjVYmQoII5t6QL6oXiQ6RNrv7g45TwseZdvSH7E7Q==",
+          "AssemblySha256": "E29A5A4A62FB2E586D10D556C604C05865076FBEBAFE93A3575D6396BC48C1C0"
+        },
+        {
+          "Id": "Lokad.Utf8Regex.Posix",
+          "Version": "0.5.0-dev.115",
+          "PackageSha256": "CF84C9853E81860F2988952DC715D7CAF6B06EAD05487536F1C4D41EB33249E4",
+          "PackageSha512Base64": "NvyC5RKgrvhf39AvBYvVnhuiPEZ37/BCoL5JAzFqk21jeGhlwpVoKfFrTE+mnvF46yNy9ZO8Z4ri7zg1mbKpLA==",
+          "AssemblySha256": "B2B59DB26FCBC5BA199D3585E86069A8D68139896A8BC2A49508686BC5F558CF"
+        }
+      ],
+      "LinkedSources": [
+        {
+          "Source": "tests\\Common\\PublicApiSnapshot.cs",
+          "RelativePath": "consumers/posix/net11.0/linked-source/Common\\PublicApiSnapshot.cs",
+          "Sha256": "859B2465349C812C8796DAF24B05D160B749D90B40C5B06F4E78C6F16C0E22A5"
+        },
+        {
+          "Source": "tests\\Common\\ProfileDifferential.cs",
+          "RelativePath": "consumers/posix/net11.0/linked-source/Common\\ProfileDifferential.cs",
+          "Sha256": "F7D2F24B4389B77D3961FD4F8CFE60C7C3E82A9BC8A003D3A81E36A768C02AC7"
+        },
+        {
+          "Source": "tests\\Common\\AssemblyDependencyInventory.cs",
+          "RelativePath": "consumers/posix/net11.0/linked-source/Common\\AssemblyDependencyInventory.cs",
+          "Sha256": "2CCE360A4466D6D7B4B3039BCF3B6D655FB08F2DD288FE7BF43F6AF6F4B372F5"
+        },
+        {
+          "Source": "bench\\Lokad.Utf8Regex.Benchmarks\\PosixBenchmarkCatalog.cs",
+          "RelativePath": "consumers/posix/net11.0/linked-source/SourceOnly\\PosixBenchmarkCatalog.cs",
+          "Sha256": "535D243985DFB8BC5C6E59297A042F99A5DE567AE364DE5E895C1A7AA0A535BB"
+        }
+      ],
+      "ResultsRelativePath": "consumers/posix/net11.0/results/qualified.trx",
+      "ResultsSha256": "C87B92F5D9909A245D68E7843C2DA5F858B74B6FCFB5A6B96ACB4F64B480D8DA",
+      "LockRelativePath": "consumers/posix/net11.0/tests/packages.lock.json",
+      "LockSha256": "C065EA79CB51A9504A6C9A2B8F987D0CE56C1FC71DB5541D9303B04A33CA89A1"
+    }
+  ],
+  "Steps": [
+    {
+      "Name": "build/Lokad.Utf8Regex.PythonRe",
+      "Succeeded": true,
+      "WallSeconds": 1.9642355
+    },
+    {
+      "Name": "build/Lokad.Utf8Regex.Pcre2",
+      "Succeeded": true,
+      "WallSeconds": 0.8088606
+    },
+    {
+      "Name": "build/Lokad.Utf8Regex.Posix",
+      "Succeeded": true,
+      "WallSeconds": 0.7193824
+    },
+    {
+      "Name": "pack-once/Lokad.Utf8Regex",
+      "Succeeded": true,
+      "WallSeconds": 0.4599767
+    },
+    {
+      "Name": "pack-once/Lokad.Utf8Regex.PythonRe",
+      "Succeeded": true,
+      "WallSeconds": 0.5179154
+    },
+    {
+      "Name": "pack-once/Lokad.Utf8Regex.Pcre2",
+      "Succeeded": true,
+      "WallSeconds": 0.6517379
+    },
+    {
+      "Name": "pack-once/Lokad.Utf8Regex.Posix",
+      "Succeeded": true,
+      "WallSeconds": 0.5986132
+    },
+    {
+      "Name": "consumer/Lokad.Utf8Regex.Tests/net10.0",
+      "Succeeded": true,
+      "WallSeconds": 67.7415908
+    },
+    {
+      "Name": "consumer/Lokad.Utf8Regex.Tests/net11.0",
+      "Succeeded": true,
+      "WallSeconds": 66.3350524
+    },
+    {
+      "Name": "consumer/Lokad.Utf8Regex.DiffTests/net10.0",
+      "Succeeded": true,
+      "WallSeconds": 9.9482068
+    },
+    {
+      "Name": "consumer/Lokad.Utf8Regex.DiffTests/net11.0",
+      "Succeeded": true,
+      "WallSeconds": 6.1412398
+    },
+    {
+      "Name": "consumer/Lokad.Utf8Regex.PythonRe.Tests/net10.0",
+      "Succeeded": true,
+      "WallSeconds": 18.3986519
+    },
+    {
+      "Name": "consumer/Lokad.Utf8Regex.PythonRe.Tests/net11.0",
+      "Succeeded": true,
+      "WallSeconds": 13.7613618
+    },
+    {
+      "Name": "consumer/Lokad.Utf8Regex.Pcre2.Tests/net10.0",
+      "Succeeded": true,
+      "WallSeconds": 15.6454875
+    },
+    {
+      "Name": "consumer/Lokad.Utf8Regex.Pcre2.Tests/net11.0",
+      "Succeeded": true,
+      "WallSeconds": 12.5714308
+    },
+    {
+      "Name": "consumer/Lokad.Utf8Regex.Posix.Tests/net10.0",
+      "Succeeded": true,
+      "WallSeconds": 10.570811
+    },
+    {
+      "Name": "consumer/Lokad.Utf8Regex.Posix.Tests/net11.0",
+      "Succeeded": true,
+      "WallSeconds": 9.1975265
+    }
+  ],
+  "ProvenanceRelativePath": "package-provenance.json",
+  "ProvenanceSha256": "08C8C91EC94FC6B6CA6B8FB739323A38A2EFC9A0BDF945B16C75E91D91A6BE57",
+  "LogSha256": "24BE49D1F998907A88193510498D36A82BF91A4F35FCA8E2DFECE8695241C988",
+  "NuGetConfigSha256": "A13A2E84C1646D9E8D836A7CE769D04DD46A03301EBC45CFC9D4DC08E51077ED"
+}

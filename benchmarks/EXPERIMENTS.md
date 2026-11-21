@@ -6,6 +6,17 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Utf8Regex dev.115](results/2026-11-21-regex-dev115-boundary/README.md)
+verifies the immutable preview on both targets. The producer's Lython
+replay passes Windows and Linux. Direct probes still reproduce the
+reversed anchored window blocker, and the managed-only blocker persists.
+
+[B1254/B1255 typed dictionary enumeration](results/2026-11-20-direct-dict-enumeration/README.md)
+removes the remaining native iterator object in typed consumers.
+The refinement preserves the encoder frame layout and improves sorted
+JSON normalization 1.16–4.09% warm with lower CPU and 6.19% less CLR
+allocation. Both unsorted controls remain inconclusive.
+
 [B1252/B1253 JSON normalization against CPython](results/2026-11-20-cpython-json-normalization/README.md)
 keeps both phase boundaries and controls. Warm Lython takes 1.09–1.16×
 CPython elapsed across the two campaigns. The original compile-to-result

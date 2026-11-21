@@ -1,0 +1,109 @@
+{
+  "source": "050c51480f0a299476d263c014a2a1bb113ba792",
+  "version": "0.5.0-dev.115",
+  "linuxArchiveSha256": "9783794F89B557BB93DA3D67BB14EA2637179D0844D424566DB5625A819CCC09",
+  "host": {
+    "Commit": "98b9f87f7a010080ac83923932994a685a7a99f4",
+    "ArchiveSha256": "fa34d2fb7daa686432d182e0d1e3fde979360a7b20b3b7b463fe6de74d51e40b",
+    "ArchiveFiles": 2449,
+    "ChangedFiles": {
+      "Directory.Packages.props": "39e166ec4a32bc0a65e119f8f7ec80e1fd190f1a4da23d11de5f635274db807d",
+      "src/Lokad.Lython.Utf8Regex/Utf8RegexProvider.cs": "7e49b79cafbf29568766136b2458f7987784b5232b8cdf10f9b557861084eda7"
+    },
+    "ExactPackage": "Lokad.Utf8Regex.PythonRe [0.5.0-dev.115]",
+    "CancellationWitness": {
+      "File": "tests/Lokad.Lython.WorkerFixture/RegexCancellationFixture.cs",
+      "Sha256": "113a63619cd076075ff2b51dcac8388b70aca245eb93f01fcc74bf437fff8b3d"
+    }
+  },
+  "downstream": [
+    {
+      "Platform": "Windows",
+      "Host": "lython",
+      "Framework": "net10.0",
+      "Passed": 405,
+      "TrxSha256": "1274700da38df5ec70d4c277a58988e54a98395d104c81375aa95b187f8ee0e3",
+      "LockSha256": "732a073c44c28018b243394a6ee91dd04043c7238427bfcddcb6ad49272fcead",
+      "Packages": [
+        {
+          "Id": "Lokad.Utf8Regex",
+          "Version": "0.5.0-dev.115",
+          "PackageSha256": "d2fdc080fdd72af3d378ee793fe54deab5e5250fb3b7677eee573848f54a017f",
+          "AssemblySha256": "725e88d74a3d7686962ca9a955fe27c7c7b598f49eac046472ae42d5058fb067"
+        },
+        {
+          "Id": "Lokad.Utf8Regex.PythonRe",
+          "Version": "0.5.0-dev.115",
+          "PackageSha256": "c2d19cd981bb5a9b2c812d81764e454c76dc1c3589210949108a6cd0ff0b1485",
+          "AssemblySha256": "4aef481841c39b09b4fe1daa6186913a9b872ac925f69eca1697ea7d14d0bb4a"
+        }
+      ]
+    },
+    {
+      "Platform": "Windows",
+      "Host": "lython",
+      "Framework": "net11.0",
+      "Passed": 405,
+      "TrxSha256": "8d81040912860218b4eb13fef5546dd8140f1a81321f9f97dfeb00653827f6a4",
+      "LockSha256": "732a073c44c28018b243394a6ee91dd04043c7238427bfcddcb6ad49272fcead",
+      "Packages": [
+        {
+          "Id": "Lokad.Utf8Regex",
+          "Version": "0.5.0-dev.115",
+          "PackageSha256": "d2fdc080fdd72af3d378ee793fe54deab5e5250fb3b7677eee573848f54a017f",
+          "AssemblySha256": "e29a5a4a62fb2e586d10d556c604c05865076fbebafe93a3575d6396bc48c1c0"
+        },
+        {
+          "Id": "Lokad.Utf8Regex.PythonRe",
+          "Version": "0.5.0-dev.115",
+          "PackageSha256": "c2d19cd981bb5a9b2c812d81764e454c76dc1c3589210949108a6cd0ff0b1485",
+          "AssemblySha256": "c9ba707d94efd1397fdd4f6d6f02604725b20f84190a433da4b9a3a214567956"
+        }
+      ]
+    },
+    {
+      "Platform": "Linux",
+      "Host": "lython",
+      "Framework": "net10.0",
+      "Passed": 405,
+      "TrxSha256": "a5afb9b1ec4a16af87e6d00f43b8392402651cdb29900abb010672434312d0ca",
+      "LockSha256": "ac586d02d23534b2001c514321a45c406838467824065116d08cc01a550b42d5",
+      "Packages": [
+        {
+          "Id": "Lokad.Utf8Regex",
+          "Version": "0.5.0-dev.115",
+          "PackageSha256": "d2fdc080fdd72af3d378ee793fe54deab5e5250fb3b7677eee573848f54a017f",
+          "AssemblySha256": "725e88d74a3d7686962ca9a955fe27c7c7b598f49eac046472ae42d5058fb067"
+        },
+        {
+          "Id": "Lokad.Utf8Regex.PythonRe",
+          "Version": "0.5.0-dev.115",
+          "PackageSha256": "c2d19cd981bb5a9b2c812d81764e454c76dc1c3589210949108a6cd0ff0b1485",
+          "AssemblySha256": "4aef481841c39b09b4fe1daa6186913a9b872ac925f69eca1697ea7d14d0bb4a"
+        }
+      ]
+    },
+    {
+      "Platform": "Linux",
+      "Host": "lython",
+      "Framework": "net11.0",
+      "Passed": 405,
+      "TrxSha256": "1ad1a91e7849a3397823a2ec03c7a5b3d4a58273f15badf74ce4776876e82ee9",
+      "LockSha256": "ac586d02d23534b2001c514321a45c406838467824065116d08cc01a550b42d5",
+      "Packages": [
+        {
+          "Id": "Lokad.Utf8Regex",
+          "Version": "0.5.0-dev.115",
+          "PackageSha256": "d2fdc080fdd72af3d378ee793fe54deab5e5250fb3b7677eee573848f54a017f",
+          "AssemblySha256": "e29a5a4a62fb2e586d10d556c604c05865076fbebafe93a3575d6396bc48c1c0"
+        },
+        {
+          "Id": "Lokad.Utf8Regex.PythonRe",
+          "Version": "0.5.0-dev.115",
+          "PackageSha256": "c2d19cd981bb5a9b2c812d81764e454c76dc1c3589210949108a6cd0ff0b1485",
+          "AssemblySha256": "c9ba707d94efd1397fdd4f6d6f02604725b20f84190a433da4b9a3a214567956"
+        }
+      ]
+    }
+  ]
+}
