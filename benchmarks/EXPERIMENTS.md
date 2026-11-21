@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1263/B1264 lexical expression traversals](results/2026-11-21-lexical-expression-traversals/README.md)
+removes two expression revisits in ordinary scripts. Validator
+compile-to-result improves 6.01–7.34% initially and 4.93–5.03% on
+exact-image confirmation with lower CPU. The dataclass control's
+initial CPU increase does not recur.
+
 [B1262 current factory and validator profiles](results/2026-11-21-current-runtime-costs/README.md)
 separates warm work and validator compilation. Factory stacks resolve
 dispatch and admission for live functions, defaults and captures. Warm

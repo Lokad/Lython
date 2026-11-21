@@ -307,7 +307,9 @@ cleanup. Literal identity and per-run admission thresholds can change.
 
 Annotation diagnostics retain conservative branch facts, including unreachable
 checks, independently of the main analyzer's refined flow. Syntax validation
-records the last relevant check in each lexical scope and detects regex imports.
+records the last relevant check in each lexical scope, detects regex imports
+and identifies scripts that need lexical expression walks. Ordinary statement
+bindings and function layouts are prepared even when those walks are skipped.
 Lexical scopes without regex can skip binding analysis after that check.
 Control-flow suites continue to export their full bindings, and constant regex
 analysis retains conservative bindings across dead and deferred scopes.

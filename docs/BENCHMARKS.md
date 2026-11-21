@@ -363,6 +363,7 @@ for the CPython ratios above.
 
 | Change | Established outcome | Limits / evidence |
 | --- | --- | --- |
+| Skip unnecessary lexical expression walks | The validator compiles 5.81–7.11% faster and reaches its result 4.93–5.03% sooner on repeat, with lower CPU. | The initial dataclass CPU increase does not recur. Warm allocation and accounted peaks match. [B1263/B1264](../benchmarks/results/2026-11-21-lexical-expression-traversals/README.md). |
 | Bind expanded builtin calls from the argument span | The JSON Lines export allocates 4.90% less and uses 2.46–4.61% less process CPU. | Elapsed varies from effectively flat to 5.48% faster. The explicit-keyword control is 0.46–1.28% slower on elapsed with mixed CPU. [B1260](../benchmarks/results/2026-11-21-expanded-builtin-span/README.md). |
 | Prepare annotation checks during syntax validation | Removes the separate annotation prepass. The unannotated validator compiles 1.46–4.17% faster with 2.11–3.51% lower process CPU. | Annotated elapsed changes are smaller or mixed, and CPU spans zero. Local compile allocation falls 0.43–1.23%, with matching warm allocations and accounted peaks. [B1259](../benchmarks/results/2026-11-21-shared-annotation-boundaries/README.md). |
 | Start exact positional callbacks in native slots | The map-based text report runs 6.00–10.07% sooner warm on repeat with 5.61–8.89% lower CPU. | The initial text reference spread was 16.19%. Map and ordinary JSON elapsed span zero. [B1256/B1257](../benchmarks/results/2026-11-21-native-callback-entry/README.md). |
