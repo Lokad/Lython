@@ -104,8 +104,13 @@ public sealed class JsonNumberTokenStorageTests
         const long limit = 1024 * 1024;
         var text = floating ? "1.2300e+04" : "-0";
         var (code, context) = Prepare("import json\nreturn json.loads(arm(source)," + (floating ? "parse_float" : "parse_int") + "=capture)", limit);
-        context.Variables["source"] = PyString.FromString(text, context.MemoryGovernor, null);
-        var demand = PyString.EstimateApproximateBytes(text.Length);
+        var source = PyString.FromString(text, context.MemoryGovernor, null);
+        context.Variables["source"] = source;
+        // A wide token can retain the funded source. Its shell and the
+        // shared array header still need admission before invoking the hook.
+        var demand = source.ByteLength > PyString.InlineUtf8Capacity
+            ? PyString.EstimateApproximateBytes(0) + source.Utf8SharingHeaderBytes
+            : PyString.EstimateApproximateBytes(source.ByteLength);
         using var arm = new AdmissionGate(context.MemoryGovernor, limit, demand, deny);
         var capture = new Capture();
         context.Variables["arm"] = arm;

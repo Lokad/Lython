@@ -185,13 +185,6 @@ internal sealed partial class LythonRuntime
             : PyString.FromString(text, context.MemoryGovernor, span);
     }
 
-    internal static PyString CreateUtf8String(ReadOnlyMemory<byte> utf8, ExecutionContext context, LythonSourceSpan? span)
-    {
-        return utf8.Length == 0
-            ? PyString.Empty
-            : PyString.FromUtf8(utf8, context.MemoryGovernor, span);
-    }
-
     // MG25: synchronous execution hops to a dedicated thread with a large
     // stack. Python-level nesting burns kilobytes of CLR stack per level
     // while the depth caps allow hundreds of levels, and even a catchable

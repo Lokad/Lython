@@ -473,7 +473,7 @@ internal static class PyTyping
             context.CheckExecution(span);
             _qualifiedName = name;
             var separator = name.Utf8Span.LastIndexOf((byte)'.');
-            _name = separator < 0 ? name : PyString.FromUtf8(name.Utf8Bytes[(separator + 1)..], context.MemoryGovernor, span);
+            _name = separator < 0 ? name : PyString.CopyFromUtf8(name.Utf8Span[(separator + 1)..], context.MemoryGovernor, span, context);
             Name = _name.AsString();
             _supertype = supertype;
             storage.Commit(bytes);

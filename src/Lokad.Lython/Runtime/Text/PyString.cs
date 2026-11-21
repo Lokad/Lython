@@ -386,36 +386,6 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         }
     }
 
-    public static PyString FromUtf8(ReadOnlyMemory<byte> utf8)
-    {
-        if (utf8.Length == 0)
-        {
-            return Empty;
-        }
-
-        return TryGetOwnedArray(utf8, out var owned)
-            ? new PyString(owned)
-            : CopyFromUtf8(utf8.Span, null, null);
-    }
-
-    public static PyString FromUtf8(ReadOnlyMemory<byte> utf8, MemoryGovernor governor)
-        => FromUtf8(utf8, governor, null);
-
-    public static PyString FromUtf8(ReadOnlyMemory<byte> utf8, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
-    {
-        if (utf8.Length == 0)
-        {
-            return Empty;
-        }
-
-        if (TryGetOwnedArray(utf8, out var owned))
-        {
-            return FromOwnedUtf8(owned, governor, allocationSpan);
-        }
-
-        return CopyFromUtf8(utf8.Span, governor, allocationSpan);
-    }
-
     internal static PyString CopyFromUtf8(ReadOnlySpan<byte> utf8, MemoryGovernor? governor,
         LythonSourceSpan? allocationSpan, LythonRuntime.ExecutionContext? context = null,
         CancellationToken cancellationToken = default)
@@ -1051,21 +1021,6 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         }
 
         return 4;
-    }
-
-    private static bool TryGetOwnedArray(ReadOnlyMemory<byte> utf8, out byte[] owned)
-    {
-        if (MemoryMarshal.TryGetArray(utf8, out ArraySegment<byte> segment) &&
-            segment.Array is not null &&
-            segment.Offset == 0 &&
-            segment.Count == segment.Array.Length)
-        {
-            owned = segment.Array;
-            return true;
-        }
-
-        owned = [];
-        return false;
     }
 
     private static byte[] AllocateGovernedUtf8(int length, MemoryGovernor governor, LythonSourceSpan? allocationSpan)

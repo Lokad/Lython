@@ -263,7 +263,7 @@ internal sealed partial class LythonRuntime
             }
 
             // The template transaction funds this transient lookup key.
-            var key = PyString.FromUtf8(name.ToArray());
+            var key = PyString.CopyFromUtf8(name, null, span, context);
             if (!PyStringOps.IsIdentifier(key, context, span))
                 throw ReplacementError($"bad character in group name {PyRendering.ToReprPyString(key, new(context)).AsString()}",
                     template, nameStart, context, span);

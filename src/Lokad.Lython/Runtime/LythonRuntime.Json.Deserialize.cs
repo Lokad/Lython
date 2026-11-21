@@ -154,7 +154,7 @@ internal sealed partial class LythonRuntime
                 }
                 // Callback text remains execution/result-owned even on failure:
                 // user code may retain it before returning, suspending or raising.
-                argument = CreateUtf8String(input.Utf8Bytes.Slice(position, end - position), context, span);
+                argument = input.CopyOrBorrowUtf8Range(position, end - position, context.MemoryGovernor, span, context);
             }
             else throw CreateJsonExpectingError(input, position, JsonIncompleteExpectation.Value, span, context);
 

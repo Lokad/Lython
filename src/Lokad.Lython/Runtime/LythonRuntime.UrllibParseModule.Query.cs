@@ -243,7 +243,7 @@ internal sealed partial class LythonRuntime
             async ValueTask<object> DecodeFieldAsync(ReadOnlyMemory<byte> field)
             {
                 if (!textQuery) return PercentDecodeBytes(field.Span, context, span, true);
-                var text = PyString.FromUtf8(field, context.MemoryGovernor, span);
+                var text = PyString.CopyFromUtf8(field.Span, context.MemoryGovernor, span, context);
                 return await UnquoteAsync([text, args[3], args[4]], span, context, asynchronous, true).ConfigureAwait(false);
             }
 

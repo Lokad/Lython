@@ -1855,8 +1855,9 @@ Ordinary integers reuse those digits. Short fixed-point tokens use one division
 with exact binary64 operands, preserving rounding and signed zero. Other floating
 tokens use native UTF-8 conversion. Larger integers use admitted magnitude and
 text workspace and keep their retained payload funded. Parse hooks receive the
-original token text with independent funding. Token scanning and surrounding
-operations check cooperative cancellation.
+original numeric token as text. A token can share an immutable source buffer
+already funded by the execution. Other owners get an admitted copy. Token
+scanning and surrounding operations check cooperative cancellation.
 
 Arrays, dictionaries and pairs-hook output share one iterative construction loop.
 Default scalar values pass directly into that loop; only callbacks that suspend
@@ -2223,6 +2224,11 @@ metadata directly through the governor. Private construction refunds that balanc
 on failure; successful strings retain the full backing charge. Copies into a
 different owner keep the source funded independently. Growing, shared and
 asynchronous working storage retains its scoped reservations.
+Strict decoding can share validated immutable guest bytes. A different owner
+funds the full array when the decoded string uses the entire backing. A slice
+across different owners uses an admitted copy.
+Textwrap predicate lines can share an immutable buffer funded by the same
+execution. The line remains funded if the predicate suspends or retains it.
 
 ### Streaming and approximation
 

@@ -52,16 +52,25 @@ internal sealed class PyBytes : IEquatable<PyBytes>, IPyTruthyValue, IPyIterable
 
     // Only a validated scalar UTF-8 reader may call this. Immutable bytes owned
     // by this command keep their entire payload funded; the text window adds
-    // just its shell. Other owners receive an independently admitted copy.
+    // just its shell. A different owner independently funds the full immutable
+    // array when the decoded text uses it in full, or an exact copy of a slice.
     internal PyString CopyOrBorrowUtf8Text(int offset, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         var length = _bytes.Length - offset;
-        if (length <= PyString.InlineUtf8Capacity || !ReferenceEquals(_memoryGovernor, context.MemoryGovernor))
-            return PyString.CopyFromUtf8(_bytes.AsSpan(offset), context.MemoryGovernor, span);
+        var governor = context.MemoryGovernor;
+        var sameOwner = ReferenceEquals(_memoryGovernor, governor);
+        if (!sameOwner && offset == 0 && length != 0)
+        {
+            using var payload = governor.ReserveTemporary(PyString.EstimateApproximateBytes(length), span);
+            context.CheckExecution(span);
+            return PyString.FromOwnedUtf8(_bytes, governor, span, payload);
+        }
+        if (length <= PyString.InlineUtf8Capacity || !sameOwner)
+            return PyString.CopyFromUtf8(_bytes.AsSpan(offset), governor, span, context);
         var bytes = PyString.EstimateApproximateBytes(0);
-        using var storage = context.MemoryGovernor.ReserveTemporary(bytes, span);
+        using var storage = governor.ReserveTemporary(bytes, span);
         context.CheckExecution(span);
-        var result = PyString.CreateReservedUtf8Window(_bytes, offset, length, context.MemoryGovernor);
+        var result = PyString.CreateReservedUtf8Window(_bytes, offset, length, governor);
         // A private I/O transaction can no longer refund this backing after
         // lending it to an escaping text/document window. Retain conservatively
         // in the existing command owner, without an alias count or new owner.

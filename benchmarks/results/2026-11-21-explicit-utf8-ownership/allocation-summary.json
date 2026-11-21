@@ -1,0 +1,29 @@
+[
+  {
+    "case": "scripts.json.numeric-callback-retained",
+    "reference": 822040,
+    "candidate": 785176,
+    "allocationChangePercent": -4.484453311274395,
+    "referenceAccountedPeak": 618485,
+    "candidateAccountedPeak": 604693,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.textwrap.indent-predicate-retained",
+    "reference": 289592,
+    "candidate": 228152,
+    "allocationChangePercent": -21.216055692146195,
+    "referenceAccountedPeak": 324821,
+    "candidateAccountedPeak": 290136,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.json.numeric-default-control",
+    "reference": 373168,
+    "candidate": 373168,
+    "allocationChangePercent": 0.0,
+    "referenceAccountedPeak": 363108,
+    "candidateAccountedPeak": 363108,
+    "allowanceRestored": true
+  }
+]

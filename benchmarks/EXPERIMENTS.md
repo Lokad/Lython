@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1306 explicit UTF-8 ownership](results/2026-11-21-explicit-utf8-ownership/README.md)
+deletes array-shape ownership inference. The retaining JSON number
+hook allocates 4.48% less and textwrap with a retaining predicate
+allocates 21.22% less. Native numeric allocation matches. Funded
+immutable-byte decoding and callback refusal checks pass.
+
 [B1304 direct checked layout into the executable tape](results/2026-11-21-direct-tape-layout/README.md)
 eliminates an instruction pass when all blocks are reachable. The
 validator reaches its result 0.91–2.68% sooner and uses less CPU.

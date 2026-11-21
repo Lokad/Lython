@@ -161,7 +161,7 @@ public sealed class StringWindowOwnershipTests
         {
             var governor = new MemoryGovernor(owner);
             var raw = Encoding.UTF8.GetBytes("x😀é\0βy");
-            var source = PyString.FromUtf8(raw.AsMemory(1, raw.Length - 2), governor, Span);
+            var source = PyString.CopyFromUtf8(raw.AsSpan(1, raw.Length - 2), governor, Span);
             var value = source.SliceByByteRange(0, 6);
             Array.Fill(raw, (byte)'!');
             governor.RefundUnpublishedValue(source);

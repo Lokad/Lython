@@ -128,7 +128,7 @@ internal sealed partial class LythonRuntime
                     PyString? lineText = null;
                     if (predicate is not PyNone)
                     {
-                        lineText = PyString.FromUtf8(text.Utf8Bytes.Slice(start, line.EndByte - start), services.MemoryGovernor, span);
+                        lineText = text.CopyOrBorrowUtf8Range(start, line.EndByte - start, services.MemoryGovernor, span, context);
                         selected = await SelectLineAsync(lineText, predicate, span, context, asynchronous).ConfigureAwait(false);
                     }
                     services.CheckExecution(span);

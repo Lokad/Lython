@@ -19,7 +19,7 @@ public sealed class GovernedByteBuilderPrimitiveTests
         builder.Append("xyz"u8);
 
         Assert.Equal(14, builder.Length);
-        Assert.Equal(PyString.FromString("ab|é|😀|xyz"), PyString.FromUtf8(builder.WrittenMemory));
+        Assert.Equal(PyString.FromString("ab|é|😀|xyz"), PyString.CopyFromUtf8(builder.WrittenSpan, null, null));
         Assert.Equal("ab|é|😀|xyz", builder.ToPyStringAndRelease().AsString());
         Assert.Equal(0, builder.Length);
     }

@@ -289,13 +289,13 @@ internal sealed partial class LythonRuntime
         => (newline != TextNewlineMode.TranslateUniversal || !utf8.Contains((byte)'\r'))
             && System.Text.Unicode.Utf8.IsValid(utf8);
 
-    // Immutable guest bytes can lend already-funded storage to decoded text.
-    // Keep unrelated-owner adoption and transforming/error codecs unchanged.
+    // Use the explicit immutable bytes owner for validated UTF-8. The generic
+    // decoder also accepts host memory and cannot assume ownership.
     internal static PyString DecodeText(PyBytes bytes, TextEncodingMode encoding, ExecutionContext context,
         LythonSourceSpan span, TextErrorMode errors, TextNewlineMode newline)
     {
         if (errors != TextErrorMode.Strict || encoding is not (TextEncodingMode.Utf8 or TextEncodingMode.Utf8Bom)
-            || newline == TextNewlineMode.TranslateUniversal || !ReferenceEquals(bytes.OwnerMemoryGovernor, context.MemoryGovernor))
+            || newline == TextNewlineMode.TranslateUniversal)
             return DecodeText(bytes.Memory, encoding, context, span, errors, newline);
         var offset = encoding == TextEncodingMode.Utf8Bom && bytes.Bytes.StartsWith("\uFEFF"u8) ? 3 : 0;
         return DecodeUtf8Bytes(bytes, offset, context, span, newline);
@@ -438,21 +438,6 @@ internal sealed partial class LythonRuntime
         }
 
         return utf8;
-    }
-
-    private static PyString StripUtf8Bom(PyString text, TextEncodingMode encoding)
-    {
-        var utf8 = text.Utf8Bytes;
-        if (encoding != TextEncodingMode.Utf8Bom ||
-            utf8.Length < 3 ||
-            utf8.Span[0] != 0xEF ||
-            utf8.Span[1] != 0xBB ||
-            utf8.Span[2] != 0xBF)
-        {
-            return text;
-        }
-
-        return PyString.FromUtf8(utf8[3..]);
     }
 
     private static PyBytes EncodeGuestBytes(PyString text, TextEncodingMode encoding, TextErrorMode errors,

@@ -175,11 +175,7 @@ internal sealed partial class LythonRuntime
         private static bool IsAsciiAlpha(byte c) => c is >= (byte)'a' and <= (byte)'z' or >= (byte)'A' and <= (byte)'Z';
         private static bool IsHex(byte c) => c is >= (byte)'0' and <= (byte)'9' or >= (byte)'A' and <= (byte)'F' or >= (byte)'a' and <= (byte)'f';
         private static PyString OwnedText(ReadOnlyMemory<byte> bytes, ExecutionContext context, LythonSourceSpan span)
-        {
-            if (bytes.IsEmpty) return PyString.Empty;
-            var result = PyString.FromUtf8(bytes, context.MemoryGovernor, span);
-            return result;
-        }
+            => PyString.CopyFromUtf8(bytes.Span, context.MemoryGovernor, span, context);
         private static PyBytes AsciiBytes(PyString text, ExecutionContext context, LythonSourceSpan span)
             => EncodeBytes(text, TextEncodingMode.Ascii, TextErrorMode.Strict, context, span);
 

@@ -129,7 +129,7 @@ public sealed class TerminalStringStorageTests
         using var builder = new GovernedByteBuilder(128);
         builder.AppendString("café😀");
         var copy = builder.ToPyString();
-        var prefix = PyString.FromUtf8(builder.WrittenMemory);
+        var prefix = PyString.CopyFromUtf8(builder.WrittenSpan, null, null);
         builder.Clear();
         builder.AppendAscii("overwrite the old content");
         Assert.Equal("café😀", copy.AsString());

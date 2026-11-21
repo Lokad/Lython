@@ -134,7 +134,7 @@ public sealed class StringBuilderAdmissionTests(ITestOutputHelper output)
         using var owner = budget.CreateScope();
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
         byte[] bytes = [(byte)'x', (byte)'a', (byte)'b', (byte)'y'];
-        var value = PyString.FromUtf8(bytes.AsMemory(1, 2), context.MemoryGovernor, Span);
+        var value = PyString.CopyFromUtf8(bytes.AsSpan(1, 2), context.MemoryGovernor, Span);
         bytes[1] = (byte)'z';
         Assert.Equal("ab", value.AsString());
         Assert.Same(context.MemoryGovernor, value.OwnerMemoryGovernor);
