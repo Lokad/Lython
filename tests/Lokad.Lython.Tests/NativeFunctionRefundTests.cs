@@ -51,7 +51,8 @@ public sealed class NativeFunctionRefundTests
             {
                 var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
                 {
-                    CallArgumentValue[] arguments = [CallArgumentValue.Positional(retained), CallArgumentValue.Positional(PyNone.Instance)];
+                    // Keyword binding rents the workspace this test returns.
+                    CallArgumentValue[] arguments = [CallArgumentValue.Positional(retained), CallArgumentValue.Keyword("unused", PyNone.Instance)];
                     if (asynchronous) await function.InvokeAsync(arguments, span, context);
                     else function.Invoke(arguments, span, context);
                 });
