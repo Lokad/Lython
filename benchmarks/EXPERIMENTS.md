@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1290 packed eager annotation reads](results/2026-11-21-packed-eager-annotations/README.md)
+replaces four reads and four staged annotation operands with one
+operation and one owner slot. Eager rules run 13.12–14.79% slower
+warm, with 12.89–13.57% higher CPU. Allocation and accounted peaks
+are effectively flat. All 168 batches pass. Keep the prototype private.
+
 [B1289 structurally shared abstract-state forks](results/2026-11-21-abstract-fork-sharing/README.md)
 eliminates full map copies and reduces dense scalar compile allocation
 55.28%. Representative compilation takes 3.05–8.62% longer and dense
