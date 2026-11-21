@@ -1,0 +1,100 @@
+{
+  "rows": [
+    {
+      "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "processMedianMicroseconds": [
+        152.5525,
+        148.21375,
+        143.35625,
+        145.64249999999998
+      ],
+      "allocatedBytes": [
+        66144,
+        66144,
+        66144,
+        66144
+      ],
+      "elapsedRangePercent": [
+        -6.028252568787806,
+        1.76545307860001
+      ],
+      "referenceSpreadPercent": 4.74449422387011,
+      "candidateSpreadPercent": 3.3884117364956223
+    },
+    {
+      "id": "scripts.dataclass-inherited-configuration.generated",
+      "processMedianMicroseconds": [
+        1452.62875,
+        1342.18875,
+        1250.5237499999998,
+        1302.8200000000002
+      ],
+      "allocatedBytes": [
+        582104,
+        582104,
+        582104,
+        582104
+      ],
+      "elapsedRangePercent": [
+        -13.91305245748442,
+        3.021810380559087
+      ],
+      "referenceSpreadPercent": 11.49880643527117,
+      "candidateSpreadPercent": 7.330128676084735
+    },
+    {
+      "id": "scripts.config-generated-guards.medium.bad-0",
+      "processMedianMicroseconds": [
+        1860.8875,
+        1658.98875,
+        1726.6675,
+        1678.625
+      ],
+      "allocatedBytes": [
+        2169681.5,
+        2169850.5,
+        2169728,
+        2169728
+      ],
+      "elapsedRangePercent": [
+        -10.849594615472459,
+        2.8620150420731294
+      ],
+      "referenceSpreadPercent": 10.857844962394815,
+      "candidateSpreadPercent": 4.079518321025377
+    },
+    {
+      "id": "scripts.embedded-restock-templates",
+      "processMedianMicroseconds": [
+        539.0912500000001,
+        509.09125000000006,
+        530.5125,
+        595.13875
+      ],
+      "allocatedBytes": [
+        1163376,
+        1163376,
+        1163376,
+        1163376
+      ],
+      "elapsedRangePercent": [
+        -14.458393105809343,
+        -1.5913354186327444
+      ],
+      "referenceSpreadPercent": 10.396662902616182,
+      "candidateSpreadPercent": 4.207742718029417
+    }
+  ],
+  "roles": [
+    "reference",
+    "candidate",
+    "candidate",
+    "reference"
+  ],
+  "sameSha256": [
+    "4293f94ee6f192dcf17459750a09e627340f145d7aeaf25bd40ca138c34ffdfe",
+    "1a188cc2da7c9a42fe1e860a01bbf9cca7f4ac7056d22677a62d895aed065dd7",
+    "1a188cc2da7c9a42fe1e860a01bbf9cca7f4ac7056d22677a62d895aed065dd7",
+    "4293f94ee6f192dcf17459750a09e627340f145d7aeaf25bd40ca138c34ffdfe"
+  ]
+}

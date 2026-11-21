@@ -12,14 +12,14 @@ internal static class FormattedStringLexicalScanner
         index--;
     }
 
-    internal static bool TrySkipString(string text, ref int index, int depth = 0, CancellationToken cancellationToken = default)
+    internal static bool TrySkipString(string text, ref int index, int depth = 0, CancellationToken cancellationToken = default, List<int>? newlines = null)
     {
         var prefixStart = index;
         while (prefixStart > 0 && index - prefixStart < 2 && text[prefixStart - 1] is 'f' or 'F' or 'r' or 'R') prefixStart--;
-        var prefix = text[prefixStart..index];
+        var prefix = text.AsSpan(prefixStart, index - prefixStart);
         var formatted = prefix is "f" or "F" or "fr" or "Fr" or "fR" or "FR" or "rf" or "rF" or "Rf" or "RF";
         if (prefixStart > 0 && (char.IsLetterOrDigit(text[prefixStart - 1]) || text[prefixStart - 1] == '_')) formatted = false;
-        if (!TryFindStringEnd(text, index, formatted, out var end, out _, depth, cancellationToken)) return false;
+        if (!TryFindStringEnd(text, index, formatted, out var end, out _, depth, cancellationToken, newlines)) return false;
         index = end - 1;
         return true;
     }
@@ -56,7 +56,8 @@ internal static class FormattedStringLexicalScanner
         return result.ToString();
     }
 
-    internal static bool TryFindStringEnd(string source, int start, bool formatted, out int end, out int width, int depth = 0, CancellationToken cancellationToken = default)
+    internal static bool TryFindStringEnd(string source, int start, bool formatted, out int end, out int width, int depth = 0,
+        CancellationToken cancellationToken = default, List<int>? newlines = null)
     {
         end = start;
         width = 0;
@@ -66,29 +67,37 @@ internal static class FormattedStringLexicalScanner
         for (var i = start + width; i < source.Length; i++)
         {
             PythonTokenization.CheckCancellation(cancellationToken, i);
-            if (source[i] == '\\')
+            var c = source[i];
+            if (c == '\\')
             {
                 if (i + 1 < source.Length && (!formatted || source[i + 1] is not '{' and not '}'))
                 {
-                    i++;
-                    if (source[i] == '\r' && i + 1 < source.Length && source[i + 1] == '\n') i++;
+                    AdvanceEscape(source, ref i, newlines);
                 }
                 continue;
             }
-            if (formatted && source[i] == '{')
+            if (formatted && c == '{')
             {
                 if (i + 1 < source.Length && source[i + 1] == '{') i++;
-                else if (!Parser.TryFindFormattedStringFieldEnd(source, i + 1, out i, depth + 1, quote, width, cancellationToken)) break;
+                else if (!Parser.TryFindFormattedStringFieldEnd(source, i + 1, out i, depth + 1, quote, width, cancellationToken, newlines)) break;
                 continue;
             }
-            if (source[i] == quote && (width == 1 || (i + 2 < source.Length && source[i + 1] == quote && source[i + 2] == quote)))
+            if (c == quote && (width == 1 || (i + 2 < source.Length && source[i + 1] == quote && source[i + 2] == quote)))
             {
                 end = i + width;
                 return true;
             }
-            if (width == 1 && source[i] is '\n' or '\r') break;
+            if (width == 1 && c is '\n' or '\r') break;
+            if (c == '\n') newlines?.Add(i);
         }
         end = start;
         return false;
+    }
+
+    internal static void AdvanceEscape(string source, ref int index, List<int>? newlines)
+    {
+        index++;
+        if (source[index] == '\r' && index + 1 < source.Length && source[index + 1] == '\n') index++;
+        if (source[index] == '\n') newlines?.Add(index);
     }
 }

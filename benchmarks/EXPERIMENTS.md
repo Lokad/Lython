@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1280 literal newline scanning](results/2026-11-21-compiler-literal-newlines/README.md)
+collects source positions during the existing scan for string termination.
+Template compilation uses 1.88–2.50% less process CPU. Validator
+compilation is 0.54–1.78% sooner with mixed CPU. Both compile-to-result
+measurements span zero. All 140 timed batches pass.
+
 [B1279 direct UTF-8 float output](results/2026-11-21-direct-float-output/README.md)
 shares one round-trip float formatter with guest repr and finite JSON.
 The numeric JSON and text exports run 5.81–9.97% and 4.37–7.56% sooner

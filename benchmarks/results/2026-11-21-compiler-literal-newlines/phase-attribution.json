@@ -1,0 +1,599 @@
+﻿{
+  "referenceProductionSource": "86da4a942",
+  "instrumentedBuild": true,
+  "boundary": "Local compile only, new admitted compiled owner with disposal and budget reuse check each invocation. Total tokenization includes the two literal phases. Per-pass timing is diagnostic and includes modified instrumentation and timer overhead.",
+  "imageSHA256": "650411ccb51cd94eb9257761261f8ea1651d13e33d014beec215834b91bf87cd",
+  "catalogSHA256": "571a61720403ea56c35153a6e97e9e3c31d2caa2ebebca2e9fe4bdfca41d45f2",
+  "runtime": "11.0.0",
+  "phases": [
+    "tokenization",
+    "find literal termination",
+    "rescan literal newlines"
+  ],
+  "rows": [
+    {
+      "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "sourceCharacters": 465,
+      "samples": [
+        {
+          "compileMicroseconds": 166.78333333333333,
+          "compileBytes": 66144,
+          "phaseMicroseconds": [
+            13.745833333333332,
+            0,
+            0
+          ],
+          "phaseBytes": [
+            4568,
+            0,
+            0
+          ],
+          "phaseCalls": [
+            1,
+            0,
+            0
+          ],
+          "acceptedLiteralCharacters": 0
+        },
+        {
+          "compileMicroseconds": 201.22916666666666,
+          "compileBytes": 66144,
+          "phaseMicroseconds": [
+            15.722916666666668,
+            0,
+            0
+          ],
+          "phaseBytes": [
+            4568,
+            0,
+            0
+          ],
+          "phaseCalls": [
+            1,
+            0,
+            0
+          ],
+          "acceptedLiteralCharacters": 0
+        },
+        {
+          "compileMicroseconds": 193.88541666666666,
+          "compileBytes": 66144,
+          "phaseMicroseconds": [
+            14.808333333333332,
+            0,
+            0
+          ],
+          "phaseBytes": [
+            4568,
+            0,
+            0
+          ],
+          "phaseCalls": [
+            1,
+            0,
+            0
+          ],
+          "acceptedLiteralCharacters": 0
+        },
+        {
+          "compileMicroseconds": 153.31458333333333,
+          "compileBytes": 66144,
+          "phaseMicroseconds": [
+            13.854166666666666,
+            0,
+            0
+          ],
+          "phaseBytes": [
+            4568,
+            0,
+            0
+          ],
+          "phaseCalls": [
+            1,
+            0,
+            0
+          ],
+          "acceptedLiteralCharacters": 0
+        },
+        {
+          "compileMicroseconds": 164.1875,
+          "compileBytes": 66144,
+          "phaseMicroseconds": [
+            13.639583333333334,
+            0,
+            0
+          ],
+          "phaseBytes": [
+            4568,
+            0,
+            0
+          ],
+          "phaseCalls": [
+            1,
+            0,
+            0
+          ],
+          "acceptedLiteralCharacters": 0
+        },
+        {
+          "compileMicroseconds": 165.58958333333334,
+          "compileBytes": 66144,
+          "phaseMicroseconds": [
+            13.041666666666666,
+            0,
+            0
+          ],
+          "phaseBytes": [
+            4568,
+            0,
+            0
+          ],
+          "phaseCalls": [
+            1,
+            0,
+            0
+          ],
+          "acceptedLiteralCharacters": 0
+        },
+        {
+          "compileMicroseconds": 180.1208333333333,
+          "compileBytes": 66144,
+          "phaseMicroseconds": [
+            13.231250000000001,
+            0,
+            0
+          ],
+          "phaseBytes": [
+            4568,
+            0,
+            0
+          ],
+          "phaseCalls": [
+            1,
+            0,
+            0
+          ],
+          "acceptedLiteralCharacters": 0
+        }
+      ]
+    },
+    {
+      "id": "scripts.dataclass-inherited-configuration.generated",
+      "sourceCharacters": 3978,
+      "samples": [
+        {
+          "compileMicroseconds": 998.5812500000001,
+          "compileBytes": 582104,
+          "phaseMicroseconds": [
+            60.88333333333333,
+            4.670833333333333,
+            2.904166666666667
+          ],
+          "phaseBytes": [
+            68032,
+            0,
+            0
+          ],
+          "phaseCalls": [
+            1,
+            48,
+            48
+          ],
+          "acceptedLiteralCharacters": 470
+        },
+        {
+          "compileMicroseconds": 1480.8270833333333,
+          "compileBytes": 582104,
+          "phaseMicroseconds": [
+            68.71666666666667,
+            5.722916666666666,
+            3.8791666666666664
+          ],
+          "phaseBytes": [
+            68032,
+            0,
+            0
+          ],
+          "phaseCalls": [
+            1,
+            48,
+            48
+          ],
+          "acceptedLiteralCharacters": 470
+        },
+        {
+          "compileMicroseconds": 1280.625,
+          "compileBytes": 582104,
+          "phaseMicroseconds": [
+            67.95208333333333,
+            5.366666666666667,
+            3.7375000000000003
+          ],
+          "phaseBytes": [
+            68032,
+            0,
+            0
+          ],
+          "phaseCalls": [
+            1,
+            48,
+            48
+          ],
+          "acceptedLiteralCharacters": 470
+        },
+        {
+          "compileMicroseconds": 1230.2083333333333,
+          "compileBytes": 582104,
+          "phaseMicroseconds": [
+            66.63541666666667,
+            5.170833333333333,
+            3.5
+          ],
+          "phaseBytes": [
+            68032,
+            0,
+            0
+          ],
+          "phaseCalls": [
+            1,
+            48,
+            48
+          ],
+          "acceptedLiteralCharacters": 470
+        },
+        {
+          "compileMicroseconds": 1198.9104166666666,
+          "compileBytes": 582104,
+          "phaseMicroseconds": [
+            66.91458333333334,
+            5.20625,
+            3.61875
+          ],
+          "phaseBytes": [
+            68032,
+            0,
+            0
+          ],
+          "phaseCalls": [
+            1,
+            48,
+            48
+          ],
+          "acceptedLiteralCharacters": 470
+        },
+        {
+          "compileMicroseconds": 1271.0375000000001,
+          "compileBytes": 582104,
+          "phaseMicroseconds": [
+            64.47083333333333,
+            5.472916666666666,
+            3.3249999999999997
+          ],
+          "phaseBytes": [
+            68032,
+            0,
+            0
+          ],
+          "phaseCalls": [
+            1,
+            48,
+            48
+          ],
+          "acceptedLiteralCharacters": 470
+        },
+        {
+          "compileMicroseconds": 1301.3333333333333,
+          "compileBytes": 582104,
+          "phaseMicroseconds": [
+            64.6125,
+            4.758333333333334,
+            3.247916666666667
+          ],
+          "phaseBytes": [
+            68032,
+            0,
+            0
+          ],
+          "phaseCalls": [
+            1,
+            48,
+            48
+          ],
+          "acceptedLiteralCharacters": 470
+        }
+      ]
+    },
+    {
+      "id": "scripts.config-generated-guards.medium.bad-0",
+      "sourceCharacters": 23531,
+      "samples": [
+        {
+          "compileMicroseconds": 6537.258333333334,
+          "compileBytes": 2243378.3333333335,
+          "phaseMicroseconds": [
+            552.4812499999999,
+            21.77916666666667,
+            13.325000000000001
+          ],
+          "phaseBytes": [
+            270968,
+            0,
+            0
+          ],
+          "phaseCalls": [
+            1,
+            385,
+            385
+          ],
+          "acceptedLiteralCharacters": 3813
+        },
+        {
+          "compileMicroseconds": 5057.547916666666,
+          "compileBytes": 2195980.5,
+          "phaseMicroseconds": [
+            380.5729166666667,
+            10.387500000000001,
+            7.7375
+          ],
+          "phaseBytes": [
+            270968,
+            0,
+            0
+          ],
+          "phaseCalls": [
+            1,
+            385,
+            385
+          ],
+          "acceptedLiteralCharacters": 3813
+        },
+        {
+          "compileMicroseconds": 3880.0333333333333,
+          "compileBytes": 2185264,
+          "phaseMicroseconds": [
+            283.26458333333335,
+            9.572916666666666,
+            7.414583333333333
+          ],
+          "phaseBytes": [
+            270968,
+            0,
+            0
+          ],
+          "phaseCalls": [
+            1,
+            385,
+            385
+          ],
+          "acceptedLiteralCharacters": 3813
+        },
+        {
+          "compileMicroseconds": 2304.0437500000003,
+          "compileBytes": 2182582.5,
+          "phaseMicroseconds": [
+            149.4625,
+            8.791666666666666,
+            6.954166666666667
+          ],
+          "phaseBytes": [
+            270968,
+            0,
+            0
+          ],
+          "phaseCalls": [
+            1,
+            385,
+            385
+          ],
+          "acceptedLiteralCharacters": 3813
+        },
+        {
+          "compileMicroseconds": 2031.7895833333332,
+          "compileBytes": 2172216.1666666665,
+          "phaseMicroseconds": [
+            183.88541666666666,
+            8.35,
+            7.05
+          ],
+          "phaseBytes": [
+            270968,
+            0,
+            0
+          ],
+          "phaseCalls": [
+            1,
+            385,
+            385
+          ],
+          "acceptedLiteralCharacters": 3813
+        },
+        {
+          "compileMicroseconds": 1779.9125000000001,
+          "compileBytes": 2170064.5,
+          "phaseMicroseconds": [
+            158.19583333333333,
+            8.387500000000001,
+            6.65625
+          ],
+          "phaseBytes": [
+            270968,
+            0,
+            0
+          ],
+          "phaseCalls": [
+            1,
+            385,
+            385
+          ],
+          "acceptedLiteralCharacters": 3813
+        },
+        {
+          "compileMicroseconds": 2139.108333333333,
+          "compileBytes": 2169832,
+          "phaseMicroseconds": [
+            147.93125,
+            8.779166666666667,
+            7.077083333333333
+          ],
+          "phaseBytes": [
+            270968,
+            0,
+            0
+          ],
+          "phaseCalls": [
+            1,
+            385,
+            385
+          ],
+          "acceptedLiteralCharacters": 3813
+        }
+      ]
+    },
+    {
+      "id": "scripts.embedded-restock-templates",
+      "sourceCharacters": 29565,
+      "samples": [
+        {
+          "compileMicroseconds": 891.88125,
+          "compileBytes": 1163504,
+          "phaseMicroseconds": [
+            88.61666666666667,
+            32.72291666666667,
+            17.1875
+          ],
+          "phaseBytes": [
+            104352,
+            0,
+            6192
+          ],
+          "phaseCalls": [
+            145,
+            97,
+            97
+          ],
+          "acceptedLiteralCharacters": 27607
+        },
+        {
+          "compileMicroseconds": 1045.3270833333333,
+          "compileBytes": 1163504,
+          "phaseMicroseconds": [
+            95.09375,
+            35.677083333333336,
+            18.866666666666667
+          ],
+          "phaseBytes": [
+            104352,
+            0,
+            6192
+          ],
+          "phaseCalls": [
+            145,
+            97,
+            97
+          ],
+          "acceptedLiteralCharacters": 27607
+        },
+        {
+          "compileMicroseconds": 1142.9520833333333,
+          "compileBytes": 1163504,
+          "phaseMicroseconds": [
+            113.55208333333333,
+            41.21666666666667,
+            21.53125
+          ],
+          "phaseBytes": [
+            104352,
+            0,
+            6192
+          ],
+          "phaseCalls": [
+            145,
+            97,
+            97
+          ],
+          "acceptedLiteralCharacters": 27607
+        },
+        {
+          "compileMicroseconds": 1113.1104166666667,
+          "compileBytes": 1163504,
+          "phaseMicroseconds": [
+            122.42708333333333,
+            40.11875,
+            22.052083333333332
+          ],
+          "phaseBytes": [
+            104352,
+            0,
+            6192
+          ],
+          "phaseCalls": [
+            145,
+            97,
+            97
+          ],
+          "acceptedLiteralCharacters": 27607
+        },
+        {
+          "compileMicroseconds": 853.0708333333333,
+          "compileBytes": 1163504,
+          "phaseMicroseconds": [
+            85.39583333333333,
+            30.77916666666667,
+            16.943749999999998
+          ],
+          "phaseBytes": [
+            104352,
+            0,
+            6192
+          ],
+          "phaseCalls": [
+            145,
+            97,
+            97
+          ],
+          "acceptedLiteralCharacters": 27607
+        },
+        {
+          "compileMicroseconds": 972.3333333333334,
+          "compileBytes": 1163504,
+          "phaseMicroseconds": [
+            103.16875,
+            30.572916666666668,
+            18.022916666666667
+          ],
+          "phaseBytes": [
+            104352,
+            0,
+            6192
+          ],
+          "phaseCalls": [
+            145,
+            97,
+            97
+          ],
+          "acceptedLiteralCharacters": 27607
+        },
+        {
+          "compileMicroseconds": 1223.2458333333334,
+          "compileBytes": 1163477.3333333333,
+          "phaseMicroseconds": [
+            114.66875,
+            42.668749999999996,
+            23.472916666666666
+          ],
+          "phaseBytes": [
+            104352,
+            0,
+            6192
+          ],
+          "phaseCalls": [
+            145,
+            97,
+            97
+          ],
+          "acceptedLiteralCharacters": 27607
+        }
+      ]
+    }
+  ]
+}

@@ -201,7 +201,8 @@ internal sealed partial class Parser
         return true;
     }
 
-    internal static bool TryFindFormattedStringFieldEnd(string content, int start, out int end, int depth = 0, char? outerQuote = null, int outerQuoteWidth = 0, CancellationToken cancellationToken = default)
+    internal static bool TryFindFormattedStringFieldEnd(string content, int start, out int end, int depth = 0, char? outerQuote = null, int outerQuoteWidth = 0,
+        CancellationToken cancellationToken = default, List<int>? newlines = null)
     {
         end = -1;
         if (depth >= MaxNestingDepth) return false;
@@ -214,12 +215,12 @@ internal sealed partial class Parser
         {
             PythonTokenization.CheckCancellation(cancellationToken, i);
             var c = content[i];
+            if (c == '\n') newlines?.Add(i);
             if (format)
             {
                 if (c == '\\' && i + 1 < content.Length && content[i + 1] is not ('{' or '}'))
                 {
-                    i++;
-                    if (content[i] == '\r' && i + 1 < content.Length && content[i + 1] == '\n') i++;
+                    FormattedStringLexicalScanner.AdvanceEscape(content, ref i, newlines);
                     continue;
                 }
                 if (outerQuoteWidth == 1 && c is '\r' or '\n') return false;
@@ -227,7 +228,7 @@ internal sealed partial class Parser
                     i + 2 < content.Length && content[i + 1] == c && content[i + 2] == c)) return false;
                 if (c == '{')
                 {
-                    if (!TryFindFormattedStringFieldEnd(content, i + 1, out i, depth + 1, outerQuote, outerQuoteWidth, cancellationToken)) return false;
+                    if (!TryFindFormattedStringFieldEnd(content, i + 1, out i, depth + 1, outerQuote, outerQuoteWidth, cancellationToken, newlines)) return false;
                 }
                 else if (c == '}')
                 {
@@ -243,7 +244,7 @@ internal sealed partial class Parser
             }
             if (c is '"' or '\'')
             {
-                if (!FormattedStringLexicalScanner.TrySkipString(content, ref i, depth + 1, cancellationToken))
+                if (!FormattedStringLexicalScanner.TrySkipString(content, ref i, depth + 1, cancellationToken, newlines))
                 {
                     return false;
                 }

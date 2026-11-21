@@ -187,19 +187,23 @@ internal static class PythonTokenization
 
         private void ReadString(int start, int quote, bool formatted)
         {
-            if (!FormattedStringLexicalScanner.TryFindStringEnd(source, quote, formatted, out var end, out _, cancellationToken: cancellationToken))
+            var firstLine = _newlines.Count;
+            if (!FormattedStringLexicalScanner.TryFindStringEnd(source, quote, formatted, out var end, out _,
+                cancellationToken: cancellationToken, newlines: _newlines))
             {
+                _newlines.RemoveRange(firstLine, _newlines.Count - firstLine);
                 // Malformed f-strings still expose the ordinary literal token
                 // where possible so the parser retains its Python diagnostics.
-                if (!formatted || !FormattedStringLexicalScanner.TryFindStringEnd(source, quote, false, out end, out _, cancellationToken: cancellationToken))
-                { Add(Token.Error, start, 1); _position = start + 1; return; }
+                if (!formatted || !FormattedStringLexicalScanner.TryFindStringEnd(source, quote, false, out end, out _,
+                    cancellationToken: cancellationToken, newlines: _newlines))
+                {
+                    _newlines.RemoveRange(firstLine, _newlines.Count - firstLine);
+                    Add(Token.Error, start, 1);
+                    _position = start + 1;
+                    return;
+                }
             }
-            Add(Token.String, start, end - start);
-            for (var i = quote; i < end; i++)
-            {
-                CheckCancellation(cancellationToken, i);
-                if (source[i] == '\n') _newlines.Add(i);
-            }
+            _tokens.Add(new(Token.String, start, end - start, firstLine));
             _position = end;
         }
 
