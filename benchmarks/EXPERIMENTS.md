@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1282 standard function attribute storage](results/2026-11-21-callable-standard-overrides/README.md)
+keeps the first allocate-on-write layout private. Factories allocate
+5.28–7.71% less and postponed time to result falls 2.71–2.96%.
+Eager nested factories use 2.10–4.05% more CPU. The wrapper and
+dataclass controls also use more CPU. A direct-admission refinement
+reduces the local wrapper allocation penalty.
+
 [B1281 compound function defaults](results/2026-11-21-compound-function-defaults/README.md)
 keeps the shared tuple backing private. Both nested factory scripts run
 2.12–5.46% sooner warm with lower CPU, and the postponed case reaches
