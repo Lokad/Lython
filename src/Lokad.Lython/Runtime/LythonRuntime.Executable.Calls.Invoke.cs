@@ -116,7 +116,7 @@ internal sealed partial class LythonRuntime
 
             try
             {
-                if (!TryInvokeUnaryBuiltin(call, target, execution.Stack.Values, start, scope,
+                if (!TryInvokeBuiltinFromSlots(call, target, execution.Stack.Values, start, scope,
                     allowProtocol: invocation is not null, out var result)) return false;
                 if (result.Reference is LythonRuntimeException failure)
                 {

@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1335 use operand slots for positional numeric extrema](results/2026-11-22-numeric-extrema-operands/README.md)
+retains 30.64–43.68% lower local allocation and 9.08–15.74% lower warm
+elapsed across three meter reports. Typed ASCII reaches the result
+13.81–16.43% sooner. The ordinary invoice takes 0.16–2.47% longer
+warm elapsed while its CPU comparisons span zero. All 140 batches verify.
+
 [B1334 transport parsed CSV doubles in existing slots](results/2026-11-22-csv-numeric-slot-ingress/README.md)
 lowers typed report allocation by 6.89% and ASCII time to result by
 0.84–1.82%. Warm Unicode is adverse. The unchanged sync invoice has a

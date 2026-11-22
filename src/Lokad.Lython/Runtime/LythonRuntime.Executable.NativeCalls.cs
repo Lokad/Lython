@@ -68,12 +68,15 @@ internal sealed partial class LythonRuntime
 
     // A function call keeps the existing argument slot. Only builtin
     // candidates have an object operand for selecting this operation.
-    private static bool TryInvokeUnaryBuiltin(ExecutableCallSite call, object target, Span<ExecutableSlot> values,
+    private static bool TryInvokeBuiltinFromSlots(ExecutableCallSite call, object target, Span<ExecutableSlot> values,
         int start, ExecutionContext scope, bool allowProtocol, out ExecutableSlot result)
     {
         result = default;
-        if (!call.IsPositionalOnly || call.HasReceiver || call.ArgumentCount != 1 || target is not BuiltinCallable builtin)
-            return false;
+        if (!call.IsPositionalOnly || call.HasReceiver) return false;
+        if (call.ArgumentCount > 1 && target is MinMaxCallable extremum)
+            return extremum.TryInvokeNumericOperands(values.Slice(start + call.ArgumentOffset, call.ArgumentCount),
+                call.CallSpan, scope, out result);
+        if (call.ArgumentCount != 1 || target is not BuiltinCallable builtin) return false;
 
         var value = values[start + call.ArgumentOffset].Object;
         var operation = SelectNativeUnaryOperation(builtin, value, allowProtocol);

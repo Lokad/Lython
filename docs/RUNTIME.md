@@ -1370,6 +1370,11 @@ EOF can publish the final unfinished row before source and scratch cleanup.
 Its independent storage stays funded through cleanup and later guest use.
 Strict EOF fails without publishing an unfinished row.
 
+Ordinary positional `min` and `max` over two or more exact numbers read
+the existing executable operands and transfer the winning value. Rich
+comparisons, iterable calls and keyword options keep the general
+invocation path.
+
 Dictionaries and sets share one native entry authority: stored Python hashes,
 insertion identities and bucket links live with their keys. Dictionaries preserve
 insertion order; sets can move the last payload when deleting. Copies retain the

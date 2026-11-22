@@ -2,6 +2,8 @@
 
 ## 0.11.0 - Unreleased
 
+- Read exact numeric positional `min` and `max` arguments directly from
+  executable operands and return the winning operand.
 - Resolve compiler jump targets directly from emitted blocks, removing two
   temporary arrays and the separate successor scan.
 - Reuse an existing UTF-8 scalar index to resolve single regex match windows.

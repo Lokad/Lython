@@ -16,6 +16,16 @@ public sealed class MinMaxProtocolCompatibilityTests
             ("empty-default-invalid-key", "marker=[]\nprint(min([],key=1,default=marker) is marker,max([],key=1,default=marker) is marker)\nfor consume in [min,max]:\n try:consume([1],key=1)\n except TypeError:print('key')\n try:consume([])\n except ValueError:print('empty')", "True True\nkey\nempty\nkey\nempty\n"),
             ("retained-iterator-after-error", "for consume in [min,max]:\n values=iter([2,'bad',1])\n try:consume(values)\n except TypeError:print(next(values))", "1\n1\n"),
             ("numeric-nan-and-alias-controls", "import math\nnan=float('nan')\nprint(min([2.0,nan,1.0]),math.isnan(max([nan,1.0])))\nfirst=1\nprint(min(range(3)),max(range(3)),min([first,True]) is first,max(first,True) is first)\nwide=1<<256\nprint(min([float('inf'),wide]) is wide,math.isinf(max(wide,float('inf'))))", "1.0 True\n0 2 True True\nTrue True\n"),
+            ("positional-numeric-ties", """
+                def same(scale):
+                    first = scale + 0.0
+                    second = scale + 0.0
+                    best = max(first, second, float('nan'), -0.0)
+                    return best is first, best is second
+                wide = 1 << 256
+                nan = float('nan')
+                print(same(3.0), min(-0.0, 0.0), min(float('inf'), wide) is wide, max(nan, 10.0) is nan)
+                """, "(True, False) -0.0 True True\n"),
             ("rich-result-truthiness", "events=[]\nclass Truth:\n def __init__(self,value):self.value=value\n def __bool__(self):events.append('truth');return self.value\nclass Key:\n def __init__(self,n):self.n=n\n def __lt__(self,other):events.append('lt');return Truth(self.n<other.n)\n def __gt__(self,other):events.append('gt');return Truth(self.n>other.n)\na=Key(2)\nb=Key(1)\nprint(min([a,b]) is b,max(a,b) is a,events)", "True True ['lt', 'truth', 'gt', 'truth']\n"),
             ("wrapped-comparator", "from functools import cmp_to_key\ndef compare(a,b):return (a>b)-(a<b)\nprint(min([2,1],key=cmp_to_key(compare)),max(2,1,key=cmp_to_key(compare)))", "1 2\n"),
         };

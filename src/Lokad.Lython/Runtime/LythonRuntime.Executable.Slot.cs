@@ -1,4 +1,5 @@
 using System.Numerics;
+using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
@@ -142,6 +143,26 @@ internal sealed partial class LythonRuntime
             if (ReferenceEquals(_value, UnpublishedInteger)) { value = _integer; return true; }
             if (_integer > 0 && _value is PyTuple tuple) return tuple.TryReadInteger((int)(_integer - 1), out value);
             return TryMachineInteger(_value, out value);
+        }
+
+        internal readonly bool TryGetNumber(out PyNumber value)
+        {
+            if (ReferenceEquals(_value, UnpublishedDouble))
+            {
+                value = PyNumber.FromFloat(BitConverter.Int64BitsToDouble(_integer));
+                return true;
+            }
+            if (IsUnpublishedInteger)
+            {
+                value = PyNumber.FromInteger(_integer);
+                return true;
+            }
+            if (_integer > 0 && _value is PyTuple tuple && tuple.TryReadInteger((int)(_integer - 1), out var integer))
+            {
+                value = PyNumber.FromInteger(integer);
+                return true;
+            }
+            return PyNumberOps.TryAsNumber(_value!, out value);
         }
 
         internal readonly long ScalarStorageBytes => ReferenceEquals(_value, UnpublishedInteger)

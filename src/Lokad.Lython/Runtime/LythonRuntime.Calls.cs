@@ -1,5 +1,6 @@
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Calls;
+using Lokad.Lython.Runtime.Numbers;
 using System.Collections.Frozen;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -3367,6 +3368,34 @@ internal sealed partial class LythonRuntime
     private sealed class MinMaxCallable(ExtremumOperation operation) : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue, IPyDynamicAttributes, IPyContextualDynamicAttributes
     {
         public string Name => operation == ExtremumOperation.Minimum ? "min" : "max";
+
+        internal bool TryInvokeNumericOperands(ReadOnlySpan<ExecutableSlot> operands, LythonSourceSpan span,
+            ExecutionContext context, out ExecutableSlot result)
+        {
+            result = default;
+            if (!operands[0].TryGetNumber(out var best)) return false;
+            context.EnterInterpreterFrame(span);
+            try
+            {
+                var bestIndex = 0;
+                for (var index = 1; index < operands.Length; index++)
+                {
+                    context.CheckExecution(span);
+                    // Exact numeric operands cannot run guest code. On a miss
+                    // every operand is still present for ordered rich comparison.
+                    if (!operands[index].TryGetNumber(out var candidate)) return false;
+                    if (PyNumberOps.TryCompare(candidate, best, out var order) &&
+                        (operation == ExtremumOperation.Minimum ? order < 0 : order > 0))
+                    {
+                        best = candidate;
+                        bestIndex = index;
+                    }
+                }
+                result = operands[bestIndex];
+                return true;
+            }
+            finally { context.LeaveInterpreterFrame(); }
+        }
 
         public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
         {

@@ -395,7 +395,7 @@ internal sealed partial class LythonRuntime
                 }
                 else
                 {
-                    if (TryInvokeUnaryBuiltin(call, target, Values, start, _scope, allowProtocol: false, out result))
+                    if (TryInvokeBuiltinFromSlots(call, target, Values, start, _scope, allowProtocol: false, out result))
                     {
                         if (result.Reference is LythonRuntimeException failure)
                         {
