@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1408 scalar binding inside the native entry](results/2026-11-22-scalar-default-binding/README.md)
+makes postponed warm elapsed 0.60–4.61% lower with mixed CPU.
+The observed-defaults control takes 3.40–14.65% longer. The Windows
+x64 JIT still clears the full reference workspace before the shortcut.
+The initial candidate stays private.
+
 [B1407 current factory and text CPU attribution](results/2026-11-22-retained-runtime-profile/README.md)
 profiles the B1406 image. Callable construction and default staging
 account for 97 of 101 sampled warm reservations. Text dictionary and
