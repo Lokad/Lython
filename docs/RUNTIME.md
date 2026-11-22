@@ -2666,7 +2666,7 @@ does not certify backend safety or couple core releases to it.
 
 | Capability | Current adapter behavior |
 | --- | --- |
-| In-flight cancellation | Active tokens reach compile, matching, cursor advances, substitutions and splitting; isolated real-backend interruption tests cover these operations. No background matching/private quota. |
+| In-flight cancellation | Active tokens reach compilation, matching and cursor work, including advances used by substitutions and splitting. Isolated tests interrupt real backend compilation, matching and cursor advance. Cancelled cursor creation returns the caller token after cleanup. |
 | UTF-8/offsets | Matching uses scalars, including supplementary characters. Providers return absolute capture byte ranges; Lython projects scalar offsets from the original subject. |
 | Windows | Original-prefix views preserve anchors/lookbehind and end bounds without a prefix copy. Python `match` with `pos > endpos` needs an unavailable backend capability and fails explicitly; reversed search/fullmatch/iteration are empty. |
 | Capture metadata | Opening-order numbering and last-closed capture selection come from the backend. Global prefix flags are read from the validated original UTF-8, including verbose trivia; scoped flags stay local. Reported flags preserve guest bitwise results independently of dispatched parsing behavior. |
