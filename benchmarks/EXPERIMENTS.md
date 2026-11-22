@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1361 current integer loops, factories and CSV against CPython](results/2026-11-22-machine-arithmetic-cpython/README.md)
+compares exact production `eb227dcac` with CPython 3.13.16. The range
+loop is 1.052–1.061× and the fully supplied helper is 1.675–1.787×.
+Mixed time to result remains uncertain, with an 8.88% Lython worker spread.
+
 [B1360 use direct signed checks in the shared integer kernel](results/2026-11-22-signed-integer-kernel/README.md)
 reduces warm CPU by 1.95–3.36% for the mixed factory and by 0.82–2.70%
 for the supplied helper. The quoted invoice has a 0.15–0.35% elapsed
