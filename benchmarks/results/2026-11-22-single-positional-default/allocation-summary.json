@@ -1,0 +1,47 @@
+[
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories",
+    "reference": 1144272,
+    "candidate": 1029584,
+    "allocationChangePercent": -10.022791783771689,
+    "referenceAccountedPeak": 2968425,
+    "candidateAccountedPeak": 2968425,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+    "reference": 1029744,
+    "candidate": 915056,
+    "allocationChangePercent": -11.137525443216955,
+    "referenceAccountedPeak": 2968481,
+    "candidateAccountedPeak": 2968481,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.factory-observed-defaults",
+    "reference": 1373960,
+    "candidate": 1423112,
+    "allocationChangePercent": 3.577396721884196,
+    "referenceAccountedPeak": 2968817,
+    "candidateAccountedPeak": 2968817,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.ordinary-fully-supplied-helper",
+    "reference": 142808,
+    "candidate": 142808,
+    "allocationChangePercent": 0.0,
+    "referenceAccountedPeak": 1255,
+    "candidateAccountedPeak": 1255,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.csv-invoice.large",
+    "reference": 3672528,
+    "candidate": 3672402,
+    "allocationChangePercent": -0.0034308792199788662,
+    "referenceAccountedPeak": 9432613,
+    "candidateAccountedPeak": 9432613,
+    "allowanceRestored": true
+  }
+]

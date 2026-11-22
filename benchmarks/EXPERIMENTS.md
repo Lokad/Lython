@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1311 single positional default in the callable](results/2026-11-22-single-positional-default/README.md)
+removes eager tuple and slot-array construction in the compiled
+single-default shape. Eager and postponed factory allocation falls
+10.02% and 11.14%. The tuple-length observer allocates 3.58% more
+and uses 3.24–7.60% more CPU. Forcing item identity on both images
+accounts for the extra allocation. Factory CPU and time to result
+span zero. Keep the variant private and preserve all 140 batches.
+
 [B1310 retained factory CPU attribution](results/2026-11-22-retained-factory-attribution/README.md)
 uses the fully qualified `4337b7765` image. Admission is visible in
 both factory profiles, alongside native definition execution and eager
