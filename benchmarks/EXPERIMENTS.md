@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1411 histogram total slots](results/2026-11-22-histogram-total-slots/README.md)
+removes repeated integer boxing between inner-loop passes. The nonlocal
+report allocates 14.71% less. The ordinary histogram allocates 3.63% less
+and takes 2.38–10.26% less warm elapsed. Nonlocal elapsed spans zero
+at both boundaries. Retained at `1884824e8`.
+
 [B1410 deferred short-word publication](results/2026-11-22-deferred-word-binding/README.md)
 preserves both strict scope-snapshot goldens and allocates 25.69% less
 on the nonlocal report with the same admitted peak. Report elapsed and

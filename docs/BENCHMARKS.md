@@ -103,6 +103,7 @@ change. The checkpoint includes the arithmetic and allocation controls.
 
 | Change | Measured effect | Limits |
 | --- | --- | --- |
+| Keep histogram totals in their numeric slots | The nonlocal report allocates 14.71% less at the same admitted peak. The ordinary histogram allocates 3.63% less and takes 2.38–10.26% less warm time. | Nonlocal elapsed spans zero at both boundaries and its warm worker spreads exceed 6%. [B1411](../benchmarks/results/2026-11-22-histogram-total-slots/README.md). |
 | Reuse tokenizer indentation state | Removes the separate leading-source scan. A synthetic 64 KiB first-line literal compiles 13.46–22.39% faster. | Sparse validator compilation takes 0.15–1.37% longer and time to result spans zero. [B1405](../benchmarks/results/2026-11-22-module-leading-indentation/README.md). |
 | Store a singleton default in its tuple | The postponed factory allocates 49,152 fewer bytes at the same admitted peak and runs 2.09–8.63% faster warm. | First-use elapsed and the tuple observer span zero. The quote-heavy control still allows an adverse result. [B1400](../benchmarks/results/2026-11-22-inline-default-tuple/README.md). |
 | Consume prepared histogram words in place | The dense Unicode report runs 22.69–24.16% faster warm while allocations and admitted peak stay effectively flat. | Ordinary histogram, nonlocal warm and first-use elapsed span zero. [B1402](../benchmarks/results/2026-11-22-prepared-histogram-refined/README.md). |
