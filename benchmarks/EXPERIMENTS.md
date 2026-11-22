@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1324 compiler-owned literal positional defaults](results/2026-11-22-compiled-literal-defaults/README.md)
+removes the per-definition tuple and its fill instructions. Both literal
+factories use 9.71–16.82% less warm CPU and allocate 15.51–18.09% less.
+The dynamic factory uses 0.81–5.37% more CPU. Keep the first version
+private and isolate mixed keyword preparation from the dynamic allocator.
+The initial accounting fixtures and all 140 timed batches are preserved.
+
 [B1323 share the asynchronous CSV record loop](results/2026-11-22-csv-direct-slots-shared-pull/README.md)
 repeats the meter CPU and allocation gains. The plain invoice takes
 2.18–5.34% more elapsed through async execution and 0.45–3.29% more
