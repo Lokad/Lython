@@ -33,11 +33,13 @@ public sealed class AsyncExecutableFunctionTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task RefusingDirectKeywordDefaultStopsBeforePublishingTheFunction(bool asynchronous)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task RefusedNativeDefinitionDoesNotPublishTheCallable(bool asynchronous, bool capturesLocal)
     {
-        const string source = """
+        const string keywordDefault = """
             def outer(value):
                 def make():
                     def call(*, item=value): return item
@@ -46,11 +48,19 @@ public sealed class AsyncExecutableFunctionTests
                 return make
             record(outer("live"))
             """;
+        const string localCapture = """
+            def factory(value):
+                def read(): return value
+                record(read)
+                return read
+            record(factory)
+            """;
         var budget = new LythonMemoryBudget(1024 * 1024);
         using (var scope = budget.CreateScope())
         {
             var hook = new AdmissionHookMemoryBudget(scope);
-            var (code, context, capture) = Prepare(source, new LythonRunOptions { MemoryBudget = hook });
+            var (code, context, capture) = Prepare(capturesLocal ? localCapture : keywordDefault,
+                new LythonRunOptions { MemoryBudget = hook });
             try
             {
                 if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
@@ -58,13 +68,15 @@ public sealed class AsyncExecutableFunctionTests
                 var make = Assert.IsType<PyExecutableFunction>(Assert.Single(capture.Functions));
                 var definition = Assert.Single(make.CodeObject.Instructions, instruction =>
                     instruction.OpCode == ExecutableOpCode.ApplyOperation &&
-                    make.CodeObject.Constants[instruction.ConstantIndex] is ExecutableCreateFunction { DirectKeywordDefault: true });
+                    make.CodeObject.Constants[instruction.ConstantIndex] is ExecutableCreateFunction function &&
+                    (capturesLocal ? function.CodeObject.ClosureNames.Count == 1 : function.DirectKeywordDefault));
                 var baseline = budget.ReservedBytes;
                 hook.RefuseGrowth = _ => true;
+                CallArgumentValue[] arguments = capturesLocal ? [CallArgumentValue.Positional(BigInteger.One)] : [];
                 var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
                 {
-                    if (asynchronous) await make.InvokeAsync([], Span, context);
-                    else make.Invoke([], Span, context);
+                    if (asynchronous) await make.InvokeAsync(arguments, Span, context);
+                    else make.Invoke(arguments, Span, context);
                 });
                 Assert.Same(definition.Span, failure.Span);
                 Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);

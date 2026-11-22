@@ -1,0 +1,47 @@
+[
+  {
+    "case": "scripts.ordinary-fully-supplied-helper",
+    "reference": 142680,
+    "candidate": 142680,
+    "allocationChangePercent": 0.0,
+    "referenceAccountedPeak": 1255,
+    "candidateAccountedPeak": 1255,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories",
+    "reference": 1144144,
+    "candidate": 1144144,
+    "allocationChangePercent": 0.0,
+    "referenceAccountedPeak": 2968425,
+    "candidateAccountedPeak": 2968425,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.annotated-rule-closures.literal-positional-dynamic-keyword",
+    "reference": 964360,
+    "candidate": 964360,
+    "allocationChangePercent": 0.0,
+    "referenceAccountedPeak": 3443797,
+    "candidateAccountedPeak": 3443797,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.factory-observed-defaults",
+    "reference": 1373718,
+    "candidate": 1373712,
+    "allocationChangePercent": -0.0004367708656416447,
+    "referenceAccountedPeak": 2968817,
+    "candidateAccountedPeak": 2968817,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+    "reference": 1029496,
+    "candidate": 1029496,
+    "allocationChangePercent": 0.0,
+    "referenceAccountedPeak": 2968481,
+    "candidateAccountedPeak": 2968481,
+    "allowanceRestored": true
+  }
+]

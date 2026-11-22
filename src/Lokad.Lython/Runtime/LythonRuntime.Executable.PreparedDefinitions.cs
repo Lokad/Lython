@@ -47,7 +47,8 @@ internal sealed partial class LythonRuntime
         ExecutionContext closure, IReadOnlyList<ExecutableCell> cells, FunctionDefaults defaults,
         bool generator, ExecutionContext context, LythonSourceSpan span, PythonCallableKind kind = PythonCallableKind.Function,
         ReadOnlySpan<ExecutableSlot> annotations = default, PyString[]? postponedAnnotations = null,
-        object?[]? preparedAnnotations = null, bool directKeywordDefault = false)
+        object?[]? preparedAnnotations = null, bool directKeywordDefault = false,
+        Span<ExecutableSlot> uncapturedLocal = default)
     {
         // The callable and its final annotation backing are still private.
         // Admit both before allocation and transfer the combined charge once.
@@ -60,11 +61,21 @@ internal sealed partial class LythonRuntime
             System.Diagnostics.Debug.Assert(defaults.InlineKeyword && preparedAnnotations is null);
             bytes = checked(bytes + PyDict.RecordKeys.SinglePreparedValueBytes);
         }
+        if (!uncapturedLocal.IsEmpty)
+        {
+            System.Diagnostics.Debug.Assert(uncapturedLocal.Length == 1 && cells.Count == 0 && preparedAnnotations is null);
+            bytes = checked(bytes + ExecutableCell.StorageBytes);
+        }
         var governor = context.MemoryGovernor;
         if (preparedAnnotations is null) governor.Reserve(bytes, span);
         try
         {
             context.CheckExecution(span);
+            // Inline execution owns this unexposed slot. Both objects stay
+            // private until their combined reservation is committed.
+            ExecutableCell? cell = null;
+            if (!uncapturedLocal.IsEmpty)
+                cells = cell = new ExecutableCell(uncapturedLocal[0]);
             PyFunctionBase function = generator
                 ? new PyGeneratorFunction(layout, code, closure, defaults, cells, kind)
                 : new PyExecutableFunction(layout, code, closure, cells, defaults, kind);
@@ -73,6 +84,11 @@ internal sealed partial class LythonRuntime
                 function.AttachAdmittedAnnotations(preparedAnnotations ?? postponedAnnotations ??
                     keys.CopyAnnotationValues(annotations, capacity, context, span), context);
             governor.Commit(bytes);
+            if (cell is not null)
+            {
+                cell.RetentionCharged = true;
+                uncapturedLocal[0].Object = cell;
+            }
             return function;
         }
         catch
@@ -94,13 +110,14 @@ internal sealed partial class LythonRuntime
     private static PyFunctionBase CreateLexicalFunctionValue(FunctionParameterLayout layout, ExecutableCodeObject code,
         IReadOnlyList<ExecutableCell> cells, bool generator, ExecutionContext scope, LythonSourceSpan span,
         PythonCallableKind kind, Span<ExecutableSlot> operands, PyString[]? postponedAnnotations = null,
-        object?[]? preparedAnnotations = null, bool directKeywordDefault = false)
+        object?[]? preparedAnnotations = null, bool directKeywordDefault = false,
+        Span<ExecutableSlot> uncapturedLocal = default)
     {
         var firstAnnotation = layout.DefaultStorageCount;
         var defaults = operands[..firstAnnotation];
         var function = CreateFunctionValue(layout, code, GetGlobalContext(scope), cells,
             ReadExecutableDefaults(layout, defaults, directKeywordDefault), generator, scope, span, kind,
-            operands[firstAnnotation..], postponedAnnotations, preparedAnnotations, directKeywordDefault);
+            operands[firstAnnotation..], postponedAnnotations, preparedAnnotations, directKeywordDefault, uncapturedLocal);
         defaults.Clear();
         return function;
     }

@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1354 construct a native first capture with the callable](results/2026-11-22-native-single-capture-construction/README.md)
+skips general capture discovery and one reserve for a prepared local.
+The mixed factory uses 9.31–13.36% less time-to-result CPU. Eager,
+postponed and fully supplied controls span zero. All 168 batches and
+575 focused checks per platform pass with matching admitted peaks.
+
 [B1353 factory CPU attribution after direct keyword defaults](results/2026-11-22-post-default-first-use-profile/README.md)
 resolves 56 capture and 48 callable reservation samples in 1,099
 mixed time-to-result samples. Compiler ancestry accounts for 27.
