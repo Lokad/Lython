@@ -21,7 +21,41 @@ internal static class SyntaxValidityDiagnostics
     private readonly record struct ExpressionVisit(ExpressionSyntax Expression, HashSet<string>? Targets,
         bool Iterable, bool InLambda = false, bool RecordCall = false);
 
-    public static IReadOnlyList<LythonDiagnostic> Analyze(ScriptSyntax script, out bool hasScopeDirectives,
+    private static int ReadFuturePrefix(IReadOnlyList<StatementSyntax> statements, CancellationToken cancellationToken,
+        out bool postponed)
+    {
+        var prefixEnd = 0;
+        postponed = false;
+        for (var i = 0; i < statements.Count; i++)
+        {
+            PythonTokenization.CheckCancellation(cancellationToken, i);
+            var statement = statements[i];
+            if (i == 0 && statement is ExpressionStatementSyntax leading)
+            {
+                var expression = leading.Expression;
+                while (expression is ParenthesizedExpressionSyntax grouped) expression = grouped.Inner;
+                if (expression is StringLiteralExpressionSyntax)
+                {
+                    prefixEnd = 1;
+                    continue;
+                }
+            }
+            if (statement is ImportStatementSyntax { ModuleName: "__future__", ImportedMembers: { } members })
+            {
+                if (i == prefixEnd) prefixEnd++;
+                for (var j = 0; !postponed && j < members.Count; j++)
+                {
+                    PythonTokenization.CheckCancellation(cancellationToken, j);
+                    postponed = members[j].Name == "annotations";
+                }
+            }
+            // A misplaced import can still enable annotation diagnostics.
+            else if (postponed) break;
+        }
+        return prefixEnd;
+    }
+
+    public static IReadOnlyList<LythonDiagnostic> Analyze(ScriptSyntax script, out bool hasScopeDirectives, out bool postponedAnnotations,
         out Dictionary<StatementSyntax, StatementFacts>? statementFacts,
         out Dictionary<IReadOnlyList<StatementSyntax>, int>? annotationChecks, out bool importsRegex,
         CancellationToken cancellationToken)
@@ -29,7 +63,9 @@ internal static class SyntaxValidityDiagnostics
         var diagnostics = new List<LythonDiagnostic>();
         var hasYield = false;
         var hasModernTypes = false;
-        var hasFutureImport = false;
+        var futurePrefixEnd = ReadFuturePrefix(script.Statements, cancellationToken, out postponedAnnotations);
+        List<LythonDiagnostic>? futureDiagnostics = null;
+        Stack<ExpressionSyntax>? annotationExpressions = null;
         hasScopeDirectives = false;
         var suites = new List<SuiteVisit> { new(script.Statements, 0, -1, lexicalScope: true, annotatedReturn: false) };
         var expressions = new Stack<ExpressionVisit>();
@@ -91,8 +127,20 @@ internal static class SyntaxValidityDiagnostics
             hasModernTypes |= statement is TypeAliasStatementSyntax;
             if (statement is ImportStatementSyntax import)
             {
-                hasFutureImport |= import.ModuleName == "__future__" && import.ImportedMembers is not null;
+                if (import is { ModuleName: "__future__", ImportedMembers: not null } &&
+                    (work.Parent >= 0 || statementIndex >= futurePrefixEnd))
+                    FutureError("Future imports must occur at the beginning of the module.", statement.Span);
                 importsRegex |= import.ModuleName == "re" || import.ModuleName.StartsWith("re.", StringComparison.Ordinal);
+            }
+            if (postponedAnnotations)
+            {
+                if (statement is AnnotatedAssignmentStatementSyntax assignment) ValidateAnnotation(assignment.Annotation);
+                else if (statement is FunctionDefinitionStatementSyntax definition)
+                {
+                    foreach (var parameter in definition.Parameters)
+                        if (parameter.Annotation is { } annotation) ValidateAnnotation(annotation);
+                    if (definition.ReturnAnnotation is { } returns) ValidateAnnotation(returns);
+                }
             }
             if (checksAnnotation) work.LastAnnotationCheck = Math.Max(work.LastAnnotationCheck, statementIndex);
             suites[current] = work;
@@ -127,11 +175,34 @@ internal static class SyntaxValidityDiagnostics
         // without repeating complete walks over ordinary scripts.
         if (hasYield) diagnostics.AddRange(GeneratorSyntaxFacts.Prepare(script, cancellationToken));
         if (hasModernTypes) diagnostics.AddRange(ModernTypeSyntaxFacts.Validate(script));
-        if (hasFutureImport) diagnostics.AddRange(PostponedAnnotationText.Validate(script));
+        // Preserve future diagnostics after the independent syntax families.
+        if (futureDiagnostics is not null) diagnostics.AddRange(futureDiagnostics);
         return diagnostics;
 
         void Error(string message, LythonSourceSpan span)
             => diagnostics.Add(new LythonDiagnostic("LA1100", message, LythonDiagnosticSeverity.Error, span));
+
+        void FutureError(string message, LythonSourceSpan span)
+            => (futureDiagnostics ??= []).Add(new("LA1100", message, LythonDiagnosticSeverity.Error, span));
+
+        void ValidateAnnotation(ExpressionSyntax annotation)
+        {
+            var pending = annotationExpressions ??= new();
+            pending.Push(annotation);
+            for (var visited = 0; pending.TryPop(out var expression); visited++)
+            {
+                PythonTokenization.CheckCancellation(cancellationToken, visited);
+                if (expression is AssignmentExpressionSyntax)
+                    FutureError("Assignment expressions cannot be used within postponed annotations.", expression.Span);
+                // A lambda's body is its own scope. Its defaults belong here.
+                if (expression is LambdaExpressionSyntax lambda)
+                {
+                    foreach (var parameter in lambda.Parameters)
+                        if (parameter.DefaultValue is { } value) pending.Push(value);
+                }
+                else foreach (var child in ExpressionSyntaxTraversal.EnumerateChildren(expression)) pending.Push(child);
+            }
+        }
 
         void Unique(IEnumerable<string> names, LythonSourceSpan span, string message)
         {

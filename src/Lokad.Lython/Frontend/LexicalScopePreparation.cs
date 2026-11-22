@@ -109,11 +109,9 @@ internal static class LexicalScopePreparation
         }
     }
 
-    public static void Prepare(ScriptSyntax script, string source, Dictionary<StatementSyntax, StatementFacts>? statementFacts,
+    public static void Prepare(ScriptSyntax script, string source, bool postponed, Dictionary<StatementSyntax, StatementFacts>? statementFacts,
         Runtime.MemoryGovernor? governor = null, CancellationToken cancellationToken = default)
     {
-        var postponed = script.Statements.OfType<ImportStatementSyntax>().Any(import =>
-            import.ModuleName == "__future__" && import.ImportedMembers?.Any(member => member.Name == "annotations") == true);
         // A module owns bindings, not an enclosing class-cell capture.
         List<CallExpressionSyntax>? preloads = null;
         List<ExpressionSyntax>? callables = null;

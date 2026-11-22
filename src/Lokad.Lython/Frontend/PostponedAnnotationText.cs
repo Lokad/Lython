@@ -11,65 +11,6 @@ namespace Lokad.Lython.Frontend;
 // Source spans recover lexical names before class-private binding mangling.
 internal static class PostponedAnnotationText
 {
-    public static IEnumerable<LythonDiagnostic> Validate(ScriptSyntax script)
-    {
-        var beginning = true;
-        var postponed = false;
-        var permitted = new HashSet<StatementSyntax>(ReferenceEqualityComparer.Instance);
-        for (var i = 0; i < script.Statements.Count; i++)
-        {
-            var statement = script.Statements[i];
-            if (i == 0 && statement is ExpressionStatementSyntax leading)
-            {
-                var expression = leading.Expression;
-                while (expression is ParenthesizedExpressionSyntax grouped) expression = grouped.Inner;
-                if (expression is StringLiteralExpressionSyntax) continue;
-            }
-            if (statement is ImportStatementSyntax { ModuleName: "__future__", ImportedMembers: not null } import)
-            {
-                if (beginning) permitted.Add(statement);
-                postponed |= import.ImportedMembers.Any(member => member.Name == "annotations");
-            }
-            else beginning = false;
-        }
-        var statements = new Stack<StatementSyntax>(script.Statements);
-        while (statements.TryPop(out var statement))
-        {
-            if (statement is ImportStatementSyntax { ModuleName: "__future__", ImportedMembers: not null } && !permitted.Contains(statement))
-                yield return new LythonDiagnostic("LA1100", "Future imports must occur at the beginning of the module.", LythonDiagnosticSeverity.Error, statement.Span);
-            if (postponed)
-            {
-                var annotations = statement switch
-                {
-                    FunctionDefinitionStatementSyntax definition => definition.Parameters.Where(p => p.Annotation is not null)
-                        .Select(p => p.Annotation!).Concat(definition.ReturnAnnotation is null ? [] : new[] { definition.ReturnAnnotation }),
-                    AnnotatedAssignmentStatementSyntax assignment => new[] { assignment.Annotation },
-                    _ => Enumerable.Empty<ExpressionSyntax>(),
-                };
-                foreach (var annotation in annotations)
-                {
-                    var expressions = new Stack<ExpressionSyntax>();
-                    expressions.Push(annotation);
-                    while (expressions.TryPop(out var expression))
-                    {
-                        if (expression is AssignmentExpressionSyntax)
-                            yield return new LythonDiagnostic("LA1100", "Assignment expressions cannot be used within postponed annotations.", LythonDiagnosticSeverity.Error, expression.Span);
-                        // A lambda's body is its own scope; only its defaults belong
-                        // to the containing annotation scope.
-                        if (expression is LambdaExpressionSyntax lambda)
-                        {
-                            foreach (var parameter in lambda.Parameters)
-                                if (parameter.DefaultValue is not null) expressions.Push(parameter.DefaultValue);
-                        }
-                        else foreach (var child in ExpressionSyntaxTraversal.EnumerateChildren(expression)) expressions.Push(child);
-                    }
-                }
-            }
-            foreach (var body in StatementSyntaxTraversal.EnumerateChildBodies(statement))
-                foreach (var child in body) statements.Push(child);
-        }
-    }
-
     internal static void Attach(ExpressionSyntax annotation, string source, MemoryGovernor? governor,
         CancellationToken cancellationToken)
         => annotation.PostponedAnnotation ??= new Writer(source, governor, cancellationToken).FormatLiteral(annotation);
