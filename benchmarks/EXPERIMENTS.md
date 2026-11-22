@@ -6,6 +6,16 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1322 fill admitted executable slots from CSV](results/2026-11-22-csv-direct-slots/README.md)
+removes the row array and refund from fixed unpacking. Typed meter
+allocation falls 14.15% and both measured meter scripts use less
+warm CPU. The async invoice uses 1.54–2.55% more CPU. Keep the first
+version private and confirm a single async pull loop.
+
+[Admission on first postponed-annotation read](results/2026-11-22-postponed-annotation-admission/README.md)
+removes the prospective charge for unread metadata, but breaks the
+existing decorator preflight. Keep the candidate private.
+
 [B1321 bypass the CSV row list during fixed unpacking](results/2026-11-22-csv-unpublished-row-unpack/README.md)
 lowers typed meter allocation 6.60% and explicit-float allocation
 4.89%. Each peak falls 589,824 accounted bytes. The typed timings
