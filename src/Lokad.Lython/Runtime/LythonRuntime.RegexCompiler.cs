@@ -332,10 +332,20 @@ internal sealed partial class LythonRuntime
             var options = requestedFlags is not null
                 ? ParseFlags(requestedFlags, span, context)
                 : new LythonRegexOptions(PythonUnicodeFlag, false);
+            // Python's wrapper cache distinguishes implicit Unicode from an
+            // explicit flag even when both compile to the same program.
+            int? requestedBits = requestedFlags switch
+            {
+                null => 0,
+                bool boolean => boolean ? 1 : 0,
+                BigInteger integer when integer >= int.MinValue && integer <= int.MaxValue => (int)integer,
+                _ => null,
+            };
+            var key = new RegexPatternCache.Key(pattern, options, requestedBits);
             context.CheckExecution(span);
             _ = pattern.GetHashCode(context.State.CancellationToken, span);
             var cache = context.State.RegexCache ??= new RegexPatternCache();
-            if (cache.TryGet(pattern, options, out var cached) && cached is not null)
+            if (cache.TryGet(key, out var cached) && cached is not null)
             {
                 return cached;
             }
@@ -360,7 +370,7 @@ internal sealed partial class LythonRuntime
                 var names = CopyRuntimeNamedGroups(compiled, captureSlotCount, context, token, span, pattern);
                 var result = new RePatternObject(pattern, flags, compiled, captureSlotCount, names, options);
                 storage.Commit(wrapperBytes);
-                cache.Add(pattern, options, result, context.MemoryGovernor, span);
+                cache.Add(key, result, context.MemoryGovernor, span);
                 if (artifact is null) context.State.TrackRegexPattern(compiled);
                 return result;
             }

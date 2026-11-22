@@ -77,6 +77,34 @@ public sealed class NativeRegexCacheTests
         }
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task WrapperCacheDistinguishesRequestedFlagsFromEffectiveFlags(bool asynchronous)
+    {
+        // Both flag keys and the new program compiled after purge can coexist.
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
+            import re
+            implicit = re.compile(pattern)
+            explicit = re.compile(pattern, re.UNICODE)
+            print(implicit is explicit, implicit == explicit, implicit.flags == explicit.flags)
+            print(implicit is re.compile(pattern, 0), implicit is re.compile(pattern, False))
+            print(explicit is re.compile(pattern, 32), explicit.fullmatch('alpha').group())
+            re.purge()
+            print(explicit is re.compile(pattern, 32), explicit.fullmatch('alpha').group())
+            """, budget);
+        var baseline = budget.ReservedBytes;
+        var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["pattern"] = "alpha" } };
+        var host = new MockLythonHost();
+        using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("False True True\nTrue True\nTrue alpha\nFalse alpha\n", result.StandardOutput);
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
     [Fact]
     public async Task ParsingVerboseIsPartOfTheCompileOptionsEvenWhenReportedFlagBitsAgree()
     {

@@ -50,11 +50,11 @@ public sealed class RegexCompilationAccountingTests
         using var compiled = pattern.Regex;
         var cache = new RegexPatternCache();
         Assert.Equal("MemoryError", Assert.Throws<LythonRuntimeException>(() =>
-            cache.Add(PyString.FromString("a"), new(32, false), pattern, new MemoryGovernor(new LythonMemoryBudget(0)), span)).ExceptionType);
+            cache.Add(new(PyString.FromString("a"), new(32, false), 0), pattern, new MemoryGovernor(new LythonMemoryBudget(0)), span)).ExceptionType);
         Assert.Equal(0, cache.Count);
-        cache.Add(PyString.FromString("a"), new(32, false), pattern, funded.MemoryGovernor, span);
+        cache.Add(new(PyString.FromString("a"), new(32, false), 0), pattern, funded.MemoryGovernor, span);
         Assert.Equal(1, cache.Count);
-        Assert.True(cache.TryGet(PyString.FromString("a"), new(32, false), out var cached));
+        Assert.True(cache.TryGet(new(PyString.FromString("a"), new(32, false), 0), out var cached));
         Assert.Same(pattern, cached);
     }
 

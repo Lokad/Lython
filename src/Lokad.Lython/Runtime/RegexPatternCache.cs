@@ -3,7 +3,7 @@ using Lokad.Lython.Runtime.Text;
 namespace Lokad.Lython.Runtime;
 
 // Bounded per-execution regex compilation cache (N19): module-level calls with the
-// same immutable UTF-8 pattern and compile options share one compiled pattern,
+// same immutable UTF-8 pattern, requested flags and compile options share a wrapper,
 // mirroring CPython's 512-entry re cache without going global (per-run isolation).
 // Cached patterns keep their existing execution ownership: the cache holds
 // references without additional pattern charges, so eviction and
@@ -22,17 +22,19 @@ internal sealed class RegexPatternCache
     // This is conservative capacity funding, not an exact object-size claim.
     internal const long SlotBytesPerEntry = 256L;
 
-    private Dictionary<(PyString PatternText, LythonRegexOptions Options), LinkedListNode<CacheEntry>> _entries = new();
+    internal readonly record struct Key(PyString PatternText, LythonRegexOptions Options, int? RequestedFlags);
+
+    private Dictionary<Key, LinkedListNode<CacheEntry>> _entries = new();
     private readonly LinkedList<CacheEntry> _recent = new();
     private long _committedSlotBytes;
 
-    private sealed record CacheEntry((PyString PatternText, LythonRegexOptions Options) Key, LythonRuntime.RePatternObject Pattern);
+    private sealed record CacheEntry(Key Key, LythonRuntime.RePatternObject Pattern);
 
     public int Count => _entries.Count;
 
-    public bool TryGet(PyString patternText, LythonRegexOptions options, out LythonRuntime.RePatternObject? pattern)
+    public bool TryGet(Key key, out LythonRuntime.RePatternObject? pattern)
     {
-        if (_entries.TryGetValue((patternText, options), out var node))
+        if (_entries.TryGetValue(key, out var node))
         {
             _recent.Remove(node);
             _recent.AddFirst(node);
@@ -47,8 +49,7 @@ internal sealed class RegexPatternCache
     // Caches a freshly compiled pattern under its exact key. Slot refusal is a
     // command failure, never a reason to fall back to uncached execution.
     public void Add(
-        PyString patternText,
-        LythonRegexOptions options,
+        Key key,
         LythonRuntime.RePatternObject pattern,
         MemoryGovernor? governor,
         LythonSourceSpan? span)
@@ -75,8 +76,8 @@ internal sealed class RegexPatternCache
             }
         }
 
-        var node = _recent.AddFirst(new CacheEntry((patternText, options), pattern));
-        _entries.Add((patternText, options), node);
+        var node = _recent.AddFirst(new CacheEntry(key, pattern));
+        _entries.Add(key, node);
     }
 
     // Explicit clear (re.purge): drops every reference and releases slot charges.

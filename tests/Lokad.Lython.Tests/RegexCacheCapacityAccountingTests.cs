@@ -28,15 +28,15 @@ public sealed class RegexCacheCapacityAccountingTests
         var span = new LythonSourceSpan(0, 0, 0, 0);
         for (var i = 0; i < RegexPatternCache.MaxEntries + replacements; i++)
         {
-            cache.Add(PyString.FromString($"pattern-{i}"), new(32, false), pattern, governor, span);
+            cache.Add(new(PyString.FromString($"pattern-{i}"), new(32, false), 0), pattern, governor, span);
         }
 
         Assert.Equal(RegexPatternCache.MaxEntries, cache.Count);
         Assert.Equal(RegexPatternCache.MaxEntries * RegexPatternCache.SlotBytesPerEntry,
             governor.CurrentCommittedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
-        Assert.False(cache.TryGet(PyString.FromString("pattern-0"), new(32, false), out _));
-        Assert.True(cache.TryGet(PyString.FromString($"pattern-{RegexPatternCache.MaxEntries + replacements - 1}"), new(32, false), out var latest));
+        Assert.False(cache.TryGet(new(PyString.FromString("pattern-0"), new(32, false), 0), out _));
+        Assert.True(cache.TryGet(new(PyString.FromString($"pattern-{RegexPatternCache.MaxEntries + replacements - 1}"), new(32, false), 0), out var latest));
         Assert.Same(pattern, latest);
 
         cache.Clear(governor);
@@ -55,15 +55,15 @@ public sealed class RegexCacheCapacityAccountingTests
         var span = new LythonSourceSpan(0, 0, 0, 0);
         for (var i = 0; i < RegexPatternCache.MaxEntries; i++)
         {
-            cache.Add(PyString.FromString($"pattern-{i}"), new(32, false), pattern, governor, span);
+            cache.Add(new(PyString.FromString($"pattern-{i}"), new(32, false), 0), pattern, governor, span);
         }
 
-        Assert.True(cache.TryGet(PyString.FromString("pattern-0"), new(32, false), out _));
-        cache.Add(PyString.FromString("replacement"), new(32, false), pattern, governor, span);
-        Assert.True(cache.TryGet(PyString.FromString("replacement"), new(32, false), out var replacement));
+        Assert.True(cache.TryGet(new(PyString.FromString("pattern-0"), new(32, false), 0), out _));
+        cache.Add(new(PyString.FromString("replacement"), new(32, false), 0), pattern, governor, span);
+        Assert.True(cache.TryGet(new(PyString.FromString("replacement"), new(32, false), 0), out var replacement));
         Assert.Same(pattern, replacement);
-        Assert.True(cache.TryGet(PyString.FromString("pattern-0"), new(32, false), out _));
-        Assert.False(cache.TryGet(PyString.FromString("pattern-1"), new(32, false), out _));
+        Assert.True(cache.TryGet(new(PyString.FromString("pattern-0"), new(32, false), 0), out _));
+        Assert.False(cache.TryGet(new(PyString.FromString("pattern-1"), new(32, false), 0), out _));
         Assert.Equal(RegexPatternCache.MaxEntries, cache.Count);
         Assert.Equal(capacity, governor.CurrentCommittedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
@@ -71,8 +71,8 @@ public sealed class RegexCacheCapacityAccountingTests
 
         cache.Clear(governor);
         Assert.Equal(0, governor.CurrentAccountedBytes);
-        cache.Add(PyString.FromString("after-purge"), new(32, false), pattern, governor, span);
+        cache.Add(new(PyString.FromString("after-purge"), new(32, false), 0), pattern, governor, span);
         Assert.Equal(RegexPatternCache.SlotBytesPerEntry, governor.CurrentCommittedBytes);
-        Assert.True(cache.TryGet(PyString.FromString("after-purge"), new(32, false), out _));
+        Assert.True(cache.TryGet(new(PyString.FromString("after-purge"), new(32, false), 0), out _));
     }
 }

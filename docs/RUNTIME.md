@@ -2450,6 +2450,9 @@ be evaluated in annotations without a provider.
 Module regex calls distinguish omitted flags from an explicit `None`.
 Text patterns raise `TypeError` for `flags=None`, and compiled patterns
 accept it as a false flag value.
+The per-execution cache preserves requested integer flag identity.
+Omitted flags and explicit `re.UNICODE` give distinct cached pattern
+objects with equal effective flags and compiled programs.
 Compiled pattern representations show effective flag names and cap the
 quoted string representation at 200 Unicode scalars. They build the
 result in governed UTF-8 storage. Match representations quote up to

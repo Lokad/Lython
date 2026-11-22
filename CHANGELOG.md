@@ -56,6 +56,9 @@
 - Compare and hash compiled regex patterns across cache purge. Providers can
   supply exact program keys when distinct compiler options produce the same
   source and effective flags.
+- Keep distinct cached regex pattern objects for distinct requested integer
+  flags, including implicit and explicit Unicode. Compare their programs
+  using the normalized options and effective flags.
 - Parse a shared postfix prefix for assignment targets and expression
   statements, removing repeated speculative parses.
 - Match Python function `__annotations__` assignment. `None` clears the
