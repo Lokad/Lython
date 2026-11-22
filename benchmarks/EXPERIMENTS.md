@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1353 factory CPU attribution after direct keyword defaults](results/2026-11-22-post-default-first-use-profile/README.md)
+resolves 56 capture and 48 callable reservation samples in 1,099
+mixed time-to-result samples. Compiler ancestry accounts for 27.
+There are no resolved scope promotions. Test whether constructing
+a prepared single local cell with its callable removes both the
+general capture walk and a reservation.
+
 [B1352 direct lexical keyword defaults](results/2026-11-22-direct-lexical-keyword-defaults/README.md)
 removes a prepared operand, store instruction and resize from the mixed
 factory. Both time-to-result collections reduce elapsed and CPU.
