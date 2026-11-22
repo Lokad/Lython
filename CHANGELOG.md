@@ -11,6 +11,8 @@
   executable operands and return the winning operand.
 - Transfer computed integers into captured bindings and box them on first
   observation, preserving stable identity for observed values.
+- Use the range enumerator directly in executable loops and remove the
+  separate enumerable wrapper. Preserve integer identity and wide values.
 - Resolve executable jump targets on demand. Reuse the block layout table
   for jump resolution, operand depths and physical offsets.
 - Reuse an existing UTF-8 scalar index to resolve single regex match windows.

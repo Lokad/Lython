@@ -1,0 +1,101 @@
+{
+  "complete": true,
+  "elapsedSeconds": 113.16692437417805,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "staging": {
+    "retiredOnly": [],
+    "alreadyAbsent": [],
+    "freshIdleLease": true,
+    "allHashesPathsOwnershipLinksAndAliasesVerified": true,
+    "canonicalArchiveAndCurrentImagesPreserved": true,
+    "freeBeforeBytes": 180768768,
+    "freeAfterBytes": 180727808
+  },
+  "rows": [
+    {
+      "case": "scripts.annotated-rule-closures.literal-positional-dynamic-keyword",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 1.1146942495726497,
+        "reference": 1.1580536507092198,
+        "candidate-control": 1.147775158081705,
+        "reference-control": 1.2305798034026463
+      },
+      "cpuMilliseconds": {
+        "candidate": 1.1282051282051284,
+        "reference": 1.1702127659574468,
+        "candidate-control": 1.1545293072824157,
+        "reference-control": 1.2476370510396977
+      },
+      "elapsedIQRPercent": {
+        "candidate": 1.1858976112687685,
+        "reference": 1.6762856558635246,
+        "candidate-control": 0.3523934715096163,
+        "reference-control": 0.3705500428374592
+      },
+      "elapsedChangePercent": [
+        -9.417150639849947,
+        -6.72891307755743,
+        -3.7441616897469054,
+        -0.8875661866978302
+      ],
+      "cpuChangePercent": [
+        -9.57264957264956,
+        -7.462726734485181,
+        -3.589743589743577,
+        -1.3402228322299425
+      ],
+      "referenceSpreadPercent": 6.262762752745488,
+      "candidateSpreadPercent": 2.9677114169861296
+    },
+    {
+      "case": "scripts.annotated-rule-closures.literal-positional-dynamic-keyword",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "reference-control": 1.2890795467196818,
+        "candidate-control": 1.2411631019230769,
+        "reference": 1.269089378698225,
+        "candidate": 1.197307422509225
+      },
+      "cpuMilliseconds": {
+        "reference-control": 1.2922465208747516,
+        "candidate-control": 1.25,
+        "reference": 1.2820512820512822,
+        "candidate": 1.1992619926199262
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.5405280071215706,
+        "candidate-control": 0.5539906006247898,
+        "reference": 0.8137163655907863,
+        "candidate": 0.45777917034481685
+      },
+      "elapsedChangePercent": [
+        -7.119197914821407,
+        -5.656178153711333,
+        -3.7171053499791995,
+        -2.2004972418722457
+      ],
+      "cpuChangePercent": [
+        -7.19557195571956,
+        -6.457564575645769,
+        -3.26923076923078,
+        -2.5000000000000133
+      ],
+      "referenceSpreadPercent": 1.5751584054672252,
+      "candidateSpreadPercent": 3.662858726954399
+    }
+  ],
+  "CPythonRefreshed": false,
+  "collection": "B1350-confirmation",
+  "sourceRevision": "12cecc6cf1a1c00a289b6982c59ff098de00f639 versus 3bbc7a416dc7cccde24e880db839eddf7aa7a95d",
+  "verifiedTimedBatches": 56,
+  "coreSHA256": {
+    "reference": "26c3d9aef87dfc41a7447c22514679d711df3a608424786372c94ca6dea0a832",
+    "reference-control": "26c3d9aef87dfc41a7447c22514679d711df3a608424786372c94ca6dea0a832",
+    "candidate": "6c0341fd3c1e915d7db5f5ea0a84eeb1f41063854b5b0de4f4d29b0830ae1a91",
+    "candidate-control": "6c0341fd3c1e915d7db5f5ea0a84eeb1f41063854b5b0de4f4d29b0830ae1a91"
+  },
+  "archiveSHA256": "f65782413acd7db80436962b6a815ffd0b8205a0cbffef0cbb1d8f6b67513518",
+  "decision": "Retain direct range iteration. The loop CPU gain is clear, the mixed factory spans zero in the first run with moving controls, and reversed-order warm and time-to-result lanes favor the change. The factory gain magnitude remains uncertain. Confirmed no loss of admitted peaks, allowance refunds or Python result checks."
+}

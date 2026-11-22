@@ -458,6 +458,13 @@ internal sealed partial class LythonRuntime
                 PublishValue(slot, liveExtent, source);
                 return true;
             }
+            if (source is PyRange range)
+            {
+                // Exact ranges have no user iteration protocol or async cleanup.
+                // ForNext already checks execution before advancing this operand.
+                PublishValue(slot, liveExtent, range.GetEnumerator());
+                return true;
+            }
             if (source is not (PyList or PyTuple)) return false;
             if (_nativeIterationPositions is null)
             {
@@ -489,8 +496,8 @@ internal sealed partial class LythonRuntime
                 case PyList or PyTuple:
                     result = PyIteration.AdvanceBuiltinSequence(source, ref _nativeIterationPositions![slot - _firstTemporarySlot]);
                     break;
-                case PyIteration.Cursor { IsBuiltinRange: true } cursor:
-                    result = cursor.TryMoveNext();
+                case PyRange.Enumerator range:
+                    result = range.TryMoveNext();
                     break;
                 default:
                     hasValue = false;

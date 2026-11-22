@@ -223,7 +223,9 @@ internal sealed partial class LythonRuntime
                         var source = Read(instruction.InputStart, 0);
                         if (source is PyStringOps.CasedWhitespaceIteration)
                             Publish(instruction, source);
-                        else if (source is PyList or PyTuple or PyRange or PyBytes or PyString or PyDict or PySet)
+                        else if (source is PyRange range)
+                            Publish(instruction, range.GetEnumerator());
+                        else if (source is PyList or PyTuple or PyBytes or PyString or PyDict or PySet)
                             Publish(instruction, PyIteration.Cursor.Create(source, instruction.Span, _scope));
                         else return false; // Promote before any user iteration protocol.
                         break;
@@ -231,8 +233,12 @@ internal sealed partial class LythonRuntime
                     case ExecutableOpCode.ForNext or ExecutableOpCode.ForNextUnpack:
                     {
                         var iterator = Values[instruction.InputStart].Object.RequireNotNull();
-                        var next = iterator is PyStringOps.CasedWhitespaceIteration words ? words.MoveNext()
-                            : ((PyIteration.Cursor)iterator).TryMoveNext();
+                        var next = iterator switch
+                        {
+                            PyStringOps.CasedWhitespaceIteration words => words.MoveNext(),
+                            PyRange.Enumerator range => range.TryMoveNext(),
+                            _ => ((PyIteration.Cursor)iterator).TryMoveNext(),
+                        };
                         if (!next.HasValue)
                         {
                             Trim(instruction.InputStart);

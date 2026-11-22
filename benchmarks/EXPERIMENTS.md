@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1350 direct range iteration](results/2026-11-22-direct-range-cursors/README.md)
+removes two iterator wrappers from executable loops. The arithmetic
+loop uses 14.04–15.28% less warm CPU. Mixed warm initially spans zero
+with moving controls. A reversed-order confirmation favors both
+factory phases, with 6.26% spread in the unchanged warm workers.
+Materialization timing spans zero. Both platforms and all 168 batches
+pass with matching admitted peaks and complete refunds.
+
 [B1349 fuse regex initialization and scalar projection](results/2026-11-22-fused-regex-range-projection/README.md)
 eliminates a separate range pass. ASCII group text uses 1.45–4.35%
 less warm CPU. Unicode timings span zero and allocation stays flat.

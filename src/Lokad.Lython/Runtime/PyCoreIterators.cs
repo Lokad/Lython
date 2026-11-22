@@ -3,7 +3,7 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PyRange : IPyIterableValue, IPySliceableValue, IPySubscriptableValue, IPyRenderableValue, IPyTruthyValue, IPyHashableValue
+internal sealed class PyRange : IPyIterableValue, IPySliceableValue, IPySubscriptableValue, IPyRenderableValue, IPyTruthyValue, IPyHashableValue, IEnumerable<object>
 {
     private readonly MemoryGovernor? _memoryGovernor;
     private readonly LythonSourceSpan? _allocationSpan;
@@ -71,20 +71,17 @@ internal sealed class PyRange : IPyIterableValue, IPySliceableValue, IPySubscrip
         return hash.ToHashCode();
     }
 
-    public IEnumerable<object> Iterate() => new RangeValues(this);
+    public IEnumerable<object> Iterate() => this;
 
     internal Enumerator GetEnumerator() => new(this);
 
-    private sealed class RangeValues(PyRange range) : IEnumerable<object>
-    {
-        public IEnumerator<object> GetEnumerator() => range.GetEnumerator();
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
-    }
+    IEnumerator<object> IEnumerable<object>.GetEnumerator() => GetEnumerator();
+    System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
 
     // One position serves ordinary object pulls and native machine pulls. Only
     // observing Current boxes a machine value; wider yields retain their eager
     // admission and publication. Each enumeration owns independent state.
-    internal sealed class Enumerator : IEnumerator<object>
+    internal sealed class Enumerator : ExecutableTemporaryValue, IEnumerator<object>
     {
         private readonly PyRange _range;
         private readonly long _machineStep;
@@ -109,13 +106,20 @@ internal sealed class PyRange : IPyIterableValue, IPySliceableValue, IPySubscrip
             }
         }
 
-        internal bool HasMachineBounds { get; }
-        internal long MachineValue => _machineValue;
+        private bool HasMachineBounds { get; }
 
         public object Current => !_started ? null! : _current ??= _range.OwnYield((BigInteger)_machineValue);
         object System.Collections.IEnumerator.Current => Current;
         public void Reset() => throw new NotSupportedException();
-        public void Dispose() => _finished = true;
+        public override void Dispose() => _finished = true;
+
+        internal PyIterationResult TryMoveNext()
+        {
+            if (!MoveNext()) return PyIterationResult.End;
+            return HasMachineBounds
+                ? PyIterationResult.Yield(LythonRuntime.ExecutableSlot.FromInteger(_machineValue))
+                : PyIterationResult.Yield(Current);
+        }
 
         public bool MoveNext()
         {

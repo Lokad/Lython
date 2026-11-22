@@ -386,8 +386,6 @@ internal static partial class PyIteration
             return TryMoveNextCore();
         }
 
-        internal bool IsBuiltinRange => _value is PyRange && _iterator is null;
-
         internal LythonRuntime.CsvRecordSource? NativeCsvSource => !_disposed && _asyncEnumerator is null
             ? (_iterator as LythonRuntime.CsvReaderObject)?.Records : null;
 
@@ -405,10 +403,7 @@ internal static partial class PyIteration
             }
 
             _syncEnumerator ??= (_syncSource ??= GetSyncEnumerable(_value, _span)).GetEnumerator();
-            if (_syncEnumerator is PyRange.Enumerator { HasMachineBounds: true } integers)
-                return integers.MoveNext()
-                    ? PyIterationResult.Yield(LythonRuntime.ExecutableSlot.FromInteger(integers.MachineValue))
-                    : PyIterationResult.End;
+            if (_syncEnumerator is PyRange.Enumerator integers) return integers.TryMoveNext();
             return _syncEnumerator.MoveNext() ? PyIterationResult.Yield(_syncEnumerator.Current) : PyIterationResult.End;
         }
 

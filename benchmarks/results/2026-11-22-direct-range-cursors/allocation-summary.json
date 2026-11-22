@@ -1,0 +1,38 @@
+[
+  {
+    "case": "diagnostic.loop-range.inside.large",
+    "reference": 14984,
+    "candidate": 14856,
+    "allocationChangePercent": -0.8542445274959953,
+    "referenceAccountedPeak": 1120,
+    "candidateAccountedPeak": 1120,
+    "allowanceRestored": true
+  },
+  {
+    "case": "diagnostic.range-materialization.large",
+    "reference": 962976,
+    "candidate": 956710,
+    "allocationChangePercent": -0.6506911906423385,
+    "referenceAccountedPeak": 1346376,
+    "candidateAccountedPeak": 1346376,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.annotated-rule-closures.literal-positional-dynamic-keyword",
+    "reference": 964488,
+    "candidate": 964360,
+    "allocationChangePercent": -0.013271290052341289,
+    "referenceAccountedPeak": 3443797,
+    "candidateAccountedPeak": 3443797,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.ordinary-fully-supplied-helper",
+    "reference": 142808,
+    "candidate": 142680,
+    "allocationChangePercent": -0.08963083300654873,
+    "referenceAccountedPeak": 1255,
+    "candidateAccountedPeak": 1255,
+    "allowanceRestored": true
+  }
+]

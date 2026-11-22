@@ -18,6 +18,8 @@ public sealed class RangeSlotTransportTests
             "[9223372036854775806]\n" },
         { "print([item for item in range(-9223372036854775807,-9223372036854775808,-2)])",
             "[-9223372036854775807]\n" },
+        { "def nested(values):\n rows=[]\n for left in values:\n  for right in values:\n   rows.append((left,right))\n   break\n return rows\nprint(nested(range(9223372036854775808,9223372036854775811)))",
+            "[(9223372036854775808, 9223372036854775808), (9223372036854775809, 9223372036854775808), (9223372036854775810, 9223372036854775808)]\n" },
     };
 
     [Theory]
