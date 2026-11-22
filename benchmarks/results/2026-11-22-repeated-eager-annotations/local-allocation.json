@@ -1,0 +1,77 @@
+{
+  "reference": [
+    {
+      "id": "scripts.ordinary-fully-supplied-helper",
+      "Growths": 7,
+      "baseline": 49856,
+      "Peak": 51111,
+      "managedBytesDiagnostic": 264176
+    },
+    {
+      "id": "scripts.annotated-rule-closures.nested-factories",
+      "Growths": 6169,
+      "baseline": 74618,
+      "Peak": 3043043,
+      "managedBytesDiagnostic": 1152520
+    },
+    {
+      "id": "scripts.annotated-rule-closures.literal-positional-dynamic-keyword",
+      "Growths": 4124,
+      "baseline": 82203,
+      "Peak": 3526000,
+      "managedBytesDiagnostic": 964728
+    },
+    {
+      "id": "scripts.factory-observed-defaults",
+      "Growths": 6170,
+      "baseline": 85534,
+      "Peak": 3054351,
+      "managedBytesDiagnostic": 1374128
+    },
+    {
+      "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "Growths": 6169,
+      "baseline": 78622,
+      "Peak": 3047103,
+      "managedBytesDiagnostic": 1029888
+    }
+  ],
+  "candidate": [
+    {
+      "id": "scripts.ordinary-fully-supplied-helper",
+      "Growths": 7,
+      "baseline": 49856,
+      "Peak": 51111,
+      "managedBytesDiagnostic": 264176
+    },
+    {
+      "id": "scripts.annotated-rule-closures.nested-factories",
+      "Growths": 6169,
+      "baseline": 74618,
+      "Peak": 3043043,
+      "managedBytesDiagnostic": 1037888
+    },
+    {
+      "id": "scripts.annotated-rule-closures.literal-positional-dynamic-keyword",
+      "Growths": 4124,
+      "baseline": 82203,
+      "Peak": 3526000,
+      "managedBytesDiagnostic": 964728
+    },
+    {
+      "id": "scripts.factory-observed-defaults",
+      "Growths": 6170,
+      "baseline": 85534,
+      "Peak": 3054351,
+      "managedBytesDiagnostic": 1374128
+    },
+    {
+      "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "Growths": 6169,
+      "baseline": 78622,
+      "Peak": 3047103,
+      "managedBytesDiagnostic": 1029888
+    }
+  ],
+  "scope": "Single whole execution per case on Windows .NET 11; allowance peak includes the compiled owner. All owners fully refund."
+}

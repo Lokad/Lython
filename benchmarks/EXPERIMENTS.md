@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1398 repeated eager annotation values](results/2026-11-22-repeated-eager-annotations/README.md)
+keeps one definition-time read and removes the eager values array.
+The eager factory allocates 9.95% less locally and runs 9.51–13.12%
+faster warm. Time to result improves 2.87–9.82%. Postponed warm
+elapsed and the supplied helper span zero. Retained at `586a90c72`.
+
 [B1397 retained 0.11.0 checkpoint against CPython](results/2026-11-22-retained-source-cpython/README.md)
 compares six complete scripts at `32c50290d`. Sparse validator time
 to result is 0.789–0.791× CPython's. The postponed factory still takes
