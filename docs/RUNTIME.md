@@ -919,11 +919,12 @@ from already-funded storage without new admission. Larger words and dynamic
 protocols keep ordinary materialization. Eager preflight still funds all eventual
 words, including capacity not physically materialized during the native segment.
 Private cased-word preparation discovers whitespace boundaries and applies Unicode
-casing in one source scan. Ranges index completed UTF-8 bytes; iteration copies
-those bytes into independent words without repeating casing. The existing cursor
-loan owns reusable scratch, with conservative capacity of four times input UTF-8
-bytes for lowercasing or six times for uppercasing. Metadata, replacement overlap
-and every eventual word are admitted before loop effects. Wider scratch can reject
+casing in one source scan. The cursor stores each word's length beside its UTF-8
+bytes in one reusable buffer. Iteration copies the bytes of each materialized
+word without repeating casing. Scratch capacity is four times the input UTF-8
+length for lowercasing or six times for uppercasing, plus four bytes for nonempty
+input. Metadata, replacement overlap and every eventual word are admitted before
+loop effects. Wider scratch can reject
 a tighter allowance earlier. Active and idle cached capacity stay funded; eviction
 or execution cleanup returns allowance after actual users finish. Early exits and
 cancellation use operand-stack cleanup, publishing completed bindings before any
@@ -1112,15 +1113,14 @@ The entire compiled capacity is admitted before binding, including for mirrored
 functions; it can remain idle in this cache after the call. Idle retention and
 earlier capacity admission can reject tight shared allowances sooner. No workspace crosses
 executions or retains a prior token or guest argument.
-The same lifetime policy retains one word-buffer loan per execution for private
-cased-word iteration. One admitted object owns its range array and private cursor
-state; repeated lines reuse that storage.
-Returned loans clear guest/source references. Growth admits replacement capacity
-while the previous loan stays funded. Active and nested loans survive idle-cache
-shutdown; later returns relinquish their capacity. All backing remains charged,
-including oversized reuse. Private iteration starts with a small buffer even for
-empty input. Conservative metadata and idle retention can reject tight allowances
-earlier; there is no independent cache allowance.
+The same lifetime policy retains one idle buffer per execution for private
+cased-word iteration. Each loan owns its prepared UTF-8, word lengths and cursor
+state. Returned loans clear execution references. Growth admits replacement
+capacity while existing storage stays funded. Active and nested loans survive
+idle-cache shutdown, and later returns relinquish their capacity. All retained
+backing stays charged, including oversized reuse. Empty input needs the cursor
+but no new byte buffer. Conservative metadata and idle retention can reject
+tight allowances earlier.
 Each call opcode prepares the evaluated function and receiver at the instruction.
 Native borrowed/inline binding and the ordinary deferred prefix remain shared by
 both APIs. Completed bodies publish directly after bound argument, workspace and
@@ -2237,8 +2237,8 @@ through ordinary call frames and suspension; a result stored in a guest local
 keeps its normal Python representation. This replaces the
 transient list and value array, sharing the forward scanner and casing writer.
 All future word capacities and cursor storage are admitted before any loop-body
-effects. The existing buffer loan supplies cursor metadata without a new packet
-or temporary reservation object per line. Each yielded word owns its bytes; the cursor retains its immutable input
+effects. The reusable buffer supplies cursor metadata and normalized bytes.
+Each yielded word owns its bytes. The cursor retains its prepared storage
 through iteration and suspension. Unused admitted capacity remains charged until
 execution ownership ends. Assigned, exposed and escaping split results keep their
 ordinary mutable lists. Admission estimates and failure boundaries can differ.

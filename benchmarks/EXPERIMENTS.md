@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1391 prepared word storage confirmation](results/2026-11-22-inline-cased-words-confirmed/README.md)
+reverses the first counter slowdown. The width report and dense line span
+zero. The quoted invoice remains 1.50–2.54% slower with stable workers.
+Keep the simpler owner for the dense-line storage benefit and carry the
+quoted-control timing as open regression debt.
+
 [B1390 prepared word lengths in UTF-8 storage](results/2026-11-22-inline-cased-word-headers/README.md)
 removes the separate range array and growth protocol. The width report
 takes 3.43–5.62% less warm time. The counter takes 1.51–5.20% longer and
