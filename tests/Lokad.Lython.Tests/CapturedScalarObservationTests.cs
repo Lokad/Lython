@@ -9,16 +9,18 @@ namespace Lokad.Lython.Tests;
 public sealed class CapturedScalarObservationTests
 {
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task AdmissionObservesCurrentCounterAndRetainedOldIdentity(bool asynchronous)
+    [InlineData(false, "processed += 1")]
+    [InlineData(true, "processed += 1")]
+    [InlineData(false, "processed = (processed + 2) - 1")]
+    [InlineData(true, "processed = (processed + 2) - 1")]
+    public async Task AdmissionObservesCurrentCounterAndRetainedOldIdentity(bool asynchronous, string update)
     {
-        const string source = """
+        var source = $$"""
             def analyze():
                 processed=0
                 def words_from_line(line):
                     nonlocal processed
-                    processed+=1
+                    {{update}}
                     return line.lower().split()
                 observe(words_from_line)
                 count=0

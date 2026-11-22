@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1347 transfer integer slots into captured bindings](results/2026-11-22-captured-scalar-slots/README.md)
+reduces local allocation by 18.04% for computed nonlocal stores.
+The existing captured counter uses 5.64–11.39% more warm CPU.
+Computed-store time to result spans zero. Keep the runtime private
+and retain the independent identity checks validated on both sources.
+
 [B1346 resolve executable jump targets on demand](results/2026-11-22-demanded-jump-targets/README.md)
 removes the eager traversal and separate target array. Dataclass
 compiler CPU falls 0.53–1.90%. Dead-heavy elapsed and validator time
