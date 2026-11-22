@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1404 closed arithmetic returns from bound defaults](results/2026-11-22-closed-return-bound-slots/README.md)
+runs the existing kernel from already-bound parameters. Postponed factory warm
+elapsed rises 0.71–4.19% and the fully supplied helper rises 0.40–1.09%.
+The observer improves 1.98–3.65%. Keep the candidate private. Allocation
+and admission stay effectively flat.
+
 [B1403 explicit regex provider state](results/2026-11-22-regex-provider-state/README.md)
 removes captured callbacks at `5ee6cbac0`. Compiling 64 named rules allocates
 5.36% less and takes 2.26–3.22% less warm time. File rewrites allocate 1.74%
