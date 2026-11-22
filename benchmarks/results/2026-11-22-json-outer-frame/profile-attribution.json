@@ -1,0 +1,35 @@
+{
+  "profilingOnly": true,
+  "overlappingAncestry": true,
+  "workloadsCompared": 1,
+  "workers": [
+    {
+      "name": "Thread (109636)",
+      "unit": "milliseconds",
+      "inclusiveSampledThreadTime": {
+        "ExecutionThreads+Worker.Run": 8019.94287109375,
+        "ComparisonFileHost": 3306.9265790056224,
+        "ExecuteInstructionPrefix": 5666.363860693742,
+        "JsonModule+": 968.5140585254642,
+        "JsonEncodeIterator": 658.4737774003945,
+        "AppendJsonString": 10.440798722267346,
+        "GrowFrameStorage": 4.310700178146362,
+        "AppendStarredDictionaryCore": 1298.3195579606963,
+        "BindNamedArgumentsCore": 15.154599708557214,
+        "InvokeBoundEncoderAsync": 679.2448762472125
+      },
+      "cpuMarkedInclusiveTime": {
+        "ExecutionThreads+Worker.Run": 2404.922305106728,
+        "ComparisonFileHost": 111.51079441375819,
+        "ExecuteInstructionPrefix": 2378.781008875458,
+        "JsonModule+": 937.4735588577223,
+        "JsonEncodeIterator": 648.1511768278083,
+        "AppendJsonString": 4.428899237442238,
+        "GrowFrameStorage": 0.0,
+        "AppendStarredDictionaryCore": 1272.0779582673981,
+        "BindNamedArgumentsCore": 8.935399675369297,
+        "InvokeBoundEncoderAsync": 656.2064766124677
+      }
+    }
+  ]
+}

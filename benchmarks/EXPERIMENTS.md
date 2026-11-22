@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1375 flat JSON encoder frames](results/2026-11-22-json-outer-frame/README.md)
+removes the initial traversal array and cycle set for flat records.
+The two JSON Lines exports use 17.90% and 21.51% less local allocation
+and 4.39–7.64% less warm elapsed time across the two workloads. The
+nested manifest adds 144 bytes per run. Its CPU range spans zero.
+The unchanged call control has 7.26% reference-worker spread.
+
 [B1374 mixed factory phase separation](results/2026-11-22-mixed-factory-boundaries/README.md)
 reuses both B1372 images. Compilation elapsed rises 0.87–1.45%,
 while compile and warm CPU span zero. Compile to result crosses zero

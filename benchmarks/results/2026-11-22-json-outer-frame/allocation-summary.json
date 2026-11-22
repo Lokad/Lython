@@ -1,0 +1,38 @@
+[
+  {
+    "case": "scripts.json-lines-shipment.expanded-options.large",
+    "allocatedBefore": 9064690,
+    "allocatedAfter": 7441778,
+    "allocationChange": -17.903667968788785,
+    "admittedBefore": 6489776,
+    "admittedAfter": 6489264,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.json-lines-shipment.explicit-options.large",
+    "allocatedBefore": 7539124,
+    "allocatedAfter": 5917102,
+    "allocationChange": -21.51472770576528,
+    "admittedBefore": 6157892,
+    "admittedAfter": 6157417,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.config-manifest.small",
+    "allocatedBefore": 99712,
+    "allocatedAfter": 99856,
+    "allocationChange": 0.14441591784339902,
+    "admittedBefore": 56431,
+    "admittedAfter": 56623,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "calls.positional.large",
+    "allocatedBefore": 1060272,
+    "allocatedAfter": 1060272,
+    "allocationChange": 0.0,
+    "admittedBefore": 1284,
+    "admittedAfter": 1284,
+    "budgetReturnedToBaseline": true
+  }
+]
