@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1390 prepared word lengths in UTF-8 storage](results/2026-11-22-inline-cased-word-headers/README.md)
+removes the separate range array and growth protocol. The width report
+takes 3.43–5.62% less warm time. The counter takes 1.51–5.20% longer and
+the quoted-invoice control is adverse. The 4,095-word dense line
+allocates 50.25% less with an 11.65% lower admitted peak. Confirm the
+conflicting CPU and elapsed outcomes before selecting the design.
+
 [B1389 compiler storage snapshots](results/2026-11-22-compiler-storage-snapshots/README.md)
 compares reuse of instruction lists and shared assignment facts.
 Both keep exact emitted code and locations. The first leaves dense

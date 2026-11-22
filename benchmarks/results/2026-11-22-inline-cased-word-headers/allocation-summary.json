@@ -1,0 +1,34 @@
+[
+  {
+    "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+    "reference": 446312,
+    "candidate": 446144,
+    "allocationChangePercent": -0.03764182903439606,
+    "admittedReference": 1279096,
+    "admittedCandidate": 1278972
+  },
+  {
+    "case": "scripts.text-summary-helpers.nonlocal-counter.large",
+    "reference": 446080,
+    "candidate": 445920,
+    "allocationChangePercent": -0.0358680057388816,
+    "admittedReference": 1279096,
+    "admittedCandidate": 1278972
+  },
+  {
+    "case": "scripts.text-summary-helpers.map-callback.large.mixed-unicode",
+    "reference": 1804142,
+    "candidate": 1803912,
+    "allocationChangePercent": -0.012748442195786858,
+    "admittedReference": 3646020,
+    "admittedCandidate": 3646020
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "reference": 4068628,
+    "candidate": 4068562,
+    "allocationChangePercent": -0.0016221684558059835,
+    "admittedReference": 9432874,
+    "admittedCandidate": 9432874
+  }
+]
