@@ -6,6 +6,17 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1397 retained 0.11.0 checkpoint against CPython](results/2026-11-22-retained-source-cpython/README.md)
+compares six complete scripts at `32c50290d`. Sparse validator time
+to result is 0.789–0.791× CPython's. The postponed factory still takes
+1.780–1.870×, and the word report takes 1.660–1.667× warm. All
+224 batches verify.
+
+[Joint eager annotation and capture admission](results/2026-11-22-eager-single-capture/README.md)
+leaves allocation and reservation counts equal. The representative
+factory evaluates its annotations in a separate definition from the
+capture. The extension remains private.
+
 [B1396 combined compiled default admission](results/2026-11-22-compiled-default-admission/README.md)
 removes a second host resize before allocating mixed default storage.
 Both nested factories run 1.00–3.94% faster warm with matching

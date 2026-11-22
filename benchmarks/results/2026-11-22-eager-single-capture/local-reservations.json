@@ -1,0 +1,37 @@
+{
+  "reference": "32c50290d",
+  "candidate": "30c1632cf",
+  "result": "left private because the measured factory route does not use the joint admission",
+  "rows": [
+    {
+      "id": "scripts.ordinary-fully-supplied-helper",
+      "Growths": 7,
+      "baseline": 49856,
+      "managedBytesDiagnostic": 264176
+    },
+    {
+      "id": "scripts.annotated-rule-closures.nested-factories",
+      "Growths": 6169,
+      "baseline": 74618,
+      "managedBytesDiagnostic": 1152520
+    },
+    {
+      "id": "scripts.annotated-rule-closures.literal-positional-dynamic-keyword",
+      "Growths": 4124,
+      "baseline": 82203,
+      "managedBytesDiagnostic": 964728
+    },
+    {
+      "id": "scripts.factory-observed-defaults",
+      "Growths": 6170,
+      "baseline": 85534,
+      "managedBytesDiagnostic": 1374128
+    },
+    {
+      "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "Growths": 6169,
+      "baseline": 78622,
+      "managedBytesDiagnostic": 1029888
+    }
+  ]
+}
