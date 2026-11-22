@@ -19,7 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../../src/Lokad.Lython/Lokad.Lython.csproj" />
-    <ProjectReference Include="../Lokad.Lython.WorkerFixture/Lokad.Lython.WorkerFixture.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="../Lokad.Lython.WorkerFixture/Lokad.Lython.WorkerFixture.csproj" ReferenceOutputAssembly="false" OutputItemType="WorkerFixtureOutput" />
   </ItemGroup>
 
   <!--
@@ -71,6 +71,7 @@
     <None Update="Fixtures/JsonBytes/*.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Fixtures/GzipFactory/cases.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Fixtures/GzipFactory/compression.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../Fixtures/**/*" Link="Fixtures/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../../benchmarks/scripts/*.py" Link="RepresentativeScripts/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup><None Update="Fixtures/IteratorAdapters/*.json" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
@@ -94,4 +95,16 @@
   <ItemGroup><None Update="Fixtures/ClassSubscription/*.json" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
   <ItemGroup><None Update="Fixtures/DictionaryWrites/*.json" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
   <ItemGroup><None Update="Fixtures/IntegerParsing/*.json" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
+  <!-- The worker shares the exact runtime and adapter files loaded by the tests. -->
+  <Target Name="StageWorkerFixture" AfterTargets="CopyFilesToOutputDirectory">
+    <Error Condition="'@(WorkerFixtureOutput->Count())' != '1'" Text="Expected one framework-matched worker fixture." />
+    <ItemGroup>
+      <WorkerFixtureFile Include="@(WorkerFixtureOutput)" />
+      <WorkerFixtureFile Include="@(WorkerFixtureOutput->'%(RootDir)%(Directory)%(Filename).deps.json')" />
+      <WorkerFixtureFile Include="@(WorkerFixtureOutput->'%(RootDir)%(Directory)%(Filename).runtimeconfig.json')" />
+    </ItemGroup>
+    <Copy SourceFiles="@(WorkerFixtureFile)" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true">
+      <Output TaskParameter="CopiedFiles" ItemName="FileWrites" />
+    </Copy>
+  </Target>
 </Project>

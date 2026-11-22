@@ -204,9 +204,10 @@ invariants belong in the white-box suite.
 
 ## Test responsibilities
 
-Use the project's normal build output for workflow fixture tests and controlled
-worker subprocesses. The test assembly finds workflow files and the matching
-worker by walking up from that output directory.
+The public test build stages workflow inputs and its framework-matched worker
+beside the test assembly. Use `--artifacts-path` for isolated builds and repeat
+the same path for `--no-build` runs. The worker shares the built core and adapter
+files with the test assembly.
 
 Keep captured stdout goldens independent of checkout line endings: escaped `\n`
 literals preserve Python output bytes on Windows and Ubuntu. Compare actual

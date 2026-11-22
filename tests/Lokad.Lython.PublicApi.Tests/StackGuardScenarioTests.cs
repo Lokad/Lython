@@ -1,4 +1,3 @@
-using System.Reflection;
 using System.Text.Json;
 using Lokad.Lython.Tests.Harness;
 
@@ -52,13 +51,7 @@ public sealed class StackGuardScenarioTests
     [InlineData("cancellation")]
     public void YieldedDeepWorkUnwindsAndRecoversInAnIsolatedProcess(string scenario)
     {
-        var root = new DirectoryInfo(AppContext.BaseDirectory);
-        while (root is not null && !File.Exists(Path.Combine(root.FullName, "Directory.Build.props"))) root = root.Parent;
-        Assert.NotNull(root);
-        var configuration = GetType().Assembly.GetCustomAttribute<AssemblyConfigurationAttribute>()!.Configuration;
-        var fixture = Path.Combine(root.FullName, "tests", "Lokad.Lython.WorkerFixture", "bin", configuration,
-            SubprocessProbeRunner.TargetFramework, "Lokad.Lython.WorkerFixture.dll");
-        Assert.True(File.Exists(fixture), "Matching fixture must be built as the suite's dependency.");
+        var fixture = SubprocessProbeRunner.WorkerFixturePath();
         var executable = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH");
         if (string.IsNullOrEmpty(executable)) executable = "dotnet";
         var result = SubprocessProbeRunner.Run(executable,

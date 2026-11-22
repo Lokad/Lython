@@ -1,4 +1,3 @@
-using System.Reflection;
 using System.Text.Json;
 using System.Security.Cryptography;
 using Lokad.Lython.Tests.Harness;
@@ -33,13 +32,7 @@ public sealed class RegexAdapterLifetimeTests
     [InlineData("cursor")]
     public void ActualBackendWorkObservesInFlightCancellationAndUnwinds(string stage)
     {
-        var root = new DirectoryInfo(AppContext.BaseDirectory);
-        while (root is not null && !File.Exists(Path.Combine(root.FullName, "Directory.Build.props"))) root = root.Parent;
-        Assert.NotNull(root);
-        var configuration = GetType().Assembly.GetCustomAttribute<AssemblyConfigurationAttribute>()!.Configuration;
-        var fixture = Path.Combine(root.FullName, "tests", "Lokad.Lython.WorkerFixture", "bin", configuration,
-            SubprocessProbeRunner.TargetFramework, "Lokad.Lython.WorkerFixture.dll");
-        Assert.True(File.Exists(fixture));
+        var fixture = SubprocessProbeRunner.WorkerFixturePath();
         var result = SubprocessProbeRunner.Run(Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? "dotnet",
             [fixture, "regex-cancellation", stage], timeout: TimeSpan.FromSeconds(25));
         Assert.True(result.ExitCode == 0, result.StandardError);

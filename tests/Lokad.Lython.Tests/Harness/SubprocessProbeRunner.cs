@@ -21,6 +21,14 @@ internal static class SubprocessProbeRunner
         typeof(SubprocessProbeRunner).Assembly.GetCustomAttribute<TargetFrameworkAttribute>()!.FrameworkName)
         .Version.ToString(2);
 
+    public static string WorkerFixturePath()
+    {
+        var path = Path.Combine(AppContext.BaseDirectory, "Lokad.Lython.WorkerFixture.dll");
+        if (!File.Exists(path))
+            throw new FileNotFoundException("Expected the worker fixture built with this test assembly.", path);
+        return path;
+    }
+
     public sealed record RunResult(int ExitCode, string StandardOutput, string StandardError);
 
     public static RunResult Run(

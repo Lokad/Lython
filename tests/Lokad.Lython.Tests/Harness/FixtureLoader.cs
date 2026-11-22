@@ -6,7 +6,9 @@ internal static class FixtureLoader
 {
     public static LythonFixture Load(string relativePath)
     {
-        var fixtureDirectory = FindFixtureDirectory(relativePath);
+        var fixtureDirectory = Path.Combine(AppContext.BaseDirectory, "Fixtures", relativePath);
+        if (!Directory.Exists(fixtureDirectory))
+            throw new DirectoryNotFoundException($"Fixture directory does not exist: {fixtureDirectory}.");
 
         return new LythonFixture(
             fixtureDirectory,
@@ -42,30 +44,6 @@ internal static class FixtureLoader
         }
 
         return files;
-    }
-
-    private static string FindFixtureDirectory(string relativePath)
-    {
-        var roots = new List<string>();
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
-        while (directory is not null)
-        {
-            var candidate = Path.Combine(directory.FullName, "Fixtures");
-            if (Directory.Exists(candidate))
-            {
-                roots.Add(candidate);
-                var fixtureDirectory = Path.Combine(candidate, relativePath);
-                if (Directory.Exists(fixtureDirectory))
-                {
-                    return fixtureDirectory;
-                }
-            }
-
-            directory = directory.Parent;
-        }
-
-        throw new DirectoryNotFoundException(
-            $"Fixture directory does not exist: {relativePath} (searched {string.Join(", ", roots)}).");
     }
 }
 

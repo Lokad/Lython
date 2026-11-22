@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Reflection;
 using Lokad.Lython.Benchmarks.Comparison;
 using Lokad.Lython.Tests.Harness;
 
@@ -263,17 +262,12 @@ public sealed class ComparisonWorkerSupervisorTests
         {
             _catalogHash = catalogHash;
             Directory.CreateDirectory(_directory);
-            var root = new DirectoryInfo(AppContext.BaseDirectory);
-            while (root is not null && !File.Exists(Path.Combine(root.FullName, "Directory.Build.props"))) root = root.Parent;
-            if (root is null) throw new InvalidOperationException("Checkout not found.");
-            var configuration = typeof(Fixture).Assembly.GetCustomAttribute<AssemblyConfigurationAttribute>()!.Configuration;
-            var dll = Path.Combine(root.FullName, "tests", "Lokad.Lython.WorkerFixture", "bin", configuration, SubprocessProbeRunner.TargetFramework, "Lokad.Lython.WorkerFixture.dll");
-            Assert.True(File.Exists(dll), "Matching fixture must be built as the test project's dependency.");
+            var dll = SubprocessProbeRunner.WorkerFixturePath();
             var hostName = OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet";
             var host = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH");
             if (string.IsNullOrEmpty(host)) host = Environment.GetEnvironmentVariable("PATH")!.Split(Path.PathSeparator)
                 .Select(path => Path.Combine(path, hostName)).First(File.Exists);
-            _launch = new WorkerLaunch(Path.GetFullPath(host), new[] { dll, mode, catalogHash, _directory }.Concat(arguments).ToArray(), root.FullName);
+            _launch = new WorkerLaunch(Path.GetFullPath(host), new[] { dll, mode, catalogHash, _directory }.Concat(arguments).ToArray(), AppContext.BaseDirectory);
         }
         public Task<ComparisonWorkerClient> StartAsync(TimeSpan? deadline = null) =>
             ComparisonWorkerClient.StartAsync(_launch, "Fixture", _catalogHash, startupDeadline: deadline);

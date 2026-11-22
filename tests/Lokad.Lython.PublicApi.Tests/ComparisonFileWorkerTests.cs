@@ -1,4 +1,3 @@
-using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Lokad.Lython.Benchmarks.Comparison;
@@ -200,14 +199,11 @@ public sealed class ComparisonFileWorkerTests
 
     private static WorkerLaunch Launch(string mode, string catalog)
     {
-        var root = new DirectoryInfo(AppContext.BaseDirectory);
-        while (root is not null && !File.Exists(System.IO.Path.Combine(root.FullName, "Directory.Build.props"))) root = root.Parent;
-        var configuration = typeof(ComparisonFileWorkerTests).Assembly.GetCustomAttribute<AssemblyConfigurationAttribute>()!.Configuration;
-        var dll = System.IO.Path.Combine(root!.FullName, "tests", "Lokad.Lython.WorkerFixture", "bin", configuration, SubprocessProbeRunner.TargetFramework, "Lokad.Lython.WorkerFixture.dll");
+        var dll = SubprocessProbeRunner.WorkerFixturePath();
         var host = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH");
         if (string.IsNullOrEmpty(host)) host = Environment.GetEnvironmentVariable("PATH")!.Split(System.IO.Path.PathSeparator)
             .Select(path => System.IO.Path.Combine(path, OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet")).First(File.Exists);
-        return new(System.IO.Path.GetFullPath(host), [dll, mode, catalog], root.FullName);
+        return new(System.IO.Path.GetFullPath(host), [dll, mode, catalog], AppContext.BaseDirectory);
     }
 
     private sealed class Catalog : IDisposable
