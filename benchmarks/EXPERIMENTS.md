@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1319 retain fresh numbers in tuple slots](results/2026-11-22-numeric-tuple-slots/README.md)
+extends integer tuple storage to floats and mixed values. Typed CSV
+allocates 2.83% less, but both meter scripts use more CPU and have
+higher accounted peaks. Keep the variant private. Preserve all 84
+timed batches and the moving plain-invoice control.
+
 [B1318 confirm decoded JSON suffixes](results/2026-11-22-json-decoded-suffix/confirmation/README.md)
 reverses the two report lanes and doubles warm-up on the same
 images and catalog. Both report clocks span zero and the unchanged

@@ -1,0 +1,38 @@
+[
+  {
+    "case": "scripts.csv-meter-report.typed-ascii",
+    "reference": 3474462,
+    "candidate": 3376246,
+    "allocationChangePercent": -2.8267973574038208,
+    "referenceAccountedPeak": 4142729,
+    "candidateAccountedPeak": 4372105,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.csv-meter-report.explicit-float",
+    "reference": 4686830,
+    "candidate": 4686974,
+    "allocationChangePercent": 0.0030724391539616036,
+    "referenceAccountedPeak": 6875721,
+    "candidateAccountedPeak": 7334473,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.csv-invoice.large",
+    "reference": 3672438,
+    "candidate": 3672438,
+    "allocationChangePercent": 0.0,
+    "referenceAccountedPeak": 9432613,
+    "candidateAccountedPeak": 9432613,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.report-render.large",
+    "reference": 2466692,
+    "candidate": 2467678,
+    "allocationChangePercent": 0.0399725624439462,
+    "referenceAccountedPeak": 3493201,
+    "candidateAccountedPeak": 3493201,
+    "allowanceRestored": true
+  }
+]
