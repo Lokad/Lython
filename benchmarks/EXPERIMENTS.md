@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1334 transport parsed CSV doubles in existing slots](results/2026-11-22-csv-numeric-slot-ingress/README.md)
+lowers typed report allocation by 6.89% and ASCII time to result by
+0.84–1.82%. Warm Unicode is adverse. The unchanged sync invoice has a
+12.25% candidate elapsed spread and adverse medians. All 168 batches
+verify. Keep the prototype private.
+
 [B1333 pack emitted block instructions](results/2026-11-22-packed-block-layout/README.md)
 reduces validator and dataclass compilation time. Validator time to
 result rises 1.71–3.24% and the dense validator needs 393,568 more
