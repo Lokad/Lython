@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1338 parse complete decimal tokens before classification](results/2026-11-22-complete-decimal-token/README.md)
+reduces ASCII warm elapsed by 3.37–7.72% across two complete reports.
+Unicode elapsed rises 1.85–3.65% and invoice process CPU rises 0.96–2.51%.
+ASCII time to result spans zero. All 140 batches verify. Keep the first
+variant private and isolate the ASCII path in a refinement.
+
 [B1337 reuse prepared regex group metadata](results/2026-11-22-regex-prepared-group-metadata/README.md)
 removes repeated provider name reads and saves allocation across many
 rules. The Unicode group report uses 1.54–3.32% more CPU and named-rule
