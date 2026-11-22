@@ -8,6 +8,11 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class ExecutionContext
     {
+        private const long HistogramTotalLimit = 1L << 55;
+
+        private static bool TryReadHistogramTotal(in ExecutableSlot slot, out long value)
+            => slot.TryGetInteger(out value) && value >= -HistogramTotalLimit && value < HistogramTotalLimit;
+
         private static bool TryExecuteDictionaryLoop(ref ExecutableWorkState execution, ExecutionContext scope,
             ExecutionContext? invocation, in ExecutableInstruction head)
         {
@@ -39,9 +44,8 @@ internal sealed partial class LythonRuntime
             long totalIncrement = 0;
             if (hasTotal)
             {
-                if (execution.Locals[total.InputStart].Object is not BigInteger integer || integer.GetByteCount() >= 8)
+                if (!TryReadHistogramTotal(execution.Locals[total.InputStart], out pendingTotal))
                     return false;
-                pendingTotal = (long)integer;
                 totalIncrement = (long)(BigInteger)execution.Code.Constants[~total.SecondInput]!;
             }
 
@@ -80,7 +84,7 @@ internal sealed partial class LythonRuntime
                     {
                         pendingTotal += totalIncrement;
                         totalChanged = true;
-                        if (pendingTotal < -(1L << 55) || pendingTotal >= (1L << 55))
+                        if (pendingTotal < -HistogramTotalLimit || pendingTotal >= HistogramTotalLimit)
                         {
                             execution.InstructionIndex = totalIndex + 2;
                             return true;
@@ -109,7 +113,7 @@ internal sealed partial class LythonRuntime
                     }
                     finally
                     {
-                        if (totalChanged) execution.Locals[total.InputStart].Object = new BigInteger(pendingTotal);
+                        if (totalChanged) execution.Locals[total.InputStart].SetInteger(pendingTotal);
                         if (exhausted) execution.Stack.RetireTo(head.InputStart);
                     }
                 }
@@ -145,9 +149,9 @@ internal sealed partial class LythonRuntime
                     scope.CheckExecution(memberSpan);
                     var dictionary = execution.Locals[store.SecondInput].Object as PyDict;
                     var key = execution.Locals[store.ThirdInput].Object as PyString;
-                    var priorTotal = hasTotal ? execution.Locals[total.InputStart].Object : null;
+                    long priorTotal = 0;
                     if (dictionary is null || key is null ||
-                        hasTotal && (priorTotal is not BigInteger integer || integer.GetByteCount() >= 8))
+                        hasTotal && !TryReadHistogramTotal(execution.Locals[total.InputStart], out priorTotal))
                     {
                         execution.InstructionIndex = headIndex + 2;
                         return true;
@@ -171,9 +175,9 @@ internal sealed partial class LythonRuntime
                         scope.CheckExecution(total.Span);
                         if (privateBindings)
                         {
-                            pendingTotal = (totalChanged ? pendingTotal : (long)(BigInteger)priorTotal!) + (long)totalIncrement;
+                            pendingTotal = (totalChanged ? pendingTotal : priorTotal) + (long)totalIncrement;
                             totalChanged = true;
-                            if (pendingTotal < -(1L << 55) || pendingTotal >= (1L << 55))
+                            if (pendingTotal < -HistogramTotalLimit || pendingTotal >= HistogramTotalLimit)
                             {
                                 execution.InstructionIndex = callIndex + 5;
                                 return true;
@@ -181,7 +185,7 @@ internal sealed partial class LythonRuntime
                         }
                         else
                         {
-                            var value = AddExactIntegers((BigInteger)priorTotal!, totalIncrement, scope.MemoryGovernor, total.Span);
+                            var value = AddExactIntegers(new BigInteger(priorTotal), totalIncrement, scope.MemoryGovernor, total.Span);
                             PublishInstructionResult(ref execution, invocation, total, value);
                         }
                     }
@@ -197,7 +201,7 @@ internal sealed partial class LythonRuntime
             }
             finally
             {
-                if (totalChanged) execution.Locals[total.InputStart].Object = new BigInteger(pendingTotal);
+                if (totalChanged) execution.Locals[total.InputStart].SetInteger(pendingTotal);
                 if (exhausted) execution.Stack.RetireTo(head.InputStart);
             }
         }

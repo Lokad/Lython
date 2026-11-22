@@ -6,6 +6,48 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class DictionaryAccumulationLifetimeTests
 {
+    [Theory]
+    [InlineData("text.lower().split()")]
+    [InlineData("words")]
+    public async Task NestedHistogramPublishesAnExactTotalWhenItCrossesTheFastRange(string iterable)
+    {
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        const long boundary = 1L << 55;
+        using var script = new LythonEngine().Compile($$"""
+            def count():
+                counts={}
+                total=(1 << 55)-2
+                before=total
+                text='ALPHA'
+                words=['alpha']
+                for batch in range(4):
+                    for word in {{iterable}}:
+                        counts[word]=counts.get(word,0)+1
+                        total+=1
+                current=total
+                return before,current,counts['alpha'],current is total
+            return count()
+            """, budget);
+        Assert.True(script.IsValid, string.Join(';', script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        foreach (var asynchronous in new[] { false, true })
+        {
+            using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                var values = Assert.IsAssignableFrom<IList>(result.ReturnValue);
+                Assert.Equal(new BigInteger(boundary - 2), Assert.IsType<BigInteger>(values[0]));
+                Assert.Equal(new BigInteger(boundary + 2), Assert.IsType<BigInteger>(values[1]));
+                Assert.Equal(new BigInteger(4), Assert.IsType<BigInteger>(values[2]));
+                Assert.True(Assert.IsType<bool>(values[3]));
+                Assert.True(budget.ReservedBytes > baseline);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Fact]
     public async Task ReturnedDictionaryAndOldCountRemainFundedUntilDisposal()
     {
