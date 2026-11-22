@@ -15,6 +15,23 @@ public sealed class OrdinaryFunctionCallTests
         { "def pack(value,*,offset):\n snapshot=locals()\n def read():return value\n value.append(offset)\n return read,snapshot\nvalue=[]\nread,snapshot=pack(offset=3,value=value)\nprint(read() is value,snapshot['value'] is value,value)", "True True [3]\n" },
         { "def f(value,*,offset=1):return value+offset\nprint(f(*[3],**{'offset':4}))\nclass Callable:\n def __call__(self,value,*,offset=2):return value+offset\nprint(Callable()(offset=5,value=6))", "7\n11\n" },
         { "def method(self,value,*,offset=1):return value+offset\nclass Box:pass\nBox.method=method\nbox=Box()\nsaved=box.method\nprint(box.method(offset=5,value=2),saved(value=3))\nprint(saved.__self__ is box,saved.__func__ is method)", "7 4\nTrue True\n" },
+        {
+            """
+            events = []
+            class Scale:
+                def __rmul__(self, value):
+                    events.append(value)
+                    return value + 20
+            def calculate(a, b, c):
+                return (a + b) * c
+            def run(a, b, c):
+                return calculate(a, b, c)
+            print(calculate(2, 3, 4), run(3, 4, 5))
+            print(run(9223372036854775807, 1, -2))
+            print(calculate(2, 3, Scale()), run(4, 5, Scale()), events)
+            """,
+            "20 35\n-18446744073709551616\n25 29 [5, 9]\n"
+        },
     };
 
     [Theory]
@@ -36,5 +53,64 @@ public sealed class OrdinaryFunctionCallTests
         }
         script.Dispose();
         Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ArithmeticReturnTransfersToOneSuspendingProtocol(bool cancel)
+    {
+        const string source = """
+            events = []
+            class Scale:
+                def __rmul__(self, value):
+                    events.append(value)
+                    with open("factor.txt") as factor:
+                        return value * int(factor.read())
+            def calculate(a, b, c):
+                return (a + b) * c
+            def run(a, b, c):
+                return calculate(a, b, c)
+            print(run(7, 8, 2))
+            print(run(2, 3, Scale()), events)
+            """;
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Message)));
+        var baseline = budget.ReservedBytes;
+        var host = new DelayedLythonHost();
+        host.SeedFile("/factor.txt", "3");
+        var entered = cancel ? host.PauseReadUntilCancellation("/factor.txt") : null;
+        using var cancellation = new CancellationTokenSource();
+        var pending = script.RunAsync(host, cancellationToken: cancellation.Token);
+        try
+        {
+            if (entered is not null)
+            {
+                var first = await Task.WhenAny(entered, pending).WaitAsync(TimeSpan.FromSeconds(10));
+                Assert.Same(entered, first);
+                Assert.False(pending.IsCompleted);
+                Assert.True(budget.ReservedBytes > baseline);
+                cancellation.Cancel();
+            }
+            using var result = await pending.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.Equal(!cancel, result.Success);
+            if (cancel)
+            {
+                Assert.Equal(LythonFailureReason.Cancelled, result.Failure?.Attribution?.Reason);
+                Assert.Equal("30\n", result.StandardOutput);
+            }
+            else
+            {
+                Assert.Equal("30\n15 [5]\n", result.StandardOutput);
+                Assert.True(host.CompletedAsynchronously > 0);
+            }
+        }
+        finally
+        {
+            cancellation.Cancel();
+            using var drained = await pending.WaitAsync(TimeSpan.FromSeconds(10));
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
     }
 }

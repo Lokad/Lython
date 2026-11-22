@@ -606,6 +606,7 @@ internal sealed partial class ExecutableCodeObject
         CanRunNativeInstructions = IsFunctionScope && !RequiresLocalVariableMirroring && EntryIndex < NativePrefixEnd
             && (capturedLocalSlots.Count == 0 ||
                 usesOnlyLexicalSlots && ValueStorageCapacity <= LythonRuntime.NativeValueCapacity);
+        HasDirectIntegerReturn = CanRunNativeInstructions && HasClosedIntegerReturn(cancellationToken);
 
         int ResolvedOffset(int block) => positions[ExecutableStackLayout.ResolveTarget(blocks, positions, block, cancellationToken)].Offset;
     }
@@ -700,6 +701,8 @@ internal sealed partial class ExecutableCodeObject
     public int ValueStorageCapacity { get; }
 
     public bool CanRunNativeInstructions { get; }
+
+    internal bool HasDirectIntegerReturn { get; }
 
     public int NativePrefixEnd { get; }
 

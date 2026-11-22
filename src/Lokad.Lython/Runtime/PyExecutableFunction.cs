@@ -78,6 +78,14 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         bool completePositional, Span<LythonRuntime.ExecutableSlot> unpackedReturn, out bool unpacked,
         out LythonRuntime.ExecutableSlot result, out LythonRuntime.ExecutionContext? frame)
     {
+        if (completePositional && receiver is null && CodeObject.HasDirectIntegerReturn &&
+            arguments.Length == CodeObject.FirstTemporarySlot && TryStartDirectIntegerReturn(arguments, span, out result))
+        {
+            unpacked = false;
+            frame = null;
+            return;
+        }
+
         // Both executable callers select eligibility before entry. Starting a
         // selected call completes or transfers its exact work; it never declines
         // after binding and asks the caller to try another execution route.
@@ -97,6 +105,32 @@ internal sealed class PyExecutableFunction : PyFunctionBase
             [], span, this, context, receiver: receiver, callSite: call, operands: arguments);
         StartInline(values, null, span, consumedByIteration, unpackedReturn,
             out unpacked, out result, out frame, out _);
+    }
+
+    private bool TryStartDirectIntegerReturn(ReadOnlySpan<LythonRuntime.ExecutableSlot> arguments, LythonSourceSpan span,
+        out LythonRuntime.ExecutableSlot result)
+    {
+        try
+        {
+            Closure.EnterFunctionCall(span);
+            try
+            {
+                return LythonRuntime.TryEvaluateDirectIntegerReturn(CodeObject, arguments, Closure, out result);
+            }
+            catch (LythonRuntimeException error)
+            {
+                var previous = Closure.State.CurrentException;
+                if (previous is not null && !ReferenceEquals(error.OriginalPythonException, previous))
+                    error.PythonContext ??= previous;
+                throw;
+            }
+            finally { Closure.LeaveFunctionCall(); }
+        }
+        catch (LythonRuntimeException error)
+        {
+            PyFunctionBinding.AnnotateException(error, Closure, Name, span);
+            throw;
+        }
     }
 
     // The short callback argument span has already been evaluated. A complete

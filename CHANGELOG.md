@@ -27,6 +27,8 @@
   afterward, avoiding an eager numeric box and temporary operand.
 - Forward eligible nested fixed tuple returns into the caller's operand slots.
   Keep exact, already-funded dictionary writes in the same native activation.
+- Return complete checked integer expressions directly from supplied positional
+  operands. Preserve managed admission and use the normal activation for other operands.
 - Reuse an existing UTF-8 scalar index to resolve single regex match windows.
 - Initialize regex match byte ranges during scalar projection. ASCII matches
   write their byte and character offsets together.

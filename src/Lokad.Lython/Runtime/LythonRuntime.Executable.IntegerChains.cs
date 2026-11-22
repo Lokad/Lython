@@ -5,6 +5,21 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
+    internal static bool TryEvaluateDirectIntegerReturn(ExecutableCodeObject code, ReadOnlySpan<ExecutableSlot> arguments,
+        ExecutionContext scope, out ExecutableSlot value)
+    {
+        value = default;
+        ref readonly var first = ref code.Instructions[0];
+        scope.CheckExecution(first.Span);
+        if (!TryReadMachineOperand(code, arguments, first.InputStart, scope, out var left) ||
+            !TryReadMachineOperand(code, arguments, first.SecondInput, scope, out var right) ||
+            !TryIntegerChain(code, arguments, 0, left, right, scope, out var end, out var result)) return false;
+        System.Diagnostics.Debug.Assert(end == code.Instructions.Length - 2);
+        scope.CheckExecution(code.Instructions[end + 1].Span);
+        value.SetInteger(result);
+        return true;
+    }
+
     private static bool TryExecuteClosureArithmetic(ExecutableCodeObject code, IReadOnlyList<ExecutableCell>? cells,
         int index, int liveExtent, ExecutionContext context)
     {

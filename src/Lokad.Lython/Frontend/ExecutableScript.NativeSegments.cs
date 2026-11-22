@@ -4,6 +4,41 @@ namespace Lokad.Lython.Frontend;
 
 internal sealed partial class ExecutableCodeObject
 {
+    private bool HasClosedIntegerReturn(CancellationToken cancellationToken)
+    {
+        if (Instructions.Length < 2 || EntryIndex != 0 || ExceptionRegions.Count != 0 ||
+            CapturedLocalSlots.Count != 0 || Instructions[^1].OpCode != ExecutableOpCode.Return ||
+            Instructions[^1].InputStart != Instructions[^2].ResultSlot) return false;
+
+        // The complete body uses only the existing integer chain and wraps
+        // one new result. Runtime arity verifies that all locals are arguments.
+        var carry = Instructions[0].ResultSlot;
+        for (var index = 0; index < Instructions.Length - 1; index++)
+        {
+            PythonTokenization.CheckCancellation(cancellationToken, index);
+            ref readonly var instruction = ref Instructions[index];
+            if (instruction.OpCode != ExecutableOpCode.Binary || instruction.ResultSlot != carry ||
+                instruction.HasResultConsumer ||
+                instruction.BinaryOperator is not (BinaryOperatorSyntax.Add or BinaryOperatorSyntax.Subtract or
+                    BinaryOperatorSyntax.Multiply or BinaryOperatorSyntax.FloorDivide or BinaryOperatorSyntax.Modulo))
+                return false;
+
+            var left = instruction.InputStart;
+            var right = instruction.SecondInput;
+            if (index == 0)
+            {
+                if (!IsInput(left) || !IsInput(right)) return false;
+            }
+            else if (!Instructions[index - 1].HasIntegerContinuation ||
+                !(left == carry && IsInput(right) || right == carry && IsInput(left))) return false;
+        }
+        return true;
+
+        // A forwarded global occupies the same encoded range as constants,
+        // after the last constant. Only immutable literal operands qualify.
+        bool IsInput(int slot) => slot >= 0 ? slot < FirstTemporarySlot : ~slot < Constants.Length;
+    }
+
     // A native get/add/store can reuse one table probe. Original instructions
     // remain the pre-effect path for dynamic values, growth and other methods.
     private void PrepareNativeSegments(ExecutableCallSite[] sites)

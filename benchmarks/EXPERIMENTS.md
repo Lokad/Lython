@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1372 direct returns with the existing call entry](results/2026-11-22-native-direct-integer-return-refined/README.md)
+retains the direct arithmetic return. Both helpers improve with lower
+CPU, and the nested invoice uses 2.06–3.10% less warm elapsed time.
+Quoted invoice spans zero. Mixed first-use CPU is still adverse.
+The original and refined observations remain available.
+
 [B1371 arithmetic returns from supplied operands](results/2026-11-22-native-direct-integer-return/README.md)
 skips the native workspace for a complete checked integer return.
 The function-scoped helper takes 18.42–20.84% less warm time and the
