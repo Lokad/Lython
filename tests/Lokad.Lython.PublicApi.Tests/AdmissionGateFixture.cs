@@ -10,6 +10,7 @@ internal sealed class AdmissionGateBudget : ILythonMemoryBudget
     public long AllocatedAtFirstRefusal { get; private set; }
     public long ThreadAllocatedAtFirstRefusal { get; private set; }
     public int ThreadAtFirstRefusal { get; private set; }
+    internal Action? OnNextReserve { get; set; }
     internal Action? OnNextResizeGrowth { get; set; }
     public void Gate(long headroom) { AtGate = Root.ReservedBytes; Ceiling = checked(AtGate + headroom); }
     public ILythonMemoryScope CreateScope() => new Scope(this, Root.CreateScope());
@@ -19,6 +20,11 @@ internal sealed class AdmissionGateBudget : ILythonMemoryBudget
         reservation = null;
         if (bytes > Ceiling - Root.ReservedBytes || !owner.TryReserve(bytes, out var inner)) return Refused();
         reservation = new Reservation(this, inner);
+        if (OnNextReserve is { } notify)
+        {
+            OnNextReserve = null;
+            notify();
+        }
         return true;
     }
     private bool Refused()

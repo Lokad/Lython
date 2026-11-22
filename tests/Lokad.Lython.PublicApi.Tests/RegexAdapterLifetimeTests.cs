@@ -122,6 +122,26 @@ public sealed class RegexAdapterLifetimeTests
     }
 
     [Fact]
+    public void CursorCreationCancellationReturnsTheCallerTokenAndUnwinds()
+    {
+        var budget = new AdmissionGateBudget();
+        using (var owner = budget.CreateScope())
+        {
+            using var cancellation = new CancellationTokenSource();
+            using var pattern = Utf8RegexProvider.Instance.Compile("a"u8.ToArray(), new(32, false), owner, default);
+            var baseline = budget.Root.ReservedBytes;
+            using var subject = pattern.Prepare("a"u8.ToArray(), new(0, 1, 0, 1), owner, default);
+            budget.OnNextReserve = cancellation.Cancel;
+            var error = Assert.ThrowsAny<OperationCanceledException>(() => subject.Find(cancellation.Token));
+            Assert.Equal(cancellation.Token, error.CancellationToken);
+            Assert.Equal(baseline, budget.Root.ReservedBytes);
+            using var cursor = subject.Find(default);
+            Assert.True(cursor.TryNext(new LythonRegexCapture?[pattern.CaptureSlotCount], out _, default));
+        }
+        Assert.Equal(0, budget.Root.ReservedBytes);
+    }
+
+    [Fact]
     public void RefusedCursorAdmissionLeavesPatternAndWorkingOwnerReusable()
     {
         var retained = new LythonMemoryBudget();

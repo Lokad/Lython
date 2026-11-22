@@ -329,14 +329,20 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
                 _cancellation = new CancellationTokenSource();
                 try
                 {
+                    token.ThrowIfCancellationRequested();
                     if (subject._window.Pos > subject._window.EndPos) return;
                     Reserve(_owner, subject.MatchBytes);
-                    using var registration = Forward(token);
                     var regex = subject.Pattern.Regex;
-                    _cursor = Backend((Regex: regex, Input: subject.BoundedInput, subject._window.StartByte, Token: _cancellation.Token),
-                        static (state, _) => state.Regex.CreateMatchCursor(state.Input, state.StartByte, state.Token),
-                        token, patternSource: regex);
+                    using (Forward(token))
+                    {
+                        _cursor = Backend((Regex: regex, Input: subject.BoundedInput, subject._window.StartByte, Token: _cancellation.Token),
+                            static (state, _) => state.Regex.CreateMatchCursor(state.Input, state.StartByte, state.Token),
+                            token, patternSource: regex);
+                    }
+                    token.ThrowIfCancellationRequested();
                 }
+                catch (OperationCanceledException) when (token.IsCancellationRequested)
+                { Dispose(); throw new OperationCanceledException(token); }
                 catch { Dispose(); throw; }
             }
 
