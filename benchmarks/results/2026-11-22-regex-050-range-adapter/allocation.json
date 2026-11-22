@@ -1,0 +1,247 @@
+{
+  "identity": {
+    "referenceSource": "6ac96ea93dd9185e93c5b570367c52be0ec8dcff",
+    "candidateSource": "ef44cbeecbd5253f3fcfe642633647e78216cffb",
+    "imageFiles": {
+      "reference": {
+        "Azure.Core.dll": "1d6df436afdc73c30d476be938f6513c90ef8fc884a7bae280091a9bed0a5490",
+        "Azure.Identity.dll": "31574a3d35ffeb0e25a00ebb317937222fe5283b91af608613f2e3bf0f26c50a",
+        "BenchmarkDotNet.Annotations.dll": "97974c60500f53a3c7d142088b22d815aae7aac729de69f4b497132cc436594f",
+        "BenchmarkDotNet.dll": "599ded314fe77dbc17318557e787cf660c1fcb0d69be39994ea462ca95745896",
+        "CommandLine.dll": "8a55501cd1a1590a4bd93a17c6fdd2c01a0ed5bff1aea9036bdc78d98c9a3fad",
+        "deniszykov.WebSocketListener.dll": "c86cfb93e32192ae12fb1a132b4ae785a7d2f325e8583c03c99abf8e832d25d6",
+        "Dia2Lib.dll": "6c4cac68010fe032218efe5e9fcf46eef9f77bfaa5f3bd33f03c5ff77d5a8fac",
+        "Gee.External.Capstone.dll": "6dfda67784598de9677173b89d0692593935f1a4024d36040c95dea48c1b5965",
+        "Iced.dll": "f058c01321b4cdfc9b9151879e88e59571c8d0ba176fbcf95bc936a8f3d073ed",
+        "Lokad.Lython.Benchmarks.deps.json": "b47f293f779ce46eefa92c6eb775842efe363be212c35bf7d155d0b89734d450",
+        "Lokad.Lython.Benchmarks.dll": "c5d76bcf186edb5266491b6bb89dbe2bd487b16e044e751e440e8a4b964b6f8d",
+        "Lokad.Lython.Benchmarks.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0",
+        "Lokad.Lython.dll": "712cc0b4e1cbf39ea59b9d32cf6d8629a8d2586ee1695e785891aeb80cd772e0",
+        "Lokad.Lython.Utf8Regex.dll": "08e5cf04b7dba7f1a5de43d2b06d405c92ac550588028652356b6dfa7dbd1630",
+        "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+        "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe",
+        "Microsoft.Bcl.AsyncInterfaces.dll": "bf58b47923b2f520c766ca905f68a1a65d217c4d828f05db538c41129cacf9d9",
+        "Microsoft.CodeAnalysis.CSharp.dll": "1af1de8a162d2312eb2f6b781f5edbe8cec7d5cd268c7e4de24396225e54260f",
+        "Microsoft.CodeAnalysis.dll": "42c9ce7891470f430267e2dc02d03571f9d046a7e7e121107754bee58d344613",
+        "Microsoft.Diagnostics.FastSerialization.dll": "e5bdad179ce97180646f37f357cb7b449f5baaf76f185eb09510eeafc5b773e1",
+        "Microsoft.Diagnostics.NETCore.Client.dll": "e2cc9e1f6c97b3c4ee45ebabaa92408eb9b2fc81cb08ceeb342fe48bf79db15f",
+        "Microsoft.Diagnostics.Runtime.dll": "52d5f113180bb0f70b1a9b10608aef93b187364ac689885d2d3c734102d850a2",
+        "Microsoft.Diagnostics.Tracing.TraceEvent.dll": "92401392ce1887c3483a3c0085e6cc3656ee39da1be539943096ebabbad6ea21",
+        "Microsoft.Identity.Client.dll": "5795027e9ae95eececb310a4fed3c502bb368039d186ab0884f64b7792b84717",
+        "Microsoft.Identity.Client.Extensions.Msal.dll": "07109a2f30df782300077a567ade47cbd0a0502c75cd7c8a62192f7d64bb004e",
+        "Microsoft.IdentityModel.Abstractions.dll": "24e97b54b6b5c234a124a336757e3116617ac6c30b655cdae74517dc2ecb5746",
+        "Perfolizer.dll": "4a5508174e2b90a651a29e1de0d2ad88236daaaae01070cd6fc8ca3c36beaa36",
+        "Pragmastat.dll": "7217e206e47de8a0335f58513019d5805a6e52ca2e8f127e2cc3944f1742bb2e",
+        "System.ClientModel.dll": "dec5e22b71a1685c5e6e97cd28b629f0aa6703fb87b6950df28e79fc1804290c",
+        "System.Memory.Data.dll": "2c1035b0106dbb2de7913d151e06071ed617bb58bbb3d6cd46a2dd0f6a03617b",
+        "System.Security.Cryptography.ProtectedData.dll": "80566f0839ece5946e66bf9f00d723e59e371ba1341a18e00c7c7a7c49298e1d",
+        "TraceReloggerLib.dll": "6830c0f1d3f3c17719181e73dd5cfa8ccbb3f3c575329d2120576545103467b5"
+      },
+      "candidate": {
+        "Azure.Core.dll": "1d6df436afdc73c30d476be938f6513c90ef8fc884a7bae280091a9bed0a5490",
+        "Azure.Identity.dll": "31574a3d35ffeb0e25a00ebb317937222fe5283b91af608613f2e3bf0f26c50a",
+        "BenchmarkDotNet.Annotations.dll": "97974c60500f53a3c7d142088b22d815aae7aac729de69f4b497132cc436594f",
+        "BenchmarkDotNet.dll": "599ded314fe77dbc17318557e787cf660c1fcb0d69be39994ea462ca95745896",
+        "CommandLine.dll": "8a55501cd1a1590a4bd93a17c6fdd2c01a0ed5bff1aea9036bdc78d98c9a3fad",
+        "deniszykov.WebSocketListener.dll": "c86cfb93e32192ae12fb1a132b4ae785a7d2f325e8583c03c99abf8e832d25d6",
+        "Dia2Lib.dll": "6c4cac68010fe032218efe5e9fcf46eef9f77bfaa5f3bd33f03c5ff77d5a8fac",
+        "Gee.External.Capstone.dll": "6dfda67784598de9677173b89d0692593935f1a4024d36040c95dea48c1b5965",
+        "Iced.dll": "f058c01321b4cdfc9b9151879e88e59571c8d0ba176fbcf95bc936a8f3d073ed",
+        "Lokad.Lython.Benchmarks.deps.json": "6b2d1cd0602c19cdd0c962195708fb0f094d63717bb98a4f8426fc33c1708dd5",
+        "Lokad.Lython.Benchmarks.dll": "06a936d0dc0aa9dde87830c288a431e580ffc2d54185a6b38b38a62e7a4c8012",
+        "Lokad.Lython.Benchmarks.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0",
+        "Lokad.Lython.dll": "712cc0b4e1cbf39ea59b9d32cf6d8629a8d2586ee1695e785891aeb80cd772e0",
+        "Lokad.Lython.Utf8Regex.dll": "7b661533197fed613a7fe7f9575d2a85634cad2dea894cf5cf87e60c30d08abc",
+        "Lokad.Utf8Regex.dll": "bda1116f27b5369ddb71b381c9ffbddf8bf92696637a9bca44073506e15460ab",
+        "Lokad.Utf8Regex.PythonRe.dll": "507f67e6218bd69a119be4c3439a7667d445780d927c015b9755ca9dd0324ad7",
+        "Microsoft.Bcl.AsyncInterfaces.dll": "bf58b47923b2f520c766ca905f68a1a65d217c4d828f05db538c41129cacf9d9",
+        "Microsoft.CodeAnalysis.CSharp.dll": "1af1de8a162d2312eb2f6b781f5edbe8cec7d5cd268c7e4de24396225e54260f",
+        "Microsoft.CodeAnalysis.dll": "42c9ce7891470f430267e2dc02d03571f9d046a7e7e121107754bee58d344613",
+        "Microsoft.Diagnostics.FastSerialization.dll": "e5bdad179ce97180646f37f357cb7b449f5baaf76f185eb09510eeafc5b773e1",
+        "Microsoft.Diagnostics.NETCore.Client.dll": "e2cc9e1f6c97b3c4ee45ebabaa92408eb9b2fc81cb08ceeb342fe48bf79db15f",
+        "Microsoft.Diagnostics.Runtime.dll": "52d5f113180bb0f70b1a9b10608aef93b187364ac689885d2d3c734102d850a2",
+        "Microsoft.Diagnostics.Tracing.TraceEvent.dll": "92401392ce1887c3483a3c0085e6cc3656ee39da1be539943096ebabbad6ea21",
+        "Microsoft.Identity.Client.dll": "5795027e9ae95eececb310a4fed3c502bb368039d186ab0884f64b7792b84717",
+        "Microsoft.Identity.Client.Extensions.Msal.dll": "07109a2f30df782300077a567ade47cbd0a0502c75cd7c8a62192f7d64bb004e",
+        "Microsoft.IdentityModel.Abstractions.dll": "24e97b54b6b5c234a124a336757e3116617ac6c30b655cdae74517dc2ecb5746",
+        "Perfolizer.dll": "4a5508174e2b90a651a29e1de0d2ad88236daaaae01070cd6fc8ca3c36beaa36",
+        "Pragmastat.dll": "7217e206e47de8a0335f58513019d5805a6e52ca2e8f127e2cc3944f1742bb2e",
+        "System.ClientModel.dll": "dec5e22b71a1685c5e6e97cd28b629f0aa6703fb87b6950df28e79fc1804290c",
+        "System.Memory.Data.dll": "2c1035b0106dbb2de7913d151e06071ed617bb58bbb3d6cd46a2dd0f6a03617b",
+        "System.Security.Cryptography.ProtectedData.dll": "80566f0839ece5946e66bf9f00d723e59e371ba1341a18e00c7c7a7c49298e1d",
+        "TraceReloggerLib.dll": "6830c0f1d3f3c17719181e73dd5cfa8ccbb3f3c575329d2120576545103467b5"
+      }
+    },
+    "catalogSHA256": "970ecb113bb82d195bb1d592606b3961fdc75710bdc83f61de78cfbee29064dc",
+    "protocolSHA256": "7b2b1486385dcbe60612d7b03e12f65a6728e8c258074bf473a8bb140c97fcb0",
+    "changedFiles": [
+      "Lokad.Lython.Benchmarks.deps.json",
+      "Lokad.Lython.Benchmarks.dll",
+      "Lokad.Lython.Utf8Regex.dll",
+      "Lokad.Utf8Regex.dll",
+      "Lokad.Utf8Regex.PythonRe.dll"
+    ]
+  },
+  "reference": {
+    "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+    "rows": [
+      {
+        "id": "scripts.regex-unicode-groups",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          3264600,
+          3264600,
+          3265020
+        ],
+        "peakExecutionMemoryBytes": 2089005,
+        "compiledReservedBytes": 135836,
+        "compilationMillisecondsDiagnostic": 261.6894,
+        "compilationAllocatedBytesDiagnostic": 1488344,
+        "firstInvocationMillisecondsDiagnostic": 135.5267,
+        "sharedBudgetBaselineRestored": true
+      },
+      {
+        "id": "scripts.regex-ascii-groups",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          2955904,
+          2955904,
+          2955904
+        ],
+        "peakExecutionMemoryBytes": 2075085,
+        "compiledReservedBytes": 135836,
+        "compilationMillisecondsDiagnostic": 2.6778,
+        "compilationAllocatedBytesDiagnostic": 165568,
+        "firstInvocationMillisecondsDiagnostic": 15.3869,
+        "sharedBudgetBaselineRestored": true
+      },
+      {
+        "id": "diagnostic.regex-template.file",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          936360,
+          936366,
+          936248
+        ],
+        "peakExecutionMemoryBytes": 50434,
+        "compiledReservedBytes": 137929,
+        "compilationMillisecondsDiagnostic": 8.0938,
+        "compilationAllocatedBytesDiagnostic": 165168,
+        "firstInvocationMillisecondsDiagnostic": 26.2068,
+        "sharedBudgetBaselineRestored": true
+      },
+      {
+        "id": "diagnostic.regex-prepared-names.many-named-rules",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          382032,
+          382032,
+          382032
+        ],
+        "peakExecutionMemoryBytes": 139956,
+        "compiledReservedBytes": 5283168,
+        "compilationMillisecondsDiagnostic": 45.5382,
+        "compilationAllocatedBytesDiagnostic": 7391080,
+        "firstInvocationMillisecondsDiagnostic": 2.0368,
+        "sharedBudgetBaselineRestored": true
+      },
+      {
+        "id": "calls.positional.large",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          1060264,
+          1060264,
+          1060264
+        ],
+        "peakExecutionMemoryBytes": 1284,
+        "compiledReservedBytes": 43232,
+        "compilationMillisecondsDiagnostic": 11.5512,
+        "compilationAllocatedBytesDiagnostic": 28376,
+        "firstInvocationMillisecondsDiagnostic": 7.3735,
+        "sharedBudgetBaselineRestored": true
+      }
+    ],
+    "boundary": "Complete warm runs including mediated I/O/reset, all output/file checks and result cleanup; compilation/startup/final cache teardown excluded. Process-wide CLR allocation counters, no forced GC. Compilation and first invocation clocks are local diagnostic observations, not a controlled CPU/source timing comparison."
+  },
+  "candidate": {
+    "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+    "rows": [
+      {
+        "id": "scripts.regex-unicode-groups",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          2089208,
+          2089208,
+          2089208
+        ],
+        "peakExecutionMemoryBytes": 2089005,
+        "compiledReservedBytes": 135836,
+        "compilationMillisecondsDiagnostic": 273.1909,
+        "compilationAllocatedBytesDiagnostic": 1453232,
+        "firstInvocationMillisecondsDiagnostic": 98.6551,
+        "sharedBudgetBaselineRestored": true
+      },
+      {
+        "id": "scripts.regex-ascii-groups",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          2077840,
+          2077840,
+          2077840
+        ],
+        "peakExecutionMemoryBytes": 2075085,
+        "compiledReservedBytes": 135836,
+        "compilationMillisecondsDiagnostic": 1.3592,
+        "compilationAllocatedBytesDiagnostic": 137432,
+        "firstInvocationMillisecondsDiagnostic": 15.3562,
+        "sharedBudgetBaselineRestored": true
+      },
+      {
+        "id": "diagnostic.regex-template.file",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          368696,
+          368696,
+          368696
+        ],
+        "peakExecutionMemoryBytes": 50434,
+        "compiledReservedBytes": 137929,
+        "compilationMillisecondsDiagnostic": 5.3046,
+        "compilationAllocatedBytesDiagnostic": 128048,
+        "firstInvocationMillisecondsDiagnostic": 34.1995,
+        "sharedBudgetBaselineRestored": true
+      },
+      {
+        "id": "diagnostic.regex-prepared-names.many-named-rules",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          154192,
+          154192,
+          154192
+        ],
+        "peakExecutionMemoryBytes": 139956,
+        "compiledReservedBytes": 5283168,
+        "compilationMillisecondsDiagnostic": 46.5451,
+        "compilationAllocatedBytesDiagnostic": 5324144,
+        "firstInvocationMillisecondsDiagnostic": 1.9722,
+        "sharedBudgetBaselineRestored": true
+      },
+      {
+        "id": "calls.positional.large",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          1060348,
+          1060264,
+          1060264
+        ],
+        "peakExecutionMemoryBytes": 1284,
+        "compiledReservedBytes": 43232,
+        "compilationMillisecondsDiagnostic": 22.6035,
+        "compilationAllocatedBytesDiagnostic": 53000,
+        "firstInvocationMillisecondsDiagnostic": 11.7499,
+        "sharedBudgetBaselineRestored": true
+      }
+    ],
+    "boundary": "Complete warm runs including mediated I/O/reset, all output/file checks and result cleanup; compilation/startup/final cache teardown excluded. Process-wide CLR allocation counters, no forced GC. Compilation and first invocation clocks are local diagnostic observations, not a controlled CPU/source timing comparison."
+  }
+}

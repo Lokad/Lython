@@ -12,7 +12,6 @@ and translates match snapshots to the existing absolute capture
 ranges. One-shot matches use one-result cursors for last-close
 metadata. Working storage and pattern lifetime use the existing
 Lython owners, and cursor creation keeps its scoped token bridge.
-Temporary snapshot and cursor overhead remains unmeasured.
 
 Each platform passes 622 focused public Release checks. Two new
 cases cover short and long UTF-8 group names, lookbehind before
@@ -38,3 +37,25 @@ original-token interruption and a focused performance comparison.
 
 [Loaded package identity](tested-producer.json) ·
 [Private source patch and checks](procedures.tar.xz).
+
+## Local allocation with the complete development backend
+
+Windows .NET 11 RC3 uses the same frozen Lython core for both images.
+The producer, adapter and rebuilt benchmark worker differ. Five
+CPython goldens verify for each image. This measures the combined
+producer and adapter change.
+
+| Complete script | 0.4.0 allocated bytes | 0.5.0 development allocated bytes | Reduction |
+| --- | ---: | ---: | ---: |
+| 3,072 Unicode rows with named captures | 3,264,600 | 2,089,208 | 36.00% |
+| 3,072 ASCII rows with named captures | 2,955,904 | 2,077,840 | 29.71% |
+| Rewrite 96 file lines using named groups | 936,360 | 368,696 | 60.63% |
+| Compile 64 named rules | 382,032 | 154,192 | 59.64% |
+| Positional call control | 1,060,264 | 1,060,264 | 0.00% |
+
+Admitted execution peaks match and the shared budget returns to
+baseline. Elapsed and process CPU remain unmeasured. The one-shot
+cursor overhead remains part of the final producer comparison.
+
+[Allocations, peaks and image identity](allocation.json) ·
+[Allocation procedure](allocation-procedures.tar.xz).
