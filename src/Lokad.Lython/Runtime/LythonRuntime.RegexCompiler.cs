@@ -251,7 +251,7 @@ internal sealed partial class LythonRuntime
                 try
                 {
                     PopulateNamedGroups(entries, count, captureSlotCount, governor, token, span, (names, context, span),
-                        static (state, name, index) => state.names.TryAddNativeString(name, new BigInteger(index), state.context, state.span));
+                        static (state, name, index) => state.names.TryAddNativeStringInteger(name, index, state.context, state.span));
                     return names;
                 }
                 catch { names.DiscardUnpublishedStorage(); throw; }

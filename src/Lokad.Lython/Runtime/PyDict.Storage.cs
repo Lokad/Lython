@@ -455,6 +455,35 @@ internal sealed partial class PyDict
             : _recordKeys is not null ? _nativeValues[index]!
             : _nativeValues[index] ??= new BigInteger(_nativeItems![index].Integer);
 
+    // An ordered table of exact int values can use the same slots as native
+    // accumulation. Public reads still cache a single Python box per entry.
+    internal bool TryAddNativeStringInteger(PyString key, int value, LythonRuntime.ExecutionContext context,
+        LythonSourceSpan span)
+    {
+        System.Diagnostics.Debug.Assert(_recordKeys is null && _nativeValues is not null);
+        var index = _nativeCount;
+        if (!TryAddNativeString(key, PyNone.Instance, context, span)) return false;
+        _nativeItems![index].Integer = value;
+        _nativeValues![index] = null;
+        return true;
+    }
+
+    internal (PyString Key, int Value) ReadNativeStringIntegerEntry(int index)
+    {
+        System.Diagnostics.Debug.Assert(_recordKeys is null && (uint)index < (uint)_nativeCount);
+        var entry = _nativeItems![index];
+        return ((PyString)entry.Key!, (int)entry.Integer);
+    }
+
+    internal bool TryReadNativeStringInteger(PyString key, LythonRuntime.ExecutionContext? context,
+        LythonSourceSpan span, out int value)
+    {
+        var hash = context is null ? NativeHash(key) : HashNativeString(key, context, span);
+        var index = FindNativeIndex(key, hash, context, span);
+        value = index >= 0 ? (int)_nativeItems![index].Integer : -1;
+        return index >= 0;
+    }
+
     // Copying publishes aliases, while shared record metadata must remain
     // immutable. Materialize before either boundary. The existing value-slot
     // allowance already funds these boxes; no callback/admission is required.

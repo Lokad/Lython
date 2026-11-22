@@ -135,12 +135,7 @@ internal sealed partial class LythonRuntime
             => RePatternMembers.TryGetMember(this, name, context, span, out value);
 
         internal bool TryGetNamedGroup(PyString name, ExecutionContext? context, LythonSourceSpan span, out int index)
-        {
-            var found = context is null ? NamedGroups.TryGetValue(name, out var value)
-                : NamedGroups.TryGetValue(name, out value, context, span);
-            index = found ? (int)(BigInteger)value! : -1;
-            return found;
-        }
+            => NamedGroups.TryReadNativeStringInteger(name, context, span, out index);
 
         public PyString RenderPython(PyRenderingContext context)
         {

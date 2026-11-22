@@ -141,11 +141,12 @@ internal sealed partial class LythonRuntime
             var dict = new PyDict(match.NamedGroups.Count, context.MemoryGovernor, span);
             try
             {
-                foreach (var entry in match.NamedGroups)
+                for (var i = 0; i < match.NamedGroups.Count; i++)
                 {
                     context.CheckExecution(span);
-                    var value = ResolveIndexedGroup(match, (int)(BigInteger)entry.Value, span, context, defaultValue);
-                    dict.SetRecordItem((PyString)entry.Key, value, context, span);
+                    var (name, index) = match.NamedGroups.ReadNativeStringIntegerEntry(i);
+                    var value = ResolveIndexedGroup(match, index, span, context, defaultValue);
+                    dict.SetRecordItem(name, value, context, span);
                 }
                 return dict;
             }
@@ -276,13 +277,18 @@ internal sealed partial class LythonRuntime
                 return PyNone.Instance;
             }
 
-            foreach (var entry in match.NamedGroups)
+            // Metadata stores capture numbers in ascending order. The name
+            // returned here is the same key the groupindex proxy exposes.
+            var first = 0;
+            var end = match.NamedGroups.Count;
+            while (first < end)
             {
                 context.CheckExecution(span);
-                if ((int)(BigInteger)entry.Value == index)
-                {
-                    return entry.Key;
-                }
+                var middle = first + (end - first) / 2;
+                var (name, group) = match.NamedGroups.ReadNativeStringIntegerEntry(middle);
+                if (group == index) return name;
+                if (group < index) first = middle + 1;
+                else end = middle;
             }
 
             return PyNone.Instance;

@@ -561,6 +561,8 @@ public sealed class RegexProviderContractTests
                 raise AssertionError('groupindex allowed mutation')
             re.purge()
             assert list(names) == ['é', 'tail']
+            assert names['é'] is p.groupindex['é']
+            assert m.lastgroup is next(iter(names))
             assert repr(names) == "mappingproxy({'é': 1, 'tail': 2})"
             print(names,m.groupdict(),m.lastgroup,m.span('é'))
             return m.expand(r'<\g<é>:\g<tail>>')
