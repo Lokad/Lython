@@ -1,0 +1,352 @@
+{
+  "complete": true,
+  "elapsedSeconds": 386.09570033382624,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "staging": {
+    "retiredOnly": [],
+    "alreadyAbsent": [],
+    "freshIdleLease": true,
+    "allHashesPathsOwnershipLinksAndAliasesVerified": true,
+    "canonicalArchiveAndCurrentImagesPreserved": true,
+    "freeBeforeBytes": 185102336,
+    "freeAfterBytes": 178049024
+  },
+  "rows": [
+    {
+      "case": "scripts.csv-invoice.helper-accumulation",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 7.627278435294117,
+        "candidate-control": 6.038174726415095,
+        "reference": 7.298290125,
+        "candidate": 6.2106895
+      },
+      "cpuMilliseconds": {
+        "reference-control": 7.764705882352942,
+        "candidate-control": 6.132075471698114,
+        "reference": 7.386363636363636,
+        "candidate": 6.346153846153847
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.7689774726168584,
+        "candidate-control": 0.16651914587940428,
+        "reference": 0.7785658468624209,
+        "candidate": 0.3162751154218172
+      },
+      "elapsedChangePercent": [
+        -20.834478803417966,
+        -18.57266582453655,
+        -17.265898957187666,
+        -14.902129216190897
+      ],
+      "cpuChangePercent": [
+        -21.02630074328188,
+        -18.26923076923077,
+        -16.981132075471685,
+        -14.082840236686378
+      ],
+      "referenceSpreadPercent": 4.50774502875928,
+      "candidateSpreadPercent": 2.857068259886675
+    },
+    {
+      "case": "scripts.csv-invoice.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 6.048252669811321,
+        "reference": 5.9779007476635515,
+        "candidate-control": 5.943887990654206,
+        "reference-control": 6.057179632075472
+      },
+      "cpuMilliseconds": {
+        "candidate": 6.132075471698114,
+        "reference": 6.074766355140187,
+        "candidate-control": 6.074766355140187,
+        "reference-control": 6.132075471698114
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.6707539139680047,
+        "reference": 0.4156260086801368,
+        "candidate-control": 0.2521168312666265,
+        "reference-control": 0.5010671563235372
+      },
+      "elapsedChangePercent": [
+        -1.8703695168843293,
+        -0.5689749369398478,
+        -0.14737819920146444,
+        1.1768666814226725
+      ],
+      "cpuChangePercent": [
+        -0.9345794392523477,
+        0.0,
+        0.0,
+        0.9433962264151052
+      ],
+      "referenceSpreadPercent": 1.326199409431572,
+      "candidateSpreadPercent": 1.755831861589785
+    },
+    {
+      "case": "scripts.csv-invoice.method-policy.quoted-control",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 7.083212923076922,
+        "candidate-control": 7.41545723255814,
+        "reference": 7.188134348314607,
+        "candidate": 7.4272796896551725
+      },
+      "cpuMilliseconds": {
+        "reference-control": 7.252747252747253,
+        "candidate-control": 7.558139534883721,
+        "reference": 7.3033707865168545,
+        "candidate": 7.586206896551724
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.6025272172073203,
+        "candidate-control": 0.36868682666594693,
+        "reference": 0.9533865749356305,
+        "candidate": 0.2519928348698853
+      },
+      "elapsedChangePercent": [
+        3.162474061114806,
+        3.326945904908385,
+        4.690587634303278,
+        4.857495748254159
+      ],
+      "cpuChangePercent": [
+        3.48837209302324,
+        3.8726790450928306,
+        4.210711768851305,
+        4.597701149425282
+      ],
+      "referenceSpreadPercent": 1.4812688306439892,
+      "candidateSpreadPercent": 0.15942991411406204
+    },
+    {
+      "case": "scripts.json-lines-shipment.expanded-options.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 6.396037079207921,
+        "reference": 6.4846910392156865,
+        "candidate-control": 6.3647767766990295,
+        "reference-control": 6.391628378947369
+      },
+      "cpuMilliseconds": {
+        "candidate": 6.534653465346535,
+        "reference": 6.568627450980393,
+        "candidate-control": 6.5048543689320395,
+        "reference-control": 6.526315789473684
+      },
+      "elapsedIQRPercent": {
+        "candidate": 1.4338861697228604,
+        "reference": 3.325008291096019,
+        "candidate-control": 3.712808082556198,
+        "reference-control": 2.0333427230279564
+      },
+      "elapsedChangePercent": [
+        -1.8491900661339766,
+        -1.3671269682955955,
+        -0.42010581116985746,
+        0.068976166935375
+      ],
+      "cpuChangePercent": [
+        -0.9708737864077666,
+        -0.5172159006945454,
+        -0.32884434700907184,
+        0.12775471095498592
+      ],
+      "referenceSpreadPercent": 1.4560086217597634,
+      "candidateSpreadPercent": 0.49114530808578305
+    },
+    {
+      "case": "diagnostic.helper-placement.function-call",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 0.29334446846846846,
+        "candidate-control": 0.295256597942964,
+        "reference": 0.3041109335154827,
+        "candidate": 0.348168794417606
+      },
+      "cpuMilliseconds": {
+        "reference-control": 0.2927927927927928,
+        "candidate-control": 0.29453015427769985,
+        "reference": 0.3005464480874317,
+        "candidate": 0.3488996242619431
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.79704614100031,
+        "candidate-control": 0.17894324874078382,
+        "reference": 2.017053023608907,
+        "candidate": 0.38050364524788266
+      },
+      "elapsedChangePercent": [
+        -2.9115479243589593,
+        0.6518375766479068,
+        14.487430751936547,
+        18.68940165647972
+      ],
+      "cpuChangePercent": [
+        -2.001785031238046,
+        0.5933757686913399,
+        16.08842043624652,
+        19.162640901771333
+      ],
+      "referenceSpreadPercent": 3.670246486400508,
+      "candidateSpreadPercent": 17.920749897979693
+    },
+    {
+      "case": "diagnostic.helper-placement.module-call",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 0.354808134279476,
+        "reference": 0.35319748300438597,
+        "candidate-control": 0.3619494337215751,
+        "reference-control": 0.3524584014356709
+      },
+      "cpuMilliseconds": {
+        "candidate": 0.3548034934497817,
+        "reference": 0.35635964912280704,
+        "candidate-control": 0.36051026067665004,
+        "reference-control": 0.353395913859746
+      },
+      "elapsedIQRPercent": {
+        "candidate": 1.1798178756744877,
+        "reference": 1.2765954395179864,
+        "candidate-control": 1.365391986579782,
+        "reference-control": 0.7182335030933061
+      },
+      "elapsedChangePercent": [
+        0.45602003201987706,
+        0.6666695514233378,
+        2.477919899865322,
+        2.6928092073402965
+      ],
+      "cpuChangePercent": [
+        -0.4366812227074246,
+        0.39830103711790965,
+        1.1647254575707144,
+        2.0131378258458232
+      ],
+      "referenceSpreadPercent": 0.20969327605884214,
+      "candidateSpreadPercent": 2.012721454822697
+    },
+    {
+      "case": "scripts.annotated-rule-closures.literal-positional-dynamic-keyword",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "reference-control": 1.0047209906103285,
+        "candidate-control": 1.0829762097315436,
+        "reference": 1.026594597133758,
+        "candidate": 1.051052320967742
+      },
+      "cpuMilliseconds": {
+        "reference-control": 1.001564945226917,
+        "candidate-control": 1.0906040268456376,
+        "reference": 1.0350318471337578,
+        "candidate": 1.0483870967741935
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.45041740214010134,
+        "candidate-control": 0.5670605519585084,
+        "reference": 0.431524108648347,
+        "candidate": 0.9089055216441874
+      },
+      "elapsedChangePercent": [
+        2.3824130676578514,
+        4.6113628350960445,
+        5.4921010450671215,
+        7.788751290413298
+      ],
+      "cpuChangePercent": [
+        1.2903225806451646,
+        4.674899193548376,
+        5.369127516778538,
+        8.889995805369132
+      ],
+      "referenceSpreadPercent": 2.177082665521124,
+      "candidateSpreadPercent": 3.0373263182948085
+    }
+  ],
+  "CPythonRefreshed": false,
+  "measuredSources": "638fc113829949bbef9ea796196ed07477ef9f96 versus 2ae6b61c9354ad1165121d8bd9fd25b89d13472d",
+  "deliveryReference": "3d88c8095",
+  "sourceImages": {
+    "reference": {
+      "Azure.Core.dll": "1d6df436afdc73c30d476be938f6513c90ef8fc884a7bae280091a9bed0a5490",
+      "Azure.Identity.dll": "31574a3d35ffeb0e25a00ebb317937222fe5283b91af608613f2e3bf0f26c50a",
+      "BenchmarkDotNet.Annotations.dll": "97974c60500f53a3c7d142088b22d815aae7aac729de69f4b497132cc436594f",
+      "BenchmarkDotNet.dll": "599ded314fe77dbc17318557e787cf660c1fcb0d69be39994ea462ca95745896",
+      "CommandLine.dll": "8a55501cd1a1590a4bd93a17c6fdd2c01a0ed5bff1aea9036bdc78d98c9a3fad",
+      "deniszykov.WebSocketListener.dll": "c86cfb93e32192ae12fb1a132b4ae785a7d2f325e8583c03c99abf8e832d25d6",
+      "Dia2Lib.dll": "6c4cac68010fe032218efe5e9fcf46eef9f77bfaa5f3bd33f03c5ff77d5a8fac",
+      "Gee.External.Capstone.dll": "6dfda67784598de9677173b89d0692593935f1a4024d36040c95dea48c1b5965",
+      "Iced.dll": "f058c01321b4cdfc9b9151879e88e59571c8d0ba176fbcf95bc936a8f3d073ed",
+      "Lokad.Lython.Benchmarks.deps.json": "b47f293f779ce46eefa92c6eb775842efe363be212c35bf7d155d0b89734d450",
+      "Lokad.Lython.Benchmarks.dll": "4b0121f46ccb9abc4de3ddb442728bf0a7bab056517e902cf50088d0a8efbedd",
+      "Lokad.Lython.Benchmarks.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0",
+      "Lokad.Lython.dll": "7cfcba90a3e4c9e25f862149ae3c80299aac76f4a70e23ff06e846a2a7cac80f",
+      "Lokad.Lython.Utf8Regex.dll": "a66728ba9e1f5b29f83be2ee9d65ad9f9ace74de0a18a053d9ceec4a0222f4c7",
+      "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+      "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe",
+      "Microsoft.Bcl.AsyncInterfaces.dll": "bf58b47923b2f520c766ca905f68a1a65d217c4d828f05db538c41129cacf9d9",
+      "Microsoft.CodeAnalysis.CSharp.dll": "1af1de8a162d2312eb2f6b781f5edbe8cec7d5cd268c7e4de24396225e54260f",
+      "Microsoft.CodeAnalysis.dll": "42c9ce7891470f430267e2dc02d03571f9d046a7e7e121107754bee58d344613",
+      "Microsoft.Diagnostics.FastSerialization.dll": "e5bdad179ce97180646f37f357cb7b449f5baaf76f185eb09510eeafc5b773e1",
+      "Microsoft.Diagnostics.NETCore.Client.dll": "e2cc9e1f6c97b3c4ee45ebabaa92408eb9b2fc81cb08ceeb342fe48bf79db15f",
+      "Microsoft.Diagnostics.Runtime.dll": "52d5f113180bb0f70b1a9b10608aef93b187364ac689885d2d3c734102d850a2",
+      "Microsoft.Diagnostics.Tracing.TraceEvent.dll": "92401392ce1887c3483a3c0085e6cc3656ee39da1be539943096ebabbad6ea21",
+      "Microsoft.Identity.Client.dll": "5795027e9ae95eececb310a4fed3c502bb368039d186ab0884f64b7792b84717",
+      "Microsoft.Identity.Client.Extensions.Msal.dll": "07109a2f30df782300077a567ade47cbd0a0502c75cd7c8a62192f7d64bb004e",
+      "Microsoft.IdentityModel.Abstractions.dll": "24e97b54b6b5c234a124a336757e3116617ac6c30b655cdae74517dc2ecb5746",
+      "Perfolizer.dll": "4a5508174e2b90a651a29e1de0d2ad88236daaaae01070cd6fc8ca3c36beaa36",
+      "Pragmastat.dll": "7217e206e47de8a0335f58513019d5805a6e52ca2e8f127e2cc3944f1742bb2e",
+      "System.ClientModel.dll": "dec5e22b71a1685c5e6e97cd28b629f0aa6703fb87b6950df28e79fc1804290c",
+      "System.Memory.Data.dll": "2c1035b0106dbb2de7913d151e06071ed617bb58bbb3d6cd46a2dd0f6a03617b",
+      "System.Security.Cryptography.ProtectedData.dll": "80566f0839ece5946e66bf9f00d723e59e371ba1341a18e00c7c7a7c49298e1d",
+      "TraceReloggerLib.dll": "6830c0f1d3f3c17719181e73dd5cfa8ccbb3f3c575329d2120576545103467b5"
+    },
+    "candidate": {
+      "Azure.Core.dll": "1d6df436afdc73c30d476be938f6513c90ef8fc884a7bae280091a9bed0a5490",
+      "Azure.Identity.dll": "31574a3d35ffeb0e25a00ebb317937222fe5283b91af608613f2e3bf0f26c50a",
+      "BenchmarkDotNet.Annotations.dll": "97974c60500f53a3c7d142088b22d815aae7aac729de69f4b497132cc436594f",
+      "BenchmarkDotNet.dll": "599ded314fe77dbc17318557e787cf660c1fcb0d69be39994ea462ca95745896",
+      "CommandLine.dll": "8a55501cd1a1590a4bd93a17c6fdd2c01a0ed5bff1aea9036bdc78d98c9a3fad",
+      "deniszykov.WebSocketListener.dll": "c86cfb93e32192ae12fb1a132b4ae785a7d2f325e8583c03c99abf8e832d25d6",
+      "Dia2Lib.dll": "6c4cac68010fe032218efe5e9fcf46eef9f77bfaa5f3bd33f03c5ff77d5a8fac",
+      "Gee.External.Capstone.dll": "6dfda67784598de9677173b89d0692593935f1a4024d36040c95dea48c1b5965",
+      "Iced.dll": "f058c01321b4cdfc9b9151879e88e59571c8d0ba176fbcf95bc936a8f3d073ed",
+      "Lokad.Lython.Benchmarks.deps.json": "b47f293f779ce46eefa92c6eb775842efe363be212c35bf7d155d0b89734d450",
+      "Lokad.Lython.Benchmarks.dll": "4b0121f46ccb9abc4de3ddb442728bf0a7bab056517e902cf50088d0a8efbedd",
+      "Lokad.Lython.Benchmarks.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0",
+      "Lokad.Lython.dll": "eed289c4eff1b18d9f2cb3bfc74bee27efb2729e66e781bea1684bea7435d93a",
+      "Lokad.Lython.Utf8Regex.dll": "a66728ba9e1f5b29f83be2ee9d65ad9f9ace74de0a18a053d9ceec4a0222f4c7",
+      "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+      "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe",
+      "Microsoft.Bcl.AsyncInterfaces.dll": "bf58b47923b2f520c766ca905f68a1a65d217c4d828f05db538c41129cacf9d9",
+      "Microsoft.CodeAnalysis.CSharp.dll": "1af1de8a162d2312eb2f6b781f5edbe8cec7d5cd268c7e4de24396225e54260f",
+      "Microsoft.CodeAnalysis.dll": "42c9ce7891470f430267e2dc02d03571f9d046a7e7e121107754bee58d344613",
+      "Microsoft.Diagnostics.FastSerialization.dll": "e5bdad179ce97180646f37f357cb7b449f5baaf76f185eb09510eeafc5b773e1",
+      "Microsoft.Diagnostics.NETCore.Client.dll": "e2cc9e1f6c97b3c4ee45ebabaa92408eb9b2fc81cb08ceeb342fe48bf79db15f",
+      "Microsoft.Diagnostics.Runtime.dll": "52d5f113180bb0f70b1a9b10608aef93b187364ac689885d2d3c734102d850a2",
+      "Microsoft.Diagnostics.Tracing.TraceEvent.dll": "92401392ce1887c3483a3c0085e6cc3656ee39da1be539943096ebabbad6ea21",
+      "Microsoft.Identity.Client.dll": "5795027e9ae95eececb310a4fed3c502bb368039d186ab0884f64b7792b84717",
+      "Microsoft.Identity.Client.Extensions.Msal.dll": "07109a2f30df782300077a567ade47cbd0a0502c75cd7c8a62192f7d64bb004e",
+      "Microsoft.IdentityModel.Abstractions.dll": "24e97b54b6b5c234a124a336757e3116617ac6c30b655cdae74517dc2ecb5746",
+      "Perfolizer.dll": "4a5508174e2b90a651a29e1de0d2ad88236daaaae01070cd6fc8ca3c36beaa36",
+      "Pragmastat.dll": "7217e206e47de8a0335f58513019d5805a6e52ca2e8f127e2cc3944f1742bb2e",
+      "System.ClientModel.dll": "dec5e22b71a1685c5e6e97cd28b629f0aa6703fb87b6950df28e79fc1804290c",
+      "System.Memory.Data.dll": "2c1035b0106dbb2de7913d151e06071ed617bb58bbb3d6cd46a2dd0f6a03617b",
+      "System.Security.Cryptography.ProtectedData.dll": "80566f0839ece5946e66bf9f00d723e59e371ba1341a18e00c7c7a7c49298e1d",
+      "TraceReloggerLib.dll": "6830c0f1d3f3c17719181e73dd5cfa8ccbb3f3c575329d2120576545103467b5"
+    }
+  },
+  "verifiedTimedBatches": 196,
+  "decision": {
+    "decision": "refine",
+    "readerDecision": "Keep this first version private. The nested-helper invoice runs\n14.90\u201320.83% faster and uses 14.08\u201321.03% less process CPU, alongside\na 39.75% allocation reduction. The quoted policy invoice takes\n3.16\u20134.86% longer and the mixed factory takes 2.38\u20137.79% longer\nfrom compile to result. The module helper takes 0.46\u20132.69% longer\nelapsed, with its CPU range crossing zero. Function-helper timing\nremains uncertain with 17.92% candidate worker spread.\n\nRefine the shared retirement and native return branch so ordinary\ncalls keep the original completion path. Preserve the fixed\ndestination and exact dictionary path. Use the original adverse\ncontrols and the complete affected invoice to decide whether the\nsimpler route earns promotion."
+  },
+  "inheritance": {
+    "original": "45018461238",
+    "corrected": "45019489855",
+    "fixtureOnly": true
+  }
+}

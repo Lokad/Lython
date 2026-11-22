@@ -316,10 +316,12 @@ analysis retains conservative bindings across dead and deferred scopes.
 
 Compilation tokenizes/parses source, validates the subset, computes scope facts,
 lowers constructs, and builds executable instructions. Parser ranges use
-token endpoints to create each final source span directly. Formatted fields
-map their retained offsets to the original normalized source. Abstract statement and
-expression checks select syntax directly and share the existing binding state;
-their branch, short-circuit and diagnostic order remains explicit.
+token endpoints to create each final source span directly. Diagnostic offsets
+and lengths count UTF-16 code units after Lython strips a leading byte-order
+mark and normalizes CRLF and CR line endings to LF. Formatted fields map their
+offsets to that same source. Lines and columns are one-based.
+Abstract statement and expression checks use the same binding state. Their
+branch, short-circuit and diagnostic order remains explicit.
 Name-binding diagnostics use the prepared local-name sets and check each
 nested function header in its defining scope before checking the body.
 Numeric syntax carries the parsed value for analysis, annotations and execution.

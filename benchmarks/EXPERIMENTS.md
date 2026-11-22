@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1367 native nested fixed returns](results/2026-11-22-native-fixed-returns/README.md)
+removes tuple and frame staging from the nested-helper invoice. Warm
+elapsed falls 14.90–20.83% and local allocation falls 39.75%.
+The quoted invoice and mixed first use are adverse. This version
+stays private. The refinement restores the ordinary retirement
+check and isolates fixed-return preparation.
+
 [B1366 profile of helper and CSV calls after local reuse](results/2026-11-22-post-checked-local-call-profile/README.md)
 finds native operation and call work in both scripts, with 31 closest-runtime
 continuation samples in the invoice and 27 reservation samples from tuple
