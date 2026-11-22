@@ -407,6 +407,7 @@ for the CPython ratios above.
 
 | Change | Established outcome | Limits / evidence |
 | --- | --- | --- |
+| Parse float text and numeric CSV fields directly from bytes | Typed ASCII and Unicode reports run 12.77–16.33% and 8.61–14.01% sooner warm. Their local allocation falls 29.68% and 41.67%. Explicit `float()` runs 6.54–8.21% sooner with 14.24% less allocation. | Warm process CPU also falls on all three. Unicode candidate spread is 6.03%. The unchanged integer invoice spans zero. [B1312](../benchmarks/results/2026-11-22-direct-float-text/README.md). |
 | Store one prepared keyword default inline | Eager factories run 1.28–4.87% sooner warm and allocate 6.68% less. Postponed factories run 2.35–5.92% sooner and allocate 7.37% less. | Postponed time to result spans zero. Observation of every default dictionary leaves allocation unchanged. [B1305](../benchmarks/results/2026-11-21-inline-keyword-default/README.md). |
 | Keep single regex match scratch local | Small per-record fullmatches take 1.89–4.02% less warm time and allocate 3.61% less. | Wide-match timing spans zero. Cursor elapsed rises 0.46–1.17% with mixed CPU. [B1303](../benchmarks/results/2026-11-21-regex-local-one-shot/README.md). |
 | Read plain CSV fields from admitted line ranges | The policy invoice runs 0.88–3.67% sooner warm and the free-function invoice 2.12–3.26% sooner. | Accounted peaks match. The fully quoted invoice takes 0.25–1.17% longer. [B1302](../benchmarks/results/2026-11-21-csv-literal-record-ranges/README.md). |

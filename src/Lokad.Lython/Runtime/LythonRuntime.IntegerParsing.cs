@@ -15,7 +15,7 @@ internal sealed partial class LythonRuntime
         result = default;
         context.CheckExecution(span);
         var inputLength = input.Length;
-        input = TrimIntegerWhitespace(input, unicode, context, span);
+        input = TrimNumericWhitespace(input, unicode, context, span);
         var position = 0;
         var negative = !input.IsEmpty && input[0] == (byte)'-';
         if (!input.IsEmpty && input[0] is (byte)'+' or (byte)'-') position++;
@@ -142,7 +142,7 @@ internal sealed partial class LythonRuntime
             ? (int)Rune.GetNumericValue(rune) : -1;
     }
 
-    private static ReadOnlySpan<byte> TrimIntegerWhitespace(ReadOnlySpan<byte> input, bool unicode,
+    private static ReadOnlySpan<byte> TrimNumericWhitespace(ReadOnlySpan<byte> input, bool unicode,
         ExecutionContext context, LythonSourceSpan span)
     {
         var start = 0;
@@ -156,7 +156,7 @@ internal sealed partial class LythonRuntime
                 context.CheckExecution(span);
                 nextCheck = start + Math.Min(4096, end - start);
             }
-            var width = IntegerWhitespaceWidth(input[start..end], unicode, false);
+            var width = NumericWhitespaceWidth(input[start..end], unicode, false);
             if (width == 0) break;
             start += width;
         }
@@ -168,14 +168,14 @@ internal sealed partial class LythonRuntime
                 context.CheckExecution(span);
                 nextCheck = end - Math.Min(4096, end - start);
             }
-            var width = IntegerWhitespaceWidth(input[start..end], unicode, true);
+            var width = NumericWhitespaceWidth(input[start..end], unicode, true);
             if (width == 0) break;
             end -= width;
         }
         return input[start..end];
     }
 
-    private static int IntegerWhitespaceWidth(ReadOnlySpan<byte> input, bool unicode, bool reverse)
+    private static int NumericWhitespaceWidth(ReadOnlySpan<byte> input, bool unicode, bool reverse)
     {
         var value = reverse ? input[^1] : input[0];
         if (value < 128) return value is (byte)' ' or >= 9 and <= 13 ? 1 : 0;

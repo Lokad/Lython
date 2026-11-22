@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1312 direct UTF-8 float parsing](results/2026-11-22-direct-float-text/README.md)
+removes the temporary CSV string, the UTF-16 decoding step and eager
+numeric field boxing. All three complete meter reports use less warm
+CPU and allocate less. The two typed reports use lower accounted
+peaks. The unchanged integer invoice spans zero. Retain the change
+and preserve the wider Unicode and invoice control spreads.
+
 [B1311 single positional default in the callable](results/2026-11-22-single-positional-default/README.md)
 removes eager tuple and slot-array construction in the compiled
 single-default shape. Eager and postponed factory allocation falls

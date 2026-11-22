@@ -524,10 +524,12 @@ internal sealed partial class LythonRuntime
         // Field descriptors and native record bytes are private working storage.
         // Long fields share one immutable final payload. Short fields retain
         // inline bytes; every field keeps its own Python string identity.
-        private readonly struct CsvField(int start, int length, object? converted)
+        // Converted numbers stay unboxed until the final row is admitted.
+        private readonly struct CsvField(int start, int length, double number = 0)
         {
             internal readonly int Start = start, Length = length;
-            internal readonly object? Converted = converted;
+            internal readonly double Number = number;
+            internal bool IsNumber => Start < 0;
         }
 
         internal long StorageBytes => checked(16L * _fields.Capacity + _record.CommittedCapacity);
@@ -602,7 +604,7 @@ internal sealed partial class LythonRuntime
         private bool TryDescribeLiteralField(int start, int length)
         {
             if (_fields.Count == _fields.Capacity) return false;
-            DescribeField(start, length, converted: null);
+            DescribeField(start, length);
             return true;
         }
 
@@ -810,26 +812,25 @@ internal sealed partial class LythonRuntime
         private void FinishField()
         {
             var length = _record.Length - _fieldStart;
-            object? converted = null;
+            double? converted = null;
             if (_options.Quoting == CsvQuotingMode.NonNumeric && !_fieldWasQuoted && length != 0)
             {
                 // Conversion must still fail at this field, before another
                 // source line can be fetched or later field syntax inspected.
-                var payload = PyString.CopyFromUtf8(_record.WrittenSpan.Slice(_fieldStart, length),
-                    _context.MemoryGovernor, _span);
-                converted = ParseOwnedFloatText(payload, _context, _span);
+                converted = ParseFloatText(_record.WrittenSpan.Slice(_fieldStart, length), _context, _span);
             }
             EnsureListCapacity(_fields);
-            DescribeField(_fieldStart, length, converted);
+            if (converted is { } number) _fields.Add(new CsvField(-1, 0, number));
+            else DescribeField(_fieldStart, length);
             _fieldStart = _record.Length;
             _state = FieldState.FieldStart;
             _fieldWasQuoted = false;
         }
 
-        private void DescribeField(int start, int length, object? converted)
+        private void DescribeField(int start, int length)
         {
-            _fields.Add(new CsvField(start, length, converted));
-            if (converted is null && length != 0)
+            _fields.Add(new CsvField(start, length));
+            if (length != 0)
             {
                 _stringBytes = checked(_stringBytes + PyString.EstimateApproximateBytes(length));
                 if (length > PyString.InlineUtf8Capacity)
@@ -880,7 +881,7 @@ internal sealed partial class LythonRuntime
             {
                 _context.CheckExecution(_span);
                 object cell;
-                if (field.Converted is { } converted) cell = converted;
+                if (field.IsNumber) cell = field.Number;
                 else if (field.Length == 0) cell = PyString.Empty;
                 else
                 {

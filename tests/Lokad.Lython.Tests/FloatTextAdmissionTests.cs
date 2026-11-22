@@ -20,7 +20,7 @@ public sealed class FloatTextAdmissionTests
 
     [Theory]
     [MemberData(nameof(RefusalCases))]
-    public async Task RefusalPrecedesDecodingAndPreservesFundedInput(bool bytes, bool asynchronous, bool shared)
+    public async Task RefusalPrecedesNormalizationAndPreservesFundedInput(bool bytes, bool asynchronous, bool shared)
     {
         foreach (var measured in new[] { false, true })
         {
@@ -30,7 +30,7 @@ public sealed class FloatTextAdmissionTests
             var context = new Context(new MockLythonHost(), new LythonRunOptions
                 { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
             var governor = context.MemoryGovernor;
-            var input = Input(new string('9', 32768), bytes, governor);
+            var input = Input(string.Concat(Enumerable.Repeat("0_", 4096)) + "1", bytes, governor);
             context.Variables["source"] = input;
             var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.State.BuiltinVariables["float"]);
             CallArgumentValue[] arguments = [CallArgumentValue.Positional(input)];
@@ -63,7 +63,8 @@ public sealed class FloatTextAdmissionTests
                 failure.Attribution?.Reason);
             Assert.Same(governor.AdmissionFailure, failure);
             Assert.Same(Span, failure.Span);
-            Assert.True(allocated < 16384, $"Refused float decode allocated {allocated} bytes.");
+            Assert.Equal(32 + 8193, failure.Attribution?.Requested);
+            Assert.True(allocated < 4096, $"Refused float normalization allocated {allocated} bytes.");
         }
     }
 
@@ -136,11 +137,11 @@ public sealed class FloatTextAdmissionTests
         var context = new Context(new MockLythonHost(), new LythonRunOptions
             { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
         var governor = context.MemoryGovernor;
-        var input = Input(new string('9', 32768), bytes, governor);
+        var input = Input(string.Concat(Enumerable.Repeat("0_", 4096)) + "1", bytes, governor);
         var original = new PyList([input], governor);
         context.Variables["source"] = input;
         context.Variables["target"] = original;
-        var padding = limit - budget.ReservedBytes - 32768;
+        var padding = limit - budget.ReservedBytes - 4096;
         ILythonMemoryReservation? blocker = null;
         if (shared) Assert.True(budget.TryReserve(padding, out blocker));
         else { governor.Reserve(padding, Span); governor.Commit(padding); }
@@ -153,6 +154,7 @@ public sealed class FloatTextAdmissionTests
         Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.SharedMemoryAllowance,
             error.Attribution?.Reason);
         Assert.Same(governor.AdmissionFailure, error);
+        Assert.Equal(32 + 8193, error.Attribution?.Requested);
         Assert.Equal(new LythonSourceSpan(9, 13, 1, 10), error.Span);
         Assert.Same(original, context.Variables["target"]);
         Assert.Same(input, Assert.Single(original));

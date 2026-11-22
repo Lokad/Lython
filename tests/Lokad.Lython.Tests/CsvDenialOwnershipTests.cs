@@ -50,20 +50,22 @@ public sealed class CsvDenialOwnershipTests
         var source = new LythonRuntime.CsvRecordSource(new PyList([]),
             Options() with { Quoting = LythonRuntime.CsvQuotingMode.NonNumeric }, Span, context);
         var parser = Parser(source);
-        parser.Feed("1,"u8);
+        var prefix = new string('٠', 129);
+        parser.Feed(Encoding.UTF8.GetBytes(prefix + "1,\n"));
         Assert.True(parser.TryTakeReady(out var retained));
         var held = PyString.FromString("held", governor, Span);
         var heldBytes = held.Utf8Bytes;
         ILythonMemoryReservation? padding = null;
-        // Fund the 130-byte UTF-8 value, leaving 70 bytes for its 72-byte float scratch.
-        if (shared) Assert.True(budget.TryReserve(Cap - budget.ReservedBytes - 200, out padding));
-        else { governor.Reserve(Cap - governor.CurrentAccountedBytes - 200, Span); governor.Commit(governor.CurrentReservedBytes); }
+        // The parser already has room for this field. Leave less than the
+        // 32 + 259 bytes for normalization of the borrowed UTF-8 token.
+        if (shared) Assert.True(budget.TryReserve(Cap - budget.ReservedBytes - 128, out padding));
+        else { governor.Reserve(Cap - governor.CurrentAccountedBytes - 128, Span); governor.Commit(governor.CurrentReservedBytes); }
         using var blocker = padding;
-        var error = Assert.Throws<LythonRuntimeException>(() => parser.Feed("٢\n"u8));
+        var error = Assert.Throws<LythonRuntimeException>(() => parser.Feed(Encoding.UTF8.GetBytes(prefix + "2\n")));
         Assert.Same(governor.AdmissionFailure, error);
         Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.SharedMemoryAllowance,
             error.Attribution?.Reason);
-        Assert.Equal(72, governor.LastDeniedReservationBytes); // Existing float scratch for two UTF-8 bytes.
+        Assert.Equal(32 + 259, governor.LastDeniedReservationBytes);
         Assert.Equal(1.0, Assert.IsType<double>(retained[0]));
         Assert.False(parser.TryTakeReady(out _));
         Assert.True(heldBytes.Span.SequenceEqual("held"u8));

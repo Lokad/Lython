@@ -9,6 +9,11 @@ public sealed class CsvNumericReaderTests
         { "mixed", "import csv\nprint(list(csv.reader(['1,\"2\",,3'],quoting=csv.QUOTE_NONNUMERIC)))", "[[1.0, '2', '', 3.0]]\n" },
         { "escaped", "import csv\nprint(list(csv.reader([r'\\3,4'],quoting=csv.QUOTE_NONNUMERIC,escapechar='\\\\')))", "[[3.0, 4.0]]\n" },
         { "unicode", "import csv\nprint(list(csv.reader(['٣_٤.٥,𝟙.𝟚,-٠'],quoting=csv.QUOTE_NONNUMERIC)))", "[[34.5, 1.2, -0.0]]\n" },
+        { "long borrowed numeric field", """
+            import csv
+            row = '٠' * 2050 + '2_5.0,"25.0",-1e-999\n'
+            print(next(csv.reader([row], quoting=csv.QUOTE_NONNUMERIC)))
+            """, "[25.0, '25.0', -0.0]\n" },
         { "multiline", "import csv\nr=csv.reader(['\"é\\n','😀\",٢\\n'],quoting=csv.QUOTE_NONNUMERIC)\nprint(list(r),r.line_num)", "[['é\\n😀', 2.0]] 2\n" },
         { "recovery", "import csv\nr=csv.reader(['1,bad','2,\"three\"','٤,5'],quoting=csv.QUOTE_NONNUMERIC)\ntry:\n next(r)\nexcept ValueError as e:\n print(type(e).__name__,str(e))\nprint(next(r),next(r),next(r,'end'))", "ValueError could not convert string to float: 'bad'\n[2.0, 'three'] [4.0, 5.0] end\n" },
         { "dict", "import csv\nr=csv.DictReader(['\"a\",\"b\"','1,2,3','4'],restkey='extra',restval='missing',quoting=csv.QUOTE_NONNUMERIC)\nprint(list(r))", "[{'a': 1.0, 'b': 2.0, 'extra': [3.0]}, {'a': 4.0, 'b': 'missing'}]\n" },

@@ -67,73 +67,110 @@ internal sealed partial class LythonRuntime
 
     private static double ParseOwnedFloatText(object source, ExecutionContext context, LythonSourceSpan span)
     {
-        // UTF-8 input bytes bound decoded UTF-16 capacity. Fund decoding
-        // and an optional normalization buffer before either allocation.
-        var length = source is PyString text ? text.ByteLength : ((PyBytes)source).Length;
-        var decodeBytes = RuntimeMemoryEstimates.SaturatingAdd(32,
-            RuntimeMemoryEstimates.SaturatingMultiply(2, length));
-        using var working = context.MemoryGovernor.ReserveTemporary(
-            RuntimeMemoryEstimates.SaturatingMultiply(2, decodeBytes), span);
-        var decoded = source is PyString value ? value.AsString() : Encoding.ASCII.GetString(((PyBytes)source).Bytes);
-        var underscores = 0;
-        var nonAscii = false;
-        for (var i = 0; i < decoded.Length; i++)
-        {
-            // The CLR parser accepts trailing NULs; Python rejects them.
-            if (decoded[i] == '\0') throw FloatConversionError(source, context, span);
-            if (decoded[i] == '_') underscores++;
-            nonAscii |= decoded[i] > '\x7f';
-        }
+        if (source is PyString text) return ParseFloatText(text.Utf8Span, context, span);
+        var bytes = (PyBytes)source;
+        return ParseFloatText(bytes.Bytes, context, span, bytes);
+    }
 
-        ReadOnlySpan<char> normalized = decoded.AsSpan().Trim();
-        if (underscores != 0 || nonAscii)
+    private static double ParseFloatText(ReadOnlySpan<byte> source, ExecutionContext context, LythonSourceSpan span,
+        PyBytes? byteSource = null)
+    {
+        context.CheckExecution(span);
+        var unicode = byteSource is null;
+        var input = TrimNumericWhitespace(source, unicode, context, span);
+        var normalize = false;
+        var offset = 0;
+        while (offset < input.Length)
         {
-            // Decimal Unicode scalars shrink to ASCII; no per-rune strings or
-            // separate underscore-removal copy are needed. Bytes decoded above
-            // remain ASCII, including replacement characters for invalid input.
-            var buffer = new char[decoded.Length - underscores];
-            var written = 0;
-            var previousDigit = false;
-            var pendingUnderscore = false;
-            foreach (var rune in decoded.EnumerateRunes())
+            var count = Math.Min(4096, input.Length - offset);
+            var part = input.Slice(offset, count);
+            var special = part.IndexOfAny((byte)0, (byte)'_');
+            if (special >= 0 && part[special] == 0) break;
+            var ascii = System.Text.Ascii.IsValid(part);
+            if (!ascii && !unicode) break;
+            normalize |= special >= 0 || !ascii;
+            offset += count;
+            context.CheckExecution(span);
+        }
+        if (offset == input.Length)
+        {
+            var valid = normalize ? TryParseNormalizedFloat(input, unicode, context, span, out var number)
+                : TryParseAsciiFloat(input, out number);
+            context.CheckExecution(span);
+            if (valid) return number;
+        }
+        throw TextConversionError(source, "could not convert string to float: ", context, span, byteSource);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static bool TryParseNormalizedFloat(ReadOnlySpan<byte> input, bool unicode, ExecutionContext context,
+        LythonSourceSpan span, out double result)
+    {
+        // Unicode decimal digits and underscores can only shrink the token.
+        // Small scratch stays inside this synchronous call. Wider tokens admit
+        // the capacity needed for the ASCII form before allocating the buffer.
+        const int inlineCapacity = 256;
+        using var storage = input.Length <= inlineCapacity ? null
+            : context.MemoryGovernor.ReserveTemporary(32L + input.Length, span);
+        context.CheckExecution(span);
+        Span<byte> normalized = storage is null ? stackalloc byte[inlineCapacity] : new byte[input.Length];
+        var written = 0;
+        var previousDigit = false;
+        var previousUnderscore = false;
+        var nextCheck = Math.Min(4096, input.Length);
+        result = default;
+        for (var offset = 0; offset < input.Length;)
+        {
+            if (offset >= nextCheck)
             {
-                if (rune.Value == '_')
-                {
-                    if (!previousDigit || pendingUnderscore) throw FloatConversionError(source, context, span);
-                    pendingUnderscore = true;
-                    continue;
-                }
-
-                char character;
-                if (rune.IsAscii) character = (char)rune.Value;
-                else if (PyStringOps.IsPythonWhitespace(rune)) character = ' ';
-                else if (Rune.GetUnicodeCategory(rune) == UnicodeCategory.DecimalDigitNumber)
-                    character = (char)('0' + (int)Rune.GetNumericValue(rune));
-                else throw FloatConversionError(source, context, span);
-
-                var digit = char.IsAsciiDigit(character);
-                if (pendingUnderscore && !digit) throw FloatConversionError(source, context, span);
-                buffer[written++] = character;
-                previousDigit = digit;
-                pendingUnderscore = false;
+                context.CheckExecution(span);
+                nextCheck = offset + Math.Min(4096, input.Length - offset);
             }
-            if (pendingUnderscore) throw FloatConversionError(source, context, span);
-            normalized = buffer.AsSpan(0, written).Trim();
+            var character = input[offset++];
+            if (character == 0) return false;
+            if (character == (byte)'_')
+            {
+                if (!previousDigit || previousUnderscore) return false;
+                previousUnderscore = true;
+                continue;
+            }
+            if (character >= 128)
+            {
+                // Outer whitespace was already trimmed. Interior whitespace,
+                // non-decimal scalars and invalid encodings cannot be digits.
+                if (!unicode || Rune.DecodeFromUtf8(input[(offset - 1)..], out var rune, out var width)
+                    != OperationStatus.Done || Rune.GetUnicodeCategory(rune) != UnicodeCategory.DecimalDigitNumber) return false;
+                offset += width - 1;
+                character = checked((byte)('0' + (int)Rune.GetNumericValue(rune)));
+            }
+            var digit = character is >= (byte)'0' and <= (byte)'9';
+            if (previousUnderscore && !digit) return false;
+            normalized[written++] = character;
+            previousDigit = digit;
+            previousUnderscore = false;
         }
-        var negative = !normalized.IsEmpty && normalized[0] == '-';
-        var unsigned = !normalized.IsEmpty && normalized[0] is '+' or '-' ? normalized[1..] : normalized;
-        if (unsigned.Equals("inf", StringComparison.OrdinalIgnoreCase) || unsigned.Equals("infinity", StringComparison.OrdinalIgnoreCase))
-            return negative ? double.NegativeInfinity : double.PositiveInfinity;
-        if (unsigned.Equals("nan", StringComparison.OrdinalIgnoreCase))
-            return negative ? -PythonNaN : PythonNaN;
-        try
+        context.CheckExecution(span);
+        return !previousUnderscore && TryParseAsciiFloat(normalized[..written], out result);
+    }
+
+    private static bool TryParseAsciiFloat(ReadOnlySpan<byte> input, out double result)
+    {
+        var negative = !input.IsEmpty && input[0] == (byte)'-';
+        var unsigned = !input.IsEmpty && input[0] is (byte)'+' or (byte)'-' ? input[1..] : input;
+        if (!unsigned.IsEmpty)
         {
-            return double.Parse(normalized, NumberStyles.Float, CultureInfo.InvariantCulture);
+            switch (unsigned[0] | 0x20)
+            {
+                case 'i' when System.Text.Ascii.EqualsIgnoreCase(unsigned, "inf"u8) ||
+                    System.Text.Ascii.EqualsIgnoreCase(unsigned, "infinity"u8):
+                    result = negative ? double.NegativeInfinity : double.PositiveInfinity;
+                    return true;
+                case 'n' when System.Text.Ascii.EqualsIgnoreCase(unsigned, "nan"u8):
+                    result = negative ? -PythonNaN : PythonNaN;
+                    return true;
+            }
         }
-        catch (FormatException)
-        {
-            throw FloatConversionError(source, context, span);
-        }
+        return double.TryParse(input, NumberStyles.Float, CultureInfo.InvariantCulture, out result);
     }
 
     private static object ValidateFloatConversionResult(object converted, PyInstance instance, ExecutionContext context, LythonSourceSpan span)
@@ -156,11 +193,13 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static LythonRuntimeException FloatConversionError(object source, ExecutionContext context, LythonSourceSpan span)
-        => TextConversionError(source, "could not convert string to float: ", context, span);
-
     private static LythonRuntimeException TextConversionError(object source, string prefix, ExecutionContext context,
         LythonSourceSpan span)
+        => source is PyString text ? TextConversionError(text.Utf8Span, prefix, context, span)
+            : TextConversionError(default(ReadOnlySpan<byte>), prefix, context, span, (PyBytes)source);
+
+    private static LythonRuntimeException TextConversionError(ReadOnlySpan<byte> source, string prefix,
+        ExecutionContext context, LythonSourceSpan span, PyBytes? byteSource = null)
     {
         var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
         context.EnterInterpreterFrame(span);
@@ -168,8 +207,8 @@ internal sealed partial class LythonRuntime
         {
             context.CheckExecution(span);
             builder.AppendAscii(prefix);
-            if (source is PyString text) PyRendering.AppendStringLiteral(builder, text.Utf8Span, context, span);
-            else ((PyBytes)source).AppendLiteral(builder, context, span);
+            if (byteSource is null) PyRendering.AppendStringLiteral(builder, source, context, span);
+            else byteSource.AppendLiteral(builder, context, span);
 
             // Admit the CLR message while the UTF-8 builder and any parsing
             // scratch are still live. The message can escape with the error.

@@ -1175,6 +1175,28 @@ print(float(" 1.5 "))
         Assert.Equal("could not convert string to float: 'a'\ncould not convert string to float: '  a  '\ncould not convert string to float: \"a'b\"\nfloat() argument must be a string or a real number, not 'object'\nfloat() argument must be a string or a real number, not 'list'\nfloat() argument must be a string or a real number, not 'NoneType'\nF.__float__ returned non-float (type str)\ninf\n1.5\n", result.StandardOutput);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FloatText_PreservesSignsAndOriginalErrorInput(bool asynchronous)
+    {
+        const string source = """
+            import math
+            print(float('\u00a0-𝟘\x85'), float(b' +1_0e-1 '), float('0_' * 4096 + '2.5'))
+            print(float('-1e-9999'), float('+InfINity'), math.copysign(1.0, float('-NaN')))
+            for invalid in ['1\x00', '\x1c５', '2_\u00a03', b'\xc2\xa01', b'1__2']:
+                try: float(invalid)
+                except ValueError as error: print(str(error))
+            """;
+        using var script = new LythonEngine().Compile(source);
+        using var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost());
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("-0.0 1.0 2.5\n-0.0 inf -1.0\ncould not convert string to float: '1\\x00'\n" +
+            "could not convert string to float: '\\x1c５'\ncould not convert string to float: '2_\\xa03'\n" +
+            "could not convert string to float: b'\\xc2\\xa01'\ncould not convert string to float: b'1__2'\n",
+            result.StandardOutput);
+    }
+
 
 
     [Fact]

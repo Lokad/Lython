@@ -1337,6 +1337,13 @@ same parser compacts in place. Public file iteration still returns independent
 strings. Raw line bytes and an unfinished multiline prefix can require more
 working capacity than the decoded fields; replacement peaks remain admitted.
 Each source item completes at most one record, with trailing CR/LF allowed.
+Unquoted `QUOTE_NONNUMERIC` fields use the same byte parser as `float()`.
+The parser reads the field before advancing to later syntax or fetching
+another line. Unicode decimal digits and underscores normalize into bounded
+stack scratch or admitted heap bytes. Converted CSV numbers stay in their
+field descriptors until final row admission, which funds their boxes.
+Long scans check cancellation between chunks. The final CLR conversion is
+synchronous.
 Final row admission covers all field storage before construction. Long fields
 have separate Python string identities over one exact immutable payload; short
 fields retain inline storage. That payload stays funded by the execution/result
