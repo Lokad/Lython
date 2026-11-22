@@ -1,0 +1,13 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "persistentTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 181489664,
+  "archiveSHA256": "6c0f17b865deb1688719e3b9741264660cbbff93d17002bb951070ffd4cbdd63",
+  "source": "Attribute current postponed factory and nonlocal word-count runtime costs",
+  "performanceComparison": false,
+  "failure": null
+}

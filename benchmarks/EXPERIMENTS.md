@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1399 postponed factory and word-count profiles](results/2026-11-22-current-runtime-attribution/README.md)
+attributes verified current runtime requests. Callable creation and
+default preparation dominate factory admission samples. Prepared
+word iteration and casing remain visible in the word report. These
+are single-image profiles, with the limited Windows trace preserved.
+
 [B1398 repeated eager annotation values](results/2026-11-22-repeated-eager-annotations/README.md)
 keeps one definition-time read and removes the eager values array.
 The eager factory allocates 9.95% less locally and runs 9.51–13.12%
