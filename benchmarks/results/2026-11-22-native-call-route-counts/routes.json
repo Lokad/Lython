@@ -1,0 +1,162 @@
+{
+  "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+  "rows": [
+    {
+      "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "asynchronous": false,
+      "routes": {
+        "FramedCandidates": 6144,
+        "FramedNative": 6144,
+        "FramedFallback": 0,
+        "DeferredLeaf": 0,
+        "NestedNative": 0
+      },
+      "peakExecutionMemoryBytes": 2968481,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.annotated-rule-closures.nested-factories.postponed.async",
+      "asynchronous": true,
+      "routes": {
+        "FramedCandidates": 6144,
+        "FramedNative": 6144,
+        "FramedFallback": 0,
+        "DeferredLeaf": 0,
+        "NestedNative": 0
+      },
+      "peakExecutionMemoryBytes": 2968481,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.annotated-rule-closures.nested-factories",
+      "asynchronous": false,
+      "routes": {
+        "FramedCandidates": 6144,
+        "FramedNative": 6144,
+        "FramedFallback": 0,
+        "DeferredLeaf": 0,
+        "NestedNative": 0
+      },
+      "peakExecutionMemoryBytes": 2968425,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.annotated-rule-closures.nested-factories.async",
+      "asynchronous": true,
+      "routes": {
+        "FramedCandidates": 6144,
+        "FramedNative": 6144,
+        "FramedFallback": 0,
+        "DeferredLeaf": 0,
+        "NestedNative": 0
+      },
+      "peakExecutionMemoryBytes": 2968425,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.factory-observed-defaults",
+      "asynchronous": false,
+      "routes": {
+        "FramedCandidates": 6144,
+        "FramedNative": 6144,
+        "FramedFallback": 0,
+        "DeferredLeaf": 0,
+        "NestedNative": 0
+      },
+      "peakExecutionMemoryBytes": 2968817,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.factory-observed-defaults.async",
+      "asynchronous": true,
+      "routes": {
+        "FramedCandidates": 6144,
+        "FramedNative": 6144,
+        "FramedFallback": 0,
+        "DeferredLeaf": 0,
+        "NestedNative": 0
+      },
+      "peakExecutionMemoryBytes": 2968817,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.ordinary-fully-supplied-helper",
+      "asynchronous": false,
+      "routes": {
+        "FramedCandidates": 2048,
+        "FramedNative": 2048,
+        "FramedFallback": 0,
+        "DeferredLeaf": 0,
+        "NestedNative": 0
+      },
+      "peakExecutionMemoryBytes": 1255,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.ordinary-fully-supplied-helper.async",
+      "asynchronous": true,
+      "routes": {
+        "FramedCandidates": 2048,
+        "FramedNative": 2048,
+        "FramedFallback": 0,
+        "DeferredLeaf": 0,
+        "NestedNative": 0
+      },
+      "peakExecutionMemoryBytes": 1255,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.csv-invoice.method-policy.quoted-control",
+      "asynchronous": false,
+      "routes": {
+        "FramedCandidates": 4096,
+        "FramedNative": 4096,
+        "FramedFallback": 0,
+        "DeferredLeaf": 0,
+        "NestedNative": 8192
+      },
+      "peakExecutionMemoryBytes": 9432874,
+      "allowanceReturned": true
+    },
+    {
+      "id": "scripts.csv-invoice.method-policy.quoted-control.async",
+      "asynchronous": true,
+      "routes": {
+        "FramedCandidates": 4096,
+        "FramedNative": 4096,
+        "FramedFallback": 0,
+        "DeferredLeaf": 0,
+        "NestedNative": 8192
+      },
+      "peakExecutionMemoryBytes": 9432874,
+      "allowanceReturned": true
+    },
+    {
+      "id": "calls.positional.large",
+      "asynchronous": false,
+      "routes": {
+        "FramedCandidates": 16384,
+        "FramedNative": 16384,
+        "FramedFallback": 0,
+        "DeferredLeaf": 0,
+        "NestedNative": 0
+      },
+      "peakExecutionMemoryBytes": 1284,
+      "allowanceReturned": true
+    },
+    {
+      "id": "calls.positional.large.async",
+      "asynchronous": true,
+      "routes": {
+        "FramedCandidates": 16384,
+        "FramedNative": 16384,
+        "FramedFallback": 0,
+        "DeferredLeaf": 0,
+        "NestedNative": 0
+      },
+      "peakExecutionMemoryBytes": 1284,
+      "allowanceReturned": true
+    }
+  ],
+  "boundary": "Portable route evidence only from separately instrumented core. No timing."
+}

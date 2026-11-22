@@ -6,6 +6,10 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Native call route counts](results/2026-11-22-native-call-route-counts/README.md)
+show that six matched workloads never reach framed function fallback.
+Factories enter the framed native route 6,144 times under either host API.
+
 [Cursor token handoff](results/2026-11-22-regex-cursor-token-handoff/README.md)
 verifies that the frozen development producer keeps the creation token
 active on advance. The adapter-local registration detaches it. A
