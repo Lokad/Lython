@@ -1,0 +1,50 @@
+[
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "reference": 4069574,
+    "candidate": 4069574,
+    "allocationChangePercent": 0.0,
+    "admittedReference": 9432874,
+    "admittedCandidate": 9432874
+  },
+  {
+    "case": "scripts.csv-invoice.helper-accumulation",
+    "reference": 3674390,
+    "candidate": 3674390,
+    "allocationChangePercent": 0.0,
+    "admittedReference": 9433061,
+    "admittedCandidate": 9433061
+  },
+  {
+    "case": "diagnostic.helper-placement.function-call",
+    "reference": 77224,
+    "candidate": 77224,
+    "allocationChangePercent": 0.0,
+    "admittedReference": 1343,
+    "admittedCandidate": 1343
+  },
+  {
+    "case": "scripts.annotated-rule-closures.literal-positional-dynamic-keyword",
+    "reference": 964360,
+    "candidate": 964360,
+    "allocationChangePercent": 0.0,
+    "admittedReference": 3443797,
+    "admittedCandidate": 3443797
+  },
+  {
+    "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+    "reference": 446304,
+    "candidate": 446310,
+    "allocationChangePercent": 0.0013443751344377475,
+    "admittedReference": 1279096,
+    "admittedCandidate": 1279096
+  },
+  {
+    "case": "calls.positional.large",
+    "reference": 1060272,
+    "candidate": 1060272,
+    "allocationChangePercent": 0.0,
+    "admittedReference": 1284,
+    "admittedCandidate": 1284
+  }
+]

@@ -12,6 +12,13 @@ postponed factories. Name-binding set copies are also visible in the
 validator. The Windows EventPipe captures support investigating these
 construction costs. They give no comparative timing result.
 
+[B1385 bound arithmetic returns](results/2026-11-22-bound-integer-return/README.md)
+eliminates the native workspace on eligible bound methods. The quoted
+invoice spans zero with 5.30% candidate-worker spread. The unchanged
+function helper uses 4.40–6.78% more CPU with stable workers. Keep
+the first variant private and preserve the ordinary operand reader in
+any refinement.
+
 [B1384 cased word ranges](results/2026-11-22-cased-word-ranges/README.md)
 removes a short-word UTF-8 copy by reading the active casing cursor's
 range. Both captured reports span zero warm. Compile to result
