@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1316 compiler and CSV checkpoint against CPython](results/2026-11-22-compiler-csv-cpython/README.md)
+compares `8c81fb8d2` production-equivalent source with CPython 3.13.16.
+The validator with a generator takes 0.801–0.813× as long to result
+and 1.851–1.871× as long warm. Typed ASCII CSV takes 1.629–1.682× as
+long warm. The quote-heavy invoice takes 1.142–1.169× as long.
+All 168 batches pass the output and ownership checks.
+
 [B1315 prepare lexical work during binding](results/2026-11-22-sparse-lexical-preparation/README.md)
 reuses syntax facts and removes the second ordinary suite walk. An early
 dense queue allocates 274 KB more on a wide complex scope. Sparse
