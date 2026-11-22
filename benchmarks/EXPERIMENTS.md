@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1386 compilation storage attribution](results/2026-11-22-frontend-growth-attribution/README.md)
+finds instruction list growth in the manifest, sparse validator and
+postponed factories. Name-binding set copies are also visible in the
+validator. The Windows EventPipe captures support investigating these
+construction costs. They give no comparative timing result.
+
 [B1384 cased word ranges](results/2026-11-22-cased-word-ranges/README.md)
 removes a short-word UTF-8 copy by reading the active casing cursor's
 range. Both captured reports span zero warm. Compile to result
