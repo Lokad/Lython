@@ -113,15 +113,22 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
 
     // Definition defaults are written once into their final storage. Admit
     // capacity and eventual small scalar boxes before evaluating any defaults.
+    internal static long EstimateDefaultStorage(int count)
+        => checked(64L + (24L + RuntimeMemoryEstimates.ScalarStorageBytes) * count);
+
+    internal static PyTuple CreateAdmittedDefaultStorage(int count, MemoryGovernor governor,
+        LythonSourceSpan span, long bytes)
+        => new(new LythonRuntime.ExecutableSlot[count], governor, span, bytes);
+
     internal static PyTuple CreateDefaultStorage(int count, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        var bytes = checked(64L + (24L + RuntimeMemoryEstimates.ScalarStorageBytes) * count);
+        var bytes = EstimateDefaultStorage(count);
         var governor = context.MemoryGovernor;
         governor.Reserve(bytes, span);
         try
         {
             context.CheckExecution(span);
-            var tuple = new PyTuple(new LythonRuntime.ExecutableSlot[count], governor, span, bytes);
+            var tuple = CreateAdmittedDefaultStorage(count, governor, span, bytes);
             governor.Commit(bytes);
             return tuple;
         }

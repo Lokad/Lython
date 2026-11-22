@@ -6,7 +6,7 @@ namespace Lokad.Lython.Runtime;
 internal sealed partial class LythonRuntime
 {
     private static FunctionDefaults AllocateFunctionDefaults(FunctionParameterLayout layout, ExecutionContext context,
-        LythonSourceSpan span, bool inlineSingleKeyword = false)
+        LythonSourceSpan span)
     {
         context.CheckExecution(span);
         var positional = layout.PositionalDefaultCount == 0
@@ -14,11 +14,6 @@ internal sealed partial class LythonRuntime
         try
         {
             var keywordCount = layout.Defaults.Length - layout.PositionalDefaultCount;
-            if (inlineSingleKeyword && keywordCount == 1)
-            {
-                AdmitInlineKeywordDefault(context, span);
-                return new(positional, PyNone.Instance, InlineKeyword: true);
-            }
             object? keywords = keywordCount == 0 ? null : layout.PreparedKeywordDefaultKeys is { } keys
                 ? keys.CreatePreparedValues(context, span) : new PyDict(keywordCount, context.MemoryGovernor, span);
             return new(positional, keywords);
@@ -35,41 +30,25 @@ internal sealed partial class LythonRuntime
     private static void StartExecutableDefaults(FunctionParameterLayout layout, Span<ExecutableSlot> operands,
         bool keywordsOnly, ExecutionContext context, LythonSourceSpan span)
     {
-        if (keywordsOnly)
-        {
-            operands[0] = PrepareExecutableKeywordDefaults(layout, context, span);
-            return;
-        }
-
-        var defaults = AllocateFunctionDefaults(layout, context, span, inlineSingleKeyword: true);
-        var next = 0;
-        if (defaults.Positional is { } positional) operands[next++] = ExecutableSlot.OwnPrivateDefault(positional);
-        if (defaults.Keywords is { } keywords)
-            operands[next] = defaults.InlineKeyword ? ExecutableSlot.OwnPrivateKeywordDefault(keywords)
-                : ExecutableSlot.OwnPrivateDefault(keywords);
-    }
-
-    private static ExecutableSlot PrepareExecutableKeywordDefaults(FunctionParameterLayout layout,
-        ExecutionContext context, LythonSourceSpan span)
-    {
-        var keys = layout.PreparedKeywordDefaultKeys.RequireNotNull();
-        if (keys.Count == 1)
-        {
-            AdmitInlineKeywordDefault(context, span);
-            return ExecutableSlot.OwnPrivateKeywordDefault(PyNone.Instance);
-        }
-        return ExecutableSlot.OwnPrivateDefault(keys.CreatePreparedValues(context, span));
-    }
-
-    private static void AdmitInlineKeywordDefault(ExecutionContext context, LythonSourceSpan span)
-    {
-        var bytes = PyDict.RecordKeys.SinglePreparedValueBytes;
+        var positionalCount = keywordsOnly ? 0 : layout.PositionalDefaultCount;
+        var keys = layout.HasKeywordDefaults ? layout.PreparedKeywordDefaultKeys.RequireNotNull() : null;
+        var positionalBytes = positionalCount == 0 ? 0 : PyTuple.EstimateDefaultStorage(positionalCount);
+        var keywordCapacity = keys?.PreparedValueCapacity ?? 0;
+        var bytes = checked(positionalBytes + (keys is null ? 0 : PyDict.RecordKeys.RecordBytes(keywordCapacity)));
         var governor = context.MemoryGovernor;
+        context.CheckExecution(span);
         governor.Reserve(bytes, span);
         try
         {
             context.CheckExecution(span);
+            var positional = positionalCount == 0 ? default : ExecutableSlot.OwnPrivateDefault(
+                PyTuple.CreateAdmittedDefaultStorage(positionalCount, governor, span, positionalBytes));
+            var keyword = keys is null ? default : keys.Count == 1
+                ? ExecutableSlot.OwnPrivateKeywordDefault(PyNone.Instance)
+                : ExecutableSlot.OwnPrivateDefault(new object?[keywordCapacity]);
             governor.Commit(bytes);
+            if (positionalCount != 0) operands[0] = positional;
+            if (keys is not null) operands[^1] = keyword;
         }
         catch { governor.ReleaseReserved(bytes); throw; }
     }
