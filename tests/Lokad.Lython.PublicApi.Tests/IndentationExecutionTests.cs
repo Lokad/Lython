@@ -10,6 +10,7 @@ public sealed class IndentationExecutionTests
         yield return ["uniform-tabs", "if True:\n\tif True:\n\t\tprint(3)\n", "3\n"];
         yield return ["consistent-mixed-prefix", "if True:\n \tvalue=1\n \tprint(value)\n", "1\n"];
         yield return ["form-feed-reset", "if True:\n\tvalue=1\n        \f\tvalue=2\n\tprint(value)\n", "2\n"];
+        yield return ["leading-comment-and-reset", "\n  # header\n \t\fprint('kept')\n", "kept\n"];
         yield return ["final-comment", "if True:\n  print('kept')\n      # only trailing comment", "kept\n"];
     }
 
@@ -34,6 +35,19 @@ public sealed class IndentationExecutionTests
             }
         }
         Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData("    $", 0, 4, 1)]
+    [InlineData("\uFEFF\t# header\r\n \r\n \f\t$", 12, 3, 3)]
+    public void LeadingIndentationPrecedesInvalidTokenOnTheSameLine(string source, int start, int length, int line)
+    {
+        using var script = new LythonEngine().Compile(source);
+        Assert.False(script.IsValid);
+        var diagnostic = Assert.Single(script.Diagnostics);
+        Assert.Equal("LA1000", diagnostic.Code);
+        Assert.Equal("Unexpected indentation.", diagnostic.Message);
+        Assert.Equal(new LythonSourceSpan(start, length, line, 1), diagnostic.Span);
     }
 
     public static IEnumerable<object[]> InvalidCases()

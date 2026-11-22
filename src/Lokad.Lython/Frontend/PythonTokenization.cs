@@ -5,8 +5,8 @@ namespace Lokad.Lython.Frontend;
 
 internal static class PythonTokenization
 {
-    public static TokenizedSource Read(string source, CancellationToken cancellationToken = default)
-        => new Reader(source, cancellationToken).Read();
+    public static TokenizedSource Read(string source, CancellationToken cancellationToken = default, bool module = false)
+        => new Reader(source, cancellationToken).Read(module);
 
     internal static void CheckCancellation(CancellationToken token, int position)
     {
@@ -25,12 +25,13 @@ internal static class PythonTokenization
         private bool _invalid;
         private LythonDiagnostic? _lexicalDiagnostic;
 
-        public TokenizedSource Read()
+        public TokenizedSource Read(bool module)
         {
             CheckCancellation(cancellationToken, 0);
             var limit = source.Length;
             while (limit > 0 && source[limit - 1] is ' ' or '\t' or '\r' or '\f')
             { CheckCancellation(cancellationToken, limit); limit--; }
+            if (module && !ReadIndentation(limit, leadingModule: true)) return Finish();
             while (_position < limit)
             {
                 CheckCancellation(cancellationToken, _position);
@@ -95,6 +96,11 @@ internal static class PythonTokenization
                 Add(token, start, length);
                 _position += length;
             }
+            return Finish();
+        }
+
+        private TokenizedSource Finish()
+        {
             var terminal = _depth > 0 && _tokens.Count > 0
                 ? _tokens[^1].Start + _tokens[^1].Length : _position;
             if (_depth == 0)
@@ -137,7 +143,7 @@ internal static class PythonTokenization
             { CheckCancellation(cancellationToken, _position); _position++; }
         }
 
-        private bool ReadIndentation(int limit)
+        private bool ReadIndentation(int limit, bool leadingModule = false)
         {
             long column = 0;
             var alternate = 0;
@@ -163,6 +169,15 @@ internal static class PythonTokenization
             var current = _indents[^1];
             if (column > current.Column)
             {
+                if (leadingModule)
+                {
+                    // The first content line is unindented. Diagnose its
+                    // prefix before scanning anything else on that line.
+                    var start = _newlines.Count == 0 ? 0 : _newlines[^1] + 1;
+                    _lexicalDiagnostic = new("LA1000", "Unexpected indentation.", LythonDiagnosticSeverity.Error,
+                        new LythonSourceSpan(start, _position - start, _newlines.Count + 1, 1));
+                    return false;
+                }
                 if (alternate <= current.Alternate) return InvalidIndentation(tabs: true);
                 _indents.Add((column, alternate));
                 Add(Token.Indent, _position, 0);

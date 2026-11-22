@@ -16,13 +16,7 @@ internal static class LythonFrontend
             return new FrontendResult(new ScriptSyntax(Array.Empty<StatementSyntax>()), Array.Empty<LythonDiagnostic>());
         }
 
-        if (TryCreateLeadingIndentationDiagnostic(source, out var indentationDiagnostic, cancellationToken))
-        {
-            return new FrontendResult(null, [indentationDiagnostic]);
-        }
-
-        var tokens = PythonTokenization.Read(source, cancellationToken);
-
+        var tokens = PythonTokenization.Read(source, cancellationToken, module: true);
         if (tokens.LexicalDiagnostic is { } lexicalDiagnostic)
         {
             return new FrontendResult(null, [lexicalDiagnostic]);
@@ -216,60 +210,4 @@ internal static class LythonFrontend
             '\t' => "\\t",
             _ => c.ToString()
         };
-
-    private static bool TryCreateLeadingIndentationDiagnostic(string source, [MaybeNullWhen(false)] out LythonDiagnostic diagnostic, CancellationToken cancellationToken)
-    {
-        var line = 1;
-        var lineStart = 0;
-
-        while (lineStart < source.Length)
-        {
-            PythonTokenization.CheckCancellation(cancellationToken, lineStart);
-            var lineEnd = lineStart;
-            while (lineEnd < source.Length && source[lineEnd] is not '\r' and not '\n')
-            {
-                PythonTokenization.CheckCancellation(cancellationToken, lineEnd);
-                lineEnd++;
-            }
-
-            var firstNonWhitespace = lineStart;
-            var hasIndentation = false;
-            while (firstNonWhitespace < lineEnd &&
-                source[firstNonWhitespace] is ' ' or '\t' or '\f')
-            {
-                PythonTokenization.CheckCancellation(cancellationToken, firstNonWhitespace);
-                hasIndentation = source[firstNonWhitespace] != '\f';
-                firstNonWhitespace++;
-            }
-
-            if (firstNonWhitespace < lineEnd && source[firstNonWhitespace] != '#')
-            {
-                if (hasIndentation)
-                {
-                    diagnostic = new LythonDiagnostic(
-                        Code: "LA1000",
-                        Message: "Unexpected indentation.",
-                        Severity: LythonDiagnosticSeverity.Error,
-                        Span: new LythonSourceSpan(lineStart, firstNonWhitespace - lineStart, line, 1));
-                    return true;
-                }
-
-                break;
-            }
-
-            if (lineEnd < source.Length && source[lineEnd] == '\r' && lineEnd + 1 < source.Length && source[lineEnd + 1] == '\n')
-            {
-                lineStart = lineEnd + 2;
-            }
-            else
-            {
-                lineStart = lineEnd + 1;
-            }
-
-            line++;
-        }
-
-        diagnostic = null;
-        return false;
-    }
 }
