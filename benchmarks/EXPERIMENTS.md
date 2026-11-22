@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1313 typed and explicit float CSV against CPython](results/2026-11-22-float-meter-cpython/README.md)
+measures the retained direct float-text source on four complete
+scripts. Typed ASCII CSV takes 1.747–1.852× as long warm and
+1.738–1.770× to result. Its compile-only ratio is 0.632–0.633×.
+The older integer invoice is near parity. All 168 timed batches and
+goldens pass.
+
 [B1312 direct UTF-8 float parsing](results/2026-11-22-direct-float-text/README.md)
 removes the temporary CSV string, the UTF-16 decoding step and eager
 numeric field boxing. All three complete meter reports use less warm
