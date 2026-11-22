@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1401 prepared-word histogram loop](results/2026-11-22-prepared-histogram/README.md)
+removes the short-word packet and tests retiring the ordinary whole-loop
+shortcut. The nonlocal report uses 4.07–10.36% less warm time and the dense
+line 18.28–22.17% less. The ordinary histogram takes 37.30–39.69% longer.
+Keep the candidate private and preserve ordinary accumulation in the
+next design.
+
 [B1400 inline dynamic default tuple](results/2026-11-22-inline-default-tuple/README.md)
 removes the singleton backing array and preserves the same lazy
 value identity. The postponed factory allocates 49,152 fewer bytes
