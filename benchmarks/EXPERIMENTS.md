@@ -6,6 +6,18 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1419 callable checkpoint against CPython](results/2026-11-22-callable-checkpoint-cpython/README.md)
+refreshes six complete scripts on exact `6ac96ea93`. Warm postponed
+factories take 1.825–2.000× CPython elapsed and the nonlocal report
+1.510–1.609×. The warm quote-heavy invoice takes 1.141–1.157× and the
+JSON Lines export 0.810–0.836×.
+
+[Frozen 0.5.0 adapter range port](results/2026-11-22-regex-050-range-adapter/README.md)
+uses native UTF-8 names and byte-range snapshots. Both platforms pass 622
+focused public checks on the immutable development producer. The retained
+cancellation bridge, legacy fixture failures and final producer gaps are
+documented.
+
 [B1417 callable diagnostic identity](results/2026-11-22-function-diagnostic-identity/README.md)
 removes duplicate per-function fields. Both factory workloads allocate
 3.34% less. Eager warm takes 5.08–6.01% less elapsed, and postponed

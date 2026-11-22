@@ -2,15 +2,15 @@
 
 | Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| Quote-heavy CSV policy invoice | 4,096 records / 174,147 B | 7.244–7.303 ms | 6.256–6.324 ms | 1.145–1.167× | Diagnostic. [B1406]. |
-| Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 1.512–1.528 ms | 0.944–0.951 ms | 1.590–1.620× | Diagnostic. [B1406]. |
-| JSON Lines export with expanded options | 3,072 records / 189,441 B | 5.428–5.461 ms | 6.462–6.483 ms | 0.837–0.845× | Diagnostic. [B1406]. |
-| Postponed nested factories | 2,048 inputs / 4,096 definitions | 1.093–1.106 ms | 0.537–0.545 ms | 2.005–2.060× | Diagnostic. [B1406]. |
+| Quote-heavy CSV policy invoice | 4,096 records / 174,147 B | 7.258–7.294 ms | 6.303–6.359 ms | 1.141–1.157× | Diagnostic. [B1419]. |
+| Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 1.479–1.572 ms | 0.977–0.980 ms | 1.510–1.609× | Diagnostic. Lython worker spread 6.29%. [B1419]. |
+| JSON Lines export with expanded options | 3,072 records / 189,441 B | 5.565–5.657 ms | 6.767–6.868 ms | 0.810–0.836× | Diagnostic. [B1419]. |
+| Postponed nested factories | 2,048 inputs / 4,096 definitions | 1.027–1.094 ms | 0.547–0.563 ms | 1.825–2.000× | Diagnostic. Lython worker spread 6.48%. [B1419]. |
 
 Ratios divide Lython elapsed time by CPython elapsed time. Above 1× means
 Lython takes longer. Ranges span the four pairings of process medians from
 two workers per engine. The opening table measures the November 22, 2026
-UTC checkpoint at `55424591f`. Each linked checkpoint gives its exact image
+UTC checkpoint at `6ac96ea93`. Each linked checkpoint gives its exact image
 IDs, worker spread and batch variation.
 
 The direct Lython source pair from `32c50290d` to `55424591f` reproduces
@@ -32,10 +32,10 @@ measurements cover the wider request.
 
 | Workload | Phase | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| Sparse generated validator | Compilation only | 1.453–1.459 ms | 1.826–1.832 ms | 0.793–0.799× | Diagnostic. [B1406]. |
-| Sparse generated validator | Compile-to-result | 1.546–1.550 ms | 1.971–1.982 ms | 0.780–0.786× | Diagnostic. [B1406]. |
-| Postponed nested factories | Compile-to-result | 1.092–1.112 ms | 0.584–0.587 ms | 1.860–1.904× | Diagnostic. [B1406]. |
-| Configuration edit | Compile-to-result | 0.109–0.110 ms | 0.125–0.126 ms | 0.862–0.882× | Diagnostic. [B1406]. |
+| Sparse generated validator | Compilation only | 1.463–1.481 ms | 1.822–1.865 ms | 0.784–0.813× | Diagnostic. [B1419]. |
+| Sparse generated validator | Compile-to-result | 1.545–1.569 ms | 1.964–1.968 ms | 0.785–0.799× | Diagnostic. [B1419]. |
+| Postponed nested factories | Compile-to-result | 1.078–1.107 ms | 0.587–0.592 ms | 1.820–1.886× | Diagnostic. [B1419]. |
+| Configuration edit | Compile-to-result | 0.1135–0.1140 ms | 0.1303–0.1304 ms | 0.871–0.875× | Diagnostic. [B1419]. |
 | Typed ASCII CSV meter report | Compilation only | 0.04166–0.04177 ms | 0.06754–0.06762 ms | 0.616–0.618× | Diagnostic. [B1336]. |
 | Typed ASCII CSV meter report | Compile-to-result | 3.102–3.286 ms | 2.655–2.677 ms | 1.159–1.237× | Diagnostic. Lython worker spread 5.93%. [B1351]. |
 | Typed Unicode CSV meter report | Compilation only | 0.04218–0.04232 ms | 0.06772–0.06784 ms | 0.622–0.625× | Diagnostic. Lython worker spread 0.34%. [B1388]. |
@@ -86,6 +86,7 @@ change. The checkpoint includes the arithmetic and allocation controls.
 
 | Checkpoint | Lython source | Date |
 | --- | --- | --- |
+| [B1419] | `6ac96ea93` | 2026-11-22 UTC |
 | [B1406] | `55424591f` | 2026-11-22 UTC |
 | [B1397] | `32c50290d` | 2026-11-22 UTC |
 | [B1388] | `d45f2ed21` | 2026-11-22 UTC |
@@ -150,6 +151,7 @@ Review individual designs and adverse observations in
 the [experiment index](../benchmarks/EXPERIMENTS.md).
 Reproduce the comparisons with the [benchmark tools](../benchmarks/README.md).
 
+[B1419]: ../benchmarks/results/2026-11-22-callable-checkpoint-cpython/README.md
 [B1406]: ../benchmarks/results/2026-11-22-current-source-cpython/README.md
 [B1397]: ../benchmarks/results/2026-11-22-retained-source-cpython/README.md
 [B1388]: ../benchmarks/results/2026-11-22-unicode-decimal-cpython/README.md
