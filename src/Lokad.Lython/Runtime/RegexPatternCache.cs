@@ -90,8 +90,11 @@ internal sealed class RegexPatternCache
         _recent.Clear();
         if (governor is not null && _committedSlotBytes > 0)
         {
-            governor.Release(_committedSlotBytes);
+            // A host refund can reenter and grow the empty cache. Retire
+            // the previous balance before that new capacity is admitted.
+            var bytes = _committedSlotBytes;
             _committedSlotBytes = 0;
+            governor.Release(bytes);
         }
     }
 }

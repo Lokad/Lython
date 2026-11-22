@@ -1,5 +1,6 @@
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
+using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
 
@@ -74,5 +75,35 @@ public sealed class RegexCacheCapacityAccountingTests
         cache.Add(new(PyString.FromString("after-purge"), new(32, false), 0), pattern, governor, span);
         Assert.Equal(RegexPatternCache.SlotBytesPerEntry, governor.CurrentCommittedBytes);
         Assert.True(cache.TryGet(new(PyString.FromString("after-purge"), new(32, false), 0), out _));
+    }
+
+    [Fact]
+    public void PurgeRefundKeepsCapacityAdmittedDuringReentry()
+    {
+        var pattern = Pattern();
+        using var compiled = pattern.Regex;
+        var budget = new LythonMemoryBudget(2 * RegexPatternCache.SlotBytesPerEntry);
+        var hook = new AdmissionHookMemoryBudget(budget);
+        var governor = new MemoryGovernor(hook);
+        var cache = new RegexPatternCache();
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        var original = new RegexPatternCache.Key(PyString.FromString("previous"), new(32, false), 0);
+        var replacement = new RegexPatternCache.Key(PyString.FromString("reentered"), new(32, false), 0);
+        cache.Add(original, pattern, governor, span);
+        hook.AfterShrink = _bytes =>
+        {
+            hook.AfterShrink = null;
+            Assert.False(cache.TryGet(original, out _));
+            cache.Add(replacement, pattern, governor, span);
+        };
+
+        cache.Clear(governor);
+
+        Assert.True(cache.TryGet(replacement, out var retained));
+        Assert.Same(pattern, retained);
+        Assert.Equal(RegexPatternCache.SlotBytesPerEntry, budget.ReservedBytes);
+        cache.Clear(governor);
+        Assert.Equal(0, cache.Count);
+        Assert.Equal(0, budget.ReservedBytes);
     }
 }
