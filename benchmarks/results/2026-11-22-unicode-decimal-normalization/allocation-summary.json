@@ -1,0 +1,34 @@
+[
+  {
+    "case": "scripts.csv-meter-report.explicit-float",
+    "reference": 2819060,
+    "candidate": 2818998,
+    "allocationChangePercent": -0.0021993146651744233,
+    "admittedReference": 6285897,
+    "admittedCandidate": 6285897
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "reference": 4069574,
+    "candidate": 4069574,
+    "allocationChangePercent": 0.0,
+    "admittedReference": 9432874,
+    "admittedCandidate": 9432874
+  },
+  {
+    "case": "scripts.csv-meter-report.typed-unicode",
+    "reference": 1606096,
+    "candidate": 1607110,
+    "allocationChangePercent": 0.06313445771610748,
+    "admittedReference": 3552905,
+    "admittedCandidate": 3552905
+  },
+  {
+    "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+    "reference": 446080,
+    "candidate": 446304,
+    "allocationChangePercent": 0.050215208034432024,
+    "admittedReference": 1279096,
+    "admittedCandidate": 1279096
+  }
+]

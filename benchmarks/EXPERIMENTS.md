@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1383 Unicode decimal normalization](results/2026-11-22-unicode-decimal-normalization/README.md)
+removes the classifier pass for short normalized float tokens and
+shares the BMP digit lookup across numeric consumers. The Unicode
+meter takes 2.41–4.96% less time from compilation to result. Its warm
+timings span zero. The quoted invoice takes 0.90–1.06% longer warm
+with stable workers, and word-count timings vary across processes.
+
 [B1382 complete record and text attribution](results/2026-11-22-record-text-attribution/README.md)
 profiles the explicit float and Unicode typed CSV meters, the quoted
 policy invoice and a Unicode word-count report. The Unicode meter has
