@@ -57,11 +57,10 @@ internal static class StaticNameBindingDiagnostics
             localNames = checkedLocals;
         }
 
-        var maybeAssigned = new HashSet<string>(
+        var maybeAssigned = new AssignmentFacts(
             functionDefinition.Parameters
                 .Select(static parameter => parameter.Name)
-                .Where(name => !scopeFacts.GlobalNames.Contains(name) && !scopeFacts.NonlocalNames.Contains(name)),
-            StringComparer.Ordinal);
+                .Where(name => !scopeFacts.GlobalNames.Contains(name) && !scopeFacts.NonlocalNames.Contains(name)), context);
         AnalyzeStatements(functionDefinition.Body, context, localNames, maybeAssigned);
     }
 
@@ -69,7 +68,7 @@ internal static class StaticNameBindingDiagnostics
         IReadOnlyList<StatementSyntax> statements,
         StaticAnalysisContext context,
         IReadOnlySet<string> localNames,
-        HashSet<string> maybeAssigned)
+        AssignmentFacts maybeAssigned)
     {
         foreach (var statement in statements)
         {
@@ -81,7 +80,7 @@ internal static class StaticNameBindingDiagnostics
         StatementSyntax statement,
         StaticAnalysisContext context,
         IReadOnlySet<string> localNames,
-        HashSet<string> maybeAssigned)
+        AssignmentFacts maybeAssigned)
     {
         foreach (var expression in StatementSyntaxTraversal.EnumerateDirectExpressions(statement))
         {
@@ -158,66 +157,53 @@ internal static class StaticNameBindingDiagnostics
 
             case IfStatementSyntax ifStatement:
                 {
-                    // This is deliberately a may-assignment analysis: unioning branch
-                    // results avoids claiming a name is certainly unbound after a branch.
-                    var thenAssigned = Clone(maybeAssigned);
-                    AnalyzeStatements(ifStatement.ThenStatements, context, localNames, thenAssigned);
-                    var elseAssigned = Clone(maybeAssigned);
-                    if (ifStatement.ElseStatements is not null)
-                    {
-                        AnalyzeStatements(ifStatement.ElseStatements, context, localNames, elseAssigned);
-                    }
-                    maybeAssigned.UnionWith(thenAssigned);
-                    maybeAssigned.UnionWith(elseAssigned);
+                    // Analyze both alternatives from the original bindings.
+                    // The join keeps a name assigned on either path.
+                    var saved = maybeAssigned.SavedCount;
+                    var branch = maybeAssigned.BeginBranch();
+                    AnalyzeStatements(ifStatement.ThenStatements, context, localNames, maybeAssigned);
+                    maybeAssigned.SaveAndRewind(branch);
+                    AnalyzeOptionalBranch(ifStatement.ElseStatements, context, localNames, maybeAssigned);
+                    maybeAssigned.ApplySaved(saved);
                     break;
                 }
 
             case ForStatementSyntax forStatement:
                 {
-                    var bodyAssigned = Clone(maybeAssigned);
-                    AnalyzeLoopStores(forStatement.Target, context, localNames, bodyAssigned);
-                    AnalyzeStatements(forStatement.Body, context, localNames, bodyAssigned);
-                    maybeAssigned.UnionWith(bodyAssigned);
-                    if (forStatement.ElseStatements is not null)
-                    {
-                        var elseAssigned = Clone(maybeAssigned);
-                        AnalyzeStatements(forStatement.ElseStatements, context, localNames, elseAssigned);
-                        maybeAssigned.UnionWith(elseAssigned);
-                    }
+                    var branch = maybeAssigned.BeginBranch();
+                    AnalyzeLoopStores(forStatement.Target, context, localNames, maybeAssigned);
+                    AnalyzeStatements(forStatement.Body, context, localNames, maybeAssigned);
+                    maybeAssigned.Merge(branch);
+                    AnalyzeOptionalBranch(forStatement.ElseStatements, context, localNames, maybeAssigned);
                     break;
                 }
 
             case WhileStatementSyntax whileStatement:
-                {
-                    var bodyAssigned = Clone(maybeAssigned);
-                    AnalyzeStatements(whileStatement.Body, context, localNames, bodyAssigned);
-                    maybeAssigned.UnionWith(bodyAssigned);
-                    if (whileStatement.ElseStatements is not null)
-                    {
-                        var elseAssigned = Clone(maybeAssigned);
-                        AnalyzeStatements(whileStatement.ElseStatements, context, localNames, elseAssigned);
-                        maybeAssigned.UnionWith(elseAssigned);
-                    }
-                    break;
-                }
+                AnalyzeOptionalBranch(whileStatement.Body, context, localNames, maybeAssigned);
+                AnalyzeOptionalBranch(whileStatement.ElseStatements, context, localNames, maybeAssigned);
+                break;
 
             case MatchStatementSyntax matchStatement:
                 {
-                    var unionAssigned = Clone(maybeAssigned);
+                    var savedBodies = maybeAssigned.SavedCount;
                     foreach (var matchCase in matchStatement.Cases)
                     {
-                        var caseAssigned = Clone(maybeAssigned);
-                        ScopeDirectiveFactsCollector.CollectPatternBindings(matchCase.Pattern, caseAssigned);
+                        var branch = maybeAssigned.BeginBranch();
+                        ScopeDirectiveFactsCollector.CollectPatternBindings(matchCase.Pattern, maybeAssigned,
+                            static (facts, name) => facts.Add(name));
                         if (matchCase.Guard is not null)
                         {
-                            AnalyzeExpression(matchCase.Guard, context, localNames, caseAssigned);
-                            maybeAssigned.UnionWith(caseAssigned);
+                            AnalyzeExpression(matchCase.Guard, context, localNames, maybeAssigned);
+                            // Pattern and guard only add bindings. Their effects
+                            // are visible to later cases, unlike body effects.
+                            maybeAssigned.Merge(branch);
+                            branch = maybeAssigned.BeginBranch();
                         }
 
-                        AnalyzeStatements(matchCase.Body, context, localNames, caseAssigned);
-                        unionAssigned.UnionWith(caseAssigned);
+                        AnalyzeStatements(matchCase.Body, context, localNames, maybeAssigned);
+                        maybeAssigned.SaveAndRewind(branch);
                     }
-                    maybeAssigned.UnionWith(unionAssigned);
+                    maybeAssigned.ApplySaved(savedBodies);
                     break;
                 }
 
@@ -245,42 +231,30 @@ internal static class StaticNameBindingDiagnostics
                 // A class suite can initialize the enclosing function's cells.
                 // Retain these possible assignments rather than rejecting a later
                 // read before the class actually runs.
-                maybeAssigned.UnionWith(ScopeDirectiveFactsCollector.ForClass(classDefinition).NonlocalNames.Intersect(localNames));
+                foreach (var nonlocalName in ScopeDirectiveFactsCollector.ForClass(classDefinition).NonlocalNames)
+                    if (localNames.Contains(nonlocalName)) maybeAssigned.Add(nonlocalName);
                 AnalyzeNestedFunctionDefinitions(classDefinition.Body, context);
                 break;
 
             case TryStatementSyntax tryStatement:
                 {
-                    var tryAssigned = Clone(maybeAssigned);
-                    AnalyzeStatements(tryStatement.TryBody, context, localNames, tryAssigned);
-                    maybeAssigned.UnionWith(tryAssigned);
+                    AnalyzeOptionalBranch(tryStatement.TryBody, context, localNames, maybeAssigned);
                     foreach (var exceptClause in tryStatement.ExceptClauses)
                     {
-                        var exceptAssigned = Clone(maybeAssigned);
+                        var handlerName = exceptClause.ExceptionVariableName;
+                        var hideHandler = handlerName is not null && !maybeAssigned.Contains(handlerName);
+                        var branch = maybeAssigned.BeginBranch();
                         if (exceptClause.ExceptionTypeExpression is { } header)
-                            AnalyzeExpression(header, context, localNames, exceptAssigned);
-                        if (exceptClause.ExceptionVariableName is not null)
-                        {
-                            exceptAssigned.Add(exceptClause.ExceptionVariableName);
-                        }
+                            AnalyzeExpression(header, context, localNames, maybeAssigned);
+                        if (handlerName is not null) maybeAssigned.Add(handlerName);
 
-                        AnalyzeStatements(exceptClause.Body, context, localNames, exceptAssigned);
-                        if (exceptClause.ExceptionVariableName is not null &&
-                            !maybeAssigned.Contains(exceptClause.ExceptionVariableName))
-                        {
-                            // The handler variable is deleted when the handler
-                            // exits like CPython, so it must not leak outward.
-                            exceptAssigned.Remove(exceptClause.ExceptionVariableName);
-                        }
-
-                        maybeAssigned.UnionWith(exceptAssigned);
+                        AnalyzeStatements(exceptClause.Body, context, localNames, maybeAssigned);
+                        // Only a handler variable that existed before the handler
+                        // can remain a possible assignment after it exits.
+                        if (hideHandler) maybeAssigned.Remove(handlerName!);
+                        maybeAssigned.Merge(branch);
                     }
-                    if (tryStatement.ElseBody is not null)
-                    {
-                        var elseAssigned = Clone(maybeAssigned);
-                        AnalyzeStatements(tryStatement.ElseBody, context, localNames, elseAssigned);
-                        maybeAssigned.UnionWith(elseAssigned);
-                    }
+                    AnalyzeOptionalBranch(tryStatement.ElseBody, context, localNames, maybeAssigned);
                     if (tryStatement.FinallyBody is not null)
                     {
                         AnalyzeStatements(tryStatement.FinallyBody, context, localNames, maybeAssigned);
@@ -290,11 +264,20 @@ internal static class StaticNameBindingDiagnostics
         }
     }
 
+    private static void AnalyzeOptionalBranch(IReadOnlyList<StatementSyntax>? statements, StaticAnalysisContext context,
+        IReadOnlySet<string> localNames, AssignmentFacts assignments)
+    {
+        if (statements is null) return;
+        var branch = assignments.BeginBranch();
+        AnalyzeStatements(statements, context, localNames, assignments);
+        assignments.Merge(branch);
+    }
+
     private static void AnalyzeExpression(
         ExpressionSyntax expression,
         StaticAnalysisContext context,
         IReadOnlySet<string> localNames,
-        HashSet<string> maybeAssigned)
+        AssignmentFacts maybeAssigned)
     {
         switch (expression)
         {
@@ -303,28 +286,23 @@ internal static class StaticNameBindingDiagnostics
                 return;
 
             case ListComprehensionExpressionSyntax listComprehension:
-                var listAssigned = AnalyzeComprehensionClauses(listComprehension.Clauses, context, localNames, maybeAssigned);
-                AnalyzeExpression(listComprehension.ItemExpression, context, localNames, listAssigned);
-                ScopeDirectiveFactsCollector.CollectExpressionBindings(expression, maybeAssigned);
+                AnalyzeComprehension(expression, listComprehension.Clauses, listComprehension.ItemExpression, null,
+                    context, localNames, maybeAssigned);
                 return;
 
             case GeneratorExpressionSyntax generator:
-                var generatorAssigned = AnalyzeComprehensionClauses(generator.Clauses, context, localNames, maybeAssigned);
-                AnalyzeExpression(generator.ItemExpression, context, localNames, generatorAssigned);
-                ScopeDirectiveFactsCollector.CollectExpressionBindings(expression, maybeAssigned);
+                AnalyzeComprehension(expression, generator.Clauses, generator.ItemExpression, null,
+                    context, localNames, maybeAssigned);
                 return;
 
             case SetComprehensionExpressionSyntax setComprehension:
-                var setAssigned = AnalyzeComprehensionClauses(setComprehension.Clauses, context, localNames, maybeAssigned);
-                AnalyzeExpression(setComprehension.ItemExpression, context, localNames, setAssigned);
-                ScopeDirectiveFactsCollector.CollectExpressionBindings(expression, maybeAssigned);
+                AnalyzeComprehension(expression, setComprehension.Clauses, setComprehension.ItemExpression, null,
+                    context, localNames, maybeAssigned);
                 return;
 
             case DictComprehensionExpressionSyntax dictComprehension:
-                var dictAssigned = AnalyzeComprehensionClauses(dictComprehension.Clauses, context, localNames, maybeAssigned);
-                AnalyzeExpression(dictComprehension.KeyExpression, context, localNames, dictAssigned);
-                AnalyzeExpression(dictComprehension.ValueExpression, context, localNames, dictAssigned);
-                ScopeDirectiveFactsCollector.CollectExpressionBindings(expression, maybeAssigned);
+                AnalyzeComprehension(expression, dictComprehension.Clauses, dictComprehension.KeyExpression,
+                    dictComprehension.ValueExpression, context, localNames, maybeAssigned);
                 return;
 
             case AssignmentExpressionSyntax assignment:
@@ -336,9 +314,7 @@ internal static class StaticNameBindingDiagnostics
                 foreach (var parameter in lambda.Parameters)
                     if (parameter.DefaultValue is not null) AnalyzeExpression(parameter.DefaultValue, context, localNames, maybeAssigned);
                 var lambdaLocalNames = ScopeDirectiveFactsCollector.CollectLambdaLocalNames(lambda);
-                var lambdaAssigned = new HashSet<string>(
-                    lambda.Parameters.Select(static parameter => parameter.Name),
-                    StringComparer.Ordinal);
+                var lambdaAssigned = new AssignmentFacts(lambda.Parameters.Select(static parameter => parameter.Name), context);
                 AnalyzeExpression(lambda.Body, context, lambdaLocalNames, lambdaAssigned);
                 return;
         }
@@ -349,28 +325,24 @@ internal static class StaticNameBindingDiagnostics
         }
     }
 
-    // The first iterable evaluates in the enclosing scope, while later
-    // iterables, conditions and the result expressions observe the targets
-    // bound by their enclosing clauses. The returned set stays local to the
-    // comprehension: targets never leak into the outer assignment facts.
-    private static HashSet<string> AnalyzeComprehensionClauses(
-        IReadOnlyList<ComprehensionClauseSyntax> clauses,
-        StaticAnalysisContext context,
-        IReadOnlySet<string> localNames,
-        HashSet<string> maybeAssigned)
+    // Clause targets stay visible within this comprehension. Only binding
+    // expressions can assign in the surrounding scope.
+    private static void AnalyzeComprehension(ExpressionSyntax expression, IReadOnlyList<ComprehensionClauseSyntax> clauses,
+        ExpressionSyntax item, ExpressionSyntax? value, StaticAnalysisContext context, IReadOnlySet<string> localNames,
+        AssignmentFacts assignments)
     {
-        var comprehensionAssigned = Clone(maybeAssigned);
+        var branch = assignments.BeginBranch();
         foreach (var clause in clauses)
         {
-            AnalyzeExpression(clause.Iterable, context, localNames, comprehensionAssigned);
-            AnalyzeLoopStores(clause.Target, context, localNames, comprehensionAssigned);
+            AnalyzeExpression(clause.Iterable, context, localNames, assignments);
+            AnalyzeLoopStores(clause.Target, context, localNames, assignments);
             if (clause.Condition is not null)
-            {
-                AnalyzeExpression(clause.Condition, context, localNames, comprehensionAssigned);
-            }
+                AnalyzeExpression(clause.Condition, context, localNames, assignments);
         }
-
-        return comprehensionAssigned;
+        AnalyzeExpression(item, context, localNames, assignments);
+        if (value is not null) AnalyzeExpression(value, context, localNames, assignments);
+        assignments.Rewind(branch);
+        ScopeDirectiveFactsCollector.CollectExpressionBindings(expression, assignments, static (facts, name) => facts.Add(name));
     }
 
     private static void AnalyzeLocalRead(
@@ -378,7 +350,7 @@ internal static class StaticNameBindingDiagnostics
         LythonSourceSpan span,
         StaticAnalysisContext context,
         IReadOnlySet<string> localNames,
-        HashSet<string> maybeAssigned)
+        AssignmentFacts maybeAssigned)
     {
         if (localNames.Contains(name) && !maybeAssigned.Contains(name))
         {
@@ -395,9 +367,7 @@ internal static class StaticNameBindingDiagnostics
         if (expression is LambdaExpressionSyntax lambda)
         {
             var localNames = ScopeDirectiveFactsCollector.CollectLambdaLocalNames(lambda);
-            var maybeAssigned = new HashSet<string>(
-                lambda.Parameters.Select(static parameter => parameter.Name),
-                StringComparer.Ordinal);
+            var maybeAssigned = new AssignmentFacts(lambda.Parameters.Select(static parameter => parameter.Name), context);
             AnalyzeExpression(lambda.Body, context, localNames, maybeAssigned);
         }
     }
@@ -416,7 +386,7 @@ internal static class StaticNameBindingDiagnostics
     }
 
     private static void AnalyzeLoopStores(LoopTargetSyntax target, StaticAnalysisContext context,
-        IReadOnlySet<string> localNames, HashSet<string> assigned)
+        IReadOnlySet<string> localNames, AssignmentFacts assigned)
     {
         if (target is LoopTupleTargetSyntax tuple)
         {
@@ -427,7 +397,7 @@ internal static class StaticNameBindingDiagnostics
         AddLoopTarget(target, assigned);
     }
 
-    private static void AddLoopTarget(LoopTargetSyntax target, HashSet<string> maybeAssigned)
+    private static void AddLoopTarget(LoopTargetSyntax target, AssignmentFacts maybeAssigned)
     {
         switch (target)
         {
@@ -446,6 +416,79 @@ internal static class StaticNameBindingDiagnostics
         }
     }
 
-    private static HashSet<string> Clone(HashSet<string> names)
-        => new(names, StringComparer.Ordinal);
+    // Branches change one live set. Record actual writes so restoration
+    // and conservative joins only visit the names touched by a branch.
+    private sealed class AssignmentFacts(IEnumerable<string> initial, StaticAnalysisContext context)
+    {
+        private readonly HashSet<string> _names = new(initial, StringComparer.Ordinal);
+        private readonly record struct Change(string Name, bool Added);
+        private List<Change>? _changes;
+        private List<string>? _saved;
+        private int _branchDepth;
+
+        internal bool Contains(string name) => _names.Contains(name);
+        internal int SavedCount => _saved?.Count ?? 0;
+
+        internal void Add(string name)
+        {
+            if (_names.Add(name) && _branchDepth != 0) (_changes ??= []).Add(new(name, true));
+        }
+
+        internal void Remove(string name)
+        {
+            if (_names.Remove(name) && _branchDepth != 0) (_changes ??= []).Add(new(name, false));
+        }
+
+        internal int BeginBranch()
+        {
+            _branchDepth++;
+            return _changes?.Count ?? 0;
+        }
+
+        internal void Rewind(int start)
+        {
+            _branchDepth--;
+            if (_changes is not { } changes || changes.Count == start) return;
+            for (var i = changes.Count - 1; i >= start; i--)
+            {
+                if ((i & 255) == 0) context.CheckExecution();
+                var change = changes[i];
+                if (change.Added) _names.Remove(change.Name);
+                else _names.Add(change.Name);
+            }
+            changes.RemoveRange(start, changes.Count - start);
+        }
+
+        internal void SaveAndRewind(int start)
+        {
+            if (_changes is { } changes)
+            {
+                for (var i = start; i < changes.Count; i++)
+                {
+                    if ((i & 255) == 0) context.CheckExecution();
+                    var change = changes[i];
+                    if (change.Added && _names.Contains(change.Name)) (_saved ??= []).Add(change.Name);
+                }
+            }
+            Rewind(start);
+        }
+
+        internal void ApplySaved(int start)
+        {
+            if (_saved is not { } saved || saved.Count == start) return;
+            for (var i = start; i < saved.Count; i++)
+            {
+                if ((i & 255) == 0) context.CheckExecution();
+                Add(saved[i]);
+            }
+            saved.RemoveRange(start, saved.Count - start);
+        }
+
+        internal void Merge(int start)
+        {
+            var saved = SavedCount;
+            SaveAndRewind(start);
+            ApplySaved(saved);
+        }
+    }
 }
