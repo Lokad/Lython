@@ -1,0 +1,388 @@
+{
+  "reference": {
+    "core": "acae391ec7aba189e1574ba33f638cf8db6f0dc4f4f53196472f8e7870f491b4",
+    "rows": [
+      {
+        "peak": 2968481,
+        "growths": 6169,
+        "requests": [
+          {
+            "Key": "256 MemoryGovernor.Reserve > LythonRuntime.CreateFunctionValue > NativeExecution.ApplyDefinition > NativeExecution.RunCore > NativeExecution.Run > PyExecutableFunction.StartInline",
+            "Value": 2048
+          },
+          {
+            "Key": "520 MemoryGovernor.Reserve > LythonRuntime.StartExecutableDefaults > NativeExecution.RunCore > NativeExecution.Run > PyExecutableFunction.StartInline > PyExecutableFunction.StartNativeCall",
+            "Value": 2048
+          },
+          {
+            "Key": "672 MemoryGovernor.Reserve > LythonRuntime.CreateFunctionValue > NativeExecution.ApplyDefinition > NativeExecution.RunCore > NativeExecution.Run > PyExecutableFunction.StartInline",
+            "Value": 2048
+          },
+          {
+            "Key": "8 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > PyRendering.AppendQuotedString > PyRendering.AppendStringLiteral > PyRendering.RenderStringLiteral > PyRendering.ToReprPyStringCore",
+            "Value": 4
+          },
+          {
+            "Key": "128 MemoryGovernor.Reserve > PyString.FromTransferredUtf8 > GovernedByteBuilder.ToPyStringAndRelease > PyRendering.RenderStringLiteral > PyRendering.ToReprPyStringCore > PyRendering.RenderReprItems",
+            "Value": 4
+          },
+          {
+            "Key": "272 MemoryGovernor.Reserve > ExecutableValueStorage..ctor > LythonRuntime.CreateExecutableWorkState > LythonRuntime.InitializeExecutableFrame > LythonRuntime.ExecuteExecutableCodeObject > LythonRuntime.ExecuteExecutableCodeObject",
+            "Value": 1
+          },
+          {
+            "Key": "160 MemoryGovernor.Reserve > LythonRuntime.CreateFunctionValue > ExecutionContext.CreateExecutableFunction > ExecutionContext.TryExecutePreparedOperation > ExecutionContext.ExecuteInstructionPrefix > ExecutionContext.ExecuteUntilCall",
+            "Value": 1
+          },
+          {
+            "Key": "736 MemoryGovernor.Reserve > LythonRuntime.ChargeClosureRetention > LythonRuntime.CreateFunctionValue > ExecutionContext.CreateExecutableFunction > ExecutionContext.TryExecutePreparedOperation > ExecutionContext.ExecuteInstructionPrefix",
+            "Value": 1
+          },
+          {
+            "Key": "64 MemoryGovernor.Reserve > LythonRuntime.Range > LythonRuntime.Range > DelegateBoundArgumentsCallable.InvokeBound > BoundArgumentsCallable.InvokeBorrowed > LythonRuntime.InvokeBorrowedCallableTarget",
+            "Value": 1
+          },
+          {
+            "Key": "32 MemoryGovernor.Reserve > LythonRuntime.ChargeClosureRetention > LythonRuntime.CreateFunctionValue > NativeExecution.ApplyDefinition > NativeExecution.RunCore > NativeExecution.Run",
+            "Value": 1
+          },
+          {
+            "Key": "64 MemoryGovernor.Reserve > TemporaryMemoryReservation.Grow > TemporaryMemoryReservation..ctor > MemoryGovernor.ReserveTemporary > PyList..ctor > LythonRuntime.List",
+            "Value": 1
+          },
+          {
+            "Key": "704 MemoryGovernor.Reserve > TemporaryMemoryReservation.Grow > TemporaryMemoryReservation..ctor > MemoryGovernor.ReserveTemporary > PyList.EnsureCapacity > PyList.Add",
+            "Value": 1
+          },
+          {
+            "Key": "135 MemoryGovernor.Reserve > PyString.CopyFromUtf8 > PyRendering.RenderInteger > PyRendering.ToInterpolatedPyString > LythonRuntime.ToInterpolatedPyString > PrintCallable.Invoke",
+            "Value": 1
+          },
+          {
+            "Key": "8 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.Append > GovernedByteBuilder.Append > HostTextOutputHandle.Write > PrintCallable.AppendOutput",
+            "Value": 1
+          },
+          {
+            "Key": "8 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.AppendString > PyRendering.RenderReprItems > PyRendering.RenderReprSequence > PyRendering.ToReprPyStringCore",
+            "Value": 1
+          },
+          {
+            "Key": "16 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.AppendAscii > PyRendering.RenderReprItems > PyRendering.RenderReprSequence > PyRendering.ToReprPyStringCore",
+            "Value": 1
+          },
+          {
+            "Key": "32 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.Append > GovernedByteBuilder.Append > PyRendering.RenderReprItems > PyRendering.RenderReprSequence",
+            "Value": 1
+          },
+          {
+            "Key": "64 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.Append > GovernedByteBuilder.Append > PyRendering.RenderReprItems > PyRendering.RenderReprSequence",
+            "Value": 1
+          },
+          {
+            "Key": "128 MemoryGovernor.Reserve > PyString.FromTransferredUtf8 > GovernedByteBuilder.ToPyStringAndRelease > PyRendering.RenderReprItems > PyRendering.RenderReprSequence > PyRendering.ToReprPyStringCore",
+            "Value": 1
+          },
+          {
+            "Key": "46 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.Append > GovernedByteBuilder.Append > HostTextOutputHandle.Write > PrintCallable.AppendOutput",
+            "Value": 1
+          },
+          {
+            "Key": "92 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.Append > GovernedByteBuilder.Append > HostTextOutputHandle.Write > PrintCallable.AppendOutput",
+            "Value": 1
+          },
+          {
+            "Key": "126 ProjectionBudget.Reserve > LythonRuntime.CaptureStandardOutput > LythonRuntime.CreateSuccessfulResult > <>c__DisplayClass750_0.<Run>b__0 > SynchronousWorkItem.Run > <>c.<Execute>b__6_0",
+            "Value": 1
+          }
+        ]
+      },
+      {
+        "peak": 2968481,
+        "growths": 6169,
+        "requests": [
+          {
+            "Key": "256 MemoryGovernor.Reserve > LythonRuntime.CreateFunctionValue > NativeExecution.ApplyDefinition > NativeExecution.RunCore > NativeExecution.Run > PyExecutableFunction.StartInline",
+            "Value": 2048
+          },
+          {
+            "Key": "520 MemoryGovernor.Reserve > LythonRuntime.StartExecutableDefaults > NativeExecution.RunCore > NativeExecution.Run > PyExecutableFunction.StartInline > PyExecutableFunction.StartNativeCall",
+            "Value": 2048
+          },
+          {
+            "Key": "672 MemoryGovernor.Reserve > LythonRuntime.CreateFunctionValue > NativeExecution.ApplyDefinition > NativeExecution.RunCore > NativeExecution.Run > PyExecutableFunction.StartInline",
+            "Value": 2048
+          },
+          {
+            "Key": "8 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > PyRendering.AppendQuotedString > PyRendering.AppendStringLiteral > PyRendering.RenderStringLiteral > PyRendering.ToReprPyStringCore",
+            "Value": 4
+          },
+          {
+            "Key": "128 MemoryGovernor.Reserve > PyString.FromTransferredUtf8 > GovernedByteBuilder.ToPyStringAndRelease > PyRendering.RenderStringLiteral > PyRendering.ToReprPyStringCore > PyRendering.RenderReprItems",
+            "Value": 4
+          },
+          {
+            "Key": "272 MemoryGovernor.Reserve > ExecutableValueStorage..ctor > LythonRuntime.CreateExecutableWorkState > LythonRuntime.InitializeExecutableFrame > LythonRuntime.ExecuteExecutableCodeObject > LythonRuntime.ExecuteExecutableCodeObject",
+            "Value": 1
+          },
+          {
+            "Key": "160 MemoryGovernor.Reserve > LythonRuntime.CreateFunctionValue > ExecutionContext.CreateExecutableFunction > ExecutionContext.TryExecutePreparedOperation > ExecutionContext.ExecuteInstructionPrefix > ExecutionContext.ExecuteUntilCall",
+            "Value": 1
+          },
+          {
+            "Key": "736 MemoryGovernor.Reserve > LythonRuntime.ChargeClosureRetention > LythonRuntime.CreateFunctionValue > ExecutionContext.CreateExecutableFunction > ExecutionContext.TryExecutePreparedOperation > ExecutionContext.ExecuteInstructionPrefix",
+            "Value": 1
+          },
+          {
+            "Key": "64 MemoryGovernor.Reserve > LythonRuntime.Range > LythonRuntime.Range > DelegateBoundArgumentsCallable.InvokeBound > BoundArgumentsCallable.InvokeBorrowed > LythonRuntime.InvokeBorrowedCallableTarget",
+            "Value": 1
+          },
+          {
+            "Key": "32 MemoryGovernor.Reserve > LythonRuntime.ChargeClosureRetention > LythonRuntime.CreateFunctionValue > NativeExecution.ApplyDefinition > NativeExecution.RunCore > NativeExecution.Run",
+            "Value": 1
+          },
+          {
+            "Key": "64 MemoryGovernor.Reserve > TemporaryMemoryReservation.Grow > TemporaryMemoryReservation..ctor > MemoryGovernor.ReserveTemporary > PyList..ctor > LythonRuntime.List",
+            "Value": 1
+          },
+          {
+            "Key": "704 MemoryGovernor.Reserve > TemporaryMemoryReservation.Grow > TemporaryMemoryReservation..ctor > MemoryGovernor.ReserveTemporary > PyList.EnsureCapacity > PyList.Add",
+            "Value": 1
+          },
+          {
+            "Key": "135 MemoryGovernor.Reserve > PyString.CopyFromUtf8 > PyRendering.RenderInteger > PyRendering.ToInterpolatedPyString > LythonRuntime.ToInterpolatedPyString > PrintCallable.Invoke",
+            "Value": 1
+          },
+          {
+            "Key": "8 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.Append > GovernedByteBuilder.Append > HostTextOutputHandle.Write > PrintCallable.AppendOutput",
+            "Value": 1
+          },
+          {
+            "Key": "8 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.AppendString > PyRendering.RenderReprItems > PyRendering.RenderReprSequence > PyRendering.ToReprPyStringCore",
+            "Value": 1
+          },
+          {
+            "Key": "16 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.AppendAscii > PyRendering.RenderReprItems > PyRendering.RenderReprSequence > PyRendering.ToReprPyStringCore",
+            "Value": 1
+          },
+          {
+            "Key": "32 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.Append > GovernedByteBuilder.Append > PyRendering.RenderReprItems > PyRendering.RenderReprSequence",
+            "Value": 1
+          },
+          {
+            "Key": "64 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.Append > GovernedByteBuilder.Append > PyRendering.RenderReprItems > PyRendering.RenderReprSequence",
+            "Value": 1
+          },
+          {
+            "Key": "128 MemoryGovernor.Reserve > PyString.FromTransferredUtf8 > GovernedByteBuilder.ToPyStringAndRelease > PyRendering.RenderReprItems > PyRendering.RenderReprSequence > PyRendering.ToReprPyStringCore",
+            "Value": 1
+          },
+          {
+            "Key": "46 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.Append > GovernedByteBuilder.Append > HostTextOutputHandle.Write > PrintCallable.AppendOutput",
+            "Value": 1
+          },
+          {
+            "Key": "92 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.Append > GovernedByteBuilder.Append > HostTextOutputHandle.Write > PrintCallable.AppendOutput",
+            "Value": 1
+          },
+          {
+            "Key": "126 ProjectionBudget.Reserve > LythonRuntime.CaptureStandardOutput > LythonRuntime.CreateSuccessfulResult > <>c__DisplayClass750_0.<Run>b__0 > SynchronousWorkItem.Run > <>c.<Execute>b__6_0",
+            "Value": 1
+          }
+        ]
+      }
+    ]
+  },
+  "candidate": {
+    "core": "c5eb0b852e74f8005bf31fbc0858279b6995feb3eca8bedae764f8ce26ceaa10",
+    "rows": [
+      {
+        "peak": 2968481,
+        "growths": 6169,
+        "requests": [
+          {
+            "Key": "256 MemoryGovernor.Reserve > LythonRuntime.CreateFunctionValue > NativeExecution.ApplyDefinition > NativeExecution.RunCore > NativeExecution.Run > PyExecutableFunction.StartInline",
+            "Value": 2048
+          },
+          {
+            "Key": "520 MemoryGovernor.Reserve > LythonRuntime.StartExecutableDefaults > NativeExecution.RunCore > NativeExecution.Run > PyExecutableFunction.StartInline > PyExecutableFunction.StartNativeCall",
+            "Value": 2048
+          },
+          {
+            "Key": "672 MemoryGovernor.Reserve > LythonRuntime.CreateFunctionValue > NativeExecution.ApplyDefinition > NativeExecution.RunCore > NativeExecution.Run > PyExecutableFunction.StartInline",
+            "Value": 2048
+          },
+          {
+            "Key": "8 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > PyRendering.AppendQuotedString > PyRendering.AppendStringLiteral > PyRendering.RenderStringLiteral > PyRendering.ToReprPyStringCore",
+            "Value": 4
+          },
+          {
+            "Key": "128 MemoryGovernor.Reserve > PyString.FromTransferredUtf8 > GovernedByteBuilder.ToPyStringAndRelease > PyRendering.RenderStringLiteral > PyRendering.ToReprPyStringCore > PyRendering.RenderReprItems",
+            "Value": 4
+          },
+          {
+            "Key": "272 MemoryGovernor.Reserve > ExecutableValueStorage..ctor > LythonRuntime.CreateExecutableWorkState > LythonRuntime.InitializeExecutableFrame > LythonRuntime.ExecuteExecutableCodeObject > LythonRuntime.ExecuteExecutableCodeObject",
+            "Value": 1
+          },
+          {
+            "Key": "160 MemoryGovernor.Reserve > LythonRuntime.CreateFunctionValue > ExecutionContext.CreateExecutableFunction > ExecutionContext.TryExecutePreparedOperation > ExecutionContext.ExecuteInstructionPrefix > ExecutionContext.ExecuteUntilCall",
+            "Value": 1
+          },
+          {
+            "Key": "736 MemoryGovernor.Reserve > LythonRuntime.ChargeClosureRetention > LythonRuntime.CreateFunctionValue > ExecutionContext.CreateExecutableFunction > ExecutionContext.TryExecutePreparedOperation > ExecutionContext.ExecuteInstructionPrefix",
+            "Value": 1
+          },
+          {
+            "Key": "64 MemoryGovernor.Reserve > LythonRuntime.Range > LythonRuntime.Range > DelegateBoundArgumentsCallable.InvokeBound > BoundArgumentsCallable.InvokeBorrowed > LythonRuntime.InvokeBorrowedCallableTarget",
+            "Value": 1
+          },
+          {
+            "Key": "32 MemoryGovernor.Reserve > LythonRuntime.ChargeClosureRetention > LythonRuntime.CreateFunctionValue > NativeExecution.ApplyDefinition > NativeExecution.RunCore > NativeExecution.Run",
+            "Value": 1
+          },
+          {
+            "Key": "64 MemoryGovernor.Reserve > TemporaryMemoryReservation.Grow > TemporaryMemoryReservation..ctor > MemoryGovernor.ReserveTemporary > PyList..ctor > LythonRuntime.List",
+            "Value": 1
+          },
+          {
+            "Key": "704 MemoryGovernor.Reserve > TemporaryMemoryReservation.Grow > TemporaryMemoryReservation..ctor > MemoryGovernor.ReserveTemporary > PyList.EnsureCapacity > PyList.Add",
+            "Value": 1
+          },
+          {
+            "Key": "135 MemoryGovernor.Reserve > PyString.CopyFromUtf8 > PyRendering.RenderInteger > PyRendering.ToInterpolatedPyString > LythonRuntime.ToInterpolatedPyString > PrintCallable.Invoke",
+            "Value": 1
+          },
+          {
+            "Key": "8 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.Append > GovernedByteBuilder.Append > HostTextOutputHandle.Write > PrintCallable.AppendOutput",
+            "Value": 1
+          },
+          {
+            "Key": "8 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.AppendString > PyRendering.RenderReprItems > PyRendering.RenderReprSequence > PyRendering.ToReprPyStringCore",
+            "Value": 1
+          },
+          {
+            "Key": "16 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.AppendAscii > PyRendering.RenderReprItems > PyRendering.RenderReprSequence > PyRendering.ToReprPyStringCore",
+            "Value": 1
+          },
+          {
+            "Key": "32 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.Append > GovernedByteBuilder.Append > PyRendering.RenderReprItems > PyRendering.RenderReprSequence",
+            "Value": 1
+          },
+          {
+            "Key": "64 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.Append > GovernedByteBuilder.Append > PyRendering.RenderReprItems > PyRendering.RenderReprSequence",
+            "Value": 1
+          },
+          {
+            "Key": "128 MemoryGovernor.Reserve > PyString.FromTransferredUtf8 > GovernedByteBuilder.ToPyStringAndRelease > PyRendering.RenderReprItems > PyRendering.RenderReprSequence > PyRendering.ToReprPyStringCore",
+            "Value": 1
+          },
+          {
+            "Key": "46 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.Append > GovernedByteBuilder.Append > HostTextOutputHandle.Write > PrintCallable.AppendOutput",
+            "Value": 1
+          },
+          {
+            "Key": "92 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.Append > GovernedByteBuilder.Append > HostTextOutputHandle.Write > PrintCallable.AppendOutput",
+            "Value": 1
+          },
+          {
+            "Key": "126 ProjectionBudget.Reserve > LythonRuntime.CaptureStandardOutput > LythonRuntime.CreateSuccessfulResult > <>c__DisplayClass750_0.<Run>b__0 > SynchronousWorkItem.Run > <>c.<Execute>b__6_0",
+            "Value": 1
+          }
+        ]
+      },
+      {
+        "peak": 2968481,
+        "growths": 6169,
+        "requests": [
+          {
+            "Key": "256 MemoryGovernor.Reserve > LythonRuntime.CreateFunctionValue > NativeExecution.ApplyDefinition > NativeExecution.RunCore > NativeExecution.Run > PyExecutableFunction.StartInline",
+            "Value": 2048
+          },
+          {
+            "Key": "520 MemoryGovernor.Reserve > LythonRuntime.StartExecutableDefaults > NativeExecution.RunCore > NativeExecution.Run > PyExecutableFunction.StartInline > PyExecutableFunction.StartNativeCall",
+            "Value": 2048
+          },
+          {
+            "Key": "672 MemoryGovernor.Reserve > LythonRuntime.CreateFunctionValue > NativeExecution.ApplyDefinition > NativeExecution.RunCore > NativeExecution.Run > PyExecutableFunction.StartInline",
+            "Value": 2048
+          },
+          {
+            "Key": "8 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > PyRendering.AppendQuotedString > PyRendering.AppendStringLiteral > PyRendering.RenderStringLiteral > PyRendering.ToReprPyStringCore",
+            "Value": 4
+          },
+          {
+            "Key": "128 MemoryGovernor.Reserve > PyString.FromTransferredUtf8 > GovernedByteBuilder.ToPyStringAndRelease > PyRendering.RenderStringLiteral > PyRendering.ToReprPyStringCore > PyRendering.RenderReprItems",
+            "Value": 4
+          },
+          {
+            "Key": "272 MemoryGovernor.Reserve > ExecutableValueStorage..ctor > LythonRuntime.CreateExecutableWorkState > LythonRuntime.InitializeExecutableFrame > LythonRuntime.ExecuteExecutableCodeObject > LythonRuntime.ExecuteExecutableCodeObject",
+            "Value": 1
+          },
+          {
+            "Key": "160 MemoryGovernor.Reserve > LythonRuntime.CreateFunctionValue > ExecutionContext.CreateExecutableFunction > ExecutionContext.TryExecutePreparedOperation > ExecutionContext.ExecuteInstructionPrefix > ExecutionContext.ExecuteUntilCall",
+            "Value": 1
+          },
+          {
+            "Key": "736 MemoryGovernor.Reserve > LythonRuntime.ChargeClosureRetention > LythonRuntime.CreateFunctionValue > ExecutionContext.CreateExecutableFunction > ExecutionContext.TryExecutePreparedOperation > ExecutionContext.ExecuteInstructionPrefix",
+            "Value": 1
+          },
+          {
+            "Key": "64 MemoryGovernor.Reserve > LythonRuntime.Range > LythonRuntime.Range > DelegateBoundArgumentsCallable.InvokeBound > BoundArgumentsCallable.InvokeBorrowed > LythonRuntime.InvokeBorrowedCallableTarget",
+            "Value": 1
+          },
+          {
+            "Key": "32 MemoryGovernor.Reserve > LythonRuntime.ChargeClosureRetention > LythonRuntime.CreateFunctionValue > NativeExecution.ApplyDefinition > NativeExecution.RunCore > NativeExecution.Run",
+            "Value": 1
+          },
+          {
+            "Key": "64 MemoryGovernor.Reserve > TemporaryMemoryReservation.Grow > TemporaryMemoryReservation..ctor > MemoryGovernor.ReserveTemporary > PyList..ctor > LythonRuntime.List",
+            "Value": 1
+          },
+          {
+            "Key": "704 MemoryGovernor.Reserve > TemporaryMemoryReservation.Grow > TemporaryMemoryReservation..ctor > MemoryGovernor.ReserveTemporary > PyList.EnsureCapacity > PyList.Add",
+            "Value": 1
+          },
+          {
+            "Key": "135 MemoryGovernor.Reserve > PyString.CopyFromUtf8 > PyRendering.RenderInteger > PyRendering.ToInterpolatedPyString > LythonRuntime.ToInterpolatedPyString > PrintCallable.Invoke",
+            "Value": 1
+          },
+          {
+            "Key": "8 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.Append > GovernedByteBuilder.Append > HostTextOutputHandle.Write > PrintCallable.AppendOutput",
+            "Value": 1
+          },
+          {
+            "Key": "8 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.AppendString > PyRendering.RenderReprItems > PyRendering.RenderReprSequence > PyRendering.ToReprPyStringCore",
+            "Value": 1
+          },
+          {
+            "Key": "16 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.AppendAscii > PyRendering.RenderReprItems > PyRendering.RenderReprSequence > PyRendering.ToReprPyStringCore",
+            "Value": 1
+          },
+          {
+            "Key": "32 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.Append > GovernedByteBuilder.Append > PyRendering.RenderReprItems > PyRendering.RenderReprSequence",
+            "Value": 1
+          },
+          {
+            "Key": "64 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.Append > GovernedByteBuilder.Append > PyRendering.RenderReprItems > PyRendering.RenderReprSequence",
+            "Value": 1
+          },
+          {
+            "Key": "128 MemoryGovernor.Reserve > PyString.FromTransferredUtf8 > GovernedByteBuilder.ToPyStringAndRelease > PyRendering.RenderReprItems > PyRendering.RenderReprSequence > PyRendering.ToReprPyStringCore",
+            "Value": 1
+          },
+          {
+            "Key": "46 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.Append > GovernedByteBuilder.Append > HostTextOutputHandle.Write > PrintCallable.AppendOutput",
+            "Value": 1
+          },
+          {
+            "Key": "92 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.Append > GovernedByteBuilder.Append > HostTextOutputHandle.Write > PrintCallable.AppendOutput",
+            "Value": 1
+          },
+          {
+            "Key": "126 ProjectionBudget.Reserve > LythonRuntime.CaptureStandardOutput > LythonRuntime.CreateSuccessfulResult > <>c__DisplayClass750_0.<Run>b__0 > SynchronousWorkItem.Run > <>c.<Execute>b__6_0",
+            "Value": 1
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1412 factory checkpoint source pair](results/2026-11-22-factory-checkpoint-source-pair/README.md)
+confirms higher warm elapsed and CPU at `55424591f` versus `32c50290d`,
+with a 14.91% spread across the later workers. Compile to result improves
+1.93–2.39%. Both images make 6,169 factory growth requests and reach the
+same admitted peak. The nonlocal word report improves and the invoice
+control spans zero.
+
 [Emitted declaration facts](results/2026-11-22-emitted-declaration-facts/README.md)
 removes constant-pool discovery of declarations. All 81 inspected code
 objects agree. Most local compile allocation controls increase slightly
