@@ -1,0 +1,13 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "persistentTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 179974144,
+  "archiveSHA256": "03425719035b3d81c5712fda58feadcdb77713f2b3ca3b7508df6a0ec15557b5",
+  "source": "Match default-tier positional CPU stacks and generated code across both images",
+  "performanceComparison": false,
+  "failure": null
+}

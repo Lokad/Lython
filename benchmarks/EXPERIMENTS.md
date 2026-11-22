@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1380 positional CPU and JIT attribution](results/2026-11-22-positional-default-tier-attribution/README.md)
+records four profiled runs on both B1377 source images. CPU and elapsed
+favor the candidate under profiling. The direct entry's code matches,
+and one dispatcher pair also matches across images. The cause of the
+normal-tier regression remains open.
+
 [B1379 fixed-tier positional diagnosis](results/2026-11-22-json-positional-fixed-tier/README.md)
 reverses the positional direction with `DOTNET_TieredCompilation=0`.
 Elapsed falls 2.67–5.95%, with 3.37% reference-worker spread. The

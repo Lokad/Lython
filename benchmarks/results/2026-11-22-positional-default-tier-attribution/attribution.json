@@ -1,0 +1,1991 @@
+{
+  "rows": [
+    {
+      "label": "candidate-positional",
+      "samples": 1115,
+      "unmatchedLeaf": 0,
+      "unparsedMapRows": 0,
+      "operations": 3456,
+      "guestElapsedMilliseconds": 1.6196652861689815,
+      "processCpuMsPerInvocation": 1.6319444444444442,
+      "hotMethods": {
+        "ExecuteInstructionPrefix": {
+          "leaf": 330,
+          "nearest": 335,
+          "ancestry": 953,
+          "leafLocations": [
+            [
+              "14306:403",
+              20
+            ],
+            [
+              "14306:416",
+              18
+            ],
+            [
+              "14306:358",
+              18
+            ],
+            [
+              "14306:427",
+              17
+            ],
+            [
+              "14306:4130",
+              12
+            ],
+            [
+              "14306:348",
+              11
+            ],
+            [
+              "14306:4295",
+              11
+            ],
+            [
+              "14306:6735",
+              10
+            ],
+            [
+              "14306:240",
+              10
+            ],
+            [
+              "14306:1045",
+              10
+            ],
+            [
+              "14306:527",
+              8
+            ],
+            [
+              "14306:278",
+              6
+            ]
+          ],
+          "generated": [
+            {
+              "tier": "Instrumented Tier0",
+              "codeBytes": 13877,
+              "instructionsHash": "32a42b732654e6c797992606f65df62b38a6135c4d7e01890ca0e8c7d604f38f"
+            },
+            {
+              "tier": "Tier1-OSR",
+              "codeBytes": 13229,
+              "instructionsHash": "12978a1375248480e5349c662c2a072dff2d93d877a2395a606896510e3e81e6"
+            },
+            {
+              "tier": "Instrumented Tier0",
+              "codeBytes": 13869,
+              "instructionsHash": "f27f54c21f7f1c306c71798d7e3a106a7006012d3129a5634bb53580f4b05459"
+            },
+            {
+              "tier": "Tier1-OSR",
+              "codeBytes": 14654,
+              "instructionsHash": "a570dc5553cf880f4a0b71985399e31171749506937bd0eab310d7b0c9abeab9"
+            },
+            {
+              "tier": "Tier1",
+              "codeBytes": 14306,
+              "instructionsHash": "69e8b810be087f7b899ec408af04ccc55396f6baecb6dc589975343a6377deca"
+            }
+          ]
+        },
+        "ExecuteOrdinaryCall": {
+          "leaf": 0,
+          "nearest": 0,
+          "ancestry": 1,
+          "leafLocations": [],
+          "generated": [
+            {
+              "tier": "Tier0",
+              "codeBytes": 2356,
+              "instructionsHash": "962231b90e8925b31eb6f087d9cc72be191c3a4e8ebdd80db6f99359b1a78469"
+            },
+            {
+              "tier": "Instrumented Tier0",
+              "codeBytes": 2651,
+              "instructionsHash": "fa4d301fd8108212a552975cb6c3a0d89675dd96a02a2485c54b108450fa1a4c"
+            },
+            {
+              "tier": "Tier1",
+              "codeBytes": 4199,
+              "instructionsHash": "2f34e7cd9f9959d8402d43238c125b99dcff4bb938a9964e17b6fe69aea778cd"
+            }
+          ]
+        },
+        "TryExecuteNativeCall": {
+          "leaf": 83,
+          "nearest": 90,
+          "ancestry": 348,
+          "leafLocations": [
+            [
+              "3323:906",
+              7
+            ],
+            [
+              "3323:25",
+              6
+            ],
+            [
+              "3323:873",
+              6
+            ],
+            [
+              "3323:714",
+              4
+            ],
+            [
+              "3323:754",
+              4
+            ],
+            [
+              "3323:242",
+              4
+            ],
+            [
+              "3323:574",
+              3
+            ],
+            [
+              "3323:208",
+              3
+            ],
+            [
+              "3323:503",
+              3
+            ],
+            [
+              "3323:673",
+              3
+            ],
+            [
+              "3323:0",
+              3
+            ],
+            [
+              "3323:1",
+              3
+            ]
+          ],
+          "generated": [
+            {
+              "tier": "Tier0",
+              "codeBytes": 3742,
+              "instructionsHash": "236e7b9107d80b117bfdd04916cdebea574a6c0f37a52cce634ed5a4ca08dc9b"
+            },
+            {
+              "tier": "Instrumented Tier0",
+              "codeBytes": 4482,
+              "instructionsHash": "cca82f70c4be2f02a2ee9d77ce40f3f3f735adb82bf7a54b86d1fc439b651f1d"
+            },
+            {
+              "tier": "Tier1",
+              "codeBytes": 3323,
+              "instructionsHash": "d9181f0191a33e8e981232f73117e28289c16563d56f5270d31083406fb01740"
+            }
+          ]
+        },
+        "StartNativeCall": {
+          "leaf": 24,
+          "nearest": 31,
+          "ancestry": 206,
+          "leafLocations": [
+            [
+              "614:1",
+              6
+            ],
+            [
+              "614:70",
+              3
+            ],
+            [
+              "614:166",
+              3
+            ],
+            [
+              "614:0",
+              3
+            ],
+            [
+              "614:99",
+              3
+            ],
+            [
+              "614:25",
+              2
+            ],
+            [
+              "614:139",
+              2
+            ],
+            [
+              "614:195",
+              1
+            ],
+            [
+              "614:86",
+              1
+            ]
+          ],
+          "generated": [
+            {
+              "tier": "Tier0",
+              "codeBytes": 892,
+              "instructionsHash": "1925cab8e7c5116da6504f374eee11f2a279b2c7a0ecf98195dcf0525b10a4ff"
+            },
+            {
+              "tier": "Instrumented Tier0",
+              "codeBytes": 1026,
+              "instructionsHash": "cdeec9abdbf45f765487585670213cf0e5fcb8cc7bc3fae6c39d61e85b266394"
+            },
+            {
+              "tier": "Tier1",
+              "codeBytes": 614,
+              "instructionsHash": "cbdcbdec523a82d54b639d7fa49597aef8c70dfccd3fa4cb36683e43e4a0b35e"
+            }
+          ]
+        },
+        "TryStartDirectIntegerReturn": {
+          "leaf": 106,
+          "nearest": 110,
+          "ancestry": 165,
+          "leafLocations": [
+            [
+              "2543:330",
+              8
+            ],
+            [
+              "2543:235",
+              8
+            ],
+            [
+              "2543:453",
+              8
+            ],
+            [
+              "2543:0",
+              5
+            ],
+            [
+              "2543:2290",
+              5
+            ],
+            [
+              "2543:650",
+              5
+            ],
+            [
+              "2543:25",
+              4
+            ],
+            [
+              "2543:409",
+              4
+            ],
+            [
+              "2543:167",
+              4
+            ],
+            [
+              "2543:429",
+              3
+            ],
+            [
+              "2543:443",
+              3
+            ],
+            [
+              "2543:1045",
+              3
+            ]
+          ],
+          "generated": [
+            {
+              "tier": "Tier0",
+              "codeBytes": 396,
+              "instructionsHash": "e1f65c69c1b4a773929eb85b191d75635b39ac6454346a4ebe1f1e0241891070"
+            },
+            {
+              "tier": "Instrumented Tier0",
+              "codeBytes": 475,
+              "instructionsHash": "bc206c8fdf6a6fcb80c1816d064482d5903c701945ba2a2825453d9db36a1728"
+            },
+            {
+              "tier": "Tier1",
+              "codeBytes": 2543,
+              "instructionsHash": "82c64654e48c93f85d0f4078e260fc4aeda756c7f2d6e95b341c179c89b18300"
+            }
+          ]
+        },
+        "TryEvaluateDirectIntegerReturn": {
+          "leaf": 0,
+          "nearest": 0,
+          "ancestry": 0,
+          "leafLocations": [],
+          "generated": [
+            {
+              "tier": "Tier0",
+              "codeBytes": 399,
+              "instructionsHash": "4ce1fe9bf2a900b492670c6f2ffbecea009c94ba6d6680ca40fa6fd9c75d6e17"
+            },
+            {
+              "tier": "Instrumented Tier0",
+              "codeBytes": 461,
+              "instructionsHash": "d926ab245ad75513cb067fa686b1f3bf4e1abc6836f3d8102cf42e14187ca4fb"
+            },
+            {
+              "tier": "Tier1",
+              "codeBytes": 2219,
+              "instructionsHash": "9c282eeec3ec659eaa87d001e1220deeebc121d8cce123ea47925f6aaa626988"
+            }
+          ]
+        }
+      },
+      "nearestRuntime": [
+        [
+          "ExecuteInstructionPrefix",
+          335
+        ],
+        [
+          "TryExecuteBuiltinArithmetic",
+          125
+        ],
+        [
+          "Execute",
+          114
+        ],
+        [
+          "TryStartDirectIntegerReturn",
+          110
+        ],
+        [
+          "TryExecuteNativeCall",
+          90
+        ],
+        [
+          "CompleteResultConsumer",
+          57
+        ],
+        [
+          "RetireTo",
+          52
+        ],
+        [
+          "EnsureInterpreterStack",
+          32
+        ],
+        [
+          "StartNativeCall",
+          31
+        ],
+        [
+          "TryMachineBinary",
+          30
+        ],
+        [
+          "TryMachineInteger",
+          29
+        ],
+        [
+          "MoveNext",
+          23
+        ],
+        [
+          "ExecuteControlFlow",
+          15
+        ],
+        [
+          "get_CanRunNativePrefix",
+          13
+        ],
+        [
+          "EnterFunctionCall",
+          12
+        ],
+        [
+          "EnterInterpreterFrame",
+          11
+        ],
+        [
+          "[no Lython runtime]",
+          11
+        ],
+        [
+          "get_CanContinue",
+          8
+        ]
+      ],
+      "leaves": [
+        [
+          "ExecuteInstructionPrefix",
+          330
+        ],
+        [
+          "TryExecuteBuiltinArithmetic",
+          121
+        ],
+        [
+          "TryStartDirectIntegerReturn",
+          106
+        ],
+        [
+          "TryExecuteNativeCall",
+          83
+        ],
+        [
+          "stub InitThreadManagerPerfMapData<JIT_CopiedWriteBarriers>",
+          54
+        ],
+        [
+          "CompleteResultConsumer",
+          52
+        ],
+        [
+          "RetireTo",
+          45
+        ],
+        [
+          "[unknown] (/home/lokad/lython-bench-toolchains/dotnet/11.0.100-rc.3.26522.148/shared/Microsoft.NETCore.App/11.0.0-rc.3.26522.148/libcoreclr.so)",
+          41
+        ],
+        [
+          "TryMachineBinary",
+          30
+        ],
+        [
+          "TryMachineInteger",
+          29
+        ],
+        [
+          "StartNativeCall",
+          24
+        ],
+        [
+          "MoveNext",
+          23
+        ],
+        [
+          "ClearWithReferences",
+          19
+        ],
+        [
+          "EnsureInterpreterStack",
+          18
+        ],
+        [
+          "op_Explicit",
+          15
+        ],
+        [
+          "ExecuteControlFlow",
+          15
+        ],
+        [
+          "get_CanRunNativePrefix",
+          13
+        ],
+        [
+          "__tls_get_addr+0x2e (/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)",
+          13
+        ],
+        [
+          "EnterFunctionCall",
+          10
+        ],
+        [
+          "EnterInterpreterFrame",
+          9
+        ]
+      ]
+    },
+    {
+      "label": "reference-positional",
+      "samples": 1130,
+      "unmatchedLeaf": 0,
+      "unparsedMapRows": 0,
+      "operations": 3456,
+      "guestElapsedMilliseconds": 1.6412465682870372,
+      "processCpuMsPerInvocation": 1.6521990740740737,
+      "hotMethods": {
+        "ExecuteInstructionPrefix": {
+          "leaf": 367,
+          "nearest": 373,
+          "ancestry": 951,
+          "leafLocations": [
+            [
+              "14360:283",
+              25
+            ],
+            [
+              "14360:3561",
+              22
+            ],
+            [
+              "14360:412",
+              14
+            ],
+            [
+              "14360:367",
+              12
+            ],
+            [
+              "14360:3731",
+              11
+            ],
+            [
+              "14360:357",
+              10
+            ],
+            [
+              "14360:3166",
+              9
+            ],
+            [
+              "14360:436",
+              9
+            ],
+            [
+              "14360:609",
+              8
+            ],
+            [
+              "14360:276",
+              8
+            ],
+            [
+              "14360:401",
+              8
+            ],
+            [
+              "14360:364",
+              8
+            ]
+          ],
+          "generated": [
+            {
+              "tier": "Instrumented Tier0",
+              "codeBytes": 13877,
+              "instructionsHash": "32a42b732654e6c797992606f65df62b38a6135c4d7e01890ca0e8c7d604f38f"
+            },
+            {
+              "tier": "Tier1-OSR",
+              "codeBytes": 13229,
+              "instructionsHash": "12978a1375248480e5349c662c2a072dff2d93d877a2395a606896510e3e81e6"
+            },
+            {
+              "tier": "Instrumented Tier0",
+              "codeBytes": 13869,
+              "instructionsHash": "f27f54c21f7f1c306c71798d7e3a106a7006012d3129a5634bb53580f4b05459"
+            },
+            {
+              "tier": "Tier1-OSR",
+              "codeBytes": 14685,
+              "instructionsHash": "8430da13b1a7bf2c4ec92de10ec6492261759f83039e69b14a04460e5f41cdc6"
+            },
+            {
+              "tier": "Tier1",
+              "codeBytes": 14360,
+              "instructionsHash": "999bfc4231d440214b0f51d3975cfca05898914638c7bd17a1882d5a7450a97c"
+            }
+          ]
+        },
+        "ExecuteOrdinaryCall": {
+          "leaf": 0,
+          "nearest": 0,
+          "ancestry": 0,
+          "leafLocations": [],
+          "generated": [
+            {
+              "tier": "Tier0",
+              "codeBytes": 2356,
+              "instructionsHash": "962231b90e8925b31eb6f087d9cc72be191c3a4e8ebdd80db6f99359b1a78469"
+            },
+            {
+              "tier": "Instrumented Tier0",
+              "codeBytes": 2651,
+              "instructionsHash": "fa4d301fd8108212a552975cb6c3a0d89675dd96a02a2485c54b108450fa1a4c"
+            },
+            {
+              "tier": "Tier1",
+              "codeBytes": 4196,
+              "instructionsHash": "8899803f0dd3d06a1a7013f20048db6d0fbc11cef3c8ddf308f5e29a3a054f32"
+            }
+          ]
+        },
+        "TryExecuteNativeCall": {
+          "leaf": 103,
+          "nearest": 112,
+          "ancestry": 349,
+          "leafLocations": [
+            [
+              "3325:377",
+              6
+            ],
+            [
+              "3325:253",
+              6
+            ],
+            [
+              "3325:1025",
+              5
+            ],
+            [
+              "3325:208",
+              5
+            ],
+            [
+              "3325:474",
+              5
+            ],
+            [
+              "3325:714",
+              4
+            ],
+            [
+              "3325:1557",
+              4
+            ],
+            [
+              "3325:574",
+              4
+            ],
+            [
+              "3325:626",
+              4
+            ],
+            [
+              "3325:0",
+              4
+            ],
+            [
+              "3325:312",
+              4
+            ],
+            [
+              "3325:70",
+              3
+            ]
+          ],
+          "generated": [
+            {
+              "tier": "Tier0",
+              "codeBytes": 3742,
+              "instructionsHash": "236e7b9107d80b117bfdd04916cdebea574a6c0f37a52cce634ed5a4ca08dc9b"
+            },
+            {
+              "tier": "Instrumented Tier0",
+              "codeBytes": 4482,
+              "instructionsHash": "cca82f70c4be2f02a2ee9d77ce40f3f3f735adb82bf7a54b86d1fc439b651f1d"
+            },
+            {
+              "tier": "Tier1",
+              "codeBytes": 3325,
+              "instructionsHash": "efe2cdfdbd73a782908948feff564254f25c45d1c0bbbcec9268dbf0158714af"
+            }
+          ]
+        },
+        "StartNativeCall": {
+          "leaf": 17,
+          "nearest": 17,
+          "ancestry": 183,
+          "leafLocations": [
+            [
+              "614:0",
+              4
+            ],
+            [
+              "614:195",
+              4
+            ],
+            [
+              "614:99",
+              3
+            ],
+            [
+              "614:139",
+              2
+            ],
+            [
+              "614:1",
+              2
+            ],
+            [
+              "614:179",
+              1
+            ],
+            [
+              "614:70",
+              1
+            ]
+          ],
+          "generated": [
+            {
+              "tier": "Tier0",
+              "codeBytes": 892,
+              "instructionsHash": "1925cab8e7c5116da6504f374eee11f2a279b2c7a0ecf98195dcf0525b10a4ff"
+            },
+            {
+              "tier": "Instrumented Tier0",
+              "codeBytes": 1026,
+              "instructionsHash": "cdeec9abdbf45f765487585670213cf0e5fcb8cc7bc3fae6c39d61e85b266394"
+            },
+            {
+              "tier": "Tier1",
+              "codeBytes": 614,
+              "instructionsHash": "cbdcbdec523a82d54b639d7fa49597aef8c70dfccd3fa4cb36683e43e4a0b35e"
+            }
+          ]
+        },
+        "TryStartDirectIntegerReturn": {
+          "leaf": 111,
+          "nearest": 114,
+          "ancestry": 159,
+          "leafLocations": [
+            [
+              "2543:235",
+              7
+            ],
+            [
+              "2543:409",
+              6
+            ],
+            [
+              "2543:25",
+              5
+            ],
+            [
+              "2543:0",
+              5
+            ],
+            [
+              "2543:443",
+              5
+            ],
+            [
+              "2543:453",
+              5
+            ],
+            [
+              "2543:429",
+              5
+            ],
+            [
+              "2543:413",
+              5
+            ],
+            [
+              "2543:1",
+              4
+            ],
+            [
+              "2543:867",
+              4
+            ],
+            [
+              "2543:63",
+              4
+            ],
+            [
+              "2543:824",
+              4
+            ]
+          ],
+          "generated": [
+            {
+              "tier": "Tier0",
+              "codeBytes": 396,
+              "instructionsHash": "e1f65c69c1b4a773929eb85b191d75635b39ac6454346a4ebe1f1e0241891070"
+            },
+            {
+              "tier": "Instrumented Tier0",
+              "codeBytes": 475,
+              "instructionsHash": "bc206c8fdf6a6fcb80c1816d064482d5903c701945ba2a2825453d9db36a1728"
+            },
+            {
+              "tier": "Tier1",
+              "codeBytes": 2543,
+              "instructionsHash": "82c64654e48c93f85d0f4078e260fc4aeda756c7f2d6e95b341c179c89b18300"
+            }
+          ]
+        },
+        "TryEvaluateDirectIntegerReturn": {
+          "leaf": 0,
+          "nearest": 0,
+          "ancestry": 0,
+          "leafLocations": [],
+          "generated": [
+            {
+              "tier": "Tier0",
+              "codeBytes": 399,
+              "instructionsHash": "4ce1fe9bf2a900b492670c6f2ffbecea009c94ba6d6680ca40fa6fd9c75d6e17"
+            },
+            {
+              "tier": "Instrumented Tier0",
+              "codeBytes": 461,
+              "instructionsHash": "d926ab245ad75513cb067fa686b1f3bf4e1abc6836f3d8102cf42e14187ca4fb"
+            },
+            {
+              "tier": "Tier1",
+              "codeBytes": 2219,
+              "instructionsHash": "9c282eeec3ec659eaa87d001e1220deeebc121d8cce123ea47925f6aaa626988"
+            }
+          ]
+        }
+      },
+      "nearestRuntime": [
+        [
+          "ExecuteInstructionPrefix",
+          373
+        ],
+        [
+          "Execute",
+          121
+        ],
+        [
+          "TryStartDirectIntegerReturn",
+          114
+        ],
+        [
+          "TryExecuteNativeCall",
+          112
+        ],
+        [
+          "TryExecuteBuiltinArithmetic",
+          104
+        ],
+        [
+          "CompleteResultConsumer",
+          54
+        ],
+        [
+          "RetireTo",
+          43
+        ],
+        [
+          "EnsureInterpreterStack",
+          26
+        ],
+        [
+          "TryMachineBinary",
+          24
+        ],
+        [
+          "MoveNext",
+          22
+        ],
+        [
+          "TryMachineInteger",
+          21
+        ],
+        [
+          "ExecuteControlFlow",
+          19
+        ],
+        [
+          "StartNativeCall",
+          17
+        ],
+        [
+          "EnterFunctionCall",
+          16
+        ],
+        [
+          "EnterInterpreterFrame",
+          16
+        ],
+        [
+          "[no Lython runtime]",
+          13
+        ],
+        [
+          "get_CanRunNativePrefix",
+          10
+        ],
+        [
+          "AugmentedBinaryOperator",
+          10
+        ]
+      ],
+      "leaves": [
+        [
+          "ExecuteInstructionPrefix",
+          367
+        ],
+        [
+          "TryStartDirectIntegerReturn",
+          111
+        ],
+        [
+          "TryExecuteNativeCall",
+          103
+        ],
+        [
+          "TryExecuteBuiltinArithmetic",
+          94
+        ],
+        [
+          "stub InitThreadManagerPerfMapData<JIT_CopiedWriteBarriers>",
+          64
+        ],
+        [
+          "[unknown] (/home/lokad/lython-bench-toolchains/dotnet/11.0.100-rc.3.26522.148/shared/Microsoft.NETCore.App/11.0.0-rc.3.26522.148/libcoreclr.so)",
+          55
+        ],
+        [
+          "CompleteResultConsumer",
+          50
+        ],
+        [
+          "RetireTo",
+          36
+        ],
+        [
+          "TryMachineBinary",
+          24
+        ],
+        [
+          "MoveNext",
+          22
+        ],
+        [
+          "TryMachineInteger",
+          21
+        ],
+        [
+          "ClearWithReferences",
+          20
+        ],
+        [
+          "ExecuteControlFlow",
+          19
+        ],
+        [
+          "StartNativeCall",
+          17
+        ],
+        [
+          "__tls_get_addr+0x2e (/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)",
+          14
+        ],
+        [
+          "EnterInterpreterFrame",
+          13
+        ],
+        [
+          "EnterFunctionCall",
+          12
+        ],
+        [
+          "EnsureInterpreterStack",
+          12
+        ],
+        [
+          "get_CanRunNativePrefix",
+          10
+        ],
+        [
+          "AugmentedBinaryOperator",
+          10
+        ]
+      ]
+    },
+    {
+      "label": "reference-repeat",
+      "samples": 1123,
+      "unmatchedLeaf": 0,
+      "unparsedMapRows": 0,
+      "operations": 3456,
+      "guestElapsedMilliseconds": 1.6350412204861111,
+      "processCpuMsPerInvocation": 1.6464120370370368,
+      "hotMethods": {
+        "ExecuteInstructionPrefix": {
+          "leaf": 386,
+          "nearest": 398,
+          "ancestry": 1007,
+          "leafLocations": [
+            [
+              "14335:427",
+              30
+            ],
+            [
+              "14335:403",
+              28
+            ],
+            [
+              "14335:416",
+              22
+            ],
+            [
+              "14335:358",
+              18
+            ],
+            [
+              "14335:4152",
+              17
+            ],
+            [
+              "14335:278",
+              17
+            ],
+            [
+              "14335:4321",
+              15
+            ],
+            [
+              "14335:6768",
+              10
+            ],
+            [
+              "14335:307",
+              10
+            ],
+            [
+              "14335:6632",
+              8
+            ],
+            [
+              "14335:399",
+              8
+            ],
+            [
+              "14335:341",
+              8
+            ]
+          ],
+          "generated": [
+            {
+              "tier": "Instrumented Tier0",
+              "codeBytes": 13877,
+              "instructionsHash": "32a42b732654e6c797992606f65df62b38a6135c4d7e01890ca0e8c7d604f38f"
+            },
+            {
+              "tier": "Tier1-OSR",
+              "codeBytes": 13229,
+              "instructionsHash": "12978a1375248480e5349c662c2a072dff2d93d877a2395a606896510e3e81e6"
+            },
+            {
+              "tier": "Instrumented Tier0",
+              "codeBytes": 13869,
+              "instructionsHash": "f27f54c21f7f1c306c71798d7e3a106a7006012d3129a5634bb53580f4b05459"
+            },
+            {
+              "tier": "Tier1-OSR",
+              "codeBytes": 14673,
+              "instructionsHash": "b694297ef05e5e80b5c9069dc84fe8ad3ef9e472ece60355004b763a32038295"
+            },
+            {
+              "tier": "Tier1",
+              "codeBytes": 14335,
+              "instructionsHash": "d501773cf4358ebad54a43069376ff93363f7b04a07cfae77658bb6aa5ec3bc8"
+            }
+          ]
+        },
+        "ExecuteOrdinaryCall": {
+          "leaf": 1,
+          "nearest": 1,
+          "ancestry": 1,
+          "leafLocations": [
+            [
+              "4001:87",
+              1
+            ]
+          ],
+          "generated": [
+            {
+              "tier": "Tier0",
+              "codeBytes": 2356,
+              "instructionsHash": "962231b90e8925b31eb6f087d9cc72be191c3a4e8ebdd80db6f99359b1a78469"
+            },
+            {
+              "tier": "Instrumented Tier0",
+              "codeBytes": 2651,
+              "instructionsHash": "fa4d301fd8108212a552975cb6c3a0d89675dd96a02a2485c54b108450fa1a4c"
+            },
+            {
+              "tier": "Tier1",
+              "codeBytes": 4001,
+              "instructionsHash": "762544070fe94eb4f0ccc6d7894e7a642cf09e25b93594bac437730d2392b357"
+            }
+          ]
+        },
+        "TryExecuteNativeCall": {
+          "leaf": 102,
+          "nearest": 108,
+          "ancestry": 368,
+          "leafLocations": [
+            [
+              "3323:873",
+              11
+            ],
+            [
+              "3323:312",
+              6
+            ],
+            [
+              "3323:208",
+              6
+            ],
+            [
+              "3323:906",
+              5
+            ],
+            [
+              "3323:103",
+              5
+            ],
+            [
+              "3323:673",
+              4
+            ],
+            [
+              "3323:227",
+              4
+            ],
+            [
+              "3323:333",
+              4
+            ],
+            [
+              "3323:714",
+              4
+            ],
+            [
+              "3323:503",
+              4
+            ],
+            [
+              "3323:831",
+              3
+            ],
+            [
+              "3323:434",
+              3
+            ]
+          ],
+          "generated": [
+            {
+              "tier": "Tier0",
+              "codeBytes": 3742,
+              "instructionsHash": "236e7b9107d80b117bfdd04916cdebea574a6c0f37a52cce634ed5a4ca08dc9b"
+            },
+            {
+              "tier": "Instrumented Tier0",
+              "codeBytes": 4482,
+              "instructionsHash": "cca82f70c4be2f02a2ee9d77ce40f3f3f735adb82bf7a54b86d1fc439b651f1d"
+            },
+            {
+              "tier": "Tier1",
+              "codeBytes": 3323,
+              "instructionsHash": "d9181f0191a33e8e981232f73117e28289c16563d56f5270d31083406fb01740"
+            }
+          ]
+        },
+        "StartNativeCall": {
+          "leaf": 19,
+          "nearest": 24,
+          "ancestry": 200,
+          "leafLocations": [
+            [
+              "614:1",
+              4
+            ],
+            [
+              "614:139",
+              4
+            ],
+            [
+              "614:25",
+              3
+            ],
+            [
+              "614:99",
+              2
+            ],
+            [
+              "614:166",
+              2
+            ],
+            [
+              "614:0",
+              2
+            ],
+            [
+              "614:195",
+              1
+            ],
+            [
+              "614:70",
+              1
+            ]
+          ],
+          "generated": [
+            {
+              "tier": "Tier0",
+              "codeBytes": 892,
+              "instructionsHash": "1925cab8e7c5116da6504f374eee11f2a279b2c7a0ecf98195dcf0525b10a4ff"
+            },
+            {
+              "tier": "Instrumented Tier0",
+              "codeBytes": 1026,
+              "instructionsHash": "cdeec9abdbf45f765487585670213cf0e5fcb8cc7bc3fae6c39d61e85b266394"
+            },
+            {
+              "tier": "Tier1",
+              "codeBytes": 614,
+              "instructionsHash": "cbdcbdec523a82d54b639d7fa49597aef8c70dfccd3fa4cb36683e43e4a0b35e"
+            }
+          ]
+        },
+        "TryStartDirectIntegerReturn": {
+          "leaf": 115,
+          "nearest": 118,
+          "ancestry": 168,
+          "leafLocations": [
+            [
+              "2543:429",
+              10
+            ],
+            [
+              "2543:453",
+              9
+            ],
+            [
+              "2543:443",
+              9
+            ],
+            [
+              "2543:330",
+              7
+            ],
+            [
+              "2543:409",
+              6
+            ],
+            [
+              "2543:867",
+              5
+            ],
+            [
+              "2543:413",
+              4
+            ],
+            [
+              "2543:1580",
+              4
+            ],
+            [
+              "2543:665",
+              4
+            ],
+            [
+              "2543:235",
+              4
+            ],
+            [
+              "2543:1",
+              4
+            ],
+            [
+              "2543:426",
+              3
+            ]
+          ],
+          "generated": [
+            {
+              "tier": "Tier0",
+              "codeBytes": 396,
+              "instructionsHash": "e1f65c69c1b4a773929eb85b191d75635b39ac6454346a4ebe1f1e0241891070"
+            },
+            {
+              "tier": "Instrumented Tier0",
+              "codeBytes": 475,
+              "instructionsHash": "bc206c8fdf6a6fcb80c1816d064482d5903c701945ba2a2825453d9db36a1728"
+            },
+            {
+              "tier": "Tier1",
+              "codeBytes": 2543,
+              "instructionsHash": "82c64654e48c93f85d0f4078e260fc4aeda756c7f2d6e95b341c179c89b18300"
+            }
+          ]
+        },
+        "TryEvaluateDirectIntegerReturn": {
+          "leaf": 0,
+          "nearest": 0,
+          "ancestry": 0,
+          "leafLocations": [],
+          "generated": [
+            {
+              "tier": "Tier0",
+              "codeBytes": 399,
+              "instructionsHash": "4ce1fe9bf2a900b492670c6f2ffbecea009c94ba6d6680ca40fa6fd9c75d6e17"
+            },
+            {
+              "tier": "Instrumented Tier0",
+              "codeBytes": 461,
+              "instructionsHash": "d926ab245ad75513cb067fa686b1f3bf4e1abc6836f3d8102cf42e14187ca4fb"
+            },
+            {
+              "tier": "Tier1",
+              "codeBytes": 2219,
+              "instructionsHash": "9c282eeec3ec659eaa87d001e1220deeebc121d8cce123ea47925f6aaa626988"
+            }
+          ]
+        }
+      },
+      "nearestRuntime": [
+        [
+          "ExecuteInstructionPrefix",
+          398
+        ],
+        [
+          "TryStartDirectIntegerReturn",
+          118
+        ],
+        [
+          "TryExecuteNativeCall",
+          108
+        ],
+        [
+          "TryExecuteBuiltinArithmetic",
+          107
+        ],
+        [
+          "Execute",
+          84
+        ],
+        [
+          "CompleteResultConsumer",
+          57
+        ],
+        [
+          "RetireTo",
+          44
+        ],
+        [
+          "EnsureInterpreterStack",
+          41
+        ],
+        [
+          "TryMachineBinary",
+          33
+        ],
+        [
+          "StartNativeCall",
+          24
+        ],
+        [
+          "EnterInterpreterFrame",
+          16
+        ],
+        [
+          "TryMachineInteger",
+          16
+        ],
+        [
+          "MoveNext",
+          14
+        ],
+        [
+          "EnterFunctionCall",
+          14
+        ],
+        [
+          "get_CanRunNativePrefix",
+          10
+        ],
+        [
+          "[no Lython runtime]",
+          10
+        ],
+        [
+          "AugmentedBinaryOperator",
+          9
+        ],
+        [
+          "ExecuteControlFlow",
+          8
+        ]
+      ],
+      "leaves": [
+        [
+          "ExecuteInstructionPrefix",
+          386
+        ],
+        [
+          "TryStartDirectIntegerReturn",
+          115
+        ],
+        [
+          "TryExecuteNativeCall",
+          102
+        ],
+        [
+          "TryExecuteBuiltinArithmetic",
+          102
+        ],
+        [
+          "CompleteResultConsumer",
+          54
+        ],
+        [
+          "[unknown] (/home/lokad/lython-bench-toolchains/dotnet/11.0.100-rc.3.26522.148/shared/Microsoft.NETCore.App/11.0.0-rc.3.26522.148/libcoreclr.so)",
+          41
+        ],
+        [
+          "stub InitThreadManagerPerfMapData<JIT_CopiedWriteBarriers>",
+          38
+        ],
+        [
+          "TryMachineBinary",
+          33
+        ],
+        [
+          "RetireTo",
+          32
+        ],
+        [
+          "ClearWithReferences",
+          19
+        ],
+        [
+          "StartNativeCall",
+          19
+        ],
+        [
+          "EnsureInterpreterStack",
+          18
+        ],
+        [
+          "TryMachineInteger",
+          16
+        ],
+        [
+          ".ctor",
+          14
+        ],
+        [
+          "MoveNext",
+          14
+        ],
+        [
+          "op_Explicit",
+          14
+        ],
+        [
+          "EnterFunctionCall",
+          13
+        ],
+        [
+          "EnterInterpreterFrame",
+          11
+        ],
+        [
+          "[unknown] ([kernel.kallsyms])",
+          11
+        ],
+        [
+          "get_CanRunNativePrefix",
+          10
+        ]
+      ]
+    },
+    {
+      "label": "candidate-repeat",
+      "samples": 1118,
+      "unmatchedLeaf": 0,
+      "unparsedMapRows": 0,
+      "operations": 3456,
+      "guestElapsedMilliseconds": 1.6253480315393518,
+      "processCpuMsPerInvocation": 1.6377314814814814,
+      "hotMethods": {
+        "ExecuteInstructionPrefix": {
+          "leaf": 349,
+          "nearest": 361,
+          "ancestry": 965,
+          "leafLocations": [
+            [
+              "14335:4152",
+              30
+            ],
+            [
+              "14335:403",
+              17
+            ],
+            [
+              "14335:427",
+              14
+            ],
+            [
+              "14335:6768",
+              12
+            ],
+            [
+              "14335:4321",
+              11
+            ],
+            [
+              "14335:416",
+              9
+            ],
+            [
+              "14335:278",
+              9
+            ],
+            [
+              "14335:370",
+              8
+            ],
+            [
+              "14335:6734",
+              8
+            ],
+            [
+              "14335:358",
+              8
+            ],
+            [
+              "14335:240",
+              8
+            ],
+            [
+              "14335:1024",
+              7
+            ]
+          ],
+          "generated": [
+            {
+              "tier": "Instrumented Tier0",
+              "codeBytes": 13877,
+              "instructionsHash": "32a42b732654e6c797992606f65df62b38a6135c4d7e01890ca0e8c7d604f38f"
+            },
+            {
+              "tier": "Tier1-OSR",
+              "codeBytes": 13229,
+              "instructionsHash": "12978a1375248480e5349c662c2a072dff2d93d877a2395a606896510e3e81e6"
+            },
+            {
+              "tier": "Instrumented Tier0",
+              "codeBytes": 13869,
+              "instructionsHash": "f27f54c21f7f1c306c71798d7e3a106a7006012d3129a5634bb53580f4b05459"
+            },
+            {
+              "tier": "Tier1-OSR",
+              "codeBytes": 14673,
+              "instructionsHash": "b694297ef05e5e80b5c9069dc84fe8ad3ef9e472ece60355004b763a32038295"
+            },
+            {
+              "tier": "Tier1",
+              "codeBytes": 14335,
+              "instructionsHash": "d501773cf4358ebad54a43069376ff93363f7b04a07cfae77658bb6aa5ec3bc8"
+            }
+          ]
+        },
+        "ExecuteOrdinaryCall": {
+          "leaf": 0,
+          "nearest": 0,
+          "ancestry": 0,
+          "leafLocations": [],
+          "generated": [
+            {
+              "tier": "Tier0",
+              "codeBytes": 2356,
+              "instructionsHash": "962231b90e8925b31eb6f087d9cc72be191c3a4e8ebdd80db6f99359b1a78469"
+            },
+            {
+              "tier": "Instrumented Tier0",
+              "codeBytes": 2651,
+              "instructionsHash": "fa4d301fd8108212a552975cb6c3a0d89675dd96a02a2485c54b108450fa1a4c"
+            },
+            {
+              "tier": "Tier1",
+              "codeBytes": 4191,
+              "instructionsHash": "353bebed2f8465ef55bb0305b8f8cd922050f19dfd0ca2e58eb0c043d6290539"
+            }
+          ]
+        },
+        "TryExecuteNativeCall": {
+          "leaf": 101,
+          "nearest": 112,
+          "ancestry": 339,
+          "leafLocations": [
+            [
+              "3327:906",
+              9
+            ],
+            [
+              "3327:873",
+              8
+            ],
+            [
+              "3327:831",
+              5
+            ],
+            [
+              "3327:253",
+              5
+            ],
+            [
+              "3327:754",
+              4
+            ],
+            [
+              "3327:242",
+              4
+            ],
+            [
+              "3327:626",
+              4
+            ],
+            [
+              "3327:434",
+              4
+            ],
+            [
+              "3327:673",
+              4
+            ],
+            [
+              "3327:312",
+              4
+            ],
+            [
+              "3327:1808",
+              4
+            ],
+            [
+              "3327:714",
+              4
+            ]
+          ],
+          "generated": [
+            {
+              "tier": "Tier0",
+              "codeBytes": 3742,
+              "instructionsHash": "236e7b9107d80b117bfdd04916cdebea574a6c0f37a52cce634ed5a4ca08dc9b"
+            },
+            {
+              "tier": "Instrumented Tier0",
+              "codeBytes": 4482,
+              "instructionsHash": "cca82f70c4be2f02a2ee9d77ce40f3f3f735adb82bf7a54b86d1fc439b651f1d"
+            },
+            {
+              "tier": "Tier1",
+              "codeBytes": 3327,
+              "instructionsHash": "690a72df0cb2ba5ffc3f0f2ba848f38c8355a82754390a98fca149056dc88384"
+            }
+          ]
+        },
+        "StartNativeCall": {
+          "leaf": 23,
+          "nearest": 31,
+          "ancestry": 182,
+          "leafLocations": [
+            [
+              "614:166",
+              5
+            ],
+            [
+              "614:1",
+              4
+            ],
+            [
+              "614:0",
+              4
+            ],
+            [
+              "614:99",
+              4
+            ],
+            [
+              "614:70",
+              3
+            ],
+            [
+              "614:195",
+              1
+            ],
+            [
+              "614:179",
+              1
+            ],
+            [
+              "614:139",
+              1
+            ]
+          ],
+          "generated": [
+            {
+              "tier": "Tier0",
+              "codeBytes": 892,
+              "instructionsHash": "1925cab8e7c5116da6504f374eee11f2a279b2c7a0ecf98195dcf0525b10a4ff"
+            },
+            {
+              "tier": "Instrumented Tier0",
+              "codeBytes": 1026,
+              "instructionsHash": "cdeec9abdbf45f765487585670213cf0e5fcb8cc7bc3fae6c39d61e85b266394"
+            },
+            {
+              "tier": "Tier1",
+              "codeBytes": 614,
+              "instructionsHash": "cbdcbdec523a82d54b639d7fa49597aef8c70dfccd3fa4cb36683e43e4a0b35e"
+            }
+          ]
+        },
+        "TryStartDirectIntegerReturn": {
+          "leaf": 93,
+          "nearest": 97,
+          "ancestry": 139,
+          "leafLocations": [
+            [
+              "2543:443",
+              7
+            ],
+            [
+              "2543:712",
+              6
+            ],
+            [
+              "2543:453",
+              5
+            ],
+            [
+              "2543:429",
+              5
+            ],
+            [
+              "2543:25",
+              4
+            ],
+            [
+              "2543:235",
+              4
+            ],
+            [
+              "2543:1",
+              4
+            ],
+            [
+              "2543:330",
+              3
+            ],
+            [
+              "2543:91",
+              3
+            ],
+            [
+              "2543:271",
+              3
+            ],
+            [
+              "2543:665",
+              3
+            ],
+            [
+              "2543:466",
+              3
+            ]
+          ],
+          "generated": [
+            {
+              "tier": "Tier0",
+              "codeBytes": 396,
+              "instructionsHash": "e1f65c69c1b4a773929eb85b191d75635b39ac6454346a4ebe1f1e0241891070"
+            },
+            {
+              "tier": "Instrumented Tier0",
+              "codeBytes": 475,
+              "instructionsHash": "bc206c8fdf6a6fcb80c1816d064482d5903c701945ba2a2825453d9db36a1728"
+            },
+            {
+              "tier": "Tier1",
+              "codeBytes": 2543,
+              "instructionsHash": "82c64654e48c93f85d0f4078e260fc4aeda756c7f2d6e95b341c179c89b18300"
+            }
+          ]
+        },
+        "TryEvaluateDirectIntegerReturn": {
+          "leaf": 0,
+          "nearest": 0,
+          "ancestry": 0,
+          "leafLocations": [],
+          "generated": [
+            {
+              "tier": "Tier0",
+              "codeBytes": 399,
+              "instructionsHash": "4ce1fe9bf2a900b492670c6f2ffbecea009c94ba6d6680ca40fa6fd9c75d6e17"
+            },
+            {
+              "tier": "Instrumented Tier0",
+              "codeBytes": 461,
+              "instructionsHash": "d926ab245ad75513cb067fa686b1f3bf4e1abc6836f3d8102cf42e14187ca4fb"
+            },
+            {
+              "tier": "Tier1",
+              "codeBytes": 2219,
+              "instructionsHash": "9c282eeec3ec659eaa87d001e1220deeebc121d8cce123ea47925f6aaa626988"
+            }
+          ]
+        }
+      },
+      "nearestRuntime": [
+        [
+          "ExecuteInstructionPrefix",
+          361
+        ],
+        [
+          "TryExecuteNativeCall",
+          112
+        ],
+        [
+          "Execute",
+          109
+        ],
+        [
+          "TryExecuteBuiltinArithmetic",
+          108
+        ],
+        [
+          "TryStartDirectIntegerReturn",
+          97
+        ],
+        [
+          "CompleteResultConsumer",
+          64
+        ],
+        [
+          "MoveNext",
+          32
+        ],
+        [
+          "StartNativeCall",
+          31
+        ],
+        [
+          "RetireTo",
+          30
+        ],
+        [
+          "TryMachineBinary",
+          28
+        ],
+        [
+          "TryMachineInteger",
+          25
+        ],
+        [
+          "EnsureInterpreterStack",
+          24
+        ],
+        [
+          "EnterInterpreterFrame",
+          20
+        ],
+        [
+          "AugmentedBinaryOperator",
+          16
+        ],
+        [
+          "EnterFunctionCall",
+          15
+        ],
+        [
+          "get_CanRunNativePrefix",
+          14
+        ],
+        [
+          "[no Lython runtime]",
+          11
+        ],
+        [
+          "ExecuteControlFlow",
+          8
+        ]
+      ],
+      "leaves": [
+        [
+          "ExecuteInstructionPrefix",
+          349
+        ],
+        [
+          "TryExecuteBuiltinArithmetic",
+          107
+        ],
+        [
+          "TryExecuteNativeCall",
+          101
+        ],
+        [
+          "TryStartDirectIntegerReturn",
+          93
+        ],
+        [
+          "CompleteResultConsumer",
+          59
+        ],
+        [
+          "[unknown] (/home/lokad/lython-bench-toolchains/dotnet/11.0.100-rc.3.26522.148/shared/Microsoft.NETCore.App/11.0.0-rc.3.26522.148/libcoreclr.so)",
+          48
+        ],
+        [
+          "stub InitThreadManagerPerfMapData<JIT_CopiedWriteBarriers>",
+          43
+        ],
+        [
+          "MoveNext",
+          32
+        ],
+        [
+          "TryMachineBinary",
+          28
+        ],
+        [
+          "TryMachineInteger",
+          25
+        ],
+        [
+          "ClearWithReferences",
+          23
+        ],
+        [
+          "RetireTo",
+          23
+        ],
+        [
+          "StartNativeCall",
+          23
+        ],
+        [
+          "op_Explicit",
+          21
+        ],
+        [
+          "EnterInterpreterFrame",
+          18
+        ],
+        [
+          "AugmentedBinaryOperator",
+          16
+        ],
+        [
+          "get_CanRunNativePrefix",
+          14
+        ],
+        [
+          "EnsureInterpreterStack",
+          13
+        ],
+        [
+          "EnterFunctionCall",
+          13
+        ],
+        [
+          "__tls_get_addr+0x2e (/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)",
+          11
+        ]
+      ]
+    }
+  ],
+  "timingQualification": false,
+  "scopesOverlap": true
+}
