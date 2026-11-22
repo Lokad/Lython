@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1423 immediate definition admission](results/2026-11-22-immediate-definition-depth/README.md)
+uses the existing interpreter body for lexical construction. Admission
+counts, peaks and cleanup are unchanged. All timing ranges span zero.
+Postponed time-to-result workers diverge 8.50% on the candidate image.
+
 [B1422 factory and report attribution](results/2026-11-22-factory-text-attribution/README.md)
 confirms callable construction, default admission, casing preparation
 and the dictionary loop on exact `3b45fdfc7`. The Windows sampling
