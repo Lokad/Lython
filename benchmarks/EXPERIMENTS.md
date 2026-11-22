@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1420 borrowed short UTF-8 keys](results/2026-11-22-short-borrowed-text-probe/README.md)
+removes query hashing from tiny native dictionaries. The nonlocal report
+takes 6.58–8.17% less warm elapsed and 2.97–4.72% less time to result.
+The wide-vocabulary and quote-heavy controls show small adverse elapsed
+ranges. Allocation and admission are effectively flat.
+
 [B1419 callable checkpoint against CPython](results/2026-11-22-callable-checkpoint-cpython/README.md)
 refreshes six complete scripts on exact `6ac96ea93`. Warm postponed
 factories take 1.825–2.000× CPython elapsed and the nonlocal report

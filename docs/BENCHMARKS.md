@@ -109,6 +109,7 @@ change. The checkpoint includes the arithmetic and allocation controls.
 
 | Change | Measured effect | Limits |
 | --- | --- | --- |
+| Borrow tiny-dictionary UTF-8 keys | The nonlocal report takes 6.58–8.17% less warm elapsed and reaches its result 2.97–4.72% sooner. Admitted peaks match. | The wide-vocabulary control takes 0.70–1.87% longer warm. [B1420](../benchmarks/results/2026-11-22-short-borrowed-text-probe/README.md). |
 | Share diagnostic identity with executable code | Both nested factories allocate 3.34% less. The defaults observer allocates 2.47% less. Admitted peaks match. | Initial eager and postponed warm results move in opposite directions. The larger confirmation spans zero for both. [B1417 and B1418](../benchmarks/results/2026-11-22-function-diagnostic-identity/README.md). |
 | Share native function call eligibility | The large positional control takes 1.16–3.10% less elapsed and 0.74–2.22% less process CPU. Admitted peaks match. | Postponed factory timing spans zero at both boundaries. The fully supplied helper allows a small slowdown. [B1415](../benchmarks/results/2026-11-22-native-call-selection-single-proof/README.md). |
 | Remove captured delegates in the optional regex adapter | Named-capture reports allocate 5.01–5.50% less and the file rewrite allocates 3.10% less at matching admitted peaks. | The local comparison measures allocation only. [B1416](../benchmarks/results/2026-11-22-regex-adapter-operation-state/README.md). |
