@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1417 callable diagnostic identity](results/2026-11-22-function-diagnostic-identity/README.md)
+removes duplicate per-function fields. Both factory workloads allocate
+3.34% less. Eager warm takes 5.08–6.01% less elapsed, and postponed
+warm takes 1.70–6.57% longer. Keep the patch private through bounded
+warm confirmation.
+
 [Native call route counts](results/2026-11-22-native-call-route-counts/README.md)
 show that six matched workloads never reach framed function fallback.
 Factories enter the framed native route 6,144 times under either host API.
