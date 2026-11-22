@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1356 factory and CSV invoices after combined construction](results/2026-11-22-construction-csv-cpython/README.md)
+measures production-equivalent `2f9f818b9` against CPython 3.13.16.
+Factory time to result is 1.743–1.770×. Ordinary invoice warm spans
+parity and the quoted policy invoice remains 1.140–1.165×. All 140
+timed batches verify.
+
 [B1355 reuse an unexposed CSV header layout](results/2026-11-22-private-csv-header-layout/README.md)
 removes two per-row identity scans for private automatic headers.
 The invoice, policy and restock timings span zero. The typed-meter
