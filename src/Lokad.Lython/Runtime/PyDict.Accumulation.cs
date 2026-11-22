@@ -28,12 +28,12 @@ internal sealed partial class PyDict
         LythonRuntime.ExecutionContext context, LythonSourceSpan querySpan)
     {
         context.CheckExecution(querySpan);
-        var hash = MixNativeHash(PyValueComparer.NormalizeHash(PyString.HashUtf8(bytes, context, querySpan)));
-        var index = FindNativeTextIndex(_nativeItems!, hash, bytes, context, querySpan);
+        var index = FindNativeTextIndex(_nativeItems!, _nativeCount, bytes, context, querySpan);
         // New keys need their real word identity. Resume the original body
         // after publishing that binding, before any insertion/growth admission.
-        return index >= 0 && TryAccumulateAt(index, (PyString)_nativeItems![index].Key!, hash,
-            fallback, increment);
+        if (index < 0) return false;
+        ref var entry = ref _nativeItems![index];
+        return TryAccumulateAt(index, (PyString)entry.Key!, entry.Hash, fallback, increment);
     }
 
     private bool TryAccumulateAt(int index, PyString key, uint hash, object fallback, BigInteger increment)
