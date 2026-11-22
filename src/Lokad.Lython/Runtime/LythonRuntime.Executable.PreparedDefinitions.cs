@@ -47,7 +47,7 @@ internal sealed partial class LythonRuntime
         ExecutionContext closure, IReadOnlyList<ExecutableCell> cells, FunctionDefaults defaults,
         bool generator, ExecutionContext context, LythonSourceSpan span, PythonCallableKind kind = PythonCallableKind.Function,
         ReadOnlySpan<ExecutableSlot> annotations = default, PyString[]? postponedAnnotations = null,
-        object?[]? preparedAnnotations = null)
+        object?[]? preparedAnnotations = null, bool directKeywordDefault = false)
     {
         // The callable and its final annotation backing are still private.
         // Admit both before allocation and transfer the combined charge once.
@@ -55,6 +55,11 @@ internal sealed partial class LythonRuntime
             ? null : code.DefinitionAnnotationKeys.RequireNotNull();
         var capacity = keys?.PreparedValueCapacity ?? 0;
         var bytes = keys is null ? FunctionValueBytes : FunctionAndAnnotationBytes(capacity);
+        if (directKeywordDefault)
+        {
+            System.Diagnostics.Debug.Assert(defaults.InlineKeyword && preparedAnnotations is null);
+            bytes = checked(bytes + PyDict.RecordKeys.SinglePreparedValueBytes);
+        }
         var governor = context.MemoryGovernor;
         if (preparedAnnotations is null) governor.Reserve(bytes, span);
         try
@@ -89,12 +94,13 @@ internal sealed partial class LythonRuntime
     private static PyFunctionBase CreateLexicalFunctionValue(FunctionParameterLayout layout, ExecutableCodeObject code,
         IReadOnlyList<ExecutableCell> cells, bool generator, ExecutionContext scope, LythonSourceSpan span,
         PythonCallableKind kind, Span<ExecutableSlot> operands, PyString[]? postponedAnnotations = null,
-        object?[]? preparedAnnotations = null)
+        object?[]? preparedAnnotations = null, bool directKeywordDefault = false)
     {
         var firstAnnotation = layout.DefaultStorageCount;
         var defaults = operands[..firstAnnotation];
-        var function = CreateFunctionValue(layout, code, GetGlobalContext(scope), cells, ReadExecutableDefaults(layout, defaults),
-            generator, scope, span, kind, operands[firstAnnotation..], postponedAnnotations, preparedAnnotations);
+        var function = CreateFunctionValue(layout, code, GetGlobalContext(scope), cells,
+            ReadExecutableDefaults(layout, defaults, directKeywordDefault), generator, scope, span, kind,
+            operands[firstAnnotation..], postponedAnnotations, preparedAnnotations, directKeywordDefault);
         defaults.Clear();
         return function;
     }
@@ -164,7 +170,7 @@ internal sealed partial class LythonRuntime
                 var cells = CaptureExecutableCells(operation.CodeObject, scope, span, ref execution, captures);
                 function = CreateLexicalFunctionValue(operation.ParameterLayout, operation.CodeObject, cells, operation.IsGenerator,
                     scope, span, PythonCallableKind.Function, execution.Stack.Slice(first, operation.InputCount).Span,
-                    operation.PostponedAnnotations, preparedAnnotations);
+                    operation.PostponedAnnotations, preparedAnnotations, operation.DirectKeywordDefault);
                 preparedAnnotations = null;
             }
             finally
@@ -201,9 +207,11 @@ internal sealed partial class LythonRuntime
                 var closure = SelectDefinitionClosure(code, typeScope.Closure, cells);
                 ReadOnlySpan<ExecutableSlot> annotations = operation.AnnotationOperandCount != 0
                     ? execution.Stack.Slice(next, operation.AnnotationOperandCount).Span : default;
-                function = CreateFunctionValue(layout, code, closure, cells, ReadExecutableDefaults(layout, defaults),
+                function = CreateFunctionValue(layout, code, closure, cells,
+                    ReadExecutableDefaults(layout, defaults, operation.DirectKeywordDefault),
                     operation.IsGenerator, context, span, annotations: annotations,
-                    postponedAnnotations: operation.PostponedAnnotations, preparedAnnotations: preparedAnnotations);
+                    postponedAnnotations: operation.PostponedAnnotations, preparedAnnotations: preparedAnnotations,
+                    directKeywordDefault: operation.DirectKeywordDefault);
                 preparedAnnotations = null;
                 var metadata = ValueTask.CompletedTask;
                 if (operation.AnnotationOperandCount == 0 && operation.EagerAnnotationReads is null &&

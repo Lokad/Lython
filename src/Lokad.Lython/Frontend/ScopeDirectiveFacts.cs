@@ -26,6 +26,8 @@ internal sealed record ScopeDirectiveFacts(
     // Such cells can change through callbacks; local flow cannot prove them unbound.
     public HashSet<string>? NestedNonlocalNames { get; set; }
 
+    internal bool WritesParameter { get; init; }
+
     // Scope validation visits child suites and records their directive effects.
     public bool ContainsDirectivesInBody { get; set; }
 
@@ -50,7 +52,7 @@ internal static class ScopeDirectiveFactsCollector
 
     private static ScopeDirectiveFacts CollectFunctionBindings(IEnumerable<string> parameterNames,
         IReadOnlyList<StatementSyntax> body, Func<StatementSyntax, bool>? scheduleLexicalWork,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken, IReadOnlyDictionary<string, int>? parameterSlots = null)
     {
         var globalNames = new HashSet<string>(StringComparer.Ordinal);
         var nonlocalNames = new HashSet<string>(StringComparer.Ordinal);
@@ -61,13 +63,16 @@ internal static class ScopeDirectiveFactsCollector
             bindings.Add(name);
         }
 
+        var parameterCount = bindings.Count;
         var containsAnnotations = CollectScopeBindings(body, bindings, globalNames, nonlocalNames, scheduleLexicalWork,
             cancellationToken);
-        var localNames = CompactLocalBindings(bindings, globalNames, nonlocalNames);
+        var localNames = CompactLocalBindings(bindings, globalNames, nonlocalNames,
+            parameterSlots, parameterCount, out var writesParameter);
 
         return new ScopeDirectiveFacts(globalNames, nonlocalNames, localNames, bindings.ToArray())
         {
-            ContainsVariableAnnotations = containsAnnotations
+            ContainsVariableAnnotations = containsAnnotations,
+            WritesParameter = writesParameter
         };
     }
 
@@ -82,7 +87,7 @@ internal static class ScopeDirectiveFactsCollector
     internal static ScopeDirectiveFacts PrepareFunction(FunctionDefinitionStatementSyntax definition, Func<StatementSyntax, bool> scheduleLexicalWork,
         CancellationToken cancellationToken)
         => definition.PreparedScopeFacts = CollectFunctionBindings(definition.Parameters.Select(p => p.Name),
-            definition.Body, scheduleLexicalWork, cancellationToken);
+            definition.Body, scheduleLexicalWork, cancellationToken, definition.ParameterLayout.LayoutParameterIndex);
 
     public static IReadOnlySet<string> CollectLambdaLocalNames(LambdaExpressionSyntax lambda)
     {
@@ -98,7 +103,7 @@ internal static class ScopeDirectiveFactsCollector
     {
         var bindings = parameterNames.ToList();
         CollectExpressionBindings(body, bindings);
-        var locals = CompactLocalBindings(bindings, EmptyNames, EmptyNames);
+        var locals = CompactLocalBindings(bindings, EmptyNames, EmptyNames, null, 0, out _);
         return new ScopeDirectiveFacts(EmptyNames, EmptyNames, locals, bindings.ToArray());
     }
 
@@ -113,14 +118,22 @@ internal static class ScopeDirectiveFactsCollector
     private static readonly IReadOnlySet<string> EmptyNames = new HashSet<string>(StringComparer.Ordinal);
 
     private static HashSet<string> CompactLocalBindings(List<string> bindings,
-        IReadOnlySet<string> globalNames, IReadOnlySet<string> nonlocalNames)
+        IReadOnlySet<string> globalNames, IReadOnlySet<string> nonlocalNames,
+        IReadOnlyDictionary<string, int>? parameterSlots, int parameterCount, out bool writesParameter)
     {
+        writesParameter = false;
         var locals = new HashSet<string>(StringComparer.Ordinal);
         var written = 0;
         for (var scan = 0; scan < bindings.Count; scan++)
         {
             var name = bindings[scan];
-            if (globalNames.Contains(name) || nonlocalNames.Contains(name) || !locals.Add(name)) continue;
+            if (globalNames.Contains(name) || nonlocalNames.Contains(name)) continue;
+            if (!locals.Add(name))
+            {
+                if (!writesParameter && scan >= parameterCount && parameterSlots?.ContainsKey(name) == true)
+                    writesParameter = true;
+                continue;
+            }
             bindings[written++] = name;
         }
         // Compaction preserves the first source occurrence. The one set is

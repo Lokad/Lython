@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1352 direct lexical keyword defaults](results/2026-11-22-direct-lexical-keyword-defaults/README.md)
+removes a prepared operand, store instruction and resize from the mixed
+factory. Both time-to-result collections reduce elapsed and CPU.
+The initial default-observer increase spans zero in confirmation.
+Eager and fully supplied timings remain uncertain, with moving
+controls. Run allocations and admitted peaks match. Both platforms,
+the targeted refusal checks and all 280 timed batches pass.
+
 [B1351 current factory, CSV and JSON Lines against CPython](results/2026-11-22-post-range-cpython/README.md)
 measures `72e1131b9` and CPython 3.13.16, with six separate execution,
 compilation and time-to-result lanes. The factory remains about twice

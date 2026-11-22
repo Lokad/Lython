@@ -74,12 +74,14 @@ internal sealed partial class LythonRuntime
         catch { governor.ReleaseReserved(bytes); throw; }
     }
 
-    private static FunctionDefaults ReadExecutableDefaults(FunctionParameterLayout layout, ReadOnlySpan<ExecutableSlot> operands)
+    private static FunctionDefaults ReadExecutableDefaults(FunctionParameterLayout layout, ReadOnlySpan<ExecutableSlot> operands,
+        bool directKeywordDefault = false)
     {
         System.Diagnostics.Debug.Assert(operands.Length == layout.DefaultStorageCount);
         var keyword = layout.HasKeywordDefaults ? operands[^1] : default;
         return new(layout.PositionalDefaultCount == 0 ? null : (PyTuple)operands[0].Reference!,
-            keyword.Reference, keyword.HasPrivateKeywordDefault);
+            directKeywordDefault ? RuntimeValue(keyword.Object) : keyword.Reference,
+            directKeywordDefault || keyword.HasPrivateKeywordDefault);
     }
 
     private static void StorePreparedKeywordDefault(object?[] values, int index, ExecutableSlot value,

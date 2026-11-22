@@ -6,7 +6,7 @@ namespace Lokad.Lython.Frontend;
 internal sealed record ExecutableCreateFunction(ExecutableCodeObject CodeObject, FunctionParameterLayout ParameterLayout,
     int DecoratorCount, bool IsGenerator, int AnnotationOperandCount, LoweredFunctionAnnotation[] DeferredAnnotations,
     IReadOnlyList<LoweredTypeParameter>? TypeParameters, PyString[]? PostponedAnnotations,
-    ExecutableInstruction[]? EagerAnnotationReads) : ExecutableOperation
+    ExecutableInstruction[]? EagerAnnotationReads, bool DirectKeywordDefault = false) : ExecutableOperation
 {
     internal int InputCount => checked(DecoratorCount + AnnotationOperandCount + ParameterLayout.DefaultStorageCount);
 }
@@ -53,7 +53,9 @@ internal sealed partial class ExecutableScript
                     _compilation.CancellationToken, definition.Span);
             foreach (var decorator in definition.Decorators) block = CompileExpression(decorator, block);
             block = CompileFunctionDefaults(definition.Parameters,
-                definition.ParameterLayout, definition.Span, block);
+                definition.ParameterLayout, definition.Span, block,
+                allowDirectKeyword: emitAnnotations && (annotations.Length == 0 || annotations[0].Expression.PostponedAnnotation is not null),
+                out var directKeywordDefault);
             PyString[]? postponed = null;
             ExecutableInstruction[]? reads = null;
             // Lexical preparation attaches postponed text to every annotation in the declaration.
@@ -87,7 +89,7 @@ internal sealed partial class ExecutableScript
             // it still evaluates them in the definition's type scope.
             EmitDefinition(new ExecutableCreateFunction(code, definition.ParameterLayout, definition.Decorators.Count,
                 definition.IsGenerator, postponed is null && reads is null ? annotations.Length : 0,
-                deferredAnnotations, typeParameters, postponed, reads), definition.Span, block);
+                deferredAnnotations, typeParameters, postponed, reads, directKeywordDefault), definition.Span, block);
             // Module declarations update their live namespace and optional slot.
             var name = definition.Name;
             if (_parameterLayout is null)
@@ -154,7 +156,7 @@ internal sealed partial class ExecutableScript
 
         private int CompileLambda(LoweredLambdaExpression lambda, int block)
         {
-            block = CompileFunctionDefaults(lambda.Lambda.Parameters, lambda.ParameterLayout, lambda.Span, block);
+            block = CompileFunctionDefaults(lambda.Lambda.Parameters, lambda.ParameterLayout, lambda.Span, block, false, out _);
             if (lambda.PreparedCode is null && _classBody)
                 CompileNamespaceLambda(lambda, _compilation);
             else if (lambda.PreparedCode is null)
@@ -166,8 +168,9 @@ internal sealed partial class ExecutableScript
         }
 
         private int CompileFunctionDefaults(IReadOnlyList<FunctionParameterSyntax> parameters,
-            FunctionParameterLayout layout, LythonSourceSpan span, int block)
+            FunctionParameterLayout layout, LythonSourceSpan span, int block, bool allowDirectKeyword, out bool directKeyword)
         {
+            directKeyword = false;
             if (layout.Defaults.Length == 0) return block;
             var literals = PrepareLiteralPositionalDefaults(parameters, layout, span);
             if (literals is not null)
@@ -176,6 +179,17 @@ internal sealed partial class ExecutableScript
                 if (!layout.HasKeywordDefaults) return block;
             }
             layout.PrepareKeywordDefaultKeys(_compilation.CancellationToken, span);
+            if (allowDirectKeyword && (literals is not null || layout.PositionalDefaultCount == 0) &&
+                layout.Defaults.Length == layout.PositionalDefaultCount + 1 &&
+                parameters[layout.Defaults[^1].ParameterIndex].DefaultValue is IdentifierExpressionSyntax name &&
+                IsUnchangingParameter(name.Name))
+            {
+                // The bound read cannot perform guest work. Keep its value as
+                // a normal definition operand and admit the retained mapping
+                // backing with the callable, before building either.
+                directKeyword = true;
+                return CompileExpression(name, block);
+            }
             AddInstruction(block, ExecutableInstruction.StartFunctionDefaults(AppendConstant(layout),
                 keywordsOnly: literals is not null, span));
             for (var i = literals is null ? 0 : layout.PositionalDefaultCount; i < layout.Defaults.Length; i++)
@@ -189,6 +203,24 @@ internal sealed partial class ExecutableScript
                     positional ? layout.DefaultStorageCount : 1, index, expression.Span));
             }
             return block;
+        }
+
+        private bool IsUnchangingParameter(string name)
+        {
+            for (var scope = this; scope is not null; scope = scope._lexicalParent)
+            {
+                _compilation.CancellationToken.ThrowIfCancellationRequested();
+                var facts = scope._scopeFacts;
+                if (!scope._completeLexicalParent || scope._classBody ||
+                    scope._parameterLayout is not { } parameters ||
+                    scope._typeParameterNames?.Contains(name) == true || facts.IsGlobal(name))
+                    return false;
+                if (facts.LocalNames.Contains(name))
+                    return parameters.LayoutParameterIndex.ContainsKey(name) &&
+                        !facts.WritesParameter &&
+                        facts.NestedNonlocalNames?.Contains(name) != true;
+            }
+            return false;
         }
 
         private PyTuple? PrepareLiteralPositionalDefaults(IReadOnlyList<FunctionParameterSyntax> parameters,

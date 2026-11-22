@@ -21,7 +21,7 @@ internal sealed partial class LythonRuntime
                     {
                         value = CreateInlineDefinition(instruction, function.CodeObject, function.ParameterLayout,
                             function.IsGenerator, PythonCallableKind.Function, function.InputCount, functionCaptures,
-                            function.PostponedAnnotations, function.EagerAnnotationReads);
+                            function.PostponedAnnotations, function.EagerAnnotationReads, function.DirectKeywordDefault);
                     }
                     finally { _scope.LeaveInterpreterFrame(); }
                     Publish(instruction, value);
@@ -39,7 +39,8 @@ internal sealed partial class LythonRuntime
 
         private PyFunctionBase CreateInlineDefinition(in ExecutableInstruction instruction,
             ExecutableCodeObject code, FunctionParameterLayout layout, bool generator, PythonCallableKind kind,
-            int inputCount, int[]? captures, PyString[]? postponedAnnotations = null, ExecutableInstruction[]? eagerReads = null)
+            int inputCount, int[]? captures, PyString[]? postponedAnnotations = null,
+            ExecutableInstruction[]? eagerReads = null, bool directKeywordDefault = false)
         {
             var first = instruction.InputStart;
             object?[]? preparedAnnotations = null;
@@ -50,7 +51,7 @@ internal sealed partial class LythonRuntime
                 IReadOnlyList<ExecutableCell> cells = captures is null ? [] :
                     CaptureExecutableCells(code, _scope, instruction.Span, Values, _cells, captures, out _, inline: true);
                 var function = CreateLexicalFunctionValue(layout, code, cells, generator, _scope, instruction.Span, kind,
-                    Values.Slice(first, inputCount), postponedAnnotations, preparedAnnotations);
+                    Values.Slice(first, inputCount), postponedAnnotations, preparedAnnotations, directKeywordDefault);
                 preparedAnnotations = null;
                 return function;
             }

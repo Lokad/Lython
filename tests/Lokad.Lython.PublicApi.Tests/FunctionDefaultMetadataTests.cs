@@ -28,6 +28,36 @@ public sealed class FunctionDefaultMetadataTests
             """, "10003 True 1.5 True\nTrue True\n(True, True, True, True)\n" },
         { "def f(*,x=2): return x\ndefaults=f.__kwdefaults__\ndefaults['x']=9\nprint(f(),defaults is f.__kwdefaults__)", "9 True\n" },
         { """
+            from __future__ import annotations
+            def factory(seed):
+                def make():
+                    def call(a=2, /, *, item: list=seed):
+                        return a, item
+                    return call
+                return make
+            saved=[]
+            make=factory(saved)
+            first, second=make(), make()
+            initial=first.__kwdefaults__
+            print(first()[1] is saved, initial['item'] is saved, initial is first.__kwdefaults__)
+            first.__kwdefaults__={'item':[3]}
+            print(first(), second()[1] is saved, initial['item'] is saved)
+            """, "True True True\n(2, [3]) True True\n" },
+        { """
+            def factory(value):
+                def set_value(other):
+                    nonlocal value
+                    value=other
+                def make():
+                    def call(*, item=value): return item
+                    return call
+                return make, set_value
+            make, set_value=factory(1)
+            first=make()
+            set_value(2)
+            print(first(), make()())
+            """, "1 2\n" },
+        { """
             def factory(seed):
                 def f(*, before, left=seed, middle, right=seed):
                     return before, left, middle, right

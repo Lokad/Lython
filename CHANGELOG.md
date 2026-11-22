@@ -4,6 +4,8 @@
 
 - Compile function-default staging to dedicated instructions and remove
   operation descriptors, while preserving preflight and evaluation order.
+- Use an existing operand for proven initialized lexical keyword defaults.
+  Admit the retained inline mapping with the callable.
 - Convert complete short ASCII decimal tokens directly from UTF-8 when
   parsing floats. Keep Python normalization, exact errors and cancellation.
 

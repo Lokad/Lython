@@ -13,6 +13,78 @@ public sealed class AsyncExecutableFunctionTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public void ForwardedKeywordDefaultNeedsStagingWhenItsBindingCanChange(bool written)
+    {
+        var source = """
+            def outer(value):
+                def make():
+                    def call(a=2, *, item=value): return a, item
+                    return call
+            """;
+        if (written) source += "\n    def replace():\n        nonlocal value\n        value=9";
+        source += "\n    return make";
+        var (code, _, _) = Prepare(source);
+        var outer = Assert.Single(code.FunctionBindings()).CodeObject!;
+        var make = outer.FunctionBindings().Single(binding => binding.CodeObject!.Name == "make").CodeObject!;
+        var definition = Assert.Single(make.Constants.OfType<ExecutableCreateFunction>());
+        Assert.Equal(!written, definition.DirectKeywordDefault);
+        Assert.Equal(written, make.Instructions.Any(instruction => instruction.OpCode == ExecutableOpCode.StartFunctionDefaults));
+        Assert.Equal(written, make.Instructions.Any(instruction => instruction.OpCode == ExecutableOpCode.StoreFunctionDefault));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RefusingDirectKeywordDefaultStopsBeforePublishingTheFunction(bool asynchronous)
+    {
+        const string source = """
+            def outer(value):
+                def make():
+                    def call(*, item=value): return item
+                    record(call)
+                    return call
+                return make
+            record(outer("live"))
+            """;
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var scope = budget.CreateScope())
+        {
+            var hook = new AdmissionHookMemoryBudget(scope);
+            var (code, context, capture) = Prepare(source, new LythonRunOptions { MemoryBudget = hook });
+            try
+            {
+                if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
+                else LythonRuntime.ExecuteExecutableCodeObject(code, context);
+                var make = Assert.IsType<PyExecutableFunction>(Assert.Single(capture.Functions));
+                var definition = Assert.Single(make.CodeObject.Instructions, instruction =>
+                    instruction.OpCode == ExecutableOpCode.ApplyOperation &&
+                    make.CodeObject.Constants[instruction.ConstantIndex] is ExecutableCreateFunction { DirectKeywordDefault: true });
+                var baseline = budget.ReservedBytes;
+                hook.RefuseGrowth = _ => true;
+                var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
+                {
+                    if (asynchronous) await make.InvokeAsync([], Span, context);
+                    else make.Invoke([], Span, context);
+                });
+                Assert.Same(definition.Span, failure.Span);
+                Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
+                Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
+                Assert.Single(capture.Functions);
+                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+                Assert.Equal(baseline, budget.ReservedBytes);
+            }
+            finally
+            {
+                hook.RefuseGrowth = null;
+                context.State.CloseResources();
+            }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task DefinitionsPreserveExecutableCodeDefaultsAndClosureCells(bool asynchronous)
     {
         var (code, context, capture) = Prepare("def outer(seed):\n    def add(amount=seed,*,scale=2):\n        marker=amount+seed\n        return marker*scale\n    return add\nrecord(outer)\nrecord(outer(3))");
@@ -108,12 +180,12 @@ public sealed class AsyncExecutableFunctionTests
         Assert.Equal(new BigInteger(12), asynchronous ? await function.InvokeAsync(arguments, Span, context) : function.Invoke(arguments, Span, context));
     }
 
-    private static (ExecutableCodeObject, Context, Capture) Prepare(string source)
+    private static (ExecutableCodeObject, Context, Capture) Prepare(string source, LythonRunOptions? options = null)
     {
         var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.NotNull(frontend.Script);
         var code = ExecutableScript.Compile(frontend.Script).EntryPoint;
-        var context = new Context(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
+        var context = new Context(new MockLythonHost(), options ?? new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var capture = new Capture();
         context.Variables["record"] = capture;
         return (code, context, capture);
