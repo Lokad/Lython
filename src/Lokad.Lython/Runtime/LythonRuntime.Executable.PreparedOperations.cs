@@ -153,6 +153,11 @@ internal sealed partial class LythonRuntime
                         instruction.LiveExtent - instruction.ResultSlot), context, span);
                     execution.Stack.RestoreNativeExtent(instruction.LiveExtent);
                     break;
+                case ExecutableStartKeywordDefaults keywords:
+                    System.Diagnostics.Debug.Assert(execution.Stack.LiveExtent == instruction.ResultSlot);
+                    execution.Stack.Values[instruction.ResultSlot] = PrepareExecutableKeywordDefaults(keywords.Layout, context, span);
+                    execution.Stack.RestoreNativeExtent(instruction.LiveExtent);
+                    break;
                 case ExecutableAppendFunctionDefault:
                     {
                         var defaultValue = execution.Stack.TakeSlotValue(instruction.ResultSlot, instruction.LiveExtent);

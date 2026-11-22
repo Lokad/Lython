@@ -18,6 +18,11 @@ internal sealed partial class LythonRuntime
                         instruction.LiveExtent - instruction.ResultSlot), _scope, span);
                     LiveExtent = instruction.LiveExtent;
                     return true;
+                case ExecutableStartKeywordDefaults keywords:
+                    System.Diagnostics.Debug.Assert(LiveExtent == instruction.ResultSlot);
+                    Values[instruction.ResultSlot] = PrepareExecutableKeywordDefaults(keywords.Layout, _scope, span);
+                    LiveExtent = instruction.LiveExtent;
+                    return true;
                 case ExecutableAppendFunctionDefault:
                     var result = Values[instruction.ResultSlot];
                     if (result.IsUnassigned) _ = result.Object.RequireNotNull();

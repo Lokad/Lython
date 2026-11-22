@@ -9,8 +9,10 @@ namespace Lokad.Lython.PublicApi.Tests;
 // while private defaults remain charged through their execution batch.
 public sealed class FunctionDefaultsAccountingScenarioTests
 {
+    // Force distinct tuples so each definition owns retained default storage.
+    // The first default still produces the same output.
     private static string DefaultParams()
-        => string.Join(", ", Enumerable.Range(1, 40).Select(k => "a" + k.ToString("D2") + "=0"));
+        => string.Join(", ", Enumerable.Range(1, 40).Select(k => "a" + k.ToString("D2") + (k == 40 ? "=i" : "=0")));
 
     private static async Task RetainedDefaults(bool lambda, int count, long limit)
     {

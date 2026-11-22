@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Share one immutable positional default tuple per compiled declaration
+  when every positional default is a scalar literal. Keyword defaults
+  and per-function `__defaults__` reassignment remain independent.
+- Fill fixed file-backed CSV loop targets directly without allocating a row list.
 - Preserve retained input text when a host reuses its UTF-8 read buffer.
 - Complete eligible lexical function and lambda definitions in their inline
   operand slots. Share default ownership and callable construction across callers.

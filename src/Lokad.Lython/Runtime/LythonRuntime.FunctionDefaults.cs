@@ -16,16 +16,8 @@ internal sealed partial class LythonRuntime
             var keywordCount = layout.Defaults.Length - layout.PositionalDefaultCount;
             if (inlineSingleKeyword && keywordCount == 1)
             {
-                var bytes = PyDict.RecordKeys.SinglePreparedValueBytes;
-                var governor = context.MemoryGovernor;
-                governor.Reserve(bytes, span);
-                try
-                {
-                    context.CheckExecution(span);
-                    governor.Commit(bytes);
-                    return new(positional, PyNone.Instance, InlineKeyword: true);
-                }
-                catch { governor.ReleaseReserved(bytes); throw; }
+                AdmitInlineKeywordDefault(context, span);
+                return new(positional, PyNone.Instance, InlineKeyword: true);
             }
             object? keywords = keywordCount == 0 ? null : layout.PreparedKeywordDefaultKeys is { } keys
                 ? keys.CreatePreparedValues(context, span) : new PyDict(keywordCount, context.MemoryGovernor, span);
@@ -49,6 +41,31 @@ internal sealed partial class LythonRuntime
         if (defaults.Keywords is { } keywords)
             operands[next] = defaults.InlineKeyword ? ExecutableSlot.OwnPrivateKeywordDefault(keywords)
                 : ExecutableSlot.OwnPrivateDefault(keywords);
+    }
+
+    private static ExecutableSlot PrepareExecutableKeywordDefaults(FunctionParameterLayout layout,
+        ExecutionContext context, LythonSourceSpan span)
+    {
+        var keys = layout.PreparedKeywordDefaultKeys.RequireNotNull();
+        if (keys.Count == 1)
+        {
+            AdmitInlineKeywordDefault(context, span);
+            return ExecutableSlot.OwnPrivateKeywordDefault(PyNone.Instance);
+        }
+        return ExecutableSlot.OwnPrivateDefault(keys.CreatePreparedValues(context, span));
+    }
+
+    private static void AdmitInlineKeywordDefault(ExecutionContext context, LythonSourceSpan span)
+    {
+        var bytes = PyDict.RecordKeys.SinglePreparedValueBytes;
+        var governor = context.MemoryGovernor;
+        governor.Reserve(bytes, span);
+        try
+        {
+            context.CheckExecution(span);
+            governor.Commit(bytes);
+        }
+        catch { governor.ReleaseReserved(bytes); throw; }
     }
 
     private static FunctionDefaults ReadExecutableDefaults(FunctionParameterLayout layout, ReadOnlySpan<ExecutableSlot> operands)

@@ -134,7 +134,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
                     // Conservatively include every duplicate, without another
                     // value-liveness analysis or runtime resource registry.
                     ExecutableOpCode.Dup => resultSlot + 1,
-                    ExecutableOpCode.ApplyOperation when constants[instruction.ConstantIndex] is ExecutableStartFunctionDefaults
+                    ExecutableOpCode.ApplyOperation when constants[instruction.ConstantIndex] is ExecutableStartFunctionDefaults or ExecutableStartKeywordDefaults
                         => depth - 1,
                     ExecutableOpCode.ApplyOperation when constants[instruction.ConstantIndex] is
                         ExecutableStartComprehension or ExecutableStartCall or ExecutableStartClassHeader => resultSlot,
@@ -377,7 +377,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
 
     private static (int Pop, int Push) OperationEffect(ExecutableOperation operation) => operation switch
     {
-        ExecutableStartDisplay or ExecutableStartClassHeader => (0, 1),
+        ExecutableStartDisplay or ExecutableStartClassHeader or ExecutableStartKeywordDefaults => (0, 1),
         ExecutableStartFunctionDefaults defaults => (0, defaults.Layout.DefaultStorageCount),
         ExecutableStartComprehension => (1, 3),
         ExecutableFinishComprehension => (2, 1),

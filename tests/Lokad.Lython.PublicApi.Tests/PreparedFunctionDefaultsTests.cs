@@ -7,6 +7,54 @@ public sealed class PreparedFunctionDefaultsTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task LiteralTupleDefaultsShareIdentityAcrossDefinitions(bool asynchronous)
+    {
+        const string source = """
+            def read(seed):
+                with open('/base.txt') as stream:
+                    return int(stream.read()) + seed
+            def make(seed):
+                def evaluate(value=(7), /, name='base', *, scale=read(seed)):
+                    return (value * scale, name)
+                return evaluate
+            first = make(2)
+            second = make(3)
+            defaults = first.__defaults__
+            print(defaults is second.__defaults__, first.__kwdefaults__ is second.__kwdefaults__)
+            print(first(), second())
+            first.__defaults__ = (11, 'other')
+            first.__kwdefaults__['scale'] = 5
+            print(first(), second(), defaults is second.__defaults__)
+            def factory():
+                return lambda n=2: n
+            print(factory().__defaults__ is factory().__defaults__)
+            """;
+        const string expected = "True False\n(28, 'base') (35, 'base')\n(55, 'other') (35, 'base') True\nTrue\n";
+        var compilation = new LythonMemoryBudget(1024 * 1024);
+        var execution = new LythonMemoryBudget(1024 * 1024);
+        using var script = new LythonEngine().Compile(source, compilation);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics));
+        var before = compilation.ReservedBytes;
+        var host = new MockLythonHost();
+        var delayed = new DelayedLythonHost();
+        host.SeedFile("/base.txt", "2");
+        delayed.SeedFile("/base.txt", "2");
+        var options = new LythonRunOptions { MemoryBudget = execution };
+        using (var result = asynchronous ? await script.RunAsync(delayed, options) : script.Run(host, options))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(expected, result.StandardOutput);
+        }
+        if (asynchronous) Assert.True(delayed.CompletedAsynchronously > 0);
+        Assert.Equal(0, execution.ReservedBytes);
+        Assert.Equal(before, compilation.ReservedBytes);
+        script.Dispose();
+        Assert.Equal(0, compilation.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task KeywordDefaultCanBeADictionaryAndKeepItsIdentity(bool asynchronous)
     {
         const string source = """

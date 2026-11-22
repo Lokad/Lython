@@ -32,6 +32,19 @@ internal sealed partial class ExecutableScript
                 }, _compilation.CancellationToken, expression.Span);
         }
 
+        private static object ScalarLiteral(ExpressionSyntax expression) => expression switch
+        {
+            StringLiteralExpressionSyntax text => PyString.FromString(text.Value),
+            BytesLiteralExpressionSyntax bytes => new PyBytes(bytes.Value.ToArray()),
+            IntegerLiteralExpressionSyntax integer => integer.Value,
+            ImaginaryLiteralExpressionSyntax imaginary => new PyComplex(0, imaginary.Value),
+            FloatLiteralExpressionSyntax floating => floating.Value,
+            BooleanLiteralExpressionSyntax boolean => boolean.Value,
+            NoneLiteralExpressionSyntax => PyNone.Instance,
+            EllipsisLiteralExpressionSyntax => PyEllipsis.Instance,
+            _ => throw new InvalidOperationException("Expected a scalar literal."),
+        };
+
         private int CompileExpression(LoweredExpression expression, int currentBlock)
             => CompileExpression(expression.Syntax, currentBlock);
 
@@ -53,8 +66,10 @@ internal sealed partial class ExecutableScript
                     currentBlock = CompileExpression(parenthesized.Inner, currentBlock);
                     return currentBlock;
 
-                case StringLiteralExpressionSyntax text:
-                    AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(PyString.FromString(text.Value)), text.Span));
+                case StringLiteralExpressionSyntax or BytesLiteralExpressionSyntax or IntegerLiteralExpressionSyntax
+                    or ImaginaryLiteralExpressionSyntax or FloatLiteralExpressionSyntax or BooleanLiteralExpressionSyntax
+                    or NoneLiteralExpressionSyntax or EllipsisLiteralExpressionSyntax:
+                    AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(ScalarLiteral(expression)), expression.Span));
                     return currentBlock;
 
                 case FormattedStringExpressionSyntax formatted:
@@ -62,34 +77,6 @@ internal sealed partial class ExecutableScript
 
                 case LambdaExpressionSyntax lambda:
                     return CompileLambda((LoweredLambdaExpression)LoweredScript.LowerExpression(lambda), currentBlock);
-
-                case BytesLiteralExpressionSyntax bytes:
-                    AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(new PyBytes(bytes.Value.ToArray())), bytes.Span));
-                    return currentBlock;
-
-                case IntegerLiteralExpressionSyntax integer:
-                    AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(integer.Value), integer.Span));
-                    return currentBlock;
-
-                case ImaginaryLiteralExpressionSyntax imaginary:
-                    AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(new PyComplex(0, imaginary.Value)), imaginary.Span));
-                    return currentBlock;
-
-                case FloatLiteralExpressionSyntax floating:
-                    AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(floating.Value), floating.Span));
-                    return currentBlock;
-
-                case BooleanLiteralExpressionSyntax boolean:
-                    AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(boolean.Value), boolean.Span));
-                    return currentBlock;
-
-                case NoneLiteralExpressionSyntax none:
-                    AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(PyNone.Instance), none.Span));
-                    return currentBlock;
-
-                case EllipsisLiteralExpressionSyntax ellipsis:
-                    AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(PyEllipsis.Instance), ellipsis.Span));
-                    return currentBlock;
 
                 case IdentifierExpressionSyntax identifier:
                     CompileLoadIdentifier(identifier.Name, identifier.Span, currentBlock);

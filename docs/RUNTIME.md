@@ -372,10 +372,12 @@ one immutable parameter layout.
 Executable code owns immutable keyword-default and annotation key layouts
 prepared during compilation. An executable function with evaluated annotation
 operands admits the callable and final annotation backing before allocating
-either. Refusal can arise from their combined estimate. Each definition admits
-its own default storage before evaluating defaults. Function declarations and
-lambdas fill the final private tuple and keyword value slots as expressions
-complete, with one owner through suspension.
+either. Refusal can arise from their combined estimate. A declaration with
+scalar literal positional defaults shares one immutable tuple owned by the
+compiled code. Reassigning `__defaults__` still affects only that function.
+Each definition admits its evaluated positional and keyword default storage
+before evaluation. Expressions write into the final private tuple and keyword
+value slots as they complete, with one owner through suspension.
 Fresh integers can stay unboxed until observed. The tuple preflights room
 for eventual scalar boxes, and a larger magnitude can require a further
 charge. A supplied allowance can refuse earlier because this storage is
@@ -984,9 +986,10 @@ dictionary keeps its owner for any aliases. Binding reads the live dictionary
 when exposed, using the prepared slot where its key layout still matches.
 Replacement dictionaries and structural key changes use ordinary lookup.
 Executable declarations evaluate decorators and defaults in the surrounding
-instruction stream. The compiler places the admitted positional tuple and
-keyword storage in private operands before any default expression runs.
-Each expression writes to its prepared destination. Those operands
+instruction stream. A scalar literal positional tuple loads directly from
+compiled storage. Any evaluated positional tuple and keyword storage are
+admitted in private operands before those expressions run. Each expression
+writes to its prepared destination. Those operands
 carry ownership through suspension and relinquish it at publication or
 cleanup. Ordinary and yielding definitions share construction and the
 prepared Python annotation order. The defining source selects eager evaluation or

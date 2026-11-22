@@ -4,6 +4,7 @@ using Lokad.Lython.Runtime.Text;
 namespace Lokad.Lython.Frontend;
 
 internal sealed record ExecutableStartFunctionDefaults(FunctionParameterLayout Layout) : ExecutableOperation;
+internal sealed record ExecutableStartKeywordDefaults(FunctionParameterLayout Layout) : ExecutableOperation;
 internal sealed record ExecutableAppendFunctionDefault(int StorageDepth, int Index) : ExecutableOperation;
 internal sealed record ExecutableCreateFunction(ExecutableCodeObject CodeObject, FunctionParameterLayout ParameterLayout,
     int DecoratorCount, bool IsGenerator, int AnnotationOperandCount, LoweredFunctionAnnotation[] DeferredAnnotations,
@@ -171,9 +172,15 @@ internal sealed partial class ExecutableScript
             FunctionParameterLayout layout, LythonSourceSpan span, int block)
         {
             if (layout.Defaults.Length == 0) return block;
+            var literals = PrepareLiteralPositionalDefaults(parameters, layout, span);
+            if (literals is not null)
+            {
+                AddInstruction(block, ExecutableInstruction.LoadConst(AppendConstant(literals), span));
+                if (!layout.HasKeywordDefaults) return block;
+            }
             layout.PrepareKeywordDefaultKeys(_compilation.CancellationToken, span);
-            EmitOperation(new ExecutableStartFunctionDefaults(layout), span, block);
-            for (var i = 0; i < layout.Defaults.Length; i++)
+            EmitOperation(literals is null ? new ExecutableStartFunctionDefaults(layout) : new ExecutableStartKeywordDefaults(layout), span, block);
+            for (var i = literals is null ? 0 : layout.PositionalDefaultCount; i < layout.Defaults.Length; i++)
             {
                 var slot = layout.Defaults[i];
                 var expression = parameters[slot.ParameterIndex].DefaultValue.RequireNotNull();
@@ -184,6 +191,49 @@ internal sealed partial class ExecutableScript
                     expression.Span, block);
             }
             return block;
+        }
+
+        private PyTuple? PrepareLiteralPositionalDefaults(IReadOnlyList<FunctionParameterSyntax> parameters,
+            FunctionParameterLayout layout, LythonSourceSpan span)
+        {
+            var count = layout.PositionalDefaultCount;
+            if (count == 0) return null;
+            var token = _compilation.CancellationToken;
+            for (var i = 0; i < count; i++)
+            {
+                PythonTokenization.CheckCancellation(token, i);
+                if (LiteralAt(i) is not (StringLiteralExpressionSyntax or BytesLiteralExpressionSyntax or IntegerLiteralExpressionSyntax
+                    or ImaginaryLiteralExpressionSyntax or FloatLiteralExpressionSyntax or BooleanLiteralExpressionSyntax
+                    or NoneLiteralExpressionSyntax or EllipsisLiteralExpressionSyntax)) return null;
+            }
+
+            // Scalar literal values already live in the compiled constant pool.
+            // One immutable tuple per declaration replaces execution-owned
+            // tuple construction, without sharing mutable keyword defaults.
+            var governor = _compilation.Governor;
+            var bytes = checked(64L + 16L * count);
+            governor?.Reserve(bytes, span);
+            try
+            {
+                PythonTokenization.CheckCancellation(token, 0);
+                var values = new object[count];
+                for (var i = 0; i < count; i++)
+                {
+                    PythonTokenization.CheckCancellation(token, i);
+                    values[i] = _buffers.Constants[InternConstant(ScalarLiteral(LiteralAt(i)))]!;
+                }
+                var tuple = PyTuple.FromOwnedArray(values);
+                governor?.Commit(bytes);
+                return tuple;
+            }
+            catch { governor?.ReleaseReserved(bytes); throw; }
+
+            ExpressionSyntax LiteralAt(int index)
+            {
+                var expression = parameters[layout.Defaults[index].ParameterIndex].DefaultValue.RequireNotNull();
+                while (expression is ParenthesizedExpressionSyntax group) expression = group.Inner;
+                return expression;
+            }
         }
 
         private int CompileClassDefinition(ClassDefinitionStatementSyntax syntax, int block)

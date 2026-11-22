@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1326 load literal defaults and prepare keywords separately](results/2026-11-22-compiled-literal-defaults-keywords/README.md)
+retains the 15.51–18.09% allocation reductions and lowers warm CPU
+in both literal factories. The mixed factory takes 10.71–14.42% less
+time to result. Both control tapes match. Their timings span zero,
+with 5.50% dynamic candidate spread. All 140 timed batches verify.
+
 [B1325 compile fixed CSV unpack separately](results/2026-11-22-csv-compiled-unpack/README.md)
 retains direct writes into existing operands for exact file-backed
 readers. Both meter reports use less warm CPU and allocation. The
