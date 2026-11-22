@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1378 JSON delivery against CPython](results/2026-11-22-json-delivery-cpython/README.md)
+measures the two exports and a configuration edit against stock CPython
+3.13.16. Both exports use 0.821–0.863× CPython's warm time across the
+two cases. The edit takes 1.236–1.251× warm and 0.848–0.869× from
+compilation to result. All 196 batches verify.
+
 [B1377 positional control confirmation](results/2026-11-22-json-positional-control/README.md)
 repeats the exact B1376 pair with reversed order and finds 2.87–4.07%
 higher elapsed and 2.57–5.22% higher CPU on positional calls. Local JIT
