@@ -1351,11 +1351,15 @@ Final row admission covers all field storage before construction. Long fields
 have separate Python string identities over one exact immutable payload; short
 fields retain inline storage. That payload stays funded by the execution/result
 owner, including after unpublished sibling storage is relinquished. It never
-borrows the mutable parser buffer. One independently funded final field array
-awaits consumption. DictReader transfers it to matching native-key records; otherwise it relinquishes private
-array capacity after header/key protocols and awaited cleanup. Escaping
-dictionaries/rest lists retain their storage funding.
-csv.reader and exposed fieldnames adopt the funded array without copying.
+borrows the mutable parser buffer. Ordinary `csv.reader` and exposed
+fieldnames adopt the funded array without copying. `DictReader` transfers
+it to matching native-key records or relinquishes the array capacity after
+header and key protocols and awaited cleanup. Escaping dictionaries and
+rest lists retain their storage funding.
+When a fixed loop target immediately unpacks a file-backed `csv.reader` row,
+the parser checks arity, admits the fields and writes them directly into
+existing executable operands. The frame tracks those private slots through
+cancellation and cleanup.
 Source and parse errors consume the failed item and discard its unfinished
 record; already returned rows remain valid and funded.
 Escaped line endings keep the record open across source items. Non-strict

@@ -212,7 +212,7 @@ internal sealed partial class LythonRuntime
                         else return false; // Promote before any user iteration protocol.
                         break;
                     }
-                    case ExecutableOpCode.ForNext:
+                    case ExecutableOpCode.ForNext or ExecutableOpCode.ForNextUnpack:
                     {
                         var iterator = Values[instruction.InputStart].Object.RequireNotNull();
                         var next = iterator is PyStringOps.CasedWhitespaceIteration words ? words.MoveNext()

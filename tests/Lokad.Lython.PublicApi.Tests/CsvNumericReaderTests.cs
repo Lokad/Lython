@@ -57,6 +57,65 @@ public sealed class CsvNumericReaderTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task FixedUnpackPreservesErrorsFinalRecordAndRetainedFields(bool asynchronous)
+    {
+        const string source = """
+            import csv
+            with open('/input.csv', newline='') as stream:
+                rows = csv.reader(stream, quoting=csv.QUOTE_NONNUMERIC)
+                try:
+                    for left, right in rows:
+                        print("unexpected")
+                except ValueError as error:
+                    print(error)
+                for first, *rest in rows:
+                    print(first, rest)
+                    break
+                result = []
+                for first, second in rows:
+                    alias = first
+                    result.append((first, second, first is alias))
+                print(rows.line_num)
+            print(result)
+            """;
+        const string input = "\"short\"\n\"middle\",1,2\n\"multi\nline\",3\n-0.0,\"tail";
+        const string expected = "not enough values to unpack (expected 2, got 1)\nmiddle [1.0, 2.0]\n5\n" +
+            "[('multi\\nline', 3.0, True), (-0.0, 'tail', True)]\n";
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        if (asynchronous)
+        {
+            var host = new DelayedLythonHost();
+            host.SeedFile("/input.csv", input);
+            using (var result = await script.RunAsync(host))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal(expected, result.StandardOutput);
+            }
+            Assert.True(host.CompletedAsynchronously > 0);
+            Assert.Equal(1, host.ClosedFileCount);
+        }
+        else
+        {
+            var host = new MockLythonHost();
+            host.SeedFile("/input.csv", input);
+            using (var result = script.Run(host))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal(expected, result.StandardOutput);
+            }
+            Assert.Equal(1, host.ClosedFileCount);
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task NativeRowsKeepPriorFieldsWhenQuotedSyntaxNeedsDecoding(bool asynchronous)
     {
         const string source = """

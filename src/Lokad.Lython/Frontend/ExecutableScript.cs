@@ -77,6 +77,7 @@ internal enum ExecutableOpCode
     ConvertFormattedValue,
     FormatField,
     ForNextDictionaryAccumulation,
+    ForNextUnpack,
 }
 
 internal enum ExecutableUnaryOperator
@@ -203,7 +204,7 @@ internal readonly record struct ExecutableInstruction
     public int FailureIndex => OpCode == ExecutableOpCode.MatchCase
         ? _secondaryOperand : throw InvalidOperand("BlockIndex");
     public int TargetIndex => OpCode is ExecutableOpCode.AbruptJump or ExecutableOpCode.Jump or ExecutableOpCode.JumpIfFalse or ExecutableOpCode.CompareJumpIfFalse
-        or ExecutableOpCode.ForNext or ExecutableOpCode.ForNextDictionaryAccumulation or ExecutableOpCode.EndFinally
+        or ExecutableOpCode.ForNext or ExecutableOpCode.ForNextDictionaryAccumulation or ExecutableOpCode.ForNextUnpack or ExecutableOpCode.EndFinally
         ? _primaryOperand : throw InvalidOperand("BlockIndex");
     internal int DictionaryLoopCallIndex => OpCode == ExecutableOpCode.ForNextDictionaryAccumulation
         ? _secondaryOperand : throw InvalidOperand(nameof(DictionaryLoopCallIndex));
@@ -344,6 +345,10 @@ internal readonly record struct ExecutableInstruction
 
     public static ExecutableInstruction ForNext(int targetBlockIndex, LythonSourceSpan span)
         => new(ExecutableOpCode.ForNext, span, targetBlockIndex);
+
+    // Applied after physical slots and the loop's exit address are known.
+    internal ExecutableInstruction WithFixedUnpack()
+        => new(ExecutableOpCode.ForNextUnpack, Span, _primaryOperand, _secondaryOperand, _inputStart, _resultSlot, _liveExtent);
 
     // Final-layout preparation changes no positions or storage capacity. The
     // ordinary body remains the continuation for protocols and admission.

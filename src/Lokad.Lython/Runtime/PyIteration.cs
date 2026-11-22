@@ -388,6 +388,9 @@ internal static partial class PyIteration
 
         internal bool IsBuiltinRange => _value is PyRange && _iterator is null;
 
+        internal LythonRuntime.CsvRecordSource? NativeCsvSource => !_disposed && _asyncEnumerator is null
+            ? (_iterator as LythonRuntime.CsvReaderObject)?.Records : null;
+
         private PyIterationResult TryMoveNextCore()
         {
             if (_disposed || _value is null) return PyIterationResult.End;

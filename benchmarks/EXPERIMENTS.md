@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1325 compile fixed CSV unpack separately](results/2026-11-22-csv-compiled-unpack/README.md)
+retains direct writes into existing operands for exact file-backed
+readers. Both meter reports use less warm CPU and allocation. The
+async invoice regression does not recur. Sync invoice timing spans
+zero with 2.89% candidate spread. All 112 timed batches verify.
+
 [B1324 compiler-owned literal positional defaults](results/2026-11-22-compiled-literal-defaults/README.md)
 removes the per-definition tuple and its fill instructions. Both literal
 factories use 9.71–16.82% less warm CPU and allocate 15.51–18.09% less.

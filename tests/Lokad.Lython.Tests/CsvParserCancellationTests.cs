@@ -9,8 +9,10 @@ namespace Lokad.Lython.Tests;
 
 public sealed class CsvParserCancellationTests
 {
-    [Fact]
-    public void CancellationDuringQuotedEofConstructionDoesNotPublishTheRow()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void CancellationDuringQuotedEofConstructionDoesNotPublishTheRow(bool unpack)
     {
         var root = new LythonMemoryBudget();
         using var owner = root.CreateScope();
@@ -23,11 +25,17 @@ public sealed class CsvParserCancellationTests
             LythonRuntime.CsvQuotingMode.Minimal, true, null, false, PyString.FromString("\n"), false);
         var parser = new LythonRuntime.CsvRecordParser(options, context, span);
         parser.Feed(Encoding.UTF8.GetBytes("\"" + new string('x', 8192)));
+        var destination = unpack ? new LythonRuntime.ExecutableSlot[1] : [];
         budget.Enabled = true;
-        var error = Assert.Throws<LythonRuntimeException>(() => parser.Finish());
+        var error = Assert.Throws<LythonRuntimeException>(() =>
+        {
+            if (unpack) parser.FinishUnpacked(destination);
+            else parser.Finish();
+        });
         Assert.True(budget.Triggered);
         Assert.Contains("execution canceled", error.Message, StringComparison.Ordinal);
         Assert.False(parser.TryTakeReady(out _));
+        Assert.All(destination, slot => Assert.True(slot.IsUnassigned));
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         parser.ReleaseScratch();
         owner.Dispose();

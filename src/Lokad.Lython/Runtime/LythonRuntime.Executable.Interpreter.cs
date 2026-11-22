@@ -478,16 +478,30 @@ internal sealed partial class LythonRuntime
         {
             var iterator = (PyIteration.Cursor)_execution.Stack[instruction.InputStart];
             var next = iterator.TryMoveNext();
-            if (!next.HasValue)
-            {
-                _ = _execution.Stack.TakeValue(instruction.InputStart, instruction.InputStart);
-                iterator.Dispose();
-                _execution.InstructionIndex = instruction.TargetIndex;
-                return true;
-            }
+            if (!next.HasValue) return CompleteForNext(iterator, instruction);
 
             PublishInstructionResult(instruction, next.TakeSlotValue());
             return false;
+        }
+
+        private bool CompleteForNext(PyIteration.Cursor iterator, in ExecutableInstruction instruction)
+        {
+            _ = _execution.Stack.TakeValue(instruction.InputStart, instruction.InputStart);
+            iterator.Dispose();
+            _execution.InstructionIndex = instruction.TargetIndex;
+            return true;
+        }
+
+        private bool CompleteFixedUnpack(int count)
+        {
+            var index = ++_execution.InstructionIndex;
+            ref readonly var unpack = ref _execution.Code.Instructions[index];
+            CheckExecution(unpack.Span);
+            var layout = unpack.UnpackLayout;
+            if (!layout.AcceptsValueCount(count))
+                throw new LythonRuntimeException("ValueError", layout.DescribeArityMismatch(count), unpack.Span);
+            _execution.InstructionIndex = index + 1;
+            return true;
         }
 
         private void ExecuteValueOperation(in ExecutableInstruction instruction)

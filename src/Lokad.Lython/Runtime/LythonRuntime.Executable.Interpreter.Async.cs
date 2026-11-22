@@ -55,6 +55,32 @@ internal sealed partial class LythonRuntime
                 : AwaitForNextAsync(next, cursor, instruction);
         }
 
+        private ValueTask<bool> AdvanceCsvUnpack(CsvRecordSource csv, PyIteration.Cursor cursor,
+            in ExecutableInstruction iteration, bool asynchronous)
+        {
+            ref readonly var unpack = ref _execution.Code.Instructions[_execution.InstructionIndex + 1];
+            CheckExecution(iteration.Span);
+            var destination = _execution.Stack.Slice(unpack.ResultSlot, unpack.UnpackLayout.TargetCount);
+            // The frame's cleanup owns the slots even while the native read is pending.
+            _execution.Stack.RestoreNativeExtent(unpack.LiveExtent);
+            if (!asynchronous)
+            {
+                var count = csv.UnpackNext(destination);
+                return new(count < 0 ? CompleteForNext(cursor, iteration) : CompleteFixedUnpack(count));
+            }
+
+            var row = csv.UnpackNextAsync(destination);
+            return row.IsCompleted ? CompleteCsvUnpackAsync(row.GetAwaiter().GetResult(), cursor, iteration)
+                : AwaitCsvUnpackAsync(row, cursor, iteration);
+        }
+
+        private async ValueTask<bool> AwaitCsvUnpackAsync(ValueTask<int> pending, PyIteration.Cursor cursor,
+            ExecutableInstruction instruction)
+            => await CompleteCsvUnpackAsync(await pending.ConfigureAwait(false), cursor, instruction).ConfigureAwait(false);
+
+        private ValueTask<bool> CompleteCsvUnpackAsync(int count, PyIteration.Cursor cursor, ExecutableInstruction instruction)
+            => count < 0 ? CompleteForNextAsync(PyIterationResult.End, cursor, instruction) : new(CompleteFixedUnpack(count));
+
         private async ValueTask<bool> AwaitForNextAsync(ValueTask<PyIterationResult> pending,
             PyIteration.Cursor cursor, ExecutableInstruction instruction)
             => await CompleteForNextAsync(await pending.ConfigureAwait(false), cursor, instruction).ConfigureAwait(false);

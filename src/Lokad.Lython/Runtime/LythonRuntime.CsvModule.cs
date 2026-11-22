@@ -290,6 +290,38 @@ internal sealed partial class LythonRuntime
         internal void ReleaseRecord(object[] record)
             => _context.MemoryGovernor.Release(PyList.EstimateCapacityBytes(record.Length));
 
+        internal bool CanUnpackDirectly => _nativeFile is not null;
+
+        internal int UnpackNext(Memory<ExecutableSlot> destination)
+        {
+            while (_nativeFile is { } file)
+            {
+                var before = _parser.InputBuffer.Length;
+                bool read;
+                try { read = file.ReadLineInto(_parser.InputBuffer); }
+                catch { _parser.ResetRecord(); throw; }
+                if (!read) return FinishUnpackedAsync(destination).GetAwaiter().GetResult();
+                var count = UnpackNativeLine(before, destination.Span);
+                if (count >= 0) return count;
+            }
+            return -1;
+        }
+
+        internal async ValueTask<int> UnpackNextAsync(Memory<ExecutableSlot> destination)
+        {
+            while (_nativeFile is { } file)
+            {
+                var before = _parser.InputBuffer.Length;
+                bool read;
+                try { read = await file.ReadLineIntoAsync(_parser.InputBuffer).ConfigureAwait(false); }
+                catch { _parser.ResetRecord(); throw; }
+                if (!read) return await FinishUnpackedAsync(destination).ConfigureAwait(false);
+                var count = UnpackNativeLine(before, destination.Span);
+                if (count >= 0) return count;
+            }
+            return -1;
+        }
+
         internal bool TryMoveNext(out object[] row)
         {
             while (true)
@@ -443,6 +475,14 @@ internal sealed partial class LythonRuntime
             catch { _parser.ResetRecord(); throw; }
         }
 
+        private int UnpackNativeLine(int before, Span<ExecutableSlot> destination)
+        {
+            _context.CheckExecution(_span);
+            PhysicalLineCount++;
+            try { return _parser.UnpackOwnedLine(before, destination); }
+            catch { _parser.ResetRecord(); throw; }
+        }
+
         private void FeedPulledLine(object current)
         {
             _context.CheckExecution(_span);
@@ -486,17 +526,30 @@ internal sealed partial class LythonRuntime
             }
             finally
             {
-                try
-                {
-                    if (_cursor is not null) await _cursor.DisposeAsync().ConfigureAwait(false);
-                }
-                finally
-                {
-                    _cursor = null;
-                    _indexed = null;
-                    _nativeFile = null;
-                    _parser.ReleaseScratch();
-                }
+                await ReleaseExhaustedInputAsync().ConfigureAwait(false);
+            }
+        }
+
+        private async ValueTask<int> FinishUnpackedAsync(Memory<ExecutableSlot> destination)
+        {
+            _completed = true;
+            try { return _parser.FinishUnpacked(destination.Span); }
+            catch { _parser.ResetRecord(); throw; }
+            finally { await ReleaseExhaustedInputAsync().ConfigureAwait(false); }
+        }
+
+        private async ValueTask ReleaseExhaustedInputAsync()
+        {
+            try
+            {
+                if (_cursor is not null) await _cursor.DisposeAsync().ConfigureAwait(false);
+            }
+            finally
+            {
+                _cursor = null;
+                _indexed = null;
+                _nativeFile = null;
+                _parser.ReleaseScratch();
             }
         }
     }
@@ -537,20 +590,27 @@ internal sealed partial class LythonRuntime
 
         internal void FeedOwnedLine(int before)
         {
+            if (DescribeOwnedLine(before)) EmitRecord();
+        }
+
+        internal int UnpackOwnedLine(int before, Span<ExecutableSlot> destination)
+            => DescribeOwnedLine(before) ? UnpackRecord(destination) : -1;
+
+        private bool DescribeOwnedLine(int before)
+        {
             var line = _record.WrittenSpan[before..];
             if (before == 0 && _state == FieldState.RecordStart && _literalDelimiter >= 0 && _fields.Capacity != 0)
             {
-                DescribeLiteralRecord(line);
-                return;
+                return DescribeLiteralRecord(line);
             }
             _record.Truncate(before);
             // CSV decoding only removes syntax bytes. Writes stay behind the
             // consumed input, and the already-admitted backing cannot grow.
-            // Truncate/FinishRecord retain it until this Feed has completed.
-            Feed(line);
+            // Keep the backing alive until the completed record is consumed.
+            return DescribeLine(line);
         }
 
-        private void DescribeLiteralRecord(ReadOnlySpan<byte> line)
+        private bool DescribeLiteralRecord(ReadOnlySpan<byte> line)
         {
             if (_readyRecord is not null) throw new InvalidOperationException("CSV input advanced before consuming its record.");
             // Already-funded literal fields keep their original byte offsets.
@@ -573,8 +633,7 @@ internal sealed partial class LythonRuntime
                     if (offset == 0 || TryDescribeLiteralField(start, offset - start))
                     {
                         ValidateRecordEnd(line[(offset + 1)..]);
-                        EmitRecord();
-                        return;
+                        return true;
                     }
                     break;
                 }
@@ -597,18 +656,14 @@ internal sealed partial class LythonRuntime
                     if (end)
                     {
                         if (next < line.Length) ValidateRecordEnd(line[(next + 1)..]);
-                        EmitRecord();
-                        return;
+                        return true;
                     }
                     start = offset = next + 1;
                 }
                 else offset++; // Within a bare field the quote is literal.
 
             }
-            if (offset == line.Length && TryDescribeLiteralField(start, offset - start))
-                EmitRecord();
-            else
-                ResumeRecordAtField(line, start);
+            return (offset == line.Length && TryDescribeLiteralField(start, offset - start)) || ResumeRecordAtField(line, start);
         }
 
         private int FindLiteralQuote(ReadOnlySpan<byte> line, int offset, byte marker)
@@ -624,12 +679,12 @@ internal sealed partial class LythonRuntime
             return -1;
         }
 
-        private void ResumeRecordAtField(ReadOnlySpan<byte> line, int start)
+        private bool ResumeRecordAtField(ReadOnlySpan<byte> line, int start)
         {
             _record.Truncate(start);
             _fieldStart = start;
             _state = FieldState.FieldStart;
-            Feed(line[start..]);
+            return DescribeLine(line[start..]);
         }
 
         private bool TryDescribeLiteralField(int start, int length)
@@ -690,6 +745,11 @@ internal sealed partial class LythonRuntime
 
         public void Feed(ReadOnlySpan<byte> text)
         {
+            if (DescribeLine(text)) EmitRecord();
+        }
+
+        private bool DescribeLine(ReadOnlySpan<byte> text)
+        {
             if (_readyRecord is not null) throw new InvalidOperationException("CSV input advanced before consuming its record.");
             var delimiter = _options.Delimiter.Utf8Span;
             var quote = _activeQuote is { } q ? q.Utf8Span : default;
@@ -728,7 +788,7 @@ internal sealed partial class LythonRuntime
                 {
                     if (!escape.IsEmpty && remaining.StartsWith(escape))
                     {
-                        if (!ConsumeEscape(text, ref i, escape)) return;
+                        if (!ConsumeEscape(text, ref i, escape)) return false;
                     }
                     else if (!quote.IsEmpty && remaining.StartsWith(quote))
                     {
@@ -749,9 +809,8 @@ internal sealed partial class LythonRuntime
                 var c = text[i];
                 if (c is (byte)'\r' or (byte)'\n')
                 {
-                    FinishRecord(text[(i + 1)..]);
-                    _context.CheckExecution(_span);
-                    return;
+                    DescribeRecordEnd(text[(i + 1)..]);
+                    return true;
                 }
                 else if (remaining.StartsWith(delimiter))
                 {
@@ -777,7 +836,7 @@ internal sealed partial class LythonRuntime
                     }
                     else if (!escape.IsEmpty && remaining.StartsWith(escape))
                     {
-                        if (!ConsumeEscape(text, ref i, escape)) return;
+                        if (!ConsumeEscape(text, ref i, escape)) return false;
                     }
                     else
                     {
@@ -788,14 +847,25 @@ internal sealed partial class LythonRuntime
                 }
             }
             _context.CheckExecution(_span);
-            if (_state is not (FieldState.Quoted or FieldState.AfterEscapedNewline)) FinishRecord();
+            if (_state is FieldState.Quoted or FieldState.AfterEscapedNewline) return false;
+            DescribeRecordEnd();
+            return true;
         }
 
         public void Finish()
         {
-            if (_state == FieldState.RecordStart) return;
+            if (DescribeEndOfInput()) EmitRecord();
+        }
+
+        internal int FinishUnpacked(Span<ExecutableSlot> destination)
+            => DescribeEndOfInput() ? UnpackRecord(destination) : -1;
+
+        private bool DescribeEndOfInput()
+        {
+            if (_state == FieldState.RecordStart) return false;
             if (_options.Strict) throw CsvError("unexpected end of data", _span);
-            FinishRecord();
+            DescribeRecordEnd();
+            return true;
         }
 
         private void ResumeUnquotedField()
@@ -869,12 +939,11 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private void FinishRecord(ReadOnlySpan<byte> remainder = default)
+        private void DescribeRecordEnd(ReadOnlySpan<byte> remainder = default)
         {
             if (!(_state == FieldState.RecordStart && _record.Length == _fieldStart && _fields.Count == 0))
                 FinishField();
             ValidateRecordEnd(remainder);
-            EmitRecord();
         }
 
         private void ValidateRecordEnd(ReadOnlySpan<byte> remainder)
@@ -911,36 +980,75 @@ internal sealed partial class LythonRuntime
             foreach (var field in _fields)
             {
                 _context.CheckExecution(_span);
-                object cell;
-                if (field.IsNumber) cell = field.Number;
-                else if (field.Length == 0) cell = PyString.Empty;
-                else
-                {
-                    var text = field.Length <= PyString.InlineUtf8Capacity
-                        ? PyString.CreateReservedUtf8(field.Length, _context.MemoryGovernor) : null;
-                    var bytes = text is null ? payload.AsSpan(payloadOffset, field.Length) : text.UnpublishedUtf8;
-                    for (var offset = 0; offset < bytes.Length;)
-                    {
-                        _context.CheckExecution(_span);
-                        var count = Math.Min(4096, bytes.Length - offset);
-                        _record.WrittenSpan.Slice(field.Start + offset, count).CopyTo(bytes.Slice(offset, count));
-                        offset += count;
-                    }
-                    if (text is null)
-                    {
-                        text = PyString.CreateReservedUtf8Window(payload, payloadOffset, field.Length, _context.MemoryGovernor);
-                        payloadOffset += field.Length;
-                    }
-                    else text.CompleteUnpublishedUtf8(field.Length);
-                    cell = text;
-                }
-                row[index++] = cell;
+                row[index++] = ReadField(field, payload, ref payloadOffset);
             }
             _context.CheckExecution(_span);
             storage.Commit(resultBytes);
             _readyRecord = row;
             ResetRecord();
             ReleaseRowScratch();
+        }
+
+        private int UnpackRecord(Span<ExecutableSlot> destination)
+        {
+            var count = _fields.Count;
+            if (count == destination.Length)
+            {
+                // These slots already belong to the frame. Admit only the
+                // escaping UTF-8 values and scalar headroom before writing.
+                var bytes = checked(_stringBytes + RuntimeMemoryEstimates.ScalarStorageBytes * count);
+                var governor = _context.MemoryGovernor;
+                governor.Reserve(bytes, _span);
+                try
+                {
+                    _context.CheckExecution(_span);
+                    var payload = _payloadBytes == 0 ? Array.Empty<byte>() : new byte[_payloadBytes];
+                    var payloadOffset = 0;
+                    var index = count;
+                    foreach (var field in _fields)
+                    {
+                        _context.CheckExecution(_span);
+                        destination[--index] = ExecutableSlot.FromObject(ReadField(field, payload, ref payloadOffset));
+                    }
+                    _context.CheckExecution(_span);
+                    governor.Commit(bytes);
+                }
+                catch
+                {
+                    destination.Clear();
+                    governor.ReleaseReserved(bytes);
+                    throw;
+                }
+            }
+
+            // The caller diagnoses arity at the unpack instruction, after
+            // the row has been consumed and the parser is ready to continue.
+            ResetRecord();
+            ReleaseRowScratch();
+            return count;
+        }
+
+        private object ReadField(CsvField field, byte[] payload, ref int payloadOffset)
+        {
+            if (field.IsNumber) return field.Number;
+            if (field.Length == 0) return PyString.Empty;
+            var text = field.Length <= PyString.InlineUtf8Capacity
+                ? PyString.CreateReservedUtf8(field.Length, _context.MemoryGovernor) : null;
+            var bytes = text is null ? payload.AsSpan(payloadOffset, field.Length) : text.UnpublishedUtf8;
+            for (var offset = 0; offset < bytes.Length;)
+            {
+                _context.CheckExecution(_span);
+                var count = Math.Min(4096, bytes.Length - offset);
+                _record.WrittenSpan.Slice(field.Start + offset, count).CopyTo(bytes.Slice(offset, count));
+                offset += count;
+            }
+            if (text is null)
+            {
+                text = PyString.CreateReservedUtf8Window(payload, payloadOffset, field.Length, _context.MemoryGovernor);
+                payloadOffset += field.Length;
+            }
+            else text.CompleteUnpublishedUtf8(field.Length);
+            return text;
         }
 
         // Drops the in-progress record after a failed feed so the next pull

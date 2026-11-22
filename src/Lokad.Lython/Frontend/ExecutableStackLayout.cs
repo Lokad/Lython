@@ -31,6 +31,8 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
                 instructions[offsets[i] + j] = instruction.OpCode switch
                 {
                     ExecutableOpCode.AbruptJump => instruction.WithTargetIndex(offsets[instruction.TargetIndex]),
+                    ExecutableOpCode.ForNext when j + 1 < source.Count && CanUnpackIteration(instruction, source[j + 1])
+                        => instruction.WithTargetIndex(offsets[jumpTargets[instruction.TargetIndex]]).WithFixedUnpack(),
                     ExecutableOpCode.Jump or ExecutableOpCode.JumpIfFalse or ExecutableOpCode.CompareJumpIfFalse or
                         ExecutableOpCode.ForNext or ExecutableOpCode.EndFinally => instruction.WithTargetIndex(offsets[jumpTargets[instruction.TargetIndex]]),
                     ExecutableOpCode.MatchCase => instruction.WithFailureIndex(offsets[jumpTargets[instruction.FailureIndex]]),
@@ -48,6 +50,11 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
             }
         }
         return instructions;
+
+        static bool CanUnpackIteration(ExecutableInstruction iteration, ExecutableInstruction next)
+            => !iteration.HasResultConsumer && next.OpCode == ExecutableOpCode.UnpackValues
+                && next.InputStart == iteration.ResultSlot && next.ResultSlot == iteration.ResultSlot
+                && next.UnpackLayout is { HasStarredTarget: false, TargetCount: > 0 };
 
         static bool Completes(List<ExecutableInstruction> block) => block.Count == 0 ||
             block[^1].OpCode is not (ExecutableOpCode.Jump or ExecutableOpCode.AbruptJump or

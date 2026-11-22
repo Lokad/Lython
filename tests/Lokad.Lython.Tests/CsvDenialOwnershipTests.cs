@@ -13,8 +13,10 @@ public sealed class CsvDenialOwnershipTests
     private const long Cap = 3L * 1024 * 1024;
     private static readonly LythonSourceSpan Span = new(0, 0, 0, 0);
 
-    [Fact]
-    public void QuotedEofRefusalIsTerminalBeforePublishingTheFinalRow()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void QuotedEofRefusalIsTerminalBeforePublishingTheFinalRow(bool unpack)
     {
         var budget = new LythonMemoryBudget(Cap);
         using var owner = budget.CreateScope();
@@ -22,13 +24,19 @@ public sealed class CsvDenialOwnershipTests
             new LythonRunOptions { MemoryBudget = owner });
         var parser = new LythonRuntime.CsvRecordParser(Options() with { Strict = false }, context, Span);
         parser.Feed(Encoding.UTF8.GetBytes("a,\"" + new string('x', 8192)));
+        var destination = unpack ? new LythonRuntime.ExecutableSlot[2] : [];
         Assert.True(budget.TryReserve(Cap - budget.ReservedBytes, out var blocker));
         using (blocker)
         {
-            var error = Assert.Throws<LythonRuntimeException>(() => parser.Finish());
+            var error = Assert.Throws<LythonRuntimeException>(() =>
+            {
+                if (unpack) parser.FinishUnpacked(destination);
+                else parser.Finish();
+            });
             Assert.Same(context.MemoryGovernor.AdmissionFailure, error);
             Assert.Equal(LythonFailureReason.SharedMemoryAllowance, error.Attribution?.Reason);
             Assert.False(parser.TryTakeReady(out _));
+            Assert.All(destination, slot => Assert.True(slot.IsUnassigned));
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
             Assert.Same(error, Assert.Throws<LythonRuntimeException>(() => context.CheckExecution(Span)));
             parser.ReleaseScratch();
