@@ -16,16 +16,12 @@ internal sealed partial class LythonRuntime
                 case ExecutableCreateFunction function
                     when !NeedsDefinitionContext(function, _scope) && CanDefineWithoutInvocation(function.CodeObject,
                         Code, _cells, _scope, span, out var functionCaptures):
-                    _scope.EnterInterpreterFrame(span);
-                    PyFunctionBase value;
-                    try
-                    {
-                        value = CreateInlineDefinition(instruction, function.CodeObject, function.ParameterLayout,
-                            function.IsGenerator, function.InputCount, functionCaptures,
-                            function.PostponedAnnotations, function.EagerAnnotationReads, function.DirectKeywordDefault);
-                    }
-                    finally { _scope.LeaveInterpreterFrame(); }
-                    Publish(instruction, value);
+                    // Defaults have executed and these direct annotation reads
+                    // need no child evaluator. Like a lambda, construction
+                    // finishes in the current admitted body.
+                    Publish(instruction, CreateInlineDefinition(instruction, function.CodeObject, function.ParameterLayout,
+                        function.IsGenerator, function.InputCount, functionCaptures,
+                        function.PostponedAnnotations, function.EagerAnnotationReads, function.DirectKeywordDefault));
                     return true;
                 case ExecutableCreateLambda { Binding.NamespaceClosure: false } lambda
                     when CanDefineWithoutInvocation(lambda.CodeObject, Code, _cells, _scope, span, out var lambdaCaptures):

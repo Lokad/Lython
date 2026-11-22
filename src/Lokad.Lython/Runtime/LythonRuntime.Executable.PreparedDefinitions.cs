@@ -182,7 +182,6 @@ internal sealed partial class LythonRuntime
         {
             var span = instruction.Span;
             var first = instruction.InputStart;
-            scope.EnterInterpreterFrame(span);
             PyFunctionBase function;
             PreparedFunctionAnnotations preparedAnnotations = default;
             try
@@ -198,7 +197,7 @@ internal sealed partial class LythonRuntime
             finally
             {
                 try { RefundEagerFunctionAnnotations(preparedAnnotations, scope); }
-                finally { RetireExecutableDefinition(ref execution, scope, first); }
+                finally { execution.Stack.RetireTo(first); }
             }
             PublishInstructionResult(ref execution, null, instruction, function);
         }
