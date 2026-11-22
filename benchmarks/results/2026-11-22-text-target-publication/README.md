@@ -43,3 +43,29 @@ observation. Timing and integrated qualification remain open.
 
 [Local allocation and image hashes](local-prototype.json) ·
 [Prototype source and controls](prototype-evidence.tar.xz).
+
+## Block-local overwrite proof
+
+Private `23ad3fdde` accepts a later read when a store in the same
+physical block dominates it. The existing block offsets provide the
+entry boundary for the proof. The exact nonlocal report now selects
+the fast path. It allocates 331,512 B per run, down from 446,144 B
+(25.69%), at the same admitted peak of 1,278,972 B. These are local
+allocations for whole verified scripts. All owners refund.
+
+Six basic probes match CPython, including a direct read before the
+next overwrite, a later loop with zero iterations, a `finally`
+read and a captured binding. The ordinary namespace probe only
+tested truthiness and could accept a stale word. Tightening it to
+compare the actual last word reveals a real regression. Direct and
+aliased `locals()` both observe a stale value in this candidate, and
+the reference passes both. The prototype stays private.
+
+A safe replacement needs to preserve publication on namespace
+observation through direct aliases, callbacks and scope snapshots.
+The evidence supports evaluating lazy materialization in the
+existing operand storage with stable shared Python identity and
+the same prepaid funding. The block-local proof alone is insufficient.
+
+[Allocation and outcomes](overwrite-proof.json) ·
+[Exact sources and failed snapshot cases](overwrite-proof-evidence.tar.xz).
