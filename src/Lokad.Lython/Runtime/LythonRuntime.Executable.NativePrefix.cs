@@ -135,6 +135,20 @@ internal sealed partial class LythonRuntime
                     case ExecutableOpCode.Call:
                         if (!Call(instruction)) return false;
                         break;
+                    case ExecutableOpCode.StartFunctionDefaults:
+                        System.Diagnostics.Debug.Assert(LiveExtent == instruction.ResultSlot);
+                        StartExecutableDefaults((FunctionParameterLayout)Code.Constants[instruction.ConstantIndex]!,
+                            Values.Slice(instruction.ResultSlot, instruction.LiveExtent - instruction.ResultSlot),
+                            instruction.StartsKeywordDefaultsOnly, _scope, instruction.Span);
+                        LiveExtent = instruction.LiveExtent;
+                        break;
+                    case ExecutableOpCode.StoreFunctionDefault:
+                        var defaultValue = Values[instruction.ResultSlot];
+                        if (defaultValue.IsUnassigned) _ = defaultValue.Object.RequireNotNull();
+                        Values[instruction.ResultSlot] = default;
+                        Trim(instruction.LiveExtent);
+                        StoreDefaultResult(Values, instruction, defaultValue, _scope.State);
+                        break;
                     case ExecutableOpCode.ApplyOperation:
                         if (!ApplyDefinition(instruction)) return false;
                         break;
@@ -530,8 +544,8 @@ internal sealed partial class LythonRuntime
                 if (!consumer.StoresCapturedLocal) Values[consumer.LocalSlot] = value;
                 else StoreCapturedLocal(consumer.LocalSlot, value);
             }
-            else if (consumer.OpCode == ExecutableOpCode.ApplyOperation)
-                StoreDefaultResult(Code, Values, consumer, value, _scope.State);
+            else if (consumer.OpCode == ExecutableOpCode.StoreFunctionDefault)
+                StoreDefaultResult(Values, consumer, value, _scope.State);
             else if (consumer.OpCode != ExecutableOpCode.PopTop)
                 throw new InvalidOperationException("Invalid prepared result consumer.");
             else if (value.IsUnassigned) _ = value.Object.RequireNotNull();

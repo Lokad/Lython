@@ -78,6 +78,8 @@ internal enum ExecutableOpCode
     FormatField,
     ForNextDictionaryAccumulation,
     ForNextUnpack,
+    StartFunctionDefaults,
+    StoreFunctionDefault,
 }
 
 internal enum ExecutableUnaryOperator
@@ -170,7 +172,11 @@ internal readonly record struct ExecutableInstruction
     public int ImportIndex => ReadPrimaryOperand(ExecutableOpCode.Import, nameof(ImportIndex));
     public int ConstantIndex => OpCode is ExecutableOpCode.LoadConst or ExecutableOpCode.ApplyOperation
         or ExecutableOpCode.AppendFormattedText or ExecutableOpCode.FormatField or ExecutableOpCode.MakeRecord
+        or ExecutableOpCode.StartFunctionDefaults
         ? _primaryOperand : throw InvalidOperand(nameof(ConstantIndex));
+    internal bool StartsKeywordDefaultsOnly => _secondaryOperand != 0;
+    internal int DefaultStorageDepth => _primaryOperand;
+    internal int DefaultValueIndex => _secondaryOperand;
     public int LocalSlot => OpCode is ExecutableOpCode.LoadLocal or ExecutableOpCode.StoreLocal
             ? _primaryOperand : throw InvalidOperand(nameof(LocalSlot));
     // StoreLocal has only one input, leaving its second operand field free.
@@ -232,6 +238,12 @@ internal readonly record struct ExecutableInstruction
 
     public static ExecutableInstruction ApplyOperation(int constantIndex, LythonSourceSpan span)
         => new(ExecutableOpCode.ApplyOperation, span, constantIndex);
+
+    internal static ExecutableInstruction StartFunctionDefaults(int layout, bool keywordsOnly, LythonSourceSpan span)
+        => new(ExecutableOpCode.StartFunctionDefaults, span, layout, keywordsOnly ? 1 : 0);
+
+    internal static ExecutableInstruction StoreFunctionDefault(int depth, int index, LythonSourceSpan span)
+        => new(ExecutableOpCode.StoreFunctionDefault, span, depth, index);
 
     public static ExecutableInstruction StartFormattedString(int capacity, LythonSourceSpan span)
         => new(ExecutableOpCode.StartFormattedString, span, capacity);

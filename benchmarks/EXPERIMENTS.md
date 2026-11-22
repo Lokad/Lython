@@ -6,6 +6,15 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1343 execute function-default staging as instructions](results/2026-11-22-direct-default-instructions/README.md)
+removes three operation descriptor types and their runtime dispatch.
+The default observer uses 1.91–5.02% less warm CPU. The mixed factory
+takes 2.32–5.26% longer to reach the result. Both platform suites and
+all 196 batches pass. Reversed-order confirmation of the mixed
+factory spans zero, with a moving fully supplied control, and all 56
+additional batches verify. Retain the simplification and preserve the
+unresolved effect on time to result.
+
 [B1342 share ordered regex names and defer groupindex](results/2026-11-22-ordered-regex-group-metadata/README.md)
 lowers local allocation 1.36% for named rules without mapping
 projection. The mapping observer allocates 3.72% more and uses

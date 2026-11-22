@@ -134,8 +134,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
                     // Conservatively include every duplicate, without another
                     // value-liveness analysis or runtime resource registry.
                     ExecutableOpCode.Dup => resultSlot + 1,
-                    ExecutableOpCode.ApplyOperation when constants[instruction.ConstantIndex] is ExecutableStartFunctionDefaults or ExecutableStartKeywordDefaults
-                        => depth - 1,
+                    ExecutableOpCode.StartFunctionDefaults => depth - 1,
                     ExecutableOpCode.ApplyOperation when constants[instruction.ConstantIndex] is
                         ExecutableStartComprehension or ExecutableStartCall or ExecutableStartClassHeader => resultSlot,
                     _ => -1
@@ -262,9 +261,8 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
                 // Keep the consumer as the pending-cleanup continuation and for its
                 // own guard/span. Direct sources do not consume a producer result.
                 if (kept > 0 &&
-                    (((instruction.OpCode == ExecutableOpCode.StoreLocal ||
-                       instruction.OpCode == ExecutableOpCode.ApplyOperation &&
-                       code.Constants[instruction.ConstantIndex] is ExecutableAppendFunctionDefault) && first == int.MaxValue
+                    (((instruction.OpCode is ExecutableOpCode.StoreLocal or ExecutableOpCode.StoreFunctionDefault) &&
+                        first == int.MaxValue
                         && CanForwardResult(instructions[kept - 1], code.Constants))
                     || (instruction.OpCode == ExecutableOpCode.PopTop
                         && instructions[kept - 1].OpCode == ExecutableOpCode.Call)))
@@ -339,6 +337,9 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
             ExecutableOpCode.DeleteSubscript => (2, 0),
             ExecutableOpCode.DeleteSlice => (1 + BitOperations.PopCount((uint)instruction.SliceParts), 0),
             ExecutableOpCode.AppendFormattedText => (0, 0),
+            ExecutableOpCode.StartFunctionDefaults => (0, instruction.StartsKeywordDefaultsOnly ? 1
+                : ((FunctionParameterLayout)constants[instruction.ConstantIndex]!).DefaultStorageCount),
+            ExecutableOpCode.StoreFunctionDefault => (1, 0),
             ExecutableOpCode.FormatField => constants[instruction.ConstantIndex] is ExecutableFormatField field
                 ? (field.DynamicSpecifier ? 2 : 1, field.Append ? 0 : 1)
                 : throw new InvalidOperationException("Missing formatted-field descriptor."),
@@ -351,6 +352,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
             ExecutableOpCode.FormatField when constants[instruction.ConstantIndex] is ExecutableFormatField { Append: true } => checked(pop + 1),
             ExecutableOpCode.ReadRetainedSubscript => 2,
             ExecutableOpCode.ReadRetainedSlice => 4,
+            ExecutableOpCode.StoreFunctionDefault => checked(1 + instruction.DefaultStorageDepth),
             _ => pop
         };
         if (instruction.OpCode == ExecutableOpCode.ApplyOperation)
@@ -360,7 +362,6 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
                 ExecutableAppendDisplay item => checked(2 + item.IteratorDepth),
                 ExecutableStoreDictionaryItem item => checked(pop + 1 + item.IteratorDepth),
                 ExecutableAppendCall => 2,
-                ExecutableAppendFunctionDefault append => 1 + append.StorageDepth,
                 _ => pop
             };
         }
@@ -377,14 +378,13 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
 
     private static (int Pop, int Push) OperationEffect(ExecutableOperation operation) => operation switch
     {
-        ExecutableStartDisplay or ExecutableStartClassHeader or ExecutableStartKeywordDefaults => (0, 1),
-        ExecutableStartFunctionDefaults defaults => (0, defaults.Layout.DefaultStorageCount),
+        ExecutableStartDisplay or ExecutableStartClassHeader => (0, 1),
         ExecutableStartComprehension => (1, 3),
         ExecutableFinishComprehension => (2, 1),
         ExecutableFinishCall => (1, 1),
         ExecutableCallWithKeywordMapping call => (checked(call.PositionalCount + 2), 1),
         ExecutableFinishTuple or ExecutableStartCall or ExecutableCreateGeneratorExpression => (1, 1),
-        ExecutableAppendDisplay or ExecutableAppendCall or ExecutableAppendFunctionDefault or ExecutableStoreModuleAnnotation => (1, 0),
+        ExecutableAppendDisplay or ExecutableAppendCall or ExecutableStoreModuleAnnotation => (1, 0),
         ExecutableBindTypeAlias => (0, 0),
         ExecutableStoreDictionaryItem item => (item.Unpacking ? 1 : 2, 0),
         ExecutableCreateFunction function => (function.InputCount, 1),

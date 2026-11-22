@@ -2,6 +2,8 @@
 
 ## 0.11.0 - Unreleased
 
+- Compile function-default staging to dedicated instructions and remove
+  operation descriptors, while preserving preflight and evaluation order.
 - Convert complete short ASCII decimal tokens directly from UTF-8 when
   parsing floats. Keep Python normalization, exact errors and cancellation.
 

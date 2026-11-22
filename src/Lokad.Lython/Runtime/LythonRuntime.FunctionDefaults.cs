@@ -33,8 +33,14 @@ internal sealed partial class LythonRuntime
     // Admit both final containers before the first expression. Only after
     // allocation succeeds do the existing work slots take responsibility.
     private static void StartExecutableDefaults(FunctionParameterLayout layout, Span<ExecutableSlot> operands,
-        ExecutionContext context, LythonSourceSpan span)
+        bool keywordsOnly, ExecutionContext context, LythonSourceSpan span)
     {
+        if (keywordsOnly)
+        {
+            operands[0] = PrepareExecutableKeywordDefaults(layout, context, span);
+            return;
+        }
+
         var defaults = AllocateFunctionDefaults(layout, context, span, inlineSingleKeyword: true);
         var next = 0;
         if (defaults.Positional is { } positional) operands[next++] = ExecutableSlot.OwnPrivateDefault(positional);

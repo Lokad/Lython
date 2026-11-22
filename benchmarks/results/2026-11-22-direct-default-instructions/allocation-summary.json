@@ -1,0 +1,65 @@
+[
+  {
+    "case": "scripts.annotated-rule-closures.literal-positional-dynamic-keyword",
+    "reference": 964488,
+    "candidate": 964488,
+    "allocationChangePercent": 0.0,
+    "referenceAccountedPeak": 3443797,
+    "candidateAccountedPeak": 3443797,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.annotated-rule-closures.literal-positional-only",
+    "reference": 1160696,
+    "candidate": 1160696,
+    "allocationChangePercent": 0.0,
+    "referenceAccountedPeak": 2198391,
+    "candidateAccountedPeak": 2198391,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+    "reference": 1029744,
+    "candidate": 1029744,
+    "allocationChangePercent": 0.0,
+    "referenceAccountedPeak": 2968481,
+    "candidateAccountedPeak": 2968481,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.ordinary-fully-supplied-helper",
+    "reference": 142808,
+    "candidate": 142808,
+    "allocationChangePercent": 0.0,
+    "referenceAccountedPeak": 1255,
+    "candidateAccountedPeak": 1255,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories",
+    "reference": 1144272,
+    "candidate": 1144272,
+    "allocationChangePercent": 0.0,
+    "referenceAccountedPeak": 2968425,
+    "candidateAccountedPeak": 2968425,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.factory-observed-defaults",
+    "reference": 1373840,
+    "candidate": 1373840,
+    "allocationChangePercent": 0.0,
+    "referenceAccountedPeak": 2968817,
+    "candidateAccountedPeak": 2968817,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.csv-invoice.large",
+    "reference": 3672346,
+    "candidate": 3672402,
+    "allocationChangePercent": 0.00152491077909378,
+    "referenceAccountedPeak": 9432613,
+    "candidateAccountedPeak": 9432613,
+    "allowanceRestored": true
+  }
+]

@@ -147,23 +147,6 @@ internal sealed partial class LythonRuntime
                     pending = StoreAnnotationEntryAsync(ResolveVariableAnnotationMapping(context, span),
                         annotation.Name, value, context, span, asynchronous);
                     break;
-                case ExecutableStartFunctionDefaults start:
-                    System.Diagnostics.Debug.Assert(execution.Stack.LiveExtent == instruction.ResultSlot);
-                    StartExecutableDefaults(start.Layout, execution.Stack.Values.AsSpan(instruction.ResultSlot,
-                        instruction.LiveExtent - instruction.ResultSlot), context, span);
-                    execution.Stack.RestoreNativeExtent(instruction.LiveExtent);
-                    break;
-                case ExecutableStartKeywordDefaults keywords:
-                    System.Diagnostics.Debug.Assert(execution.Stack.LiveExtent == instruction.ResultSlot);
-                    execution.Stack.Values[instruction.ResultSlot] = PrepareExecutableKeywordDefaults(keywords.Layout, context, span);
-                    execution.Stack.RestoreNativeExtent(instruction.LiveExtent);
-                    break;
-                case ExecutableAppendFunctionDefault:
-                    {
-                        var defaultValue = execution.Stack.TakeSlotValue(instruction.ResultSlot, instruction.LiveExtent);
-                        StoreDefaultResult(execution.Code, execution.Stack.Values, instruction, defaultValue, context.State);
-                        break;
-                    }
                 case ExecutableCreateFunction function:
                     if (invocation is null)
                     {

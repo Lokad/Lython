@@ -79,6 +79,17 @@ internal sealed partial class LythonRuntime
                                 _ = ConsumeOperation(ref pending);
                             }
                             break;
+                        case ExecutableOpCode.StartFunctionDefaults:
+                            System.Diagnostics.Debug.Assert(execution.Stack.LiveExtent == instruction.ResultSlot);
+                            StartExecutableDefaults((FunctionParameterLayout)execution.Code.Constants[instruction.ConstantIndex]!,
+                                execution.Stack.Values.AsSpan(instruction.ResultSlot, instruction.LiveExtent - instruction.ResultSlot),
+                                instruction.StartsKeywordDefaultsOnly, invocation ?? scope, instruction.Span);
+                            execution.Stack.RestoreNativeExtent(instruction.LiveExtent);
+                            break;
+                        case ExecutableOpCode.StoreFunctionDefault:
+                            var defaultValue = execution.Stack.TakeSlotValue(instruction.ResultSlot, instruction.LiveExtent);
+                            StoreDefaultResult(execution.Stack.Values, instruction, defaultValue, (invocation ?? scope).State);
+                            break;
                         case ExecutableOpCode.ApplyOperation:
                             if (!TryExecutePreparedOperation(ref execution, scope, invocation, instruction, asynchronous, out var operationTask))
                                 return InstructionPause.ContextRequired;

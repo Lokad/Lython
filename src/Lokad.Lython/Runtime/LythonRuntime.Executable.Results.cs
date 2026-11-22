@@ -45,8 +45,8 @@ internal sealed partial class LythonRuntime
             ref readonly var consumer = ref execution.Code.Instructions[execution.InstructionIndex + 1];
             if (consumer.OpCode == ExecutableOpCode.StoreLocal)
                 StoreLocalValue(execution.Code, execution.Locals, invocation, consumer.LocalSlot, value, consumer.Span);
-            else if (consumer.OpCode == ExecutableOpCode.ApplyOperation)
-                StoreDefaultResult(execution.Code, execution.Stack.Values, consumer, value, execution.Stack.State);
+            else if (consumer.OpCode == ExecutableOpCode.StoreFunctionDefault)
+                StoreDefaultResult(execution.Stack.Values, consumer, value, execution.Stack.State);
             else if (consumer.OpCode != ExecutableOpCode.PopTop)
                 throw new InvalidOperationException("Invalid prepared result consumer.");
             // Discarded calls cannot return private iteration loans. No
@@ -56,10 +56,9 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static void StoreDefaultResult(ExecutableCodeObject code, Span<ExecutableSlot> slots,
+    private static void StoreDefaultResult(Span<ExecutableSlot> slots,
         in ExecutableInstruction consumer, ExecutableSlot value, ExecutionState state)
     {
-        var append = (ExecutableAppendFunctionDefault)code.Constants[consumer.ConstantIndex]!;
         ref var destination = ref slots[consumer.InputStart];
         if (destination.HasPrivateKeywordDefault)
         {
@@ -67,7 +66,7 @@ internal sealed partial class LythonRuntime
             destination = ExecutableSlot.OwnPrivateKeywordDefault(RuntimeValue(value.Object));
         }
         else if (destination.Reference is PyTuple positional)
-            positional.SetPrivateDefault(append.Index, value, state, consumer.Span);
-        else StorePreparedKeywordDefault((object?[])destination.Reference!, append.Index, value, state, consumer.Span);
+            positional.SetPrivateDefault(consumer.DefaultValueIndex, value, state, consumer.Span);
+        else StorePreparedKeywordDefault((object?[])destination.Reference!, consumer.DefaultValueIndex, value, state, consumer.Span);
     }
 }

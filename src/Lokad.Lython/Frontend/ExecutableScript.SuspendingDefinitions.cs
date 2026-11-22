@@ -3,9 +3,6 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Frontend;
 
-internal sealed record ExecutableStartFunctionDefaults(FunctionParameterLayout Layout) : ExecutableOperation;
-internal sealed record ExecutableStartKeywordDefaults(FunctionParameterLayout Layout) : ExecutableOperation;
-internal sealed record ExecutableAppendFunctionDefault(int StorageDepth, int Index) : ExecutableOperation;
 internal sealed record ExecutableCreateFunction(ExecutableCodeObject CodeObject, FunctionParameterLayout ParameterLayout,
     int DecoratorCount, bool IsGenerator, int AnnotationOperandCount, LoweredFunctionAnnotation[] DeferredAnnotations,
     IReadOnlyList<LoweredTypeParameter>? TypeParameters, PyString[]? PostponedAnnotations,
@@ -179,7 +176,8 @@ internal sealed partial class ExecutableScript
                 if (!layout.HasKeywordDefaults) return block;
             }
             layout.PrepareKeywordDefaultKeys(_compilation.CancellationToken, span);
-            EmitOperation(literals is null ? new ExecutableStartFunctionDefaults(layout) : new ExecutableStartKeywordDefaults(layout), span, block);
+            AddInstruction(block, ExecutableInstruction.StartFunctionDefaults(AppendConstant(layout),
+                keywordsOnly: literals is not null, span));
             for (var i = literals is null ? 0 : layout.PositionalDefaultCount; i < layout.Defaults.Length; i++)
             {
                 var slot = layout.Defaults[i];
@@ -187,8 +185,8 @@ internal sealed partial class ExecutableScript
                 block = CompileExpression(expression, block);
                 var positional = slot.KeywordIndex < 0;
                 var index = positional ? i : layout.KeywordDefaultAt(slot.KeywordIndex).RecordPosition;
-                EmitOperation(new ExecutableAppendFunctionDefault(positional ? layout.DefaultStorageCount : 1, index),
-                    expression.Span, block);
+                AddInstruction(block, ExecutableInstruction.StoreFunctionDefault(
+                    positional ? layout.DefaultStorageCount : 1, index, expression.Span));
             }
             return block;
         }

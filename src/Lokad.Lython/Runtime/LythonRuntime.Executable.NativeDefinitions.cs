@@ -12,24 +12,6 @@ internal sealed partial class LythonRuntime
             var span = instruction.Span;
             switch (Code.Constants[instruction.ConstantIndex])
             {
-                case ExecutableStartFunctionDefaults start:
-                    System.Diagnostics.Debug.Assert(LiveExtent == instruction.ResultSlot);
-                    StartExecutableDefaults(start.Layout, Values.Slice(instruction.ResultSlot,
-                        instruction.LiveExtent - instruction.ResultSlot), _scope, span);
-                    LiveExtent = instruction.LiveExtent;
-                    return true;
-                case ExecutableStartKeywordDefaults keywords:
-                    System.Diagnostics.Debug.Assert(LiveExtent == instruction.ResultSlot);
-                    Values[instruction.ResultSlot] = PrepareExecutableKeywordDefaults(keywords.Layout, _scope, span);
-                    LiveExtent = instruction.LiveExtent;
-                    return true;
-                case ExecutableAppendFunctionDefault:
-                    var result = Values[instruction.ResultSlot];
-                    if (result.IsUnassigned) _ = result.Object.RequireNotNull();
-                    Values[instruction.ResultSlot] = default;
-                    Trim(instruction.LiveExtent);
-                    StoreDefaultResult(Code, Values, instruction, result, _scope.State);
-                    return true;
                 case ExecutableCreateFunction function
                     when !NeedsDefinitionContext(function, _scope) && CanDefineWithoutInvocation(function.CodeObject,
                         Code, _cells, _scope, span, out var functionCaptures):

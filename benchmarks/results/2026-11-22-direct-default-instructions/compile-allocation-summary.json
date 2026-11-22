@@ -1,0 +1,85 @@
+{
+  "roles": [
+    "reference",
+    "candidate",
+    "candidate",
+    "reference"
+  ],
+  "rows": [
+    {
+      "id": "scripts.annotated-rule-closures.literal-positional-dynamic-keyword",
+      "allocatedBytes": [
+        74672,
+        74368,
+        74368,
+        74672
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        180.803125,
+        284.19375,
+        340.846875,
+        206.903125
+      ]
+    },
+    {
+      "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "allocatedBytes": [
+        65896,
+        65472,
+        65472,
+        65896
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        246.896875,
+        284.2375,
+        253,
+        161.58125
+      ]
+    },
+    {
+      "id": "scripts.ordinary-fully-supplied-helper",
+      "allocatedBytes": [
+        32104,
+        32104,
+        32104,
+        32104
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        113.4734375,
+        103.746875,
+        74.5375,
+        78.171875
+      ]
+    },
+    {
+      "id": "scripts.annotated-rule-closures.nested-factories",
+      "allocatedBytes": [
+        59712,
+        59288,
+        59288,
+        59712
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        306.25,
+        153.54375,
+        153.9015625,
+        152.953125
+      ]
+    },
+    {
+      "id": "scripts.factory-observed-defaults",
+      "allocatedBytes": [
+        75656,
+        75232,
+        75232,
+        75656
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        277.278125,
+        303.709375,
+        198.0421875,
+        208.5265625
+      ]
+    }
+  ]
+}
