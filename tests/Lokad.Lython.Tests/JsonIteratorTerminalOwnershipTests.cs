@@ -21,7 +21,7 @@ public sealed class JsonIteratorTerminalOwnershipTests
         var inputCharge = budget.ReservedBytes;
         var options = new LythonRuntime.JsonDumpOptions(false, true, true, true, null,
             PyString.FromString(", "), PyString.FromString(": "), null, true);
-        var iterator = new LythonRuntime.JsonEncodeIterator(input, options, context, span);
+        var iterator = LythonRuntime.JsonEncodeIterator.Create(input, options, context, span);
         if (asynchronous) Assert.True((await iterator.TryMoveNextAsync()).HasValue);
         else Assert.True(iterator.TryMoveNext().HasValue);
         var activeCharge = budget.ReservedBytes;
@@ -35,9 +35,13 @@ public sealed class JsonIteratorTerminalOwnershipTests
         Assert.InRange(budget.ReservedBytes, inputCharge, activeCharge - 32 * 32);
         // A live failed iterator must not retain the private copied entries
         // whose charge has just been returned. Input aliases remain funded.
-        var frames = (ICollection)iterator.GetType().GetField("_frames", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(iterator)!;
-        Assert.Empty(frames);
-        Assert.Null(iterator.GetType().GetField("_rootValue", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(iterator));
+        const BindingFlags fields = BindingFlags.NonPublic | BindingFlags.Instance;
+        var type = iterator.GetType();
+        var nested = (ICollection)type.GetField("_nestedFrames", fields)!.GetValue(iterator)!;
+        Assert.Empty(nested);
+        var outer = type.GetField("_outerFrame", fields)!.GetValue(iterator)!;
+        Assert.Null(outer.GetType().GetField("SortedEntries")!.GetValue(outer));
+        Assert.Null(type.GetField("_rootValue", fields)!.GetValue(iterator));
         Assert.Equal(32, input.Count);
         Assert.False(iterator.TryMoveNext().HasValue);
         GC.KeepAlive(iterator);

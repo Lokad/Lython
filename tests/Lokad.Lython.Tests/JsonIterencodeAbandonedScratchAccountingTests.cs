@@ -22,7 +22,7 @@ public sealed class JsonIterencodeAbandonedScratchAccountingTests
         var live = new PyDict();
         live.SetItem(PyString.FromString("b"), (object)1);
         live.SetItem(PyString.FromString("a"), (object)2);
-        var iterator = new LythonRuntime.JsonEncodeIterator(live, SortedOptions(), context, span);
+        var iterator = LythonRuntime.JsonEncodeIterator.Create(live, SortedOptions(), context, span);
         var baseline = budget.ReservedBytes;
         var big = BuildDict(16);
         for (var batch = 0; batch < 8; batch++)
@@ -67,7 +67,7 @@ public sealed class JsonIterencodeAbandonedScratchAccountingTests
         var options = SortedOptions();
         for (var s = 0; s < 2; s++)
         {
-            var iterator = new LythonRuntime.JsonEncodeIterator(big, options, context, span);
+            var iterator = LythonRuntime.JsonEncodeIterator.Create(big, options, context, span);
             for (var k = 0; k < 5; k++)
             {
                 Assert.True(iterator.TryMoveNext().HasValue);

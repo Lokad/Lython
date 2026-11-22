@@ -46,9 +46,8 @@ internal sealed partial class LythonRuntime
                 var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
                 try
                 {
-                    using var working = context.MemoryGovernor.ReserveTemporary(PyIteratorBase.IteratorValueBytes, span);
-                    var iterator = new JsonEncodeIterator(value, options, context, span, working);
-                    await iterator.WriteToBuilderAsync(builder, asynchronous).ConfigureAwait(false);
+                    await JsonEncodeIterator.WriteRootToBuilderAsync(value, options, builder, context, span, asynchronous)
+                        .ConfigureAwait(false);
                     return builder.ToPyStringAndRelease();
                 }
                 finally { builder.Release(); }

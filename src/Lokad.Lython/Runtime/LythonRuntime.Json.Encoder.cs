@@ -100,7 +100,7 @@ internal sealed partial class LythonRuntime
                 var text = await JsonModule.SerializeJsonTextCoreAsync(arguments[0], options, context, span, asynchronous).ConfigureAwait(false);
                 return new PyTuple(new object[] { text }, context.MemoryGovernor, span);
             }
-            return new JsonEncodeIterator(arguments[0], options, context, span);
+            return JsonEncodeIterator.Create(arguments[0], options, context, span);
         }
 
         public static object Default(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -211,6 +211,8 @@ internal sealed partial class LythonRuntime
     // are independent. Sort scratch ends when its frame is relinquished.
     internal sealed class JsonEncodeIterator : PyIteratorBase
     {
+        private const long StorageBytes = 224;
+
         private struct EmitFrame(object container, int depth)
         {
             public bool IsDefault;
@@ -228,27 +230,41 @@ internal sealed partial class LythonRuntime
         private readonly JsonDumpOptions _options;
         private readonly ExecutionContext _context;
         private readonly LythonSourceSpan _span;
-        private EmitFrame[] _frames = [];
+        private EmitFrame _outerFrame;
+        private EmitFrame[] _nestedFrames = [];
         private int _frameCount;
-        private HashSet<object>? _markers;
+        private HashSet<object>? _nestedMarkers;
         private object? _rootValue;
-        private bool _hasRoot;
         private bool _finished;
         private GovernedByteBuilder? _builder;
         private int _advancing;
 
-        public JsonEncodeIterator(object value, JsonDumpOptions options, ExecutionContext context, LythonSourceSpan span,
-            MemoryGovernor.TemporaryMemoryReservation? workingStorage = null)
+        private JsonEncodeIterator(object value, JsonDumpOptions options, ExecutionContext context, LythonSourceSpan span)
         {
             _rootValue = value;
-            _hasRoot = true;
             _options = options;
             _context = context;
             _span = span;
-            _markers = options.CheckCircular ? new HashSet<object>(ReferenceEqualityComparer.Instance) : null;
-            // Exposed iterators retain their value charge. An eager caller holds
-            // admitted private working storage until traversal and callbacks end.
-            if (workingStorage is null) PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
+        }
+
+        internal static JsonEncodeIterator Create(object value, JsonDumpOptions options, ExecutionContext context,
+            LythonSourceSpan span)
+        {
+            var governor = context.MemoryGovernor;
+            governor.Reserve(StorageBytes, span);
+            JsonEncodeIterator iterator;
+            try
+            {
+                context.CheckExecution(span);
+                iterator = new JsonEncodeIterator(value, options, context, span);
+            }
+            catch
+            {
+                governor.ReleaseReserved(StorageBytes);
+                throw;
+            }
+            governor.Commit(StorageBytes);
+            return iterator;
         }
 
         public override PyString RenderPython(PyRenderingContext context)
@@ -318,43 +334,46 @@ internal sealed partial class LythonRuntime
             finally { Volatile.Write(ref _advancing, 0); }
         }
 
-        // Eager encoding borrows its caller's final builder. Frames, markers and
-        // pending callbacks use the same traversal as exposed/streamed chunks;
-        // Finish never owns this builder or refunds it while a callback is live.
-        internal async ValueTask WriteToBuilderAsync(GovernedByteBuilder builder, bool asynchronous)
+        // The eager iterator is private, so only exposed chunk iteration needs
+        // the reentry guard. Its working storage covers suspended callbacks too.
+        internal static async ValueTask WriteRootToBuilderAsync(object value, JsonDumpOptions options,
+            GovernedByteBuilder builder, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
         {
-            if (Interlocked.CompareExchange(ref _advancing, 1, 0) != 0)
-            {
-                _context.CheckExecution(_span);
-                throw new LythonRuntimeException("ValueError", "generator already executing", _span);
-            }
+            var governor = context.MemoryGovernor;
+            governor.Reserve(StorageBytes, span);
             try
             {
-                while (true)
+                context.CheckExecution(span);
+                var iterator = new JsonEncodeIterator(value, options, context, span);
+                try
                 {
-                    _context.CheckExecution(_span);
-                    var (advanced, _) = await AdvanceAsync(builder, asynchronous).ConfigureAwait(false);
-                    if (!advanced) return;
+                    while (true)
+                    {
+                        context.CheckExecution(span);
+                        var (advanced, _) = await iterator.AdvanceAsync(builder, asynchronous).ConfigureAwait(false);
+                        if (!advanced) return;
+                    }
                 }
+                finally { iterator.Finish(); }
             }
-            finally
-            {
-                try { Finish(); }
-                finally { Volatile.Write(ref _advancing, 0); }
-            }
+            finally { governor.ReleaseReserved(StorageBytes); }
         }
+
+        private ref EmitFrame FrameAt(int index)
+            => ref (index == 0 ? ref _outerFrame : ref _nestedFrames[index - 1]);
 
         private void PushFrame(EmitFrame frame)
         {
-            if (_frameCount == _frames.Length) GrowFrameStorage();
-            _frames[_frameCount++] = frame;
+            FrameAt(_frameCount) = frame;
+            _frameCount++;
         }
 
         private static long EstimateFrameStorage(int capacity) => capacity == 0 ? 0 : 96L + 128L * capacity;
 
-        private void GrowFrameStorage()
+        private void EnsureFrameSlot()
         {
-            var capacity = _frames.Length == 0 ? 4 : checked(_frames.Length * 2);
+            if (_frameCount <= _nestedFrames.Length) return;
+            var capacity = _nestedFrames.Length == 0 ? 4 : checked(_nestedFrames.Length * 2);
             // Admit the replacement array and its cycle markers while the current
             // backing is live. At most one marker is retained for each frame.
             var bytes = EstimateFrameStorage(capacity);
@@ -365,35 +384,38 @@ internal sealed partial class LythonRuntime
             {
                 _context.CheckExecution(_span);
                 expanded = new EmitFrame[capacity];
-                for (var offset = 0; offset < _frameCount; offset += 256)
+                for (var offset = 0; offset < _nestedFrames.Length; offset += 256)
                 {
                     _context.CheckExecution(_span);
-                    Array.Copy(_frames, offset, expanded, offset, Math.Min(256, _frameCount - offset));
+                    Array.Copy(_nestedFrames, offset, expanded, offset, Math.Min(256, _nestedFrames.Length - offset));
                 }
-                _markers?.EnsureCapacity(capacity);
+                if (_options.CheckCircular)
+                {
+                    _nestedMarkers ??= new HashSet<object>(ReferenceEqualityComparer.Instance);
+                    _nestedMarkers.EnsureCapacity(capacity);
+                }
             }
             catch
             {
                 governor.ReleaseReserved(bytes);
                 throw;
             }
-            var priorBytes = EstimateFrameStorage(_frames.Length);
+            var priorBytes = EstimateFrameStorage(_nestedFrames.Length);
             governor.Commit(bytes);
-            _frames = expanded;
+            _nestedFrames = expanded;
             governor.Release(priorBytes);
         }
 
         private void Finish()
         {
             _finished = true;
-            _hasRoot = false;
             _rootValue = null;
             _builder?.Release();
             _builder = null;
             while (_frameCount != 0) CloseFrame();
-            var bytes = EstimateFrameStorage(_frames.Length);
-            _frames = [];
-            _markers = null;
+            var bytes = EstimateFrameStorage(_nestedFrames.Length);
+            _nestedFrames = [];
+            _nestedMarkers = null;
             _context.MemoryGovernor.Release(bytes);
         }
 
@@ -403,22 +425,20 @@ internal sealed partial class LythonRuntime
         // the same text encode() produces.
         private ValueTask<(bool Advanced, bool ChunkReady)> AdvanceAsync(GovernedByteBuilder builder, bool asynchronous)
         {
-            if (_hasRoot)
+            if (_rootValue is { } root)
             {
-                _hasRoot = false;
-                return AdvanceValueAsync(_rootValue!, 0, builder, asynchronous);
+                _rootValue = null;
+                return AdvanceValueAsync(root, 0, builder, asynchronous);
             }
 
             while (_frameCount != 0)
             {
                 var frameIndex = _frameCount - 1;
-                ref var frame = ref _frames[frameIndex];
+                ref var frame = ref FrameAt(frameIndex);
                 if (frame.IsDefault) { CloseFrame(); continue; }
                 if (!frame.Opened)
                 {
-                    frame.Opened = true;
-                    if (_markers is not null && !_markers.Add(frame.Container))
-                        throw new LythonRuntimeException("ValueError", "Circular reference detected.", _span);
+                    OpenFrame(ref frame, frameIndex);
                     builder.Append(frame.Sequence is not null ? (byte)'[' : (byte)'{');
                     return new((true, true));
                 }
@@ -454,8 +474,9 @@ internal sealed partial class LythonRuntime
         private ValueTask<(bool Advanced, bool ChunkReady)> AdvancePairAsync(int frameIndex,
             (bool Found, object Key, object Value) pair, GovernedByteBuilder builder, bool asynchronous)
         {
-            var depth = _frames[frameIndex].Depth;
-            var index = _frames[frameIndex].Index;
+            ref var frame = ref FrameAt(frameIndex);
+            var depth = frame.Depth;
+            var index = frame.Index;
             if (!pair.Found)
             {
                 CloseFrame();
@@ -477,8 +498,9 @@ internal sealed partial class LythonRuntime
             object value, GovernedByteBuilder builder, bool asynchronous)
         {
             JsonModule.AppendSeparator(builder, _options.KeySeparator, _context, _span);
-            _frames[frameIndex].Index++;
-            return AdvanceValueAsync(value, _frames[frameIndex].Depth + 1, builder, asynchronous);
+            ref var frame = ref FrameAt(frameIndex);
+            frame.Index++;
+            return AdvanceValueAsync(value, frame.Depth + 1, builder, asynchronous);
         }
 
         private async ValueTask<(bool Advanced, bool ChunkReady)> CompletePairAsync(
@@ -525,9 +547,11 @@ internal sealed partial class LythonRuntime
                         return CompleteValue(JsonModule.AppendJsonDoubleAsync(builder, floating, _options,
                             _context, _span, asynchronous), chunkReady: true);
                     case PyList list:
+                        EnsureFrameSlot();
                         PushFrame(new EmitFrame(list, depth) { Sequence = list });
                         return new((true, false));
                     case object tupleLike when PyTupleLike.TryGetItems(tupleLike, out var tuple):
+                        EnsureFrameSlot();
                         PushFrame(new EmitFrame(tupleLike, depth) { Sequence = tuple });
                         return new((true, false));
                     case PyDict dict:
@@ -539,11 +563,12 @@ internal sealed partial class LythonRuntime
                     default:
                         if (_options.DefaultCallable is null)
                             throw new InvalidOperationException($"Unsupported json.dumps value type: {JsonModule.JsonValueTypeName(value)}");
-                        if (_markers is not null)
+                        if (_options.CheckCircular)
                         {
-                            PushFrame(new EmitFrame(value, depth) { IsDefault = true, Opened = true });
-                            if (!_markers.Add(value))
-                                throw new LythonRuntimeException("ValueError", "Circular reference detected.", _span);
+                            EnsureFrameSlot();
+                            var frameIndex = _frameCount;
+                            PushFrame(new EmitFrame(value, depth) { IsDefault = true });
+                            OpenFrame(ref FrameAt(frameIndex), frameIndex);
                         }
                         var replacement = JsonModule.InvokeJsonCallbackCoreAsync(_options.DefaultCallable, value,
                             _context, _span, asynchronous);
@@ -599,7 +624,7 @@ internal sealed partial class LythonRuntime
         private void PrepareDictFrame(PyDict dict, int depth, bool sorted)
         {
             // Reserve the frame slot before retaining an item cursor or sorted pairs.
-            if (_frameCount == _frames.Length) GrowFrameStorage();
+            EnsureFrameSlot();
             var frame = new EmitFrame(dict, depth);
             if (!sorted)
             {
@@ -630,7 +655,7 @@ internal sealed partial class LythonRuntime
 
         private ValueTask<(bool Found, object Key, object Value)> TryTakePairAsync(int frameIndex, bool asynchronous)
         {
-            ref var frame = ref _frames[frameIndex];
+            ref var frame = ref FrameAt(frameIndex);
             while (true)
             {
                 _context.CheckExecution(_span);
@@ -661,12 +686,23 @@ internal sealed partial class LythonRuntime
             return await TryTakePairAsync(frameIndex, asynchronous).ConfigureAwait(false);
         }
 
+        private void OpenFrame(ref EmitFrame frame, int frameIndex)
+        {
+            // The outer frame is already its own marker. Nested frames
+            // keep the existing constant-time membership test.
+            if (frameIndex != 0 && _nestedMarkers is not null
+                && (ReferenceEquals(_outerFrame.Container, frame.Container) || !_nestedMarkers.Add(frame.Container)))
+                throw new LythonRuntimeException("ValueError", "Circular reference detected.", _span);
+            frame.Opened = true;
+        }
+
         private void CloseFrame()
         {
-            ref var frame = ref _frames[--_frameCount];
+            var frameIndex = --_frameCount;
+            ref var frame = ref FrameAt(frameIndex);
             var bytes = frame.ScratchBytes;
             var pairs = frame.DictPairs;
-            _markers?.Remove(frame.Container);
+            if (frameIndex != 0 && frame.Opened) _nestedMarkers?.Remove(frame.Container);
             frame = default;
             pairs.Dispose();
             _context.MemoryGovernor.Release(bytes);

@@ -8,11 +8,11 @@ namespace Lokad.Lython.Tests;
 public sealed class JsonEncoderFrameOwnershipTests
 {
     [Theory]
-    [InlineData(false, false)]
-    [InlineData(false, true)]
-    [InlineData(true, false)]
-    [InlineData(true, true)]
-    public async Task FrameGrowthUnwindsWithoutInvalidatingPublishedChunks(bool asynchronous, bool cancel)
+    [InlineData(false, false, 1)]
+    [InlineData(false, true, 5)]
+    [InlineData(true, false, 5)]
+    [InlineData(true, true, 1)]
+    public async Task FrameGrowthUnwindsWithoutInvalidatingPublishedChunks(bool asynchronous, bool cancel, int prefixLength)
     {
         var budget = new LythonMemoryBudget(16 * 1024);
         using (var owner = budget.CreateScope())
@@ -28,17 +28,17 @@ public sealed class JsonEncoderFrameOwnershipTests
             for (var depth = 0; depth < 10; depth++)
                 nested = new PyList([nested]);
             var span = new LythonSourceSpan(1, 1, 1, 2);
-            var iterator = new LythonRuntime.JsonEncodeIterator(nested, LythonRuntime.JsonDumpOptions.Default, context, span);
+            var iterator = LythonRuntime.JsonEncodeIterator.Create(nested, LythonRuntime.JsonDumpOptions.Default, context, span);
             async ValueTask<PyIterationResult> Next() => asynchronous
                 ? await iterator.TryMoveNextAsync() : iterator.TryMoveNext();
 
             var prefix = new List<PyString>();
-            for (var index = 0; index < 4; index++)
+            for (var index = 0; index < prefixLength; index++)
                 prefix.Add(Assert.IsType<PyString>((await Next()).Value));
             var before = context.MemoryGovernor.CurrentAccountedBytes;
 
-            // The next container opens beyond the existing frame capacity.
-            // Small result allocations cannot trigger the fault.
+            // The next container needs either the first spill or replacement
+            // backing. Small result allocations cannot trigger the fault.
             var growths = 0;
             if (cancel)
                 hook.AfterGrowth = bytes =>

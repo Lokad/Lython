@@ -86,6 +86,30 @@ public sealed class JsonCollectionsMappingTests : LifetimeScenario
         await AssertBothModes(source, "cycle 0\n");
     }
 
+    [Fact]
+    public async Task OnlyActiveAncestorsCountAsCycles()
+    {
+        await AssertBothModes("""
+            import json
+            shared = {'n': [1]}
+            root = {'a': shared, 'b': shared}
+            print(json.dumps(root))
+            print(''.join(json.JSONEncoder().iterencode(root)))
+            shared['loop'] = [shared]
+            try:
+                json.dumps(root)
+            except ValueError:
+                print('nested cycle')
+            value = {1}
+            def replace(item):
+                return [item]
+            try:
+                json.dumps(value, default=replace)
+            except ValueError:
+                print('default cycle')
+            """, "{\"a\": {\"n\": [1]}, \"b\": {\"n\": [1]}}\n{\"a\": {\"n\": [1]}, \"b\": {\"n\": [1]}}\nnested cycle\ndefault cycle\n");
+    }
+
     [Theory]
     [InlineData(false, false)]
     [InlineData(false, true)]

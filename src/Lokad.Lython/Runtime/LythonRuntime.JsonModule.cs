@@ -252,7 +252,7 @@ internal sealed partial class LythonRuntime
             context.CheckExecution(span);
             object chunks;
             if (await CanUseDefaultEncoderAsync(bound, extras, 1, span, context, asynchronous).ConfigureAwait(false))
-                chunks = new JsonEncodeIterator(bound.Values[0], JsonDumpOptions.Default, context, span);
+                chunks = JsonEncodeIterator.Create(bound.Values[0], JsonDumpOptions.Default, context, span);
             else
             {
                 var cls = ResolveEncoderClass(GetOptional(bound.Values, 6), span);
@@ -383,7 +383,7 @@ internal sealed partial class LythonRuntime
                     callback is PyNone ? JsonDumpOptions.Default.DefaultCallable : callback, sort);
                 return oneShot
                     ? await SerializeJsonTextCoreAsync(value, options, context, span, asynchronous).ConfigureAwait(false)
-                    : new JsonEncodeIterator(value, options, context, span);
+                    : JsonEncodeIterator.Create(value, options, context, span);
             }
             catch (Exception error) when (TryTranslateCallableException(error, span, out var translated)) { throw translated; }
             finally { context.LeaveInterpreterFrame(); }
