@@ -2,14 +2,14 @@
 
 | Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| Typed ASCII CSV meter report | 4,096 records / 139,299 B | 3.247–3.264 ms | 2.638–2.687 ms | 1.209–1.237× | Diagnostic. Lython worker spread 0.51%. [B1345]. |
+| Typed ASCII CSV meter report | 4,096 records / 139,299 B | 2.991–3.067 ms | 2.491–2.512 ms | 1.191–1.231× | Diagnostic. Lython worker spread 2.53%. [B1351]. |
 | CSV meter report with explicit `float()` | 4,096 records / 139,299 B | 4.460–4.664 ms | 2.903–2.907 ms | 1.534–1.607× | Diagnostic. Lython worker spread 4.58%. [B1336]. |
 | Typed Unicode CSV meter report | 4,096 records / 223,267 B | 3.924–3.972 ms | 3.095–3.157 ms | 1.243–1.283× | Diagnostic. Lython worker spread 1.22%. [B1336]. |
 | Quote-heavy CSV policy invoice | 4,096 records / 174,147 B | 7.227–7.301 ms | 6.267–6.280 ms | 1.151–1.165× | Diagnostic. Lython worker spread 1.02%. [B1327]. |
 | CSV restock export | 3,072 records / 182,437 B | 3.759–3.907 ms | 5.102–5.129 ms | 0.733–0.766× | Historical diagnostic. [B1278]. |
 | Map-based text report | 3,072 lines / 35,840 B | 1.440–1.495 ms | 1.217–1.220 ms | 1.181–1.228× | Historical diagnostic. [B1274]. |
-| JSON Lines export with expanded options | 3,072 records / 189,441 B | 6.538–6.560 ms | 7.014–7.075 ms | 0.924–0.935× | Diagnostic. Lython worker spread 0.35%. [B1345]. |
-| Mixed literal-default factory | 2,048 inputs / 4,096 definitions | 1.240–1.270 ms | 0.605–0.617 ms | 2.010–2.098× | Diagnostic. Lython worker spread 2.42%. [B1345]. |
+| JSON Lines export with expanded options | 3,072 records / 189,441 B | 6.279–6.473 ms | 6.735–6.816 ms | 0.921–0.961× | Diagnostic. Lython worker spread 3.10%. [B1351]. |
+| Mixed literal-default factory | 2,048 inputs / 4,096 definitions | 1.170–1.190 ms | 0.575–0.577 ms | 2.028–2.069× | Diagnostic. Lython worker spread 1.73%. [B1351]. |
 | Generated validator with a generator | 96 guards / 1,714 B JSON | 0.07462–0.07479 ms | 0.03998–0.04031 ms | 1.851–1.871× | Diagnostic. [B1316]. |
 
 Ratios divide Lython elapsed time by CPython elapsed time. Above 1× means
@@ -32,9 +32,9 @@ measurements cover the wider request.
 | Workload | Phase | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
 | Typed ASCII CSV meter report | Compilation only | 0.04166–0.04177 ms | 0.06754–0.06762 ms | 0.616–0.618× | Diagnostic. [B1336]. |
-| Typed ASCII CSV meter report | Compile-to-result | 3.177–3.203 ms | 2.703–2.713 ms | 1.171–1.185× | Diagnostic. Lython worker spread 0.83%. [B1345]. |
-| Mixed literal-default factory | Compilation only | 0.02523–0.02559 ms | 0.04490–0.04530 ms | 0.557–0.570× | Diagnostic. Lython worker spread 1.43%. [B1345]. |
-| Mixed literal-default factory | Compile-to-result | 1.229–1.245 ms | 0.621–0.622 ms | 1.977–2.004× | Diagnostic. Lython worker spread 1.32%. [B1345]. |
+| Typed ASCII CSV meter report | Compile-to-result | 3.102–3.286 ms | 2.655–2.677 ms | 1.159–1.237× | Diagnostic. Lython worker spread 5.93%. [B1351]. |
+| Mixed literal-default factory | Compilation only | 0.02445–0.02469 ms | 0.04317–0.04319 ms | 0.566–0.572× | Diagnostic. Lython worker spread 1.00%. [B1351]. |
+| Mixed literal-default factory | Compile-to-result | 1.224–1.227 ms | 0.628–0.633 ms | 1.933–1.955× | Diagnostic. Lython worker spread 0.25%. [B1351]. |
 | Generated validator with a generator | Compilation only | 1.519–1.534 ms | 1.813–1.825 ms | 0.832–0.846× | Diagnostic. [B1316]. |
 | Generated validator with a generator | Compile-to-result | 1.575–1.597 ms | 1.965–1.967 ms | 0.801–0.813× | Diagnostic. [B1316]. |
 | Postponed nested factories | Compilation only | 0.02269–0.02273 ms | 0.03937–0.03983 ms | 0.570–0.577× | Diagnostic. [B1307]. |
@@ -52,6 +52,7 @@ clocks. The archived tables include the earlier startup evidence.
 
 | Checkpoint | Lython source | Date |
 | --- | --- | --- |
+| [B1351] | `72e1131b9` | 2026-11-22 UTC |
 | [B1345] | `6b5ae7c26` | 2026-11-22 UTC |
 | [B1336] | `e961df912` | 2026-11-22 UTC |
 | [B1327] | `318bf0e0a` | 2026-11-22 UTC |
@@ -84,6 +85,7 @@ Review individual designs and adverse observations in
 the [experiment index](../benchmarks/EXPERIMENTS.md).
 Reproduce the comparisons with the [benchmark tools](../benchmarks/README.md).
 
+[B1351]: ../benchmarks/results/2026-11-22-post-range-cpython/README.md
 [B1345]: ../benchmarks/results/2026-11-22-post-staging-cpython/README.md
 [B1336]: ../benchmarks/results/2026-11-22-numeric-extrema-cpython/README.md
 [B1327]: ../benchmarks/results/2026-11-22-retained-csv-cpython/README.md

@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1351 current factory, CSV and JSON Lines against CPython](results/2026-11-22-post-range-cpython/README.md)
+measures `72e1131b9` and CPython 3.13.16, with six separate execution,
+compilation and time-to-result lanes. The factory remains about twice
+as slow warm, while its compiler uses 0.566–0.572× CPython's elapsed.
+CSV time to result has 5.93% Lython spread. JSON Lines remains faster
+warm on this fixture. All 168 timed batches match their goldens.
+
 [B1350 direct range iteration](results/2026-11-22-direct-range-cursors/README.md)
 removes two iterator wrappers from executable loops. The arithmetic
 loop uses 14.04–15.28% less warm CPU. Mixed warm initially spans zero
