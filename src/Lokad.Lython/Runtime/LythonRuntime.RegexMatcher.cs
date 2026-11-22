@@ -82,10 +82,10 @@ internal sealed partial class LythonRuntime
                 return true;
             }
 
-            internal void Project(RegexSubjectRange range, ReCaptureRange[] captures)
+            internal void ProjectUnicode(RegexSubjectRange range, ReCaptureRange[] captures)
             {
                 ObjectDisposedException.ThrowIf(_subject is null, this);
-                if (range.Original.Length != range.Original.ByteLength && _coordinates is null)
+                if (_coordinates is null)
                 {
                     var count = checked(2 * captures.Length);
                     var needsComparison = count > DirectCoordinateSortCount;
@@ -94,7 +94,7 @@ internal sealed partial class LythonRuntime
                     _coordinates = new long[count];
                     if (needsComparison) _coordinateComparison = CompareCoordinates;
                 }
-                ProjectScalarBounds(range, _window, captures, ref _position, _coordinates, _context, _span,
+                ProjectScalarBounds(range, _window, Captures, captures, ref _position, _coordinates, _context, _span,
                     _coordinateComparison);
             }
 
@@ -155,22 +155,13 @@ internal sealed partial class LythonRuntime
             ExecutionContext context, LythonSourceSpan span)
             => MaterializeRegexRange(range.Original, start, end, context.MemoryGovernor, context, span);
 
-        private static void ProjectScalarBounds(RegexSubjectRange range, LythonRegexWindow window, ReCaptureRange[] captures,
+        private static void ProjectScalarBounds(RegexSubjectRange range, LythonRegexWindow window,
+            ReadOnlySpan<LythonRegexCapture?> slots, ReCaptureRange[] captures,
             ref RegexScalarPosition previous, Span<long> coordinates, ExecutionContext context, LythonSourceSpan span,
             Comparison<long>? coordinateComparison)
         {
             var count = checked(2 * captures.Length);
             var input = range.Original.Utf8Span;
-            if (range.Original.Length == input.Length)
-            {
-                for (var i = 0; i < captures.Length; i++)
-                {
-                    context.CheckExecution(span);
-                    var capture = captures[i];
-                    captures[i] = capture with { Start = capture.StartByte, End = capture.EndByte };
-                }
-                return;
-            }
             // One operation-owned array orders byte boundaries and remembers
             // their capture endpoints. Signed high bits put unmatched -1 first;
             // the low bits identify the original endpoint, including ties.
@@ -178,8 +169,10 @@ internal sealed partial class LythonRuntime
             for (var i = 0; i < captures.Length; i++)
             {
                 context.CheckExecution(span);
-                coordinates[2 * i] = ((long)captures[i].StartByte << 32) | (uint)(2 * i);
-                coordinates[2 * i + 1] = ((long)captures[i].EndByte << 32) | (uint)(2 * i + 1);
+                var (start, end) = slots[i].GetValueOrDefault(new(-1, -1));
+                captures[i] = new(start, end, -1, -1);
+                coordinates[2 * i] = ((long)start << 32) | (uint)(2 * i);
+                coordinates[2 * i + 1] = ((long)end << 32) | (uint)(2 * i + 1);
             }
             if (coordinateComparison is null) coordinates.Sort();
             else ExecutionSort.Sort(coordinates, coordinateComparison);
@@ -290,14 +283,17 @@ internal sealed partial class LythonRuntime
             using var storage = context.MemoryGovernor.ReserveTemporary(bytes, span);
             context.CheckExecution(span);
             var captures = new ReCaptureRange[slots.Length];
-            for (var i = 0; i < captures.Length; i++)
+            if (range.Original.Length == range.Original.ByteLength)
             {
-                context.CheckExecution(span);
-                captures[i] = slots[i] is { } capture
-                    ? new(capture.StartByte, capture.EndByte, -1, -1) : new(-1, -1, -1, -1);
+                for (var i = 0; i < captures.Length; i++)
+                {
+                    context.CheckExecution(span);
+                    var (start, end) = slots[i].GetValueOrDefault(new(-1, -1));
+                    captures[i] = new(start, end, start, end);
+                }
             }
-            if (match is not null) match.Project(range, captures);
-            else ProjectSingleMatch(range, window, captures, context, span);
+            else if (match is not null) match.ProjectUnicode(range, captures);
+            else ProjectSingleMatch(range, window, slots, captures, context, span);
             var result = new ReMatchObject(pattern, range.Original, range.Pos, range.EndPos,
                 captures, lastIndex, context.MemoryGovernor);
             storage.Commit(bytes);
@@ -305,14 +301,14 @@ internal sealed partial class LythonRuntime
         }
 
         private static void ProjectSingleMatch(RegexSubjectRange range, LythonRegexWindow window,
-            ReCaptureRange[] captures, ExecutionContext context, LythonSourceSpan span)
+            ReadOnlySpan<LythonRegexCapture?> slots, ReCaptureRange[] captures, ExecutionContext context, LythonSourceSpan span)
         {
             var position = new RegexScalarPosition(window.StartByte, window.Pos);
-            var count = range.Original.Length == range.Original.ByteLength ? 0 : checked(captures.Length * 2);
+            var count = checked(captures.Length * 2);
             if (count <= DirectCoordinateSortCount)
             {
                 Span<long> coordinates = stackalloc long[count];
-                ProjectScalarBounds(range, window, captures, ref position, coordinates, context, span, null);
+                ProjectScalarBounds(range, window, slots, captures, ref position, coordinates, context, span, null);
                 return;
             }
 
@@ -321,7 +317,7 @@ internal sealed partial class LythonRuntime
             using var scratch = context.MemoryGovernor.ReserveTemporary(checked(160L + 8L * count), span);
             context.CheckExecution(span);
             var wide = new long[count];
-            ProjectScalarBounds(range, window, captures, ref position, wide, context, span, CreateCoordinateComparison(context, span));
+            ProjectScalarBounds(range, window, slots, captures, ref position, wide, context, span, CreateCoordinateComparison(context, span));
         }
 
         private static Comparison<long> CreateCoordinateComparison(ExecutionContext context, LythonSourceSpan span)

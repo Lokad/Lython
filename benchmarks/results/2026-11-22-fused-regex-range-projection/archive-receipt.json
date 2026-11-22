@@ -1,0 +1,14 @@
+{
+  "complete": true,
+  "jobs": 4,
+  "elapsedSeconds": 220.99006439372897,
+  "allWorkersJoined": true,
+  "guestFixturesRemoved": true,
+  "quietBeforeAndAfter": true,
+  "archivedAndVerifiedUnderLease": true,
+  "archiveSHA256": "bfe0b0a82d7e2b03f34105b256c4e620311e1b776da792d8de8a8519f399688e",
+  "freeBytesAfterArchive": 181334016,
+  "performanceQualified": false,
+  "recoveredAfterArchiveFailure": true,
+  "originalServiceExitCode": 1
+}

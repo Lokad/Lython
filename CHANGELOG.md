@@ -14,6 +14,8 @@
 - Resolve executable jump targets on demand. Reuse the block layout table
   for jump resolution, operand depths and physical offsets.
 - Reuse an existing UTF-8 scalar index to resolve single regex match windows.
+- Initialize regex match byte ranges during scalar projection. ASCII matches
+  write their byte and character offsets together.
 - Share one immutable positional default tuple per compiled declaration
   when every positional default is a scalar literal. Keyword defaults
   and per-function `__defaults__` reassignment remain independent.

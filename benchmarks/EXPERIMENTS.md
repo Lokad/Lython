@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1349 fuse regex initialization and scalar projection](results/2026-11-22-fused-regex-range-projection/README.md)
+eliminates a separate range pass. ASCII group text uses 1.45–4.35%
+less warm CPU. Unicode timings span zero and allocation stays flat.
+Both platforms and all 112 timed batches pass. The service failed in
+archiving after both quiet gates. An exclusive recovery verifies the
+persisted observations and preserves the original failure.
+
 [B1348 preserve captured arithmetic while transferring computed stores](results/2026-11-22-computed-capture-stores/README.md)
 retains the existing cell fields. Computed nonlocal stores allocate
 18.05% less locally and take 2.51–4.57% less warm time. Captured-counter

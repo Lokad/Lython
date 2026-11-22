@@ -13,8 +13,9 @@ namespace Lokad.Lython.Tests;
 public sealed class RegexScalarCursorCancellationTests
 {
     private static readonly LythonSourceSpan Span = new(13, 4, 2, 6);
-    private delegate void Project(SubjectRange range, LythonRegexWindow window, Capture[] captures, ref Position previous, Span<long> coordinates,
-        Context context, LythonSourceSpan span, Comparison<long>? coordinateComparison);
+    private delegate void Project(SubjectRange range, LythonRegexWindow window, ReadOnlySpan<LythonRegexCapture?> slots,
+        Capture[] captures, ref Position previous, Span<long> coordinates, Context context, LythonSourceSpan span,
+        Comparison<long>? coordinateComparison);
     private static readonly Project ProjectCaptures = typeof(LythonRuntime)
         .GetNestedType("RegexMatcher", BindingFlags.NonPublic)!
         .GetMethod("ProjectScalarBounds", BindingFlags.NonPublic | BindingFlags.Static)!
@@ -42,11 +43,12 @@ public sealed class RegexScalarCursorCancellationTests
             // Fund captures and projection scratch through their actual user's
             // completion. No reservation or provider callback interrupts this scan.
             using var scratch = context.MemoryGovernor.ReserveTemporary(512, Span);
-            var captures = new Capture[]
+            LythonRegexCapture?[] slots =
             {
-                new(2 * characters, 2 * (characters + 1), -1, -1),
-                new(2 * (characters * 3 / 5), 2 * characters, -1, -1),
+                new LythonRegexCapture(2 * characters, 2 * (characters + 1)),
+                new LythonRegexCapture(2 * (characters * 3 / 5), 2 * characters),
             };
+            var captures = new Capture[slots.Length];
             scratch.Commit(512);
             var previous = new Position(2 * characters, characters);
             var coordinates = new long[2 * captures.Length];
@@ -60,7 +62,7 @@ public sealed class RegexScalarCursorCancellationTests
                 {
                     previous = original;
                     ProjectCaptures(new(text, 0, characters + 2), new(0, characters + 2, 0, byteLength),
-                        captures, ref previous, coordinates, context, Span, null);
+                        slots, captures, ref previous, coordinates, context, Span, null);
                     // Signal only after an actual rewind completes. A later
                     // attempt must observe cancellation before updating its cursor.
                     started.Set();
@@ -112,13 +114,14 @@ public sealed class RegexScalarCursorCancellationTests
             var text = PyString.FromString("éx");
             var range = new SubjectRange(text, 0, 2);
             var window = new LythonRegexWindow(0, 2, 0, 3);
-            var captures = new Capture[40];
-            Array.Fill(captures, new Capture(0, 2, -1, -1));
+            var slots = new LythonRegexCapture?[40];
+            Array.Fill<LythonRegexCapture?>(slots, new LythonRegexCapture(0, 2));
+            var captures = new Capture[slots.Length];
             var coordinates = new long[2 * captures.Length];
             var previous = new Position(0, 0);
             var baseline = budget.ReservedBytes;
             var failure = Assert.Throws<LythonRuntimeException>(() =>
-                ProjectCaptures(range, window, captures, ref previous, coordinates, context, Span, (left, right) =>
+                ProjectCaptures(range, window, slots, captures, ref previous, coordinates, context, Span, (left, right) =>
                 {
                     cancellation.Cancel();
                     context.CheckExecution(Span);
