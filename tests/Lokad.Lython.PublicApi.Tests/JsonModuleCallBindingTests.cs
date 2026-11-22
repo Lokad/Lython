@@ -33,6 +33,8 @@ public sealed class JsonModuleCallBindingTests
         { "writer_known", "import json\nclass W:\n def __init__(self):self.parts=[]\n def write(self,s):self.parts.append(s)\nw=W()\njson.dump(obj={\"é\":1},fp=w,ensure_ascii=None)\nprint(\"\".join(w.parts))", "{\"é\": 1}\n" },
         { "known_effect_order", "import json\neffects=[]\ndef mark(name,value):\n effects.append(name)\n return value\nprint(json.loads(s=mark(\"s\",\"7\"),strict=mark(\"strict\",None)))\nprint(effects)", "7\n['s', 'strict']\n" },
         { "duplicate_keyword", "import json\ndef call(**options):return json.loads(\"7\",**options)\ntry:call(**{\"strict\":None},**{\"strict\":False})\nexcept Exception as error:print(type(error).__name__)", "TypeError\n" },
+        { "mapping_key_before_duplicate", "import json\noptions={'s':'8', 1:None}\ntry:json.loads('7', **options)\nexcept TypeError as e:print(str(e))", "keywords must be strings\n" },
+        { "mapping_extra_unicode", "import json\nname='é'*40\nclass E(json.JSONEncoder):\n def __init__(self,**kw):\n  self.tag=kw.pop(name)\n  super().__init__(**kw)\n def default(self,v):return self.tag\nprint(json.dumps({1},**{'cls':E,name:'résultat','ensure_ascii':False}))", "\"résultat\"\n" },
     };
 
     [Theory]

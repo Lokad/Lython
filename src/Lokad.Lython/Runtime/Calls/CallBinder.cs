@@ -1,4 +1,5 @@
 using Lokad.Lython.Frontend;
+using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
@@ -119,6 +120,80 @@ internal static class CallBinder
         LythonRuntime.ExecutionContext context, bool preservePresence)
         => BindNamedArgumentsCore(new OperandInputs(operands, call.Arguments, context), call.CallSpan,
             signature.Name, callableKind, signature.Parameters, out _, preservePresence);
+
+    // These entry points have fixed named slots and allow extra keywords for
+    // their user-supplied constructors. The cursor is gone before a constructor
+    // or option callback can run. Only the final binding survives suspension.
+    internal static BoundBuiltinArguments BindExactKeywordOptions(ReadOnlySpan<LythonRuntime.ExecutableSlot> positional,
+        PyDict dictionary, NamedCallableParameterLayout parameters, LythonRuntime.ExecutionContext context,
+        LythonSourceSpan mappingSpan, MemoryGovernor.TemporaryMemoryReservation storage,
+        out IReadOnlyList<KeyValuePair<string, object>> extras, out int duplicate)
+    {
+        var size = parameters.ParameterNames.Length;
+        var values = new object[size];
+        Array.Fill(values, PyNone.Instance);
+        var assigned = new ArgumentPresence(size);
+        for (var i = 0; i < positional.Length; i++)
+        {
+            values[i] = positional[i].Object.RequireNotNull();
+            assigned[i] = true;
+        }
+
+        List<KeyValuePair<string, object>>? extraKeywords = null;
+        var sourceCount = dictionary.Count;
+        var cursor = new PyDict.ItemCursor(dictionary);
+        var parameterLookup = parameters.BorrowParameterLookup();
+        Span<char> keyword = stackalloc char[32];
+        duplicate = -1;
+        try
+        {
+            while (cursor.MoveNext(out var pair, context, mappingSpan))
+            {
+                context.CheckExecution(mappingSpan);
+                if (pair.Key is not PyString key) throw RuntimeErrors.Type("keywords must be strings", mappingSpan);
+                string? name = null;
+                var known = key.ByteLength <= keyword.Length
+                    ? parameterLookup.TryGetValue(keyword[..key.CopyUtf16To(keyword)], out var index)
+                    : parameters.ParameterIndices.TryGetValue(
+                        name = CallArgumentValue.Keyword(key, pair.Value).GetKeywordName(context, mappingSpan), out index);
+                if (known)
+                {
+                    if (assigned[index])
+                    {
+                        // Expansion must still validate later keys before
+                        // the call can report a binding error.
+                        if (duplicate < 0) duplicate = index;
+                    }
+                    else
+                    {
+                        values[index] = pair.Value;
+                        assigned[index] = true;
+                    }
+                    continue;
+                }
+
+                name ??= CallArgumentValue.Keyword(key, pair.Value).GetKeywordName(context, mappingSpan);
+                if (extraKeywords is null)
+                {
+                    storage.Grow(checked(64L + 16L * sourceCount), mappingSpan);
+                    context.CheckExecution(mappingSpan);
+                    extraKeywords = new List<KeyValuePair<string, object>>(sourceCount);
+                }
+                extraKeywords.Add(new(name, pair.Value));
+            }
+        }
+        finally { cursor.Dispose(); }
+
+        extras = extraKeywords is null ? [] : extraKeywords;
+        return new BoundBuiltinArguments(values, assigned);
+    }
+
+    internal static void ValidateRequiredNamedArguments(ArgumentPresence assigned, NamedCallableParameterLayout named,
+        PythonCallableKind callableKind, string callableName, LythonSourceSpan span)
+    {
+        for (var i = 0; i < named.RequiredCount; i++)
+            if (!assigned[i]) throw CallErrors.MissingArgument(callableKind, callableName, named.ParameterNames[i], span);
+    }
 
     // Both input shapes are borrowed only during binding. The constrained
     // calls let the JIT specialize the loops without a shape check per read.
@@ -274,13 +349,7 @@ internal static class CallBinder
             assigned[index] = true;
         }
 
-        for (var i = 0; i < named.RequiredCount; i++)
-        {
-            if (!assigned[i])
-            {
-                throw CallErrors.MissingArgument(callableKind, callableName, parameterNames[i], span);
-            }
-        }
+        ValidateRequiredNamedArguments(assigned, named, callableKind, callableName, span);
 
         var count = parameterNames.Length;
         // Plain bound callables model defaults by omitting only the unassigned suffix.

@@ -307,11 +307,16 @@ internal sealed partial class LythonRuntime
         private ValueTask<object> InvokeWithKeywordMapping(object target, Memory<ExecutableSlot> positional, object mapping,
             ExecutableCallWithKeywordMapping call, LythonSourceSpan span, bool asynchronous)
         {
-            var method = target as PyBoundMethod;
-            if (mapping is PyDict dictionary && (method?.Function ?? target) is PyFunctionBase function &&
-                function.CanTakeExpandedKeywords(positional.Length, method?.Receiver) &&
-                function.PrepareExpandedKeywords(dictionary, this, call.MappingSpan, span, call.FreshMapping) is { } keywords)
-                return InvokeWithPreparedKeywords(function, positional.Span, method?.Receiver, keywords, span, this, asynchronous);
+            if (mapping is PyDict dictionary)
+            {
+                var method = target as PyBoundMethod;
+                if ((method?.Function ?? target) is PyFunctionBase function &&
+                    function.CanTakeExpandedKeywords(positional.Length, method?.Receiver) &&
+                    function.PrepareExpandedKeywords(dictionary, this, call.MappingSpan, span, call.FreshMapping) is { } keywords)
+                    return InvokeWithPreparedKeywords(function, positional.Span, method?.Receiver, keywords, span, this, asynchronous);
+                if (target is JsonModule.JsonModuleCallable json && json.AcceptsMappingOperands(positional.Length))
+                    return json.InvokeFromMapping(positional, dictionary, call.MappingSpan, span, this, asynchronous);
+            }
 
             // Operand storage belongs to the caller and remains live through
             // mapping callbacks. Only the general route needs an argument packet.

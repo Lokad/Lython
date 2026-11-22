@@ -40,7 +40,7 @@ internal sealed partial class LythonRuntime
         // Module entry points accept extra keywords at binding so custom
         // cls=... constructors receive them; standard shapes bind exactly
         // like BuiltinCallable, and every introspection answer matches it.
-        private sealed class JsonModuleCallable : IOperandBoundCallable, IPyRenderableValue, IPyDynamicAttributes, IPyContextualDynamicAttributes, IPyBoundEngineMethod, IPyHashableValue
+        internal sealed class JsonModuleCallable : IOperandBoundCallable, IPyRenderableValue, IPyDynamicAttributes, IPyContextualDynamicAttributes, IPyBoundEngineMethod, IPyHashableValue
         {
             private readonly LythonCallableSignature _signature;
             private readonly Func<BoundBuiltinArguments, IReadOnlyList<KeyValuePair<string, object>>, LythonSourceSpan, ExecutionContext, object> _implementation;
@@ -113,10 +113,44 @@ internal sealed partial class LythonRuntime
             {
                 var bound = CallBinder.BindNamedArgumentsWithExtras(arguments, span, _signature,
                     PythonCallableKind.Builtin, out var extras);
-                return !asynchronous || _asyncImplementation is null
+                return InvokeBoundOptions(bound, extras, span, context, asynchronous);
+            }
+
+            internal bool AcceptsMappingOperands(int positionalCount)
+                => _signature.Parameters is NamedCallableParameterLayout
+                {
+                    PositionalOnlyCount: 0, AllowsExtraPositional: false, AllowsExtraKeywords: true,
+                } parameters && positionalCount <= parameters.ParameterNames.Length &&
+                    parameters.MaximumPositionalArgumentCount.Accepts(positionalCount);
+
+            internal async ValueTask<object> InvokeFromMapping(Memory<ExecutableSlot> positional, PyDict dictionary,
+                LythonSourceSpan mappingSpan, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+            {
+                var parameters = (NamedCallableParameterLayout)_signature.Parameters;
+                var size = parameters.ParameterNames.Length;
+                var bytes = 64L + 8L * size + (size > 64 ? 32L + size - 64 : 0);
+                using var storage = context.MemoryGovernor.ReserveTemporary(bytes, mappingSpan);
+                context.CheckExecution(mappingSpan);
+                var bound = CallBinder.BindExactKeywordOptions(positional.Span, dictionary, parameters, context,
+                    mappingSpan, storage, out var extras, out var duplicate);
+                context.EnterInterpreterFrame(span);
+                try
+                {
+                    context.CheckExecution(span);
+                    if (duplicate >= 0)
+                        throw CallErrors.MultipleValues(PythonCallableKind.Builtin, _signature.Name, parameters.ParameterNames[duplicate], span);
+                    CallBinder.ValidateRequiredNamedArguments(bound.Assigned, parameters, PythonCallableKind.Builtin, _signature.Name, span);
+                    return RuntimeValue(await InvokeBoundOptions(bound, extras, span, context, asynchronous).ConfigureAwait(false));
+                }
+                catch (Exception error) when (TryTranslateCallableException(error, span, out var translated)) { throw translated; }
+                finally { context.LeaveInterpreterFrame(); }
+            }
+
+            private ValueTask<object> InvokeBoundOptions(BoundBuiltinArguments bound,
+                IReadOnlyList<KeyValuePair<string, object>> extras, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+                => !asynchronous || _asyncImplementation is null
                     ? new(_implementation(bound, extras, span, context))
                     : _asyncImplementation(bound, extras, span, context);
-            }
 
             // This complete call shape has no keyword/default slots to bind.
             // Other signatures and every explicit option retain general binding.

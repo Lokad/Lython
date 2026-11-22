@@ -78,6 +78,8 @@ internal sealed class PositionalCallableParameterLayout : CallableParameterLayou
 
 internal sealed class NamedCallableParameterLayout : CallableParameterLayout
 {
+    private readonly Dictionary<string, int> _parameterIndices;
+
     public NamedCallableParameterLayout(
         string callableName,
         string[] parameterNames,
@@ -102,9 +104,9 @@ internal sealed class NamedCallableParameterLayout : CallableParameterLayout
         AllowsExtraKeywords = (variadicParameters & LythonVariadicParameters.Keywords) != 0;
         AllowsExtraPositional = (variadicParameters & LythonVariadicParameters.Positional) != 0;
         PositionalOnlyCount = positionalOnlyCount;
-        ParameterIndices = CreateParameterIndices(ParameterNames, callableName);
+        _parameterIndices = CreateParameterIndices(ParameterNames, callableName);
 
-        static IReadOnlyDictionary<string, int> CreateParameterIndices(ImmutableArray<string> names, string name)
+        static Dictionary<string, int> CreateParameterIndices(ImmutableArray<string> names, string name)
         {
             var indices = new Dictionary<string, int>(names.Length, StringComparer.Ordinal);
             for (var index = 0; index < names.Length; index++)
@@ -131,7 +133,10 @@ internal sealed class NamedCallableParameterLayout : CallableParameterLayout
 
     public int PositionalOnlyCount { get; }
 
-    public IReadOnlyDictionary<string, int> ParameterIndices { get; }
+    public IReadOnlyDictionary<string, int> ParameterIndices => _parameterIndices;
+
+    internal Dictionary<string, int>.AlternateLookup<ReadOnlySpan<char>> BorrowParameterLookup()
+        => _parameterIndices.GetAlternateLookup<ReadOnlySpan<char>>();
 
     internal override bool HasSameShape(CallableParameterLayout other)
         => other is NamedCallableParameterLayout named &&

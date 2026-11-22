@@ -28,6 +28,56 @@ public sealed class ExpandedCallExecutableTests
     [InlineData(true, false)]
     [InlineData(false, true)]
     [InlineData(true, true)]
+    public async Task JsonKeywordBindingAdmitsBeforeReadingMapping(bool asynchronous, bool refuse)
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var owner = budget.CreateScope())
+        {
+            var hook = new AdmissionHookMemoryBudget(owner);
+            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = hook });
+            var alias = new PyList([1]);
+            var converter = new ParsedValue(alias);
+            var key = PyString.FromString("parse_int");
+            var options = new PyDict(4, context.MemoryGovernor, null);
+            options.SetItem(key, PyNone.Instance);
+            context.Variables["prepare"] = new ReentrantKeywords(hook, options, key, converter, refuse, sharedKeys: false);
+            var executable = ExecutableScript.Compile(LythonFrontend.Compile("""
+                import json
+                return json.loads('7', **prepare())
+                """).Script!).EntryPoint;
+            try
+            {
+                if (refuse)
+                {
+                    var failure = await Assert.ThrowsAsync<LythonRuntimeException>(Run);
+                    Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
+                    Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
+                    Assert.Same(PyNone.Instance, options.GetItem(key));
+                    Assert.Equal(0, converter.Visits);
+                }
+                else
+                {
+                    Assert.Same(alias, await Run());
+                    Assert.Same(converter, options.GetItem(key));
+                    Assert.Equal(1, converter.Visits);
+                }
+                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+                Assert.Equal(0, context.State.CurrentInterpreterDepth);
+                Assert.Null(context.CurrentExecutableFrame);
+            }
+            finally { context.State.CloseResources(); }
+
+            async Task<object?> Run() => asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(executable, context)
+                : LythonRuntime.ExecuteExecutableCodeObject(executable, context, default, null);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
     [InlineData(false, false, true)]
     [InlineData(true, false, true)]
     [InlineData(false, true, true)]
@@ -138,8 +188,18 @@ public sealed class ExpandedCallExecutableTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
+    private sealed class ParsedValue(object alias) : LythonRuntime.ICallable
+    {
+        internal int Visits;
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)
+        {
+            Visits++;
+            return alias;
+        }
+    }
+
     private sealed class ReentrantKeywords(AdmissionHookMemoryBudget hook, PyDict source, PyString added,
-        PyString value, bool refuse, bool sharedKeys) : LythonRuntime.ICallable
+        object value, bool refuse, bool sharedKeys) : LythonRuntime.ICallable
     {
         internal int Admissions;
 
