@@ -479,10 +479,7 @@ internal sealed partial class LythonRuntime
                 function = boundFunction;
                 receiver = bound.Receiver;
             }
-            if (function is null || !function.CanStartInline) return false;
-            var completePositional = call.IsPositionalOnly
-                && function.HasCompletePositionalSupply(call.ArgumentCount, receiver);
-            if (!completePositional && !function.CanBindNativeArguments) return false;
+            if (function is null || !function.TrySelectNativeCall(call, receiver, out var completePositional)) return false;
             _scope.EnterInterpreterFrame(call.CallSpan);
             var entered = true;
             try

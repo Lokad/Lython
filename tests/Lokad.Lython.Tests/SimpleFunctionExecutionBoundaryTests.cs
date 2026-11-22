@@ -798,14 +798,15 @@ public sealed class SimpleFunctionExecutionBoundaryTests
                 var call = Assert.Single(ExecutableScript.Compile(
                     callFrontend.Script.RequireNotNull()).EntryPoint.CallSites);
                 Assert.True(code.CanRunNativeInstructions);
-                Assert.True(function.CanBindNativeArguments);
+                Assert.True(function.TrySelectNativeCall(call, null, out var completePositional));
+                Assert.False(completePositional);
                 var baseline = budget.ReservedBytes;
                 hook.RefuseGrowth = _ => true;
                 context.EnterInterpreterFrame(CallSpan);
                 try
                 {
                     function.StartNativeCall(call, [Slot.FromObject(line)], null, context, CallSpan, false,
-                        completePositional: false, default, out _, out var result, out var frame);
+                        completePositional, default, out _, out var result, out var frame);
                     Assert.Null(frame);
                     Assert.True(Assert.IsType<bool>(result.Object));
                     Assert.Null(context.MemoryGovernor.AdmissionFailure);

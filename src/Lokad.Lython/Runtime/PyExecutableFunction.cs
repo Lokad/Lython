@@ -54,20 +54,29 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         (CodeObject.CapturedLocalSlots.Count == 0 || CodeObject.UsesOnlyLexicalSlots) &&
         CodeObject.ExceptionRegions.Count == 0 &&
         !Closure.IsClassBody && !Closure.IsAnnotationScope && !Closure.IsTypeParameterScope && Closure.ClassCell is null &&
-        Closure.InlinedComprehensionLookup is null && Closure.ActiveHandlerVariables is not { Count: > 0 };
+        Closure.ActiveHandlerVariables is not { Count: > 0 };
 
+    // The comprehension lookup can only be present in a class or annotation scope.
     private bool CanRunNativePrefix => CodeObject.CanRunNativeInstructions
         && !Closure.IsClassBody && !Closure.IsAnnotationScope && !Closure.IsTypeParameterScope
-        && Closure.ClassCell is null && Closure.InlinedComprehensionLookup is null;
+        && Closure.ClassCell is null;
 
     internal bool CanStartInline => CanRunNativePrefix
         && CodeObject.ValueStorageCapacity <= LythonRuntime.NativeValueCapacity;
 
-    internal bool CanBindNativeArguments => CanStartInline
-        && ParameterCount <= LythonRuntime.NativeValueCapacity
-        && VariadicListIndex < 0 && VariadicDictionaryIndex < 0
-        && PositionalDefaults is null or PyTuple
-        && (KeywordDefaultStorage is null || KeywordDefaultStorage.SupportsNativeStringReads);
+    // Both executable callers prove the prefix once. Only calls that need
+    // binding inspect the current default containers and parameter shape.
+    internal bool TrySelectNativeCall(ExecutableCallSite call, object? receiver, out bool completePositional)
+    {
+        completePositional = false;
+        if (!CanStartInline) return false;
+        completePositional = call.IsPositionalOnly && HasCompletePositionalSupply(call.ArgumentCount, receiver);
+        if (completePositional) return true;
+        return ParameterCount <= LythonRuntime.NativeValueCapacity
+            && VariadicListIndex < 0 && VariadicDictionaryIndex < 0
+            && PositionalDefaults is null or PyTuple
+            && KeywordDefaultStorage is null or { SupportsNativeStringReads: true };
+    }
 
     [System.Runtime.CompilerServices.InlineArray(LythonRuntime.NativeValueCapacity)]
     private struct NativeValues { private LythonRuntime.ExecutableSlot _first; }

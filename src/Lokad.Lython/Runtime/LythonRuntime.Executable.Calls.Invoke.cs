@@ -29,11 +29,9 @@ internal sealed partial class LythonRuntime
                 function = boundFunction;
                 functionReceiver = bound.Receiver;
             }
-            if (function is not null && function.CanStartInline && invocation is not null)
+            if (function is not null && invocation is not null)
             {
-                var completePositional = call.IsPositionalOnly
-                    && function.HasCompletePositionalSupply(call.ArgumentCount, functionReceiver);
-                if (!completePositional && !function.CanBindNativeArguments) return false;
+                if (!function.TrySelectNativeCall(call, functionReceiver, out var completePositional)) return false;
                 var callEntered = false;
                 try
                 {
