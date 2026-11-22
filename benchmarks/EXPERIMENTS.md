@@ -6,6 +6,18 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1332 resolve jumps directly through emitted blocks](results/2026-11-22-direct-jump-layout/README.md)
+removes two arrays and the successor scan. Final metadata matches across
+79 code objects. Dataclass and dead-heavy compilation use less CPU.
+Validator time-to-result elapsed spans zero. Postponed factory compilation
+takes 0.17–1.60% longer elapsed. All 140 batches verify.
+
+[Early protected exits and packed-block feasibility](results/2026-11-22-block-emission-shape/README.md)
+removes the generated validator's 192 block reopens while preserving the
+same final metadata. Replay predicts 4,160 packed capacity slots versus
+5,820 per-block slots on that fixture. Small factory capacity rises in
+the same replay. Both shapes are structural observations.
+
 [B1331 joint callable and closure capture admission](results/2026-11-22-joint-definition-admission/README.md)
 lowers mixed-factory warm CPU by 0.68–2.46%. Mixed time to result
 takes 7.15–12.38% longer and the default-observing factory takes

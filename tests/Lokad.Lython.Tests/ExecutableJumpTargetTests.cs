@@ -8,19 +8,19 @@ public sealed class ExecutableJumpTargetTests
     public void Cycles_PreserveEachEntryAndIncomingTail()
     {
         Assert.Equal([0, 1, 2, 1, 2, 0, 6, 6],
-            ExecutableScript.ResolveJumpTargets([0, 2, 1, 1, 2, 0, -1, 6]));
+            Resolve([0, 2, 1, 1, 2, 0, -1, 6]));
     }
 
     [Fact]
     public void AllSmallGraphs_MatchIndependentPerEntryWalk()
     {
-        Assert.Empty(ExecutableScript.ResolveJumpTargets([]));
+        Assert.Empty(Resolve([]));
         for (var size = 1; size <= 5; size++)
         {
             var successors = Enumerable.Repeat(-1, size).ToArray();
             do
             {
-                var actual = ExecutableScript.ResolveJumpTargets(successors);
+                var actual = Resolve(successors);
                 for (var start = 0; start < size; start++)
                 {
                     var seen = new HashSet<int>();
@@ -50,7 +50,7 @@ public sealed class ExecutableJumpTargetTests
         const int count = 20_000;
         var successors = Enumerable.Range(1, count).ToArray();
         successors[^1] = -1;
-        Assert.All(ExecutableScript.ResolveJumpTargets(successors), value => Assert.Equal(count - 1, value));
+        Assert.All(Resolve(successors), value => Assert.Equal(count - 1, value));
     }
 
     [Theory]
@@ -58,6 +58,22 @@ public sealed class ExecutableJumpTargetTests
     [InlineData(1)]
     public void InvalidSuccessor_IsACompilerFailure(int successor)
     {
-        Assert.Throws<IndexOutOfRangeException>(() => ExecutableScript.ResolveJumpTargets([successor]));
+        Assert.Throws<IndexOutOfRangeException>(() => Resolve([successor]));
+    }
+
+    [Fact]
+    public void ProtectedEntry_RemainsAnEntryWhenItOnlyJumps()
+    {
+        var region = new ExecutableExceptionRegion(1, 2, 2, null, null, null);
+        Assert.Equal([1, 1, 2], Resolve([1, 2, -1], [region]));
+    }
+
+    private static int[] Resolve(int[] successors, IReadOnlyList<ExecutableExceptionRegion>? regions = null)
+    {
+        var blocks = new List<List<ExecutableInstruction>>(successors.Length);
+        var span = new LythonSourceSpan(1, 1, 1, 1);
+        foreach (var successor in successors)
+            blocks.Add(successor == -1 ? [] : [ExecutableInstruction.Jump(successor, span)]);
+        return ExecutableScript.ResolveJumpTargets(blocks, regions ?? []);
     }
 }

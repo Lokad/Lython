@@ -2,6 +2,8 @@
 
 ## 0.11.0 - Unreleased
 
+- Resolve compiler jump targets directly from emitted blocks, removing two
+  temporary arrays and the separate successor scan.
 - Reuse an existing UTF-8 scalar index to resolve single regex match windows.
 - Share one immutable positional default tuple per compiled declaration
   when every positional default is a scalar literal. Keyword defaults

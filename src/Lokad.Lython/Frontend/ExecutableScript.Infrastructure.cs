@@ -9,51 +9,69 @@ namespace Lokad.Lython.Frontend;
 
 internal sealed partial class ExecutableScript
 {
-    // A successor of -1 denotes a block that is not a single ordinary jump.
-    // Completed targets are nonnegative; negative markers index the current path.
-    internal static int[] ResolveJumpTargets(ReadOnlySpan<int> successors, CancellationToken token = default)
+    // Jump threading reads the emitted blocks directly. The target array
+    // also marks the current walk until all its entries have final targets.
+    internal static int[] ResolveJumpTargets(List<List<ExecutableInstruction>> blocks,
+        IReadOnlyList<ExecutableExceptionRegion> regions, CancellationToken token = default)
     {
-        var targets = new int[successors.Length];
-        Array.Fill(targets, -1);
-        var path = new int[successors.Length];
-        for (var start = 0; start < successors.Length; start++)
+        const int unseen = -1, visiting = -2;
+        var targets = new int[blocks.Count];
+        Array.Fill(targets, unseen);
+        for (var i = 0; i < regions.Count; i++)
+        {
+            PythonTokenization.CheckCancellation(token, i);
+            // The incoming operand depth belongs to the handlers at this
+            // block. Preserve that entry even when its only instruction jumps.
+            var start = regions[i].ProtectedStartIndex;
+            targets[start] = start;
+        }
+
+        for (var start = 0; start < targets.Length; start++)
         {
             PythonTokenization.CheckCancellation(token, start);
-            if (targets[start] >= 0)
-                continue;
+            if (targets[start] >= 0) continue;
 
-            var length = 0;
             var current = start;
-            while (targets[current] == -1)
+            for (var step = 0; targets[current] == unseen; step++)
             {
-                PythonTokenization.CheckCancellation(token, length);
-                targets[current] = -2 - length;
-                path[length++] = current;
-                var next = successors[current];
+                PythonTokenization.CheckCancellation(token, step);
+                var next = Successor(blocks[current]);
                 if (next == -1)
                 {
                     targets[current] = current;
                     break;
                 }
+                targets[current] = visiting;
                 current = next;
             }
 
-            if (targets[current] < 0)
+            var target = targets[current];
+            if (target == visiting)
             {
-                // The old walk returned its first repeated node. Preserve every
-                // cycle node's own identity, and each incoming tail's entry node.
-                var cycleStart = -2 - targets[current];
-                for (var i = cycleStart; i < length; i++)
-                    targets[path[i]] = path[i];
+                // Preserve every cycle node's identity. A tail into the
+                // cycle resolves to its own entry point.
+                target = current;
+                var step = 0;
+                do
+                {
+                    PythonTokenization.CheckCancellation(token, step++);
+                    targets[current] = current;
+                    current = Successor(blocks[current]);
+                } while (current != target);
             }
-            for (var i = length - 1; i >= 0; i--)
+
+            current = start;
+            for (var step = 0; targets[current] == visiting; step++)
             {
-                var block = path[i];
-                if (targets[block] < 0)
-                    targets[block] = targets[successors[block]];
+                PythonTokenization.CheckCancellation(token, step);
+                targets[current] = target;
+                current = Successor(blocks[current]);
             }
         }
         return targets;
+
+        static int Successor(List<ExecutableInstruction> block)
+            => block.Count == 1 && block[0].OpCode == ExecutableOpCode.Jump ? block[0].TargetIndex : -1;
     }
 
     private sealed partial class Builder
@@ -93,30 +111,6 @@ internal sealed partial class ExecutableScript
             }
 
             return instructions[^1].OpCode is ExecutableOpCode.Jump or ExecutableOpCode.AbruptJump or ExecutableOpCode.Return or ExecutableOpCode.ReturnNone or ExecutableOpCode.ReraiseException;
-        }
-
-        private int[] PrepareJumpTargets()
-        {
-            if (_buffers.Blocks.Count == 1) return SingleEntryBlock;
-
-            var token = _compilation.CancellationToken;
-            var successors = new int[_buffers.Blocks.Count];
-            for (var i = 0; i < successors.Length; i++)
-            {
-                PythonTokenization.CheckCancellation(token, i);
-                var instructions = _buffers.Blocks[i];
-                successors[i] = instructions.Count == 1 && instructions[0].OpCode == ExecutableOpCode.Jump
-                    ? instructions[0].TargetIndex : -1;
-            }
-            // The structured emitter enters each protected clause at its first
-            // block. Its incoming operand depth belongs to all associated
-            // handlers, even if this block consists only of a jump.
-            for (var i = 0; i < _buffers.Regions.Count; i++)
-            {
-                PythonTokenization.CheckCancellation(token, i);
-                successors[_buffers.Regions[i].ProtectedStartIndex] = -1;
-            }
-            return ExecutableScript.ResolveJumpTargets(successors, token);
         }
 
         private int InternLocal(string name)

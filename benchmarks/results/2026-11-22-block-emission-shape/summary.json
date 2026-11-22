@@ -1,0 +1,2282 @@
+{
+  "observations": {
+    "ordinary": {
+      "source": "f069dc7ab with emission diagnostics",
+      "workerHashes": {
+        "Inspect.deps.json": "2d4667c19cc8c902aaec0f8f7ee91d1cf12cbad6b6e7bffe82d306ae68c743c4",
+        "Inspect.dll": "300444b73f51f07cbf8543fe00e2ac53cb8e73dbe57ef7a5ba67ddb09881796a",
+        "Inspect.exe": "2861970b7ef37ab8118ae2aa48c4616c0f5f3412137083275ba86b68917bb154",
+        "Inspect.pdb": "fcaf8b0295a46eefe3d9f0adcc533b2e100c3425218975704412b1147b3ea128",
+        "Inspect.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0",
+        "Lokad.Lython.dll": "4b0a45e3d681beda133234064261d1a7626ee4120350f513a820ebd3cf940b06"
+      },
+      "fixtureSHA256": "39e2c67582aea733e74bd9e57f799efebfa765bd0bc8854b89a3d3c475afbfe6",
+      "rows": [
+        {
+          "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+          "total": {
+            "blocks": 6,
+            "heapArrays": 6,
+            "emitted": 60,
+            "live": 60,
+            "listSlots": 84,
+            "nonEmptyReopens": 0,
+            "relocatedWrites": 0,
+            "arenaHighWaterSlots": 60,
+            "arenaGeometricSlots": 92
+          },
+          "emissions": [
+            {
+              "code": "evaluate",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 6,
+              "live": 6,
+              "listSlots": 8,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 6,
+              "arenaGeometricSlots": 8
+            },
+            {
+              "code": "compile_rule",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 11,
+              "live": 11,
+              "listSlots": 16,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 11,
+              "arenaGeometricSlots": 16
+            },
+            {
+              "code": "for_policy",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "<module>",
+              "blocks": 3,
+              "heapArrays": 3,
+              "emitted": 39,
+              "live": 39,
+              "listSlots": 56,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 39,
+              "arenaGeometricSlots": 64
+            }
+          ]
+        },
+        {
+          "case": "scripts.dataclass-inherited-configuration.generated",
+          "total": {
+            "blocks": 53,
+            "heapArrays": 53,
+            "emitted": 454,
+            "live": 454,
+            "listSlots": 468,
+            "nonEmptyReopens": 0,
+            "relocatedWrites": 0,
+            "arenaHighWaterSlots": 454,
+            "arenaGeometricSlots": 468
+          },
+          "emissions": [
+            {
+              "code": "Config",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 2,
+              "live": 2,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 2,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region0",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region1",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region2",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region3",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region4",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region5",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region6",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region7",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region8",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region9",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region10",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region11",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region12",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region13",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region14",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region15",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region16",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region17",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region18",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region19",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region20",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region21",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region22",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region23",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region24",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region25",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region26",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region27",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region28",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region29",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region30",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region31",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region32",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region33",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region34",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region35",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region36",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region37",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region38",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region39",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region40",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region41",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region42",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region43",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region44",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region45",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region46",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region47",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "<genexpr>",
+              "blocks": 3,
+              "heapArrays": 3,
+              "emitted": 9,
+              "live": 9,
+              "listSlots": 16,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 9,
+              "arenaGeometricSlots": 16
+            },
+            {
+              "code": "<module>",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 251,
+              "live": 251,
+              "listSlots": 256,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 251,
+              "arenaGeometricSlots": 256
+            }
+          ]
+        },
+        {
+          "case": "scripts.config-generated-guards.medium.bad-0",
+          "total": {
+            "blocks": 485,
+            "heapArrays": 485,
+            "emitted": 3889,
+            "live": 3889,
+            "listSlots": 5820,
+            "nonEmptyReopens": 192,
+            "relocatedWrites": 1152,
+            "arenaHighWaterSlots": 5041,
+            "arenaGeometricSlots": 8256
+          },
+          "emissions": [
+            {
+              "code": "normalize",
+              "blocks": 481,
+              "heapArrays": 481,
+              "emitted": 3848,
+              "live": 3848,
+              "listSlots": 5768,
+              "nonEmptyReopens": 192,
+              "relocatedWrites": 1152,
+              "arenaHighWaterSlots": 5000,
+              "arenaGeometricSlots": 8192
+            },
+            {
+              "code": "<module>",
+              "blocks": 4,
+              "heapArrays": 4,
+              "emitted": 41,
+              "live": 41,
+              "listSlots": 52,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 41,
+              "arenaGeometricSlots": 64
+            }
+          ]
+        },
+        {
+          "case": "assertion-tail-with-handler",
+          "total": {
+            "blocks": 8,
+            "heapArrays": 8,
+            "emitted": 26,
+            "live": 26,
+            "listSlots": 48,
+            "nonEmptyReopens": 0,
+            "relocatedWrites": 0,
+            "arenaHighWaterSlots": 26,
+            "arenaGeometricSlots": 32
+          },
+          "emissions": [
+            {
+              "code": "verify",
+              "blocks": 7,
+              "heapArrays": 7,
+              "emitted": 15,
+              "live": 15,
+              "listSlots": 32,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 15,
+              "arenaGeometricSlots": 16
+            },
+            {
+              "code": "<module>",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 11,
+              "live": 11,
+              "listSlots": 16,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 11,
+              "arenaGeometricSlots": 16
+            }
+          ]
+        },
+        {
+          "case": "dead-heavy-control",
+          "total": {
+            "blocks": 4,
+            "heapArrays": 4,
+            "emitted": 1042,
+            "live": 1042,
+            "listSlots": 2072,
+            "nonEmptyReopens": 0,
+            "relocatedWrites": 0,
+            "arenaHighWaterSlots": 1042,
+            "arenaGeometricSlots": 2064
+          },
+          "emissions": [
+            {
+              "code": "verify",
+              "blocks": 3,
+              "heapArrays": 3,
+              "emitted": 1031,
+              "live": 1031,
+              "listSlots": 2056,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 1031,
+              "arenaGeometricSlots": 2048
+            },
+            {
+              "code": "<module>",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 11,
+              "live": 11,
+              "listSlots": 16,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 11,
+              "arenaGeometricSlots": 16
+            }
+          ]
+        },
+        {
+          "case": "nested-definition-in-protected-suite",
+          "total": {
+            "blocks": 7,
+            "heapArrays": 7,
+            "emitted": 26,
+            "live": 26,
+            "listSlots": 44,
+            "nonEmptyReopens": 0,
+            "relocatedWrites": 0,
+            "arenaHighWaterSlots": 26,
+            "arenaGeometricSlots": 36
+          },
+          "emissions": [
+            {
+              "code": "inner",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 2,
+              "live": 2,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 2,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "outer",
+              "blocks": 5,
+              "heapArrays": 5,
+              "emitted": 12,
+              "live": 12,
+              "listSlots": 24,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 12,
+              "arenaGeometricSlots": 16
+            },
+            {
+              "code": "<module>",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 12,
+              "live": 12,
+              "listSlots": 16,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 12,
+              "arenaGeometricSlots": 16
+            }
+          ]
+        },
+        {
+          "case": "postponed-module-annotation",
+          "total": {
+            "blocks": 2,
+            "heapArrays": 2,
+            "emitted": 12,
+            "live": 12,
+            "listSlots": 12,
+            "nonEmptyReopens": 0,
+            "relocatedWrites": 0,
+            "arenaHighWaterSlots": 12,
+            "arenaGeometricSlots": 16
+          },
+          "emissions": [
+            {
+              "code": "<module>",
+              "blocks": 2,
+              "heapArrays": 2,
+              "emitted": 12,
+              "live": 12,
+              "listSlots": 12,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 12,
+              "arenaGeometricSlots": 16
+            }
+          ]
+        },
+        {
+          "case": "ordinary-scopes-under-protection",
+          "total": {
+            "blocks": 10,
+            "heapArrays": 10,
+            "emitted": 39,
+            "live": 39,
+            "listSlots": 64,
+            "nonEmptyReopens": 0,
+            "relocatedWrites": 0,
+            "arenaHighWaterSlots": 39,
+            "arenaGeometricSlots": 68
+          },
+          "emissions": [
+            {
+              "code": "callback",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 2,
+              "live": 2,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 2,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "f",
+              "blocks": 6,
+              "heapArrays": 6,
+              "emitted": 18,
+              "live": 18,
+              "listSlots": 32,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 18,
+              "arenaGeometricSlots": 32
+            },
+            {
+              "code": "K",
+              "blocks": 2,
+              "heapArrays": 2,
+              "emitted": 9,
+              "live": 9,
+              "listSlots": 12,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 9,
+              "arenaGeometricSlots": 16
+            },
+            {
+              "code": "<module>",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 10,
+              "live": 10,
+              "listSlots": 16,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 10,
+              "arenaGeometricSlots": 16
+            }
+          ]
+        },
+        {
+          "case": "complex-scopes-under-protection",
+          "total": {
+            "blocks": 12,
+            "heapArrays": 12,
+            "emitted": 53,
+            "live": 53,
+            "listSlots": 84,
+            "nonEmptyReopens": 0,
+            "relocatedWrites": 0,
+            "arenaHighWaterSlots": 53,
+            "arenaGeometricSlots": 96
+          },
+          "emissions": [
+            {
+              "code": "value",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 2,
+              "live": 2,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 2,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Base",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 2,
+              "live": 2,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 2,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "<lambda>",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "value",
+              "blocks": 7,
+              "heapArrays": 7,
+              "emitted": 33,
+              "live": 33,
+              "listSlots": 52,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 33,
+              "arenaGeometricSlots": 64
+            },
+            {
+              "code": "Derived",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 2,
+              "live": 2,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 2,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "<module>",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 10,
+              "live": 10,
+              "listSlots": 16,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 10,
+              "arenaGeometricSlots": 16
+            }
+          ]
+        },
+        {
+          "case": "native-loop-back-edge",
+          "total": {
+            "blocks": 4,
+            "heapArrays": 4,
+            "emitted": 39,
+            "live": 36,
+            "listSlots": 52,
+            "nonEmptyReopens": 0,
+            "relocatedWrites": 0,
+            "arenaHighWaterSlots": 36,
+            "arenaGeometricSlots": 40
+          },
+          "emissions": [
+            {
+              "code": "count",
+              "blocks": 3,
+              "heapArrays": 3,
+              "emitted": 28,
+              "live": 28,
+              "listSlots": 44,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 28,
+              "arenaGeometricSlots": 32
+            },
+            {
+              "code": "<module>",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 11,
+              "live": 8,
+              "listSlots": 8,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 8,
+              "arenaGeometricSlots": 8
+            }
+          ]
+        },
+        {
+          "case": "nested-finally-counter",
+          "total": {
+            "blocks": 14,
+            "heapArrays": 14,
+            "emitted": 48,
+            "live": 48,
+            "listSlots": 80,
+            "nonEmptyReopens": 2,
+            "relocatedWrites": 6,
+            "arenaHighWaterSlots": 54,
+            "arenaGeometricSlots": 80
+          },
+          "emissions": [
+            {
+              "code": "apply",
+              "blocks": 13,
+              "heapArrays": 13,
+              "emitted": 36,
+              "live": 36,
+              "listSlots": 64,
+              "nonEmptyReopens": 2,
+              "relocatedWrites": 6,
+              "arenaHighWaterSlots": 42,
+              "arenaGeometricSlots": 64
+            },
+            {
+              "code": "<module>",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 12,
+              "live": 12,
+              "listSlots": 16,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 12,
+              "arenaGeometricSlots": 16
+            }
+          ]
+        }
+      ]
+    },
+    "early-exits": {
+      "source": "f069dc7ab with emission diagnostics",
+      "workerHashes": {
+        "Inspect.deps.json": "2d4667c19cc8c902aaec0f8f7ee91d1cf12cbad6b6e7bffe82d306ae68c743c4",
+        "Inspect.dll": "300444b73f51f07cbf8543fe00e2ac53cb8e73dbe57ef7a5ba67ddb09881796a",
+        "Inspect.exe": "2861970b7ef37ab8118ae2aa48c4616c0f5f3412137083275ba86b68917bb154",
+        "Inspect.pdb": "fcaf8b0295a46eefe3d9f0adcc533b2e100c3425218975704412b1147b3ea128",
+        "Inspect.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0",
+        "Lokad.Lython.dll": "f6bdf9f2337f88c73161f64f5b0254e74cba0a7272bb9b207e698e96b5230dae"
+      },
+      "fixtureSHA256": "39e2c67582aea733e74bd9e57f799efebfa765bd0bc8854b89a3d3c475afbfe6",
+      "rows": [
+        {
+          "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+          "total": {
+            "blocks": 6,
+            "heapArrays": 6,
+            "emitted": 60,
+            "live": 60,
+            "listSlots": 84,
+            "nonEmptyReopens": 0,
+            "relocatedWrites": 0,
+            "arenaHighWaterSlots": 60,
+            "arenaGeometricSlots": 92
+          },
+          "emissions": [
+            {
+              "code": "evaluate",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 6,
+              "live": 6,
+              "listSlots": 8,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 6,
+              "arenaGeometricSlots": 8
+            },
+            {
+              "code": "compile_rule",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 11,
+              "live": 11,
+              "listSlots": 16,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 11,
+              "arenaGeometricSlots": 16
+            },
+            {
+              "code": "for_policy",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "<module>",
+              "blocks": 3,
+              "heapArrays": 3,
+              "emitted": 39,
+              "live": 39,
+              "listSlots": 56,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 39,
+              "arenaGeometricSlots": 64
+            }
+          ]
+        },
+        {
+          "case": "scripts.dataclass-inherited-configuration.generated",
+          "total": {
+            "blocks": 53,
+            "heapArrays": 53,
+            "emitted": 454,
+            "live": 454,
+            "listSlots": 468,
+            "nonEmptyReopens": 0,
+            "relocatedWrites": 0,
+            "arenaHighWaterSlots": 454,
+            "arenaGeometricSlots": 468
+          },
+          "emissions": [
+            {
+              "code": "Config",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 2,
+              "live": 2,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 2,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region0",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region1",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region2",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region3",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region4",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region5",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region6",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region7",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region8",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region9",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region10",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region11",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region12",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region13",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region14",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region15",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region16",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region17",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region18",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region19",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region20",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region21",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region22",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region23",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region24",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region25",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region26",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region27",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region28",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region29",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region30",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region31",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region32",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region33",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region34",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region35",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region36",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region37",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region38",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region39",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region40",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region41",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region42",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region43",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region44",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region45",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region46",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Region47",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "<genexpr>",
+              "blocks": 3,
+              "heapArrays": 3,
+              "emitted": 9,
+              "live": 9,
+              "listSlots": 16,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 9,
+              "arenaGeometricSlots": 16
+            },
+            {
+              "code": "<module>",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 251,
+              "live": 251,
+              "listSlots": 256,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 251,
+              "arenaGeometricSlots": 256
+            }
+          ]
+        },
+        {
+          "case": "scripts.config-generated-guards.medium.bad-0",
+          "total": {
+            "blocks": 485,
+            "heapArrays": 485,
+            "emitted": 3889,
+            "live": 3889,
+            "listSlots": 5820,
+            "nonEmptyReopens": 0,
+            "relocatedWrites": 0,
+            "arenaHighWaterSlots": 3889,
+            "arenaGeometricSlots": 4160
+          },
+          "emissions": [
+            {
+              "code": "normalize",
+              "blocks": 481,
+              "heapArrays": 481,
+              "emitted": 3848,
+              "live": 3848,
+              "listSlots": 5768,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 3848,
+              "arenaGeometricSlots": 4096
+            },
+            {
+              "code": "<module>",
+              "blocks": 4,
+              "heapArrays": 4,
+              "emitted": 41,
+              "live": 41,
+              "listSlots": 52,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 41,
+              "arenaGeometricSlots": 64
+            }
+          ]
+        },
+        {
+          "case": "assertion-tail-with-handler",
+          "total": {
+            "blocks": 8,
+            "heapArrays": 8,
+            "emitted": 26,
+            "live": 26,
+            "listSlots": 48,
+            "nonEmptyReopens": 0,
+            "relocatedWrites": 0,
+            "arenaHighWaterSlots": 26,
+            "arenaGeometricSlots": 32
+          },
+          "emissions": [
+            {
+              "code": "verify",
+              "blocks": 7,
+              "heapArrays": 7,
+              "emitted": 15,
+              "live": 15,
+              "listSlots": 32,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 15,
+              "arenaGeometricSlots": 16
+            },
+            {
+              "code": "<module>",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 11,
+              "live": 11,
+              "listSlots": 16,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 11,
+              "arenaGeometricSlots": 16
+            }
+          ]
+        },
+        {
+          "case": "dead-heavy-control",
+          "total": {
+            "blocks": 4,
+            "heapArrays": 4,
+            "emitted": 1042,
+            "live": 1042,
+            "listSlots": 2072,
+            "nonEmptyReopens": 0,
+            "relocatedWrites": 0,
+            "arenaHighWaterSlots": 1042,
+            "arenaGeometricSlots": 2064
+          },
+          "emissions": [
+            {
+              "code": "verify",
+              "blocks": 3,
+              "heapArrays": 3,
+              "emitted": 1031,
+              "live": 1031,
+              "listSlots": 2056,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 1031,
+              "arenaGeometricSlots": 2048
+            },
+            {
+              "code": "<module>",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 11,
+              "live": 11,
+              "listSlots": 16,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 11,
+              "arenaGeometricSlots": 16
+            }
+          ]
+        },
+        {
+          "case": "nested-definition-in-protected-suite",
+          "total": {
+            "blocks": 7,
+            "heapArrays": 7,
+            "emitted": 26,
+            "live": 26,
+            "listSlots": 44,
+            "nonEmptyReopens": 0,
+            "relocatedWrites": 0,
+            "arenaHighWaterSlots": 26,
+            "arenaGeometricSlots": 36
+          },
+          "emissions": [
+            {
+              "code": "inner",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 2,
+              "live": 2,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 2,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "outer",
+              "blocks": 5,
+              "heapArrays": 5,
+              "emitted": 12,
+              "live": 12,
+              "listSlots": 24,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 12,
+              "arenaGeometricSlots": 16
+            },
+            {
+              "code": "<module>",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 12,
+              "live": 12,
+              "listSlots": 16,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 12,
+              "arenaGeometricSlots": 16
+            }
+          ]
+        },
+        {
+          "case": "postponed-module-annotation",
+          "total": {
+            "blocks": 2,
+            "heapArrays": 2,
+            "emitted": 12,
+            "live": 12,
+            "listSlots": 12,
+            "nonEmptyReopens": 0,
+            "relocatedWrites": 0,
+            "arenaHighWaterSlots": 12,
+            "arenaGeometricSlots": 16
+          },
+          "emissions": [
+            {
+              "code": "<module>",
+              "blocks": 2,
+              "heapArrays": 2,
+              "emitted": 12,
+              "live": 12,
+              "listSlots": 12,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 12,
+              "arenaGeometricSlots": 16
+            }
+          ]
+        },
+        {
+          "case": "ordinary-scopes-under-protection",
+          "total": {
+            "blocks": 10,
+            "heapArrays": 10,
+            "emitted": 39,
+            "live": 39,
+            "listSlots": 64,
+            "nonEmptyReopens": 0,
+            "relocatedWrites": 0,
+            "arenaHighWaterSlots": 39,
+            "arenaGeometricSlots": 68
+          },
+          "emissions": [
+            {
+              "code": "callback",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 2,
+              "live": 2,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 2,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "f",
+              "blocks": 6,
+              "heapArrays": 6,
+              "emitted": 18,
+              "live": 18,
+              "listSlots": 32,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 18,
+              "arenaGeometricSlots": 32
+            },
+            {
+              "code": "K",
+              "blocks": 2,
+              "heapArrays": 2,
+              "emitted": 9,
+              "live": 9,
+              "listSlots": 12,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 9,
+              "arenaGeometricSlots": 16
+            },
+            {
+              "code": "<module>",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 10,
+              "live": 10,
+              "listSlots": 16,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 10,
+              "arenaGeometricSlots": 16
+            }
+          ]
+        },
+        {
+          "case": "complex-scopes-under-protection",
+          "total": {
+            "blocks": 12,
+            "heapArrays": 12,
+            "emitted": 53,
+            "live": 53,
+            "listSlots": 84,
+            "nonEmptyReopens": 0,
+            "relocatedWrites": 0,
+            "arenaHighWaterSlots": 53,
+            "arenaGeometricSlots": 96
+          },
+          "emissions": [
+            {
+              "code": "value",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 2,
+              "live": 2,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 2,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "Base",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 2,
+              "live": 2,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 2,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "<lambda>",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 4,
+              "live": 4,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 4,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "value",
+              "blocks": 7,
+              "heapArrays": 7,
+              "emitted": 33,
+              "live": 33,
+              "listSlots": 52,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 33,
+              "arenaGeometricSlots": 64
+            },
+            {
+              "code": "Derived",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 2,
+              "live": 2,
+              "listSlots": 4,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 2,
+              "arenaGeometricSlots": 4
+            },
+            {
+              "code": "<module>",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 10,
+              "live": 10,
+              "listSlots": 16,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 10,
+              "arenaGeometricSlots": 16
+            }
+          ]
+        },
+        {
+          "case": "native-loop-back-edge",
+          "total": {
+            "blocks": 4,
+            "heapArrays": 4,
+            "emitted": 39,
+            "live": 36,
+            "listSlots": 52,
+            "nonEmptyReopens": 0,
+            "relocatedWrites": 0,
+            "arenaHighWaterSlots": 36,
+            "arenaGeometricSlots": 40
+          },
+          "emissions": [
+            {
+              "code": "count",
+              "blocks": 3,
+              "heapArrays": 3,
+              "emitted": 28,
+              "live": 28,
+              "listSlots": 44,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 28,
+              "arenaGeometricSlots": 32
+            },
+            {
+              "code": "<module>",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 11,
+              "live": 8,
+              "listSlots": 8,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 8,
+              "arenaGeometricSlots": 8
+            }
+          ]
+        },
+        {
+          "case": "nested-finally-counter",
+          "total": {
+            "blocks": 14,
+            "heapArrays": 14,
+            "emitted": 48,
+            "live": 48,
+            "listSlots": 80,
+            "nonEmptyReopens": 0,
+            "relocatedWrites": 0,
+            "arenaHighWaterSlots": 48,
+            "arenaGeometricSlots": 80
+          },
+          "emissions": [
+            {
+              "code": "apply",
+              "blocks": 13,
+              "heapArrays": 13,
+              "emitted": 36,
+              "live": 36,
+              "listSlots": 64,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 36,
+              "arenaGeometricSlots": 64
+            },
+            {
+              "code": "<module>",
+              "blocks": 1,
+              "heapArrays": 1,
+              "emitted": 12,
+              "live": 12,
+              "listSlots": 16,
+              "nonEmptyReopens": 0,
+              "relocatedWrites": 0,
+              "arenaHighWaterSlots": 12,
+              "arenaGeometricSlots": 16
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "exactCodeObjects": 79,
+  "elapsedMeasured": false
+}
