@@ -63,8 +63,9 @@ internal sealed partial class LythonRuntime
             internal ILythonRegexCursor Find()
             {
                 ObjectDisposedException.ThrowIf(_subject is null, this);
-                return RegexCompiler.ProviderCall(() => _subject.Find(_context.State.CancellationToken),
-                    _context.MemoryGovernor, _context.State.CancellationToken, _span, _pattern.Pattern);
+                var token = _context.State.CancellationToken;
+                return RegexCompiler.ProviderCall((Subject: _subject, Token: token),
+                    static state => state.Subject.Find(state.Token), _context.MemoryGovernor, token, _span, _pattern.Pattern);
             }
 
             internal bool Next(ILythonRegexCursor cursor, RegexSubjectRange range)
@@ -119,9 +120,12 @@ internal sealed partial class LythonRuntime
 
         private static ILythonRegexSubject OpenSubject(RePatternObject pattern, RegexSubjectRange range,
             LythonRegexWindow window, ExecutionContext context, LythonSourceSpan span)
-            => RegexCompiler.ProviderCall(() => pattern.Regex.Prepare(range.Original.Utf8Bytes, window,
-                context.MemoryGovernor.Budget, context.State.CancellationToken), context.MemoryGovernor,
-                context.State.CancellationToken, span, pattern.Pattern);
+        {
+            var token = context.State.CancellationToken;
+            return RegexCompiler.ProviderCall((pattern, range.Original, window, context, token),
+                static state => state.pattern.Regex.Prepare(state.Original.Utf8Bytes, state.window,
+                    state.context.MemoryGovernor.Budget, state.token), context.MemoryGovernor, token, span, pattern.Pattern);
+        }
 
         private static bool TryMatch(ILythonRegexSubject subject, RePatternObject pattern, RegexSubjectRange range,
             LythonRegexWindow window, LythonRegexMatchMode mode, Span<LythonRegexCapture?> captures,

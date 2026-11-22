@@ -74,7 +74,9 @@ internal sealed partial class LythonRuntime
             return offset;
         }
 
-        internal static T ProviderCall<T>(Func<T> operation, MemoryGovernor? governor,
+        // Pass borrowed operation state explicitly so a subject or cursor
+        // acquisition needs no per-call closure or delegate allocation.
+        internal static T ProviderCall<TState, T>(TState state, Func<TState, T> operation, MemoryGovernor? governor,
             CancellationToken cancellationToken, LythonSourceSpan? span, PyString? pattern = null,
             string operationName = "Regex provider")
         {
@@ -82,7 +84,7 @@ internal sealed partial class LythonRuntime
             if (cancellationToken.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
             try
             {
-                var result = operation();
+                var result = operation(state);
                 try
                 {
                     governor?.ThrowIfAdmissionFailed();
@@ -218,7 +220,7 @@ internal sealed partial class LythonRuntime
         internal static int ReadCaptureSlotCount(ILythonRegexPattern pattern, MemoryGovernor? governor,
             CancellationToken token, LythonSourceSpan? span)
         {
-            var count = ProviderCall(() => pattern.CaptureSlotCount, governor, token, span);
+            var count = ProviderCall(pattern, static p => p.CaptureSlotCount, governor, token, span);
             if (count <= 0 || count > Array.MaxLength)
                 throw RuntimeErrors.Capability("Regex provider returned an invalid capture slot count.", span);
             return count;
@@ -226,8 +228,9 @@ internal sealed partial class LythonRuntime
 
         internal static IReadOnlyDictionary<PyString, int> CopyNamedGroups(ILythonRegexPattern pattern, int captureSlotCount,
             MemoryGovernor? governor, CancellationToken token, LythonSourceSpan? span, PyString? sourcePattern = null)
-            => ProviderCall<IReadOnlyDictionary<PyString, int>>(() =>
+            => ProviderCall((pattern, captureSlotCount, governor, token, span), static state =>
             {
+                var (pattern, captureSlotCount, governor, token, span) = state;
                 var (entries, count) = ReadNamedGroupEntries(pattern, captureSlotCount, governor, token, span);
                 var bytes = checked(64L + 96L * count);
                 using var storage = governor?.ReserveTemporary(bytes, span);
@@ -242,8 +245,9 @@ internal sealed partial class LythonRuntime
 
         private static PyDict CopyRuntimeNamedGroups(ILythonRegexPattern pattern, int captureSlotCount,
             ExecutionContext context, CancellationToken token, LythonSourceSpan span, PyString sourcePattern)
-            => ProviderCall(() =>
+            => ProviderCall((pattern, captureSlotCount, context, token, span), static state =>
             {
+                var (pattern, captureSlotCount, context, token, span) = state;
                 var governor = context.MemoryGovernor;
                 var (entries, count) = ReadNamedGroupEntries(pattern, captureSlotCount, governor, token, span);
                 if (count == 0) return EmptyRuntimeNamedGroups;
@@ -354,15 +358,15 @@ internal sealed partial class LythonRuntime
             var provider = context.State.RegexProvider
                 ?? throw RuntimeErrors.Capability("Python regex functionality requires a host-supplied Lython regex provider.", span);
             var artifact = context.State.RegexPrograms?.Find(pattern, options);
-            var compiled = artifact?.Program ?? ProviderCall(() => provider.Compile(pattern.Utf8Bytes, options,
-                context.MemoryGovernor.Budget, context.State.CancellationToken), context.MemoryGovernor,
-                context.State.CancellationToken, span, pattern);
+            var token = context.State.CancellationToken;
+            var compiled = artifact?.Program ?? ProviderCall((provider, pattern, options, context, token),
+                static state => state.provider.Compile(state.pattern.Utf8Bytes, state.options,
+                    state.context.MemoryGovernor.Budget, state.token), context.MemoryGovernor, token, span, pattern);
             try
             {
-                var token = context.State.CancellationToken;
                 var captureSlotCount = artifact?.CaptureSlotCount
                     ?? ReadCaptureSlotCount(compiled, context.MemoryGovernor, token, span);
-                var flags = ProviderCall(() => compiled.Flags, context.MemoryGovernor, token, span, pattern);
+                var flags = ProviderCall(compiled, static p => p.Flags, context.MemoryGovernor, token, span, pattern);
                 var wrapperBytes = checked(256L + 64L * captureSlotCount);
                 using var storage = context.MemoryGovernor.ReserveTemporary(wrapperBytes, span);
                 // Guest-visible name strings can acquire caches and produce new

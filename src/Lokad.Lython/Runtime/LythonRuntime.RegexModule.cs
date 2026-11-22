@@ -96,7 +96,8 @@ internal sealed partial class LythonRuntime
             // represent successful compilations of the same original pattern.
             if (Options.Flags == other.Options.Flags && Options.Verbose == other.Options.Verbose ||
                 ReferenceEquals(Regex, other.Regex)) return true;
-            return RegexCompiler.ProviderCall(() => CompareProgramKeys(other, context, span),
+            return RegexCompiler.ProviderCall((Pattern: this, other, context, span),
+                static state => state.Pattern.CompareProgramKeys(state.other, state.context, state.span),
                 context?.MemoryGovernor, context?.State.CancellationToken ?? default, span, Pattern);
         }
 

@@ -263,8 +263,9 @@ internal static class StaticRegexReturnResolver
             var bytes = 512L + 3L * pattern.Length;
             analysis.ReserveRegexStorage(bytes, span);
             var encoded = Encoding.UTF8.GetBytes(pattern);
-            var program = LythonRuntime.RegexCompiler.ProviderCall(() => provider.Compile(encoded, options,
-                analysis.RegexMemoryOwner, token), governor, token, span, operationName: "Regex pattern compilation");
+            var program = LythonRuntime.RegexCompiler.ProviderCall((provider, encoded, options, analysis, token),
+                static state => state.provider.Compile(state.encoded, state.options, state.analysis.RegexMemoryOwner, state.token),
+                governor, token, span, operationName: "Regex pattern compilation");
             try
             {
                 var captureSlotCount = LythonRuntime.RegexCompiler.ReadCaptureSlotCount(program, governor, token, span);
@@ -313,9 +314,10 @@ internal static class StaticRegexReturnResolver
         var length = PyString.CountUtf8Units(input, false, token, span);
         var window = LythonRuntime.RegexCompiler.CreateWindow(input, length, pos, endPos, token, span);
         if (LythonRuntime.RegexCompiler.IsImpossibleWindow(operation, window.Pos, window.EndPos)) return false;
-        using var subject = LythonRuntime.RegexCompiler.ProviderCall(() => pattern.Prepare(input, window,
-            analysis.MemoryGovernor?.Budget ?? new LythonMemoryBudget(), token), analysis.MemoryGovernor, token, span,
-            operationName: "Regex constant-subject preparation");
+        using var subject = LythonRuntime.RegexCompiler.ProviderCall((pattern, input, window, analysis, token),
+            static state => state.pattern.Prepare(state.input, state.window,
+                state.analysis.MemoryGovernor?.Budget ?? new LythonMemoryBudget(), state.token),
+            analysis.MemoryGovernor, token, span, operationName: "Regex constant-subject preparation");
         using var storage = analysis.MemoryGovernor?.ReserveTemporary(checked(32L + 16L * captureSlotCount), span);
         if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
         var captures = new LythonRegexCapture?[captureSlotCount];
