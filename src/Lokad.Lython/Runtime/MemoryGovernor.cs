@@ -23,34 +23,33 @@ internal sealed class MemoryGovernor
     internal void ReturnFunctionWorkspace(LythonRuntime.ExecutableSlot[] values, int usedLength)
         => _functionWorkspace.Return(this, values, usedLength);
 
-    // The range array and its private iteration state share one existing loan.
-    // Reusing a loan retains its full capacity but clears every guest reference.
-    internal Text.PyStringOps.CasedWhitespaceIteration RentWordRanges(int capacity, LythonSourceSpan? span)
+    // A loan owns the cursor and its prepared bytes through the final user.
+    internal Text.PyStringOps.CasedWhitespaceIteration RentWordBuffer(LythonSourceSpan? span)
     {
         ThrowIfAdmissionFailed();
         var cached = _idleWords;
         _idleWords = null;
         if (cached is not null)
         {
-            if (cached.Ranges.Length >= capacity) { cached.BeginLoan(); return cached; }
-            cached.ReleaseStorage();
+            cached.BeginLoan();
+            return cached;
         }
-        var bytes = Text.PyStringOps.CasedWhitespaceIteration.EstimateStorageBytes(capacity);
+        const long bytes = Text.PyStringOps.CasedWhitespaceIteration.HeaderBytes;
         Reserve(bytes, span);
         try
         {
-            var words = new Text.PyStringOps.CasedWhitespaceIteration(this, capacity);
+            var words = new Text.PyStringOps.CasedWhitespaceIteration(this);
             Commit(bytes);
             return words;
         }
         catch { ReleaseReserved(bytes); throw; }
     }
 
-    internal void ReturnWordRanges(Text.PyStringOps.CasedWhitespaceIteration words, int usedLength)
+    internal void ReturnWordBuffer(Text.PyStringOps.CasedWhitespaceIteration words)
     {
-        if (!words.EndLoan(usedLength)) return;
+        if (!words.EndLoan()) return;
         var cached = _idleWords;
-        if (!_wordReuseEnded && (cached is null || cached.Ranges.Length < words.Ranges.Length))
+        if (!_wordReuseEnded && (cached is null || cached.EncodedCapacity < words.EncodedCapacity))
         {
             _idleWords = words;
             if (cached is not null) cached.ReleaseStorage();

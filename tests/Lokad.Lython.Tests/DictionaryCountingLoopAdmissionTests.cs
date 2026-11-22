@@ -192,14 +192,14 @@ public sealed class DictionaryCountingLoopAdmissionTests
         {
             hook.AfterGrowth = bytes =>
             {
-                // Wait for complete word admission, after the source and range
+                // Wait for complete word admission, after the source and scratch
                 // storage. Cursor/header estimates may change independently.
                 if (bytes < 3 * PyString.EstimateApproximateBytes(4)) return;
                 hook.AfterGrowth = null;
                 // A nested loan has returned a larger idle buffer while the
                 // native source is still active. Its return must now refund.
-                var spare = context.MemoryGovernor.RentWordRanges(16, span);
-                context.MemoryGovernor.ReturnWordRanges(spare, 0);
+                using (var spare = context.MemoryGovernor.RentWordBuffer(span))
+                    spare.PrepareEncoded(256, context, span);
                 hook.AfterShrink = refunded =>
                 {
                     hook.AfterShrink = null;

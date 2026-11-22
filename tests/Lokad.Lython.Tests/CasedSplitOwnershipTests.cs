@@ -113,7 +113,7 @@ public sealed class CasedSplitOwnershipTests
     [Theory]
     [InlineData(false, false), InlineData(true, false)]
     [InlineData(false, true), InlineData(true, true)]
-    public void InterruptedRangeGrowthKeepsInputAndReturnsOwnedCapacity(bool upper, bool cancel)
+    public void InterruptedBufferGrowthKeepsInputAndTheIdleBuffer(bool upper, bool cancel)
     {
         var budget = new LythonMemoryBudget(1024 * 1024);
         using (var owner = budget.CreateScope())
@@ -125,18 +125,15 @@ public sealed class CasedSplitOwnershipTests
             var span = new LythonSourceSpan(0, 1, 1, 1);
             var text = string.Join(' ', Enumerable.Repeat("Αß", 65));
             var input = PyString.FromString(text, context.MemoryGovernor, span);
+            using (PyStringOps.PrepareCasedWhitespaceIteration(PyString.FromString("ALPHA"), upper, context, span)) { }
             var baseline = budget.ReservedBytes;
             var reached = false;
             hook.RefuseGrowth = bytes =>
             {
-                if (bytes < MemoryGovernor.WorkspaceBytes(32)) return false;
                 reached = true;
                 return !cancel;
             };
-            hook.AfterGrowth = bytes =>
-            {
-                if (bytes >= MemoryGovernor.WorkspaceBytes(32)) cancellation.Cancel();
-            };
+            hook.AfterGrowth = _ => cancellation.Cancel();
             var error = Assert.Throws<LythonRuntimeException>(() =>
                 PyStringOps.PrepareCasedWhitespaceIteration(input, upper, context, span));
             Assert.True(reached);
@@ -145,9 +142,9 @@ public sealed class CasedSplitOwnershipTests
             if (!cancel) Assert.Same(error, context.MemoryGovernor.AdmissionFailure);
             Assert.Equal(text, input.AsString());
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-            Assert.True(budget.ReservedBytes > baseline); // returned inventory remains owned
-            context.State.CloseResources();
             Assert.Equal(baseline, budget.ReservedBytes);
+            context.State.CloseResources();
+            Assert.InRange(budget.ReservedBytes, input.CommittedOwnedBytes, baseline - 1);
             Assert.Equal(text, input.AsString());
         }
         Assert.Equal(0, budget.ReservedBytes);
@@ -156,7 +153,7 @@ public sealed class CasedSplitOwnershipTests
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void CancelledHelperReturnRelinquishesItsPreparedRangeLoan(bool native)
+    public void CancelledHelperReturnRelinquishesItsPreparedWordLoan(bool native)
     {
         var budget = new LythonMemoryBudget(1024 * 1024);
         using (var owner = budget.CreateScope())
@@ -223,7 +220,7 @@ public sealed class CasedSplitOwnershipTests
     }
 
     [Fact]
-    public void PreparedRangesKeepOverlappingLoansFundedThroughReuseShutdown()
+    public void PreparedWordsKeepOverlappingLoansFundedThroughReuseShutdown()
     {
         var budget = new LythonMemoryBudget(1024 * 1024);
         using (var owner = budget.CreateScope())
@@ -255,6 +252,33 @@ public sealed class CasedSplitOwnershipTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
+    [Theory]
+    [InlineData("", new string[0])]
+    [InlineData(" \t\u2003\u0085", new string[0])]
+    [InlineData("A", new[] { "a" })]
+    [InlineData(" \tA\0B\u2003İ \r", new[] { "a\0b", "i\u0307" })]
+    [InlineData("a b c d e f g h i", new[] { "a", "b", "c", "d", "e", "f", "g", "h", "i" })]
+    public void ReusedWordBufferStopsAtNewLineBoundary(string line, string[] expected)
+    {
+        var budget = new LythonMemoryBudget();
+        using (var owner = budget.CreateScope())
+        {
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = owner });
+            var span = new LythonSourceSpan(0, 1, 1, 1);
+            var previous = PyString.FromString("FIRST " + new string('X', 260));
+            using (var prior = PyStringOps.PrepareCasedWhitespaceIteration(previous, true, context, span))
+                Assert.Equal("FIRST", Assert.IsType<PyString>(prior.MoveNext().Value).AsString());
+            using (var current = PyStringOps.PrepareCasedWhitespaceIteration(PyString.FromString(line), false, context, span))
+            {
+                foreach (var word in expected)
+                    Assert.Equal(word, Assert.IsType<PyString>(current.MoveNext().Value).AsString());
+                Assert.False(current.MoveNext().HasValue);
+            }
+            context.State.CloseResources();
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Fact]
     public void EagerWordRefusalReturnsPreparedStorageWithoutPublishingCursor()
     {
@@ -264,15 +288,15 @@ public sealed class CasedSplitOwnershipTests
             var hook = new AdmissionHookMemoryBudget(owner);
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = hook });
             var span = new LythonSourceSpan(0, 1, 1, 1);
-            var input = PyString.FromString("A " + new string('B', 20000), context.MemoryGovernor, span);
+            var input = PyString.FromString(string.Join(' ', Enumerable.Repeat("A", 32)), context.MemoryGovernor, span);
             var baseline = budget.ReservedBytes;
-            hook.RefuseGrowth = bytes => bytes >= 20000;
+            hook.RefuseGrowth = bytes => bytes >= 32 * PyString.EstimateApproximateBytes(1);
             var first = Assert.Throws<LythonRuntimeException>(() =>
                 PyStringOps.PrepareCasedWhitespaceIteration(input, false, context, span));
             Assert.Same(first, context.MemoryGovernor.AdmissionFailure);
             Assert.Equal(LythonFailureReason.SharedMemoryAllowance, first.Attribution?.Reason);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-            Assert.True(budget.ReservedBytes > baseline); // returned range cache is still owned
+            Assert.True(budget.ReservedBytes > baseline); // the idle cursor is still owned
             context.State.CloseResources();
             Assert.Equal(baseline, budget.ReservedBytes);
         }

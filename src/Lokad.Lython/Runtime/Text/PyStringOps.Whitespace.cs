@@ -1,4 +1,5 @@
 using System.Buffers;
+using System.Buffers.Binary;
 using System.Text;
 
 namespace Lokad.Lython.Runtime.Text;
@@ -52,23 +53,36 @@ internal static partial class PyStringOps
     {
         context.CheckExecution(span);
         var mapping = upper ? CaseMapping.Upper : CaseMapping.Lower;
-        var prepared = context.MemoryGovernor.RentWordRanges(8, span);
+        CasedWhitespaceIteration? prepared = context.MemoryGovernor.RentWordBuffer(span);
         var previousScratchCapacity = prepared.EncodedCapacity;
-        Span<(int Start, int End, int Capacity)> ranges = prepared.Ranges;
-        var count = 0;
-        long outputBytes = 0;
         try
         {
-            CollectWhitespaceForward(value.Utf8Span, -1, ref ranges, ref count, ref outputBytes,
-                ref prepared, context.MemoryGovernor, span, context, mapping, prepared);
-            // The loan already owns the cursor and range capacity. Only eventual
-            // immutable words need admission now; no transaction object per line.
+            var source = value.Utf8Span;
+            var state = new WhitespaceRangeState(-1, mapping);
+            // The first length needs four bytes. Each later length uses
+            // space already covered by at least one skipped whitespace scalar.
+            var capacity = source.IsEmpty ? 0
+                : CheckCaseOutputCapacity(sizeof(int) + (long)source.Length * state.MaximumCaseWidth, span);
+            var encoded = prepared.PrepareEncoded(capacity, context, span);
+            context.CheckExecution(span);
+            var used = 0;
+            long outputBytes = 0;
+            while (state.Position < source.Length)
+            {
+                state.Written = used + sizeof(int);
+                if (!TryReadWhitespaceRange(source, ref state, context, span, out var range, encoded)) break;
+                BinaryPrimitives.WriteInt32LittleEndian(encoded[used..], range.Capacity);
+                used = range.End;
+                outputBytes = checked(outputBytes + PyString.EstimateApproximateBytes(range.Capacity));
+            }
+
+            // Prepay every eventual immutable word before any loop effect.
             context.MemoryGovernor.Reserve(outputBytes, span);
             try
             {
                 context.CheckExecution(span);
-                var result = prepared!;
-                result.Initialize(context, span, count);
+                var result = prepared;
+                result.Initialize(context, span, used);
                 context.MemoryGovernor.Commit(outputBytes);
                 prepared = null;
                 return result;
@@ -86,7 +100,7 @@ internal static partial class PyStringOps
                     if (prepared.EncodedCapacity > previousScratchCapacity)
                         prepared.ReleaseEncoded();
                 }
-                finally { context.MemoryGovernor.ReturnWordRanges(prepared, count); }
+                finally { context.MemoryGovernor.ReturnWordBuffer(prepared); }
             }
         }
     }
@@ -94,31 +108,23 @@ internal static partial class PyStringOps
     internal sealed class CasedWhitespaceIteration : ExecutableTemporaryValue
     {
         private readonly MemoryGovernor _owner;
-        internal readonly (int Start, int End, int Capacity)[] Ranges;
         private byte[] _encoded = [];
         internal int EncodedCapacity => _encoded.Length;
         private LythonRuntime.ExecutionContext? _context;
         private LythonSourceSpan? _span;
-        private int _count;
+        private int _length;
         private int _position;
         private bool _loaned = true;
 
-        internal static long EstimateStorageBytes(int capacity) => checked(128L + 16L * capacity);
-        internal long StorageBytes => checked(EstimateStorageBytes(Ranges.Length) + EncodedStorageBytes(_encoded.Length));
+        internal const long HeaderBytes = 128;
+        internal long StorageBytes => HeaderBytes + EncodedStorageBytes(EncodedCapacity);
 
-        internal CasedWhitespaceIteration(MemoryGovernor owner, int capacity)
-        {
-            _owner = owner;
-            Ranges = new (int Start, int End, int Capacity)[capacity];
-        }
-
-        internal void AdoptScratchFrom(CasedWhitespaceIteration previous)
-            => (_encoded, previous._encoded) = (previous._encoded, _encoded);
+        internal CasedWhitespaceIteration(MemoryGovernor owner) => _owner = owner;
 
         internal void ReleaseStorage()
         {
             try { ReleaseEncoded(); }
-            finally { _owner.Release(EstimateStorageBytes(Ranges.Length)); }
+            finally { _owner.Release(HeaderBytes); }
         }
 
         private static long EncodedStorageBytes(int capacity) => capacity == 0 ? 0 : 32L + capacity;
@@ -150,22 +156,21 @@ internal static partial class PyStringOps
 
         internal void BeginLoan() => _loaned = true;
 
-        internal bool EndLoan(int usedLength)
+        internal bool EndLoan()
         {
             if (!_loaned) return false;
             _loaned = false;
             _context = null;
             _span = null;
-            _count = _position = 0;
-            Array.Clear(Ranges, 0, usedLength);
+            _length = _position = 0;
             return true;
         }
 
-        internal void Initialize(LythonRuntime.ExecutionContext context, LythonSourceSpan span, int count)
+        internal void Initialize(LythonRuntime.ExecutionContext context, LythonSourceSpan span, int length)
         {
             _context = context;
             _span = span;
-            _count = count;
+            _length = length;
             _position = 0;
         }
 
@@ -174,11 +179,17 @@ internal static partial class PyStringOps
             // ForNext already checks the active execution before entering this
             // private cursor. The shared writer checks inside long work;
             // publication retains the ordinary binding/next-opcode check.
-            if (_position == _count) return PyIterationResult.End;
-            var range = Ranges[_position++];
-            var word = CreateSplitFragment(_encoded.AsSpan(), range, null,
-                _owner, _span, _context);
-            return PyIterationResult.Yield(word);
+            if (_position == _length) return PyIterationResult.End;
+            var range = ReadWordRange();
+            return PyIterationResult.Yield(CreateSplitFragment(_encoded.AsSpan(), range, null, _owner, _span, _context));
+        }
+
+        private (int Start, int End, int Capacity) ReadWordRange()
+        {
+            var start = _position + sizeof(int);
+            var length = BinaryPrimitives.ReadInt32LittleEndian(_encoded.AsSpan(_position));
+            _position = start + length;
+            return (start, _position, length);
         }
 
         internal MemoryGovernor MemoryGovernor => _owner;
@@ -188,15 +199,14 @@ internal static partial class PyStringOps
         internal bool TryReadWord(out CompactWord word)
         {
             word = default;
-            if (_position == _count) return false;
-            var range = Ranges[_position++];
+            if (_position == _length) return false;
+            var range = ReadWordRange();
             if (range.Capacity > PyString.InlineUtf8Capacity)
                 word.Value = CreateSplitFragment(_encoded.AsSpan(), range, null,
                     _owner, _span, _context);
             else
             {
-                word.Capacity = range.Capacity;
-                word.Length = range.End - range.Start;
+                word.Length = range.Capacity;
                 _encoded.AsSpan()[range.Start..range.End].CopyTo((Span<byte>)word.Utf8);
             }
             return true;
@@ -208,7 +218,7 @@ internal static partial class PyStringOps
         internal object Materialize(ref CompactWord word)
         {
             if (word.Value is not null) return word.Value;
-            var value = PyString.CreateReservedUtf8(word.Capacity, _owner);
+            var value = PyString.CreateReservedUtf8(word.Length, _owner);
             CompactWordBytes(ref word).CopyTo(value.UnpublishedUtf8);
             value.CompleteUnpublishedUtf8(word.Length);
             word.Value = value;
@@ -216,7 +226,7 @@ internal static partial class PyStringOps
         }
 
         public override void Dispose()
-            => _owner.ReturnWordRanges(this, _count);
+            => _owner.ReturnWordBuffer(this);
     }
 
     [System.Runtime.CompilerServices.InlineArray(PyString.InlineUtf8Capacity)]
@@ -226,7 +236,7 @@ internal static partial class PyStringOps
     {
         internal object? Value;
         internal CompactWordUtf8 Utf8;
-        internal int Length, Capacity;
+        internal int Length;
     }
 
     internal static ReadOnlySpan<byte> CompactWordBytes(ref CompactWord word)
@@ -453,24 +463,6 @@ internal static partial class PyStringOps
             : casing == CaseMapping.Lower ? 4 : Math.Max(4, MaxCaseExpansionUtf8Bytes);
     }
 
-    private static void CollectWhitespaceForward(ReadOnlySpan<byte> source, int maxSplit,
-        scoped ref Span<(int Start, int End, int Capacity)> ranges, ref int count, ref long outputBytes,
-        ref CasedWhitespaceIteration? prepared, MemoryGovernor? governor,
-        LythonSourceSpan? span, LythonRuntime.ExecutionContext? context, CaseMapping? casing,
-        CasedWhitespaceIteration? encoded = null)
-    {
-        var state = new WhitespaceRangeState(maxSplit, casing);
-        // The source byte count bounds its scalar count. Admit the entire
-        // conservative case expansion before obtaining this one stable window;
-        // no per-word resize/admission or extra sizing scan is needed.
-        var encodedBytes = encoded is null ? default : encoded.PrepareEncoded(
-            CheckCaseOutputCapacity((long)source.Length * state.MaximumCaseWidth, span), context!, span);
-        context?.CheckExecution(span);
-        while (TryReadWhitespaceRange(source, ref state, context, span, out var range, encodedBytes))
-            AppendSplitRange(ref ranges, ref count, range.Start, range.End, ref outputBytes,
-                ref prepared, governor, span, context, range.Capacity);
-    }
-
     // One forward scanner serves sizing/materialization and native consumption.
     // State carries only positions and case bounds, never a borrowed byte span.
     private static bool TryReadWhitespaceRange(ReadOnlySpan<byte> source, ref WhitespaceRangeState state,
@@ -555,33 +547,4 @@ internal static partial class PyStringOps
         return false;
     }
 
-    private static void AppendSplitRange(scoped ref Span<(int Start, int End, int Capacity)> ranges,
-        ref int count, int start, int end, ref long outputBytes,
-        ref CasedWhitespaceIteration? prepared, MemoryGovernor? governor, LythonSourceSpan? span,
-        LythonRuntime.ExecutionContext? context, int? casedCapacity = null)
-    {
-        if (count == ranges.Length)
-        {
-            var capacity = checked(ranges.Length * 2);
-            context?.CheckExecution(span);
-            // Keep the previous loan funded through admission and copying. The
-            // execution cache owns returned capacity; active cursors own loans.
-            var replacement = governor?.RentWordRanges(capacity, span);
-            var values = replacement?.Ranges ?? new (int Start, int End, int Capacity)[capacity];
-            var previous = prepared;
-            ranges[..count].CopyTo(values);
-            prepared = replacement;
-            ranges = values;
-            if (previous is not null)
-            {
-                // The scanner keeps this same byte builder while range capacity
-                // grows; transfer it before the old cursor can reenter the cache.
-                replacement?.AdoptScratchFrom(previous);
-                governor?.ReturnWordRanges(previous, count);
-            }
-        }
-        var outputCapacity = casedCapacity ?? end - start;
-        ranges[count++] = (start, end, outputCapacity);
-        if (outputCapacity != 0) outputBytes = checked(outputBytes + PyString.EstimateApproximateBytes(outputCapacity));
-    }
 }
