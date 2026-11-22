@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1344 share temporary block depths and physical offsets](results/2026-11-22-shared-block-layout/README.md)
+replaces two backing arrays and preserves exact executable metadata.
+The dataclass allocates 1,640 fewer compiler bytes. The postponed
+factory uses 0.38–1.00% more compiler CPU and dead-heavy elapsed
+rises. Validator time to result spans zero. Keep this form private
+and revisit if on-demand branch resolution can remove a full pass.
+
 [B1343 execute function-default staging as instructions](results/2026-11-22-direct-default-instructions/README.md)
 removes three operation descriptor types and their runtime dispatch.
 The default observer uses 1.91–5.02% less warm CPU. The mixed factory

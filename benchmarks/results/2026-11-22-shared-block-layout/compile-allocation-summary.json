@@ -1,0 +1,175 @@
+{
+  "roles": [
+    "reference",
+    "candidate",
+    "candidate",
+    "reference"
+  ],
+  "rows": [
+    {
+      "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "allocatedBytes": [
+        65472,
+        65336,
+        65336,
+        65472
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        144.190625,
+        172.4484375,
+        142.7,
+        158.70625
+      ]
+    },
+    {
+      "id": "scripts.dataclass-inherited-configuration.generated",
+      "allocatedBytes": [
+        530984,
+        529344,
+        529344,
+        530984
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        1216.421875,
+        1064.925,
+        1296.4703125,
+        1351.975
+      ]
+    },
+    {
+      "id": "scripts.config-generated-guards.medium.bad-0",
+      "allocatedBytes": [
+        2163140.25,
+        2166495,
+        2159749.375,
+        2168479.875
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        2001.0296875,
+        2154.2109375,
+        2072.4171875,
+        2067.6671875
+      ]
+    },
+    {
+      "id": "assertion-tail-with-handler",
+      "allocatedBytes": [
+        25744,
+        25624,
+        25624,
+        25712
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        11.2125,
+        10.3921875,
+        26.0984375,
+        9.9921875
+      ]
+    },
+    {
+      "id": "dead-heavy-control",
+      "allocatedBytes": [
+        840624,
+        840552,
+        840552,
+        840624
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        516.48125,
+        541.8734375,
+        410.7421875,
+        410.84375
+      ]
+    },
+    {
+      "id": "nested-definition-in-protected-suite",
+      "allocatedBytes": [
+        34048,
+        33904,
+        33904,
+        34016
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        14.303125,
+        13.4828125,
+        13.4234375,
+        14.853125
+      ]
+    },
+    {
+      "id": "postponed-module-annotation",
+      "allocatedBytes": [
+        16448,
+        16408,
+        16408,
+        16448
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        10.190625,
+        8.7,
+        8.5609375,
+        8.596875
+      ]
+    },
+    {
+      "id": "ordinary-scopes-under-protection",
+      "allocatedBytes": [
+        55072,
+        54880,
+        54880,
+        55040
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        27.5515625,
+        31.2890625,
+        30.2828125,
+        28
+      ]
+    },
+    {
+      "id": "complex-scopes-under-protection",
+      "allocatedBytes": [
+        60728,
+        60480,
+        60480,
+        60696
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        66.646875,
+        87.4,
+        34.796875,
+        31.859375
+      ]
+    },
+    {
+      "id": "native-loop-back-edge",
+      "allocatedBytes": [
+        35088,
+        35016,
+        35016,
+        35088
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        21.9375,
+        16.9453125,
+        17.7578125,
+        17.0984375
+      ]
+    },
+    {
+      "id": "nested-finally-counter",
+      "allocatedBytes": [
+        41968,
+        41824,
+        41824,
+        41936
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        28.365625,
+        18.703125,
+        21.215625,
+        19.634375
+      ]
+    }
+  ]
+}
