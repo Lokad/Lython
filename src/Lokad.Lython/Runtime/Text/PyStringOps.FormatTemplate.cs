@@ -1,5 +1,4 @@
 using System.Text;
-using System.Globalization;
 
 namespace Lokad.Lython.Runtime.Text;
 
@@ -319,9 +318,9 @@ internal static partial class PyStringOps
             if ((scalar++ & 2047) == 0) cancellationToken.ThrowIfCancellationRequested();
             Rune.DecodeFromUtf8(text[offset..], out var digit, out var width);
             offset += width;
-            if (Rune.GetUnicodeCategory(digit) != UnicodeCategory.DecimalDigitNumber) return false;
+            var number = GetDecimalDigitValue(digit);
+            if (number < 0) return false;
             // CPython checks overflow while walking, even before a later nondigit.
-            var number = (int)Rune.GetNumericValue(digit);
             if (value > (long.MaxValue - number) / 10)
                 throw new InvalidOperationException("Too many decimal digits in format string");
             value = value * 10 + number;

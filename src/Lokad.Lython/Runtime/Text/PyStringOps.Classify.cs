@@ -223,6 +223,12 @@ internal static partial class PyStringOps
     public static bool IsDecimal(PyString value, LythonRuntime.ExecutionContext? context = null, LythonSourceSpan? span = null)
         => CheckAllRunes(value, static rune => Rune.GetUnicodeCategory(rune) == UnicodeCategory.DecimalDigitNumber, context, span);
 
+    internal static int GetDecimalDigitValue(Rune rune)
+    {
+        if (rune.IsBmp) return CharUnicodeInfo.GetDecimalDigitValue((char)rune.Value);
+        return Rune.GetUnicodeCategory(rune) == UnicodeCategory.DecimalDigitNumber ? (int)Rune.GetNumericValue(rune) : -1;
+    }
+
     public static bool IsDigit(PyString value, LythonRuntime.ExecutionContext? context = null, LythonSourceSpan? span = null)
         => CheckAllRunes(value, IsDigitRune, context, span);
 

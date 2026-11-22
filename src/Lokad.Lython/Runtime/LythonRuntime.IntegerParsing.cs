@@ -1,5 +1,4 @@
 using System.Buffers;
-using System.Globalization;
 using System.Numerics;
 using System.Text;
 using Lokad.Lython.Runtime.Text;
@@ -137,9 +136,8 @@ internal sealed partial class LythonRuntime
         if (value is >= (byte)'a' and <= (byte)'z') return value - (byte)'a' + 10;
         if (value is >= (byte)'A' and <= (byte)'Z') return value - (byte)'A' + 10;
         if (!unicode || value < 128) return -1;
-        return Rune.DecodeFromUtf8(input, out var rune, out width) == OperationStatus.Done &&
-            Rune.GetUnicodeCategory(rune) == UnicodeCategory.DecimalDigitNumber
-            ? (int)Rune.GetNumericValue(rune) : -1;
+        return Rune.DecodeFromUtf8(input, out var rune, out width) == OperationStatus.Done
+            ? PyStringOps.GetDecimalDigitValue(rune) : -1;
     }
 
     private static ReadOnlySpan<byte> TrimNumericWhitespace(ReadOnlySpan<byte> input, bool unicode,

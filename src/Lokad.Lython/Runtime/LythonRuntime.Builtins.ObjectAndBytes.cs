@@ -73,6 +73,8 @@ internal sealed partial class LythonRuntime
         return ParseFloatText(bytes.Bytes, context, span, bytes);
     }
 
+    private const int FloatNormalizationStackBytes = 256;
+
     private static double ParseFloatText(ReadOnlySpan<byte> source, ExecutionContext context, LythonSourceSpan span,
         PyBytes? byteSource = null)
     {
@@ -93,28 +95,34 @@ internal sealed partial class LythonRuntime
                 return direct;
             }
         }
+        // Short tokens can validate and normalize together in existing stack
+        // scratch. Wide ASCII tokens still avoid admitting a temporary buffer.
+        var valid = input.Length <= FloatNormalizationStackBytes
+            ? TryParseNormalizedFloat(input, unicode, context, span, out var number)
+            : TryParseWideFloat(input, unicode, context, span, out number);
+        context.CheckExecution(span);
+        return valid ? number : throw TextConversionError(source, "could not convert string to float: ", context, span, byteSource);
+    }
+
+    private static bool TryParseWideFloat(ReadOnlySpan<byte> input, bool unicode, ExecutionContext context,
+        LythonSourceSpan span, out double result)
+    {
         var normalize = false;
-        var offset = 0;
-        while (offset < input.Length)
+        result = default;
+        for (var offset = 0; offset < input.Length;)
         {
             var count = Math.Min(4096, input.Length - offset);
             var part = input.Slice(offset, count);
             var special = part.IndexOfAny((byte)0, (byte)'_');
-            if (special >= 0 && part[special] == 0) break;
+            if (special >= 0 && part[special] == 0) return false;
             var ascii = System.Text.Ascii.IsValid(part);
-            if (!ascii && !unicode) break;
+            if (!ascii && !unicode) return false;
             normalize |= special >= 0 || !ascii;
             offset += count;
             context.CheckExecution(span);
         }
-        if (offset == input.Length)
-        {
-            var valid = normalize ? TryParseNormalizedFloat(input, unicode, context, span, out var number)
-                : TryParseAsciiFloat(input, out number);
-            context.CheckExecution(span);
-            if (valid) return number;
-        }
-        throw TextConversionError(source, "could not convert string to float: ", context, span, byteSource);
+        return normalize ? TryParseNormalizedFloat(input, unicode, context, span, out result)
+            : TryParseAsciiFloat(input, out result);
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
@@ -124,11 +132,10 @@ internal sealed partial class LythonRuntime
         // Unicode decimal digits and underscores can only shrink the token.
         // Small scratch stays inside this synchronous call. Wider tokens admit
         // the capacity needed for the ASCII form before allocating the buffer.
-        const int inlineCapacity = 256;
-        using var storage = input.Length <= inlineCapacity ? null
+        using var storage = input.Length <= FloatNormalizationStackBytes ? null
             : context.MemoryGovernor.ReserveTemporary(32L + input.Length, span);
         context.CheckExecution(span);
-        Span<byte> normalized = storage is null ? stackalloc byte[inlineCapacity] : new byte[input.Length];
+        Span<byte> normalized = storage is null ? stackalloc byte[FloatNormalizationStackBytes] : new byte[input.Length];
         var written = 0;
         var previousDigit = false;
         var previousUnderscore = false;
@@ -154,9 +161,11 @@ internal sealed partial class LythonRuntime
                 // Outer whitespace was already trimmed. Interior whitespace,
                 // non-decimal scalars and invalid encodings cannot be digits.
                 if (!unicode || Rune.DecodeFromUtf8(input[(offset - 1)..], out var rune, out var width)
-                    != OperationStatus.Done || Rune.GetUnicodeCategory(rune) != UnicodeCategory.DecimalDigitNumber) return false;
+                    != OperationStatus.Done) return false;
+                var decimalDigit = PyStringOps.GetDecimalDigitValue(rune);
+                if (decimalDigit < 0) return false;
                 offset += width - 1;
-                character = checked((byte)('0' + (int)Rune.GetNumericValue(rune)));
+                character = (byte)('0' + decimalDigit);
             }
             var digit = character is >= (byte)'0' and <= (byte)'9';
             if (previousUnderscore && !digit) return false;
