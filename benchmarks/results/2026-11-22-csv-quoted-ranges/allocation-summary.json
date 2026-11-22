@@ -1,0 +1,47 @@
+[
+  {
+    "case": "scripts.csv-invoice.large",
+    "reference": 3672438,
+    "candidate": 3672438,
+    "allocationChangePercent": 0.0,
+    "referenceAccountedPeak": 9432613,
+    "candidateAccountedPeak": 9432613,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.csv-meter-report.typed-ascii",
+    "reference": 3474462,
+    "candidate": 3474406,
+    "allocationChangePercent": -0.0016117603243270828,
+    "referenceAccountedPeak": 4142729,
+    "candidateAccountedPeak": 4142729,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.csv-meter-report.explicit-float",
+    "reference": 4686830,
+    "candidate": 4686830,
+    "allocationChangePercent": 0.0,
+    "referenceAccountedPeak": 6875721,
+    "candidateAccountedPeak": 6875721,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.csv-meter-report.typed-unicode",
+    "reference": 3474942,
+    "candidate": 3474886,
+    "allocationChangePercent": -0.0016115376889724864,
+    "referenceAccountedPeak": 4142729,
+    "candidateAccountedPeak": 4142729,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "reference": 4069574,
+    "candidate": 4068790,
+    "allocationChangePercent": -0.01926491568896571,
+    "referenceAccountedPeak": 9432874,
+    "candidateAccountedPeak": 9432874,
+    "allowanceRestored": true
+  }
+]

@@ -1331,10 +1331,11 @@ allocation, including supplementary characters. Final CLR decoding is synchronou
 
 Each CSV reader prepares its dialect's byte search sets once. The parser
 searches bounded UTF-8 spans and verifies complete dialect characters at
-each boundary. Native text files append
-a complete physical line directly into the parser's admitted buffer, which the
-same parser compacts in place. Public file iteration still returns independent
-strings. Raw line bytes and an unfinished multiline prefix can require more
+each boundary. Native text files append a complete physical line directly
+into the parser's admitted buffer. Literal fields, including simple quoted
+fields and unquoted numbers, use ranges in that buffer. Parsing compacts
+in place from the first field that needs transformation. Public file iteration
+returns independent strings. Raw line bytes and an unfinished multiline prefix can require more
 working capacity than the decoded fields; replacement peaks remain admitted.
 Each source item completes at most one record, with trailing CR/LF allowed.
 Unquoted `QUOTE_NONNUMERIC` fields use the same byte parser as `float()`.

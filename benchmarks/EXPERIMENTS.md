@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1314 numeric and simple quoted CSV ranges](results/2026-11-22-csv-quoted-ranges/README.md)
+removes field compaction on native file input. Both typed meter reports
+and the quoted method-policy invoice use less warm CPU. The plain
+invoice takes 0.19–2.19% longer. Allocation and accounted peaks remain
+effectively flat. Retain the change and preserve all 112 batches.
+
 [B1313 typed and explicit float CSV against CPython](results/2026-11-22-float-meter-cpython/README.md)
 measures the retained direct float-text source on four complete
 scripts. Typed ASCII CSV takes 1.747–1.852× as long warm and

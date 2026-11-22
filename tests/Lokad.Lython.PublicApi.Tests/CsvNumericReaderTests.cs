@@ -53,4 +53,46 @@ public sealed class CsvNumericReaderTests
         script.Dispose();
         Assert.Equal(0, budget.ReservedBytes);
     }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task NativeRowsKeepPriorFieldsWhenQuotedSyntaxNeedsDecoding(bool asynchronous)
+    {
+        const string source = """
+            import csv
+            with open('/input.csv', newline='') as stream:
+                rows = list(csv.reader(stream, quoting=csv.QUOTE_NONNUMERIC, strict=True))
+            print(rows)
+            """;
+        const string input = "\"a\",1,\"two,words\",٣_٤.٥\r\n\"b\",2,\"a\"\"b\",3\n" +
+            "\"c\",4,\"line\nwrapped\",5\n\"d\",-٠,\"\",";
+        const string golden = "[['a', 1.0, 'two,words', 34.5], ['b', 2.0, 'a\"b', 3.0], " +
+            "['c', 4.0, 'line\\nwrapped', 5.0], ['d', -0.0, '', '']]\n";
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        var baseline = budget.ReservedBytes;
+        if (asynchronous)
+        {
+            var host = new DelayedLythonHost();
+            host.SeedFile("/input.csv", input);
+            using (var result = await script.RunAsync(host)) Check(result);
+            Assert.True(host.CompletedAsynchronously > 0);
+            Assert.Equal(1, host.ClosedFileCount);
+        }
+        else
+        {
+            var host = new MockLythonHost();
+            host.SeedFile("/input.csv", input);
+            using (var result = script.Run(host)) Check(result);
+            Assert.Equal(1, host.ClosedFileCount);
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+
+        static void Check(LythonExecutionResult result)
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(golden, result.StandardOutput);
+        }
+    }
 }

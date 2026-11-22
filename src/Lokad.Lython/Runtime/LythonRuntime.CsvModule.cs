@@ -553,7 +553,7 @@ internal sealed partial class LythonRuntime
         private void DescribeLiteralRecord(ReadOnlySpan<byte> line)
         {
             if (_readyRecord is not null) throw new InvalidOperationException("CSV input advanced before consuming its record.");
-            // Already-funded plain fields keep their original byte offsets.
+            // Already-funded literal fields keep their original byte offsets.
             // If the next field needs transformation or more scratch, the
             // general parser continues at that field without repeating the
             // prefix. The admitted buffer keeps those earlier ranges live.
@@ -583,7 +583,25 @@ internal sealed partial class LythonRuntime
                     if (!TryDescribeLiteralField(start, offset - start)) break;
                     start = ++offset;
                 }
-                else if (offset == start) break; // A quote can introduce this field.
+                else if (offset == start)
+                {
+                    if (_fields.Count == _fields.Capacity || _activeQuote is not { ByteLength: 1 }) break;
+                    var close = FindLiteralQuote(line, start + 1, marker);
+                    if (close < 0) break;
+                    var next = close + 1;
+                    var end = next == line.Length || line[next] is (byte)'\r' or (byte)'\n';
+                    // Doubled quotes, trailing text and partial quoted fields
+                    // preserve their original parser state and error order.
+                    if (!end && line[next] != _literalDelimiter) break;
+                    DescribeField(new CsvField(start + 1, close - start - 1));
+                    if (end)
+                    {
+                        if (next < line.Length) ValidateRecordEnd(line[(next + 1)..]);
+                        EmitRecord();
+                        return;
+                    }
+                    start = offset = next + 1;
+                }
                 else offset++; // Within a bare field the quote is literal.
 
             }
@@ -591,6 +609,19 @@ internal sealed partial class LythonRuntime
                 EmitRecord();
             else
                 ResumeRecordAtField(line, start);
+        }
+
+        private int FindLiteralQuote(ReadOnlySpan<byte> line, int offset, byte marker)
+        {
+            while (offset < line.Length)
+            {
+                _context.CheckExecution(_span);
+                var count = Math.Min(4096, line.Length - offset);
+                var close = line.Slice(offset, count).IndexOf(marker);
+                if (close >= 0) return offset + close;
+                offset += count;
+            }
+            return -1;
         }
 
         private void ResumeRecordAtField(ReadOnlySpan<byte> line, int start)
@@ -604,7 +635,7 @@ internal sealed partial class LythonRuntime
         private bool TryDescribeLiteralField(int start, int length)
         {
             if (_fields.Count == _fields.Capacity) return false;
-            DescribeField(start, length);
+            DescribeField(CreateField(start, length, quoted: false));
             return true;
         }
 
@@ -619,8 +650,7 @@ internal sealed partial class LythonRuntime
             var delimiter = options.Delimiter.Utf8Span;
             var quote = _activeQuote is { } q ? q.Utf8Span : default;
             var escape = options.EscapeChar is { } e ? e.Utf8Span : default;
-            _literalDelimiter = delimiter.Length == 1 && escape.IsEmpty && !options.SkipInitialSpace &&
-                options.Quoting != CsvQuotingMode.NonNumeric ? delimiter[0] : -1;
+            _literalDelimiter = delimiter.Length == 1 && escape.IsEmpty && !options.SkipInitialSpace ? delimiter[0] : -1;
             // The dialect is fixed for the reader. These sets find lead bytes;
             // the parser checks the full scalars before interpreting syntax.
             Span<byte> unquoted = stackalloc byte[5];
@@ -811,30 +841,31 @@ internal sealed partial class LythonRuntime
 
         private void FinishField()
         {
-            var length = _record.Length - _fieldStart;
-            double? converted = null;
-            if (_options.Quoting == CsvQuotingMode.NonNumeric && !_fieldWasQuoted && length != 0)
-            {
-                // Conversion must still fail at this field, before another
-                // source line can be fetched or later field syntax inspected.
-                converted = ParseFloatText(_record.WrittenSpan.Slice(_fieldStart, length), _context, _span);
-            }
+            var field = CreateField(_fieldStart, _record.Length - _fieldStart, _fieldWasQuoted);
             EnsureListCapacity(_fields);
-            if (converted is { } number) _fields.Add(new CsvField(-1, 0, number));
-            else DescribeField(_fieldStart, length);
+            DescribeField(field);
             _fieldStart = _record.Length;
             _state = FieldState.FieldStart;
             _fieldWasQuoted = false;
         }
 
-        private void DescribeField(int start, int length)
+        private CsvField CreateField(int start, int length, bool quoted)
         {
-            _fields.Add(new CsvField(start, length));
-            if (length != 0)
+            if (_options.Quoting != CsvQuotingMode.NonNumeric || quoted || length == 0)
+                return new CsvField(start, length);
+            // Conversion must still fail at this field before another line
+            // can be fetched or later field syntax inspected.
+            return new CsvField(-1, 0, ParseFloatText(_record.WrittenSpan.Slice(start, length), _context, _span));
+        }
+
+        private void DescribeField(CsvField field)
+        {
+            _fields.Add(field);
+            if (!field.IsNumber && field.Length != 0)
             {
-                _stringBytes = checked(_stringBytes + PyString.EstimateApproximateBytes(length));
-                if (length > PyString.InlineUtf8Capacity)
-                    _payloadBytes = checked(_payloadBytes + length);
+                _stringBytes = checked(_stringBytes + PyString.EstimateApproximateBytes(field.Length));
+                if (field.Length > PyString.InlineUtf8Capacity)
+                    _payloadBytes = checked(_payloadBytes + field.Length);
             }
         }
 
