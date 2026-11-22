@@ -1,0 +1,102 @@
+{
+  "candidate": [
+    {
+      "method": "ExecuteInstructionPrefix",
+      "tier": "OptimizedTier1",
+      "codeBytes": 14333,
+      "stacks": 1132
+    },
+    {
+      "method": "TryExecuteNativeCall",
+      "tier": "OptimizedTier1",
+      "codeBytes": 3329,
+      "stacks": 866
+    },
+    {
+      "method": "StartNativeCall",
+      "tier": "OptimizedTier1",
+      "codeBytes": 749,
+      "stacks": 712
+    },
+    {
+      "method": "StartInline",
+      "tier": "OptimizedTier1",
+      "codeBytes": 1012,
+      "stacks": 650
+    },
+    {
+      "method": "RunCore",
+      "tier": "OptimizedTier1",
+      "codeBytes": 6660,
+      "stacks": 503
+    },
+    {
+      "method": "CreateFunctionValue",
+      "tier": "OptimizedTier1",
+      "codeBytes": 1420,
+      "stacks": 116
+    },
+    {
+      "method": "StartExecutableDefaults",
+      "tier": "OptimizedTier1",
+      "codeBytes": 1118,
+      "stacks": 40
+    },
+    {
+      "method": "BindFunctionArgumentsInto",
+      "tier": "OptimizedTier1",
+      "codeBytes": 2800,
+      "stacks": 31
+    }
+  ],
+  "reference-control": [
+    {
+      "method": "ExecuteInstructionPrefix",
+      "tier": "OptimizedTier1",
+      "codeBytes": 14331,
+      "stacks": 1133
+    },
+    {
+      "method": "TryExecuteNativeCall",
+      "tier": "OptimizedTier1",
+      "codeBytes": 3333,
+      "stacks": 834
+    },
+    {
+      "method": "StartNativeCall",
+      "tier": "OptimizedTier1",
+      "codeBytes": 749,
+      "stacks": 693
+    },
+    {
+      "method": "StartInline",
+      "tier": "OptimizedTier1",
+      "codeBytes": 1012,
+      "stacks": 628
+    },
+    {
+      "method": "RunCore",
+      "tier": "OptimizedTier1",
+      "codeBytes": 6679,
+      "stacks": 514
+    },
+    {
+      "method": "CreateFunctionValue",
+      "tier": "OptimizedTier1",
+      "codeBytes": 1304,
+      "stacks": 110
+    },
+    {
+      "method": "StartExecutableDefaults",
+      "tier": "OptimizedTier1",
+      "codeBytes": 1118,
+      "stacks": 39
+    },
+    {
+      "method": "BindFunctionArgumentsInto",
+      "tier": "OptimizedTier1",
+      "codeBytes": 2790,
+      "stacks": 36
+    }
+  ]
+}

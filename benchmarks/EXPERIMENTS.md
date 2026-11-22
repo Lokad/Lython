@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1414 same-image warm factory spread](results/2026-11-22-factory-worker-spread/README.md)
+reproduces an 11.06% elapsed spread after extended warmup. Profiles of
+the extreme workers map to different optimized Tier 1 code. Calls,
+construction and dispatch each contribute samples, with no isolated cause.
+
 [B1413 annotation transport](results/2026-11-22-definition-annotation-transport/README.md)
 passes the evaluated eager value without the capacity and repeated-read
 tuple. Allocation and peak match. The postponed target spans zero at
