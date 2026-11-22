@@ -2638,8 +2638,9 @@ therefore occur at group access; it remains terminal and cannot be hidden by
 guest exception handling. Expansion reads the retained ranges directly.
 
 Provider compilation, preparation, matching and enumeration receive the current
-token. Lython replacement/split/result processing checks that same token. Cached
-patterns save no prior token.
+token. Lython checks that same token during comparisons of long cache keys and
+through replacement, splitting and result processing. Cached patterns and keys
+carry no cancellation state.
 Entry/exit checks do not prove in-flight interruption: providers must cooperate
 or report the limitation, without private timeout/work quotas or abandoned work.
 Retained patterns/caches and working/replacement peaks use supplied owners.
