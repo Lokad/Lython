@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1337 reuse prepared regex group metadata](results/2026-11-22-regex-prepared-group-metadata/README.md)
+removes repeated provider name reads and saves allocation across many
+rules. The Unicode group report uses 1.54–3.32% more CPU and named-rule
+time to result spans zero. All 140 batches verify. Keep the prototype
+private.
+
 [B1336 compare the retained numeric calls against CPython](results/2026-11-22-numeric-extrema-cpython/README.md)
 measures three complete meter reports at `e961df912`. ASCII warm is 1.351–1.427×,
 explicit-float warm is 1.534–1.607× and Unicode warm is

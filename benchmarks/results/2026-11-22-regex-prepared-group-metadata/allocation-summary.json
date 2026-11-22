@@ -1,0 +1,38 @@
+[
+  {
+    "case": "diagnostic.regex-prepared-names.many-named-rules",
+    "reference": 413064,
+    "candidate": 409480,
+    "allocationChangePercent": -0.867662154048765,
+    "referenceAccountedPeak": 139956,
+    "candidateAccountedPeak": 139956,
+    "allowanceRestored": true
+  },
+  {
+    "case": "diagnostic.regex-prepared-names.many-unnamed-rules",
+    "reference": 380808,
+    "candidate": 373640,
+    "allocationChangePercent": -1.8823133967773797,
+    "referenceAccountedPeak": 81844,
+    "candidateAccountedPeak": 81844,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.regex-unicode-groups",
+    "reference": 3437248,
+    "candidate": 3437192,
+    "allocationChangePercent": -0.0016292103450221695,
+    "referenceAccountedPeak": 2089005,
+    "candidateAccountedPeak": 2089005,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.regex-ascii-groups",
+    "reference": 3128552,
+    "candidate": 3128496,
+    "allocationChangePercent": -0.0017899654536690512,
+    "referenceAccountedPeak": 2075085,
+    "candidateAccountedPeak": 2075085,
+    "allowanceRestored": true
+  }
+]
