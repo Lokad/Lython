@@ -109,6 +109,7 @@ change. The checkpoint includes the arithmetic and allocation controls.
 
 | Change | Measured effect | Limits |
 | --- | --- | --- |
+| Keep optional metadata off ordinary callables | Both factory shapes allocate 6.9% less. Eager warm elapsed falls 0.70–4.95%. Wrapper elapsed falls 5.18–7.86%. | Postponed time to result rises 0.65–2.77%. Mixed wrappers need 32,768 more admitted bytes at peak. [B1425](../benchmarks/results/2026-11-23-function-optional-attributes/README.md). |
 | Classify CSV fields at their start | Typed Unicode meter warm elapsed falls 1.27–5.75% and CPU falls 2.09–6.41%. | The ASCII meter takes 0.32–2.42% longer and quote-heavy warm elapsed spans zero. [B1424](../benchmarks/results/2026-11-22-csv-literal-field-scan/README.md). |
 | Reuse the syntax walk for future imports | The postponed factory compiles 1.72–3.13% faster and allocates 2.21% less. Time to result falls 1.47–4.28%. | Compile controls span zero. [B1421](../benchmarks/results/2026-11-22-future-validation-single-walk/README.md). |
 | Borrow tiny-dictionary UTF-8 keys | The nonlocal report takes 6.58–8.17% less warm elapsed and reaches its result 2.97–4.72% sooner. Admitted peaks match. | The wide-vocabulary control takes 0.70–1.87% longer warm. [B1420](../benchmarks/results/2026-11-22-short-borrowed-text-probe/README.md). |

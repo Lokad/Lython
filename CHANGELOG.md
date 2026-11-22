@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Share one optional metadata field on functions. Preserve dictionaries
+  installed during admission. Match Python's tuple default, assignment
+  and deletion behavior for `__type_params__`.
 - Return the original tuple when `tuple()` receives an exact tuple.
   Tuple subclasses still convert to a plain tuple.
 - Compile function-default staging to dedicated instructions and remove

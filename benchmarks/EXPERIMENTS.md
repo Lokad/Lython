@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1425 optional function metadata](results/2026-11-23-function-optional-attributes/README.md)
+removes two references from ordinary callables. Both factory shapes
+allocate 6.9% less. Eager warm and wrapper CPU improve, while postponed
+time to result slows 0.65–2.77%. The mixed wrapper retains a higher
+admitted peak. The initial higher-cost layout remains in the archive.
+
 [B1424 literal CSV field scan](results/2026-11-22-csv-literal-field-scan/README.md)
 checks for quotes only at field start. The typed Unicode meter warm
 elapsed falls 1.27–5.75% and CPU falls 2.09–6.41%. The ASCII meter
