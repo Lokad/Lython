@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1329 attribute current factory admission and invocation](results/2026-11-22-retained-definition-attribution/README.md)
+profiles the mixed and dynamic factories plus a fully supplied helper at
+`318bf0e0a`. Callable and capture admission account for 133 and 115
+nearest resolved reserve samples in the two factories. The helper has
+none. Test unifying the two private admissions while preserving existing
+default and capture semantics. This evidence identifies work to target.
+
 [B1328 borrow the regex subject's existing index](results/2026-11-22-regex-borrowed-index/README.md)
 uses 8.57–10.00% less warm CPU on bounded search. Indexed cursor
 timings span zero or lean adverse. Unindexed Unicode and ASCII cursors
