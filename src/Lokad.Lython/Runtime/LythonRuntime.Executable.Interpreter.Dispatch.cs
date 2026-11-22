@@ -37,6 +37,10 @@ internal sealed partial class LythonRuntime
                             PublishInstructionResult(ref execution, invocation, instruction,
                                 LoadLocal(execution.Code, execution.Locals, instruction.LocalSlot, instruction.Span, scope));
                             break;
+                        case ExecutableOpCode.CheckLocal:
+                            if (execution.Locals[instruction.LocalSlot].IsUnassigned)
+                                throw RuntimeErrors.UnboundLocalVariable(execution.Code.LocalNames[instruction.LocalSlot], instruction.Span);
+                            break;
                         case ExecutableOpCode.LoadClosure:
                             if (!execution.Stack.HasPendingDisposals && TryExecuteClosureArithmetic(execution.Code,
                                 execution.ClosureCells, execution.InstructionIndex, execution.Stack.LiveExtent, scope))

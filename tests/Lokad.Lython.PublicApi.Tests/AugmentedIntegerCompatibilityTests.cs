@@ -44,6 +44,32 @@ public sealed class AugmentedIntegerCompatibilityTests
             items += [2]
             print(items is alias,items)
             """, "['rhs', 'iadd', 'add', 'radd'] 42\nTrue [1, 2]\n"];
+        yield return ["local, captured and global operands across a call", """
+            def identity(value):return value
+            def arguments_rebind_local():
+                value=4
+                value+=identity(value:=10)
+                return value
+            def captured():
+                value=5
+                def replace():
+                    nonlocal value
+                    value=90
+                    return 7
+                value+=replace()
+                return value
+            value=6
+            def update_global():
+                globals()['value']=100
+                return 9
+            value+=update_global()
+            def private_container():
+                value=[3]
+                alias=value
+                value+=identity([9])
+                return value is alias,value
+            print(arguments_rebind_local(),captured(),value,private_container())
+            """, "14 12 15 (True, [3, 9])\n"];
         yield return ["failure preserves the target", """
             value=17
             old=value
@@ -81,5 +107,104 @@ public sealed class AugmentedIntegerCompatibilityTests
             Assert.True(result.Success, name + ": " + result.Failure?.Message);
             Assert.Equal(expected, result.StandardOutput);
         }
+    }
+
+    [Fact]
+    public async Task UnboundLocalStopsBeforeCallingRightHandSide()
+    {
+        const string source = """
+            def rhs():
+                print('called')
+                return 1
+            def add():
+                for value in []:pass
+                value+=rhs()
+            add()
+            """;
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var compiled = new LythonEngine().Compile(source, budget))
+        {
+            Assert.True(compiled.IsValid);
+            var baseline = budget.ReservedBytes;
+            foreach (var asynchronous in new[] { false, true })
+            {
+                using (var result = asynchronous ? await compiled.RunAsync(new MockLythonHost())
+                    : compiled.Run(new MockLythonHost()))
+                {
+                    var failure = Assert.IsType<LythonRuntimeFailure>(result.Failure);
+                    Assert.Equal("UnboundLocalError", failure.ExceptionType);
+                    Assert.Equal(source.IndexOf("value+=rhs()", StringComparison.Ordinal), failure.Span?.Start);
+                    Assert.Empty(result.StandardOutput);
+                }
+                Assert.Equal(baseline, budget.ReservedBytes);
+            }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData("complete")]
+    [InlineData("cancel")]
+    [InlineData("refuse")]
+    public async Task PrivateLocalWaitsForActualRightHandIo(string outcome)
+    {
+        const string source = """
+            def load():
+                with open('/input.txt') as input:
+                    value=int(input.read())
+                return value if value >= 0 else len('x'*2000000)
+            def add():
+                number=1000
+                alias=number
+                number+=load()
+                print(number,alias)
+            print('before')
+            try:add()
+            except MemoryError:print('caught')
+            """;
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var compiled = new LythonEngine().Compile(source, budget))
+        {
+            Assert.True(compiled.IsValid);
+            var baseline = budget.ReservedBytes;
+            var host = new DelayedLythonHost();
+            host.SeedFile("/input.txt", outcome == "refuse" ? "-1" : "7");
+            using var cancellation = new CancellationTokenSource();
+            var entered = outcome == "cancel" ? host.PauseReadUntilCancellation("/input.txt") : null;
+            var pending = compiled.RunAsync(host, cancellationToken: cancellation.Token);
+            try
+            {
+                if (entered is not null)
+                {
+                    await entered.WaitAsync(TimeSpan.FromSeconds(10));
+                    Assert.False(pending.IsCompleted);
+                    Assert.True(budget.ReservedBytes > baseline);
+                    cancellation.Cancel();
+                }
+
+                using var result = await pending.WaitAsync(TimeSpan.FromSeconds(10));
+                if (outcome == "complete")
+                {
+                    Assert.True(result.Success, result.Failure?.Message);
+                    Assert.Equal("before\n1007 1000\n", result.StandardOutput);
+                }
+                else
+                {
+                    Assert.False(result.Success);
+                    Assert.Equal(outcome == "cancel" ? LythonFailureReason.Cancelled
+                        : LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+                    Assert.Equal("before\n", result.StandardOutput);
+                }
+            }
+            finally
+            {
+                cancellation.Cancel();
+                using var joined = await pending.WaitAsync(TimeSpan.FromSeconds(10));
+            }
+            if (entered is null) Assert.True(host.CompletedAsynchronously > 0);
+            Assert.Equal(1, host.ClosedFileCount);
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
     }
 }

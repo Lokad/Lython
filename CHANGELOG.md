@@ -23,6 +23,8 @@
   execution loops reuse the prepared links and skip runtime lookahead.
 - Check machine integer overflow with operand signs and the signed high
   product. Keep exact, governed promotion for wider results.
+- Check a private augmented local before an ordinary call and reuse its slot
+  afterward, avoiding an eager numeric box and temporary operand.
 - Reuse an existing UTF-8 scalar index to resolve single regex match windows.
 - Initialize regex match byte ranges during scalar projection. ASCII matches
   write their byte and character offsets together.

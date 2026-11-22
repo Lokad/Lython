@@ -319,6 +319,14 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
                 if (instruction.OpCode == ExecutableOpCode.StoreLocal && code.CapturedLocalSlots.Count != 0 &&
                     code.CapturedLocalSlots.Contains(instruction.LocalSlot))
                     instruction = instruction.WithCapturedLocalStore();
+                if (instruction.OpCode == ExecutableOpCode.LoadLocal && instruction.CheckedLocalConsumer >= 0 &&
+                    code.UsesOnlyLexicalSlots && !code.CapturedLocalSlots.Contains(instruction.LocalSlot) &&
+                    CanReuseCheckedLocal(instructions, index, instruction.CheckedLocalConsumer, instruction.LocalSlot, token))
+                {
+                    var consumer = instruction.CheckedLocalConsumer;
+                    instructions[consumer] = instructions[consumer].WithValueInputs(instruction.LocalSlot, int.MaxValue);
+                    instruction = instruction.AsCheckLocal();
+                }
                 var count = instruction.ValueInputCount;
                 var first = instruction.InputStart;
                 var second = instruction.SecondInput;
@@ -371,6 +379,22 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
         return reads;
     }
 
+    // A private lexical local remains authoritative during a call. A
+    // same-block expression can still write it explicitly with a walrus.
+    private static bool CanReuseCheckedLocal(List<ExecutableInstruction> instructions,
+        int load, int consumer, int slot, CancellationToken token)
+    {
+        for (var i = load + 1; i < consumer; i++)
+        {
+            PythonTokenization.CheckCancellation(token, i);
+            var item = instructions[i];
+            if ((item.OpCode == ExecutableOpCode.StoreLocal && item.LocalSlot == slot) ||
+                item.OpCode is ExecutableOpCode.StoreName or ExecutableOpCode.DeleteName)
+                return false;
+        }
+        return true;
+    }
+
     private static bool CanForwardResult(ExecutableInstruction instruction, IReadOnlyList<object?> constants)
         => instruction.OpCode switch
         {
@@ -417,7 +441,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
             ExecutableOpCode.Import or
                 ExecutableOpCode.PreloadImplicitSuperArguments or ExecutableOpCode.Jump or ExecutableOpCode.AbruptJump or
                 ExecutableOpCode.BindException or ExecutableOpCode.ReraiseException or ExecutableOpCode.ClearException or
-                ExecutableOpCode.EndFinally or ExecutableOpCode.ReturnNone => (0, 0),
+                ExecutableOpCode.EndFinally or ExecutableOpCode.ReturnNone or ExecutableOpCode.CheckLocal => (0, 0),
             ExecutableOpCode.ReadRetainedSubscript or ExecutableOpCode.ReadRetainedSlice => (0, 1),
             ExecutableOpCode.StoreMember or ExecutableOpCode.StoreMemberLast => (2, 0),
             ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast => (3, 0),

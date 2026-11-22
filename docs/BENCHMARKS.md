@@ -77,6 +77,7 @@ clocks. The archived tables include the earlier startup evidence.
 
 | Change | Measured effect | Limits |
 | --- | --- | --- |
+| Reuse a private augmented local across a call | The function-scoped helper runs 7.29–8.60% faster warm and allocates 45.89% less. The helper-driven CSV invoice allocates 2.10% less. | Invoice timing spans zero. Initial mixed-factory time to result is 2.05–2.66% slower. The follow-up has 14.35% reference-worker spread. [B1364 and B1365](../benchmarks/results/2026-11-22-checked-augmented-local/README.md). |
 | Use direct signed overflow checks in the shared integer kernel | Mixed factory warm CPU falls 1.95–3.36%, and fully supplied helper warm CPU falls 0.82–2.70%. | Mixed time to result and range-loop elapsed span zero. Quoted-invoice elapsed rises 0.15–0.35%. [B1360](../benchmarks/results/2026-11-22-signed-integer-kernel/README.md). |
 | Prepare integer continuations in the executable tape | The fully supplied helper uses 1.52–3.67% less warm CPU. The ordinary invoice uses 0.95–2.88% less. | Factory timing spans zero. The ASCII control varies 7.65% across reference workers. [B1359](../benchmarks/results/2026-11-22-prepared-integer-continuations/README.md). |
 | Construct a native function's first local capture with the callable | The mixed factory takes 2.11–7.56% less warm time and 8.95–13.16% less time to result. | Local allocations and peaks are flat. Fully supplied, eager and postponed elapsed ranges span zero. [B1354](../benchmarks/results/2026-11-22-native-single-capture-construction/README.md). |

@@ -1,0 +1,22 @@
+{
+  "reference": {
+    "generator-send": 0,
+    "walrus-rebind": 0,
+    "captured-rebind": 0,
+    "global-rebind": 0,
+    "inplace-alias": 0,
+    "held-identity-reflected": 0,
+    "optimized-local-snapshot": 0,
+    "exception-before-store": 0
+  },
+  "candidate": {
+    "generator-send": 1,
+    "walrus-rebind": 0,
+    "captured-rebind": 0,
+    "global-rebind": 0,
+    "inplace-alias": 1,
+    "held-identity-reflected": 1,
+    "optimized-local-snapshot": 1,
+    "exception-before-store": 1
+  }
+}

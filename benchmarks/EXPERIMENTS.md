@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1364 and B1365 keep private augmented operands in their local slots](results/2026-11-22-checked-augmented-local/README.md)
+retain the original unbound check and remove one temporary. The
+function-scoped helper uses 7.37–8.52% less warm CPU. A complete
+helper-driven CSV invoice allocates 2.10% less and its timings span zero.
+Mixed first-use initially worsens, then changes direction with an
+unstable reference. Module-helper CPU debt remains visible.
+
 [B1363 matched calls and arithmetic at module and function scope](results/2026-11-22-matched-helper-placement/README.md)
 shows an 11.81–14.46% Lython elapsed benefit from wrapping the supplied
 loop, with a larger CPython scope effect. Keeping all calls but reading

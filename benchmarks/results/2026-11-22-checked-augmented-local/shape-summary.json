@@ -1,0 +1,123 @@
+[
+  {
+    "case": "diagnostic.helper-placement.function-call",
+    "changedFrames": [
+      {
+        "frame": "run",
+        "reference": {
+          "StoreLocal": 3,
+          "LoadGlobal": 2,
+          "LoadConst": 1,
+          "Call": 2,
+          "GetIter": 1,
+          "Jump": 2,
+          "ForNext": 1,
+          "LoadLocal": 2,
+          "Binary": 3,
+          "Augmented": 1,
+          "Return": 1
+        },
+        "candidate": {
+          "StoreLocal": 3,
+          "LoadGlobal": 2,
+          "LoadConst": 1,
+          "Call": 2,
+          "GetIter": 1,
+          "Jump": 2,
+          "ForNext": 1,
+          "CheckLocal": 1,
+          "LoadLocal": 1,
+          "Binary": 3,
+          "Augmented": 1,
+          "Return": 1
+        },
+        "capacity": [
+          8,
+          7
+        ],
+        "arithmetic": [
+          [
+            {
+              "index": 11,
+              "line": 7,
+              "op": "Modulo",
+              "left": "local",
+              "right": "BigInteger"
+            },
+            {
+              "index": 12,
+              "line": 7,
+              "op": "Modulo",
+              "left": "local",
+              "right": "BigInteger"
+            },
+            {
+              "index": 13,
+              "line": 7,
+              "op": "Add",
+              "left": "temporary",
+              "right": "BigInteger"
+            },
+            {
+              "index": 15,
+              "line": 7,
+              "op": "Add",
+              "left": "temporary",
+              "right": "temporary"
+            }
+          ],
+          [
+            {
+              "index": 11,
+              "line": 7,
+              "op": "Modulo",
+              "left": "local",
+              "right": "BigInteger"
+            },
+            {
+              "index": 12,
+              "line": 7,
+              "op": "Modulo",
+              "left": "local",
+              "right": "BigInteger"
+            },
+            {
+              "index": 13,
+              "line": 7,
+              "op": "Add",
+              "left": "temporary",
+              "right": "BigInteger"
+            },
+            {
+              "index": 15,
+              "line": 7,
+              "op": "Add",
+              "left": "local",
+              "right": "temporary"
+            }
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "case": "diagnostic.helper-placement.module-call",
+    "changedFrames": []
+  },
+  {
+    "case": "diagnostic.loop-range.inside.large",
+    "changedFrames": []
+  },
+  {
+    "case": "scripts.annotated-rule-closures.literal-positional-dynamic-keyword",
+    "changedFrames": []
+  },
+  {
+    "case": "scripts.csv-invoice.large",
+    "changedFrames": []
+  },
+  {
+    "case": "scripts.csv-meter-report.typed-ascii",
+    "changedFrames": []
+  }
+]

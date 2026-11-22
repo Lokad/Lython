@@ -80,6 +80,7 @@ internal enum ExecutableOpCode
     ForNextUnpack,
     StartFunctionDefaults,
     StoreFunctionDefault,
+    CheckLocal,
 }
 
 internal enum ExecutableUnaryOperator
@@ -178,8 +179,15 @@ internal readonly record struct ExecutableInstruction
     internal bool StartsKeywordDefaultsOnly => _secondaryOperand != 0;
     internal int DefaultStorageDepth => _primaryOperand;
     internal int DefaultValueIndex => _secondaryOperand;
-    public int LocalSlot => OpCode is ExecutableOpCode.LoadLocal or ExecutableOpCode.StoreLocal
+    public int LocalSlot => OpCode is ExecutableOpCode.LoadLocal or ExecutableOpCode.StoreLocal or ExecutableOpCode.CheckLocal
             ? _primaryOperand : throw InvalidOperand(nameof(LocalSlot));
+    // Before layout assigns a result slot, a LoadLocal can name its
+    // same-block consumer in that field. No hint survives in the final tape.
+    internal int CheckedLocalConsumer => _resultSlot;
+    internal ExecutableInstruction WithCheckedLocalConsumer(int index)
+        => new(ExecutableOpCode.LoadLocal, Span, _primaryOperand, resultSlot: index);
+    internal ExecutableInstruction AsCheckLocal()
+        => new(ExecutableOpCode.CheckLocal, Span, _primaryOperand);
     // StoreLocal has only one input, leaving its second operand field free.
     internal bool StoresCapturedLocal => _secondaryOperand != int.MaxValue;
     internal ExecutableInstruction WithCapturedLocalStore()
@@ -545,6 +553,7 @@ internal sealed partial class ExecutableCodeObject
         PatternStorageCount = matchCases.Select(item => item.Pattern.StorageCount).DefaultIfEmpty(0).Max();
         RequiresLocalVariableMirroring = requiresLocalVariableMirroring;
         IsFunctionScope = isFunctionScope;
+        UsesOnlyLexicalSlots = usesOnlyLexicalSlots;
         var reads = ExecutableStackLayout.ForwardValues(this, blocks, callSites, cancellationToken);
         // Assign physical positions after forwarding. Both execution forms use
         // this final layout, including at a dynamic-operation transition.
@@ -594,7 +603,6 @@ internal sealed partial class ExecutableCodeObject
         PrepareNativeSegments(callSites);
         // Lexical/storage admission only. The native loop transfers at the
         // actual operation needing a frame, without a second opcode inventory.
-        UsesOnlyLexicalSlots = usesOnlyLexicalSlots;
         CanRunNativeInstructions = IsFunctionScope && !RequiresLocalVariableMirroring && EntryIndex < NativePrefixEnd
             && (capturedLocalSlots.Count == 0 ||
                 usesOnlyLexicalSlots && ValueStorageCapacity <= LythonRuntime.NativeValueCapacity);

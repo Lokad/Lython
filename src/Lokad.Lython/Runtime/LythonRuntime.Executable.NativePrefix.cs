@@ -103,6 +103,10 @@ internal sealed partial class LythonRuntime
                     case ExecutableOpCode.LoadLocal:
                         Publish(instruction, Read(instruction.LocalSlot, 0));
                         break;
+                    case ExecutableOpCode.CheckLocal:
+                        if (Values[instruction.LocalSlot].IsUnassigned)
+                            throw RuntimeErrors.UnboundLocalVariable(Code.LocalNames[instruction.LocalSlot], instruction.Span);
+                        break;
                     case ExecutableOpCode.LoadGlobal:
                         Publish(instruction, ResolveExecutableGlobal(Code, instruction.NameIndex, instruction.Span, _scope));
                         break;

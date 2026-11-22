@@ -185,8 +185,17 @@ internal sealed partial class ExecutableScript
                     if (augmentedTarget is not LoweredNameStoreTarget augmentedName)
                         throw new InvalidOperationException("Unknown augmented assignment target.");
 
+                    var targetBlock = currentBlock;
+                    var instructions = _buffers.Blocks[targetBlock];
+                    var targetLoad = instructions.Count;
                     CompileLoadIdentifier(augmentedName.Name, augmented.Span, currentBlock);
                     currentBlock = CompileExpression(augmented.Expression, currentBlock);
+                    // The existing operand pass checks capture facts and writes
+                    // within this expression before keeping the original read in place.
+                    if (_parameterLayout is not null && currentBlock == targetBlock &&
+                        instructions[targetLoad].OpCode == ExecutableOpCode.LoadLocal &&
+                        instructions[^1].OpCode == ExecutableOpCode.Call)
+                        instructions[targetLoad] = instructions[targetLoad].WithCheckedLocalConsumer(instructions.Count);
                     AddInstruction(currentBlock, ExecutableInstruction.Augmented(augmented.Operator, augmented.Span));
                     CompileStoreBoundName(augmentedName.Name, augmented.Span, currentBlock);
                     return currentBlock;
