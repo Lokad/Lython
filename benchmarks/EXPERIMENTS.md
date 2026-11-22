@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1384 cased word ranges](results/2026-11-22-cased-word-ranges/README.md)
+removes a short-word UTF-8 copy by reading the active casing cursor's
+range. Both captured reports span zero warm. Compile to result
+ranges from 3.69% faster to 9.81% slower with 9.20% candidate-worker
+spread. Allocation and admitted peaks are effectively flat. The
+prototype stays private.
+
 [B1383 Unicode decimal normalization](results/2026-11-22-unicode-decimal-normalization/README.md)
 removes the classifier pass for short normalized float tokens and
 shares the BMP digit lookup across numeric consumers. The Unicode
