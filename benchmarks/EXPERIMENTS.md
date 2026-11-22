@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1323 share the asynchronous CSV record loop](results/2026-11-22-csv-direct-slots-shared-pull/README.md)
+repeats the meter CPU and allocation gains. The plain invoice takes
+2.18–5.34% more elapsed through async execution and 0.45–3.29% more
+through sync execution. Keep this version private and isolate direct
+unpack from ordinary iteration.
+
 [B1322 fill admitted executable slots from CSV](results/2026-11-22-csv-direct-slots/README.md)
 removes the row array and refund from fixed unpacking. Typed meter
 allocation falls 14.15% and both measured meter scripts use less
