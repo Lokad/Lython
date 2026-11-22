@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1339 restrict complete decimal parsing to short ASCII leads](results/2026-11-22-complete-decimal-ascii/README.md)
+retains lower elapsed and CPU on both warm ASCII reports and typed ASCII
+time to result, with flat allocation and unchanged admitted peaks.
+One Unicode reference worker moves materially, leaving that effect
+uncertain. The integer invoice spans zero. All 140 batches verify.
+
 [B1338 parse complete decimal tokens before classification](results/2026-11-22-complete-decimal-token/README.md)
 reduces ASCII warm elapsed by 3.37–7.72% across two complete reports.
 Unicode elapsed rises 1.85–3.65% and invoice process CPU rises 0.96–2.51%.

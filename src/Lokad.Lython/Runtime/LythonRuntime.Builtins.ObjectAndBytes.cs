@@ -1,4 +1,5 @@
 using System.Buffers;
+using System.Buffers.Text;
 using System.Globalization;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -78,6 +79,20 @@ internal sealed partial class LythonRuntime
         context.CheckExecution(span);
         var unicode = byteSource is null;
         var input = TrimNumericWhitespace(source, unicode, context, span);
+        if (input.Length is > 0 and <= 4096)
+        {
+            // Only a decimal lead can bypass classification. Require full
+            // consumption so an embedded separator or NUL reaches Python's
+            // existing normalization and error handling.
+            var lead = input[0];
+            if (lead is (byte)'+' or (byte)'-' && input.Length > 1) lead = input[1];
+            if ((lead is >= (byte)'0' and <= (byte)'9' or (byte)'.') &&
+                Utf8Parser.TryParse(input, out double direct, out var consumed) && consumed == input.Length)
+            {
+                context.CheckExecution(span);
+                return direct;
+            }
+        }
         var normalize = false;
         var offset = 0;
         while (offset < input.Length)

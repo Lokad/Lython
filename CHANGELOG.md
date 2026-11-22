@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Convert complete short ASCII decimal tokens directly from UTF-8 when
+  parsing floats. Keep Python normalization, exact errors and cancellation.
+
 - Read exact numeric positional `min` and `max` arguments directly from
   executable operands and return the winning operand.
 - Resolve compiler jump targets directly from emitted blocks, removing two
