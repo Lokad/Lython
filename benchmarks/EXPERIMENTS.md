@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1403 explicit regex provider state](results/2026-11-22-regex-provider-state/README.md)
+removes captured callbacks at `5ee6cbac0`. Compiling 64 named rules allocates
+5.36% less and takes 2.26–3.22% less warm time. File rewrites allocate 1.74%
+less and take 0.29–1.09% longer from compilation to result. The ASCII report
+takes 0.77–1.61% longer warm. The positional control has high reference spread.
+
 [B1402 refined prepared histogram](results/2026-11-22-prepared-histogram-refined/README.md)
 retains the ordinary whole-loop path and removes the prepared words'
 temporary packet at `6e085a0e3`. The dense Unicode line runs 22.69–24.16%

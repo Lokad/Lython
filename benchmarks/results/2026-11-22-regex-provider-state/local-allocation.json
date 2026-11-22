@@ -1,0 +1,165 @@
+{
+  "reference": {
+    "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+    "rows": [
+      {
+        "id": "scripts.regex-unicode-groups",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          3437604,
+          3437184,
+          3437184
+        ],
+        "peakExecutionMemoryBytes": 2089005,
+        "compiledReservedBytes": 135836,
+        "compilationMillisecondsDiagnostic": 334.9512,
+        "compilationAllocatedBytesDiagnostic": 1477736,
+        "firstInvocationMillisecondsDiagnostic": 165.1581,
+        "sharedBudgetBaselineRestored": true
+      },
+      {
+        "id": "scripts.regex-ascii-groups",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          3128488,
+          3128488,
+          3128488
+        ],
+        "peakExecutionMemoryBytes": 2075085,
+        "compiledReservedBytes": 135836,
+        "compilationMillisecondsDiagnostic": 2.8541,
+        "compilationAllocatedBytesDiagnostic": 166032,
+        "firstInvocationMillisecondsDiagnostic": 15.7006,
+        "sharedBudgetBaselineRestored": true
+      },
+      {
+        "id": "diagnostic.regex-template.file",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          984088,
+          984318,
+          984088
+        ],
+        "peakExecutionMemoryBytes": 50434,
+        "compiledReservedBytes": 137929,
+        "compilationMillisecondsDiagnostic": 9.671,
+        "compilationAllocatedBytesDiagnostic": 190256,
+        "firstInvocationMillisecondsDiagnostic": 39.5128,
+        "sharedBudgetBaselineRestored": true
+      },
+      {
+        "id": "diagnostic.regex-prepared-names.many-named-rules",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          410704,
+          410704,
+          410704
+        ],
+        "peakExecutionMemoryBytes": 139956,
+        "compiledReservedBytes": 5283168,
+        "compilationMillisecondsDiagnostic": 112.0706,
+        "compilationAllocatedBytesDiagnostic": 7410352,
+        "firstInvocationMillisecondsDiagnostic": 4.2696,
+        "sharedBudgetBaselineRestored": true
+      },
+      {
+        "id": "calls.positional.large",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          1060272,
+          1060272,
+          1060272
+        ],
+        "peakExecutionMemoryBytes": 1284,
+        "compiledReservedBytes": 43232,
+        "compilationMillisecondsDiagnostic": 17.0524,
+        "compilationAllocatedBytesDiagnostic": 28376,
+        "firstInvocationMillisecondsDiagnostic": 44.9338,
+        "sharedBudgetBaselineRestored": true
+      }
+    ],
+    "boundary": "Complete warm runs including mediated I/O/reset, all output/file checks and result cleanup; compilation/startup/final cache teardown excluded. Process-wide CLR allocation counters, no forced GC. Compilation and first invocation clocks are local diagnostic observations, not a controlled CPU/source timing comparison."
+  },
+  "candidate": {
+    "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+    "rows": [
+      {
+        "id": "scripts.regex-unicode-groups",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          3437204,
+          3436784,
+          3436784
+        ],
+        "peakExecutionMemoryBytes": 2089005,
+        "compiledReservedBytes": 135836,
+        "compilationMillisecondsDiagnostic": 347.9767,
+        "compilationAllocatedBytesDiagnostic": 1487872,
+        "firstInvocationMillisecondsDiagnostic": 173.7401,
+        "sharedBudgetBaselineRestored": true
+      },
+      {
+        "id": "scripts.regex-ascii-groups",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          3128088,
+          3128088,
+          3128088
+        ],
+        "peakExecutionMemoryBytes": 2075085,
+        "compiledReservedBytes": 135836,
+        "compilationMillisecondsDiagnostic": 3.4801,
+        "compilationAllocatedBytesDiagnostic": 190296,
+        "firstInvocationMillisecondsDiagnostic": 16.3759,
+        "sharedBudgetBaselineRestored": true
+      },
+      {
+        "id": "diagnostic.regex-template.file",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          966968,
+          967198,
+          966968
+        ],
+        "peakExecutionMemoryBytes": 50434,
+        "compiledReservedBytes": 137929,
+        "compilationMillisecondsDiagnostic": 16.8652,
+        "compilationAllocatedBytesDiagnostic": 165272,
+        "firstInvocationMillisecondsDiagnostic": 46.1755,
+        "sharedBudgetBaselineRestored": true
+      },
+      {
+        "id": "diagnostic.regex-prepared-names.many-named-rules",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          388688,
+          388688,
+          388688
+        ],
+        "peakExecutionMemoryBytes": 139956,
+        "compiledReservedBytes": 5283168,
+        "compilationMillisecondsDiagnostic": 64.9475,
+        "compilationAllocatedBytesDiagnostic": 7379688,
+        "firstInvocationMillisecondsDiagnostic": 3.0106,
+        "sharedBudgetBaselineRestored": true
+      },
+      {
+        "id": "calls.positional.large",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          1060272,
+          1060272,
+          1060272
+        ],
+        "peakExecutionMemoryBytes": 1284,
+        "compiledReservedBytes": 43232,
+        "compilationMillisecondsDiagnostic": 16.6472,
+        "compilationAllocatedBytesDiagnostic": 28376,
+        "firstInvocationMillisecondsDiagnostic": 14.2756,
+        "sharedBudgetBaselineRestored": true
+      }
+    ],
+    "boundary": "Complete warm runs including mediated I/O/reset, all output/file checks and result cleanup; compilation/startup/final cache teardown excluded. Process-wide CLR allocation counters, no forced GC. Compilation and first invocation clocks are local diagnostic observations, not a controlled CPU/source timing comparison."
+  },
+  "scope": "Three local allocation samples per script on Windows .NET 11 using existing verified allocation harness. Shared budget baseline returns."
+}
