@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1369 retained call transport against CPython](results/2026-11-22-retained-call-transport-cpython/README.md)
+compares production `880c6d958` with CPython 3.13.16. The nested invoice
+takes 1.090–1.101× CPython's warm time. The function-scoped helper still
+takes 2.257–2.363×. The mixed factory compiles in 0.556–0.566× the time
+and takes 1.712–1.780× to reach the result. All 140 timed batches verify.
+The mixed tape and allocation evidence leave the prior source-pair CPU
+increase unexplained.
+
 [B1368 isolated native nested fixed returns](results/2026-11-22-native-fixed-returns-refined/README.md)
 retains the ordinary retirement and call boundaries. The helper-driven
 invoice takes 17.71–18.34% less warm elapsed time and allocates 39.75%
