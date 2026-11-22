@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1340 separate mixed-factory warm and first-use CPU attribution](results/2026-11-22-current-first-use-factory/README.md)
+resolves 115 warm and 116 first-use reserve samples to callable or
+capture construction. The fully supplied helper has none. Compiler
+ancestry accounts for 20 of 1,102 first-use samples. The capture is
+diagnostic. The initial compile-only count bound and completed phases
+are both preserved.
+
 [B1339 restrict complete decimal parsing to short ASCII leads](results/2026-11-22-complete-decimal-ascii/README.md)
 retains lower elapsed and CPU on both warm ASCII reports and typed ASCII
 time to result, with flat allocation and unchanged admitted peaks.

@@ -1,0 +1,13 @@
+{
+  "complete": false,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "persistentTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 184692736,
+  "archiveSHA256": "6f2f59e79a1d435afc35047e6a0c30456739781bc227715db6361ccfb0b088f1",
+  "source": "Current factory warm and first-use CPU attribution",
+  "performanceComparison": false,
+  "failure": "Traceback (most recent call last):\n  File \"/home/lokad/lython-bench-checks/current-first-use-factory-b1340-20261122/collect.py\", line 13, in <module>\n    subprocess.run(['python3',str(root/'ops-profile.py'),str(root/'guest-fixtures/profiles')],check=True)\n  File \"/usr/lib/python3.12/subprocess.py\", line 571, in run\n    raise CalledProcessError(retcode, process.args,\nsubprocess.CalledProcessError: Command '['python3', '/home/lokad/lython-bench-checks/current-first-use-factory-b1340-20261122/ops-profile.py', '/home/lokad/lython-bench-checks/current-first-use-factory-b1340-20261122/guest-fixtures/profiles']' returned non-zero exit status 1.\n"
+}
