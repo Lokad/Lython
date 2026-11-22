@@ -25,6 +25,8 @@
   product. Keep exact, governed promotion for wider results.
 - Check a private augmented local before an ordinary call and reuse its slot
   afterward, avoiding an eager numeric box and temporary operand.
+- Forward eligible nested fixed tuple returns into the caller's operand slots.
+  Keep exact, already-funded dictionary writes in the same native activation.
 - Reuse an existing UTF-8 scalar index to resolve single regex match windows.
 - Initialize regex match byte ranges during scalar projection. ASCII matches
   write their byte and character offsets together.

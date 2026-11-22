@@ -77,6 +77,7 @@ clocks. The archived tables include the earlier startup evidence.
 
 | Change | Measured effect | Limits |
 | --- | --- | --- |
+| Forward nested fixed tuple returns | The nested-helper CSV invoice runs 17.71–18.34% faster warm on the quiet VM and allocates 39.75% less locally. | The quoted invoice and function-scoped helper span zero. Mixed first-use CPU is 0.33–8.75% higher, with 5.82% reference-worker spread. [B1368](../benchmarks/results/2026-11-22-native-fixed-returns-refined/README.md). |
 | Reuse a private augmented local across a call | The function-scoped helper runs 7.29–8.60% faster warm and allocates 45.89% less. The helper-driven CSV invoice allocates 2.10% less. | Invoice timing spans zero. Initial mixed-factory time to result is 2.05–2.66% slower. The follow-up has 14.35% reference-worker spread. [B1364 and B1365](../benchmarks/results/2026-11-22-checked-augmented-local/README.md). |
 | Use direct signed overflow checks in the shared integer kernel | Mixed factory warm CPU falls 1.95–3.36%, and fully supplied helper warm CPU falls 0.82–2.70%. | Mixed time to result and range-loop elapsed span zero. Quoted-invoice elapsed rises 0.15–0.35%. [B1360](../benchmarks/results/2026-11-22-signed-integer-kernel/README.md). |
 | Prepare integer continuations in the executable tape | The fully supplied helper uses 1.52–3.67% less warm CPU. The ordinary invoice uses 0.95–2.88% less. | Factory timing spans zero. The ASCII control varies 7.65% across reference workers. [B1359](../benchmarks/results/2026-11-22-prepared-integer-continuations/README.md). |

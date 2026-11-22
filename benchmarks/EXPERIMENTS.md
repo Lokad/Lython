@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1368 isolated native nested fixed returns](results/2026-11-22-native-fixed-returns-refined/README.md)
+retains the ordinary retirement and call boundaries. The helper-driven
+invoice takes 17.71–18.34% less warm elapsed time and allocates 39.75%
+less locally. The quoted invoice and function helper span zero. Mixed
+first-use CPU remains adverse with a variable reference. Retain the
+source with that debt and keep the first version's adverse controls.
+
 [B1367 native nested fixed returns](results/2026-11-22-native-fixed-returns/README.md)
 removes tuple and frame staging from the nested-helper invoice. Warm
 elapsed falls 14.90–20.83% and local allocation falls 39.75%.

@@ -47,6 +47,25 @@ public sealed class OrdinaryUnpackingTests
             a,b=change()
             print(a,b,events)
             """, "3 4 ['cleanup']\n" },
+        { """
+            events=[]
+            class Sink:
+                def __setitem__(self,key,value):
+                    events.append(key)
+                    self.saved=value
+            def produce(value):
+                return value,value,4,5
+            def store(table,key,value):
+                first,second,number,extra=produce(value)
+                table[key]=first
+                return first is second,number+extra
+            shared=[]
+            table={'held': None}
+            for key in ('held','new1','new2','new3','new4','held'):
+                assert store(table,key,shared)==(True,9)
+            sink=Sink()
+            print(store(sink,'hook',shared),len(table),sink.saved is table['held'],events)
+            """, "(True, 9) 5 True ['hook']\n" },
     };
 
     [Theory]
@@ -132,7 +151,11 @@ public sealed class OrdinaryUnpackingTests
     [InlineData("/rhs.txt", true, true)]
     [InlineData("/receiver.txt", true, true)]
     [InlineData("/set.txt", true, true)]
-    public async Task UnpackedValuesSurviveSuspensionAndCancelWithoutReplay(string? pausedPath, bool tuple, bool fixedTargets)
+    [InlineData(null, true, true, true)]
+    [InlineData("/rhs.txt", true, true, true)]
+    [InlineData("/set.txt", true, true, true)]
+    public async Task UnpackedValuesSurviveSuspensionAndCancelWithoutReplay(string? pausedPath, bool tuple, bool fixedTargets,
+        bool nativeCaller = false)
     {
         const string source = "def mark(path,label):\n with open(path,'a') as output: output.write(label)\nclass Box:\n @property\n def value(self): return self.saved\n @value.setter\n def value(self,value):\n  mark('set.txt','S')\n  self.saved=value\nbox=Box()\npayload=['value']\ndef rhs():\n mark('rhs.txt','R')\n return [payload,2,3]\ndef receiver():\n mark('receiver.txt','C')\n return box\nreceiver().value,*rest=rhs()\nprint(box.saved is payload,rest)";
         var paths = new[] { "/rhs.txt", "/receiver.txt", "/set.txt" };
@@ -141,6 +164,10 @@ public sealed class OrdinaryUnpackingTests
         var program = tuple ? source.Replace("return [payload,2,3]", "return (payload,2,3)", StringComparison.Ordinal) : source;
         if (fixedTargets) program = program.Replace("*rest=rhs()", "second,third=rhs()", StringComparison.Ordinal)
             .Replace("is payload,rest)", "is payload,[second,third])", StringComparison.Ordinal);
+        if (nativeCaller)
+            program = program.Replace("receiver().value,second,third=rhs()\nprint(box.saved is payload,[second,third])",
+                "def consume():\n receiver().value,second,third=rhs()\n print(box.saved is payload,[second,third])\nconsume()",
+                StringComparison.Ordinal);
         using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(program, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
@@ -272,6 +299,49 @@ finally:
                     Assert.Empty(result.StandardOutput);
                 }
                 else Assert.Equal("stored\n", result.StandardOutput);
+            }
+            Assert.Equal(0, budget.Root.ReservedBytes);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task NestedTupleAdmissionPrecedesUnpackAndDictionaryMutation(bool asynchronous)
+    {
+        const string source = """
+            import time
+            def collect(value):
+                return value,value,4,5
+            def store(table,value):
+                table['initial'],alias,left,right=collect(value)
+                print(table['initial'] is alias,left+right)
+            table={'initial':None}
+            shared=[]
+            time.time()
+            try:store(table,shared)
+            except MemoryError:print('caught')
+            finally:return 0
+            """;
+        using var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid);
+        var budget = new AdmissionGateBudget();
+        foreach (var headroom in new[] { 0L, 2L * 1024 * 1024 })
+        {
+            budget.Gate(64L * 1024 * 1024);
+            var host = new AdmissionGateHost(budget, headroom);
+            var options = new LythonRunOptions { MemoryBudget = budget };
+            using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
+            {
+                Assert.True(budget.AtGate > 0);
+                Assert.Equal(headroom != 0, result.Success);
+                if (headroom == 0)
+                {
+                    Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+                    Assert.Equal(3, result.Failure?.Span?.Line);
+                    Assert.Empty(result.StandardOutput);
+                }
+                else Assert.Equal("True 9\n", result.StandardOutput);
             }
             Assert.Equal(0, budget.Root.ReservedBytes);
         }

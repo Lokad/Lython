@@ -182,6 +182,9 @@ internal sealed partial class LythonRuntime
                         Publish(instruction, ReadSubscriptValue(dictionary, field, instruction.Span, _scope));
                         break;
                     }
+                    case ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast:
+                        if (!StoreSubscript(instruction)) return false;
+                        break;
                     case ExecutableOpCode.Binary:
                     case ExecutableOpCode.Augmented:
                         if (TryIntegerOperation()) break;
@@ -369,6 +372,24 @@ internal sealed partial class LythonRuntime
             return value;
         }
 
+        private bool StoreSubscript(in ExecutableInstruction instruction)
+        {
+            // Resolve the physical inputs in their existing evaluation order.
+            // Growth and protocol keys transfer before the dictionary is changed.
+            var first = Read(instruction.InputStart, 0);
+            var second = Read(instruction.SecondInput, 1);
+            var third = Read(instruction.ThirdInput, 2);
+            var receiver = instruction.ValueLast ? first : second;
+            if (receiver is not PyDict dictionary) return false;
+            var key = instruction.ValueLast ? second : third;
+            var value = instruction.ValueLast ? third : first;
+            var span = (LythonSourceSpan)Code.Constants[instruction.TargetSpanIndex]!;
+            if (!dictionary.TryWriteKeyWithoutAdmission(key, value, _scope, span)) return false;
+            try { _scope.CheckExecution(span); }
+            finally { Trim(instruction.LiveExtent); }
+            return true;
+        }
+
         private bool Call(in ExecutableInstruction instruction)
         {
             var call = Code.CallSites[instruction.CallSiteIndex];
@@ -437,7 +458,13 @@ internal sealed partial class LythonRuntime
             { throw translated; }
             // Publication and its store checkpoint remain outside callable
             // exception translation. The marker never leaves this activation.
-            Publish(Code.Instructions[Index], result);
+            if (call.UnpackedReturnCount != 0 && Code.Instructions[Index].OpCode == ExecutableOpCode.UnpackValues)
+            {
+                _scope.CheckExecution(Code.Instructions[Index].Span);
+                Trim(start + call.UnpackedReturnCount);
+                Values.Slice(start, call.UnpackedReturnCount).Reverse();
+            }
+            else Publish(Code.Instructions[Index], result);
             return true;
         }
 
@@ -461,10 +488,13 @@ internal sealed partial class LythonRuntime
             try
             {
                 var arguments = Values.Slice(start + call.ArgumentOffset, call.ArgumentCount);
-                function.StartNativeCall(call, arguments, receiver, _scope, call.CallSpan,
-                    call.ConsumedByIteration || _consumedByIteration && call.ReturnedDirectly,
-                    completePositional, default, out _, out var childValue, out var child);
-                result = childValue;
+                var consumedByIteration = call.ConsumedByIteration || _consumedByIteration && call.ReturnedDirectly;
+                ExecutionContext? child;
+                if (call.UnpackedReturnCount != 0 && Code.LastOwnedTemporarySlot < start)
+                    StartNativeFixedReturn(function, call, arguments, receiver, start, consumedByIteration,
+                        completePositional, out result, out child);
+                else function.StartNativeCall(call, arguments, receiver, _scope, call.CallSpan,
+                    consumedByIteration, completePositional, default, out _, out result, out child);
                 if (child is not null)
                 {
                     // No operation is running in the child. Keep its exact
@@ -477,6 +507,23 @@ internal sealed partial class LythonRuntime
             }
             finally { if (entered) _scope.LeaveInterpreterFrame(); }
             return true;
+        }
+
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+        private void StartNativeFixedReturn(PyExecutableFunction function, ExecutableCallSite call,
+            scoped ReadOnlySpan<ExecutableSlot> arguments, object? receiver, int start, bool consumedByIteration,
+            bool completePositional, out ExecutableSlot result, out ExecutionContext? child)
+        {
+            // This destination cannot overlap an owned temporary. Binding
+            // consumes arguments before the callee writes. Track wider returns
+            // before invoking it so a terminal exit can retire all references.
+            var originalExtent = LiveExtent;
+            var returned = Values.Slice(start, call.UnpackedReturnCount);
+            LiveExtent = Math.Max(originalExtent, start + returned.Length);
+            function.StartNativeCall(call, arguments, receiver, _scope, call.CallSpan,
+                consumedByIteration, completePositional, returned, out var unpacked, out result, out child);
+            if (unpacked) Index++; // The caller completes this existing unpack after leaving the call.
+            else LiveExtent = originalExtent;
         }
 
         private bool TryReturnUnpackedTuple(in ExecutableInstruction instruction)
