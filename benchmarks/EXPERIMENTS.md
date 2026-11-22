@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1360 use direct signed checks in the shared integer kernel](results/2026-11-22-signed-integer-kernel/README.md)
+reduces warm CPU by 1.95–3.36% for the mixed factory and by 0.82–2.70%
+for the supplied helper. The quoted invoice has a 0.15–0.35% elapsed
+regression. The range loop, ordinary invoice and mixed first-use
+elapsed span zero. All 196 timed batches and allowance checks verify.
+
 [B1359 prepare integer continuations during tape emission](results/2026-11-22-prepared-integer-continuations/README.md)
 removes runtime successor discovery. Fully supplied helper and ordinary
 invoice warm CPU fall 1.52–3.67% and 0.95–2.88%. Factory timings span

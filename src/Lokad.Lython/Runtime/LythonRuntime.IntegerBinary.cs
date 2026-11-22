@@ -77,18 +77,27 @@ internal sealed partial class LythonRuntime
     private static bool TryMachineBinary(BinaryOperatorSyntax op, long left, long right, out long result)
     {
         result = 0;
-        // Two int64 operands fit these intermediate operations in Int128.
         // Out-of-range results decline without an exception or publication.
         // The same rule serves ordinary arithmetic, chains and captured cells.
         switch (op)
         {
             case BinaryOperatorSyntax.Add:
+                var sum = unchecked(left + right);
+                // Overflow changes the result's sign relative to both operands.
+                if (((left ^ sum) & (right ^ sum)) < 0) return false;
+                result = sum;
+                return true;
             case BinaryOperatorSyntax.Subtract:
+                var difference = unchecked(left - right);
+                // Only opposite operand signs can overflow a subtraction.
+                if (((left ^ right) & (left ^ difference)) < 0) return false;
+                result = difference;
+                return true;
             case BinaryOperatorSyntax.Multiply:
-                var wide = op == BinaryOperatorSyntax.Add ? (Int128)left + right
-                    : op == BinaryOperatorSyntax.Subtract ? (Int128)left - right : (Int128)left * right;
-                if (wide < long.MinValue || wide > long.MaxValue) return false;
-                result = (long)wide;
+                var high = Math.BigMul(left, right, out var low);
+                // A signed product fits when its upper word is sign extension.
+                if (high != (low >> 63)) return false;
+                result = low;
                 return true;
             case BinaryOperatorSyntax.FloorDivide when right != 0:
                 if (left == long.MinValue && right == -1) return false;

@@ -21,6 +21,8 @@
   for jump resolution, operand depths and physical offsets.
 - Mark integer continuations during executable tape emission. Both
   execution loops reuse the prepared links and skip runtime lookahead.
+- Check machine integer overflow with operand signs and the signed high
+  product. Keep exact, governed promotion for wider results.
 - Reuse an existing UTF-8 scalar index to resolve single regex match windows.
 - Initialize regex match byte ranges during scalar projection. ASCII matches
   write their byte and character offsets together.
