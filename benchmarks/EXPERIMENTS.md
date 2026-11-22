@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1410 deferred short-word publication](results/2026-11-22-deferred-word-binding/README.md)
+preserves both strict scope-snapshot goldens and allocates 25.69% less
+on the nonlocal report with the same admitted peak. Report elapsed and
+CPU span zero. The fully supplied helper takes 0.85–2.46% longer warm and
+the ordinary histogram has elevated worker spread. Keep the candidate
+private. The original archive failure and successful recovery are recorded.
+
 [B1409 scalar binding before the workspace](results/2026-11-22-scalar-default-binding/README.md#b1409-probe-before-the-reference-workspace)
 confirms a 2.65–5.20% warm gain for postponed factories. Both fully
 supplied and quote-heavy controls take longer. First use is inconclusive.
