@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1422 factory and report attribution](results/2026-11-22-factory-text-attribution/README.md)
+confirms callable construction, default admission, casing preparation
+and the dictionary loop on exact `3b45fdfc7`. The Windows sampling
+intervals leave its method split uncertain. The resolved Linux stacks
+carry the attribution and supply no new elapsed comparison.
+
 [B1421 future annotation validation](results/2026-11-22-future-validation-single-walk/README.md)
 removes the separate statement walk and permitted-import set. The
 postponed factory compiles 1.72–3.13% faster and allocates 2.21% less.
