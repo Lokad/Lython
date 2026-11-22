@@ -2,9 +2,9 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyHashableValue, IPyOwnershipSnapshot
+internal class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyHashableValue, IPyOwnershipSnapshot
 {
-    private readonly Array _items;
+    private readonly Array? _items;
     private readonly MemoryGovernor? _memoryGovernor;
     private readonly LythonSourceSpan? _allocationSpan;
     private long _committedBytes;
@@ -46,12 +46,20 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
         _items = takeOwnership ? items : [.. items];
     }
 
-    private PyTuple(Array items, MemoryGovernor governor, LythonSourceSpan? allocationSpan, long committedBytes)
+    private PyTuple(Array? items, MemoryGovernor governor, LythonSourceSpan? allocationSpan, long committedBytes)
     {
         _items = items;
         _memoryGovernor = governor;
         _allocationSpan = allocationSpan;
         _committedBytes = committedBytes;
+    }
+
+    // A dynamic singleton default has one canonical tuple and one value slot.
+    // Put that slot in the tuple so calls and metadata share lazy box identity.
+    internal sealed class SingletonDefault(MemoryGovernor governor, LythonSourceSpan span, long bytes)
+        : PyTuple(null, governor, span, bytes)
+    {
+        internal LythonRuntime.ExecutableSlot Item;
     }
 
     internal static long EstimateObjectSlotStorage(ReadOnlySpan<LythonRuntime.ExecutableSlot> values,
@@ -118,7 +126,8 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
 
     internal static PyTuple CreateAdmittedDefaultStorage(int count, MemoryGovernor governor,
         LythonSourceSpan span, long bytes)
-        => new(new LythonRuntime.ExecutableSlot[count], governor, span, bytes);
+        => count == 1 ? new SingletonDefault(governor, span, bytes)
+            : new PyTuple(new LythonRuntime.ExecutableSlot[count], governor, span, bytes);
 
     internal static PyTuple CreateDefaultStorage(int count, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
@@ -145,7 +154,7 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
             state.CheckExecution(span);
             // Fresh integers can stay unboxed. Other values retain their current
             // identity, including an integer borrowed from another tuple.
-            ((LythonRuntime.ExecutableSlot[])_items)[index] = value.IsUnpublishedInteger
+            WritableValueSlot(index) = value.IsUnpublishedInteger
                 ? value : LythonRuntime.ExecutableSlot.FromObject(LythonRuntime.RuntimeValue(value.Object));
             if (extra != 0)
             {
@@ -162,7 +171,7 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
 
     internal bool TryReadInteger(int index, out long value)
     {
-        if (_items is LythonRuntime.ExecutableSlot[] items) return items[index].TryGetInteger(out value);
+        if (_items is not object[]) return WritableValueSlot(index).TryGetInteger(out value);
         value = 0;
         return false;
     }
@@ -170,31 +179,41 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
     internal bool TryReadStoredSlot(long index, out LythonRuntime.ExecutableSlot value)
     {
         value = default;
-        if (_items is not LythonRuntime.ExecutableSlot[] items) return false;
-        if (index < 0) index += items.Length;
-        if ((ulong)index >= (uint)items.Length) return false;
-        value = ReadValueSlot(items, (int)index);
+        if (_items is object[]) return false;
+        var count = Count;
+        if (index < 0) index += count;
+        if ((ulong)index >= (uint)count) return false;
+        value = ReadValueSlot((int)index);
         return true;
     }
 
     // Positional defaults align with the end of the callable's parameter list.
     internal bool TryReadTrailingSlot(int distance, out LythonRuntime.ExecutableSlot value)
     {
-        var index = _items.Length - distance;
-        if ((uint)index >= (uint)_items.Length)
+        var count = Count;
+        var index = count - distance;
+        if ((uint)index >= (uint)count)
         {
             value = default;
             return false;
         }
         value = _items is object[] objects ? LythonRuntime.ExecutableSlot.FromObject(objects[index])
-            : ReadValueSlot((LythonRuntime.ExecutableSlot[])_items, index);
+            : ReadValueSlot(index);
         return true;
     }
 
-    private LythonRuntime.ExecutableSlot ReadValueSlot(LythonRuntime.ExecutableSlot[] items, int index)
+    private ref LythonRuntime.ExecutableSlot WritableValueSlot(int index)
     {
-        if (!items[index].IsUnpublishedInteger)
-            return LythonRuntime.ExecutableSlot.FromObject(items[index].Reference);
+        if (_items is LythonRuntime.ExecutableSlot[] items) return ref items[index];
+        if (index != 0) throw new IndexOutOfRangeException();
+        return ref ((SingletonDefault)this).Item;
+    }
+
+    private LythonRuntime.ExecutableSlot ReadValueSlot(int index)
+    {
+        ref var item = ref WritableValueSlot(index);
+        if (!item.IsUnpublishedInteger)
+            return LythonRuntime.ExecutableSlot.FromObject(item.Reference);
         LythonRuntime.ExecutableSlot value = default;
         value.BorrowTupleInteger(this, index);
         return value;
@@ -398,12 +417,12 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
         finally { builder.DiscardUnpublishedStorage(); }
     }
 
-    public int Count => _items.Length;
+    public int Count => _items?.Length ?? 1;
 
-    public int Length => _items.Length;
+    public int Length => Count;
 
     public object this[int index] => _items is object[] objects ? objects[index]
-        : ((LythonRuntime.ExecutableSlot[])_items)[index].PublishSharedInteger();
+        : WritableValueSlot(index).PublishSharedInteger();
 
     public IEnumerator<object> GetEnumerator() => _items is object[] objects
         ? ((IEnumerable<object>)objects).GetEnumerator() : EnumerateSlots().GetEnumerator();
@@ -435,7 +454,7 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
 
     public object[] ToArray()
     {
-        var bytes = EstimateApproximateBytes(_items.Length);
+        var bytes = EstimateApproximateBytes(Count);
         using var storage = _memoryGovernor?.ReserveTemporary(bytes, _allocationSpan);
         var result = this.ToArrayCore();
         storage?.Commit(bytes);

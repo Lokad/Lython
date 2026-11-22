@@ -13,6 +13,21 @@ public sealed class FunctionDefaultMetadataTests
         { "def f(a=1,*,b=2): return a,b\nprint(f.__defaults__,f.__kwdefaults__)\nprint(f.__defaults__ is f.__defaults__,f.__kwdefaults__ is f.__kwdefaults__)", "(1,) {'b': 2}\nTrue True\n" },
         { "def f(x=5): return x\nf.__defaults__=(7,)\nprint(f())", "7\n" },
         { """
+            def factory(seed):
+                def pick(value=seed+10000):
+                    return value
+                return pick
+            first = factory(3)
+            second = factory(3)
+            value = first()
+            saved = first.__defaults__
+            print(type(saved) is tuple, tuple(saved) == saved, saved is second.__defaults__)
+            print(value is saved[-1], next(iter(saved)) is value, saved.count(value), saved.index(value))
+            print({saved: 'old'}[(10003,)], saved[:], hash(saved) == hash((10003,)))
+            first.__defaults__ = second.__defaults__
+            print(first() is second.__defaults__[0], saved[0] is value)
+            """, "True True False\nTrue True 1 0\nold (10003,) True\nTrue True\n" },
+        { """
             shared = []
             def factory(n):
                 def source(value=n+10000, alias=shared, real=n/2, large=10**80):

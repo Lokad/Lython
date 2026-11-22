@@ -545,8 +545,8 @@ internal sealed partial class LythonRuntime
             var valueType = value.GetType();
             return valueType == typeof(PyList)
                 ? NormalizeContainer(value, activeContainers, normalizedContainers, memoScratch, () => NormalizePyList((PyList)value, context, activeContainers, normalizedContainers, memoScratch, depth + 1))
-                : valueType == typeof(PyTuple)
-                    ? NormalizeContainer(value, activeContainers, normalizedContainers, memoScratch, () => NormalizePyTuple((PyTuple)value, context, activeContainers, normalizedContainers, memoScratch, depth + 1))
+                : value is PyTuple tuple
+                    ? NormalizeContainer(value, activeContainers, normalizedContainers, memoScratch, () => NormalizePyTuple(tuple, context, activeContainers, normalizedContainers, memoScratch, depth + 1))
                     : valueType == typeof(List<object?>)
                         ? NormalizeContainer(value, activeContainers, normalizedContainers, memoScratch, () => NormalizeObjectList((List<object?>)value, context, activeContainers, normalizedContainers, memoScratch, depth + 1))
                         : valueType == typeof(object?[])
