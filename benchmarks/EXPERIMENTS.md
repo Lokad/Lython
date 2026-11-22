@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1416 adapter operation state](results/2026-11-22-regex-adapter-operation-state/README.md)
+deletes captured delegates at the optional backend boundary. Named-capture
+reports allocate 5.01–5.50% less with matching admitted peaks. Both
+platforms pass 714 focused checks. No elapsed comparison was collected.
+
 [B1414 same-image warm factory spread](results/2026-11-22-factory-worker-spread/README.md)
 reproduces an 11.06% elapsed spread after extended warmup. Profiles of
 the extreme workers map to different optimized Tier 1 code. Calls,
