@@ -19,6 +19,8 @@
   separate enumerable wrapper. Preserve integer identity and wide values.
 - Resolve executable jump targets on demand. Reuse the block layout table
   for jump resolution, operand depths and physical offsets.
+- Mark integer continuations during executable tape emission. Both
+  execution loops reuse the prepared links and skip runtime lookahead.
 - Reuse an existing UTF-8 scalar index to resolve single regex match windows.
 - Initialize regex match byte ranges during scalar projection. ASCII matches
   write their byte and character offsets together.

@@ -21,7 +21,8 @@ internal sealed partial class LythonRuntime
                 value.Object = RuntimeValue(CompareOrderedResult(instruction.BinaryOperator, left.CompareTo(right)));
                 return true;
             }
-            if (TryIntegerChain(code, values, index, left, right, context, out var last, out var chained))
+            if (instruction.HasIntegerContinuation &&
+                TryIntegerChain(code, values, index, left, right, context, out var last, out var chained))
             {
                 end = last;
                 value.SetInteger(chained);

@@ -1,0 +1,65 @@
+[
+  {
+    "case": "scripts.ordinary-fully-supplied-helper",
+    "reference": 142680,
+    "candidate": 142680,
+    "allocationChangePercent": 0.0,
+    "referenceAccountedPeak": 1255,
+    "candidateAccountedPeak": 1255,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.csv-meter-report.typed-ascii",
+    "reference": 1606512,
+    "candidate": 1606630,
+    "allocationChangePercent": 0.007345105420930587,
+    "referenceAccountedPeak": 3552905,
+    "candidateAccountedPeak": 3552905,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.annotated-rule-closures.literal-positional-dynamic-keyword",
+    "reference": 964360,
+    "candidate": 964360,
+    "allocationChangePercent": 0.0,
+    "referenceAccountedPeak": 3443797,
+    "candidateAccountedPeak": 3443797,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.config-generated-guards.medium.bad-0.sparse-lexical",
+    "reference": 68248,
+    "candidate": 68248,
+    "allocationChangePercent": 0.0,
+    "referenceAccountedPeak": 92830,
+    "candidateAccountedPeak": 92830,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.csv-invoice.large",
+    "reference": 3672382,
+    "candidate": 3671934,
+    "allocationChangePercent": -0.012199166644433213,
+    "referenceAccountedPeak": 9432613,
+    "candidateAccountedPeak": 9432613,
+    "allowanceRestored": true
+  },
+  {
+    "case": "diagnostic.loop-range.inside.large",
+    "reference": 14736,
+    "candidate": 14736,
+    "allocationChangePercent": 0.0,
+    "referenceAccountedPeak": 1120,
+    "candidateAccountedPeak": 1120,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "reference": 4068656,
+    "candidate": 4068502,
+    "allocationChangePercent": -0.003785033681880101,
+    "referenceAccountedPeak": 9432874,
+    "candidateAccountedPeak": 9432874,
+    "allowanceRestored": true
+  }
+]

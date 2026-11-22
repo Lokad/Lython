@@ -1,0 +1,121 @@
+{
+  "codeObjects": 25,
+  "comparison": "Only existing Binary operator metadata bits differ",
+  "cases": [
+    {
+      "id": "scripts.ordinary-fully-supplied-helper",
+      "links": [
+        {
+          "code": "<module>",
+          "index": 14,
+          "line": 6
+        },
+        {
+          "code": "evaluate",
+          "index": 0,
+          "line": 2
+        }
+      ]
+    },
+    {
+      "id": "scripts.csv-meter-report.typed-ascii",
+      "links": []
+    },
+    {
+      "id": "scripts.annotated-rule-closures.literal-positional-dynamic-keyword",
+      "links": [
+        {
+          "code": "<module>",
+          "index": 12,
+          "line": 11
+        },
+        {
+          "code": "evaluate",
+          "index": 0,
+          "line": 5
+        },
+        {
+          "code": "evaluate",
+          "index": 4,
+          "line": 5
+        }
+      ]
+    },
+    {
+      "id": "scripts.config-generated-guards.medium.bad-0.sparse-lexical",
+      "links": []
+    },
+    {
+      "id": "scripts.csv-invoice.large",
+      "links": [
+        {
+          "code": "rounded_basis_points",
+          "index": 0,
+          "line": 5
+        },
+        {
+          "code": "rounded_basis_points",
+          "index": 1,
+          "line": 5
+        }
+      ]
+    },
+    {
+      "id": "diagnostic.loop-range.inside.large",
+      "links": []
+    },
+    {
+      "id": "scripts.csv-invoice.method-policy.quoted-control",
+      "links": [
+        {
+          "code": "rounded_basis_points",
+          "index": 0,
+          "line": 6
+        },
+        {
+          "code": "rounded_basis_points",
+          "index": 1,
+          "line": 6
+        }
+      ]
+    },
+    {
+      "id": "protected-chain",
+      "links": [
+        {
+          "code": "f",
+          "index": 1,
+          "line": 2
+        },
+        {
+          "code": "f",
+          "index": 2,
+          "line": 2
+        }
+      ]
+    },
+    {
+      "id": "conditional-chain",
+      "links": []
+    },
+    {
+      "id": "published-chain",
+      "links": []
+    }
+  ],
+  "catalogSHA256": "6f96aa82ba74f1fbc7a721faf3409bbec5bec4da3cda89fc0111efc02104c27f",
+  "shapeWorkerFiles": {
+    "reference": {
+      "Inspect.deps.json": "2d4667c19cc8c902aaec0f8f7ee91d1cf12cbad6b6e7bffe82d306ae68c743c4",
+      "Inspect.dll": "7f0a372a76e601f1678ecb4cd2417ebcf08cc9ca0f599d23aa1893c806c06018",
+      "Inspect.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0",
+      "Lokad.Lython.dll": "56c00e27752e32ca9e1a725b96598aa2c0b4d8ac3d7d47052b327c501736901b"
+    },
+    "candidate": {
+      "Inspect.deps.json": "2d4667c19cc8c902aaec0f8f7ee91d1cf12cbad6b6e7bffe82d306ae68c743c4",
+      "Inspect.dll": "7f0a372a76e601f1678ecb4cd2417ebcf08cc9ca0f599d23aa1893c806c06018",
+      "Inspect.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0",
+      "Lokad.Lython.dll": "2bfd3917a7710c630197a4d8814c7d879d57a4c337a62649f6212ea96b25b8e5"
+    }
+  }
+}

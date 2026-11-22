@@ -108,6 +108,7 @@ internal readonly record struct ExecutableInstruction
     private readonly int _inputStart;
     private readonly int _resultSlot;
     private readonly int _liveExtent;
+    private const int IntegerContinuationBit = int.MinValue;
 
     private ExecutableInstruction(ExecutableOpCode opCode, LythonSourceSpan span,
         int primaryOperand = 0, int secondaryOperand = int.MaxValue,
@@ -219,7 +220,16 @@ internal readonly record struct ExecutableInstruction
         : ReadPrimaryOperand(ExecutableOpCode.ExitContextManager, nameof(CleanupId));
     public int ExceptionNameIndex => ReadPrimaryOperand(ExecutableOpCode.ClearException, nameof(ExceptionNameIndex));
     public ExecutableSliceParts SliceParts => (ExecutableSliceParts)_primaryOperand;
-    public BinaryOperatorSyntax BinaryOperator => (BinaryOperatorSyntax)(OpCode == ExecutableOpCode.CompareJumpIfFalse ? _resultSlot : _primaryOperand);
+    public BinaryOperatorSyntax BinaryOperator
+        => (BinaryOperatorSyntax)(OpCode == ExecutableOpCode.CompareJumpIfFalse ? _resultSlot : _primaryOperand & ~IntegerContinuationBit);
+
+    // A Binary instruction's operator leaves room for a continuation bit.
+    // Only a physically adjacent operation in the same block can follow it.
+    internal bool HasIntegerContinuation => (_primaryOperand & IntegerContinuationBit) != 0;
+
+    internal ExecutableInstruction WithIntegerContinuation()
+        => new(OpCode, Span, _primaryOperand | IntegerContinuationBit, _secondaryOperand,
+            _inputStart, _resultSlot, _liveExtent);
     public ExecutableUnaryOperator UnaryOperator => (ExecutableUnaryOperator)_primaryOperand;
     public AugmentedAssignmentOperatorSyntax AugmentedOperator => (AugmentedAssignmentOperatorSyntax)_primaryOperand;
 

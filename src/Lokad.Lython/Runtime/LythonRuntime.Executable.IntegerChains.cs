@@ -27,13 +27,9 @@ internal sealed partial class LythonRuntime
         end = index;
         result = 0;
         ref readonly var first = ref code.Instructions[index];
-        if (first.HasResultConsumer || index + 1 >= code.Instructions.Length
-            || !ContinuesIntegerChain(code, code.Instructions[index + 1], first.ResultSlot)) return false;
-
         long accumulator;
         if (!TryMachineBinary(first.BinaryOperator, left, right, out accumulator)) return false;
-        while (end + 1 < code.Instructions.Length
-            && ContinuesIntegerChain(code, code.Instructions[end + 1], first.ResultSlot))
+        while (code.Instructions[end].HasIntegerContinuation)
         {
             ref readonly var next = ref code.Instructions[end + 1];
             scope.CheckExecution(next.Span);
@@ -45,7 +41,6 @@ internal sealed partial class LythonRuntime
             var b = next.SecondInput == first.ResultSlot ? accumulator : operand;
             if (!TryMachineBinary(next.BinaryOperator, a, b, out accumulator)) return false;
             end++;
-            if (next.HasResultConsumer) break;
         }
 
         // The caller boxes the one published value using existing minor-
@@ -53,9 +48,4 @@ internal sealed partial class LythonRuntime
         result = accumulator;
         return true;
     }
-
-    private static bool ContinuesIntegerChain(ExecutableCodeObject code, in ExecutableInstruction next, int slot)
-        => next.OpCode == ExecutableOpCode.Binary && next.ResultSlot == slot
-            && (next.InputStart == slot && next.SecondInput < code.FirstTemporarySlot
-                || next.SecondInput == slot && next.InputStart < code.FirstTemporarySlot);
 }

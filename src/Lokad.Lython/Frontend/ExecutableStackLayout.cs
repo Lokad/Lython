@@ -114,6 +114,9 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
                     ExecutableOpCode.AbruptJump => instruction.WithTargetIndex(positions[instruction.TargetIndex].Offset),
                     ExecutableOpCode.ForNext when j + 1 < source.Count && CanUnpackIteration(instruction, source[j + 1])
                         => instruction.WithTargetIndex(ResolvedOffset(instruction.TargetIndex)).WithFixedUnpack(),
+                    ExecutableOpCode.Binary when !instruction.HasResultConsumer && j + 1 < source.Count &&
+                        CanContinueInteger(source[j + 1], instruction.ResultSlot, layout.FirstTemporarySlot)
+                        => instruction.WithIntegerContinuation(),
                     ExecutableOpCode.Jump or ExecutableOpCode.JumpIfFalse or ExecutableOpCode.CompareJumpIfFalse or
                         ExecutableOpCode.ForNext or ExecutableOpCode.EndFinally => instruction.WithTargetIndex(ResolvedOffset(instruction.TargetIndex)),
                     ExecutableOpCode.MatchCase => instruction.WithFailureIndex(ResolvedOffset(instruction.FailureIndex)),
@@ -138,6 +141,11 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
             => !iteration.HasResultConsumer && next.OpCode == ExecutableOpCode.UnpackValues
                 && next.InputStart == iteration.ResultSlot && next.ResultSlot == iteration.ResultSlot
                 && next.UnpackLayout is { HasStarredTarget: false, TargetCount: > 0 };
+
+        static bool CanContinueInteger(in ExecutableInstruction next, int resultSlot, int firstTemporarySlot)
+            => next.OpCode == ExecutableOpCode.Binary && next.ResultSlot == resultSlot &&
+                (next.InputStart == resultSlot && next.SecondInput < firstTemporarySlot ||
+                 next.SecondInput == resultSlot && next.InputStart < firstTemporarySlot);
 
         static bool Completes(List<ExecutableInstruction> block) => block.Count == 0 ||
             block[^1].OpCode is not (ExecutableOpCode.Jump or ExecutableOpCode.AbruptJump or

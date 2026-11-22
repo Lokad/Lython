@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1359 prepare integer continuations during tape emission](results/2026-11-22-prepared-integer-continuations/README.md)
+removes runtime successor discovery. Fully supplied helper and ordinary
+invoice warm CPU fall 1.52–3.67% and 0.95–2.88%. Factory timings span
+zero. All 224 batches and 25 compiled code objects verify.
+
 [B1358 classify the first closed arithmetic operand once](results/2026-11-22-shared-arithmetic-operand/README.md)
 keeps the shared dispatch private. The typed ASCII meter uses 0.99–2.46%
 less warm CPU, while the integer range loop uses 18.33–19.45% more.
