@@ -215,18 +215,16 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
     private sealed class Subject : ILythonRegexSubject
     {
         internal readonly Pattern Pattern;
-        internal readonly ReadOnlyMemory<byte> Input;
+        private ReadOnlyMemory<byte> _input;
         private readonly ILythonMemoryScope _owner;
         private readonly ILythonMemoryReservation _storage;
-        private readonly int _startByte, _endByte;
         private readonly LythonRegexWindow _window;
-        private ReadOnlyMemory<byte> BoundedInput => Input[.._endByte];
+        private ReadOnlyMemory<byte> BoundedInput => _input[.._window.EndByte];
         private bool _disposed;
 
         internal Subject(Pattern pattern, ReadOnlyMemory<byte> input, LythonRegexWindow window, ILythonMemoryBudget owner, CancellationToken token)
         {
-            Pattern = pattern; Input = input; _window = window;
-            _startByte = window.StartByte; _endByte = window.EndByte;
+            Pattern = pattern; _input = input; _window = window;
             _owner = owner.CreateScope();
             try
             {
@@ -239,10 +237,12 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
 
         private void ValidateWindow()
         {
+            var start = _window.StartByte;
+            var end = _window.EndByte;
             if (_window.Pos < 0 || _window.EndPos < 0 ||
-                (uint)_startByte > (uint)Input.Length || (uint)_endByte > (uint)Input.Length ||
-                _startByte < Input.Length && (Input.Span[_startByte] & 0xc0) == 0x80 ||
-                _endByte < Input.Length && (Input.Span[_endByte] & 0xc0) == 0x80)
+                (uint)start > (uint)_input.Length || (uint)end > (uint)_input.Length ||
+                start < _input.Length && (_input.Span[start] & 0xc0) == 0x80 ||
+                end < _input.Length && (_input.Span[end] & 0xc0) == 0x80)
                 throw new ArgumentOutOfRangeException(nameof(_window), "Regex window bounds must be clamped to the original scalar length.");
         }
 
@@ -253,7 +253,7 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
         }
 
         private long MatchBytes => checked(16384L + 128L * Pattern.CaptureSlotCount +
-            16L * Input.Length * (Pattern.CaptureSlotCount + 1L) + 16L * Pattern.PatternBytes);
+            16L * _input.Length * (Pattern.CaptureSlotCount + 1L) + 16L * Pattern.PatternBytes);
 
         public bool TryMatch(LythonRegexMatchMode mode, Span<LythonRegexCapture?> captures, out int? lastIndex,
             CancellationToken cancellationToken)
@@ -271,9 +271,9 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
             Fund(MatchBytes);
             var data = Backend(() => mode switch
             {
-                LythonRegexMatchMode.Match => Pattern.Regex.MatchDetailedData(BoundedInput.Span, _startByte, cancellationToken),
-                LythonRegexMatchMode.FullMatch => Pattern.Regex.FullMatchDetailedData(BoundedInput.Span, _startByte, cancellationToken),
-                _ => Pattern.Regex.SearchDetailedData(BoundedInput.Span, _startByte, cancellationToken),
+                LythonRegexMatchMode.Match => Pattern.Regex.MatchDetailedData(BoundedInput.Span, _window.StartByte, cancellationToken),
+                LythonRegexMatchMode.FullMatch => Pattern.Regex.FullMatchDetailedData(BoundedInput.Span, _window.StartByte, cancellationToken),
+                _ => Pattern.Regex.SearchDetailedData(BoundedInput.Span, _window.StartByte, cancellationToken),
             }, cancellationToken, patternSource: Pattern.Regex);
             if (!data.Success) return false;
             CopyCaptures(data, captures, cancellationToken);
@@ -300,7 +300,13 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
             }
         }
 
-        public void Dispose() { if (!_disposed) { _disposed = true; _owner.Dispose(); } }
+        public void Dispose()
+        {
+            if (_disposed) return;
+            _disposed = true;
+            _input = default;
+            _owner.Dispose();
+        }
 
         private sealed class Cursor : ILythonRegexCursor
         {
@@ -320,7 +326,7 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
                     if (subject._window.Pos > subject._window.EndPos) return;
                     Reserve(_owner, subject.MatchBytes);
                     using var registration = Forward(token);
-                    _cursor = Backend(() => subject.Pattern.Regex.CreateMatchCursor(subject.BoundedInput, subject._startByte, _cancellation.Token), token, patternSource: subject.Pattern.Regex);
+                    _cursor = Backend(() => subject.Pattern.Regex.CreateMatchCursor(subject.BoundedInput, subject._window.StartByte, _cancellation.Token), token, patternSource: subject.Pattern.Regex);
                 }
                 catch { Dispose(); throw; }
             }
