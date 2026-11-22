@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1362 CPU attribution after signed arithmetic](results/2026-11-22-post-arithmetic-invocation-profile/README.md)
+resolves most range-loop samples to the native loop. The supplied
+helper resolves 523 of 1,148 samples to instruction dispatch or
+builtin arithmetic, with no closest-runtime reservation samples.
+The scripts differ in arithmetic and scope. The profile preserves
+both traces and motivates a matched workload comparison.
+
 [B1361 current integer loops, factories and CSV against CPython](results/2026-11-22-machine-arithmetic-cpython/README.md)
 compares exact production `eb227dcac` with CPython 3.13.16. The range
 loop is 1.052–1.061× and the fully supplied helper is 1.675–1.787×.
