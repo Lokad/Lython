@@ -4,11 +4,12 @@
 | --- | --- | ---: | ---: | ---: | --- |
 | Typed ASCII CSV meter report | 4,096 records / 139,299 B | 3.034–3.049 ms | 2.488–2.522 ms | 1.203–1.226× | Diagnostic. Lython worker spread 0.49%. [B1361]. |
 | CSV meter report with explicit `float()` | 4,096 records / 139,299 B | 4.460–4.664 ms | 2.903–2.907 ms | 1.534–1.607× | Diagnostic. Lython worker spread 4.58%. [B1336]. |
-| Typed Unicode CSV meter report | 4,096 records / 223,267 B | 3.924–3.972 ms | 3.095–3.157 ms | 1.243–1.283× | Diagnostic. Lython worker spread 1.22%. [B1336]. |
+| Typed Unicode CSV meter report | 4,096 records / 223,267 B | 3.712–3.713 ms | 3.139–3.152 ms | 1.178–1.183× | Diagnostic. CPython worker spread 0.40%. [B1388]. |
 | Ordinary CSV invoice | 4,096 records / 127,031 B | 6.163–6.246 ms | 6.092–6.213 ms | 0.992–1.025× | Diagnostic. Spans parity. [B1356]. |
 | Nested-helper CSV invoice | 4,096 records / 127,031 B | 5.926–5.941 ms | 5.558–5.559 ms | 1.066–1.069× | Diagnostic. Lython worker spread 0.26%. [B1373]. |
-| Quote-heavy CSV policy invoice | 4,096 records / 174,147 B | 7.197–7.447 ms | 6.255–6.289 ms | 1.145–1.191× | Diagnostic. Lython worker spread 3.48%. [B1369]. |
+| Quote-heavy CSV policy invoice | 4,096 records / 174,147 B | 7.155–7.287 ms | 6.268–6.277 ms | 1.140–1.162× | Diagnostic. Lython worker spread 1.84%. [B1388]. |
 | CSV restock export | 3,072 records / 182,437 B | 3.759–3.907 ms | 5.102–5.129 ms | 0.733–0.766× | Historical diagnostic. [B1278]. |
+| Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 1.573–1.585 ms | 0.931–0.953 ms | 1.652–1.702× | Diagnostic. CPython worker spread 2.29%. [B1388]. |
 | Map-based text report | 3,072 lines / 35,840 B | 1.440–1.495 ms | 1.217–1.220 ms | 1.181–1.228× | Historical diagnostic. [B1274]. |
 | JSON Lines export with expanded options | 3,072 records / 189,441 B | 5.438–5.455 ms | 6.515–6.623 ms | 0.821–0.837× | Diagnostic. CPython worker spread 1.66%. [B1378]. |
 | JSON Lines export with explicit options | 3,072 records / 189,441 B | 5.432–5.470 ms | 6.340–6.367 ms | 0.853–0.863× | Diagnostic. Lython worker spread 0.71%. [B1378]. |
@@ -46,6 +47,8 @@ change. The checkpoint includes the arithmetic and allocation controls.
 | --- | --- | ---: | ---: | ---: | --- |
 | Typed ASCII CSV meter report | Compilation only | 0.04166–0.04177 ms | 0.06754–0.06762 ms | 0.616–0.618× | Diagnostic. [B1336]. |
 | Typed ASCII CSV meter report | Compile-to-result | 3.102–3.286 ms | 2.655–2.677 ms | 1.159–1.237× | Diagnostic. Lython worker spread 5.93%. [B1351]. |
+| Typed Unicode CSV meter report | Compilation only | 0.04218–0.04232 ms | 0.06772–0.06784 ms | 0.622–0.625× | Diagnostic. Lython worker spread 0.34%. [B1388]. |
+| Typed Unicode CSV meter report | Compile-to-result | 3.799–3.876 ms | 3.298–3.439 ms | 1.104–1.175× | Diagnostic. CPython worker spread 4.29%. [B1388]. |
 | Mixed literal-default factory | Compilation only | 0.02439–0.02517 ms | 0.04307–0.04325 ms | 0.564–0.584× | Diagnostic. Lython worker spread 3.17%. [B1373]. |
 | Mixed literal-default factory | Compile-to-result | 1.046–1.060 ms | 0.623–0.625 ms | 1.674–1.702× | Diagnostic. Lython worker spread 1.39%. [B1373]. |
 | Generated validator with a generator | Compilation only | 1.519–1.534 ms | 1.813–1.825 ms | 0.832–0.846× | Diagnostic. [B1316]. |
@@ -69,6 +72,7 @@ clocks. The archived tables include the earlier startup evidence.
 
 | Checkpoint | Lython source | Date |
 | --- | --- | --- |
+| [B1388] | `d45f2ed21` | 2026-11-22 UTC |
 | [B1378] | `a3338b0a8` | 2026-11-22 UTC |
 | [B1373] | `e152d1ceb` | 2026-11-22 UTC |
 | [B1369] | `880c6d958` | 2026-11-22 UTC |
@@ -117,6 +121,7 @@ Review individual designs and adverse observations in
 the [experiment index](../benchmarks/EXPERIMENTS.md).
 Reproduce the comparisons with the [benchmark tools](../benchmarks/README.md).
 
+[B1388]: ../benchmarks/results/2026-11-22-unicode-decimal-cpython/README.md
 [B1378]: ../benchmarks/results/2026-11-22-json-delivery-cpython/README.md
 [B1373]: ../benchmarks/results/2026-11-22-direct-integer-return-cpython/README.md
 [B1369]: ../benchmarks/results/2026-11-22-retained-call-transport-cpython/README.md

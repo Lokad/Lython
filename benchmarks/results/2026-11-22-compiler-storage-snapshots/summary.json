@@ -1,0 +1,309 @@
+{
+  "blockLists": {
+    "revision": "eb7536c34",
+    "sourcePatchSHA256": "bbacf89df15261d6ca30ad51ecf88446c47eb4cbf6226959731733dd066fea87",
+    "fixtureSHA256": "d9ed7ef73c29f71567e28c57674b6fda8c299f0d85bca3b497afb1da8218c116",
+    "images": {
+      "reference": {
+        "inspect": {
+          "Inspect.deps.json": "2d4667c19cc8c902aaec0f8f7ee91d1cf12cbad6b6e7bffe82d306ae68c743c4",
+          "Inspect.dll": "300444b73f51f07cbf8543fe00e2ac53cb8e73dbe57ef7a5ba67ddb09881796a",
+          "Inspect.exe": "2861970b7ef37ab8118ae2aa48c4616c0f5f3412137083275ba86b68917bb154",
+          "Inspect.pdb": "fcaf8b0295a46eefe3d9f0adcc533b2e100c3425218975704412b1147b3ea128",
+          "Inspect.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0",
+          "Lokad.Lython.dll": "7f9fd55bb22346f761f65feadf79805dd459c07353244261ae352905c948ac29"
+        },
+        "compile": {
+          "Lokad.Lython.dll": "7f9fd55bb22346f761f65feadf79805dd459c07353244261ae352905c948ac29",
+          "Lokad.Lython.WhiteBox.Tests.deps.json": "6ea1f87922cc85a0efb999d3becb94d850b5f25547c181e76a588992ee9528e1",
+          "Lokad.Lython.WhiteBox.Tests.dll": "dafb26c890976eb7c5b6bbfdc85ee9f6be02627acdf19d737ae9a9a115172db8",
+          "Lokad.Lython.WhiteBox.Tests.exe": "067cfe7aeff22779dd751096c9ceba7a8e11045b51f595f60411f97dfdf1e66e",
+          "Lokad.Lython.WhiteBox.Tests.pdb": "e9bf93ef2811d7638552ebb20fa25dc15b6f1a3122d19f0e37673c4092aec3d4",
+          "Lokad.Lython.WhiteBox.Tests.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0"
+        }
+      },
+      "candidate": {
+        "inspect": {
+          "Inspect.deps.json": "2d4667c19cc8c902aaec0f8f7ee91d1cf12cbad6b6e7bffe82d306ae68c743c4",
+          "Inspect.dll": "300444b73f51f07cbf8543fe00e2ac53cb8e73dbe57ef7a5ba67ddb09881796a",
+          "Inspect.exe": "2861970b7ef37ab8118ae2aa48c4616c0f5f3412137083275ba86b68917bb154",
+          "Inspect.pdb": "fcaf8b0295a46eefe3d9f0adcc533b2e100c3425218975704412b1147b3ea128",
+          "Inspect.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0",
+          "Lokad.Lython.dll": "ebcdb309b33fd6f8bc79bc28488fc888bc5bcb7636a44b21629bffb3002e2c6d"
+        },
+        "compile": {
+          "Lokad.Lython.dll": "ebcdb309b33fd6f8bc79bc28488fc888bc5bcb7636a44b21629bffb3002e2c6d",
+          "Lokad.Lython.WhiteBox.Tests.deps.json": "6ea1f87922cc85a0efb999d3becb94d850b5f25547c181e76a588992ee9528e1",
+          "Lokad.Lython.WhiteBox.Tests.dll": "dafb26c890976eb7c5b6bbfdc85ee9f6be02627acdf19d737ae9a9a115172db8",
+          "Lokad.Lython.WhiteBox.Tests.exe": "067cfe7aeff22779dd751096c9ceba7a8e11045b51f595f60411f97dfdf1e66e",
+          "Lokad.Lython.WhiteBox.Tests.pdb": "e9bf93ef2811d7638552ebb20fa25dc15b6f1a3122d19f0e37673c4092aec3d4",
+          "Lokad.Lython.WhiteBox.Tests.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0"
+        }
+      }
+    },
+    "allocationCounts": [
+      {
+        "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+        "bytes": [
+          65400,
+          65496,
+          65496,
+          65400
+        ]
+      },
+      {
+        "case": "scripts.dataclass-inherited-configuration.generated",
+        "bytes": [
+          530536,
+          530584,
+          530584,
+          530536
+        ]
+      },
+      {
+        "case": "scripts.config-generated-guards.medium.bad-0",
+        "bytes": [
+          2153808.5,
+          2158378.375,
+          2161327.75,
+          2153796.625
+        ]
+      },
+      {
+        "case": "assertion-tail-with-handler",
+        "bytes": [
+          25640,
+          25688,
+          25688,
+          25640
+        ]
+      },
+      {
+        "case": "dead-heavy-control",
+        "bytes": [
+          840568,
+          840616,
+          840616,
+          840568
+        ]
+      },
+      {
+        "case": "nested-definition-in-protected-suite",
+        "bytes": [
+          33944,
+          34016,
+          34016,
+          33944
+        ]
+      },
+      {
+        "case": "postponed-module-annotation",
+        "bytes": [
+          16408,
+          16432,
+          16432,
+          16408
+        ]
+      },
+      {
+        "case": "ordinary-scopes-under-protection",
+        "bytes": [
+          54928,
+          55024,
+          55024,
+          54928
+        ]
+      },
+      {
+        "case": "complex-scopes-under-protection",
+        "bytes": [
+          60592,
+          60712,
+          60712,
+          60632
+        ]
+      },
+      {
+        "case": "native-loop-back-edge",
+        "bytes": [
+          35032,
+          35080,
+          35080,
+          35032
+        ]
+      },
+      {
+        "case": "nested-finally-counter",
+        "bytes": [
+          41840,
+          41888,
+          41888,
+          41840
+        ]
+      },
+      {
+        "case": "native-call-continuation",
+        "bytes": [
+          63856,
+          63072,
+          63072,
+          63856
+        ]
+      }
+    ]
+  },
+  "branchSets": {
+    "revision": "bc5383f3b",
+    "sourcePatchSHA256": "a54162ac9c958339c6e98bc290a04afec7641f0bf85f6a9997fe90d6cdbdd555",
+    "fixtureSHA256": "d9ed7ef73c29f71567e28c57674b6fda8c299f0d85bca3b497afb1da8218c116",
+    "images": {
+      "reference": {
+        "inspect": {
+          "Inspect.deps.json": "2d4667c19cc8c902aaec0f8f7ee91d1cf12cbad6b6e7bffe82d306ae68c743c4",
+          "Inspect.dll": "300444b73f51f07cbf8543fe00e2ac53cb8e73dbe57ef7a5ba67ddb09881796a",
+          "Inspect.exe": "2861970b7ef37ab8118ae2aa48c4616c0f5f3412137083275ba86b68917bb154",
+          "Inspect.pdb": "fcaf8b0295a46eefe3d9f0adcc533b2e100c3425218975704412b1147b3ea128",
+          "Inspect.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0",
+          "Lokad.Lython.dll": "7f9fd55bb22346f761f65feadf79805dd459c07353244261ae352905c948ac29"
+        },
+        "compile": {
+          "Lokad.Lython.dll": "7f9fd55bb22346f761f65feadf79805dd459c07353244261ae352905c948ac29",
+          "Lokad.Lython.WhiteBox.Tests.deps.json": "6ea1f87922cc85a0efb999d3becb94d850b5f25547c181e76a588992ee9528e1",
+          "Lokad.Lython.WhiteBox.Tests.dll": "dafb26c890976eb7c5b6bbfdc85ee9f6be02627acdf19d737ae9a9a115172db8",
+          "Lokad.Lython.WhiteBox.Tests.exe": "067cfe7aeff22779dd751096c9ceba7a8e11045b51f595f60411f97dfdf1e66e",
+          "Lokad.Lython.WhiteBox.Tests.pdb": "e9bf93ef2811d7638552ebb20fa25dc15b6f1a3122d19f0e37673c4092aec3d4",
+          "Lokad.Lython.WhiteBox.Tests.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0"
+        }
+      },
+      "candidate": {
+        "inspect": {
+          "Inspect.deps.json": "2d4667c19cc8c902aaec0f8f7ee91d1cf12cbad6b6e7bffe82d306ae68c743c4",
+          "Inspect.dll": "300444b73f51f07cbf8543fe00e2ac53cb8e73dbe57ef7a5ba67ddb09881796a",
+          "Inspect.exe": "2861970b7ef37ab8118ae2aa48c4616c0f5f3412137083275ba86b68917bb154",
+          "Inspect.pdb": "fcaf8b0295a46eefe3d9f0adcc533b2e100c3425218975704412b1147b3ea128",
+          "Inspect.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0",
+          "Lokad.Lython.dll": "db9f71dedacae896cd8bb2034aee865cfa211b39f909cf3847a112f1c33195d3"
+        },
+        "compile": {
+          "Lokad.Lython.dll": "db9f71dedacae896cd8bb2034aee865cfa211b39f909cf3847a112f1c33195d3",
+          "Lokad.Lython.WhiteBox.Tests.deps.json": "6ea1f87922cc85a0efb999d3becb94d850b5f25547c181e76a588992ee9528e1",
+          "Lokad.Lython.WhiteBox.Tests.dll": "dafb26c890976eb7c5b6bbfdc85ee9f6be02627acdf19d737ae9a9a115172db8",
+          "Lokad.Lython.WhiteBox.Tests.exe": "067cfe7aeff22779dd751096c9ceba7a8e11045b51f595f60411f97dfdf1e66e",
+          "Lokad.Lython.WhiteBox.Tests.pdb": "e9bf93ef2811d7638552ebb20fa25dc15b6f1a3122d19f0e37673c4092aec3d4",
+          "Lokad.Lython.WhiteBox.Tests.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0"
+        }
+      }
+    },
+    "allocationCounts": [
+      {
+        "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+        "bytes": [
+          65400,
+          65832,
+          65832,
+          65400
+        ]
+      },
+      {
+        "case": "scripts.dataclass-inherited-configuration.generated",
+        "bytes": [
+          530536,
+          530536,
+          530536,
+          530536
+        ]
+      },
+      {
+        "case": "scripts.config-generated-guards.medium.bad-0",
+        "bytes": [
+          2155381,
+          2129848.625,
+          2124109.5,
+          2155357
+        ]
+      },
+      {
+        "case": "assertion-tail-with-handler",
+        "bytes": [
+          25640,
+          25640,
+          25640,
+          25640
+        ]
+      },
+      {
+        "case": "dead-heavy-control",
+        "bytes": [
+          840568,
+          834992,
+          834992,
+          840568
+        ]
+      },
+      {
+        "case": "nested-definition-in-protected-suite",
+        "bytes": [
+          33944,
+          34312,
+          34312,
+          33944
+        ]
+      },
+      {
+        "case": "postponed-module-annotation",
+        "bytes": [
+          16408,
+          16408,
+          16408,
+          16408
+        ]
+      },
+      {
+        "case": "ordinary-scopes-under-protection",
+        "bytes": [
+          54928,
+          55464,
+          55464,
+          54928
+        ]
+      },
+      {
+        "case": "complex-scopes-under-protection",
+        "bytes": [
+          60592,
+          60784,
+          60784,
+          60592
+        ]
+      },
+      {
+        "case": "native-loop-back-edge",
+        "bytes": [
+          35032,
+          35216,
+          35216,
+          35032
+        ]
+      },
+      {
+        "case": "nested-finally-counter",
+        "bytes": [
+          41840,
+          42208,
+          42208,
+          41840
+        ]
+      },
+      {
+        "case": "native-call-continuation",
+        "bytes": [
+          63856,
+          63952,
+          63952,
+          63856
+        ]
+      }
+    ]
+  },
+  "archiveSHA256": "b1806f5e6544db5c5f43d15867cef1edf8848969eb719f59ee379b045fa75669"
+}

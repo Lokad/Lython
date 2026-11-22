@@ -6,6 +6,20 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1389 compiler storage snapshots](results/2026-11-22-compiler-storage-snapshots/README.md)
+compares reuse of instruction lists and shared assignment facts.
+Both keep exact emitted code and locations. The first leaves dense
+allocation effectively flat, and the second reduces sparse validator
+allocation by about 1.2–1.5% while increasing it on several smaller
+cases. Both prototypes remain private.
+
+[B1388 Unicode CSV and text against CPython](results/2026-11-22-unicode-decimal-cpython/README.md)
+measures the retained Unicode meter and quoted invoice at 1.178–1.183×
+and 1.140–1.162× CPython warm. The nonlocal-helper word count takes
+1.652–1.702×. The meter compiles in 0.622–0.625× CPython's time and takes
+1.104–1.175× to reach the result. The earlier map-based script uses the
+same text fixture and a different helper.
+
 [B1387 bound return from the existing target slot](results/2026-11-22-bound-return-target-slot/README.md)
 keeps the original arithmetic operand reader. The quoted invoice takes
 2.45–4.87% less warm time. The unchanged function helper takes 0.40–1.47%
