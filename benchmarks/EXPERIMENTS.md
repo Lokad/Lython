@@ -9,8 +9,8 @@ original conditions retained. Current comparisons belong in
 [B1417 callable diagnostic identity](results/2026-11-22-function-diagnostic-identity/README.md)
 removes duplicate per-function fields. Both factory workloads allocate
 3.34% less. Eager warm takes 5.08–6.01% less elapsed, and postponed
-warm takes 1.70–6.57% longer. Keep the patch private through bounded
-warm confirmation.
+warm takes 1.70–6.57% longer. B1418 spans zero in both warm cases.
+Retained at `693b020c0` for the deleted storage and allocation result.
 
 [Native call route counts](results/2026-11-22-native-call-route-counts/README.md)
 show that six matched workloads never reach framed function fallback.

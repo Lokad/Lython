@@ -35,9 +35,7 @@ observer saves the same number of bytes (2.47%). Controls are
 effectively flat. Admitted peaks and allowance refunds agree.
 Eager warm elapsed and CPU improve in every pairing. Postponed warm
 elapsed and CPU worsen in every pairing, with a wider split between
-candidate workers. Compile-to-result timing spans zero. Keep the
-prototype private pending a bounded warm confirmation of these two
-opposing cases.
+candidate workers. Compile-to-result timing spans zero.
 
 Both platforms pass 928 white-box and 3,494 public focused Release
 checks. Three initial Windows subprocess cases picked up an
@@ -58,3 +56,25 @@ redundant VM binaries. This comparison supplies no CPython ratio.
 [Images and source](source.json) · [Timing](summary.json) ·
 [Allocation and admission](local-allocation.json) · [Raw observations](observations.tgz) ·
 [Checks and procedures](procedures.tar.xz).
+
+## B1418 Warm confirmation with four workers per image
+
+The same 32-file images, original catalog, timing boundary, eight
+seconds of warmup and seven rotating batches are used on the two
+opposing cases. Initial source order is reversed. Each row spans
+all sixteen median pairings from four fresh processes per source.
+
+| Complete script | Elapsed change | Wider process CPU change | Elapsed spread before / after |
+| --- | ---: | ---: | ---: |
+| Postponed nested factories | −6.03 to +1.65% | −7.16 to +2.69% | 3.81 / 4.20% |
+| Eager nested factories | −8.69 to +3.27% | −8.37 to +1.40% | 6.99 / 5.71% |
+
+Both ranges span zero. The postponed slowdown and the consistent eager
+gain from the initial run do not repeat. Retain the field and argument
+deletion at `693b020c0` for the whole-script allocation reduction, stable
+admitted peaks and exact diagnostics. The earlier adverse result remains
+part of the timing record. All 112 batches verify, workers join and the
+persistent archive verifies after the guest fixtures are removed.
+
+[Confirmation timing](confirmation/summary.json) · [Raw observations](confirmation/observations.tgz) ·
+[Checks and procedures](confirmation/procedures.tar.xz).
