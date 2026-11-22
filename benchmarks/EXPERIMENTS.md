@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1321 bypass the CSV row list during fixed unpacking](results/2026-11-22-csv-unpublished-row-unpack/README.md)
+lowers typed meter allocation 6.60% and explicit-float allocation
+4.89%. Each peak falls 589,824 accounted bytes. The typed timings
+are inconclusive and explicit-float elapsed rises 0.70–1.81%. Keep
+this version private. The first staging failure and all 84 timed
+batches are preserved.
+
 [B1320 fuse executable tape finalization](results/2026-11-22-fused-executable-finalization/README.md)
 compares bulk block copying and one combined branch/native walk.
 All 79 inspected code objects match. Factory compilation is slightly
