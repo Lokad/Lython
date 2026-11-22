@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1400 inline dynamic default tuple](results/2026-11-22-inline-default-tuple/README.md)
+removes the singleton backing array and preserves the same lazy
+value identity. The postponed factory allocates 49,152 fewer bytes
+and runs 2.09–8.63% faster warm. First-use elapsed, the tuple observer
+and the quote-heavy control span zero. Retained at `6b4afc809`.
+
 [B1399 postponed factory and word-count profiles](results/2026-11-22-current-runtime-attribution/README.md)
 attributes verified current runtime requests. Callable creation and
 default preparation dominate factory admission samples. Prepared
