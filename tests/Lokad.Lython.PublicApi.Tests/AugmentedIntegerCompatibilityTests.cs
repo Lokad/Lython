@@ -133,7 +133,7 @@ public sealed class AugmentedIntegerCompatibilityTests
                 {
                     var failure = Assert.IsType<LythonRuntimeFailure>(result.Failure);
                     Assert.Equal("UnboundLocalError", failure.ExceptionType);
-                    Assert.Equal(source.IndexOf("value+=rhs()", StringComparison.Ordinal), failure.Span?.Start);
+                    Assert.Equal(source.ReplaceLineEndings("\n").IndexOf("value+=rhs()", StringComparison.Ordinal), failure.Span?.Start);
                     Assert.Empty(result.StandardOutput);
                 }
                 Assert.Equal(baseline, budget.ReservedBytes);
