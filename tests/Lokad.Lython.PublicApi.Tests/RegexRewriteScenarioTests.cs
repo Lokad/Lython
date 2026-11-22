@@ -646,6 +646,98 @@ __lython_file.close()
         }
     }
 
+    [Fact]
+    public async Task MatchGroup_UsesNamedDictionaryProtocolsAndRuntimeErrors()
+    {
+        const string source = """
+            import re
+            class Key:
+                def __hash__(self):
+                    print('hash')
+                    return hash('label')
+                def __eq__(self, other):
+                    print('equal', other)
+                    return other == 'label'
+            class Index(Key):
+                def __index__(self):
+                    print('index')
+                    return 1
+            def check(m, key):
+                for action in (m.group, m.start, m.end, m.span, m.__getitem__):
+                    try: print(action(key))
+                    except Exception as error: print(type(error).__name__, str(error))
+            named = re.match('(?P<label>a)', 'a')
+            print(named.group(Index()))
+            check(named, Key())
+            check(named, [])
+            check(named, 'missing')
+            check(named, 10**100)
+            check(re.match('(a)', 'a'), Key())
+            """;
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
+        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Message)));
+        var expected = "index\na\n" +
+            string.Concat(new[] { "a", "0", "1", "(0, 1)", "a" }.Select(value => "hash\nequal label\n" + value + "\n")) +
+            string.Concat(Enumerable.Repeat("TypeError unhashable type: 'list'\n", 5)) +
+            string.Concat(Enumerable.Repeat("IndexError no such group\n", 15));
+        using var sync = script.Run(new MockLythonHost());
+        using var async = await script.RunAsync(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.True(async.Success, async.Failure?.Message);
+        Assert.Equal(expected, sync.StandardOutput);
+        Assert.Equal(expected, async.StandardOutput);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task MatchGroup_NamedKeyComparisonCanSuspend(bool cancel)
+    {
+        const string source = """
+            import re
+            class Key:
+                def __hash__(self):
+                    print('hash')
+                    return hash('label')
+                def __eq__(self, other):
+                    print('equal')
+                    with open('key.txt') as source:
+                        return other == source.read()
+            m = re.match('(?P<label>a)', 'a')
+            print(m[Key()])
+            """;
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Message)));
+        var baseline = budget.ReservedBytes;
+        var host = new DelayedLythonHost();
+        host.SeedFile("/key.txt", "label");
+        var entered = cancel ? host.PauseReadUntilCancellation("/key.txt") : null;
+        using var cancellation = new CancellationTokenSource();
+        var pending = script.RunAsync(host, cancellationToken: cancellation.Token);
+        try
+        {
+            if (entered is not null)
+            {
+                Assert.Same(entered, await Task.WhenAny(entered, pending).WaitAsync(TimeSpan.FromSeconds(10)));
+                Assert.False(pending.IsCompleted);
+                Assert.True(budget.ReservedBytes > baseline);
+                cancellation.Cancel();
+            }
+            using var result = await pending.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.Equal(!cancel, result.Success);
+            Assert.Equal(cancel ? "hash\nequal\n" : "hash\nequal\na\n", result.StandardOutput);
+            if (cancel) Assert.Equal(LythonFailureReason.Cancelled, result.Failure?.Attribution?.Reason);
+            else Assert.True(host.CompletedAsynchronously > 0);
+        }
+        finally
+        {
+            cancellation.Cancel();
+            using var drained = await pending.WaitAsync(TimeSpan.FromSeconds(10));
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
     [Theory]
     [InlineData(
         """

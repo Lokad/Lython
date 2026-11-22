@@ -2552,6 +2552,9 @@ Dynamic programs remain execution-owned until cleanup, including programs
 evicted from the cache; many distinct patterns can reject early.
 Runtime group names are copied once under the pattern owner and shared by named
 lookup, `groupdict`, `groupindex` and `lastgroup`; capture order stays unchanged.
+Match selectors use `__index__` before named lookup. A pattern with named
+groups uses Python dictionary hashing and equality for other keys, including
+callbacks that suspend during asynchronous execution.
 Each `groupindex` access returns a read-only view for named groups or a fresh
 empty dictionary when the pattern has no named groups.
 The module exports the same `re.Pattern` and `re.Match` type objects returned

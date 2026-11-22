@@ -55,23 +55,23 @@ public sealed class RegexMatchIndexTests
     }
 
     [Theory]
-    [InlineData("1.0")]
-    [InlineData("None")]
-    [InlineData("[]")]
-    [InlineData("slice(None)")]
-    [InlineData("10**100")]
-    [InlineData("-(10**100)")]
-    [InlineData("-2147483648")]
-    [InlineData("-1")]
-    [InlineData("3")]
-    [InlineData("'missing'")]
-    public async Task InvalidKeysRaiseCatchableIndexErrors(string key)
+    [InlineData("1.0", "IndexError")]
+    [InlineData("None", "IndexError")]
+    [InlineData("[]", "TypeError")]
+    [InlineData("slice(None)", "IndexError")]
+    [InlineData("10**100", "IndexError")]
+    [InlineData("-(10**100)", "IndexError")]
+    [InlineData("-2147483648", "IndexError")]
+    [InlineData("-1", "IndexError")]
+    [InlineData("3", "IndexError")]
+    [InlineData("'missing'", "IndexError")]
+    public async Task InvalidKeysRaisePythonErrors(string key, string error)
     {
         var source = "import re\nimport operator\n" +
             "def check(m, key):\n" +
             "    for fn in [lambda: m[key], lambda: m.__getitem__(key), lambda: m.group(key), lambda: m.group(0, key),\n" +
             "               lambda: m.start(key), lambda: m.end(key), lambda: m.span(key), lambda: operator.getitem(m, key)]:\n" +
-            "        try:\n            fn()\n        except IndexError:\n            print('bad key')\n" +
+            "        try:\n            fn()\n        except " + error + ":\n            print('bad key')\n" +
             "check(re.search('(?P<first>a)(?P<tail>b)', 'ab'), " + key + ")";
         await AssertBothModes(source, string.Concat(Enumerable.Repeat("bad key\n", 8)));
     }

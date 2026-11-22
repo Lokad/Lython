@@ -71,6 +71,8 @@
   using the normalized options and effective flags.
 - Forward implicit Unicode provenance through the regex provider contract.
   Report global inline ASCII and explicit Unicode conflicts as `ValueError`.
+- Resolve named regex match keys with Python's dictionary protocols.
+  Preserve integer index precedence and propagate callback errors.
   Preserve Python's syntax-error precedence for exact string mode flags.
 - Parse a shared postfix prefix for assignment targets and expression
   statements, removing repeated speculative parses.

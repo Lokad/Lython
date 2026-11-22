@@ -167,10 +167,8 @@ internal sealed partial class LythonRuntime
 
         private static async ValueTask<object> GetSubscriptCoreAsync(ReMatchObject match, object key, LythonSourceSpan span, ExecutionContext? context, bool asynchronous)
         {
-            key = await CoerceGroupKeyAsync(key, context, span, asynchronous).ConfigureAwait(false);
-            return TryResolveGroupIndex(match, key, context, span, out var index)
-                ? ResolveIndexedGroup(match, index, span, context)
-                : throw new LythonRuntimeException("IndexError", "no such group", span);
+            var index = await ResolveGroupIndexAsync(match, key, context, span, asynchronous).ConfigureAwait(false);
+            return ResolveIndexedGroup(match, index, span, context);
         }
 
         private static async ValueTask<object> GroupCoreAsync(ReMatchObject match, ReceiverArguments arguments, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
@@ -192,35 +190,10 @@ internal sealed partial class LythonRuntime
 
         private static async ValueTask<RegexGroupBounds> GetBoundsCoreAsync(ReMatchObject match, ReceiverArguments arguments, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
         {
-            var key = await CoerceGroupKeyAsync(arguments.Length == 0 ? BigInteger.Zero : arguments[0]!, context, span, asynchronous).ConfigureAwait(false);
-            return ResolveGroupBounds(match, key, context, span);
-        }
-
-        private static async ValueTask<object> CoerceGroupKeyAsync(object key, ExecutionContext? context, LythonSourceSpan span, bool asynchronous)
-        {
-            if (context is null || key is not PyInstance instance ||
-                !instance.Type.TryLookupInMro("__index__", 0, out var rawValue, out _))
-            {
-                return key;
-            }
-
-            // Numeric protocol slots come from the type, bypassing instance
-            // attributes and __getattr__/__getattribute__ as Python does.
-            var member = asynchronous
-                ? await PyAttributeLookup.BindForInstanceAsync(instance, rawValue, context, span).ConfigureAwait(false)
-                : PyAttributeLookup.BindForInstance(instance, rawValue, context, span);
-            if (member is not ICallable callable)
-            {
-                throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(member, context) + "' object is not callable", span);
-            }
-            var converted = asynchronous
-                ? await callable.InvokeAsync([], span, context).ConfigureAwait(false)
-                : callable.Invoke([], span, context);
-            if (!PyNumberOps.TryAsInteger(converted, out var integer))
-            {
-                throw new LythonRuntimeException("TypeError", "__index__ returned non-int (type " + UnboundTypeMethod.PythonTypeName(converted, context) + ")", span);
-            }
-            return integer;
+            var index = arguments.Length == 0 ? 0 :
+                await ResolveGroupIndexAsync(match, arguments[0]!, context, span, asynchronous).ConfigureAwait(false);
+            var capture = match.Captures[index];
+            return new(capture.Start, capture.End);
         }
 
         private static object ResolveIndexedGroup(ReMatchObject match, int index, LythonSourceSpan span, ExecutionContext? context)
@@ -230,44 +203,55 @@ internal sealed partial class LythonRuntime
             ExecutionContext? context, object defaultValue)
         {
             if (index < 0 || index >= match.CaptureSlotCount)
-                throw new LythonRuntimeException("IndexError", "Regex group index is out of range.", span);
+                throw new LythonRuntimeException("IndexError", "no such group", span);
             return match.Captures[index].StartByte < 0 ? defaultValue : match.MaterializeGroup(index, context, span);
         }
 
-        private static RegexGroupBounds ResolveGroupBounds(ReMatchObject match, object group, ExecutionContext context, LythonSourceSpan span)
+        private static async ValueTask<int> ResolveGroupIndexAsync(ReMatchObject match, object key, ExecutionContext? context,
+            LythonSourceSpan span, bool asynchronous)
         {
-            if (TryResolveGroupIndex(match, group, context, span, out var index))
+            if (key is BigInteger integer) return ResolveIntegerGroupIndex(match, integer, span);
+            if (key is int small) return ResolveIntegerGroupIndex(match, small, span);
+            if (key is bool boolean) return ResolveIntegerGroupIndex(match, boolean ? BigInteger.One : BigInteger.Zero, span);
+            if (context is not null && key is PyInstance instance &&
+                instance.Type.TryLookupInMro("__index__", 0, out var rawValue, out _))
             {
-                var capture = match.Captures[index];
-                return new RegexGroupBounds(capture.Start, capture.End);
+                // The numeric protocol uses the type's slot before name lookup.
+                var member = asynchronous
+                    ? await PyAttributeLookup.BindForInstanceAsync(instance, rawValue, context, span).ConfigureAwait(false)
+                    : PyAttributeLookup.BindForInstance(instance, rawValue, context, span);
+                if (member is not ICallable callable)
+                    throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(member, context) + "' object is not callable", span);
+                var converted = asynchronous
+                    ? await callable.InvokeAsync([], span, context).ConfigureAwait(false)
+                    : callable.Invoke([], span, context);
+                if (!PyNumberOps.TryAsInteger(converted, out var index))
+                    throw new LythonRuntimeException("TypeError", "__index__ returned non-int (type " + UnboundTypeMethod.PythonTypeName(converted, context) + ")", span);
+                return ResolveIntegerGroupIndex(match, index, span);
+            }
+
+            // Python uses its group dictionary for non-index keys when the
+            // pattern has names. Keep the existing dictionary protocol across
+            // suspension. A pattern without names never hashes the key.
+            var namedGroups = match.NamedGroups;
+            if (namedGroups.Count != 0)
+            {
+                if (PyStringOps.TryAsString(key, out var name))
+                {
+                    if (match.Pattern.TryGetNamedGroup(name, context, span, out var namedIndex)) return namedIndex;
+                }
+                else if (context is not null && asynchronous)
+                {
+                    var (found, value) = await namedGroups.TryGetKeyAsync(key, context, span).ConfigureAwait(false);
+                    if (found) return (int)(BigInteger)value;
+                }
+                else if (context is null ? namedGroups.TryGetValue(key, out var value)
+                    : namedGroups.TryGetValue(key, out value, context, span))
+                {
+                    return (int)(BigInteger)value!;
+                }
             }
             throw new LythonRuntimeException("IndexError", "no such group", span);
-        }
-
-        private static bool TryResolveGroupIndex(ReMatchObject match, object group, ExecutionContext? context, LythonSourceSpan span, out int index)
-        {
-            index = group switch
-            {
-                BigInteger integer => ResolveIntegerGroupIndex(match, integer, span),
-                int integer => ResolveIntegerGroupIndex(match, integer, span),
-                bool boolean => ResolveIntegerGroupIndex(match, boolean ? BigInteger.One : BigInteger.Zero, span),
-                _ when PyStringOps.TryAsString(group, out var nameText) => match.Pattern.TryGetNamedGroup(nameText, context, span, out var namedIndex)
-                    ? namedIndex
-                    : throw new LythonRuntimeException("IndexError", $"Regex group '{nameText.AsString()}' is not defined.", span),
-                _ => int.MinValue
-            };
-
-            if (index == int.MinValue)
-            {
-                return false;
-            }
-
-            if (index < 0 || index >= match.CaptureSlotCount)
-            {
-                throw new LythonRuntimeException("IndexError", "Regex group index is out of range.", span);
-            }
-
-            return true;
         }
 
         private static int ResolveIntegerGroupIndex(ReMatchObject match, BigInteger index, LythonSourceSpan span)
@@ -276,7 +260,7 @@ internal sealed partial class LythonRuntime
             // indices must stay catchable IndexErrors, never CLR overflows.
             if (index < 0 || index >= match.CaptureSlotCount)
             {
-                throw new LythonRuntimeException("IndexError", "Regex group index is out of range.", span);
+                throw new LythonRuntimeException("IndexError", "no such group", span);
             }
 
             return (int)index;
