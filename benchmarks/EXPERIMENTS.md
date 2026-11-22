@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Emitted declaration facts](results/2026-11-22-emitted-declaration-facts/README.md)
+removes constant-pool discovery of declarations. All 81 inspected code
+objects agree. Most local compile allocation controls increase slightly
+and the elapsed ranges span zero with large process spreads. Keep the
+candidate private.
+
 [B1411 histogram total slots](results/2026-11-22-histogram-total-slots/README.md)
 removes repeated integer boxing between inner-loop passes. The nonlocal
 report allocates 14.71% less. The ordinary histogram allocates 3.63% less
