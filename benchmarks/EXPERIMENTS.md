@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1424 literal CSV field scan](results/2026-11-22-csv-literal-field-scan/README.md)
+checks for quotes only at field start. The typed Unicode meter warm
+elapsed falls 1.27–5.75% and CPU falls 2.09–6.41%. The ASCII meter
+takes 0.32–2.42% longer warm. Quoted-invoice warm timing spans zero.
+
 [B1423 immediate definition admission](results/2026-11-22-immediate-definition-depth/README.md)
 uses the existing interpreter body for lexical construction. Admission
 counts, peaks and cleanup are unchanged. All timing ranges span zero.

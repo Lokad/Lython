@@ -1,0 +1,194 @@
+{
+  "reference": {
+    "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+    "rows": [
+      {
+        "id": "scripts.csv-invoice.method-policy.quoted-control",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          4069558,
+          4069558,
+          4069558
+        ],
+        "peakExecutionMemoryBytes": 9432874,
+        "compiledReservedBytes": 157114,
+        "compilationMillisecondsDiagnostic": 216.3266,
+        "compilationAllocatedBytesDiagnostic": 1445248,
+        "firstInvocationMillisecondsDiagnostic": 188.4818,
+        "sharedBudgetBaselineRestored": true
+      },
+      {
+        "id": "scripts.csv-invoice.method-policy",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          4069254,
+          4069254,
+          4069254
+        ],
+        "peakExecutionMemoryBytes": 9432862,
+        "compiledReservedBytes": 157114,
+        "compilationMillisecondsDiagnostic": 1.0509,
+        "compilationAllocatedBytesDiagnostic": 137376,
+        "firstInvocationMillisecondsDiagnostic": 24.632,
+        "sharedBudgetBaselineRestored": true
+      },
+      {
+        "id": "scripts.csv-meter-report.typed-ascii",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          1606456,
+          1606456,
+          1606686
+        ],
+        "peakExecutionMemoryBytes": 3552905,
+        "compiledReservedBytes": 102464,
+        "compilationMillisecondsDiagnostic": 7.4994,
+        "compilationAllocatedBytesDiagnostic": 120984,
+        "firstInvocationMillisecondsDiagnostic": 26.6443,
+        "sharedBudgetBaselineRestored": true
+      },
+      {
+        "id": "scripts.csv-meter-report.typed-unicode",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          1606936,
+          1607166,
+          1606936
+        ],
+        "peakExecutionMemoryBytes": 3552905,
+        "compiledReservedBytes": 102464,
+        "compilationMillisecondsDiagnostic": 1.0281,
+        "compilationAllocatedBytesDiagnostic": 95584,
+        "firstInvocationMillisecondsDiagnostic": 18.8628,
+        "sharedBudgetBaselineRestored": true
+      },
+      {
+        "id": "scripts.csv-restock-export.ordinary",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          4106190,
+          4106196,
+          4105588
+        ],
+        "peakExecutionMemoryBytes": 4641647,
+        "compiledReservedBytes": 85184,
+        "compilationMillisecondsDiagnostic": 6.2535,
+        "compilationAllocatedBytesDiagnostic": 65920,
+        "firstInvocationMillisecondsDiagnostic": 37.973,
+        "sharedBudgetBaselineRestored": true
+      },
+      {
+        "id": "diagnostic.text-summary.nonlocal-computed-width.large",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          380160,
+          380160,
+          380160
+        ],
+        "peakExecutionMemoryBytes": 1278972,
+        "compiledReservedBytes": 92091,
+        "compilationMillisecondsDiagnostic": 7.7365,
+        "compilationAllocatedBytesDiagnostic": 91248,
+        "firstInvocationMillisecondsDiagnostic": 17.6331,
+        "sharedBudgetBaselineRestored": true
+      }
+    ],
+    "boundary": "Complete warm runs including mediated I/O/reset, all output/file checks and result cleanup; compilation/startup/final cache teardown excluded. Process-wide CLR allocation counters, no forced GC. Compilation and first invocation clocks are local diagnostic observations, not a controlled CPU/source timing comparison."
+  },
+  "candidate": {
+    "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+    "rows": [
+      {
+        "id": "scripts.csv-invoice.method-policy.quoted-control",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          4069596,
+          4069558,
+          4069558
+        ],
+        "peakExecutionMemoryBytes": 9432874,
+        "compiledReservedBytes": 157114,
+        "compilationMillisecondsDiagnostic": 245.508,
+        "compilationAllocatedBytesDiagnostic": 1444960,
+        "firstInvocationMillisecondsDiagnostic": 177.1539,
+        "sharedBudgetBaselineRestored": true
+      },
+      {
+        "id": "scripts.csv-invoice.method-policy",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          4069254,
+          4069254,
+          4069254
+        ],
+        "peakExecutionMemoryBytes": 9432862,
+        "compiledReservedBytes": 157114,
+        "compilationMillisecondsDiagnostic": 1.0924,
+        "compilationAllocatedBytesDiagnostic": 137376,
+        "firstInvocationMillisecondsDiagnostic": 26.6562,
+        "sharedBudgetBaselineRestored": true
+      },
+      {
+        "id": "scripts.csv-meter-report.typed-ascii",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          1606456,
+          1606686,
+          1606456
+        ],
+        "peakExecutionMemoryBytes": 3552905,
+        "compiledReservedBytes": 102464,
+        "compilationMillisecondsDiagnostic": 9.5758,
+        "compilationAllocatedBytesDiagnostic": 120984,
+        "firstInvocationMillisecondsDiagnostic": 37.7536,
+        "sharedBudgetBaselineRestored": true
+      },
+      {
+        "id": "scripts.csv-meter-report.typed-unicode",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          1606096,
+          1606270,
+          1606152
+        ],
+        "peakExecutionMemoryBytes": 3552905,
+        "compiledReservedBytes": 102464,
+        "compilationMillisecondsDiagnostic": 0.6386,
+        "compilationAllocatedBytesDiagnostic": 95584,
+        "firstInvocationMillisecondsDiagnostic": 18.7528,
+        "sharedBudgetBaselineRestored": true
+      },
+      {
+        "id": "scripts.csv-restock-export.ordinary",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          4105406,
+          4105238,
+          4105112
+        ],
+        "peakExecutionMemoryBytes": 4641647,
+        "compiledReservedBytes": 85184,
+        "compilationMillisecondsDiagnostic": 6.4007,
+        "compilationAllocatedBytesDiagnostic": 65920,
+        "firstInvocationMillisecondsDiagnostic": 52.9213,
+        "sharedBudgetBaselineRestored": true
+      },
+      {
+        "id": "diagnostic.text-summary.nonlocal-computed-width.large",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          380222,
+          392264,
+          379936
+        ],
+        "peakExecutionMemoryBytes": 1278972,
+        "compiledReservedBytes": 92091,
+        "compilationMillisecondsDiagnostic": 12.414,
+        "compilationAllocatedBytesDiagnostic": 91248,
+        "firstInvocationMillisecondsDiagnostic": 28.8564,
+        "sharedBudgetBaselineRestored": true
+      }
+    ],
+    "boundary": "Complete warm runs including mediated I/O/reset, all output/file checks and result cleanup; compilation/startup/final cache teardown excluded. Process-wide CLR allocation counters, no forced GC. Compilation and first invocation clocks are local diagnostic observations, not a controlled CPU/source timing comparison."
+  }
+}
