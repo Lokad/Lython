@@ -27,6 +27,42 @@ public sealed class RegexAdapterLifetimeTests
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void BoundedWindowUsesFundedPrefixWithoutReservingForTheSuffix(bool iterate)
+    {
+        var budget = new LythonMemoryBudget(256 * 1024);
+        using (var owner = budget.CreateScope())
+        {
+            var prefix = "éx"u8;
+            var length = prefix.Length + 64 * 1024;
+            Assert.True(owner.TryReserve(length + 32L, out var inputStorage));
+            using var inputFunding = inputStorage;
+            var input = new byte[length];
+            prefix.CopyTo(input);
+            input.AsSpan(prefix.Length).Fill((byte)'a');
+            using var pattern = Utf8RegexProvider.Instance.Compile("(?<=é)(?P<value>x)"u8.ToArray(), new(32, false), owner, default);
+            var baseline = budget.ReservedBytes;
+            using (var subject = pattern.Prepare(input, new(1, 2, 2, 3), owner, default))
+            {
+                Span<LythonRegexCapture?> captures = stackalloc LythonRegexCapture?[2];
+                int? lastIndex;
+                if (iterate)
+                {
+                    using var cursor = subject.Find(default);
+                    Assert.True(cursor.TryNext(captures, out lastIndex, default));
+                }
+                else Assert.True(subject.TryMatch(LythonRegexMatchMode.Match, captures, out lastIndex, default));
+                Assert.Equal(new LythonRegexCapture(2, 3), captures[0]);
+                Assert.Equal(captures[0], captures[1]);
+                Assert.Equal(1, lastIndex);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
     [InlineData("compile")]
     [InlineData("match")]
     [InlineData("cursor")]

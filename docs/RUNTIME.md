@@ -2670,7 +2670,7 @@ does not certify backend safety or couple core releases to it.
 | UTF-8/offsets | Matching uses scalars, including supplementary characters. Providers return absolute capture byte ranges; Lython projects scalar offsets from the original subject. |
 | Windows | Original-prefix views preserve anchors/lookbehind and end bounds without a prefix copy. Python `match` with `pos > endpos` needs an unavailable backend capability and fails explicitly; reversed search/fullmatch/iteration are empty. |
 | Capture metadata | Opening-order numbering and last-closed capture selection come from the backend. Global prefix flags are read from the validated original UTF-8, including verbose trivia; scoped flags stay local. Reported flags preserve guest bitwise results independently of dispatched parsing behavior. |
-| Iteration/storage | Lazy cursors fund current scratch/captures, including empty-match progression. Lython template plans are private per-operation storage; retained output is funded independently. Conservative estimates may reject early and require backend/framework headroom. |
+| Iteration/storage | Matching and lazy cursors estimate backend scratch from the original prefix through `endpos`. The caller funds the entire subject. Lython template plans are private per-operation storage, and retained output is funded independently. Conservative estimates require backend and framework headroom. |
 
 See the [adapter README](../src/Lokad.Lython.Utf8Regex/README.md) and
 [capability tests](../tests/Lokad.Lython.PublicApi.Tests/RegexAdapterCapabilityTests.cs).

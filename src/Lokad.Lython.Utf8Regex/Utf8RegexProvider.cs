@@ -252,8 +252,10 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
             Resize(_storage, bytes);
         }
 
+        // PythonRe sees the original prefix through EndByte, including any
+        // lookbehind context. The caller already funds the full subject.
         private long MatchBytes => checked(16384L + 128L * Pattern.CaptureSlotCount +
-            16L * _input.Length * (Pattern.CaptureSlotCount + 1L) + 16L * Pattern.PatternBytes);
+            16L * _window.EndByte * (Pattern.CaptureSlotCount + 1L) + 16L * Pattern.PatternBytes);
 
         public bool TryMatch(LythonRegexMatchMode mode, Span<LythonRegexCapture?> captures, out int? lastIndex,
             CancellationToken cancellationToken)
