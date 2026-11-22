@@ -92,6 +92,7 @@ clocks. The archived tables include the earlier startup evidence.
 
 | Change | Measured effect | Limits |
 | --- | --- | --- |
+| Merge compiler assignment facts from branch edits | The sparse validator compiles 5.16–7.61% faster and reaches its result 0.32–3.55% sooner. A generated branch stress fixture compiles 35.11–36.40% faster. | Dataclass compilation takes 0.67–2.38% longer. Postponed-factory time to result spans zero across workers. [B1395](../benchmarks/results/2026-11-22-compiler-branch-edits/README.md). |
 | Borrow regex template literals and group decoded escapes | Long-literal expansion takes 21.47–22.23% less warm time and allocates 45.08% less locally. | Dense expansion spans zero and allocates 4.76% less. The positional control is adverse with 4.75% candidate worker spread. [B1394](../benchmarks/results/2026-11-22-regex-escape-runs/README.md). |
 | Store prepared word lengths in the UTF-8 buffer | The 4,095-word dense line allocates 50.25% less with an 11.65% lower admitted peak. | Dense-line elapsed spans zero. The ordinary text results vary across trials and the quoted invoice takes 1.50–2.54% longer on confirmation. [B1391](../benchmarks/results/2026-11-22-inline-cased-words-confirmed/README.md). |
 | Normalize short float tokens in one pass | The typed Unicode CSV meter takes 2.41–4.96% less time from compilation to result. | Warm timing spans zero. The quoted invoice takes 0.90–1.06% longer warm. [B1383](../benchmarks/results/2026-11-22-unicode-decimal-normalization/README.md). |

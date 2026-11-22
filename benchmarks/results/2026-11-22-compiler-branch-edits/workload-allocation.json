@@ -1,0 +1,70 @@
+{
+  "roles": [
+    "reference",
+    "candidate",
+    "candidate",
+    "reference"
+  ],
+  "rows": [
+    {
+      "id": "scripts.config-generated-guards.medium.bad-0.sparse-lexical",
+      "allocatedBytes": [
+        2168542.875,
+        2047704,
+        2049619.625,
+        2161216
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        2510.453125,
+        2113.340625,
+        3077.3328125,
+        2082.95
+      ]
+    },
+    {
+      "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "allocatedBytes": [
+        63440,
+        63608,
+        63608,
+        63320
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        51.4484375,
+        56.740625,
+        57.575,
+        46.7015625
+      ]
+    },
+    {
+      "id": "scripts.dataclass-inherited-configuration.generated",
+      "allocatedBytes": [
+        515352,
+        515352,
+        515352,
+        515352
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        295.1609375,
+        316.7953125,
+        309.3421875,
+        262.33125
+      ]
+    },
+    {
+      "id": "compiler.generated-read-only-branches",
+      "allocatedBytes": [
+        14561016,
+        11401712,
+        11401712,
+        14561016
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        2688.465625,
+        1874.240625,
+        1735.4765625,
+        2714.065625
+      ]
+    }
+  ]
+}

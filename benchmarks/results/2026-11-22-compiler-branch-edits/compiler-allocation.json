@@ -1,0 +1,235 @@
+{
+  "roles": [
+    "reference",
+    "candidate",
+    "candidate",
+    "reference"
+  ],
+  "rows": [
+    {
+      "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "allocatedBytes": [
+        65400,
+        65568,
+        65568,
+        65400
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        199.44375,
+        167.6828125,
+        205.2171875,
+        194.9515625
+      ]
+    },
+    {
+      "id": "scripts.dataclass-inherited-configuration.generated",
+      "allocatedBytes": [
+        530536,
+        530536,
+        530536,
+        530536
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        1551.7078125,
+        1326.321875,
+        1544.6171875,
+        1620.5828125
+      ]
+    },
+    {
+      "id": "scripts.config-generated-guards.medium.bad-0",
+      "allocatedBytes": [
+        2155802.875,
+        2040304,
+        2040248.5,
+        2158511.625
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        2331.065625,
+        2915.0703125,
+        4004.2828125,
+        2301.8578125
+      ]
+    },
+    {
+      "id": "assertion-tail-with-handler",
+      "allocatedBytes": [
+        25640,
+        25264,
+        25264,
+        25640
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        10.2375,
+        26.553125,
+        10.5984375,
+        24.746875
+      ]
+    },
+    {
+      "id": "dead-heavy-control",
+      "allocatedBytes": [
+        840568,
+        840192,
+        840192,
+        840568
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        461.0890625,
+        538.3484375,
+        605.5796875,
+        542.653125
+      ]
+    },
+    {
+      "id": "nested-definition-in-protected-suite",
+      "allocatedBytes": [
+        33944,
+        33960,
+        33960,
+        33944
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        15.3140625,
+        15.8734375,
+        15.565625,
+        19.3578125
+      ]
+    },
+    {
+      "id": "postponed-module-annotation",
+      "allocatedBytes": [
+        16408,
+        16408,
+        16408,
+        16408
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        26.3609375,
+        11.9,
+        9.05625,
+        9.1125
+      ]
+    },
+    {
+      "id": "ordinary-scopes-under-protection",
+      "allocatedBytes": [
+        54928,
+        54816,
+        54816,
+        54928
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        33.1015625,
+        40.584375,
+        33.9625,
+        33.5390625
+      ]
+    },
+    {
+      "id": "complex-scopes-under-protection",
+      "allocatedBytes": [
+        60592,
+        59800,
+        59800,
+        60592
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        78.0375,
+        45.7,
+        40.5703125,
+        36.1546875
+      ]
+    },
+    {
+      "id": "native-loop-back-edge",
+      "allocatedBytes": [
+        35032,
+        34888,
+        34888,
+        35032
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        18.7671875,
+        43.834375,
+        25.2421875,
+        45.015625
+      ]
+    },
+    {
+      "id": "nested-finally-counter",
+      "allocatedBytes": [
+        41840,
+        40808,
+        40808,
+        41840
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        51.146875,
+        21.9859375,
+        21.7359375,
+        22.4171875
+      ]
+    },
+    {
+      "id": "native-call-continuation",
+      "allocatedBytes": [
+        63856,
+        64024,
+        64024,
+        63856
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        33.9921875,
+        39.5328125,
+        86.090625,
+        38.7203125
+      ]
+    },
+    {
+      "id": "compiler.generated-read-only-branches",
+      "allocatedBytes": [
+        14561016,
+        11401712,
+        11401712,
+        14561016
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        4506.2859375,
+        3203.0203125,
+        3235.6859375,
+        4815.103125
+      ]
+    },
+    {
+      "id": "compiler.match-guard-and-deletion",
+      "allocatedBytes": [
+        34104,
+        33176,
+        33176,
+        34104
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        16.465625,
+        41.496875,
+        40.8578125,
+        42.890625
+      ]
+    },
+    {
+      "id": "compiler.branch-edits",
+      "allocatedBytes": [
+        31360,
+        30544,
+        30544,
+        31360
+      ],
+      "elapsedDiagnosticMicroseconds": [
+        35.3703125,
+        15.8921875,
+        33.709375,
+        35.1703125
+      ]
+    }
+  ]
+}

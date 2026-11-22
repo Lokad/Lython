@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1395 compiler branch edits](results/2026-11-22-compiler-branch-edits/README.md)
+replaces whole assignment-set copies and unions with undo and join lists.
+The sparse validator compiles 5.16–7.61% faster and reaches its result
+0.32–3.55% sooner. Dataclass compilation takes 0.67–2.38% longer and the
+postponed factory spans zero. Retained at `f31edc41b`.
+
 [B1394 grouped regex escape replay](results/2026-11-22-regex-escape-runs/README.md)
 keeps literal borrowing, decodes adjacent escapes once and reuses its
 name reservation. Long-literal elapsed improves 21.47–22.23%. Dense
