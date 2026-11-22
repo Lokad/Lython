@@ -1,0 +1,537 @@
+{
+  "coreSHA256": "352d09234fad8be9a7b3725a21a8e48497644ff7e316dec3a495d21ffd33397a",
+  "codeObjects": [
+    {
+      "script": "diagnostic.helper-placement.module-call",
+      "name": "<module>",
+      "native": false,
+      "mirrors": false,
+      "capacity": 9,
+      "locals": [
+        "evaluate",
+        "total",
+        "index"
+      ],
+      "opcodeCounts": {
+        "ApplyOperation": 1,
+        "StoreName": 1,
+        "StoreLocal": 3,
+        "LoadName": 2,
+        "LoadConst": 1,
+        "Call": 3,
+        "GetIter": 1,
+        "Jump": 2,
+        "ForNext": 1,
+        "LoadLocal": 4,
+        "Binary": 3,
+        "Augmented": 1,
+        "PopTop": 1,
+        "Complete": 1
+      },
+      "arithmetic": [
+        {
+          "index": 13,
+          "line": 6,
+          "op": "Modulo",
+          "left": "local",
+          "right": "BigInteger"
+        },
+        {
+          "index": 14,
+          "line": 6,
+          "op": "Modulo",
+          "left": "local",
+          "right": "BigInteger"
+        },
+        {
+          "index": 15,
+          "line": 6,
+          "op": "Add",
+          "left": "temporary",
+          "right": "BigInteger"
+        },
+        {
+          "index": 17,
+          "line": 6,
+          "op": "Add",
+          "left": "temporary",
+          "right": "temporary"
+        }
+      ],
+      "calls": [
+        {
+          "first": 3,
+          "count": 1,
+          "offset": 1,
+          "deadTailCapacity": 4,
+          "span": "LythonSourceSpan { Start = 96, Length = 11, Line = 5, Column = 14 }"
+        },
+        {
+          "first": 5,
+          "count": 3,
+          "offset": 1,
+          "deadTailCapacity": 0,
+          "span": "LythonSourceSpan { Start = 122, Length = 42, Line = 6, Column = 14 }"
+        },
+        {
+          "first": 3,
+          "count": 1,
+          "offset": 1,
+          "deadTailCapacity": 4,
+          "span": "LythonSourceSpan { Start = 165, Length = 12, Line = 7, Column = 1 }"
+        }
+      ]
+    },
+    {
+      "script": "diagnostic.helper-placement.module-call",
+      "name": "evaluate",
+      "native": true,
+      "mirrors": false,
+      "capacity": 7,
+      "locals": [
+        "record",
+        "base",
+        "weight"
+      ],
+      "opcodeCounts": {
+        "Binary": 2,
+        "Return": 1
+      },
+      "arithmetic": [
+        {
+          "index": 0,
+          "line": 2,
+          "op": "Add",
+          "left": "local",
+          "right": "local"
+        },
+        {
+          "index": 1,
+          "line": 2,
+          "op": "Multiply",
+          "left": "temporary",
+          "right": "local"
+        }
+      ],
+      "calls": []
+    },
+    {
+      "script": "diagnostic.helper-placement.function-call",
+      "name": "<module>",
+      "native": false,
+      "mirrors": false,
+      "capacity": 6,
+      "locals": [
+        "evaluate",
+        "run"
+      ],
+      "opcodeCounts": {
+        "ApplyOperation": 2,
+        "StoreName": 2,
+        "LoadName": 1,
+        "LoadLocal": 1,
+        "Call": 2,
+        "PopTop": 1,
+        "Complete": 1
+      },
+      "arithmetic": [],
+      "calls": [
+        {
+          "first": 3,
+          "count": 0,
+          "offset": 1,
+          "deadTailCapacity": 2,
+          "span": "LythonSourceSpan { Start = 211, Length = 5, Line = 9, Column = 7 }"
+        },
+        {
+          "first": 2,
+          "count": 1,
+          "offset": 1,
+          "deadTailCapacity": 2,
+          "span": "LythonSourceSpan { Start = 205, Length = 12, Line = 9, Column = 1 }"
+        }
+      ]
+    },
+    {
+      "script": "diagnostic.helper-placement.function-call",
+      "name": "evaluate",
+      "native": true,
+      "mirrors": false,
+      "capacity": 7,
+      "locals": [
+        "record",
+        "base",
+        "weight"
+      ],
+      "opcodeCounts": {
+        "Binary": 2,
+        "Return": 1
+      },
+      "arithmetic": [
+        {
+          "index": 0,
+          "line": 2,
+          "op": "Add",
+          "left": "local",
+          "right": "local"
+        },
+        {
+          "index": 1,
+          "line": 2,
+          "op": "Multiply",
+          "left": "temporary",
+          "right": "local"
+        }
+      ],
+      "calls": []
+    },
+    {
+      "script": "diagnostic.helper-placement.function-call",
+      "name": "run",
+      "native": true,
+      "mirrors": false,
+      "capacity": 8,
+      "locals": [
+        "total",
+        "index"
+      ],
+      "opcodeCounts": {
+        "StoreLocal": 3,
+        "LoadGlobal": 2,
+        "LoadConst": 1,
+        "Call": 2,
+        "GetIter": 1,
+        "Jump": 2,
+        "ForNext": 1,
+        "LoadLocal": 2,
+        "Binary": 3,
+        "Augmented": 1,
+        "Return": 1
+      },
+      "arithmetic": [
+        {
+          "index": 11,
+          "line": 7,
+          "op": "Modulo",
+          "left": "local",
+          "right": "BigInteger"
+        },
+        {
+          "index": 12,
+          "line": 7,
+          "op": "Modulo",
+          "left": "local",
+          "right": "BigInteger"
+        },
+        {
+          "index": 13,
+          "line": 7,
+          "op": "Add",
+          "left": "temporary",
+          "right": "BigInteger"
+        },
+        {
+          "index": 15,
+          "line": 7,
+          "op": "Add",
+          "left": "temporary",
+          "right": "temporary"
+        }
+      ],
+      "calls": [
+        {
+          "first": 2,
+          "count": 1,
+          "offset": 1,
+          "deadTailCapacity": 4,
+          "span": "LythonSourceSpan { Start = 115, Length = 11, Line = 6, Column = 18 }"
+        },
+        {
+          "first": 4,
+          "count": 3,
+          "offset": 1,
+          "deadTailCapacity": 0,
+          "span": "LythonSourceSpan { Start = 145, Length = 42, Line = 7, Column = 18 }"
+        }
+      ]
+    },
+    {
+      "script": "diagnostic.helper-placement.function-inline",
+      "name": "<module>",
+      "native": false,
+      "mirrors": false,
+      "capacity": 6,
+      "locals": [
+        "evaluate",
+        "run"
+      ],
+      "opcodeCounts": {
+        "ApplyOperation": 2,
+        "StoreName": 2,
+        "LoadName": 1,
+        "LoadLocal": 1,
+        "Call": 2,
+        "PopTop": 1,
+        "Complete": 1
+      },
+      "arithmetic": [],
+      "calls": [
+        {
+          "first": 3,
+          "count": 0,
+          "offset": 1,
+          "deadTailCapacity": 2,
+          "span": "LythonSourceSpan { Start = 249, Length = 5, Line = 11, Column = 7 }"
+        },
+        {
+          "first": 2,
+          "count": 1,
+          "offset": 1,
+          "deadTailCapacity": 2,
+          "span": "LythonSourceSpan { Start = 243, Length = 12, Line = 11, Column = 1 }"
+        }
+      ]
+    },
+    {
+      "script": "diagnostic.helper-placement.function-inline",
+      "name": "evaluate",
+      "native": true,
+      "mirrors": false,
+      "capacity": 7,
+      "locals": [
+        "record",
+        "base",
+        "weight"
+      ],
+      "opcodeCounts": {
+        "Binary": 2,
+        "Return": 1
+      },
+      "arithmetic": [
+        {
+          "index": 0,
+          "line": 2,
+          "op": "Add",
+          "left": "local",
+          "right": "local"
+        },
+        {
+          "index": 1,
+          "line": 2,
+          "op": "Multiply",
+          "left": "temporary",
+          "right": "local"
+        }
+      ],
+      "calls": []
+    },
+    {
+      "script": "diagnostic.helper-placement.function-inline",
+      "name": "run",
+      "native": true,
+      "mirrors": false,
+      "capacity": 8,
+      "locals": [
+        "total",
+        "index",
+        "base",
+        "weight"
+      ],
+      "opcodeCounts": {
+        "StoreLocal": 5,
+        "LoadGlobal": 1,
+        "LoadConst": 1,
+        "Call": 1,
+        "GetIter": 1,
+        "Jump": 2,
+        "ForNext": 1,
+        "Binary": 5,
+        "LoadLocal": 1,
+        "Augmented": 1,
+        "Return": 1
+      },
+      "arithmetic": [
+        {
+          "index": 8,
+          "line": 7,
+          "op": "Modulo",
+          "left": "local",
+          "right": "BigInteger"
+        },
+        {
+          "index": 10,
+          "line": 8,
+          "op": "Modulo",
+          "left": "local",
+          "right": "BigInteger"
+        },
+        {
+          "index": 11,
+          "line": 8,
+          "op": "Add",
+          "left": "temporary",
+          "right": "BigInteger"
+        },
+        {
+          "index": 14,
+          "line": 9,
+          "op": "Add",
+          "left": "local",
+          "right": "local"
+        },
+        {
+          "index": 15,
+          "line": 9,
+          "op": "Multiply",
+          "left": "temporary",
+          "right": "local"
+        },
+        {
+          "index": 16,
+          "line": 9,
+          "op": "Add",
+          "left": "temporary",
+          "right": "temporary"
+        }
+      ],
+      "calls": [
+        {
+          "first": 4,
+          "count": 1,
+          "offset": 1,
+          "deadTailCapacity": 2,
+          "span": "LythonSourceSpan { Start = 115, Length = 11, Line = 6, Column = 18 }"
+        }
+      ]
+    },
+    {
+      "script": "diagnostic.helper-placement.module-inline",
+      "name": "<module>",
+      "native": false,
+      "mirrors": false,
+      "capacity": 9,
+      "locals": [
+        "evaluate",
+        "total",
+        "index",
+        "base",
+        "weight"
+      ],
+      "opcodeCounts": {
+        "ApplyOperation": 1,
+        "StoreName": 1,
+        "StoreLocal": 5,
+        "LoadName": 2,
+        "LoadConst": 1,
+        "Call": 2,
+        "GetIter": 1,
+        "Jump": 2,
+        "ForNext": 1,
+        "Binary": 5,
+        "LoadLocal": 2,
+        "Augmented": 1,
+        "PopTop": 1,
+        "Complete": 1
+      },
+      "arithmetic": [
+        {
+          "index": 10,
+          "line": 6,
+          "op": "Modulo",
+          "left": "local",
+          "right": "BigInteger"
+        },
+        {
+          "index": 12,
+          "line": 7,
+          "op": "Modulo",
+          "left": "local",
+          "right": "BigInteger"
+        },
+        {
+          "index": 13,
+          "line": 7,
+          "op": "Add",
+          "left": "temporary",
+          "right": "BigInteger"
+        },
+        {
+          "index": 16,
+          "line": 8,
+          "op": "Add",
+          "left": "local",
+          "right": "local"
+        },
+        {
+          "index": 17,
+          "line": 8,
+          "op": "Multiply",
+          "left": "temporary",
+          "right": "local"
+        },
+        {
+          "index": 18,
+          "line": 8,
+          "op": "Add",
+          "left": "temporary",
+          "right": "temporary"
+        }
+      ],
+      "calls": [
+        {
+          "first": 5,
+          "count": 1,
+          "offset": 1,
+          "deadTailCapacity": 2,
+          "span": "LythonSourceSpan { Start = 96, Length = 11, Line = 5, Column = 14 }"
+        },
+        {
+          "first": 5,
+          "count": 1,
+          "offset": 1,
+          "deadTailCapacity": 2,
+          "span": "LythonSourceSpan { Start = 195, Length = 12, Line = 9, Column = 1 }"
+        }
+      ]
+    },
+    {
+      "script": "diagnostic.helper-placement.module-inline",
+      "name": "evaluate",
+      "native": true,
+      "mirrors": false,
+      "capacity": 7,
+      "locals": [
+        "record",
+        "base",
+        "weight"
+      ],
+      "opcodeCounts": {
+        "Binary": 2,
+        "Return": 1
+      },
+      "arithmetic": [
+        {
+          "index": 0,
+          "line": 2,
+          "op": "Add",
+          "left": "local",
+          "right": "local"
+        },
+        {
+          "index": 1,
+          "line": 2,
+          "op": "Multiply",
+          "left": "temporary",
+          "right": "local"
+        }
+      ],
+      "calls": []
+    }
+  ],
+  "inspectWorkerHashes": {
+    "Inspect.deps.json": "2d4667c19cc8c902aaec0f8f7ee91d1cf12cbad6b6e7bffe82d306ae68c743c4",
+    "Inspect.dll": "7f0a372a76e601f1678ecb4cd2417ebcf08cc9ca0f599d23aa1893c806c06018",
+    "Inspect.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0",
+    "Lokad.Lython.dll": "352d09234fad8be9a7b3725a21a8e48497644ff7e316dec3a495d21ffd33397a"
+  }
+}

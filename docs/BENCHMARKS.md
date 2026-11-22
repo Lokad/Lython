@@ -30,6 +30,12 @@ active. CPython uses its native file APIs. Fixture reset and request
 framing sit outside the elapsed execution clock. The raw process CPU
 measurements cover the wider request.
 
+The helper row calls from module scope. In a matched placement
+diagnostic, wrapping the loop in a function lowers Lython elapsed by
+11.81–14.46%. CPython improves more under the same change. Arithmetic
+controls and separate allocation measurements are in the checkpoint.
+[Matched helper placement](../benchmarks/results/2026-11-22-matched-helper-placement/README.md).
+
 ## Compilation and compile-to-result
 
 | Workload | Phase | Lython | CPython | Lython / CPython | Measurement status |

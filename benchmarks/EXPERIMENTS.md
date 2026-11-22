@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1363 matched calls and arithmetic at module and function scope](results/2026-11-22-matched-helper-placement/README.md)
+shows an 11.81–14.46% Lython elapsed benefit from wrapping the supplied
+loop, with a larger CPython scope effect. Keeping all calls but reading
+the accumulator later saves 65,504 bytes locally in both Lython scopes.
+The four quiet lanes verify. Operand staging remains a candidate for
+redesign with Python evaluation order preserved.
+
 [B1362 CPU attribution after signed arithmetic](results/2026-11-22-post-arithmetic-invocation-profile/README.md)
 resolves most range-loop samples to the native loop. The supplied
 helper resolves 523 of 1,148 samples to instruction dispatch or

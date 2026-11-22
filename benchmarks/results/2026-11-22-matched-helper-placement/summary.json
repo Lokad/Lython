@@ -1,0 +1,326 @@
+{
+  "revision": "eb227dcaca84c2340b48b7be4787242d123e29bc",
+  "coreSHA256": "352d09234fad8be9a7b3725a21a8e48497644ff7e316dec3a495d21ffd33397a",
+  "sourceCatalogSHA256": "cdb9a8829a3ad7abe7c59f2d6f9be682fbbeac42a33bc9cf699a863493bf76bf",
+  "rows": {
+    "module-call": {
+      "sourceSHA256": "e1a19ff9d81d1c7e3aabe9080ebfd6e1638a1781e90f41c23a503a0c5f7e3d7d",
+      "lythonMs": [
+        0.36456248226544624,
+        0.3684621616972477
+      ],
+      "cpythonMs": [
+        0.20194612159197745,
+        0.21498272577996716
+      ],
+      "ratio": [
+        1.6957756998512177,
+        1.824556761935285
+      ],
+      "workerSpreadPercent": [
+        1.0696875354721858,
+        6.455486287738443
+      ],
+      "engines": {
+        "candidate": {
+          "elapsedMs": 0.3684621616972477,
+          "externalCpuMs": 0.3669724770642202,
+          "elapsedIQRPercent": 0.7616466941750804
+        },
+        "candidate-control": {
+          "elapsedMs": 0.36456248226544624,
+          "externalCpuMs": 0.36041189931350115,
+          "elapsedIQRPercent": 0.6520630786705298
+        },
+        "CPython": {
+          "elapsedMs": 0.21498272577996716,
+          "externalCpuMs": 0.2134646962233169,
+          "elapsedIQRPercent": 0.3135755055128013
+        },
+        "CPython-control": {
+          "elapsedMs": 0.20194612159197745,
+          "externalCpuMs": 0.20369790034471952,
+          "elapsedIQRPercent": 0.4201754611303593
+        }
+      }
+    },
+    "function-call": {
+      "sourceSHA256": "ab20425b8bc4a1ae2a9386271e65eda208b7727ac646c3bc120f529aa323a5dc",
+      "lythonMs": [
+        0.3151952483059052,
+        0.32150454568023834
+      ],
+      "cpythonMs": [
+        0.1279753844488189,
+        0.13259627430910953
+      ],
+      "ratio": [
+        2.3771048617182062,
+        2.512237388970825
+      ],
+      "workerSpreadPercent": [
+        2.001710815199176,
+        3.610764585855697
+      ],
+      "engines": {
+        "candidate": {
+          "elapsedMs": 0.3151952483059052,
+          "externalCpuMs": 0.31461761858664083,
+          "elapsedIQRPercent": 1.216097200422567
+        },
+        "candidate-control": {
+          "elapsedMs": 0.32150454568023834,
+          "externalCpuMs": 0.3227408142999007,
+          "elapsedIQRPercent": 1.49255280791697
+        },
+        "CPython": {
+          "elapsedMs": 0.13259627430910953,
+          "externalCpuMs": 0.1330603889457523,
+          "elapsedIQRPercent": 0.9573497744749111
+        },
+        "CPython-control": {
+          "elapsedMs": 0.1279753844488189,
+          "externalCpuMs": 0.1279527559055118,
+          "elapsedIQRPercent": 0.21573577004005215
+        }
+      }
+    },
+    "function-inline": {
+      "sourceSHA256": "2fd7322a50229d7098c82c3089d459af3f717e3d25a18874b0bdec9859b320be",
+      "lythonMs": [
+        0.1679071118251928,
+        0.1681393434108527
+      ],
+      "cpythonMs": [
+        0.09767872120754717,
+        0.10738457017977898
+      ],
+      "ratio": [
+        1.563605567765363,
+        1.7213507848202807
+      ],
+      "workerSpreadPercent": [
+        0.13830955885996143,
+        9.936502906921652
+      ],
+      "engines": {
+        "candidate": {
+          "elapsedMs": 0.1681393434108527,
+          "externalCpuMs": 0.165374677002584,
+          "elapsedIQRPercent": 0.5352117667003405
+        },
+        "candidate-control": {
+          "elapsedMs": 0.1679071118251928,
+          "externalCpuMs": 0.16452442159383032,
+          "elapsedIQRPercent": 0.622511300527578
+        },
+        "CPython": {
+          "elapsedMs": 0.10738457017977898,
+          "externalCpuMs": 0.10720765297707406,
+          "elapsedIQRPercent": 0.7440066799672967
+        },
+        "CPython-control": {
+          "elapsedMs": 0.09767872120754717,
+          "externalCpuMs": 0.09811320754716982,
+          "elapsedIQRPercent": 0.7487466867274474
+        }
+      }
+    },
+    "module-inline": {
+      "sourceSHA256": "ffeceaf46c3c5482a6cfe9c88dc6871614f0cf1276e278e22482a6d70af7fdef",
+      "lythonMs": [
+        0.23646790426300576,
+        0.24403081298992163
+      ],
+      "cpythonMs": [
+        0.2042157543803759,
+        0.20926150711513583
+      ],
+      "ratio": [
+        1.1300114747472452,
+        1.1949656564467868
+      ],
+      "workerSpreadPercent": [
+        3.1982812849325137,
+        2.470795042267704
+      ],
+      "engines": {
+        "candidate": {
+          "elapsedMs": 0.24403081298992163,
+          "externalCpuMs": 0.24262784621127287,
+          "elapsedIQRPercent": 0.6752850136347351
+        },
+        "candidate-control": {
+          "elapsedMs": 0.23646790426300576,
+          "externalCpuMs": 0.23482658959537572,
+          "elapsedIQRPercent": 0.6786252272174458
+        },
+        "CPython": {
+          "elapsedMs": 0.2042157543803759,
+          "externalCpuMs": 0.20388658808537752,
+          "elapsedIQRPercent": 0.22605707164461042
+        },
+        "CPython-control": {
+          "elapsedMs": 0.20926150711513583,
+          "externalCpuMs": 0.21021992238033635,
+          "elapsedIQRPercent": 0.1881840281734883
+        }
+      }
+    }
+  },
+  "relativeChangesPercent": {
+    "functionVersusModuleWithCall": {
+      "lython": {
+        "elapsedMs": [
+          -14.456549119176609,
+          -11.810852372311976
+        ],
+        "externalCpuMs": [
+          -14.266698935140376,
+          -10.452231206948193
+        ]
+      },
+      "cpython": {
+        "elapsedMs": [
+          -40.47178256554411,
+          -34.34076709974455
+        ],
+        "externalCpuMs": [
+          -40.05905511811023,
+          -34.67758444216991
+        ]
+      }
+    },
+    "functionVersusModuleInline": {
+      "lython": {
+        "elapsedMs": [
+          -31.194298880556815,
+          -28.895490517037036
+        ],
+        "externalCpuMs": [
+          -32.190626853865936,
+          -29.575829854899617
+        ]
+      },
+      "cpython": {
+        "elapsedMs": [
+          -53.322174462881854,
+          -47.41611855285045
+        ],
+        "externalCpuMs": [
+          -53.32830188679245,
+          -47.41799645390071
+        ]
+      }
+    },
+    "callVersusInlineAtModule": {
+      "lython": {
+        "elapsedMs": [
+          49.39198775709628,
+          55.81910062831803
+        ],
+        "externalCpuMs": [
+          48.54515050167223,
+          56.27381792519408
+        ]
+      },
+      "cpython": {
+        "elapsedMs": [
+          -3.4958103972430266,
+          5.2723510153563025
+        ],
+        "externalCpuMs": [
+          -3.102475712942654,
+          4.697762725779953
+        ]
+      }
+    },
+    "callVersusInlineInFunction": {
+      "lython": {
+        "elapsedMs": [
+          87.46073459780182,
+          91.477622469592
+        ],
+        "externalCpuMs": [
+          90.24534123910937,
+          96.16590119165842
+        ]
+      },
+      "cpython": {
+        "elapsedMs": [
+          19.174835113245404,
+          35.74734872641274
+        ],
+        "externalCpuMs": [
+          19.350393700787393,
+          35.61924257932447
+        ]
+      }
+    }
+  },
+  "localWindowsAllocation": {
+    "module-call": {
+      "medianBytes": 142680,
+      "samples": [
+        142680,
+        142680,
+        142680
+      ],
+      "peakAllowanceBytes": 1255,
+      "fullRefund": true
+    },
+    "function-call": {
+      "medianBytes": 142728,
+      "samples": [
+        142728,
+        142728,
+        142728
+      ],
+      "peakAllowanceBytes": 1343,
+      "fullRefund": true
+    },
+    "function-inline": {
+      "medianBytes": 77192,
+      "samples": [
+        77192,
+        77192,
+        77192
+      ],
+      "peakAllowanceBytes": 1343,
+      "fullRefund": true
+    },
+    "module-inline": {
+      "medianBytes": 77144,
+      "samples": [
+        77144,
+        77144,
+        77144
+      ],
+      "peakAllowanceBytes": 1319,
+      "fullRefund": true
+    },
+    "module-call-read-after": {
+      "medianBytes": 77176,
+      "samples": [
+        77176,
+        77176,
+        77176
+      ],
+      "peakAllowanceBytes": 1287,
+      "fullRefund": true
+    },
+    "function-call-read-after": {
+      "medianBytes": 77224,
+      "samples": [
+        77224,
+        77224,
+        77224
+      ],
+      "peakAllowanceBytes": 1343,
+      "fullRefund": true
+    }
+  },
+  "verifiedBatches": 112,
+  "elapsedSeconds": 210.40285956393927,
+  "rawSHA256": "c4c26275b22d9cb9adad93c61e062271014dbdbd9565ec0f03e892cdc88ca0c4"
+}
