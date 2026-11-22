@@ -1,0 +1,13 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "persistentTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 185135104,
+  "archiveSHA256": "9bbf66be0416c563a7362cb638b6a8363e700ee5ffaca3e9b0977562a740e79e",
+  "source": "Fully supplied helper and protected invoice CPU attribution",
+  "performanceComparison": false,
+  "failure": null
+}

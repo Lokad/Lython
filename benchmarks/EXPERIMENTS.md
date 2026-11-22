@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1366 profile of helper and CSV calls after local reuse](results/2026-11-22-post-checked-local-call-profile/README.md)
+finds native operation and call work in both scripts, with 31 closest-runtime
+continuation samples in the invoice and 27 reservation samples from tuple
+construction. The invoice tape identifies a native helper immediately
+unpacking another helper's return. The profile gives no speedup estimate.
+
 [B1364 and B1365 keep private augmented operands in their local slots](results/2026-11-22-checked-augmented-local/README.md)
 retain the original unbound check and remove one temporary. The
 function-scoped helper uses 7.37–8.52% less warm CPU. A complete
