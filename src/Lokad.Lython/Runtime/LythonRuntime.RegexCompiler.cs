@@ -346,19 +346,19 @@ internal sealed partial class LythonRuntime
             };
             var options = requestedBits is { } bits && TryNormalizeExactFlags(bits, out var exact)
                 ? exact : ParseFlags(requestedFlags.RequireNotNull(), span, context);
-            var key = new RegexPatternCache.Key(pattern, options, requestedBits);
+            var key = new RegexPatternKey(pattern, options, requestedBits);
             context.CheckExecution(span);
-            _ = pattern.GetHashCode(context.State.CancellationToken, span);
+            var token = context.State.CancellationToken;
+            _ = pattern.GetHashCode(token, span);
             var cache = context.State.RegexCache ??= new RegexPatternCache();
-            if (cache.TryGet(key, out var cached))
+            if (cache.TryGet(key, out var cached, token, span))
             {
                 return cached;
             }
 
             var provider = context.State.RegexProvider
                 ?? throw RuntimeErrors.Capability("Python regex functionality requires a host-supplied Lython regex provider.", span);
-            var artifact = context.State.RegexPrograms?.Find(pattern, options);
-            var token = context.State.CancellationToken;
+            var artifact = context.State.RegexPrograms?.Find(pattern, options, token, span);
             var compiled = artifact?.Program ?? ProviderCall((provider, pattern, options, context, token),
                 static state => state.provider.Compile(state.pattern.Utf8Bytes, state.options,
                     state.context.MemoryGovernor.Budget, state.token), context.MemoryGovernor, token, span, pattern);

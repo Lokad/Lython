@@ -10,7 +10,7 @@ internal sealed class CompiledRegexPrograms(MemoryGovernor? governor) : IDisposa
     internal readonly record struct Entry(ILythonRegexPattern Program, int CaptureSlotCount);
 
     private ILythonMemoryScope? _owner;
-    private Dictionary<(PyString Pattern, LythonRegexOptions Options), Entry>? _entries;
+    private Dictionary<RegexPatternKey, Entry>? _entries;
 
     internal bool HasPrograms => _entries is { Count: > 0 };
     internal ILythonMemoryBudget StorageOwner => _owner ??=
@@ -33,11 +33,19 @@ internal sealed class CompiledRegexPrograms(MemoryGovernor? governor) : IDisposa
         _ = key.GetHashCode(token, span);
         // Once published, the lookup owns the handle. It must never replace
         // a program that a compiler fact may still borrow.
-        (_entries ??= new()).Add((key, options), new Entry(program, captureSlotCount));
+        (_entries ??= new(RegexPatternKey.Comparer.Instance)).Add(new(key, options), new Entry(program, captureSlotCount));
     }
 
-    internal Entry? Find(PyString pattern, LythonRegexOptions options)
-        => _entries?.TryGetValue((pattern, options), out var entry) == true ? entry : null;
+    internal Entry? Find(PyString pattern, LythonRegexOptions options, CancellationToken token, LythonSourceSpan span)
+    {
+        if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
+        if (_entries is not { } entries) return null;
+        var key = new RegexPatternKey(pattern, options);
+        var found = token.CanBeCanceled
+            ? entries.GetAlternateLookup<RegexPatternKey.Lookup>().TryGetValue(new(key, token, span), out var entry)
+            : entries.TryGetValue(key, out entry);
+        return found ? entry : null;
+    }
 
     public void Dispose()
     {

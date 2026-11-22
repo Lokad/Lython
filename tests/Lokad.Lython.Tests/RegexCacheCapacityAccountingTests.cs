@@ -1,6 +1,8 @@
+using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
 using Lokad.Lython.Tests.Harness;
+using System.Text;
 
 namespace Lokad.Lython.Tests;
 
@@ -87,8 +89,8 @@ public sealed class RegexCacheCapacityAccountingTests
         var governor = new MemoryGovernor(hook);
         var cache = new RegexPatternCache();
         var span = new LythonSourceSpan(0, 0, 0, 0);
-        var original = new RegexPatternCache.Key(PyString.FromString("previous"), new(32, false), 0);
-        var replacement = new RegexPatternCache.Key(PyString.FromString("reentered"), new(32, false), 0);
+        var original = new RegexPatternKey(PyString.FromString("previous"), new(32, false), 0);
+        var replacement = new RegexPatternKey(PyString.FromString("reentered"), new(32, false), 0);
         cache.GetOrAdd(original, pattern, governor, span);
         hook.AfterShrink = _bytes =>
         {
@@ -105,5 +107,40 @@ public sealed class RegexCacheCapacityAccountingTests
         cache.Clear(governor);
         Assert.Equal(0, cache.Count);
         Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Fact]
+    public void CachedPatternLookupUsesOnlyItsCurrentToken()
+    {
+        var pattern = Pattern();
+        using var analysis = new CompiledRegexPrograms(null);
+        var options = new LythonRegexOptions(32, false);
+        var span = new LythonSourceSpan(1, 6, 1, 2);
+        var text = new string('é', 6144);
+        var inserted = PyString.FromString(text);
+        var lookup = PyString.FromString(text);
+        Assert.NotSame(inserted, lookup);
+        var cache = new RegexPatternCache();
+        var governor = new MemoryGovernor(null);
+        cache.GetOrAdd(new(inserted, options, 0), pattern, governor, span);
+        analysis.Add(Encoding.UTF8.GetBytes(text), options, pattern.Regex, 1, default, span);
+
+        using var previous = new CancellationTokenSource();
+        using var current = new CancellationTokenSource();
+        Assert.True(cache.TryGet(new(lookup, options, 0), out var first, previous.Token, span));
+        Assert.Same(pattern, first);
+        Assert.Equal(pattern.Regex, analysis.Find(lookup, options, previous.Token, span)?.Program);
+        previous.Cancel();
+        var error = Assert.Throws<LythonRuntimeException>(() => cache.TryGet(new(lookup, options, 0), out _, previous.Token, span));
+        Assert.Equal(LythonFailureReason.Cancelled, error.Attribution?.Reason);
+        Assert.Equal(span, error.Span);
+        error = Assert.Throws<LythonRuntimeException>(() => analysis.Find(lookup, options, previous.Token, span));
+        Assert.Equal(LythonFailureReason.Cancelled, error.Attribution?.Reason);
+        Assert.Equal(span, error.Span);
+        Assert.True(cache.TryGet(new(lookup, options, 0), out var again, current.Token, span));
+        Assert.Same(pattern, again);
+        Assert.Equal(pattern.Regex, analysis.Find(lookup, options, current.Token, span)?.Program);
+        cache.Clear(governor);
+        Assert.Equal(0, governor.CurrentAccountedBytes);
     }
 }

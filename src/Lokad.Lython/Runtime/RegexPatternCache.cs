@@ -1,5 +1,3 @@
-using Lokad.Lython.Runtime.Text;
-
 namespace Lokad.Lython.Runtime;
 
 // Bounded per-execution regex compilation cache (N19): module-level calls with the
@@ -22,23 +20,27 @@ internal sealed class RegexPatternCache
     // This is conservative capacity funding, not an exact object-size claim.
     internal const long SlotBytesPerEntry = 256L;
 
-    internal readonly record struct Key(PyString PatternText, LythonRegexOptions Options, int? RequestedFlags);
-
-    private Dictionary<Key, LinkedListNode<CacheEntry>> _entries = new();
+    private Dictionary<RegexPatternKey, LinkedListNode<CacheEntry>> _entries = new(RegexPatternKey.Comparer.Instance);
     private readonly LinkedList<CacheEntry> _recent = new();
     private long _committedSlotBytes;
 
-    private readonly record struct CacheEntry(Key Key, LythonRuntime.RePatternObject Pattern);
+    private readonly record struct CacheEntry(RegexPatternKey Key, LythonRuntime.RePatternObject Pattern);
 
     public int Count => _entries.Count;
 
-    public bool TryGet(Key key, [NotNullWhen(true)] out LythonRuntime.RePatternObject? pattern)
+    public bool TryGet(RegexPatternKey key, [NotNullWhen(true)] out LythonRuntime.RePatternObject? pattern,
+        CancellationToken token = default, LythonSourceSpan? span = null)
     {
-        if (_entries.TryGetValue(key, out var node))
+        if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
+        var found = token.CanBeCanceled
+            ? _entries.GetAlternateLookup<RegexPatternKey.Lookup>().TryGetValue(new(key, token, span), out var node)
+            : _entries.TryGetValue(key, out node);
+        if (found)
         {
-            _recent.Remove(node);
-            _recent.AddFirst(node);
-            pattern = node.Value.Pattern;
+            var entry = node.RequireNotNull();
+            _recent.Remove(entry);
+            _recent.AddFirst(entry);
+            pattern = entry.Value.Pattern;
             return true;
         }
 
@@ -49,15 +51,14 @@ internal sealed class RegexPatternCache
     // Caches a freshly compiled pattern under its exact key. Slot refusal is a
     // command failure, never a reason to fall back to uncached execution.
     public LythonRuntime.RePatternObject GetOrAdd(
-        Key key,
+        RegexPatternKey key,
         LythonRuntime.RePatternObject pattern,
         MemoryGovernor governor,
         LythonSourceSpan? span,
         CancellationToken cancellationToken = default)
     {
         governor.ThrowIfAdmissionFailed();
-        if (cancellationToken.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
-        if (TryGet(key, out var existing)) return existing;
+        if (TryGet(key, out var existing, cancellationToken, span)) return existing;
         // Eviction replaces an already-funded slot. Only growing the cache
         // needs new capacity funding; charging every miss strands slot charges
         // and can prevent a full cache from replacing its least-recent entry.
@@ -67,7 +68,7 @@ internal sealed class RegexPatternCache
         {
             if (cancellationToken.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
             // The admission callback can publish the canonical wrapper.
-            if (bytes != 0 && TryGet(key, out existing)) return existing;
+            if (bytes != 0 && TryGet(key, out existing, cancellationToken, span)) return existing;
 
             var entry = new CacheEntry(key, pattern);
             LinkedListNode<CacheEntry> node;
@@ -100,7 +101,7 @@ internal sealed class RegexPatternCache
     {
         // Clear alone keeps the table's backing. Relinquish it before refunding
         // capacity; callers cannot borrow the cache's private slots.
-        _entries = new();
+        _entries = new(RegexPatternKey.Comparer.Instance);
         _recent.Clear();
         if (governor is not null && _committedSlotBytes > 0)
         {
