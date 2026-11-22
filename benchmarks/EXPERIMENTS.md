@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1406 current 0.11.0 checkpoint against CPython](results/2026-11-22-current-source-cpython/README.md)
+refreshes the six B1397 workloads at `55424591f`. Postponed factories
+use 2.005–2.060× CPython warm elapsed and the nonlocal word report uses
+1.590–1.620×. The quote-heavy invoice uses 1.145–1.167× and the
+expanded JSON export uses 0.837–0.845×. The sparse validator reaches
+its result in 0.780–0.786× CPython elapsed. All 224 batches verify.
+
 [B1405 module opening indentation](results/2026-11-22-module-leading-indentation/README.md)
 removes the separate leading-source scan at `55424591f`. The synthetic
 64 KiB first-line source compiles 13.46–22.39% faster. Sparse validator

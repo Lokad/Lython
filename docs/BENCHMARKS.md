@@ -2,29 +2,16 @@
 
 | Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| Typed ASCII CSV meter report | 4,096 records / 139,299 B | 3.034–3.049 ms | 2.488–2.522 ms | 1.203–1.226× | Diagnostic. Lython worker spread 0.49%. [B1361]. |
-| CSV meter report with explicit `float()` | 4,096 records / 139,299 B | 4.460–4.664 ms | 2.903–2.907 ms | 1.534–1.607× | Diagnostic. Lython worker spread 4.58%. [B1336]. |
-| Typed Unicode CSV meter report | 4,096 records / 223,267 B | 3.712–3.713 ms | 3.139–3.152 ms | 1.178–1.183× | Diagnostic. CPython worker spread 0.40%. [B1388]. |
-| Ordinary CSV invoice | 4,096 records / 127,031 B | 6.163–6.246 ms | 6.092–6.213 ms | 0.992–1.025× | Diagnostic. Spans parity. [B1356]. |
-| Nested-helper CSV invoice | 4,096 records / 127,031 B | 5.926–5.941 ms | 5.558–5.559 ms | 1.066–1.069× | Diagnostic. Lython worker spread 0.26%. [B1373]. |
-| Quote-heavy CSV policy invoice | 4,096 records / 174,147 B | 7.256–7.279 ms | 6.282–6.314 ms | 1.149–1.159× | Diagnostic. Both worker spreads below 0.6%. [B1397]. |
-| CSV restock export | 3,072 records / 182,437 B | 3.759–3.907 ms | 5.102–5.129 ms | 0.733–0.766× | Historical diagnostic. [B1278]. |
-| Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 1.578–1.584 ms | 0.950–0.951 ms | 1.660–1.667× | Diagnostic. Both worker spreads below 0.4%. [B1397]. |
-| Map-based text report | 3,072 lines / 35,840 B | 1.440–1.495 ms | 1.217–1.220 ms | 1.181–1.228× | Historical diagnostic. [B1274]. |
-| JSON Lines export with expanded options | 3,072 records / 189,441 B | 5.345–5.470 ms | 6.495–6.526 ms | 0.819–0.842× | Diagnostic. Lython worker spread 2.34%. [B1397]. |
-| JSON Lines export with explicit options | 3,072 records / 189,441 B | 5.432–5.470 ms | 6.340–6.367 ms | 0.853–0.863× | Diagnostic. Lython worker spread 0.71%. [B1378]. |
-| Configuration edit | One JSON file / 181 B | 0.077 ms | 0.062 ms | 1.236–1.251× | Diagnostic. CPython worker spread 0.94%. [B1378]. |
-| Mixed literal-default factory | 2,048 inputs / 4,096 definitions | 1.023–1.075 ms | 0.576–0.581 ms | 1.760–1.867× | Diagnostic. Lython worker spread 5.09%. [B1356]. |
-| Postponed nested factories | 2,048 inputs / 4,096 definitions | 1.044–1.082 ms | 0.551–0.557 ms | 1.873–1.963× | Diagnostic. Lython worker spread 3.72%. [B1397]. |
-| Fully supplied arithmetic helper, module scope | 2,048 calls | 0.3546–0.3587 ms | 0.2008–0.2117 ms | 1.675–1.787× | Diagnostic. CPython worker spread 5.46%. [B1361]. |
-| Fully supplied arithmetic helper, function scope | 2,048 calls | 0.2344–0.2668 ms | 0.1319–0.1333 ms | 1.759–2.023× | Uncertain magnitude. Lython worker spread 13.82%. [B1373]. |
-| Integer range sum | 100,000 iterations | 1.798–1.813 ms | 1.709 ms | 1.052–1.061× | Diagnostic loop. Lython worker spread 0.80%. [B1361]. |
-| Generated validator with a generator | 96 guards / 1,714 B JSON | 0.07462–0.07479 ms | 0.03998–0.04031 ms | 1.851–1.871× | Diagnostic. [B1316]. |
+| Quote-heavy CSV policy invoice | 4,096 records / 174,147 B | 7.244–7.303 ms | 6.256–6.324 ms | 1.145–1.167× | Diagnostic. [B1406]. |
+| Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 1.512–1.528 ms | 0.944–0.951 ms | 1.590–1.620× | Diagnostic. [B1406]. |
+| JSON Lines export with expanded options | 3,072 records / 189,441 B | 5.428–5.461 ms | 6.462–6.483 ms | 0.837–0.845× | Diagnostic. [B1406]. |
+| Postponed nested factories | 2,048 inputs / 4,096 definitions | 1.093–1.106 ms | 0.537–0.545 ms | 2.005–2.060× | Diagnostic. [B1406]. |
 
 Ratios divide Lython elapsed time by CPython elapsed time. Above 1× means
 Lython takes longer. Ranges span the four pairings of process medians from
-two workers per engine. The rows cover several source revisions. Each
-linked checkpoint gives worker spread, batch variation and exact image IDs.
+two workers per engine. The opening table measures the November 22, 2026
+UTC checkpoint at `55424591f`. Each linked checkpoint gives its exact image
+IDs, worker spread and batch variation.
 
 The quiet comparison machine is an Azure F4as_v7 running Ubuntu 24.04.4
 with .NET 11 RC3. The external baseline is stock CPython 3.13.16. Warm
@@ -36,16 +23,14 @@ active. CPython uses its native file APIs. Fixture reset and request
 framing sit outside the elapsed execution clock. The raw process CPU
 measurements cover the wider request.
 
-The helper rows use different Lython revisions. The matched placement
-diagnostic holds revisions fixed. Wrapping the loop in a function lowers
-Lython elapsed by 11.81–14.46%. CPython improves more under the same
-change. The checkpoint includes the arithmetic and allocation controls.
-[Matched helper placement](../benchmarks/results/2026-11-22-matched-helper-placement/README.md).
-
 ## Compilation and compile-to-result
 
 | Workload | Phase | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| Sparse generated validator | Compilation only | 1.453–1.459 ms | 1.826–1.832 ms | 0.793–0.799× | Diagnostic. [B1406]. |
+| Sparse generated validator | Compile-to-result | 1.546–1.550 ms | 1.971–1.982 ms | 0.780–0.786× | Diagnostic. [B1406]. |
+| Postponed nested factories | Compile-to-result | 1.092–1.112 ms | 0.584–0.587 ms | 1.860–1.904× | Diagnostic. [B1406]. |
+| Configuration edit | Compile-to-result | 0.109–0.110 ms | 0.125–0.126 ms | 0.862–0.882× | Diagnostic. [B1406]. |
 | Typed ASCII CSV meter report | Compilation only | 0.04166–0.04177 ms | 0.06754–0.06762 ms | 0.616–0.618× | Diagnostic. [B1336]. |
 | Typed ASCII CSV meter report | Compile-to-result | 3.102–3.286 ms | 2.655–2.677 ms | 1.159–1.237× | Diagnostic. Lython worker spread 5.93%. [B1351]. |
 | Typed Unicode CSV meter report | Compilation only | 0.04218–0.04232 ms | 0.06772–0.06784 ms | 0.622–0.625× | Diagnostic. Lython worker spread 0.34%. [B1388]. |
@@ -54,14 +39,10 @@ change. The checkpoint includes the arithmetic and allocation controls.
 | Mixed literal-default factory | Compile-to-result | 1.046–1.060 ms | 0.623–0.625 ms | 1.674–1.702× | Diagnostic. Lython worker spread 1.39%. [B1373]. |
 | Generated validator with a generator | Compilation only | 1.519–1.534 ms | 1.813–1.825 ms | 0.832–0.846× | Diagnostic. [B1316]. |
 | Generated validator with a generator | Compile-to-result | 1.575–1.597 ms | 1.965–1.967 ms | 0.801–0.813× | Diagnostic. [B1316]. |
-| Sparse generated validator | Compilation only | 1.431–1.468 ms | 1.818–1.819 ms | 0.787–0.807× | Diagnostic. Lython worker spread 2.62%. [B1397]. |
-| Sparse generated validator | Compile-to-result | 1.553–1.554 ms | 1.964–1.967 ms | 0.789–0.791× | Diagnostic. Both worker spreads below 0.2%. [B1397]. |
 | Postponed nested factories | Compilation only | 0.02269–0.02273 ms | 0.03937–0.03983 ms | 0.570–0.577× | Diagnostic. [B1307]. |
-| Postponed nested factories | Compile-to-result | 1.058–1.084 ms | 0.580–0.594 ms | 1.780–1.870× | Diagnostic. Both worker spreads near 2.5%. [B1397]. |
 | JSON Lines export with expanded options | Compilation only | 0.02552–0.02588 ms | 0.04435–0.04447 ms | 0.574–0.584× | Diagnostic. Lython worker spread 1.43%. [B1378]. |
 | Configuration edit | Compilation only | 0.01946–0.01953 ms | 0.03399–0.03415 ms | 0.570–0.575× | Diagnostic. CPython worker spread 0.47%. [B1378]. |
 | JSON Lines export with expanded options | Compile-to-result | 5.533–5.548 ms | 6.665–6.669 ms | 0.830–0.832× | Diagnostic. Lython worker spread 0.27%. [B1378]. |
-| Configuration edit | Compile-to-result | 0.109 ms | 0.125 ms | 0.867–0.875× | Diagnostic. Both worker spreads below 0.5%. [B1397]. |
 | JSON normalization | Compilation only | 0.03536–0.03571 ms | 0.05254–0.05284 ms | 0.669–0.680× | Diagnostic. [B1252]. |
 | JSON normalization | Compile-to-result | 2.771–2.801 ms | 2.813–3.007 ms | 0.922–0.996× | Inconclusive. Initial run spans parity and the repeat varies more. [B1253]. |
 
@@ -71,10 +52,36 @@ host. Workers measure the phases independently. Use time to result for
 new scripts. Process startup and final teardown are excluded from these
 clocks. The archived tables include the earlier startup evidence.
 
+## Earlier warm execution checkpoints
+
+| Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
+| --- | --- | ---: | ---: | ---: | --- |
+| Typed ASCII CSV meter report | 4,096 records / 139,299 B | 3.034–3.049 ms | 2.488–2.522 ms | 1.203–1.226× | Diagnostic. Lython worker spread 0.49%. [B1361]. |
+| CSV meter report with explicit `float()` | 4,096 records / 139,299 B | 4.460–4.664 ms | 2.903–2.907 ms | 1.534–1.607× | Diagnostic. Lython worker spread 4.58%. [B1336]. |
+| Typed Unicode CSV meter report | 4,096 records / 223,267 B | 3.712–3.713 ms | 3.139–3.152 ms | 1.178–1.183× | Diagnostic. CPython worker spread 0.40%. [B1388]. |
+| Ordinary CSV invoice | 4,096 records / 127,031 B | 6.163–6.246 ms | 6.092–6.213 ms | 0.992–1.025× | Diagnostic. Spans parity. [B1356]. |
+| Nested-helper CSV invoice | 4,096 records / 127,031 B | 5.926–5.941 ms | 5.558–5.559 ms | 1.066–1.069× | Diagnostic. Lython worker spread 0.26%. [B1373]. |
+| CSV restock export | 3,072 records / 182,437 B | 3.759–3.907 ms | 5.102–5.129 ms | 0.733–0.766× | Historical diagnostic. [B1278]. |
+| Map-based text report | 3,072 lines / 35,840 B | 1.440–1.495 ms | 1.217–1.220 ms | 1.181–1.228× | Historical diagnostic. [B1274]. |
+| JSON Lines export with explicit options | 3,072 records / 189,441 B | 5.432–5.470 ms | 6.340–6.367 ms | 0.853–0.863× | Diagnostic. Lython worker spread 0.71%. [B1378]. |
+| Configuration edit | One JSON file / 181 B | 0.077 ms | 0.062 ms | 1.236–1.251× | Diagnostic. CPython worker spread 0.94%. [B1378]. |
+| Mixed literal-default factory | 2,048 inputs / 4,096 definitions | 1.023–1.075 ms | 0.576–0.581 ms | 1.760–1.867× | Diagnostic. Lython worker spread 5.09%. [B1356]. |
+| Fully supplied arithmetic helper, module scope | 2,048 calls | 0.3546–0.3587 ms | 0.2008–0.2117 ms | 1.675–1.787× | Diagnostic. CPython worker spread 5.46%. [B1361]. |
+| Fully supplied arithmetic helper, function scope | 2,048 calls | 0.2344–0.2668 ms | 0.1319–0.1333 ms | 1.759–2.023× | Uncertain magnitude. Lython worker spread 13.82%. [B1373]. |
+| Integer range sum | 100,000 iterations | 1.798–1.813 ms | 1.709 ms | 1.052–1.061× | Diagnostic loop. Lython worker spread 0.80%. [B1361]. |
+| Generated validator with a generator | 96 guards / 1,714 B JSON | 0.07462–0.07479 ms | 0.03998–0.04031 ms | 1.851–1.871× | Diagnostic. [B1316]. |
+
+The helper rows use different Lython revisions. The matched placement
+diagnostic holds revisions fixed. Wrapping the loop in a function lowers
+Lython elapsed by 11.81–14.46%. CPython improves more under the same
+change. The checkpoint includes the arithmetic and allocation controls.
+[Matched helper placement](../benchmarks/results/2026-11-22-matched-helper-placement/README.md).
+
 ## Measured revisions
 
 | Checkpoint | Lython source | Date |
 | --- | --- | --- |
+| [B1406] | `55424591f` | 2026-11-22 UTC |
 | [B1397] | `32c50290d` | 2026-11-22 UTC |
 | [B1388] | `d45f2ed21` | 2026-11-22 UTC |
 | [B1378] | `a3338b0a8` | 2026-11-22 UTC |
@@ -134,6 +141,7 @@ Review individual designs and adverse observations in
 the [experiment index](../benchmarks/EXPERIMENTS.md).
 Reproduce the comparisons with the [benchmark tools](../benchmarks/README.md).
 
+[B1406]: ../benchmarks/results/2026-11-22-current-source-cpython/README.md
 [B1397]: ../benchmarks/results/2026-11-22-retained-source-cpython/README.md
 [B1388]: ../benchmarks/results/2026-11-22-unicode-decimal-cpython/README.md
 [B1378]: ../benchmarks/results/2026-11-22-json-delivery-cpython/README.md
