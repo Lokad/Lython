@@ -27,7 +27,7 @@ public sealed class CasedSplitOwnershipTests
             Assert.Equal(context.MemoryGovernor.CurrentAccountedBytes, budget.ReservedBytes);
             var retained = new List<PyString>();
             using (cursor)
-                while (cursor.TryReadWord(out var word)) retained.Add(Assert.IsType<PyString>(cursor.Materialize(ref word)));
+                while (cursor.TryReadWord(out var bytes, out var word)) retained.Add(word ?? cursor.Materialize(bytes));
             context.State.CloseResources();
             Assert.Equal(upper ? ["ΟΣ", new string('A', 4096), "CAFÉ", "SS"]
                 : ["ος", new string('a', 4096), "café", "ß"], retained.Select(word => word.AsString()).ToArray());
@@ -54,7 +54,7 @@ public sealed class CasedSplitOwnershipTests
             var admitted = context.MemoryGovernor.CurrentAccountedBytes;
             hook.RefuseGrowth = _ => throw new InvalidOperationException("Word advancement requested late admission.");
             var retained = new List<PyString>();
-            while (cursor.TryReadWord(out var word)) retained.Add(Assert.IsType<PyString>(cursor.Materialize(ref word)));
+            while (cursor.TryReadWord(out var bytes, out var word)) retained.Add(word ?? cursor.Materialize(bytes));
             Assert.Equal(upper ? ["FIRST", string.Concat(Enumerable.Repeat("SSFFI", 256)), "ΟΣ", "İ"]
                 : ["first", repeated, "ος", "i\u0307"], retained.Select(word => word.AsString()).ToArray());
             Assert.Equal(admitted, context.MemoryGovernor.CurrentAccountedBytes);
@@ -66,8 +66,9 @@ public sealed class CasedSplitOwnershipTests
     }
 
     [Theory]
-    [InlineData(0), InlineData(1), InlineData(2)]
-    public void LongWordPublicationAfterStopKeepsRetainedBackingFunded(int failureKind)
+    [InlineData(0, 256), InlineData(1, 256), InlineData(2, 256)]
+    [InlineData(0, 1), InlineData(1, 1), InlineData(2, 1)]
+    public void WordPublicationAfterStopKeepsRetainedValuesFunded(int failureKind, int repetition)
     {
         var budget = new LythonMemoryBudget(1024 * 1024);
         using (var owner = budget.CreateScope())
@@ -77,13 +78,13 @@ public sealed class CasedSplitOwnershipTests
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new()
             { MemoryBudget = hook, CancellationToken = cancellation.Token });
             var span = new LythonSourceSpan(0, 1, 1, 1);
-            var text = string.Concat(Enumerable.Repeat("é😀ß", 256));
-            var expected = string.Concat(Enumerable.Repeat("É😀SS", 256));
+            var text = string.Concat(Enumerable.Repeat("é😀ß", repetition));
+            var expected = string.Concat(Enumerable.Repeat("É😀SS", repetition));
             var input = PyString.FromString(text + " " + text, context.MemoryGovernor, span);
             using var cursor = PyStringOps.PrepareCasedWhitespaceIteration(input, true, context, span);
-            Assert.True(cursor.TryReadWord(out var first));
-            var retainedFirst = Assert.IsType<PyString>(cursor.Materialize(ref first));
-            Assert.True(cursor.TryReadWord(out var last));
+            Assert.True(cursor.TryReadWord(out var firstBytes, out var first));
+            var retainedFirst = first ?? cursor.Materialize(firstBytes);
+            Assert.True(cursor.TryReadWord(out var lastBytes, out var last));
             LythonRuntimeException? failure = null;
             if (failureKind == 1) cancellation.Cancel();
             if (failureKind == 2)
@@ -91,7 +92,7 @@ public sealed class CasedSplitOwnershipTests
             // Publishing the final loop binding during unwind may neither admit
             // new storage nor replace the cancellation/first refusal.
             hook.RefuseGrowth = _ => throw new InvalidOperationException("Late word admission.");
-            var retainedLast = Assert.IsType<PyString>(cursor.Materialize(ref last));
+            var retainedLast = last ?? cursor.Materialize(lastBytes);
             cursor.Dispose();
             context.State.CloseResources();
             var ended = budget.ReservedBytes;
@@ -101,9 +102,14 @@ public sealed class CasedSplitOwnershipTests
             Assert.Equal(expected, retainedFirst.AsString());
             Assert.Equal(expected, retainedLast.AsString());
             Assert.Equal(text + " " + text, input.AsString());
-            Assert.True(System.Runtime.InteropServices.MemoryMarshal.TryGetArray(retainedLast.Utf8Bytes, out var backing));
-            Assert.True(budget.ReservedBytes >= backing.Array!.LongLength
-                + 2 * PyString.EstimateApproximateBytes(0) + input.CommittedOwnedBytes);
+            Assert.True(budget.ReservedBytes >= retainedFirst.CommittedOwnedBytes
+                + retainedLast.CommittedOwnedBytes + input.CommittedOwnedBytes);
+            if (repetition > 1)
+            {
+                Assert.True(System.Runtime.InteropServices.MemoryMarshal.TryGetArray(retainedLast.Utf8Bytes, out var backing));
+                Assert.True(budget.ReservedBytes >= backing.Array!.LongLength
+                    + 2 * PyString.EstimateApproximateBytes(0) + input.CommittedOwnedBytes);
+            }
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
             if (failure is not null) Assert.Same(failure, context.MemoryGovernor.AdmissionFailure);
         }

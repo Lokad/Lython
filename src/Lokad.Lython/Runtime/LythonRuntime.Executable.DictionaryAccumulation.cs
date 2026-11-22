@@ -11,9 +11,16 @@ internal sealed partial class LythonRuntime
         private static bool TryExecuteDictionaryLoop(ref ExecutableWorkState execution, ExecutionContext scope,
             ExecutionContext? invocation, in ExecutableInstruction head)
         {
-            // The ordinary ForNext owns wider/pending stack retirement. A
-            // native source advances here only after that ownership is settled.
+            // This segment can keep the word binding private only while all
+            // updates are callback-free and the cursor owns its prepared bytes.
             if (execution.Stack.LiveExtent != head.ResultSlot || execution.Stack.HasPendingDisposals) return false;
+            var privateBindings = !execution.Code.RequiresLocalVariableMirroring &&
+                invocation?.MirrorLocalStores != true && invocation?.GlobalNamespace is null;
+            if (!privateBindings ||
+                execution.Stack[head.InputStart] is not PyStringOps.CasedWhitespaceIteration cursor ||
+                !ReferenceEquals(cursor.MemoryGovernor, scope.MemoryGovernor))
+                return TryExecuteOrdinaryDictionaryLoop(ref execution, scope, invocation, head, privateBindings);
+
             var headIndex = execution.InstructionIndex;
             var callIndex = head.DictionaryLoopCallIndex;
             var call = execution.Code.CallSites[execution.Code.Instructions[callIndex].CallSiteIndex];
@@ -22,122 +29,153 @@ internal sealed partial class LythonRuntime
             ref readonly var store = ref execution.Code.Instructions[callIndex + 2];
             var fallback = execution.Code.Constants[execution.Code.Instructions[headIndex + 4].ConstantIndex]!;
             var increment = (BigInteger)execution.Code.Constants[~add.SecondInput]!;
+
+            if (execution.Locals[store.SecondInput].Object is not PyDict dictionary ||
+                !dictionary.CanAccumulateInlineWords(scope)) return false;
             var totalIndex = callIndex + 3;
-            var hasTotal = execution.Code.Instructions[totalIndex].OpCode == ExecutableOpCode.Augmented;
             ref readonly var total = ref execution.Code.Instructions[totalIndex];
-            var totalIncrement = hasTotal ? (BigInteger)execution.Code.Constants[~total.SecondInput]! : BigInteger.Zero;
-            // No callback can observe these uncaptured slots inside the native
-            // segment. Observable namespaces retain their ordinary stores.
-            var privateBindings = !execution.Code.RequiresLocalVariableMirroring
-                && invocation?.MirrorLocalStores != true && invocation?.GlobalNamespace is null;
-            var deferTotal = hasTotal && privateBindings;
-            var cursor = privateBindings
-                ? execution.Stack[head.InputStart] as PyStringOps.CasedWhitespaceIteration : null;
-            if (cursor is not null && !ReferenceEquals(cursor.MemoryGovernor, scope.MemoryGovernor)) cursor = null;
-            if (!TryReadDictionaryWord(ref execution, cursor, head.InputStart, out var word, out var hasWord)) return false;
-            if (!hasWord)
-            {
-                execution.Stack.RetireTo(head.InputStart);
-                execution.InstructionIndex = head.TargetIndex;
-                return true;
-            }
-            var wordChanged = false;
-            PyStringOps.CompactWord pendingWord = default;
-            var totalChanged = false;
+            var hasTotal = total.OpCode == ExecutableOpCode.Augmented;
             long pendingTotal = 0;
+            long totalIncrement = 0;
+            if (hasTotal)
+            {
+                if (execution.Locals[total.InputStart].Object is not BigInteger integer || integer.GetByteCount() >= 8)
+                    return false;
+                pendingTotal = (long)integer;
+                totalIncrement = (long)(BigInteger)execution.Code.Constants[~total.SecondInput]!;
+            }
+
+            ReadOnlySpan<byte> pendingBytes = default;
+            PyString? pendingWord = null;
+            var totalChanged = false;
+            var frameEntered = false;
             var exhausted = false;
-            PyDict? dictionary = null;
-            object? priorTotal = null;
-            var wordFrameEntered = false;
             try
             {
-                while (true)
+                while (cursor.TryReadWord(out var bytes, out var word))
                 {
-                    execution.InstructionIndex = headIndex;
-                    var compact = word.Value is null;
-                    if (compact)
+                    pendingBytes = bytes;
+                    pendingWord = word;
+                    if (!frameEntered)
                     {
-                        // The callback-free segment keeps this binding private;
-                        // publication precedes every continuation and unwind.
-                        pendingWord = word;
-                        wordChanged = true;
-                    }
-                    else
-                    {
-                        PublishInstructionResult(ref execution, invocation, head, word.Value!);
-                        wordChanged = false;
-                    }
-                    if (!wordFrameEntered)
-                    {
-                        // Observable bindings may admit/reenter. Private words
-                        // use prepaid storage and leave these uncaptured slots
-                        // unchanged until this callback-free segment ends.
                         scope.CheckExecution(member.Span);
-                        dictionary = execution.Locals[store.SecondInput].Object as PyDict;
-                        priorTotal = hasTotal ? execution.Locals[total.InputStart].Object : null;
-                        if (dictionary is null || hasTotal &&
-                            (priorTotal is not BigInteger integer || integer.GetByteCount() >= 8))
+                        execution.InstructionIndex = callIndex;
+                        scope.EnterInterpreterFrame(call.CallSpan);
+                        frameEntered = true;
+                    }
+                    else execution.InstructionIndex = callIndex;
+
+                    var updated = word is null
+                        ? dictionary.TryAccumulateInlineWord(bytes, fallback, increment, scope, call.CallSpan)
+                        : dictionary.TryAccumulateWithoutAdmission(word, fallback, increment, scope, call.CallSpan);
+                    if (!updated)
+                    {
+                        // The ordinary body resumes with the Python word
+                        // already published, before insertion or a protocol.
+                        execution.InstructionIndex = headIndex + 2;
+                        return true;
+                    }
+
+                    if (hasTotal)
+                    {
+                        pendingTotal += totalIncrement;
+                        totalChanged = true;
+                        if (pendingTotal < -(1L << 55) || pendingTotal >= (1L << 55))
                         {
-                            execution.InstructionIndex = headIndex + 2;
+                            execution.InstructionIndex = totalIndex + 2;
                             return true;
                         }
                     }
-                    var key = compact ? null : execution.Locals[store.ThirdInput].Object as PyString;
-                    if (!compact && key is null)
+
+                    execution.InstructionIndex = headIndex;
+                    scope.CheckExecution(head.Span);
+                }
+
+                exhausted = true;
+                execution.InstructionIndex = head.TargetIndex;
+                return true;
+            }
+            finally
+            {
+                try { if (frameEntered) scope.LeaveInterpreterFrame(); }
+                finally
+                {
+                    try
+                    {
+                        // The active cursor's storage stays available until
+                        // the prepaid binding is restored, including on unwind.
+                        if (pendingWord is not null || !pendingBytes.IsEmpty)
+                            execution.Locals[store.ThirdInput].Object = pendingWord ?? cursor.Materialize(pendingBytes);
+                    }
+                    finally
+                    {
+                        if (totalChanged) execution.Locals[total.InputStart].Object = new BigInteger(pendingTotal);
+                        if (exhausted) execution.Stack.RetireTo(head.InputStart);
+                    }
+                }
+            }
+        }
+
+        private static bool TryExecuteOrdinaryDictionaryLoop(ref ExecutableWorkState execution, ExecutionContext scope,
+            ExecutionContext? invocation, in ExecutableInstruction head, bool privateBindings)
+        {
+            var headIndex = execution.InstructionIndex;
+            var callIndex = head.DictionaryLoopCallIndex;
+            var call = execution.Code.CallSites[execution.Code.Instructions[callIndex].CallSiteIndex];
+            var memberSpan = execution.Code.Instructions[headIndex + 2].Span;
+            ref readonly var add = ref execution.Code.Instructions[callIndex + 1];
+            ref readonly var store = ref execution.Code.Instructions[callIndex + 2];
+            var fallback = execution.Code.Constants[execution.Code.Instructions[headIndex + 4].ConstantIndex]!;
+            var increment = (BigInteger)execution.Code.Constants[~add.SecondInput]!;
+            ref readonly var total = ref execution.Code.Instructions[callIndex + 3];
+            var hasTotal = total.OpCode == ExecutableOpCode.Augmented;
+            var totalIncrement = hasTotal ? (BigInteger)execution.Code.Constants[~total.SecondInput]! : BigInteger.Zero;
+
+            if (!execution.Stack.TryAdvanceNativeIteration(head.InputStart, out var hasWord, out var next)) return false;
+            var totalChanged = false;
+            long pendingTotal = 0;
+            var exhausted = false;
+            try
+            {
+                while (hasWord)
+                {
+                    PublishInstructionResult(ref execution, invocation, head, next.Object!);
+                    // An observable store can reenter. Read the current
+                    // dictionary and operands only after publishing the word.
+                    scope.CheckExecution(memberSpan);
+                    var dictionary = execution.Locals[store.SecondInput].Object as PyDict;
+                    var key = execution.Locals[store.ThirdInput].Object as PyString;
+                    var priorTotal = hasTotal ? execution.Locals[total.InputStart].Object : null;
+                    if (dictionary is null || key is null ||
+                        hasTotal && (priorTotal is not BigInteger integer || integer.GetByteCount() >= 8))
                     {
                         execution.InstructionIndex = headIndex + 2;
                         return true;
                     }
 
                     execution.InstructionIndex = callIndex;
-                    if (!wordFrameEntered)
-                    {
-                        scope.EnterInterpreterFrame(call.CallSpan);
-                        if (cursor is not null)
-                        {
-                            wordFrameEntered = true;
-                            if (!dictionary!.CanAccumulateInlineWords(scope))
-                            {
-                                execution.InstructionIndex = headIndex + 2;
-                                return true;
-                            }
-                        }
-                    }
+                    scope.EnterInterpreterFrame(call.CallSpan);
                     bool updated;
-                    try
-                    {
-                        updated = compact
-                            ? dictionary!.TryAccumulateInlineWord(PyStringOps.CompactWordBytes(ref word), fallback, increment, scope,
-                                call.CallSpan)
-                            : dictionary!.TryAccumulateWithoutAdmission(key!, fallback, increment, scope,
-                                call.CallSpan);
-                    }
-                    finally { if (!wordFrameEntered) scope.LeaveInterpreterFrame(); }
+                    try { updated = dictionary.TryAccumulateWithoutAdmission(key, fallback, increment, scope, call.CallSpan); }
+                    finally { scope.LeaveInterpreterFrame(); }
                     if (!updated)
                     {
-                        // Only the loop binding happened. The original body now
-                        // performs any required admission/protocol, exactly once.
                         execution.InstructionIndex = headIndex + 2;
                         return true;
                     }
-                    if (!wordFrameEntered) execution.Stack.RetireTo(store.LiveExtent);
+
+                    execution.Stack.RetireTo(store.LiveExtent);
                     if (hasTotal)
                     {
-                        execution.InstructionIndex = totalIndex;
-                        // Retirement can refund/reenter. Observe a first refusal
-                        // before performing the following Python store.
-                        if (!wordFrameEntered) scope.CheckExecution(total.Span);
-                        if (deferTotal)
+                        execution.InstructionIndex = callIndex + 3;
+                        scope.CheckExecution(total.Span);
+                        if (privateBindings)
                         {
-                            // Both operands fit seven signed bytes. Stop this
-                            // segment before that bound changes; the ordinary
-                            // arithmetic path keeps exact promotion and admission.
-                            var value = (totalChanged ? pendingTotal : (long)(BigInteger)priorTotal!) + (long)totalIncrement;
-                            pendingTotal = value;
+                            pendingTotal = (totalChanged ? pendingTotal : (long)(BigInteger)priorTotal!) + (long)totalIncrement;
                             totalChanged = true;
-                            if (value < -(1L << 55) || value >= (1L << 55))
+                            if (pendingTotal < -(1L << 55) || pendingTotal >= (1L << 55))
                             {
-                                execution.InstructionIndex = totalIndex + 2;
+                                execution.InstructionIndex = callIndex + 5;
                                 return true;
                             }
                         }
@@ -147,47 +185,21 @@ internal sealed partial class LythonRuntime
                             PublishInstructionResult(ref execution, invocation, total, value);
                         }
                     }
+
                     execution.InstructionIndex = headIndex;
                     scope.CheckExecution(head.Span);
-                    if (!TryReadDictionaryWord(ref execution, cursor, head.InputStart, out var nextWord, out hasWord))
+                    if (!execution.Stack.TryAdvanceNativeIteration(head.InputStart, out hasWord, out next))
                         throw new InvalidOperationException("A native loop lost its private iteration source.");
-                    if (hasWord) { word = nextWord; continue; }
-                    exhausted = true;
-                    execution.InstructionIndex = head.TargetIndex;
-                    return true;
                 }
+                exhausted = true;
+                execution.InstructionIndex = head.TargetIndex;
+                return true;
             }
             finally
             {
-                try { if (wordFrameEntered) scope.LeaveInterpreterFrame(); }
-                finally
-                {
-                    // Publish before any continuation, callback or error handler.
-                    // This private scalar store cannot admit or invoke guest code;
-                    // it must not replace a cancellation or first refusal.
-                    try
-                    {
-                        if (wordChanged) execution.Locals[store.ThirdInput].Object = cursor!.Materialize(ref pendingWord);
-                    }
-                    finally
-                    {
-                        if (totalChanged) execution.Locals[total.InputStart].Object = new BigInteger(pendingTotal);
-                        // Returning the prepared ranges can refund storage and
-                        // reenter. Publish both Python bindings before that point.
-                        if (exhausted) execution.Stack.RetireTo(head.InputStart);
-                    }
-                }
+                if (totalChanged) execution.Locals[total.InputStart].Object = new BigInteger(pendingTotal);
+                if (exhausted) execution.Stack.RetireTo(head.InputStart);
             }
-        }
-
-        private static bool TryReadDictionaryWord(ref ExecutableWorkState execution,
-            PyStringOps.CasedWhitespaceIteration? cursor, int slot, out PyStringOps.CompactWord word, out bool hasWord)
-        {
-            if (cursor is not null) { hasWord = cursor.TryReadWord(out word); return true; }
-            word = default;
-            if (!execution.Stack.TryAdvanceNativeIteration(slot, out hasWord, out var next)) return false;
-            if (hasWord) word.Value = next.Object;
-            return true;
         }
 
         private static bool TryExecuteDictionaryAccumulation(ref ExecutableWorkState execution, ExecutionContext context,
