@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1357 factory CPU attribution after combined capture construction](results/2026-11-22-post-capture-first-use-profile/README.md)
+finds 70 of 1,115 mixed first-use samples in callable reservation and
+none in separate capture reservation or scope promotion. The supplied
+control has no reserve samples and 560 closest-runtime samples in
+instruction dispatch or builtin arithmetic.
+
 [B1356 factory and CSV invoices after combined construction](results/2026-11-22-construction-csv-cpython/README.md)
 measures production-equivalent `2f9f818b9` against CPython 3.13.16.
 Factory time to result is 1.743–1.770×. Ordinary invoice warm spans
