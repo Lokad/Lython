@@ -31,6 +31,8 @@ internal sealed partial class LythonRuntime
             _name = name;
         }
 
+        internal ExecutableCell(ExecutableSlot value) => StoreSlot(value);
+
         // Tree-walk methods and executable siblings share the defining frame's
         // mirrored namespace even after its executable slots have been released.
         public object? Value
@@ -58,6 +60,19 @@ internal sealed partial class LythonRuntime
         internal bool HasNamespaceOwner => _owner is not null;
 
         private bool UsesNamespace => _owner is { MirrorsExecutableLocals: true } || _owner?.MirrorLocalStores == true;
+
+        // Only a consumed, unpublished integer can move without creating a
+        // guest object. A namespace or tuple borrow still observes its value.
+        internal void StoreSlot(ExecutableSlot value)
+        {
+            if (value.IsUnpublishedInteger && !UsesNamespace && value.TryGetInteger(out var integer))
+            {
+                _integer = integer;
+                _hasInteger = true;
+                _value = null;
+            }
+            else Value = value.Object;
+        }
 
         internal bool TryApplyIntegerArithmetic(BinaryOperatorSyntax operation, long operand,
             ExecutionContext context, LythonSourceSpan arithmeticSpan, LythonSourceSpan storeSpan)
@@ -713,7 +728,7 @@ internal sealed partial class LythonRuntime
                 var slot = codeObject.CapturedLocalSlots[i];
                 if (continuingNative && locals[slot].Reference is ExecutableCell) continue;
                 locals[slot].Object = standalone
-                    ? new ExecutableCell(locals[slot].Object)
+                    ? new ExecutableCell(locals[slot])
                     : new ExecutableCell(locals[slot].Object, context, codeObject.LocalNames[slot]);
             }
 

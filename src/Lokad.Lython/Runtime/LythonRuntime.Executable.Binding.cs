@@ -113,8 +113,8 @@ internal sealed partial class LythonRuntime
         var slot = instruction.ClosureSlot;
         if (ReadCapturedCell(execution.ClosureCells, slot) is { CanStoreDirectly: true } cell)
         {
-            var value = execution.Stack.TakeValue(instruction.InputStart, instruction.LiveExtent);
-            cell.Value = value;
+            var value = execution.Stack.TakeSlotValue(instruction.InputStart, instruction.LiveExtent);
+            cell.StoreSlot(value);
             return true;
         }
         if (context is null) return false;
@@ -421,7 +421,7 @@ internal sealed partial class LythonRuntime
                 var slot = slots[index];
                 if (slot < 0) return parentCells![~slot];
                 if (!inline) return (ExecutableCell)locals[slot].Reference!;
-                return locals[slot].Reference as ExecutableCell ?? new ExecutableCell(locals[slot].Object);
+                return locals[slot].Reference as ExecutableCell ?? new ExecutableCell(locals[slot]);
             }
             var name = names[index];
             ExecutableCell? cell = null;

@@ -114,8 +114,10 @@ internal sealed partial class LythonRuntime
                         break;
                     case ExecutableOpCode.StoreClosure:
                         if (ReadCapturedCell(_cells, instruction.ClosureSlot) is not { CanStoreDirectly: true } writeCell) return false;
-                        var stored = Take(instruction);
-                        writeCell.Value = stored;
+                        var stored = ReadSlotForTransfer(instruction.InputStart);
+                        Values[instruction.InputStart] = default;
+                        Trim(instruction.LiveExtent);
+                        writeCell.StoreSlot(stored);
                         break;
                     case ExecutableOpCode.StoreLocal:
                         StoreLocal(instruction);
@@ -499,7 +501,7 @@ internal sealed partial class LythonRuntime
 
         private void StoreCapturedLocal(int slot, ExecutableSlot value)
         {
-            if (Values[slot].Reference is ExecutableCell cell) cell.Value = value.Object.RequireNotNull();
+            if (Values[slot].Reference is ExecutableCell cell) cell.StoreSlot(value);
             else Values[slot] = value;
         }
 

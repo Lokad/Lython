@@ -1,0 +1,38 @@
+[
+  {
+    "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+    "reference": 544576,
+    "candidate": 446304,
+    "allocationChangePercent": -18.045598777764717,
+    "referenceAccountedPeak": 1279096,
+    "candidateAccountedPeak": 1279096,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.text-summary-helpers.nonlocal-counter.large",
+    "reference": 446304,
+    "candidate": 446304,
+    "allocationChangePercent": 0.0,
+    "referenceAccountedPeak": 1279096,
+    "candidateAccountedPeak": 1279096,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.annotated-rule-closures.literal-positional-dynamic-keyword",
+    "reference": 964488,
+    "candidate": 964488,
+    "allocationChangePercent": 0.0,
+    "referenceAccountedPeak": 3443797,
+    "candidateAccountedPeak": 3443797,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.ordinary-fully-supplied-helper",
+    "reference": 142808,
+    "candidate": 142808,
+    "allocationChangePercent": 0.0,
+    "referenceAccountedPeak": 1255,
+    "candidateAccountedPeak": 1255,
+    "allowanceRestored": true
+  }
+]

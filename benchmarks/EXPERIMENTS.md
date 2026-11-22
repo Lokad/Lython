@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1348 preserve captured arithmetic while transferring computed stores](results/2026-11-22-computed-capture-stores/README.md)
+retains the existing cell fields. Computed nonlocal stores allocate
+18.05% less locally and take 2.51–4.57% less warm time. Captured-counter
+CPU falls in this comparison. Time to result and the fully supplied
+control span zero. Both platforms and all 140 timed batches pass.
+
 [B1347 transfer integer slots into captured bindings](results/2026-11-22-captured-scalar-slots/README.md)
 reduces local allocation by 18.04% for computed nonlocal stores.
 The existing captured counter uses 5.64–11.39% more warm CPU.
