@@ -1,0 +1,42 @@
+[
+  {
+    "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+    "reference": 446144,
+    "candidate": 446144,
+    "allocationChangePercent": 0.0,
+    "admittedReference": 1278972,
+    "admittedCandidate": 1278972
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "reference": 4069574,
+    "candidate": 4069574,
+    "allocationChangePercent": 0.0,
+    "admittedReference": 9432874,
+    "admittedCandidate": 9432874
+  },
+  {
+    "case": "diagnostic.helper-placement.function-call",
+    "reference": 77224,
+    "candidate": 77224,
+    "allocationChangePercent": 0.0,
+    "admittedReference": 1343,
+    "admittedCandidate": 1343
+  },
+  {
+    "case": "scripts.annotated-rule-closures.literal-positional-dynamic-keyword",
+    "reference": 964360,
+    "candidate": 964360,
+    "allocationChangePercent": 0.0,
+    "admittedReference": 3443797,
+    "admittedCandidate": 3443797
+  },
+  {
+    "case": "calls.positional.large",
+    "reference": 1060272,
+    "candidate": 1060272,
+    "allocationChangePercent": 0.0,
+    "admittedReference": 1284,
+    "admittedCandidate": 1284
+  }
+]

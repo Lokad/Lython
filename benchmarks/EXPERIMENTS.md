@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1392 native argument and workspace reuse](results/2026-11-22-native-operand-call-loan/README.md)
+removes the separate inline workspace and argument copy for eligible
+framed calls. Word-count warm time spans zero. The mixed closure factory
+takes 2.11–3.06% longer from compilation to result. Allocation and
+admitted peaks match. Keep this version private.
+
 [B1391 prepared word storage confirmation](results/2026-11-22-inline-cased-words-confirmed/README.md)
 reverses the first counter slowdown. The width report and dense line span
 zero. The quoted invoice remains 1.50–2.54% slower with stable workers.
