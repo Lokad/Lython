@@ -1,0 +1,38 @@
+[
+  {
+    "case": "diagnostic.report-render.escaped-unicode.large",
+    "reference": 2588288,
+    "candidate": 2588512,
+    "allocationChangePercent": 0.008654369220106872,
+    "referenceAccountedPeak": 3551569,
+    "candidateAccountedPeak": 3551569,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.report-render.large",
+    "reference": 2465542,
+    "candidate": 2465368,
+    "allocationChangePercent": -0.00705727178851312,
+    "referenceAccountedPeak": 3493201,
+    "candidateAccountedPeak": 3493201,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.json-normalized-records.large",
+    "reference": 2982530,
+    "candidate": 2982530,
+    "allocationChangePercent": 0.0,
+    "referenceAccountedPeak": 5554429,
+    "candidateAccountedPeak": 5554429,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.text-summary-helpers.map-callback.large.mixed-unicode",
+    "reference": 1804192,
+    "candidate": 1804366,
+    "allocationChangePercent": 0.00964420638158714,
+    "referenceAccountedPeak": 3646020,
+    "candidateAccountedPeak": 3646020,
+    "allowanceRestored": true
+  }
+]

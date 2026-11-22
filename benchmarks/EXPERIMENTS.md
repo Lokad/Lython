@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1317 reuse decoded JSON suffixes](results/2026-11-22-json-decoded-suffix/README.md)
+keeps exact admission and removes a second decode for short escaped
+suffixes. Both escaped-report clocks span zero. The plain report uses
+less CPU with a 6.50% reference spread. Normalization CPU falls slightly.
+Allocation and accounted peaks are effectively unchanged. Preserve the
+original batches and confirm the two reports with longer warm-up.
+
 [B1316 compiler and CSV checkpoint against CPython](results/2026-11-22-compiler-csv-cpython/README.md)
 compares `8c81fb8d2` production-equivalent source with CPython 3.13.16.
 The validator with a generator takes 0.801–0.813× as long to result
