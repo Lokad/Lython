@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1342 share ordered regex names and defer groupindex](results/2026-11-22-ordered-regex-group-metadata/README.md)
+lowers local allocation 1.36% for named rules without mapping
+projection. The mapping observer allocates 3.72% more and uses
+1.54–3.78% more warm CPU. Named-rule time to result spans zero,
+and Unicode elapsed increases with CPU flat. Keep the variant private.
+All 168 batches and both machine gates pass.
+
 [B1341 compile read-only parameter captures as callable values](results/2026-11-22-compiled-value-captures/README.md)
 lowers mixed-factory allocation by 10.19% and eager allocation by
 4.29%. Independently collected mixed time to result uses 2.71–5.06%

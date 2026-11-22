@@ -1,0 +1,47 @@
+[
+  {
+    "case": "diagnostic.regex-prepared-names.many-named-rules",
+    "reference": 413064,
+    "candidate": 407432,
+    "allocationChangePercent": -1.3634690992194942,
+    "referenceAccountedPeak": 139956,
+    "candidateAccountedPeak": 115380,
+    "allowanceRestored": true
+  },
+  {
+    "case": "diagnostic.regex-prepared-names.many-unnamed-rules",
+    "reference": 380808,
+    "candidate": 381320,
+    "allocationChangePercent": 0.1344509569126684,
+    "referenceAccountedPeak": 81844,
+    "candidateAccountedPeak": 81844,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.regex-unicode-groups",
+    "reference": 3437752,
+    "candidate": 3437542,
+    "allocationChangePercent": -0.006108643090019239,
+    "referenceAccountedPeak": 2089005,
+    "candidateAccountedPeak": 2088365,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.regex-ascii-groups",
+    "reference": 3128552,
+    "candidate": 3128336,
+    "allocationChangePercent": -0.0069041524641377805,
+    "referenceAccountedPeak": 2075085,
+    "candidateAccountedPeak": 2074445,
+    "allowanceRestored": true
+  },
+  {
+    "case": "diagnostic.regex-ordered-names.groupindex-observed",
+    "reference": 426496,
+    "candidate": 442368,
+    "allocationChangePercent": 3.7214885954381716,
+    "referenceAccountedPeak": 156543,
+    "candidateAccountedPeak": 172927,
+    "allowanceRestored": true
+  }
+]
