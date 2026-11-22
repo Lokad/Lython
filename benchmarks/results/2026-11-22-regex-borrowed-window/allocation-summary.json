@@ -1,0 +1,38 @@
+[
+  {
+    "case": "scripts.regex-indexed-bounded-search",
+    "reference": 13492440,
+    "candidate": 13492440,
+    "allocationChangePercent": 0.0,
+    "referenceAccountedPeak": 346712,
+    "candidateAccountedPeak": 346712,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.regex-indexed-cursor-capture-spans",
+    "reference": 1379376,
+    "candidate": 1379376,
+    "allocationChangePercent": 0.0,
+    "referenceAccountedPeak": 575089,
+    "candidateAccountedPeak": 575089,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.regex-unindexed-cursor-control",
+    "reference": 1369016,
+    "candidate": 1369016,
+    "allocationChangePercent": 0.0,
+    "referenceAccountedPeak": 564682,
+    "candidateAccountedPeak": 564682,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.regex-ascii-cursor-control",
+    "reference": 1333464,
+    "candidate": 1333464,
+    "allocationChangePercent": 0.0,
+    "referenceAccountedPeak": 561530,
+    "candidateAccountedPeak": 561530,
+    "allowanceRestored": true
+  }
+]

@@ -1,0 +1,188 @@
+{
+  "complete": true,
+  "elapsedSeconds": 289.67643615882844,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "staging": {
+    "retiredOnly": [
+      {
+        "paths": [
+          "json-decoded-suffix-b1318-confirmation-20261122/representative.json",
+          "json-decoded-suffix-b1317-20261122/representative.json"
+        ],
+        "bytes": 1576227,
+        "links": 2,
+        "sha256": "d8f7e9824da8ff366e5fb6e5e5c8bb5814f2bb26baf146e1d167c7af5f2750b1",
+        "archives": {
+          "json-decoded-suffix-b1317-20261122/observations.tgz": "9d86fd19cf60b81bb78cf4a41b74c63c640b08ac7e7a32f8388e2ec07382ca04",
+          "json-decoded-suffix-b1318-confirmation-20261122/observations.tgz": "b56c947ac4b3dddb71cb4cb81bfa76cfa9b3985d2612b7ed613391e3c5b94933"
+        },
+        "optional": false
+      }
+    ],
+    "alreadyAbsent": [],
+    "freshIdleLease": true,
+    "allHashesPathsOwnershipLinksAndAliasesVerified": true,
+    "canonicalArchiveAndCurrentImagesPreserved": true,
+    "freeBeforeBytes": 181882880,
+    "freeAfterBytes": 177692672
+  },
+  "rows": [
+    {
+      "case": "scripts.regex-indexed-bounded-search",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 9.3931013,
+        "reference": 10.54747073015873,
+        "candidate-control": 9.203533140845071,
+        "reference-control": 10.528072096774194
+      },
+      "cpuMilliseconds": {
+        "candidate": 9.428571428571429,
+        "reference": 10.476190476190478,
+        "candidate-control": 9.295774647887326,
+        "reference-control": 10.64516129032258
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.8646146355456455,
+        "reference": 1.2132690546065372,
+        "candidate-control": 0.6534089718297552,
+        "reference-control": 0.8260459934405313
+      },
+      "elapsedChangePercent": [
+        -12.741799656963204,
+        -12.581020948127453,
+        -10.944514184410147,
+        -10.780423864326972
+      ],
+      "cpuChangePercent": [
+        -12.676056338028152,
+        -11.428571428571422,
+        -11.267605633802813,
+        -10.000000000000009
+      ],
+      "referenceSpreadPercent": 0.18425627414235812,
+      "candidateSpreadPercent": 2.059732455502661
+    },
+    {
+      "case": "scripts.regex-indexed-cursor-capture-spans",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 4.685177942028986,
+        "candidate-control": 4.618721099290781,
+        "reference": 4.664567688405797,
+        "candidate": 4.829604428571429
+      },
+      "cpuMilliseconds": {
+        "reference-control": 4.710144927536232,
+        "candidate-control": 4.609929078014185,
+        "reference": 4.63768115942029,
+        "candidate": 4.81203007518797
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.5404024250662285,
+        "candidate-control": 0.5157689448205116,
+        "reference": 0.4178217792527263,
+        "candidate": 0.4427565713444684
+      },
+      "elapsedChangePercent": [
+        -1.418448638674863,
+        -0.9828689854575856,
+        3.0826254270269304,
+        3.5380929421572116
+      ],
+      "cpuChangePercent": [
+        -2.127659574468088,
+        -0.5984042553191515,
+        2.1631000578368864,
+        3.7593984962405846
+      ],
+      "referenceSpreadPercent": 0.4418470263475305,
+      "candidateSpreadPercent": 4.565838134565636
+    },
+    {
+      "case": "scripts.regex-unindexed-cursor-control",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 4.748374145985402,
+        "reference": 4.664396235714285,
+        "candidate-control": 4.735298963503649,
+        "reference-control": 4.687462557971015
+      },
+      "cpuMilliseconds": {
+        "candidate": 4.744525547445255,
+        "reference": 4.714285714285714,
+        "candidate-control": 4.744525547445255,
+        "reference-control": 4.710144927536232
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.38110324656067734,
+        "reference": 0.3071926444230205,
+        "candidate-control": 0.8141336139718164,
+        "reference-control": 0.8457957414130942
+      },
+      "elapsedChangePercent": [
+        1.020518136220372,
+        1.299457590563713,
+        1.5200837194421002,
+        1.8004025821845016
+      ],
+      "cpuChangePercent": [
+        0.641451006414484,
+        0.641451006414484,
+        0.7299270072992359,
+        0.7299270072992359
+      ],
+      "referenceSpreadPercent": 0.49451892787573115,
+      "candidateSpreadPercent": 0.27612158350565075
+    },
+    {
+      "case": "scripts.regex-ascii-cursor-control",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 3.8351736190476196,
+        "candidate-control": 3.858943970414201,
+        "reference": 3.9413695939393945,
+        "candidate": 3.930680072289157
+      },
+      "cpuMilliseconds": {
+        "reference-control": 3.869047619047619,
+        "candidate-control": 3.8461538461538463,
+        "reference": 3.9393939393939394,
+        "candidate": 3.975903614457831
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 1.0970462397641978,
+        "candidate-control": 0.7126032093420135,
+        "reference": 0.15907230020671909,
+        "candidate": 0.918825028365215
+      },
+      "elapsedChangePercent": [
+        -2.09129394137354,
+        -0.2712133788892679,
+        0.6197985730952205,
+        2.490277174602973
+      ],
+      "cpuChangePercent": [
+        -2.3668639053254448,
+        -0.591715976331364,
+        0.9267840593141674,
+        2.761816496756242
+      ],
+      "referenceSpreadPercent": 2.7690004531827794,
+      "candidateSpreadPercent": 1.8589568137019619
+    }
+  ],
+  "CPythonRefreshed": false,
+  "collection": "B1330",
+  "sourceRevision": "318bf0e0a6cd9ae9814e6e2efdea6fa063614de1 versus 1557706c6023516342ad18650b1ac8fd1aaf52d5",
+  "verifiedTimedBatches": 112,
+  "coreSHA256": {
+    "reference": "c07034f3d8519c721ac6a7c10ed0b07439c6f570bb0d389b25eef4a1e0ae27ea",
+    "reference-control": "c07034f3d8519c721ac6a7c10ed0b07439c6f570bb0d389b25eef4a1e0ae27ea",
+    "candidate": "d91a69603772d866a3991ea9d7c85ec638ada23e7b9bb62c0a748d7750eecc1f",
+    "candidate-control": "d91a69603772d866a3991ea9d7c85ec638ada23e7b9bb62c0a748d7750eecc1f"
+  },
+  "archiveSHA256": "5276aaabb446edadeaee63e68d67ac4b76577a406fe9607a6021f678151b6ff3",
+  "retentionDecision": "Retain single-match window lookup with the measured small unindexed cursor cost and indexed cursor uncertainty."
+}

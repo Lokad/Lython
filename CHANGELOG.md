@@ -2,6 +2,7 @@
 
 ## 0.11.0 - Unreleased
 
+- Reuse an existing UTF-8 scalar index to resolve single regex match windows.
 - Share one immutable positional default tuple per compiled declaration
   when every positional default is a scalar literal. Keyword defaults
   and per-function `__defaults__` reassignment remain independent.

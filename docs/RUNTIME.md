@@ -2458,9 +2458,10 @@ The named-group list must fit the remaining slots before Lython reserves
 dictionary storage. List access uses the same provider failure handling in
 compilation and execution.
 
-Single matches keep capture scratch within the provider operation and result
-projection. Small capture sets use managed inline storage. Larger capture and
-coordinate buffers are admitted before allocation. Iteration keeps reusable
+Single matches use an existing subject scalar index to resolve UTF-8 window
+bounds directly. They keep capture scratch within the provider operation and
+result projection. Small capture sets use managed inline storage. Larger capture
+and coordinate buffers are admitted before allocation. Iteration keeps reusable
 scratch with the cursor until cleanup. Escaping matches own their final ranges
 and retain the funded original subject.
 

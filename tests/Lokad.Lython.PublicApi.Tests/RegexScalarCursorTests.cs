@@ -18,6 +18,20 @@ public sealed class RegexScalarCursorTests
         { "import re\ntext='é😀a'*64\np=re.compile(r'(?<=(..))(?=(.*))|(?P<missing>Z)')\nmatches=list(p.finditer(text,5,len(text)-7))\nprint(len(matches),sum(m.start() for m in matches),sum(m.end(2) for m in matches))\nprint(matches[0].regs,matches[-1].regs,matches[0].pos,matches[0].endpos)\nre.purge()\nprint(matches[0].group(1)==text[3:5],matches[0].group(2)==text[5:-7],matches[-1].group(2),matches[-1].span('missing'))\n", "181 17195 33485\n((5, 5), (3, 5), (5, 185), (-1, -1)) ((185, 185), (183, 185), (185, 185), (-1, -1)) 5 185\nTrue True  (-1, -1)\n" },
         { "import re\np=re.compile('(é)'*40)\nmatches=list(p.finditer('é'*80))\nre.purge()\nfor m in matches:print(m.span(),m.span(1),m.span(40),m.lastindex)\n",
             "(0, 40) (0, 1) (39, 40) 40\n(40, 80) (40, 41) (79, 80) 40\n" },
+        { """
+            import re
+            text = 'aé😀bç🦊d' * 2
+            assert text[9] == '😀'
+            p = re.compile(r'(?<=(..))(?=(..))|(?P<missing>Z)')
+            first = p.search(text, 7, 12)
+            kept = list(p.finditer(text, 7, 12))
+            re.purge()
+            print(first.regs, first.groups(), first.pos, first.endpos)
+            print(kept[-1].regs, kept[-1].groups(), kept[-1].string is text)
+            print(len(kept), sum(m.start(1) + m.end(2) for m in kept))
+            """,
+            "((7, 7), (5, 7), (7, 9), (-1, -1)) ('🦊d', 'aé', None) 7 12\n" +
+            "((10, 10), (8, 10), (10, 12), (-1, -1)) ('é😀', 'bç', None) True\n4 68\n" },
     };
 
     [Theory]

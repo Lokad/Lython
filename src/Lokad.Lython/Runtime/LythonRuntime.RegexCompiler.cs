@@ -24,12 +24,13 @@ internal sealed partial class LythonRuntime
             => pos > endPos && mode is LythonRegexMatchMode.Search or LythonRegexMatchMode.FullMatch;
 
         internal static LythonRegexWindow CreateWindow(ReadOnlySpan<byte> subject, int scalarLength,
-            int pos, int endPos, CancellationToken token, LythonSourceSpan span)
+            int pos, int endPos, CancellationToken token, LythonSourceSpan span, ReadOnlySpan<int> offsets = default)
         {
             if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
             pos = Math.Clamp(pos, 0, scalarLength);
             endPos = Math.Clamp(endPos, 0, scalarLength);
             if (scalarLength == subject.Length) return new(pos, endPos, pos, endPos);
+            if (!offsets.IsEmpty) return new(pos, endPos, offsets[pos], offsets[endPos]);
 
             var lower = Math.Min(pos, endPos);
             var upper = Math.Max(pos, endPos);

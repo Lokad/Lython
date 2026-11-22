@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1330 borrow an existing index for single regex windows](results/2026-11-22-regex-borrowed-window/README.md)
+retains 10.00–12.68% lower warm CPU on bounded search. Indexed and ASCII
+cursor timings span zero. Unindexed Unicode cursor CPU rises 0.64–0.73%.
+Allocation and admitted peaks match. All 112 batches pass. The archive
+preserves the first staging rejection and both exact input proofs.
+
 [B1329 attribute current factory admission and invocation](results/2026-11-22-retained-definition-attribution/README.md)
 profiles the mixed and dynamic factories plus a fully supplied helper at
 `318bf0e0a`. Callable and capture admission account for 133 and 115

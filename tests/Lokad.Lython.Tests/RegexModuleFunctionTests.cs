@@ -14,6 +14,7 @@ public sealed class RegexModuleFunctionTests
         var offsets = new List<int> { 0 };
         foreach (var rune in text.EnumerateRunes()) offsets.Add(offsets[^1] + rune.Utf8SequenceLength);
         var length = offsets.Count - 1;
+        var prepared = offsets.ToArray();
         var bounds = new[] { int.MinValue, -1, 0, 1, 2, 3, 4, 5, 1023, 1024, 1025,
             length / 2, (length / 2) + 1, length - 1025, length - 1024, length - 1, length, int.MaxValue };
         var span = new LythonSourceSpan(2, 3, 1, 2);
@@ -25,6 +26,7 @@ public sealed class RegexModuleFunctionTests
             var stop = Math.Clamp(end, 0, length);
             var window = LythonRuntime.RegexCompiler.CreateWindow(subject, length, pos, end, default, span);
             Assert.Equal(new LythonRegexWindow(start, stop, offsets[start], offsets[stop]), window);
+            Assert.Equal(window, LythonRuntime.RegexCompiler.CreateWindow(subject, length, pos, end, default, span, prepared));
         }
     }
 

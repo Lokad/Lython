@@ -142,12 +142,13 @@ internal sealed partial class LythonRuntime
             if (error is not null) throw RuntimeErrors.Runtime(error, span);
         }
 
-        private static LythonRegexWindow Window(RegexSubjectRange range, ExecutionContext context, LythonSourceSpan span)
+        private static LythonRegexWindow Window(RegexSubjectRange range, ExecutionContext context,
+            LythonSourceSpan span, bool borrowIndex = false)
         {
             context.CheckExecution(span);
             var token = context.State.CancellationToken;
             return RegexCompiler.CreateWindow(range.Original.Utf8Span, range.Original.GetCharacterCount(token, span),
-                range.Pos, range.EndPos, token, span);
+                range.Pos, range.EndPos, token, span, borrowIndex ? range.Original.PreparedRuneByteOffsets : default);
         }
 
         private static PyString ReadSubjectRange(RegexSubjectRange range, int start, int end,
@@ -238,7 +239,7 @@ internal sealed partial class LythonRuntime
             }
             // Single matches need no iterator state. Keep working storage
             // local until the provider and the final projection have finished.
-            var window = Window(range, context, span);
+            var window = Window(range, context, span, borrowIndex: true);
             var count = pattern.CaptureSlotCount;
             using var scratch = count > InlineMatchCaptureCount
                 ? context.MemoryGovernor.ReserveTemporary(checked(32L + 16L * count), span) : null;

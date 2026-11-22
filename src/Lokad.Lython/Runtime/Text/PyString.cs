@@ -918,6 +918,11 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         return new RuneByteRange(offsets[runeIndex], offsets[runeIndex + 1] - offsets[runeIndex]);
     }
 
+    // Borrow an index already owned by this string. Regex work never creates
+    // or copies one just to convert its boundaries.
+    internal ReadOnlySpan<int> PreparedRuneByteOffsets
+        => Volatile.Read(ref _metadata) is RuneIndexCache indexed ? indexed.Offsets : default;
+
     private int[] GetRuneByteOffsets(LythonRuntime.ExecutionContext? context = null, LythonSourceSpan? span = null)
     {
         if (Volatile.Read(ref _metadata) is RuneIndexCache cached)
