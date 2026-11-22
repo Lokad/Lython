@@ -2538,10 +2538,13 @@ providers expose no replacement or split dialect.
 
 The per-execution 512-entry pattern cache compares immutable UTF-8 content and
 complete compilation options, including the separate parsing-time verbose bit.
-Lookup does not decode pattern text. Equal text reuses pattern identity; eviction
-and `re.purge()` release cache slots without invalidating retained patterns or
-their existing storage ownership.
-Purge relinquishes the cache's table capacity before refunding its funding.
+Lookup uses the original UTF-8 bytes. A cached key reuses pattern identity.
+Eviction reuses funded capacity. Purge relinquishes the old table and capacity
+balance before calling the host refund, so entries admitted during that callback
+keep their funding. Retained patterns and matches keep their existing owners.
+If compilation or admission reenters the cache for the same key, the first
+published wrapper keeps its identity. Discarded wrappers release their private
+storage and close any newly compiled provider handle.
 Successful public compilation retains the immutable provider programs used for
 constant validation under the compiled script's owner. Runs borrow exact UTF-8
 pattern/option matches; they retain their own Python wrappers and group-name

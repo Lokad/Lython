@@ -50,12 +50,56 @@ public sealed class RegexCompilationAccountingTests
         using var compiled = pattern.Regex;
         var cache = new RegexPatternCache();
         Assert.Equal("MemoryError", Assert.Throws<LythonRuntimeException>(() =>
-            cache.Add(new(PyString.FromString("a"), new(32, false), 0), pattern, new MemoryGovernor(new LythonMemoryBudget(0)), span)).ExceptionType);
+            cache.GetOrAdd(new(PyString.FromString("a"), new(32, false), 0), pattern, new MemoryGovernor(new LythonMemoryBudget(0)), span)).ExceptionType);
         Assert.Equal(0, cache.Count);
-        cache.Add(new(PyString.FromString("a"), new(32, false), 0), pattern, funded.MemoryGovernor, span);
+        cache.GetOrAdd(new(PyString.FromString("a"), new(32, false), 0), pattern, funded.MemoryGovernor, span);
         Assert.Equal(1, cache.Count);
         Assert.True(cache.TryGet(new(PyString.FromString("a"), new(32, false), 0), out var cached));
         Assert.Same(pattern, cached);
+    }
+
+    [Theory]
+    [InlineData("a")]
+    [InlineData("(?P<item>a)")]
+    public void CacheAdmissionReentryKeepsTheAlreadyPublishedPattern(string pattern)
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        var key = PyString.FromString(pattern);
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        long ordinaryBytes;
+        using (var ordinary = budget.CreateScope())
+        {
+            var reference = new LythonRuntime.ExecutionContext(new MockLythonHost(),
+                new LythonRunOptions { MemoryBudget = ordinary }, regexProvider: Utf8RegexProvider.Instance);
+            try { _ = CreatePattern(key, reference, span); ordinaryBytes = budget.ReservedBytes; }
+            finally { reference.State.CloseResources(); }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+
+        using (var owner = budget.CreateScope())
+        {
+            var hook = new AdmissionHookMemoryBudget(owner);
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
+                new LythonRunOptions { MemoryBudget = hook }, regexProvider: Utf8RegexProvider.Instance);
+            object? reentered = null;
+            hook.AfterGrowth = bytes =>
+            {
+                if (bytes != RegexPatternCache.SlotBytesPerEntry) return;
+                hook.AfterGrowth = null;
+                reentered = CreatePattern(key, context, span);
+            };
+            try
+            {
+                var result = CreatePattern(key, context, span);
+                Assert.NotNull(reentered);
+                Assert.Same(reentered, result);
+                Assert.Same(result, CreatePattern(key, context, span));
+                Assert.Equal(ordinaryBytes, budget.ReservedBytes);
+                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            }
+            finally { context.State.CloseResources(); }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [Fact]

@@ -350,7 +350,7 @@ internal sealed partial class LythonRuntime
             context.CheckExecution(span);
             _ = pattern.GetHashCode(context.State.CancellationToken, span);
             var cache = context.State.RegexCache ??= new RegexPatternCache();
-            if (cache.TryGet(key, out var cached) && cached is not null)
+            if (cache.TryGet(key, out var cached))
             {
                 return cached;
             }
@@ -362,6 +362,8 @@ internal sealed partial class LythonRuntime
             var compiled = artifact?.Program ?? ProviderCall((provider, pattern, options, context, token),
                 static state => state.provider.Compile(state.pattern.Utf8Bytes, state.options,
                     state.context.MemoryGovernor.Budget, state.token), context.MemoryGovernor, token, span, pattern);
+            PyDict? names = null;
+            var published = false;
             try
             {
                 var captureSlotCount = artifact?.CaptureSlotCount
@@ -372,14 +374,30 @@ internal sealed partial class LythonRuntime
                 // Guest-visible name strings can acquire caches and produce new
                 // strings. Give those values the current run's governor rather
                 // than sharing an analysis governor across concurrent runs.
-                var names = CopyRuntimeNamedGroups(compiled, captureSlotCount, context, token, span, pattern);
+                names = CopyRuntimeNamedGroups(compiled, captureSlotCount, context, token, span, pattern);
                 var result = new RePatternObject(pattern, flags, compiled, captureSlotCount, names, options);
+                var canonical = cache.GetOrAdd(key, result, context.MemoryGovernor, span);
+                if (!ReferenceEquals(canonical, result)) return canonical;
+                published = true;
                 storage.Commit(wrapperBytes);
-                cache.Add(key, result, context.MemoryGovernor, span);
                 if (artifact is null) context.State.TrackRegexPattern(compiled);
                 return result;
             }
-            catch { if (artifact is null) compiled.Dispose(); throw; }
+            finally
+            {
+                if (!published)
+                {
+                    try
+                    {
+                        if (names is not null && !ReferenceEquals(names, EmptyRuntimeNamedGroups))
+                        {
+                            foreach (var name in names.Keys) context.MemoryGovernor.RefundUnpublishedValue(name);
+                            names.DiscardUnpublishedStorage();
+                        }
+                    }
+                    finally { if (artifact is null) compiled.Dispose(); }
+                }
+            }
         }
 
         // The cache lookup hashes flags first, so unhashable flags fail before

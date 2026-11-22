@@ -32,7 +32,7 @@ internal sealed class RegexPatternCache
 
     public int Count => _entries.Count;
 
-    public bool TryGet(Key key, out LythonRuntime.RePatternObject? pattern)
+    public bool TryGet(Key key, [NotNullWhen(true)] out LythonRuntime.RePatternObject? pattern)
     {
         if (_entries.TryGetValue(key, out var node))
         {
@@ -48,18 +48,27 @@ internal sealed class RegexPatternCache
 
     // Caches a freshly compiled pattern under its exact key. Slot refusal is a
     // command failure, never a reason to fall back to uncached execution.
-    public void Add(
+    public LythonRuntime.RePatternObject GetOrAdd(
         Key key,
         LythonRuntime.RePatternObject pattern,
         MemoryGovernor? governor,
         LythonSourceSpan? span)
     {
+        if (TryGet(key, out var existing)) return existing;
         // Eviction replaces an already-funded slot. Only growing the cache
         // needs new capacity funding; charging every miss strands slot charges
         // and can prevent a full cache from replacing its least-recent entry.
         if (governor is not null && _entries.Count < MaxEntries)
         {
             governor.Reserve(SlotBytesPerEntry, span);
+            if (TryGet(key, out existing))
+            {
+                // The admission callback published the canonical wrapper.
+                governor.ReleaseReserved(SlotBytesPerEntry);
+                return existing;
+            }
+            // If a callback filled the last slot, keep the extra admission
+            // until purge so publication needs no intervening refund callback.
             governor.Commit(SlotBytesPerEntry);
             _committedSlotBytes += SlotBytesPerEntry;
         }
@@ -76,8 +85,10 @@ internal sealed class RegexPatternCache
             }
         }
 
-        var node = _recent.AddFirst(new CacheEntry(key, pattern));
+        var node = new LinkedListNode<CacheEntry>(new CacheEntry(key, pattern));
         _entries.Add(key, node);
+        _recent.AddFirst(node);
+        return pattern;
     }
 
     // Explicit clear (re.purge): drops every reference and releases slot charges.
