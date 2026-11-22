@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1310 retained factory CPU attribution](results/2026-11-22-retained-factory-attribution/README.md)
+uses the fully qualified `4337b7765` image. Admission is visible in
+both factory profiles, alongside native definition execution and eager
+annotation reads. The general binder and framed promotion have little
+visible work. The profile selects a single positional default held in
+the callable until tuple observation, with identity and ownership
+preserved. These are attribution samples.
+
 [B1309 leaf-suite preparation](results/2026-11-21-lexical-leaf-preparation/README.md)
 removes the second lexical walk through leaf suites with no deferred
 work. The exact code objects and compile refunds match. The validator
