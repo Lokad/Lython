@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1318 confirm decoded JSON suffixes](results/2026-11-22-json-decoded-suffix/confirmation/README.md)
+reverses the two report lanes and doubles warm-up on the same
+images and catalog. Both report clocks span zero and the unchanged
+text control moves slightly against the candidate. Keep the decoder
+prototype private. All 84 batches verify.
+
 [B1317 reuse decoded JSON suffixes](results/2026-11-22-json-decoded-suffix/README.md)
 keeps exact admission and removes a second decode for short escaped
 suffixes. Both escaped-report clocks span zero. The plain report uses
