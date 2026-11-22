@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Cursor token handoff](results/2026-11-22-regex-cursor-token-handoff/README.md)
+verifies that the frozen development producer keeps the creation token
+active on advance. The adapter-local registration detaches it. A
+separate fix returns the caller's token on cancelled 0.4.0 cursor creation.
+
 [B1416 adapter operation state](results/2026-11-22-regex-adapter-operation-state/README.md)
 deletes captured delegates at the optional backend boundary. Named-capture
 reports allocate 5.01–5.50% less with matching admitted peaks. Both
