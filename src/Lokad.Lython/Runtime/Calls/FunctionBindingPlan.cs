@@ -16,29 +16,23 @@ internal readonly record struct FunctionDefaults(PyTuple? Positional, object? Ke
 
 // Ordinary functions own this state directly. Generated callables can own a
 // standalone plan. Binding keeps the live default objects in either case.
-internal class FunctionBindingPlan
+internal abstract class FunctionBindingPlan
 {
     private readonly FunctionParameterLayout _layout;
     private object? _keywordDefaults;
     private bool _inlineKeywordDefault;
 
-    public FunctionBindingPlan(
-        string callableName,
-        PythonCallableKind callableKind,
-        FunctionParameterLayout layout,
-        FunctionDefaults defaults)
+    protected FunctionBindingPlan(FunctionParameterLayout layout, FunctionDefaults defaults)
     {
         _layout = layout;
-        CallableName = callableName;
-        CallableKind = callableKind;
         PositionalDefaults = defaults.Positional;
         _keywordDefaults = defaults.Keywords;
         _inlineKeywordDefault = defaults.InlineKeyword;
     }
 
-    public string CallableName { get; }
+    public abstract string CallableName { get; }
 
-    public PythonCallableKind CallableKind { get; }
+    public abstract PythonCallableKind CallableKind { get; }
 
     public int PositionalCount => _layout.PositionalCount;
     internal bool SupportsPositionalBinding => _layout.SupportsPositionalBinding;
@@ -193,4 +187,12 @@ internal class FunctionBindingPlan
         }
         return false;
     }
+}
+
+// Generated methods share common parameter layouts across declaring types.
+internal sealed class GeneratedFunctionBindingPlan(string name, FunctionParameterLayout layout, FunctionDefaults defaults)
+    : FunctionBindingPlan(layout, defaults)
+{
+    public override string CallableName { get; } = name;
+    public override PythonCallableKind CallableKind => PythonCallableKind.Function;
 }

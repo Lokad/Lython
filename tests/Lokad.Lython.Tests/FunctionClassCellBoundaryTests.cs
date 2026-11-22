@@ -147,7 +147,7 @@ public sealed class FunctionClassCellBoundaryTests
     private static Context Enter(Context closure, IReadOnlyList<GeneratedFunctionParameter> parameters,
         object[] values, bool mirror, PyType? owner = null, ScopeDirectiveFacts? facts = null)
         => PyFunctionBinding.EnterInvocationFrame(closure, facts ?? ScopeDirectiveFacts.Empty with { RequiresClassCell = true },
-            new FunctionBindingPlan("f", PythonCallableKind.Function,
+            new GeneratedFunctionBindingPlan("f",
                 FunctionParameterLayout.Create(parameters), default),
             new BoundFunctionArguments(values.Select(LythonRuntime.ExecutableSlot.FromObject).ToArray(), default), mirror, owner, Span);
 

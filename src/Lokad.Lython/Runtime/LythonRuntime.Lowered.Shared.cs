@@ -486,7 +486,7 @@ internal sealed partial class LythonRuntime
             lambda.NamespaceClosure ? context.FunctionClosureContext : context, span);
         var closure = SelectDefinitionClosure(code, context, cells);
         var function = CreateFunctionValue(lambda.Layout, code, closure, cells, defaults,
-            lambda.IsGenerator, context, span, PythonCallableKind.Lambda);
+            lambda.IsGenerator, context, span);
         // Module lambdas expose their globals after the executable slots leave.
         // Retain the existing namespace once, without lowering a compiled body.
         if (lambda.NamespaceClosure || code.RequiresLocalVariableMirroring ||

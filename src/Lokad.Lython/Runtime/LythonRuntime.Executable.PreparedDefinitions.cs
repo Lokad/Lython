@@ -50,7 +50,7 @@ internal sealed partial class LythonRuntime
 
     private static PyFunctionBase CreateFunctionValue(FunctionParameterLayout layout, ExecutableCodeObject code,
         ExecutionContext closure, IReadOnlyList<ExecutableCell> cells, FunctionDefaults defaults,
-        bool generator, ExecutionContext context, LythonSourceSpan span, PythonCallableKind kind = PythonCallableKind.Function,
+        bool generator, ExecutionContext context, LythonSourceSpan span,
         ReadOnlySpan<ExecutableSlot> annotations = default, PyString[]? postponedAnnotations = null,
         PreparedFunctionAnnotations preparedAnnotations = default, bool directKeywordDefault = false,
         Span<ExecutableSlot> uncapturedLocal = default)
@@ -82,8 +82,8 @@ internal sealed partial class LythonRuntime
             if (!uncapturedLocal.IsEmpty)
                 cells = cell = new ExecutableCell(uncapturedLocal[0]);
             PyFunctionBase function = generator
-                ? new PyGeneratorFunction(layout, code, closure, defaults, cells, kind)
-                : new PyExecutableFunction(layout, code, closure, cells, defaults, kind);
+                ? new PyGeneratorFunction(layout, code, closure, defaults, cells)
+                : new PyExecutableFunction(layout, code, closure, cells, defaults);
             ChargeClosureRetention(closure, governor, span);
             if (keys is not null)
                 function.AttachAdmittedAnnotations(preparedAnnotations.Values ?? postponedAnnotations ??
@@ -114,14 +114,14 @@ internal sealed partial class LythonRuntime
     // order. Only the caller retires the storage the operands came from.
     private static PyFunctionBase CreateLexicalFunctionValue(FunctionParameterLayout layout, ExecutableCodeObject code,
         IReadOnlyList<ExecutableCell> cells, bool generator, ExecutionContext scope, LythonSourceSpan span,
-        PythonCallableKind kind, Span<ExecutableSlot> operands, PyString[]? postponedAnnotations = null,
+        Span<ExecutableSlot> operands, PyString[]? postponedAnnotations = null,
         PreparedFunctionAnnotations preparedAnnotations = default, bool directKeywordDefault = false,
         Span<ExecutableSlot> uncapturedLocal = default)
     {
         var firstAnnotation = layout.DefaultStorageCount;
         var defaults = operands[..firstAnnotation];
         var function = CreateFunctionValue(layout, code, GetGlobalContext(scope), cells,
-            ReadExecutableDefaults(layout, defaults, directKeywordDefault), generator, scope, span, kind,
+            ReadExecutableDefaults(layout, defaults, directKeywordDefault), generator, scope, span,
             operands[firstAnnotation..], postponedAnnotations, preparedAnnotations, directKeywordDefault, uncapturedLocal);
         defaults.Clear();
         return function;
@@ -191,7 +191,7 @@ internal sealed partial class LythonRuntime
                     preparedAnnotations = ReadEagerFunctionAnnotations(reads, execution.Code, operation.CodeObject, scope, span);
                 var cells = CaptureExecutableCells(operation.CodeObject, scope, span, ref execution, captures);
                 function = CreateLexicalFunctionValue(operation.ParameterLayout, operation.CodeObject, cells, operation.IsGenerator,
-                    scope, span, PythonCallableKind.Function, execution.Stack.Slice(first, operation.InputCount).Span,
+                    scope, span, execution.Stack.Slice(first, operation.InputCount).Span,
                     operation.PostponedAnnotations, preparedAnnotations, operation.DirectKeywordDefault);
                 preparedAnnotations = default;
             }

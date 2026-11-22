@@ -21,7 +21,7 @@ internal sealed partial class LythonRuntime
                     try
                     {
                         value = CreateInlineDefinition(instruction, function.CodeObject, function.ParameterLayout,
-                            function.IsGenerator, PythonCallableKind.Function, function.InputCount, functionCaptures,
+                            function.IsGenerator, function.InputCount, functionCaptures,
                             function.PostponedAnnotations, function.EagerAnnotationReads, function.DirectKeywordDefault);
                     }
                     finally { _scope.LeaveInterpreterFrame(); }
@@ -31,7 +31,7 @@ internal sealed partial class LythonRuntime
                     when CanDefineWithoutInvocation(lambda.CodeObject, Code, _cells, _scope, span, out var lambdaCaptures):
                     var binding = lambda.Binding;
                     Publish(instruction, CreateInlineDefinition(instruction, binding.CodeObject, binding.Layout,
-                        binding.IsGenerator, PythonCallableKind.Lambda, lambda.InputCount, lambdaCaptures));
+                        binding.IsGenerator, lambda.InputCount, lambdaCaptures));
                     return true;
                 default:
                     return false;
@@ -39,7 +39,7 @@ internal sealed partial class LythonRuntime
         }
 
         private PyFunctionBase CreateInlineDefinition(in ExecutableInstruction instruction,
-            ExecutableCodeObject code, FunctionParameterLayout layout, bool generator, PythonCallableKind kind,
+            ExecutableCodeObject code, FunctionParameterLayout layout, bool generator,
             int inputCount, int[]? captures, PyString[]? postponedAnnotations = null,
             ExecutableInstruction[]? eagerReads = null, bool directKeywordDefault = false)
         {
@@ -54,7 +54,7 @@ internal sealed partial class LythonRuntime
                     uncapturedLocal = Values.Slice(captures[0], 1);
                 IReadOnlyList<ExecutableCell> cells = captures is null || !uncapturedLocal.IsEmpty ? [] :
                     CaptureExecutableCells(code, _scope, instruction.Span, Values, _cells, captures, out _, inline: true);
-                var function = CreateLexicalFunctionValue(layout, code, cells, generator, _scope, instruction.Span, kind,
+                var function = CreateLexicalFunctionValue(layout, code, cells, generator, _scope, instruction.Span,
                     Values.Slice(first, inputCount), postponedAnnotations, preparedAnnotations, directKeywordDefault, uncapturedLocal);
                 preparedAnnotations = default;
                 return function;

@@ -44,7 +44,7 @@ public sealed class FunctionDefaultConstructionTests
             object last = new BigInteger(3);
             values[0] = first;
             values[1] = last;
-            var plan = new FunctionBindingPlan("f", PythonCallableKind.Function, layout, new(null, values));
+            var plan = new GeneratedFunctionBindingPlan("f", layout, new(null, values));
             var admitted = budget.ReservedBytes;
             Assert.True(admitted > before);
             LythonRuntime.ExecutableSlot[] bound = [default, LythonRuntime.ExecutableSlot.FromInteger(2), default];

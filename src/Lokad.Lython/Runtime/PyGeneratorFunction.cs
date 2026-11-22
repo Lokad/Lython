@@ -9,9 +9,8 @@ internal sealed class PyGeneratorFunction : PyFunctionBase
     public PyGeneratorFunction(FunctionParameterLayout parameterLayout,
         ExecutableCodeObject code, LythonRuntime.ExecutionContext closure,
         FunctionDefaults defaults,
-        IReadOnlyList<LythonRuntime.ExecutableCell>? closureCells = null,
-        PythonCallableKind callableKind = PythonCallableKind.Function)
-        : base(code, parameterLayout, closure, defaults, callableKind)
+        IReadOnlyList<LythonRuntime.ExecutableCell>? closureCells = null)
+        : base(code, parameterLayout, closure, defaults)
     {
         _closureCells = closureCells;
     }

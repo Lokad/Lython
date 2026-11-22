@@ -18,8 +18,7 @@ public sealed class KwargsKeyAccountingTests
         string name,
         object value)
     {
-        var plan = new FunctionBindingPlan("f",
-            PythonCallableKind.Function,
+        var plan = new GeneratedFunctionBindingPlan("f",
             FunctionParameterLayout.Create([new("kw", FunctionParameterKind.VariadicDictionary)]), default);
         return LythonRuntime.BindFunctionArguments([CallArgumentValue.Keyword(name, value)], span, plan, context);
     }

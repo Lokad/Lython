@@ -18,7 +18,7 @@ public sealed class BoundBoxCleanupTests
     private static readonly LythonSourceSpan Span = new(0, 0, 0, 0);
 
     private static FunctionBindingPlan Plan(string name, params GeneratedFunctionParameter[] parameters)
-        => new(name, PythonCallableKind.Function, FunctionParameterLayout.Create(parameters), default);
+        => new GeneratedFunctionBindingPlan(name, FunctionParameterLayout.Create(parameters), default);
 
     private static FunctionBindingPlan TwoParameterPlan() => Plan("f",
         new("a", FunctionParameterKind.Positional), new("b", FunctionParameterKind.Positional));

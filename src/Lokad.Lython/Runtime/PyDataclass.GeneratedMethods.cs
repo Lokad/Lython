@@ -271,7 +271,7 @@ internal static partial class PyDataclass
         }
 
         private readonly FunctionBindingPlan _bindingPlan =
-            new($"{typeName}.__eq__", PythonCallableKind.Function, BinaryProtocolLayout, default);
+            new GeneratedFunctionBindingPlan($"{typeName}.__eq__", BinaryProtocolLayout, default);
 
         public object Bind(object self) => new PyBoundMethod(self, this);
 
@@ -385,7 +385,7 @@ internal static partial class PyDataclass
                 DataclassOrderOperation.GreaterEqual => "ge",
                 _ => throw new InvalidOperationException("Unsupported dataclass order operation.")
             };
-            _bindingPlan = new($"{typeName}.__{operationName}__", PythonCallableKind.Function, BinaryProtocolLayout, default);
+            _bindingPlan = new GeneratedFunctionBindingPlan($"{typeName}.__{operationName}__", BinaryProtocolLayout, default);
         }
 
         public object Bind(object self) => new PyBoundMethod(self, this);

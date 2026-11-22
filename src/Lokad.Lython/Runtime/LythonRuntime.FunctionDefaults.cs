@@ -93,7 +93,7 @@ internal sealed partial class LythonRuntime
             var positional = 0;
             foreach (var slot in layout.Defaults)
                 AddFunctionDefault(defaults, layout, slot, ref positional, ExecutableSlot.FromObject(parameters[slot.ParameterIndex].DefaultValue), context, span);
-            var plan = new FunctionBindingPlan(name, PythonCallableKind.Function, layout, defaults);
+            var plan = new GeneratedFunctionBindingPlan(name, layout, defaults);
             storage.Commit(bytes);
             return plan;
         }

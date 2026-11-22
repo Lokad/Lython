@@ -171,7 +171,7 @@ internal sealed partial class LythonRuntime
                             {
                                 var cells = CaptureExecutableCells(lambda.CodeObject, context, span, ref execution, lambdaCaptures);
                                 function = CreateLexicalFunctionValue(binding.Layout, binding.CodeObject, cells, binding.IsGenerator,
-                                    context, span, PythonCallableKind.Lambda, execution.Stack.Slice(first, lambda.InputCount).Span);
+                                    context, span, execution.Stack.Slice(first, lambda.InputCount).Span);
                             }
                             else
                             {

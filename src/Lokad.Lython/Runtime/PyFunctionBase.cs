@@ -30,9 +30,8 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
         ExecutableCodeObject codeObject,
         FunctionParameterLayout parameterLayout,
         LythonRuntime.ExecutionContext closure,
-        FunctionDefaults defaults,
-        PythonCallableKind callableKind = PythonCallableKind.Function)
-        : base(codeObject.Name, callableKind, parameterLayout, defaults)
+        FunctionDefaults defaults)
+        : base(parameterLayout, defaults)
     {
         CodeObject = codeObject;
         _closure = closure;
@@ -40,7 +39,11 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
 
     internal ExecutableCodeObject CodeObject { get; }
 
-    public string Name => CallableName;
+    public string Name => CodeObject.Name;
+
+    public sealed override string CallableName => Name;
+    public sealed override PythonCallableKind CallableKind
+        => Name == "<lambda>" ? PythonCallableKind.Lambda : PythonCallableKind.Function;
 
     public int GetPyHashCode() => RuntimeHelpers.GetHashCode(this);
 
