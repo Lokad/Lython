@@ -1,0 +1,38 @@
+[
+  {
+    "case": "scripts.json-lines-shipment.expanded-options.large",
+    "allocatedBefore": 7440716,
+    "allocatedAfter": 6113558,
+    "allocationChange": -17.83642864477021,
+    "admittedBefore": 6489264,
+    "admittedAfter": 6157312,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.json-lines-shipment.explicit-options.large",
+    "allocatedBefore": 5917102,
+    "allocatedAfter": 5918392,
+    "allocationChange": 0.021801212823446825,
+    "admittedBefore": 6157417,
+    "admittedAfter": 6157417,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "scripts.report-forwarding.expanded",
+    "allocatedBefore": 1654256,
+    "allocatedAfter": 1654256,
+    "allocationChange": 0.0,
+    "admittedBefore": 2976186,
+    "admittedAfter": 2976186,
+    "budgetReturnedToBaseline": true
+  },
+  {
+    "case": "calls.positional.large",
+    "allocatedBefore": 1060272,
+    "allocatedAfter": 1060272,
+    "allocationChange": 0.0,
+    "admittedBefore": 1284,
+    "admittedAfter": 1284,
+    "budgetReturnedToBaseline": true
+  }
+]

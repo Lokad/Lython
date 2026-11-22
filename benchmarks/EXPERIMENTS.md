@@ -6,6 +6,17 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1376 direct JSON keyword mapping](results/2026-11-22-json-direct-mapping/README.md)
+removes the expanded packet and second binding pass on four JSON
+module entry points. The expanded export takes 7.21–11.09% less warm
+time and allocates 17.84% less locally. The positional control uses
+1.79–11.14% more CPU with 7.95% candidate-worker spread. Keep that debt open.
+
+[Frozen Utf8Regex 0.5.0 producer boundary](results/2026-11-22-regex-050-frozen-boundary/README.md)
+verifies the new local candidate's identity, names, windows, captures,
+and refusal and cancellation during producer admission on both Windows
+targets. Final adapter qualification remains separate.
+
 [B1375 flat JSON encoder frames](results/2026-11-22-json-outer-frame/README.md)
 removes the initial traversal array and cycle set for flat records.
 The two JSON Lines exports use 17.90% and 21.51% less local allocation
