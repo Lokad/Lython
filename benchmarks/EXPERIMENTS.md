@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1402 refined prepared histogram](results/2026-11-22-prepared-histogram-refined/README.md)
+retains the ordinary whole-loop path and removes the prepared words'
+temporary packet at `6e085a0e3`. The dense Unicode line runs 22.69–24.16%
+faster warm. The ordinary regression from B1401 does not recur. The nonlocal
+warm, first-result and quote ranges span zero.
+
 [B1401 prepared-word histogram loop](results/2026-11-22-prepared-histogram/README.md)
 removes the short-word packet and tests retiring the ordinary whole-loop
 shortcut. The nonlocal report uses 4.07–10.36% less warm time and the dense
