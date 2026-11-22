@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1355 reuse an unexposed CSV header layout](results/2026-11-22-private-csv-header-layout/README.md)
+removes two per-row identity scans for private automatic headers.
+The invoice, policy and restock timings span zero. The typed-meter
+control uses 1.47–2.91% more CPU. Keep the prototype private. Both
+platforms pass the header-mutation and ownership regressions, and
+all 140 timed batches verify.
+
 [B1354 construct a native first capture with the callable](results/2026-11-22-native-single-capture-construction/README.md)
 skips general capture discovery and one reserve for a prepared local.
 The mixed factory uses 9.31–13.36% less time-to-result CPU. Eager,
