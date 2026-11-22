@@ -308,8 +308,8 @@ cleanup. Literal identity and per-run admission thresholds can change.
 Annotation diagnostics retain conservative branch facts, including unreachable
 checks, independently of the main analyzer's refined flow. Syntax validation
 records the last relevant check in each lexical scope, detects regex imports
-and identifies scripts that need lexical expression walks. Ordinary statement
-bindings and function layouts are prepared even when those walks are skipped.
+and marks statements that require lexical expression preparation. Ordinary
+statement bindings and function layouts are always prepared.
 Lexical scopes without regex can skip binding analysis after that check.
 Control-flow suites continue to export their full bindings, and constant regex
 analysis retains conservative bindings across dead and deferred scopes.
@@ -333,12 +333,14 @@ selects generator, modern-type and future-import validation only when the releva
 syntax occurs, including in dead bodies. Those validators retain their own scope
 rules and diagnostic order. Comprehension and type-parameter validation allocate
 name sets only when introducing bindings; unchanged scopes share their read-only
-inherited set. Syntax validation records potential mutating calls by statement.
-Binding analysis uses current bindings to determine their effects and releases
-the call-site map when analysis ends.
+inherited set. Syntax validation shares a sparse statement map for potential
+mutating calls and lexical expression work. Binding analysis uses current
+bindings to determine call effects. The map is temporary compiler storage.
 
-Lexical scope preparation follows parsing and name rewriting. It also
-prepares canonical text for postponed annotations. Analysis, lowering and
+The lexical binding walk queues only statements that need further work.
+It preserves ordinary source-order bindings, prepares nested declarations and
+canonical postponed-annotation text, and revisits expressions that require
+lexical facts. Analysis, lowering and
 class creation reuse the resulting immutable function/class/lambda facts. They belong to the compiled program,
 without a cross-script cache. A function declaration also owns one flat parameter
 name/slot table, role counts and generator classification, shared by analysis,

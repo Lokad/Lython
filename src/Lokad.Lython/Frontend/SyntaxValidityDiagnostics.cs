@@ -1,5 +1,7 @@
 namespace Lokad.Lython.Frontend;
 
+internal readonly record struct StatementFacts(List<CallExpressionSyntax>? PotentialMutations, bool NeedsLexicalExpressions);
+
 // Python's context-sensitive syntax rules apply even in dead branches and
 // uncalled bodies. Keep them independent of abstract-value/runtime analysis.
 internal static class SyntaxValidityDiagnostics
@@ -20,19 +22,18 @@ internal static class SyntaxValidityDiagnostics
         bool Iterable, bool InLambda = false, bool RecordCall = false);
 
     public static IReadOnlyList<LythonDiagnostic> Analyze(ScriptSyntax script, out bool hasScopeDirectives,
-        out Dictionary<StatementSyntax, List<CallExpressionSyntax>>? potentialMutations,
+        out Dictionary<StatementSyntax, StatementFacts>? statementFacts,
         out Dictionary<IReadOnlyList<StatementSyntax>, int>? annotationChecks, out bool importsRegex,
-        out bool needsLexicalExpressionWalk, CancellationToken cancellationToken)
+        CancellationToken cancellationToken)
     {
         var diagnostics = new List<LythonDiagnostic>();
         var hasYield = false;
         var hasModernTypes = false;
         var hasFutureImport = false;
-        var hasLexicalExpressions = false;
         hasScopeDirectives = false;
         var suites = new List<SuiteVisit> { new(script.Statements, 0, -1, lexicalScope: true, annotatedReturn: false) };
         var expressions = new Stack<ExpressionVisit>();
-        potentialMutations = null;
+        statementFacts = null;
         annotationChecks = null;
         importsRegex = false;
         HashSet<string>? seenNames = null;
@@ -75,10 +76,10 @@ internal static class SyntaxValidityDiagnostics
                 checksAnnotation = function.Parameters.Any(static parameter =>
                     parameter.Annotation is not null && parameter.DefaultValue is not null);
             }
+            // Pattern reads are separate from direct expressions.
+            var needsLexicalExpressions = statement is MatchStatementSyntax;
             if (statement is MatchStatementSyntax match)
             {
-                // Pattern reads are separate from direct expressions.
-                hasLexicalExpressions = true;
                 foreach (var matchCase in match.Cases) PatternNames(matchCase.Pattern);
             }
             if (statement is ClassDefinitionStatementSyntax type)
@@ -97,9 +98,9 @@ internal static class SyntaxValidityDiagnostics
             suites[current] = work;
             List<CallExpressionSyntax>? calls = null;
             foreach (var expression in StatementSyntaxTraversal.EnumerateDirectExpressions(statement))
-                Expressions(expression, ref calls);
-            if (calls is not null)
-                (potentialMutations ??= new(ReferenceEqualityComparer.Instance))[statement] = calls;
+                Expressions(expression, ref calls, ref needsLexicalExpressions);
+            if (calls is not null || needsLexicalExpressions)
+                (statementFacts ??= new(ReferenceEqualityComparer.Instance))[statement] = new(calls, needsLexicalExpressions);
             foreach (var body in StatementSyntaxTraversal.EnumerateChildBodies(statement))
             {
                 var depth = statement switch
@@ -127,9 +128,6 @@ internal static class SyntaxValidityDiagnostics
         if (hasYield) diagnostics.AddRange(GeneratorSyntaxFacts.Prepare(script, cancellationToken));
         if (hasModernTypes) diagnostics.AddRange(ModernTypeSyntaxFacts.Validate(script));
         if (hasFutureImport) diagnostics.AddRange(PostponedAnnotationText.Validate(script));
-        // Lazy generic expressions can contain lexical work beyond the
-        // direct statement and expression visits.
-        needsLexicalExpressionWalk = hasLexicalExpressions || hasModernTypes;
         return diagnostics;
 
         void Error(string message, LythonSourceSpan span)
@@ -153,7 +151,7 @@ internal static class SyntaxValidityDiagnostics
         void Parameters(IReadOnlyList<FunctionParameterSyntax> parameters, LythonSourceSpan span)
             => Unique(parameters.Select(p => p.Name), span, "Duplicate function parameter.");
 
-        void Expressions(ExpressionSyntax root, ref List<CallExpressionSyntax>? calls)
+        void Expressions(ExpressionSyntax root, ref List<CallExpressionSyntax>? calls, ref bool needsLexicalExpressions)
         {
             var first = calls?.Count ?? 0;
             expressions.Push(new(root, null, false));
@@ -166,11 +164,11 @@ internal static class SyntaxValidityDiagnostics
                     continue;
                 }
                 PythonTokenization.CheckCancellation(cancellationToken, expression.Span.Start);
-                hasLexicalExpressions |= expression is IdentifierExpressionSyntax { Name: "super" or "__class__" };
+                needsLexicalExpressions |= expression is IdentifierExpressionSyntax { Name: "super" or "__class__" };
                 hasYield |= expression is YieldExpressionSyntax;
                 if (expression is AssignmentExpressionSyntax assignment)
                 {
-                    hasLexicalExpressions = true;
+                    needsLexicalExpressions = true;
                     if (iterable) Error("Assignment expressions are forbidden in comprehension iterables.", assignment.Span);
                     else if (targets?.Contains(assignment.Name) == true) Error("Assignment expression rebinds a comprehension iteration target.", assignment.Span);
                 }
@@ -185,7 +183,7 @@ internal static class SyntaxValidityDiagnostics
                 }
                 if (expression is LambdaExpressionSyntax lambda)
                 {
-                    hasLexicalExpressions = true;
+                    needsLexicalExpressions = true;
                     Parameters(lambda.Parameters, lambda.Span);
                     foreach (var parameter in lambda.Parameters)
                         if (parameter.DefaultValue is not null) expressions.Push(new(parameter.DefaultValue, targets, iterable, InLambda: true));
@@ -202,7 +200,7 @@ internal static class SyntaxValidityDiagnostics
                 };
                 if (clauses is not null)
                 {
-                    hasLexicalExpressions = true;
+                    needsLexicalExpressions = true;
                     var nestedTargets = targets is null ? new HashSet<string>(StringComparer.Ordinal)
                         : new HashSet<string>(targets, StringComparer.Ordinal);
                     foreach (var clause in clauses) AddTargetNames(clause.Target, nestedTargets);

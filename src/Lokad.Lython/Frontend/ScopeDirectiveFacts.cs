@@ -44,11 +44,13 @@ internal static class ScopeDirectiveFactsCollector
     public static ScopeDirectiveFacts ForModule(ScriptSyntax script)
         => script.PreparedScopeFacts ??= ForSuite(script.Statements);
 
-    public static ScopeDirectiveFacts ForSuite(IReadOnlyList<StatementSyntax> body, bool collectExpressionBindings = true)
-        => CollectFunctionBindings([], body, collectExpressionBindings);
+    internal static ScopeDirectiveFacts ForSuite(IReadOnlyList<StatementSyntax> body,
+        Func<StatementSyntax, bool>? scheduleLexicalWork = null, CancellationToken cancellationToken = default)
+        => CollectFunctionBindings([], body, scheduleLexicalWork, cancellationToken);
 
     private static ScopeDirectiveFacts CollectFunctionBindings(IEnumerable<string> parameterNames,
-        IReadOnlyList<StatementSyntax> body, bool collectExpressionBindings)
+        IReadOnlyList<StatementSyntax> body, Func<StatementSyntax, bool>? scheduleLexicalWork,
+        CancellationToken cancellationToken)
     {
         var globalNames = new HashSet<string>(StringComparer.Ordinal);
         var nonlocalNames = new HashSet<string>(StringComparer.Ordinal);
@@ -59,7 +61,8 @@ internal static class ScopeDirectiveFactsCollector
             bindings.Add(name);
         }
 
-        var containsAnnotations = CollectScopeBindings(body, bindings, globalNames, nonlocalNames, collectExpressionBindings);
+        var containsAnnotations = CollectScopeBindings(body, bindings, globalNames, nonlocalNames, scheduleLexicalWork,
+            cancellationToken);
         var localNames = CompactLocalBindings(bindings, globalNames, nonlocalNames);
 
         return new ScopeDirectiveFacts(globalNames, nonlocalNames, localNames, bindings.ToArray())
@@ -70,14 +73,16 @@ internal static class ScopeDirectiveFactsCollector
 
     public static ScopeDirectiveFacts ForClass(ClassDefinitionStatementSyntax definition) => definition.PreparedScopeFacts.RequireNotNull();
 
-    internal static ScopeDirectiveFacts PrepareClass(ClassDefinitionStatementSyntax definition, bool collectExpressionBindings)
-        => definition.PreparedScopeFacts = ForSuite(definition.Body, collectExpressionBindings);
+    internal static ScopeDirectiveFacts PrepareClass(ClassDefinitionStatementSyntax definition, Func<StatementSyntax, bool> scheduleLexicalWork,
+        CancellationToken cancellationToken)
+        => definition.PreparedScopeFacts = ForSuite(definition.Body, scheduleLexicalWork, cancellationToken);
 
     public static ScopeDirectiveFacts ForFunction(FunctionDefinitionStatementSyntax definition) => definition.PreparedScopeFacts.RequireNotNull();
 
-    internal static ScopeDirectiveFacts PrepareFunction(FunctionDefinitionStatementSyntax definition, bool collectExpressionBindings)
+    internal static ScopeDirectiveFacts PrepareFunction(FunctionDefinitionStatementSyntax definition, Func<StatementSyntax, bool> scheduleLexicalWork,
+        CancellationToken cancellationToken)
         => definition.PreparedScopeFacts = CollectFunctionBindings(definition.Parameters.Select(p => p.Name),
-            definition.Body, collectExpressionBindings);
+            definition.Body, scheduleLexicalWork, cancellationToken);
 
     public static IReadOnlySet<string> CollectLambdaLocalNames(LambdaExpressionSyntax lambda)
     {
@@ -125,117 +130,123 @@ internal static class ScopeDirectiveFactsCollector
     }
 
     private static bool CollectScopeBindings(IReadOnlyList<StatementSyntax> statements, ICollection<string> names,
-        HashSet<string> globalNames, HashSet<string> nonlocalNames, bool collectExpressionBindings)
+        HashSet<string> globalNames, HashSet<string> nonlocalNames, Func<StatementSyntax, bool>? scheduleLexicalWork,
+        CancellationToken cancellationToken)
     {
         var containsAnnotations = false;
-        foreach (var statement in statements)
+        CollectSuite(statements);
+        return containsAnnotations;
+
+        void CollectSuite(IReadOnlyList<StatementSyntax> suite)
         {
-            switch (statement)
+            foreach (var statement in suite)
             {
-                case ScopeDirectiveStatementSyntax directive:
-                    (directive.Kind == ScopeDirectiveKind.Global ? globalNames : nonlocalNames).UnionWith(directive.Names);
-                    break;
-                case ImportStatementSyntax importStatement:
-                    foreach (var memberName in ImportSyntaxFacts.EnumerateBindingNames(importStatement))
-                    {
-                        names.Add(memberName);
-                    }
-                    break;
+                PythonTokenization.CheckCancellation(cancellationToken, statement.Span.Start);
+                var collectExpressionBindings = scheduleLexicalWork?.Invoke(statement) ?? true;
+                switch (statement)
+                {
+                    case ScopeDirectiveStatementSyntax directive:
+                        (directive.Kind == ScopeDirectiveKind.Global ? globalNames : nonlocalNames).UnionWith(directive.Names);
+                        break;
+                    case ImportStatementSyntax importStatement:
+                        foreach (var memberName in ImportSyntaxFacts.EnumerateBindingNames(importStatement))
+                        {
+                            names.Add(memberName);
+                        }
+                        break;
 
-                case TypeAliasStatementSyntax alias:
-                    names.Add(alias.Name);
-                    break;
-                case AssignmentStatementSyntax assignment:
-                    names.Add(assignment.Name);
-                    break;
+                    case TypeAliasStatementSyntax alias:
+                        names.Add(alias.Name);
+                        break;
+                    case AssignmentStatementSyntax assignment:
+                        names.Add(assignment.Name);
+                        break;
 
-                case ChainedAssignmentStatementSyntax chained:
-                    foreach (var target in chained.Targets) CollectAssignmentTargetBindings(target, names);
-                    break;
+                    case ChainedAssignmentStatementSyntax chained:
+                        foreach (var target in chained.Targets) CollectAssignmentTargetBindings(target, names);
+                        break;
 
-                case AnnotatedAssignmentStatementSyntax annotated:
-                    containsAnnotations = true;
-                    if (annotated.Target is NameAssignmentTargetSyntax name)
-                    {
-                        names.Add(name.Name);
-                    }
+                    case AnnotatedAssignmentStatementSyntax annotated:
+                        containsAnnotations = true;
+                        if (annotated.Target is NameAssignmentTargetSyntax name)
+                        {
+                            names.Add(name.Name);
+                        }
 
-                    break;
+                        break;
 
-                case AugmentedAssignmentStatementSyntax { Target: NameAssignmentTargetSyntax nameTarget }:
-                    names.Add(nameTarget.Name);
-                    break;
+                    case AugmentedAssignmentStatementSyntax { Target: NameAssignmentTargetSyntax nameTarget }:
+                        names.Add(nameTarget.Name);
+                        break;
 
-                case UnpackingAssignmentStatementSyntax unpacking:
-                    foreach (var target in unpacking.Targets) CollectUnpackingTargetNames(target, names);
-                    break;
+                    case UnpackingAssignmentStatementSyntax unpacking:
+                        foreach (var target in unpacking.Targets) CollectUnpackingTargetNames(target, names);
+                        break;
 
-                case ForStatementSyntax forStatement:
-                    CollectLoopTargetBindings(forStatement.Target, names);
-                    break;
+                    case ForStatementSyntax forStatement:
+                        CollectLoopTargetBindings(forStatement.Target, names);
+                        break;
 
-                case WithStatementSyntax withStatement:
-                    CollectDirectBindings(withStatement);
-                    foreach (var boundName in withStatement.BoundNames) names.Add(boundName);
-                    containsAnnotations |= CollectScopeBindings(withStatement.Body, names, globalNames, nonlocalNames, collectExpressionBindings);
-                    continue;
+                    case WithStatementSyntax withStatement:
+                        CollectDirectBindings(withStatement, collectExpressionBindings);
+                        foreach (var boundName in withStatement.BoundNames) names.Add(boundName);
+                        CollectSuite(withStatement.Body);
+                        continue;
 
-                case TryStatementSyntax tryStatement:
-                    containsAnnotations |= CollectScopeBindings(tryStatement.TryBody, names, globalNames, nonlocalNames, collectExpressionBindings);
-                    foreach (var exceptClause in tryStatement.ExceptClauses)
-                    {
-                        if (collectExpressionBindings && exceptClause.ExceptionTypeExpression is not null)
-                            CollectExpressionBindings(exceptClause.ExceptionTypeExpression, names);
-                        if (exceptClause.ExceptionVariableName is not null) names.Add(exceptClause.ExceptionVariableName);
-                        containsAnnotations |= CollectScopeBindings(exceptClause.Body, names, globalNames, nonlocalNames, collectExpressionBindings);
-                    }
-                    if (tryStatement.ElseBody is not null)
-                        containsAnnotations |= CollectScopeBindings(tryStatement.ElseBody, names, globalNames, nonlocalNames, collectExpressionBindings);
-                    if (tryStatement.FinallyBody is not null)
-                        containsAnnotations |= CollectScopeBindings(tryStatement.FinallyBody, names, globalNames, nonlocalNames, collectExpressionBindings);
-                    continue;
+                    case TryStatementSyntax tryStatement:
+                        CollectSuite(tryStatement.TryBody);
+                        foreach (var exceptClause in tryStatement.ExceptClauses)
+                        {
+                            if (collectExpressionBindings && exceptClause.ExceptionTypeExpression is not null)
+                                CollectExpressionBindings(exceptClause.ExceptionTypeExpression, names);
+                            if (exceptClause.ExceptionVariableName is not null) names.Add(exceptClause.ExceptionVariableName);
+                            CollectSuite(exceptClause.Body);
+                        }
+                        if (tryStatement.ElseBody is not null)
+                            CollectSuite(tryStatement.ElseBody);
+                        if (tryStatement.FinallyBody is not null)
+                            CollectSuite(tryStatement.FinallyBody);
+                        continue;
 
-                case MatchStatementSyntax matchStatement:
-                    CollectExpressionBindings(matchStatement.Subject, names);
-                    foreach (var matchCase in matchStatement.Cases)
-                    {
-                        CollectPatternBindings(matchCase.Pattern, names);
-                        if (matchCase.Guard is not null) CollectExpressionBindings(matchCase.Guard, names);
-                        containsAnnotations |= CollectScopeBindings(matchCase.Body, names, globalNames, nonlocalNames, collectExpressionBindings);
-                    }
-                    continue;
+                    case MatchStatementSyntax matchStatement:
+                        CollectExpressionBindings(matchStatement.Subject, names);
+                        foreach (var matchCase in matchStatement.Cases)
+                        {
+                            CollectPatternBindings(matchCase.Pattern, names);
+                            if (matchCase.Guard is not null) CollectExpressionBindings(matchCase.Guard, names);
+                            CollectSuite(matchCase.Body);
+                        }
+                        continue;
 
-                case DeleteStatementSyntax deletion:
-                    StatementSyntaxTraversal.VisitDeletionTargets(deletion.Target, names, static (bindings, target) =>
-                    {
-                        if (target is IdentifierExpressionSyntax name) bindings.Add(name.Name);
-                    });
-                    break;
+                    case DeleteStatementSyntax deletion:
+                        StatementSyntaxTraversal.VisitDeletionTargets(deletion.Target, names, static (bindings, target) =>
+                        {
+                            if (target is IdentifierExpressionSyntax name) bindings.Add(name.Name);
+                        });
+                        break;
 
-                case FunctionDefinitionStatementSyntax functionDefinition:
-                    names.Add(functionDefinition.Name);
-                    CollectDirectBindings(functionDefinition);
-                    continue;
+                    case FunctionDefinitionStatementSyntax functionDefinition:
+                        names.Add(functionDefinition.Name);
+                        CollectDirectBindings(functionDefinition, collectExpressionBindings);
+                        continue;
 
-                case ClassDefinitionStatementSyntax classDefinition:
-                    names.Add(classDefinition.Name);
-                    CollectDirectBindings(classDefinition);
-                    continue;
+                    case ClassDefinitionStatementSyntax classDefinition:
+                        names.Add(classDefinition.Name);
+                        CollectDirectBindings(classDefinition, collectExpressionBindings);
+                        continue;
+                }
 
-            }
+                CollectDirectBindings(statement, collectExpressionBindings);
 
-            CollectDirectBindings(statement);
-
-            foreach (var body in StatementSyntaxTraversal.EnumerateChildBodies(statement))
-            {
-                // Keep collecting bindings after finding an annotation.
-                containsAnnotations |= CollectScopeBindings(body, names, globalNames, nonlocalNames, collectExpressionBindings);
+                foreach (var body in StatementSyntaxTraversal.EnumerateChildBodies(statement))
+                {
+                    // Keep collecting bindings after finding an annotation.
+                    CollectSuite(body);
+                }
             }
         }
 
-        return containsAnnotations;
-
-        void CollectDirectBindings(StatementSyntax statement)
+        void CollectDirectBindings(StatementSyntax statement, bool collectExpressionBindings)
         {
             if (!collectExpressionBindings) return;
             foreach (var expression in StatementSyntaxTraversal.EnumerateDirectExpressions(statement))

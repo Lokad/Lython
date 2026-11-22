@@ -5,12 +5,12 @@ internal sealed class StaticAnalysisContext : IDisposable
     private readonly List<LythonDiagnostic> _diagnostics = new();
     private readonly CompiledRegexPrograms _regexPrograms;
     private readonly bool _ownsRegexPrograms;
-    private readonly Dictionary<StatementSyntax, List<CallExpressionSyntax>>? _potentialMutations;
+    private readonly Dictionary<StatementSyntax, StatementFacts>? _statementFacts;
 
     public StaticAnalysisContext(ScriptSyntax script, ILythonRegexProvider? regexProvider = null,
         Runtime.MemoryGovernor? governor = null, CancellationToken cancellationToken = default,
         CompiledRegexPrograms? regexPrograms = null,
-        Dictionary<StatementSyntax, List<CallExpressionSyntax>>? potentialMutations = null)
+        Dictionary<StatementSyntax, StatementFacts>? statementFacts = null)
     {
         Script = script;
         RegexProvider = regexProvider;
@@ -18,7 +18,7 @@ internal sealed class StaticAnalysisContext : IDisposable
         CancellationToken = cancellationToken;
         _regexPrograms = regexPrograms ?? new(governor);
         _ownsRegexPrograms = regexPrograms is null;
-        _potentialMutations = potentialMutations;
+        _statementFacts = statementFacts;
     }
 
     public ScriptSyntax Script { get; }
@@ -39,7 +39,7 @@ internal sealed class StaticAnalysisContext : IDisposable
         => _regexPrograms.Add(encoded, options, program, captureSlotCount, CancellationToken, span);
 
     internal List<CallExpressionSyntax>? GetPotentialMutations(StatementSyntax statement)
-        => _potentialMutations?.GetValueOrDefault(statement);
+        => _statementFacts?.GetValueOrDefault(statement).PotentialMutations;
 
     internal void CheckExecution()
     {

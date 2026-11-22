@@ -1,0 +1,234 @@
+{
+  "complete": true,
+  "elapsedSeconds": 272.2977497433312,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "staging": {
+    "retiredOnly": [
+      {
+        "paths": [
+          "direct-dict-enumeration-b1254-20261120/candidate/Lokad.Lython.dll"
+        ],
+        "bytes": 5680640,
+        "sha256": "4ffcb1266ff18fb73cbb4ff09451092e3cc7617e45d80916409074f38aa70a4f",
+        "links": 1,
+        "archives": {
+          "direct-dict-enumeration-b1254-20261120/observations.tgz": "826e363395e31eac17f600350cd3bb7e357f911c588ab20402d883dda4037cf2"
+        },
+        "optional": false
+      },
+      {
+        "paths": [
+          "direct-dict-enumeration-narrow-b1255-20261120/candidate/Lokad.Lython.dll"
+        ],
+        "bytes": 5680640,
+        "sha256": "c6163f187b86bc7b2b356fa1fa3f6921ec6de5cf0e8fa4bd7e69d1e4dc59538c",
+        "links": 1,
+        "archives": {
+          "direct-dict-enumeration-narrow-b1255-20261120/observations.tgz": "16e49bd4e7db4945ab6bf93dee115edfdaf77c4f7626db7301acdcc017a0006d"
+        },
+        "optional": false
+      }
+    ],
+    "alreadyAbsent": [],
+    "freshIdleLease": true,
+    "allHashesPathsOwnershipLinksAndAliasesVerified": true,
+    "canonicalArchiveAndCurrentImagesPreserved": true,
+    "freeBeforeBytes": 176689152,
+    "freeAfterBytes": 182235136
+  },
+  "rows": [
+    {
+      "case": "scripts.config-generated-guards.medium.bad-0",
+      "lane": "compile",
+      "elapsedMilliseconds": {
+        "candidate": 1.3955784658119659,
+        "reference": 1.424777925925926,
+        "candidate-control": 1.4066535782608696,
+        "reference-control": 1.4270557598253277
+      },
+      "cpuMilliseconds": {
+        "candidate": 1.4102564102564104,
+        "reference": 1.4379084967320264,
+        "candidate-control": 1.4130434782608696,
+        "reference-control": 1.4410480349344978
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.46839176246865427,
+        "reference": 0.3785426527686915,
+        "candidate-control": 0.46537198925862167,
+        "reference-control": 0.4293132387524942
+      },
+      "elapsedChangePercent": [
+        -2.2057508122327762,
+        -2.0494043024272712,
+        -1.42966954332292,
+        -1.2720822898261708
+      ],
+      "cpuChangePercent": [
+        -2.136752136752129,
+        -1.9433465085638923,
+        -1.9230769230769273,
+        -1.7292490118577142
+      ],
+      "referenceSpreadPercent": 0.15987290776711127,
+      "candidateSpreadPercent": 0.7935857940069457
+    },
+    {
+      "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "lane": "compile",
+      "elapsedMilliseconds": {
+        "reference-control": 0.02262457850140056,
+        "candidate-control": 0.02259095550773929,
+        "reference": 0.022455429401189324,
+        "candidate": 0.022714535211267605
+      },
+      "cpuMilliseconds": {
+        "reference-control": 0.02275910364145658,
+        "candidate-control": 0.022558478517387383,
+        "reference": 0.02247268704190292,
+        "candidate": 0.022839741149600305
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.44363060870245474,
+        "candidate-control": 0.4751184430184085,
+        "reference": 0.5369443402105465,
+        "candidate": 1.2245717327218824
+      },
+      "elapsedChangePercent": [
+        -0.14861268535538708,
+        0.3976061249559848,
+        0.6035338007955859,
+        1.1538670913349813
+      ],
+      "cpuChangePercent": [
+        -0.8815159297563602,
+        0.3543088050130372,
+        0.3817588672173189,
+        1.6333343093906327
+      ],
+      "referenceSpreadPercent": 0.7532659348846726,
+      "candidateSpreadPercent": 0.5470317689129089
+    },
+    {
+      "case": "scripts.dataclass-inherited-configuration.generated",
+      "lane": "compile",
+      "elapsedMilliseconds": {
+        "candidate": 0.17093841222776177,
+        "reference": 0.1864762685747326,
+        "candidate-control": 0.17191722381711858,
+        "reference-control": 0.18964681171303074
+      },
+      "cpuMilliseconds": {
+        "candidate": 0.17318289162949357,
+        "reference": 0.18791558253830587,
+        "candidate-control": 0.17012227538543329,
+        "reference-control": 0.1903367496339678
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.32060770554178936,
+        "reference": 0.9866067810682186,
+        "candidate-control": 1.1324172558868346,
+        "reference-control": 0.7479561351884016
+      },
+      "elapsedChangePercent": [
+        -9.864863699147286,
+        -9.348740290314073,
+        -8.332350526814537,
+        -7.807451784021147
+      ],
+      "cpuChangePercent": [
+        -10.62037377826851,
+        -9.46877683719789,
+        -9.012373090042992,
+        -7.840058131320271
+      ],
+      "referenceSpreadPercent": 1.7002394795493814,
+      "candidateSpreadPercent": 0.5726106710600698
+    },
+    {
+      "case": "scripts.config-generated-guards.medium.bad-0.sparse-lexical",
+      "lane": "compile",
+      "elapsedMilliseconds": {
+        "reference-control": 1.5005993701149427,
+        "candidate-control": 1.4166269934354485,
+        "reference": 1.5061825852534563,
+        "candidate": 1.417257142857143
+      },
+      "cpuMilliseconds": {
+        "reference-control": 1.517241379310345,
+        "candidate-control": 1.4223194748358863,
+        "reference": 1.5207373271889402,
+        "candidate": 1.4285714285714286
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.7670946336927719,
+        "candidate-control": 0.5976904155371835,
+        "reference": 0.7489351394448108,
+        "candidate": 0.8223987054393698
+      },
+      "elapsedChangePercent": [
+        -5.9458655739893285,
+        -5.9040280552273945,
+        -5.59592242618775,
+        -5.553929244380251
+      ],
+      "cpuChangePercent": [
+        -6.471719382003849,
+        -6.256216431271144,
+        -6.060606060606066,
+        -5.844155844155852
+      ],
+      "referenceSpreadPercent": 0.3720656725376248,
+      "candidateSpreadPercent": 0.044482381361832246
+    },
+    {
+      "case": "scripts.config-generated-guards.medium.bad-0.sparse-lexical",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "candidate": 1.5791672817955114,
+        "reference": 1.6555581984126984,
+        "candidate-control": 1.5722985812182741,
+        "reference-control": 1.6779824327176782
+      },
+      "cpuMilliseconds": {
+        "candidate": 1.6458852867830425,
+        "reference": 1.7195767195767195,
+        "candidate-control": 1.649746192893401,
+        "reference-control": 1.741424802110818
+      },
+      "elapsedIQRPercent": {
+        "candidate": 1.1427714641360396,
+        "reference": 0.7090446495116574,
+        "candidate-control": 0.4672017894277591,
+        "reference-control": 0.7268014268838329
+      },
+      "elapsedChangePercent": [
+        -6.2982692451813875,
+        -5.8889264270856945,
+        -5.02909636606258,
+        -4.614209074040909
+      ],
+      "cpuChangePercent": [
+        -5.48628428927681,
+        -5.264574680818345,
+        -4.285440245539984,
+        -4.060913705583758
+      ],
+      "referenceSpreadPercent": 1.354481789071471,
+      "candidateSpreadPercent": 0.43685726485329646
+    }
+  ],
+  "CPythonRefreshed": false,
+  "collection": "B1315",
+  "sourceRevision": "745f8833f359eeb8656012f217501f4c0346cc93 versus d5abc29d4e754c0f81eac67d7848113940ec2376",
+  "verifiedTimedBatches": 140,
+  "coreSHA256": {
+    "reference": "e61d97e3a7389b6821754356bc7d1d625af930bd3899a95cfe3a71d11aaca27a",
+    "reference-control": "e61d97e3a7389b6821754356bc7d1d625af930bd3899a95cfe3a71d11aaca27a",
+    "candidate": "1c9548a091bf3680cf450d0b65e9993e7ab0f4cb5f1ff92ae86c2f19fdcc7fc5",
+    "candidate-control": "1c9548a091bf3680cf450d0b65e9993e7ab0f4cb5f1ff92ae86c2f19fdcc7fc5"
+  },
+  "archiveSHA256": "b17c8f7f87eb81c3f05f7538729e1c96ed9ecf56a01d912ed4d460a52b5afe59",
+  "retentionDecision": "Retain the shared statement facts and fused binding walk. Representative compilation and validator time to result improve. Factory compilation spans zero. The original dense queue remains private."
+}

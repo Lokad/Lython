@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1315 prepare lexical work during binding](results/2026-11-22-sparse-lexical-preparation/README.md)
+reuses syntax facts and removes the second ordinary suite walk. An early
+dense queue allocates 274 KB more on a wide complex scope. Sparse
+statement facts eliminate that backlog and irrelevant expression walks.
+Dataclass compilation and validator time to result improve. Factory
+compilation spans zero. Retain the sparse version and all 140 batches.
+
 [B1314 numeric and simple quoted CSV ranges](results/2026-11-22-csv-quoted-ranges/README.md)
 removes field compaction on native file input. Both typed meter reports
 and the quoted method-policy invoice use less warm CPU. The plain

@@ -1,0 +1,46 @@
+[
+  {
+    "id": "scripts.config-generated-guards.medium.bad-0",
+    "bytes": [
+      2179676.75,
+      2161233.875,
+      2161140.25,
+      2179476
+    ],
+    "changeBytes": -18389.3125,
+    "changePercent": -0.8437103976225657
+  },
+  {
+    "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+    "bytes": [
+      63920,
+      63896,
+      63736,
+      63920
+    ],
+    "changeBytes": -104,
+    "changePercent": -0.16270337922402733
+  },
+  {
+    "id": "scripts.dataclass-inherited-configuration.generated",
+    "bytes": [
+      565328,
+      515880,
+      515880,
+      565328
+    ],
+    "changeBytes": -49448,
+    "changePercent": -8.746780630005945
+  },
+  {
+    "id": "scripts.config-generated-guards.medium.bad-0.sparse-lexical",
+    "bytes": [
+      2202511,
+      2168151,
+      2168191,
+      2202518
+    ],
+    "changeBytes": -34343.5,
+    "changePercent": -1.5592859888096111
+  }
+]

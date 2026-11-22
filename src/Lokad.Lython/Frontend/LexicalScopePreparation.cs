@@ -10,6 +10,10 @@ internal static class LexicalScopePreparation
         bool Function = false, bool Class = false, bool Positional = false, bool Annotation = false,
         string? DeclarationName = null, bool UseLocalsQualifier = false, bool Inlined = false)
     {
+        // The binding walk may already have queued children with this scope.
+        // Their preparation starts only after the current scope is complete.
+        public ScopeDirectiveFacts Facts { get; set; } = Facts;
+
         public bool IsModule => !Function && !Class && !Annotation && (Parent?.IsModule ?? true);
 
         public string? QualifyDeclaration(string name, Runtime.MemoryGovernor.TemporaryMemoryReservation? workspace, LythonSourceSpan span,
@@ -105,21 +109,22 @@ internal static class LexicalScopePreparation
         }
     }
 
-    public static void Prepare(ScriptSyntax script, string source, bool needsExpressionWalk, Runtime.MemoryGovernor? governor = null,
-        CancellationToken cancellationToken = default)
+    public static void Prepare(ScriptSyntax script, string source, Dictionary<StatementSyntax, StatementFacts>? statementFacts,
+        Runtime.MemoryGovernor? governor = null, CancellationToken cancellationToken = default)
     {
         var postponed = script.Statements.OfType<ImportStatementSyntax>().Any(import =>
             import.ModuleName == "__future__" && import.ImportedMembers?.Any(member => member.Name == "annotations") == true);
         // A module owns bindings, not an enclosing class-cell capture.
-        var moduleFacts = ScopeDirectiveFactsCollector.ForSuite(script.Statements, needsExpressionWalk);
-        var moduleUsesSuper = moduleFacts.LocalNames.Contains("super") || moduleFacts.IsGlobal("super");
         List<CallExpressionSyntax>? preloads = null;
         List<ExpressionSyntax>? callables = null;
         // Module bindings do not supply lexical class cells to child functions.
         var root = new Scope(null, ScopeDirectiveFacts.Empty);
         using var qualifiedNameWorkspace = governor?.ReserveTemporary(0, null);
         var pending = new Stack<(object Syntax, Scope Scope)>();
-        PushStatements(script.Statements, root);
+        var bindingScope = root;
+        Func<StatementSyntax, bool> scheduleLexicalWork = QueueLexicalWork;
+        var moduleFacts = ScopeDirectiveFactsCollector.ForSuite(script.Statements, scheduleLexicalWork, cancellationToken);
+        var moduleUsesSuper = moduleFacts.LocalNames.Contains("super") || moduleFacts.IsGlobal("super");
         while (pending.Count != 0)
         {
             var (syntax, scope) = pending.Pop();
@@ -149,7 +154,7 @@ internal static class LexicalScopePreparation
                     PushTypeParameters(alias.TypeParameters, alias.DeclaredName, alias.Span, scope, aliasScope);
                     continue;
                 }
-                if (needsExpressionWalk) PushStatementReads(statement, scope);
+                if (NeedsLexicalExpressions(statement)) PushStatementReads(statement, scope);
                 if (statement is FunctionDefinitionStatementSyntax function)
                 {
                     if (postponed)
@@ -164,16 +169,15 @@ internal static class LexicalScopePreparation
                     if (!ReferenceEquals(enclosing, scope))
                         function.PreparedTypeParameterNames = enclosing.Facts.LocalNames;
                     PushTypeParameters(function.TypeParameters, function.DeclaredName, function.Span, scope, enclosing);
-                    var facts = ScopeDirectiveFactsCollector.PrepareFunction(function, needsExpressionWalk);
                     var parameters = function.PrepareParameterLayout(cancellationToken);
                     var qualified = scope.Facts.IsGlobal(function.Name) ? null
                         : scope.QualifyDeclaration(function.DeclaredName, qualifiedNameWorkspace, function.Span, cancellationToken);
                     function.PreparedQualifiedName = PrepareQualifiedName(qualified, function.Span);
-                    var functionScope = new Scope(enclosing, facts,
+                    bindingScope = new Scope(enclosing, ScopeDirectiveFacts.Empty,
                         Function: true, Positional: parameters.PositionalCount != 0,
                         DeclarationName: qualified ?? function.DeclaredName, UseLocalsQualifier: true);
-                    if (facts.IsNonlocal("__class__")) functionScope.RequireClassCell();
-                    PushStatements(function.Body, functionScope);
+                    bindingScope.Facts = ScopeDirectiveFactsCollector.PrepareFunction(function, scheduleLexicalWork, cancellationToken);
+                    if (bindingScope.Facts.IsNonlocal("__class__")) bindingScope.RequireClassCell();
                 }
                 else if (statement is ClassDefinitionStatementSyntax definition)
                 {
@@ -181,13 +185,11 @@ internal static class LexicalScopePreparation
                     PushTypeParameters(definition.TypeParameters, definition.DeclaredName, definition.Span, scope, enclosing);
                     var qualified = scope.Facts.IsGlobal(definition.Name) ? null
                         : scope.QualifyDeclaration(definition.DeclaredName, qualifiedNameWorkspace, definition.Span, cancellationToken);
-                    var facts = ScopeDirectiveFactsCollector.PrepareClass(definition, needsExpressionWalk);
-                    var classScope = new Scope(enclosing, facts, Class: true,
+                    bindingScope = new Scope(enclosing, ScopeDirectiveFacts.Empty, Class: true,
                         DeclarationName: qualified ?? definition.DeclaredName);
-                    if (facts.IsNonlocal("__class__")) classScope.RequireClassCell();
-                    PushStatements(definition.Body, classScope);
+                    bindingScope.Facts = ScopeDirectiveFactsCollector.PrepareClass(definition, scheduleLexicalWork, cancellationToken);
+                    if (bindingScope.Facts.IsNonlocal("__class__")) bindingScope.RequireClassCell();
                 }
-                else foreach (var body in StatementSyntaxTraversal.EnumerateChildBodies(statement)) PushStatements(body, scope);
                 continue;
             }
             var node = (ExpressionSyntax)syntax;
@@ -252,10 +254,18 @@ internal static class LexicalScopePreparation
         script.PreparedScopeFacts = moduleFacts;
         script.PreparedCallables = callables ?? [];
 
-        void PushStatements(IReadOnlyList<StatementSyntax> statements, Scope scope)
+        bool QueueLexicalWork(StatementSyntax statement)
         {
-            foreach (var statement in statements) pending.Push((statement, scope));
+            var readExpressions = NeedsLexicalExpressions(statement);
+            if (readExpressions || statement is FunctionDefinitionStatementSyntax or ClassDefinitionStatementSyntax
+                or TypeAliasStatementSyntax or ScopeDirectiveStatementSyntax { Kind: ScopeDirectiveKind.Global }
+                || postponed && statement is AnnotatedAssignmentStatementSyntax)
+                pending.Push((statement, bindingScope));
+            return readExpressions;
         }
+
+        bool NeedsLexicalExpressions(StatementSyntax statement)
+            => statementFacts?.GetValueOrDefault(statement).NeedsLexicalExpressions == true;
 
         void PushStatementReads(StatementSyntax statement, Scope scope)
         {
