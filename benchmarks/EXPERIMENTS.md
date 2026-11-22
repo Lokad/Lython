@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1373 direct integer returns against CPython](results/2026-11-22-direct-integer-return-cpython/README.md)
+measures production `e152d1ceb` against stock CPython 3.13.16. The
+nested invoice takes 1.066–1.069× CPython's warm time. The function
+helper takes 1.759–2.023× with 13.82% Lython worker spread. The mixed
+factory compiles in 0.564–0.584× and takes 1.674–1.702× to reach the
+result. All 112 batches verify. The prior source-pair CPU debt stays open.
+
 [B1372 direct returns with the existing call entry](results/2026-11-22-native-direct-integer-return-refined/README.md)
 retains the direct arithmetic return. Both helpers improve with lower
 CPU, and the nested invoice uses 2.06–3.10% less warm elapsed time.
