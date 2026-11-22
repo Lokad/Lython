@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1333 pack emitted block instructions](results/2026-11-22-packed-block-layout/README.md)
+reduces validator and dataclass compilation time. Validator time to
+result rises 1.71–3.24% and the dense validator needs 393,568 more
+admitted peak bytes despite a 4.01% CLR allocation reduction. All 140
+batches verify. Keep the prototype private.
+
 [B1332 resolve jumps directly through emitted blocks](results/2026-11-22-direct-jump-layout/README.md)
 removes two arrays and the successor scan. Final metadata matches across
 79 code objects. Dataclass and dead-heavy compilation use less CPU.
