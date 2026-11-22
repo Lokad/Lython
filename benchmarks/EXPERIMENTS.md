@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1381 native regex capture numbers](results/2026-11-22-regex-native-indices/README.md)
+reuses the ordered dictionary's integer slots and boxes indices only when
+Python observes them. Unicode matching uses 1.72–2.16% less process CPU
+and ASCII uses 1.43–1.52% less. Reading every `groupindex` value uses
+0.70–3.16% more CPU. The named-rule diagnostic allocates 4,096 fewer
+bytes with the same admitted peak.
+
 [B1380 positional CPU and JIT attribution](results/2026-11-22-positional-default-tier-attribution/README.md)
 records four profiled runs on both B1377 source images. CPU and elapsed
 favor the candidate under profiling. The direct entry's code matches,

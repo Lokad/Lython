@@ -1,0 +1,42 @@
+[
+  {
+    "case": "diagnostic.regex-prepared-names.many-named-rules",
+    "reference": 414800,
+    "candidate": 410704,
+    "allocationChange": -0.987463837994218,
+    "admittedReference": 139956,
+    "admittedCandidate": 139956
+  },
+  {
+    "case": "diagnostic.regex-ordered-names.groupindex-observed",
+    "reference": 428352,
+    "candidate": 428352,
+    "allocationChange": 0.0,
+    "admittedReference": 156543,
+    "admittedCandidate": 156543
+  },
+  {
+    "case": "scripts.regex-unicode-groups",
+    "reference": 3437280,
+    "candidate": 3437184,
+    "allocationChange": -0.0027929060187115162,
+    "admittedReference": 2089005,
+    "admittedCandidate": 2089005
+  },
+  {
+    "case": "scripts.regex-ascii-groups",
+    "reference": 3128584,
+    "candidate": 3128488,
+    "allocationChange": -0.003068480820711539,
+    "admittedReference": 2075085,
+    "admittedCandidate": 2075085
+  },
+  {
+    "case": "diagnostic.regex-prepared-names.many-unnamed-rules",
+    "reference": 382424,
+    "candidate": 382424,
+    "allocationChange": 0.0,
+    "admittedReference": 81844,
+    "admittedCandidate": 81844
+  }
+]
