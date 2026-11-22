@@ -1,0 +1,13 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "persistentTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 180879360,
+  "archiveSHA256": "b2207dd9ff31e634ea680df916ab4c9bfee82e3e7eed51b523f7e66969ca73a3",
+  "source": "Attribute mixed first use on both fixed-return images and the retained function helper",
+  "performanceComparison": false,
+  "failure": null
+}

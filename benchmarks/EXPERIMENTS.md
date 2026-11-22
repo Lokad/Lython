@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1370 current call and first-use CPU attribution](results/2026-11-22-retained-call-cpu-profile/README.md)
+profiles both B1368 images on mixed time to result and the retained
+function helper on warm execution. The mixed profiles show similar
+sampled costs. Almost every explicit reserve belongs to callable
+construction. The helper concentrates in the native loop and call
+entry, with no resolved general binder. The mixed CPU debt stays open.
+
 [B1369 retained call transport against CPython](results/2026-11-22-retained-call-transport-cpython/README.md)
 compares production `880c6d958` with CPython 3.13.16. The nested invoice
 takes 1.090–1.101× CPython's warm time. The function-scoped helper still
