@@ -13,6 +13,11 @@ two workers per engine. The opening table measures the November 22, 2026
 UTC checkpoint at `55424591f`. Each linked checkpoint gives its exact image
 IDs, worker spread and batch variation.
 
+The direct Lython source pair from `32c50290d` to `55424591f` reproduces
+higher warm factory time and a 14.91% spread between the later workers.
+The same factory reaches its result 1.93–2.39% sooner when measured from
+compilation. [Paired factory checkpoint](../benchmarks/results/2026-11-22-factory-checkpoint-source-pair/README.md).
+
 The quiet comparison machine is an Azure F4as_v7 running Ubuntu 24.04.4
 with .NET 11 RC3. The external baseline is stock CPython 3.13.16. Warm
 execution uses a compiled script in a running process. Timings include
