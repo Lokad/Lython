@@ -1,0 +1,17 @@
+{
+  "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+  "rows": [
+    {
+      "id": "diagnostic.text-summary.nonlocal-computed-width.large",
+      "asynchronous": false,
+      "peakExecutionMemoryBytes": 1278972,
+      "compiledReservedBytes": 92091,
+      "sharedBudgetBaselineRestored": true,
+      "preparedHistogramLoops": 3076,
+      "exhaustedHistogramLoops": 3072,
+      "exhaustedFinalShortWordObjects": 2047,
+      "coreSha256": "ec7e31d2e7eac19851eee3ca3f2d862d31029837de3612d07526d52a4a5a732e"
+    }
+  ],
+  "boundary": "One verified complete run. Scratch instrumented core counts prepared-loop entries and normal final-word publications. No comparative timings."
+}

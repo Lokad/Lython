@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Final short-word publication](results/2026-11-22-text-target-publication/README.md)
+finds 2,047 materializations on 3,072 normal exits in the nonlocal
+Unicode report. The scratch run verifies both outputs and restores its
+allowance. No timing or target-elision claim accompanies the count.
+
 [B1408 scalar binding inside the native entry](results/2026-11-22-scalar-default-binding/README.md)
 makes postponed warm elapsed 0.60–4.61% lower with mixed CPU.
 The observed-defaults control takes 3.40–14.65% longer. The Windows
