@@ -1,5 +1,6 @@
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Text;
+using PreparedFunctionAnnotations = (object? Values, int Capacity, bool Repeated);
 
 namespace Lokad.Lython.Runtime;
 
@@ -43,7 +44,7 @@ internal sealed partial class LythonRuntime
             ExecutableInstruction[]? eagerReads = null, bool directKeywordDefault = false)
         {
             var first = instruction.InputStart;
-            object?[]? preparedAnnotations = null;
+            PreparedFunctionAnnotations preparedAnnotations = default;
             try
             {
                 if (eagerReads is not null)
@@ -55,7 +56,7 @@ internal sealed partial class LythonRuntime
                     CaptureExecutableCells(code, _scope, instruction.Span, Values, _cells, captures, out _, inline: true);
                 var function = CreateLexicalFunctionValue(layout, code, cells, generator, _scope, instruction.Span, kind,
                     Values.Slice(first, inputCount), postponedAnnotations, preparedAnnotations, directKeywordDefault, uncapturedLocal);
-                preparedAnnotations = null;
+                preparedAnnotations = default;
                 return function;
             }
             finally

@@ -104,16 +104,24 @@ internal sealed partial class ExecutableScript
             if (count < 2) return null;
             var instructions = _buffers.Blocks[block];
             if (instructions.Count - first != count) return null;
-            for (var i = first; i < instructions.Count; i++)
+            var read = instructions[first];
+            if (read.OpCode is not (ExecutableOpCode.LoadGlobal or ExecutableOpCode.LoadConst)) return null;
+            var operand = read.OpCode == ExecutableOpCode.LoadGlobal ? read.NameIndex : read.ConstantIndex;
+            var repeated = true;
+            for (var i = first + 1; i < instructions.Count; i++)
             {
                 if ((i & 63) == 0) _compilation.CancellationToken.ThrowIfCancellationRequested();
-                if (instructions[i].OpCode is not (ExecutableOpCode.LoadGlobal or ExecutableOpCode.LoadConst)) return null;
+                var next = instructions[i];
+                if (next.OpCode is not (ExecutableOpCode.LoadGlobal or ExecutableOpCode.LoadConst)) return null;
+                repeated &= next.OpCode == read.OpCode &&
+                    (next.OpCode == ExecutableOpCode.LoadGlobal ? next.NameIndex : next.ConstantIndex) == operand;
             }
 
             // Definition creation consumes these direct reads before capture
-            // admission. Nontrivial expressions keep their executable route.
-            var reads = new ExecutableInstruction[count];
-            instructions.CopyTo(first, reads, 0, count);
+            // admission. Identical reads observe the same object without any
+            // intervening guest work. Keep the first span for name errors.
+            var reads = repeated ? [read] : new ExecutableInstruction[count];
+            if (!repeated) instructions.CopyTo(first, reads, 0, count);
             instructions.RemoveRange(first, count);
             return reads;
         }

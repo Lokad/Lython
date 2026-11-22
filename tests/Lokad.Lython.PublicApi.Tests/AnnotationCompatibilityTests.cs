@@ -124,6 +124,38 @@ def sample(flag: bool = "oops") -> int:
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task RepeatedEagerAnnotationsSnapshotTheDefinitionValue(bool asynchronous)
+    {
+        const string source = """
+            Alias = {}
+            def factory():
+                def f(left: Alias, right: Alias) -> Alias: return left
+                return f
+            first = factory()
+            before = Alias
+            Alias = {"changed": True}
+            second = factory()
+            saved = first.__annotations__
+            assert list(saved) == ["left", "right", "return"]
+            assert all(value is before for value in saved.values())
+            assert all(value is Alias for value in second.__annotations__.values())
+            assert saved is first.__annotations__
+            first.__annotations__ = {}
+            assert len(saved) == 3 and len(first.__annotations__) == 0
+            """;
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var compiled = new LythonEngine().Compile(source, budget);
+        Assert.True(compiled.IsValid, string.Join(" | ", compiled.Diagnostics.Select(d => d.Message)));
+        var baseline = budget.ReservedBytes;
+        var host = new MockLythonHost();
+        using (var result = asynchronous ? await compiled.RunAsync(host) : compiled.Run(host))
+            Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task EagerRegexAnnotationsCreateGenericAliasesWithoutAProvider(bool asynchronous)
     {
         using var compiled = new LythonEngine().Compile("""

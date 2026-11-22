@@ -13,6 +13,7 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
     // Resetting metadata needs no replacement storage.
     private bool _moduleCleared;
     private bool _docstringCleared;
+    private bool _repeatedAnnotation;
     private object? _annotations;
     private object? _typeParameters;
     private PyDict? _customAttributes;
@@ -375,33 +376,38 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
         return removed || name == "__annotations__";
     }
 
-    internal void AttachAdmittedAnnotations(object?[] values, LythonRuntime.ExecutionContext context)
+    internal void AttachAdmittedAnnotations(object values, LythonRuntime.ExecutionContext context, bool repeated)
     {
         System.Diagnostics.Debug.Assert(_annotations is null && ReferenceEquals(_closure.MemoryGovernor, context.MemoryGovernor));
+        System.Diagnostics.Debug.Assert(repeated || values is object?[]);
         _annotations = values;
+        _repeatedAnnotation = repeated;
     }
 
     private object ReadAnnotations()
     {
-        if (_annotations is object?[] prepared)
+        var repeated = _repeatedAnnotation;
+        var prepared = _annotations;
+        var values = prepared as object?[];
+        if (repeated || values is not null)
         {
             var span = PyStructuralGuard.AmbientSpan;
             _closure.CheckExecution(span);
-            var keys = CodeObject.DefinitionAnnotationKeys!;
-            var values = prepared;
-            if (prepared is PyString[] postponed)
+            var keys = CodeObject.DefinitionAnnotationKeys.RequireNotNull();
+            if (repeated || values is PyString[])
             {
-                // The definition has funded the final record. The compiler's
-                // immutable payload never becomes guest-owned mutable storage.
-                values = new object?[keys.PreparedValueCapacity];
-                for (var i = 0; i < postponed.Length; i++)
+                // Both forms already fund the complete mutable record.
+                var observed = new object?[keys.PreparedValueCapacity];
+                for (var i = 0; i < keys.Count; i++)
                 {
                     if ((i & 63) == 0) _closure.CheckExecution(span);
-                    values[i] = postponed[i];
+                    observed[i] = repeated ? prepared : values![i];
                 }
                 _closure.CheckExecution(span);
+                values = observed;
             }
-            _annotations = keys.AdoptPreparedValues(values, _closure.MemoryGovernor, span);
+            _annotations = keys.AdoptPreparedValues(values.RequireNotNull(), _closure.MemoryGovernor, span);
+            _repeatedAnnotation = false;
         }
         return _annotations ??= new PyDict(_closure.MemoryGovernor);
     }
@@ -409,8 +415,10 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
     private void ReplaceAnnotations(object? value)
     {
         var previous = _annotations;
+        var repeated = _repeatedAnnotation;
         _annotations = value;
-        if (previous is PyString[])
+        _repeatedAnnotation = false;
+        if (repeated || previous is PyString[])
             _closure.MemoryGovernor.Release(PyDict.RecordKeys.RecordBytes(CodeObject.DefinitionAnnotationKeys!.PreparedValueCapacity));
         else if (previous is object?[] values)
             PyDict.RecordKeys.RefundPreparedValues(values, _closure.MemoryGovernor);

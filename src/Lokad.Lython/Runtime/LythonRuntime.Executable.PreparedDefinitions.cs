@@ -1,6 +1,7 @@
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Calls;
 using Lokad.Lython.Runtime.Text;
+using PreparedFunctionAnnotations = (object? Values, int Capacity, bool Repeated);
 
 namespace Lokad.Lython.Runtime;
 
@@ -13,7 +14,7 @@ internal sealed partial class LythonRuntime
     private static long FunctionAndAnnotationBytes(int capacity)
         => checked(FunctionValueBytes + PyDict.RecordKeys.RecordBytes(capacity));
 
-    private static object?[] ReadEagerFunctionAnnotations(ExecutableInstruction[] reads, ExecutableCodeObject parent,
+    private static PreparedFunctionAnnotations ReadEagerFunctionAnnotations(ExecutableInstruction[] reads, ExecutableCodeObject parent,
         ExecutableCodeObject code, ExecutionContext context, LythonSourceSpan span)
     {
         var capacity = code.DefinitionAnnotationKeys.RequireNotNull().PreparedValueCapacity;
@@ -23,51 +24,55 @@ internal sealed partial class LythonRuntime
         try
         {
             context.CheckExecution(span);
+            if (reads.Length == 1)
+                return (ReadAnnotation(reads[0]), capacity, true);
             var values = new object?[capacity];
             for (var i = 0; i < reads.Length; i++)
-            {
-                ref readonly var read = ref reads[i];
-                context.State.CheckExecution(read.Span);
-                values[i] = read.OpCode == ExecutableOpCode.LoadGlobal
-                    ? ResolveExecutableGlobal(parent, read.NameIndex, read.Span, context)
-                    : RuntimeValue(parent.Constants[read.ConstantIndex]);
-            }
+                values[i] = ReadAnnotation(reads[i]);
             // Keep the reservation private until the callable takes the record.
-            return values;
+            return (values, capacity, false);
         }
         catch { governor.ReleaseReserved(bytes); throw; }
+
+        object ReadAnnotation(in ExecutableInstruction read)
+        {
+            context.State.CheckExecution(read.Span);
+            return read.OpCode == ExecutableOpCode.LoadGlobal
+                ? ResolveExecutableGlobal(parent, read.NameIndex, read.Span, context)
+                : RuntimeValue(parent.Constants[read.ConstantIndex]);
+        }
     }
 
-    private static void RefundEagerFunctionAnnotations(object?[]? values, ExecutionContext context)
+    private static void RefundEagerFunctionAnnotations(PreparedFunctionAnnotations prepared, ExecutionContext context)
     {
-        if (values is not null) context.MemoryGovernor.ReleaseReserved(FunctionAndAnnotationBytes(values.Length));
+        if (prepared.Values is not null) context.MemoryGovernor.ReleaseReserved(FunctionAndAnnotationBytes(prepared.Capacity));
     }
 
     private static PyFunctionBase CreateFunctionValue(FunctionParameterLayout layout, ExecutableCodeObject code,
         ExecutionContext closure, IReadOnlyList<ExecutableCell> cells, FunctionDefaults defaults,
         bool generator, ExecutionContext context, LythonSourceSpan span, PythonCallableKind kind = PythonCallableKind.Function,
         ReadOnlySpan<ExecutableSlot> annotations = default, PyString[]? postponedAnnotations = null,
-        object?[]? preparedAnnotations = null, bool directKeywordDefault = false,
+        PreparedFunctionAnnotations preparedAnnotations = default, bool directKeywordDefault = false,
         Span<ExecutableSlot> uncapturedLocal = default)
     {
         // The callable and its final annotation backing are still private.
         // Admit both before allocation and transfer the combined charge once.
-        var keys = annotations.IsEmpty && postponedAnnotations is null && preparedAnnotations is null
+        var keys = annotations.IsEmpty && postponedAnnotations is null && preparedAnnotations.Values is null
             ? null : code.DefinitionAnnotationKeys.RequireNotNull();
         var capacity = keys?.PreparedValueCapacity ?? 0;
         var bytes = keys is null ? FunctionValueBytes : FunctionAndAnnotationBytes(capacity);
         if (directKeywordDefault)
         {
-            System.Diagnostics.Debug.Assert(defaults.InlineKeyword && preparedAnnotations is null);
+            System.Diagnostics.Debug.Assert(defaults.InlineKeyword && preparedAnnotations.Values is null);
             bytes = checked(bytes + PyDict.RecordKeys.SinglePreparedValueBytes);
         }
         if (!uncapturedLocal.IsEmpty)
         {
-            System.Diagnostics.Debug.Assert(uncapturedLocal.Length == 1 && cells.Count == 0 && preparedAnnotations is null);
+            System.Diagnostics.Debug.Assert(uncapturedLocal.Length == 1 && cells.Count == 0 && preparedAnnotations.Values is null);
             bytes = checked(bytes + ExecutableCell.StorageBytes);
         }
         var governor = context.MemoryGovernor;
-        if (preparedAnnotations is null) governor.Reserve(bytes, span);
+        if (preparedAnnotations.Values is null) governor.Reserve(bytes, span);
         try
         {
             context.CheckExecution(span);
@@ -81,8 +86,8 @@ internal sealed partial class LythonRuntime
                 : new PyExecutableFunction(layout, code, closure, cells, defaults, kind);
             ChargeClosureRetention(closure, governor, span);
             if (keys is not null)
-                function.AttachAdmittedAnnotations(preparedAnnotations ?? postponedAnnotations ??
-                    keys.CopyAnnotationValues(annotations, capacity, context, span), context);
+                function.AttachAdmittedAnnotations(preparedAnnotations.Values ?? postponedAnnotations ??
+                    keys.CopyAnnotationValues(annotations, capacity, context, span), context, preparedAnnotations.Repeated);
             governor.Commit(bytes);
             if (cell is not null)
             {
@@ -93,7 +98,7 @@ internal sealed partial class LythonRuntime
         }
         catch
         {
-            if (preparedAnnotations is null) governor.ReleaseReserved(bytes);
+            if (preparedAnnotations.Values is null) governor.ReleaseReserved(bytes);
             throw;
         }
     }
@@ -110,7 +115,7 @@ internal sealed partial class LythonRuntime
     private static PyFunctionBase CreateLexicalFunctionValue(FunctionParameterLayout layout, ExecutableCodeObject code,
         IReadOnlyList<ExecutableCell> cells, bool generator, ExecutionContext scope, LythonSourceSpan span,
         PythonCallableKind kind, Span<ExecutableSlot> operands, PyString[]? postponedAnnotations = null,
-        object?[]? preparedAnnotations = null, bool directKeywordDefault = false,
+        PreparedFunctionAnnotations preparedAnnotations = default, bool directKeywordDefault = false,
         Span<ExecutableSlot> uncapturedLocal = default)
     {
         var firstAnnotation = layout.DefaultStorageCount;
@@ -179,7 +184,7 @@ internal sealed partial class LythonRuntime
             var first = instruction.InputStart;
             scope.EnterInterpreterFrame(span);
             PyFunctionBase function;
-            object?[]? preparedAnnotations = null;
+            PreparedFunctionAnnotations preparedAnnotations = default;
             try
             {
                 if (operation.EagerAnnotationReads is { } reads)
@@ -188,7 +193,7 @@ internal sealed partial class LythonRuntime
                 function = CreateLexicalFunctionValue(operation.ParameterLayout, operation.CodeObject, cells, operation.IsGenerator,
                     scope, span, PythonCallableKind.Function, execution.Stack.Slice(first, operation.InputCount).Span,
                     operation.PostponedAnnotations, preparedAnnotations, operation.DirectKeywordDefault);
-                preparedAnnotations = null;
+                preparedAnnotations = default;
             }
             finally
             {
@@ -206,7 +211,7 @@ internal sealed partial class LythonRuntime
             context.EnterInterpreterFrame(span);
             PyFunctionBase function;
             var transferred = false;
-            object?[]? preparedAnnotations = null;
+            PreparedFunctionAnnotations preparedAnnotations = default;
             try
             {
                 var layout = operation.ParameterLayout;
@@ -229,7 +234,7 @@ internal sealed partial class LythonRuntime
                     operation.IsGenerator, context, span, annotations: annotations,
                     postponedAnnotations: operation.PostponedAnnotations, preparedAnnotations: preparedAnnotations,
                     directKeywordDefault: operation.DirectKeywordDefault);
-                preparedAnnotations = null;
+                preparedAnnotations = default;
                 var metadata = ValueTask.CompletedTask;
                 if (operation.AnnotationOperandCount == 0 && operation.EagerAnnotationReads is null &&
                     (operation.DeferredAnnotations.Length != 0 || operation.TypeParameters is not null || HasTypeParameterScope(context)))
