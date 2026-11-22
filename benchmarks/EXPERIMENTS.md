@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1331 joint callable and closure capture admission](results/2026-11-22-joint-definition-admission/README.md)
+lowers mixed-factory warm CPU by 0.68–2.46%. Mixed time to result
+takes 7.15–12.38% longer and the default-observing factory takes
+1.37–1.47% longer warm. The desktop helper regression does not recur.
+All 168 batches verify. Keep the prototype private and retain the
+adverse lanes alongside the warm gain.
+
 [B1330 borrow an existing index for single regex windows](results/2026-11-22-regex-borrowed-window/README.md)
 retains 10.00–12.68% lower warm CPU on bounded search. Indexed and ASCII
 cursor timings span zero. Unindexed Unicode cursor CPU rises 0.64–0.73%.
