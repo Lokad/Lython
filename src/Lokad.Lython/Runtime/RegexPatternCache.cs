@@ -28,7 +28,7 @@ internal sealed class RegexPatternCache
     private readonly LinkedList<CacheEntry> _recent = new();
     private long _committedSlotBytes;
 
-    private sealed record CacheEntry(Key Key, LythonRuntime.RePatternObject Pattern);
+    private readonly record struct CacheEntry(Key Key, LythonRuntime.RePatternObject Pattern);
 
     public int Count => _entries.Count;
 
@@ -51,44 +51,47 @@ internal sealed class RegexPatternCache
     public LythonRuntime.RePatternObject GetOrAdd(
         Key key,
         LythonRuntime.RePatternObject pattern,
-        MemoryGovernor? governor,
-        LythonSourceSpan? span)
+        MemoryGovernor governor,
+        LythonSourceSpan? span,
+        CancellationToken cancellationToken = default)
     {
+        governor.ThrowIfAdmissionFailed();
+        if (cancellationToken.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
         if (TryGet(key, out var existing)) return existing;
         // Eviction replaces an already-funded slot. Only growing the cache
         // needs new capacity funding; charging every miss strands slot charges
         // and can prevent a full cache from replacing its least-recent entry.
-        if (governor is not null && _entries.Count < MaxEntries)
+        var bytes = _entries.Count < MaxEntries ? SlotBytesPerEntry : 0;
+        governor.Reserve(bytes, span);
+        try
         {
-            governor.Reserve(SlotBytesPerEntry, span);
-            if (TryGet(key, out existing))
+            if (cancellationToken.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
+            // The admission callback can publish the canonical wrapper.
+            if (bytes != 0 && TryGet(key, out existing)) return existing;
+
+            var entry = new CacheEntry(key, pattern);
+            LinkedListNode<CacheEntry> node;
+            if (_entries.Count >= MaxEntries)
             {
-                // The admission callback published the canonical wrapper.
-                governor.ReleaseReserved(SlotBytesPerEntry);
-                return existing;
+                // Replace only the cache's reference. Any live pattern or
+                // match keeps its existing owner.
+                node = _recent.Last.RequireNotNull();
+                _entries.Remove(node.Value.Key);
+                _recent.Remove(node);
+                node.Value = entry;
             }
+            else node = new(entry);
+
+            _entries.Add(key, node);
+            _recent.AddFirst(node);
             // If a callback filled the last slot, keep the extra admission
             // until purge so publication needs no intervening refund callback.
-            governor.Commit(SlotBytesPerEntry);
-            _committedSlotBytes += SlotBytesPerEntry;
+            governor.Commit(bytes);
+            _committedSlotBytes += bytes;
+            bytes = 0;
+            return pattern;
         }
-
-        if (_entries.Count >= MaxEntries)
-        {
-            // Evict the coldest entry: its reference drops while its own ownership
-            // (and any retained users) stay exactly as they were.
-            var last = _recent.Last;
-            if (last is not null)
-            {
-                _entries.Remove(last.Value.Key);
-                _recent.RemoveLast();
-            }
-        }
-
-        var node = new LinkedListNode<CacheEntry>(new CacheEntry(key, pattern));
-        _entries.Add(key, node);
-        _recent.AddFirst(node);
-        return pattern;
+        finally { if (bytes != 0) governor.ReleaseReserved(bytes); }
     }
 
     // Explicit clear (re.purge): drops every reference and releases slot charges.

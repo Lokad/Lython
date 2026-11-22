@@ -376,7 +376,7 @@ internal sealed partial class LythonRuntime
                 // than sharing an analysis governor across concurrent runs.
                 names = CopyRuntimeNamedGroups(compiled, captureSlotCount, context, token, span, pattern);
                 var result = new RePatternObject(pattern, flags, compiled, captureSlotCount, names, options);
-                var canonical = cache.GetOrAdd(key, result, context.MemoryGovernor, span);
+                var canonical = cache.GetOrAdd(key, result, context.MemoryGovernor, span, token);
                 if (!ReferenceEquals(canonical, result)) return canonical;
                 published = true;
                 storage.Commit(wrapperBytes);

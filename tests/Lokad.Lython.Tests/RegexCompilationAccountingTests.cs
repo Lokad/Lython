@@ -103,6 +103,35 @@ public sealed class RegexCompilationAccountingTests
     }
 
     [Fact]
+    public void CancellationDuringCacheAdmissionClosesTheUnpublishedPattern()
+    {
+        var budget = new LythonMemoryBudget();
+        using var owner = budget.CreateScope();
+        using var cancellation = new CancellationTokenSource();
+        var hook = new AdmissionHookMemoryBudget(owner);
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
+            new LythonRunOptions { MemoryBudget = hook, CancellationToken = cancellation.Token },
+            regexProvider: Utf8RegexProvider.Instance);
+        var baseline = budget.ReservedBytes;
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        hook.AfterGrowth = bytes =>
+        {
+            if (bytes == RegexPatternCache.SlotBytesPerEntry) cancellation.Cancel();
+        };
+
+        try
+        {
+            var error = Assert.Throws<LythonRuntimeException>(() =>
+                CreatePattern(PyString.FromString("(?P<item>a)"), context, span));
+            Assert.Equal(LythonFailureReason.Cancelled, error.Attribution?.Reason);
+            Assert.Equal(0, context.State.RegexCache!.Count);
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        finally { context.State.CloseResources(); }
+    }
+
+    [Fact]
     public void FailedCompilationFundsErrorMetadataUntilOwnerCleanup()
     {
         var host = new MockLythonHost();
