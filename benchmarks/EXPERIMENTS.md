@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1358 classify the first closed arithmetic operand once](results/2026-11-22-shared-arithmetic-operand/README.md)
+keeps the shared dispatch private. The typed ASCII meter uses 0.99–2.46%
+less warm CPU, while the integer range loop uses 18.33–19.45% more.
+The supplied helper, integer invoice and typed Unicode meter slow down.
+All 196 timed batches, both quiet gates and ownership checks verify.
+
 [B1357 factory CPU attribution after combined capture construction](results/2026-11-22-post-capture-first-use-profile/README.md)
 finds 70 of 1,115 mixed first-use samples in callable reservation and
 none in separate capture reservation or scope promotion. The supplied
