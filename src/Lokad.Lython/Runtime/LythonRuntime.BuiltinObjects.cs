@@ -132,6 +132,12 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "tuple(iterable) expects one argument.", span);
         }
 
+        if (arguments[0] is PyTuple tuple)
+        {
+            context.CheckExecution(span);
+            return tuple;
+        }
+
         var result = PyTuple.CreateFromIterable(PyIteration.Cursor.Create(arguments[0], span, context), context, span);
         context.CheckExecution(span);
         return result;
@@ -147,6 +153,12 @@ internal sealed partial class LythonRuntime
         if (arguments.Length != 1)
         {
             throw new LythonRuntimeException("TypeError", "tuple(iterable) expects one argument.", span);
+        }
+
+        if (arguments[0] is PyTuple tuple)
+        {
+            context.CheckExecution(span);
+            return tuple;
         }
 
         return await PyTuple.CreateFromIterableAsync(arguments[0], context, span).ConfigureAwait(false);

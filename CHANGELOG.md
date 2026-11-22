@@ -2,6 +2,8 @@
 
 ## 0.11.0 - Unreleased
 
+- Return the original tuple when `tuple()` receives an exact tuple.
+  Tuple subclasses still convert to a plain tuple.
 - Compile function-default staging to dedicated instructions and remove
   operation descriptors, while preserving preflight and evaluation order.
 - Use an existing operand for proven initialized lexical keyword defaults.

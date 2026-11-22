@@ -20,6 +20,18 @@ public sealed class LiteralTupleExecutionTests
         yield return ["function-and-generator","def f():\n yield (1,(2,3))\n yield (4,(5,6))\nprint(list(f()))\n","[(1, (2, 3)), (4, (5, 6))]\n"];
         yield return ["slice-and-concat","t=(1,2,3,4,5)\nprint(t[:],t[::-1],t[1::2],t[4:0:-2],t[8:],t[:0:-2])\nprint(t+(6,7),(8,)+t,t+(),()+t)\n","(1, 2, 3, 4, 5) (5, 4, 3, 2, 1) (2, 4) (5, 3) () (5, 3)\n(1, 2, 3, 4, 5, 6, 7) (8, 1, 2, 3, 4, 5) (1, 2, 3, 4, 5) (1, 2, 3, 4, 5)\n"];
         yield return ["nested-derived-aliases","a=((1,2),(3,4))\nb=a[::-1]+a\nprint(b,b[0] is a[1],b[2] is a[0],a)\n","((3, 4), (1, 2), (1, 2), (3, 4)) True True ((1, 2), (3, 4))\n"];
+        yield return ["tuple-constructor-identity",
+            """
+            from collections import namedtuple
+            t = ([1],)
+            same = tuple(t)
+            same[0].append(2)
+            print(same is t, t)
+            named = namedtuple('Point', 'x')(t)
+            plain = tuple(named)
+            print(type(plain) is tuple, plain is named, plain[0] is t)
+            """,
+            "True ([1, 2],)\nTrue False True\n"];
         yield return ["slice-index-io","class Bound:\n def __index__(self):\n  with open('bound.txt') as source:return int(source.read())\nt=(1,2,3,4)\nprint(t[Bound():],t[:Bound()])\n","(2, 3, 4) (1,)\n"];
     }
 
