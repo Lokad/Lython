@@ -9,8 +9,8 @@
 
 - Read exact numeric positional `min` and `max` arguments directly from
   executable operands and return the winning operand.
-- Resolve compiler jump targets directly from emitted blocks, removing two
-  temporary arrays and the separate successor scan.
+- Resolve executable jump targets on demand. Reuse the block layout table
+  for jump resolution, operand depths and physical offsets.
 - Reuse an existing UTF-8 scalar index to resolve single regex match windows.
 - Share one immutable positional default tuple per compiled declaration
   when every positional default is a scalar literal. Keyword defaults

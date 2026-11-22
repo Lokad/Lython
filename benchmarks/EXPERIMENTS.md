@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1346 resolve executable jump targets on demand](results/2026-11-22-demanded-jump-targets/README.md)
+removes the eager traversal and separate target array. Dataclass
+compiler CPU falls 0.53–1.90%. Dead-heavy elapsed and validator time
+to result span zero. Retain the removed work. Both platform suites
+pass, and all 140 timed batches verify. Preserve the initial Ubuntu
+fixture failure and the passing reruns.
+
 [B1345 current factory, CSV and JSON Lines scripts against CPython](results/2026-11-22-post-staging-cpython/README.md)
 measures retained source against CPython 3.13.16. Mixed factory time
 to result remains 1.977–2.004× CPython's. Typed ASCII CSV time to

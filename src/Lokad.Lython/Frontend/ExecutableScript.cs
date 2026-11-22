@@ -503,7 +503,6 @@ internal sealed partial class ExecutableCodeObject
         ScopeDirectiveFacts scopeFacts,
         List<List<ExecutableInstruction>> blocks,
         int entryBlockIndex,
-        int[] jumpTargets,
         IReadOnlyList<ExecutableExceptionRegion> exceptionRegions,
         IReadOnlyList<ImportStatementSyntax> imports,
         ExecutableCallSite[] callSites,
@@ -542,35 +541,36 @@ internal sealed partial class ExecutableCodeObject
         var regionsByEntry = exceptionRegions.Count == 0 ? [] :
             exceptionRegions.OrderBy(region => region.ProtectedStartIndex).ToArray();
         var operandLayout = ExecutableStackLayout.Prepare(blocks, constants, callSites,
-            regionsByEntry, jumpTargets, entryBlockIndex, initialOperandDepth, FirstTemporarySlot, cancellationToken);
+            regionsByEntry, entryBlockIndex, initialOperandDepth, FirstTemporarySlot, cancellationToken);
         OperandCapacity = operandLayout.MaximumDepth;
         PatternStorageStart = checked(FirstTemporarySlot + Math.Max(4, OperandCapacity));
         ValueStorageCapacity = checked(PatternStorageStart + PatternStorageCount);
         LastOwnedTemporarySlot = operandLayout.LastOwnedTemporarySlot;
-        Instructions = ExecutableStackLayout.Linearize(blocks, operandLayout, jumpTargets, cancellationToken, out var offsets);
-        _operandReadSpans = reads.Where(read => operandLayout.EntryDepths[read.Block].HasValue)
+        Instructions = ExecutableStackLayout.Linearize(blocks, operandLayout, cancellationToken);
+        var positions = operandLayout.Blocks;
+        _operandReadSpans = reads.Where(read => positions[read.Block].IsReachable)
             .Select(read => new ExecutableOperandSpan(
-                ((long)(offsets[read.Block] + read.Instruction) << 2) | (uint)read.Input, read.Span)).ToArray();
-        EntryIndex = offsets[entryBlockIndex];
+                ((long)(positions[read.Block].Offset + read.Instruction) << 2) | (uint)read.Input, read.Span)).ToArray();
+        EntryIndex = positions[entryBlockIndex].Offset;
         // Original block widths preserve inner-first unwinding, including
         // ranges that become physically equal after unreachable blocks vanish.
         ExceptionRegions = regionsByEntry
-            .Where(region => operandLayout.EntryDepths[region.ProtectedStartIndex].HasValue)
+            .Where(region => positions[region.ProtectedStartIndex].IsReachable)
             .OrderBy(region => region.ProtectedEndIndex - region.ProtectedStartIndex)
             .Select(region =>
             {
                 // A suite may have no remaining instructions. Keep its bounds
                 // paired, since runtime routing tests containment in this suite.
-                var suiteStart = region.SuiteStartIndex is int start ? offsets[start] : (int?)null;
-                var suiteEnd = region.SuiteEndIndex is int end ? offsets[end + 1] - 1 : (int?)null;
+                var suiteStart = region.SuiteStartIndex is int start ? positions[start].Offset : (int?)null;
+                var suiteEnd = region.SuiteEndIndex is int end ? positions[end + 1].Offset - 1 : (int?)null;
                 if (suiteStart > suiteEnd) suiteStart = suiteEnd = null;
                 return region with
                 {
-                    StackDepth = checked(FirstTemporarySlot + operandLayout.EntryDepths[region.ProtectedStartIndex]!.Value),
-                    ProtectedStartIndex = offsets[region.ProtectedStartIndex],
-                    ProtectedEndIndex = offsets[region.ProtectedEndIndex + 1] - 1,
-                    ExceptIndex = region.ExceptIndex is int handler ? offsets[jumpTargets[handler]] : null,
-                    FinallyIndex = region.FinallyIndex is int cleanup ? offsets[jumpTargets[cleanup]] : null,
+                    StackDepth = checked(FirstTemporarySlot + positions[region.ProtectedStartIndex].EntryDepth),
+                    ProtectedStartIndex = positions[region.ProtectedStartIndex].Offset,
+                    ProtectedEndIndex = positions[region.ProtectedEndIndex + 1].Offset - 1,
+                    ExceptIndex = region.ExceptIndex is int handler ? ResolvedOffset(handler) : null,
+                    FinallyIndex = region.FinallyIndex is int cleanup ? ResolvedOffset(cleanup) : null,
                     SuiteStartIndex = suiteStart,
                     SuiteEndIndex = suiteEnd
                 };
@@ -588,6 +588,8 @@ internal sealed partial class ExecutableCodeObject
         CanRunNativeInstructions = IsFunctionScope && !RequiresLocalVariableMirroring && EntryIndex < NativePrefixEnd
             && (capturedLocalSlots.Count == 0 ||
                 usesOnlyLexicalSlots && ValueStorageCapacity <= LythonRuntime.NativeValueCapacity);
+
+        int ResolvedOffset(int block) => positions[ExecutableStackLayout.ResolveTarget(blocks, positions, block, cancellationToken)].Offset;
     }
 
     public string Name { get; }

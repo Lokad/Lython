@@ -9,6 +9,8 @@ public sealed class ExecutableJumpTargetTests
     {
         Assert.Equal([0, 1, 2, 1, 2, 0, 6, 6],
             Resolve([0, 2, 1, 1, 2, 0, -1, 6]));
+        Assert.Equal([0, 1, 2, 1, 2, 0, 6, 6],
+            Resolve([0, 2, 1, 1, 2, 0, -1, 6], reversed: true));
     }
 
     [Fact]
@@ -20,7 +22,7 @@ public sealed class ExecutableJumpTargetTests
             var successors = Enumerable.Repeat(-1, size).ToArray();
             do
             {
-                var actual = Resolve(successors);
+                var actual = Resolve(successors, reversed: successors[0] >= 0);
                 for (var start = 0; start < size; start++)
                 {
                     var seen = new HashSet<int>();
@@ -68,12 +70,20 @@ public sealed class ExecutableJumpTargetTests
         Assert.Equal([1, 1, 2], Resolve([1, 2, -1], [region]));
     }
 
-    private static int[] Resolve(int[] successors, IReadOnlyList<ExecutableExceptionRegion>? regions = null)
+    private static int[] Resolve(int[] successors, IReadOnlyList<ExecutableExceptionRegion>? regions = null,
+        bool reversed = false)
     {
         var blocks = new List<List<ExecutableInstruction>>(successors.Length);
         var span = new LythonSourceSpan(1, 1, 1, 1);
         foreach (var successor in successors)
             blocks.Add(successor == -1 ? [] : [ExecutableInstruction.Jump(successor, span)]);
-        return ExecutableScript.ResolveJumpTargets(blocks, regions ?? []);
+        var positions = ExecutableStackLayout.CreatePositions(blocks.Count, regions ?? [], default);
+        var results = new int[blocks.Count];
+        for (var i = 0; i < results.Length; i++)
+        {
+            var index = reversed ? results.Length - 1 - i : i;
+            results[index] = ExecutableStackLayout.ResolveTarget(blocks, positions, index, default);
+        }
+        return results;
     }
 }

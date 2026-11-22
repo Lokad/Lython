@@ -229,8 +229,6 @@ internal sealed partial class ExecutableScript
                 AddInstruction(finalBlock, ExecutableInstruction.ReturnNone(EmptySpan));
             }
 
-            var jumpTargets = _buffers.Blocks.Count == 1 ? SingleEntryBlock :
-                ResolveJumpTargets(_buffers.Blocks, _buffers.Regions, _compilation.CancellationToken);
             var (capturedLocalSlots, containsCallable, needsMirroring, completeChildren) = PrepareDeclarations();
             // Annotation values can retain functions or deferred generators after
             // module slots leave. Keep their existing global namespace lifetime
@@ -262,7 +260,6 @@ internal sealed partial class ExecutableScript
                 _scopeFacts,
                 _buffers.Blocks,
                 0,
-                jumpTargets,
                 _buffers.Regions,
                 _buffers.Imports.ToArray(),
                 _buffers.CallSites.ToArray(),

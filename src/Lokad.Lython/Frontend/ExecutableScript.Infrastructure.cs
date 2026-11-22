@@ -9,77 +9,8 @@ namespace Lokad.Lython.Frontend;
 
 internal sealed partial class ExecutableScript
 {
-    // Jump threading reads the emitted blocks directly. The target array
-    // also marks the current walk until all its entries have final targets.
-    internal static int[] ResolveJumpTargets(List<List<ExecutableInstruction>> blocks,
-        IReadOnlyList<ExecutableExceptionRegion> regions, CancellationToken token = default)
-    {
-        const int unseen = -1, visiting = -2;
-        var targets = new int[blocks.Count];
-        Array.Fill(targets, unseen);
-        for (var i = 0; i < regions.Count; i++)
-        {
-            PythonTokenization.CheckCancellation(token, i);
-            // The incoming operand depth belongs to the handlers at this
-            // block. Preserve that entry even when its only instruction jumps.
-            var start = regions[i].ProtectedStartIndex;
-            targets[start] = start;
-        }
-
-        for (var start = 0; start < targets.Length; start++)
-        {
-            PythonTokenization.CheckCancellation(token, start);
-            if (targets[start] >= 0) continue;
-
-            var current = start;
-            for (var step = 0; targets[current] == unseen; step++)
-            {
-                PythonTokenization.CheckCancellation(token, step);
-                var next = Successor(blocks[current]);
-                if (next == -1)
-                {
-                    targets[current] = current;
-                    break;
-                }
-                targets[current] = visiting;
-                current = next;
-            }
-
-            var target = targets[current];
-            if (target == visiting)
-            {
-                // Preserve every cycle node's identity. A tail into the
-                // cycle resolves to its own entry point.
-                target = current;
-                var step = 0;
-                do
-                {
-                    PythonTokenization.CheckCancellation(token, step++);
-                    targets[current] = current;
-                    current = Successor(blocks[current]);
-                } while (current != target);
-            }
-
-            current = start;
-            for (var step = 0; targets[current] == visiting; step++)
-            {
-                PythonTokenization.CheckCancellation(token, step);
-                targets[current] = target;
-                current = Successor(blocks[current]);
-            }
-        }
-        return targets;
-
-        static int Successor(List<ExecutableInstruction> block)
-            => block.Count == 1 && block[0].OpCode == ExecutableOpCode.Jump ? block[0].TargetIndex : -1;
-    }
-
     private sealed partial class Builder
     {
-        // These mappings are immutable after construction. A lone block can
-        // target only itself and is always reachable from its entry.
-        private static readonly int[] SingleEntryBlock = [0];
-
         private int CreateBlock()
         {
             var index = _buffers.Blocks.Count;

@@ -4,38 +4,119 @@ namespace Lokad.Lython.Frontend;
 
 // Operand shapes are a compiler invariant. Guest iteration, expansion and
 // suspension change values, never the number of executable operand slots.
-internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepths, int FirstTemporarySlot,
+internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLayout.Block[] Blocks, int FirstTemporarySlot,
     int LastOwnedTemporarySlot)
 {
-    internal static ExecutableInstruction[] Linearize(IReadOnlyList<List<ExecutableInstruction>> blocks,
-        ExecutableStackLayout layout, int[] jumpTargets, CancellationToken token, out int[] offsets)
+    internal struct Block
     {
-        offsets = new int[blocks.Count + 1];
-        for (var i = 0; i < blocks.Count; i++)
+        // A zero-initialized entry is unreachable. Complementing a live depth
+        // preserves every nonnegative value, including an empty operand stack.
+        private int _encodedDepth;
+        internal readonly bool IsReachable => _encodedDepth != 0;
+        internal int EntryDepth { readonly get => ~_encodedDepth; set => _encodedDepth = ~value; }
+        internal int Offset;
+        internal int EncodedTarget;
+    }
+
+    internal static Block[] CreatePositions(int count, IReadOnlyList<ExecutableExceptionRegion> regions,
+        CancellationToken token)
+    {
+        var positions = new Block[checked(count + 1)];
+        for (var i = 0; i < regions.Count; i++)
         {
             PythonTokenization.CheckCancellation(token, i);
-            offsets[i + 1] = offsets[i];
-            if (layout.EntryDepths[i].HasValue)
-                offsets[i + 1] = checked(offsets[i] + blocks[i].Count + (Completes(blocks[i]) ? 1 : 0));
+            // Handlers need the operand depth at their protected entry even
+            // when that entry consists only of an unconditional jump.
+            var start = regions[i].ProtectedStartIndex;
+            positions[start].EncodedTarget = checked(start + 1);
         }
-        var instructions = new ExecutableInstruction[offsets[^1]];
+        return positions;
+    }
+
+    internal static int ResolveTarget(IReadOnlyList<List<ExecutableInstruction>> blocks, Block[] positions, int start,
+        CancellationToken token)
+    {
+        var targets = positions.AsSpan(0, positions.Length - 1);
+        var target = targets[start].EncodedTarget;
+        return target > 0 ? target - 1 : ResolveUnseenTarget(blocks, targets, start, token);
+    }
+
+    private static int ResolveUnseenTarget(IReadOnlyList<List<ExecutableInstruction>> blocks, Span<Block> targets,
+        int start, CancellationToken token)
+    {
+        const int unseen = 0, visiting = -1;
+        var current = start;
+        for (var step = 0; targets[current].EncodedTarget == unseen; step++)
+        {
+            PythonTokenization.CheckCancellation(token, step);
+            var next = Successor(blocks[current]);
+            if (next == -1)
+            {
+                targets[current].EncodedTarget = current + 1;
+                break;
+            }
+            targets[current].EncodedTarget = visiting;
+            current = next;
+        }
+
+        var target = targets[current].EncodedTarget;
+        if (target == visiting)
+        {
+            // Preserve every cycle node, including the first node a tail
+            // enters. The walk has no recursive calls or separate path list.
+            target = current + 1;
+            var step = 0;
+            do
+            {
+                PythonTokenization.CheckCancellation(token, step++);
+                targets[current].EncodedTarget = current + 1;
+                current = Successor(blocks[current]);
+            } while (current + 1 != target);
+        }
+
+        current = start;
+        for (var step = 0; targets[current].EncodedTarget == visiting; step++)
+        {
+            PythonTokenization.CheckCancellation(token, step);
+            targets[current].EncodedTarget = target;
+            current = Successor(blocks[current]);
+        }
+        return target - 1;
+
+        static int Successor(List<ExecutableInstruction> block)
+            => block.Count == 1 && block[0].OpCode == ExecutableOpCode.Jump ? block[0].TargetIndex : -1;
+    }
+
+    internal static ExecutableInstruction[] Linearize(IReadOnlyList<List<ExecutableInstruction>> blocks,
+        ExecutableStackLayout layout, CancellationToken token)
+    {
+        var positions = layout.Blocks;
         for (var i = 0; i < blocks.Count; i++)
         {
             PythonTokenization.CheckCancellation(token, i);
-            if (!layout.EntryDepths[i].HasValue) continue;
+            var position = positions[i];
+            positions[i + 1].Offset = position.IsReachable
+                ? checked(position.Offset + blocks[i].Count + (Completes(blocks[i]) ? 1 : 0)) : position.Offset;
+        }
+        var instructions = new ExecutableInstruction[positions[^1].Offset];
+        for (var i = 0; i < blocks.Count; i++)
+        {
+            PythonTokenization.CheckCancellation(token, i);
+            var position = positions[i];
+            if (!position.IsReachable) continue;
             var source = blocks[i];
             for (var j = 0; j < source.Count; j++)
             {
                 PythonTokenization.CheckCancellation(token, j);
                 var instruction = source[j];
-                instructions[offsets[i] + j] = instruction.OpCode switch
+                instructions[position.Offset + j] = instruction.OpCode switch
                 {
-                    ExecutableOpCode.AbruptJump => instruction.WithTargetIndex(offsets[instruction.TargetIndex]),
+                    ExecutableOpCode.AbruptJump => instruction.WithTargetIndex(positions[instruction.TargetIndex].Offset),
                     ExecutableOpCode.ForNext when j + 1 < source.Count && CanUnpackIteration(instruction, source[j + 1])
-                        => instruction.WithTargetIndex(offsets[jumpTargets[instruction.TargetIndex]]).WithFixedUnpack(),
+                        => instruction.WithTargetIndex(ResolvedOffset(instruction.TargetIndex)).WithFixedUnpack(),
                     ExecutableOpCode.Jump or ExecutableOpCode.JumpIfFalse or ExecutableOpCode.CompareJumpIfFalse or
-                        ExecutableOpCode.ForNext or ExecutableOpCode.EndFinally => instruction.WithTargetIndex(offsets[jumpTargets[instruction.TargetIndex]]),
-                    ExecutableOpCode.MatchCase => instruction.WithFailureIndex(offsets[jumpTargets[instruction.FailureIndex]]),
+                        ExecutableOpCode.ForNext or ExecutableOpCode.EndFinally => instruction.WithTargetIndex(ResolvedOffset(instruction.TargetIndex)),
+                    ExecutableOpCode.MatchCase => instruction.WithFailureIndex(ResolvedOffset(instruction.FailureIndex)),
                     _ => instruction
                 };
             }
@@ -43,13 +124,15 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
             // distinctly from a guest top-level return (not legal in imports).
             if (Completes(blocks[i]))
             {
-                var extent = source.Count == 0 ? checked(layout.FirstTemporarySlot + (layout.EntryDepths[i] ?? 0)) : source[^1].LiveExtent;
-                instructions[offsets[i + 1] - 1] = ExecutableInstruction.Complete(
+                var extent = source.Count == 0 ? checked(layout.FirstTemporarySlot + position.EntryDepth) : source[^1].LiveExtent;
+                instructions[positions[i + 1].Offset - 1] = ExecutableInstruction.Complete(
                     source.Count == 0 ? new LythonSourceSpan(0, 0, 0, 0) : source[^1].Span)
                     .WithStorageSlots(extent, extent, extent);
             }
         }
         return instructions;
+
+        int ResolvedOffset(int block) => positions[ResolveTarget(blocks, positions, block, token)].Offset;
 
         static bool CanUnpackIteration(ExecutableInstruction iteration, ExecutableInstruction next)
             => !iteration.HasResultConsumer && next.OpCode == ExecutableOpCode.UnpackValues
@@ -63,31 +146,31 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
 
     internal static ExecutableStackLayout Prepare(IReadOnlyList<List<ExecutableInstruction>> blocks,
         IReadOnlyList<object?> constants, IReadOnlyList<ExecutableCallSite> calls,
-        ExecutableExceptionRegion[] regions, int[] jumpTargets,
+        ExecutableExceptionRegion[] regions,
         int entryBlock, int initialDepth, int firstTemporarySlot, CancellationToken token)
     {
         if (initialDepth < 0 || (uint)entryBlock >= (uint)blocks.Count)
             throw new InvalidOperationException("Invalid executable entry operand depth.");
-        var depths = new int?[blocks.Count];
+        var positions = CreatePositions(blocks.Count, regions, token);
         Queue<int>? pending = null;
         var maximum = initialDepth;
         // Generator expressions arrive with their acquired outer cursor. Other
         // guest values never expose the interpreter's private temporary wrappers.
         var lastOwnedTemporarySlot = initialDepth == 0 ? -1 : checked(firstTemporarySlot + initialDepth - 1);
-        depths[entryBlock] = initialDepth;
+        positions[entryBlock].EntryDepth = initialDepth;
         var blockIndex = entryBlock;
         do
         {
             PythonTokenization.CheckCancellation(token, 0);
-            var depth = depths[blockIndex]!.Value;
+            var depth = positions[blockIndex].EntryDepth;
             if (regions.Length != 0)
             {
                 for (var i = FirstProtectedRegion(regions, blockIndex);
                      i < regions.Length && regions[i].ProtectedStartIndex == blockIndex; i++)
                 {
                     var region = regions[i];
-                    if (region.ExceptIndex is int except) Enter(jumpTargets[except], depth);
-                    if (region.FinallyIndex is int cleanup) Enter(jumpTargets[cleanup], depth);
+                    if (region.ExceptIndex is int except) Enter(ResolveTarget(blocks, positions, except, token), depth);
+                    if (region.FinallyIndex is int cleanup) Enter(ResolveTarget(blocks, positions, cleanup, token), depth);
                 }
             }
 
@@ -145,21 +228,21 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
                 switch (instruction.OpCode)
                 {
                     case ExecutableOpCode.ForNext:
-                        Enter(jumpTargets[instruction.TargetIndex], depth - 2);
+                        Enter(ResolveTarget(blocks, positions, instruction.TargetIndex, token), depth - 2);
                         break;
                     case ExecutableOpCode.JumpIfFalse:
                     case ExecutableOpCode.CompareJumpIfFalse:
-                        Enter(jumpTargets[instruction.TargetIndex], depth);
+                        Enter(ResolveTarget(blocks, positions, instruction.TargetIndex, token), depth);
                         break;
                     case ExecutableOpCode.MatchCase:
-                        Enter(jumpTargets[instruction.FailureIndex], depth);
+                        Enter(ResolveTarget(blocks, positions, instruction.FailureIndex, token), depth);
                         break;
                     case ExecutableOpCode.AbruptJump:
                         Enter(instruction.TargetIndex, depth - (instruction.DiscardIterator ? 1 : 0));
                         goto CompleteBlock;
                     case ExecutableOpCode.Jump:
                     case ExecutableOpCode.EndFinally:
-                        Enter(jumpTargets[instruction.TargetIndex], depth);
+                        Enter(ResolveTarget(blocks, positions, instruction.TargetIndex, token), depth);
                         goto CompleteBlock;
                     case ExecutableOpCode.Return:
                     case ExecutableOpCode.ReturnNone:
@@ -173,19 +256,21 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
             // existing interpreter never falls through to the next stored block.
         CompleteBlock:;
         } while (pending is not null && pending.TryDequeue(out blockIndex));
-        return new(maximum, depths, firstTemporarySlot, lastOwnedTemporarySlot);
+        return new(maximum, positions, firstTemporarySlot, lastOwnedTemporarySlot);
 
         void Enter(int block, int depth)
         {
             if (depth < 0 || (uint)block >= (uint)blocks.Count)
                 throw new InvalidOperationException("Invalid executable operand edge.");
-            if (depths[block] is int previous)
+            ref var position = ref positions[block];
+            if (position.IsReachable)
             {
+                var previous = position.EntryDepth;
                 if (previous != depth)
                     throw new InvalidOperationException($"Executable operand join mismatch in block {block}: {previous} versus {depth}.");
                 return;
             }
-            depths[block] = depth;
+            position.EntryDepth = depth;
             (pending ??= new Queue<int>()).Enqueue(block);
         }
     }
