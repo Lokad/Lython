@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1374 mixed factory phase separation](results/2026-11-22-mixed-factory-boundaries/README.md)
+reuses both B1372 images. Compilation elapsed rises 0.87–1.45%,
+while compile and warm CPU span zero. Compile to result crosses zero
+with 9.29% same-image worker spread. The earlier adverse results stay
+open without a phase-specific cause.
+
 [B1373 direct integer returns against CPython](results/2026-11-22-direct-integer-return-cpython/README.md)
 measures production `e152d1ceb` against stock CPython 3.13.16. The
 nested invoice takes 1.066–1.069× CPython's warm time. The function

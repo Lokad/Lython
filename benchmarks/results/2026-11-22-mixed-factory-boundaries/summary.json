@@ -1,0 +1,130 @@
+{
+  "complete": true,
+  "elapsedSeconds": 167.24794815387577,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "staging": {
+    "retiredOnly": [],
+    "alreadyAbsent": [],
+    "freshIdleLease": true,
+    "allHashesPathsOwnershipLinksAndAliasesVerified": true,
+    "canonicalArchiveAndCurrentImagesPreserved": true,
+    "freeBeforeBytes": 178864128,
+    "freeAfterBytes": 178823168
+  },
+  "rows": [
+    {
+      "case": "scripts.annotated-rule-closures.literal-positional-dynamic-keyword",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "reference-control": 1.0475278488745978,
+        "candidate-control": 1.0238815203761755,
+        "reference": 1.042760546474359,
+        "candidate": 1.1190502184300342
+      },
+      "cpuMilliseconds": {
+        "reference-control": 1.045016077170418,
+        "candidate-control": 1.0344827586206897,
+        "reference": 1.0576923076923077,
+        "candidate": 1.1262798634812288
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.4819281124730324,
+        "candidate-control": 1.0260254017377706,
+        "reference": 0.3031116949479017,
+        "candidate": 0.8406360075328804
+      },
+      "elapsedChangePercent": [
+        -2.25734604801453,
+        -1.8104852702775065,
+        6.827729652464676,
+        7.316125664095696
+      ],
+      "cpuChangePercent": [
+        -2.1943573667711602,
+        -1.0079575596816936,
+        6.484641638225264,
+        7.776319243896057
+      ],
+      "referenceSpreadPercent": 0.45718093347100197,
+      "candidateSpreadPercent": 9.294893614145261
+    },
+    {
+      "case": "scripts.annotated-rule-closures.literal-positional-dynamic-keyword",
+      "lane": "compile",
+      "elapsedMilliseconds": {
+        "candidate": 0.024660257633154024,
+        "reference": 0.0243090604998135,
+        "candidate-control": 0.024520288159077294,
+        "reference-control": 0.024306826903648267
+      },
+      "cpuMilliseconds": {
+        "candidate": 0.02462307750587166,
+        "reference": 0.02424468481909735,
+        "candidate-control": 0.02434092270820851,
+        "reference-control": 0.02469597754911132
+      },
+      "elapsedIQRPercent": {
+        "candidate": 1.2849446941486888,
+        "reference": 0.7835105841242039,
+        "candidate-control": 0.8056119996681309,
+        "reference-control": 0.9551450873035635
+      },
+      "elapsedChangePercent": [
+        0.8689256389214028,
+        0.8781946581311706,
+        1.4447170154651578,
+        1.4540389451356495
+      ],
+      "cpuChangePercent": [
+        -1.4377031247163052,
+        -0.2951899478151332,
+        0.39694427801080234,
+        1.5607242972952573
+      ],
+      "referenceSpreadPercent": 0.009189172137058499,
+      "candidateSpreadPercent": 0.5708312772209956
+    },
+    {
+      "case": "scripts.annotated-rule-closures.literal-positional-dynamic-keyword",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 1.036034308681672,
+        "candidate-control": 1.0306537788461538,
+        "reference": 1.0026428238897396,
+        "candidate": 1.0288500794912558
+      },
+      "cpuMilliseconds": {
+        "reference-control": 1.045016077170418,
+        "candidate-control": 1.0416666666666667,
+        "reference": 0.9954058192955589,
+        "candidate": 1.0333863275039745
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 1.052828608420836,
+        "candidate-control": 0.39004314286083674,
+        "reference": 0.7384797980853667,
+        "candidate": 0.6688527500797178
+      },
+      "elapsedChangePercent": [
+        -0.6934354519164354,
+        -0.5193389630469558,
+        2.6138177002898777,
+        2.7937122062816178
+      ],
+      "cpuChangePercent": [
+        -1.112877583465821,
+        -0.32051282051280827,
+        3.8155802861685295,
+        4.647435897435903
+      ],
+      "referenceSpreadPercent": 3.3303469586896783,
+      "candidateSpreadPercent": 0.17531216557711282
+    }
+  ],
+  "CPythonRefreshed": false,
+  "verifiedTimedBatches": 84,
+  "source": "7a8df051a9cbb3fbfab866273267c1e7f75b2f6e versus 7d323d40fa6b7aae8d22377673be8d1b12e0200e",
+  "archiveSHA256": "92805d8f93b4c5bc60283ed78d41a09b241a32764c347e8e52bb01d97101929f",
+  "disposition": "Preserve earlier adverse observations. The matched phase exercise does not identify a reliable phase-specific CPU increase."
+}
