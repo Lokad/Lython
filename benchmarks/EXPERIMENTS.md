@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1327 CSV and mixed-factory checkpoint](results/2026-11-22-retained-csv-cpython/README.md)
+measures retained `318bf0e0a` against CPython 3.13.16. Warm ratios are
+1.491–1.525× for typed ASCII, 1.763–1.779× for explicit float,
+1.151–1.165× for the quoted invoice, and 2.034–2.096× for mixed defaults.
+The typed meter takes 0.620–0.624× as long to compile. The full meter
+and mixed factory take 1.458–1.496× and 1.988–2.042× as long to result.
+All 196 batches pass and the archive retains both worker medians per engine.
+
 [B1326 load literal defaults and prepare keywords separately](results/2026-11-22-compiled-literal-defaults-keywords/README.md)
 retains the 15.51–18.09% allocation reductions and lowers warm CPU
 in both literal factories. The mixed factory takes 10.71–14.42% less

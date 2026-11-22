@@ -1,0 +1,350 @@
+{
+  "source": "318bf0e0a6cd9ae9814e6e2efdea6fa063614de1",
+  "coreSHA256": "c07034f3d8519c721ac6a7c10ed0b07439c6f570bb0d389b25eef4a1e0ae27ea",
+  "collection": "B1327",
+  "retainedSource": "318bf0e0a6cd9ae9814e6e2efdea6fa063614de1",
+  "rows": [
+    {
+      "case": "scripts.csv-meter-report.typed-ascii",
+      "lane": "warm",
+      "inputs": 1024,
+      "inputRecords": 4096,
+      "inputFileBytes": {
+        "meters.csv": 139299
+      },
+      "inputFileLines": {
+        "meters.csv": 4097
+      },
+      "lythonMs": [
+        3.7986747125748503,
+        3.8521443272727276
+      ],
+      "cpythonMs": [
+        2.5255137489878545,
+        2.5478779224489796
+      ],
+      "ratio": [
+        1.4909170800944909,
+        1.5252913704455358
+      ],
+      "lythonControlPercent": 1.4075860331203227,
+      "cpythonControlPercent": 0.8855296657992007,
+      "maxIQRPercent": 0.999822305766098,
+      "engines": {
+        "candidate": {
+          "elapsedMs": 3.8521443272727276,
+          "cpuMs": 4.0,
+          "elapsedIQRPercent": 0.8240634943703996
+        },
+        "candidate-control": {
+          "elapsedMs": 3.7986747125748503,
+          "cpuMs": 3.8922155688622753,
+          "elapsedIQRPercent": 0.21181110726393992
+        },
+        "CPython": {
+          "elapsedMs": 2.5255137489878545,
+          "cpuMs": 2.6315789473684212,
+          "elapsedIQRPercent": 0.999822305766098
+        },
+        "CPython-control": {
+          "elapsedMs": 2.5478779224489796,
+          "cpuMs": 2.6530612244897958,
+          "elapsedIQRPercent": 0.18239956971251076
+        }
+      }
+    },
+    {
+      "case": "scripts.csv-meter-report.explicit-float",
+      "lane": "warm",
+      "inputs": 1024,
+      "inputRecords": 4096,
+      "inputFileBytes": {
+        "meters.csv": 139299
+      },
+      "inputFileLines": {
+        "meters.csv": 4097
+      },
+      "lythonMs": [
+        5.041105246031746,
+        5.057584230158731
+      ],
+      "cpythonMs": [
+        2.8423981719457014,
+        2.86018585520362
+      ],
+      "ratio": [
+        1.7625096763765598,
+        1.7793369979184415
+      ],
+      "lythonControlPercent": 0.32689228497970735,
+      "cpythonControlPercent": 0.6257984343461143,
+      "maxIQRPercent": 0.726400663339474,
+      "engines": {
+        "candidate": {
+          "elapsedMs": 5.057584230158731,
+          "cpuMs": 5.238095238095238,
+          "elapsedIQRPercent": 0.726400663339474
+        },
+        "candidate-control": {
+          "elapsedMs": 5.041105246031746,
+          "cpuMs": 5.238095238095238,
+          "elapsedIQRPercent": 0.6465866019513963
+        },
+        "CPython": {
+          "elapsedMs": 2.8423981719457014,
+          "cpuMs": 2.9411764705882355,
+          "elapsedIQRPercent": 0.23076325027149264
+        },
+        "CPython-control": {
+          "elapsedMs": 2.86018585520362,
+          "cpuMs": 2.9411764705882355,
+          "elapsedIQRPercent": 0.5529398135463417
+        }
+      }
+    },
+    {
+      "case": "scripts.csv-invoice.method-policy.quoted-control",
+      "lane": "warm",
+      "inputs": 1024,
+      "inputRecords": 4096,
+      "inputFileBytes": {
+        "input.csv": 174147
+      },
+      "inputFileLines": {
+        "input.csv": 5121
+      },
+      "lythonMs": [
+        7.2270368,
+        7.301075011235954
+      ],
+      "cpythonMs": [
+        6.266932128712871,
+        6.280436284313725
+      ],
+      "ratio": [
+        1.150722095222993,
+        1.1650158101736903
+      ],
+      "lythonControlPercent": 1.0244615225420528,
+      "cpythonControlPercent": 0.215482716638693,
+      "maxIQRPercent": 0.7790415875870932,
+      "engines": {
+        "candidate": {
+          "elapsedMs": 7.2270368,
+          "cpuMs": 7.444444444444445,
+          "elapsedIQRPercent": 0.7790415875870932
+        },
+        "candidate-control": {
+          "elapsedMs": 7.301075011235954,
+          "cpuMs": 7.415730337078652,
+          "elapsedIQRPercent": 0.5884611334348153
+        },
+        "CPython": {
+          "elapsedMs": 6.266932128712871,
+          "cpuMs": 6.435643564356436,
+          "elapsedIQRPercent": 0.33968220858519055
+        },
+        "CPython-control": {
+          "elapsedMs": 6.280436284313725,
+          "cpuMs": 6.372549019607843,
+          "elapsedIQRPercent": 0.23238566036861855
+        }
+      }
+    },
+    {
+      "case": "scripts.csv-meter-report.typed-ascii",
+      "lane": "compile",
+      "inputs": 1024,
+      "inputRecords": 4096,
+      "inputFileBytes": {
+        "meters.csv": 139299
+      },
+      "inputFileLines": {
+        "meters.csv": 4097
+      },
+      "lythonMs": [
+        0.041999999612378054,
+        0.042207379247612246
+      ],
+      "cpythonMs": [
+        0.06765865433646813,
+        0.0677271639874739
+      ],
+      "ratio": [
+        0.62013521812527,
+        0.6238282398836064
+      ],
+      "lythonControlPercent": 0.4937610408288551,
+      "cpythonControlPercent": 0.101257779477959,
+      "maxIQRPercent": 1.0492600792667368,
+      "engines": {
+        "candidate": {
+          "elapsedMs": 0.042207379247612246,
+          "cpuMs": 0.04288220388538756,
+          "elapsedIQRPercent": 1.0492600792667368
+        },
+        "candidate-control": {
+          "elapsedMs": 0.041999999612378054,
+          "cpuMs": 0.041992376768525096,
+          "elapsedIQRPercent": 0.3790091987517004
+        },
+        "CPython": {
+          "elapsedMs": 0.06765865433646813,
+          "cpuMs": 0.06792058516196448,
+          "elapsedIQRPercent": 0.9022600390618255
+        },
+        "CPython-control": {
+          "elapsedMs": 0.0677271639874739,
+          "cpuMs": 0.06784968684759916,
+          "elapsedIQRPercent": 0.46819762439598905
+        }
+      }
+    },
+    {
+      "case": "scripts.csv-meter-report.typed-ascii",
+      "lane": "compile-run",
+      "inputs": 1024,
+      "inputRecords": 4096,
+      "inputFileBytes": {
+        "meters.csv": 139299
+      },
+      "inputFileLines": {
+        "meters.csv": 4097
+      },
+      "lythonMs": [
+        3.9402785217391307,
+        4.0210422051282055
+      ],
+      "cpythonMs": [
+        2.6886707739130435,
+        2.7029408728070177
+      ],
+      "ratio": [
+        1.457774589662826,
+        1.4955502340199325
+      ],
+      "lythonControlPercent": 2.0496947853683167,
+      "cpythonControlPercent": 0.5307492100717681,
+      "maxIQRPercent": 0.5771255486586733,
+      "engines": {
+        "candidate": {
+          "elapsedMs": 3.9402785217391307,
+          "cpuMs": 4.099378881987578,
+          "elapsedIQRPercent": 0.5771255486586733
+        },
+        "candidate-control": {
+          "elapsedMs": 4.0210422051282055,
+          "cpuMs": 4.166666666666667,
+          "elapsedIQRPercent": 0.5728260423056857
+        },
+        "CPython": {
+          "elapsedMs": 2.7029408728070177,
+          "cpuMs": 2.807017543859649,
+          "elapsedIQRPercent": 0.25686114315005243
+        },
+        "CPython-control": {
+          "elapsedMs": 2.6886707739130435,
+          "cpuMs": 2.8260869565217392,
+          "elapsedIQRPercent": 0.2697096430765817
+        }
+      }
+    },
+    {
+      "case": "scripts.annotated-rule-closures.literal-positional-dynamic-keyword",
+      "lane": "warm",
+      "inputs": 2048,
+      "inputRecords": null,
+      "inputFileBytes": {},
+      "inputFileLines": {},
+      "lythonMs": [
+        1.178845012635379,
+        1.2066102063197026
+      ],
+      "cpythonMs": [
+        0.5756529831858408,
+        0.5797081004444444
+      ],
+      "ratio": [
+        2.033514818460523,
+        2.0960721850896182
+      ],
+      "lythonControlPercent": 2.355287878111545,
+      "cpythonControlPercent": 0.7044378083757019,
+      "maxIQRPercent": 0.9145624220844571,
+      "engines": {
+        "candidate": {
+          "elapsedMs": 1.2066102063197026,
+          "cpuMs": 1.20817843866171,
+          "elapsedIQRPercent": 0.5739475303028314
+        },
+        "candidate-control": {
+          "elapsedMs": 1.178845012635379,
+          "cpuMs": 1.1913357400722022,
+          "elapsedIQRPercent": 0.5029437911078005
+        },
+        "CPython": {
+          "elapsedMs": 0.5756529831858408,
+          "cpuMs": 0.5752212389380531,
+          "elapsedIQRPercent": 0.32456877278191076
+        },
+        "CPython-control": {
+          "elapsedMs": 0.5797081004444444,
+          "cpuMs": 0.5777777777777777,
+          "elapsedIQRPercent": 0.9145624220844571
+        }
+      }
+    },
+    {
+      "case": "scripts.annotated-rule-closures.literal-positional-dynamic-keyword",
+      "lane": "compile-run",
+      "inputs": 2048,
+      "inputRecords": null,
+      "inputFileBytes": {},
+      "inputFileLines": {},
+      "lythonMs": [
+        1.2447132294455066,
+        1.2710580233463034
+      ],
+      "cpythonMs": [
+        0.6223625680076629,
+        0.6260125708775314
+      ],
+      "ratio": [
+        1.988319863450495,
+        2.042311168255629
+      ],
+      "lythonControlPercent": 2.1165352209306043,
+      "cpythonControlPercent": 0.5864753212188045,
+      "maxIQRPercent": 0.8852939824830278,
+      "engines": {
+        "candidate": {
+          "elapsedMs": 1.2710580233463034,
+          "cpuMs": 1.284046692607004,
+          "elapsedIQRPercent": 0.8852939824830278
+        },
+        "candidate-control": {
+          "elapsedMs": 1.2447132294455066,
+          "cpuMs": 1.2619502868068833,
+          "elapsedIQRPercent": 0.29607908688293694
+        },
+        "CPython": {
+          "elapsedMs": 0.6260125708775314,
+          "cpuMs": 0.626808100289296,
+          "elapsedIQRPercent": 0.6655595579618158
+        },
+        "CPython-control": {
+          "elapsedMs": 0.6223625680076629,
+          "cpuMs": 0.6226053639846744,
+          "elapsedIQRPercent": 0.856814591547447
+        }
+      }
+    }
+  ],
+  "elapsedSeconds": 370.8608719846234,
+  "archiveSHA256": "6950aa4f039089fb01423266483ab25a9cc914588e20d6fe24afd4bcc8fc6105",
+  "measuredColdStartup": false,
+  "measuredCore": "measured-core.dll.gz",
+  "memoryMeasurementIncluded": false,
+  "builtImageSource": "318bf0e0a6cd9ae9814e6e2efdea6fa063614de1",
+  "verifiedBatches": 196
+}

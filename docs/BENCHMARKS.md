@@ -2,11 +2,12 @@
 
 | Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| Typed ASCII CSV meter report | 4,096 records / 139,299 B | 4.103–4.231 ms | 2.515–2.518 ms | 1.629–1.682× | B1316 diagnostic. Controls L/C 3.14 / 0.13%. IQR ≤0.55%. |
-| Quote-heavy CSV policy invoice | 4,096 records / 174,147 B | 7.261–7.366 ms | 6.299–6.357 ms | 1.142–1.169× | B1316 diagnostic. Controls L/C 1.46 / 0.93%. IQR ≤1.03%. |
+| Typed ASCII CSV meter report | 4,096 records / 139,299 B | 3.799–3.852 ms | 2.526–2.548 ms | 1.491–1.525× | B1327 diagnostic. Controls L/C 1.41 / 0.89%. IQR ≤1.00%. |
+| CSV meter report with explicit `float()` | 4,096 records / 139,299 B | 5.041–5.058 ms | 2.842–2.860 ms | 1.763–1.779× | B1327 diagnostic. Controls L/C 0.33 / 0.63%. IQR ≤0.73%. |
+| Quote-heavy CSV policy invoice | 4,096 records / 174,147 B | 7.227–7.301 ms | 6.267–6.280 ms | 1.151–1.165× | B1327 diagnostic. Controls L/C 1.02 / 0.22%. IQR ≤0.78%. |
+| Mixed literal-default factory | 2,048 inputs / 4,096 definitions | 1.179–1.207 ms | 0.576–0.580 ms | 2.034–2.096× | B1327 diagnostic. Controls L/C 2.36 / 0.70%. IQR ≤0.91%. |
 | Generated validator with a generator | 96 guards / 1,714 B JSON | 0.07462–0.07479 ms | 0.03998–0.04031 ms | 1.851–1.871× | B1316 diagnostic. Controls L/C 0.23 / 0.82%. IQR ≤0.80%. |
 | Typed Unicode CSV meter report | 4,096 records / 223,267 B | 5.019–5.208 ms | 3.134–3.196 ms | 1.570–1.662× | B1313 diagnostic. Controls L/C 3.76 / 1.98%. IQR ≤0.78%. |
-| CSV meter report with explicit `float()` | 4,096 records / 139,299 B | 5.783–5.992 ms | 2.871–2.993 ms | 1.932–2.087× | B1313 diagnostic. Controls L/C 3.62 / 4.27%. IQR ≤1.20%. |
 | CSV restock export | 3,072 records / 182,437 B | 3.759–3.907 ms | 5.102–5.129 ms | 0.733–0.766× | B1278 diagnostic. Controls L/C 3.92 / 0.52%. IQR ≤0.80%. |
 | CSV restock export with Unicode escaping | 3,072 records / 170,917 B | 4.507–4.525 ms | 5.714–5.798 ms | 0.777–0.792× | B1278 diagnostic. Controls L/C 0.41 / 1.48%. IQR ≤0.78%. |
 | JSON Lines export with expanded options | 3,072 records / 189,441 B | 6.503–6.598 ms | 6.534–6.571 ms | 0.990–1.010× | B1261 diagnostic. Spans parity. Controls L/C 1.47 / 0.57%. IQR ≤1.78%. |
@@ -36,6 +37,16 @@
 **Ratio = Lython elapsed / CPython elapsed. Above one means slower.** Ranges cover
 the combinations of two process medians per engine, not confidence intervals.
 Controls L/C report the difference between the two Lython/CPython medians.
+
+B1327 measures **318bf0e0a** against **CPython 3.13.16** on **2026-11-22 UTC**.
+All 196 timed batches passed on the quiet Azure F4as_v7 running Ubuntu
+24.04.4 and .NET 11 RC3. The three CSV scripts include mediated RAM-backed
+input and output. Warm execution also includes captured output, golden
+verification and prior-result disposal. Independent phase workers measure
+typed ASCII meter compilation and time to result, and mixed-factory time
+to result. Startup and final teardown are separate. The archived comparison
+records the measured revision for each lane.
+[B1327 checkpoint](../benchmarks/results/2026-11-22-retained-csv-cpython/README.md).
 
 B1316 measures **d5abc29d4**, with production-equivalent source at
 **8c81fb8d2**, against **CPython 3.13.16** on **2026-11-22 UTC**.
@@ -240,8 +251,9 @@ The table compares workload latency under different containment boundaries.
 | Generated validator with a generator | Compilation only | 1.519–1.534 ms | 1.813–1.825 ms | 0.832–0.846× | B1316 diagnostic. Controls L/C 0.95 / 0.68%. IQR ≤1.25%. |
 | Generated validator with a generator | Compile-to-result | 1.575–1.597 ms | 1.965–1.967 ms | 0.801–0.813× | B1316 diagnostic. Controls L/C 1.37 / 0.10%. IQR ≤0.74%. |
 | Inherited dataclass configuration | Compilation only | 0.17064–0.17213 ms | 0.43804–0.43880 ms | 0.389–0.393× | B1316 diagnostic. Controls L/C 0.87 / 0.17%. IQR ≤0.92%. |
-| Typed ASCII CSV meter report | Compilation only | 0.04265–0.04268 ms | 0.06745–0.06748 ms | 0.632–0.633× | B1313 diagnostic. Controls L/C 0.07 / 0.06%. IQR ≤0.43%. |
-| Typed ASCII CSV meter report | Compile-to-result | 4.688–4.741 ms | 2.678–2.698 ms | 1.738–1.770× | B1313 diagnostic. Controls L/C 1.13 / 0.73%. IQR ≤0.77%. |
+| Typed ASCII CSV meter report | Compilation only | 0.04200–0.04221 ms | 0.06766–0.06773 ms | 0.620–0.624× | B1327 diagnostic. Controls L/C 0.49 / 0.10%. IQR ≤1.05%. |
+| Typed ASCII CSV meter report | Compile-to-result | 3.940–4.021 ms | 2.689–2.703 ms | 1.458–1.496× | B1327 diagnostic. Controls L/C 2.05 / 0.53%. IQR ≤0.58%. |
+| Mixed literal-default factory | Compile-to-result | 1.245–1.271 ms | 0.622–0.626 ms | 1.988–2.042× | B1327 diagnostic. Controls L/C 2.12 / 0.59%. IQR ≤0.89%. |
 | Postponed nested factories | Compilation only | 0.02269–0.02273 ms | 0.03937–0.03983 ms | 0.570–0.577× | B1307 diagnostic. Controls L/C 0.16 / 1.18%. IQR ≤1.52%. |
 | Postponed nested factories | Compile-to-result | 1.183–1.295 ms | 0.576–0.588 ms | 2.014–2.247× | B1307 uncertain magnitude. Controls L/C 9.44 / 1.94%. IQR ≤0.93%. |
 | Captured rule closures | Compilation only | 0.03460–0.03524 ms | 0.04742–0.04748 ms | 0.73–0.74× | B1122 diagnostic. Controls L/C 1.86 / 0.14%. IQR ≤1.31%. |
