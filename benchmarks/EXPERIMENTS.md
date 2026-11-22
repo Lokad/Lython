@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1413 annotation transport](results/2026-11-22-definition-annotation-transport/README.md)
+passes the evaluated eager value without the capacity and repeated-read
+tuple. Allocation and peak match. The postponed target spans zero at
+both boundaries. The eager factory takes 1.33–6.18% longer warm and the
+defaults observer slows in every elapsed pairing. Keep it private.
+
 [B1412 factory checkpoint source pair](results/2026-11-22-factory-checkpoint-source-pair/README.md)
 confirms higher warm elapsed and CPU at `55424591f` versus `32c50290d`,
 with a 14.91% spread across the later workers. Compile to result improves
