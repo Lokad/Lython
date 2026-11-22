@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1396 combined compiled default admission](results/2026-11-22-compiled-default-admission/README.md)
+removes a second host resize before allocating mixed default storage.
+Both nested factories run 1.00–3.94% faster warm with matching
+allocation and 2,048 fewer growth requests each. First-use timing
+spans zero. Retained at `b0e35f20b`.
+
 [B1395 compiler branch edits](results/2026-11-22-compiler-branch-edits/README.md)
 replaces whole assignment-set copies and unions with undo and join lists.
 The sparse validator compiles 5.16–7.61% faster and reaches its result
