@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1320 fuse executable tape finalization](results/2026-11-22-fused-executable-finalization/README.md)
+compares bulk block copying and one combined branch/native walk.
+All 79 inspected code objects match. Factory compilation is slightly
+faster, while dead-heavy compilation uses 0.70–2.06% more CPU and
+validator time-to-result CPU spans zero. Keep the layout private and
+preserve all 140 batches.
+
 [B1319 retain fresh numbers in tuple slots](results/2026-11-22-numeric-tuple-slots/README.md)
 extends integer tuple storage to floats and mixed values. Typed CSV
 allocates 2.83% less, but both meter scripts use more CPU and have
