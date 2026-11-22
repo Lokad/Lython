@@ -613,57 +613,64 @@ internal sealed partial class LythonRuntime
         private bool DescribeLiteralRecord(ReadOnlySpan<byte> line)
         {
             if (_readyRecord is not null) throw new InvalidOperationException("CSV input advanced before consuming its record.");
+            if (!line.IsEmpty && line[0] is (byte)'\r' or (byte)'\n')
+            {
+                _context.CheckExecution(_span);
+                ValidateRecordEnd(line[1..]);
+                return true;
+            }
             // Already-funded literal fields keep their original byte offsets.
             // If the next field needs transformation or more scratch, the
             // general parser continues at that field without repeating the
             // prefix. The admitted buffer keeps those earlier ranges live.
+            var quote = _activeQuote is { } active ? active.Utf8Span : default;
+            var quoteStart = quote.IsEmpty ? -1 : quote[0];
+            // Delimiters and line endings take precedence over a quote at
+            // the same byte. Within a bare field, quotes are ordinary data.
+            if (quoteStart == _literalDelimiter || quoteStart is '\r' or '\n') quoteStart = -1;
             var start = 0;
-            var offset = 0;
-            for (; offset < line.Length;)
+            while (_fields.Count < _fields.Capacity)
             {
-                _context.CheckExecution(_span);
-                var width = Math.Min(4096, line.Length - offset);
-                var relative = line.Slice(offset, width).IndexOfAny(_fieldStartBytes);
-                if (relative < 0) { offset += width; continue; }
-                offset += relative;
-
-                var marker = line[offset];
-                if (marker is (byte)'\r' or (byte)'\n')
+                int end;
+                if (start < line.Length && line[start] == quoteStart)
                 {
-                    if (offset == 0 || TryDescribeLiteralField(start, offset - start))
-                    {
-                        ValidateRecordEnd(line[(offset + 1)..]);
-                        return true;
-                    }
-                    break;
-                }
-                if (marker == _literalDelimiter)
-                {
-                    if (!TryDescribeLiteralField(start, offset - start)) break;
-                    start = ++offset;
-                }
-                else if (offset == start)
-                {
-                    if (_fields.Count == _fields.Capacity || _activeQuote is not { ByteLength: 1 }) break;
-                    var close = FindLiteralQuote(line, start + 1, marker);
+                    if (quote.Length != 1) break;
+                    var close = FindLiteralQuote(line, start + 1, (byte)quoteStart);
                     if (close < 0) break;
-                    var next = close + 1;
-                    var end = next == line.Length || line[next] is (byte)'\r' or (byte)'\n';
                     // Doubled quotes, trailing text and partial quoted fields
                     // preserve their original parser state and error order.
-                    if (!end && line[next] != _literalDelimiter) break;
+                    end = close + 1;
+                    if (end < line.Length && line[end] != _literalDelimiter && line[end] is not ((byte)'\r' or (byte)'\n')) break;
                     DescribeField(new CsvField(start + 1, close - start - 1));
-                    if (end)
-                    {
-                        if (next < line.Length) ValidateRecordEnd(line[(next + 1)..]);
-                        return true;
-                    }
-                    start = offset = next + 1;
                 }
-                else offset++; // Within a bare field the quote is literal.
+                else
+                {
+                    end = FindLiteralFieldEnd(line, start);
+                    DescribeField(CreateField(start, end - start, quoted: false));
+                }
 
+                if (end == line.Length) return true;
+                if (line[end] is (byte)'\r' or (byte)'\n')
+                {
+                    ValidateRecordEnd(line[(end + 1)..]);
+                    return true;
+                }
+                start = end + 1;
             }
-            return (offset == line.Length && TryDescribeLiteralField(start, offset - start)) || ResumeRecordAtField(line, start);
+            return ResumeRecordAtField(line, start);
+        }
+
+        private int FindLiteralFieldEnd(ReadOnlySpan<byte> line, int offset)
+        {
+            while (offset < line.Length)
+            {
+                _context.CheckExecution(_span);
+                var count = Math.Min(4096, line.Length - offset);
+                var marker = line.Slice(offset, count).IndexOfAny(_unquotedBytes);
+                if (marker >= 0) return offset + marker;
+                offset += count;
+            }
+            return offset;
         }
 
         private int FindLiteralQuote(ReadOnlySpan<byte> line, int offset, byte marker)
@@ -685,13 +692,6 @@ internal sealed partial class LythonRuntime
             _fieldStart = start;
             _state = FieldState.FieldStart;
             return DescribeLine(line[start..]);
-        }
-
-        private bool TryDescribeLiteralField(int start, int length)
-        {
-            if (_fields.Count == _fields.Capacity) return false;
-            DescribeField(CreateField(start, length, quoted: false));
-            return true;
         }
 
         public CsvRecordParser(CsvOptions options, ExecutionContext context, LythonSourceSpan span)
