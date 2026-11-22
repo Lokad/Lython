@@ -18,44 +18,55 @@ internal sealed partial class LythonRuntime
         context.CheckExecution(span);
     }
 
-    internal readonly record struct RegexReplacementPiece(int Group, int Start, int Length);
+    internal readonly record struct RegexReplacementPiece(int Group, int Start, int Length)
+    {
+        internal const int LiteralRange = -1;
+        internal const int EscapedRange = -2;
+    }
 
-    internal sealed class RegexReplacementPlan(byte[] literals, RegexReplacementPiece[] parts, int count,
+    internal sealed class RegexReplacementPlan(RegexReplacementPiece[] parts, byte[] escaped, int count,
         MemoryGovernor.TemporaryMemoryReservation storage) : IDisposable
     {
-        private byte[] _literals = literals;
         private RegexReplacementPiece[] _parts = parts;
+        private byte[] _escaped = escaped;
         private MemoryGovernor.TemporaryMemoryReservation? _storage = storage;
 
-        internal void AppendTo(GovernedByteBuilder builder, ReMatchObject match, ExecutionContext context, LythonSourceSpan span)
+        internal void AppendTo(GovernedByteBuilder builder, PyString template, ReMatchObject match, ExecutionContext context, LythonSourceSpan span)
         {
             for (var i = 0; i < count; i++)
             {
                 context.CheckExecution(span);
                 var part = _parts[i];
-                if (part.Group < 0) AppendRegexBytes(builder, _literals.AsSpan(part.Start, part.Length), context, span);
+                if (part.Group < 0) AppendLiteral(builder, template, part, context, span);
                 else AppendRegexBytes(builder, match.GroupBytes(part.Group), context, span);
             }
         }
 
-        internal void AppendTo(GovernedByteBuilder builder, RegexSubjectRange range, ReadOnlySpan<LythonRegexCapture?> captures,
+        internal void AppendTo(GovernedByteBuilder builder, PyString template, RegexSubjectRange range, ReadOnlySpan<LythonRegexCapture?> captures,
             ExecutionContext context, LythonSourceSpan span)
         {
             for (var i = 0; i < count; i++)
             {
                 context.CheckExecution(span);
                 var part = _parts[i];
-                if (part.Group < 0) AppendRegexBytes(builder, _literals.AsSpan(part.Start, part.Length), context, span);
+                if (part.Group < 0) AppendLiteral(builder, template, part, context, span);
                 else if (captures[part.Group] is { } capture)
                     AppendRegexBytes(builder, range.Original.Utf8Span.Slice(capture.StartByte,
                         capture.EndByte - capture.StartByte), context, span);
             }
         }
 
+        private void AppendLiteral(GovernedByteBuilder builder, PyString template, RegexReplacementPiece part,
+            ExecutionContext context, LythonSourceSpan span)
+        {
+            var source = part.Group == RegexReplacementPiece.LiteralRange ? template.Utf8Span : _escaped.AsSpan();
+            AppendRegexBytes(builder, source.Slice(part.Start, part.Length), context, span);
+        }
+
         public void Dispose()
         {
-            _literals = [];
             _parts = [];
+            _escaped = [];
             Interlocked.Exchange(ref _storage, null)?.Dispose();
         }
     }
@@ -71,7 +82,7 @@ internal sealed partial class LythonRuntime
             var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
             try
             {
-                plan.AppendTo(builder, match, context, span);
+                plan.AppendTo(builder, template, match, context, span);
                 var result = builder.ToPyStringAndRelease();
                 context.CheckExecution(span);
                 return result;
@@ -97,29 +108,50 @@ internal sealed partial class LythonRuntime
             var capacityLong = 1L + 2L * slashes;
             if (capacityLong > int.MaxValue) throw RuntimeErrors.Runtime("replacement template program is too large.", span);
             var capacity = (int)capacityLong;
-            // Fund the private program, literal capacity, transient name keys and
-            // construction overlap before allocation. No template storage escapes
-            // the operation; the result obtains its independent admission.
+            // The private plan borrows ranges only during replay. The caller
+            // keeps the immutable template funded through that use.
             MemoryGovernor.TemporaryMemoryReservation? storage = context.MemoryGovernor.ReserveTemporary(
-                checked(256L + 4L * source.Length + 32L * capacity), span);
-            GovernedByteBuilder? builder = null;
+                checked(256L + 32L * capacity), span);
             try
             {
                 context.CheckExecution(span);
-                builder = new GovernedByteBuilder(source.Length); // capacity is prefunded above
                 var parts = new RegexReplacementPiece[capacity];
                 var count = 0;
                 var literalStart = 0;
-                void FlushLiteral()
+                byte[]? escapedBytes = null;
+                var escapeLength = 0;
+                var escapeRunStart = 0;
+                long nameScratch = 0;
+                void FlushLiterals(int end)
                 {
-                    if (builder.Length == literalStart) return;
-                    parts[count++] = new(-1, literalStart, builder.Length - literalStart);
-                    literalStart = builder.Length;
+                    if (escapeLength != escapeRunStart)
+                    {
+                        parts[count++] = new(RegexReplacementPiece.EscapedRange, escapeRunStart, escapeLength - escapeRunStart);
+                        escapeRunStart = escapeLength;
+                    }
+                    if (end != literalStart)
+                        parts[count++] = new(RegexReplacementPiece.LiteralRange, literalStart, end - literalStart);
                 }
-                void AddGroup(int index)
+                void AddGroup(int group, int escapeStart, int escapeEnd)
                 {
-                    FlushLiteral();
-                    parts[count++] = new(index, 0, 0);
+                    FlushLiterals(escapeStart);
+                    parts[count++] = new(group, 0, 0);
+                    literalStart = escapeEnd;
+                }
+                void AppendEscape(int value, int escapeStart, int escapeEnd)
+                {
+                    if (escapeStart != literalStart) FlushLiterals(escapeStart);
+                    if (escapedBytes is null)
+                    {
+                        // Recognized escapes emit at most two UTF-8 bytes
+                        // and consume at least two original bytes.
+                        var capacity = (int)Math.Min(template.ByteLength, 2L * slashes);
+                        storage!.Grow(32L + capacity, span);
+                        context.CheckExecution(span);
+                        escapedBytes = new byte[capacity];
+                    }
+                    escapeLength += new Rune(value).EncodeToUtf8(escapedBytes.AsSpan(escapeLength));
+                    literalStart = escapeEnd;
                 }
                 for (var offset = 0; offset < source.Length;)
                 {
@@ -128,12 +160,10 @@ internal sealed partial class LythonRuntime
                     var slash = chunk.IndexOf((byte)'\\');
                     if (slash < 0)
                     {
-                        builder.Append(chunk);
                         offset += chunk.Length;
                         continue;
                     }
 
-                    builder.Append(chunk[..slash]);
                     offset += slash;
                     var escapeStart = offset++;
                     if (offset == source.Length)
@@ -164,7 +194,8 @@ internal sealed partial class LythonRuntime
                         if (offset == nameStart)
                             throw ReplacementError("missing group name", template, nameStart, context, span);
                         var name = source[nameStart..offset++];
-                        AddGroup(ResolveReplacementGroup(pattern, name, template, nameStart, context, span));
+                        var group = ResolveReplacementGroup(pattern, name, template, nameStart, storage, ref nameScratch, context, span);
+                        AddGroup(group, escapeStart, offset);
                     }
                     else if (escaped == '0')
                     {
@@ -174,7 +205,7 @@ internal sealed partial class LythonRuntime
                             value = value * 8 + source[offset++] - '0';
                             CheckReplacementLookahead(template, offset, context, span);
                         }
-                        builder.Append(new Rune(value));
+                        AppendEscape(value, escapeStart, offset);
                     }
                     else if (escaped is >= (byte)'1' and <= (byte)'9')
                     {
@@ -191,13 +222,13 @@ internal sealed partial class LythonRuntime
                                 if (value > 255)
                                     throw ReplacementError($"octal escape value {Encoding.UTF8.GetString(source[escapeStart..offset])} outside of range 0-0o377",
                                         template, escapeStart, context, span);
-                                builder.Append(new Rune(value));
+                                AppendEscape(value, escapeStart, offset);
                                 continue;
                             }
                         }
                         if (index >= pattern.CaptureSlotCount)
                             throw ReplacementError($"invalid group reference {index}", template, escapeStart + 1, context, span);
-                        AddGroup(index);
+                        AddGroup(index, escapeStart, offset);
                     }
                     else
                     {
@@ -207,27 +238,23 @@ internal sealed partial class LythonRuntime
                             (byte)'n' => 10, (byte)'r' => 13, (byte)'t' => 9,
                             (byte)'v' => 11, (byte)'\\' => '\\', _ => -1,
                         };
-                        if (literal >= 0) builder.Append((byte)literal);
+                        if (literal >= 0)
+                            AppendEscape(literal, escapeStart, offset);
                         else if (escaped is >= (byte)'a' and <= (byte)'z' or >= (byte)'A' and <= (byte)'Z')
                             throw ReplacementError($"bad escape \\{(char)escaped}", template, escapeStart, context, span);
-                        else
-                        {
-                            // Unknown punctuation/non-ASCII escapes keep the slash.
-                            // Leave a non-ASCII scalar intact for the next chunk.
-                            builder.Append((byte)'\\');
-                            if (escaped < 128) builder.Append(escaped);
-                            else offset--;
-                        }
+                        // Unknown punctuation/non-ASCII escapes remain in the literal range.
                     }
                 }
 
                 context.CheckExecution(span);
-                FlushLiteral();
-                var plan = new RegexReplacementPlan(builder.ToArrayAndRelease(), parts, count, storage);
+                FlushLiterals(source.Length);
+                storage.Shrink(nameScratch);
+                context.CheckExecution(span);
+                var plan = new RegexReplacementPlan(parts, escapedBytes ?? [], count, storage);
                 storage = null; // the operation owns this private reservation
                 return plan;
             }
-            finally { builder?.Release(); storage?.Dispose(); }
+            finally { storage?.Dispose(); }
         }
 
         private static bool IsDigit(byte value) => value is >= (byte)'0' and <= (byte)'9';
@@ -243,7 +270,8 @@ internal sealed partial class LythonRuntime
         }
 
         private static int ResolveReplacementGroup(RePatternObject pattern, ReadOnlySpan<byte> name,
-            PyString template, int nameStart, ExecutionContext context, LythonSourceSpan span)
+            PyString template, int nameStart, MemoryGovernor.TemporaryMemoryReservation storage, ref long nameScratch,
+            ExecutionContext context, LythonSourceSpan span)
         {
             var numeric = true;
             var index = 0;
@@ -258,17 +286,30 @@ internal sealed partial class LythonRuntime
                 if (index < pattern.CaptureSlotCount) return index;
                 // Only diagnostics cross into CLR text. Normal names and values
                 // remain native, including supplementary/combining characters.
+                FundReplacementName(name.Length, storage, ref nameScratch, context, span);
                 var reference = Encoding.UTF8.GetString(name).TrimStart('0');
                 throw ReplacementError($"invalid group reference {reference}", template, nameStart, context, span);
             }
 
-            // The template transaction funds this transient lookup key.
+            FundReplacementName(name.Length, storage, ref nameScratch, context, span);
             var key = PyString.CopyFromUtf8(name, null, span, context);
             if (!PyStringOps.IsIdentifier(key, context, span))
                 throw ReplacementError($"bad character in group name {PyRendering.ToReprPyString(key, new(context)).AsString()}",
                     template, nameStart, context, span);
             if (pattern.TryGetNamedGroup(key, context, span, out index)) return index;
             throw new LythonRuntimeException("IndexError", $"unknown group name '{key.AsString()}'", span);
+        }
+
+        private static void FundReplacementName(int length, MemoryGovernor.TemporaryMemoryReservation storage,
+            ref long scratch, ExecutionContext context, LythonSourceSpan span)
+        {
+            // One name is read at a time. Keep enough temporary funding
+            // for the largest lookup and refund it before replay.
+            var required = checked(192L + 4L * length);
+            if (required <= scratch) return;
+            storage.Grow(required - scratch, span);
+            scratch = required;
+            context.CheckExecution(span);
         }
 
         private static LythonRuntimeException ReplacementError(string message, PyString template, int byteOffset,

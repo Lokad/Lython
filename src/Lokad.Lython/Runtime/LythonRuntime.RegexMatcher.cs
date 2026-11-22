@@ -409,7 +409,7 @@ internal sealed partial class LythonRuntime
                         soleReplacement = null;
                     }
                     AppendRegexBytes(builder, range.Original.Utf8Span[lastByte..whole.StartByte], context, span);
-                    if (plan is not null) plan.AppendTo(builder, range, match.Captures, context, span);
+                    if (plan is not null) plan.AppendTo(builder, template!, range, match.Captures, context, span);
                     else
                     {
                         var text = template;

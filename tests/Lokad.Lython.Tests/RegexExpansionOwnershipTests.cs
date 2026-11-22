@@ -134,6 +134,34 @@ public sealed class RegexExpansionOwnershipTests
         Assert.Equal(0, root.ReservedBytes);
     }
 
+    [Fact]
+    public void LongLiteralTemplateFitsAlongsideItsRetainedExpansion()
+    {
+        const long allowance = 112 * 1024;
+        var root = new LythonMemoryBudget(1024 * 1024);
+        using (var owner = root.CreateScope())
+        {
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = owner },
+                regexProvider: Utf8RegexProvider.Instance);
+            var match = Match(context, "(?P<g>x)", "x");
+            using var compiled = match.Pattern.Regex;
+            var literal = new string('z', 32768);
+            var template = PyString.FromString(literal + @"\g<g>\é\377", context.MemoryGovernor, Span);
+            var templateBytes = template.CommittedOwnedBytes;
+            Assert.True(owner.TryReserve(root.LimitBytes!.Value - root.ReservedBytes - allowance, out var pad));
+            using (pad)
+            {
+                var before = root.ReservedBytes;
+                var result = LythonRuntime.ReMatchMembers.ExpandReplacementTemplate(match, template, context, Span);
+                Assert.Equal(literal + "x\\éÿ", result.AsString());
+                Assert.Equal(before + result.CommittedOwnedBytes, root.ReservedBytes);
+                Assert.Equal(templateBytes, template.CommittedOwnedBytes);
+                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            }
+        }
+        Assert.Equal(0, root.ReservedBytes);
+    }
+
     private static LythonRuntime.ReMatchObject Match(LythonRuntime.ExecutionContext context, string patternText = "(x+)", string? text = null, bool commandOwnedSubject = true)
     {
         // Use the real regex boundary and funded native captures; call expansion
