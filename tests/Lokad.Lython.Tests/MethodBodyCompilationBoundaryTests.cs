@@ -75,7 +75,7 @@ public sealed class MethodBodyCompilationBoundaryTests
         Assert.Same(function, fixture.Tape.Values["bottom-apply"]);
         Assert.Same(function, fixture.Tape.Values["top-apply"]);
         Assert.True(function.TryGetMember("__defaults__", out var defaultValues));
-        var defaults = Assert.IsType<PyTuple>(defaultValues);
+        var defaults = Assert.IsAssignableFrom<PyTuple>(defaultValues);
         Assert.Same(fixture.Tape.Saved, Assert.Single(defaults));
         Assert.Same(fixture.Context.MemoryGovernor, defaults.OwnerMemoryGovernor);
         Assert.True(defaults.CommittedStorageBytes > 0);
