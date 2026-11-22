@@ -2452,7 +2452,10 @@ Text patterns raise `TypeError` for `flags=None`, and compiled patterns
 accept it as a false flag value.
 The per-execution cache preserves requested integer flag identity.
 Omitted flags and explicit `re.UNICODE` give distinct cached pattern
-objects with equal effective flags and compiled programs.
+objects when both compile. The provider receives the same flag inputs
+during analysis and execution, including whether Unicode was implicit.
+Global inline ASCII can replace implicit Unicode. A conflict with
+explicit Unicode raises `ValueError`, and scoped modes remain local.
 Compiled pattern representations show effective flag names and cap the
 quoted string representation at 200 Unicode scalars. They build the
 result in governed UTF-8 storage. Match representations quote up to

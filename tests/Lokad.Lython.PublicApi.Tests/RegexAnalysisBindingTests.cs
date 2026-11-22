@@ -48,6 +48,29 @@ public sealed class RegexAnalysisBindingTests
     public async Task PatternsAndResolvedFlagsFollowActualRegexSemantics(string source, string expected)
         => await CheckRuns(new LythonEngine(Utf8RegexProvider.Instance), source, expected);
 
+    [Fact]
+    public async Task GlobalInlineModesDistinguishImplicitAndExplicitUnicode()
+    {
+        await CheckRuns(new LythonEngine(Utf8RegexProvider.Instance), """
+            import re
+            print(re.compile('(?a)a').flags, re.compile('(?a:a)', re.UNICODE).flags)
+            try:
+                re.compile('(?a)a', re.UNICODE)
+            except ValueError as error:
+                print(str(error))
+            def check(pattern, flags):
+                try:
+                    re.compile(pattern, flags)
+                except (ValueError, re.error) as error:
+                    print(type(error).__name__, str(error))
+            check('(?u)a', re.ASCII)
+            check('(?a)(?u)a', 0)
+            check('(?a)[', re.UNICODE)
+            """, "256 32\nASCII and UNICODE flags are incompatible\n" +
+            "ValueError ASCII and UNICODE flags are incompatible\nValueError ASCII and UNICODE flags are incompatible\n" +
+            "PatternError unterminated character set at position 4\n");
+    }
+
     [Theory]
     [InlineData("import re as regex\nflags = regex.I | regex.L\nregex.compile('a', flags)", "LOCALE")]
     [InlineData("from re import compile as prepare, I, DEBUG\nflags = I | DEBUG\nprepare('a', flags)", "DEBUG")]

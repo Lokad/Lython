@@ -23,7 +23,7 @@ internal sealed class StaticAnalysisContext : IDisposable
 
     public ScriptSyntax Script { get; }
     internal ILythonRegexProvider? RegexProvider { get; }
-    internal Dictionary<(string Pattern, int Flags), AbstractRegexPatternSummary> RegexPatterns { get; } = new();
+    internal Dictionary<(string Pattern, LythonRegexOptions Options), AbstractRegexPatternSummary> RegexPatterns { get; } = new();
     internal Runtime.MemoryGovernor? MemoryGovernor { get; }
     internal CancellationToken CancellationToken { get; }
     internal ILythonMemoryBudget RegexMemoryOwner => _regexPrograms.StorageOwner;

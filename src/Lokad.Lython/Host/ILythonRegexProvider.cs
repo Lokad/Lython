@@ -33,9 +33,17 @@ public interface ILythonRegexProvider
 /// Lython performs Python's flag-operator protocol, including implicit Unicode.
 /// Verbose is separate because a guest flag object's earlier bitwise result can
 /// differ from its final integer bits. Providers preserve the supplied bits in
-/// reported flags, applying leading inline flags as Python does.
+/// reported flags, applying global inline flags as Python does.
 /// </remarks>
-public readonly record struct LythonRegexOptions(int Flags, bool Verbose);
+public readonly record struct LythonRegexOptions(int Flags, bool Verbose)
+{
+    /// <summary>Identifies the Unicode bit that Python adds when no mode was requested.</summary>
+    /// <remarks>
+    /// Global inline ASCII can replace implicit Unicode. Explicit Unicode and
+    /// global inline ASCII conflict. This distinction affects validation only.
+    /// </remarks>
+    public bool ImplicitUnicode { get; init; }
+}
 
 /// <summary>Owns one immutable compiled Python pattern handle, without a saved caller token.</summary>
 /// <remarks>
@@ -145,9 +153,9 @@ public enum LythonRegexMatchMode { Search, Match, FullMatch }
 public readonly record struct LythonRegexCapture(int StartByte, int EndByte);
 
 /// <summary>Identifies a provider failure without relying on backend exception types.</summary>
-public enum LythonRegexFailure { Pattern, Capability, MemoryAdmission }
+public enum LythonRegexFailure { Pattern, Capability, MemoryAdmission, Flags }
 
-/// <summary>Reports a Python pattern error, unavailable provider capability, or terminal admission refusal.</summary>
+/// <summary>Reports a Python pattern or flag error, unavailable capability, or terminal admission refusal.</summary>
 public sealed class LythonRegexException : Exception
 {
     /// <summary>Creates a provider error. Pattern messages exclude position/line suffixes; Lython formats those from the scalar position. Requested bytes describe the first refused storage admission.</summary>

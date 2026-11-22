@@ -197,6 +197,7 @@ internal sealed partial class LythonRuntime
             return providerError.Failure switch
             {
                 LythonRegexFailure.Capability => RuntimeErrors.Capability(providerError.Message, span),
+                LythonRegexFailure.Flags => RuntimeErrors.Value(providerError.Message, span),
                 LythonRegexFailure.MemoryAdmission => governor?.RefuseAdmission($"{operationName}: {providerError.Message}", providerError.RequestedBytes, span, providerError)
                     ?? RuntimeErrors.Attributed("MemoryError", $"{operationName}: {providerError.Message}", span,
                         LythonFailureReason.SharedMemoryAllowance, requested: providerError.RequestedBytes),
@@ -329,18 +330,18 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "first argument must be string or compiled pattern", span);
             }
 
-            var options = requestedFlags is not null
-                ? ParseFlags(requestedFlags, span, context)
-                : new LythonRegexOptions(PythonUnicodeFlag, false);
             // Python's wrapper cache distinguishes implicit Unicode from an
             // explicit flag even when both compile to the same program.
             int? requestedBits = requestedFlags switch
             {
                 null => 0,
                 bool boolean => boolean ? 1 : 0,
+                int small => small,
                 BigInteger integer when integer >= int.MinValue && integer <= int.MaxValue => (int)integer,
                 _ => null,
             };
+            var options = requestedBits is { } bits && TryNormalizeExactFlags(bits, out var exact)
+                ? exact : ParseFlags(requestedFlags.RequireNotNull(), span, context);
             var key = new RegexPatternCache.Key(pattern, options, requestedBits);
             context.CheckExecution(span);
             _ = pattern.GetHashCode(context.State.CancellationToken, span);
@@ -514,6 +515,21 @@ internal sealed partial class LythonRuntime
         {
             var length = text.Length;
             return new RegexSubjectRange(text, Math.Clamp(pos, 0, length), Math.Clamp(endPos, 0, length));
+        }
+
+        internal static bool TryNormalizeExactFlags(int flags, out LythonRegexOptions options)
+        {
+            var mode = flags & (PythonAsciiFlag | PythonUnicodeFlag);
+            if ((flags & (PythonLocaleFlag | RegexDebugFlag)) != 0 || mode == (PythonAsciiFlag | PythonUnicodeFlag))
+            {
+                options = default;
+                return false;
+            }
+
+            var implicitUnicode = mode == 0;
+            options = new(implicitUnicode ? flags | PythonUnicodeFlag : flags, (flags & PythonVerboseFlag) != 0)
+                { ImplicitUnicode = implicitUnicode };
+            return true;
         }
 
         // Flags flow through operator dispatch like CPython (sre fix_flags plus

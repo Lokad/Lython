@@ -7,6 +7,10 @@ namespace Lokad.Lython.Utf8Regex;
 /// <summary>Optional PythonRe adapter with borrowed UTF-8 subjects and explicit storage owners.</summary>
 public sealed class Utf8RegexProvider : ILythonRegexProvider
 {
+    private const int UnicodeFlag = 32;
+    private const int AsciiFlag = 256;
+    private const string ConflictingModes = "ASCII and UNICODE flags are incompatible";
+
     /// <summary>Gets a stateless provider instance; patterns and working owners remain caller-local.</summary>
     public static Utf8RegexProvider Instance { get; } = new();
 
@@ -46,6 +50,10 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
         catch (PythonRePatternException error)
         {
             token.ThrowIfCancellationRequested();
+            // PythonRe 0.4 has one exception type. Its unpositioned global
+            // mode conflict is a Python ValueError; scoped conflicts have positions.
+            if (error.Position < 0 && error.Message == ConflictingModes)
+                throw new LythonRegexException(LythonRegexFailure.Flags, ConflictingModes);
             throw new LythonRegexException(LythonRegexFailure.Pattern, error.Message,
                 ScalarErrorPosition(error.Position, utf8Pattern, patternSource?.Pattern, token));
         }
@@ -109,7 +117,7 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
     {
         // Reported Python flags can differ from dispatched parsing flags.
         // Read the validated global prefix directly from the original UTF-8.
-        var flags = options.Flags;
+        var flags = options.ImplicitUnicode ? options.Flags & ~UnicodeFlag : options.Flags;
         var verbose = options.Verbose;
         var offset = 0;
         while (offset < pattern.Length)
@@ -142,10 +150,8 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
             while (end < pattern.Length)
             {
                 token.ThrowIfCancellationRequested();
-                var flag = pattern[end] switch { (byte)'i' => 2, (byte)'m' => 8, (byte)'s' => 16, (byte)'x' => 64, (byte)'a' => 256, (byte)'u' => 32, _ => 0 };
+                var flag = pattern[end] switch { (byte)'i' => 2, (byte)'m' => 8, (byte)'s' => 16, (byte)'x' => 64, (byte)'a' => AsciiFlag, (byte)'u' => UnicodeFlag, _ => 0 };
                 if (flag == 0) break;
-                if (flag == 256) nextFlags &= ~32;
-                if (flag == 32) nextFlags &= ~256;
                 if (flag == 64) nextVerbose = true;
                 nextFlags |= flag; end++;
             }
@@ -154,7 +160,10 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
             verbose = nextVerbose;
             offset = end + 1;
         }
-        return flags;
+        var mode = flags & (AsciiFlag | UnicodeFlag);
+        if (mode == (AsciiFlag | UnicodeFlag))
+            throw new LythonRegexException(LythonRegexFailure.Flags, ConflictingModes);
+        return options.ImplicitUnicode && mode == 0 ? flags | UnicodeFlag : flags;
     }
 
     private sealed class Pattern : ILythonRegexPattern

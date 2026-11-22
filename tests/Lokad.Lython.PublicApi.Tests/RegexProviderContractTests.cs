@@ -335,14 +335,21 @@ public sealed class RegexProviderContractTests
             exact = re.compile('x')
             same = re.compile('\x78')
             folded = re.compile('x', re.I)
-            return exact is same, exact.fullmatch(text) is None, folded.fullmatch(text).group(0)
+            explicit = re.compile('x', re.UNICODE)
+            return exact is same, exact.fullmatch(text) is None, folded.fullmatch(text).group(0), exact is explicit, exact == explicit
             """;
-        using var provider = new CooperatingProvider();
+        var compiledOptions = new List<LythonRegexOptions>();
+        using var provider = new CooperatingProvider
+        {
+            ProgramKeyFactory = (_, options) => { compiledOptions.Add(options); return null; },
+        };
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
         using var script = new LythonEngine(provider).Compile(source, budget);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
-        Assert.Equal(2, provider.Compilations);
-        Assert.Equal(2, provider.CaptureSlotReads);
+        Assert.Contains(new LythonRegexOptions(32, false) { ImplicitUnicode = true }, compiledOptions);
+        Assert.Contains(new LythonRegexOptions(32, false), compiledOptions);
+        Assert.Equal(3, provider.Compilations);
+        Assert.Equal(3, provider.CaptureSlotReads);
         var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["text"] = "X" } };
         foreach (var asynchronous in new[] { false, true })
@@ -351,15 +358,15 @@ public sealed class RegexProviderContractTests
                 : script.Run(new MockLythonHost(), options))
             {
                 Assert.True(result.Success, result.Failure?.Message);
-                Assert.Equal(new object?[] { true, true, "X" }, Assert.IsAssignableFrom<IEnumerable<object?>>(result.ReturnValue));
+                Assert.Equal(new object?[] { true, true, "X", false, true }, Assert.IsAssignableFrom<IEnumerable<object?>>(result.ReturnValue));
             }
             Assert.Equal(baseline, budget.ReservedBytes);
         }
-        Assert.Equal(2, provider.Compilations);
-        Assert.Equal(2, provider.CaptureSlotReads);
+        Assert.Equal(3, provider.Compilations);
+        Assert.Equal(3, provider.CaptureSlotReads);
         Assert.Equal(0, provider.ClosedPatterns);
         script.Dispose();
-        Assert.Equal(2, provider.ClosedPatterns);
+        Assert.Equal(3, provider.ClosedPatterns);
         Assert.Equal(0, budget.ReservedBytes);
     }
 

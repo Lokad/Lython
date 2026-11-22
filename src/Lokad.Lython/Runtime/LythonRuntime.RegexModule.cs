@@ -92,7 +92,10 @@ internal sealed partial class LythonRuntime
             context?.CheckExecution(span);
             if (ReferenceEquals(this, other)) return true;
             if (Flags != other.Flags || !Pattern.Equals(other.Pattern, context, span)) return false;
-            if (Options == other.Options || ReferenceEquals(Regex, other.Regex)) return true;
+            // Unicode provenance only affects validation. Both handles already
+            // represent successful compilations of the same original pattern.
+            if (Options.Flags == other.Options.Flags && Options.Verbose == other.Options.Verbose ||
+                ReferenceEquals(Regex, other.Regex)) return true;
             return RegexCompiler.ProviderCall(() => CompareProgramKeys(other, context, span),
                 context?.MemoryGovernor, context?.State.CancellationToken ?? default, span, Pattern);
         }

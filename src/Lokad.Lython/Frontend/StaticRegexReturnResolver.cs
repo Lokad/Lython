@@ -195,7 +195,7 @@ internal static class StaticRegexReturnResolver
         }
 
         var compiledPattern = allowCompiledPattern && patternValue.Kind == AbstractValueKind.RegexPattern;
-        flagsKnown = TryGetRegexOptions(arguments, flagsPosition, flagsKeyword, bindings, compiledPattern, out var patternFlags);
+        flagsKnown = TryGetRegexFlags(arguments, flagsPosition, flagsKeyword, bindings, compiledPattern, out var patternFlags);
         if (compiledPattern)
         {
             flagsKnown &= patternFlags == 0;
@@ -209,7 +209,9 @@ internal static class StaticRegexReturnResolver
             return false;
         }
 
-        summary = flagsKnown && TryCompileRegex(patternValue.RequireText(), patternFlags, bindings,
+        var options = default(LythonRegexOptions);
+        flagsKnown = flagsKnown && LythonRuntime.RegexCompiler.TryNormalizeExactFlags(patternFlags, out options);
+        summary = flagsKnown && TryCompileRegex(patternValue.RequireText(), options, bindings,
             DiagnosticSpan(patternExpression, patternValue), out var compiled)
             ? compiled : AbstractRegexPatternSummary.Unknown;
         return true;
@@ -218,64 +220,38 @@ internal static class StaticRegexReturnResolver
     private static AbstractRegexMatchSummary CreateRegexMatchSummary(AbstractRegexPatternSummary pattern)
         => new(pattern.CaptureSlotCount, pattern.NamedGroups);
 
-    private static bool TryGetRegexOptions(
+    private static bool TryGetRegexFlags(
         ConcreteCallArguments arguments,
         int flagsPosition,
         string flagsKeyword,
         AbstractState bindings,
         bool allowNone,
-        out int options)
+        out int flags)
     {
         if (!TryGetArgument(arguments, flagsPosition, flagsKeyword, bindings, out _, out var flagsValue))
         {
-            options = 0;
+            flags = 0;
             return true;
         }
 
         if (flagsValue.Kind == AbstractValueKind.None)
         {
-            options = 0;
+            flags = 0;
             return allowNone;
         }
 
-        if (flagsValue.TryGetInt32(out var flags) && flags >= 0)
+        if (flagsValue.Kind == AbstractValueKind.Boolean)
         {
-            return TryTranslatePythonRegexFlags(flags, out options);
+            flags = flagsValue.RequireBoolean() ? 1 : 0;
+            return true;
         }
-
-        options = 0;
-        return false;
+        return flagsValue.TryGetInt32(out flags);
     }
 
-    private static bool TryTranslatePythonRegexFlags(int flags, out int options)
-    {
-        const int ignoreCase = 2;
-        const int locale = 4;
-        const int multiline = 8;
-        const int dotAll = 16;
-        const int unicode = 32;
-        const int verbose = 64;
-        const int debug = 128;
-        const int ascii = 256;
-        const int supported = ignoreCase | locale | multiline | dotAll | unicode | verbose | debug | ascii;
-
-        options = 0;
-        if ((flags & ~supported) != 0 ||
-            (flags & (locale | debug)) != 0 ||
-            (flags & ascii) != 0 && (flags & unicode) != 0)
-        {
-            return false;
-        }
-
-        options = flags;
-        return true;
-    }
-
-    private static bool TryCompileRegex(string pattern, int options, AbstractState bindings, LythonSourceSpan span,
+    private static bool TryCompileRegex(string pattern, LythonRegexOptions options, AbstractState bindings, LythonSourceSpan span,
         [MaybeNullWhen(false)] out AbstractRegexPatternSummary regex)
     {
         var analysis = bindings.AnalysisContext;
-        if ((options & 256) == 0) options |= 32;
         if (analysis?.RegexPatterns.TryGetValue((pattern, options), out regex) == true) return true;
         var provider = analysis?.RegexProvider
             ?? throw RuntimeErrors.Capability("Python regex analysis requires a host-supplied Lython regex provider.", null);
@@ -287,15 +263,14 @@ internal static class StaticRegexReturnResolver
             var bytes = 512L + 3L * pattern.Length;
             analysis.ReserveRegexStorage(bytes, span);
             var encoded = Encoding.UTF8.GetBytes(pattern);
-            var compileOptions = new LythonRegexOptions(options, (options & 64) != 0);
-            var program = LythonRuntime.RegexCompiler.ProviderCall(() => provider.Compile(encoded, compileOptions,
+            var program = LythonRuntime.RegexCompiler.ProviderCall(() => provider.Compile(encoded, options,
                 analysis.RegexMemoryOwner, token), governor, token, span, operationName: "Regex pattern compilation");
             try
             {
                 var captureSlotCount = LythonRuntime.RegexCompiler.ReadCaptureSlotCount(program, governor, token, span);
                 regex = new(program, captureSlotCount,
                     LythonRuntime.RegexCompiler.CopyNamedGroups(program, captureSlotCount, governor, token, span));
-                analysis.RetainRegexProgram(encoded, compileOptions, program, captureSlotCount, span);
+                analysis.RetainRegexProgram(encoded, options, program, captureSlotCount, span);
             }
             catch { program.Dispose(); throw; }
             // The compiled lookup now owns the program, even if analysis
@@ -303,7 +278,7 @@ internal static class StaticRegexReturnResolver
             analysis.RegexPatterns[(pattern, options)] = regex;
             return true;
         }
-        catch (LythonRuntimeException error) when (error.ExceptionType == "PatternError")
+        catch (LythonRuntimeException error) when (error.ExceptionType is "PatternError" or "ValueError")
         {
             regex = default;
             return false;
