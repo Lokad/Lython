@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1328 borrow the regex subject's existing index](results/2026-11-22-regex-borrowed-index/README.md)
+uses 8.57–10.00% less warm CPU on bounded search. Indexed cursor
+timings span zero or lean adverse. Unindexed Unicode and ASCII cursors
+use 2.21–4.52% and 1.83–3.32% more CPU respectively. Allocation is
+effectively flat. Keep full index borrowing private and confirm the
+single-match window change with capture projection left as before.
+
 [B1327 CSV and mixed-factory checkpoint](results/2026-11-22-retained-csv-cpython/README.md)
 measures retained `318bf0e0a` against CPython 3.13.16. Warm ratios are
 1.491–1.525× for typed ASCII, 1.763–1.779× for explicit float,
