@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1336 compare the retained numeric calls against CPython](results/2026-11-22-numeric-extrema-cpython/README.md)
+measures three complete meter reports at `e961df912`. ASCII warm is 1.351–1.427×,
+explicit-float warm is 1.534–1.607× and Unicode warm is
+1.243–1.283×. All 140 timed batches verify.
+
 [B1335 use operand slots for positional numeric extrema](results/2026-11-22-numeric-extrema-operands/README.md)
 retains 30.64–43.68% lower local allocation and 9.08–15.74% lower warm
 elapsed across three meter reports. Typed ASCII reaches the result
