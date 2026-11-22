@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1409 scalar binding before the workspace](results/2026-11-22-scalar-default-binding/README.md#b1409-probe-before-the-reference-workspace)
+confirms a 2.65–5.20% warm gain for postponed factories. Both fully
+supplied and quote-heavy controls take longer. First use is inconclusive.
+Keep the refinement private and retain the observer recovery.
+
 [Final short-word publication](results/2026-11-22-text-target-publication/README.md)
 finds 2,047 materializations on 3,072 normal exits in the nonlocal
 Unicode report. The scratch run verifies both outputs and restores its

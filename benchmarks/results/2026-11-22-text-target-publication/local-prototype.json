@@ -1,0 +1,93 @@
+{
+  "prototypeRevision": "8189309f4a72f3779a0ffaa13fc03dea5481a4e4",
+  "observations": {
+    "prototype-reference.json": {
+      "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+      "rows": [
+        {
+          "id": "diagnostic.text-summary.nonlocal-computed-width.large",
+          "asynchronous": false,
+          "allocatedBytesPerInvocation": [
+            446144,
+            446144,
+            446932
+          ],
+          "peakExecutionMemoryBytes": 1278972,
+          "compiledReservedBytes": 92091,
+          "compilationMillisecondsDiagnostic": 97.3855,
+          "compilationAllocatedBytesDiagnostic": 190080,
+          "firstInvocationMillisecondsDiagnostic": 96.7211,
+          "sharedBudgetBaselineRestored": true
+        }
+      ],
+      "boundary": "Complete warm runs including mediated I/O/reset, all output/file checks and result cleanup; compilation/startup/final cache teardown excluded. Process-wide CLR allocation counters, no forced GC. Compilation and first invocation clocks are local diagnostic observations, not a controlled CPU/source timing comparison."
+    },
+    "prototype-candidate.json": {
+      "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+      "rows": [
+        {
+          "id": "diagnostic.text-summary.nonlocal-computed-width.large",
+          "asynchronous": false,
+          "allocatedBytesPerInvocation": [
+            446144,
+            446932,
+            446144
+          ],
+          "peakExecutionMemoryBytes": 1278972,
+          "compiledReservedBytes": 92091,
+          "compilationMillisecondsDiagnostic": 101.9959,
+          "compilationAllocatedBytesDiagnostic": 190080,
+          "firstInvocationMillisecondsDiagnostic": 97.4817,
+          "sharedBudgetBaselineRestored": true
+        }
+      ],
+      "boundary": "Complete warm runs including mediated I/O/reset, all output/file checks and result cleanup; compilation/startup/final cache teardown excluded. Process-wide CLR allocation counters, no forced GC. Compilation and first invocation clocks are local diagnostic observations, not a controlled CPU/source timing comparison."
+    },
+    "distinct-target-reference.json": {
+      "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+      "rows": [
+        {
+          "id": "diagnostic.text-summary.nonlocal-computed-width.large",
+          "asynchronous": false,
+          "allocatedBytesPerInvocation": [
+            446160,
+            446948,
+            446160
+          ],
+          "peakExecutionMemoryBytes": 1278996,
+          "compiledReservedBytes": 94107,
+          "compilationMillisecondsDiagnostic": 97.317,
+          "compilationAllocatedBytesDiagnostic": 190144,
+          "firstInvocationMillisecondsDiagnostic": 96.5073,
+          "sharedBudgetBaselineRestored": true
+        }
+      ],
+      "boundary": "Complete warm runs including mediated I/O/reset, all output/file checks and result cleanup; compilation/startup/final cache teardown excluded. Process-wide CLR allocation counters, no forced GC. Compilation and first invocation clocks are local diagnostic observations, not a controlled CPU/source timing comparison."
+    },
+    "distinct-target-candidate.json": {
+      "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+      "rows": [
+        {
+          "id": "diagnostic.text-summary.nonlocal-computed-width.large",
+          "asynchronous": false,
+          "allocatedBytesPerInvocation": [
+            331528,
+            331528,
+            331528
+          ],
+          "peakExecutionMemoryBytes": 1278996,
+          "compiledReservedBytes": 94107,
+          "compilationMillisecondsDiagnostic": 96.2737,
+          "compilationAllocatedBytesDiagnostic": 190144,
+          "firstInvocationMillisecondsDiagnostic": 99.4868,
+          "sharedBudgetBaselineRestored": true
+        }
+      ],
+      "boundary": "Complete warm runs including mediated I/O/reset, all output/file checks and result cleanup; compilation/startup/final cache teardown excluded. Process-wide CLR allocation counters, no forced GC. Compilation and first invocation clocks are local diagnostic observations, not a controlled CPU/source timing comparison."
+    }
+  },
+  "coreSHA256": {
+    "reference": "c5eb0b852e74f8005bf31fbc0858279b6995feb3eca8bedae764f8ce26ceaa10",
+    "candidate": "52f82a418bdcbd0390fd01a768547ec4595fb2d95428238d4c02b606f019f873"
+  }
+}

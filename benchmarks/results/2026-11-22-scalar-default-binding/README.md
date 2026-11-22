@@ -52,3 +52,51 @@ removed and the persistent archive verified under the lease.
 [Timings](initial/summary.json) · [Allocation](initial/local-allocation.json) ·
 [Source and image hashes](initial/source.json) · [Raw observations](initial/observations.tgz) ·
 [Checks and JIT diagnostics](initial/procedures.tar.xz).
+
+## B1409 Probe before the reference workspace
+
+Private `51f6d1154` checks eligibility before both ordinary native call
+entries. An observed keyword-default dictionary declines before any
+scalar decoding. The successful read uses bounded machine slots and
+enters the existing integer kernel without constructing the native
+reference-slot frame. The original arguments, ownership and error path
+stay available when the probe declines. The original workspace is
+still needed for other calls. The Windows JIT listings confirm the
+separate successful probe and show code-generation changes in the
+ordinary entry as well.
+
+Compared with the same frozen `55424591f` image on the same quiet VM.
+Worker roles reverse from the initial comparison. All other sample
+and phase boundaries are unchanged.
+
+| Complete workload and phase | Elapsed change | Wider CPU change |
+| --- | ---: | ---: |
+| Postponed factories, warm | −5.20 to −2.65% | −5.40 to −2.71% |
+| Postponed factories, compile to result | −8.31 to +2.24% | −8.84 to +0.93% |
+| Fully supplied helper, warm | +0.79 to +1.85% | +0.68 to +1.87% |
+| Eager factories, warm | −9.85 to +3.75% | −10.18 to +4.93% |
+| Default metadata observer, warm | −0.11 to +2.30% | +0.76 to +2.12% |
+| Quote-heavy CSV invoice, warm | +1.17 to +3.43% | +1.14 to +3.82% |
+
+The refined probe confirms a warm benefit for postponed factories,
+and the initial observer slowdown shrinks. The observer's CPU remains
+adverse. The fully supplied helper and quoted invoice consistently
+use more elapsed time and CPU. First-use and eager results remain
+inconclusive with 9.26% and 9.90% reference-worker spread. The candidate
+stays private because the common call paths carry a measurable
+regression and allocation and admitted peaks are effectively flat.
+These observations do not separately attribute the controls'
+changes to JIT layout or to dispatch. A further design should leave the
+ordinary entries isolated and eliminate complete work on those paths
+or keep their performance stable. Callable and default allocation
+remains a separate cost.
+
+The exact refined source passed 667 focused Release checks per
+platform, including native unpack/return, recursive protection,
+live defaults and cooperative cancellation. Both frozen images
+match five CPython goldens. All 168 batches, both quiet gates,
+worker joins and the archive hash verified.
+
+[Timings](refined/summary.json) · [Allocation](refined/local-allocation.json) ·
+[Source and image hashes](refined/source.json) · [Raw observations](refined/observations.tgz) ·
+[Checks and JIT diagnostics](refined/procedures.tar.xz).
