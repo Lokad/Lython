@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1379 fixed-tier positional diagnosis](results/2026-11-22-json-positional-fixed-tier/README.md)
+reverses the positional direction with `DOTNET_TieredCompilation=0`.
+Elapsed falls 2.67–5.95%, with 3.37% reference-worker spread. The
+ordinary default-tier regression remains open.
+
 [B1378 JSON delivery against CPython](results/2026-11-22-json-delivery-cpython/README.md)
 measures the two exports and a configuration edit against stock CPython
 3.13.16. Both exports use 0.821–0.863× CPython's warm time across the

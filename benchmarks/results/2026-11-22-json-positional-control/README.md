@@ -34,6 +34,8 @@ image. With tiering disabled in WSL, the normalized instructions and
 code size match across all seven inspected methods. The captures
 locate variation in generated code and leave the quiet-VM slowdown
 unexplained. They use JIT logging and produce no timing comparison.
+The quiet fixed-tier diagnostic reverses the positional direction.
+[B1379](../2026-11-22-json-positional-fixed-tier/README.md).
 
 [Timing](summary.json) · [Raw observations](observations.tgz) ·
 [Code generation and procedures](procedures.tar.xz) ·
