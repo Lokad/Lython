@@ -1,0 +1,13 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "persistentTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 178425856,
+  "archiveSHA256": "6d8df54c5b4e82b0661cc0c584e213216d11fff922c9eeb0ff518442ca2bd863",
+  "source": "Locate complete record construction and Unicode text costs",
+  "performanceComparison": false,
+  "failure": null
+}

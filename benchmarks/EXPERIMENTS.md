@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1382 complete record and text attribution](results/2026-11-22-record-text-attribution/README.md)
+profiles the explicit float and Unicode typed CSV meters, the quoted
+policy invoice and a Unicode word-count report. The Unicode meter has
+158 of 1,131 nearest samples in normalized float conversion. The
+combined samples support examining token normalization before changing
+the physical line copy. The word-count report exposes a separate
+dictionary-loop and casing cost.
+
 [B1381 native regex capture numbers](results/2026-11-22-regex-native-indices/README.md)
 reuses the ordered dictionary's integer slots and boxes indices only when
 Python observes them. Unicode matching uses 1.72–2.16% less process CPU
