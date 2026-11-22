@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1377 positional control confirmation](results/2026-11-22-json-positional-control/README.md)
+repeats the exact B1376 pair with reversed order and finds 2.87–4.07%
+higher elapsed and 2.57–5.22% higher CPU on positional calls. Local JIT
+listings vary even within one image. The regression remains open.
+
 [B1376 direct JSON keyword mapping](results/2026-11-22-json-direct-mapping/README.md)
 removes the expanded packet and second binding pass on four JSON
 module entry points. The expanded export takes 7.21–11.09% less warm

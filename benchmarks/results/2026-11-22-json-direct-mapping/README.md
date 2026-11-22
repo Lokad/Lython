@@ -39,7 +39,8 @@ reference-worker spread on this same control. The workload never
 calls the expanded-dictionary route. The observation gives no cause
 for the difference and warrants a bounded repeat with reversed order
 before release. Retain the demonstrated JSON improvement with that
-debt open.
+debt open. The repeat reproduces a 2.87–4.07% elapsed increase
+with stable workers. [Confirmation](../2026-11-22-json-positional-control/README.md).
 
 Both actual images match CPython 3.13.2 on all four complete scripts.
 Each platform passed 235 white-box and 957 public focused Release
