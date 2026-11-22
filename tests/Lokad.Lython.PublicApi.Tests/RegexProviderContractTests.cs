@@ -370,6 +370,43 @@ public sealed class RegexProviderContractTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
+    [Theory]
+    [InlineData(4, 36)]
+    [InlineData(288, 288)]
+    public async Task ExactStringModeConflictsReachTheProviderBeforeErrorClassification(int flags, int expected)
+    {
+        using var provider = new CooperatingProvider
+        {
+            OnCompile = (pattern, options) =>
+            {
+                Assert.Equal(expected, options.Flags);
+                if (pattern.Span.SequenceEqual("["u8))
+                    throw new LythonRegexException(LythonRegexFailure.Pattern, "unterminated character set", 0);
+                throw new LythonRegexException(LythonRegexFailure.Flags, "invalid string-pattern mode");
+            },
+        };
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var script = new LythonEngine(provider).Compile("""
+            import re
+            for pattern in ['a', '[']:
+                try:
+                    re.compile(pattern, flags)
+                except (ValueError, re.error) as error:
+                    print(type(error).__name__, str(error))
+            """, budget);
+        Assert.True(script.IsValid);
+        var baseline = budget.ReservedBytes;
+        var run = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["flags"] = flags } };
+        using (var result = await script.RunAsync(new MockLythonHost(), run))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("ValueError invalid string-pattern mode\nPatternError unterminated character set at position 0\n", result.StandardOutput);
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Fact]
     public async Task ActualAdapterSharesValidatedProgramsAcrossConcurrentRunsAndRetainedResults()
     {
@@ -1630,6 +1667,7 @@ public sealed class RegexProviderContractTests
         internal int AdditionalEffectiveFlags;
         internal IReadOnlyList<LythonRegexNamedGroup> GroupNames = [];
         internal IReadOnlyList<LythonRegexNamedGroup>? GroupListOverride;
+        internal Action<ReadOnlyMemory<byte>, LythonRegexOptions>? OnCompile;
         internal Action<ReadOnlyMemory<byte>, LythonRegexWindow>? OnPrepare;
         internal Func<ReadOnlyMemory<byte>, LythonRegexWindow, FixtureMatch?>? MatchFactory;
         internal Func<ReadOnlyMemory<byte>, LythonRegexOptions, ReadOnlyMemory<byte>?>? ProgramKeyFactory;
@@ -1664,6 +1702,7 @@ public sealed class RegexProviderContractTests
             Reserve(scratch, 256);
             try { Work("compile", token); }
             catch { Cleanup(scratch); throw; }
+            OnCompile?.Invoke(pattern, options);
             if (MissingHandleStage == "compile") return null!;
             ILythonMemoryScope? retained = null;
             var flags = options.Flags | AdditionalEffectiveFlags;

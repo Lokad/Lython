@@ -7,6 +7,7 @@ namespace Lokad.Lython.Utf8Regex;
 /// <summary>Optional PythonRe adapter with borrowed UTF-8 subjects and explicit storage owners.</summary>
 public sealed class Utf8RegexProvider : ILythonRegexProvider
 {
+    private const int LocaleFlag = 4;
     private const int UnicodeFlag = 32;
     private const int AsciiFlag = 256;
     private const string ConflictingModes = "ASCII and UNICODE flags are incompatible";
@@ -160,6 +161,8 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
             verbose = nextVerbose;
             offset = end + 1;
         }
+        if ((flags & LocaleFlag) != 0)
+            throw new LythonRegexException(LythonRegexFailure.Flags, "cannot use LOCALE flag with a str pattern");
         var mode = flags & (AsciiFlag | UnicodeFlag);
         if (mode == (AsciiFlag | UnicodeFlag))
             throw new LythonRegexException(LythonRegexFailure.Flags, ConflictingModes);

@@ -66,9 +66,15 @@ public sealed class RegexAnalysisBindingTests
             check('(?u)a', re.ASCII)
             check('(?a)(?u)a', 0)
             check('(?a)[', re.UNICODE)
+            check('a', re.ASCII | re.UNICODE)
+            check('[', re.ASCII | re.UNICODE)
+            check('a', re.LOCALE)
+            check('[', re.LOCALE)
             """, "256 32\nASCII and UNICODE flags are incompatible\n" +
             "ValueError ASCII and UNICODE flags are incompatible\nValueError ASCII and UNICODE flags are incompatible\n" +
-            "PatternError unterminated character set at position 4\n");
+            "PatternError unterminated character set at position 4\n" +
+            "ValueError ASCII and UNICODE flags are incompatible\nPatternError unterminated character set at position 0\n" +
+            "ValueError cannot use LOCALE flag with a str pattern\nPatternError unterminated character set at position 0\n");
     }
 
     [Theory]

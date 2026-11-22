@@ -34,6 +34,8 @@ public interface ILythonRegexProvider
 /// Verbose is separate because a guest flag object's earlier bitwise result can
 /// differ from its final integer bits. Providers preserve the supplied bits in
 /// reported flags, applying global inline flags as Python does.
+/// Parse the pattern before reporting string-pattern mode conflicts with
+/// <see cref="LythonRegexFailure.Flags"/>.
 /// </remarks>
 public readonly record struct LythonRegexOptions(int Flags, bool Verbose)
 {

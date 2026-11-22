@@ -520,7 +520,9 @@ internal sealed partial class LythonRuntime
         internal static bool TryNormalizeExactFlags(int flags, out LythonRegexOptions options)
         {
             var mode = flags & (PythonAsciiFlag | PythonUnicodeFlag);
-            if ((flags & (PythonLocaleFlag | RegexDebugFlag)) != 0 || mode == (PythonAsciiFlag | PythonUnicodeFlag))
+            // The provider checks Python mode conflicts after parsing. DEBUG
+            // still reaches the explicit unsupported-feature diagnostic.
+            if ((flags & RegexDebugFlag) != 0)
             {
                 options = default;
                 return false;
