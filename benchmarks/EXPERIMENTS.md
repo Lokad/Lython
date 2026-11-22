@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1387 bound return from the existing target slot](results/2026-11-22-bound-return-target-slot/README.md)
+keeps the original arithmetic operand reader. The quoted invoice takes
+2.45–4.87% less warm time. The unchanged function helper takes 0.40–1.47%
+more, and the positional control takes 0.67–2.74% more. Keep the prototype
+private and advance compiler construction work.
+
 [B1386 compilation storage attribution](results/2026-11-22-frontend-growth-attribution/README.md)
 finds instruction list growth in the manifest, sparse validator and
 postponed factories. Name-binding set copies are also visible in the
