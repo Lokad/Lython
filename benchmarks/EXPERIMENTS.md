@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1394 grouped regex escape replay](results/2026-11-22-regex-escape-runs/README.md)
+keeps literal borrowing, decodes adjacent escapes once and reuses its
+name reservation. Long-literal elapsed improves 21.47–22.23%. Dense
+escape elapsed and CPU span zero after the earlier regression. The
+positional control remains an adverse reading with 4.75% candidate
+worker spread. Retained at `5ac8ca3dd`.
+
 [B1393 original regex template literals](results/2026-11-22-regex-template-source-ranges/README.md)
 eliminates the complete decoded literal buffer. Long-literal expansion
 allocates 45.09% less and takes 19.76–21.75% less warm time. Dense escapes

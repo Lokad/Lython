@@ -2576,14 +2576,14 @@ stays charged to that owner. A small surviving capture can keep a larger
 subject funded until the owner ends. Short values use inline storage, and
 partial values from other owners use independent payloads.
 One UTF-8 parser handles `match.expand` and template substitution, including Python
-numeric/named references, octal escapes and error precedence. Each operation parses
-once into a temporary literal/capture plan, even with no matches or negative count.
-The plan and lookup scratch are refunded after actual matching/users/cleanup finish;
-retained output is admitted independently. Result copying checks cancellation in
-bounded chunks. Replacement plans are not cached between operations; this removes
-the optional adapter's private replacement-cache funding without changing compiled-
-pattern caching. Split/sub consume capture byte ranges directly; callable replacements
-receive ordinary Python matches and RunAsync awaits their actual callbacks.
+numeric and named references, octal escapes and error precedence. Each operation
+parses once, even with no matches or negative count. The plan borrows literal
+ranges from the funded template and stores adjacent decoded escapes in a private
+UTF-8 buffer. Temporary name funding returns before replay. The plan returns its
+allowance after use and retained output has its own admission. Result copying
+checks cancellation in bounded chunks. Replacement plans live for one operation.
+Split and substitution consume capture byte ranges directly. Callable replacements
+receive ordinary Python matches, and RunAsync awaits their callbacks.
 
 Preparation receives the original UTF-8 subject and a `LythonRegexWindow` with
 independently clamped scalar `Pos`/`EndPos` and matching byte `StartByte`/`EndByte`.
