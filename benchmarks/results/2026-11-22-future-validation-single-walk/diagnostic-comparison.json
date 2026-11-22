@@ -1,0 +1,20 @@
+{
+  "cases": 1200,
+  "valid": 57,
+  "diagnosticDifferences": [],
+  "balanceDifferences": 0,
+  "imageHashes": {
+    "reference": {
+      "DiagnosticProbe.deps.json": "f8bdd8dfc63039d2a8b91a638047d3034c6319ed9460a31d2a13254a0ca668b0",
+      "DiagnosticProbe.dll": "62d693da94d5e49bea866d51307142dd0ee6d0e50a634a28e9de4d40959ee324",
+      "DiagnosticProbe.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0",
+      "Lokad.Lython.dll": "712cc0b4e1cbf39ea59b9d32cf6d8629a8d2586ee1695e785891aeb80cd772e0"
+    },
+    "candidate": {
+      "DiagnosticProbe.deps.json": "f8bdd8dfc63039d2a8b91a638047d3034c6319ed9460a31d2a13254a0ca668b0",
+      "DiagnosticProbe.dll": "62d693da94d5e49bea866d51307142dd0ee6d0e50a634a28e9de4d40959ee324",
+      "DiagnosticProbe.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0",
+      "Lokad.Lython.dll": "c6cabd0d5ca8cf80cf5fcbeb199be381e74e1a9e22db07881209756af6580f57"
+    }
+  }
+}

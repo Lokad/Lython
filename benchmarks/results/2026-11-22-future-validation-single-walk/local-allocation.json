@@ -1,0 +1,168 @@
+{
+  "reference": {
+    "coreSha256": "712cc0b4e1cbf39ea59b9d32cf6d8629a8d2586ee1695e785891aeb80cd772e0",
+    "boundary": "Local synchronous public compilation and compiled-owner disposal. Borrowed budget returns to baseline after every invocation. Counts current-thread allocations. No elapsed claim.",
+    "rows": [
+      {
+        "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+        "bytes": [
+          65568,
+          65568,
+          65568,
+          65568,
+          65568
+        ],
+        "characters": 465
+      },
+      {
+        "id": "scripts.annotated-rule-closures.nested-factories",
+        "bytes": [
+          59288,
+          59288,
+          59288,
+          59288,
+          59288
+        ],
+        "characters": 430
+      },
+      {
+        "id": "scripts.dataclass-inherited-configuration.generated",
+        "bytes": [
+          530536,
+          530536,
+          530536,
+          530536,
+          530536
+        ],
+        "characters": 3978
+      },
+      {
+        "id": "scripts.config-generated-guards.medium.bad-0.sparse-lexical",
+        "bytes": [
+          2161880.75,
+          2161543.25,
+          2132774.875,
+          2063334.375,
+          2061252.25
+        ],
+        "characters": 23555
+      },
+      {
+        "id": "compiler.generated-read-only-branches",
+        "bytes": [
+          11422074.5,
+          11409797,
+          11407315.125,
+          11401712,
+          11401712
+        ],
+        "characters": 11139
+      },
+      {
+        "id": "diagnostic.text-summary.nonlocal-computed-width.large",
+        "bytes": [
+          79304,
+          79304,
+          79304,
+          79304,
+          79304
+        ],
+        "characters": 615
+      },
+      {
+        "id": "scripts.config-edit.small",
+        "bytes": [
+          43504,
+          43504,
+          43504,
+          43504,
+          43504
+        ],
+        "characters": 357
+      }
+    ]
+  },
+  "candidate": {
+    "coreSha256": "c6cabd0d5ca8cf80cf5fcbeb199be381e74e1a9e22db07881209756af6580f57",
+    "boundary": "Local synchronous public compilation and compiled-owner disposal. Borrowed budget returns to baseline after every invocation. Counts current-thread allocations. No elapsed claim.",
+    "rows": [
+      {
+        "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+        "bytes": [
+          64120,
+          64120,
+          64120,
+          64120,
+          64120
+        ],
+        "characters": 465
+      },
+      {
+        "id": "scripts.annotated-rule-closures.nested-factories",
+        "bytes": [
+          59200,
+          59200,
+          59200,
+          59200,
+          59200
+        ],
+        "characters": 430
+      },
+      {
+        "id": "scripts.dataclass-inherited-configuration.generated",
+        "bytes": [
+          530448,
+          530448,
+          530448,
+          530448,
+          530640.75
+        ],
+        "characters": 3978
+      },
+      {
+        "id": "scripts.config-generated-guards.medium.bad-0.sparse-lexical",
+        "bytes": [
+          2161408,
+          2135126.75,
+          2075867,
+          2062526.375,
+          2059081.5
+        ],
+        "characters": 23555
+      },
+      {
+        "id": "compiler.generated-read-only-branches",
+        "bytes": [
+          11421534,
+          11416104,
+          11407970.875,
+          11401624,
+          11401624
+        ],
+        "characters": 11139
+      },
+      {
+        "id": "diagnostic.text-summary.nonlocal-computed-width.large",
+        "bytes": [
+          79216,
+          79216,
+          79216,
+          79216,
+          79216
+        ],
+        "characters": 615
+      },
+      {
+        "id": "scripts.config-edit.small",
+        "bytes": [
+          43416,
+          43416,
+          43416,
+          43416,
+          43416
+        ],
+        "characters": 357
+      }
+    ]
+  }
+}

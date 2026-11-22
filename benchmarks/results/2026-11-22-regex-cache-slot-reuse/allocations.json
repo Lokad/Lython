@@ -1,0 +1,104 @@
+{
+  "reference": {
+    "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+    "rows": [
+      {
+        "id": "scripts.regex-cache.compile-evict-purge",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          114549118,
+          114543482,
+          114543360
+        ],
+        "peakExecutionMemoryBytes": 2750490,
+        "compiledReservedBytes": 66272,
+        "compilationMillisecondsDiagnostic": 283.5457,
+        "compilationAllocatedBytesDiagnostic": 1364464,
+        "firstInvocationMillisecondsDiagnostic": 1282.8946,
+        "sharedBudgetBaselineRestored": true
+      },
+      {
+        "id": "scripts.regex-ascii-groups",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          2955904,
+          2955904,
+          2955904
+        ],
+        "peakExecutionMemoryBytes": 2075085,
+        "compiledReservedBytes": 135836,
+        "compilationMillisecondsDiagnostic": 20.1231,
+        "compilationAllocatedBytesDiagnostic": 166472,
+        "firstInvocationMillisecondsDiagnostic": 57.2977,
+        "sharedBudgetBaselineRestored": true
+      },
+      {
+        "id": "diagnostic.regex-prepared-names.many-named-rules",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          382032,
+          382032,
+          382032
+        ],
+        "peakExecutionMemoryBytes": 139956,
+        "compiledReservedBytes": 5283168,
+        "compilationMillisecondsDiagnostic": 19.9178,
+        "compilationAllocatedBytesDiagnostic": 7366352,
+        "firstInvocationMillisecondsDiagnostic": 3.5267,
+        "sharedBudgetBaselineRestored": true
+      }
+    ],
+    "boundary": "Complete warm runs including mediated I/O/reset, all output/file checks and result cleanup; compilation/startup/final cache teardown excluded. Process-wide CLR allocation counters, no forced GC. Compilation and first invocation clocks are local diagnostic observations, not a controlled CPU/source timing comparison."
+  },
+  "candidate": {
+    "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+    "rows": [
+      {
+        "id": "scripts.regex-cache.compile-evict-purge",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          114493842,
+          114494646,
+          114493922
+        ],
+        "peakExecutionMemoryBytes": 2750490,
+        "compiledReservedBytes": 66272,
+        "compilationMillisecondsDiagnostic": 208.2396,
+        "compilationAllocatedBytesDiagnostic": 1364800,
+        "firstInvocationMillisecondsDiagnostic": 1279.0964,
+        "sharedBudgetBaselineRestored": true
+      },
+      {
+        "id": "scripts.regex-ascii-groups",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          2955880,
+          2955880,
+          2955880
+        ],
+        "peakExecutionMemoryBytes": 2075085,
+        "compiledReservedBytes": 135836,
+        "compilationMillisecondsDiagnostic": 16.9097,
+        "compilationAllocatedBytesDiagnostic": 166472,
+        "firstInvocationMillisecondsDiagnostic": 56.2671,
+        "sharedBudgetBaselineRestored": true
+      },
+      {
+        "id": "diagnostic.regex-prepared-names.many-named-rules",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          380496,
+          380496,
+          380496
+        ],
+        "peakExecutionMemoryBytes": 139956,
+        "compiledReservedBytes": 5283168,
+        "compilationMillisecondsDiagnostic": 28.9348,
+        "compilationAllocatedBytesDiagnostic": 7366352,
+        "firstInvocationMillisecondsDiagnostic": 3.6371,
+        "sharedBudgetBaselineRestored": true
+      }
+    ],
+    "boundary": "Complete warm runs including mediated I/O/reset, all output/file checks and result cleanup; compilation/startup/final cache teardown excluded. Process-wide CLR allocation counters, no forced GC. Compilation and first invocation clocks are local diagnostic observations, not a controlled CPU/source timing comparison."
+  }
+}

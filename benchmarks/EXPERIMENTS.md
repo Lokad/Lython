@@ -6,6 +6,16 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1421 future annotation validation](results/2026-11-22-future-validation-single-walk/README.md)
+removes the separate statement walk and permitted-import set. The
+postponed factory compiles 1.72–3.13% faster and allocates 2.21% less.
+Controls span zero, including a larger worker spread on generated branches.
+
+[Regex cache admission and node reuse](results/2026-11-22-regex-cache-slot-reuse/README.md)
+closes unpublished patterns when cache admission cancels and reuses the
+least-recent node on eviction. Allocation savings are small. The
+cancellation regression fails on the exact previous core.
+
 [B1420 borrowed short UTF-8 keys](results/2026-11-22-short-borrowed-text-probe/README.md)
 removes query hashing from tiny native dictionaries. The nonlocal report
 takes 6.58–8.17% less warm elapsed and 2.97–4.72% less time to result.
