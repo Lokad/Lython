@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1371 arithmetic returns from supplied operands](results/2026-11-22-native-direct-integer-return/README.md)
+skips the native workspace for a complete checked integer return.
+The function-scoped helper takes 18.42–20.84% less warm time and the
+module-scoped helper takes 10.65–12.31% less. The mixed factory takes
+3.30–4.58% longer to reach the result. The first source remains private
+while a refinement restores the ordinary workspace entry method.
+
 [B1370 current call and first-use CPU attribution](results/2026-11-22-retained-call-cpu-profile/README.md)
 profiles both B1368 images on mixed time to result and the retained
 function helper on warm execution. The mixed profiles show similar

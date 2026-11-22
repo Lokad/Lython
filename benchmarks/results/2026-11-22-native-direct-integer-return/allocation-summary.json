@@ -1,0 +1,74 @@
+[
+  {
+    "case": "scripts.csv-invoice.helper-accumulation",
+    "referenceBytes": 3674428,
+    "candidateBytes": 3674390,
+    "allocationChangePercent": -0.0010341745708464245,
+    "referencePeak": 9433061,
+    "candidatePeak": 9433061,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.csv-invoice.large",
+    "referenceBytes": 3672382,
+    "candidateBytes": 3672438,
+    "allocationChangePercent": 0.0015248958305624782,
+    "referencePeak": 9432613,
+    "candidatePeak": 9432613,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "referenceBytes": 4068902,
+    "candidateBytes": 4069574,
+    "allocationChangePercent": 0.01651551204722157,
+    "referencePeak": 9432874,
+    "candidatePeak": 9432874,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.json-lines-shipment.expanded-options.large",
+    "referenceBytes": 9062912,
+    "candidateBytes": 9063862,
+    "allocationChangePercent": 0.01048228207445323,
+    "referencePeak": 6489776,
+    "candidatePeak": 6489776,
+    "allowanceRestored": true
+  },
+  {
+    "case": "diagnostic.helper-placement.function-call",
+    "referenceBytes": 77224,
+    "candidateBytes": 77224,
+    "allocationChangePercent": 0.0,
+    "referencePeak": 1343,
+    "candidatePeak": 1343,
+    "allowanceRestored": true
+  },
+  {
+    "case": "diagnostic.helper-placement.module-call",
+    "referenceBytes": 142560,
+    "candidateBytes": 142680,
+    "allocationChangePercent": 0.08417508417508657,
+    "referencePeak": 1255,
+    "candidatePeak": 1255,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.annotated-rule-closures.literal-positional-dynamic-keyword",
+    "referenceBytes": 964240,
+    "candidateBytes": 964240,
+    "allocationChangePercent": 0.0,
+    "referencePeak": 3443797,
+    "candidatePeak": 3443797,
+    "allowanceRestored": true
+  },
+  {
+    "case": "scripts.csv-meter-report.typed-ascii",
+    "referenceBytes": 1605440,
+    "candidateBytes": 1605468,
+    "allocationChangePercent": 0.0017440701614468423,
+    "referencePeak": 3552905,
+    "candidatePeak": 3552905,
+    "allowanceRestored": true
+  }
+]

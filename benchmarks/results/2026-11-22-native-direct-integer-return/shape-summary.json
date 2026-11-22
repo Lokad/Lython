@@ -1,0 +1,55 @@
+{
+  "cases": 8,
+  "codeObjects": 23,
+  "sameExecutableShape": true,
+  "eligible": [
+    {
+      "case": "scripts.csv-invoice.helper-accumulation",
+      "name": "rounded_basis_points",
+      "locals": [
+        "amount",
+        "rate"
+      ],
+      "instructions": 4
+    },
+    {
+      "case": "scripts.csv-invoice.large",
+      "name": "rounded_basis_points",
+      "locals": [
+        "amount",
+        "rate"
+      ],
+      "instructions": 4
+    },
+    {
+      "case": "scripts.csv-invoice.method-policy.quoted-control",
+      "name": "rounded_basis_points",
+      "locals": [
+        "self",
+        "amount",
+        "rate"
+      ],
+      "instructions": 4
+    },
+    {
+      "case": "diagnostic.helper-placement.function-call",
+      "name": "evaluate",
+      "locals": [
+        "record",
+        "base",
+        "weight"
+      ],
+      "instructions": 3
+    },
+    {
+      "case": "diagnostic.helper-placement.module-call",
+      "name": "evaluate",
+      "locals": [
+        "record",
+        "base",
+        "weight"
+      ],
+      "instructions": 3
+    }
+  ]
+}

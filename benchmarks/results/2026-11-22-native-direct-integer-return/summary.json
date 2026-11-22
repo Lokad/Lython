@@ -1,0 +1,338 @@
+{
+  "complete": true,
+  "elapsedSeconds": 329.26350896898657,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "staging": {
+    "retiredOnly": [
+      {
+        "paths": [
+          "checked-augmented-local-b1364-20261122/candidate/Lokad.Lython.dll",
+          "checked-local-csv-b1365-20261122/candidate/Lokad.Lython.dll",
+          "native-fixed-return-b1367-20261122/reference/Lokad.Lython.dll",
+          "native-fixed-return-refined-b1368-20261122/reference/Lokad.Lython.dll",
+          "post-checked-local-call-profile-b1366-20261122/candidate/Lokad.Lython.dll",
+          "retained-call-profile-b1370-20261122/reference/Lokad.Lython.dll"
+        ],
+        "bytes": 5729280,
+        "links": 6,
+        "sha256": "7cfcba90a3e4c9e25f862149ae3c80299aac76f4a70e23ff06e846a2a7cac80f",
+        "archives": {
+          "native-fixed-return-refined-b1368-20261122/observations.tgz": "d410d7458ad40e4c7df5d1ef017f2bc23bb2f9e27fc2262157f5e81f1e7dbc3b",
+          "checked-local-csv-b1365-20261122/observations.tgz": "56122c0103f48553c1fbca97862f4050a1506ee390d82f9eaf1c59a74f823a6d",
+          "retained-call-profile-b1370-20261122/observations.tgz": "b2207dd9ff31e634ea680df916ab4c9bfee82e3e7eed51b523f7e66969ca73a3",
+          "native-fixed-return-b1367-20261122/observations.tgz": "ddfcff08ec3c6da0628a88c5f0f605a32a85df9968a08e5285f171092ced5ef1",
+          "post-checked-local-call-profile-b1366-20261122/observations.tgz": "9bbf66be0416c563a7362cb638b6a8363e700ee5ffaca3e9b0977562a740e79e",
+          "checked-augmented-local-b1364-20261122/observations.tgz": "a022b5e442c7c9bfd984a7d131c942aa1b50fc54f06fe9026befbd7e04164727"
+        },
+        "optional": false
+      }
+    ],
+    "alreadyAbsent": [],
+    "freshIdleLease": true,
+    "allHashesPathsOwnershipLinksAndAliasesVerified": true,
+    "canonicalArchiveAndCurrentImagesPreserved": true,
+    "freeBeforeBytes": 180846592,
+    "freeAfterBytes": 180805632
+  },
+  "rows": [
+    {
+      "case": "diagnostic.helper-placement.function-call",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 0.29243294149659865,
+        "candidate-control": 0.23373369686162626,
+        "reference": 0.2952522347865576,
+        "candidate": 0.23855225604395605
+      },
+      "cpuMilliseconds": {
+        "reference-control": 0.29478458049886624,
+        "candidate-control": 0.231811697574893,
+        "reference": 0.2951861943687557,
+        "candidate": 0.23809523809523808
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 1.050241049429277,
+        "candidate-control": 0.46974310776266587,
+        "reference": 0.23644833145721958,
+        "candidate": 0.38727455909364183
+      },
+      "elapsedChangePercent": [
+        -20.835926261287753,
+        -20.072719692441055,
+        -19.203911795482544,
+        -18.424971269274494
+      ],
+      "cpuChangePercent": [
+        -21.469329529243943,
+        -21.36233951497861,
+        -19.34065934065935,
+        -19.23076923076924
+      ],
+      "referenceSpreadPercent": 0.9640819791130628,
+      "candidateSpreadPercent": 2.061559478598607
+    },
+    {
+      "case": "diagnostic.helper-placement.module-call",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 0.31515876678269517,
+        "reference": 0.35272415534521157,
+        "candidate-control": 0.3128180065359477,
+        "reference-control": 0.3567185540166205
+      },
+      "cpuMilliseconds": {
+        "candidate": 0.31327697662854304,
+        "reference": 0.3507795100222717,
+        "candidate-control": 0.3117144293614882,
+        "reference-control": 0.3545706371191136
+      },
+      "elapsedIQRPercent": {
+        "candidate": 1.4037351163080112,
+        "reference": 1.358100983480662,
+        "candidate-control": 0.6984687911715033,
+        "reference-control": 0.7812100879703984
+      },
+      "elapsedChangePercent": [
+        -12.306774342505145,
+        -11.650581884784428,
+        -11.313698879002953,
+        -10.650075418212035
+      ],
+      "cpuChangePercent": [
+        -12.086789844142787,
+        -11.646102685231218,
+        -11.136648391550352,
+        -10.691198408751855
+      ],
+      "referenceSpreadPercent": 1.1324426214869288,
+      "candidateSpreadPercent": 0.7482818117372281
+    },
+    {
+      "case": "scripts.csv-invoice.helper-accumulation",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 5.97495129906542,
+        "candidate-control": 5.809033504504504,
+        "reference": 6.037163700934578,
+        "candidate": 6.012680205607476
+      },
+      "cpuMilliseconds": {
+        "reference-control": 6.074766355140187,
+        "candidate-control": 5.945945945945946,
+        "reference": 6.168224299065421,
+        "candidate": 6.074766355140187
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.5103578140610309,
+        "candidate-control": 0.3114353337582458,
+        "reference": 0.4664355321548669,
+        "candidate": 0.44579976153883716
+      },
+      "elapsedChangePercent": [
+        -3.7787644617746308,
+        -2.776889488402501,
+        -0.4055463217489397,
+        0.631451281418105
+      ],
+      "cpuChangePercent": [
+        -3.603603603603611,
+        -2.1205821205821263,
+        -1.5151515151515138,
+        0.0
+      ],
+      "referenceSpreadPercent": 1.0412202335253973,
+      "candidateSpreadPercent": 3.5056899042682055
+    },
+    {
+      "case": "scripts.csv-invoice.method-policy.quoted-control",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 7.569564036144579,
+        "reference": 7.626923928571429,
+        "candidate-control": 7.342195416666667,
+        "reference-control": 7.369506505747127
+      },
+      "cpuMilliseconds": {
+        "candidate": 7.710843373493977,
+        "reference": 7.738095238095238,
+        "candidate-control": 7.5,
+        "reference-control": 7.471264367816092
+      },
+      "elapsedIQRPercent": {
+        "candidate": 3.3050187679714136,
+        "reference": 2.623023564655279,
+        "candidate-control": 4.132427936132973,
+        "reference-control": 3.3994506339985437
+      },
+      "elapsedChangePercent": [
+        -3.733202462373242,
+        -0.7520711228280796,
+        -0.37059590162735745,
+        2.7146665823747584
+      ],
+      "cpuChangePercent": [
+        -3.076923076923077,
+        -0.35217794253937784,
+        0.38461538461538325,
+        3.2066728452270654
+      ],
+      "referenceSpreadPercent": 3.4930076067312577,
+      "candidateSpreadPercent": 3.0967388713434296
+    },
+    {
+      "case": "scripts.json-lines-shipment.expanded-options.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 6.666665595959596,
+        "candidate-control": 6.424157108910891,
+        "reference": 6.331107257425743,
+        "candidate": 6.400008390000001
+      },
+      "cpuMilliseconds": {
+        "reference-control": 6.767676767676768,
+        "candidate-control": 6.435643564356436,
+        "reference": 6.336633663366337,
+        "candidate": 6.500000000000001
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 3.6547421778828486,
+        "candidate-control": 2.8525811857171637,
+        "reference": 3.378021640945726,
+        "candidate": 2.2116899912376575
+      },
+      "elapsedChangePercent": [
+        -3.9998587317954915,
+        -3.6376278899556636,
+        1.0882951397394702,
+        1.4697247685388604
+      ],
+      "cpuChangePercent": [
+        -4.906162258016844,
+        -3.955223880597014,
+        1.5625,
+        2.578125000000009
+      ],
+      "referenceSpreadPercent": 5.3001524834424,
+      "candidateSpreadPercent": 0.37732323833548076
+    },
+    {
+      "case": "scripts.annotated-rule-closures.literal-positional-dynamic-keyword",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "candidate": 1.0577739674267101,
+        "reference": 1.0146778611544462,
+        "candidate-control": 1.0611056720779222,
+        "reference-control": 1.0239835579937304
+      },
+      "cpuMilliseconds": {
+        "candidate": 1.0586319218241043,
+        "reference": 1.014040561622465,
+        "candidate-control": 1.0714285714285714,
+        "reference-control": 1.0344827586206897
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.7812202836090375,
+        "reference": 0.8700666460684412,
+        "candidate-control": 0.4386167770534853,
+        "reference-control": 0.36745169929273913
+      },
+      "elapsedChangePercent": [
+        3.2998976564803995,
+        3.6252646631284025,
+        4.2472697909493595,
+        4.5756207660481385
+      ],
+      "cpuChangePercent": [
+        2.3344191096634104,
+        3.5714285714285587,
+        4.397394136807797,
+        5.659340659340639
+      ],
+      "referenceSpreadPercent": 0.9171084928074169,
+      "candidateSpreadPercent": 0.3149732129745342
+    }
+  ],
+  "CPythonRefreshed": false,
+  "measuredSources": "7a8df051a9cbb3fbfab866273267c1e7f75b2f6e versus b3909536dd2732b1cbe5fda2449fd54db5f8e099",
+  "deliveryReference": "880c6d958",
+  "sourceImages": {
+    "reference": {
+      "Azure.Core.dll": "1d6df436afdc73c30d476be938f6513c90ef8fc884a7bae280091a9bed0a5490",
+      "Azure.Identity.dll": "31574a3d35ffeb0e25a00ebb317937222fe5283b91af608613f2e3bf0f26c50a",
+      "BenchmarkDotNet.Annotations.dll": "97974c60500f53a3c7d142088b22d815aae7aac729de69f4b497132cc436594f",
+      "BenchmarkDotNet.dll": "599ded314fe77dbc17318557e787cf660c1fcb0d69be39994ea462ca95745896",
+      "CommandLine.dll": "8a55501cd1a1590a4bd93a17c6fdd2c01a0ed5bff1aea9036bdc78d98c9a3fad",
+      "deniszykov.WebSocketListener.dll": "c86cfb93e32192ae12fb1a132b4ae785a7d2f325e8583c03c99abf8e832d25d6",
+      "Dia2Lib.dll": "6c4cac68010fe032218efe5e9fcf46eef9f77bfaa5f3bd33f03c5ff77d5a8fac",
+      "Gee.External.Capstone.dll": "6dfda67784598de9677173b89d0692593935f1a4024d36040c95dea48c1b5965",
+      "Iced.dll": "f058c01321b4cdfc9b9151879e88e59571c8d0ba176fbcf95bc936a8f3d073ed",
+      "Lokad.Lython.Benchmarks.deps.json": "b47f293f779ce46eefa92c6eb775842efe363be212c35bf7d155d0b89734d450",
+      "Lokad.Lython.Benchmarks.dll": "4b0121f46ccb9abc4de3ddb442728bf0a7bab056517e902cf50088d0a8efbedd",
+      "Lokad.Lython.Benchmarks.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0",
+      "Lokad.Lython.dll": "c18e96d4b44139511d540981190d0a252c296b50099a32a0d62841f620486792",
+      "Lokad.Lython.Utf8Regex.dll": "a66728ba9e1f5b29f83be2ee9d65ad9f9ace74de0a18a053d9ceec4a0222f4c7",
+      "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+      "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe",
+      "Microsoft.Bcl.AsyncInterfaces.dll": "bf58b47923b2f520c766ca905f68a1a65d217c4d828f05db538c41129cacf9d9",
+      "Microsoft.CodeAnalysis.CSharp.dll": "1af1de8a162d2312eb2f6b781f5edbe8cec7d5cd268c7e4de24396225e54260f",
+      "Microsoft.CodeAnalysis.dll": "42c9ce7891470f430267e2dc02d03571f9d046a7e7e121107754bee58d344613",
+      "Microsoft.Diagnostics.FastSerialization.dll": "e5bdad179ce97180646f37f357cb7b449f5baaf76f185eb09510eeafc5b773e1",
+      "Microsoft.Diagnostics.NETCore.Client.dll": "e2cc9e1f6c97b3c4ee45ebabaa92408eb9b2fc81cb08ceeb342fe48bf79db15f",
+      "Microsoft.Diagnostics.Runtime.dll": "52d5f113180bb0f70b1a9b10608aef93b187364ac689885d2d3c734102d850a2",
+      "Microsoft.Diagnostics.Tracing.TraceEvent.dll": "92401392ce1887c3483a3c0085e6cc3656ee39da1be539943096ebabbad6ea21",
+      "Microsoft.Identity.Client.dll": "5795027e9ae95eececb310a4fed3c502bb368039d186ab0884f64b7792b84717",
+      "Microsoft.Identity.Client.Extensions.Msal.dll": "07109a2f30df782300077a567ade47cbd0a0502c75cd7c8a62192f7d64bb004e",
+      "Microsoft.IdentityModel.Abstractions.dll": "24e97b54b6b5c234a124a336757e3116617ac6c30b655cdae74517dc2ecb5746",
+      "Perfolizer.dll": "4a5508174e2b90a651a29e1de0d2ad88236daaaae01070cd6fc8ca3c36beaa36",
+      "Pragmastat.dll": "7217e206e47de8a0335f58513019d5805a6e52ca2e8f127e2cc3944f1742bb2e",
+      "System.ClientModel.dll": "dec5e22b71a1685c5e6e97cd28b629f0aa6703fb87b6950df28e79fc1804290c",
+      "System.Memory.Data.dll": "2c1035b0106dbb2de7913d151e06071ed617bb58bbb3d6cd46a2dd0f6a03617b",
+      "System.Security.Cryptography.ProtectedData.dll": "80566f0839ece5946e66bf9f00d723e59e371ba1341a18e00c7c7a7c49298e1d",
+      "TraceReloggerLib.dll": "6830c0f1d3f3c17719181e73dd5cfa8ccbb3f3c575329d2120576545103467b5"
+    },
+    "candidate": {
+      "Azure.Core.dll": "1d6df436afdc73c30d476be938f6513c90ef8fc884a7bae280091a9bed0a5490",
+      "Azure.Identity.dll": "31574a3d35ffeb0e25a00ebb317937222fe5283b91af608613f2e3bf0f26c50a",
+      "BenchmarkDotNet.Annotations.dll": "97974c60500f53a3c7d142088b22d815aae7aac729de69f4b497132cc436594f",
+      "BenchmarkDotNet.dll": "599ded314fe77dbc17318557e787cf660c1fcb0d69be39994ea462ca95745896",
+      "CommandLine.dll": "8a55501cd1a1590a4bd93a17c6fdd2c01a0ed5bff1aea9036bdc78d98c9a3fad",
+      "deniszykov.WebSocketListener.dll": "c86cfb93e32192ae12fb1a132b4ae785a7d2f325e8583c03c99abf8e832d25d6",
+      "Dia2Lib.dll": "6c4cac68010fe032218efe5e9fcf46eef9f77bfaa5f3bd33f03c5ff77d5a8fac",
+      "Gee.External.Capstone.dll": "6dfda67784598de9677173b89d0692593935f1a4024d36040c95dea48c1b5965",
+      "Iced.dll": "f058c01321b4cdfc9b9151879e88e59571c8d0ba176fbcf95bc936a8f3d073ed",
+      "Lokad.Lython.Benchmarks.deps.json": "b47f293f779ce46eefa92c6eb775842efe363be212c35bf7d155d0b89734d450",
+      "Lokad.Lython.Benchmarks.dll": "4b0121f46ccb9abc4de3ddb442728bf0a7bab056517e902cf50088d0a8efbedd",
+      "Lokad.Lython.Benchmarks.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0",
+      "Lokad.Lython.dll": "81391906ece5014b1ca63f523082d72ac42af8d428431ecd28ebddc5f10e5838",
+      "Lokad.Lython.Utf8Regex.dll": "a66728ba9e1f5b29f83be2ee9d65ad9f9ace74de0a18a053d9ceec4a0222f4c7",
+      "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+      "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe",
+      "Microsoft.Bcl.AsyncInterfaces.dll": "bf58b47923b2f520c766ca905f68a1a65d217c4d828f05db538c41129cacf9d9",
+      "Microsoft.CodeAnalysis.CSharp.dll": "1af1de8a162d2312eb2f6b781f5edbe8cec7d5cd268c7e4de24396225e54260f",
+      "Microsoft.CodeAnalysis.dll": "42c9ce7891470f430267e2dc02d03571f9d046a7e7e121107754bee58d344613",
+      "Microsoft.Diagnostics.FastSerialization.dll": "e5bdad179ce97180646f37f357cb7b449f5baaf76f185eb09510eeafc5b773e1",
+      "Microsoft.Diagnostics.NETCore.Client.dll": "e2cc9e1f6c97b3c4ee45ebabaa92408eb9b2fc81cb08ceeb342fe48bf79db15f",
+      "Microsoft.Diagnostics.Runtime.dll": "52d5f113180bb0f70b1a9b10608aef93b187364ac689885d2d3c734102d850a2",
+      "Microsoft.Diagnostics.Tracing.TraceEvent.dll": "92401392ce1887c3483a3c0085e6cc3656ee39da1be539943096ebabbad6ea21",
+      "Microsoft.Identity.Client.dll": "5795027e9ae95eececb310a4fed3c502bb368039d186ab0884f64b7792b84717",
+      "Microsoft.Identity.Client.Extensions.Msal.dll": "07109a2f30df782300077a567ade47cbd0a0502c75cd7c8a62192f7d64bb004e",
+      "Microsoft.IdentityModel.Abstractions.dll": "24e97b54b6b5c234a124a336757e3116617ac6c30b655cdae74517dc2ecb5746",
+      "Perfolizer.dll": "4a5508174e2b90a651a29e1de0d2ad88236daaaae01070cd6fc8ca3c36beaa36",
+      "Pragmastat.dll": "7217e206e47de8a0335f58513019d5805a6e52ca2e8f127e2cc3944f1742bb2e",
+      "System.ClientModel.dll": "dec5e22b71a1685c5e6e97cd28b629f0aa6703fb87b6950df28e79fc1804290c",
+      "System.Memory.Data.dll": "2c1035b0106dbb2de7913d151e06071ed617bb58bbb3d6cd46a2dd0f6a03617b",
+      "System.Security.Cryptography.ProtectedData.dll": "80566f0839ece5946e66bf9f00d723e59e371ba1341a18e00c7c7a7c49298e1d",
+      "TraceReloggerLib.dll": "6830c0f1d3f3c17719181e73dd5cfa8ccbb3f3c575329d2120576545103467b5"
+    }
+  },
+  "verifiedTimedBatches": 168,
+  "decision": {
+    "decision": "Refine",
+    "readerDecision": "Both helper placements measure lower warm elapsed and CPU, without a\nmeasured allocation change. The affected invoice elapsed spans zero\nand the quoted invoice and JSON controls are inconclusive. The mixed\nfactory consistently takes 3.30\u20134.58% longer to reach the result and\nuses 2.33\u20135.66% more wider CPU. The factory has no eligible arithmetic\nreturn, so it takes the ordinary workspace entry through the new wrapper.\nKeep this candidate private. The next source puts the workspace back\nin its original entry method and preserves the direct arithmetic return.\nThat changes the common entry shape. The measured differences do not\nisolate its cause."
+  },
+  "targetedPlatforms": {
+    "Windows": "net11.0",
+    "Ubuntu": "net10.0"
+  }
+}
