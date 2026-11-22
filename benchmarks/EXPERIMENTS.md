@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1407 current factory and text CPU attribution](results/2026-11-22-retained-runtime-profile/README.md)
+profiles the B1406 image. Callable construction and default staging
+account for 97 of 101 sampled warm reservations. Text dictionary and
+casing costs remain visible. This is an attribution trace with the
+original outputs verified, without a new elapsed comparison.
+
 [B1406 current 0.11.0 checkpoint against CPython](results/2026-11-22-current-source-cpython/README.md)
 refreshes the six B1397 workloads at `55424591f`. Postponed factories
 use 2.005–2.060× CPython warm elapsed and the nonlocal word report uses
