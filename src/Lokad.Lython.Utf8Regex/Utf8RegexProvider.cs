@@ -34,9 +34,10 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
             Reserve(owner, checked(65536L + 2048L * Math.Max(0, slots - 2) + 256L * Math.Max(0, pattern.Length - 64)));
             var backendOptions = Options(options.Flags);
             backendOptions = options.Verbose ? backendOptions | PythonReCompileOptions.Verbose : backendOptions & ~PythonReCompileOptions.Verbose;
-            var regex = Backend(() => Utf8PythonRegex.Compile(pattern.Span, backendOptions,
+            var regex = Backend((Pattern: pattern, Options: backendOptions), static (state, token) =>
+                Utf8PythonRegex.Compile(state.Pattern.Span, state.Options,
                 Timeout.InfiniteTimeSpan, Utf8ResourcePolicy.Unlimited, Utf8ConstructionPolicy.Default,
-                Timeout.InfiniteTimeSpan, cancellationToken), cancellationToken, utf8Pattern: pattern);
+                Timeout.InfiniteTimeSpan, token), cancellationToken, utf8Pattern: pattern);
             cancellationToken.ThrowIfCancellationRequested();
             return new Pattern(regex, EffectiveFlags(pattern.Span, options, cancellationToken), pattern.Length, owner, cancellationToken);
         }
@@ -45,9 +46,10 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
 
     // Native UTF-8 producers may decode Pattern on access. Read that text
     // only after an error, without allocating a deferred delegate per match.
-    private static T Backend<T>(Func<T> work, CancellationToken token, ReadOnlyMemory<byte> utf8Pattern = default, Utf8PythonRegex? patternSource = null)
+    private static T Backend<TState, T>(TState state, Func<TState, CancellationToken, T> work,
+        CancellationToken token, ReadOnlyMemory<byte> utf8Pattern = default, Utf8PythonRegex? patternSource = null)
     {
-        try { return work(); }
+        try { return work(state, token); }
         catch (PythonRePatternException error)
         {
             token.ThrowIfCancellationRequested();
@@ -271,12 +273,14 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
                     "PythonRe 0.4 does not support Python match with pos greater than endpos.");
             }
             Fund(MatchBytes);
-            var data = Backend(() => mode switch
+            var regex = Pattern.Regex;
+            var data = Backend((Regex: regex, Input: BoundedInput, _window.StartByte, Mode: mode),
+                static (state, token) => state.Mode switch
             {
-                LythonRegexMatchMode.Match => Pattern.Regex.MatchDetailedData(BoundedInput.Span, _window.StartByte, cancellationToken),
-                LythonRegexMatchMode.FullMatch => Pattern.Regex.FullMatchDetailedData(BoundedInput.Span, _window.StartByte, cancellationToken),
-                _ => Pattern.Regex.SearchDetailedData(BoundedInput.Span, _window.StartByte, cancellationToken),
-            }, cancellationToken, patternSource: Pattern.Regex);
+                LythonRegexMatchMode.Match => state.Regex.MatchDetailedData(state.Input.Span, state.StartByte, token),
+                LythonRegexMatchMode.FullMatch => state.Regex.FullMatchDetailedData(state.Input.Span, state.StartByte, token),
+                _ => state.Regex.SearchDetailedData(state.Input.Span, state.StartByte, token),
+            }, cancellationToken, patternSource: regex);
             if (!data.Success) return false;
             CopyCaptures(data, captures, cancellationToken);
             lastIndex = data.LastIndex;
@@ -328,7 +332,10 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
                     if (subject._window.Pos > subject._window.EndPos) return;
                     Reserve(_owner, subject.MatchBytes);
                     using var registration = Forward(token);
-                    _cursor = Backend(() => subject.Pattern.Regex.CreateMatchCursor(subject.BoundedInput, subject._window.StartByte, _cancellation.Token), token, patternSource: subject.Pattern.Regex);
+                    var regex = subject.Pattern.Regex;
+                    _cursor = Backend((Regex: regex, Input: subject.BoundedInput, subject._window.StartByte, Token: _cancellation.Token),
+                        static (state, _) => state.Regex.CreateMatchCursor(state.Input, state.StartByte, state.Token),
+                        token, patternSource: regex);
                 }
                 catch { Dispose(); throw; }
             }
@@ -342,14 +349,14 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
                 if (captures.Length != _subject.Pattern.CaptureSlotCount) throw new ArgumentException("Capture buffer length must equal CaptureSlotCount.", nameof(captures));
                 token.ThrowIfCancellationRequested();
                 ObjectDisposedException.ThrowIf(_disposed, this);
-                if (_cursor is null) return false;
+                if (_cursor is not { } cursor) return false;
                 try
                 {
                     using (Forward(token))
                     {
-                        if (Backend(() => _cursor.MoveNext(), token, patternSource: _subject.Pattern.Regex))
+                        if (Backend(cursor, static (current, _) => current.MoveNext(), token, patternSource: _subject.Pattern.Regex))
                         {
-                            var data = _cursor.Current;
+                            var data = cursor.Current;
                             CopyCaptures(data, captures, token);
                             lastIndex = data.LastIndex;
                             return true;
