@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1341 compile read-only parameter captures as callable values](results/2026-11-22-compiled-value-captures/README.md)
+lowers mixed-factory allocation by 10.19% and eager allocation by
+4.29%. Independently collected mixed time to result uses 2.71–5.06%
+more CPU. The default observer is adverse with wider worker spread.
+Keep the prototype private. Preserve all 224 verified batches across
+the seven initially completed lanes and the separately qualified
+diagnostic time-to-result lane.
+
 [B1340 separate mixed-factory warm and first-use CPU attribution](results/2026-11-22-current-first-use-factory/README.md)
 resolves 115 warm and 116 first-use reserve samples to callable or
 capture construction. The fully supplied helper has none. Compiler
