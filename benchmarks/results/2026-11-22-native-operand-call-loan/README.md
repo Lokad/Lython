@@ -42,6 +42,13 @@ CPython on all five workloads and fully return their allowance.
 All 140 timed batches and both quiet machine gates pass. Workers join,
 fixtures are removed and the archive verifies under the lease.
 
+A separate managed route probe logged 3,072 entries into the borrowed
+workspace on the 3,072-line report. The other four scripts logged
+zero, including the slower mixed factory and quoted invoice. The probe
+validates the route and outputs with separate instrumentation. It gives
+no timing or attribution for the common-path regression.
+[Route counts](routes.json) · [Probe source and build](route-procedures.tar.xz).
+
 [Source and images](source.json) · [Timings](summary.json) ·
 [Allocation](allocation-summary.json) · [Raw observations](observations.tgz) ·
 [Tests and procedures](procedures.tar.xz) · [Archive receipt](archive-receipt.json).
