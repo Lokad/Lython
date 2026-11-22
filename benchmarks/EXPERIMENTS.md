@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1345 current factory, CSV and JSON Lines scripts against CPython](results/2026-11-22-post-staging-cpython/README.md)
+measures retained source against CPython 3.13.16. Mixed factory time
+to result remains 1.977–2.004× CPython's. Typed ASCII CSV time to
+result is 1.171–1.185× and JSON Lines warm time is 0.924–0.935×.
+All 168 batches verify. Both engines' timing movements remain visible.
+
 [B1344 share temporary block depths and physical offsets](results/2026-11-22-shared-block-layout/README.md)
 replaces two backing arrays and preserves exact executable metadata.
 The dataclass allocates 1,640 fewer compiler bytes. The postponed
