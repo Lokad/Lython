@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1393 original regex template literals](results/2026-11-22-regex-template-source-ranges/README.md)
+eliminates the complete decoded literal buffer. Long-literal expansion
+allocates 45.09% less and takes 19.76–21.75% less warm time. Dense escapes
+take 13.43–26.83% longer. Keep the first version private and test
+decoding adjacent escapes once for bulk replay.
+
 [B1392 native argument and workspace reuse](results/2026-11-22-native-operand-call-loan/README.md)
 removes the separate inline workspace and argument copy for eligible
 framed calls. Word-count warm time spans zero. The mixed closure factory

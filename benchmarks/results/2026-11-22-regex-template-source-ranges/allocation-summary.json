@@ -1,0 +1,67 @@
+[
+  {
+    "id": "diagnostic.regex-template.file",
+    "managedBytes": [
+      994840,
+      989464
+    ],
+    "changePercent": -0.5403884041654927,
+    "admitted": [
+      50434,
+      50434
+    ],
+    "fullRefund": true
+  },
+  {
+    "id": "diagnostic.regex-template.long-literal",
+    "managedBytes": [
+      2627144,
+      1442504
+    ],
+    "changePercent": -45.09231317354511,
+    "admitted": [
+      878561,
+      829349
+    ],
+    "fullRefund": true
+  },
+  {
+    "id": "diagnostic.regex-template.dense-escapes",
+    "managedBytes": [
+      435752,
+      444200
+    ],
+    "changePercent": 1.9387174356055636,
+    "admitted": [
+      49814,
+      47510
+    ],
+    "fullRefund": true
+  },
+  {
+    "id": "diagnostic.regex-template.plain-literal",
+    "managedBytes": [
+      24944,
+      24944
+    ],
+    "changePercent": 0.0,
+    "admitted": [
+      11154,
+      11154
+    ],
+    "fullRefund": true
+  },
+  {
+    "id": "calls.positional.large",
+    "managedBytes": [
+      1060272,
+      1060272
+    ],
+    "changePercent": 0.0,
+    "admitted": [
+      1284,
+      1284
+    ],
+    "fullRefund": true
+  }
+]
