@@ -7,23 +7,23 @@ namespace Lokad.Lython.Runtime;
 internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue, IPyBindableCallable, LythonRuntime.ISpanCallable, IClassOwnedMember, IPyMutableDynamicAttributes, IPyDeletableDynamicAttributes, IPyHashableValue
 {
     private readonly LythonRuntime.ExecutionContext _closure;
-    // Compiled names and docstrings can be read directly. Explicit overrides
-    // use separately admitted storage and stay separate from __dict__.
-    private StandardOverrides? _standardOverrides;
+    // One optional value can live directly here: a custom dictionary or
+    // a type-parameter tuple. Overrides or both values need the full record.
+    private object? _attributes;
     // Resetting metadata needs no replacement storage.
     private bool _moduleCleared;
     private bool _docstringCleared;
     private bool _repeatedAnnotation;
     private object? _annotations;
-    private object? _typeParameters;
-    private PyDict? _customAttributes;
 
-    private sealed class StandardOverrides
+    private sealed class FunctionAttributes
     {
         internal object? Name;
         internal object? QualifiedName;
         internal object? Module;
         internal object? Docstring;
+        internal object? TypeParameters;
+        internal PyDict? Custom;
     }
 
     protected PyFunctionBase(
@@ -239,21 +239,28 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
     public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
     {
         if (TryGetDefaultMetadata(name, _closure, out value)) return true;
-        if (name == "__dict__") { value = _customAttributes ??= new PyDict(_closure.MemoryGovernor); return true; }
+        if (name == "__dict__") { value = GetCustomAttributes(); return true; }
+        var storage = _attributes;
+        var attributes = storage as FunctionAttributes;
         value = name switch
         {
-            "__name__" => _standardOverrides?.Name ?? CodeObject.FunctionName.RequireNotNull(),
-            "__qualname__" => _standardOverrides?.QualifiedName ?? CodeObject.QualifiedName ?? CodeObject.FunctionName.RequireNotNull(),
-            "__module__" => _standardOverrides?.Module ??
+            "__name__" => attributes?.Name ?? CodeObject.FunctionName.RequireNotNull(),
+            "__qualname__" => attributes?.QualifiedName ?? CodeObject.QualifiedName ?? CodeObject.FunctionName.RequireNotNull(),
+            "__module__" => attributes?.Module ??
                 (!_moduleCleared && TryGetModuleName(out var moduleName) ? moduleName : (object)PyNone.Instance),
-            "__doc__" => _standardOverrides?.Docstring ??
+            "__doc__" => attributes?.Docstring ??
                 (_docstringCleared ? PyNone.Instance : CodeObject.Docstring ?? (object)PyNone.Instance),
             "__annotations__" => ReadAnnotations(),
-            "__type_params__" => _typeParameters,
+            "__type_params__" => storage switch
+            {
+                FunctionAttributes record => record.TypeParameters ?? PyTuple.Empty,
+                null or PyDict => PyTuple.Empty,
+                _ => storage,
+            },
             _ => null,
         };
-        return value is not null || _customAttributes is not null &&
-            _customAttributes.TryGetStringValue(name, _closure.MemoryGovernor, null, null, out value);
+        return value is not null || (storage as PyDict ?? attributes?.Custom) is { } custom &&
+            custom.TryGetStringValue(name, _closure.MemoryGovernor, null, null, out value);
     }
 
     // The defining module is resolved per read by walking the closure frame
@@ -286,54 +293,66 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
         switch (name)
         {
             case "__dict__":
-                _customAttributes = value as PyDict ?? throw new LythonRuntimeException("TypeError", "__dict__ must be set to a dictionary", null);
+                var dictionary = value as PyDict ?? throw new LythonRuntimeException("TypeError", "__dict__ must be set to a dictionary", null);
+                if (_attributes is null or PyDict) _attributes = dictionary;
+                else GetFunctionAttributes().Custom = dictionary;
                 break;
-            case "__name__": GetStandardOverrides().Name = value; break;
-            case "__qualname__": GetStandardOverrides().QualifiedName = value; break;
+            case "__name__": GetFunctionAttributes().Name = value; break;
+            case "__qualname__": GetFunctionAttributes().QualifiedName = value; break;
             case "__module__":
                 if (value is PyNone)
                 {
                     _moduleCleared = true;
-                    if (_standardOverrides is { } overrides) overrides.Module = null;
+                    if (_attributes is FunctionAttributes attributes) attributes.Module = null;
                 }
-                else GetStandardOverrides().Module = value;
+                else GetFunctionAttributes().Module = value;
                 break;
             case "__doc__":
                 if (value is PyNone)
                 {
                     _docstringCleared = true;
-                    if (_standardOverrides is { } overrides) overrides.Docstring = null;
+                    if (_attributes is FunctionAttributes attributes) attributes.Docstring = null;
                 }
-                else GetStandardOverrides().Docstring = value;
+                else GetFunctionAttributes().Docstring = value;
                 break;
             case "__annotations__":
                 if (value is not (PyNone or PyDict or PyDefaultDict or PyCounter))
                     throw new LythonRuntimeException("TypeError", "__annotations__ must be set to a dict object", null);
                 ReplaceAnnotations(value is PyNone ? null : value);
                 break;
-            case "__type_params__": _typeParameters = value; break;
+            case "__type_params__":
+                if (!PyTupleLike.TryGetItems(value, out _)) throw TypeParametersMustBeTuple(PyStructuralGuard.AmbientSpan);
+                if (_attributes is PyDict or FunctionAttributes) GetFunctionAttributes().TypeParameters = value;
+                else _attributes = value;
+                break;
             default:
-                (_customAttributes ??= new PyDict(_closure.MemoryGovernor)).SetStringItem(name, value, _closure.MemoryGovernor, null);
+                GetCustomAttributes().SetStringItem(name, value, _closure.MemoryGovernor, null);
                 break;
         }
         return true;
     }
 
-    private StandardOverrides GetStandardOverrides()
+    private FunctionAttributes GetFunctionAttributes()
     {
-        if (_standardOverrides is { } existing) return existing;
-        const long bytes = 64;
+        if (_attributes is FunctionAttributes existing) return existing;
+        const long bytes = 80;
         var span = PyStructuralGuard.AmbientSpan;
         var governor = _closure.MemoryGovernor;
         governor.Reserve(bytes, span);
         try
         {
             _closure.CheckExecution(span);
-            if (_standardOverrides is null)
+            var current = _attributes;
+            if (current is not FunctionAttributes)
             {
-                var overrides = new StandardOverrides();
+                var attributes = new FunctionAttributes
+                {
+                    Custom = current as PyDict,
+                    TypeParameters = current is PyDict ? null : current,
+                };
                 governor.Commit(bytes);
-                return _standardOverrides = overrides;
+                _attributes = attributes;
+                return attributes;
             }
         }
         catch
@@ -345,7 +364,37 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
         // Refund the redundant allowance before changing an existing value.
         governor.ReleaseReserved(bytes);
         _closure.CheckExecution(span);
-        return _standardOverrides.RequireNotNull();
+        return (FunctionAttributes)_attributes.RequireNotNull();
+    }
+
+    private PyDict? ReadCustomAttributes() => _attributes as PyDict ?? (_attributes as FunctionAttributes)?.Custom;
+
+    private PyDict GetCustomAttributes()
+    {
+        if (ReadCustomAttributes() is { } existing) return existing;
+        var span = PyStructuralGuard.AmbientSpan;
+        var dictionary = new PyDict(_closure.MemoryGovernor, span);
+        try
+        {
+            _closure.CheckExecution(span);
+            if (_attributes is null)
+            {
+                _attributes = dictionary;
+                return dictionary;
+            }
+            if (ReadCustomAttributes() is null)
+            {
+                var attributes = GetFunctionAttributes();
+                if (attributes.Custom is null) return attributes.Custom = dictionary;
+            }
+        }
+        finally
+        {
+            if (!ReferenceEquals(ReadCustomAttributes(), dictionary)) dictionary.DiscardUnpublishedStorage();
+        }
+        // During admission a callback can publish a dictionary of its own.
+        _closure.CheckExecution(span);
+        return ReadCustomAttributes().RequireNotNull();
     }
 
     public bool TryDeleteMember(string name, LythonSourceSpan? span)
@@ -353,6 +402,7 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
         if (TrySetDefaultMetadata(name, PyNone.Instance, _closure.MemoryGovernor, span)) return true;
         if (name is "__name__" or "__qualname__" or "__dict__")
             throw new LythonRuntimeException("TypeError", $"cannot delete {name}", span);
+        if (name == "__type_params__") throw TypeParametersMustBeTuple(span);
         if (name is "__doc__" or "__module__") return TrySetMember(name, PyNone.Instance);
 
         // Values previously returned to Python can remain aliased after deletion.
@@ -363,21 +413,19 @@ internal abstract class PyFunctionBase : FunctionBindingPlan, IPyRenderableValue
             removed = _annotations is not null;
             ReplaceAnnotations(null);
         }
-        else if (name == "__type_params__")
-        {
-            removed = _typeParameters is not null;
-            _typeParameters = null;
-        }
-        if (!removed && _customAttributes is not null)
+        if (!removed && ReadCustomAttributes() is { } custom)
         {
             var governor = _closure.MemoryGovernor;
             var key = PyString.FromString(name, governor, span);
-            var mayEscape = _customAttributes.HasProtocolKeys;
-            try { removed = _customAttributes.Remove(key); }
+            var mayEscape = custom.HasProtocolKeys;
+            try { removed = custom.Remove(key); }
             finally { if (!mayEscape) governor.RefundUnpublishedValue(key); }
         }
         return removed || name == "__annotations__";
     }
+
+    private static LythonRuntimeException TypeParametersMustBeTuple(LythonSourceSpan? span)
+        => RuntimeErrors.Type("__type_params__ must be set to a tuple", span);
 
     internal void AttachAdmittedAnnotations(object values, LythonRuntime.ExecutionContext context, bool repeated)
     {

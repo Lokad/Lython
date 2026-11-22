@@ -86,6 +86,37 @@ public sealed class FunctionAttributeAccountingTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public void DictionaryPublishedDuringAdmissionStaysAuthoritative(bool alreadyHasOverrides)
+    {
+        var budget = new LythonMemoryBudget();
+        using (var owner = budget.CreateScope())
+        {
+            var hook = new AdmissionHookMemoryBudget(owner);
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
+                new LythonRunOptions { MemoryBudget = hook });
+            var function = Function(context);
+            if (alreadyHasOverrides) function.TrySetMember("__doc__", PyString.FromString("changed"));
+            var replacement = new PyDict(context.MemoryGovernor);
+            hook.AfterGrowth = _ =>
+            {
+                hook.AfterGrowth = null;
+                function.TrySetMember("__dict__", replacement);
+            };
+
+            Assert.True(function.TryGetMember("__dict__", out var observed));
+            Assert.Same(replacement, observed);
+            Assert.True(function.TrySetMember("tag", PyNone.Instance));
+            Assert.True(function.TryGetMember("__dict__", out var alias));
+            Assert.Same(replacement, alias);
+            Assert.Single(replacement);
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public void AnnotationDeletionRefundsOnlyUnpublishedStorage(bool readFirst)
     {
         const long limit = 1024 * 1024;

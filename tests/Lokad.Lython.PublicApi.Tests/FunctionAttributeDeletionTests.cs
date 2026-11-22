@@ -58,4 +58,39 @@ public sealed class FunctionAttributeDeletionTests
             Assert.Equal(baseline, budget.ReservedBytes);
         }
     }
+
+    [Fact]
+    public Task TypeParametersPreserveTupleIdentityAndDictionaryAliases()
+        => DeletionPreservesPythonMetadataBehavior("""
+            from collections import namedtuple
+
+            parameters = namedtuple('Parameters', 'item')(1)
+            for params_first in (False, True):
+                def f(): pass
+                assert f.__type_params__ == ()
+                if params_first:
+                    f.__type_params__ = parameters
+                dictionary = f.__dict__
+                dictionary['payload'] = 12
+                if not params_first:
+                    f.__type_params__ = parameters
+                f.__doc__ = 'assigned'
+                assert f.__dict__ is dictionary
+                assert f.payload == 12 and f.__type_params__ is parameters
+                for bad in (None, [], {}):
+                    try:
+                        f.__type_params__ = bad
+                    except TypeError as error:
+                        assert str(error) == '__type_params__ must be set to a tuple'
+                    else:
+                        raise AssertionError('accepted a non-tuple')
+                try:
+                    del f.__type_params__
+                except TypeError as error:
+                    assert str(error) == '__type_params__ must be set to a tuple'
+                else:
+                    raise AssertionError('deleted type parameters')
+                assert f.__type_params__ is parameters
+            print('ok')
+            """, "ok\n");
 }
