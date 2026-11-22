@@ -96,6 +96,7 @@ clocks. The archived tables include the earlier startup evidence.
 
 | Change | Measured effect | Limits |
 | --- | --- | --- |
+| Reuse tokenizer indentation state | Removes the separate leading-source scan. A synthetic 64 KiB first-line literal compiles 13.46–22.39% faster. | Sparse validator compilation takes 0.15–1.37% longer and time to result spans zero. [B1405](../benchmarks/results/2026-11-22-module-leading-indentation/README.md). |
 | Store a singleton default in its tuple | The postponed factory allocates 49,152 fewer bytes at the same admitted peak and runs 2.09–8.63% faster warm. | First-use elapsed and the tuple observer span zero. The quote-heavy control still allows an adverse result. [B1400](../benchmarks/results/2026-11-22-inline-default-tuple/README.md). |
 | Consume prepared histogram words in place | The dense Unicode report runs 22.69–24.16% faster warm while allocations and admitted peak stay effectively flat. | Ordinary histogram, nonlocal warm and first-use elapsed span zero. [B1402](../benchmarks/results/2026-11-22-prepared-histogram-refined/README.md). |
 | Pass regex provider state directly | Compiling 64 named rules allocates 5.36% less and runs 2.26–3.22% faster warm. File rewrites allocate 1.74% less. | The ASCII report runs 0.77–1.61% slower warm. The file rewrite takes 0.29–1.09% longer from compilation to result. [B1403](../benchmarks/results/2026-11-22-regex-provider-state/README.md). |

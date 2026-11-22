@@ -1,0 +1,125 @@
+{
+  "reference": {
+    "coreSha256": "028c97940e7655736be9eb41ee0ca4b7151297fa9c29e373de678beb70c923ba",
+    "boundary": "Local synchronous public compilation and compiled-owner disposal. Borrowed budget returns to baseline after every invocation. Counts current-thread allocations. No elapsed claim.",
+    "rows": [
+      {
+        "id": "scripts.config-generated-guards.medium.bad-0.sparse-lexical",
+        "bytes": [
+          2162607,
+          2154424.875,
+          2079088.625,
+          2049092.75,
+          2048815
+        ],
+        "characters": 23555
+      },
+      {
+        "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+        "bytes": [
+          63608,
+          63608,
+          63608,
+          63608,
+          63608
+        ],
+        "characters": 465
+      },
+      {
+        "id": "scripts.dataclass-inherited-configuration.generated",
+        "bytes": [
+          515352,
+          515352,
+          515352,
+          515352,
+          515352
+        ],
+        "characters": 3978
+      },
+      {
+        "id": "compiler.generated-read-only-branches",
+        "bytes": [
+          11408992,
+          11402755.125,
+          11401742.625,
+          11401712,
+          11401712
+        ],
+        "characters": 11139
+      },
+      {
+        "id": "diagnostic.compiler-wide-first-line",
+        "bytes": [
+          213408,
+          213408,
+          213408,
+          213408,
+          213408
+        ],
+        "characters": 65569
+      }
+    ]
+  },
+  "candidate": {
+    "coreSha256": "d3f883cdb9c548be163c85de7f3e62461eb60e201941f04905ae33fbfa666e19",
+    "boundary": "Local synchronous public compilation and compiled-owner disposal. Borrowed budget returns to baseline after every invocation. Counts current-thread allocations. No elapsed claim.",
+    "rows": [
+      {
+        "id": "scripts.config-generated-guards.medium.bad-0.sparse-lexical",
+        "bytes": [
+          2162481.125,
+          2147096.375,
+          2066591.25,
+          2049092.75,
+          2048815
+        ],
+        "characters": 23555
+      },
+      {
+        "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+        "bytes": [
+          63608,
+          63608,
+          63608,
+          63608,
+          63608
+        ],
+        "characters": 465
+      },
+      {
+        "id": "scripts.dataclass-inherited-configuration.generated",
+        "bytes": [
+          515352,
+          515352,
+          515352,
+          515352,
+          515352
+        ],
+        "characters": 3978
+      },
+      {
+        "id": "compiler.generated-read-only-branches",
+        "bytes": [
+          11408992,
+          11403777,
+          11401739.5,
+          11401712,
+          11401712
+        ],
+        "characters": 11139
+      },
+      {
+        "id": "diagnostic.compiler-wide-first-line",
+        "bytes": [
+          213408,
+          213408,
+          213408,
+          213408,
+          213408
+        ],
+        "characters": 65569
+      }
+    ]
+  },
+  "scope": "Local Windows .NET 11 compile lane with shared budget and compiled-owner disposal."
+}

@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1405 module opening indentation](results/2026-11-22-module-leading-indentation/README.md)
+removes the separate leading-source scan at `55424591f`. The synthetic
+64 KiB first-line source compiles 13.46–22.39% faster. Sparse validator
+compilation takes 0.15–1.37% longer and time to result spans zero.
+All 949 diagnostic cases and 61 inspected executable objects match.
+
 [B1404 closed arithmetic returns from bound defaults](results/2026-11-22-closed-return-bound-slots/README.md)
 runs the existing kernel from already-bound parameters. Postponed factory warm
 elapsed rises 0.71–4.19% and the fully supplied helper rises 0.40–1.09%.
