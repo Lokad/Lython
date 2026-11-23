@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1465 share exact short-decimal rounding](results/2026-11-23-exact-short-decimal/README.md)
+retains 8.87–10.72% lower typed ASCII warm elapsed and 3.20–7.11%
+lower explicit float elapsed, with supporting CPU. B1466 confirms the
+ASCII direction and finds the scientific-notation control inconclusive.
+Allocation and admitted peaks are effectively unchanged.
+
 [B1464 retained CSV CPU attribution](results/2026-11-23-retained-csv-profile/README.md)
 finds numeric parsing in 85 of 984 resolved runtime stacks for the typed
 meter, mostly in .NET UTF-8 parsing. The invoice instead shows function

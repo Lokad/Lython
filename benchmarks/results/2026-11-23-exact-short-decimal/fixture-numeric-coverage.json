@@ -1,0 +1,20 @@
+[
+  {
+    "id": "scripts.csv-meter-report.typed-ascii",
+    "numericFields": 12288,
+    "eligibleShortDecimal": 12288,
+    "inputBytes": 139299
+  },
+  {
+    "id": "scripts.csv-meter-report.typed-unicode",
+    "numericFields": 12288,
+    "eligibleShortDecimal": 0,
+    "inputBytes": 223267
+  },
+  {
+    "id": "diagnostic.csv-meter-report.typed-ascii.scientific",
+    "numericFields": 12288,
+    "eligibleShortDecimal": 0,
+    "inputBytes": 171043
+  }
+]
