@@ -110,6 +110,7 @@ change. The checkpoint includes the arithmetic and allocation controls.
 
 | Change | Measured effect | Limits |
 | --- | --- | --- |
+| Read prepared defaults directly for closed integer returns | Postponed factory warm elapsed falls 0.53–6.79% and eager factory warm elapsed falls 0.94–2.66%. Admitted peaks match. | Postponed time to result spans zero. Quote-heavy CSV uses up to 2.25% more process CPU. [B1431](../benchmarks/results/2026-11-23-direct-bound-integer-refined/README.md). |
 | Keep optional metadata off ordinary callables | Both factory shapes allocate 6.9% less. Eager warm elapsed falls 0.70–4.95%. Wrapper elapsed falls 5.18–7.86%. | Postponed time to result rises 0.65–2.77%. Mixed wrappers need 32,768 more admitted bytes at peak. [B1425](../benchmarks/results/2026-11-23-function-optional-attributes/README.md). |
 | Classify CSV fields at their start | Typed Unicode meter warm elapsed falls 1.27–5.75% and CPU falls 2.09–6.41%. | The ASCII meter takes 0.32–2.42% longer and quote-heavy warm elapsed spans zero. [B1424](../benchmarks/results/2026-11-22-csv-literal-field-scan/README.md). |
 | Reuse the syntax walk for future imports | The postponed factory compiles 1.72–3.13% faster and allocates 2.21% less. Time to result falls 1.47–4.28%. | Compile controls span zero. [B1421](../benchmarks/results/2026-11-22-future-validation-single-walk/README.md). |

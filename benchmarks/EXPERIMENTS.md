@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1431 refined prepared integer operands](results/2026-11-23-direct-bound-integer-refined/README.md)
+retains direct reads for eligible native returns. Both factory warm gains recur
+and the defaults observer loss does not. First-result timing spans zero and the
+quoted invoice uses up to 2.25% more process CPU.
+
 [B1430 direct prepared integer operands](results/2026-11-23-direct-bound-integer/README.md)
 removes native argument staging from closed returns. Postponed factory
 warm elapsed falls 8.10–10.24%. The defaults observer takes 3.87–5.19%

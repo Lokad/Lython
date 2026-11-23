@@ -705,6 +705,11 @@ receiver declarations; dynamic protocols stop before their operation and transfe
 the current PC and live values into the existing frame runner. They may then
 genuinely suspend. Defaults, bindings and earlier work are never replayed.
 
+A closed machine-integer return can read supplied operands and prepared
+omitted defaults directly after validating arity, bypassing binder workspace.
+Calls with an exposed keyword-default mapping use ordinary binding. Wide
+arithmetic and user-defined operations retain ordinary Python dispatch.
+
 Unexposed captured cells can keep exact machine-integer updates directly, using
 the same arithmetic kernel and compiler preparation as ordinary instructions.
 Reading materializes one stable immutable identity; later updates preserve older
