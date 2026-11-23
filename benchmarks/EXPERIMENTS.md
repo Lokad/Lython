@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1484 complete ready DictReader rows directly](results/2026-11-23-dictreader-activation/README.md)
+moves the native record builder outside the mixed continuation. Quoted
+warm CPU falls 1.72–2.44%. Ordinary invoice and time-to-result elapsed
+span zero, with an unstable text control and effectively flat allocation.
+Keep the full split private and retain independent header tests.
+
 [B1483 CPython checkpoint after direct factory construction](results/2026-11-23-closed-definition-cpython/README.md)
 puts postponed factories at 1.606–1.649× CPython warm elapsed and
 1.470–1.493× time to result. The unchanged nonlocal control is slower.
