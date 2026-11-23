@@ -1,0 +1,65 @@
+{
+  "sameTapes": 20,
+  "closedWorkloads": [
+    "scripts.annotated-rule-closures.nested-factories",
+    "scripts.annotated-rule-closures.nested-factories.postponed",
+    "scripts.factory-observed-defaults"
+  ],
+  "jit": {
+    "reference": {
+      "codeBytes": 938,
+      "calls": [
+        "call     [Lokad.Lython.Runtime.LythonRuntime:StartExecutableDefaults(Lokad.Lython.Frontend.FunctionParameterLayout,System.Span`1[Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot],bool,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan)]",
+        "call     [Lokad.Lython.Runtime.ExecutionState:get_CanContinue():bool:this]",
+        "call     [Lokad.Lython.Runtime.ExecutionState:ThrowExecutionFailure(Lokad.Lython.LythonSourceSpan):this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:StoreDefaultResult(byref,byref,Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot,Lokad.Lython.Runtime.ExecutionState)]",
+        "call     [Lokad.Lython.Runtime.ExecutionState:get_CanContinue():bool:this]",
+        "call     [Lokad.Lython.Runtime.ExecutionState:ThrowExecutionFailure(Lokad.Lython.LythonSourceSpan):this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:StoreDefaultResult(byref,byref,Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot,Lokad.Lython.Runtime.ExecutionState)]",
+        "call     [Lokad.Lython.Runtime.ExecutionState:get_CanContinue():bool:this]",
+        "call     [Lokad.Lython.Runtime.ExecutionState:ThrowExecutionFailure(Lokad.Lython.LythonSourceSpan):this]",
+        "call     [Lokad.Lython.Frontend.FunctionParameterLayout:get_DefaultStorageCount():int:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:GetGlobalContext(Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):Lokad.Lython.Runtime.LythonRuntime+ExecutionContext]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:ReadExecutableDefaults(Lokad.Lython.Frontend.FunctionParameterLayout,System.ReadOnlySpan`1[Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot],bool):Lokad.Lython.Runtime.FunctionDefaults]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:CreateFunctionValue(Lokad.Lython.Frontend.FunctionParameterLayout,Lokad.Lython.Frontend.ExecutableCodeObject,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutableCaptures,Lokad.Lython.Runtime.FunctionDefaults,bool,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,System.ReadOnlySpan`1[Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot],Lokad.Lython.Runtime.Text.PyString[],System.ValueTuple`3[System.Object,int,bool],bool,System.Span`1[Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot]):Lokad.Lython.Runtime.PyFunctionBase]",
+        "call     [System.SpanHelpers:ClearWithReferences(byref,nuint)]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:CreateClosedEagerDefinition(Lokad.Lython.Frontend.ExecutableCreateFunction,Lokad.Lython.Frontend.ExecutableCodeObject,Lokad.Lython.Frontend.ExecutableInstruction[],Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,System.Span`1[Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot]):Lokad.Lython.Runtime.PyFunctionBase]",
+        "call     [System.ThrowHelper:ThrowArgumentOutOfRangeException()]",
+        "call     CORINFO_HELP_RNGCHKFAIL",
+        "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot:RetireTemporary(Lokad.Lython.Runtime.MemoryGovernor):this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot:RetireTemporary(Lokad.Lython.Runtime.MemoryGovernor):this]",
+        "call     CORINFO_HELP_RNGCHKFAIL",
+        "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot:RetireTemporary(Lokad.Lython.Runtime.MemoryGovernor):this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot:RetireTemporary(Lokad.Lython.Runtime.MemoryGovernor):this]"
+      ]
+    },
+    "candidate": {
+      "codeBytes": 965,
+      "calls": [
+        "call     [Lokad.Lython.Runtime.LythonRuntime:AllocateExecutableDefaults(Lokad.Lython.Frontend.FunctionParameterLayout,bool,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.FunctionDefaults]",
+        "call     [Lokad.Lython.Runtime.ExecutionState:get_CanContinue():bool:this]",
+        "call     [Lokad.Lython.Runtime.ExecutionState:ThrowExecutionFailure(Lokad.Lython.LythonSourceSpan):this]",
+        "call     [Lokad.Lython.Runtime.PyTuple:SetPrivateDefault(int,Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot,Lokad.Lython.Runtime.ExecutionState,Lokad.Lython.LythonSourceSpan):this]",
+        "call     [Lokad.Lython.Runtime.ExecutionState:get_CanContinue():bool:this]",
+        "call     [Lokad.Lython.Runtime.ExecutionState:ThrowExecutionFailure(Lokad.Lython.LythonSourceSpan):this]",
+        "call     [Lokad.Lython.Runtime.ExecutionState:get_CanContinue():bool:this]",
+        "call     [Lokad.Lython.Runtime.ExecutionState:ThrowExecutionFailure(Lokad.Lython.LythonSourceSpan):this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:RuntimeValue(System.Object):System.Object]",
+        "call     [Lokad.Lython.Runtime.ExecutionState:get_CanContinue():bool:this]",
+        "call     [Lokad.Lython.Runtime.ExecutionState:ThrowExecutionFailure(Lokad.Lython.LythonSourceSpan):this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:CreateClosedEagerDefinition(Lokad.Lython.Frontend.ExecutableCreateFunction,Lokad.Lython.Frontend.ExecutableCodeObject,Lokad.Lython.Frontend.ExecutableInstruction[],Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.FunctionDefaults):Lokad.Lython.Runtime.PyFunctionBase]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:GetGlobalContext(Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):Lokad.Lython.Runtime.LythonRuntime+ExecutionContext]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:CreateFunctionValue(Lokad.Lython.Frontend.FunctionParameterLayout,Lokad.Lython.Frontend.ExecutableCodeObject,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutableCaptures,Lokad.Lython.Runtime.FunctionDefaults,bool,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,System.ReadOnlySpan`1[Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot],Lokad.Lython.Runtime.Text.PyString[],System.ValueTuple`3[System.Object,int,bool],bool,System.Span`1[Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot]):Lokad.Lython.Runtime.PyFunctionBase]",
+        "call     CORINFO_HELP_RNGCHKFAIL",
+        "call     CORINFO_HELP_RNGCHKFAIL",
+        "call     [Lokad.Lython.Runtime.MemoryGovernor:RefundUnpublishedValue(System.Object):this]",
+        "call     CORINFO_HELP_GET_NONGCSTATIC_BASE",
+        "call     [Lokad.Lython.Runtime.MemoryGovernor:Release(long):this]",
+        "call     CORINFO_HELP_ISINSTANCEOFARRAY",
+        "call     [Lokad.Lython.Runtime.PyDict+RecordKeys:RecordBytes(int):long]",
+        "call     [Lokad.Lython.Runtime.MemoryGovernor:Release(long):this]",
+        "call     [Lokad.Lython.Runtime.MemoryGovernor:RefundUnpublishedValue(System.Object):this]"
+      ]
+    }
+  }
+}

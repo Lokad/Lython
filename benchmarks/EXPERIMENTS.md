@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1515 carry admitted defaults directly into closed definitions](results/2026-11-23-direct-closed-defaults/README.md)
+removes temporary default operands. Postponed factory first use improves
+in both comparisons with supporting CPU. The quote-heavy control changes
+direction. Retain the owner transfer and preserve both results.
+
 [B1514 project regex captures through an owned rune index](results/2026-11-23-indexed-regex-projection/README.md)
 removes indexed coordinate scratch. A quiet confirmation after the initial
 gate failure finds 2.67–4.78% higher elapsed for indexed cursor captures

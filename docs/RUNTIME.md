@@ -396,7 +396,9 @@ activation or tuple-unpack destination. The same function-call and stack
 admission apply. Wide arithmetic and protocols use the ordinary activation.
 An eligible lexical factory can return a definition directly when checked
 integer arithmetic and a read-only capture supply its defaults. It uses the
-same admitted default containers and definition constructor. Prepared eager
+same admission and definition constructor, carrying the funded defaults directly
+into the callable. Other executable definitions keep unfinished defaults in
+frame operands through evaluation and suspension. Prepared eager
 annotations read their live bindings after defaults and use the same admitted
 annotation storage as general definitions. General arithmetic and annotation
 expressions use the ordinary executable activation.
