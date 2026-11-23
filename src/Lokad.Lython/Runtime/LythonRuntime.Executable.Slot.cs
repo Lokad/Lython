@@ -1,3 +1,4 @@
+using System.Buffers.Binary;
 using System.Numerics;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
@@ -7,15 +8,15 @@ namespace Lokad.Lython.Runtime;
 internal sealed partial class LythonRuntime
 {
     // One managed layout for final function arguments, locals and operands.
-    // An unpublished numeric result has no guest identity yet. Object reads cache its
-    // immutable box before any alias, protocol, collection or public boundary.
+    // An unpublished scalar has no shared guest identity yet. Object reads cache
+    // its immutable representation before a use can observe or copy it.
     internal struct ExecutableSlot
     {
         private static readonly object UnpublishedInteger = new();
         private static readonly object UnpublishedDouble = new();
         private object? _value;
-        // Integer value, double bits, an immutable tuple's positive item offset,
-        // or the private-default marker paired with its admitted final storage.
+        // An integer, double bits, short UTF-8 with its existing owner, a tuple
+        // item offset, or a private-default marker with its admitted storage.
         private const long PrivateDefault = -1;
         private const long PrivateKeywordDefault = -2;
         private long _integer;
@@ -27,7 +28,7 @@ internal sealed partial class LythonRuntime
                 if (ReferenceEquals(_value, UnpublishedInteger)) return PublishInteger();
                 if (ReferenceEquals(_value, UnpublishedDouble)) return PublishDouble();
                 System.Diagnostics.Debug.Assert(!HasPrivateDefault && !HasPrivateKeywordDefault);
-                return _integer == 0 ? _value : PublishTupleBorrow();
+                return _integer == 0 ? _value : PublishDeferredValue();
             }
             set { _value = value; _integer = 0; }
         }
@@ -87,9 +88,43 @@ internal sealed partial class LythonRuntime
             return value;
         }
 
-        private object? PublishTupleBorrow()
+        // Seven bytes plus the length fit in the existing scalar word.
+        internal const int ShortUtf8Capacity = sizeof(long) - 1;
+
+        internal static ExecutableSlot FromShortUtf8(ReadOnlySpan<byte> source, MemoryGovernor owner)
         {
-            if (_integer > 0 && _value is PyTuple tuple)
+            System.Diagnostics.Debug.Assert(source.Length is > 0 and <= ShortUtf8Capacity);
+            var packed = (long)source.Length << 56;
+            for (var i = 0; i < source.Length; i++)
+                packed |= (long)source[i] << (i * 8);
+            return new() { _value = owner, _integer = packed };
+        }
+
+        internal readonly bool TryGetShortUtf8(out long packed)
+        {
+            packed = _integer;
+            return packed > 0 && _value is MemoryGovernor;
+        }
+
+        internal static ReadOnlySpan<byte> UnpackShortUtf8(long packed, Span<byte> buffer)
+        {
+            BinaryPrimitives.WriteInt64LittleEndian(buffer, packed);
+            return buffer[..(int)(packed >> 56)];
+        }
+
+        private object? PublishDeferredValue()
+        {
+            if (_value is MemoryGovernor owner)
+            {
+                Span<byte> buffer = stackalloc byte[sizeof(long)];
+                var bytes = UnpackShortUtf8(_integer, buffer);
+                // The CSV record already admitted this possible publication.
+                var text = PyString.CreateReservedUtf8(bytes.Length, owner);
+                bytes.CopyTo(text.UnpublishedUtf8);
+                text.CompleteUnpublishedUtf8(bytes.Length);
+                Object = text;
+            }
+            else if (_integer > 0 && _value is PyTuple tuple)
             {
                 _value = tuple[(int)(_integer - 1)];
                 _integer = 0;

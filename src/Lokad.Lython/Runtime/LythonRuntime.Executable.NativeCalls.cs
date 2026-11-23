@@ -82,6 +82,28 @@ internal sealed partial class LythonRuntime
         return TryInvokeUnaryBuiltin(builtin, value, call.CallSpan, scope, allowProtocol, out result);
     }
 
+    private static readonly Func<long, LythonSourceSpan, ExecutionContext, ExecutableSlot> ShortUtf8FloatOperation
+        = static (packed, span, context) =>
+        {
+            Span<byte> buffer = stackalloc byte[sizeof(long)];
+            var value = ParseFloatText(ExecutableSlot.UnpackShortUtf8(packed, buffer), context, span);
+            ExecutableSlot result = default;
+            result.SetDouble(value);
+            return result;
+        };
+
+    private static bool TryInvokeShortUtf8Float(long packed, object callee,
+        LythonSourceSpan span, ExecutionContext scope, out ExecutableSlot result)
+    {
+        if (callee is BuiltinCallable { Name: "float" })
+        {
+            result = InvokeSingleInput(packed, ShortUtf8FloatOperation, span, scope);
+            return true;
+        }
+        result = default;
+        return false;
+    }
+
     private static bool TryInvokeUnaryBuiltin(BuiltinCallable builtin, object? value,
         LythonSourceSpan span, ExecutionContext scope, bool allowProtocol, out ExecutableSlot result)
     {

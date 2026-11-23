@@ -133,6 +133,32 @@ public sealed class CsvNativeInputTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task FloatConversionOfShortFieldsRetainsCanonicalAliasesAfterFailure(bool asynchronous)
+    {
+        await AssertFile(asynchronous, "١.٥,bad\n٢.٥,-0.0\n", """
+            import csv
+            with open('/input.csv', encoding='utf-8', newline='') as source:
+                for amount, tax in csv.reader(source):
+                    try:
+                        amount, tax = float(amount), float(tax)
+                    except ValueError as error:
+                        print(str(error))
+                        aliases = (amount, tax)
+                        print(amount, tax, aliases[0] is amount, aliases[1] is tax)
+                    else:
+                        print(amount, tax)
+            print(aliases)
+            """, """
+            could not convert string to float: 'bad'
+            ١.٥ bad True True
+            2.5 -0.0
+            ('١.٥', 'bad')
+            """.ReplaceLineEndings("\n") + "\n");
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task RetainedNativeRowsSurviveQuotesAndChangesInWidth(bool asynchronous)
     {
         await AssertFile(asynchronous,

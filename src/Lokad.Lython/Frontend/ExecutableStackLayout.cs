@@ -342,9 +342,10 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
             if (instruction.OpCode is ExecutableOpCode.Call or ExecutableOpCode.LoadCallMember)
                 code.PrepareCallSite(instructions, index, instruction, calls);
             if (instruction.OpCode == ExecutableOpCode.Call && kept >= 2 &&
-                code.IsFunctionScope && !code.RequiresLocalVariableMirroring &&
+                !code.RequiresLocalVariableMirroring &&
                 calls[instruction.CallSiteIndex] is { HasReceiver: false, IsPositionalOnly: true, ArgumentCount: 1 } &&
-                instructions[kept - 2].OpCode == ExecutableOpCode.LoadGlobal &&
+                instructions[kept - 2] is { OpCode: ExecutableOpCode.LoadGlobal } target &&
+                (code.IsFunctionScope || code.Names[target.NameIndex] == "float") &&
                 instructions[kept - 1] is { OpCode: ExecutableOpCode.LoadLocal } argument &&
                 !code.CapturedLocalSlots.Contains(argument.LocalSlot))
                 instruction = instruction.WithForwardedCallOperands();

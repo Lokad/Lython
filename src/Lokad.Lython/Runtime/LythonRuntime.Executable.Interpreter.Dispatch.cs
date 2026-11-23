@@ -315,7 +315,14 @@ internal sealed partial class LythonRuntime
                             if (instruction.InputStart < 0 && execution.Stack.LiveExtent == callStart)
                             {
                                 var callee = ReadOperand(ref execution, instruction.InputStart, scope, 0);
-                                var argument = ReadOperand(ref execution, instruction.SecondInput, scope, 1);
+                                var source = instruction.SecondInput;
+                                if (source >= 0 && execution.Stack.Values[source].TryGetShortUtf8(out var packed)
+                                    && TryInvokeShortUtf8Float(packed, callee, call.CallSpan, scope, out var converted))
+                                {
+                                    PublishInstructionResult(ref execution, invocation, instruction, converted);
+                                    break;
+                                }
+                                var argument = ReadOperand(ref execution, source, scope, 1);
                                 if (callee is BuiltinCallable builtin &&
                                     TryInvokeUnaryBuiltin(builtin, argument, call.CallSpan, scope,
                                         allowProtocol: invocation is not null, out var value))

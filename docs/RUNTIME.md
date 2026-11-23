@@ -1399,8 +1399,11 @@ header and key protocols and awaited cleanup. Escaping dictionaries and
 rest lists retain their storage funding.
 When a fixed loop target immediately unpacks a file-backed `csv.reader` row,
 the parser checks arity, admits the fields and writes them directly into
-existing executable operands. The frame tracks those private slots through
-cancellation and cleanup.
+existing executable operands. Short text fields in nonnumeric readers can
+remain in the existing slot as funded UTF-8. An adjacent call to the exact
+builtin `float` consumes the bytes directly. A guest read, alias or dynamic
+call publishes the canonical string. The frame owns those slots through
+cancellation and cleanup. Numeric readers publish their remaining text directly.
 Source and parse errors consume the failed item and discard its unfinished
 record; already returned rows remain valid and funded.
 Escaped line endings keep the record open across source items. Non-strict

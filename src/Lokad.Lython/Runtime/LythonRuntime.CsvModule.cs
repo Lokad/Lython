@@ -1027,6 +1027,9 @@ internal sealed partial class LythonRuntime
                 // escaping UTF-8 values and scalar headroom before writing.
                 var bytes = checked(_stringBytes + RuntimeMemoryEstimates.ScalarStorageBytes * count);
                 var governor = _context.MemoryGovernor;
+                // The numeric reader has already parsed the values that can
+                // be consumed as numbers. Publish its remaining text directly.
+                var deferShortText = _options.Quoting != CsvQuotingMode.NonNumeric;
                 governor.Reserve(bytes, _span);
                 try
                 {
@@ -1037,7 +1040,9 @@ internal sealed partial class LythonRuntime
                     foreach (var field in _fields)
                     {
                         _context.CheckExecution(_span);
-                        destination[--index] = ExecutableSlot.FromObject(ReadField(source, field, payload, ref payloadOffset));
+                        destination[--index] = deferShortText && field.Length is > 0 and <= ExecutableSlot.ShortUtf8Capacity
+                            ? ExecutableSlot.FromShortUtf8(source.Slice(field.Start, field.Length), governor)
+                            : ExecutableSlot.FromObject(ReadField(source, field, payload, ref payloadOffset));
                     }
                     _context.CheckExecution(_span);
                     governor.Commit(bytes);

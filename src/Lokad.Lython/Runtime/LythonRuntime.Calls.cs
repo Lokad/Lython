@@ -209,8 +209,8 @@ internal sealed partial class LythonRuntime
 
     // Completed builtin calls share one result convention with executable
     // operands. Observation/publication owns materialization, not this boundary.
-    private static ExecutableSlot InvokeSingleInput(object value,
-        Func<object, LythonSourceSpan, ExecutionContext, ExecutableSlot> operation,
+    private static ExecutableSlot InvokeSingleInput<T>(T value,
+        Func<T, LythonSourceSpan, ExecutionContext, ExecutableSlot> operation,
         LythonSourceSpan span, ExecutionContext context)
     {
         context.EnterInterpreterFrame(span);
