@@ -59,6 +59,71 @@ public sealed class WhitespaceSplitCancellationTests
         Assert.Equal(0, root.ReservedBytes);
     }
 
+    [Fact]
+    public void PreparedCasingStopsBeforeGrowingBufferAfterHeaderCancellation()
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var cancellation = new CancellationTokenSource();
+        using (var owner = budget.CreateScope())
+        {
+            var hook = new AdmissionHook(owner);
+            var context = new Context(new MockLythonHost(), new()
+            { MemoryBudget = hook, CancellationToken = cancellation.Token });
+            var input = PyString.FromString("ΑΒΓ Σ", context.MemoryGovernor, Span);
+            var fundedInput = budget.ReservedBytes;
+            hook.CancelOnGrowth(cancellation);
+            try
+            {
+                var failure = Assert.Throws<LythonRuntimeException>(() =>
+                    PyStringOps.PrepareCasedWhitespaceIteration(input, false, context, Span));
+                AssertCancelled(failure, context, cancellation, hook);
+                Assert.Equal("ΑΒΓ Σ", input.AsString());
+            }
+            finally { context.State.CloseResources(); }
+            Assert.Equal(fundedInput, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void CasedScratchRefundCanInterruptPublication(bool refuse)
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var cancellation = new CancellationTokenSource();
+        using (var owner = budget.CreateScope())
+        {
+            var hook = new AdmissionHookMemoryBudget(owner);
+            var context = new Context(new MockLythonHost(), new()
+            { MemoryBudget = hook, CancellationToken = cancellation.Token });
+            var governor = context.MemoryGovernor;
+            governor.EndWorkspaceReuse();
+            var text = new string('Α', 180) + " Σ";
+            var input = PyString.FromString(text, governor, Span);
+            var baseline = budget.ReservedBytes;
+            LythonRuntimeException? first = null;
+            hook.AfterShrink = _ =>
+            {
+                hook.AfterShrink = null;
+                if (refuse) first = governor.RefuseAdmission("refused during scratch cleanup", 37, Span);
+                else cancellation.Cancel();
+            };
+
+            var failure = Assert.Throws<LythonRuntimeException>(() =>
+                PyStringOps.SplitCasedWhitespace(input, false, governor, Span, context));
+            Assert.Equal(refuse ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.Cancelled,
+                failure.Attribution?.Reason);
+            if (refuse) Assert.Same(first, failure);
+            Assert.Equal(Span, failure.Span);
+            Assert.Equal(text, input.AsString());
+            Assert.Equal(baseline, budget.ReservedBytes);
+            Assert.Equal(0, governor.CurrentReservedBytes);
+            context.State.CloseResources();
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Theory]
     [InlineData(false, -1)]
     [InlineData(false, 1)]

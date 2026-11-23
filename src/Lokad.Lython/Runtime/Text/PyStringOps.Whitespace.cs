@@ -1,5 +1,6 @@
 using System.Buffers;
 using System.Buffers.Binary;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Lokad.Lython.Runtime.Text;
@@ -42,8 +43,93 @@ internal static partial class PyStringOps
 
     internal static PyList SplitCasedWhitespace(PyString value, bool upper,
         MemoryGovernor governor, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-        => SplitCore(value, -1, false, governor, span, context,
-            upper ? CaseMapping.Upper : CaseMapping.Lower);
+    {
+        const int stackCapacity = 512;
+        const int pooledCapacity = 16 * 1024;
+        context.CheckExecution(span);
+        var source = value.Utf8Span;
+        var mapping = upper ? CaseMapping.Upper : CaseMapping.Lower;
+        var scan = new WhitespaceRangeState(-1, mapping);
+        var capacity = PackedCaseCapacity(source.Length, scan.MaximumCaseWidth);
+        CasedWhitespaceIteration? scratch = null;
+        if (capacity <= stackCapacity)
+        {
+            Span<byte> encoded = stackalloc byte[(int)capacity];
+            return BuildCasedWords(source, scan, encoded, governor, span, context, ref scratch);
+        }
+        // Limit scratch for eager results. A longer input is sized and
+        // copied directly into the final words by the general split path.
+        if (capacity > pooledCapacity)
+            return SplitCore(value, -1, false, governor, span, context, mapping);
+        scratch = governor.RentWordBuffer(span);
+        try
+        {
+            var encoded = scratch.PrepareEncoded((int)capacity, context, span);
+            context.CheckExecution(span);
+            return BuildCasedWords(source, scan, encoded, governor, span, context, ref scratch);
+        }
+        finally { scratch?.ReleaseStorage(); }
+    }
+
+    private static PyList BuildCasedWords(ReadOnlySpan<byte> source, WhitespaceRangeState scan, Span<byte> encoded,
+        MemoryGovernor governor, LythonSourceSpan span, LythonRuntime.ExecutionContext context,
+        ref CasedWhitespaceIteration? scratch)
+    {
+        var used = 0;
+        var count = 0;
+        long outputBytes = 0;
+        while (TryEncodeCasedWord(source, ref scan, encoded, ref used, context, span, out var length))
+        {
+            count++;
+            outputBytes = checked(outputBytes + PyString.EstimateApproximateBytes(length));
+        }
+        var bytes = checked(outputBytes + PyList.EstimateCapacityBytes(count));
+        using var output = governor.ReserveTemporary(bytes, span);
+        context.CheckExecution(span);
+        var words = count == 0 ? Array.Empty<object>() : new object[count];
+        var position = 0;
+        for (var i = 0; i < words.Length; i++)
+        {
+            var range = ReadEncodedWord(encoded, ref position);
+            words[i] = CreateSplitFragment(encoded, range, null, governor, span, context);
+        }
+        var list = PyList.FromTransferredArray(words, governor, span);
+        // The result owns independent fragments. The last scratch user
+        // finishes before publication, while the output can still unwind.
+        var loan = scratch;
+        scratch = null;
+        loan?.Dispose();
+        context.CheckExecution(span);
+        output.Commit(bytes);
+        return list;
+    }
+
+    // The first prefix needs four bytes. Later prefixes use space covered by
+    // the preceding whitespace scalar in the conservative capacity estimate.
+    private static long PackedCaseCapacity(int inputLength, int maximumCaseWidth)
+        => inputLength == 0 ? 0 : sizeof(int) + (long)inputLength * maximumCaseWidth;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool TryEncodeCasedWord(ReadOnlySpan<byte> source, ref WhitespaceRangeState scan, Span<byte> encoded,
+        ref int used, LythonRuntime.ExecutionContext context, LythonSourceSpan span, out int length)
+    {
+        length = 0;
+        if (scan.Position >= source.Length) return false;
+        scan.Written = used + sizeof(int);
+        if (!TryReadWhitespaceRange(source, ref scan, context, span, out var range, encoded)) return false;
+        BinaryPrimitives.WriteInt32LittleEndian(encoded[used..], range.Capacity);
+        used = range.End;
+        length = range.Capacity;
+        return true;
+    }
+
+    private static (int Start, int End, int Capacity) ReadEncodedWord(ReadOnlySpan<byte> encoded, ref int position)
+    {
+        var start = position + sizeof(int);
+        var length = BinaryPrimitives.ReadInt32LittleEndian(encoded[position..]);
+        position = start + length;
+        return (start, position, length);
+    }
 
     // Only compiler-private immediate iteration may consume this representation.
     // Admit every eventual word before the first loop effect, just as eager split
@@ -59,22 +145,13 @@ internal static partial class PyStringOps
         {
             var source = value.Utf8Span;
             var state = new WhitespaceRangeState(-1, mapping);
-            // The first length needs four bytes. Each later length uses
-            // space already covered by at least one skipped whitespace scalar.
-            var capacity = source.IsEmpty ? 0
-                : CheckCaseOutputCapacity(sizeof(int) + (long)source.Length * state.MaximumCaseWidth, span);
+            var capacity = CheckCaseOutputCapacity(PackedCaseCapacity(source.Length, state.MaximumCaseWidth), span);
             var encoded = prepared.PrepareEncoded(capacity, context, span);
             context.CheckExecution(span);
             var used = 0;
             long outputBytes = 0;
-            while (state.Position < source.Length)
-            {
-                state.Written = used + sizeof(int);
-                if (!TryReadWhitespaceRange(source, ref state, context, span, out var range, encoded)) break;
-                BinaryPrimitives.WriteInt32LittleEndian(encoded[used..], range.Capacity);
-                used = range.End;
-                outputBytes = checked(outputBytes + PyString.EstimateApproximateBytes(range.Capacity));
-            }
+            while (TryEncodeCasedWord(source, ref state, encoded, ref used, context, span, out var length))
+                outputBytes = checked(outputBytes + PyString.EstimateApproximateBytes(length));
 
             // Prepay every eventual immutable word before any loop effect.
             context.MemoryGovernor.Reserve(outputBytes, span);
@@ -135,6 +212,7 @@ internal static partial class PyStringOps
             {
                 // Only a new line can replace scratch. Prior cached bytes have
                 // no user; reserve overlap, but never copy them into the new line.
+                context.CheckExecution(span);
                 var bytes = EncodedStorageBytes(capacity);
                 using var replacement = _owner.ReserveTemporary(bytes, span);
                 context.CheckExecution(span);
@@ -180,16 +258,8 @@ internal static partial class PyStringOps
             // private cursor. The shared writer checks inside long work;
             // publication retains the ordinary binding/next-opcode check.
             if (_position == _length) return PyIterationResult.End;
-            var range = ReadWordRange();
+            var range = ReadEncodedWord(_encoded, ref _position);
             return PyIterationResult.Yield(CreateSplitFragment(_encoded.AsSpan(), range, null, _owner, _span, _context));
-        }
-
-        private (int Start, int End, int Capacity) ReadWordRange()
-        {
-            var start = _position + sizeof(int);
-            var length = BinaryPrimitives.ReadInt32LittleEndian(_encoded.AsSpan(_position));
-            _position = start + length;
-            return (start, _position, length);
         }
 
         internal MemoryGovernor MemoryGovernor => _owner;
@@ -201,7 +271,7 @@ internal static partial class PyStringOps
             bytes = default;
             word = null;
             if (_position == _length) return false;
-            var range = ReadWordRange();
+            var range = ReadEncodedWord(_encoded, ref _position);
             if (range.Capacity <= PyString.InlineUtf8Capacity)
                 bytes = _encoded.AsSpan(range.Start, range.Capacity);
             else

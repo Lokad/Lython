@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Construct eligible materialized cased split lists from one UTF-8 scan.
+  Bound temporary packed storage and keep direct construction for longer
+  inputs. Observe cancellation before growing a newly admitted word buffer.
 - Share one optional metadata field on functions. Preserve dictionaries
   installed during admission. Match Python's tuple default, assignment
   and deletion behavior for `__type_params__`.

@@ -2231,9 +2231,13 @@ whitespace scanner serves direct construction and private iteration with conserv
 case-output capacity. Forward/reverse discovery use managed bulk searches over fixed ASCII
 inventories derived from the same whitespace classifier, decoding
 Unicode scalars at non-ASCII boundaries. The shared casing writer preserves Unicode expansions
-and final-sigma context. Final word capacities are admitted together;
-removing the unobservable cased line can change admission amounts, order and failure
-spans. First refusal remains terminal. Custom protocols keep awaited execution.
+and final-sigma context. Materialized lists use the prepared byte scan when
+it fits the bounded working buffer. They admit the final list and independent
+words before construction. Larger inputs use the existing sizing and direct
+word construction. Short inputs use stack scratch. A materialized call adds
+at most 16 KiB of packed buffer capacity to the reusable execution workspace.
+The first refusal remains terminal. Native fusion can change admission order,
+amounts and spans. Custom protocols keep awaited execution.
 
 Immediate iteration of an exact cased-split chain, an eligible closed helper or
 a directly returned chain through ordinary executable helpers uses a private
