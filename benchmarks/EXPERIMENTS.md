@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1486 separate the closed native-call workspace](results/2026-11-23-closed-native-workspace/README.md)
+shrinks the direct entry's Tier 1 stack subtraction from 520 to 184 bytes.
+Factory elapsed spans zero, the short text control is unstable and ordinary
+calls use an additional frame. Keep the candidate private. The reproduced
+small-stack fixture race has an independent test-only correction.
+
 [B1485 return initialized DictReader headers directly](results/2026-11-23-dictreader-ready-header/README.md)
 removes the ready header's state-machine entry. The quoted warm lane is
 flat and its compile-to-result elapsed rises 1.36–4.64%. Ordinary invoice
