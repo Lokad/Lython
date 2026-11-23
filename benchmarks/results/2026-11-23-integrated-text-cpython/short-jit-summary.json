@@ -1,0 +1,158 @@
+{
+  "windows": {
+    "reference": {
+      "TryAccumulateInlineWord": {
+        "stackSubtractionBytes": 280,
+        "codeBytes": 4140,
+        "callees": [
+          "long]",
+          "this]",
+          "ThrowArgumentOutOfRangeException"
+        ]
+      },
+      "FindNativeTextIndex": {
+        "stackSubtractionBytes": 104,
+        "codeBytes": 2945,
+        "callees": [
+          "ThrowArgumentOutOfRangeException",
+          "this]"
+        ]
+      },
+      "TryExecuteDictionaryLoop": {
+        "stackSubtractionBytes": 616,
+        "codeBytes": 8035,
+        "callees": [
+          "int]",
+          "this]",
+          "Memmove",
+          "NoteWork",
+          "ThrowArgumentOutOfRangeException",
+          "Lokad.Lython.Runtime.LythonRuntimeException]",
+          "bool]",
+          "ThrowArgumentOutOfRange_IndexMustBeLessException",
+          "this",
+          "System.String]",
+          "ThrowNegativeOrZero",
+          "ThrowArgumentException_DestinationTooShort"
+        ]
+      }
+    },
+    "candidate": {
+      "TryAccumulateBorrowedWord": {
+        "stackSubtractionBytes": 296,
+        "codeBytes": 4008,
+        "callees": [
+          "this]",
+          "bool]",
+          "ThrowArgumentOutOfRangeException",
+          "long]",
+          "System.String]"
+        ]
+      },
+      "FindNativeTextIndex": {
+        "stackSubtractionBytes": 136,
+        "codeBytes": 2512,
+        "callees": [
+          "this]",
+          "bool]",
+          "ThrowArgumentOutOfRangeException"
+        ]
+      },
+      "TryExecuteDictionaryLoop": {
+        "stackSubtractionBytes": 696,
+        "codeBytes": 8227,
+        "callees": [
+          "long]",
+          "this]",
+          "bool]",
+          "ThrowArgumentOutOfRangeException",
+          "ThrowArgumentOutOfRange_IndexMustBeLessException",
+          "this",
+          "System.String]",
+          "ThrowNegativeOrZero",
+          "Memmove",
+          "ThrowArgumentException_DestinationTooShort"
+        ]
+      }
+    }
+  },
+  "linux": {
+    "reference": {
+      "TryAccumulateInlineWord": {
+        "stackSubtractionBytes": 200,
+        "codeBytes": 3852,
+        "callees": [
+          "this]",
+          "ThrowArgumentOutOfRangeException",
+          "long]",
+          "System.String]"
+        ]
+      },
+      "FindNativeTextIndex": {
+        "stackSubtractionBytes": 152,
+        "codeBytes": 3185,
+        "callees": [
+          "ThrowArgumentOutOfRangeException",
+          "this]"
+        ]
+      },
+      "TryExecuteDictionaryLoop": {
+        "stackSubtractionBytes": 776,
+        "codeBytes": 9708,
+        "callees": [
+          "bool]",
+          "this]",
+          "Memmove",
+          "long]",
+          "NoteWork",
+          "int]",
+          "ThrowArgumentOutOfRangeException",
+          "Lokad.Lython.Runtime.LythonRuntimeException]",
+          "ThrowArgumentOutOfRange_IndexMustBeLessException",
+          "this",
+          "System.String]",
+          "ThrowNegativeOrZero",
+          "ThrowArgumentException_DestinationTooShort"
+        ]
+      }
+    },
+    "candidate": {
+      "TryAccumulateBorrowedWord": {
+        "stackSubtractionBytes": 232,
+        "codeBytes": 3609,
+        "callees": [
+          "this]",
+          "bool]",
+          "ThrowArgumentOutOfRangeException",
+          "long]",
+          "System.String]"
+        ]
+      },
+      "FindNativeTextIndex": {
+        "stackSubtractionBytes": 136,
+        "codeBytes": 2554,
+        "callees": [
+          "this]",
+          "bool]",
+          "ThrowArgumentOutOfRangeException"
+        ]
+      },
+      "TryExecuteDictionaryLoop": {
+        "stackSubtractionBytes": 648,
+        "codeBytes": 8316,
+        "callees": [
+          "long]",
+          "this]",
+          "bool]",
+          "ThrowArgumentOutOfRangeException",
+          "ThrowArgumentOutOfRange_IndexMustBeLessException",
+          "this",
+          "System.String]",
+          "ThrowNegativeOrZero",
+          "Memmove",
+          "ThrowArgumentException_DestinationTooShort"
+        ]
+      }
+    }
+  }
+}

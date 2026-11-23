@@ -2,18 +2,17 @@
 
 | Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| Quote-heavy CSV policy invoice | 4,096 records / 174,147 B | 7.113–7.119 ms | 6.318–6.343 ms | 1.121–1.127× | Diagnostic. [B1451]. |
-| Native typed ASCII CSV meter | 4,096 records / 139,299 B | 2.970–2.996 ms | 2.536–2.590 ms | 1.147–1.181× | Diagnostic. [B1451]. |
-| Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 1.326–1.364 ms | 0.9371–0.9486 ms | 1.398–1.455× | Diagnostic. Lython worker spread 2.87%. [B1451]. |
-| JSON Lines export with expanded options | 3,072 records / 189,441 B | 5.376–5.567 ms | 6.556–6.558 ms | 0.820–0.849× | Diagnostic. [B1451]. |
-| Postponed nested factories | 2,048 inputs / 4,096 definitions | 0.9783–0.9953 ms | 0.5353–0.5515 ms | 1.774–1.859× | Diagnostic. [B1451]. |
+| Mixed-width word histogram | 3,072 lines / 107,520 B | 1.610–1.656 ms | 1.686–1.696 ms | 0.949–0.983× | Diagnostic. [B1458]. |
+| Native typed ASCII CSV meter | 4,096 records / 139,299 B | 3.054–3.080 ms | 2.492–2.529 ms | 1.208–1.236× | Diagnostic. [B1458]. |
+| Short Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 1.334–1.394 ms | 0.9334–0.9461 ms | 1.410–1.494× | Diagnostic. Lython worker spread 4.51%. [B1458]. |
+| JSON Lines export with expanded options | 3,072 records / 189,441 B | 5.355–5.366 ms | 6.508–6.509 ms | 0.823–0.825× | Diagnostic. [B1458]. |
 
 Ratios divide Lython elapsed time by CPython elapsed time. Above 1× means
 Lython takes longer. Ranges span the four pairings of process medians from
 two workers per engine. The opening table measures the November 23, 2026
-UTC checkpoint at `dfabddb88`. The factory remains the largest warm gap
-in this set. The nonlocal report has lower worker spread than the 13.77%
-observed at the previous checkpoint. [B1451] · [B1443].
+UTC checkpoint at `7bc247f1a`. The short nonlocal report has the largest
+warm gap in this set. Its range overlaps the previous checkpoint, leaving
+the B1457 short-word slowdown unresolved. [B1458] · [B1451].
 
 The quiet comparison machine is an Azure F4as_v7 running Ubuntu 24.04.4
 with .NET 11 RC3. The external baseline is stock CPython 3.13.16. Warm
@@ -29,9 +28,12 @@ measurements cover the wider request.
 
 | Workload | Phase | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| Generated validator with read-only branches | Compilation only | 0.4757–0.4924 ms | 0.9257–0.9317 ms | 0.511–0.532× | Diagnostic. [B1451]. |
-| Sparse generated validator | Compile-to-result | 1.535–1.565 ms | 1.9741–1.9742 ms | 0.777–0.793× | Diagnostic. [B1451]. |
-| Postponed nested factories | Compile-to-result | 1.059–1.061 ms | 0.5852–0.5907 ms | 1.793–1.814× | Diagnostic. [B1451]. |
+| Configuration edit, 181 B | Compilation only | 0.01882–0.01968 ms | 0.03397–0.03404 ms | 0.553–0.579× | Diagnostic. [B1458]. |
+| Configuration edit, 181 B | Compile-to-result | 0.1073–0.1078 ms | 0.1265–0.1280 ms | 0.839–0.852× | Diagnostic. [B1458]. |
+| Postponed nested factories | Compile-to-result | 0.987–1.127 ms | 0.6063–0.6190 ms | 1.594–1.859× | Uncertain magnitude. Lython worker spread 14.23%. [B1458]. |
+| Generated validator with read-only branches | Compilation only | 0.4757–0.4924 ms | 0.9257–0.9317 ms | 0.511–0.532× | Historical diagnostic. [B1451]. |
+| Sparse generated validator | Compile-to-result | 1.535–1.565 ms | 1.9741–1.9742 ms | 0.777–0.793× | Historical diagnostic. [B1451]. |
+| Postponed nested factories | Compile-to-result | 1.059–1.061 ms | 0.5852–0.5907 ms | 1.793–1.814× | Historical diagnostic. [B1451]. |
 | Generated validator with read-only branches | Compile-to-result | 0.5013–0.5076 ms | 0.9446–0.9524 ms | 0.526–0.537× | Historical diagnostic. [B1443]. |
 | Sparse generated validator | Compilation only | 1.459–1.462 ms | 1.814–1.817 ms | 0.803–0.806× | Historical diagnostic. [B1438]. |
 | Configuration edit | Compile-to-result | 0.1077–0.1090 ms | 0.1236–0.1253 ms | 0.859–0.882× | Historical diagnostic. [B1438]. |
@@ -63,7 +65,7 @@ new scripts. These clocks end before final process teardown.
 | Tiny arithmetic | One calculation | 150.7 ms | 29.9 ms | 5.03× | Diagnostic control. [B1451]. |
 | Configuration edit | One JSON file / 181 B | 278.0 ms | 32.2 ms | 8.62× | Diagnostic. [B1451]. |
 
-Seven fresh processes per row and engine measure launch through exit
+At the earlier `dfabddb88` checkpoint, seven fresh processes per row and engine measure launch through exit
 and pipe drain. The clock includes runtime and worker initialization,
 compilation, one run, applicable RAM-backed I/O and in-worker cleanup.
 OS caches stay warm. Case order rotates. The smoke starts Lython first
@@ -75,6 +77,8 @@ Lython inside an already-running application. [B1451].
 
 | Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| Quote-heavy CSV policy invoice | 4,096 records / 174,147 B | 7.113–7.119 ms | 6.318–6.343 ms | 1.121–1.127× | Historical diagnostic. [B1451]. |
+| Postponed nested factories | 2,048 inputs / 4,096 definitions | 0.9783–0.9953 ms | 0.5353–0.5515 ms | 1.774–1.859× | Historical diagnostic. [B1451]. |
 | Wide Unicode word report with a materialized split | 195,585 B | 0.9942–0.9975 ms | 1.310–1.328 ms | 0.749–0.761× | Historical diagnostic. [B1443]. |
 | Typed ASCII CSV meter report | 4,096 records / 139,299 B | 3.034–3.049 ms | 2.488–2.522 ms | 1.203–1.226× | Diagnostic. Lython worker spread 0.49%. [B1361]. |
 | CSV meter report with explicit `float()` | 4,096 records / 139,299 B | 4.460–4.664 ms | 2.903–2.907 ms | 1.534–1.607× | Diagnostic. Lython worker spread 4.58%. [B1336]. |
@@ -101,6 +105,7 @@ change. The checkpoint includes the arithmetic and allocation controls.
 
 | Checkpoint | Lython source | Date |
 | --- | --- | --- |
+| [B1458] | `7bc247f1a` | 2026-11-23 UTC |
 | [B1451] | `dfabddb88` | 2026-11-23 UTC |
 | [B1443] | `30d956735` | 2026-11-23 UTC |
 | [B1438] | `9fb7fdcfb` | 2026-11-23 UTC |
@@ -184,6 +189,7 @@ Review individual designs and adverse observations in
 the [experiment index](../benchmarks/EXPERIMENTS.md).
 Reproduce the comparisons with the [benchmark tools](../benchmarks/README.md).
 
+[B1458]: ../benchmarks/results/2026-11-23-integrated-text-cpython/README.md
 [B1451]: ../benchmarks/results/2026-11-23-runtime-cpython-checkpoint/README.md
 [B1443]: ../benchmarks/results/2026-11-23-branch-cpython-checkpoint/README.md
 [B1438]: ../benchmarks/results/2026-11-23-integrated-cpython-checkpoint/README.md

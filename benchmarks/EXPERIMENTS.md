@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1458 integrated CPython checkpoint](results/2026-11-23-integrated-text-cpython/README.md)
+places mixed-width text at 0.949–0.983× CPython and short nonlocal
+text at 1.410–1.494×. Configuration takes 0.553–0.579× for compilation
+and 0.839–0.852× from compilation to result. Factory magnitude remains
+uncertain with a 14.23% Lython worker spread.
+
 [B1457 preserve native cased-key insertion](results/2026-11-23-borrowed-cased-words-append/README.md)
 retains the borrowed repeated-key savings and reduces the distinct-word
 elapsed cost to 1.75–3.62%. The short nonlocal report takes longer against
