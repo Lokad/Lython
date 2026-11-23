@@ -28,6 +28,8 @@
   Admit the retained inline mapping with the callable.
 - Construct a native function's first prepared local capture with the callable.
   One admission covers both objects and commits before either becomes visible.
+- Match Python's optimized `locals()` order for ordinary locals,
+  captured locals and free variables.
 - Convert complete short ASCII decimal tokens directly from UTF-8 when
   parsing floats. Keep Python normalization, exact errors and cancellation.
 

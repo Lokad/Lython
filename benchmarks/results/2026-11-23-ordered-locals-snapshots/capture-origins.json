@@ -1,0 +1,43 @@
+{
+  "bindingsCompared": 18,
+  "remapped": [
+    {
+      "script": "mixed-declaration-forwarding",
+      "code": "<lambda>",
+      "reference": {
+        "zebra": [
+          "zebra",
+          -2
+        ]
+      },
+      "candidate": {
+        "zebra": [
+          "zebra",
+          -1
+        ]
+      }
+    },
+    {
+      "script": "mixed-declaration-forwarding",
+      "code": "read_alpha",
+      "reference": {
+        "alpha": [
+          "alpha",
+          -1
+        ]
+      },
+      "candidate": {
+        "alpha": [
+          "alpha",
+          -2
+        ]
+      }
+    }
+  ],
+  "images": {
+    "reference": "443c2234650af31e7e281c3d7e578e44bcac985aa1c5ace0fca66ca4d27a480a",
+    "reference-control": "443c2234650af31e7e281c3d7e578e44bcac985aa1c5ace0fca66ca4d27a480a",
+    "candidate": "ad9d2d0d40c2d10d264b2aa0d086573229f3212f5cd8f84ab5fd7a26f103fd03",
+    "candidate-control": "ad9d2d0d40c2d10d264b2aa0d086573229f3212f5cd8f84ab5fd7a26f103fd03"
+  }
+}

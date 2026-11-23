@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1468 match optimized Python scope snapshot order](results/2026-11-23-ordered-locals-snapshots/README.md)
+replaces separate declaration scans. Executable instructions and operands
+agree across 163 inspected code objects. Compile allocation changes
+under 0.3%. Inherited dataclass compile elapsed rises 0.38–1.47%.
+
 [B1467 CPython checkpoint after capture and decimal changes](results/2026-11-23-numeric-capture-cpython/README.md)
 measures the typed ASCII meter at 1.069–1.091× and postponed factory time
 to result at 1.642–1.698×. Factory worker spread falls to 3.17%.
