@@ -86,6 +86,15 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         bool completePositional, Span<LythonRuntime.ExecutableSlot> unpackedReturn, out bool unpacked,
         out LythonRuntime.ExecutableSlot result, out LythonRuntime.ExecutionContext? frame)
     {
+        if (receiver is null && completePositional && arguments.Length == 1 &&
+            CodeObject.DirectDefinitionReturn is { } definition && !Closure.IsTypeParameterScope)
+        {
+            result = LythonRuntime.ExecutableSlot.FromObject(ReturnDefinition(definition, arguments[0], span));
+            unpacked = false;
+            frame = null;
+            return;
+        }
+
         if (receiver is null && CodeObject.HasDirectIntegerReturn &&
             (completePositional
                 ? arguments.Length == CodeObject.FirstTemporarySlot &&
@@ -116,6 +125,39 @@ internal sealed class PyExecutableFunction : PyFunctionBase
             [], span, this, context, receiver: receiver, callSite: call, operands: arguments);
         StartInline(values, null, span, consumedByIteration, unpackedReturn,
             out unpacked, out result, out frame, out _);
+    }
+
+    private PyFunctionBase ReturnDefinition(ExecutableCreateFunction definition,
+        LythonRuntime.ExecutableSlot argument, LythonSourceSpan span)
+    {
+        try
+        {
+            Closure.EnterFunctionCall(span);
+            var previous = Closure.State.CurrentException;
+            try
+            {
+                var result = LythonRuntime.CreateClosedFunctionDefinition(definition, Closure, argument,
+                    CodeObject.Instructions[0].Span);
+                Closure.CheckExecution(CodeObject.Instructions[1].Span);
+                return result;
+            }
+            catch (LythonRuntimeException error)
+            {
+                if (previous is not null && !ReferenceEquals(error.OriginalPythonException, previous))
+                    error.PythonContext ??= previous;
+                throw;
+            }
+            finally
+            {
+                Closure.State.SetCurrentException(previous);
+                Closure.LeaveFunctionCall();
+            }
+        }
+        catch (LythonRuntimeException error)
+        {
+            PyFunctionBinding.AnnotateException(error, Closure, Name, span);
+            throw;
+        }
     }
 
     private bool TryStartPreparedIntegerReturn(ExecutableCallSite call, ReadOnlySpan<LythonRuntime.ExecutableSlot> arguments,

@@ -31,6 +31,8 @@
 - Match Python's optimized `locals()` order for ordinary locals,
   captured locals and free variables.
 - Forward a private lexical assignment directly to its immediate return.
+- Return a single lexical definition directly from an eligible native factory.
+  Preserve fresh function identity and the captured argument.
 - Resolve root-module reads through the live global and builtin path.
 - Construct executable tuples under one fixed reservation through
   publication or rollback.

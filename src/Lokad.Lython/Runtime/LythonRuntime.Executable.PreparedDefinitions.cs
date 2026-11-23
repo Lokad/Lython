@@ -109,6 +109,14 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    internal static PyFunctionBase CreateClosedFunctionDefinition(ExecutableCreateFunction definition,
+        ExecutionContext scope, ExecutableSlot argument, LythonSourceSpan span)
+    {
+        scope.CheckExecution(span);
+        return CreateFunctionValue(definition.ParameterLayout, definition.CodeObject, GetGlobalContext(scope),
+            default, default, false, scope, span, uncapturedLocal: new Span<ExecutableSlot>(ref argument));
+    }
+
     private static bool CanDefineLexically(ExecutableCodeObject code)
         => code.UsesOnlyLexicalSlots && !code.ScopeFacts.RequiresClassCell;
 

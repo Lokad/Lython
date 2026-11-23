@@ -119,6 +119,17 @@ public sealed class CapturedScalarExecutionTests
     // publication and genuine protocol/I/O paths.
     public static IEnumerable<object[]> PythonControls()
     {
+        yield return ["lexical-factory-aliases", """
+            def make(value):
+                def read():
+                    return value
+                return read
+            value = []
+            first = make(value)
+            second = make(value)
+            value.append(27)
+            print(first is not second, first() is value, second() is first(), first())
+            """, "True True True [27]\n", false];
         yield return ["stable-identities-native","\ndef run():\n    value=1000\n    def step():\n        nonlocal value\n        value+=1\n    def read():return value\n    def replace(new):\n        nonlocal value\n        value=new\n    old=read()\n    step()\n    first=read()\n    step()\n    second=read()\n    print(old,first,second,first is read(),second is read())\n    print(old is first,first is second,id(read())==id(read()))\n    replace(old)\n    print(read() is old)\nrun()\n","1000 1001 1002 False True\nFalse False True\nTrue\n",false];
         yield return ["stable-identities-ordinary","\ndef run():\n    value=1000\n    def step():\n        nonlocal value\n        try:\n            value+=1\n        finally:\n            pass\n    def read():return value\n    def replace(new):\n        nonlocal value\n        value=new\n    old=read()\n    step()\n    first=read()\n    step()\n    second=read()\n    print(old,first,second,first is read(),second is read())\n    print(old is first,first is second,id(read())==id(read()))\n    replace(old)\n    print(read() is old)\nrun()\n","1000 1001 1002 False True\nFalse False True\nTrue\n",false];
         yield return ["promotion-native","\ndef run():\n    value=9223372036854775806\n    def step():\n        nonlocal value\n        value+=1\n    def read():return value\n    def replace(new):\n        nonlocal value\n        value=new\n    old=read()\n    for i in range(4):\n     step()\n     print(read())\n    print(old,read() is read())\nrun()\n","9223372036854775807\n9223372036854775808\n9223372036854775809\n9223372036854775810\n9223372036854775806 True\n",false];

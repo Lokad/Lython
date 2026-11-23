@@ -4,6 +4,26 @@ namespace Lokad.Lython.Frontend;
 
 internal sealed partial class ExecutableCodeObject
 {
+    private ExecutableCreateFunction? PrepareDirectDefinitionReturn()
+    {
+        if (!UsesOnlyLexicalSlots || EntryIndex != 0 || ExceptionRegions.Count != 0 ||
+            Instructions.Length != 2 || Instructions[0].OpCode != ExecutableOpCode.ApplyOperation ||
+            Instructions[1].OpCode != ExecutableOpCode.Return || Instructions[1].InputStart != Instructions[0].ResultSlot ||
+            Constants[Instructions[0].ConstantIndex] is not ExecutableCreateFunction
+            {
+                InputCount: 0, IsGenerator: false, DeferredAnnotations.Length: 0,
+                TypeParameters: null, EagerAnnotationReads: null, PostponedAnnotations: null,
+            } definition) return null;
+
+        // The declaration captures the factory's only bound argument by value.
+        // Its code still owns live function metadata and allocates a fresh callable.
+        var body = definition.CodeObject;
+        var capture = body.CaptureSources;
+        return body.UsesOnlyLexicalSlots && !body.ScopeFacts.RequiresClassCell &&
+            capture is { CanCaptureByValue: true, Slots: [0] } &&
+            ReferenceEquals(capture.ParentLocalSlots, LocalNameToSlot) ? definition : null;
+    }
+
     private bool HasClosedIntegerReturn(CancellationToken cancellationToken)
     {
         if (Instructions.Length < 2 || EntryIndex != 0 || ExceptionRegions.Count != 0 ||
