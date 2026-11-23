@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1479 complete buffered CSV rows directly](results/2026-11-23-buffered-csv-read-completion/README.md)
+bypasses the refill state machine on complete rows. Allocations and admitted
+peaks match. Warm explicit CSV takes 2.35–5.27% longer with supporting CPU
+while compile-to-result elapsed falls. The text control is slower and
+varies between workers. Keep the split private.
+
 [B1478 CPython checkpoint after fixed tuple admission](results/2026-11-23-tuple-admission-cpython/README.md)
 measures seven lanes on the integrated source. The short nonlocal report
 takes 1.433–1.502× CPython warm time. Postponed factories take 1.718–1.742×
