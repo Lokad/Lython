@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1467 CPython checkpoint after capture and decimal changes](results/2026-11-23-numeric-capture-cpython/README.md)
+measures the typed ASCII meter at 1.069–1.091× and postponed factory time
+to result at 1.642–1.698×. Factory worker spread falls to 3.17%.
+The initial worker-manifest failure is preserved beside the successful
+196-batch retry.
+
 [B1465 share exact short-decimal rounding](results/2026-11-23-exact-short-decimal/README.md)
 retains 8.87–10.72% lower typed ASCII warm elapsed and 3.20–7.11%
 lower explicit float elapsed, with supporting CPU. B1466 confirms the
