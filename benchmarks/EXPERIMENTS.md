@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1490 confirm the forwarded-call controls](results/2026-11-23-forwarded-global-confirmation/README.md)
+finds a 0.50–1.27% quoted-invoice elapsed cost with supporting CPU.
+The short text gain recurs with wide reference spread. Mixed-width
+and fully supplied elapsed changes span zero.
+
 [B1489 forward the live global and private local into a positional call](results/2026-11-23-forwarded-global-call/README.md)
 removes two tape instructions from qualifying calls. The short report takes
 5.69–11.26% less warm elapsed, with supporting CPU and equal allocation
