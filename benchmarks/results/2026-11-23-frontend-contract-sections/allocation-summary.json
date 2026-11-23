@@ -1,0 +1,156 @@
+{
+  "control.empty.control": {
+    "reference": {
+      "coldAllocated": 6648,
+      "warmAllocated": 5088,
+      "coldPeaks": [
+        33248
+      ],
+      "warmPeaks": [
+        33248
+      ]
+    },
+    "candidate": {
+      "coldAllocated": 6648,
+      "warmAllocated": 5088,
+      "coldPeaks": [
+        33248
+      ],
+      "warmPeaks": [
+        33248
+      ]
+    }
+  },
+  "control.tiny.control": {
+    "reference": {
+      "coldAllocated": 12448,
+      "warmAllocated": 7560,
+      "coldPeaks": [
+        33728
+      ],
+      "warmPeaks": [
+        33728
+      ]
+    },
+    "candidate": {
+      "coldAllocated": 12448,
+      "warmAllocated": 7560,
+      "coldPeaks": [
+        33728
+      ],
+      "warmPeaks": [
+        33728
+      ]
+    }
+  },
+  "scripts.config-edit.small": {
+    "reference": {
+      "coldAllocated": 1346024,
+      "warmAllocated": 44976,
+      "coldPeaks": [
+        67040
+      ],
+      "warmPeaks": [
+        67040
+      ]
+    },
+    "candidate": {
+      "coldAllocated": 1119744,
+      "warmAllocated": 44976,
+      "coldPeaks": [
+        67040
+      ],
+      "warmPeaks": [
+        67040
+      ]
+    }
+  },
+  "scripts.csv-meter-report.typed-ascii": {
+    "reference": {
+      "coldAllocated": 1400280,
+      "warmAllocated": 95816,
+      "coldPeaks": [
+        102464
+      ],
+      "warmPeaks": [
+        102464
+      ]
+    },
+    "candidate": {
+      "coldAllocated": 1186224,
+      "warmAllocated": 95816,
+      "coldPeaks": [
+        102464
+      ],
+      "warmPeaks": [
+        102464
+      ]
+    }
+  },
+  "xml.parse-select.small": {
+    "reference": {
+      "coldAllocated": 1331304,
+      "warmAllocated": 30368,
+      "coldPeaks": [
+        85760
+      ],
+      "warmPeaks": [
+        85760
+      ]
+    },
+    "candidate": {
+      "coldAllocated": 1065184,
+      "warmAllocated": 30368,
+      "coldPeaks": [
+        85760
+      ],
+      "warmPeaks": [
+        85760
+      ]
+    }
+  },
+  "compiler.generated-read-only-branches": {
+    "reference": {
+      "coldAllocated": 1187000,
+      "warmAllocated": 1095744,
+      "coldPeaks": [
+        1102112
+      ],
+      "warmPeaks": [
+        1102112
+      ]
+    },
+    "candidate": {
+      "coldAllocated": 1187000,
+      "warmAllocated": 1095744,
+      "coldPeaks": [
+        1102112
+      ],
+      "warmPeaks": [
+        1102112
+      ]
+    }
+  },
+  "control.workbook-contracts.small": {
+    "reference": {
+      "coldAllocated": 1316536,
+      "warmAllocated": 17936,
+      "coldPeaks": [
+        43808
+      ],
+      "warmPeaks": [
+        43808
+      ]
+    },
+    "candidate": {
+      "coldAllocated": 761384,
+      "warmAllocated": 17936,
+      "coldPeaks": [
+        43808
+      ],
+      "warmPeaks": [
+        43808
+      ]
+    }
+  }
+}

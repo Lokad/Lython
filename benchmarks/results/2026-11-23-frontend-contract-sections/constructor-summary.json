@@ -1,0 +1,183 @@
+[
+  {
+    "role": "reference",
+    "case": "control.empty.control",
+    "traceSha256": "1ec0cde6ad5968bab56b7c5c4a6a288030b65ebd14dae25767f0a0077fc945e7",
+    "semanticResponse": {
+      "protocolVersion": 2,
+      "requestId": 1,
+      "caseId": "control.empty.control",
+      "status": "Equivalent",
+      "completedInvocations": 1,
+      "elapsedTicks": null,
+      "clockFrequency": 10000000,
+      "sourceSha256": "9f56e761d79bfdb34304a012586cb04d16b435ef6130091a97702e559260a2f2",
+      "fixtureSha256": "8a954131b5ad4fc6eba637a538e85f27edd4a57ca1a7a472cf8fc34c8781a2bb",
+      "expectedOutputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "actualOutputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "reason": null
+    },
+    "trace": "reference-control.empty.control.nettrace",
+    "total": 969,
+    "constructors": []
+  },
+  {
+    "role": "reference",
+    "case": "scripts.config-edit.small",
+    "traceSha256": "d7f066129866592e00bb01a7637efa3ee820c82c33bbfb01554a70d06fbb78a3",
+    "semanticResponse": {
+      "protocolVersion": 2,
+      "requestId": 1,
+      "caseId": "scripts.config-edit.small",
+      "status": "Equivalent",
+      "completedInvocations": 1,
+      "elapsedTicks": null,
+      "clockFrequency": 10000000,
+      "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+      "fixtureSha256": "1d10ae54c3a744f1edd3d47ae3f2ec30725f67d3bd122b238677000b95aaf831",
+      "expectedOutputSha256": "54183f4323f377b737433a1e98229ead0fdc686f93bab057ecb612daa94002b5",
+      "actualOutputSha256": "54183f4323f377b737433a1e98229ead0fdc686f93bab057ecb612daa94002b5",
+      "reason": null,
+      "actualFilesSha256": "2a91c8bbb0890345733ca9739c1769a6ab6d0c7ef53544488d0264f88030043f"
+    },
+    "trace": "reference-scripts.config-edit.small.nettrace",
+    "total": 2781,
+    "constructors": [
+      "Lokad.Lython.Frontend.StaticContractEngine",
+      "Lokad.Lython.Frontend.StaticContracts",
+      "Lokad.Lython.Frontend.StaticContracts+<>c",
+      "Lokad.Lython.Frontend.StaticContracts+BuiltinModuleSurface+<>c",
+      "Lokad.Lython.Frontend.StaticContracts+CoreCallableContractCatalog",
+      "Lokad.Lython.Frontend.StaticContracts+CoreMemberReturnContractCatalog",
+      "Lokad.Lython.Frontend.StaticContracts+DataCallableContractCatalog",
+      "Lokad.Lython.Frontend.StaticContracts+ExtendedMemberReturnContractCatalog",
+      "Lokad.Lython.Frontend.StaticContracts+LibraryCallableContractCatalog",
+      "Lokad.Lython.Frontend.StaticContracts+OpenPyxlCallableContractCatalog",
+      "Lokad.Lython.Frontend.StaticKnownCallArgumentChecks+<>c"
+    ]
+  },
+  {
+    "role": "reference",
+    "case": "control.workbook-contracts.small",
+    "traceSha256": "3d50caaeebcf4acc9544360c42920fa6b84e47388194da8a1121c3761be75976",
+    "semanticResponse": {
+      "protocolVersion": 2,
+      "requestId": 1,
+      "caseId": "control.workbook-contracts.small",
+      "status": "Equivalent",
+      "completedInvocations": 1,
+      "elapsedTicks": null,
+      "clockFrequency": 10000000,
+      "sourceSha256": "e230e30509b6173964c12b2417ee8b3a9d2ca18a5bdf0559d3ee8b776bd32fc0",
+      "fixtureSha256": "8a954131b5ad4fc6eba637a538e85f27edd4a57ca1a7a472cf8fc34c8781a2bb",
+      "expectedOutputSha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "actualOutputSha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "reason": null
+    },
+    "trace": "reference-control.workbook-contracts.small.nettrace",
+    "total": 2020,
+    "constructors": [
+      "Lokad.Lython.Frontend.StaticContractEngine",
+      "Lokad.Lython.Frontend.StaticContracts",
+      "Lokad.Lython.Frontend.StaticContracts+<>c",
+      "Lokad.Lython.Frontend.StaticContracts+BuiltinModuleSurface+<>c",
+      "Lokad.Lython.Frontend.StaticContracts+CoreCallableContractCatalog",
+      "Lokad.Lython.Frontend.StaticContracts+CoreMemberReturnContractCatalog",
+      "Lokad.Lython.Frontend.StaticContracts+DataCallableContractCatalog",
+      "Lokad.Lython.Frontend.StaticContracts+ExtendedMemberReturnContractCatalog",
+      "Lokad.Lython.Frontend.StaticContracts+LibraryCallableContractCatalog",
+      "Lokad.Lython.Frontend.StaticContracts+OpenPyxlCallableContractCatalog"
+    ]
+  },
+  {
+    "role": "candidate",
+    "case": "control.empty.control",
+    "traceSha256": "be2e4b4fb8aafb728db5b7285fde0816697559fa5834ac73838621125b9d519e",
+    "semanticResponse": {
+      "protocolVersion": 2,
+      "requestId": 1,
+      "caseId": "control.empty.control",
+      "status": "Equivalent",
+      "completedInvocations": 1,
+      "elapsedTicks": null,
+      "clockFrequency": 10000000,
+      "sourceSha256": "9f56e761d79bfdb34304a012586cb04d16b435ef6130091a97702e559260a2f2",
+      "fixtureSha256": "8a954131b5ad4fc6eba637a538e85f27edd4a57ca1a7a472cf8fc34c8781a2bb",
+      "expectedOutputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "actualOutputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "reason": null
+    },
+    "trace": "candidate-control.empty.control.nettrace",
+    "total": 969,
+    "constructors": []
+  },
+  {
+    "role": "candidate",
+    "case": "scripts.config-edit.small",
+    "traceSha256": "4a5500f9bf5d668ec5542a5c7b27cccc1f573c350d4d362f7c879219a085e22b",
+    "semanticResponse": {
+      "protocolVersion": 2,
+      "requestId": 1,
+      "caseId": "scripts.config-edit.small",
+      "status": "Equivalent",
+      "completedInvocations": 1,
+      "elapsedTicks": null,
+      "clockFrequency": 10000000,
+      "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+      "fixtureSha256": "1d10ae54c3a744f1edd3d47ae3f2ec30725f67d3bd122b238677000b95aaf831",
+      "expectedOutputSha256": "54183f4323f377b737433a1e98229ead0fdc686f93bab057ecb612daa94002b5",
+      "actualOutputSha256": "54183f4323f377b737433a1e98229ead0fdc686f93bab057ecb612daa94002b5",
+      "reason": null,
+      "actualFilesSha256": "2a91c8bbb0890345733ca9739c1769a6ab6d0c7ef53544488d0264f88030043f"
+    },
+    "trace": "candidate-scripts.config-edit.small.nettrace",
+    "total": 2766,
+    "constructors": [
+      "Lokad.Lython.Frontend.StaticContractEngine",
+      "Lokad.Lython.Frontend.StaticContracts+CallableMemberCatalog",
+      "Lokad.Lython.Frontend.StaticContracts+KnownCallCatalog",
+      "Lokad.Lython.Frontend.StaticContracts+KnownCallCatalog+<>c",
+      "Lokad.Lython.Frontend.StaticContracts+MemberReturnCatalog",
+      "Lokad.Lython.Frontend.StaticContracts+MemberValueCatalog",
+      "Lokad.Lython.Frontend.StaticContracts+MemberValueCatalog+<>c",
+      "Lokad.Lython.Frontend.StaticCoreMemberSurfaces",
+      "Lokad.Lython.Frontend.StaticKnownCallArgumentChecks+<>c",
+      "Lokad.Lython.Frontend.StaticModuleCatalog",
+      "Lokad.Lython.Frontend.StaticModuleCatalog+BuiltinModuleSurface+<>c"
+    ]
+  },
+  {
+    "role": "candidate",
+    "case": "control.workbook-contracts.small",
+    "traceSha256": "fd5bdd3a45c93ae55ddeff7b3136a394d92a4ae2666f033c1655086b97592d60",
+    "semanticResponse": {
+      "protocolVersion": 2,
+      "requestId": 1,
+      "caseId": "control.workbook-contracts.small",
+      "status": "Equivalent",
+      "completedInvocations": 1,
+      "elapsedTicks": null,
+      "clockFrequency": 10000000,
+      "sourceSha256": "e230e30509b6173964c12b2417ee8b3a9d2ca18a5bdf0559d3ee8b776bd32fc0",
+      "fixtureSha256": "8a954131b5ad4fc6eba637a538e85f27edd4a57ca1a7a472cf8fc34c8781a2bb",
+      "expectedOutputSha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "actualOutputSha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "reason": null
+    },
+    "trace": "candidate-control.workbook-contracts.small.nettrace",
+    "total": 1987,
+    "constructors": [
+      "Lokad.Lython.Frontend.StaticContractEngine",
+      "Lokad.Lython.Frontend.StaticContracts+KnownCallCatalog",
+      "Lokad.Lython.Frontend.StaticContracts+KnownCallCatalog+<>c",
+      "Lokad.Lython.Frontend.StaticContracts+MemberReturnCatalog",
+      "Lokad.Lython.Frontend.StaticContracts+MemberValueCatalog",
+      "Lokad.Lython.Frontend.StaticContracts+MemberValueCatalog+<>c",
+      "Lokad.Lython.Frontend.StaticContracts+WorkbookCallableMemberCatalog",
+      "Lokad.Lython.Frontend.StaticContracts+WorkbookCallableMemberCatalog+<>c",
+      "Lokad.Lython.Frontend.StaticModuleCatalog",
+      "Lokad.Lython.Frontend.StaticModuleCatalog+BuiltinModuleSurface+<>c",
+      "Lokad.Lython.Frontend.StaticWorkbookMemberSurfaces"
+    ]
+  }
+]

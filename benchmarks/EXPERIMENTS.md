@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1452 independent frontend catalogs](results/2026-11-23-frontend-contract-sections/README.md)
+retains on-demand metadata initialization and removes aggregate backing
+and the production cross-check. Fresh configuration, CSV and XML medians
+fall 3.13–4.19%. Warm compile allocation and guest allowance match.
+
 [B1451 retained CSV and text runtime against CPython](results/2026-11-23-runtime-cpython-checkpoint/README.md)
 measures five warm scripts and three compilation or first-result lanes.
 Postponed factory time to result is 1.793–1.814× CPython. The native
