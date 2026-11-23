@@ -1,0 +1,137 @@
+{
+  "reference": [
+    {
+      "_inputStart": 19,
+      "_liveExtent": 20,
+      "_primaryOperand": 3,
+      "_resultSlot": 19,
+      "_secondaryOperand": 2147483647,
+      "<OpCode>k__BackingField": 32,
+      "<Span>k__BackingField": {
+        "Start": 215,
+        "Length": 37,
+        "Line": 8,
+        "Column": 28
+      }
+    },
+    {
+      "_inputStart": 19,
+      "_liveExtent": 22,
+      "_primaryOperand": 3,
+      "_resultSlot": 19,
+      "_secondaryOperand": -1,
+      "<OpCode>k__BackingField": 15,
+      "<Span>k__BackingField": {
+        "Start": 196,
+        "Length": 56,
+        "Line": 8,
+        "Column": 9
+      }
+    },
+    {
+      "_inputStart": 21,
+      "_liveExtent": 21,
+      "_primaryOperand": 8,
+      "_resultSlot": 21,
+      "_secondaryOperand": 2147483647,
+      "<OpCode>k__BackingField": 25,
+      "<Span>k__BackingField": {
+        "Start": 196,
+        "Length": 3,
+        "Line": 8,
+        "Column": 9
+      }
+    },
+    {
+      "_inputStart": 20,
+      "_liveExtent": 20,
+      "_primaryOperand": 9,
+      "_resultSlot": 20,
+      "_secondaryOperand": 2147483647,
+      "<OpCode>k__BackingField": 25,
+      "<Span>k__BackingField": {
+        "Start": 201,
+        "Length": 4,
+        "Line": 8,
+        "Column": 14
+      }
+    },
+    {
+      "_inputStart": 19,
+      "_liveExtent": 19,
+      "_primaryOperand": 10,
+      "_resultSlot": 19,
+      "_secondaryOperand": 2147483647,
+      "<OpCode>k__BackingField": 25,
+      "<Span>k__BackingField": {
+        "Start": 207,
+        "Length": 5,
+        "Line": 8,
+        "Column": 20
+      }
+    }
+  ],
+  "candidate": [
+    {
+      "_inputStart": 19,
+      "_liveExtent": 22,
+      "_primaryOperand": 3,
+      "_resultSlot": 19,
+      "_secondaryOperand": 2147483647,
+      "<OpCode>k__BackingField": 73,
+      "<Span>k__BackingField": {
+        "Start": 215,
+        "Length": 37,
+        "Line": 8,
+        "Column": 28
+      }
+    },
+    {
+      "_inputStart": 21,
+      "_liveExtent": 21,
+      "_primaryOperand": 8,
+      "_resultSlot": 21,
+      "_secondaryOperand": 2147483647,
+      "<OpCode>k__BackingField": 25,
+      "<Span>k__BackingField": {
+        "Start": 196,
+        "Length": 3,
+        "Line": 8,
+        "Column": 9
+      }
+    },
+    {
+      "_inputStart": 20,
+      "_liveExtent": 20,
+      "_primaryOperand": 9,
+      "_resultSlot": 20,
+      "_secondaryOperand": 2147483647,
+      "<OpCode>k__BackingField": 25,
+      "<Span>k__BackingField": {
+        "Start": 201,
+        "Length": 4,
+        "Line": 8,
+        "Column": 14
+      }
+    },
+    {
+      "_inputStart": 19,
+      "_liveExtent": 19,
+      "_primaryOperand": 10,
+      "_resultSlot": 19,
+      "_secondaryOperand": 2147483647,
+      "<OpCode>k__BackingField": 25,
+      "<Span>k__BackingField": {
+        "Start": 207,
+        "Length": 5,
+        "Line": 8,
+        "Column": 20
+      }
+    }
+  ],
+  "unchangedControlCodeCount": {
+    "scripts.csv-meter-report.typed-ascii": 1,
+    "scripts.csv-invoice.method-policy.quoted-control": 4,
+    "scripts.ordinary-fully-supplied-helper": 2
+  }
+}

@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1517 keep exact-width assignment values in operands](results/2026-11-23-parallel-assignment-operands/README.md)
+removes tuple allocation and unpack dispatch in the explicit-float meter.
+The retained revision uses 23.08% less managed allocation and 8.99–11.50%
+less warm elapsed, with lower CPU. The typed control slows in the original
+shape twice and improves in the refined comparison.
+
 [B1516 CPython checkpoint after direct default ownership transfer](results/2026-11-23-closed-defaults-cpython/README.md)
 measures postponed factories at 1.217–1.261× through first use and
 0.532–0.537× for compilation alone. Fully supplied arithmetic remains

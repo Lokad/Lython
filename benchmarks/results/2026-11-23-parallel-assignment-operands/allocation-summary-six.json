@@ -1,0 +1,46 @@
+[
+  {
+    "case": "scripts.csv-meter-report.typed-ascii",
+    "allocatedBytes": [
+      1475352,
+      1475296
+    ],
+    "peakAdmission": [
+      3552905,
+      3552905
+    ]
+  },
+  {
+    "case": "scripts.csv-meter-report.explicit-float",
+    "allocatedBytes": [
+      2556766,
+      1966824
+    ],
+    "peakAdmission": [
+      6285897,
+      5171785
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "allocatedBytes": [
+      3938470,
+      3938470
+    ],
+    "peakAdmission": [
+      9432874,
+      9432874
+    ]
+  },
+  {
+    "case": "scripts.ordinary-fully-supplied-helper",
+    "allocatedBytes": [
+      142664,
+      142664
+    ],
+    "peakAdmission": [
+      1255,
+      1255
+    ]
+  }
+]
