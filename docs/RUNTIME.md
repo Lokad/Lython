@@ -2667,11 +2667,14 @@ Entry/exit checks do not prove in-flight interruption: providers must cooperate
 or report the limitation, without private timeout/work quotas or abandoned work.
 Retained patterns/caches and working/replacement peaks use supplied owners.
 Each successful provider `Compile` transfers a fresh disposable pattern handle.
-Public compilation retains successful constant programs until script disposal;
-invalid compilation, standalone frontend and import analysis close theirs after
-analysis. Execution closes its own dynamic handles after active cursors, subjects
-and callbacks finish, including failure/cancellation. A failed runtime wrapper
-must not close a program borrowed from the compiled script.
+Public compilation retains successful constant programs until script disposal.
+Successful local import preparation makes its analyzed programs available to
+runtime regex calls in that module. The execution owns those programs through
+cleanup, including when functions escape a module body that raises. Invalid or
+refused preparation releases unpublished programs. Standalone frontend analysis
+closes its own programs. Execution closes imported and dynamic handles after
+active cursors, subjects and callbacks finish, including failure and cancellation.
+A failed runtime wrapper leaves its borrowed program with the owning scope.
 Dispose cursors before subjects and subjects before patterns. A provider may share
 underlying programs through a separately funded longer-lived cache; closing a
 handle must not refund storage that cache still retains. Metadata borrows also end

@@ -1,0 +1,629 @@
+{
+  "host": "Windows-11-10.0.26200-SP0",
+  "rows": [
+    {
+      "role": "reference",
+      "case": "import-literal-rules",
+      "lane": "warm",
+      "fresh": false,
+      "iterations": 96,
+      "processId": 219648,
+      "runtime": "11.0.0",
+      "frequency": 10000000,
+      "batches": [
+        {
+          "ticks": 13087683,
+          "bytes": 696079744,
+          "cpuTicks": 18750000
+        },
+        {
+          "ticks": 11782139,
+          "bytes": 695787232,
+          "cpuTicks": 19687500
+        },
+        {
+          "ticks": 8009749,
+          "bytes": 695781344,
+          "cpuTicks": 12656250
+        },
+        {
+          "ticks": 7804827,
+          "bytes": 695550904,
+          "cpuTicks": 13281250
+        },
+        {
+          "ticks": 7746598,
+          "bytes": 695425688,
+          "cpuTicks": 12656250
+        },
+        {
+          "ticks": 7035710,
+          "bytes": 695427776,
+          "cpuTicks": 6875000
+        },
+        {
+          "ticks": 8099603,
+          "bytes": 695428024,
+          "cpuTicks": 7968750
+        }
+      ],
+      "peak": 442521,
+      "peakShared": 1631650,
+      "core": "f2397ca89b1805b026f1ef1b21f4f1bf2d6d8c2ed330e33f2193eaf675148fb7",
+      "adapter": "08e5cf04b7dba7f1a5de43d2b06d405c92ac550588028652356b6dfa7dbd1630",
+      "golden": "0ed26ced0f07bcd4660e284e1ce0d1008c43f1667b787eac5fd24de0e7e7596c"
+    },
+    {
+      "role": "candidate",
+      "case": "import-literal-rules",
+      "lane": "warm",
+      "fresh": false,
+      "iterations": 96,
+      "processId": 192080,
+      "runtime": "11.0.0",
+      "frequency": 10000000,
+      "batches": [
+        {
+          "ticks": 13402886,
+          "bytes": 396718264,
+          "cpuTicks": 20468750
+        },
+        {
+          "ticks": 12097026,
+          "bytes": 396340096,
+          "cpuTicks": 16875000
+        },
+        {
+          "ticks": 8463253,
+          "bytes": 396339784,
+          "cpuTicks": 15156250
+        },
+        {
+          "ticks": 7738129,
+          "bytes": 396115344,
+          "cpuTicks": 12500000
+        },
+        {
+          "ticks": 6448491,
+          "bytes": 396082504,
+          "cpuTicks": 11875000
+        },
+        {
+          "ticks": 6006871,
+          "bytes": 396101896,
+          "cpuTicks": 9531250
+        },
+        {
+          "ticks": 5942566,
+          "bytes": 395986456,
+          "cpuTicks": 11718750
+        }
+      ],
+      "peak": 442521,
+      "peakShared": 1642914,
+      "core": "6dba7dc886fda03188020550f153565c834ff1e862112b6847758b76fd2ca0b4",
+      "adapter": "08e5cf04b7dba7f1a5de43d2b06d405c92ac550588028652356b6dfa7dbd1630",
+      "golden": "0ed26ced0f07bcd4660e284e1ce0d1008c43f1667b787eac5fd24de0e7e7596c"
+    },
+    {
+      "role": "candidate",
+      "case": "import-literal-rules",
+      "lane": "warm",
+      "fresh": false,
+      "iterations": 96,
+      "processId": 39048,
+      "runtime": "11.0.0",
+      "frequency": 10000000,
+      "batches": [
+        {
+          "ticks": 10952179,
+          "bytes": 396710752,
+          "cpuTicks": 15625000
+        },
+        {
+          "ticks": 8880425,
+          "bytes": 396568792,
+          "cpuTicks": 10937500
+        },
+        {
+          "ticks": 7024078,
+          "bytes": 396501096,
+          "cpuTicks": 12812500
+        },
+        {
+          "ticks": 4467121,
+          "bytes": 396367704,
+          "cpuTicks": 7500000
+        },
+        {
+          "ticks": 5124514,
+          "bytes": 396243784,
+          "cpuTicks": 10000000
+        },
+        {
+          "ticks": 4861312,
+          "bytes": 396232720,
+          "cpuTicks": 6406250
+        },
+        {
+          "ticks": 5408121,
+          "bytes": 396171808,
+          "cpuTicks": 10937500
+        }
+      ],
+      "peak": 442521,
+      "peakShared": 1642914,
+      "core": "6dba7dc886fda03188020550f153565c834ff1e862112b6847758b76fd2ca0b4",
+      "adapter": "08e5cf04b7dba7f1a5de43d2b06d405c92ac550588028652356b6dfa7dbd1630",
+      "golden": "0ed26ced0f07bcd4660e284e1ce0d1008c43f1667b787eac5fd24de0e7e7596c"
+    },
+    {
+      "role": "reference",
+      "case": "import-literal-rules",
+      "lane": "warm",
+      "fresh": false,
+      "iterations": 96,
+      "processId": 58488,
+      "runtime": "11.0.0",
+      "frequency": 10000000,
+      "batches": [
+        {
+          "ticks": 13110458,
+          "bytes": 696182792,
+          "cpuTicks": 17968750
+        },
+        {
+          "ticks": 14913882,
+          "bytes": 695870800,
+          "cpuTicks": 21406250
+        },
+        {
+          "ticks": 10373454,
+          "bytes": 695787256,
+          "cpuTicks": 17968750
+        },
+        {
+          "ticks": 8386461,
+          "bytes": 695667976,
+          "cpuTicks": 11250000
+        },
+        {
+          "ticks": 8545663,
+          "bytes": 695441952,
+          "cpuTicks": 17031250
+        },
+        {
+          "ticks": 8100765,
+          "bytes": 695428376,
+          "cpuTicks": 9375000
+        },
+        {
+          "ticks": 11336319,
+          "bytes": 695428024,
+          "cpuTicks": 10625000
+        }
+      ],
+      "peak": 442521,
+      "peakShared": 1631650,
+      "core": "f2397ca89b1805b026f1ef1b21f4f1bf2d6d8c2ed330e33f2193eaf675148fb7",
+      "adapter": "08e5cf04b7dba7f1a5de43d2b06d405c92ac550588028652356b6dfa7dbd1630",
+      "golden": "0ed26ced0f07bcd4660e284e1ce0d1008c43f1667b787eac5fd24de0e7e7596c"
+    },
+    {
+      "role": "reference",
+      "case": "import-literal-rules",
+      "lane": "first-use",
+      "fresh": true,
+      "iterations": 96,
+      "processId": 83932,
+      "runtime": "11.0.0",
+      "frequency": 10000000,
+      "batches": [
+        {
+          "ticks": 23368730,
+          "bytes": 699819280,
+          "cpuTicks": 33281250
+        },
+        {
+          "ticks": 14951738,
+          "bytes": 699800000,
+          "cpuTicks": 21250000
+        },
+        {
+          "ticks": 12126649,
+          "bytes": 699518400,
+          "cpuTicks": 20781250
+        },
+        {
+          "ticks": 9512379,
+          "bytes": 699129640,
+          "cpuTicks": 16250000
+        },
+        {
+          "ticks": 10377502,
+          "bytes": 699036248,
+          "cpuTicks": 19687500
+        },
+        {
+          "ticks": 10454574,
+          "bytes": 699029696,
+          "cpuTicks": 9375000
+        },
+        {
+          "ticks": 10378457,
+          "bytes": 699030952,
+          "cpuTicks": 10312500
+        }
+      ],
+      "peak": 442521,
+      "peakShared": 1631650,
+      "core": "f2397ca89b1805b026f1ef1b21f4f1bf2d6d8c2ed330e33f2193eaf675148fb7",
+      "adapter": "08e5cf04b7dba7f1a5de43d2b06d405c92ac550588028652356b6dfa7dbd1630",
+      "golden": "0ed26ced0f07bcd4660e284e1ce0d1008c43f1667b787eac5fd24de0e7e7596c"
+    },
+    {
+      "role": "candidate",
+      "case": "import-literal-rules",
+      "lane": "first-use",
+      "fresh": true,
+      "iterations": 96,
+      "processId": 19552,
+      "runtime": "11.0.0",
+      "frequency": 10000000,
+      "batches": [
+        {
+          "ticks": 21575752,
+          "bytes": 400372104,
+          "cpuTicks": 30156250
+        },
+        {
+          "ticks": 10863195,
+          "bytes": 400352584,
+          "cpuTicks": 17812500
+        },
+        {
+          "ticks": 6940711,
+          "bytes": 400286640,
+          "cpuTicks": 10000000
+        },
+        {
+          "ticks": 5591595,
+          "bytes": 399729352,
+          "cpuTicks": 10781250
+        },
+        {
+          "ticks": 5125026,
+          "bytes": 399709112,
+          "cpuTicks": 9218750
+        },
+        {
+          "ticks": 5027760,
+          "bytes": 399662272,
+          "cpuTicks": 7187500
+        },
+        {
+          "ticks": 5173562,
+          "bytes": 399666488,
+          "cpuTicks": 8750000
+        }
+      ],
+      "peak": 442521,
+      "peakShared": 1642914,
+      "core": "6dba7dc886fda03188020550f153565c834ff1e862112b6847758b76fd2ca0b4",
+      "adapter": "08e5cf04b7dba7f1a5de43d2b06d405c92ac550588028652356b6dfa7dbd1630",
+      "golden": "0ed26ced0f07bcd4660e284e1ce0d1008c43f1667b787eac5fd24de0e7e7596c"
+    },
+    {
+      "role": "candidate",
+      "case": "import-literal-rules",
+      "lane": "first-use",
+      "fresh": true,
+      "iterations": 96,
+      "processId": 227736,
+      "runtime": "11.0.0",
+      "frequency": 10000000,
+      "batches": [
+        {
+          "ticks": 15575366,
+          "bytes": 400374544,
+          "cpuTicks": 21875000
+        },
+        {
+          "ticks": 11885329,
+          "bytes": 400256512,
+          "cpuTicks": 15468750
+        },
+        {
+          "ticks": 7738438,
+          "bytes": 399938664,
+          "cpuTicks": 14375000
+        },
+        {
+          "ticks": 6956117,
+          "bytes": 399938632,
+          "cpuTicks": 12656250
+        },
+        {
+          "ticks": 6336089,
+          "bytes": 399755976,
+          "cpuTicks": 11718750
+        },
+        {
+          "ticks": 6081856,
+          "bytes": 399710416,
+          "cpuTicks": 8281250
+        },
+        {
+          "ticks": 5819431,
+          "bytes": 399597688,
+          "cpuTicks": 11406250
+        }
+      ],
+      "peak": 442521,
+      "peakShared": 1642914,
+      "core": "6dba7dc886fda03188020550f153565c834ff1e862112b6847758b76fd2ca0b4",
+      "adapter": "08e5cf04b7dba7f1a5de43d2b06d405c92ac550588028652356b6dfa7dbd1630",
+      "golden": "0ed26ced0f07bcd4660e284e1ce0d1008c43f1667b787eac5fd24de0e7e7596c"
+    },
+    {
+      "role": "reference",
+      "case": "import-literal-rules",
+      "lane": "first-use",
+      "fresh": true,
+      "iterations": 96,
+      "processId": 46740,
+      "runtime": "11.0.0",
+      "frequency": 10000000,
+      "batches": [
+        {
+          "ticks": 21837662,
+          "bytes": 699793072,
+          "cpuTicks": 29375000
+        },
+        {
+          "ticks": 19112527,
+          "bytes": 699824928,
+          "cpuTicks": 26250000
+        },
+        {
+          "ticks": 16148521,
+          "bytes": 699414848,
+          "cpuTicks": 25000000
+        },
+        {
+          "ticks": 10474377,
+          "bytes": 699168384,
+          "cpuTicks": 16718750
+        },
+        {
+          "ticks": 10058566,
+          "bytes": 699033808,
+          "cpuTicks": 19218750
+        },
+        {
+          "ticks": 10707249,
+          "bytes": 699027112,
+          "cpuTicks": 10312500
+        },
+        {
+          "ticks": 10510786,
+          "bytes": 699025856,
+          "cpuTicks": 10000000
+        }
+      ],
+      "peak": 442521,
+      "peakShared": 1631650,
+      "core": "f2397ca89b1805b026f1ef1b21f4f1bf2d6d8c2ed330e33f2193eaf675148fb7",
+      "adapter": "08e5cf04b7dba7f1a5de43d2b06d405c92ac550588028652356b6dfa7dbd1630",
+      "golden": "0ed26ced0f07bcd4660e284e1ce0d1008c43f1667b787eac5fd24de0e7e7596c"
+    },
+    {
+      "role": "reference",
+      "case": "import-text-control",
+      "lane": "warm",
+      "fresh": false,
+      "iterations": 96,
+      "processId": 53460,
+      "runtime": "11.0.0",
+      "frequency": 10000000,
+      "batches": [
+        {
+          "ticks": 2834295,
+          "bytes": 22139632,
+          "cpuTicks": 2812500
+        },
+        {
+          "ticks": 2488109,
+          "bytes": 22139384,
+          "cpuTicks": 2343750
+        },
+        {
+          "ticks": 2652967,
+          "bytes": 22139384,
+          "cpuTicks": 2343750
+        },
+        {
+          "ticks": 3371536,
+          "bytes": 22139408,
+          "cpuTicks": 3593750
+        },
+        {
+          "ticks": 2783059,
+          "bytes": 22139632,
+          "cpuTicks": 2500000
+        },
+        {
+          "ticks": 2412295,
+          "bytes": 22139384,
+          "cpuTicks": 2812500
+        },
+        {
+          "ticks": 2421060,
+          "bytes": 22164008,
+          "cpuTicks": 2968750
+        }
+      ],
+      "peak": 254318,
+      "peakShared": 311342,
+      "core": "f2397ca89b1805b026f1ef1b21f4f1bf2d6d8c2ed330e33f2193eaf675148fb7",
+      "adapter": "08e5cf04b7dba7f1a5de43d2b06d405c92ac550588028652356b6dfa7dbd1630",
+      "golden": "0ed26ced0f07bcd4660e284e1ce0d1008c43f1667b787eac5fd24de0e7e7596c"
+    },
+    {
+      "role": "candidate",
+      "case": "import-text-control",
+      "lane": "warm",
+      "fresh": false,
+      "iterations": 96,
+      "processId": 152696,
+      "runtime": "11.0.0",
+      "frequency": 10000000,
+      "batches": [
+        {
+          "ticks": 5048568,
+          "bytes": 22214896,
+          "cpuTicks": 2656250
+        },
+        {
+          "ticks": 1970294,
+          "bytes": 22214648,
+          "cpuTicks": 1875000
+        },
+        {
+          "ticks": 2792544,
+          "bytes": 22214672,
+          "cpuTicks": 2968750
+        },
+        {
+          "ticks": 3104934,
+          "bytes": 22214896,
+          "cpuTicks": 2812500
+        },
+        {
+          "ticks": 1109369,
+          "bytes": 22214648,
+          "cpuTicks": 625000
+        },
+        {
+          "ticks": 3545498,
+          "bytes": 22214648,
+          "cpuTicks": 1250000
+        },
+        {
+          "ticks": 1729884,
+          "bytes": 22239272,
+          "cpuTicks": 937500
+        }
+      ],
+      "peak": 254318,
+      "peakShared": 311342,
+      "core": "6dba7dc886fda03188020550f153565c834ff1e862112b6847758b76fd2ca0b4",
+      "adapter": "08e5cf04b7dba7f1a5de43d2b06d405c92ac550588028652356b6dfa7dbd1630",
+      "golden": "0ed26ced0f07bcd4660e284e1ce0d1008c43f1667b787eac5fd24de0e7e7596c"
+    },
+    {
+      "role": "candidate",
+      "case": "import-text-control",
+      "lane": "warm",
+      "fresh": false,
+      "iterations": 96,
+      "processId": 123744,
+      "runtime": "11.0.0",
+      "frequency": 10000000,
+      "batches": [
+        {
+          "ticks": 2762728,
+          "bytes": 22214648,
+          "cpuTicks": 2812500
+        },
+        {
+          "ticks": 2467245,
+          "bytes": 22214896,
+          "cpuTicks": 2968750
+        },
+        {
+          "ticks": 2353640,
+          "bytes": 22214680,
+          "cpuTicks": 3125000
+        },
+        {
+          "ticks": 2307611,
+          "bytes": 22214672,
+          "cpuTicks": 3281250
+        },
+        {
+          "ticks": 2989742,
+          "bytes": 22214896,
+          "cpuTicks": 1718750
+        },
+        {
+          "ticks": 1747062,
+          "bytes": 22214648,
+          "cpuTicks": 2031250
+        },
+        {
+          "ticks": 1679488,
+          "bytes": 22214648,
+          "cpuTicks": 2812500
+        }
+      ],
+      "peak": 254318,
+      "peakShared": 311342,
+      "core": "6dba7dc886fda03188020550f153565c834ff1e862112b6847758b76fd2ca0b4",
+      "adapter": "08e5cf04b7dba7f1a5de43d2b06d405c92ac550588028652356b6dfa7dbd1630",
+      "golden": "0ed26ced0f07bcd4660e284e1ce0d1008c43f1667b787eac5fd24de0e7e7596c"
+    },
+    {
+      "role": "reference",
+      "case": "import-text-control",
+      "lane": "warm",
+      "fresh": false,
+      "iterations": 96,
+      "processId": 114400,
+      "runtime": "11.0.0",
+      "frequency": 10000000,
+      "batches": [
+        {
+          "ticks": 5076475,
+          "bytes": 22139408,
+          "cpuTicks": 5000000
+        },
+        {
+          "ticks": 3410329,
+          "bytes": 22139632,
+          "cpuTicks": 2343750
+        },
+        {
+          "ticks": 3307548,
+          "bytes": 22139384,
+          "cpuTicks": 2968750
+        },
+        {
+          "ticks": 3323649,
+          "bytes": 22164040,
+          "cpuTicks": 3281250
+        },
+        {
+          "ticks": 1638023,
+          "bytes": 22139632,
+          "cpuTicks": 2187500
+        },
+        {
+          "ticks": 2296178,
+          "bytes": 22139384,
+          "cpuTicks": 1562500
+        },
+        {
+          "ticks": 1903380,
+          "bytes": 22131120,
+          "cpuTicks": 1406250
+        }
+      ],
+      "peak": 254318,
+      "peakShared": 311342,
+      "core": "f2397ca89b1805b026f1ef1b21f4f1bf2d6d8c2ed330e33f2193eaf675148fb7",
+      "adapter": "08e5cf04b7dba7f1a5de43d2b06d405c92ac550588028652356b6dfa7dbd1630",
+      "golden": "0ed26ced0f07bcd4660e284e1ce0d1008c43f1667b787eac5fd24de0e7e7596c"
+    }
+  ]
+}

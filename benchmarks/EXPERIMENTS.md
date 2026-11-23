@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1496 reuse imported regex programs](results/2026-11-23-imported-regex-programs/README.md)
+removes a second provider compilation for analyzed literal rules used
+at runtime. The imported-rule script allocates about 43% less at the same
+admitted peak. The local text control varies, so timings remain diagnostic.
+
 [B1495 retain deferred numerical ranges through line advance](results/2026-11-23-csv-deferred-number/README.md)
 improves explicit-float warm elapsed 1.13–2.59% and typed ASCII time to
 result 0.31–2.98%, with supporting CPU. Unicode remains slower, ASCII

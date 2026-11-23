@@ -1212,6 +1212,81 @@ public sealed class RegexProviderContractTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
+    [Fact]
+    public async Task RefusedLocalModulePublicationClosesItsPreparedProgram()
+    {
+        var budget = new AdmissionGateBudget();
+        using var provider = new CooperatingProvider { OnMetadata = () => budget.Gate(0) };
+        var host = new MockLythonHost();
+        host.SeedFile("/helper.py", "import re\np=re.compile('x')");
+        using var script = new LythonEngine(provider).Compile("""
+            try:
+                import helper
+            except MemoryError:
+                print('must not run')
+            """, budget);
+        var baseline = budget.Root.ReservedBytes;
+        var options = new LythonRunOptions { AllowedLocalModules = new HashSet<string> { "helper" } };
+        using (var result = await script.RunAsync(host, options))
+        {
+            Assert.False(result.Success);
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+            Assert.Empty(result.StandardOutput);
+            Assert.Equal(1, provider.Compilations);
+            Assert.Equal(1, provider.ClosedPatterns);
+        }
+        Assert.Equal(baseline, budget.Root.ReservedBytes);
+        script.Dispose();
+        Assert.Equal(0, budget.Root.ReservedBytes);
+    }
+
+    [Fact]
+    public async Task CancellationDrainsTheImportedProgramCursorBeforeRefundingItsOwner()
+    {
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var cancellation = new CancellationTokenSource();
+        using var provider = new CooperatingProvider
+        {
+            BlockStage = "next", HoldCleanup = true, ExpectedToken = cancellation.Token,
+        };
+        var host = new MockLythonHost();
+        host.SeedFile("/helper.py", "import re\np=re.compile('x')\ndef rows(text):\n return p.finditer(text)");
+        using var script = new LythonEngine(provider).Compile("from helper import rows\nreturn next(rows(text)).group()", budget);
+        var baseline = budget.ReservedBytes;
+        var options = new LythonRunOptions
+        {
+            AllowedLocalModules = new HashSet<string> { "helper" },
+            Globals = new Dictionary<string, object?> { ["text"] = "x" },
+            CancellationToken = cancellation.Token,
+        };
+        var pending = Task.Run(() => script.RunAsync(host, options));
+        Task cancellationRequest = Task.CompletedTask;
+        try
+        {
+            var first = await Task.WhenAny(provider.Entered.Task, pending).WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.Same(provider.Entered.Task, first);
+            cancellationRequest = cancellation.CancelAsync();
+            await provider.CleanupEntered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.True(provider.CursorDisposed);
+            Assert.False(pending.IsCompleted);
+            Assert.Equal(1, provider.Compilations);
+            Assert.Equal(0, provider.ClosedPatterns);
+            Assert.True(budget.ReservedBytes > baseline);
+        }
+        finally
+        {
+            var cleanupCancellation = cancellation.CancelAsync();
+            provider.ReleaseCleanup.Set();
+            await Task.WhenAll(cancellationRequest, cleanupCancellation).WaitAsync(TimeSpan.FromSeconds(5));
+            using var result = await pending.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
+        }
+        Assert.Equal(1, provider.ClosedPatterns);
+        Assert.Equal(baseline, budget.ReservedBytes);
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
