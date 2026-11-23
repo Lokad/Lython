@@ -394,6 +394,12 @@ An eligible call with all positional arguments supplied can evaluate an
 exact integer return from the caller's slots before preparing a callee
 activation or tuple-unpack destination. The same function-call and stack
 admission apply. Wide arithmetic and protocols use the ordinary activation.
+An adjacent addition to a private local can carry early reads through an
+exact call. The existing operand window holds only provisional integers until
+the selected helper and its arguments are known to finish without callbacks.
+Cancellation is checked through the segment. A dynamic argument or a wider
+result resumes the ordinary instructions with the original bindings and
+canonical Python objects available.
 An eligible lexical factory can return a definition directly when checked
 integer arithmetic and a read-only capture supply its defaults. It uses the
 same admission and definition constructor, carrying the funded defaults directly

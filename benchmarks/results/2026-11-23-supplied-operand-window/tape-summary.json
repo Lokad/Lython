@@ -1,0 +1,19 @@
+{
+  "reference": "1e0c6f92328931f53dd995bbb9de360a877d6dfd6705eb68bdf48ef33420ebae",
+  "candidate": "0016e5020cc5248926f4c8e5dec20acd1616ae55e151529d826666be3e8a9c84",
+  "inspectedBodies": 13,
+  "onlyInstructionChanges": [
+    {
+      "case": "scripts.ordinary-fully-supplied-helper",
+      "scope": "<module>",
+      "index": 10,
+      "opcode": "LoadLocal",
+      "changes": {
+        "_secondaryOperand": [
+          2147483647,
+          16
+        ]
+      }
+    }
+  ]
+}
