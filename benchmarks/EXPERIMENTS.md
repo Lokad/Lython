@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1545](results/2026-11-24-parallel-local-transfer/README.md) removes the
+parallel operand reversal and stores as well. The explicit CSV report
+saves 2.42–4.50% elapsed with lower CPU. The unchanged short text control
+takes more elapsed and CPU. The source stays private.
+
 [B1544](results/2026-11-24-csv-unpack-bindings/README.md) transfers fixed
 CSV unpack operands to their private locals in one step. The explicit
 meter is modestly faster. Typed Unicode spans zero and quote-control
