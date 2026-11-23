@@ -9,6 +9,7 @@
 | Eager nested factories | 2,048 iterations | 0.7449–0.7532 ms | 0.5693–0.5890 ms | 1.265–1.323× | Diagnostic. [B1516]. |
 | Postponed nested factories | 2,048 iterations | 0.6988–0.7187 ms | 0.5371–0.5444 ms | 1.284–1.338× | Diagnostic. [B1516]. |
 | Fully supplied arithmetic helper, module scope | 2,048 calls | 0.1892–0.1900 ms | 0.2077–0.2119 ms | 0.893–0.915× | Diagnostic. [B1525]. |
+| Fully supplied arithmetic helper, function scope | 2,048 calls | 0.1658–0.1666 ms | 0.1304–0.1312 ms | 1.264–1.278× | Diagnostic. [B1527]. |
 | Mixed-width word histogram | 3,072 lines / 107,520 B | 1.609–1.646 ms | 1.723–1.738 ms | 0.926–0.956× | Earlier diagnostic. [B1491]. |
 | JSON Lines export with expanded options | 3,072 records / 189,441 B | 5.355–5.366 ms | 6.508–6.509 ms | 0.823–0.825× | Historical diagnostic. [B1458]. |
 
@@ -16,11 +17,12 @@ Ratios divide Lython elapsed time by CPython elapsed time. Above 1× means
 Lython takes longer. Ranges span the four pairings of process medians from
 two workers per engine. The November 23, 2026 UTC explicit CSV checkpoint
 measures `65d4207fb`. The typed ASCII meter measures `fb3894153`.
-The supplied helper measures `faf86299e`. The same day's invoice and
+The supplied helper measures `faf86299e` at module scope and `be20f34fc`
+inside a function. The same day's invoice and
 factory checkpoint measures `09fc2c0a5`. The warm short word report measures `9e0cf58f8`, the
 mixed-width report measures `2b501135a`, and the JSON export measures
 `7bc247f1a`. The matched Lython comparisons below attribute changes to
-specific source pairs. [B1525] · [B1521] · [B1518] · [B1516] · [B1499] · [B1491] · [B1458].
+specific source pairs. [B1525] · [B1527] · [B1521] · [B1518] · [B1516] · [B1499] · [B1491] · [B1458].
 
 The quiet comparison machine is an Azure F4as_v7 running Ubuntu 24.04.4
 with .NET 11 RC3. The external baseline is stock CPython 3.13.16. Warm
@@ -44,6 +46,7 @@ measurements cover the wider request.
 | Postponed nested factories, 465 B | Compile-to-result | 0.7136–0.7352 ms | 0.5828–0.5863 ms | 1.217–1.261× | Diagnostic. [B1516]. |
 | Postponed nested factories, 465 B | Compilation only | 0.02105–0.02124 ms | 0.03954–0.03961 ms | 0.532–0.537× | Diagnostic. [B1516]. |
 | Fully supplied arithmetic helper, 178 B | Compile-to-result | 0.2086–0.2102 ms | 0.2322–0.2423 ms | 0.861–0.905× | Diagnostic. CPython worker spread 4.34%. [B1525]. |
+| Fully supplied arithmetic helper, function scope | Compile-to-result | 0.1806–0.1810 ms | 0.1451–0.1520 ms | 1.188–1.247× | Diagnostic. CPython worker spread 4.74%. [B1527]. |
 | Postponed nested factories | Compile-to-result | 0.9171–0.9259 ms | 0.6203–0.6239 ms | 1.470–1.493× | Diagnostic. [B1483]. |
 | Postponed nested factories | Compile-to-result | 1.0503–1.0599 ms | 0.6084–0.6115 ms | 1.718–1.742× | Diagnostic. [B1478]. |
 | Postponed nested factories | Compilation only | 0.02116–0.02135 ms | 0.03961–0.03962 ms | 0.534–0.539× | Diagnostic. [B1480]. |
@@ -125,6 +128,7 @@ change. The checkpoint includes the arithmetic and allocation controls.
 
 | Checkpoint | Lython source | Date |
 | --- | --- | --- |
+| [B1527] | `be20f34fc` | 2026-11-23 UTC |
 | [B1525] | `faf86299e` | 2026-11-23 UTC |
 | [B1523] | `1b9841606` | 2026-11-23 UTC |
 | [B1521] | `65d4207fb` | 2026-11-23 UTC |
@@ -244,6 +248,7 @@ Reproduce the comparisons with the [benchmark tools](../benchmarks/README.md).
 [B1491]: ../benchmarks/results/2026-11-23-forwarded-global-cpython/README.md
 [B1499]: ../benchmarks/results/2026-11-23-closure-cpython/README.md
 [B1503]: ../benchmarks/results/2026-11-23-computed-factory-cpython/README.md
+[B1527]: ../benchmarks/results/2026-11-23-supplied-lexical-call-cpython/README.md
 [B1525]: ../benchmarks/results/2026-11-23-supplied-operand-window-cpython/README.md
 [B1523]: ../benchmarks/results/2026-11-23-integer-call-update-cpython/README.md
 [B1521]: ../benchmarks/results/2026-11-23-short-csv-utf8-cpython/README.md
