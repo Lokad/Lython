@@ -25,6 +25,11 @@ unmeasured.
 Windows .NET 11 and Ubuntu .NET 10 each pass 677 public and 932 white-box
 checks. The suites include provider cancellation and cleanup, shared
 budget refusal, and public lists and captured tuples through both APIs.
+`b7914d086` adds a cooperating-provider regression that refuses or
+cancels the core capture projection after a successful cursor pull.
+Both APIs close the cursor and subject, suppress partial output, return
+the allowance to baseline and can reuse the script. The focused suite
+with the regression passes 170 checks per platform.
 
 [Allocation](allocation-summary.json) · [Image identity](identity.json) ·
 [Goldens and checks](checks.tar.xz) ·

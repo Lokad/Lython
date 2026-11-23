@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1538](results/2026-11-23-marked-cased-split/README.md) takes the
+exact-string split branch off the ordinary member handler. It retains
+the existing dynamic path and confirms lower elapsed and CPU on both
+complete text reports.
+
 [B1537](results/2026-11-23-early-cased-split/README.md) moves cased split
 execution before the ordinary call dispatch. Both text workloads have
 divergent candidate workers and the supplied-call control is slower

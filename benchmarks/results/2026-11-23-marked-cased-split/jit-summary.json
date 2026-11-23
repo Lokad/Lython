@@ -1,0 +1,19 @@
+{
+  "reference": {
+    "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix": 12501,
+    "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:TryExecuteNativeCall": 3665,
+    "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:TryLoadDirectCallReceiver": 947,
+    "Lokad.Lython.Runtime.LythonRuntime+NativeExecution:RunCore": 5444,
+    "Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Call": 3476,
+    "Lokad.Lython.Runtime.LythonRuntime+NativeExecution:CallFunction": 1099
+  },
+  "candidate": {
+    "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix": 12537,
+    "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:TryExecuteNativeCall": 3570,
+    "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:TryLoadDirectCallReceiver": 947,
+    "Lokad.Lython.Runtime.LythonRuntime+NativeExecution:RunCore": 5476,
+    "Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Call": 3043,
+    "Lokad.Lython.Runtime.LythonRuntime+NativeExecution:CallFunction": 1099,
+    "Lokad.Lython.Runtime.LythonRuntime+NativeExecution:TryExecuteCasedSplitMember": 203
+  }
+}

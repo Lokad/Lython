@@ -872,9 +872,10 @@ Suspended protocols keep the receiver and operands funded until completion
 and cleanup. Custom string index, width and line-ending truth callbacks can suspend
 under RunAsync. Native no-argument and helper operations remain shared.
 Zero-argument whitespace `split()` and `rsplit()` after native `lower()` or
-`upper()` share one prepared
-recipe with closed helpers, including inside branches and protected bodies. They
-write final words without allocating a cased intermediate string. Custom receivers
+`upper()` share one prepared recipe with closed helpers, including inside
+branches and protected bodies. For exact strings, the first member instruction
+runs the recipe directly and writes final words without an intermediate cased
+string or receiver/method pair. Custom receivers
 keep ordinary method dispatch and suspension; intervening local bindings remain
 observable on ordinary execution. Final storage is admitted before allocation and
 keeps the current cancellation context and requesting source span.
