@@ -392,6 +392,102 @@ public sealed class CsvDenialOwnershipTests
         return new(source);
     }
 
+    [Theory]
+    [InlineData(false, false, 0)]
+    [InlineData(true, true, 0)]
+    [InlineData(false, true, 1)]
+    [InlineData(true, false, 1)]
+    [InlineData(false, false, 2)]
+    [InlineData(true, true, 2)]
+    public async Task BufferedNativeRowKeepsItsInputFundedThroughCleanupAndAdmission(
+        bool asynchronous, bool unpack, int failureKind)
+    {
+        var budget = new LythonMemoryBudget(Cap);
+        var host = new MockLythonHost();
+        var longField = new string('é', 32);
+        host.SeedFile("/input.csv", "first,row\n" + longField + ",next\nlast,row\n");
+        using var cancellation = new CancellationTokenSource();
+        using (var owner = budget.CreateScope())
+        {
+            var hook = new AdmissionHookMemoryBudget(owner);
+            var context = new LythonRuntime.ExecutionContext(host,
+                new() { MemoryBudget = hook, CancellationToken = cancellation.Token });
+            var file = new OpenedByteFile(context.State);
+            await file.OpenAsync("/input.csv", new(LythonFileAccess.Read), Span, asynchronous);
+            using var reader = new LythonRuntime.ExecutionContext.ChunkedTextFileReadState(file, context,
+                LythonRuntime.TextEncodingMode.Utf8, LythonRuntime.TextErrorMode.Strict,
+                LythonRuntime.TextNewlineMode.TranslateUniversal, 256);
+            var source = new LythonRuntime.CsvRecordSource(new PyList([]), Options(), Span, context);
+            var parser = Parser(source);
+            var slots = new LythonRuntime.ExecutableSlot[2];
+            LythonRuntimeException? refusal = null;
+            var checkedBorrow = false;
+            try
+            {
+                _ = await reader.ReadCsvLine(source, null, asynchronous);
+                Assert.True(parser.TryTakeReady(out var first));
+                Assert.True(source.CanBorrowNativeLine);
+                hook.AfterGrowth = _ =>
+                {
+                    hook.AfterGrowth = null;
+                    checkedBorrow = true;
+                    Assert.Equal(0, source.NativeLineBuffer.Length);
+                    Assert.Equal(2, source.PhysicalLineCount);
+                    var held = budget.ReservedBytes;
+                    var window = reader.OwnedBytes;
+                    reader.Release();
+                    Assert.Equal(held, budget.ReservedBytes);
+                    Assert.Equal(window, reader.OwnedBytes);
+                    if (failureKind == 1) cancellation.Cancel();
+                    if (failureKind == 2)
+                        refusal = context.MemoryGovernor.RefuseAdmission("row refusal", 777, Span);
+                };
+                var destination = unpack ? (Memory<LythonRuntime.ExecutableSlot>?)slots.AsMemory() : null;
+                if (failureKind == 0)
+                {
+                    var result = await reader.ReadCsvLine(source, destination, asynchronous);
+                    if (unpack)
+                    {
+                        Assert.Equal(2, result);
+                        Assert.Equal(longField, Assert.IsType<PyString>(slots[1].Object).AsString());
+                        Assert.Equal("next", Assert.IsType<PyString>(slots[0].Object).AsString());
+                    }
+                    else
+                    {
+                        Assert.True(parser.TryTakeReady(out var row));
+                        Assert.Equal(longField, Assert.IsType<PyString>(row[0]).AsString());
+                        Assert.Equal("next", Assert.IsType<PyString>(row[1]).AsString());
+                    }
+                }
+                else
+                {
+                    var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
+                        _ = await reader.ReadCsvLine(source, destination, asynchronous));
+                    if (failureKind == 1) Assert.Equal(LythonFailureReason.Cancelled, failure.Attribution?.Reason);
+                    else
+                    {
+                        Assert.Same(refusal, failure);
+                        Assert.Equal(777, failure.Attribution?.Requested);
+                    }
+                    Assert.False(parser.TryTakeReady(out _));
+                    Assert.All(slots, slot => Assert.True(slot.IsUnassigned));
+                }
+                Assert.True(checkedBorrow);
+                Assert.Equal("first", Assert.IsType<PyString>(first[0]).AsString());
+                Assert.Equal(LythonRuntime.ExecutionContext.ChunkedTextFileReadState.ShellBytes, reader.OwnedBytes);
+                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            }
+            finally
+            {
+                hook.AfterGrowth = null;
+                reader.Release();
+                parser.ReleaseScratch();
+                context.State.CloseResources();
+            }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     private static LythonRuntime.CsvRecordParser Parser(LythonRuntime.CsvRecordSource source)
         => (LythonRuntime.CsvRecordParser)typeof(LythonRuntime.CsvRecordSource)
             .GetField("_parser", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(source)!;

@@ -213,29 +213,48 @@ internal sealed partial class LythonRuntime
                 return CompleteReadAsync(pending);
             }
 
-            // Native consumers own their destination through the complete line.
-            // The same scanner appends directly; no intermediate string escapes.
-            internal bool ReadLineInto(GovernedByteBuilder destination)
+            internal async ValueTask<int> ReadCsvLine(CsvRecordSource source, Memory<ExecutableSlot>? destination, bool asynchronous)
             {
-                var before = destination.Length;
-                _ = ReadLineOwned(-1, destination);
-                return destination.Length != before;
+                var buffer = source.NativeLineBuffer;
+                var before = buffer.Length;
+                BeginRead();
+                var failed = true;
+                try
+                {
+                    if (before == 0 && source.CanBorrowNativeLine && TryConsumeBufferedCsvLine(source, destination, out var fields))
+                    {
+                        failed = false;
+                        return fields;
+                    }
+                    var read = ReadLineCore(-1, asynchronous, buffer);
+                    if (asynchronous) _ = await read.ConfigureAwait(false);
+                    else _ = read.GetAwaiter().GetResult();
+                    failed = false;
+                }
+                finally
+                {
+                    if (asynchronous) await EndReadAsync(failed).ConfigureAwait(false);
+                    else EndRead(failed);
+                }
+
+                return buffer.Length == before ? CsvRecordSource.EndOfNativeInput : source.ConsumeStagedNativeLine(before, destination);
             }
 
-            internal ValueTask<bool> ReadLineIntoAsync(GovernedByteBuilder destination)
+            private bool TryConsumeBufferedCsvLine(CsvRecordSource source, Memory<ExecutableSlot>? destination, out int fields)
             {
-                var before = destination.Length;
-                var line = ReadLineOwnedAsync(-1, destination);
-                if (!line.IsCompletedSuccessfully) return AwaitLineIntoAsync(line, destination, before);
-                _ = line.GetAwaiter().GetResult();
-                return new(destination.Length != before);
-            }
+                fields = -1;
+                var start = _windowConsumed;
+                var bytes = _window.Span;
+                if (start == bytes.Length) return false;
+                var end = TextLineScanning.FindLineEndByte(bytes, start, _newline);
+                if (end == bytes.Length && !EndsWithTerminator()) return false;
 
-            private static async ValueTask<bool> AwaitLineIntoAsync(ValueTask<PyString> pending,
-                GovernedByteBuilder destination, int before)
-            {
-                _ = await pending.ConfigureAwait(false);
-                return destination.Length != before;
+                // The active read defers window cleanup through parsing and
+                // admission. Retained fields still receive independent payload.
+                Advance(end);
+                _services.CheckExecution(null);
+                fields = source.ConsumeBorrowedNativeLine(bytes[start..end], destination);
+                return true;
             }
 
             private ValueTask<PyString> ReadLineCore(int size, bool asynchronous,

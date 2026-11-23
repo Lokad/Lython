@@ -1348,13 +1348,14 @@ allocation, including supplementary characters. Final CLR decoding is synchronou
 
 Each CSV reader prepares its dialect's byte search sets once. The parser
 searches bounded UTF-8 spans and verifies complete dialect characters at
-each boundary. Native text files append a complete physical line directly
-into the parser's admitted buffer. For an already materialized input string,
-the parser reads literal fields from the immutable line during the call.
-It transfers the parsed prefix to the admitted buffer if a field needs
-transformation or continuation. Raw line bytes and an unfinished multiline
-prefix can require more working capacity than the decoded fields. Replacement
-peaks remain admitted.
+each boundary. The literal parser can borrow a complete line in the current
+decoded file window or an immutable input string. The active native read
+keeps the window funded through admission and row handoff, including when
+cleanup is requested. Each retained field has independent storage.
+Cross-window reads use the admitted parser buffer. A borrowed parse that
+needs the general grammar copies its parsed prefix into that buffer. Raw
+line bytes and an unfinished multiline prefix can need more capacity than
+the decoded fields. Replacement peaks remain admitted.
 Each source item completes at most one record, with trailing CR/LF allowed.
 Unquoted `QUOTE_NONNUMERIC` fields use the same byte parser as `float()`.
 The parser reads the field before advancing to later syntax or fetching

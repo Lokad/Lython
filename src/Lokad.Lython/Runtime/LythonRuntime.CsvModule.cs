@@ -296,12 +296,10 @@ internal sealed partial class LythonRuntime
         {
             while (_nativeFile is { } file)
             {
-                var before = _parser.InputBuffer.Length;
-                bool read;
-                try { read = file.ReadLineInto(_parser.InputBuffer); }
+                int count;
+                try { count = file.ReadCsvLine(this, destination, asynchronous: false).GetAwaiter().GetResult(); }
                 catch { _parser.ResetRecord(); throw; }
-                if (!read) return FinishUnpackedAsync(destination).GetAwaiter().GetResult();
-                var count = UnpackNativeLine(before, destination.Span);
+                if (count == EndOfNativeInput) return FinishUnpackedAsync(destination).GetAwaiter().GetResult();
                 if (count >= 0) return count;
             }
             return -1;
@@ -311,12 +309,10 @@ internal sealed partial class LythonRuntime
         {
             while (_nativeFile is { } file)
             {
-                var before = _parser.InputBuffer.Length;
-                bool read;
-                try { read = await file.ReadLineIntoAsync(_parser.InputBuffer).ConfigureAwait(false); }
+                int count;
+                try { count = await file.ReadCsvLine(this, destination, asynchronous: true).ConfigureAwait(false); }
                 catch { _parser.ResetRecord(); throw; }
-                if (!read) return await FinishUnpackedAsync(destination).ConfigureAwait(false);
-                var count = UnpackNativeLine(before, destination.Span);
+                if (count == EndOfNativeInput) return await FinishUnpackedAsync(destination).ConfigureAwait(false);
                 if (count >= 0) return count;
             }
             return -1;
@@ -357,12 +353,10 @@ internal sealed partial class LythonRuntime
 
                 if (_nativeFile is not null)
                 {
-                    var before = _parser.InputBuffer.Length;
-                    bool read;
-                    try { read = await _nativeFile.ReadLineIntoAsync(_parser.InputBuffer).ConfigureAwait(false); }
+                    int count;
+                    try { count = await _nativeFile.ReadCsvLine(this, null, asynchronous: true).ConfigureAwait(false); }
                     catch { _parser.ResetRecord(); throw; }
-                    if (!read) await FinishExhaustedAsync().ConfigureAwait(false);
-                    else FeedNativeLine(before);
+                    if (count == EndOfNativeInput) await FinishExhaustedAsync().ConfigureAwait(false);
                     continue;
                 }
 
@@ -414,12 +408,10 @@ internal sealed partial class LythonRuntime
         {
             if (_nativeFile is not null)
             {
-                var before = _parser.InputBuffer.Length;
-                bool read;
-                try { read = _nativeFile.ReadLineInto(_parser.InputBuffer); }
+                int count;
+                try { count = _nativeFile.ReadCsvLine(this, null, asynchronous: false).GetAwaiter().GetResult(); }
                 catch { _parser.ResetRecord(); throw; }
-                if (!read) FinishExhausted();
-                else FeedNativeLine(before);
+                if (count == EndOfNativeInput) FinishExhausted();
                 return;
             }
             object current;
@@ -467,20 +459,22 @@ internal sealed partial class LythonRuntime
             FeedPulledLine(current);
         }
 
-        private void FeedNativeLine(int before)
+        internal const int EndOfNativeInput = -2;
+        internal GovernedByteBuilder NativeLineBuffer => _parser.InputBuffer;
+        internal bool CanBorrowNativeLine => _parser.CanDescribeLiteralRecord;
+
+        internal int ConsumeStagedNativeLine(int before, Memory<ExecutableSlot>? destination)
         {
             _context.CheckExecution(_span);
             PhysicalLineCount++;
-            try { _parser.FeedOwnedLine(before); }
-            catch { _parser.ResetRecord(); throw; }
+            return _parser.ConsumeStagedLine(before, destination);
         }
 
-        private int UnpackNativeLine(int before, Span<ExecutableSlot> destination)
+        internal int ConsumeBorrowedNativeLine(ReadOnlySpan<byte> line, Memory<ExecutableSlot>? destination)
         {
             _context.CheckExecution(_span);
             PhysicalLineCount++;
-            try { return _parser.UnpackOwnedLine(before, destination); }
-            catch { _parser.ResetRecord(); throw; }
+            return _parser.ConsumeBorrowedLine(line, destination);
         }
 
         private void FeedPulledLine(object current)
@@ -588,13 +582,15 @@ internal sealed partial class LythonRuntime
         internal long StorageBytes => checked(16L * _fields.Capacity + _record.CommittedCapacity);
         internal GovernedByteBuilder InputBuffer => _record;
 
-        internal void FeedOwnedLine(int before)
-        {
-            if (DescribeOwnedLine(before)) EmitRecord(_record.WrittenSpan);
-        }
+        internal int ConsumeStagedLine(int before, Memory<ExecutableSlot>? destination)
+            => DescribeOwnedLine(before) ? PublishRecord(_record.WrittenSpan, destination) : -1;
 
-        internal int UnpackOwnedLine(int before, Span<ExecutableSlot> destination)
-            => DescribeOwnedLine(before) ? UnpackRecord(destination) : -1;
+        private int PublishRecord(ReadOnlySpan<byte> source, Memory<ExecutableSlot>? destination)
+        {
+            if (destination is { } slots) return UnpackRecord(source, slots.Span);
+            EmitRecord(source);
+            return -1;
+        }
 
         private bool DescribeOwnedLine(int before)
         {
@@ -610,7 +606,7 @@ internal sealed partial class LythonRuntime
             return DescribeLine(line);
         }
 
-        private bool CanDescribeLiteralRecord => _state == FieldState.RecordStart &&
+        internal bool CanDescribeLiteralRecord => _state == FieldState.RecordStart &&
             _literalDelimiter >= 0 && _fields.Capacity != 0;
 
         private bool TryDescribeLiteralRecord(ReadOnlySpan<byte> line, out int nextField)
@@ -756,18 +752,13 @@ internal sealed partial class LythonRuntime
 
         internal void Feed(PyString text)
         {
-            var line = text.Utf8Span;
-            if (!CanDescribeLiteralRecord)
-            {
-                Feed(line);
-                return;
-            }
+            if (CanDescribeLiteralRecord) _ = ConsumeBorrowedLine(text.Utf8Span, null);
+            else Feed(text.Utf8Span);
+        }
 
-            if (TryDescribeLiteralRecord(line, out var nextField))
-            {
-                EmitRecord(line);
-                return;
-            }
+        internal int ConsumeBorrowedLine(ReadOnlySpan<byte> line, Memory<ExecutableSlot>? destination)
+        {
+            if (TryDescribeLiteralRecord(line, out var nextField)) return PublishRecord(line, destination);
 
             // Retain only the already described prefix if the general parser
             // needs to transform or continue the record. Its offsets stay valid.
@@ -783,7 +774,7 @@ internal sealed partial class LythonRuntime
                 }
                 _record.Advance(prefix.Length);
             }
-            if (ResumeRecordAtField(line, nextField)) EmitRecord(_record.WrittenSpan);
+            return ResumeRecordAtField(line, nextField) ? PublishRecord(_record.WrittenSpan, destination) : -1;
         }
 
         private bool DescribeLine(ReadOnlySpan<byte> text)
@@ -896,7 +887,7 @@ internal sealed partial class LythonRuntime
         }
 
         internal int FinishUnpacked(Span<ExecutableSlot> destination)
-            => DescribeEndOfInput() ? UnpackRecord(destination) : -1;
+            => DescribeEndOfInput() ? UnpackRecord(_record.WrittenSpan, destination) : -1;
 
         private bool DescribeEndOfInput()
         {
@@ -1027,7 +1018,7 @@ internal sealed partial class LythonRuntime
             ReleaseRowScratch();
         }
 
-        private int UnpackRecord(Span<ExecutableSlot> destination)
+        private int UnpackRecord(ReadOnlySpan<byte> source, Span<ExecutableSlot> destination)
         {
             var count = _fields.Count;
             if (count == destination.Length)
@@ -1043,7 +1034,6 @@ internal sealed partial class LythonRuntime
                     var payload = _payloadBytes == 0 ? Array.Empty<byte>() : new byte[_payloadBytes];
                     var payloadOffset = 0;
                     var index = count;
-                    var source = _record.WrittenSpan;
                     foreach (var field in _fields)
                     {
                         _context.CheckExecution(_span);

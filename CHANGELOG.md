@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Parse complete buffered CSV lines directly from the decoded file
+  window. Keep its owner active through admission and materialization.
+  Use admitted scratch for cross-window lines and grammar continuations.
 - Share the compiler's binding and sequence-length maps across
   branches until their facts change.
 - Build complete literal CSV records directly from immutable input strings.
