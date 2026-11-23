@@ -4,19 +4,20 @@
 | --- | --- | ---: | ---: | ---: | --- |
 | Native typed ASCII CSV meter | 4,096 records / 139,299 B | 2.686–2.701 ms | 2.508–2.521 ms | 1.065–1.077× | Earlier diagnostic. [B1478]. |
 | CSV meter with explicit `float()` | 4,096 records / 139,299 B | 3.809–3.895 ms | 2.814–2.870 ms | 1.327–1.384× | Earlier diagnostic. [B1478]. |
-| Short Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 1.3403–1.3642 ms | 0.9395–0.9431 ms | 1.421–1.452× | Diagnostic. [B1491]. |
-| Quote-heavy CSV policy invoice | 4,096 records / 174,147 B | 6.878–6.953 ms | 6.319–6.396 ms | 1.075–1.100× | Diagnostic. [B1491]. |
-| Postponed nested factories | 2,048 iterations | 0.8757–0.8872 ms | 0.5403–0.5583 ms | 1.568–1.642× | Diagnostic. [B1491]. |
-| Mixed-width word histogram | 3,072 lines / 107,520 B | 1.609–1.646 ms | 1.723–1.738 ms | 0.926–0.956× | Diagnostic. [B1491]. |
+| Short Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 1.3254–1.3718 ms | 0.9503–0.9552 ms | 1.388–1.444× | Diagnostic. [B1499]. |
+| Quote-heavy CSV policy invoice | 4,096 records / 174,147 B | 6.953–6.971 ms | 6.221–6.372 ms | 1.091–1.121× | Diagnostic. [B1499]. |
+| Postponed nested factories | 2,048 iterations | 0.8989–0.9121 ms | 0.5350–0.5351 ms | 1.680–1.705× | Diagnostic. [B1499]. |
+| Fully supplied arithmetic helper | 2,048 calls | 0.3133–0.3152 ms | 0.1952–0.1968 ms | 1.592–1.615× | Diagnostic. [B1499]. |
+| Mixed-width word histogram | 3,072 lines / 107,520 B | 1.609–1.646 ms | 1.723–1.738 ms | 0.926–0.956× | Earlier diagnostic. [B1491]. |
 | JSON Lines export with expanded options | 3,072 records / 189,441 B | 5.355–5.366 ms | 6.508–6.509 ms | 0.823–0.825× | Historical diagnostic. [B1458]. |
 
 Ratios divide Lython elapsed time by CPython elapsed time. Above 1× means
 Lython takes longer. Ranges span the four pairings of process medians from
 two workers per engine. The latest November 23, 2026 UTC checkpoint measures
-`2b501135a`. The meter rows measure `a94f78fc7` and the JSON row measures
-`7bc247f1a`. The short report ran 1.512–1.545× CPython at `9cea1fc0a`.
-The matched Lython pair and its repeat isolate the retained change and
-its quoted-invoice control cost. [B1491] · [B1483] · [B1478] · [B1458].
+`9e0cf58f8`. The mixed-width row measures `2b501135a`, the meter rows measure
+`a94f78fc7`, and the JSON row measures `7bc247f1a`. The matched Lython
+comparisons measure the direct-store effect separately. [B1499] · [B1491] ·
+[B1478] · [B1458].
 
 The quiet comparison machine is an Azure F4as_v7 running Ubuntu 24.04.4
 with .NET 11 RC3. The external baseline is stock CPython 3.13.16. Warm
@@ -33,7 +34,8 @@ measurements cover the wider request.
 | Workload | Phase | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
 | Configuration edit, 181 B | Compilation only | 0.01898–0.01912 ms | 0.03401–0.03426 ms | 0.554–0.562× | Diagnostic. [B1491]. |
-| Short nonlocal word report | Compile-to-result | 1.3660–1.4169 ms | 1.0808–1.0974 ms | 1.245–1.311× | Diagnostic. [B1491]. |
+| Short nonlocal word report, 615 B | Compilation only | 0.02873–0.02881 ms | 0.05609–0.05640 ms | 0.509–0.514× | Diagnostic. [B1499]. |
+| Short nonlocal word report | Compile-to-result | 1.3796–1.5295 ms | 1.0975–1.0994 ms | 1.255–1.394× | Uncertain magnitude. Lython worker spread 10.87%. [B1499]. |
 | Configuration edit, 181 B | Compile-to-result | 0.1070–0.1073 ms | 0.1232–0.1246 ms | 0.859–0.871× | Diagnostic. [B1478]. |
 | Postponed nested factories | Compile-to-result | 0.9171–0.9259 ms | 0.6203–0.6239 ms | 1.470–1.493× | Diagnostic. [B1483]. |
 | Postponed nested factories | Compile-to-result | 1.0503–1.0599 ms | 0.6084–0.6115 ms | 1.718–1.742× | Diagnostic. [B1478]. |
@@ -114,6 +116,8 @@ change. The checkpoint includes the arithmetic and allocation controls.
 
 | Checkpoint | Lython source | Date |
 | --- | --- | --- |
+| [B1499] | `9e0cf58f8` | 2026-11-23 UTC |
+| [B1491] | `2b501135a` | 2026-11-23 UTC |
 | [B1483] | `9cea1fc0a` | 2026-11-23 UTC |
 | [B1480] | `a94f78fc7` | 2026-11-23 UTC |
 | [B1478] | `a94f78fc7` | 2026-11-23 UTC |
@@ -212,6 +216,7 @@ the [experiment index](../benchmarks/EXPERIMENTS.md).
 Reproduce the comparisons with the [benchmark tools](../benchmarks/README.md).
 
 [B1491]: ../benchmarks/results/2026-11-23-forwarded-global-cpython/README.md
+[B1499]: ../benchmarks/results/2026-11-23-closure-cpython/README.md
 [B1487]: ../benchmarks/results/2026-11-23-short-text-source-pair/README.md
 [B1483]: ../benchmarks/results/2026-11-23-closed-definition-cpython/README.md
 [B1480]: ../benchmarks/results/2026-11-23-factory-phase-cpython/README.md

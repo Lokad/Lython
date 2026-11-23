@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1499 CPython checkpoint after direct closure assignment](results/2026-11-23-closure-cpython/README.md)
+puts the short report at 1.388–1.444× CPython warm and 0.509–0.514× for
+compilation. Its time to result has 10.87% Lython worker spread. The
+factory and fully supplied call gaps persist on stable workers.
+
 [B1497–B1498 commit binary results directly to closure cells](results/2026-11-23-closure-result-consumer/README.md)
 improves short-report time to result in two quiet comparisons, with
 supporting CPU. Warm results vary. The fully supplied control slowdown
