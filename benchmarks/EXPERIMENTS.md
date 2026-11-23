@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1494 find the physical CSV line during field scanning](results/2026-11-23-csv-combined-scan/README.md)
+reduces typed ASCII warm elapsed 3.61–4.18%. Unicode warm and ASCII
+first-use take longer, with supporting CPU. Keep the prototype private
+and preserve the line/error/refill tests on both platforms.
+
 [B1493 dispatch already-forwarded operands separately](results/2026-11-23-forwarded-global-opcode/README.md)
 removes the eligibility check from ordinary call entry. The quoted
 control's CPU spans zero and the short report takes 3.65–5.44% more
