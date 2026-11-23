@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1483 CPython checkpoint after direct factory construction](results/2026-11-23-closed-definition-cpython/README.md)
+puts postponed factories at 1.606–1.649× CPython warm elapsed and
+1.470–1.493× time to result. The unchanged nonlocal control is slower.
+All 140 quiet batches and the four independent goldens verify.
+
 [B1482 return closed lexical definitions directly](results/2026-11-23-closed-definition-return/README.md)
 eliminates the factory's native activation and operand copy. Warm elapsed
 falls 10.19–15.04% postponed and 7.37–13.84% eager with supporting CPU.
