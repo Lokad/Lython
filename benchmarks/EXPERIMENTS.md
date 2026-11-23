@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1537](results/2026-11-23-early-cased-split/README.md) moves cased split
+execution before the ordinary call dispatch. Both text workloads have
+divergent candidate workers and the supplied-call control is slower
+in elapsed. The prototype stays private.
+[Direct `findall` tuples](results/2026-11-23-findall-string-tuples/README.md)
+remove allocation and the scalar charge scan for already funded strings.
+Local diagnostics save 6–18% CLR allocation with the same admitted peaks.
+
 [B1535](results/2026-11-23-short-text-boundaries/cpu.md) isolates a
 short-report source boundary. The nonlocal update move overlaps zero.
 Omitting the per-line helper on the same runtime cuts roughly a

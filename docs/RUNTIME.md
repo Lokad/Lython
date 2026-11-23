@@ -2710,6 +2710,9 @@ admitted and copied on access; empty groups use the empty string and full-subjec
 reuse the original string. Group copies are not cached. Admission refusal can
 therefore occur at group access; it remains terminal and cannot be hidden by
 guest exception handling. Expansion reads the retained ranges directly.
+Multi-group `findall` admits each tuple's backing before filling it with the
+owned capture strings. Unmatched groups use empty strings. The tuple keeps
+its captures independently of cursor cleanup.
 
 Provider compilation, preparation, matching and enumeration receive the current
 token. Lython checks that same token during comparisons of long cache keys and

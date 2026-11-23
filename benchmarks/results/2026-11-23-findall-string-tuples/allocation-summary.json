@@ -1,0 +1,46 @@
+[
+  {
+    "case": "diagnostic.regex.findall.two-ascii-groups",
+    "allocatedBytes": [
+      2160048,
+      1799544
+    ],
+    "peakAdmission": [
+      1662438,
+      1662438
+    ]
+  },
+  {
+    "case": "diagnostic.regex.findall.optional-unicode-groups",
+    "allocatedBytes": [
+      1974208,
+      1613704
+    ],
+    "peakAdmission": [
+      1408486,
+      1408486
+    ]
+  },
+  {
+    "case": "diagnostic.regex.findall.wide-groups",
+    "allocatedBytes": [
+      1398928,
+      1308760
+    ],
+    "peakAdmission": [
+      1317456,
+      1317456
+    ]
+  },
+  {
+    "case": "diagnostic.regex.findall.one-group-control",
+    "allocatedBytes": [
+      828568,
+      828512
+    ],
+    "peakAdmission": [
+      871002,
+      871002
+    ]
+  }
+]
