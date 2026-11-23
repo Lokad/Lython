@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1544](results/2026-11-24-csv-unpack-bindings/README.md) transfers fixed
+CSV unpack operands to their private locals in one step. The explicit
+meter is modestly faster. Typed Unicode spans zero and quote-control
+CPU includes regression. A shared parallel-assignment design follows.
+
 [B1543](results/2026-11-24-current-csv-cpython/README.md) refreshes the two
 CSV meters against stock CPython at the retained text delivery. Local
 allocation weights identify tuple backing, typed numeric boxes and key
