@@ -16,7 +16,15 @@ public sealed class RegexMatchIndexTests
             print([(m.group('letter'),m.span(),m.pos,m.endpos,m.string is subject)
                    for m in pattern.finditer(subject, 2, 6)])
             print(list(pattern.finditer(subject, 6, 2)))
-            """, "['b']\n[('b', (2, 3), 2, 6, True), ('c', (5, 6), 2, 6, True)]\n[]\n");
+            bounds = re.compile(r'(?<=(😀))(?P<letter>[bc])(?P<absent>Z)?()')
+            single = bounds.search(subject, 2, 6)
+            others = list(bounds.finditer(subject, 2, 6))
+            for match in [single, *others]:
+                print(match.regs, match.groups(), match.string is subject)
+            """, "['b']\n[('b', (2, 3), 2, 6, True), ('c', (5, 6), 2, 6, True)]\n[]\n" +
+            "((2, 3), (1, 2), (2, 3), (-1, -1), (3, 3)) ('😀', 'b', None, '') True\n" +
+            "((2, 3), (1, 2), (2, 3), (-1, -1), (3, 3)) ('😀', 'b', None, '') True\n" +
+            "((5, 6), (4, 5), (5, 6), (-1, -1), (6, 6)) ('😀', 'c', None, '') True\n");
     }
 
     [Fact]
