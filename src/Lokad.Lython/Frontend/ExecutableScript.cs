@@ -715,6 +715,8 @@ internal sealed partial class ExecutableCodeObject
 
     public bool RequiresLocalVariableMirroring { get; }
 
+    internal bool HasPlainModuleClass { get; init; }
+
     public bool IsFunctionScope { get; }
 
     public int OperandCapacity { get; }

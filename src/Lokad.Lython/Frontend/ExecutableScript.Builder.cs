@@ -229,7 +229,8 @@ internal sealed partial class ExecutableScript
                 AddInstruction(finalBlock, ExecutableInstruction.ReturnNone(EmptySpan));
             }
 
-            var (capturedLocalSlots, containsCallable, needsMirroring, completeChildren, forwardsCaptures) = PrepareDeclarations();
+            var (capturedLocalSlots, containsCallable, needsMirroring, completeChildren, forwardsCaptures, hasPlainModuleClass) =
+                PrepareDeclarations();
             var (firstSnapshotCell, snapshotTail) = PrepareSnapshotOrder(capturedLocalSlots);
             // Annotation values can retain functions or deferred generators after
             // module slots leave. Keep their existing global namespace lifetime
@@ -275,6 +276,7 @@ internal sealed partial class ExecutableScript
                 cancellationToken: _compilation.CancellationToken)
             {
                 QualifiedName = qualifiedName,
+                HasPlainModuleClass = hasPlainModuleClass && !requiresLocalVariableMirroring,
                 ForwardsCaptures = forwardsCaptures,
                 FirstSnapshotCell = firstSnapshotCell,
                 SnapshotTailOrder = snapshotTail
@@ -284,12 +286,14 @@ internal sealed partial class ExecutableScript
             return code;
         }
 
-        private (int[] CapturedLocals, bool ContainsCallable, bool NeedsMirroring, bool CompleteChildren, bool ForwardsCaptures) PrepareDeclarations()
+        private (int[] CapturedLocals, bool ContainsCallable, bool NeedsMirroring, bool CompleteChildren, bool ForwardsCaptures,
+            bool HasPlainModuleClass) PrepareDeclarations()
         {
             var containsCallable = false;
             var needsMirroring = false;
             var completeChildren = true;
             var forwardsCaptures = false;
+            var hasPlainModuleClass = false;
             HashSet<int>? captured = null;
             for (var index = 0; index < _buffers.Constants.Count; index++)
             {
@@ -299,7 +303,12 @@ internal sealed partial class ExecutableScript
                     case ExecutableCreateFunction function:
                         PrepareChild(function.CodeObject);
                         break;
-                    case ExecutableCreateClass or ExecutableBindTypeAlias:
+                    case ExecutableCreateClass definition:
+                        if (!needsMirroring && _parameterLayout is null && !_classBody && UsesOnlyPlainMethodDeclarations(definition))
+                            hasPlainModuleClass = true;
+                        else needsMirroring = true;
+                        break;
+                    case ExecutableBindTypeAlias:
                         needsMirroring = true;
                         break;
                     case ExecutableCreateLambda lambda:
@@ -314,7 +323,7 @@ internal sealed partial class ExecutableScript
 
             var slots = captured?.ToArray() ?? [];
             if (slots.Length > 1) Array.Sort(slots);
-            return (slots, containsCallable, needsMirroring, completeChildren, forwardsCaptures);
+            return (slots, containsCallable, needsMirroring, completeChildren, forwardsCaptures, hasPlainModuleClass);
 
             void PrepareChild(ExecutableCodeObject child)
             {
@@ -353,6 +362,35 @@ internal sealed partial class ExecutableScript
                         _compilation.Governor, _compilation.CancellationToken);
                 }
             }
+        }
+
+        private bool UsesOnlyPlainMethodDeclarations(ExecutableCreateClass definition)
+        {
+            // The module's slots already support global reads and writes.
+            // A plain class suite creates only lexical functions and never
+            // hands its enclosing namespace to a construction callback.
+            if (definition.TypeParameters is not null || definition.Syntax.Decorators.Count != 0 ||
+                definition.Syntax.HeaderArguments.Count != 0 || definition.Body.ScopeFacts.CreatesClassCell ||
+                definition.Body.ScopeFacts.ContainsVariableAnnotations) return false;
+            var code = definition.Body;
+            for (var i = 0; i < code.Instructions.Length; i++)
+            {
+                PythonTokenization.CheckCancellation(_compilation.CancellationToken, i);
+                ref readonly var instruction = ref code.Instructions[i];
+                if (instruction.OpCode is ExecutableOpCode.Complete or ExecutableOpCode.StoreName) continue;
+                if (instruction.OpCode != ExecutableOpCode.ApplyOperation ||
+                    code.Constants[instruction.ConstantIndex] is not ExecutableCreateFunction
+                    {
+                        InputCount: 0, IsGenerator: false, TypeParameters: null,
+                        DeferredAnnotations.Length: 0, EagerAnnotationReads: null, PostponedAnnotations: null,
+                        CodeObject:
+                        {
+                            ClosureNames.Count: 0, RequiresLocalVariableMirroring: false,
+                            ScopeFacts: { NonlocalNames.Count: 0, RequiresClassCell: false },
+                        },
+                    }) return false;
+            }
+            return true;
         }
 
         private (int FirstCell, int[]? Tail) PrepareSnapshotOrder(int[] captured)

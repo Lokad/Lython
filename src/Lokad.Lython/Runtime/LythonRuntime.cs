@@ -454,7 +454,7 @@ internal sealed partial class LythonRuntime
         {
             // Compiled definitions share the synchronous slot/cell contract.
             // Code-object fallback facts still request mirroring when needed.
-            context = new ExecutionContext(host, options, _regexProvider, _regexPrograms);
+            context = new ExecutionContext(host, options, _regexProvider, _regexPrograms, ownsModuleNamespace: true);
             InitializeModuleAnnotations(script.AnnotationInitializationSpan, context);
             // MG25: no initial yield here. Yielding first would abandon the
             // calling thread (in particular the dedicated large stack the

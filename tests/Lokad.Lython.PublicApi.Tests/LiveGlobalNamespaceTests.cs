@@ -32,6 +32,29 @@ public sealed class LiveGlobalNamespaceTests
             value=3
             print(scope['value'])
             """, "3\n"];
+        yield return ["plain_class_observes_module_slots_and_the_later_namespace", """
+            amount = int('1200')
+            class Policy:
+                def read(self):
+                    return amount
+                def write(self, value):
+                    global amount
+                    amount = value
+            policy = Policy()
+            old = amount
+            amount = int('1400')
+            print(policy.read() is amount, old)
+            policy.write(int('1600'))
+            print(policy.read() is amount, amount)
+            scope = globals()
+            scope['amount'] = int('1800')
+            print(policy.read() is amount, amount)
+            del scope['amount']
+            try:
+                policy.read()
+            except NameError:
+                print('deleted')
+            """, "True 1200\nTrue 1600\nTrue 1800\ndeleted\n"];
         yield return ["write_existing", """
             value=1
             scope=globals()

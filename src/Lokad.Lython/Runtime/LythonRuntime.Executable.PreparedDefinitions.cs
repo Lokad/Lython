@@ -241,7 +241,8 @@ internal sealed partial class LythonRuntime
                 // through all class and decorator callbacks, then retire once.
                 _execution.Stack.RetireTo(first);
             }
-            SyncExecutableLocalsFromContext(_execution.Code, _execution.Locals, this);
+            if (MirrorsExecutableLocals || MirrorLocalStores)
+                SyncExecutableLocalsFromContext(_execution.Code, _execution.Locals, this);
         }
 
         private static void CreateBorrowedExecutableFunction(ref ExecutableWorkState execution,
