@@ -266,7 +266,7 @@ internal sealed partial class LythonRuntime
         finally { context.LeaveInterpreterFrame(); }
     }
 
-    private static bool TryTranslateCallableException(
+    internal static bool TryTranslateCallableException(
         Exception exception,
         LythonSourceSpan callSpan,
         [MaybeNullWhen(false)] out LythonRuntimeException translated)

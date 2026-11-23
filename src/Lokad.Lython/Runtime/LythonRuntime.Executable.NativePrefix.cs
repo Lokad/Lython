@@ -407,10 +407,17 @@ internal sealed partial class LythonRuntime
         {
             var call = Code.CallSites[instruction.CallSiteIndex];
             var start = instruction.ResultSlot;
-            if (instruction.InputStart < 0)
+            if (instruction.HasForwardedCallOperands && LiveExtent == start)
             {
                 var callee = Read(instruction.InputStart, 0);
                 var source = instruction.SecondInput;
+                if (instruction.InputStart >= 0 && _scope.State.CurrentRecursionDepth < NativeCallDepth &&
+                    callee is PyExecutableFunction function &&
+                    function.TryStartForwardedComputedDefinition(call, Values[source], _scope, out var defined))
+                {
+                    Publish(instruction, defined);
+                    return true;
+                }
                 if (source >= 0 && Values[source].TryGetShortUtf8(out var packed)
                     && TryInvokeShortUtf8Float(packed, callee, call.CallSpan, _scope, out var converted))
                 {

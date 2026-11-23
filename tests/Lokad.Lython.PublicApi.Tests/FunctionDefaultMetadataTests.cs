@@ -5,6 +5,60 @@ namespace Lokad.Lython.PublicApi.Tests;
 [Collection("RuntimeStress")]
 public sealed class FunctionDefaultMetadataTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ForwardedFactoryArgumentsAndUpdatesKeepObservedAliasesAndLiveDefaults(bool asynchronous)
+    {
+        const string source = """
+            def make(weight):
+                def define(seed):
+                    def evaluate(record, /, base=seed % 11, *, scale=weight):
+                        return (record + base) * scale
+                    return evaluate
+                return define
+            class Seed:
+                def __mod__(self, divisor):
+                    with open('/offset') as stream:
+                        print('read', divisor)
+                        return int(stream.read())
+            def identity(value):
+                return value
+            factory = make(2)
+            total = 0
+            for seed in range(1200, 1203):
+                latest = factory(seed)
+                total += latest(seed)
+            print(total)
+            previous = latest.__defaults__
+            latest.__defaults__ = (7,)
+            latest.__kwdefaults__['scale'] = 5
+            total += latest(seed)
+            print(total, previous)
+            alias = identity(seed)
+            print(alias is seed)
+            source = Seed()
+            dynamic = factory(source)
+            print(dynamic(0))
+            """;
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        var delayed = new DelayedLythonHost();
+        var sync = new MockLythonHost();
+        delayed.SeedFile("/offset", "4");
+        sync.SeedFile("/offset", "4");
+        using (var result = asynchronous ? await script.RunAsync(delayed) : script.Run(sync))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("7218\n13263 (3,)\nTrue\nread 11\n8\n", result.StandardOutput);
+        }
+        Assert.Equal(1, asynchronous ? delayed.ClosedFileCount : sync.ClosedFileCount);
+        if (asynchronous) Assert.True(delayed.CompletedAsynchronously > 0);
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
     [Fact]
     public async Task ComputedDefinitionKeepsDefaultOwnersAcrossWideAndSuspendingArguments()
     {

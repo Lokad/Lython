@@ -124,6 +124,25 @@ internal sealed class PyExecutableFunction : PyFunctionBase
             out unpacked, out result, out frame, out _);
     }
 
+    // This shape consumes the argument only as an integer. The caller can
+    // keep its canonical slot private through the definition's admission.
+    internal bool TryStartForwardedComputedDefinition(ExecutableCallSite call, LythonRuntime.ExecutableSlot argument,
+        LythonRuntime.ExecutionContext scope, out LythonRuntime.ExecutableSlot result)
+    {
+        result = default;
+        if (CodeObject.DirectDefinitionReturn is not { InputCount: > 0 } definition ||
+            !TrySelectNativeCall(call, null, out var complete) || !complete) return false;
+        scope.EnterInterpreterFrame(call.CallSpan);
+        try
+        {
+            scope.CheckExecution(call.CallSpan);
+            return TryReturnDefinition(definition, argument, call.CallSpan, out result);
+        }
+        catch (Exception error) when (LythonRuntime.TryTranslateCallableException(error, call.CallSpan, out var translated))
+        { throw translated; }
+        finally { scope.LeaveInterpreterFrame(); }
+    }
+
     private bool TryReturnDefinition(ExecutableCreateFunction definition,
         LythonRuntime.ExecutableSlot argument, LythonSourceSpan span, out LythonRuntime.ExecutableSlot result)
     {
@@ -165,7 +184,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         }
     }
 
-    private bool TryStartPreparedIntegerReturn(ExecutableCallSite call, ReadOnlySpan<LythonRuntime.ExecutableSlot> arguments,
+    internal bool TryStartPreparedIntegerReturn(ExecutableCallSite call, ReadOnlySpan<LythonRuntime.ExecutableSlot> arguments,
         LythonRuntime.ExecutionContext context, LythonSourceSpan span, out LythonRuntime.ExecutableSlot result)
     {
         result = default;

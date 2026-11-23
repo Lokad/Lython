@@ -404,6 +404,8 @@ internal readonly record struct ExecutableInstruction
 
     // Single-positional calls can use the common two-operand encoding. The
     // result position also identifies the existing contiguous fallback input.
+    internal bool HasForwardedCallOperands => _secondaryOperand != int.MaxValue;
+
     internal ExecutableInstruction WithForwardedCallOperands()
         => new(OpCode, Span, _primaryOperand, 0);
 

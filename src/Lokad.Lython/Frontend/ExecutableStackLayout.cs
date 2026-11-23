@@ -271,7 +271,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
                 // its two protocol arguments above the ordinary subscript inputs.
                 if (instruction.OpCode == ExecutableOpCode.Subscript)
                     maximum = Math.Max(maximum, checked(depth - pop + 4));
-                else if (instruction.OpCode == ExecutableOpCode.Call && instruction.InputStart < 0)
+                else if (instruction.OpCode == ExecutableOpCode.Call && instruction.HasForwardedCallOperands)
                     maximum = Math.Max(maximum, checked(depth + 2));
                 var resultSlot = depth - pop;
                 var inputStart = depth - minimum;
@@ -393,10 +393,13 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
             if (instruction.OpCode == ExecutableOpCode.Call && kept >= 2 &&
                 !code.RequiresLocalVariableMirroring &&
                 calls[instruction.CallSiteIndex] is { HasReceiver: false, IsPositionalOnly: true, ArgumentCount: 1 } &&
-                instructions[kept - 2] is { OpCode: ExecutableOpCode.LoadGlobal } target &&
-                (code.IsFunctionScope || code.Names[target.NameIndex] == "float") &&
                 instructions[kept - 1] is { OpCode: ExecutableOpCode.LoadLocal } argument &&
-                !code.CapturedLocalSlots.Contains(argument.LocalSlot))
+                !code.CapturedLocalSlots.Contains(argument.LocalSlot) &&
+                (instructions[kept - 2] is { OpCode: ExecutableOpCode.LoadGlobal } target &&
+                    (code.IsFunctionScope || code.Names[target.NameIndex] == "float") ||
+                 instructions[kept - 2] is { OpCode: ExecutableOpCode.LoadLocal } localTarget &&
+                    !code.CapturedLocalSlots.Contains(localTarget.LocalSlot) &&
+                    index + 1 < instructions.Count && instructions[index + 1].OpCode == ExecutableOpCode.StoreLocal))
                 instruction = instruction.WithForwardedCallOperands();
             if (instruction.OpCode == ExecutableOpCode.StoreLocal)
             {

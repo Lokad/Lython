@@ -23,7 +23,7 @@ internal sealed partial class LythonRuntime
             return false;
 
         ref readonly var next = ref code.Instructions[index + 1];
-        if (next.OpCode != ExecutableOpCode.Call || next.InputStart < 0) return false;
+        if (next.OpCode != ExecutableOpCode.Call || next.HasForwardedCallOperands) return false;
         var consumer = code.CallSites[next.CallSiteIndex];
         if (consumer.HasReceiver || !consumer.IsPositionalOnly || consumer.ArgumentCount != 1
             || next.InputStart + consumer.TargetOffset >= start
