@@ -5,6 +5,30 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class RegexAdapterSemanticsTests
 {
+    [Fact]
+    public async Task ReplacementGroupScanPreservesEscapesAndPositionsAcrossChunks()
+    {
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
+            import re
+            match = re.match('(x)', 'x')
+            print(match.expand(r'\g<' + '0' * 2048 + '1>'))
+            prefix = r'\g<' + 'a' * 1020
+            for suffix in (r'\>tail>', '\\'):
+                try:
+                    match.expand(prefix + suffix)
+                except re.PatternError as error:
+                    print(error.msg[:27], error.msg[-8:], error.pos)
+            """);
+        Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
+        foreach (var asynchronous in new[] { false, true })
+        {
+            using var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost());
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("x\nbad character in group name \\\\>tail' 3\nbad escape (end of pattern) pattern) 1023\n",
+                result.StandardOutput);
+        }
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

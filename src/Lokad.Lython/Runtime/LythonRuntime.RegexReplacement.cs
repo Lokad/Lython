@@ -175,17 +175,23 @@ internal sealed partial class LythonRuntime
                         if (offset == source.Length || source[offset] != '<')
                             throw ReplacementError("missing <", template, offset, context, span);
                         var nameStart = ++offset;
-                        while (offset < source.Length && source[offset] != '>')
+                        while (offset < source.Length)
                         {
-                            if ((offset & 1023) == 0) context.CheckExecution(span);
-                            if (source[offset++] == '\\')
+                            context.CheckExecution(span);
+                            var nameChunk = source.Slice(offset, Math.Min(1024, source.Length - offset));
+                            var special = nameChunk.IndexOfAny((byte)'>', (byte)'\\');
+                            if (special < 0)
                             {
-                                if (offset == source.Length)
-                                    throw ReplacementError("bad escape (end of pattern)", template, offset - 1, context, span);
-                                // A quoted > belongs to the name, not its terminator.
-                                offset++;
-                                while (offset < source.Length && (source[offset] & 0xc0) == 0x80) offset++;
+                                offset += nameChunk.Length;
+                                continue;
                             }
+                            offset += special;
+                            if (source[offset] == '>') break;
+                            if (++offset == source.Length)
+                                throw ReplacementError("bad escape (end of pattern)", template, offset - 1, context, span);
+                            // A quoted > belongs to the name, not its terminator.
+                            offset++;
+                            while (offset < source.Length && (source[offset] & 0xc0) == 0x80) offset++;
                         }
                         if (offset == source.Length)
                             throw ReplacementError(offset == nameStart ? "missing group name" : "missing >, unterminated name",
