@@ -1,0 +1,281 @@
+{
+  "fields": [
+    "caller",
+    "callee",
+    "availableFromArguments",
+    "calleeValueStorage",
+    "calleeLiveSlotMaximum",
+    "calleePatternStorage",
+    "arity",
+    "argumentsAtLiveTop",
+    "startsInConsumedWindow",
+    "afterLastOwnedTemporary",
+    "nativeTapeCoversAllInstructions",
+    "unpackedReturnCount",
+    "hasReceiver",
+    "callerOperandDepth",
+    "argumentPosition",
+    "callerStorageCapacity",
+    "useBorrowedModuleSlots_candidateOnly"
+  ],
+  "reference": {
+    "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+    "rows": [
+      {
+        "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+        "asynchronous": false,
+        "shapes": {
+          "<module>|for_policy|2|6|3|0|1|True|True|True|True|0|False|4|8|10": 2048,
+          "<module>|compile_rule|2|6|5|0|1|True|True|True|True|0|False|4|8|10": 2048
+        },
+        "peakExecutionMemoryBytes": 2968481,
+        "allowanceReturned": true
+      },
+      {
+        "id": "scripts.annotated-rule-closures.nested-factories.postponed.async",
+        "asynchronous": true,
+        "shapes": {
+          "<module>|for_policy|2|6|3|0|1|True|True|True|True|0|False|4|8|10": 2048,
+          "<module>|compile_rule|2|6|5|0|1|True|True|True|True|0|False|4|8|10": 2048
+        },
+        "peakExecutionMemoryBytes": 2968481,
+        "allowanceReturned": true
+      },
+      {
+        "id": "scripts.annotated-rule-closures.nested-factories",
+        "asynchronous": false,
+        "shapes": {
+          "<module>|for_policy|2|6|3|0|1|True|True|True|True|0|False|4|7|9": 2048,
+          "<module>|compile_rule|2|6|5|0|1|True|True|True|True|0|False|4|7|9": 2048
+        },
+        "peakExecutionMemoryBytes": 2968425,
+        "allowanceReturned": true
+      },
+      {
+        "id": "scripts.annotated-rule-closures.nested-factories.async",
+        "asynchronous": true,
+        "shapes": {
+          "<module>|for_policy|2|6|3|0|1|True|True|True|True|0|False|4|7|9": 2048,
+          "<module>|compile_rule|2|6|5|0|1|True|True|True|True|0|False|4|7|9": 2048
+        },
+        "peakExecutionMemoryBytes": 2968425,
+        "allowanceReturned": true
+      },
+      {
+        "id": "scripts.factory-observed-defaults",
+        "asynchronous": false,
+        "shapes": {
+          "<module>|for_policy|4|6|3|0|1|True|True|True|True|0|False|6|8|12": 2048,
+          "<module>|compile_rule|4|6|5|0|1|True|True|True|True|0|False|6|8|12": 2048
+        },
+        "peakExecutionMemoryBytes": 2968817,
+        "allowanceReturned": true
+      },
+      {
+        "id": "scripts.factory-observed-defaults.async",
+        "asynchronous": true,
+        "shapes": {
+          "<module>|for_policy|4|6|3|0|1|True|True|True|True|0|False|6|8|12": 2048,
+          "<module>|compile_rule|4|6|5|0|1|True|True|True|True|0|False|6|8|12": 2048
+        },
+        "peakExecutionMemoryBytes": 2968817,
+        "allowanceReturned": true
+      },
+      {
+        "id": "scripts.ordinary-fully-supplied-helper",
+        "asynchronous": false,
+        "shapes": {},
+        "peakExecutionMemoryBytes": 1255,
+        "allowanceReturned": true
+      },
+      {
+        "id": "scripts.ordinary-fully-supplied-helper.async",
+        "asynchronous": true,
+        "shapes": {},
+        "peakExecutionMemoryBytes": 1255,
+        "allowanceReturned": true
+      },
+      {
+        "id": "scripts.csv-invoice.method-policy.quoted-control",
+        "asynchronous": false,
+        "shapes": {
+          "<module>|price_line|6|12|12|0|1|True|True|True|True|4|False|8|22|28": 4096
+        },
+        "peakExecutionMemoryBytes": 9432874,
+        "allowanceReturned": true
+      },
+      {
+        "id": "scripts.csv-invoice.method-policy.quoted-control.async",
+        "asynchronous": true,
+        "shapes": {
+          "<module>|price_line|6|12|12|0|1|True|True|True|True|4|False|8|22|28": 4096
+        },
+        "peakExecutionMemoryBytes": 9432874,
+        "allowanceReturned": true
+      },
+      {
+        "id": "calls.positional.large",
+        "asynchronous": false,
+        "shapes": {},
+        "peakExecutionMemoryBytes": 1284,
+        "allowanceReturned": true
+      },
+      {
+        "id": "calls.positional.large.async",
+        "asynchronous": true,
+        "shapes": {},
+        "peakExecutionMemoryBytes": 1284,
+        "allowanceReturned": true
+      },
+      {
+        "id": "diagnostic.text-summary.materialized-ordinary-split",
+        "asynchronous": false,
+        "shapes": {
+          "main|words_from_line|7|5|3|0|1|True|True|True|True|0|False|9|15|22": 3072
+        },
+        "peakExecutionMemoryBytes": 1967664,
+        "allowanceReturned": true
+      },
+      {
+        "id": "diagnostic.text-summary.materialized-ordinary-split.async",
+        "asynchronous": true,
+        "shapes": {
+          "main|words_from_line|7|5|3|0|1|True|True|True|True|0|False|9|15|22": 3072
+        },
+        "peakExecutionMemoryBytes": 1967664,
+        "allowanceReturned": true
+      }
+    ],
+    "boundary": "Portable route evidence only from separately instrumented core. No timing."
+  },
+  "candidate": {
+    "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+    "rows": [
+      {
+        "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+        "asynchronous": false,
+        "shapes": {
+          "<module>|for_policy|17|6|3|0|1|True|True|True|True|0|False|4|8|25|True": 2048,
+          "<module>|compile_rule|17|6|5|0|1|True|True|True|True|0|False|4|8|25|True": 2048
+        },
+        "peakExecutionMemoryBytes": 2968841,
+        "allowanceReturned": true
+      },
+      {
+        "id": "scripts.annotated-rule-closures.nested-factories.postponed.async",
+        "asynchronous": true,
+        "shapes": {
+          "<module>|for_policy|17|6|3|0|1|True|True|True|True|0|False|4|8|25|True": 2048,
+          "<module>|compile_rule|17|6|5|0|1|True|True|True|True|0|False|4|8|25|True": 2048
+        },
+        "peakExecutionMemoryBytes": 2968841,
+        "allowanceReturned": true
+      },
+      {
+        "id": "scripts.annotated-rule-closures.nested-factories",
+        "asynchronous": false,
+        "shapes": {
+          "<module>|for_policy|17|6|3|0|1|True|True|True|True|0|False|4|7|24|True": 2048,
+          "<module>|compile_rule|17|6|5|0|1|True|True|True|True|0|False|4|7|24|True": 2048
+        },
+        "peakExecutionMemoryBytes": 2968785,
+        "allowanceReturned": true
+      },
+      {
+        "id": "scripts.annotated-rule-closures.nested-factories.async",
+        "asynchronous": true,
+        "shapes": {
+          "<module>|for_policy|17|6|3|0|1|True|True|True|True|0|False|4|7|24|True": 2048,
+          "<module>|compile_rule|17|6|5|0|1|True|True|True|True|0|False|4|7|24|True": 2048
+        },
+        "peakExecutionMemoryBytes": 2968785,
+        "allowanceReturned": true
+      },
+      {
+        "id": "scripts.factory-observed-defaults",
+        "asynchronous": false,
+        "shapes": {
+          "<module>|for_policy|19|6|3|0|1|True|True|True|True|0|False|6|8|27|True": 2048,
+          "<module>|compile_rule|19|6|5|0|1|True|True|True|True|0|False|6|8|27|True": 2048
+        },
+        "peakExecutionMemoryBytes": 2969177,
+        "allowanceReturned": true
+      },
+      {
+        "id": "scripts.factory-observed-defaults.async",
+        "asynchronous": true,
+        "shapes": {
+          "<module>|for_policy|19|6|3|0|1|True|True|True|True|0|False|6|8|27|True": 2048,
+          "<module>|compile_rule|19|6|5|0|1|True|True|True|True|0|False|6|8|27|True": 2048
+        },
+        "peakExecutionMemoryBytes": 2969177,
+        "allowanceReturned": true
+      },
+      {
+        "id": "scripts.ordinary-fully-supplied-helper",
+        "asynchronous": false,
+        "shapes": {},
+        "peakExecutionMemoryBytes": 1615,
+        "allowanceReturned": true
+      },
+      {
+        "id": "scripts.ordinary-fully-supplied-helper.async",
+        "asynchronous": true,
+        "shapes": {},
+        "peakExecutionMemoryBytes": 1615,
+        "allowanceReturned": true
+      },
+      {
+        "id": "scripts.csv-invoice.method-policy.quoted-control",
+        "asynchronous": false,
+        "shapes": {
+          "<module>|price_line|21|12|12|0|1|True|True|True|True|4|False|8|22|43|False": 4096
+        },
+        "peakExecutionMemoryBytes": 9433234,
+        "allowanceReturned": true
+      },
+      {
+        "id": "scripts.csv-invoice.method-policy.quoted-control.async",
+        "asynchronous": true,
+        "shapes": {
+          "<module>|price_line|21|12|12|0|1|True|True|True|True|4|False|8|22|43|False": 4096
+        },
+        "peakExecutionMemoryBytes": 9433234,
+        "allowanceReturned": true
+      },
+      {
+        "id": "calls.positional.large",
+        "asynchronous": false,
+        "shapes": {},
+        "peakExecutionMemoryBytes": 1644,
+        "allowanceReturned": true
+      },
+      {
+        "id": "calls.positional.large.async",
+        "asynchronous": true,
+        "shapes": {},
+        "peakExecutionMemoryBytes": 1644,
+        "allowanceReturned": true
+      },
+      {
+        "id": "diagnostic.text-summary.materialized-ordinary-split",
+        "asynchronous": false,
+        "shapes": {
+          "main|words_from_line|7|5|3|0|1|True|True|True|True|0|False|9|15|22|False": 3072
+        },
+        "peakExecutionMemoryBytes": 1968024,
+        "allowanceReturned": true
+      },
+      {
+        "id": "diagnostic.text-summary.materialized-ordinary-split.async",
+        "asynchronous": true,
+        "shapes": {
+          "main|words_from_line|7|5|3|0|1|True|True|True|True|0|False|9|15|22|False": 3072
+        },
+        "peakExecutionMemoryBytes": 1968024,
+        "allowanceReturned": true
+      }
+    ],
+    "boundary": "Portable route evidence only from separately instrumented core. No timing."
+  }
+}

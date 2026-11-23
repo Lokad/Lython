@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1445 module workspace loans](results/2026-11-23-module-native-workspace/README.md)
+reaches 4,096 factory activations through evaluated positional operands.
+Warm factory results span zero. Postponed time to result favors the
+candidate with 7.03% worker spread. Supplied controls slow and the
+candidate remains private.
+
 [B1444 sparse validator confirmation](results/2026-11-23-sparse-branch-confirmation/README.md)
 repeats the exact compiler pair. Sparse first-result elapsed spans
 −0.50 to +0.54% with less than 0.63% spread per source. The earlier
