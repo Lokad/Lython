@@ -1,0 +1,119 @@
+[
+  {
+    "role": "reference",
+    "methods": [
+      {
+        "method": "ExecuteInstructionPrefix",
+        "tier": "Instrumented Tier0",
+        "stack": 72,
+        "bytes": 13698,
+        "activationCall": false
+      },
+      {
+        "method": "Call",
+        "tier": "Tier0",
+        "stack": 976,
+        "bytes": 3358,
+        "activationCall": false
+      },
+      {
+        "method": "ExecuteInstructionPrefix",
+        "tier": "Tier1-OSR",
+        "stack": 864,
+        "bytes": 14324,
+        "activationCall": false
+      },
+      {
+        "method": "Call",
+        "tier": "Instrumented Tier0",
+        "stack": 72,
+        "bytes": 4050,
+        "activationCall": false
+      },
+      {
+        "method": "Call",
+        "tier": "Tier1",
+        "stack": 344,
+        "bytes": 4453,
+        "activationCall": false
+      },
+      {
+        "method": "ExecuteInstructionPrefix",
+        "tier": "Instrumented Tier0",
+        "stack": 72,
+        "bytes": 13690,
+        "activationCall": false
+      },
+      {
+        "method": "ExecuteInstructionPrefix",
+        "tier": "Tier1-OSR",
+        "stack": 816,
+        "bytes": 17934,
+        "activationCall": false
+      },
+      {
+        "method": "ExecuteInstructionPrefix",
+        "tier": "Tier1",
+        "stack": 824,
+        "bytes": 14400,
+        "activationCall": false
+      }
+    ],
+    "coreSHA256": "90b3fe2b9a20283ca7b0cbb77a65b21eb686f3dcaaf72bd52a23b90d377eb44f"
+  },
+  {
+    "role": "candidate",
+    "methods": [
+      {
+        "method": "ExecuteInstructionPrefix",
+        "tier": "Instrumented Tier0",
+        "stack": 72,
+        "bytes": 14337,
+        "activationCall": false
+      },
+      {
+        "method": "Call",
+        "tier": "Tier0",
+        "stack": 72,
+        "bytes": 3837,
+        "activationCall": false
+      },
+      {
+        "method": "ExecuteInstructionPrefix",
+        "tier": "Tier1-OSR",
+        "stack": 928,
+        "bytes": 14971,
+        "activationCall": false
+      },
+      {
+        "method": "Call",
+        "tier": "Instrumented Tier0",
+        "stack": 72,
+        "bytes": 4709,
+        "activationCall": false
+      },
+      {
+        "method": "Call",
+        "tier": "Tier1",
+        "stack": 344,
+        "bytes": 4550,
+        "activationCall": false
+      },
+      {
+        "method": "ExecuteInstructionPrefix",
+        "tier": "Instrumented Tier0",
+        "stack": 72,
+        "bytes": 14327,
+        "activationCall": false
+      },
+      {
+        "method": "ExecuteInstructionPrefix",
+        "tier": "Tier1-OSR",
+        "stack": 832,
+        "bytes": 19330,
+        "activationCall": false
+      }
+    ],
+    "coreSHA256": "f2397ca89b1805b026f1ef1b21f4f1bf2d6d8c2ed330e33f2193eaf675148fb7"
+  }
+]

@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1489 forward the live global and private local into a positional call](results/2026-11-23-forwarded-global-call/README.md)
+removes two tape instructions from qualifying calls. The short report takes
+5.69–11.26% less warm elapsed, with supporting CPU and equal allocation
+and admission. Mixed-width and quoted controls vary. Rebound and fully
+supplied warm changes span zero.
+
 [B1488 attribute CPU on short and mixed-width text](results/2026-11-23-retained-short-text-cpu/README.md)
 finds 302 of 959 resolved short-report warm samples nearest instruction
 dispatch and 70 nearest call entry or operand movement. Mixed-width
