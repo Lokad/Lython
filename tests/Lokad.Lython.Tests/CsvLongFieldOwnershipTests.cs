@@ -16,6 +16,46 @@ public sealed class CsvLongFieldOwnershipTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task LiteralInputGrowsOnlyFinalStorageAndKeepsMultilinePrefixes(bool asynchronous)
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var owner = budget.CreateScope())
+        {
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = owner });
+            var field = new string('é', 24);
+            var lines = new PyList([PyString.FromString("a,b\n"), PyString.FromString(field + ",\"x,y\"\n"),
+                PyString.FromString(field + ",\"quoted\n"), PyString.FromString("next\"\"piece\"\n"), PyString.Empty]);
+            var source = new LythonRuntime.CsvRecordSource(lines, Options, Span, context);
+            try
+            {
+                _ = await Next();
+                var scratch = source.OwnedBytes;
+                var literal = await Next();
+                Assert.Equal(scratch, source.OwnedBytes);
+                Assert.Equal([field, "x,y"], literal.Cast<PyString>().Select(value => value.AsString()));
+                var multiline = await Next();
+                Assert.Equal([field, "quoted\nnext\"piece"], multiline.Cast<PyString>().Select(value => value.AsString()));
+                Assert.Empty(await Next());
+                var end = asynchronous ? await source.TryMoveNextAsync() : source.TryMoveNext(out var row) ? row : null;
+                Assert.Null(end);
+                Assert.Equal([field, "x,y"], literal.Cast<PyString>().Select(value => value.AsString()));
+                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            }
+            finally { context.State.CloseResources(); }
+
+            async ValueTask<object[]> Next()
+            {
+                if (asynchronous) return Assert.IsType<object[]>(await source.TryMoveNextAsync());
+                Assert.True(source.TryMoveNext(out var next));
+                return next;
+            }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task LongFieldsKeepOffsetsAndFundingAfterLaterRowsAndScratchCleanup(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(1024 * 1024);

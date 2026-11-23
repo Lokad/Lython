@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Build complete literal CSV records directly from immutable input strings.
+  Materialize independent row storage and retain the admitted parser buffer
+  for transformed and continued records.
 - Let eligible nested bound methods return checked integer expressions directly
   from the evaluated receiver and arguments, without constructing callee slots.
 - Construct eligible materialized cased split lists from one UTF-8 scan.

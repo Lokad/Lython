@@ -495,7 +495,7 @@ internal sealed partial class LythonRuntime
             PhysicalLineCount++;
             try
             {
-                _parser.Feed(line.Utf8Span);
+                _parser.Feed(line);
             }
             catch
             {
@@ -590,7 +590,7 @@ internal sealed partial class LythonRuntime
 
         internal void FeedOwnedLine(int before)
         {
-            if (DescribeOwnedLine(before)) EmitRecord();
+            if (DescribeOwnedLine(before)) EmitRecord(_record.WrittenSpan);
         }
 
         internal int UnpackOwnedLine(int before, Span<ExecutableSlot> destination)
@@ -599,9 +599,9 @@ internal sealed partial class LythonRuntime
         private bool DescribeOwnedLine(int before)
         {
             var line = _record.WrittenSpan[before..];
-            if (before == 0 && _state == FieldState.RecordStart && _literalDelimiter >= 0 && _fields.Capacity != 0)
+            if (before == 0 && CanDescribeLiteralRecord)
             {
-                return DescribeLiteralRecord(line);
+                return TryDescribeLiteralRecord(line, out var nextField) || ResumeRecordAtField(line, nextField);
             }
             _record.Truncate(before);
             // CSV decoding only removes syntax bytes. Writes stay behind the
@@ -610,10 +610,15 @@ internal sealed partial class LythonRuntime
             return DescribeLine(line);
         }
 
-        private bool DescribeLiteralRecord(ReadOnlySpan<byte> line)
+        private bool CanDescribeLiteralRecord => _state == FieldState.RecordStart &&
+            _literalDelimiter >= 0 && _fields.Capacity != 0;
+
+        private bool TryDescribeLiteralRecord(ReadOnlySpan<byte> line, out int nextField)
         {
             if (_readyRecord is not null) throw new InvalidOperationException("CSV input advanced before consuming its record.");
-            if (!line.IsEmpty && line[0] is (byte)'\r' or (byte)'\n')
+            nextField = 0;
+            if (line.IsEmpty) return true;
+            if (line[0] is (byte)'\r' or (byte)'\n')
             {
                 _context.CheckExecution(_span);
                 ValidateRecordEnd(line[1..]);
@@ -646,7 +651,7 @@ internal sealed partial class LythonRuntime
                 else
                 {
                     end = FindLiteralFieldEnd(line, start);
-                    DescribeField(CreateField(start, end - start, quoted: false));
+                    DescribeField(CreateField(line, start, end - start, quoted: false));
                 }
 
                 if (end == line.Length) return true;
@@ -657,7 +662,8 @@ internal sealed partial class LythonRuntime
                 }
                 start = end + 1;
             }
-            return ResumeRecordAtField(line, start);
+            nextField = start;
+            return false;
         }
 
         private int FindLiteralFieldEnd(ReadOnlySpan<byte> line, int offset)
@@ -745,7 +751,39 @@ internal sealed partial class LythonRuntime
 
         public void Feed(ReadOnlySpan<byte> text)
         {
-            if (DescribeLine(text)) EmitRecord();
+            if (DescribeLine(text)) EmitRecord(_record.WrittenSpan);
+        }
+
+        internal void Feed(PyString text)
+        {
+            var line = text.Utf8Span;
+            if (!CanDescribeLiteralRecord)
+            {
+                Feed(line);
+                return;
+            }
+
+            if (TryDescribeLiteralRecord(line, out var nextField))
+            {
+                EmitRecord(line);
+                return;
+            }
+
+            // Retain only the already described prefix if the general parser
+            // needs to transform or continue the record. Its offsets stay valid.
+            if (nextField != 0)
+            {
+                var prefix = _record.GetWriteWindow(nextField, _context.State.CancellationToken).Span;
+                for (var offset = 0; offset < prefix.Length;)
+                {
+                    _context.CheckExecution(_span);
+                    var count = Math.Min(4096, prefix.Length - offset);
+                    line.Slice(offset, count).CopyTo(prefix.Slice(offset, count));
+                    offset += count;
+                }
+                _record.Advance(prefix.Length);
+            }
+            if (ResumeRecordAtField(line, nextField)) EmitRecord(_record.WrittenSpan);
         }
 
         private bool DescribeLine(ReadOnlySpan<byte> text)
@@ -854,7 +892,7 @@ internal sealed partial class LythonRuntime
 
         public void Finish()
         {
-            if (DescribeEndOfInput()) EmitRecord();
+            if (DescribeEndOfInput()) EmitRecord(_record.WrittenSpan);
         }
 
         internal int FinishUnpacked(Span<ExecutableSlot> destination)
@@ -911,7 +949,7 @@ internal sealed partial class LythonRuntime
 
         private void FinishField()
         {
-            var field = CreateField(_fieldStart, _record.Length - _fieldStart, _fieldWasQuoted);
+            var field = CreateField(_record.WrittenSpan, _fieldStart, _record.Length - _fieldStart, _fieldWasQuoted);
             EnsureListCapacity(_fields);
             DescribeField(field);
             _fieldStart = _record.Length;
@@ -919,13 +957,13 @@ internal sealed partial class LythonRuntime
             _fieldWasQuoted = false;
         }
 
-        private CsvField CreateField(int start, int length, bool quoted)
+        private CsvField CreateField(ReadOnlySpan<byte> source, int start, int length, bool quoted)
         {
             if (_options.Quoting != CsvQuotingMode.NonNumeric || quoted || length == 0)
                 return new CsvField(start, length);
             // Conversion must still fail at this field before another line
             // can be fetched or later field syntax inspected.
-            return new CsvField(-1, 0, ParseFloatText(_record.WrittenSpan.Slice(start, length), _context, _span));
+            return new CsvField(-1, 0, ParseFloatText(source.Slice(start, length), _context, _span));
         }
 
         private void DescribeField(CsvField field)
@@ -961,7 +999,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private void EmitRecord()
+        private void EmitRecord(ReadOnlySpan<byte> source)
         {
             // Admit all ordinary field payloads once, while working bytes and
             // old capacities remain funded. The private array includes headroom
@@ -980,7 +1018,7 @@ internal sealed partial class LythonRuntime
             foreach (var field in _fields)
             {
                 _context.CheckExecution(_span);
-                row[index++] = ReadField(field, payload, ref payloadOffset);
+                row[index++] = ReadField(source, field, payload, ref payloadOffset);
             }
             _context.CheckExecution(_span);
             storage.Commit(resultBytes);
@@ -1005,10 +1043,11 @@ internal sealed partial class LythonRuntime
                     var payload = _payloadBytes == 0 ? Array.Empty<byte>() : new byte[_payloadBytes];
                     var payloadOffset = 0;
                     var index = count;
+                    var source = _record.WrittenSpan;
                     foreach (var field in _fields)
                     {
                         _context.CheckExecution(_span);
-                        destination[--index] = ExecutableSlot.FromObject(ReadField(field, payload, ref payloadOffset));
+                        destination[--index] = ExecutableSlot.FromObject(ReadField(source, field, payload, ref payloadOffset));
                     }
                     _context.CheckExecution(_span);
                     governor.Commit(bytes);
@@ -1028,7 +1067,7 @@ internal sealed partial class LythonRuntime
             return count;
         }
 
-        private object ReadField(CsvField field, byte[] payload, ref int payloadOffset)
+        private object ReadField(ReadOnlySpan<byte> source, CsvField field, byte[] payload, ref int payloadOffset)
         {
             if (field.IsNumber) return field.Number;
             if (field.Length == 0) return PyString.Empty;
@@ -1039,7 +1078,7 @@ internal sealed partial class LythonRuntime
             {
                 _context.CheckExecution(_span);
                 var count = Math.Min(4096, bytes.Length - offset);
-                _record.WrittenSpan.Slice(field.Start + offset, count).CopyTo(bytes.Slice(offset, count));
+                source.Slice(field.Start + offset, count).CopyTo(bytes.Slice(offset, count));
                 offset += count;
             }
             if (text is null)
