@@ -93,4 +93,39 @@ public sealed class FailureProjectionAccountingScenarioTests
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
         Assert.Equal(expected, asyncResult.Failure?.Message);
     }
+
+    [Fact]
+    public async Task ErrorRenderingKeepsModuleBindingsThroughAwaitedHostWork()
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var script = new LythonEngine().Compile("""
+            filename = '/input.txt'
+            message = 'old'
+            class Key:
+                def __repr__(self):
+                    global message
+                    with open(filename) as stream:
+                        message = stream.read() + message
+                    print(message)
+                    return message
+            message = 'live'
+            raise KeyError(Key())
+            """, budget);
+        Assert.True(script.IsValid);
+        var baseline = budget.ReservedBytes;
+        var host = new DelayedLythonHost();
+        host.SeedFile("/input.txt", "loaded:");
+        using (var result = await script.RunAsync(host))
+        {
+            Assert.False(result.Success);
+            Assert.Equal("KeyError", result.Failure?.ExceptionType);
+            Assert.Equal("loaded:live", result.Failure?.Message);
+            Assert.Equal("loaded:live\n", result.StandardOutput);
+            Assert.True(host.CompletedAsynchronously > 0);
+            Assert.Equal(1, host.ClosedFileCount);
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
 }

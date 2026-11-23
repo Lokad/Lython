@@ -27,7 +27,7 @@ internal sealed partial class LythonRuntime
                 {
                     _preparedCallValue = null;
                     AbandonFrame();
-                    _execution.Stack.ReleaseStorage();
+                    if (!OwnsModuleNamespace) _execution.Stack.ReleaseStorage();
                 }
             }
         }

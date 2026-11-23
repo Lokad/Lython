@@ -68,6 +68,17 @@ internal sealed partial class LythonRuntime
                 throw new InvalidOperationException("An invocation context cannot execute overlapping code objects.");
         }
 
+        // The public run owns these slots through any lazy error rendering.
+        // The interpreter has already retired operands and joined disposals.
+        internal void ReleaseOwnedModuleExecution()
+        {
+            if (!OwnsModuleNamespace || _execution.Code is null) return;
+            LeaveExecutableSlots();
+            var storage = _execution.Stack;
+            DetachExecutableExecution();
+            storage.ReleaseStorage();
+        }
+
         // Lexical contexts may escape through closures. Retire all invocation
         // borrows after their users/cleanup finish; no refunded workspace or
         // handler/caller chain may survive in that retained lexical context.
@@ -756,7 +767,7 @@ internal sealed partial class LythonRuntime
                         AbandonFrame();
                     }
                     try { if (_execution.Stack.HasPendingDisposals) await DrainPendingDisposalsAsync().ConfigureAwait(false); }
-                    finally { if (!HasYield && !HasPendingCall) _execution.Stack.ReleaseStorage(); }
+                    finally { if (!HasYield && !HasPendingCall && !OwnsModuleNamespace) _execution.Stack.ReleaseStorage(); }
                 }
                 finally { _execution.Stack.DeferAsyncDisposal = false; }
             }

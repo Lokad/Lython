@@ -620,6 +620,7 @@ internal sealed partial class LythonRuntime
                 context = new ExecutionContext(host, options, _regexProvider, _regexPrograms, ownsModuleNamespace: true);
                 InitializeModuleAnnotations(script.AnnotationInitializationSpan, context);
                 ExecuteExecutableCodeObject(script.EntryPoint, context);
+                context.ReleaseOwnedModuleExecution();
 
                 // Successful execution publishes outstanding writers instead of
                 // silently discarding accepted writes; a publication failure
@@ -630,6 +631,7 @@ internal sealed partial class LythonRuntime
             }
             catch (ReturnSignal signal)
             {
+                context?.ReleaseOwnedModuleExecution();
                 // A top-level return still publishes outstanding writers; a
                 // publication failure replaces the return with a failure.
                 try
@@ -649,7 +651,11 @@ internal sealed partial class LythonRuntime
             }
             finally
             {
-                try { if (context is not null) context.State.TryCloseOpenFiles(context); }
+                try
+                {
+                    try { context?.ReleaseOwnedModuleExecution(); }
+                    finally { if (context is not null) context.State.TryCloseOpenFiles(context); }
+                }
                 finally { context?.State.CloseResources(); }
             }
         });
@@ -729,7 +735,14 @@ internal sealed partial class LythonRuntime
             context.Execute();
             return context.HasFrameReturn ? context.FrameReturnValue : null;
         }
-        finally { context.LeaveExecutableSlots(); context.DetachExecutableExecution(); }
+        finally
+        {
+            if (!context.OwnsModuleNamespace)
+            {
+                context.LeaveExecutableSlots();
+                context.DetachExecutableExecution();
+            }
+        }
     }
 
     internal static async ValueTask<object?> ExecuteInitializedFrameAsync(ExecutionContext context)
@@ -740,7 +753,14 @@ internal sealed partial class LythonRuntime
             await context.ExecuteAsync().ConfigureAwait(false);
             return context.HasFrameReturn ? context.FrameReturnValue : null;
         }
-        finally { context.LeaveExecutableSlots(); context.DetachExecutableExecution(); }
+        finally
+        {
+            if (!context.OwnsModuleNamespace)
+            {
+                context.LeaveExecutableSlots();
+                context.DetachExecutableExecution();
+            }
+        }
     }
 
     private static void InitializeExecutableFrame(

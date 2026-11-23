@@ -285,7 +285,9 @@ internal sealed partial class LythonRuntime
     {
         context?.State.CloseRegexIterators();
         exception = context?.MemoryGovernor.AdmissionFailure ?? exception;
-        var message = await RuntimeFailureProjection.RenderFailureMessageAsync(exception, context).ConfigureAwait(false);
+        string message;
+        try { message = await RuntimeFailureProjection.RenderFailureMessageAsync(exception, context).ConfigureAwait(false); }
+        finally { context?.ReleaseOwnedModuleExecution(); }
         if (context is not null && !context.State.CancellationRequested)
             await context.State.TryCloseOpenFilesAsync(context).ConfigureAwait(false);
         return CreateRuntimeFailureResult(exception, context, options, message);
@@ -302,7 +304,8 @@ internal sealed partial class LythonRuntime
         var message = renderedMessage;
         if (message is null)
         {
-            message = RuntimeFailureProjection.RenderFailureMessage(exception, context);
+            try { message = RuntimeFailureProjection.RenderFailureMessage(exception, context); }
+            finally { context?.ReleaseOwnedModuleExecution(); }
             if (context is not null && !context.State.CancellationRequested)
                 context.State.TryCloseOpenFiles(context);
         }
@@ -462,6 +465,7 @@ internal sealed partial class LythonRuntime
             // so deep recursion that never genuinely yields would nest on a
             // small pool thread instead. Genuine host delays still yield.
             var returned = await ExecuteExecutableCodeObjectAsync(script.EntryPoint, context).ConfigureAwait(false);
+            context.ReleaseOwnedModuleExecution();
 
             // Successful execution publishes outstanding writers instead of
             // silently discarding accepted writes; the await keeps delayed hosts
@@ -477,6 +481,7 @@ internal sealed partial class LythonRuntime
         }
         catch (ReturnSignal signal)
         {
+            context?.ReleaseOwnedModuleExecution();
             // A top-level return still publishes outstanding writers; a
             // publication failure replaces the return with a failure.
             try
@@ -501,8 +506,12 @@ internal sealed partial class LythonRuntime
         {
             try
             {
-                if (context is not null)
-                    await context.State.TryCloseOpenFilesAsync(context).ConfigureAwait(false);
+                try { context?.ReleaseOwnedModuleExecution(); }
+                finally
+                {
+                    if (context is not null)
+                        await context.State.TryCloseOpenFilesAsync(context).ConfigureAwait(false);
+                }
             }
             finally { context?.State.CloseResources(); }
         }

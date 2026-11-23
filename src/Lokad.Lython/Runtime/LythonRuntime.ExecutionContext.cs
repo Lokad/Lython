@@ -21,12 +21,12 @@ internal sealed partial class LythonRuntime
         // Only populated on roots of local modules with prepared patterns.
         internal CompiledRegexPrograms? ImportedRegexPrograms;
 
-        private readonly bool _ownsModuleNamespace;
+        internal bool OwnsModuleNamespace { get; }
 
         public ExecutionContext(ILythonHost host, LythonRunOptions? options, ILythonRegexProvider? regexProvider = null,
             CompiledRegexPrograms? regexPrograms = null, bool ownsModuleNamespace = false)
         {
-            _ownsModuleNamespace = ownsModuleNamespace;
+            OwnsModuleNamespace = ownsModuleNamespace;
             var builtinVariables = CreateBuiltinVariables();
             State = new ExecutionState(host, options, builtinVariables, regexProvider, regexPrograms);
             var sourcePath = options?.SourcePath is null ? null : PathOps.Normalize(options.SourcePath, host.Cwd);
@@ -290,7 +290,7 @@ internal sealed partial class LythonRuntime
             // An owned script can publish its module namespace lazily when
             // Python exposes it. A caller with a reusable context can already
             // hold that dictionary while the script runs.
-            if (_execution.Code.HasPlainModuleClass && !_ownsModuleNamespace) MirrorLocalStores = true;
+            if (_execution.Code.HasPlainModuleClass && !OwnsModuleNamespace) MirrorLocalStores = true;
             MirrorsExecutableLocals = RequiresLocalVariableMirroring;
         }
 
