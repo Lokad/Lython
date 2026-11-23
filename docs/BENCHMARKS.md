@@ -2,22 +2,23 @@
 
 | Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| Quote-heavy CSV policy invoice | 4,096 records / 174,147 B | 7.090–7.256 ms | 6.299–6.420 ms | 1.104–1.152× | Diagnostic. [B1438]. |
-| Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 1.381–1.418 ms | 0.945–0.953 ms | 1.449–1.500× | Diagnostic. [B1438]. |
-| Wide Unicode word report with a materialized split | 195,585 B | 0.994–0.998 ms | 1.326–1.329 ms | 0.748–0.752× | Diagnostic. [B1438]. |
-| JSON Lines export with expanded options | 3,072 records / 189,441 B | 5.402–5.483 ms | 6.474–6.512 ms | 0.830–0.847× | Diagnostic. [B1438]. |
-| Postponed nested factories | 2,048 inputs / 4,096 definitions | 0.975–0.988 ms | 0.5404–0.5405 ms | 1.803–1.829× | Diagnostic. Lython worker spread 1.41%. [B1438]. |
+| Quote-heavy CSV policy invoice | 4,096 records / 174,147 B | 6.814–6.958 ms | 6.341–6.470 ms | 1.053–1.097× | Diagnostic. [B1443]. |
+| Native typed ASCII CSV meter | 4,096 records / 139,299 B | 3.049–3.113 ms | 2.478–2.499 ms | 1.220–1.257× | Diagnostic. [B1443]. |
+| Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 1.379–1.569 ms | 0.9478–0.9562 ms | 1.442–1.655× | Uncertain magnitude. Lython worker spread 13.77%. [B1443]. |
+| Wide Unicode word report with a materialized split | 195,585 B | 0.9942–0.9975 ms | 1.310–1.328 ms | 0.749–0.761× | Diagnostic. [B1443]. |
+| JSON Lines export with expanded options | 3,072 records / 189,441 B | 5.400–5.526 ms | 6.476–6.536 ms | 0.826–0.853× | Diagnostic. [B1443]. |
+| Postponed nested factories | 2,048 inputs / 4,096 definitions | 0.9604–0.9668 ms | 0.5399–0.5447 ms | 1.763–1.791× | Diagnostic. Lython worker spread 0.66%. [B1443]. |
 
 Ratios divide Lython elapsed time by CPython elapsed time. Above 1× means
 Lython takes longer. Ranges span the four pairings of process medians from
 two workers per engine. The opening table measures the November 23, 2026
-UTC checkpoint at `9fb7fdcfb`. Each linked checkpoint gives its exact image
+UTC checkpoint at `30d956735`. Each linked checkpoint gives its exact image
 IDs, worker spread and batch variation.
 
-The factory gap persists with tighter workers in this collection. The
-previous Lython warm spread was 18.08%. The two text rows use different
-scripts and inputs. The wide report specifically measures code that
-materializes the word list. [B1429] · [B1438].
+The factory gap persists in both phases. Earlier Lython warm workers
+differed by 18.08% at B1429 and 1.41% at B1438. The two text rows use
+different scripts and inputs. The wide report materializes the word list.
+[B1429] · [B1438] · [B1443].
 
 The quiet comparison machine is an Azure F4as_v7 running Ubuntu 24.04.4
 with .NET 11 RC3. The external baseline is stock CPython 3.13.16. Warm
@@ -33,10 +34,12 @@ measurements cover the wider request.
 
 | Workload | Phase | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| Sparse generated validator | Compilation only | 1.459–1.462 ms | 1.814–1.817 ms | 0.803–0.806× | Diagnostic. [B1438]. |
-| Sparse generated validator | Compile-to-result | 1.488–1.521 ms | 1.968–1.972 ms | 0.755–0.773× | Diagnostic. [B1438]. |
-| Postponed nested factories | Compile-to-result | 1.023–1.043 ms | 0.580–0.587 ms | 1.744–1.800× | Diagnostic. [B1438]. |
-| Configuration edit | Compile-to-result | 0.1077–0.1090 ms | 0.1236–0.1253 ms | 0.859–0.882× | Diagnostic. [B1438]. |
+| Generated validator with read-only branches | Compilation only | 0.4882–0.4970 ms | 0.9270–0.9320 ms | 0.524–0.536× | Diagnostic. [B1443]. |
+| Generated validator with read-only branches | Compile-to-result | 0.5013–0.5076 ms | 0.9446–0.9524 ms | 0.526–0.537× | Diagnostic. [B1443]. |
+| Sparse generated validator | Compile-to-result | 1.566–1.570 ms | 1.963–1.972 ms | 0.794–0.800× | Diagnostic. [B1443]. |
+| Postponed nested factories | Compile-to-result | 1.050–1.076 ms | 0.5775–0.5831 ms | 1.800–1.864× | Diagnostic. [B1443]. |
+| Sparse generated validator | Compilation only | 1.459–1.462 ms | 1.814–1.817 ms | 0.803–0.806× | Historical diagnostic. [B1438]. |
+| Configuration edit | Compile-to-result | 0.1077–0.1090 ms | 0.1236–0.1253 ms | 0.859–0.882× | Historical diagnostic. [B1438]. |
 | Typed ASCII CSV meter report | Compilation only | 0.04166–0.04177 ms | 0.06754–0.06762 ms | 0.616–0.618× | Diagnostic. [B1336]. |
 | Typed ASCII CSV meter report | Compile-to-result | 3.102–3.286 ms | 2.655–2.677 ms | 1.159–1.237× | Diagnostic. Lython worker spread 5.93%. [B1351]. |
 | Typed Unicode CSV meter report | Compilation only | 0.04218–0.04232 ms | 0.06772–0.06784 ms | 0.622–0.625× | Diagnostic. Lython worker spread 0.34%. [B1388]. |
@@ -87,6 +90,7 @@ change. The checkpoint includes the arithmetic and allocation controls.
 
 | Checkpoint | Lython source | Date |
 | --- | --- | --- |
+| [B1443] | `30d956735` | 2026-11-23 UTC |
 | [B1438] | `9fb7fdcfb` | 2026-11-23 UTC |
 | [B1429] | `1b841b597` | 2026-11-23 UTC |
 | [B1419] | `6ac96ea93` | 2026-11-22 UTC |
@@ -163,6 +167,7 @@ Review individual designs and adverse observations in
 the [experiment index](../benchmarks/EXPERIMENTS.md).
 Reproduce the comparisons with the [benchmark tools](../benchmarks/README.md).
 
+[B1443]: ../benchmarks/results/2026-11-23-branch-cpython-checkpoint/README.md
 [B1438]: ../benchmarks/results/2026-11-23-integrated-cpython-checkpoint/README.md
 [B1429]: ../benchmarks/results/2026-11-23-retained-cpython-checkpoint/README.md
 [B1419]: ../benchmarks/results/2026-11-22-callable-checkpoint-cpython/README.md

@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1443 compiler and runtime against CPython](results/2026-11-23-branch-cpython-checkpoint/README.md)
+measures the retained source. The read-only branch validator compiles in
+0.524–0.536× CPython's time, the quote-heavy invoice runs in 1.053–1.097×
+warm and postponed factories take 1.800–1.864× from compilation to result.
+
 [B1442 compiler binding snapshots](results/2026-11-23-abstract-state-snapshots/README.md)
 removes copying for unchanged branches. The generated read-only script
 compiles 70.34–71.29% faster. Inherited dataclass compilation improves
