@@ -5,6 +5,48 @@ namespace Lokad.Lython.PublicApi.Tests;
 [Collection("RuntimeStress")]
 public sealed class FunctionDefaultMetadataTests
 {
+    [Fact]
+    public async Task ComputedDefinitionKeepsDefaultOwnersAcrossWideAndSuspendingArguments()
+    {
+        const string source = """
+            from __future__ import annotations
+            def bind(weight):
+                def define(seed):
+                    def evaluate(record: int, /, base: int = seed * 3, *, scale = weight) -> int:
+                        return record + base
+                    return evaluate
+                return define
+            class Operand:
+                def __mul__(self, factor):
+                    with open('/seed') as stream:
+                        print('operator', factor)
+                        return int(stream.read())
+            shared = []
+            factory = bind(shared)
+            first = factory(7)
+            second = factory(7)
+            dynamic = factory(Operand())
+            wide = factory(2**70)
+            print(first(1), dynamic(1), wide(1) == (3 << 70) + 1)
+            print(first.__defaults__ is not second.__defaults__, first.__kwdefaults__['scale'] is shared)
+            print(first.__annotations__)
+            """;
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        var host = new DelayedLythonHost();
+        host.SeedFile("/seed", "20");
+        using (var result = await script.RunAsync(host))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("operator 3\n22 21 True\nTrue True\n{'base': 'int', 'record': 'int', 'return': 'int'}\n", result.StandardOutput);
+        }
+        Assert.Equal(1, host.ClosedFileCount);
+        Assert.True(host.CompletedAsynchronously > 0);
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
     public static TheoryData<string, string> Programs => new()
     {
         { "def add(a=1,*,b=2): return a+b\nprint(add(),add(3,b=4),add(b=8))\nadd.__defaults__=(10,)\nadd.__kwdefaults__={'b':20}\nprint(add(),add(b=5))", "3 7 9\n30 15\n" },
