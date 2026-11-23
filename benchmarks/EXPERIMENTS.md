@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1438 integrated CPython checkpoint](results/2026-11-23-integrated-cpython-checkpoint/README.md)
+measures the retained core on the six B1429 scripts and adds a
+materialized wide Unicode report. The wide report takes 0.748–0.752×
+CPython's time. The postponed factory takes 1.803–1.829× warm with
+1.41% Lython worker spread.
+
 [Current native call inventory](results/2026-11-23-native-transition-inventory/README.md)
 counts 12,288 completed native prefixes on the invoice and 4,096 in
 each ordinary factory. Neither host entry point transfers a native
