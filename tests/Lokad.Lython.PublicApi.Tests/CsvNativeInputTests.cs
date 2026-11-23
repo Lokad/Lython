@@ -69,6 +69,32 @@ public sealed class CsvNativeInputTests
     }
 
     [Theory]
+    [InlineData(false, false)] [InlineData(false, true)]
+    [InlineData(true, false)] [InlineData(true, true)]
+    public async Task NumericFailureConsumesOnePhysicalLineAndKeepsTheNextRefill(bool asynchronous, bool translate)
+    {
+        var content = "1,2\r\n3,bad,\"unfinished\r\nskip,me\r\n4,1e2\r\n5,\"" +
+            new string('x', 18000) + "\",6\r\n7,8\r\n";
+        var newline = translate ? "None" : "''";
+        await AssertFile(asynchronous, content, $$"""
+            import csv
+            with open('/input.csv', newline={{newline}}) as source:
+                reader = csv.reader(source, quoting=csv.QUOTE_NONNUMERIC, strict=True)
+                saved = next(reader)
+                try:
+                    next(reader)
+                except ValueError:
+                    print('bad number', reader.line_num)
+                print(repr(source.readline()))
+                print(next(reader), reader.line_num)
+                number, text, tail = next(reader)
+                print(number, len(text), tail, reader.line_num)
+                print(next(reader), reader.line_num, saved)
+            """, "bad number 2\n" + (translate ? "'skip,me\\n'\n" : "'skip,me\\r\\n'\n") +
+            "[4.0, 100.0] 3\n5.0 18000 6.0 4\n[7.0, 8.0] 5 [1.0, 2.0]\n");
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task RetainedNativeRowsSurviveQuotesAndChangesInWidth(bool asynchronous)
