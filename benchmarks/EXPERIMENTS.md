@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1523 supplied arithmetic against CPython after direct call updates](results/2026-11-23-integer-call-update-cpython/README.md)
+puts the retained helper at 1.498–1.531× warm and 1.365–1.385× through
+result. The independent caller probes preserve pre-rebind identity and
+error order across argument evaluation.
+
 [B1522 feed completed integer call results directly to an adjacent update](results/2026-11-23-integer-call-update/README.md)
 removes intermediate result publication. The supplied script takes
 3.07–3.42% less warm elapsed and 2.68–3.09% less from compilation to
