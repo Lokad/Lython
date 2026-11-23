@@ -7,6 +7,25 @@ public sealed class CsvCanonicalStateTests
     // Independent CPython 3.13.2 outputs; no installed Python is needed by these tests.
     public static IEnumerable<object[]> Cases()
     {
+        yield return ["header-replaced-during-row-pull", """
+            import csv
+            class Source:
+                i=0
+                def __iter__(self):
+                    return self
+                def __next__(self):
+                    self.i += 1
+                    if self.i == 1:
+                        return '1,2'
+                    if self.i == 2:
+                        reader.fieldnames=['x','y']
+                        return '3,4'
+                    raise StopIteration
+            reader=csv.DictReader(Source(),fieldnames=['a','b'])
+            first=next(reader)
+            second=next(reader)
+            print(first,second,reader.line_num)
+            """, "{'a': '1', 'b': '2'} {'x': '3', 'y': '4'} 2\n"];
         yield return new object[] { "equal-header-key-identity", "import csv\nfields=['ab','v']\nr=csv.DictReader(['1,2','3,4'],fieldnames=fields)\nold=fields[0]\nfirst=next(r)\nfields[0]=''.join(['a','b'])\nsecond=next(r)\nprint(next(iter(first)) is old,next(iter(second)) is fields[0],next(iter(second)) is old)\nprint(first,second)\n", "True True False\n{'ab': '1', 'v': '2'} {'ab': '3', 'v': '4'}\n" };
         yield return new object[] { "duplicate-header-rest-collision", "import csv\nr=csv.DictReader(['1,2','3,4,5','6,7,8,9'],fieldnames=['a','a','b'],restkey='a',restval='missing')\nprint(list(r))\n", "[{'a': '2', 'b': 'missing'}, {'a': '4', 'b': '5'}, {'a': ['9'], 'b': '8'}]\n" };
         yield return new object[] { "irregular-independent-rows", "import csv\nr=csv.DictReader(['1,2,3,4','5,6,7,8,extra','9,10,11,12'],fieldnames=['a','b','c','d'])\nfirst=next(r)\nsecond=next(r)\nthird=next(r)\nfirst['a']='changed'\nprint(first,second,third)\n", "{'a': 'changed', 'b': '2', 'c': '3', 'd': '4'} {'a': '5', 'b': '6', 'c': '7', 'd': '8', None: ['extra']} {'a': '9', 'b': '10', 'c': '11', 'd': '12'}\n" };

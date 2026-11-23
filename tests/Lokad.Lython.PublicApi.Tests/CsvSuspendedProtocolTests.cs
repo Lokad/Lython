@@ -6,6 +6,16 @@ public sealed class CsvSuspendedProtocolTests
 {
     public static IEnumerable<object[]> Callbacks()
     {
+        yield return ["header-replaced-during-a-suspending-row", """
+            def rows():
+                yield 'first'
+                reader.fieldnames = [read()]
+                yield 'second'
+            reader=csv.DictReader(rows(),fieldnames=['old'])
+            first=next(reader)
+            second=next(reader)
+            print(first,second,reader.line_num)
+            """, "read\n{'old': 'first'} {'a': 'second'} 2\n"];
         yield return new object[] { "reader-iterator", "class Source:\n def __iter__(self):\n  read()\n  return iter(['a'])\nr=csv.reader(Source())\nprint('made')\nprint(next(r))", "read\nmade\n['a']\n" };
         yield return new object[] { "field-iterator", "def fields():\n yield read()\nr=csv.DictReader(['1'],fields())\nprint(next(r))", "read\n{'a': '1'}\n" };
         yield return new object[] { "lazy-header", "def rows():\n yield read()\n yield '1'\nr=csv.DictReader(rows())\nprint('made',r.line_num)\nprint(r.fieldnames,r.line_num)\nprint(next(r))", "made 0\nread\n['a'] 1\n{'a': '1'}\n" };
