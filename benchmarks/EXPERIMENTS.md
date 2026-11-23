@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1532 plain class namespace prototype](results/2026-11-23-plain-class-module-slots/README.md)
+finds a whole-invoice elapsed and allocation gain. It also exposes the
+live namespace requirement of reusable execution contexts. The measured
+prototype fails 35 focused tests on each platform.
+[B1533](results/2026-11-23-owned-class-module-slots/README.md) preserves that
+namespace and confirms the warm gain on the retained source.
+
 [B1523 supplied arithmetic against CPython after direct call updates](results/2026-11-23-integer-call-update-cpython/README.md)
 puts the retained helper at 1.498–1.531× warm and 1.365–1.385× through
 result. The independent caller probes preserve pre-rebind identity and

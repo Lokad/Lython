@@ -899,9 +899,12 @@ these copies conservatively remain charged to the execution/result owner.
 Suspended generators keep their state until completion and own one context handle.
 They initialize locals and cells through the shared executable-state constructor.
 Bound arguments copy directly into their admitted retained workspace before the
-call's binding storage returns. Complete lexical scopes need no blanket namespace
-mirroring. Class construction and incomplete scopes retain their namespace bridge. Nonlocal stores and deletions update captured cells even after the defining
-workspace has detached; live defining frames read those same cells.
+call's binding storage returns. An owned script can keep module bindings in
+their existing slots through a bare class with plain method declarations.
+Python's `globals()` publishes the live namespace when first needed. Imports,
+reused contexts and classes with observable construction retain their
+namespace bridge. Nonlocal stores and deletions update captured cells
+after the defining workspace has detached. Live frames read those same cells.
 Match patterns use a compile-owned representation. Immutable literal keys, capture indexes and required working
 positions are prepared once. Captures stay private until a complete pattern succeeds;
 validated OR alternatives overwrite their own indexed slots. Executable frames admit
