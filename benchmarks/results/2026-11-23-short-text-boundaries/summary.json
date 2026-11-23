@@ -1,0 +1,63 @@
+{
+  "source": "0112138c13318401d2ab1e4c62bf9f6f2e9ed557",
+  "timedBatches": 42,
+  "elapsedSeconds": 82.13125271815807,
+  "workerMediansMs": {
+    "representative": {
+      "elapsed": 1.3495647115384615,
+      "cpu": 1.4316239316239316
+    },
+    "caller-update": {
+      "elapsed": 1.3627995432900433,
+      "cpu": 1.4285714285714286
+    },
+    "inline": {
+      "elapsed": 0.9846889841521395,
+      "cpu": 1.045958795562599
+    },
+    "inline-control": {
+      "elapsed": 0.9942832079365079,
+      "cpu": 1.0634920634920635
+    },
+    "caller-update-control": {
+      "elapsed": 1.3304278874734607,
+      "cpu": 1.4012738853503184
+    },
+    "representative-control": {
+      "elapsed": 1.356435873390558,
+      "cpu": 1.4163090128755365
+    }
+  },
+  "percentChange": {
+    "caller-update vs representative": {
+      "elapsed": [
+        -1.9173767390925356,
+        0.9806741120619966
+      ],
+      "cpu": [
+        -2.119973381500151,
+        0.8658008658008809
+      ]
+    },
+    "inline vs caller-update": {
+      "elapsed": [
+        -27.745133978037362,
+        -25.26590751004971
+      ],
+      "cpu": [
+        -26.782884310618073,
+        -24.105339105339098
+      ]
+    },
+    "inline vs representative": {
+      "elapsed": [
+        -27.406152884264035,
+        -26.325636745269055
+      ],
+      "cpu": [
+        -26.938997563687106,
+        -24.911014911014906
+      ]
+    }
+  }
+}

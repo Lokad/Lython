@@ -22,5 +22,6 @@ instruction placement. They establish no elapsed or CPU speedup.
 Compare CPU before selecting an entry or cased-split redesign.
 Every tested shared allowance returns to baseline.
 
+[Quiet-VM CPU comparison](cpu.md) ·
 [Catalog, opcode tapes, allocations and verification](diagnostics.tar.xz) ·
 [Frozen image](../2026-11-23-owned-class-module-slots/identity.json).
