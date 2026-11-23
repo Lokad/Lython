@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1481 share inline captures with constant analysis](results/2026-11-23-frontend-regex-captures/README.md)
+eliminates the small temporary capture array and its reservation.
+The 64-rule compile allocates 6,144 fewer bytes. Large capture admission,
+flags, cancellation and cleanup pass on both focused platforms.
+
 [B1480 separate factory compilation and execution](results/2026-11-23-factory-phase-cpython/README.md)
 finds 21 µs compilation and 980–990 µs warm execution on the B1478
 source. The runtime takes 1.731–1.811× CPython warm elapsed. The
