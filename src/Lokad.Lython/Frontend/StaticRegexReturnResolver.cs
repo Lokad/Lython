@@ -318,9 +318,13 @@ internal static class StaticRegexReturnResolver
             static state => state.pattern.Prepare(state.input, state.window,
                 state.analysis.MemoryGovernor?.Budget ?? new LythonMemoryBudget(), state.token),
             analysis.MemoryGovernor, token, span, operationName: "Regex constant-subject preparation");
-        using var storage = analysis.MemoryGovernor?.ReserveTemporary(checked(32L + 16L * captureSlotCount), span);
+        var useInlineCaptures = captureSlotCount <= LythonRuntime.RegexCompiler.InlineCaptureCapacity;
+        using var storage = useInlineCaptures ? null
+            : analysis.MemoryGovernor?.ReserveTemporary(LythonRuntime.RegexCompiler.CaptureBufferBytes(captureSlotCount), span);
         if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
-        var captures = new LythonRegexCapture?[captureSlotCount];
+        LythonRuntime.RegexCompiler.InlineCaptureBuffer buffer = default;
+        Span<LythonRegexCapture?> captures = buffer;
+        captures = useInlineCaptures ? captures[..captureSlotCount] : new LythonRegexCapture?[captureSlotCount];
         if (!LythonRuntime.RegexCompiler.TryMatch(subject, operation, captures, out var lastIndex,
             analysis.MemoryGovernor, token, span, operationName: "Regex constant matching")) return false;
 

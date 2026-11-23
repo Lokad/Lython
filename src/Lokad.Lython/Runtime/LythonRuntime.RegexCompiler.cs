@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Text;
@@ -9,6 +10,13 @@ internal sealed partial class LythonRuntime
 {
     internal static class RegexCompiler
     {
+        internal const int InlineCaptureCapacity = 8;
+
+        [InlineArray(InlineCaptureCapacity)]
+        internal struct InlineCaptureBuffer { private LythonRegexCapture? _first; }
+
+        internal static long CaptureBufferBytes(int count) => checked(32L + 16L * count);
+
         internal const int PythonIgnoreCaseFlag = 2;
         internal const int PythonLocaleFlag = 4;
         internal const int PythonMultilineFlag = 8;

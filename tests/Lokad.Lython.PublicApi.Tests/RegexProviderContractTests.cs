@@ -1047,6 +1047,7 @@ public sealed class RegexProviderContractTests
         using var provider = new CooperatingProvider
         {
             ExpectedToken = cancellation.Token,
+            CaptureSlots = 12, // Large enough to require admitted capture storage.
             OnPrepare = (_, _) => budget.OnNextResizeGrowth = cancellation.Cancel,
         };
         var engine = new LythonEngine(provider);
@@ -1454,15 +1455,23 @@ public sealed class RegexProviderContractTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
-    [Fact]
-    public void CompiledPatternConstantAnalysisKeepsEffectiveFlags()
+    [Theory]
+    [InlineData(1)]
+    [InlineData(12)]
+    public void CompiledPatternConstantAnalysisKeepsEffectiveFlags(int captureSlots)
     {
-        using var provider = new CooperatingProvider();
-        using var script = new LythonEngine(provider).Compile("import re\np=re.compile('x',re.I)\nreturn p.match('X').group()");
-        Assert.True(script.IsValid, string.Join(";", script.Diagnostics.Select(d => d.Message)));
-        using var result = script.Run(new MockLythonHost());
-        Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("X", result.ReturnValue);
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using var provider = new CooperatingProvider { CaptureSlots = captureSlots };
+        var source = $"import re\np=re.compile('x',re.I)\nreturn p.match('X').group({captureSlots - 1})";
+        using (var script = new LythonEngine(provider).Compile(source, budget))
+        {
+            Assert.True(script.IsValid, string.Join(";", script.Diagnostics.Select(d => d.Message)));
+            using var result = script.Run(new MockLythonHost());
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("X", result.ReturnValue);
+        }
+        Assert.Equal(provider.Compilations, provider.ClosedPatterns);
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [Theory]

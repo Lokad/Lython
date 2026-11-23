@@ -56,6 +56,8 @@
 - Return complete checked integer expressions directly from supplied positional
   operands and eligible prepared defaults. Preserve managed admission and use
   the normal activation for other operands.
+- Share bounded capture scratch between regex constant analysis and single
+  runtime matches. Admit wider capture arrays before allocation.
 - Reuse an existing UTF-8 scalar index to resolve single regex match windows.
 - Initialize regex match byte ranges during scalar projection. ASCII matches
   write their byte and character offsets together.

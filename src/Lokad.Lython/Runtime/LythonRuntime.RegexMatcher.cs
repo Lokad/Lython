@@ -1,5 +1,4 @@
 using System.Numerics;
-using System.Runtime.CompilerServices;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
@@ -12,11 +11,6 @@ internal sealed partial class LythonRuntime
     private static class RegexMatcher
     {
         private const int DirectCoordinateSortCount = 64;
-        private const int InlineMatchCaptureCount = 8;
-
-        [InlineArray(InlineMatchCaptureCount)]
-        private struct InlineMatchCaptures { private LythonRegexCapture? _first; }
-
         internal static PreparedSubject Prepare(RePatternObject pattern, RegexSubjectRange range,
             ExecutionContext context, LythonSourceSpan span)
         {
@@ -238,10 +232,10 @@ internal sealed partial class LythonRuntime
             // local until the provider and the final projection have finished.
             var window = Window(range, context, span, borrowIndex: true);
             var count = pattern.CaptureSlotCount;
-            using var scratch = count > InlineMatchCaptureCount
-                ? context.MemoryGovernor.ReserveTemporary(checked(32L + 16L * count), span) : null;
+            using var scratch = count > RegexCompiler.InlineCaptureCapacity
+                ? context.MemoryGovernor.ReserveTemporary(RegexCompiler.CaptureBufferBytes(count), span) : null;
             context.CheckExecution(span);
-            InlineMatchCaptures buffer = default;
+            RegexCompiler.InlineCaptureBuffer buffer = default;
             Span<LythonRegexCapture?> slots = buffer;
             slots = scratch is null ? slots[..count] : new LythonRegexCapture?[count];
             using var subject = OpenSubject(pattern, range, window, context, span);
