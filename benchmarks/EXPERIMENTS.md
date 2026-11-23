@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1482 return closed lexical definitions directly](results/2026-11-23-closed-definition-return/README.md)
+eliminates the factory's native activation and operand copy. Warm elapsed
+falls 10.19–15.04% postponed and 7.37–13.84% eager with supporting CPU.
+The defaults observer and postponed time to result improve. Both controls
+span zero. CLR allocation and admitted peaks match. The Tier 1 outer
+frame still clears the inline buffer.
+
 [B1481 share inline captures with constant analysis](results/2026-11-23-frontend-regex-captures/README.md)
 eliminates the small temporary capture array and its reservation.
 The 64-rule compile allocates 6,144 fewer bytes. Large capture admission,

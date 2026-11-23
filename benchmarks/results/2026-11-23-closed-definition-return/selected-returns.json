@@ -1,0 +1,29 @@
+[
+  [
+    "scripts.annotated-rule-closures.nested-factories.postponed",
+    "for_policy",
+    6,
+    {
+      "ApplyOperation": 1,
+      "Return": 1
+    }
+  ],
+  [
+    "scripts.annotated-rule-closures.nested-factories",
+    "for_policy",
+    6,
+    {
+      "ApplyOperation": 1,
+      "Return": 1
+    }
+  ],
+  [
+    "scripts.factory-observed-defaults",
+    "for_policy",
+    6,
+    {
+      "ApplyOperation": 1,
+      "Return": 1
+    }
+  ]
+]

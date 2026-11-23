@@ -140,6 +140,7 @@ change. The checkpoint includes the arithmetic and allocation controls.
 
 | Change | Measured effect | Limits |
 | --- | --- | --- |
+| Return closed lexical definitions directly | Postponed factories take 10.19–15.04% less warm elapsed and 9.35–12.74% less time to result. Eager warm time falls 7.37–13.84%. Process CPU supports the gains. | Both unchanged controls span zero. Allocation and admitted peaks match. [B1482](../benchmarks/results/2026-11-23-closed-definition-return/README.md). |
 | Use a fixed reservation for executable tuples | Local managed allocation falls 8.16% on typed CSV and 9.31% on explicit-float CSV, with unchanged admitted peaks. | CSV warm elapsed spans zero. The defaults observer takes 0.44–1.55% longer with mixed process CPU. [B1477](../benchmarks/results/2026-11-23-fixed-tuple-admission/README.md). |
 | Use live global resolution for root module reads | Explicit-float CSV takes 1.33–3.01% less warm elapsed and short nonlocal text takes 3.04–4.70% less, with lower process CPU. | Both time-to-result ranges and typed CSV warm elapsed span zero. Local compile allocation and admitted peaks match. [B1474](../benchmarks/results/2026-11-23-root-module-lookup/README.md). |
 | Share exact short-decimal float conversion | Typed ASCII CSV takes 8.87–10.72% less warm elapsed and explicit float takes 3.20–7.11% less, with supporting process CPU. | Typed Unicode, scientific notation, JSON and the quoted invoice span zero. Admitted peaks match. [B1465/B1466](../benchmarks/results/2026-11-23-exact-short-decimal/README.md). |

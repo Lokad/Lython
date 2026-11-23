@@ -1,0 +1,98 @@
+[
+  {
+    "role": "reference",
+    "methods": [
+      {
+        "method": "StartNativeCall",
+        "tier": "Tier0",
+        "stack": 704,
+        "bytes": 1025,
+        "activationCall": true
+      },
+      {
+        "method": "StartNativeCall",
+        "tier": "Instrumented Tier0",
+        "stack": 704,
+        "bytes": 1146,
+        "activationCall": true
+      },
+      {
+        "method": "StartNativeCall",
+        "tier": "Tier1",
+        "stack": 504,
+        "bytes": 926,
+        "activationCall": true
+      }
+    ],
+    "coreSHA256": "9c3170fe72d4f6629ddf9dc0b59d0a4bf9ae699eb0234cd3cb2c47ace8bc2cf0"
+  },
+  {
+    "role": "candidate",
+    "methods": [
+      {
+        "method": "StartNativeCall",
+        "tier": "Tier0",
+        "stack": 768,
+        "bytes": 1302,
+        "activationCall": true
+      },
+      {
+        "method": "ReturnDefinition",
+        "tier": "Tier0",
+        "stack": 176,
+        "bytes": 603,
+        "activationCall": false
+      },
+      {
+        "method": "CreateClosedFunctionDefinition",
+        "tier": "Tier0",
+        "stack": 352,
+        "bytes": 427,
+        "activationCall": false
+      },
+      {
+        "method": "StartNativeCall",
+        "tier": "Instrumented Tier0",
+        "stack": 768,
+        "bytes": 1487,
+        "activationCall": true
+      },
+      {
+        "method": "ReturnDefinition",
+        "tier": "Instrumented Tier0",
+        "stack": 176,
+        "bytes": 682,
+        "activationCall": false
+      },
+      {
+        "method": "CreateClosedFunctionDefinition",
+        "tier": "Instrumented Tier0",
+        "stack": 352,
+        "bytes": 427,
+        "activationCall": false
+      },
+      {
+        "method": "StartNativeCall",
+        "tier": "Tier1",
+        "stack": 520,
+        "bytes": 1044,
+        "activationCall": true
+      },
+      {
+        "method": "ReturnDefinition",
+        "tier": "Tier1",
+        "stack": 208,
+        "bytes": 783,
+        "activationCall": false
+      },
+      {
+        "method": "CreateClosedFunctionDefinition",
+        "tier": "Tier1",
+        "stack": 184,
+        "bytes": 349,
+        "activationCall": false
+      }
+    ],
+    "coreSHA256": "c0f2a8fdef17d2ac081246c9d7d0ab1e82bd27135f96e9152034a2f345728ebc"
+  }
+]
