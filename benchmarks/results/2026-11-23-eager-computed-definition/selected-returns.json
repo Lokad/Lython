@@ -1,0 +1,15 @@
+[
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories",
+    "function": "compile_rule",
+    "opcodes": {
+      "StartFunctionDefaults": 1,
+      "Binary": 1,
+      "StoreFunctionDefault": 2,
+      "LoadClosure": 1,
+      "ApplyOperation": 1,
+      "Return": 1
+    },
+    "workspace": 6
+  }
+]

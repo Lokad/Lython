@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1501 share eager annotation admission with the direct factory](results/2026-11-23-eager-computed-definition/README.md)
+improves eager warm elapsed 17.78–21.67% but slows postponed warm
+4.31–10.40%, with supporting CPU. Keep the variant private. The shared
+constructor's stack footprint grows in the Windows JIT diagnostic.
+
 [B1500 return a definition with its prepared computed defaults](results/2026-11-23-direct-computed-definition/README.md)
 avoids the native activation on two factory scripts. Postponed warm
 elapsed improves 20.98–24.50%, with supporting CPU. Eager CPU and quoted
