@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1457 preserve native cased-key insertion](results/2026-11-23-borrowed-cased-words-append/README.md)
+retains the borrowed repeated-key savings and reduces the distinct-word
+elapsed cost to 1.75–3.62%. The short nonlocal report takes longer against
+a moving reference. Its timing debt carries forward to the checkpoint.
+
 [B1456 borrowed cased dictionary words](results/2026-11-23-borrowed-cased-words/README.md)
 reduces managed allocation by 40–46% and elapsed by 5–14% on the
 repeated-word reports. The distinct-word control takes 10–13% longer.
