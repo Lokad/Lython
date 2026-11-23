@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1485 return initialized DictReader headers directly](results/2026-11-23-dictreader-ready-header/README.md)
+removes the ready header's state-machine entry. The quoted warm lane is
+flat and its compile-to-result elapsed rises 1.36–4.64%. Ordinary invoice
+and text controls have variable candidate workers. The isolated change
+stays private.
+
 [B1484 complete ready DictReader rows directly](results/2026-11-23-dictreader-activation/README.md)
 moves the native record builder outside the mixed continuation. Quoted
 warm CPU falls 1.72–2.44%. Ordinary invoice and time-to-result elapsed
