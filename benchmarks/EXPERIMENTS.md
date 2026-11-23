@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1510 retained call checkpoint against CPython](results/2026-11-23-retained-call-cpython/README.md)
+puts fully supplied arithmetic at 1.516–1.555× CPython warm and
+1.447–1.528× through first use. Eager first-use and short-text magnitudes
+remain uncertain. Exact source, timing boundaries and failed staging
+evidence are preserved.
+
 [B1509 guard the shared closed return with compiler facts](results/2026-11-23-guarded-native-closed-entry/README.md)
 keeps the omitted-default and eager first-use gains. The wide helper
 skips the check, with unsettled timing, and the quoted invoice uses
