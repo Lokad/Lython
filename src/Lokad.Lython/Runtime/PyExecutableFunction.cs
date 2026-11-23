@@ -130,6 +130,14 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         return TryStartDirectIntegerReturn(new LythonRuntime.DefaultIntegerOperands(arguments, this), span, out result);
     }
 
+    internal bool TryStartBoundIntegerReturn(ReadOnlySpan<LythonRuntime.ExecutableSlot> arguments,
+        object receiver, LythonSourceSpan span, out LythonRuntime.ExecutableSlot result)
+    {
+        result = default;
+        return CodeObject.HasDirectIntegerReturn && arguments.Length + 1 == CodeObject.FirstTemporarySlot &&
+            TryStartDirectIntegerReturn(new LythonRuntime.BoundIntegerOperands(receiver, arguments), span, out result);
+    }
+
     private bool TryStartDirectIntegerReturn<T>(T operands, LythonSourceSpan span, out LythonRuntime.ExecutableSlot result)
         where T : LythonRuntime.IIntegerOperands, allows ref struct
     {

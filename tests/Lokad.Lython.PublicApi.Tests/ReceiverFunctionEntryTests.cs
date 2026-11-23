@@ -7,6 +7,18 @@ public sealed class ReceiverFunctionEntryTests
     public static TheoryData<string, string, string> Cases => new()
     {
         { "direct-alias-and-receiver", "class Reader:\n    def identity(self): return self\n    def words(self,line): return line.lower().split()\nvalue=Reader()\nsaved=value.words\nprint(value.identity() is value,saved.__self__ is value,saved is value.words)\nprint(value.words('A Café'),saved('B TEST'))\n", "True True False\n['a', 'café'] ['b', 'test']\n" },
+        { "nested-checked-bound-return", """
+            events = []
+            class Factor:
+                def transform(self, value): return value * 3 + 1
+                def forward(self, value): return self.transform(value) * 2
+            class Adaptive:
+                def __mul__(self, value):
+                    events.append(value)
+                    return 7
+            item = Factor()
+            print(item.forward(7), item.forward(2**62), item.forward(Adaptive()), events)
+            """, "44 27670116110564327426 16 [3]\n" },
         { "live-defaults-and-keywords", "class Reader:\n    def wanted(self,value,/,prefix='A',*,suffix='!'):\n        return value.startswith(prefix) and value.endswith(suffix)\nvalue=Reader();saved=value.wanted\nprint(saved('ABC!'),value.wanted('ABC!',suffix='?'))\nReader.wanted.__defaults__=('B',)\nReader.wanted.__kwdefaults__['suffix']='?'\nprint(saved('BCD?'),value.wanted('AX!',prefix='A',suffix='!'))\nfor bad in [lambda:saved(value='x'),lambda:saved('x',prefix='A',self=value),lambda:saved()]:\n    try:bad()\n    except TypeError:print('TypeError')\n", "True False\nTrue True\nTypeError\nTypeError\nTypeError\n" },
         { "evaluated-target-survives-rebinding", "class Reader:\n    def old(self,value): return value.lower()\n    def new(self,value): return value.upper()\n    read=old\nvalue=Reader();saved=value.read\ndef argument():\n    Reader.read=Reader.new\n    return 'aB'\nprint(value.read(argument()),saved('Cd'),value.read('eF'))\n", "ab cd EF\n" },
         { "positional-method-defaults-and-alias", "class Reader:\n    def take(self,value,/,suffix='!'):return value+suffix\nreader=Reader();saved=reader.take\nprint(reader.take('A','?'),saved('B'),saved('C','.'))\nReader.take.__defaults__=('~',)\nprint(reader.take('D'),saved('E','+'))\ntry:saved(value='bad')\nexcept TypeError:print('TypeError')\n", "A? B! C.\nD~ E+\nTypeError\n" },

@@ -2,6 +2,8 @@
 
 ## 0.11.0 - Unreleased
 
+- Let eligible nested bound methods return checked integer expressions directly
+  from the evaluated receiver and arguments, without constructing callee slots.
 - Construct eligible materialized cased split lists from one UTF-8 scan.
   Bound temporary packed storage and keep direct construction for longer
   inputs. Observe cancellation before growing a newly admitted word buffer.

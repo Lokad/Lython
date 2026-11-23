@@ -34,6 +34,15 @@ internal sealed partial class LythonRuntime
             => TryReadMachineOperand(code, _slots, slot, scope, out value);
     }
 
+    internal readonly ref struct BoundIntegerOperands(object receiver, ReadOnlySpan<ExecutableSlot> arguments) : IIntegerOperands
+    {
+        private readonly ReadOnlySpan<ExecutableSlot> _arguments = arguments;
+
+        public bool TryRead(ExecutableCodeObject code, int slot, ExecutionContext scope, out long value)
+            => slot == 0 ? TryMachineInteger(receiver, out value)
+                : TryReadMachineOperand(code, _arguments, slot > 0 ? slot - 1 : slot, scope, out value);
+    }
+
     internal readonly ref struct DefaultIntegerOperands(ReadOnlySpan<ExecutableSlot> supplied, FunctionBindingPlan plan) : IIntegerOperands
     {
         private readonly ReadOnlySpan<ExecutableSlot> _supplied = supplied;
