@@ -1,0 +1,218 @@
+{
+  "sourceRevision": "be20f34fc68dfad6e305a113ef6e3469597613f9",
+  "retainedSource": "be20f34fc68dfad6e305a113ef6e3469597613f9",
+  "runtime": ".NET 11.0.0-rc.3.26522.148",
+  "catalogSha": "eeed9ae811b66ac344564771548d9e9a5a515bbf028cfc2ceec852903e059ad2",
+  "allProcessesJoined": true,
+  "totalVerifiedBatches": 313,
+  "timingQualification": false,
+  "workloads": {
+    "postponed": {
+      "workload": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "traceSHA256": "24724dadb2ad09ca008c16b3aad1d956ad0c1a9016475834f51cde1e782d72da",
+      "allocationTicks": 28391,
+      "batches": 136,
+      "invocations": 4352,
+      "allocationWeight": [
+        {
+          "Type": "Lokad.Lython.Runtime.PyExecutableFunction",
+          "Samples": 15751,
+          "SampleWeightBytes": 1678884504,
+          "SampleWeightPercent": 55.478804031619546
+        },
+        {
+          "Type": "System.Numerics.BigInteger",
+          "Samples": 7192,
+          "SampleWeightBytes": 766570600,
+          "SampleWeightPercent": 25.3313554282475
+        },
+        {
+          "Type": "SingletonDefault",
+          "Samples": 4902,
+          "SampleWeightBytes": 522531352,
+          "SampleWeightPercent": 17.26706894304935
+        },
+        {
+          "Type": "ExceptionTypeValue",
+          "Samples": 120,
+          "SampleWeightBytes": 12791456,
+          "SampleWeightPercent": 0.4226941633044485
+        },
+        {
+          "Type": "Entry[System.String,System.Object][]",
+          "Samples": 99,
+          "SampleWeightBytes": 10546208,
+          "SampleWeightPercent": 0.34849985541870143
+        },
+        {
+          "Type": "BuiltinCallable",
+          "Samples": 46,
+          "SampleWeightBytes": 4900128,
+          "SampleWeightPercent": 0.16192492121652927
+        },
+        {
+          "Type": "System.Int32[]",
+          "Samples": 38,
+          "SampleWeightBytes": 4050800,
+          "SampleWeightPercent": 0.1338588442718061
+        },
+        {
+          "Type": "ExecutionContext",
+          "Samples": 18,
+          "SampleWeightBytes": 1918800,
+          "SampleWeightPercent": 0.06340682097085552
+        },
+        {
+          "Type": "System.Object[]",
+          "Samples": 18,
+          "SampleWeightBytes": 1916912,
+          "SampleWeightPercent": 0.06334443193708808
+        },
+        {
+          "Type": "Lokad.Lython.Runtime.Text.GovernedByteBuilder",
+          "Samples": 18,
+          "SampleWeightBytes": 1916160,
+          "SampleWeightPercent": 0.06331958206770613
+        }
+      ]
+    },
+    "eager": {
+      "workload": "scripts.annotated-rule-closures.nested-factories",
+      "traceSHA256": "699224bcd6f160aada47bf495f9fb2aba643077e7eb7cadf0e41e36e240823a1",
+      "allocationTicks": 37184,
+      "batches": 165,
+      "invocations": 5280,
+      "allocationWeight": [
+        {
+          "Type": "Lokad.Lython.Runtime.PyExecutableFunction",
+          "Samples": 20609,
+          "SampleWeightBytes": 2196724416,
+          "SampleWeightPercent": 55.42502121472744
+        },
+        {
+          "Type": "System.Numerics.BigInteger",
+          "Samples": 9525,
+          "SampleWeightBytes": 1015248520,
+          "SampleWeightPercent": 25.615489293683268
+        },
+        {
+          "Type": "SingletonDefault",
+          "Samples": 6360,
+          "SampleWeightBytes": 677896072,
+          "SampleWeightPercent": 17.10383145847476
+        },
+        {
+          "Type": "Entry[System.String,System.Object][]",
+          "Samples": 174,
+          "SampleWeightBytes": 18550504,
+          "SampleWeightPercent": 0.46804326944936464
+        },
+        {
+          "Type": "ExceptionTypeValue",
+          "Samples": 107,
+          "SampleWeightBytes": 11407488,
+          "SampleWeightPercent": 0.28781956434846157
+        },
+        {
+          "Type": "BuiltinCallable",
+          "Samples": 53,
+          "SampleWeightBytes": 5649800,
+          "SampleWeightPercent": 0.14254873418722316
+        },
+        {
+          "Type": "Lokad.Lython.Runtime.Text.GovernedByteBuilder",
+          "Samples": 37,
+          "SampleWeightBytes": 3941552,
+          "SampleWeightPercent": 0.09944834300915394
+        },
+        {
+          "Type": "ExecutionContext",
+          "Samples": 30,
+          "SampleWeightBytes": 3198000,
+          "SampleWeightPercent": 0.08068796274748481
+        },
+        {
+          "Type": "Scope",
+          "Samples": 30,
+          "SampleWeightBytes": 3195704,
+          "SampleWeightPercent": 0.08063003292807637
+        },
+        {
+          "Type": "Lokad.Lython.Runtime.ExecutionState",
+          "Samples": 26,
+          "SampleWeightBytes": 2771600,
+          "SampleWeightPercent": 0.06992956771448684
+        }
+      ]
+    },
+    "invoice": {
+      "workload": "scripts.csv-invoice.method-policy.quoted-control",
+      "traceSHA256": "4d684ee92fa030fa3af4e9f2960320fbb44788df47182da69cf344f923631cc8",
+      "allocationTicks": 13390,
+      "batches": 12,
+      "invocations": 384,
+      "allocationWeight": [
+        {
+          "Type": "Lokad.Lython.Runtime.Text.PyString",
+          "Samples": 4673,
+          "SampleWeightBytes": 498260112,
+          "SampleWeightPercent": 34.8273867420991
+        },
+        {
+          "Type": "System.Numerics.BigInteger",
+          "Samples": 3099,
+          "SampleWeightBytes": 330406024,
+          "SampleWeightPercent": 23.0947212161492
+        },
+        {
+          "Type": "Lokad.Lython.Runtime.PyDict",
+          "Samples": 1335,
+          "SampleWeightBytes": 142340968,
+          "SampleWeightPercent": 9.94934939078718
+        },
+        {
+          "Type": "ExecutableSlot[]",
+          "Samples": 1223,
+          "SampleWeightBytes": 130417856,
+          "SampleWeightPercent": 9.1159476739077
+        },
+        {
+          "Type": "System.Object[]",
+          "Samples": 1016,
+          "SampleWeightBytes": 108337608,
+          "SampleWeightPercent": 7.5725824356775515
+        },
+        {
+          "Type": "TemporaryMemoryReservation",
+          "Samples": 910,
+          "SampleWeightBytes": 97031056,
+          "SampleWeightPercent": 6.782277031451948
+        },
+        {
+          "Type": "Lokad.Lython.Runtime.PyTuple",
+          "Samples": 683,
+          "SampleWeightBytes": 72826584,
+          "SampleWeightPercent": 5.090432777958285
+        },
+        {
+          "Type": "System.Byte[]",
+          "Samples": 323,
+          "SampleWeightBytes": 37391120,
+          "SampleWeightPercent": 2.6135646133364103
+        },
+        {
+          "Type": "System.String",
+          "Samples": 20,
+          "SampleWeightBytes": 2132000,
+          "SampleWeightPercent": 0.14902254213388705
+        },
+        {
+          "Type": "ExceptionTypeValue",
+          "Samples": 18,
+          "SampleWeightBytes": 1918800,
+          "SampleWeightPercent": 0.13412028792049835
+        }
+      ]
+    }
+  }
+}
