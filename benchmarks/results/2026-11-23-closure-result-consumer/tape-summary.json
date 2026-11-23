@@ -1,0 +1,36 @@
+[
+  {
+    "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+    "consumers": [
+      {
+        "function": "words_from_line",
+        "instruction": 2,
+        "store": 3,
+        "workspace": 5
+      }
+    ]
+  },
+  {
+    "case": "diagnostic.text-summary.borrowed-cased-words.mixed-width",
+    "consumers": []
+  },
+  {
+    "case": "diagnostic.text-summary.rebound-length.large",
+    "consumers": [
+      {
+        "function": "words_from_line",
+        "instruction": 2,
+        "store": 3,
+        "workspace": 5
+      }
+    ]
+  },
+  {
+    "case": "scripts.ordinary-fully-supplied-helper",
+    "consumers": []
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "consumers": []
+  }
+]

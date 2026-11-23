@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1497–B1498 commit binary results directly to closure cells](results/2026-11-23-closure-result-consumer/README.md)
+improves short-report time to result in two quiet comparisons, with
+supporting CPU. Warm results vary. The fully supplied control slowdown
+does not recur in the reversed-order check. The source change is retained.
+
 [B1496 reuse imported regex programs](results/2026-11-23-imported-regex-programs/README.md)
 removes a second provider compilation for analyzed literal rules used
 at runtime. The imported-rule script allocates about 43% less. Its reported

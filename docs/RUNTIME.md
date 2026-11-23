@@ -557,6 +557,9 @@ span. Inputs retire in their original order, then cancellation/refusal is checke
 before binding. If disposal is pending, the existing funded result operand and
 store remain the continuation after awaited cleanup. No result is published early
 and no extra async completion stage is needed.
+Binary operations can also complete into an adjacent closure assignment. A
+direct cell receives the computed slot. Pending cleanup and namespace-aware
+assignments keep the existing closure-store continuation.
 Failable reads retain their source spans; evaluated call and protocol packets
 retain snapshots across callbacks. Eligible synchronous helpers use the final executable
 slots and instruction positions directly in a private managed span. Parameters
