@@ -435,9 +435,9 @@ internal sealed partial class LythonRuntime
             var flags = bound.Assigned[2] ? arguments[2] : null;
             CheckFlagsHashable(flags, span);
             var pos = ParseOptionalPosition(arguments[3], 0, span, context);
-            var endPos = ParseOptionalPosition(arguments[4], text.Length, span, context);
+            var endPos = ParseOptionalPosition(arguments[4], int.MaxValue, span, context);
 
-            var matchRange = CreateSubjectRange(text, pos, endPos);
+            var matchRange = CreateSubjectRange(text, pos, endPos, span, context);
             return new RegexPatternRange(ResolvePattern(arguments[0], flags, span, context), matchRange);
         }
 
@@ -457,12 +457,12 @@ internal sealed partial class LythonRuntime
 
             var count = ParseOptionalIntOrDefault(arguments[3], 0, "count", signature, span, context);
             var pos = ParseOptionalPosition(arguments[5], 0, span, context);
-            var endPos = ParseOptionalPosition(arguments[6], text.Length, span, context);
+            var endPos = ParseOptionalPosition(arguments[6], int.MaxValue, span, context);
 
             var flags = bound.Assigned[4] ? arguments[4] : null;
             CheckFlagsHashable(flags, span);
             var pattern = ResolvePattern(arguments[0], flags, span, context);
-            return new RegexSubstituteInputs(pattern, replacement, CreateSubjectRange(text, pos, endPos), count);
+            return new RegexSubstituteInputs(pattern, replacement, CreateSubjectRange(text, pos, endPos, span, context), count);
         }
 
         internal static RegexSplitInputs CreateSplitInputs(BoundBuiltinArguments bound, string signature, LythonSourceSpan span, ExecutionContext context)
@@ -474,13 +474,13 @@ internal sealed partial class LythonRuntime
             }
 
             var pos = ParseOptionalPosition(arguments[4], 0, span, context);
-            var endPos = ParseOptionalPosition(arguments[5], text.Length, span, context);
+            var endPos = ParseOptionalPosition(arguments[5], int.MaxValue, span, context);
 
             var flags = bound.Assigned[3] ? arguments[3] : null;
             CheckFlagsHashable(flags, span);
             var pattern = ResolvePattern(arguments[0], flags, span, context);
             var maxSplit = ParseOptionalIntOrDefault(arguments[2], 0, "maxsplit", signature, span, context);
-            return new RegexSplitInputs(pattern, CreateSubjectRange(text, pos, endPos), maxSplit);
+            return new RegexSplitInputs(pattern, CreateSubjectRange(text, pos, endPos, span, context), maxSplit);
         }
 
         // Regex bounds coerce through __index__ like CPython. Module-level
@@ -542,9 +542,11 @@ internal sealed partial class LythonRuntime
             return (long)integer;
         }
 
-        internal static RegexSubjectRange CreateSubjectRange(PyString text, int pos, int endPos)
+        internal static RegexSubjectRange CreateSubjectRange(PyString text, int pos, int endPos,
+            LythonSourceSpan span, ExecutionContext context)
         {
-            var length = text.Length;
+            context.CheckExecution(span);
+            var length = text.GetCharacterCount(context.State.CancellationToken, span);
             return new RegexSubjectRange(text, Math.Clamp(pos, 0, length), Math.Clamp(endPos, 0, length));
         }
 

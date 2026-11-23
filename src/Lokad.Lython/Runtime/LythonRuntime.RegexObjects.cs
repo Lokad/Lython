@@ -351,7 +351,7 @@ internal sealed partial class LythonRuntime
             var range = RegexCompiler.CreateSubjectRange(
                 text,
                 bound.Assigned[1] ? RegexCompiler.ParsePosition(arguments[1], span, context) : 0,
-                bound.Assigned[2] ? RegexCompiler.ParsePosition(arguments[2], span, context) : text.Length);
+                bound.Assigned[2] ? RegexCompiler.ParsePosition(arguments[2], span, context) : int.MaxValue, span, context);
             return RegexMatcher.Match(pattern, range, operation, span, context);
         }
 
@@ -367,7 +367,7 @@ internal sealed partial class LythonRuntime
             var range = RegexCompiler.CreateSubjectRange(
                 text,
                 bound.Assigned[1] ? RegexCompiler.ParsePosition(arguments[1], span, context) : 0,
-                bound.Assigned[2] ? RegexCompiler.ParsePosition(arguments[2], span, context) : text.Length);
+                bound.Assigned[2] ? RegexCompiler.ParsePosition(arguments[2], span, context) : int.MaxValue, span, context);
             return RegexMatcher.CreateFindAllResult(pattern, range, span, context);
         }
 
@@ -383,7 +383,7 @@ internal sealed partial class LythonRuntime
             var range = RegexCompiler.CreateSubjectRange(
                 text,
                 bound.Assigned[1] ? RegexCompiler.ParsePosition(arguments[1], span, context) : 0,
-                bound.Assigned[2] ? RegexCompiler.ParsePosition(arguments[2], span, context) : text.Length);
+                bound.Assigned[2] ? RegexCompiler.ParsePosition(arguments[2], span, context) : int.MaxValue, span, context);
             return PyRegexFindIterator.Create(pattern, range, context, span);
         }
 
@@ -415,7 +415,7 @@ internal sealed partial class LythonRuntime
             var range = RegexCompiler.CreateSubjectRange(
                 text,
                 bound.Assigned[3] ? RegexCompiler.ParsePosition(arguments[3], span, context) : 0,
-                bound.Assigned[4] ? RegexCompiler.ParsePosition(arguments[4], span, context) : text.Length);
+                bound.Assigned[4] ? RegexCompiler.ParsePosition(arguments[4], span, context) : int.MaxValue, span, context);
             return asynchronous ? RegexMatcher.ExecuteSubstituteAsync(pattern, replacement, range, count, span, context, mode)
                 : new ValueTask<object>(RegexMatcher.ExecuteSubstitute(pattern, replacement, range, count, span, context, mode));
         }
@@ -433,7 +433,7 @@ internal sealed partial class LythonRuntime
             var range = RegexCompiler.CreateSubjectRange(
                 text,
                 bound.Assigned[2] ? RegexCompiler.ParsePosition(arguments[2], span, context) : 0,
-                bound.Assigned[3] ? RegexCompiler.ParsePosition(arguments[3], span, context) : text.Length);
+                bound.Assigned[3] ? RegexCompiler.ParsePosition(arguments[3], span, context) : int.MaxValue, span, context);
             return RegexMatcher.Split(pattern, range, maxSplit, span, context);
         }
     }

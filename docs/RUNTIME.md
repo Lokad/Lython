@@ -2468,7 +2468,8 @@ are diagnostics, not separate allowances. See [memory controls](../tests/Lokad.L
 ## Regex providers
 
 Regex preparation carries the original UTF-8 subject and independently clamped
-scalar/byte window bounds. Lython locates those byte bounds from the nearer
+scalar/byte window bounds. A single normalization uses the active token to count
+subject scalars and clamp both endpoints. Lython locates the byte bounds from the nearer
 subject end or an already located boundary. Captures identify absolute byte
 ranges. Lython checks
 capture boundaries, the whole match's window and forward cursor progression
