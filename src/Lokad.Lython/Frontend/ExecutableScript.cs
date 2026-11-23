@@ -554,22 +554,18 @@ internal sealed partial class ExecutableCodeObject
         RequiresLocalVariableMirroring = requiresLocalVariableMirroring;
         IsFunctionScope = isFunctionScope;
         UsesOnlyLexicalSlots = usesOnlyLexicalSlots;
-        var reads = ExecutableStackLayout.ForwardValues(this, blocks, callSites, cancellationToken);
-        // Assign physical positions after forwarding. Both execution forms use
-        // this final layout, including at a dynamic-operation transition.
+        // Prepare reachable operands and their final storage. Both execution
+        // forms use this layout, including at a dynamic-operation transition.
         var regionsByEntry = exceptionRegions.Count == 0 ? [] :
             exceptionRegions.OrderBy(region => region.ProtectedStartIndex).ToArray();
-        var operandLayout = ExecutableStackLayout.Prepare(blocks, constants, callSites,
-            regionsByEntry, entryBlockIndex, initialOperandDepth, FirstTemporarySlot, cancellationToken);
+        var operandLayout = ExecutableStackLayout.Prepare(this, blocks, callSites,
+            regionsByEntry, entryBlockIndex, initialOperandDepth, cancellationToken);
         OperandCapacity = operandLayout.MaximumDepth;
         PatternStorageStart = checked(FirstTemporarySlot + Math.Max(4, OperandCapacity));
         ValueStorageCapacity = checked(PatternStorageStart + PatternStorageCount);
         LastOwnedTemporarySlot = operandLayout.LastOwnedTemporarySlot;
-        Instructions = ExecutableStackLayout.Linearize(blocks, operandLayout, cancellationToken);
+        Instructions = ExecutableStackLayout.Linearize(blocks, operandLayout, cancellationToken, out _operandReadSpans);
         var positions = operandLayout.Blocks;
-        _operandReadSpans = reads.Where(read => positions[read.Block].IsReachable)
-            .Select(read => new ExecutableOperandSpan(
-                ((long)(positions[read.Block].Offset + read.Instruction) << 2) | (uint)read.Input, read.Span)).ToArray();
         EntryIndex = positions[entryBlockIndex].Offset;
         // Original block widths preserve inner-first unwinding, including
         // ranges that become physically equal after unreachable blocks vanish.

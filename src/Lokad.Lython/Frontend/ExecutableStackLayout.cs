@@ -5,8 +5,10 @@ namespace Lokad.Lython.Frontend;
 // Operand shapes are a compiler invariant. Guest iteration, expansion and
 // suspension change values, never the number of executable operand slots.
 internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLayout.Block[] Blocks, int FirstTemporarySlot,
-    int LastOwnedTemporarySlot)
+    int LastOwnedTemporarySlot, List<ExecutableStackLayout.OperandRead> OperandReads)
 {
+    internal readonly record struct OperandRead(int Block, int Instruction, int Input, LythonSourceSpan Span);
+
     internal struct Block
     {
         // A zero-initialized entry is unreachable. Complementing a live depth
@@ -14,6 +16,8 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
         private int _encodedDepth;
         internal readonly bool IsReachable => _encodedDepth != 0;
         internal int EntryDepth { readonly get => ~_encodedDepth; set => _encodedDepth = ~value; }
+        // Read-list start while preparing a reachable block, tape offset once
+        // linearization has placed that block and its diagnostic spans.
         internal int Offset;
         internal int EncodedTarget;
     }
@@ -88,17 +92,32 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
     }
 
     internal static ExecutableInstruction[] Linearize(IReadOnlyList<List<ExecutableInstruction>> blocks,
-        ExecutableStackLayout layout, CancellationToken token)
+        ExecutableStackLayout layout, CancellationToken token, out ExecutableOperandSpan[] readSpans)
     {
         var positions = layout.Blocks;
+        var reads = layout.OperandReads;
+        readSpans = reads.Count == 0 ? [] : new ExecutableOperandSpan[reads.Count];
+        var nextRead = 0;
+        var offset = 0;
         for (var i = 0; i < blocks.Count; i++)
         {
             PythonTokenization.CheckCancellation(token, i);
-            var position = positions[i];
-            positions[i + 1].Offset = position.IsReachable
-                ? checked(position.Offset + blocks[i].Count + (Completes(blocks[i]) ? 1 : 0)) : position.Offset;
+            ref var position = ref positions[i];
+            var firstRead = position.Offset;
+            position.Offset = offset;
+            if (!position.IsReachable) continue;
+            // The operand analysis discovers blocks in control-flow order.
+            // Here each block's contiguous reads follow the final tape order.
+            for (var index = firstRead; index < reads.Count && reads[index].Block == i; index++)
+            {
+                PythonTokenization.CheckCancellation(token, index - firstRead);
+                var read = reads[index];
+                readSpans[nextRead++] = new(((long)(offset + read.Instruction) << 2) | (uint)read.Input, read.Span);
+            }
+            offset = checked(offset + blocks[i].Count + (Completes(blocks[i]) ? 1 : 0));
         }
-        var instructions = new ExecutableInstruction[positions[^1].Offset];
+        positions[^1].Offset = offset;
+        var instructions = new ExecutableInstruction[offset];
         for (var i = 0; i < blocks.Count; i++)
         {
             PythonTokenization.CheckCancellation(token, i);
@@ -133,6 +152,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
                     .WithStorageSlots(extent, extent, extent);
             }
         }
+        System.Diagnostics.Debug.Assert(nextRead == readSpans.Length);
         return instructions;
 
         int ResolvedOffset(int block) => positions[ResolveTarget(blocks, positions, block, token)].Offset;
@@ -152,14 +172,16 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
                 ExecutableOpCode.EndFinally or ExecutableOpCode.Return or ExecutableOpCode.ReturnNone or ExecutableOpCode.ReraiseException);
     }
 
-    internal static ExecutableStackLayout Prepare(IReadOnlyList<List<ExecutableInstruction>> blocks,
-        IReadOnlyList<object?> constants, IReadOnlyList<ExecutableCallSite> calls,
-        ExecutableExceptionRegion[] regions,
-        int entryBlock, int initialDepth, int firstTemporarySlot, CancellationToken token)
+    internal static ExecutableStackLayout Prepare(ExecutableCodeObject code, IReadOnlyList<List<ExecutableInstruction>> blocks,
+        ExecutableCallSite[] calls, ExecutableExceptionRegion[] regions,
+        int entryBlock, int initialDepth, CancellationToken token)
     {
         if (initialDepth < 0 || (uint)entryBlock >= (uint)blocks.Count)
             throw new InvalidOperationException("Invalid executable entry operand depth.");
         var positions = CreatePositions(blocks.Count, regions, token);
+        var constants = code.Constants;
+        var firstTemporarySlot = code.FirstTemporarySlot;
+        List<OperandRead> reads = [];
         Queue<int>? pending = null;
         var maximum = initialDepth;
         // Generator expressions arrive with their acquired outer cursor. Other
@@ -183,6 +205,10 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
             }
 
             var instructions = blocks[blockIndex];
+            // Forwarding removes only reads that feed an operand. It leaves
+            // jump-only blocks and the already resolved successors intact.
+            positions[blockIndex].Offset = reads.Count;
+            ForwardBlock(code, blockIndex, instructions, calls, reads, token);
             for (var instructionIndex = 0; instructionIndex < instructions.Count; instructionIndex++)
             {
                 PythonTokenization.CheckCancellation(token, instructionIndex);
@@ -264,7 +290,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
             // existing interpreter never falls through to the next stored block.
         CompleteBlock:;
         } while (pending is not null && pending.TryDequeue(out blockIndex));
-        return new(maximum, positions, firstTemporarySlot, lastOwnedTemporarySlot);
+        return new(maximum, positions, firstTemporarySlot, lastOwnedTemporarySlot, reads);
 
         void Enter(int block, int depth)
         {
@@ -299,84 +325,77 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
     // Forward adjacent pure leaf inputs before assigning physical positions.
     // Checked locals keep their original spans in cold metadata; neither branch
     // initialization facts nor their invalidation inventories are needed.
-    internal static List<(int Block, int Instruction, int Input, LythonSourceSpan Span)> ForwardValues(
-        ExecutableCodeObject code, List<List<ExecutableInstruction>> blocks, ExecutableCallSite[] sites, CancellationToken token)
+    private static void ForwardBlock(ExecutableCodeObject code, int block, List<ExecutableInstruction> instructions,
+        ExecutableCallSite[] calls, List<OperandRead> reads, CancellationToken token)
     {
-        var reads = new List<(int Block, int Instruction, int Input, LythonSourceSpan Span)>();
-        for (var block = 0; block < blocks.Count; block++)
+        var kept = 0;
+        for (var index = 0; index < instructions.Count; index++)
         {
-            PythonTokenization.CheckCancellation(token, block);
-            var instructions = blocks[block];
-            var kept = 0;
-            for (var index = 0; index < instructions.Count; index++)
+            PythonTokenization.CheckCancellation(token, index);
+            var instruction = instructions[index];
+            // Site facts use original adjacency, before forwarding can
+            // remove or rewrite the instructions supplying operands.
+            if (instruction.OpCode is ExecutableOpCode.Call or ExecutableOpCode.LoadCallMember)
+                code.PrepareCallSite(instructions, index, instruction, calls);
+            if (instruction.OpCode == ExecutableOpCode.StoreLocal && code.CapturedLocalSlots.Count != 0 &&
+                code.CapturedLocalSlots.Contains(instruction.LocalSlot))
+                instruction = instruction.WithCapturedLocalStore();
+            if (instruction.OpCode == ExecutableOpCode.LoadLocal && instruction.CheckedLocalConsumer >= 0 &&
+                code.UsesOnlyLexicalSlots && !code.CapturedLocalSlots.Contains(instruction.LocalSlot) &&
+                CanReuseCheckedLocal(instructions, index, instruction.CheckedLocalConsumer, instruction.LocalSlot, token))
             {
-                PythonTokenization.CheckCancellation(token, index);
-                var instruction = instructions[index];
-                // Site facts use original adjacency, before forwarding can
-                // remove or rewrite the instructions supplying operands.
-                if (instruction.OpCode is ExecutableOpCode.Call or ExecutableOpCode.LoadCallMember)
-                    code.PrepareCallSite(instructions, index, instruction, sites);
-                if (instruction.OpCode == ExecutableOpCode.StoreLocal && code.CapturedLocalSlots.Count != 0 &&
-                    code.CapturedLocalSlots.Contains(instruction.LocalSlot))
-                    instruction = instruction.WithCapturedLocalStore();
-                if (instruction.OpCode == ExecutableOpCode.LoadLocal && instruction.CheckedLocalConsumer >= 0 &&
-                    code.UsesOnlyLexicalSlots && !code.CapturedLocalSlots.Contains(instruction.LocalSlot) &&
-                    CanReuseCheckedLocal(instructions, index, instruction.CheckedLocalConsumer, instruction.LocalSlot, token))
-                {
-                    var consumer = instruction.CheckedLocalConsumer;
-                    instructions[consumer] = instructions[consumer].WithValueInputs(instruction.LocalSlot, int.MaxValue);
-                    instruction = instruction.AsCheckLocal();
-                }
-                var count = instruction.ValueInputCount;
-                var first = instruction.InputStart;
-                var second = instruction.SecondInput;
-                var third = count == 3 ? instruction.ThirdInput : int.MaxValue;
-                LythonSourceSpan? firstSpan = null, secondSpan = null, thirdSpan = null;
-                for (var input = count - 1; input >= 0 && kept != 0; input--)
-                {
-                    var leaf = instructions[kept - 1];
-                    int source;
-                    LythonSourceSpan? span = null;
-                    if (leaf.OpCode == ExecutableOpCode.LoadConst) source = ~leaf.ConstantIndex;
-                    else if (leaf.OpCode == ExecutableOpCode.LoadGlobal)
-                    {
-                        // Negative sources address immutable constants followed
-                        // by names. Resolve the name at consumption; never retain
-                        // its value or move a read across an intervening effect.
-                        source = ~checked(code.Constants.Length + leaf.NameIndex);
-                        span = leaf.Span;
-                    }
-                    else if (leaf.OpCode == ExecutableOpCode.LoadLocal && !code.RequiresLocalVariableMirroring
-                        && !code.CapturedLocalSlots.Contains(leaf.LocalSlot))
-                    {
-                        source = leaf.LocalSlot;
-                        span = leaf.Span;
-                    }
-                    else break;
-                    if (input == 0) { first = source; firstSpan = span; }
-                    else if (input == 1) { second = source; secondSpan = span; }
-                    else { third = source; thirdSpan = span; }
-                    kept--;
-                }
-                if (count != 0) instruction = instruction.WithValueInputs(first, second, third);
-                // Keep the consumer as the pending-cleanup continuation and for its
-                // own guard/span. Direct sources do not consume a producer result.
-                if (kept > 0 &&
-                    (((instruction.OpCode is ExecutableOpCode.StoreLocal or ExecutableOpCode.StoreFunctionDefault) &&
-                        first == int.MaxValue
-                        && CanForwardResult(instructions[kept - 1], code.Constants))
-                    || (instruction.OpCode == ExecutableOpCode.PopTop
-                        && instructions[kept - 1].OpCode == ExecutableOpCode.Call)))
-                    instructions[kept - 1] = instructions[kept - 1].WithResultConsumer();
-                if (firstSpan is not null) reads.Add((block, kept, 0, firstSpan));
-                if (secondSpan is not null) reads.Add((block, kept, 1, secondSpan));
-                if (thirdSpan is not null) reads.Add((block, kept, 2, thirdSpan));
-                instructions[kept++] = instruction;
+                var consumer = instruction.CheckedLocalConsumer;
+                instructions[consumer] = instructions[consumer].WithValueInputs(instruction.LocalSlot, int.MaxValue);
+                instruction = instruction.AsCheckLocal();
             }
-            if (kept != instructions.Count)
-                instructions.RemoveRange(kept, instructions.Count - kept);
+            var count = instruction.ValueInputCount;
+            var first = instruction.InputStart;
+            var second = instruction.SecondInput;
+            var third = count == 3 ? instruction.ThirdInput : int.MaxValue;
+            LythonSourceSpan? firstSpan = null, secondSpan = null, thirdSpan = null;
+            for (var input = count - 1; input >= 0 && kept != 0; input--)
+            {
+                var leaf = instructions[kept - 1];
+                int source;
+                LythonSourceSpan? span = null;
+                if (leaf.OpCode == ExecutableOpCode.LoadConst) source = ~leaf.ConstantIndex;
+                else if (leaf.OpCode == ExecutableOpCode.LoadGlobal)
+                {
+                    // Negative sources address immutable constants followed
+                    // by names. Resolve the name at consumption; never retain
+                    // its value or move a read across an intervening effect.
+                    source = ~checked(code.Constants.Length + leaf.NameIndex);
+                    span = leaf.Span;
+                }
+                else if (leaf.OpCode == ExecutableOpCode.LoadLocal && !code.RequiresLocalVariableMirroring
+                    && !code.CapturedLocalSlots.Contains(leaf.LocalSlot))
+                {
+                    source = leaf.LocalSlot;
+                    span = leaf.Span;
+                }
+                else break;
+                if (input == 0) { first = source; firstSpan = span; }
+                else if (input == 1) { second = source; secondSpan = span; }
+                else { third = source; thirdSpan = span; }
+                kept--;
+            }
+            if (count != 0) instruction = instruction.WithValueInputs(first, second, third);
+            // Keep the consumer as the pending-cleanup continuation and for its
+            // own guard/span. Direct sources do not consume a producer result.
+            if (kept > 0 &&
+                (((instruction.OpCode is ExecutableOpCode.StoreLocal or ExecutableOpCode.StoreFunctionDefault) &&
+                    first == int.MaxValue
+                    && CanForwardResult(instructions[kept - 1], code.Constants))
+                || (instruction.OpCode == ExecutableOpCode.PopTop
+                    && instructions[kept - 1].OpCode == ExecutableOpCode.Call)))
+                instructions[kept - 1] = instructions[kept - 1].WithResultConsumer();
+            if (firstSpan is not null) reads.Add(new(block, kept, 0, firstSpan));
+            if (secondSpan is not null) reads.Add(new(block, kept, 1, secondSpan));
+            if (thirdSpan is not null) reads.Add(new(block, kept, 2, thirdSpan));
+            instructions[kept++] = instruction;
         }
-        return reads;
+        if (kept != instructions.Count)
+            instructions.RemoveRange(kept, instructions.Count - kept);
     }
 
     // A private lexical local remains authoritative during a call. A

@@ -43,6 +43,8 @@ public sealed class OperandReadFailureTests
     [InlineData("for missing in []:pass\nfor item in missing:pass", "missing", "NameError")]
     [InlineData("for missing in []:pass\nif missing:print('called')", "missing", "NameError")]
     [InlineData("def fail():\n for left in []:pass\n for right in []:pass\n return left + right\nfail()", "left", "UnboundLocalError")]
+    [InlineData("def fail(branch):\n for yes_left in []:pass\n for yes_right in []:pass\n for no_left in []:pass\n for no_right in []:pass\n if branch:return yes_left + yes_right\n return no_left + no_right\nfail(True)", "yes_left", "UnboundLocalError")]
+    [InlineData("def fail(branch):\n for yes_left in []:pass\n for yes_right in []:pass\n for no_left in []:pass\n for no_right in []:pass\n if branch:return yes_left + yes_right\n return no_left + no_right\nfail(False)", "no_left", "UnboundLocalError")]
     [InlineData("def fail():\n for missing in []:pass\n return missing.value\nfail()", "missing", "UnboundLocalError")]
     [InlineData("def fail():\n for missing in []:pass\n for item in missing:pass\nfail()", "missing", "UnboundLocalError")]
     [InlineData("def fail():\n for missing in []:pass\n if missing:print('called')\nfail()", "missing", "UnboundLocalError")]
