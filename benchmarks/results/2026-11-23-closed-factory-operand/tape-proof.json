@@ -1,0 +1,22 @@
+{
+  "proof": [
+    {
+      "script": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "oldCall": 18,
+      "forwardedCall": 16,
+      "targetSlot": 4,
+      "argumentSlot": 3,
+      "closedUpdateCall": 21
+    },
+    {
+      "script": "scripts.annotated-rule-closures.nested-factories",
+      "oldCall": 17,
+      "forwardedCall": 15,
+      "targetSlot": 3,
+      "argumentSlot": 2,
+      "closedUpdateCall": 20
+    }
+  ],
+  "candidateCore": "aab90f2a58f7907ace5e288e48bd70bcdc85bd6867f2950a5650d0f3c558a965",
+  "referenceCore": "0802efcdeea7c91eb3f425d665d30c595a031e03abd09b7e295d9bd0629a482a"
+}

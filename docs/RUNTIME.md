@@ -400,6 +400,11 @@ the selected helper and its arguments are known to finish without callbacks.
 Cancellation is checked through the segment. A dynamic argument or a wider
 result resumes the ordinary instructions with the original bindings and
 canonical Python objects available.
+This update can also read omitted exact integers from prepared defaults.
+An exposed keyword mapping uses the ordinary call path. A closed factory
+that only reads its argument as an integer can take an adjacent local
+argument directly. Its definition still owns the preflighted defaults and
+publishes a fresh callable.
 An eligible lexical factory can return a definition directly when checked
 integer arithmetic and a read-only capture supply its defaults. It uses the
 same admission and definition constructor, carrying the funded defaults directly
