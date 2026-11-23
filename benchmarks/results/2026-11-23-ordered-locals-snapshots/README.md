@@ -18,7 +18,7 @@ CPython fixture goldens. Windows .NET 11 and Ubuntu .NET 10 each passed
 
 ## Controlled comparison
 
-Measurements use the dedicated Ubuntu VM, pinned .NET 10, the same
+Measurements use the dedicated Ubuntu VM, pinned .NET 11 RC3, the same
 worker and adapter files, independent processes and RAM-backed fixture
 files. Each mode has two processes per image and seven timed batches
 per process after an eight-second warmup. All 196 batches and teardown

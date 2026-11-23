@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1469 retained factory CPU attribution](results/2026-11-23-retained-factory-cpu/README.md)
+finds callable-creation and default admission in 91 of 995 resolved
+postponed runtime samples, with only one admission sample in the fully
+supplied control. The readiness-gated run completed all four profiles.
+The initial acknowledgment failure and cleanup recovery remain archived.
+
 [B1468 match optimized Python scope snapshot order](results/2026-11-23-ordered-locals-snapshots/README.md)
 replaces separate declaration scans. Executable instructions and operands
 agree across 163 inspected code objects. Compile allocation changes
