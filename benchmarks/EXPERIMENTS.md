@@ -6,6 +6,15 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1519 retained CSV allocation attribution](results/2026-11-23-retained-meter-allocation/README.md)
+resolves 58.51% of explicit-float allocation tick weight to strings made
+while unpacking CSV records. Retained totals tuples still box some values.
+The next ownership design needs to preserve original field observation.
+
+[B1518 CPython checkpoint for the current CSV reports](results/2026-11-23-parallel-assignment-cpython/README.md)
+measures explicit float at 1.184–1.257× warm, 1.167–1.171× through result
+and 0.619–0.638× for compilation alone. Typed ASCII measures 1.034–1.065× warm.
+
 [B1517 keep exact-width assignment values in operands](results/2026-11-23-parallel-assignment-operands/README.md)
 removes tuple allocation and unpack dispatch in the explicit-float meter.
 The retained revision uses 23.08% less managed allocation and 8.99–11.50%

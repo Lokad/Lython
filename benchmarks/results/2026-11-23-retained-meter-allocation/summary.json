@@ -1,0 +1,124 @@
+{
+  "explicit-float": {
+    "Lokad.Lython.Runtime.Text.PyString": {
+      "weight": 490443104,
+      "percentOfAll": 58.50862092183273,
+      "nearest": [
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+CsvRecordParser.UnpackRecord",
+          "bytes": 490443104,
+          "percentOfType": 100.0
+        }
+      ]
+    },
+    "System.Double": {
+      "weight": 123986232,
+      "percentOfAll": 14.791243649771873,
+      "nearest": [
+        {
+          "method": "Lokad.Lython.Runtime.PyTuple.FromSlots",
+          "bytes": 83580288,
+          "percentOfType": 67.41094285371943
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.ExecuteInstructionPrefix",
+          "bytes": 40405944,
+          "percentOfType": 32.58905714628057
+        }
+      ]
+    },
+    "System.Object[]": {
+      "weight": 86119848,
+      "percentOfAll": 10.273879884093251,
+      "nearest": [
+        {
+          "method": "Lokad.Lython.Runtime.PyTuple.FromSlots",
+          "bytes": 85906648,
+          "percentOfType": 99.7524380210239
+        },
+        {
+          "method": "Lokad.Lython.Runtime.CallBinder.BindNamedArgumentsCore",
+          "bytes": 106600,
+          "percentOfType": 0.12378098948804461
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyIteration.DrainLeased",
+          "bytes": 106600,
+          "percentOfType": 0.12378098948804461
+        }
+      ]
+    },
+    "Lokad.Lython.Runtime.PyTuple": {
+      "weight": 75258496,
+      "percentOfAll": 8.978148082211112,
+      "nearest": [
+        {
+          "method": "Lokad.Lython.Runtime.PyTuple.FromSlots",
+          "bytes": 75258496,
+          "percentOfType": 100.0
+        }
+      ]
+    }
+  },
+  "typed-ascii": {
+    "Lokad.Lython.Runtime.Text.PyString": {
+      "weight": 201234800,
+      "percentOfAll": 27.02796850809484,
+      "nearest": [
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+CsvRecordParser.UnpackRecord",
+          "bytes": 201128200,
+          "percentOfType": 99.94702705496266
+        },
+        {
+          "method": "Lokad.Lython.Runtime.Text.PyString.CopyFromUtf8",
+          "bytes": 106600,
+          "percentOfType": 0.052972945037339465
+        }
+      ]
+    },
+    "System.Double": {
+      "weight": 279594128,
+      "percentOfAll": 37.552457560184614,
+      "nearest": [
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+CsvRecordParser.UnpackRecord",
+          "bytes": 164898248,
+          "percentOfType": 58.97772216446548
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyTuple.FromSlots",
+          "bytes": 114695880,
+          "percentOfType": 41.02227783553452
+        }
+      ]
+    },
+    "System.Object[]": {
+      "weight": 100196904,
+      "percentOfAll": 13.45750718027201,
+      "nearest": [
+        {
+          "method": "Lokad.Lython.Runtime.PyTuple.FromSlots",
+          "bytes": 99450704,
+          "percentOfType": 99.2552664102276
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyDict.AppendNativeItem",
+          "bytes": 746200,
+          "percentOfType": 0.7447335897723946
+        }
+      ]
+    },
+    "Lokad.Lython.Runtime.PyTuple": {
+      "weight": 89855736,
+      "percentOfAll": 12.06857861005991,
+      "nearest": [
+        {
+          "method": "Lokad.Lython.Runtime.PyTuple.FromSlots",
+          "bytes": 89855736,
+          "percentOfType": 100.0
+        }
+      ]
+    }
+  }
+}
