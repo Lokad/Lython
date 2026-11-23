@@ -1,0 +1,187 @@
+{
+  "windows": {
+    "reference": {
+      "TryExecuteNativeCall": {
+        "stackSubtractionBytes": 408,
+        "machineCodeBytes": 4611
+      },
+      "StartNativeCall": {
+        "stackSubtractionBytes": 504,
+        "machineCodeBytes": 926
+      },
+      "CallFunction": {
+        "stackSubtractionBytes": 200,
+        "machineCodeBytes": 1528
+      }
+    },
+    "candidate": {
+      "TryExecuteNativeCall": {
+        "stackSubtractionBytes": 424,
+        "machineCodeBytes": 4278
+      },
+      "TryStartNativeIntegerReturn": {
+        "stackSubtractionBytes": 80,
+        "machineCodeBytes": 313
+      },
+      "StartNativeCall": {
+        "stackSubtractionBytes": 448,
+        "machineCodeBytes": 564
+      },
+      "CallFunction": {
+        "stackSubtractionBytes": 200,
+        "machineCodeBytes": 1603
+      }
+    },
+    "referenceOwnershipRows": {
+      "scripts.annotated-rule-closures.nested-factories.postponed": {
+        "allocatedBytes": 882136,
+        "peakExecutionMemoryBytes": 2968481,
+        "compiledReservedBytes": 78622,
+        "restored": true
+      },
+      "scripts.annotated-rule-closures.nested-factories": {
+        "allocatedBytes": 882032,
+        "peakExecutionMemoryBytes": 2968425,
+        "compiledReservedBytes": 74618,
+        "restored": true
+      },
+      "scripts.factory-observed-defaults": {
+        "allocatedBytes": 1226352,
+        "peakExecutionMemoryBytes": 2968817,
+        "compiledReservedBytes": 85534,
+        "restored": true
+      },
+      "scripts.ordinary-fully-supplied-helper": {
+        "allocatedBytes": 142656,
+        "peakExecutionMemoryBytes": 1255,
+        "compiledReservedBytes": 49856,
+        "restored": true
+      },
+      "scripts.csv-invoice.method-policy.quoted-control": {
+        "allocatedBytes": 4069406,
+        "peakExecutionMemoryBytes": 9432874,
+        "compiledReservedBytes": 157114,
+        "restored": true
+      },
+      "calls.positional.large": {
+        "allocatedBytes": 1060128,
+        "peakExecutionMemoryBytes": 1284,
+        "compiledReservedBytes": 43232,
+        "restored": true
+      },
+      "diagnostic.text-summary.materialized-ordinary-split": {
+        "allocatedBytes": 979040,
+        "peakExecutionMemoryBytes": 1967664,
+        "compiledReservedBytes": 93819,
+        "restored": true
+      },
+      "calls.positional.wide-native-buffer": {
+        "allocatedBytes": 404880,
+        "peakExecutionMemoryBytes": 1115720,
+        "compiledReservedBytes": 53792,
+        "restored": true
+      }
+    },
+    "differingOwnershipRows": {}
+  },
+  "linux": {
+    "reference": {
+      "TryExecuteNativeCall": {
+        "stackSubtractionBytes": 248,
+        "machineCodeBytes": 3503
+      },
+      "StartNativeCall": {
+        "stackSubtractionBytes": 440,
+        "machineCodeBytes": 1067
+      },
+      "CallFunction": {
+        "stackSubtractionBytes": 168,
+        "machineCodeBytes": 1551
+      }
+    },
+    "candidate": {
+      "TryExecuteNativeCall": {
+        "stackSubtractionBytes": 296,
+        "machineCodeBytes": 4225
+      },
+      "TryStartNativeIntegerReturn": {
+        "stackSubtractionBytes": 56,
+        "machineCodeBytes": 347
+      },
+      "StartNativeCall": {
+        "stackSubtractionBytes": 384,
+        "machineCodeBytes": 530
+      },
+      "CallFunction": {
+        "stackSubtractionBytes": 168,
+        "machineCodeBytes": 1641
+      }
+    },
+    "referenceOwnershipRows": {
+      "scripts.annotated-rule-closures.nested-factories.postponed": {
+        "allocatedBytes": 882136,
+        "peakExecutionMemoryBytes": 2968481,
+        "compiledReservedBytes": 78622,
+        "restored": true
+      },
+      "scripts.annotated-rule-closures.nested-factories": {
+        "allocatedBytes": 882032,
+        "peakExecutionMemoryBytes": 2968425,
+        "compiledReservedBytes": 74618,
+        "restored": true
+      },
+      "scripts.factory-observed-defaults": {
+        "allocatedBytes": 1226352,
+        "peakExecutionMemoryBytes": 2968817,
+        "compiledReservedBytes": 85534,
+        "restored": true
+      },
+      "scripts.ordinary-fully-supplied-helper": {
+        "allocatedBytes": 142656,
+        "peakExecutionMemoryBytes": 1255,
+        "compiledReservedBytes": 49856,
+        "restored": true
+      },
+      "scripts.csv-invoice.method-policy.quoted-control": {
+        "allocatedBytes": 4067998,
+        "peakExecutionMemoryBytes": 9432874,
+        "compiledReservedBytes": 157114,
+        "restored": true
+      },
+      "calls.positional.large": {
+        "allocatedBytes": 1060128,
+        "peakExecutionMemoryBytes": 1284,
+        "compiledReservedBytes": 43232,
+        "restored": true
+      },
+      "diagnostic.text-summary.materialized-ordinary-split": {
+        "allocatedBytes": 977688,
+        "peakExecutionMemoryBytes": 1967664,
+        "compiledReservedBytes": 93819,
+        "restored": true
+      },
+      "calls.positional.wide-native-buffer": {
+        "allocatedBytes": 404880,
+        "peakExecutionMemoryBytes": 1115720,
+        "compiledReservedBytes": 53792,
+        "restored": true
+      }
+    },
+    "differingOwnershipRows": {
+      "scripts.csv-invoice.method-policy.quoted-control": {
+        "reference": {
+          "allocatedBytes": 4067998,
+          "peakExecutionMemoryBytes": 9432874,
+          "compiledReservedBytes": 157114,
+          "restored": true
+        },
+        "candidate": {
+          "allocatedBytes": 4068118,
+          "peakExecutionMemoryBytes": 9432874,
+          "compiledReservedBytes": 157114,
+          "restored": true
+        }
+      }
+    }
+  }
+}

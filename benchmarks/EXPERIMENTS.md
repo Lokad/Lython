@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1455 direct native integer entry](results/2026-11-23-direct-native-return-entry/README.md)
+skips workspace preparation and improves the positional loop and
+quoted invoice. Eager factories and the supplied helper use more CPU.
+The prototype stays private and the scalar-unpack error-order check stays.
+
 [B1454 module-owned known-call analysis](results/2026-11-23-dispatch-known-call-semantics/README.md)
 retains the module catalogs and removes the unrelated semantic-family
 scan. The first compile allocates 35.60–40.51% less across the file
