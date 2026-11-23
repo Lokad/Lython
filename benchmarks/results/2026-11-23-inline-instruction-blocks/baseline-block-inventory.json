@@ -1,0 +1,434 @@
+[
+  {
+    "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+    "entries": 4,
+    "blocks": 6,
+    "occupied": 60,
+    "capacity": 84,
+    "width": {
+      "4": 1,
+      "6": 1,
+      "8": 1,
+      "10": 1,
+      "11": 1,
+      "21": 1
+    },
+    "nonEntrySingletons": {},
+    "entry": [
+      {
+        "Count": 6,
+        "Capacity": 8
+      },
+      {
+        "Count": 11,
+        "Capacity": 16
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 10,
+        "Capacity": 16
+      }
+    ]
+  },
+  {
+    "id": "scripts.annotated-rule-closures.nested-factories",
+    "entries": 4,
+    "blocks": 6,
+    "occupied": 59,
+    "capacity": 84,
+    "width": {
+      "4": 1,
+      "6": 1,
+      "8": 1,
+      "9": 1,
+      "11": 1,
+      "21": 1
+    },
+    "nonEntrySingletons": {},
+    "entry": [
+      {
+        "Count": 6,
+        "Capacity": 8
+      },
+      {
+        "Count": 11,
+        "Capacity": 16
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 9,
+        "Capacity": 16
+      }
+    ]
+  },
+  {
+    "id": "scripts.dataclass-inherited-configuration.generated",
+    "entries": 51,
+    "blocks": 53,
+    "occupied": 454,
+    "capacity": 468,
+    "width": {
+      "1": 2,
+      "2": 1,
+      "4": 48,
+      "7": 1,
+      "251": 1
+    },
+    "nonEntrySingletons": {
+      "ReturnNone": 1
+    },
+    "entry": [
+      {
+        "Count": 2,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 1,
+        "Capacity": 4
+      },
+      {
+        "Count": 251,
+        "Capacity": 256
+      }
+    ]
+  },
+  {
+    "id": "scripts.config-generated-guards.medium.bad-0.sparse-lexical",
+    "entries": 3,
+    "blocks": 488,
+    "occupied": 3900,
+    "capacity": 5840,
+    "width": {
+      "1": 98,
+      "3": 1,
+      "5": 96,
+      "8": 2,
+      "9": 96,
+      "11": 96,
+      "12": 2,
+      "14": 96,
+      "15": 1
+    },
+    "nonEntrySingletons": {
+      "ReraiseException": 96,
+      "ReturnNone": 1
+    },
+    "entry": [
+      {
+        "Count": 5,
+        "Capacity": 8
+      },
+      {
+        "Count": 1,
+        "Capacity": 8
+      },
+      {
+        "Count": 12,
+        "Capacity": 16
+      }
+    ]
+  },
+  {
+    "id": "compiler.generated-read-only-branches",
+    "entries": 2,
+    "blocks": 182,
+    "occupied": 1678,
+    "capacity": 2468,
+    "width": {
+      "2": 1,
+      "5": 179,
+      "8": 1,
+      "773": 1
+    },
+    "nonEntrySingletons": {},
+    "entry": [
+      {
+        "Count": 773,
+        "Capacity": 1024
+      },
+      {
+        "Count": 8,
+        "Capacity": 8
+      }
+    ]
+  },
+  {
+    "id": "diagnostic.text-summary.nonlocal-computed-width.large",
+    "entries": 3,
+    "blocks": 17,
+    "occupied": 121,
+    "capacity": 196,
+    "width": {
+      "1": 3,
+      "2": 1,
+      "3": 2,
+      "4": 1,
+      "5": 3,
+      "7": 2,
+      "11": 1,
+      "14": 1,
+      "17": 2,
+      "18": 1
+    },
+    "nonEntrySingletons": {
+      "Jump": 3
+    },
+    "entry": [
+      {
+        "Count": 14,
+        "Capacity": 16
+      },
+      {
+        "Count": 17,
+        "Capacity": 32
+      },
+      {
+        "Count": 5,
+        "Capacity": 8
+      }
+    ]
+  },
+  {
+    "id": "scripts.config-edit.small",
+    "entries": 1,
+    "blocks": 7,
+    "occupied": 77,
+    "capacity": 104,
+    "width": {
+      "3": 2,
+      "8": 2,
+      "10": 1,
+      "17": 1,
+      "28": 1
+    },
+    "nonEntrySingletons": {},
+    "entry": [
+      {
+        "Count": 10,
+        "Capacity": 16
+      }
+    ]
+  },
+  {
+    "id": "diagnostic.dead-heavy-validator",
+    "entries": 2,
+    "blocks": 4,
+    "occupied": 1042,
+    "capacity": 2072,
+    "width": {
+      "2": 1,
+      "4": 1,
+      "11": 1,
+      "1025": 1
+    },
+    "nonEntrySingletons": {},
+    "entry": [
+      {
+        "Count": 4,
+        "Capacity": 4
+      },
+      {
+        "Count": 11,
+        "Capacity": 16
+      }
+    ]
+  }
+]

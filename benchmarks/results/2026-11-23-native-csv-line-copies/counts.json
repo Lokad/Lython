@@ -1,0 +1,96 @@
+{
+  "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+  "rows": [
+    {
+      "id": "scripts.csv-invoice.method-policy.quoted-control",
+      "asynchronous": false,
+      "peakExecutionMemoryBytes": 9432874,
+      "compiledReservedBytes": 157114,
+      "sharedBudgetBaselineRestored": true,
+      "counts": {
+        "NativeCompleteWindows": 5121,
+        "NativeIncompleteWindows": 9,
+        "NativeCopiedBytes": 174147,
+        "NativeLiteralComplete": 3072,
+        "NativeLiteralResume": 1024,
+        "NativeNoLiteral": 1025,
+        "BorrowedLiteralComplete": 0,
+        "BorrowedPrefixBytesCopied": 0
+      },
+      "coreSha256": "f6f96bd99e45e67e3f5eba31bdb34a6b4fbc479c20233220dce4e3dea0985550"
+    },
+    {
+      "id": "scripts.csv-meter-report.typed-ascii",
+      "asynchronous": false,
+      "peakExecutionMemoryBytes": 3552905,
+      "compiledReservedBytes": 102464,
+      "sharedBudgetBaselineRestored": true,
+      "counts": {
+        "NativeCompleteWindows": 4097,
+        "NativeIncompleteWindows": 8,
+        "NativeCopiedBytes": 139299,
+        "NativeLiteralComplete": 4096,
+        "NativeLiteralResume": 0,
+        "NativeNoLiteral": 1,
+        "BorrowedLiteralComplete": 0,
+        "BorrowedPrefixBytesCopied": 0
+      },
+      "coreSha256": "f6f96bd99e45e67e3f5eba31bdb34a6b4fbc479c20233220dce4e3dea0985550"
+    },
+    {
+      "id": "scripts.csv-meter-report.typed-ascii.borrowed",
+      "asynchronous": false,
+      "peakExecutionMemoryBytes": 5470750,
+      "compiledReservedBytes": 103616,
+      "sharedBudgetBaselineRestored": true,
+      "counts": {
+        "NativeCompleteWindows": 0,
+        "NativeIncompleteWindows": 0,
+        "NativeCopiedBytes": 0,
+        "NativeLiteralComplete": 0,
+        "NativeLiteralResume": 0,
+        "NativeNoLiteral": 0,
+        "BorrowedLiteralComplete": 4096,
+        "BorrowedPrefixBytesCopied": 0
+      },
+      "coreSha256": "f6f96bd99e45e67e3f5eba31bdb34a6b4fbc479c20233220dce4e3dea0985550"
+    },
+    {
+      "id": "scripts.csv-meter-report.typed-unicode",
+      "asynchronous": false,
+      "peakExecutionMemoryBytes": 3552905,
+      "compiledReservedBytes": 102464,
+      "sharedBudgetBaselineRestored": true,
+      "counts": {
+        "NativeCompleteWindows": 4097,
+        "NativeIncompleteWindows": 12,
+        "NativeCopiedBytes": 223267,
+        "NativeLiteralComplete": 4096,
+        "NativeLiteralResume": 0,
+        "NativeNoLiteral": 1,
+        "BorrowedLiteralComplete": 0,
+        "BorrowedPrefixBytesCopied": 0
+      },
+      "coreSha256": "f6f96bd99e45e67e3f5eba31bdb34a6b4fbc479c20233220dce4e3dea0985550"
+    },
+    {
+      "id": "diagnostic.text-summary.nonlocal-computed-width.large",
+      "asynchronous": false,
+      "peakExecutionMemoryBytes": 1278972,
+      "compiledReservedBytes": 92091,
+      "sharedBudgetBaselineRestored": true,
+      "counts": {
+        "NativeCompleteWindows": 0,
+        "NativeIncompleteWindows": 0,
+        "NativeCopiedBytes": 0,
+        "NativeLiteralComplete": 0,
+        "NativeLiteralResume": 0,
+        "NativeNoLiteral": 0,
+        "BorrowedLiteralComplete": 0,
+        "BorrowedPrefixBytesCopied": 0
+      },
+      "coreSha256": "f6f96bd99e45e67e3f5eba31bdb34a6b4fbc479c20233220dce4e3dea0985550"
+    }
+  ],
+  "boundary": "One golden-verified execution per case. Count text-window copies and CSV parser boundaries. No timing comparison."
+}

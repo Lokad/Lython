@@ -6,6 +6,16 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Native CSV line inventory](results/2026-11-23-native-csv-line-copies/README.md)
+counts decoded payload copies and parser handoffs. Both typed meters
+complete 4,096 literal rows with zero grammar handoffs. The quote-heavy
+invoice resumes the general grammar 1,024 times.
+
+[B1447 inline compiler instruction prefixes](results/2026-11-23-inline-instruction-blocks/README.md)
+reduces allocation in both generated validators. Read-only time to
+result improves 1.09–4.24%. Sparse compile takes 3.93–6.16% longer
+and sparse time to result takes 0.88–1.70% longer. Keep the source private.
+
 [B1446 inline CSV field descriptors](results/2026-11-23-csv-inline-descriptors/README.md)
 keeps the existing parser. Borrowed ASCII takes 5.44–18.30% longer and
 its candidate workers have 11.49% spread. Native ASCII spans zero.

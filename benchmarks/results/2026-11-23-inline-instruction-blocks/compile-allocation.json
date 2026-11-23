@@ -1,0 +1,566 @@
+{
+  "reference": {
+    "referenceProductionSource": "54b909bb1",
+    "instrumentedBuild": false,
+    "boundary": "Local compile only, new admitted compiled owner with disposal and budget reuse check each invocation. Diagnostic independent workers, freshly compiled owner disposed on each invocation.",
+    "imageSHA256": "df039380883864c44b536cda56438697d6458ccd83067652876c7c6142ef935b",
+    "catalogSHA256": "d8d7e69e5e6f8fa3fc2085b89ea453a914d8ec1c019ab4ed309ec4f61cb4a0f3",
+    "runtime": "11.0.0",
+    "rows": [
+      {
+        "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+        "sourceCharacters": 465,
+        "samples": [
+          {
+            "compileMicroseconds": 220.296875,
+            "compileBytes": 62176
+          },
+          {
+            "compileMicroseconds": 257.6796875,
+            "compileBytes": 62176
+          },
+          {
+            "compileMicroseconds": 138.434375,
+            "compileBytes": 62176
+          },
+          {
+            "compileMicroseconds": 135.846875,
+            "compileBytes": 62176
+          },
+          {
+            "compileMicroseconds": 136.7375,
+            "compileBytes": 62176
+          },
+          {
+            "compileMicroseconds": 183.06875,
+            "compileBytes": 62176
+          },
+          {
+            "compileMicroseconds": 137.5359375,
+            "compileBytes": 62176
+          }
+        ]
+      },
+      {
+        "id": "scripts.annotated-rule-closures.nested-factories",
+        "sourceCharacters": 430,
+        "samples": [
+          {
+            "compileMicroseconds": 165.3609375,
+            "compileBytes": 58184
+          },
+          {
+            "compileMicroseconds": 185.8015625,
+            "compileBytes": 58184
+          },
+          {
+            "compileMicroseconds": 186.90625,
+            "compileBytes": 58184
+          },
+          {
+            "compileMicroseconds": 151.8921875,
+            "compileBytes": 58184
+          },
+          {
+            "compileMicroseconds": 141.365625,
+            "compileBytes": 58184
+          },
+          {
+            "compileMicroseconds": 141.2359375,
+            "compileBytes": 58184
+          },
+          {
+            "compileMicroseconds": 133.84375,
+            "compileBytes": 58184
+          }
+        ]
+      },
+      {
+        "id": "scripts.dataclass-inherited-configuration.generated",
+        "sourceCharacters": 3978,
+        "samples": [
+          {
+            "compileMicroseconds": 1267.4796875,
+            "compileBytes": 503088
+          },
+          {
+            "compileMicroseconds": 1259.41875,
+            "compileBytes": 503088
+          },
+          {
+            "compileMicroseconds": 1220.571875,
+            "compileBytes": 503088
+          },
+          {
+            "compileMicroseconds": 1309.075,
+            "compileBytes": 503088
+          },
+          {
+            "compileMicroseconds": 1264.490625,
+            "compileBytes": 503088
+          },
+          {
+            "compileMicroseconds": 1404.61875,
+            "compileBytes": 503088
+          },
+          {
+            "compileMicroseconds": 1502.9234375,
+            "compileBytes": 503088
+          }
+        ]
+      },
+      {
+        "id": "scripts.config-generated-guards.medium.bad-0.sparse-lexical",
+        "sourceCharacters": 23555,
+        "samples": [
+          {
+            "compileMicroseconds": 2395.6921875,
+            "compileBytes": 2071162.125
+          },
+          {
+            "compileMicroseconds": 2262.5953125,
+            "compileBytes": 2069352
+          },
+          {
+            "compileMicroseconds": 2384.1984375,
+            "compileBytes": 2069352
+          },
+          {
+            "compileMicroseconds": 2288.3421875,
+            "compileBytes": 2058465.75
+          },
+          {
+            "compileMicroseconds": 2156.728125,
+            "compileBytes": 2057803.25
+          },
+          {
+            "compileMicroseconds": 2783.7984375,
+            "compileBytes": 2057784.25
+          },
+          {
+            "compileMicroseconds": 3040.0015625,
+            "compileBytes": 2057630.25
+          }
+        ]
+      },
+      {
+        "id": "compiler.generated-read-only-branches",
+        "sourceCharacters": 11139,
+        "samples": [
+          {
+            "compileMicroseconds": 1171.5078125,
+            "compileBytes": 1046224
+          },
+          {
+            "compileMicroseconds": 1143.075,
+            "compileBytes": 1046224
+          },
+          {
+            "compileMicroseconds": 1067.740625,
+            "compileBytes": 1046224
+          },
+          {
+            "compileMicroseconds": 1045.8375,
+            "compileBytes": 1046224
+          },
+          {
+            "compileMicroseconds": 1067.2296875,
+            "compileBytes": 1046224
+          },
+          {
+            "compileMicroseconds": 991.9765625,
+            "compileBytes": 1046224
+          },
+          {
+            "compileMicroseconds": 1038.0171875,
+            "compileBytes": 1046224
+          }
+        ]
+      },
+      {
+        "id": "diagnostic.text-summary.nonlocal-computed-width.large",
+        "sourceCharacters": 615,
+        "samples": [
+          {
+            "compileMicroseconds": 162.4,
+            "compileBytes": 78936
+          },
+          {
+            "compileMicroseconds": 130.0703125,
+            "compileBytes": 78936
+          },
+          {
+            "compileMicroseconds": 179.1921875,
+            "compileBytes": 78936
+          },
+          {
+            "compileMicroseconds": 122.1125,
+            "compileBytes": 78936
+          },
+          {
+            "compileMicroseconds": 118.1203125,
+            "compileBytes": 78936
+          },
+          {
+            "compileMicroseconds": 117.3875,
+            "compileBytes": 78936
+          },
+          {
+            "compileMicroseconds": 142.071875,
+            "compileBytes": 78936
+          }
+        ]
+      },
+      {
+        "id": "scripts.config-edit.small",
+        "sourceCharacters": 357,
+        "samples": [
+          {
+            "compileMicroseconds": 66.9109375,
+            "compileBytes": 43272
+          },
+          {
+            "compileMicroseconds": 70.3234375,
+            "compileBytes": 43272
+          },
+          {
+            "compileMicroseconds": 58.5828125,
+            "compileBytes": 43272
+          },
+          {
+            "compileMicroseconds": 70.5453125,
+            "compileBytes": 43272
+          },
+          {
+            "compileMicroseconds": 87.25,
+            "compileBytes": 43272
+          },
+          {
+            "compileMicroseconds": 90.8203125,
+            "compileBytes": 43272
+          },
+          {
+            "compileMicroseconds": 75.9796875,
+            "compileBytes": 43272
+          }
+        ]
+      },
+      {
+        "id": "diagnostic.dead-heavy-validator",
+        "sourceCharacters": 10644,
+        "samples": [
+          {
+            "compileMicroseconds": 830.359375,
+            "compileBytes": 838128
+          },
+          {
+            "compileMicroseconds": 805.6765625,
+            "compileBytes": 838128
+          },
+          {
+            "compileMicroseconds": 697.540625,
+            "compileBytes": 838128
+          },
+          {
+            "compileMicroseconds": 745.1375,
+            "compileBytes": 838128
+          },
+          {
+            "compileMicroseconds": 689.475,
+            "compileBytes": 838128
+          },
+          {
+            "compileMicroseconds": 669.2609375,
+            "compileBytes": 838128
+          },
+          {
+            "compileMicroseconds": 643.3921875,
+            "compileBytes": 838128
+          }
+        ]
+      }
+    ]
+  },
+  "candidate": {
+    "referenceProductionSource": "54b909bb1",
+    "instrumentedBuild": false,
+    "boundary": "Local compile only, new admitted compiled owner with disposal and budget reuse check each invocation. Diagnostic independent workers, freshly compiled owner disposed on each invocation.",
+    "imageSHA256": "ccc2b03511db4d55b68cf1c6a37f131c1f6ed4095dece756b548e74464811c67",
+    "catalogSHA256": "d8d7e69e5e6f8fa3fc2085b89ea453a914d8ec1c019ab4ed309ec4f61cb4a0f3",
+    "runtime": "11.0.0",
+    "rows": [
+      {
+        "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+        "sourceCharacters": 465,
+        "samples": [
+          {
+            "compileMicroseconds": 186.625,
+            "compileBytes": 60616
+          },
+          {
+            "compileMicroseconds": 276.55,
+            "compileBytes": 60616
+          },
+          {
+            "compileMicroseconds": 270.30625,
+            "compileBytes": 60616
+          },
+          {
+            "compileMicroseconds": 275.63125,
+            "compileBytes": 60616
+          },
+          {
+            "compileMicroseconds": 265.6515625,
+            "compileBytes": 60616
+          },
+          {
+            "compileMicroseconds": 248.6171875,
+            "compileBytes": 60616
+          },
+          {
+            "compileMicroseconds": 189.003125,
+            "compileBytes": 60616
+          }
+        ]
+      },
+      {
+        "id": "scripts.annotated-rule-closures.nested-factories",
+        "sourceCharacters": 430,
+        "samples": [
+          {
+            "compileMicroseconds": 155.9640625,
+            "compileBytes": 56624
+          },
+          {
+            "compileMicroseconds": 169.48125,
+            "compileBytes": 56624
+          },
+          {
+            "compileMicroseconds": 156.2078125,
+            "compileBytes": 56624
+          },
+          {
+            "compileMicroseconds": 160.903125,
+            "compileBytes": 56624
+          },
+          {
+            "compileMicroseconds": 151.3046875,
+            "compileBytes": 56624
+          },
+          {
+            "compileMicroseconds": 179.4890625,
+            "compileBytes": 56624
+          },
+          {
+            "compileMicroseconds": 190.89375,
+            "compileBytes": 56624
+          }
+        ]
+      },
+      {
+        "id": "scripts.dataclass-inherited-configuration.generated",
+        "sourceCharacters": 3978,
+        "samples": [
+          {
+            "compileMicroseconds": 1287.5390625,
+            "compileBytes": 511360
+          },
+          {
+            "compileMicroseconds": 1397.178125,
+            "compileBytes": 511552.75
+          },
+          {
+            "compileMicroseconds": 1402.1703125,
+            "compileBytes": 511360
+          },
+          {
+            "compileMicroseconds": 1408.1828125,
+            "compileBytes": 511360
+          },
+          {
+            "compileMicroseconds": 1504.103125,
+            "compileBytes": 511360
+          },
+          {
+            "compileMicroseconds": 1548.4875,
+            "compileBytes": 511360
+          },
+          {
+            "compileMicroseconds": 1530.2515625,
+            "compileBytes": 511360
+          }
+        ]
+      },
+      {
+        "id": "scripts.config-generated-guards.medium.bad-0.sparse-lexical",
+        "sourceCharacters": 23555,
+        "samples": [
+          {
+            "compileMicroseconds": 2577.9421875,
+            "compileBytes": 1951768.75
+          },
+          {
+            "compileMicroseconds": 2313.634375,
+            "compileBytes": 1949285.375
+          },
+          {
+            "compileMicroseconds": 2224.078125,
+            "compileBytes": 1948016.125
+          },
+          {
+            "compileMicroseconds": 2403.5953125,
+            "compileBytes": 1947836.625
+          },
+          {
+            "compileMicroseconds": 2181.990625,
+            "compileBytes": 1936917.375
+          },
+          {
+            "compileMicroseconds": 1640.11875,
+            "compileBytes": 1936024.75
+          },
+          {
+            "compileMicroseconds": 1952.5109375,
+            "compileBytes": 1936466.625
+          }
+        ]
+      },
+      {
+        "id": "compiler.generated-read-only-branches",
+        "sourceCharacters": 11139,
+        "samples": [
+          {
+            "compileMicroseconds": 751.88125,
+            "compileBytes": 981200
+          },
+          {
+            "compileMicroseconds": 644.175,
+            "compileBytes": 981200
+          },
+          {
+            "compileMicroseconds": 830.3875,
+            "compileBytes": 981200
+          },
+          {
+            "compileMicroseconds": 807.103125,
+            "compileBytes": 981200
+          },
+          {
+            "compileMicroseconds": 828.703125,
+            "compileBytes": 981200
+          },
+          {
+            "compileMicroseconds": 711.134375,
+            "compileBytes": 981200
+          },
+          {
+            "compileMicroseconds": 795.39375,
+            "compileBytes": 981200
+          }
+        ]
+      },
+      {
+        "id": "diagnostic.text-summary.nonlocal-computed-width.large",
+        "sourceCharacters": 615,
+        "samples": [
+          {
+            "compileMicroseconds": 125.6171875,
+            "compileBytes": 74792
+          },
+          {
+            "compileMicroseconds": 103.434375,
+            "compileBytes": 74792
+          },
+          {
+            "compileMicroseconds": 168.4453125,
+            "compileBytes": 74792
+          },
+          {
+            "compileMicroseconds": 154.0296875,
+            "compileBytes": 74792
+          },
+          {
+            "compileMicroseconds": 130.4015625,
+            "compileBytes": 74792
+          },
+          {
+            "compileMicroseconds": 131.64375,
+            "compileBytes": 74792
+          },
+          {
+            "compileMicroseconds": 119.51875,
+            "compileBytes": 74792
+          }
+        ]
+      },
+      {
+        "id": "scripts.config-edit.small",
+        "sourceCharacters": 357,
+        "samples": [
+          {
+            "compileMicroseconds": 39.1140625,
+            "compileBytes": 41080
+          },
+          {
+            "compileMicroseconds": 63.3125,
+            "compileBytes": 41080
+          },
+          {
+            "compileMicroseconds": 85.1921875,
+            "compileBytes": 41080
+          },
+          {
+            "compileMicroseconds": 27.6546875,
+            "compileBytes": 41080
+          },
+          {
+            "compileMicroseconds": 26.1421875,
+            "compileBytes": 41080
+          },
+          {
+            "compileMicroseconds": 25.0984375,
+            "compileBytes": 41080
+          },
+          {
+            "compileMicroseconds": 24.059375,
+            "compileBytes": 41080
+          }
+        ]
+      },
+      {
+        "id": "diagnostic.dead-heavy-validator",
+        "sourceCharacters": 10644,
+        "samples": [
+          {
+            "compileMicroseconds": 455.3765625,
+            "compileBytes": 805096
+          },
+          {
+            "compileMicroseconds": 563.8328125,
+            "compileBytes": 805096
+          },
+          {
+            "compileMicroseconds": 557.4921875,
+            "compileBytes": 805096
+          },
+          {
+            "compileMicroseconds": 567.3015625,
+            "compileBytes": 805096
+          },
+          {
+            "compileMicroseconds": 553.25625,
+            "compileBytes": 805096
+          },
+          {
+            "compileMicroseconds": 547.2359375,
+            "compileBytes": 805096
+          },
+          {
+            "compileMicroseconds": 508.0484375,
+            "compileBytes": 805096
+          }
+        ]
+      }
+    ]
+  }
+}
