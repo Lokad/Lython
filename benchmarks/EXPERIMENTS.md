@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1432 unboxed singleton positional default](results/2026-11-23-unboxed-singleton-default/README.md)
+defers the funded tuple without earlier boxing. The refined factories
+allocate 13.00% less. The defaults observer allocates 1.34% more and
+takes 2.81–6.07% longer warm. Both variants stay private.
+
 [B1431 refined prepared integer operands](results/2026-11-23-direct-bound-integer-refined/README.md)
 retains direct reads for eligible native returns. Both factory warm gains recur
 and the defaults observer loss does not. First-result timing spans zero and the
