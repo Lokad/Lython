@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1435 materialized cased words](results/2026-11-23-materialized-cased-split/README.md)
+shares the casing and word-boundary scan. Wide warm elapsed falls about 20%
+and the pooled trial allocates 4.98% less on that report. Peak admission
+more than doubles on a separate 132 KiB input. Both initial variants stay
+private while the added working buffer is bounded.
+
 [B1434 reused native signature](results/2026-11-23-body-owned-signatures-refined/README.md)
 retains the allocation reduction and lowers eager and wide positional CPU.
 Postponed factory warm takes 2.24–5.16% longer. The compile-only and
