@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1470 forward a terminal private assignment](results/2026-11-23-terminal-private-results/README.md)
+removes one store per factory helper. Eager warm elapsed falls 1.99–5.85%.
+Postponed time to result rises 1.68–3.15% with higher CPU and stable
+same-source controls. Keep the candidate private for a bounded phase split.
+
 [B1469 retained factory CPU attribution](results/2026-11-23-retained-factory-cpu/README.md)
 finds callable-creation and default admission in 91 of 995 resolved
 postponed runtime samples, with only one admission sample in the fully

@@ -1,0 +1,2820 @@
+{
+  "rows": [
+    {
+      "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "roles": {
+        "reference": {
+          "compiledAllocated": 60968.0,
+          "admitted": [
+            78718
+          ]
+        },
+        "candidate": {
+          "compiledAllocated": 60728.0,
+          "admitted": [
+            78718
+          ]
+        }
+      }
+    },
+    {
+      "case": "scripts.annotated-rule-closures.nested-factories",
+      "roles": {
+        "reference": {
+          "compiledAllocated": 56976.0,
+          "admitted": [
+            74810
+          ]
+        },
+        "candidate": {
+          "compiledAllocated": 56736.0,
+          "admitted": [
+            74810
+          ]
+        }
+      }
+    },
+    {
+      "case": "scripts.factory-observed-defaults",
+      "roles": {
+        "reference": {
+          "compiledAllocated": 70728.0,
+          "admitted": [
+            85630
+          ]
+        },
+        "candidate": {
+          "compiledAllocated": 70488.0,
+          "admitted": [
+            85630
+          ]
+        }
+      }
+    },
+    {
+      "case": "scripts.ordinary-fully-supplied-helper",
+      "roles": {
+        "reference": {
+          "compiledAllocated": 31136.0,
+          "admitted": [
+            49856
+          ]
+        },
+        "candidate": {
+          "compiledAllocated": 31136.0,
+          "admitted": [
+            49856
+          ]
+        }
+      }
+    },
+    {
+      "case": "scripts.csv-invoice.method-policy.quoted-control",
+      "roles": {
+        "reference": {
+          "compiledAllocated": 134144.0,
+          "admitted": [
+            157222
+          ]
+        },
+        "candidate": {
+          "compiledAllocated": 134144.0,
+          "admitted": [
+            157222
+          ]
+        }
+      }
+    },
+    {
+      "case": "scripts.config-generated-guards.medium.bad-0.sparse-lexical",
+      "roles": {
+        "reference": {
+          "compiledAllocated": 2170768.0,
+          "admitted": [
+            2294048
+          ]
+        },
+        "candidate": {
+          "compiledAllocated": 2170768.0,
+          "admitted": [
+            2294048
+          ]
+        }
+      }
+    }
+  ],
+  "observations": [
+    {
+      "role": "reference",
+      "run": 0,
+      "stats": {
+        "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+        "cold": {
+          "AllocatedBytes": 286376,
+          "PeakAllowance": 78718
+        },
+        "warm": [
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          }
+        ]
+      }
+    },
+    {
+      "role": "candidate",
+      "run": 0,
+      "stats": {
+        "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+        "cold": {
+          "AllocatedBytes": 285352,
+          "PeakAllowance": 78718
+        },
+        "warm": [
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          }
+        ]
+      }
+    },
+    {
+      "role": "reference",
+      "run": 0,
+      "stats": {
+        "id": "scripts.annotated-rule-closures.nested-factories",
+        "cold": {
+          "AllocatedBytes": 75064,
+          "PeakAllowance": 74810
+        },
+        "warm": [
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          }
+        ]
+      }
+    },
+    {
+      "role": "candidate",
+      "run": 0,
+      "stats": {
+        "id": "scripts.annotated-rule-closures.nested-factories",
+        "cold": {
+          "AllocatedBytes": 74824,
+          "PeakAllowance": 74810
+        },
+        "warm": [
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          }
+        ]
+      }
+    },
+    {
+      "role": "reference",
+      "run": 0,
+      "stats": {
+        "id": "scripts.factory-observed-defaults",
+        "cold": {
+          "AllocatedBytes": 295736,
+          "PeakAllowance": 85630
+        },
+        "warm": [
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          }
+        ]
+      }
+    },
+    {
+      "role": "candidate",
+      "run": 0,
+      "stats": {
+        "id": "scripts.factory-observed-defaults",
+        "cold": {
+          "AllocatedBytes": 296760,
+          "PeakAllowance": 85630
+        },
+        "warm": [
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          }
+        ]
+      }
+    },
+    {
+      "role": "reference",
+      "run": 0,
+      "stats": {
+        "id": "scripts.ordinary-fully-supplied-helper",
+        "cold": {
+          "AllocatedBytes": 49224,
+          "PeakAllowance": 49856
+        },
+        "warm": [
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          }
+        ]
+      }
+    },
+    {
+      "role": "candidate",
+      "run": 0,
+      "stats": {
+        "id": "scripts.ordinary-fully-supplied-helper",
+        "cold": {
+          "AllocatedBytes": 49224,
+          "PeakAllowance": 49856
+        },
+        "warm": [
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          }
+        ]
+      }
+    },
+    {
+      "role": "reference",
+      "run": 0,
+      "stats": {
+        "id": "scripts.csv-invoice.method-policy.quoted-control",
+        "cold": {
+          "AllocatedBytes": 753672,
+          "PeakAllowance": 157222
+        },
+        "warm": [
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          }
+        ]
+      }
+    },
+    {
+      "role": "candidate",
+      "run": 0,
+      "stats": {
+        "id": "scripts.csv-invoice.method-policy.quoted-control",
+        "cold": {
+          "AllocatedBytes": 753480,
+          "PeakAllowance": 157222
+        },
+        "warm": [
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          }
+        ]
+      }
+    },
+    {
+      "role": "reference",
+      "run": 0,
+      "stats": {
+        "id": "scripts.config-generated-guards.medium.bad-0.sparse-lexical",
+        "cold": {
+          "AllocatedBytes": 2870400,
+          "PeakAllowance": 2294048
+        },
+        "warm": [
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          }
+        ]
+      }
+    },
+    {
+      "role": "candidate",
+      "run": 0,
+      "stats": {
+        "id": "scripts.config-generated-guards.medium.bad-0.sparse-lexical",
+        "cold": {
+          "AllocatedBytes": 2873768,
+          "PeakAllowance": 2294048
+        },
+        "warm": [
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          }
+        ]
+      }
+    },
+    {
+      "role": "candidate",
+      "run": 1,
+      "stats": {
+        "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+        "cold": {
+          "AllocatedBytes": 287000,
+          "PeakAllowance": 78718
+        },
+        "warm": [
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60728,
+            "PeakAllowance": 78718
+          }
+        ]
+      }
+    },
+    {
+      "role": "reference",
+      "run": 1,
+      "stats": {
+        "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+        "cold": {
+          "AllocatedBytes": 286968,
+          "PeakAllowance": 78718
+        },
+        "warm": [
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          },
+          {
+            "AllocatedBytes": 60968,
+            "PeakAllowance": 78718
+          }
+        ]
+      }
+    },
+    {
+      "role": "candidate",
+      "run": 1,
+      "stats": {
+        "id": "scripts.annotated-rule-closures.nested-factories",
+        "cold": {
+          "AllocatedBytes": 74824,
+          "PeakAllowance": 74810
+        },
+        "warm": [
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56736,
+            "PeakAllowance": 74810
+          }
+        ]
+      }
+    },
+    {
+      "role": "reference",
+      "run": 1,
+      "stats": {
+        "id": "scripts.annotated-rule-closures.nested-factories",
+        "cold": {
+          "AllocatedBytes": 75064,
+          "PeakAllowance": 74810
+        },
+        "warm": [
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          },
+          {
+            "AllocatedBytes": 56976,
+            "PeakAllowance": 74810
+          }
+        ]
+      }
+    },
+    {
+      "role": "candidate",
+      "run": 1,
+      "stats": {
+        "id": "scripts.factory-observed-defaults",
+        "cold": {
+          "AllocatedBytes": 296168,
+          "PeakAllowance": 85630
+        },
+        "warm": [
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70488,
+            "PeakAllowance": 85630
+          }
+        ]
+      }
+    },
+    {
+      "role": "reference",
+      "run": 1,
+      "stats": {
+        "id": "scripts.factory-observed-defaults",
+        "cold": {
+          "AllocatedBytes": 296280,
+          "PeakAllowance": 85630
+        },
+        "warm": [
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          },
+          {
+            "AllocatedBytes": 70728,
+            "PeakAllowance": 85630
+          }
+        ]
+      }
+    },
+    {
+      "role": "candidate",
+      "run": 1,
+      "stats": {
+        "id": "scripts.ordinary-fully-supplied-helper",
+        "cold": {
+          "AllocatedBytes": 49224,
+          "PeakAllowance": 49856
+        },
+        "warm": [
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          }
+        ]
+      }
+    },
+    {
+      "role": "reference",
+      "run": 1,
+      "stats": {
+        "id": "scripts.ordinary-fully-supplied-helper",
+        "cold": {
+          "AllocatedBytes": 49224,
+          "PeakAllowance": 49856
+        },
+        "warm": [
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          },
+          {
+            "AllocatedBytes": 31136,
+            "PeakAllowance": 49856
+          }
+        ]
+      }
+    },
+    {
+      "role": "candidate",
+      "run": 1,
+      "stats": {
+        "id": "scripts.csv-invoice.method-policy.quoted-control",
+        "cold": {
+          "AllocatedBytes": 753624,
+          "PeakAllowance": 157222
+        },
+        "warm": [
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          }
+        ]
+      }
+    },
+    {
+      "role": "reference",
+      "run": 1,
+      "stats": {
+        "id": "scripts.csv-invoice.method-policy.quoted-control",
+        "cold": {
+          "AllocatedBytes": 753784,
+          "PeakAllowance": 157222
+        },
+        "warm": [
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          },
+          {
+            "AllocatedBytes": 134144,
+            "PeakAllowance": 157222
+          }
+        ]
+      }
+    },
+    {
+      "role": "candidate",
+      "run": 1,
+      "stats": {
+        "id": "scripts.config-generated-guards.medium.bad-0.sparse-lexical",
+        "cold": {
+          "AllocatedBytes": 2871952,
+          "PeakAllowance": 2294048
+        },
+        "warm": [
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          }
+        ]
+      }
+    },
+    {
+      "role": "reference",
+      "run": 1,
+      "stats": {
+        "id": "scripts.config-generated-guards.medium.bad-0.sparse-lexical",
+        "cold": {
+          "AllocatedBytes": 2870688,
+          "PeakAllowance": 2294048
+        },
+        "warm": [
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          },
+          {
+            "AllocatedBytes": 2170768,
+            "PeakAllowance": 2294048
+          }
+        ]
+      }
+    }
+  ]
+}

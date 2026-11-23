@@ -1,0 +1,111 @@
+{
+  "scripts": 26,
+  "identicalCodeObjects": 171,
+  "changedCodeObjects": [
+    {
+      "script": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "name": "for_policy",
+      "fields": [
+        "nativeEnd",
+        "instructions",
+        "opcodeCounts",
+        "operandReads",
+        "tape"
+      ]
+    },
+    {
+      "script": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "name": "compile_rule",
+      "fields": [
+        "nativeEnd",
+        "instructions",
+        "opcodeCounts",
+        "operandReads",
+        "tape"
+      ]
+    },
+    {
+      "script": "scripts.annotated-rule-closures.nested-factories",
+      "name": "for_policy",
+      "fields": [
+        "nativeEnd",
+        "instructions",
+        "opcodeCounts",
+        "operandReads",
+        "tape"
+      ]
+    },
+    {
+      "script": "scripts.annotated-rule-closures.nested-factories",
+      "name": "compile_rule",
+      "fields": [
+        "nativeEnd",
+        "instructions",
+        "opcodeCounts",
+        "operandReads",
+        "tape"
+      ]
+    },
+    {
+      "script": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "name": "for_policy",
+      "fields": [
+        "nativeEnd",
+        "instructions",
+        "opcodeCounts",
+        "operandReads",
+        "tape"
+      ]
+    },
+    {
+      "script": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "name": "compile_rule",
+      "fields": [
+        "nativeEnd",
+        "instructions",
+        "opcodeCounts",
+        "operandReads",
+        "tape"
+      ]
+    },
+    {
+      "script": "scripts.factory-observed-defaults",
+      "name": "for_policy",
+      "fields": [
+        "nativeEnd",
+        "instructions",
+        "opcodeCounts",
+        "operandReads",
+        "tape"
+      ]
+    },
+    {
+      "script": "scripts.factory-observed-defaults",
+      "name": "compile_rule",
+      "fields": [
+        "nativeEnd",
+        "instructions",
+        "opcodeCounts",
+        "operandReads",
+        "tape"
+      ]
+    },
+    {
+      "script": "terminal-local-observation",
+      "name": "private_factory",
+      "fields": [
+        "nativeEnd",
+        "instructions",
+        "opcodeCounts",
+        "operandReads",
+        "tape"
+      ]
+    }
+  ],
+  "coreHashes": {
+    "reference": "ad9d2d0d40c2d10d264b2aa0d086573229f3212f5cd8f84ab5fd7a26f103fd03",
+    "reference-control": "ad9d2d0d40c2d10d264b2aa0d086573229f3212f5cd8f84ab5fd7a26f103fd03",
+    "candidate": "7456bdce453d8b69f9949549c323597227642e9b076358547a1c07ba309af872",
+    "candidate-control": "7456bdce453d8b69f9949549c323597227642e9b076358547a1c07ba309af872"
+  }
+}
