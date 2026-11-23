@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1434 reused native signature](results/2026-11-23-body-owned-signatures-refined/README.md)
+retains the allocation reduction and lowers eager and wide positional CPU.
+Postponed factory warm takes 2.24–5.16% longer. The compile-only and
+time-to-result comparisons span zero. Both signature variants stay private.
+
 [B1433 body-owned signatures](results/2026-11-23-body-owned-signatures/README.md)
 removes signature references from each callable and definition descriptor.
 Factories allocate 3.72% less. The defaults observer is 3.01–4.42% faster,
