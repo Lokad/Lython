@@ -13,7 +13,7 @@ internal sealed partial class ExecutableCodeObject
             Constants[Instructions[createIndex].ConstantIndex] is not ExecutableCreateFunction
             {
                 DecoratorCount: 0, IsGenerator: false, DeferredAnnotations.Length: 0,
-                TypeParameters: null, EagerAnnotationReads: null, DirectKeywordDefault: false,
+                TypeParameters: null, DirectKeywordDefault: false,
             } definition) return null;
 
         var body = definition.CodeObject;
@@ -24,7 +24,7 @@ internal sealed partial class ExecutableCodeObject
         // The declaration captures the factory's only bound argument by value.
         // Its code still owns live function metadata and allocates a fresh callable.
         var capture = body.CaptureSources;
-        return definition is { InputCount: 0, PostponedAnnotations: null } &&
+        return definition is { InputCount: 0, EagerAnnotationReads: null, PostponedAnnotations: null } &&
             capture is { CanCaptureByValue: true, Slots: [0] } &&
             ReferenceEquals(capture.ParentLocalSlots, LocalNameToSlot) ? definition : null;
     }

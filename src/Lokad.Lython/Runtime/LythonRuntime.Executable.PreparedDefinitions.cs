@@ -149,6 +149,8 @@ internal sealed partial class LythonRuntime
             StoreDefaultResult(ref defaults[1], instructions[4], ExecutableSlot.FromObject(keyword), scope.State);
             var span = instructions[5].Span;
             scope.CheckExecution(span);
+            if (definition.EagerAnnotationReads is { } reads)
+                return CreateClosedEagerDefinition(definition, factory, reads, scope, span, defaults);
             return CreateLexicalFunctionValue(definition.ParameterLayout, definition.CodeObject, default,
                 false, scope, span, defaults, definition.PostponedAnnotations);
         }
@@ -157,6 +159,23 @@ internal sealed partial class LythonRuntime
             defaults[1].RetireTemporary(scope.MemoryGovernor);
             defaults[0].RetireTemporary(scope.MemoryGovernor);
         }
+    }
+
+    // Keep the eager-only annotation owner out of the default producer's frame.
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    private static PyFunctionBase CreateClosedEagerDefinition(ExecutableCreateFunction definition,
+        ExecutableCodeObject factory, ExecutableInstruction[] reads, ExecutionContext scope, LythonSourceSpan span,
+        Span<ExecutableSlot> defaults)
+    {
+        var prepared = ReadEagerFunctionAnnotations(reads, factory, definition.CodeObject, scope, span);
+        try
+        {
+            var function = CreateLexicalFunctionValue(definition.ParameterLayout, definition.CodeObject, default,
+                false, scope, span, defaults, definition.PostponedAnnotations, prepared);
+            prepared = default;
+            return function;
+        }
+        finally { RefundEagerFunctionAnnotations(prepared, scope); }
     }
 
     private static bool CanDefineLexically(ExecutableCodeObject code)
