@@ -8,6 +8,28 @@ public sealed class FunctionDefaultMetadataTests
     public static TheoryData<string, string> Programs => new()
     {
         { "def add(a=1,*,b=2): return a+b\nprint(add(),add(3,b=4),add(b=8))\nadd.__defaults__=(10,)\nadd.__kwdefaults__={'b':20}\nprint(add(),add(b=5))", "3 7 9\n30 15\n" },
+        { """
+            def factory(seed):
+                def calculate(value=1, /, *, scale=seed, observed=seed):
+                    return (value + 2) * scale
+                return calculate
+
+            calculate = factory(3)
+            print(calculate(), calculate(5))
+            saved = calculate.__kwdefaults__
+            del saved['observed']
+            try: calculate(5)
+            except TypeError: print('missing observed')
+            saved['observed'] = []
+            saved['scale'] = 1 << 90
+            print(calculate(5) == 7 << 90, calculate.__kwdefaults__ is saved)
+
+            def required(value=1, /, *, unused, scale=3):
+                return (value + 2) * scale
+            try: required()
+            except TypeError: print('missing unused')
+            print(required(unused=[]))
+            """, "9 21\nmissing observed\nTrue True\nmissing unused\n9\n" },
         { "saved=[]\ndef pick(*,value=saved): return value\nprint(pick() is saved,pick(value=saved) is saved)\npick.__kwdefaults__={'value':['changed']}\npicked=pick()\nprint(picked is pick.__kwdefaults__['value'],saved)", "True True\nTrue []\n" },
         { "def f(a=0,b=1,c=2,d=3,e=4,f=5,g=6,h=7,i=8,j=9,k=10,l=11,m=12,n=13,o=14,p=15,q=16): return q\nprint(f(),f(q=23),f(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16))", "16 23 16\n" },
         { "def f(a=1,*,b=2): return a,b\nprint(f.__defaults__,f.__kwdefaults__)\nprint(f.__defaults__ is f.__defaults__,f.__kwdefaults__ is f.__kwdefaults__)", "(1,) {'b': 2}\nTrue True\n" },

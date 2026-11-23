@@ -66,6 +66,26 @@ internal abstract class FunctionBindingPlan
     public object? PositionalDefaults { get; private set; }
     public PyString KeywordDefaultName(int index) => _layout.KeywordDefaultName(index);
 
+    internal bool HasPreparedOmittedArguments(int supplied)
+        => (KeywordOnlyCount == 0 ||
+                (_inlineKeywordDefault || _keywordDefaults is object?[]) &&
+                _layout.Defaults.Length - _layout.PositionalDefaultCount == KeywordOnlyCount) &&
+            supplied <= PositionalCount &&
+            supplied >= PositionalCount - ((PositionalDefaults as PyTuple)?.Count ?? 0);
+
+    internal bool TryReadPreparedDefaultInteger(int index, out long value)
+    {
+        if (index >= PositionalCount)
+        {
+            var keywordPosition = _layout.KeywordDefaultAt(index - PositionalCount).RecordPosition;
+            var stored = _inlineKeywordDefault ? _keywordDefaults : ((object?[])_keywordDefaults!)[keywordPosition];
+            return LythonRuntime.ExecutableSlot.FromObject(stored).TryGetInteger(out value);
+        }
+        if (TryGetPositionalDefault(index, out var slot)) return slot.TryGetInteger(out value);
+        value = default;
+        return false;
+    }
+
     internal bool TryFillPreparedKeywordDefaults(Span<LythonRuntime.ExecutableSlot> bound,
         LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
