@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1444 sparse validator confirmation](results/2026-11-23-sparse-branch-confirmation/README.md)
+repeats the exact compiler pair. Sparse first-result elapsed spans
+−0.50 to +0.54% with less than 0.63% spread per source. The earlier
+adverse pairing remains in B1442.
+
 [B1443 compiler and runtime against CPython](results/2026-11-23-branch-cpython-checkpoint/README.md)
 measures the retained source. The read-only branch validator compiles in
 0.524–0.536× CPython's time, the quote-heavy invoice runs in 1.053–1.097×
