@@ -81,6 +81,7 @@ internal enum ExecutableOpCode
     StartFunctionDefaults,
     StoreFunctionDefault,
     CheckLocal,
+    ReverseAssignmentValues,
 }
 
 internal enum ExecutableUnaryOperator
@@ -213,6 +214,7 @@ internal readonly record struct ExecutableInstruction
         ? _secondaryOperand != 0 : throw InvalidOperand("ItemCount");
     public int ItemCount => OpCode is ExecutableOpCode.MakeList or ExecutableOpCode.MakeTuple or ExecutableOpCode.MakeSet
         ? _primaryOperand : throw InvalidOperand(nameof(ItemCount));
+    public int AssignmentValueCount => ReadPrimaryOperand(ExecutableOpCode.ReverseAssignmentValues, nameof(AssignmentValueCount));
     public int PairCount => ReadPrimaryOperand(ExecutableOpCode.MakeDict, nameof(PairCount));
     public int FormattedInitialCapacity => ReadPrimaryOperand(ExecutableOpCode.StartFormattedString, nameof(FormattedInitialCapacity));
     public char FormattedConversion => (char)ReadPrimaryOperand(ExecutableOpCode.ConvertFormattedValue, nameof(FormattedConversion));
@@ -292,6 +294,9 @@ internal readonly record struct ExecutableInstruction
     public static ExecutableInstruction ReadRetainedSlice(LythonSourceSpan span) => new(ExecutableOpCode.ReadRetainedSlice, span);
     public static ExecutableInstruction UnpackValues(UnpackingLayout layout, LythonSourceSpan span)
         => new(ExecutableOpCode.UnpackValues, span, layout.TargetCount, layout.StarredTargetIndex);
+
+    public static ExecutableInstruction ReverseAssignmentValues(int count, LythonSourceSpan span)
+        => new(ExecutableOpCode.ReverseAssignmentValues, span, count);
     public static ExecutableInstruction FailAssertion(bool hasMessage, LythonSourceSpan span)
         => new(ExecutableOpCode.FailAssertion, span, hasMessage ? 1 : 0);
     public static ExecutableInstruction Raise(bool hasCause, LythonSourceSpan span)

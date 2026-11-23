@@ -487,6 +487,10 @@ raises use ordinary instructions. Store metadata keeps its target span separate
 from the instruction's guard/routing span. A shared synchronous prefix completes
 ordinary work; incomplete protocols retain their operands until awaited completion
 and retirement. Deletion keeps only its executable shape and name/bounds metadata.
+An exact-width, unstarred tuple display assigned to one unstarred unpack
+target evaluates every right-hand value before any target. Existing operand
+slots carry those values into the ordinary left-to-right stores. No intermediate
+tuple is allocated. If a target fails, earlier stores retain their effects.
 Unpacking borrows exact builtin tuples' immutable storage, retaining the tuple
 through its users. Fixed executable unpacking of an exact list checks arity and
 copies its items straight into admitted operand slots before running any target.

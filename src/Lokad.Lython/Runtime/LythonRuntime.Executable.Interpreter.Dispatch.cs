@@ -225,6 +225,10 @@ internal sealed partial class LythonRuntime
                             PublishInstructionResult(ref execution, invocation, instruction,
                                 CreateListFromStack(ref execution.Stack, instruction.InputStart, instruction.ItemCount, instruction.Span, scope));
                             break;
+                        case ExecutableOpCode.ReverseAssignmentValues:
+                            ReverseAssignmentValues(execution.Stack.Values.AsSpan(instruction.InputStart, instruction.AssignmentValueCount),
+                                scope.State, instruction.Span);
+                            break;
                         case ExecutableOpCode.MakeTuple:
                             if (invocation is not null && invocation.TryStageUnpackedFrameReturn(instruction))
                                 return InstructionPause.Boundary;

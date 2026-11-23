@@ -42,6 +42,64 @@ public sealed class AssignmentTargetCompatibilityTests
         if (delayed is not null) Assert.True(delayed.CompletedAsynchronously > 0);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task TupleDisplayAssignmentEvaluatesAllValuesBeforeAnyTarget(bool asynchronous)
+    {
+        const string source = """
+            def exercise():
+                first = []
+                second = []
+                items = [first, second]
+                class Replace:
+                    def __setitem__(self, key, value):
+                        with open('/assignment.txt') as reader:
+                            print(reader.read())
+                        items[key] = value
+                def load_right(fail):
+                    with open('/value.txt') as reader:
+                        print(reader.read())
+                    if fail:
+                        raise ValueError()
+                    return items[1]
+                target = Replace()
+                try:
+                    target[1], kept = items[0], load_right(True)
+                except ValueError:
+                    print(items[1] is second)
+                target[1], kept = items[0], load_right(False)
+                print(items[1] is first, kept is second)
+                kept, first = first, kept
+                print(kept is items[1], first is second)
+                try:
+                    kept, target[9] = first, kept
+                except IndexError:
+                    print(kept is second, items[1] is not second)
+                kept, kept = items[1], second
+                print(kept is second)
+            exercise()
+            """;
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
+        var delayed = asynchronous ? new DelayedLythonHost() : null;
+        var mock = asynchronous ? null : new MockLythonHost();
+        if (delayed is not null)
+        {
+            delayed.SeedFile("/assignment.txt", "setting");
+            delayed.SeedFile("/value.txt", "loading");
+        }
+        else
+        {
+            mock!.SeedFile("/assignment.txt", "setting");
+            mock.SeedFile("/value.txt", "loading");
+        }
+        using var result = asynchronous ? await script.RunAsync(delayed!) : script.Run(mock!);
+        Assert.True(result.Success, DescribeFailure(result));
+        Assert.Equal("loading\nTrue\nloading\nsetting\nTrue True\nTrue True\nsetting\nTrue True\nTrue\n", result.StandardOutput);
+        if (delayed is not null) Assert.True(delayed.CompletedAsynchronously > 0);
+    }
+
     [Fact]
     public void AugmentedAssignment_TargetsAndOperators_RunLikePython()
     {

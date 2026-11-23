@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Lokad.Lython.Frontend;
 
 namespace Lokad.Lython.Runtime;
@@ -63,6 +64,19 @@ internal sealed partial class LythonRuntime
             // publication or scalar materialization is needed for their result.
             else if (value.IsUnassigned) _ = value.Object.RequireNotNull();
             execution.InstructionIndex++;
+        }
+    }
+
+    // Keep the wide-assignment loop out of both ordinary dispatch loops.
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void ReverseAssignmentValues(Span<ExecutableSlot> values, ExecutionState state, LythonSourceSpan span)
+    {
+        // RHS evaluation fills the slots left to right. Targets take them off the
+        // stack in that same order, and a wide display still checks cancellation.
+        for (int left = 0, right = values.Length - 1; left < right; left++, right--)
+        {
+            if ((left & 255) == 255) state.CheckExecution(span);
+            (values[left], values[right]) = (values[right], values[left]);
         }
     }
 

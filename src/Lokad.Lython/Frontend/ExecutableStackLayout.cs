@@ -491,6 +491,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
             ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast => (3, 0),
             ExecutableOpCode.StoreSlice or ExecutableOpCode.StoreSliceLast => (5, 0),
             ExecutableOpCode.UnpackValues => (1, instruction.UnpackLayout.TargetCount),
+            ExecutableOpCode.ReverseAssignmentValues => (instruction.AssignmentValueCount, instruction.AssignmentValueCount),
             ExecutableOpCode.FailAssertion => (instruction.HasAssertionMessage ? 1 : 0, 0),
             ExecutableOpCode.Raise => (instruction.HasRaiseCause ? 2 : 1, 0),
             ExecutableOpCode.DeleteName => (0, 0),

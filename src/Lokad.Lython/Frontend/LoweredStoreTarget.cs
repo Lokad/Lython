@@ -20,7 +20,7 @@ internal abstract record LoweredStoreTarget(LythonSourceSpan Span)
         _ => throw new InvalidOperationException("Unknown assignment target."),
     };
 
-    internal static LoweredStoreTarget FromUnpacking(IReadOnlyList<UnpackingTargetSyntax> targets, LythonSourceSpan span)
+    internal static LoweredUnpackingStoreTarget FromUnpacking(IReadOnlyList<UnpackingTargetSyntax> targets, LythonSourceSpan span)
         => new LoweredUnpackingStoreTarget(targets.Select(LowerUnpacking).ToArray(), UnpackingLayout.FromTargets(targets), span);
 
     private static LoweredStoreTarget LowerUnpacking(UnpackingTargetSyntax target) => target switch

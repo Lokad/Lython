@@ -214,8 +214,21 @@ internal sealed partial class ExecutableScript
                     return currentBlock;
 
                 case UnpackingAssignmentStatementSyntax unpacking:
+                    var group = LoweredStoreTarget.FromUnpacking(unpacking.Targets, unpacking.Expression.Span);
+                    if (unpacking.Expression is TupleLiteralExpressionSyntax { HasUnpacking: false } tuple
+                        && !group.Layout.HasStarredTarget && group.Items.Count == tuple.Items.Count)
+                    {
+                        // All right-hand values are snapshots before evaluation of any target.
+                        foreach (var item in tuple.Items)
+                            currentBlock = CompileExpression(item.Expression, currentBlock);
+                        if (tuple.Items.Count > 1)
+                            AddInstruction(currentBlock, ExecutableInstruction.ReverseAssignmentValues(tuple.Items.Count, tuple.Span));
+                        foreach (var child in group.Items)
+                            currentBlock = CompileStoreTarget(child, child.Span, currentBlock);
+                        return currentBlock;
+                    }
                     currentBlock = CompileExpression(unpacking.Expression, currentBlock);
-                    return CompileStoreTarget(LoweredStoreTarget.FromUnpacking(unpacking.Targets, unpacking.Expression.Span), unpacking.Span, currentBlock);
+                    return CompileStoreTarget(group, unpacking.Span, currentBlock);
 
                 case MemberAssignmentStatementSyntax member:
                     currentBlock = CompileExpression(member.Expression, currentBlock);

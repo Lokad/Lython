@@ -255,6 +255,9 @@ internal sealed partial class LythonRuntime
                         Publish(instruction, next.TakeSlotValue());
                         break;
                     }
+                    case ExecutableOpCode.ReverseAssignmentValues:
+                        ReverseAssignmentValues(Values.Slice(instruction.InputStart, instruction.AssignmentValueCount), _scope.State, instruction.Span);
+                        break;
                     case ExecutableOpCode.MakeTuple:
                     {
                         if (TryReturnUnpackedTuple(instruction)) return true;
