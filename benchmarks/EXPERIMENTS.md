@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1442 compiler binding snapshots](results/2026-11-23-abstract-state-snapshots/README.md)
+removes copying for unchanged branches. The generated read-only script
+compiles 70.34–71.29% faster. Inherited dataclass compilation improves
+1.61–2.58%. Sparse compile-to-result timing remains inconclusive.
+
 [Current runtime attribution on Windows](results/2026-11-23-integrated-runtime-attribution/README.md)
 verifies four representative scripts against the retained CSV checkpoint.
 Native entry frames absorb most of the relevant samples, so these traces

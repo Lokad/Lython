@@ -1,0 +1,166 @@
+{
+  "reference": [
+    {
+      "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "counts": {
+        "Clones": 8,
+        "ValueCopies": 8,
+        "ValueEntries": 9,
+        "LengthCopies": 8,
+        "LengthEntries": 0
+      }
+    },
+    {
+      "id": "scripts.annotated-rule-closures.nested-factories",
+      "counts": {
+        "Clones": 8,
+        "ValueCopies": 8,
+        "ValueEntries": 1,
+        "LengthCopies": 8,
+        "LengthEntries": 0
+      }
+    },
+    {
+      "id": "scripts.dataclass-inherited-configuration.generated",
+      "counts": {
+        "Clones": 99,
+        "ValueCopies": 99,
+        "ValueEntries": 197,
+        "LengthCopies": 99,
+        "LengthEntries": 1
+      }
+    },
+    {
+      "id": "scripts.config-generated-guards.medium.bad-0.sparse-lexical",
+      "counts": {
+        "Clones": 194,
+        "ValueCopies": 194,
+        "ValueEntries": 387,
+        "LengthCopies": 194,
+        "LengthEntries": 1
+      }
+    },
+    {
+      "id": "compiler.generated-read-only-branches",
+      "counts": {
+        "Clones": 543,
+        "ValueCopies": 543,
+        "ValueEntries": 207720,
+        "LengthCopies": 543,
+        "LengthEntries": 0
+      }
+    },
+    {
+      "id": "diagnostic.text-summary.nonlocal-computed-width.large",
+      "counts": {
+        "Clones": 2,
+        "ValueCopies": 2,
+        "ValueEntries": 1,
+        "LengthCopies": 2,
+        "LengthEntries": 0
+      }
+    },
+    {
+      "id": "scripts.config-edit.small",
+      "counts": {
+        "Clones": 0,
+        "ValueCopies": 0,
+        "ValueEntries": 0,
+        "LengthCopies": 0,
+        "LengthEntries": 0
+      }
+    },
+    {
+      "id": "diagnostic.dead-heavy-validator",
+      "counts": {
+        "Clones": 9,
+        "ValueCopies": 9,
+        "ValueEntries": 4,
+        "LengthCopies": 9,
+        "LengthEntries": 0
+      }
+    }
+  ],
+  "candidate": [
+    {
+      "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "counts": {
+        "Clones": 8,
+        "ValueCopies": 4,
+        "ValueEntries": 6,
+        "LengthCopies": 0,
+        "LengthEntries": 0
+      }
+    },
+    {
+      "id": "scripts.annotated-rule-closures.nested-factories",
+      "counts": {
+        "Clones": 8,
+        "ValueCopies": 4,
+        "ValueEntries": 2,
+        "LengthCopies": 0,
+        "LengthEntries": 0
+      }
+    },
+    {
+      "id": "scripts.dataclass-inherited-configuration.generated",
+      "counts": {
+        "Clones": 99,
+        "ValueCopies": 53,
+        "ValueEntries": 106,
+        "LengthCopies": 2,
+        "LengthEntries": 1
+      }
+    },
+    {
+      "id": "scripts.config-generated-guards.medium.bad-0.sparse-lexical",
+      "counts": {
+        "Clones": 194,
+        "ValueCopies": 291,
+        "ValueEntries": 581,
+        "LengthCopies": 3,
+        "LengthEntries": 2
+      }
+    },
+    {
+      "id": "compiler.generated-read-only-branches",
+      "counts": {
+        "Clones": 543,
+        "ValueCopies": 3,
+        "ValueEntries": 0,
+        "LengthCopies": 0,
+        "LengthEntries": 0
+      }
+    },
+    {
+      "id": "diagnostic.text-summary.nonlocal-computed-width.large",
+      "counts": {
+        "Clones": 2,
+        "ValueCopies": 2,
+        "ValueEntries": 1,
+        "LengthCopies": 0,
+        "LengthEntries": 0
+      }
+    },
+    {
+      "id": "scripts.config-edit.small",
+      "counts": {
+        "Clones": 0,
+        "ValueCopies": 0,
+        "ValueEntries": 0,
+        "LengthCopies": 0,
+        "LengthEntries": 0
+      }
+    },
+    {
+      "id": "diagnostic.dead-heavy-validator",
+      "counts": {
+        "Clones": 9,
+        "ValueCopies": 4,
+        "ValueEntries": 0,
+        "LengthCopies": 0,
+        "LengthEntries": 0
+      }
+    }
+  ]
+}
