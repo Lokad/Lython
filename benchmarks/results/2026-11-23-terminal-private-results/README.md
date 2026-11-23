@@ -46,8 +46,34 @@ All 168 batches passed and the archive verified after worker and
 fixture cleanup. Ranges compare all four pairings of process medians.
 The postponed control spread stays below 0.8% on both images, while
 unchanged scripts have broader or directionally favorable controls.
-Keep the candidate private pending one confirmation that splits the
-postponed phases and repeats the eager and untouched helper controls.
+The candidate stayed private while a second run separated the
+postponed phases and repeated the eager and fully supplied controls.
+
+## Same-image phase confirmation
+
+B1471 uses the same images, catalog and sampling boundaries. All 140
+batches pass. Workers join and the quiet-machine archive verifies.
+The initial local launch failed before uploading when an image hash
+map shadowed the payload list. The corrected launch verifies all the
+same files and preserves its original inputs.
+
+| Workload | Boundary | Elapsed change | Wider CPU change |
+| --- | --- | ---: | ---: |
+| Postponed factories | Time to result | −2.78% to +1.64% | −3.41% to +2.85% |
+| Postponed factories | Warm | −5.23% to −3.15% | −4.99% to −3.02% |
+| Postponed factories | Compilation | −1.81% to −0.49% | −0.55% to +0.33% |
+| Eager factories | Warm | −6.65% to −3.26% | −8.17% to −3.34% |
+| Fully supplied helper | Warm | −3.69% to −2.29% | −3.51% to −2.27% |
+
+Retain the simpler tape in `fed081ff0`. Eager warm elapsed falls in
+both runs. The unchanged fully supplied helper also improves in the
+phase confirmation, which limits attribution. Postponed time to
+result remains inconclusive across runs. Retain the initial adverse
+result for the next callable-construction checkpoint.
+
+[Phase identity](phase-identity.json) · [Phase summary](phase-summary.json) ·
+[Raw confirmation](phase-observations.tar.xz) · [Phase terminal status](phase-terminal-status.json) ·
+[Phase procedures and initial launch failure](phase-procedures.tar.xz).
 
 [Frozen identity](identity.json) · [Timing summary](summary.json) ·
 [Raw observations](observations.tar.xz) · [Terminal status](terminal-status.json) ·
