@@ -1,0 +1,164 @@
+{
+  "reference": {
+    "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+    "rows": [
+      {
+        "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          882136,
+          882136,
+          882136
+        ],
+        "peakExecutionMemoryBytes": 2968481,
+        "compiledReservedBytes": 78622,
+        "compilationMillisecondsDiagnostic": 145.824,
+        "compilationAllocatedBytesDiagnostic": 1369152,
+        "firstInvocationMillisecondsDiagnostic": 63.6104,
+        "sharedBudgetBaselineRestored": true
+      },
+      {
+        "id": "scripts.annotated-rule-closures.nested-factories",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          882032,
+          882032,
+          882032
+        ],
+        "peakExecutionMemoryBytes": 2968425,
+        "compiledReservedBytes": 74618,
+        "compilationMillisecondsDiagnostic": 0.4515,
+        "compilationAllocatedBytesDiagnostic": 59224,
+        "firstInvocationMillisecondsDiagnostic": 2.0301,
+        "sharedBudgetBaselineRestored": true
+      },
+      {
+        "id": "scripts.factory-observed-defaults",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          1226352,
+          1226352,
+          1226352
+        ],
+        "peakExecutionMemoryBytes": 2968817,
+        "compiledReservedBytes": 85534,
+        "compilationMillisecondsDiagnostic": 2.7357,
+        "compilationAllocatedBytesDiagnostic": 73904,
+        "firstInvocationMillisecondsDiagnostic": 4.955,
+        "sharedBudgetBaselineRestored": true
+      },
+      {
+        "id": "scripts.ordinary-fully-supplied-helper",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          142656,
+          142656,
+          142656
+        ],
+        "peakExecutionMemoryBytes": 1255,
+        "compiledReservedBytes": 49856,
+        "compilationMillisecondsDiagnostic": 2.753,
+        "compilationAllocatedBytesDiagnostic": 32096,
+        "firstInvocationMillisecondsDiagnostic": 0.641,
+        "sharedBudgetBaselineRestored": true
+      },
+      {
+        "id": "scripts.csv-invoice.method-policy.quoted-control",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          4069490,
+          4069496,
+          4069490
+        ],
+        "peakExecutionMemoryBytes": 9432874,
+        "compiledReservedBytes": 157114,
+        "compilationMillisecondsDiagnostic": 28.2003,
+        "compilationAllocatedBytesDiagnostic": 140064,
+        "firstInvocationMillisecondsDiagnostic": 83.0963,
+        "sharedBudgetBaselineRestored": true
+      }
+    ],
+    "boundary": "Complete warm runs including mediated I/O/reset, all output/file checks and result cleanup; compilation/startup/final cache teardown excluded. Process-wide CLR allocation counters, no forced GC. Compilation and first invocation clocks are local diagnostic observations, not a controlled CPU/source timing comparison."
+  },
+  "candidate": {
+    "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+    "rows": [
+      {
+        "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          816600,
+          816600,
+          816600
+        ],
+        "peakExecutionMemoryBytes": 2968481,
+        "compiledReservedBytes": 78622,
+        "compilationMillisecondsDiagnostic": 153.845,
+        "compilationAllocatedBytesDiagnostic": 1370256,
+        "firstInvocationMillisecondsDiagnostic": 58.8229,
+        "sharedBudgetBaselineRestored": true
+      },
+      {
+        "id": "scripts.annotated-rule-closures.nested-factories",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          816496,
+          816496,
+          816496
+        ],
+        "peakExecutionMemoryBytes": 2968425,
+        "compiledReservedBytes": 74618,
+        "compilationMillisecondsDiagnostic": 0.4362,
+        "compilationAllocatedBytesDiagnostic": 59224,
+        "firstInvocationMillisecondsDiagnostic": 2.0438,
+        "sharedBudgetBaselineRestored": true
+      },
+      {
+        "id": "scripts.factory-observed-defaults",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          1291888,
+          1291888,
+          1291888
+        ],
+        "peakExecutionMemoryBytes": 2968817,
+        "compiledReservedBytes": 85534,
+        "compilationMillisecondsDiagnostic": 2.611,
+        "compilationAllocatedBytesDiagnostic": 73904,
+        "firstInvocationMillisecondsDiagnostic": 5.6394,
+        "sharedBudgetBaselineRestored": true
+      },
+      {
+        "id": "scripts.ordinary-fully-supplied-helper",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          142656,
+          142656,
+          142656
+        ],
+        "peakExecutionMemoryBytes": 1255,
+        "compiledReservedBytes": 49856,
+        "compilationMillisecondsDiagnostic": 2.7904,
+        "compilationAllocatedBytesDiagnostic": 32096,
+        "firstInvocationMillisecondsDiagnostic": 0.6232,
+        "sharedBudgetBaselineRestored": true
+      },
+      {
+        "id": "scripts.csv-invoice.method-policy.quoted-control",
+        "asynchronous": false,
+        "allocatedBytesPerInvocation": [
+          4069530,
+          4069490,
+          4069490
+        ],
+        "peakExecutionMemoryBytes": 9432874,
+        "compiledReservedBytes": 157114,
+        "compilationMillisecondsDiagnostic": 24.2431,
+        "compilationAllocatedBytesDiagnostic": 140064,
+        "firstInvocationMillisecondsDiagnostic": 82.6695,
+        "sharedBudgetBaselineRestored": true
+      }
+    ],
+    "boundary": "Complete warm runs including mediated I/O/reset, all output/file checks and result cleanup; compilation/startup/final cache teardown excluded. Process-wide CLR allocation counters, no forced GC. Compilation and first invocation clocks are local diagnostic observations, not a controlled CPU/source timing comparison."
+  }
+}

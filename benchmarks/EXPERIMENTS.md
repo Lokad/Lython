@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1428 singleton positional default](results/2026-11-23-singleton-positional-default/README.md)
+removes eager tuple allocation. Factories allocate 7.43% less and
+the defaults observer allocates 5.34% more. Factory elapsed spans
+zero and the fully supplied control has 17.32% candidate spread.
+The prototype stays private.
+
 [B1427 direct suite bindings](results/2026-11-23-direct-suite-bindings/README.md)
 removes temporary binding order from module and class scopes. The
 dataclass allocates 1.41% less compiling. Quiet elapsed ranges span
