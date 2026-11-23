@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1492 share forwarded-call reads and staging](results/2026-11-23-forwarded-global-shared/README.md)
+leaves quoted control debt unresolved. Mixed-width and short timings
+span zero with moving candidate workers. Keep the variant private.
+The fully supplied elapsed reduction has mixed CPU support.
+
 [B1491 CPython checkpoint after forwarding call operands](results/2026-11-23-forwarded-global-cpython/README.md)
 puts short nonlocal text at 1.421–1.452× CPython warm, with overlapping
 CPython elapsed from B1483. The same report takes 1.245–1.311× time to
