@@ -17,6 +17,22 @@ public sealed class GlobalBindingPipelineTests
             assert next(values)==12
             print('ok')
             """];
+        yield return ["""
+            original = float
+            def replace():
+                globals()['float'] = lambda text: 'shadowed ' + text
+                return '2.5'
+            assert float(replace()) == 2.5
+            assert float('value') == 'shadowed value'
+            del globals()['float']
+            assert float is original and float('2.5') == 2.5
+            class Scope:
+                float = 'class'
+                kinds = [float is original for index in range(2)]
+                alias = float
+            assert Scope.alias == 'class' and Scope.kinds == [True, True]
+            print('ok')
+            """];
     }
 
     [Theory]

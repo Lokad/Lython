@@ -78,11 +78,12 @@ internal sealed partial class ExecutableScript
             {
                 AddInstruction(currentBlock, ExecutableInstruction.LoadClosure(InternClosure(name), span));
             }
-            else if (_parameterLayout is not null && _completeLexicalParent && !_scopeFacts.IsNonlocal(name))
+            else if (_completeLexicalParent && !_scopeFacts.IsNonlocal(name) &&
+                (_parameterLayout is not null || !_classBody && _moduleCode is not null))
             {
-                // Locals and all lexical captures were considered above. The
-                // remaining name belongs to the live module/builtin namespace;
-                // no invocation-time search through function frames is needed.
+                // The root module and complete lexical functions have no
+                // other scope to search after locals and captures. Resolve
+                // the live module binding before falling back to builtins.
                 AddInstruction(currentBlock, ExecutableInstruction.LoadGlobal(InternName(name), span));
             }
             else
