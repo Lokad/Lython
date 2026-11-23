@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1488 attribute CPU on short and mixed-width text](results/2026-11-23-retained-short-text-cpu/README.md)
+finds 302 of 959 resolved short-report warm samples nearest instruction
+dispatch and 70 nearest call entry or operand movement. Mixed-width
+samples concentrate in word preparation and dictionary work. The initial
+staging failure and all successful samples are preserved.
+
 [B1487 isolate short text across the retained factory change](results/2026-11-23-short-text-source-pair/README.md)
 finds warm elapsed and process CPU spanning zero. Compile-to-result
 elapsed is lower with variable workers and mixed CPU. Keep the adverse
