@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1473 retained CSV and text CPU attribution](results/2026-11-23-retained-csv-text-cpu/README.md)
+finds the explicit meter's name resolver in 70 of 998 resolved runtime
+stacks, versus 33 of 996 for typed CSV. The nonlocal text report shows
+both word-processing and helper-call work. This selects a live module
+lookup simplification for a source-pair check.
+
 [B1472 preflight defaults and their callable together](results/2026-11-23-prepaid-definition-defaults/README.md)
 removes 2,048 positive allowances per factory run at equal peaks and
 allocation. Postponed time to result rises 3.63–7.04% and observer CPU
