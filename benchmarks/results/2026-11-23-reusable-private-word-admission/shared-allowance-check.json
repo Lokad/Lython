@@ -1,0 +1,42 @@
+{
+  "reference": {
+    "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+    "rows": [
+      {
+        "id": "diagnostic.text-summary.nonlocal-computed-width.large",
+        "asynchronous": false,
+        "success": false,
+        "reason": "SharedMemoryAllowance",
+        "peakExecutionMemoryBytes": 0,
+        "compiledReservedBytes": 92091,
+        "sharedBudgetBaselineRestored": true,
+        "GrowthCalls": 3674,
+        "GrownBytes": 908943,
+        "ShrinkCalls": 7,
+        "ShrunkBytes": 1996,
+        "coreSha256": "41756725744931e73fea28819de97518c1546af4efa1c19855c2ded954032488"
+      }
+    ],
+    "boundary": "One nonlocal report with a 1,000,000-byte shared allowance including compilation, execution and projection. Compare successful result and first admission failure, and verify cleanup."
+  },
+  "candidate": {
+    "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+    "rows": [
+      {
+        "id": "diagnostic.text-summary.nonlocal-computed-width.large",
+        "asynchronous": false,
+        "success": true,
+        "reason": null,
+        "peakExecutionMemoryBytes": 735891,
+        "compiledReservedBytes": 92091,
+        "sharedBudgetBaselineRestored": true,
+        "GrowthCalls": 5179,
+        "GrownBytes": 757966,
+        "ShrinkCalls": 15,
+        "ShrunkBytes": 19886,
+        "coreSha256": "ff6eea2190ed6396bdb3ce175bbc9d5bd5e1bcec9b563f1a72084f80037f4324"
+      }
+    ],
+    "boundary": "One nonlocal report with a 1,000,000-byte shared allowance including compilation, execution and projection. Compare successful result and first admission failure, and verify cleanup."
+  }
+}

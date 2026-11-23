@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1449 reusable private word admission](results/2026-11-23-reusable-private-word-admission/README.md)
+retains lower admitted peaks and allows the nonlocal report to complete
+under a 1,000,000-byte shared allowance. Nonlocal CPU rises 0.92–2.91%.
+Wide-vocabulary timing spans zero.
+
 [B1448 borrowed native CSV windows](results/2026-11-23-borrowed-native-csv-window/README.md)
 retains the measured borrow with over 99.6% less native-meter staging.
 Native ASCII uses 2.08–7.55% less CPU. Unicode crosses zero and the

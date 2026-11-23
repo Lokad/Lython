@@ -1,0 +1,182 @@
+{
+  "reference": {
+    "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+    "rows": [
+      {
+        "id": "diagnostic.text-summary.nonlocal-computed-width.large",
+        "asynchronous": false,
+        "peakExecutionMemoryBytes": 1278972,
+        "compiledReservedBytes": 92091,
+        "sharedBudgetBaselineRestored": true,
+        "GrowthCalls": 5179,
+        "GrownBytes": 1301047,
+        "ShrinkCalls": 16,
+        "ShrunkBytes": 19621,
+        "coreSha256": "41756725744931e73fea28819de97518c1546af4efa1c19855c2ded954032488"
+      },
+      {
+        "id": "diagnostic.text-summary.ordinary-histogram.large",
+        "asynchronous": false,
+        "peakExecutionMemoryBytes": 3591836,
+        "compiledReservedBytes": 80288,
+        "sharedBudgetBaselineRestored": true,
+        "GrowthCalls": 6264,
+        "GrownBytes": 3623140,
+        "ShrinkCalls": 24,
+        "ShrunkBytes": 22967,
+        "coreSha256": "41756725744931e73fea28819de97518c1546af4efa1c19855c2ded954032488"
+      },
+      {
+        "id": "diagnostic.text-summary.dense-line",
+        "asynchronous": false,
+        "peakExecutionMemoryBytes": 646161,
+        "compiledReservedBytes": 62144,
+        "sharedBudgetBaselineRestored": true,
+        "GrowthCalls": 26,
+        "GrownBytes": 656261,
+        "ShrinkCalls": 10,
+        "ShrunkBytes": 97525,
+        "coreSha256": "41756725744931e73fea28819de97518c1546af4efa1c19855c2ded954032488"
+      },
+      {
+        "id": "diagnostic.text-summary.nonlocal-computed-width.wide-vocabulary",
+        "asynchronous": false,
+        "peakExecutionMemoryBytes": 2198764,
+        "compiledReservedBytes": 92091,
+        "sharedBudgetBaselineRestored": true,
+        "GrowthCalls": 8778,
+        "GrownBytes": 2481253,
+        "ShrinkCalls": 40,
+        "ShrunkBytes": 272309,
+        "coreSha256": "41756725744931e73fea28819de97518c1546af4efa1c19855c2ded954032488"
+      },
+      {
+        "id": "diagnostic.text-summary.materialized-wide",
+        "asynchronous": false,
+        "peakExecutionMemoryBytes": 1475125,
+        "compiledReservedBytes": 94587,
+        "sharedBudgetBaselineRestored": true,
+        "GrowthCalls": 1145,
+        "GrownBytes": 1506084,
+        "ShrinkCalls": 32,
+        "ShrunkBytes": 27504,
+        "coreSha256": "41756725744931e73fea28819de97518c1546af4efa1c19855c2ded954032488"
+      },
+      {
+        "id": "diagnostic.text-summary.materialized-ordinary-split",
+        "asynchronous": false,
+        "peakExecutionMemoryBytes": 1967664,
+        "compiledReservedBytes": 93819,
+        "sharedBudgetBaselineRestored": true,
+        "GrowthCalls": 6209,
+        "GrownBytes": 1991366,
+        "ShrinkCalls": 17,
+        "ShrunkBytes": 20485,
+        "coreSha256": "41756725744931e73fea28819de97518c1546af4efa1c19855c2ded954032488"
+      },
+      {
+        "id": "scripts.csv-invoice.method-policy.quoted-control",
+        "asynchronous": false,
+        "peakExecutionMemoryBytes": 9432874,
+        "compiledReservedBytes": 157114,
+        "sharedBudgetBaselineRestored": true,
+        "GrowthCalls": 16473,
+        "GrownBytes": 9458929,
+        "ShrinkCalls": 37,
+        "ShrunkBytes": 22079,
+        "coreSha256": "41756725744931e73fea28819de97518c1546af4efa1c19855c2ded954032488"
+      }
+    ],
+    "boundary": "One golden-verified warm execution and its cleanup. Counts successful positive and negative changes at the host execution allowance. Compilation and result scopes are passed directly to the original allowance."
+  },
+  "candidate": {
+    "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+    "rows": [
+      {
+        "id": "diagnostic.text-summary.nonlocal-computed-width.large",
+        "asynchronous": false,
+        "peakExecutionMemoryBytes": 735891,
+        "compiledReservedBytes": 92091,
+        "sharedBudgetBaselineRestored": true,
+        "GrowthCalls": 5179,
+        "GrownBytes": 757966,
+        "ShrinkCalls": 15,
+        "ShrunkBytes": 19886,
+        "coreSha256": "ff6eea2190ed6396bdb3ce175bbc9d5bd5e1bcec9b563f1a72084f80037f4324"
+      },
+      {
+        "id": "diagnostic.text-summary.ordinary-histogram.large",
+        "asynchronous": false,
+        "peakExecutionMemoryBytes": 3591836,
+        "compiledReservedBytes": 80288,
+        "sharedBudgetBaselineRestored": true,
+        "GrowthCalls": 6264,
+        "GrownBytes": 3623140,
+        "ShrinkCalls": 24,
+        "ShrunkBytes": 22967,
+        "coreSha256": "ff6eea2190ed6396bdb3ce175bbc9d5bd5e1bcec9b563f1a72084f80037f4324"
+      },
+      {
+        "id": "diagnostic.text-summary.dense-line",
+        "asynchronous": false,
+        "peakExecutionMemoryBytes": 646161,
+        "compiledReservedBytes": 62144,
+        "sharedBudgetBaselineRestored": true,
+        "GrowthCalls": 26,
+        "GrownBytes": 656261,
+        "ShrinkCalls": 9,
+        "ShrunkBytes": 630717,
+        "coreSha256": "ff6eea2190ed6396bdb3ce175bbc9d5bd5e1bcec9b563f1a72084f80037f4324"
+      },
+      {
+        "id": "diagnostic.text-summary.nonlocal-computed-width.wide-vocabulary",
+        "asynchronous": false,
+        "peakExecutionMemoryBytes": 1445257,
+        "compiledReservedBytes": 92091,
+        "sharedBudgetBaselineRestored": true,
+        "GrowthCalls": 8778,
+        "GrownBytes": 1727746,
+        "ShrinkCalls": 39,
+        "ShrunkBytes": 272577,
+        "coreSha256": "ff6eea2190ed6396bdb3ce175bbc9d5bd5e1bcec9b563f1a72084f80037f4324"
+      },
+      {
+        "id": "diagnostic.text-summary.materialized-wide",
+        "asynchronous": false,
+        "peakExecutionMemoryBytes": 1475125,
+        "compiledReservedBytes": 94587,
+        "sharedBudgetBaselineRestored": true,
+        "GrowthCalls": 1145,
+        "GrownBytes": 1506084,
+        "ShrinkCalls": 31,
+        "ShrunkBytes": 27504,
+        "coreSha256": "ff6eea2190ed6396bdb3ce175bbc9d5bd5e1bcec9b563f1a72084f80037f4324"
+      },
+      {
+        "id": "diagnostic.text-summary.materialized-ordinary-split",
+        "asynchronous": false,
+        "peakExecutionMemoryBytes": 1967664,
+        "compiledReservedBytes": 93819,
+        "sharedBudgetBaselineRestored": true,
+        "GrowthCalls": 6209,
+        "GrownBytes": 1991366,
+        "ShrinkCalls": 17,
+        "ShrunkBytes": 20485,
+        "coreSha256": "ff6eea2190ed6396bdb3ce175bbc9d5bd5e1bcec9b563f1a72084f80037f4324"
+      },
+      {
+        "id": "scripts.csv-invoice.method-policy.quoted-control",
+        "asynchronous": false,
+        "peakExecutionMemoryBytes": 9432874,
+        "compiledReservedBytes": 157114,
+        "sharedBudgetBaselineRestored": true,
+        "GrowthCalls": 16473,
+        "GrownBytes": 9458929,
+        "ShrinkCalls": 37,
+        "ShrunkBytes": 22079,
+        "coreSha256": "ff6eea2190ed6396bdb3ce175bbc9d5bd5e1bcec9b563f1a72084f80037f4324"
+      }
+    ],
+    "boundary": "One golden-verified warm execution and its cleanup. Counts successful positive and negative changes at the host execution allowance. Compilation and result scopes are passed directly to the original allowance."
+  }
+}
