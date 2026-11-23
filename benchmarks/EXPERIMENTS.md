@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1441 deferred regex coordinates in existing slots](results/2026-11-23-deferred-regex-coordinates-slots/README.md)
+keeps the ordered scan and ordinary match size. Unicode group text
+timing spans zero. ASCII, wide coordinates and the unchanged positional
+control slow. The source stays private.
+
 [B1440 literal CSV records from immutable input](results/2026-11-23-borrowed-csv-record/README.md)
 removes a complete record copy. Borrowed typed reports take 7.00–9.98%
 less warm elapsed. The native ASCII control takes 0.96–2.44% longer.
