@@ -15,8 +15,9 @@ Lython takes longer. Ranges span the four pairings of process medians from
 two workers per engine. The latest November 23, 2026 UTC checkpoint measures
 `9cea1fc0a`. The meter rows measure `a94f78fc7` and the mixed-width and JSON
 rows measure `7bc247f1a`. The unchanged nonlocal report took 1.43–1.50×
-CPython in the earlier comparison. The source of the variation remains
-uncertain. [B1483] · [B1478] · [B1458].
+CPython in the earlier comparison. A paired check of the direct factory
+change found the report's warm elapsed and CPU differences spanned zero.
+The checkpoint variation remains unresolved. [B1483] · [B1478] · [B1458] · [B1487].
 
 The quiet comparison machine is an Azure F4as_v7 running Ubuntu 24.04.4
 with .NET 11 RC3. The external baseline is stock CPython 3.13.16. Warm
@@ -207,6 +208,7 @@ Review individual designs and adverse observations in
 the [experiment index](../benchmarks/EXPERIMENTS.md).
 Reproduce the comparisons with the [benchmark tools](../benchmarks/README.md).
 
+[B1487]: ../benchmarks/results/2026-11-23-short-text-source-pair/README.md
 [B1483]: ../benchmarks/results/2026-11-23-closed-definition-cpython/README.md
 [B1480]: ../benchmarks/results/2026-11-23-factory-phase-cpython/README.md
 [B1478]: ../benchmarks/results/2026-11-23-tuple-admission-cpython/README.md

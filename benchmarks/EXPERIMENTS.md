@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1487 isolate short text across the retained factory change](results/2026-11-23-short-text-source-pair/README.md)
+finds warm elapsed and process CPU spanning zero. Compile-to-result
+elapsed is lower with variable workers and mixed CPU. Keep the adverse
+B1483 external checkpoint alongside this matched source pair.
+
 [B1486 separate the closed native-call workspace](results/2026-11-23-closed-native-workspace/README.md)
 shrinks the direct entry's Tier 1 stack subtraction from 520 to 184 bytes.
 Factory elapsed spans zero, the short text control is unstable and ordinary
