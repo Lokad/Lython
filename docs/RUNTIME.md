@@ -2634,8 +2634,10 @@ without copying it into their own funded storage.
 Provider captures use absolute byte coordinates, including lookbehind captures
 before `Pos`. Captures end at or before `EndPos`. A reversed anchored match can
 also return empty captures at `Pos`. The frontend and runtime compute scalar
-and byte window bounds with the same UTF-8 routine. Constant analysis encodes
-known subjects under its working owner. Unknown bounds remain uncertain. With clamped `pos` greater
+and byte window bounds with the same UTF-8 routine. Runtime matches and cursors
+can borrow an existing, subject-owned rune index for interior Unicode bounds.
+Constant analysis encodes known subjects under its working owner. Unknown
+bounds remain uncertain. With clamped `pos` greater
 than `endpos`, Lython resolves `search` and `fullmatch` to `None` before provider
 subject preparation. An anchored `match` passes the reversed window to the
 provider, since a zero-width match can succeed. Substitution rewrites the

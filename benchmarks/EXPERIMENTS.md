@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1506 borrow an owned rune index for regex cursor bounds](results/2026-11-23-regex-indexed-cursor-window/README.md)
+improves the repeated indexed windows through warm and first use with lower
+CPU and equal admission. Retain the common resolver and the indexed capture
+control's higher CPU. The initial manifest failure remains in the archive.
+
 [B1504–B1505 return supplied scalars before native setup](results/2026-11-23-supplied-scalar-return/README.md)
 removes the general activation and optional unpack destination for exact
 integer returns. The module and function helpers improve with supporting CPU.

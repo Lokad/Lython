@@ -1,0 +1,68 @@
+[
+  {
+    "case": "scripts.regex-bounded-cursor.indexed",
+    "allocatedBytes": [
+      32969408,
+      32969408
+    ],
+    "peakAdmission": [
+      4302433,
+      4302433
+    ]
+  },
+  {
+    "case": "scripts.regex-bounded-cursor.unindexed",
+    "allocatedBytes": [
+      32959048,
+      32959048
+    ],
+    "peakAdmission": [
+      4292026,
+      4292026
+    ]
+  },
+  {
+    "case": "scripts.regex-indexed-bounded-search",
+    "allocatedBytes": [
+      13205384,
+      13205264
+    ],
+    "peakAdmission": [
+      346712,
+      346712
+    ]
+  },
+  {
+    "case": "scripts.regex-indexed-cursor-capture-spans",
+    "allocatedBytes": [
+      1239728,
+      1239728
+    ],
+    "peakAdmission": [
+      575097,
+      575097
+    ]
+  },
+  {
+    "case": "scripts.regex-unindexed-cursor-control",
+    "allocatedBytes": [
+      1229368,
+      1229368
+    ],
+    "peakAdmission": [
+      564690,
+      564690
+    ]
+  },
+  {
+    "case": "scripts.regex-ascii-cursor-control",
+    "allocatedBytes": [
+      1193936,
+      1193936
+    ],
+    "peakAdmission": [
+      561538,
+      561538
+    ]
+  }
+]
