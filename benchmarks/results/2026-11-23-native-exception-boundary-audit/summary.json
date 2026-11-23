@@ -1,0 +1,237 @@
+{
+  "sourceRevision": "a2bde38b2",
+  "imageRevision": "73e28cac2",
+  "coreSHA256": "1b61dd757dbd2c73399868255c2b0dcc20eb0bb84385b9e797f3a4b81a96deb8",
+  "rows": [
+    {
+      "case": "protected.dict-update.8",
+      "instructions": 117,
+      "exceptionRegions": 8,
+      "dictionaryProbes": 8,
+      "loopProbes": 0,
+      "closureProbes": 0,
+      "minimumRegionVisits": 64,
+      "maximumRegionVisits": 128
+    },
+    {
+      "case": "protected.dict-update.32",
+      "instructions": 429,
+      "exceptionRegions": 32,
+      "dictionaryProbes": 32,
+      "loopProbes": 0,
+      "closureProbes": 0,
+      "minimumRegionVisits": 1024,
+      "maximumRegionVisits": 2048
+    },
+    {
+      "case": "protected.dict-update.128",
+      "instructions": 1677,
+      "exceptionRegions": 128,
+      "dictionaryProbes": 128,
+      "loopProbes": 0,
+      "closureProbes": 0,
+      "minimumRegionVisits": 16384,
+      "maximumRegionVisits": 32768
+    },
+    {
+      "case": "scripts.annotated-rule-closures.nested-factories",
+      "instructions": 46,
+      "exceptionRegions": 0,
+      "dictionaryProbes": 0,
+      "loopProbes": 0,
+      "closureProbes": 0,
+      "minimumRegionVisits": 0,
+      "maximumRegionVisits": 0
+    },
+    {
+      "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "instructions": 47,
+      "exceptionRegions": 0,
+      "dictionaryProbes": 0,
+      "loopProbes": 0,
+      "closureProbes": 0,
+      "minimumRegionVisits": 0,
+      "maximumRegionVisits": 0
+    },
+    {
+      "case": "scripts.ordinary-helper-with-omitted-default",
+      "instructions": 27,
+      "exceptionRegions": 0,
+      "dictionaryProbes": 0,
+      "loopProbes": 0,
+      "closureProbes": 0,
+      "minimumRegionVisits": 0,
+      "maximumRegionVisits": 0
+    },
+    {
+      "case": "scripts.factory-observed-defaults",
+      "instructions": 56,
+      "exceptionRegions": 0,
+      "dictionaryProbes": 0,
+      "loopProbes": 0,
+      "closureProbes": 0,
+      "minimumRegionVisits": 0,
+      "maximumRegionVisits": 0
+    },
+    {
+      "case": "scripts.ordinary-fully-supplied-helper",
+      "instructions": 28,
+      "exceptionRegions": 0,
+      "dictionaryProbes": 0,
+      "loopProbes": 0,
+      "closureProbes": 0,
+      "minimumRegionVisits": 0,
+      "maximumRegionVisits": 0
+    },
+    {
+      "case": "calls.positional.wide-native-buffer",
+      "instructions": 45,
+      "exceptionRegions": 0,
+      "dictionaryProbes": 0,
+      "loopProbes": 0,
+      "closureProbes": 0,
+      "minimumRegionVisits": 0,
+      "maximumRegionVisits": 0
+    },
+    {
+      "case": "scripts.csv-invoice.method-policy.quoted-control",
+      "instructions": 175,
+      "exceptionRegions": 2,
+      "dictionaryProbes": 0,
+      "loopProbes": 0,
+      "closureProbes": 0,
+      "minimumRegionVisits": 0,
+      "maximumRegionVisits": 0
+    },
+    {
+      "case": "scripts.csv-invoice.large",
+      "instructions": 147,
+      "exceptionRegions": 2,
+      "dictionaryProbes": 0,
+      "loopProbes": 0,
+      "closureProbes": 0,
+      "minimumRegionVisits": 0,
+      "maximumRegionVisits": 0
+    },
+    {
+      "case": "scripts.text-normalization.large",
+      "instructions": 80,
+      "exceptionRegions": 2,
+      "dictionaryProbes": 0,
+      "loopProbes": 0,
+      "closureProbes": 0,
+      "minimumRegionVisits": 0,
+      "maximumRegionVisits": 0
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "instructions": 81,
+      "exceptionRegions": 2,
+      "dictionaryProbes": 1,
+      "loopProbes": 0,
+      "closureProbes": 0,
+      "minimumRegionVisits": 2,
+      "maximumRegionVisits": 4
+    },
+    {
+      "case": "scripts.file-search.large.protected",
+      "instructions": 68,
+      "exceptionRegions": 3,
+      "dictionaryProbes": 0,
+      "loopProbes": 0,
+      "closureProbes": 0,
+      "minimumRegionVisits": 0,
+      "maximumRegionVisits": 0
+    },
+    {
+      "case": "scripts.text-summary-helpers.nonlocal-counter.large",
+      "instructions": 91,
+      "exceptionRegions": 2,
+      "dictionaryProbes": 1,
+      "loopProbes": 1,
+      "closureProbes": 1,
+      "minimumRegionVisits": 4,
+      "maximumRegionVisits": 4
+    },
+    {
+      "case": "calls.positional.large",
+      "instructions": 25,
+      "exceptionRegions": 0,
+      "dictionaryProbes": 0,
+      "loopProbes": 0,
+      "closureProbes": 0,
+      "minimumRegionVisits": 0,
+      "maximumRegionVisits": 0
+    },
+    {
+      "case": "scripts.text-summary-helpers.long-line",
+      "instructions": 82,
+      "exceptionRegions": 2,
+      "dictionaryProbes": 1,
+      "loopProbes": 1,
+      "closureProbes": 0,
+      "minimumRegionVisits": 4,
+      "maximumRegionVisits": 4
+    },
+    {
+      "case": "scripts.dataclass-inherited-configuration.generated",
+      "instructions": 503,
+      "exceptionRegions": 0,
+      "dictionaryProbes": 0,
+      "loopProbes": 0,
+      "closureProbes": 0,
+      "minimumRegionVisits": 0,
+      "maximumRegionVisits": 0
+    },
+    {
+      "case": "scripts.config-generated-guards.medium.bad-0.sparse-lexical",
+      "instructions": 2937,
+      "exceptionRegions": 97,
+      "dictionaryProbes": 0,
+      "loopProbes": 0,
+      "closureProbes": 0,
+      "minimumRegionVisits": 0,
+      "maximumRegionVisits": 0
+    },
+    {
+      "case": "compiler.generated-read-only-branches",
+      "instructions": 754,
+      "exceptionRegions": 0,
+      "dictionaryProbes": 0,
+      "loopProbes": 0,
+      "closureProbes": 0,
+      "minimumRegionVisits": 0,
+      "maximumRegionVisits": 0
+    },
+    {
+      "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+      "instructions": 92,
+      "exceptionRegions": 2,
+      "dictionaryProbes": 1,
+      "loopProbes": 1,
+      "closureProbes": 0,
+      "minimumRegionVisits": 4,
+      "maximumRegionVisits": 4
+    },
+    {
+      "case": "scripts.config-edit.small",
+      "instructions": 65,
+      "exceptionRegions": 2,
+      "dictionaryProbes": 0,
+      "loopProbes": 0,
+      "closureProbes": 0,
+      "minimumRegionVisits": 0,
+      "maximumRegionVisits": 0
+    },
+    {
+      "case": "diagnostic.dead-heavy-validator",
+      "instructions": 15,
+      "exceptionRegions": 0,
+      "dictionaryProbes": 0,
+      "loopProbes": 0,
+      "closureProbes": 0,
+      "minimumRegionVisits": 0,
+      "maximumRegionVisits": 0
+    }
+  ]
+}

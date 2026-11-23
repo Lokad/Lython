@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Native exception-boundary audit](results/2026-11-23-native-exception-boundary-audit/README.md)
+confirms quadratic scanning for constructed protected updates, with at most
+four possible region visits per script in the existing corpus. Keep the
+current representation until a real workload makes the scan material.
+
 [B1507–B1508 complete closed returns before native setup](results/2026-11-23-complete-native-closed-entry/README.md)
 improves eager factory and omitted-default warm elapsed with supporting CPU.
 The repeat finds higher elapsed and CPU for the wide helper and leaves
