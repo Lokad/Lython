@@ -51,6 +51,97 @@ public sealed class DeferredFunctionContextTests
     }
 
     [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public async Task GlobalCallReportsTheFirstFailedReadWithItsOwnSpan(bool asynchronous)
+    {
+        const string source = """
+            def call(assigned):
+             if assigned: value='ready'
+             return fetch(value)
+            return call(flag)
+            """;
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        foreach (var targetExists in new[] { false, true })
+        {
+            var globals = new Dictionary<string, object?> { ["flag"] = false };
+            if (targetExists) globals["fetch"] = 0; // Calling it would raise TypeError.
+            var options = new LythonRunOptions { Globals = globals };
+            using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options)
+                : script.Run(new MockLythonHost(), options))
+            {
+                var failure = Assert.IsType<LythonRuntimeFailure>(result.Failure);
+                Assert.Equal(targetExists ? "UnboundLocalError" : "NameError", failure.ExceptionType);
+                Assert.Equal(3, failure.Span?.Line);
+                Assert.Equal(targetExists ? 15 : 9, failure.Span?.Column);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public async Task ReboundBuiltinCallPreservesEvaluatedAliasThroughCleanup(bool cancel)
+    {
+        const string source = """
+            def measure(value):
+             return len(value)
+            assert measure('abc')==3
+            def replacement(value):
+             global len
+             len=None
+             print('entered')
+             with open('/pause') as source: source.read()
+             return value,value
+            def unpack(value):
+             first,second=len(value)
+             assert first is second and second is value
+             return first[0]
+            len=replacement
+            return unpack(['kept',1<<65536])
+            """;
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        var host = new DelayedLythonHost();
+        host.SeedFile("/pause", "released");
+        var entered = cancel ? host.PauseReadUntilCancellation("/pause") : null;
+        using var cancellation = new CancellationTokenSource();
+        var pending = script.RunAsync(host, cancellationToken: cancellation.Token);
+        try
+        {
+            if (entered is not null)
+            {
+                Assert.Same(entered, await Task.WhenAny(entered, pending).WaitAsync(TimeSpan.FromSeconds(5)));
+                Assert.True(budget.ReservedBytes > baseline + 8192);
+                cancellation.Cancel();
+            }
+            using var result = await pending.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.Equal("entered\n", result.StandardOutput);
+            if (cancel) Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
+            else
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal("kept", result.ReturnValue);
+                Assert.True(host.CompletedAsynchronously > 0);
+            }
+        }
+        finally
+        {
+            cancellation.Cancel();
+            using var drained = await pending.WaitAsync(TimeSpan.FromSeconds(5));
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
     [InlineData(false, false)] [InlineData(true, false)]
     [InlineData(false, true)] [InlineData(true, true)]
     public async Task NativeErrorKeepsFunctionTraceAndAllowsBudgetReuse(bool asynchronous, bool method)
