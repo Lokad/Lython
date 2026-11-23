@@ -40,6 +40,23 @@ internal sealed partial class LythonRuntime
         return true;
     }
 
+    // The completed call's result can feed the already evaluated left operand.
+    // Read only physical slots. Overflow and protocol values leave the tape
+    // and operands available to the original augmented operation.
+    private static bool TryCombineCallAugmentation(ExecutableCodeObject code, ReadOnlySpan<ExecutableSlot> values,
+        in ExecutableInstruction call, int index, ExecutableSlot returned, ExecutionState state, out ExecutableSlot result)
+    {
+        result = default;
+        ref readonly var update = ref code.Instructions[index];
+        if (update.OpCode != ExecutableOpCode.Augmented || update.SecondInput != call.ResultSlot ||
+            (uint)update.InputStart >= (uint)call.ResultSlot ||
+            update.AugmentedOperator == AugmentedAssignmentOperatorSyntax.MatrixMultiply || !state.CanContinue ||
+            !returned.TryGetInteger(out var right) || !values[update.InputStart].TryGetInteger(out var left) ||
+            !TryMachineBinary(AugmentedBinaryOperator(update.AugmentedOperator), left, right, out var integer)) return false;
+        result.SetInteger(integer);
+        return true;
+    }
+
     internal ref partial struct NativeExecution
     {
         private bool TryIntegerOperation()

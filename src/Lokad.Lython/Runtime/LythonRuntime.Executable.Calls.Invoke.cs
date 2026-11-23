@@ -44,7 +44,7 @@ internal sealed partial class LythonRuntime
                     {
                         scope.LeaveInterpreterFrame();
                         callEntered = false;
-                        PublishInstructionResult(ref execution, invocation, execution.Code.Instructions[execution.InstructionIndex], scalar);
+                        PublishDirectIntegerCall(ref execution, scope, invocation, scalar);
                         return true;
                     }
                     var unpackedReturn = PrepareUnpackedCallReturn(ref execution, call, start, out var originalExtent);
@@ -134,6 +134,30 @@ internal sealed partial class LythonRuntime
                 return true;
             }
             catch { execution.Stack.RetireTo(start); throw; }
+        }
+
+        private static void PublishDirectIntegerCall(ref ExecutableWorkState execution,
+            ExecutionContext scope, ExecutionContext invocation, ExecutableSlot value)
+        {
+            var index = execution.InstructionIndex;
+            var code = execution.Code;
+            ref readonly var call = ref code.Instructions[index];
+            if (index + 1 < code.Instructions.Length && !call.HasResultConsumer &&
+                TryCombineCallAugmentation(code, execution.Stack.Values, call, index + 1, value, scope.State, out var updated))
+            {
+                ref readonly var update = ref code.Instructions[index + 1];
+                var canStore = !update.HasResultConsumer ||
+                    !code.RequiresLocalVariableMirroring && !invocation.MirrorLocalStores && invocation.GlobalNamespace is null &&
+                    code.Instructions[index + 2] is { OpCode: ExecutableOpCode.StoreLocal, StoresCapturedLocal: false } store &&
+                    execution.Locals[store.LocalSlot].Reference is not ExecutableCell;
+                if (canStore && execution.Stack.CanRetireWithoutCleanup(update.ResultSlot))
+                {
+                    execution.InstructionIndex = index + 1;
+                    PublishInstructionResult(ref execution, invocation, update, updated);
+                    return;
+                }
+            }
+            PublishInstructionResult(ref execution, invocation, call, value);
         }
 
         private static bool TryExecuteSplitUnpack(ref ExecutableWorkState execution, ExecutionContext? invocation,

@@ -425,11 +425,12 @@ internal sealed partial class LythonRuntime
             }
             var target = Values[start + call.TargetOffset].Object.RequireNotNull();
             var result = default(ExecutableSlot);
+            var directInteger = false;
             try
             {
                 if (!call.IsPositionalOnly)
                 {
-                    if (!CallFunction(call, start, target, out result)) return false;
+                    if (!CallFunction(call, start, target, out result, out directInteger)) return false;
                 }
                 else if (!call.HasReceiver && ExecutionContext.IsRangeBuiltin(target))
                 {
@@ -480,7 +481,7 @@ internal sealed partial class LythonRuntime
                             return false;
                         }
                     }
-                    else if (!CallFunction(call, start, target, out result)) return false;
+                    else if (!CallFunction(call, start, target, out result, out directInteger)) return false;
                 }
             }
             catch (Exception error) when (TryTranslateCallableException(error, call.CallSpan, out var translated))
@@ -493,13 +494,32 @@ internal sealed partial class LythonRuntime
                 Trim(start + call.UnpackedReturnCount);
                 Values.Slice(start, call.UnpackedReturnCount).Reverse();
             }
-            else Publish(Code.Instructions[Index], result);
+            else
+            {
+                ref readonly var producer = ref Code.Instructions[Index];
+                var next = Index + 1;
+                if (directInteger && !producer.HasResultConsumer && next < Code.NativePrefixEnd &&
+                    TryCombineCallAugmentation(Code, Values, producer, next, result, _scope.State, out var updated))
+                {
+                    ref readonly var update = ref Code.Instructions[next];
+                    if (Code.LastOwnedTemporarySlot < update.ResultSlot && (!update.HasResultConsumer ||
+                        next + 1 < Code.NativePrefixEnd &&
+                        Code.Instructions[next + 1] is { OpCode: ExecutableOpCode.StoreLocal, StoresCapturedLocal: false }))
+                    {
+                        Index = next;
+                        Publish(update, updated);
+                        return true;
+                    }
+                }
+                Publish(producer, result);
+            }
             return true;
         }
 
-        private bool CallFunction(ExecutableCallSite call, int start, object target, out ExecutableSlot result)
+        private bool CallFunction(ExecutableCallSite call, int start, object target, out ExecutableSlot result, out bool directInteger)
         {
             result = ExecutableSlot.FromObject(PyNone.Instance);
+            directInteger = false;
             if (_scope.State.CurrentRecursionDepth >= NativeCallDepth) return false;
             var function = target as PyExecutableFunction;
             object? receiver = call.HasReceiver && Values[start].Object is not PyNone ? Values[start].Object : null;
@@ -517,7 +537,11 @@ internal sealed partial class LythonRuntime
                 // The receiver and arguments are already evaluated. A closed
                 // scalar return needs neither callee slots nor an unpack window.
                 if (completePositional &&
-                    function.TryStartSuppliedIntegerReturn(arguments, receiver, call.CallSpan, out result)) return true;
+                    function.TryStartSuppliedIntegerReturn(arguments, receiver, call.CallSpan, out result))
+                {
+                    directInteger = true;
+                    return true;
+                }
                 var consumedByIteration = call.ConsumedByIteration || _consumedByIteration && call.ReturnedDirectly;
                 ExecutionContext? child;
                 if (call.UnpackedReturnCount != 0 && Code.LastOwnedTemporarySlot < start)

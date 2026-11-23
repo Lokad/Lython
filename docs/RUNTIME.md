@@ -736,7 +736,11 @@ An eligible nested bound method reads the already evaluated receiver and
 supplied arguments separately. It keeps the caller's operands intact and
 avoids constructing callee slots. Calls with an exposed keyword-default
 mapping use ordinary binding. Wide arithmetic and user-defined operations
-retain ordinary Python dispatch.
+retain ordinary Python dispatch. A completed supplied integer return can
+feed an adjacent exact augmented operation directly. The caller keeps
+the original left operand. For private destinations the existing store
+consumes the result, with ordinary publication and dispatch available
+when arithmetic, namespace state or pending cleanup require them.
 
 Unexposed captured cells can keep exact machine-integer updates directly, using
 the same arithmetic kernel and compiler preparation as ordinary instructions.

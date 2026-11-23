@@ -61,6 +61,59 @@ public sealed class SharedIntegerChainTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task CompletedCallUpdateRetainsTheOriginalOperandAndExactFallbacks(bool asynchronous)
+    {
+        const string source = """
+            def delta(value):
+                return value + 1
+            def accumulate(value):
+                value += delta(8)
+                return value
+            class Extended:
+                def __iadd__(self, other):
+                    print('protocol', other)
+                    return 13
+            total = 5000
+            old = total
+            total += delta(16)
+            print(total, old)
+            print(accumulate(5000), accumulate(9223372036854775807))
+            value = Extended()
+            value += delta(8)
+            print(value)
+            def replace():
+                global total
+                with open('/delta.txt', encoding='utf-8') as stream:
+                    total = 101
+                    return int(stream.read())
+            total += replace()
+            print(total)
+            try:
+                total //= delta(-1)
+            except ZeroDivisionError:
+                print('zero', total)
+            """;
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
+        var baseline = budget.ReservedBytes;
+        var delayed = new DelayedLythonHost();
+        var sync = new MockLythonHost();
+        delayed.SeedFile("/delta.txt", "4");
+        sync.SeedFile("/delta.txt", "4");
+        using (var result = asynchronous ? await script.RunAsync(delayed) : script.Run(sync))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("5017 5000\n5009 9223372036854775816\nprotocol 9\n13\n5021\nzero 5021\n", result.StandardOutput);
+        }
+        Assert.Equal(1, asynchronous ? delayed.ClosedFileCount : sync.ClosedFileCount);
+        if (asynchronous) Assert.True(delayed.CompletedAsynchronously > 0);
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task PendingNumericProtocolIsNotReplayedAndKeepsOwnersUntilCleanup(bool cancel)
     {
         const string source = """
