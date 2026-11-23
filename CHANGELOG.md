@@ -30,6 +30,8 @@
   One admission covers both objects and commits before either becomes visible.
 - Match Python's optimized `locals()` order for ordinary locals,
   captured locals and free variables.
+- Forward a private lexical assignment directly to its immediate return.
+- Resolve root-module reads through the live global and builtin path.
 - Convert complete short ASCII decimal tokens directly from UTF-8 when
   parsing floats. Keep Python normalization, exact errors and cancellation.
 

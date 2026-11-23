@@ -1,0 +1,48 @@
+{
+  "scripts": 5,
+  "identicalCodeObjects": 6,
+  "changedCodeObjects": [
+    {
+      "script": "scripts.csv-meter-report.typed-ascii",
+      "name": "<module>",
+      "fields": [
+        "opcodeCounts",
+        "tape"
+      ]
+    },
+    {
+      "script": "scripts.config-edit.small",
+      "name": "<module>",
+      "fields": [
+        "opcodeCounts",
+        "tape"
+      ]
+    },
+    {
+      "script": "scripts.csv-meter-report.explicit-float",
+      "name": "<module>",
+      "fields": [
+        "opcodeCounts",
+        "tape"
+      ]
+    },
+    {
+      "script": "root-module-shadowing",
+      "name": "<module>",
+      "fields": [
+        "arithmetic",
+        "nativeEnd",
+        "instructions",
+        "opcodeCounts",
+        "operandReads",
+        "tape"
+      ]
+    }
+  ],
+  "coreHashes": {
+    "reference": "7456bdce453d8b69f9949549c323597227642e9b076358547a1c07ba309af872",
+    "reference-control": "7456bdce453d8b69f9949549c323597227642e9b076358547a1c07ba309af872",
+    "candidate": "c873e43af3b7716c650cb5e2588445139ba733307b470c800c1b34e2902e1740",
+    "candidate-control": "c873e43af3b7716c650cb5e2588445139ba733307b470c800c1b34e2902e1740"
+  }
+}

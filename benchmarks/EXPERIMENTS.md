@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1474 resolve live module reads through the global path](results/2026-11-23-root-module-lookup/README.md)
+removes the general namespace walk from proven root reads. Explicit
+CSV takes 1.33–3.01% less warm elapsed and short nonlocal text takes
+3.04–4.70% less, with supporting CPU. Time to result spans zero.
+
 [B1473 retained CSV and text CPU attribution](results/2026-11-23-retained-csv-text-cpu/README.md)
 finds the explicit meter's name resolver in 70 of 998 resolved runtime
 stacks, versus 33 of 996 for typed CSV. The nonlocal text report shows
