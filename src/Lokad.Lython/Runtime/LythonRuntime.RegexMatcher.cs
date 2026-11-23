@@ -139,13 +139,19 @@ internal sealed partial class LythonRuntime
             if (error is not null) throw RuntimeErrors.Runtime(error, span);
         }
 
-        private static LythonRegexWindow Window(RegexSubjectRange range, ExecutionContext context,
-            LythonSourceSpan span, bool borrowIndex = false)
+        private static LythonRegexWindow Window(RegexSubjectRange range, ExecutionContext context, LythonSourceSpan span)
         {
             context.CheckExecution(span);
             var token = context.State.CancellationToken;
-            return RegexCompiler.CreateWindow(range.Original.Utf8Span, range.Original.GetCharacterCount(token, span),
-                range.Pos, range.EndPos, token, span, borrowIndex ? range.Original.PreparedRuneByteOffsets : default);
+            var subject = range.Original;
+            var utf8 = subject.Utf8Span;
+            var length = subject.GetCharacterCount(token, span);
+            // ASCII and windows using only the subject edges need no index.
+            // Interior bounds may borrow an already-funded scalar index.
+            var offsets = length != utf8.Length &&
+                (range.Pos > 0 && range.Pos < length || range.EndPos > 0 && range.EndPos < length)
+                    ? subject.PreparedRuneByteOffsets : default;
+            return RegexCompiler.CreateWindow(utf8, length, range.Pos, range.EndPos, token, span, offsets);
         }
 
         private static PyString ReadSubjectRange(RegexSubjectRange range, int start, int end,
@@ -229,7 +235,7 @@ internal sealed partial class LythonRuntime
             }
             // Single matches need no iterator state. Keep working storage
             // local until the provider and the final projection have finished.
-            var window = Window(range, context, span, borrowIndex: true);
+            var window = Window(range, context, span);
             var count = pattern.CaptureSlotCount;
             using var scratch = count > RegexCompiler.InlineCaptureCapacity
                 ? context.MemoryGovernor.ReserveTemporary(RegexCompiler.CaptureBufferBytes(count), span) : null;

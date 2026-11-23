@@ -5,6 +5,21 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class RegexMatchIndexTests
 {
     [Fact]
+    public async Task IndexedCursorKeepsTheOriginalSubjectAndScalarWindow()
+    {
+        await AssertBothModes("""
+            import re
+            subject = ('α😀bβ😀cγ' + '!') * 2
+            assert subject[2] == 'b'
+            pattern = re.compile(r'(?<=😀)(?P<letter>.)')
+            print(pattern.findall(subject, 2, 5))
+            print([(m.group('letter'),m.span(),m.pos,m.endpos,m.string is subject)
+                   for m in pattern.finditer(subject, 2, 6)])
+            print(list(pattern.finditer(subject, 6, 2)))
+            """, "['b']\n[('b', (2, 3), 2, 6, True), ('c', (5, 6), 2, 6, True)]\n[]\n");
+    }
+
+    [Fact]
     public async Task SplitResultSubjectsKeepTheirOwnUnicodeOffsetsAndText()
     {
         await AssertBothModes("""
