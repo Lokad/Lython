@@ -121,7 +121,7 @@ public sealed class SharedIntegerChainTests
                 return (first + second) * third
             def local(exact, total, item, divisor):
                 total += exact(item, item % 7, item // divisor + 1)
-                return total
+                return total + 0
             total = 4000
             item = 1234
             total += exact(item, item % 7, item % 11 + 1)
@@ -134,6 +134,7 @@ public sealed class SharedIntegerChainTests
             def observed(first, second, third):
                 print(first is item, second, third)
                 return 0
+            print(local(observed, 512, item, 500))
             exact = observed
             total += exact(item, item % 7, item % 11 + 1)
             class Observer:
@@ -160,7 +161,7 @@ public sealed class SharedIntegerChainTests
         using (var result = asynchronous ? await script.RunAsync(delayed) : script.Run(sync))
         {
             Assert.True(result.Success, result.Failure?.Message);
-            Assert.Equal("7708 7708\n9223372036854779515\nzero\nTrue 2 3\nonce 7\n8952\n", result.StandardOutput);
+            Assert.Equal("7708 7708\n9223372036854779515\nzero\nTrue 2 3\n512\nTrue 2 3\nonce 7\n8952\n", result.StandardOutput);
         }
         Assert.Equal(1, asynchronous ? delayed.ClosedFileCount : sync.ClosedFileCount);
         if (asynchronous) Assert.True(delayed.CompletedAsynchronously > 0);
@@ -262,10 +263,14 @@ public sealed class SharedIntegerChainTests
     public async Task NonallocatingControlAroundArithmeticRemainsCancellable(bool asynchronous)
     {
         const string source = """
+            def increase(number, adjustment):
+                return (number + adjustment) % 10000
             def compute(flag):
                 with open('input.txt') as source:
                     value=0
-                    while flag: value=(value+1+2+3)%10000
+                    while flag:
+                        value=(value+1+2+3)%10000
+                        value += increase(value, value % 7)
                 return value
             return compute(flag)
             """;

@@ -100,15 +100,17 @@ internal sealed partial class LythonRuntime
                     case ExecutableOpCode.LoadConst:
                         Publish(instruction, RuntimeValue(Code.Constants[instruction.ConstantIndex]));
                         break;
-                    case ExecutableOpCode.LoadLocal:
-                        if (instruction.IntegerUpdateCallIndex != int.MaxValue &&
-                            instruction.IntegerUpdateCallIndex + 2 < Code.NativePrefixEnd &&
+                    case ExecutableOpCode.IntegerCallUpdate:
+                        if (instruction.IntegerUpdateCallIndex + 2 < Code.NativePrefixEnd &&
                             _scope.State.CurrentRecursionDepth < NativeCallDepth &&
                             TryEvaluateIntegerCallUpdate(Code, Values, ref Index, LiveExtent, _scope, out var updated))
                         {
                             Publish(Code.Instructions[Index], updated);
                             break;
                         }
+                        if (instruction.IntegerUpdateChecksLocal) goto case ExecutableOpCode.CheckLocal;
+                        goto case ExecutableOpCode.LoadLocal;
+                    case ExecutableOpCode.LoadLocal:
                         Publish(instruction, Read(instruction.LocalSlot, 0));
                         break;
                     case ExecutableOpCode.CheckLocal:

@@ -82,6 +82,7 @@ internal enum ExecutableOpCode
     StoreFunctionDefault,
     CheckLocal,
     ReverseAssignmentValues,
+    IntegerCallUpdate,
 }
 
 internal enum ExecutableUnaryOperator
@@ -182,6 +183,7 @@ internal readonly record struct ExecutableInstruction
     internal int DefaultStorageDepth => _primaryOperand;
     internal int DefaultValueIndex => _secondaryOperand;
     public int LocalSlot => OpCode is ExecutableOpCode.LoadLocal or ExecutableOpCode.StoreLocal or ExecutableOpCode.CheckLocal
+            or ExecutableOpCode.IntegerCallUpdate
             ? _primaryOperand : throw InvalidOperand(nameof(LocalSlot));
     // Before layout assigns a result slot, a LoadLocal can name its
     // same-block consumer in that field. No hint survives in the final tape.
@@ -191,8 +193,9 @@ internal readonly record struct ExecutableInstruction
     internal ExecutableInstruction AsCheckLocal()
         => new(ExecutableOpCode.CheckLocal, Span, _primaryOperand);
     internal int IntegerUpdateCallIndex => _secondaryOperand;
+    internal bool IntegerUpdateChecksLocal => LiveExtent == ResultSlot;
     internal ExecutableInstruction WithIntegerUpdateCall(int callIndex)
-        => new(OpCode, Span, _primaryOperand, callIndex, _inputStart, _resultSlot, _liveExtent);
+        => new(ExecutableOpCode.IntegerCallUpdate, Span, _primaryOperand, callIndex, _inputStart, _resultSlot, _liveExtent);
     // StoreLocal has only one input, leaving its second operand field free.
     internal bool StoresCapturedLocal => _secondaryOperand != int.MaxValue;
     internal ExecutableInstruction WithCapturedLocalStore()

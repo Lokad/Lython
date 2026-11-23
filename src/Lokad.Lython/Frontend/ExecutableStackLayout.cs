@@ -186,8 +186,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
         var store = block[index + 2];
         if (update.OpCode != ExecutableOpCode.Augmented || !update.HasResultConsumer ||
             update.AugmentedOperator != AugmentedAssignmentOperatorSyntax.Add ||
-            update.SecondInput != call.ResultSlot || update.InputStart != call.ResultSlot - 1 ||
-            update.ResultSlot != update.InputStart ||
+            update.SecondInput != call.ResultSlot ||
             store.OpCode != ExecutableOpCode.StoreLocal || store.StoresCapturedLocal ||
             store.InputStart != update.ResultSlot || store.LiveExtent != update.ResultSlot)
             return;
@@ -213,8 +212,11 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
         }
         if (first < 1 || block[first].OpCode is not (ExecutableOpCode.LoadLocal or ExecutableOpCode.LoadGlobal) ||
             block[first].ResultSlot != call.InputStart || block[first].LiveExtent != argumentStart ||
-            block[first - 1] is not { OpCode: ExecutableOpCode.LoadLocal, HasResultConsumer: false } load ||
-            load.ResultSlot != update.InputStart || load.LiveExtent != call.InputStart || load.LocalSlot != store.LocalSlot)
+            block[first - 1] is not { HasResultConsumer: false } load ||
+            load.OpCode is not (ExecutableOpCode.LoadLocal or ExecutableOpCode.CheckLocal) ||
+            load.LiveExtent != call.InputStart || load.LocalSlot != store.LocalSlot ||
+            update.InputStart != (load.OpCode == ExecutableOpCode.CheckLocal ? load.LocalSlot : load.ResultSlot) ||
+            update.ResultSlot != load.ResultSlot)
             return;
         tape[offset + first - 1] = load.WithIntegerUpdateCall(offset + index);
     }
