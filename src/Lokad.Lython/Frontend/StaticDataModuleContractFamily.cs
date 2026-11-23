@@ -6,73 +6,57 @@ namespace Lokad.Lython.Frontend;
 
 internal static partial class StaticDataModuleContractFamily
 {
-    public static bool AnalyzeKnownCallArgumentTypes(
+    public static bool AnalyzeJsonKnownCallArgumentTypes(
         string targetName,
         ConcreteCallArguments arguments,
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
     {
-        if (string.Equals(targetName, LythonKnownCallableSignatures.JsonLoad.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Json.Load.Name, StringComparison.Ordinal))
         {
             AnalyzeJsonReadableFileArgument(arguments, 0, "fp", diagnostics, bindings);
             return true;
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.JsonLoads.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Json.Loads.Name, StringComparison.Ordinal))
         {
             return AnalyzeArgument(arguments, 0, "s", "json.loads(s, *, ...) expects str or bytes.", diagnostics, bindings,
                 static value => value.IsStringLike || StaticAbstractFacts.IsBytesLike(value));
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.JsonDump.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Json.Dump.Name, StringComparison.Ordinal))
         {
             AnalyzeJsonWritableFileArgument(arguments, 1, "fp", diagnostics, bindings);
             return true;
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.JsonDumps.Name, StringComparison.Ordinal))
-        {
-            return false;
-        }
+        return false;
+    }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.CsvReader.Name, StringComparison.Ordinal))
+    public static bool AnalyzeCsvKnownCallArgumentTypes(
+        string targetName,
+        ConcreteCallArguments arguments,
+        List<LythonDiagnostic> diagnostics,
+        AbstractState bindings)
+    {
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Csv.Reader.Name, StringComparison.Ordinal))
         {
             return AnalyzeCsvReaderCall(arguments, diagnostics, bindings);
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.CsvWriter.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Csv.Writer.Name, StringComparison.Ordinal))
         {
             return AnalyzeCsvWriterCall(arguments, diagnostics, bindings);
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.CsvDictReader.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Csv.DictReader.Name, StringComparison.Ordinal))
         {
             return AnalyzeCsvDictReaderCall(arguments, diagnostics, bindings);
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.CsvDictWriter.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Csv.DictWriter.Name, StringComparison.Ordinal))
         {
             return AnalyzeCsvDictWriterCall(arguments, diagnostics, bindings);
-        }
-
-        if (AnalyzeDifflibKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings))
-        {
-            return true;
-        }
-
-        if (AnalyzePkgutilKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings))
-        {
-            return true;
-        }
-
-        if (AnalyzeCopyKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings))
-        {
-            return true;
-        }
-
-        if (AnalyzeRandomKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings))
-        {
-            return true;
         }
 
         return false;

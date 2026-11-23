@@ -14,24 +14,24 @@ internal static class StaticRegexReturnResolver
         LythonSourceSpan span,
         out AbstractValue value)
     {
-        if (string.Equals(targetName, LythonKnownCallableSignatures.ReCompile.Name, StringComparison.Ordinal) &&
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Regex.Compile.Name, StringComparison.Ordinal) &&
             TryGetRegexPatternSummary(arguments, 0, "pattern", 1, "flags", bindings, allowCompiledPattern: false, out var patternSummary, out _))
         {
             value = AbstractValue.RegexPattern(patternSummary, span);
             return true;
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.ReSearch.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Regex.Search.Name, StringComparison.Ordinal))
         {
             return TryResolveRegexMatchLikeReturn(arguments, 0, "pattern", 1, "string", 2, "flags", bindings, span, LythonRegexMatchMode.Search, out value);
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.ReMatch.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Regex.Match.Name, StringComparison.Ordinal))
         {
             return TryResolveRegexMatchLikeReturn(arguments, 0, "pattern", 1, "string", 2, "flags", bindings, span, LythonRegexMatchMode.Match, out value);
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.ReFullMatch.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Regex.FullMatch.Name, StringComparison.Ordinal))
         {
             return TryResolveRegexMatchLikeReturn(arguments, 0, "pattern", 1, "string", 2, "flags", bindings, span, LythonRegexMatchMode.FullMatch, out value);
         }

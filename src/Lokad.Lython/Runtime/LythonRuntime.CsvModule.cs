@@ -45,10 +45,10 @@ internal sealed partial class LythonRuntime
         }
 
         private enum FactoryKind { Reader, Writer, DictReader, DictWriter }
-        private static readonly CsvFactory ReaderCallable = new(LythonKnownCallableSignatures.CsvReader, FactoryKind.Reader);
-        private static readonly CsvFactory WriterCallable = new(LythonKnownCallableSignatures.CsvWriter, FactoryKind.Writer);
-        private static readonly CsvFactory DictReaderCallable = new(LythonKnownCallableSignatures.CsvDictReader, FactoryKind.DictReader);
-        private static readonly CsvFactory DictWriterCallable = new(LythonKnownCallableSignatures.CsvDictWriter, FactoryKind.DictWriter);
+        private static readonly CsvFactory ReaderCallable = new(LythonKnownCallableSignatures.Csv.Reader, FactoryKind.Reader);
+        private static readonly CsvFactory WriterCallable = new(LythonKnownCallableSignatures.Csv.Writer, FactoryKind.Writer);
+        private static readonly CsvFactory DictReaderCallable = new(LythonKnownCallableSignatures.Csv.DictReader, FactoryKind.DictReader);
+        private static readonly CsvFactory DictWriterCallable = new(LythonKnownCallableSignatures.Csv.DictWriter, FactoryKind.DictWriter);
 
         private sealed class CsvFactory(LythonCallableSignature signature, FactoryKind kind) : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyDynamicAttributes
         {

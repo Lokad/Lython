@@ -15,13 +15,13 @@ internal static class StaticDataclassContractFamily
             return false;
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.DataclassesAsDict.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Dataclasses.AsDict.Name, StringComparison.Ordinal))
         {
             AnalyzeDataclassesAsDictCall(arguments, diagnostics, bindings);
             return true;
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.DataclassesAsTuple.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Dataclasses.AsTuple.Name, StringComparison.Ordinal))
         {
             AnalyzeDataclassesAsTupleCall(arguments, diagnostics, bindings);
             return true;
@@ -37,7 +37,7 @@ internal static class StaticDataclassContractFamily
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
     {
-        if (string.Equals(targetName, LythonKnownCallableSignatures.DataclassesReplace.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Dataclasses.Replace.Name, StringComparison.Ordinal))
         {
             return AnalyzeDataclassesReplaceContract(call, arguments, diagnostics, bindings);
         }
@@ -52,14 +52,14 @@ internal static class StaticDataclassContractFamily
         LythonSourceSpan span,
         out AbstractValue value)
     {
-        if (targetName == LythonKnownCallableSignatures.DataclassesIsDataclass.Name)
+        if (targetName == LythonKnownCallableSignatures.Dataclasses.IsDataclass.Name)
         { value = AbstractValue.BooleanType(span); return true; }
-        if (targetName == LythonKnownCallableSignatures.DataclassesFields.Name ||
-            targetName == LythonKnownCallableSignatures.DataclassesAsDict.Name ||
-            targetName == LythonKnownCallableSignatures.DataclassesAsTuple.Name)
+        if (targetName == LythonKnownCallableSignatures.Dataclasses.Fields.Name ||
+            targetName == LythonKnownCallableSignatures.Dataclasses.AsDict.Name ||
+            targetName == LythonKnownCallableSignatures.Dataclasses.AsTuple.Name)
         { value = AbstractValue.Unknown(span); return true; }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.DataclassesReplace.Name, StringComparison.Ordinal) &&
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Dataclasses.Replace.Name, StringComparison.Ordinal) &&
             TryResolveDataclassInstance(arguments, bindings, out var instance))
         {
             var fields = new Dictionary<string, AbstractValue>(instance.Fields, StringComparer.Ordinal);

@@ -35,19 +35,19 @@ internal sealed partial class LythonRuntime
         private static readonly PyString Ampersand = PyString.FromString("&");
         private static readonly Dictionary<string, UrlMethod> Methods = new(StringComparer.Ordinal)
         {
-            ["quote"] = new(LythonKnownCallableSignatures.UrlQuote, UrlOperation.Quote),
-            ["quote_plus"] = new(LythonKnownCallableSignatures.UrlQuotePlus, UrlOperation.QuotePlus),
-            ["quote_from_bytes"] = new(LythonKnownCallableSignatures.UrlQuoteFromBytes, UrlOperation.QuoteBytes),
-            ["unquote"] = new(LythonKnownCallableSignatures.UrlUnquote, UrlOperation.Unquote),
-            ["unquote_plus"] = new(LythonKnownCallableSignatures.UrlUnquotePlus, UrlOperation.UnquotePlus),
-            ["unquote_to_bytes"] = new(LythonKnownCallableSignatures.UrlUnquoteToBytes, UrlOperation.UnquoteBytes),
-            ["urlencode"] = new(LythonKnownCallableSignatures.UrlEncode, UrlOperation.Encode),
-            ["parse_qs"] = new(LythonKnownCallableSignatures.UrlParseQs, UrlOperation.ParseQs),
-            ["parse_qsl"] = new(LythonKnownCallableSignatures.UrlParseQsl, UrlOperation.ParseQsl),
-            ["urlsplit"] = new(LythonKnownCallableSignatures.UrlSplit, UrlOperation.Split),
-            ["urlparse"] = new(LythonKnownCallableSignatures.UrlParse, UrlOperation.Parse),
-            ["urlunsplit"] = new(LythonKnownCallableSignatures.UrlUnsplit, UrlOperation.Unsplit),
-            ["urlunparse"] = new(LythonKnownCallableSignatures.UrlUnparse, UrlOperation.Unparse),
+            ["quote"] = new(LythonKnownCallableSignatures.UrlLib.UrlQuote, UrlOperation.Quote),
+            ["quote_plus"] = new(LythonKnownCallableSignatures.UrlLib.UrlQuotePlus, UrlOperation.QuotePlus),
+            ["quote_from_bytes"] = new(LythonKnownCallableSignatures.UrlLib.UrlQuoteFromBytes, UrlOperation.QuoteBytes),
+            ["unquote"] = new(LythonKnownCallableSignatures.UrlLib.UrlUnquote, UrlOperation.Unquote),
+            ["unquote_plus"] = new(LythonKnownCallableSignatures.UrlLib.UrlUnquotePlus, UrlOperation.UnquotePlus),
+            ["unquote_to_bytes"] = new(LythonKnownCallableSignatures.UrlLib.UrlUnquoteToBytes, UrlOperation.UnquoteBytes),
+            ["urlencode"] = new(LythonKnownCallableSignatures.UrlLib.UrlEncode, UrlOperation.Encode),
+            ["parse_qs"] = new(LythonKnownCallableSignatures.UrlLib.Qs, UrlOperation.ParseQs),
+            ["parse_qsl"] = new(LythonKnownCallableSignatures.UrlLib.Qsl, UrlOperation.ParseQsl),
+            ["urlsplit"] = new(LythonKnownCallableSignatures.UrlLib.UrlSplit, UrlOperation.Split),
+            ["urlparse"] = new(LythonKnownCallableSignatures.UrlLib.UrlParse, UrlOperation.Parse),
+            ["urlunsplit"] = new(LythonKnownCallableSignatures.UrlLib.UrlUnsplit, UrlOperation.Unsplit),
+            ["urlunparse"] = new(LythonKnownCallableSignatures.UrlLib.UrlUnparse, UrlOperation.Unparse),
         };
 
         public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)

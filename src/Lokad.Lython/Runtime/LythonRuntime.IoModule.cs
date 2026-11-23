@@ -34,7 +34,7 @@ internal sealed partial class LythonRuntime
         public string Name => "io.StringIO";
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            var bound = CallBinder.BindNamedArgumentsWithPresence(arguments, span, LythonKnownCallableSignatures.IoStringIO, PythonCallableKind.Builtin);
+            var bound = CallBinder.BindNamedArgumentsWithPresence(arguments, span, LythonKnownCallableSignatures.Io.StringIO, PythonCallableKind.Builtin);
             var initial = bound.Values[0];
             var newline = bound.Assigned[1] ? bound.Values[1] : PyString.FromString("\n");
             if (initial is not PyNone and not PyString)

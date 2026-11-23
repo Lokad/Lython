@@ -24,20 +24,20 @@ internal static class StaticMathContractFamily
 
         if (IsBinaryRealCall(targetName))
         {
-            var isAtan2 = string.Equals(targetName, LythonKnownCallableSignatures.MathAtan2.Name, StringComparison.Ordinal);
+            var isAtan2 = string.Equals(targetName, LythonKnownCallableSignatures.Math.Atan2.Name, StringComparison.Ordinal);
             emitted |= AnalyzeMathRealArgument(arguments, 0, isAtan2 ? "y" : "x", $"{targetName}(...) expects real numbers.", diagnostics, bindings);
             emitted |= AnalyzeMathRealArgument(arguments, 1, isAtan2 ? "x" : "y", $"{targetName}(...) expects real numbers.", diagnostics, bindings);
             return emitted;
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.MathLog.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Math.Log.Name, StringComparison.Ordinal))
         {
             emitted |= AnalyzeMathRealArgument(arguments, 0, "x", "math.log(x[, base]) expects real numbers.", diagnostics, bindings);
             emitted |= AnalyzeMathRealOrNoneArgument(arguments, 1, "base", "math.log(x[, base]) expects base to be a real number or None.", diagnostics, bindings);
             return emitted;
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.MathIsClose.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Math.IsClose.Name, StringComparison.Ordinal))
         {
             emitted |= AnalyzeMathRealArgument(arguments, 0, "a", "math.isclose(a, b[, rel_tol][, abs_tol]) expects real numbers.", diagnostics, bindings);
             emitted |= AnalyzeMathRealArgument(arguments, 1, "b", "math.isclose(a, b[, rel_tol][, abs_tol]) expects real numbers.", diagnostics, bindings);
@@ -46,60 +46,60 @@ internal static class StaticMathContractFamily
             return emitted;
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.MathProd.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Math.Prod.Name, StringComparison.Ordinal))
         {
             emitted |= AnalyzeIterableArgument(arguments, 0, "iterable", "math.prod(iterable, *, start=1) expects an iterable.", diagnostics, bindings);
             emitted |= AnalyzeMathRealArgument(arguments, 1, "start", "math.prod(..., start=...) expects a real number.", diagnostics, bindings);
             return emitted;
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.MathFsum.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Math.Fsum.Name, StringComparison.Ordinal))
         {
             return AnalyzeIterableArgument(arguments, 0, "iterable", "math.fsum(iterable) expects an iterable.", diagnostics, bindings);
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.MathHypot.Name, StringComparison.Ordinal) ||
-            string.Equals(targetName, LythonKnownCallableSignatures.MathGcd.Name, StringComparison.Ordinal) ||
-            string.Equals(targetName, LythonKnownCallableSignatures.MathLcm.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Math.Hypot.Name, StringComparison.Ordinal) ||
+            string.Equals(targetName, LythonKnownCallableSignatures.Math.Gcd.Name, StringComparison.Ordinal) ||
+            string.Equals(targetName, LythonKnownCallableSignatures.Math.Lcm.Name, StringComparison.Ordinal))
         {
             return AnalyzeVariadicMathArguments(targetName, arguments, diagnostics, bindings);
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.MathFactorial.Name, StringComparison.Ordinal) ||
-            string.Equals(targetName, LythonKnownCallableSignatures.MathIsqrt.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Math.Factorial.Name, StringComparison.Ordinal) ||
+            string.Equals(targetName, LythonKnownCallableSignatures.Math.Isqrt.Name, StringComparison.Ordinal))
         {
             return AnalyzeMathIntegerArgument(arguments, 0, "n", $"{targetName}(n) expects an integer argument.", diagnostics, bindings);
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.MathComb.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Math.Comb.Name, StringComparison.Ordinal))
         {
             emitted |= AnalyzeMathIntegerArgument(arguments, 0, "n", "math.comb(n, k) expects integer arguments.", diagnostics, bindings);
             emitted |= AnalyzeMathIntegerArgument(arguments, 1, "k", "math.comb(n, k) expects integer arguments.", diagnostics, bindings);
             return emitted;
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.MathPerm.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Math.Perm.Name, StringComparison.Ordinal))
         {
             emitted |= AnalyzeMathIntegerArgument(arguments, 0, "n", "math.perm(n[, k]) expects integer arguments.", diagnostics, bindings);
             emitted |= AnalyzeIntegerOrNoneArgument(arguments, 1, "k", "math.perm(n[, k]) expects k to be an integer or None.", diagnostics, bindings);
             return emitted;
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.MathDist.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Math.Dist.Name, StringComparison.Ordinal))
         {
             emitted |= AnalyzeIterableArgument(arguments, 0, "p", "math.dist(p, q) expects iterable points.", diagnostics, bindings);
             emitted |= AnalyzeIterableArgument(arguments, 1, "q", "math.dist(p, q) expects iterable points.", diagnostics, bindings);
             return emitted;
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.MathLdexp.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Math.Ldexp.Name, StringComparison.Ordinal))
         {
             emitted |= AnalyzeMathRealArgument(arguments, 0, "x", "math.ldexp(x, i) expects x to be a real number.", diagnostics, bindings);
             emitted |= AnalyzeMathIntegerArgument(arguments, 1, "i", "math.ldexp(x, i) expects i to be an integer.", diagnostics, bindings);
             return emitted;
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.MathNextAfter.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Math.NextAfter.Name, StringComparison.Ordinal))
         {
             emitted |= AnalyzeMathRealArgument(arguments, 0, "x", "math.nextafter(x, y, *, steps=None) expects real endpoints.", diagnostics, bindings);
             emitted |= AnalyzeMathRealArgument(arguments, 1, "y", "math.nextafter(x, y, *, steps=None) expects real endpoints.", diagnostics, bindings);
@@ -107,7 +107,7 @@ internal static class StaticMathContractFamily
             return emitted;
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.MathFma.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Math.Fma.Name, StringComparison.Ordinal))
         {
             emitted |= AnalyzeMathRealArgument(arguments, 0, "x", "math.fma(x, y, z) expects real numbers.", diagnostics, bindings);
             emitted |= AnalyzeMathRealArgument(arguments, 1, "y", "math.fma(x, y, z) expects real numbers.", diagnostics, bindings);
@@ -115,7 +115,7 @@ internal static class StaticMathContractFamily
             return emitted;
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.MathSumProd.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Math.SumProd.Name, StringComparison.Ordinal))
         {
             emitted |= AnalyzeIterableArgument(arguments, 0, "p", "math.sumprod(p, q) expects iterable inputs.", diagnostics, bindings);
             emitted |= AnalyzeIterableArgument(arguments, 1, "q", "math.sumprod(p, q) expects iterable inputs.", diagnostics, bindings);
@@ -132,8 +132,8 @@ internal static class StaticMathContractFamily
         AbstractState bindings)
     {
         var emitted = false;
-        var integerOnly = string.Equals(targetName, LythonKnownCallableSignatures.MathGcd.Name, StringComparison.Ordinal) ||
-            string.Equals(targetName, LythonKnownCallableSignatures.MathLcm.Name, StringComparison.Ordinal);
+        var integerOnly = string.Equals(targetName, LythonKnownCallableSignatures.Math.Gcd.Name, StringComparison.Ordinal) ||
+            string.Equals(targetName, LythonKnownCallableSignatures.Math.Lcm.Name, StringComparison.Ordinal);
         var message = integerOnly
             ? $"{targetName}(*integers) expects integer arguments."
             : $"{targetName}(*coordinates) expects real-number arguments.";
@@ -209,43 +209,43 @@ internal static class StaticMathContractFamily
     }
 
     private static bool IsSingleRealCall(string targetName)
-        => string.Equals(targetName, LythonKnownCallableSignatures.MathSqrt.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.MathExp.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.MathLog10.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.MathLog2.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.MathSin.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.MathCos.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.MathTan.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.MathAsin.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.MathAcos.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.MathAtan.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.MathSinh.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.MathCosh.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.MathTanh.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.MathFabs.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.MathDegrees.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.MathRadians.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.MathIsFinite.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.MathIsInf.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.MathIsNaN.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.MathFrexp.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.MathModf.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.MathUlp.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.MathExp2.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.MathExpm1.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.MathLog1p.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.MathCbrt.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.MathErf.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.MathErfc.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.MathGamma.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.MathLgamma.Name, StringComparison.Ordinal);
+        => string.Equals(targetName, LythonKnownCallableSignatures.Math.Sqrt.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Math.Exp.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Math.Log10.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Math.Log2.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Math.Sin.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Math.Cos.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Math.Tan.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Math.Asin.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Math.Acos.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Math.Atan.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Math.Sinh.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Math.Cosh.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Math.Tanh.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Math.Fabs.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Math.Degrees.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Math.Radians.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Math.IsFinite.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Math.IsInf.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Math.IsNaN.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Math.Frexp.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Math.Modf.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Math.Ulp.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Math.Exp2.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Math.Expm1.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Math.Log1p.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Math.Cbrt.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Math.Erf.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Math.Erfc.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Math.Gamma.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Math.Lgamma.Name, StringComparison.Ordinal);
 
     private static bool IsBinaryRealCall(string targetName)
-        => string.Equals(targetName, LythonKnownCallableSignatures.MathAtan2.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.MathPow.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.MathFmod.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.MathCopySign.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.MathRemainder.Name, StringComparison.Ordinal);
+        => string.Equals(targetName, LythonKnownCallableSignatures.Math.Atan2.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Math.Pow.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Math.Fmod.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Math.CopySign.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Math.Remainder.Name, StringComparison.Ordinal);
 
     private static bool AnalyzeMathFloorLikeArgument(
         ConcreteCallArguments arguments,
@@ -257,9 +257,9 @@ internal static class StaticMathContractFamily
         => AnalyzeArgument(arguments, position, keyword, message, diagnostics, bindings, IsMathFloorLike);
 
     private static bool IsFloorLikeCall(string targetName)
-        => string.Equals(targetName, LythonKnownCallableSignatures.MathFloor.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.MathCeil.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.MathTrunc.Name, StringComparison.Ordinal);
+        => string.Equals(targetName, LythonKnownCallableSignatures.Math.Floor.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Math.Ceil.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Math.Trunc.Name, StringComparison.Ordinal);
 
     private static bool IsMathRealLike(AbstractValue value)
         => value.Kind is AbstractValueKind.Integer or

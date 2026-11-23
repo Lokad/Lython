@@ -53,7 +53,7 @@ internal sealed partial class LythonRuntime
                 "algorithms_available" => CreateAlgorithmSet(),
                 "algorithms_guaranteed" => CreateAlgorithmSet(),
                 "file_digest" => BuiltinCallable.Create(
-                    LythonKnownCallableSignatures.HashlibFileDigest,
+                    LythonKnownCallableSignatures.Hashlib.FileDigest,
                     (_, span, _) => throw new LythonRuntimeException(
                         "NotImplementedError",
                         "hashlib.file_digest() is unsupported by Lython; read a mediated binary stream in chunks and use hash.update().",

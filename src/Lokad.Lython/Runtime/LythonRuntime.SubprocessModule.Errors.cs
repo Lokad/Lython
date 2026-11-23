@@ -99,7 +99,7 @@ internal sealed partial class LythonRuntime
             var bound = CallBinder.BindNamedArguments(
                 arguments,
                 span,
-                LythonKnownCallableSignatures.SubprocessTimeoutExpired,
+                LythonKnownCallableSignatures.Subprocess.TimeoutExpired,
                 PythonCallableKind.Builtin);
             return CreateSubprocessErrorValue("TimeoutExpired", bound[1], bound[0],
                 GetArgument(bound, 2), GetArgument(bound, 3),

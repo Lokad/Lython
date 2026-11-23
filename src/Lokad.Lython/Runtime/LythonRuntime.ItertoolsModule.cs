@@ -149,7 +149,7 @@ internal sealed partial class LythonRuntime
 
     private static object Count(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsCount, span);
+        var bound = BindArguments(arguments, LythonKnownCallableSignatures.Itertools.Count, span);
         var start = bound.Assigned[0] ? ExpectNumber(bound.Values[0], "itertools.count(..., start=...) expects a number.", span) : BigInteger.Zero;
         var step = bound.Assigned[1] ? ExpectNumber(bound.Values[1], "itertools.count(..., step=...) expects a number.", span) : BigInteger.One;
         var countResult = new PyCountIterator(start, step, context, span);
@@ -164,7 +164,7 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<object> RepeatCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
     {
-        var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsRepeat, span);
+        var bound = BindArguments(arguments, LythonKnownCallableSignatures.Itertools.Repeat, span);
         long? times = bound.Assigned[1]
             ? Math.Max(0, await CoerceItertoolsIndexAsync(bound.Values[1], span, context, asynchronous).ConfigureAwait(false))
             : null;
@@ -372,8 +372,8 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> CreateCombinationsAsync(CallArgumentValue[] arguments, LythonSourceSpan span,
         ExecutionContext context, bool withReplacement, bool asynchronous)
     {
-        var signature = withReplacement ? LythonKnownCallableSignatures.ItertoolsCombinationsWithReplacement
-            : LythonKnownCallableSignatures.ItertoolsCombinations;
+        var signature = withReplacement ? LythonKnownCallableSignatures.Itertools.CombinationsWithReplacement
+            : LythonKnownCallableSignatures.Itertools.Combinations;
         var bound = BindArguments(arguments, signature, span);
         // Clinic converts r before tuple(iterable), but checks negativity after it.
         var requested = await CoerceItertoolsIndexAsync(bound.Values[1], span, context, asynchronous).ConfigureAwait(false);
@@ -398,7 +398,7 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> PermutationsCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span,
         ExecutionContext context, bool asynchronous)
     {
-        var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsPermutations, span);
+        var bound = BindArguments(arguments, LythonKnownCallableSignatures.Itertools.Permutations, span);
         var pool = asynchronous
             ? await MaterializeItSequenceAsync(bound.Values[0], span, context).ConfigureAwait(false)
             : MaterializeSequence(bound.Values[0], span, context);
@@ -432,7 +432,7 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> AccumulateCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span,
         ExecutionContext context, bool asynchronous)
     {
-        var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsAccumulate, span);
+        var bound = BindArguments(arguments, LythonKnownCallableSignatures.Itertools.Accumulate, span);
         var function = !bound.Assigned[1] || bound.Values[1] is PyNone ? null : bound.Values[1];
         var hasInitial = bound.Assigned[2] && bound.Values[2] is not PyNone;
         context = GetGlobalContext(context);
@@ -451,7 +451,7 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> CompressCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span,
         ExecutionContext context, bool asynchronous)
     {
-        var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsCompress, span);
+        var bound = BindArguments(arguments, LythonKnownCallableSignatures.Itertools.Compress, span);
         context = GetGlobalContext(context);
         using var storage = context.MemoryGovernor.ReserveTemporary(448, span);
         var data = asynchronous ? await PyIteration.Cursor.CreateAsync(bound.Values[0], span, context).ConfigureAwait(false)
@@ -563,7 +563,7 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> GroupByCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span,
         ExecutionContext context, bool asynchronous)
     {
-        var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsGroupBy, span);
+        var bound = BindArguments(arguments, LythonKnownCallableSignatures.Itertools.GroupBy, span);
         var key = !bound.Assigned[1] || bound.Values[1] is PyNone ? null : bound.Values[1];
         context = GetGlobalContext(context);
         using var storage = context.MemoryGovernor.ReserveTemporary(288, span);
@@ -613,7 +613,7 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> BatchedCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span,
         ExecutionContext context, bool asynchronous)
     {
-        var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsBatched, span);
+        var bound = BindArguments(arguments, LythonKnownCallableSignatures.Itertools.Batched, span);
         var size = await CoerceItertoolsIndexAsync(bound.Values[1], span, context, asynchronous).ConfigureAwait(false);
         var strict = bound.Assigned[2] && (asynchronous
             ? await IsTruthyAsync(bound.Values[2], context, span).ConfigureAwait(false) : IsTruthy(bound.Values[2], context, span));

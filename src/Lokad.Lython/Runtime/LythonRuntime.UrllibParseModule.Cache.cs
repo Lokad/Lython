@@ -28,7 +28,7 @@ internal sealed partial class LythonRuntime
                 }
 
                 var bound = CallBinder.BindNamedArgumentsWithPresence(key.Arguments, span,
-                    LythonKnownCallableSignatures.UrlSplit, PythonCallableKind.Builtin);
+                    LythonKnownCallableSignatures.UrlLib.UrlSplit, PythonCallableKind.Builtin);
                 if (!bound.Assigned[1]) bound.Values[1] = Text.PyString.Empty;
                 if (!bound.Assigned[2]) bound.Values[2] = true;
                 var result = (UrlResult)await SplitUrlCoreAsync(bound.Values, span, context, asynchronous).ConfigureAwait(false);

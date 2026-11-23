@@ -19,14 +19,14 @@ internal sealed partial class LythonRuntime
         private OpenPyxlStylesModule()
             : base("openpyxl.styles", new Dictionary<string, object>
             {
-                ["Font"] = BuiltinCallable.Create(LythonKnownCallableSignatures.OpenPyxlFont, CreateFont),
+                ["Font"] = BuiltinCallable.Create(LythonKnownCallableSignatures.OpenPyxl.Font, CreateFont),
                 ["PatternFill"] = BuiltinCallable.Create("openpyxl.styles.PatternFill", CreatePatternFill, ["fill_type", "start_color", "end_color", "fgColor", "bgColor", "patternType"], requiredCount: 0),
                 ["GradientFill"] = UnsupportedOpenPyxlCallable("openpyxl.styles.GradientFill"),
                 ["Border"] = BuiltinCallable.Create("openpyxl.styles.Border", CreateBorder, ["left", "right", "top", "bottom"], requiredCount: 0),
                 ["Side"] = BuiltinCallable.Create("openpyxl.styles.Side", CreateSide, ["style", "color", "border_style"], requiredCount: 0),
-                ["Alignment"] = BuiltinCallable.Create(LythonKnownCallableSignatures.OpenPyxlAlignment, CreateAlignment),
+                ["Alignment"] = BuiltinCallable.Create(LythonKnownCallableSignatures.OpenPyxl.Alignment, CreateAlignment),
                 ["Protection"] = BuiltinCallable.Create("openpyxl.styles.Protection", CreateProtection, ["locked", "hidden"], requiredCount: 0),
-                ["NamedStyle"] = BuiltinCallable.Create(LythonKnownCallableSignatures.OpenPyxlNamedStyle, CreateNamedStyle),
+                ["NamedStyle"] = BuiltinCallable.Create(LythonKnownCallableSignatures.OpenPyxl.NamedStyle, CreateNamedStyle),
                 ["colors"] = OpenPyxlStylesColorsModule.Instance,
             })
         {
@@ -40,7 +40,7 @@ internal sealed partial class LythonRuntime
         private OpenPyxlStylesColorsModule()
             : base("openpyxl.styles.colors", new Dictionary<string, object>
             {
-                ["Color"] = BuiltinCallable.Create(LythonKnownCallableSignatures.OpenPyxlColor, CreateColor),
+                ["Color"] = BuiltinCallable.Create(LythonKnownCallableSignatures.OpenPyxl.Color, CreateColor),
                 ["BLACK"] = PyString.FromString("00000000"),
                 ["WHITE"] = PyString.FromString("00FFFFFF"),
                 ["BLUE"] = PyString.FromString("000000FF"),

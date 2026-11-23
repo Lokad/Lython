@@ -22,16 +22,16 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "run" => BuiltinCallable.Create(LythonKnownCallableSignatures.SubprocessRun, Run, RunAsync),
-                "call" => BuiltinCallable.Create(LythonKnownCallableSignatures.SubprocessCall, Call, CallAsync),
-                "check_call" => BuiltinCallable.Create(LythonKnownCallableSignatures.SubprocessCheckCall, CheckCall, CheckCallAsync),
-                "check_output" => BuiltinCallable.Create(LythonKnownCallableSignatures.SubprocessCheckOutput, CheckOutput, CheckOutputAsync),
-                "CompletedProcess" => BuiltinCallable.Create(LythonKnownCallableSignatures.SubprocessCompletedProcess, CompletedProcess),
+                "run" => BuiltinCallable.Create(LythonKnownCallableSignatures.Subprocess.Run, Run, RunAsync),
+                "call" => BuiltinCallable.Create(LythonKnownCallableSignatures.Subprocess.Call, Call, CallAsync),
+                "check_call" => BuiltinCallable.Create(LythonKnownCallableSignatures.Subprocess.CheckCall, CheckCall, CheckCallAsync),
+                "check_output" => BuiltinCallable.Create(LythonKnownCallableSignatures.Subprocess.CheckOutput, CheckOutput, CheckOutputAsync),
+                "CompletedProcess" => BuiltinCallable.Create(LythonKnownCallableSignatures.Subprocess.CompletedProcess, CompletedProcess),
                 "CalledProcessError" => SubprocessCalledProcessErrorType.Instance,
                 "SubprocessError" => new ExceptionTypeValue(ModuleException("subprocess", "SubprocessError")),
                 "TimeoutExpired" => SubprocessTimeoutExpiredType.Instance,
-                "Popen" => BuiltinCallable.Create(LythonKnownCallableSignatures.SubprocessPopen, Popen, PopenAsync),
-                "list2cmdline" => BuiltinCallable.Create(LythonKnownCallableSignatures.SubprocessList2Cmdline, List2Cmdline, List2CmdlineAsync),
+                "Popen" => BuiltinCallable.Create(LythonKnownCallableSignatures.Subprocess.Popen, Popen, PopenAsync),
+                "list2cmdline" => BuiltinCallable.Create(LythonKnownCallableSignatures.Subprocess.List2Cmdline, List2Cmdline, List2CmdlineAsync),
                 "getoutput" => new UnsupportedSubprocessCallable("subprocess.getoutput", "subprocess.getoutput() is not supported by Lython under the no-new-shell-integration subprocess subset."),
                 "getstatusoutput" => new UnsupportedSubprocessCallable("subprocess.getstatusoutput", "subprocess.getstatusoutput() is not supported by Lython under the no-new-shell-integration subprocess subset."),
                 "PIPE" => new BigInteger(SubprocessPipe),

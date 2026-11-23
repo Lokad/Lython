@@ -11,7 +11,7 @@ internal static class StaticArgparseContractFamily
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
     {
-        if (string.Equals(targetName, LythonKnownCallableSignatures.ArgparseArgumentParser.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Argparse.ArgumentParser.Name, StringComparison.Ordinal))
         {
             var emitted = false;
             emitted |= AnalyzeStringOrNoneArgument(arguments, 0, "prog", "argparse.ArgumentParser(..., prog=...) expects a string or None.", diagnostics, bindings);
@@ -21,7 +21,7 @@ internal static class StaticArgparseContractFamily
             return emitted;
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.ArgparseFileType.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Argparse.FileType.Name, StringComparison.Ordinal))
         {
             var emitted = false;
             emitted |= AnalyzeStringArgument(arguments, 0, "mode", "argparse.FileType(..., mode=...) expects a string.", diagnostics, bindings);

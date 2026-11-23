@@ -17,7 +17,7 @@ internal sealed partial class LythonRuntime
         private static async ValueTask<object> InvokeCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             context.CheckExecution(span);
-            var bound = CallBinder.BindNamedArgumentsWithPresence(arguments, span, LythonKnownCallableSignatures.FunctoolsLruCache, PythonCallableKind.Builtin);
+            var bound = CallBinder.BindNamedArgumentsWithPresence(arguments, span, LythonKnownCallableSignatures.Functools.LruCache, PythonCallableKind.Builtin);
             var maxSize = bound.Assigned[0] ? bound.Values[0] : new BigInteger(128);
             var typed = bound.Assigned[1] ? bound.Values[1] : false;
             if (IsCallable(maxSize) && typed is bool)

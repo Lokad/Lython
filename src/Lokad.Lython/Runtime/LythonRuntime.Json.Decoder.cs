@@ -299,8 +299,8 @@ internal sealed partial class LythonRuntime
             if (decoder.Attributes.TryGetValue(name, out value!)) return true;
             value = name switch
             {
-                "decode" => BoundCallable.Create((arguments, span, context) => decoder.Decode(arguments, span, context), LythonKnownCallableSignatures.JsonDecoderDecode, (arguments, span, context) => decoder.DecodeAsync(arguments, span, context)),
-                "raw_decode" => BoundCallable.Create((arguments, span, context) => decoder.RawDecode(arguments, span, context), LythonKnownCallableSignatures.JsonDecoderRawDecode, (arguments, span, context) => decoder.RawDecodeAsync(arguments, span, context)),
+                "decode" => BoundCallable.Create((arguments, span, context) => decoder.Decode(arguments, span, context), LythonKnownCallableSignatures.Json.DecoderDecode, (arguments, span, context) => decoder.DecodeAsync(arguments, span, context)),
+                "raw_decode" => BoundCallable.Create((arguments, span, context) => decoder.RawDecode(arguments, span, context), LythonKnownCallableSignatures.Json.DecoderRawDecode, (arguments, span, context) => decoder.RawDecodeAsync(arguments, span, context)),
                 _ => MissingMemberValue.Instance,
             };
 

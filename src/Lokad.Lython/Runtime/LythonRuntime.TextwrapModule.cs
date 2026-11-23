@@ -14,8 +14,8 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "dedent" => BuiltinCallable.Create(LythonKnownCallableSignatures.TextwrapDedent, Dedent),
-                "indent" => BuiltinCallable.Create(LythonKnownCallableSignatures.TextwrapIndent,
+                "dedent" => BuiltinCallable.Create(LythonKnownCallableSignatures.Textwrap.Dedent, Dedent),
+                "indent" => BuiltinCallable.Create(LythonKnownCallableSignatures.Textwrap.Indent,
                     (args, span, context) => IndentAsync(args, span, context, false).GetAwaiter().GetResult(),
                     (args, span, context) => IndentAsync(args, span, context, true)),
                 _ => MissingMemberValue.Instance,

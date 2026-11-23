@@ -20,13 +20,13 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "pack" => BuiltinCallable.Create(LythonKnownCallableSignatures.StructPack,
+                "pack" => BuiltinCallable.Create(LythonKnownCallableSignatures.Struct.Pack,
                     (args, span, context) => PackAsync(args, span, context, false).GetAwaiter().GetResult(),
                     (args, span, context) => PackAsync(args, span, context, true)),
-                "unpack" => BuiltinCallable.Create(LythonKnownCallableSignatures.StructUnpack, Unpack),
-                "calcsize" => BuiltinCallable.Create(LythonKnownCallableSignatures.StructCalcsize,
+                "unpack" => BuiltinCallable.Create(LythonKnownCallableSignatures.Struct.Unpack, Unpack),
+                "calcsize" => BuiltinCallable.Create(LythonKnownCallableSignatures.Struct.Calcsize,
                     (args, span, context) => new BigInteger(ParseLayout(args[0], context, span).Size)),
-                "iter_unpack" => BuiltinCallable.Create(LythonKnownCallableSignatures.StructIterUnpack, IterUnpack),
+                "iter_unpack" => BuiltinCallable.Create(LythonKnownCallableSignatures.Struct.IterUnpack, IterUnpack),
                 "error" => ErrorType,
                 "Struct" or "pack_into" or "unpack_from" => BuiltinCallable.CreateUnsupported("struct." + name),
                 _ => MissingMemberValue.Instance,

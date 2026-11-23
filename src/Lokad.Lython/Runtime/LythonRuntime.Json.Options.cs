@@ -48,7 +48,7 @@ internal sealed partial class LythonRuntime
         // Immutable builtin metadata; no guest values, receiver or execution owner.
         internal static readonly JsonDumpOptions Default = new(false, true, true, true,
             null, PyString.FromString(", "), PyString.FromString(": "), BoundCallable.Create(JsonEncoderObject.Default,
-                LythonKnownCallableSignatures.JsonEncoderDefault), false);
+                LythonKnownCallableSignatures.Json.EncoderDefault), false);
     }
 
     internal readonly record struct JsonSeparators(object ItemSeparator, object KeySeparator);

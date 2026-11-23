@@ -44,7 +44,7 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "fromstring" => BuiltinCallable.Create(LythonKnownCallableSignatures.ElementTreeFromString, FromString),
+                "fromstring" => BuiltinCallable.Create(LythonKnownCallableSignatures.ElementTree.FromString, FromString),
                 "iterparse" => BuiltinCallable.Create(IterparseSignature,
                     static (args, span, context) => IterparseAsync(args, span, context, false).GetAwaiter().GetResult(),
                     static (args, span, context) => IterparseAsync(args, span, context, true)),

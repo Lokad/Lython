@@ -106,15 +106,15 @@ internal sealed partial class LythonRuntime
                 "modules" => GetModules(),
                 "builtin_module_names" => _builtinModuleNames,
                 "stdlib_module_names" => _stdlibModuleNames,
-                "exit" => BuiltinCallable.Create(LythonKnownCallableSignatures.SysExit, Exit),
-                "getdefaultencoding" => BuiltinCallable.Create(LythonKnownCallableSignatures.SysGetDefaultEncoding, GetDefaultEncoding),
-                "exc_info" => BuiltinCallable.Create(LythonKnownCallableSignatures.SysExcInfo, ExcInfo),
-                "getsizeof" => BuiltinCallable.Create(LythonKnownCallableSignatures.SysGetSizeOf, GetSizeOf),
-                "settrace" => UnsupportedSysCallable(LythonKnownCallableSignatures.SysSetTrace, "sys.settrace(...) is not supported by Lython."),
-                "setprofile" => UnsupportedSysCallable(LythonKnownCallableSignatures.SysSetProfile, "sys.setprofile(...) is not supported by Lython."),
-                "setrecursionlimit" => UnsupportedSysCallable(LythonKnownCallableSignatures.SysSetRecursionLimit, "sys.setrecursionlimit(...) is not supported by Lython; use LythonRunOptions.MaxRecursionDepth."),
-                "addaudithook" => UnsupportedSysCallable(LythonKnownCallableSignatures.SysAddAuditHook, "sys.addaudithook(...) is not supported by Lython."),
-                "audit" => UnsupportedSysCallable(LythonKnownCallableSignatures.SysAudit, "sys.audit(...) is not supported by Lython."),
+                "exit" => BuiltinCallable.Create(LythonKnownCallableSignatures.Sys.Exit, Exit),
+                "getdefaultencoding" => BuiltinCallable.Create(LythonKnownCallableSignatures.Sys.GetDefaultEncoding, GetDefaultEncoding),
+                "exc_info" => BuiltinCallable.Create(LythonKnownCallableSignatures.Sys.ExcInfo, ExcInfo),
+                "getsizeof" => BuiltinCallable.Create(LythonKnownCallableSignatures.Sys.GetSizeOf, GetSizeOf),
+                "settrace" => UnsupportedSysCallable(LythonKnownCallableSignatures.Sys.SetTrace, "sys.settrace(...) is not supported by Lython."),
+                "setprofile" => UnsupportedSysCallable(LythonKnownCallableSignatures.Sys.SetProfile, "sys.setprofile(...) is not supported by Lython."),
+                "setrecursionlimit" => UnsupportedSysCallable(LythonKnownCallableSignatures.Sys.SetRecursionLimit, "sys.setrecursionlimit(...) is not supported by Lython; use LythonRunOptions.MaxRecursionDepth."),
+                "addaudithook" => UnsupportedSysCallable(LythonKnownCallableSignatures.Sys.AddAuditHook, "sys.addaudithook(...) is not supported by Lython."),
+                "audit" => UnsupportedSysCallable(LythonKnownCallableSignatures.Sys.Audit, "sys.audit(...) is not supported by Lython."),
                 _ => MissingMemberValue.Instance
             };
 
@@ -300,7 +300,7 @@ internal sealed partial class LythonRuntime
             if (name == "is_dataclass")
             {
                 value = BuiltinCallable.Create(
-                    LythonKnownCallableSignatures.DataclassesIsDataclass,
+                    LythonKnownCallableSignatures.Dataclasses.IsDataclass,
                     PyDataclass.IsDataclass);
                 return true;
             }
@@ -308,7 +308,7 @@ internal sealed partial class LythonRuntime
             if (name == "fields")
             {
                 value = BuiltinCallable.Create(
-                    LythonKnownCallableSignatures.DataclassesFields,
+                    LythonKnownCallableSignatures.Dataclasses.Fields,
                     PyDataclass.Fields);
                 return true;
             }
@@ -316,7 +316,7 @@ internal sealed partial class LythonRuntime
             if (name == "asdict")
             {
                 value = BuiltinCallable.Create(
-                    LythonKnownCallableSignatures.DataclassesAsDict,
+                    LythonKnownCallableSignatures.Dataclasses.AsDict,
                     PyDataclass.AsDict, PyDataclass.AsDictAsync);
                 return true;
             }
@@ -324,7 +324,7 @@ internal sealed partial class LythonRuntime
             if (name == "astuple")
             {
                 value = BuiltinCallable.Create(
-                    LythonKnownCallableSignatures.DataclassesAsTuple,
+                    LythonKnownCallableSignatures.Dataclasses.AsTuple,
                     PyDataclass.AsTuple, PyDataclass.AsTupleAsync);
                 return true;
             }

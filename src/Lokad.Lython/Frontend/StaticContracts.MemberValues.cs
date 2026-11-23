@@ -371,34 +371,34 @@ internal static partial class StaticContracts
             {
                 "min" or "max" => AbstractValue.DateTimeDate(span),
                 "resolution" => AbstractValue.DateTimeTimedelta(span),
-                "today" => AbstractValue.KnownCallable(LythonKnownCallableSignatures.DateTimeDateToday.Name, span),
-                "fromtimestamp" => AbstractValue.KnownCallable(LythonKnownCallableSignatures.DateTimeDateFromTimestamp.Name, span),
-                "fromordinal" => AbstractValue.KnownCallable(LythonKnownCallableSignatures.DateTimeDateFromOrdinal.Name, span),
-                "fromisoformat" => AbstractValue.KnownCallable(LythonKnownCallableSignatures.DateTimeDateFromIsoFormat.Name, span),
-                "fromisocalendar" => AbstractValue.KnownCallable(LythonKnownCallableSignatures.DateTimeDateFromIsoCalendar.Name, span),
+                "today" => AbstractValue.KnownCallable(LythonKnownCallableSignatures.DateTime.DateToday.Name, span),
+                "fromtimestamp" => AbstractValue.KnownCallable(LythonKnownCallableSignatures.DateTime.DateFromTimestamp.Name, span),
+                "fromordinal" => AbstractValue.KnownCallable(LythonKnownCallableSignatures.DateTime.DateFromOrdinal.Name, span),
+                "fromisoformat" => AbstractValue.KnownCallable(LythonKnownCallableSignatures.DateTime.DateFromIsoFormat.Name, span),
+                "fromisocalendar" => AbstractValue.KnownCallable(LythonKnownCallableSignatures.DateTime.DateFromIsoCalendar.Name, span),
                 _ => default
             },
             "datetime.time" => memberName switch
             {
                 "min" or "max" => AbstractValue.DateTimeTime(span),
                 "resolution" => AbstractValue.DateTimeTimedelta(span),
-                "fromisoformat" => AbstractValue.KnownCallable(LythonKnownCallableSignatures.DateTimeTimeFromIsoFormat.Name, span),
+                "fromisoformat" => AbstractValue.KnownCallable(LythonKnownCallableSignatures.DateTime.TimeFromIsoFormat.Name, span),
                 _ => default
             },
             "datetime.datetime" => memberName switch
             {
                 "min" or "max" => AbstractValue.DateTimeDateTime(span),
                 "resolution" => AbstractValue.DateTimeTimedelta(span),
-                "today" => AbstractValue.KnownCallable(LythonKnownCallableSignatures.DateTimeDateTimeToday.Name, span),
-                "now" => AbstractValue.KnownCallable(LythonKnownCallableSignatures.DateTimeDateTimeNow.Name, span),
-                "utcnow" => AbstractValue.KnownCallable(LythonKnownCallableSignatures.DateTimeDateTimeUtcNow.Name, span),
-                "fromtimestamp" => AbstractValue.KnownCallable(LythonKnownCallableSignatures.DateTimeDateTimeFromTimestamp.Name, span),
-                "utcfromtimestamp" => AbstractValue.KnownCallable(LythonKnownCallableSignatures.DateTimeDateTimeUtcFromTimestamp.Name, span),
-                "fromordinal" => AbstractValue.KnownCallable(LythonKnownCallableSignatures.DateTimeDateTimeFromOrdinal.Name, span),
-                "combine" => AbstractValue.KnownCallable(LythonKnownCallableSignatures.DateTimeDateTimeCombine.Name, span),
-                "fromisoformat" => AbstractValue.KnownCallable(LythonKnownCallableSignatures.DateTimeDateTimeFromIsoFormat.Name, span),
-                "fromisocalendar" => AbstractValue.KnownCallable(LythonKnownCallableSignatures.DateTimeDateTimeFromIsoCalendar.Name, span),
-                "strptime" => AbstractValue.KnownCallable(LythonKnownCallableSignatures.DateTimeDateTimeStrptime.Name, span),
+                "today" => AbstractValue.KnownCallable(LythonKnownCallableSignatures.DateTime.DateTimeToday.Name, span),
+                "now" => AbstractValue.KnownCallable(LythonKnownCallableSignatures.DateTime.DateTimeNow.Name, span),
+                "utcnow" => AbstractValue.KnownCallable(LythonKnownCallableSignatures.DateTime.DateTimeUtcNow.Name, span),
+                "fromtimestamp" => AbstractValue.KnownCallable(LythonKnownCallableSignatures.DateTime.DateTimeFromTimestamp.Name, span),
+                "utcfromtimestamp" => AbstractValue.KnownCallable(LythonKnownCallableSignatures.DateTime.DateTimeUtcFromTimestamp.Name, span),
+                "fromordinal" => AbstractValue.KnownCallable(LythonKnownCallableSignatures.DateTime.DateTimeFromOrdinal.Name, span),
+                "combine" => AbstractValue.KnownCallable(LythonKnownCallableSignatures.DateTime.DateTimeCombine.Name, span),
+                "fromisoformat" => AbstractValue.KnownCallable(LythonKnownCallableSignatures.DateTime.DateTimeFromIsoFormat.Name, span),
+                "fromisocalendar" => AbstractValue.KnownCallable(LythonKnownCallableSignatures.DateTime.DateTimeFromIsoCalendar.Name, span),
+                "strptime" => AbstractValue.KnownCallable(LythonKnownCallableSignatures.DateTime.DateTimeStrptime.Name, span),
                 _ => default
             },
             "datetime.timezone" => memberName switch
@@ -413,7 +413,7 @@ internal static partial class StaticContracts
             },
             "statistics.NormalDist" => memberName switch
             {
-                "from_samples" => AbstractValue.KnownCallable(LythonKnownCallableSignatures.StatisticsNormalDistFromSamples.Name, span),
+                "from_samples" => AbstractValue.KnownCallable(LythonKnownCallableSignatures.Statistics.NormalDistFromSamples.Name, span),
                 _ => default
             },
             _ => default

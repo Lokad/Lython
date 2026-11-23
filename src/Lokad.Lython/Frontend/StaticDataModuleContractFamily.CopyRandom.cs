@@ -6,7 +6,7 @@ namespace Lokad.Lython.Frontend;
 
 internal static partial class StaticDataModuleContractFamily
 {
-    private static bool AnalyzeCopyKnownCallArgumentTypes(
+    internal static bool AnalyzeCopyKnownCallArgumentTypes(
         string targetName,
         ConcreteCallArguments arguments,
         List<LythonDiagnostic> diagnostics,
@@ -14,17 +14,17 @@ internal static partial class StaticDataModuleContractFamily
     {
         var emitted = false;
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.CopyCopy.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Copy.CopyCopy.Name, StringComparison.Ordinal))
         {
             return AnalyzeUnsupportedCopyProtocols(arguments, deep: false, diagnostics, bindings);
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.CopyReplace.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Copy.Replace.Name, StringComparison.Ordinal))
         {
             return AnalyzeCopyReplaceDataclassFields(arguments, diagnostics, bindings);
         }
 
-        if (!string.Equals(targetName, LythonKnownCallableSignatures.CopyDeepCopy.Name, StringComparison.Ordinal))
+        if (!string.Equals(targetName, LythonKnownCallableSignatures.Copy.DeepCopy.Name, StringComparison.Ordinal))
         {
             return false;
         }
@@ -112,7 +112,7 @@ internal static partial class StaticDataModuleContractFamily
         return false;
     }
 
-    private static bool AnalyzeRandomKnownCallArgumentTypes(
+    internal static bool AnalyzeRandomKnownCallArgumentTypes(
         string targetName,
         ConcreteCallArguments arguments,
         List<LythonDiagnostic> diagnostics,

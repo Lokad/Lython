@@ -31,7 +31,7 @@ internal sealed partial class LythonRuntime
             LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             var bound = CallBinder.BindNamedArgumentsWithPresence(arguments, span,
-                LythonKnownCallableSignatures.StatisticsNormalDist, PythonCallableKind.Builtin);
+                LythonKnownCallableSignatures.Statistics.NormalDist, PythonCallableKind.Builtin);
             var sigma = bound.Assigned[1] ? bound.Values[1] : 1.0;
             var comparison = asynchronous
                 ? await EvaluateBinaryOperatorAsync(BinaryOperatorSyntax.Less, sigma, 0.0, context, span).ConfigureAwait(false)

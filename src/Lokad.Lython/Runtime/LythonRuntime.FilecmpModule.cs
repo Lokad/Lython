@@ -22,10 +22,10 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "cmp" => BuiltinCallable.Create(LythonKnownCallableSignatures.FilecmpCmp, CompareFiles, CompareFilesAsync),
-                "clear_cache" => BuiltinCallable.Create(LythonKnownCallableSignatures.FilecmpClearCache, ClearCache),
+                "cmp" => BuiltinCallable.Create(LythonKnownCallableSignatures.Filecmp.Cmp, CompareFiles, CompareFilesAsync),
+                "clear_cache" => BuiltinCallable.Create(LythonKnownCallableSignatures.Filecmp.ClearCache, ClearCache),
                 "dircmp" => BuiltinCallable.Create(
-                    LythonKnownCallableSignatures.FilecmpDircmp,
+                    LythonKnownCallableSignatures.Filecmp.Dircmp,
                     (_, span, _) => throw new LythonRuntimeException(
                         "NotImplementedError",
                         "filecmp.dircmp is unsupported because recursive directory comparison is outside Lython's contained filecmp surface.",

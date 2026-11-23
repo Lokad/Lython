@@ -25,10 +25,10 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "shlex" => BuiltinCallable.Create(LythonKnownCallableSignatures.ShlexClass, CreateLexer, CreateLexerAsync),
-                "quote" => BuiltinCallable.Create(LythonKnownCallableSignatures.ShlexQuote, Quote),
-                "join" => BuiltinCallable.Create(LythonKnownCallableSignatures.ShlexJoin, Join, JoinAsync),
-                "split" => BuiltinCallable.Create(LythonKnownCallableSignatures.ShlexSplit, Split, SplitAsync),
+                "shlex" => BuiltinCallable.Create(LythonKnownCallableSignatures.Shlex.Class, CreateLexer, CreateLexerAsync),
+                "quote" => BuiltinCallable.Create(LythonKnownCallableSignatures.Shlex.Quote, Quote),
+                "join" => BuiltinCallable.Create(LythonKnownCallableSignatures.Shlex.Join, Join, JoinAsync),
+                "split" => BuiltinCallable.Create(LythonKnownCallableSignatures.Shlex.Split, Split, SplitAsync),
                 _ => MissingMemberValue.Instance,
             };
 

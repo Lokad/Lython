@@ -35,12 +35,12 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "Decimal" => BuiltinCallable.Create(LythonKnownCallableSignatures.Decimal, DecimalCtor),
-                "DecimalTuple" => BuiltinCallable.Create(LythonKnownCallableSignatures.DecimalTuple, DecimalTupleCtor, DecimalTupleCtorAsync),
-                "Context" => BuiltinCallable.Create(LythonKnownCallableSignatures.DecimalContext, DecimalContextCtor),
-                "getcontext" => BuiltinCallable.Create(LythonKnownCallableSignatures.DecimalGetContext, DecimalGetContext),
-                "setcontext" => BuiltinCallable.Create(LythonKnownCallableSignatures.DecimalSetContext, DecimalSetContext),
-                "localcontext" => BuiltinCallable.Create(LythonKnownCallableSignatures.DecimalLocalContext, DecimalLocalContext),
+                "Decimal" => BuiltinCallable.Create(LythonKnownCallableSignatures.Decimal.Create, DecimalCtor),
+                "DecimalTuple" => BuiltinCallable.Create(LythonKnownCallableSignatures.Decimal.Tuple, DecimalTupleCtor, DecimalTupleCtorAsync),
+                "Context" => BuiltinCallable.Create(LythonKnownCallableSignatures.Decimal.Context, DecimalContextCtor),
+                "getcontext" => BuiltinCallable.Create(LythonKnownCallableSignatures.Decimal.GetContext, DecimalGetContext),
+                "setcontext" => BuiltinCallable.Create(LythonKnownCallableSignatures.Decimal.SetContext, DecimalSetContext),
+                "localcontext" => BuiltinCallable.Create(LythonKnownCallableSignatures.Decimal.LocalContext, DecimalLocalContext),
                 "DefaultContext" => _defaultContext ??= PyDecimalContext.Default(_governor),
                 "BasicContext" => _basicContext ??= PyDecimalContext.Basic(_governor),
                 "ExtendedContext" => _extendedContext ??= PyDecimalContext.Extended(_governor),

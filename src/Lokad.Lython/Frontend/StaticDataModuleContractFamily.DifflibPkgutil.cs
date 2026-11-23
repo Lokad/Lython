@@ -5,24 +5,24 @@ namespace Lokad.Lython.Frontend;
 
 internal static partial class StaticDataModuleContractFamily
 {
-    private static bool AnalyzeDifflibKnownCallArgumentTypes(
+    internal static bool AnalyzeDifflibKnownCallArgumentTypes(
         string targetName,
         ConcreteCallArguments arguments,
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
     {
-        if (string.Equals(targetName, LythonKnownCallableSignatures.DifflibIsLineJunk.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Difflib.IsLineJunk.Name, StringComparison.Ordinal))
         {
             return AnalyzeStringArgument(arguments, 0, "line", "difflib.IS_LINE_JUNK(line) expects a string.", diagnostics, bindings);
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.DifflibIsCharacterJunk.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Difflib.IsCharacterJunk.Name, StringComparison.Ordinal))
         {
             return AnalyzeStringArgument(arguments, 0, "ch", "difflib.IS_CHARACTER_JUNK(ch) expects a string.", diagnostics, bindings);
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.DifflibUnifiedDiff.Name, StringComparison.Ordinal) ||
-            string.Equals(targetName, LythonKnownCallableSignatures.DifflibContextDiff.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Difflib.UnifiedDiff.Name, StringComparison.Ordinal) ||
+            string.Equals(targetName, LythonKnownCallableSignatures.Difflib.ContextDiff.Name, StringComparison.Ordinal))
         {
             var owner = targetName.EndsWith("unified_diff", StringComparison.Ordinal) ? "difflib.unified_diff" : "difflib.context_diff";
             var emitted = AnalyzeDifflibLineIterable(arguments, 0, "a", $"{owner}(a, b) expects a and b to be iterables of strings.", diagnostics, bindings);
@@ -36,7 +36,7 @@ internal static partial class StaticDataModuleContractFamily
             return emitted;
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.DifflibNdiff.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Difflib.Ndiff.Name, StringComparison.Ordinal))
         {
             var emitted = AnalyzeDifflibLineIterable(arguments, 0, "a", "difflib.ndiff(a, b) expects a and b to be iterables of strings.", diagnostics, bindings);
             emitted |= AnalyzeDifflibLineIterable(arguments, 1, "b", "difflib.ndiff(a, b) expects a and b to be iterables of strings.", diagnostics, bindings);
@@ -45,14 +45,14 @@ internal static partial class StaticDataModuleContractFamily
             return emitted;
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.DifflibRestore.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Difflib.Restore.Name, StringComparison.Ordinal))
         {
             var emitted = AnalyzeDifflibLineIterable(arguments, 0, "delta", "difflib.restore(delta, which) expects delta to be an iterable of strings.", diagnostics, bindings);
             emitted |= AnalyzeRestoreWhich(arguments, diagnostics, bindings);
             return emitted;
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.DifflibGetCloseMatches.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Difflib.GetCloseMatches.Name, StringComparison.Ordinal))
         {
             var emitted = AnalyzeStringArgument(arguments, 0, "word", "difflib.get_close_matches(word, possibilities) expects word to be a string.", diagnostics, bindings);
             emitted |= AnalyzeDifflibLineIterable(arguments, 1, "possibilities", "difflib.get_close_matches(word, possibilities) expects possibilities to be an iterable of strings.", diagnostics, bindings);
@@ -61,7 +61,7 @@ internal static partial class StaticDataModuleContractFamily
             return emitted;
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.DifflibDiffBytes.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Difflib.DiffBytes.Name, StringComparison.Ordinal))
         {
             var emitted = AnalyzeArgument(arguments, 0, "dfunc", "difflib.diff_bytes(dfunc, ...) expects dfunc to be callable.", diagnostics, bindings, static value => !StaticAbstractFacts.IsDefinitelyNonCallable(value));
             emitted |= AnalyzeIterableOfBytesArgument(arguments, 1, "a", "difflib.diff_bytes(..., a=...) expects an iterable of bytes.", diagnostics, bindings);
@@ -75,14 +75,14 @@ internal static partial class StaticDataModuleContractFamily
             return emitted;
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.DifflibDiffer.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Difflib.Differ.Name, StringComparison.Ordinal))
         {
             var emitted = AnalyzeCallableOrNoneArgument(arguments, 0, "linejunk", "difflib.Differ(..., linejunk=...) expects a callable or None.", diagnostics, bindings);
             emitted |= AnalyzeCallableOrNoneArgument(arguments, 1, "charjunk", "difflib.Differ(..., charjunk=...) expects a callable or None.", diagnostics, bindings);
             return emitted;
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.DifflibHtmlDiff.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Difflib.HtmlDiff.Name, StringComparison.Ordinal))
         {
             var emitted = AnalyzeIntegerArgument(arguments, 0, "tabsize", "difflib.HtmlDiff(..., tabsize=...) expects an integer.", diagnostics, bindings);
             emitted |= AnalyzeIntegerOrNoneArgument(arguments, 1, "wrapcolumn", "difflib.HtmlDiff(..., wrapcolumn=...) expects an integer or None.", diagnostics, bindings);
@@ -105,20 +105,20 @@ internal static partial class StaticDataModuleContractFamily
         AbstractState bindings)
         => AnalyzeIterableOfStringsArgument(arguments, position, keyword, message, diagnostics, bindings);
 
-    private static bool AnalyzePkgutilKnownCallArgumentTypes(
+    internal static bool AnalyzePkgutilKnownCallArgumentTypes(
         string targetName,
         ConcreteCallArguments arguments,
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
     {
-        if (string.Equals(targetName, LythonKnownCallableSignatures.PkgutilFindLoader.Name, StringComparison.Ordinal) ||
-            string.Equals(targetName, LythonKnownCallableSignatures.PkgutilResolveName.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Pkgutil.FindLoader.Name, StringComparison.Ordinal) ||
+            string.Equals(targetName, LythonKnownCallableSignatures.Pkgutil.ResolveName.Name, StringComparison.Ordinal))
         {
             var owner = targetName.EndsWith("resolve_name", StringComparison.Ordinal) ? "pkgutil.resolve_name" : "pkgutil.find_loader";
             return AnalyzeStringArgument(arguments, 0, targetName.EndsWith("resolve_name", StringComparison.Ordinal) ? "name" : "fullname", $"{owner}(...) expects a module name string.", diagnostics, bindings);
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.PkgutilGetLoader.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Pkgutil.GetLoader.Name, StringComparison.Ordinal))
         {
             return AnalyzeArgument(
                 arguments,
@@ -130,20 +130,20 @@ internal static partial class StaticDataModuleContractFamily
                 static value => value.IsStringLike || value.Kind == AbstractValueKind.Module);
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.PkgutilGetData.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Pkgutil.GetData.Name, StringComparison.Ordinal))
         {
             var emitted = AnalyzeStringArgument(arguments, 0, "package", "pkgutil.get_data(package, resource) expects a string package name.", diagnostics, bindings);
             emitted |= AnalyzeStringArgument(arguments, 1, "resource", "pkgutil.get_data(package, resource) expects a string resource name.", diagnostics, bindings);
             return emitted;
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.PkgutilIterImporters.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Pkgutil.IterImporters.Name, StringComparison.Ordinal))
         {
             return AnalyzeStringArgument(arguments, 0, "fullname", "pkgutil.iter_importers([fullname]) expects a module name string.", diagnostics, bindings);
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.PkgutilIterImporterModules.Name, StringComparison.Ordinal) ||
-            string.Equals(targetName, LythonKnownCallableSignatures.PkgutilIterZipimportModules.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Pkgutil.IterImporterModules.Name, StringComparison.Ordinal) ||
+            string.Equals(targetName, LythonKnownCallableSignatures.Pkgutil.IterZipimportModules.Name, StringComparison.Ordinal))
         {
             return AnalyzeStringArgument(arguments, 1, "prefix", "pkgutil importer helpers expect prefix to be a string.", diagnostics, bindings);
         }

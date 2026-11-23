@@ -25,18 +25,18 @@ internal static class StaticProcessContractFamily
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
     {
-        if (string.Equals(targetName, LythonKnownCallableSignatures.SubprocessCompletedProcess.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Subprocess.CompletedProcess.Name, StringComparison.Ordinal))
         {
             var completedProcessEmitted = AnalyzeIntegerArgument(arguments, 1, "returncode", "subprocess.CompletedProcess(..., returncode=...) expects an integer.", diagnostics, bindings);
             return completedProcessEmitted;
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.SubprocessList2Cmdline.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Subprocess.List2Cmdline.Name, StringComparison.Ordinal))
         {
             return AnalyzeIterableOfStringsArgument(arguments, 0, "seq", "subprocess.list2cmdline(seq) expects an iterable of strings.", diagnostics, bindings, rejectSingleString: true);
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.SubprocessPopen.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Subprocess.Popen.Name, StringComparison.Ordinal))
         {
             return AnalyzePopenArguments(arguments, diagnostics, bindings);
         }
@@ -145,10 +145,10 @@ internal static class StaticProcessContractFamily
     }
 
     private static bool IsSubprocessKnownCall(string targetName)
-        => string.Equals(targetName, LythonKnownCallableSignatures.SubprocessRun.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.SubprocessCall.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.SubprocessCheckCall.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.SubprocessCheckOutput.Name, StringComparison.Ordinal);
+        => string.Equals(targetName, LythonKnownCallableSignatures.Subprocess.Run.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Subprocess.Call.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Subprocess.CheckCall.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Subprocess.CheckOutput.Name, StringComparison.Ordinal);
 
     private static bool AnalyzePopenArguments(
         ConcreteCallArguments arguments,

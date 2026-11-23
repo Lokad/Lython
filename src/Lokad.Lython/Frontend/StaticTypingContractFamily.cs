@@ -11,7 +11,7 @@ internal static class StaticTypingContractFamily
         LythonSourceSpan span,
         out AbstractValue value)
     {
-        if (string.Equals(targetName, LythonKnownCallableSignatures.TypingCast.Name, StringComparison.Ordinal) &&
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Typing.Cast.Name, StringComparison.Ordinal) &&
             arguments.TryGetValue(1, "val", out var valueExpression))
         {
             value = StaticAbstractValueResolver.TryResolve(valueExpression, bindings, out var resolved)

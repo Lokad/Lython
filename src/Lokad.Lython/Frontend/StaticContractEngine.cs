@@ -219,22 +219,15 @@ internal static class StaticContractEngine
             return false;
         }
 
-        if (StaticDataclassContractFamily.TryResolveKnownCallReturn(targetName, arguments, bindings, call.Span, out value))
+        switch (StaticContracts.KnownCallModule(targetName))
         {
-            return true;
+            case "dataclasses" when StaticDataclassContractFamily.TryResolveKnownCallReturn(targetName, arguments, bindings, call.Span, out value):
+            case "re" when StaticRegexReturnResolver.TryResolveKnownCallReturn(targetName, arguments, bindings, call.Span, out value):
+            case "typing" when StaticTypingContractFamily.TryResolveKnownCallReturn(targetName, arguments, bindings, call.Span, out value):
+                return true;
+            default:
+                return StaticContracts.TryGetKnownCallReturn(contract, call.Span, out value);
         }
-
-        if (StaticRegexReturnResolver.TryResolveKnownCallReturn(targetName, arguments, bindings, call.Span, out value))
-        {
-            return true;
-        }
-
-        if (StaticTypingContractFamily.TryResolveKnownCallReturn(targetName, arguments, bindings, call.Span, out value))
-        {
-            return true;
-        }
-
-        return StaticContracts.TryGetKnownCallReturn(targetName, call.Span, out value);
     }
 
     public static bool TryResolveKnownCallableTarget(ExpressionSyntax target, AbstractState bindings, out string targetName)
@@ -256,29 +249,27 @@ internal static class StaticContractEngine
         ConcreteCallArguments arguments,
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
-    {
-        var emitted = false;
-        emitted |= StaticDataclassContractFamily.AnalyzeKnownCallSemanticContract(targetName, call, arguments, diagnostics, bindings);
-        emitted |= AnalyzeKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings);
-        return emitted;
-    }
-
-    private static bool AnalyzeKnownCallArgumentTypes(
-        string targetName,
-        ConcreteCallArguments arguments,
-        List<LythonDiagnostic> diagnostics,
-        AbstractState bindings)
-    {
-        var emitted = false;
-        emitted |= StaticDataModuleContractFamily.AnalyzeKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings);
-        emitted |= StaticRegexArgumentContracts.AnalyzeKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings);
-        emitted |= StaticArgparseContractFamily.AnalyzeKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings);
-        emitted |= StaticProcessContractFamily.AnalyzeKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings);
-        emitted |= StaticFilesystemContractFamily.AnalyzeKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings);
-        emitted |= StaticMathContractFamily.AnalyzeKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings);
-        emitted |= StaticStatisticsContractFamily.AnalyzeKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings);
-        return emitted;
-    }
+        => StaticContracts.KnownCallModule(targetName) switch
+        {
+            "dataclasses" => StaticDataclassContractFamily.AnalyzeKnownCallSemanticContract(targetName, call, arguments, diagnostics, bindings),
+            "json" => StaticDataModuleContractFamily.AnalyzeJsonKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings),
+            "csv" => StaticDataModuleContractFamily.AnalyzeCsvKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings),
+            "copy" => StaticDataModuleContractFamily.AnalyzeCopyKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings),
+            "random" => StaticDataModuleContractFamily.AnalyzeRandomKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings),
+            "difflib" => StaticDataModuleContractFamily.AnalyzeDifflibKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings),
+            "pkgutil" => StaticDataModuleContractFamily.AnalyzePkgutilKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings),
+            "re" => StaticRegexArgumentContracts.AnalyzeKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings),
+            "argparse" => StaticArgparseContractFamily.AnalyzeKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings),
+            "subprocess" => StaticProcessContractFamily.AnalyzeKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings),
+            "pathlib" => StaticFilesystemContractFamily.AnalyzePathlibKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings),
+            "os" => StaticFilesystemContractFamily.AnalyzeOsKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings),
+            "shutil" => StaticFilesystemContractFamily.AnalyzeShutilKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings),
+            "glob" => StaticFilesystemContractFamily.AnalyzeGlobKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings),
+            "fnmatch" => StaticFilesystemContractFamily.AnalyzeFnmatchKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings),
+            "math" => StaticMathContractFamily.AnalyzeKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings),
+            "statistics" => StaticStatisticsContractFamily.AnalyzeKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings),
+            _ => false,
+        };
 
     private static bool TryResolveDictionaryMemberCallReturn(CallExpressionSyntax call, AbstractState bindings, out AbstractValue value)
     {

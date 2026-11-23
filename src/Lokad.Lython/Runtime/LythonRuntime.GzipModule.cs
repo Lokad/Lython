@@ -28,10 +28,10 @@ internal sealed partial class LythonRuntime
             {
                 "open" => GzipOpenCallable.Instance,
                 "GzipFile" => GzipFileClass.Instance,
-                "compress" => BuiltinCallable.CreateWithPresence(LythonKnownCallableSignatures.GzipCompress,
+                "compress" => BuiltinCallable.CreateWithPresence(LythonKnownCallableSignatures.Gzip.Compress,
                     (args, span, context) => CompressAsync(args, span, context, false).GetAwaiter().GetResult(),
                     (args, span, context) => CompressAsync(args, span, context, true)),
-                "decompress" => BuiltinCallable.Create(LythonKnownCallableSignatures.GzipDecompress, Decompress),
+                "decompress" => BuiltinCallable.Create(LythonKnownCallableSignatures.Gzip.Decompress, Decompress),
                 "BadGzipFile" => BadGzipType,
                 _ => MissingMemberValue.Instance,
             };
@@ -163,7 +163,7 @@ internal sealed partial class LythonRuntime
     private sealed class GzipOpenCallable : BoundArgumentsCallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue
     {
         internal static readonly GzipOpenCallable Instance = new();
-        private GzipOpenCallable() : base(LythonKnownCallableSignatures.GzipOpen, PythonCallableKind.Builtin) { }
+        private GzipOpenCallable() : base(LythonKnownCallableSignatures.Gzip.Open, PythonCallableKind.Builtin) { }
         public string Name => "gzip.open";
         protected override bool PreservePresence => true;
         protected override object InvokeBound(object[] args, LythonSourceSpan span, ExecutionContext context)

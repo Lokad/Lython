@@ -16,13 +16,13 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "glob" => BuiltinCallable.Create(LythonKnownCallableSignatures.Glob, Glob, GlobAsync),
-                "iglob" => BuiltinCallable.Create(LythonKnownCallableSignatures.IGlob, IGlob, IGlobAsync),
-                "escape" => BuiltinCallable.Create(LythonKnownCallableSignatures.GlobEscape, Escape, EscapeAsync),
-                "has_magic" => BuiltinCallable.Create(LythonKnownCallableSignatures.GlobHasMagic, HasMagic, HasMagicAsync),
-                "translate" => BuiltinCallable.Create(LythonKnownCallableSignatures.GlobTranslate, Translate, TranslateAsync),
-                "glob0" => BuiltinCallable.Create(LythonKnownCallableSignatures.Glob0, UnsupportedGlobInternal),
-                "glob1" => BuiltinCallable.Create(LythonKnownCallableSignatures.Glob1, UnsupportedGlobInternal),
+                "glob" => BuiltinCallable.Create(LythonKnownCallableSignatures.Glob.Find, Glob, GlobAsync),
+                "iglob" => BuiltinCallable.Create(LythonKnownCallableSignatures.Glob.IGlob, IGlob, IGlobAsync),
+                "escape" => BuiltinCallable.Create(LythonKnownCallableSignatures.Glob.Escape, Escape, EscapeAsync),
+                "has_magic" => BuiltinCallable.Create(LythonKnownCallableSignatures.Glob.HasMagic, HasMagic, HasMagicAsync),
+                "translate" => BuiltinCallable.Create(LythonKnownCallableSignatures.Glob.Translate, Translate, TranslateAsync),
+                "glob0" => BuiltinCallable.Create(LythonKnownCallableSignatures.Glob.Glob0, UnsupportedGlobInternal),
+                "glob1" => BuiltinCallable.Create(LythonKnownCallableSignatures.Glob.Glob1, UnsupportedGlobInternal),
                 _ => MissingMemberValue.Instance,
             };
 

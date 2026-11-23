@@ -14,16 +14,16 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "iter_modules" => BuiltinCallable.CreateWithPresence(LythonKnownCallableSignatures.PkgutilIterModules,
+                "iter_modules" => BuiltinCallable.CreateWithPresence(LythonKnownCallableSignatures.Pkgutil.IterModules,
                     (a, s, c) => Discover(a, s, c, false), (a, s, c) => ValueTask.FromResult(Discover(a, s, c, false))),
-                "walk_packages" => BuiltinCallable.CreateWithPresence(LythonKnownCallableSignatures.PkgutilWalkPackages,
+                "walk_packages" => BuiltinCallable.CreateWithPresence(LythonKnownCallableSignatures.Pkgutil.WalkPackages,
                     (a, s, c) => Discover(a, s, c, true), (a, s, c) => ValueTask.FromResult(Discover(a, s, c, true))),
-                "find_loader" => BuiltinCallable.Create(LythonKnownCallableSignatures.PkgutilFindLoader,
+                "find_loader" => BuiltinCallable.Create(LythonKnownCallableSignatures.Pkgutil.FindLoader,
                     (a, s, c) => FindLoader(a, s, c, false).GetAwaiter().GetResult(), (a, s, c) => FindLoader(a, s, c, true)),
-                "get_loader" => BuiltinCallable.Create(LythonKnownCallableSignatures.PkgutilGetLoader,
+                "get_loader" => BuiltinCallable.Create(LythonKnownCallableSignatures.Pkgutil.GetLoader,
                     (a, s, c) => GetLoader(a, s, c, false).GetAwaiter().GetResult(), (a, s, c) => GetLoader(a, s, c, true)),
-                "extend_path" => BuiltinCallable.Create(LythonKnownCallableSignatures.PkgutilExtendPath, ExtendPath),
-                "resolve_name" => BuiltinCallable.Create(LythonKnownCallableSignatures.PkgutilResolveName,
+                "extend_path" => BuiltinCallable.Create(LythonKnownCallableSignatures.Pkgutil.ExtendPath, ExtendPath),
+                "resolve_name" => BuiltinCallable.Create(LythonKnownCallableSignatures.Pkgutil.ResolveName,
                     (a, s, c) => ResolveName(a, s, c, false).GetAwaiter().GetResult(), (a, s, c) => ResolveName(a, s, c, true)),
                 "get_importer" or "iter_importers" or "iter_importer_modules" or "iter_zipimport_modules" or "get_data" or "read_code"
                     => BuiltinCallable.CreateUnsupported("pkgutil." + name),

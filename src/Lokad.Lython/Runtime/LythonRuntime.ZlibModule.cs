@@ -53,7 +53,7 @@ internal sealed partial class LythonRuntime
             internal static readonly ZlibCallable Decompress = new(false);
             private readonly bool _compress;
             private ZlibCallable(bool compress)
-                : base(compress ? LythonKnownCallableSignatures.ZlibCompress : LythonKnownCallableSignatures.ZlibDecompress,
+                : base(compress ? LythonKnownCallableSignatures.Zlib.Compress : LythonKnownCallableSignatures.Zlib.Decompress,
                        PythonCallableKind.Builtin) => _compress = compress;
             public string Name => Signature.Name;
             public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)

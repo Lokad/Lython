@@ -12,7 +12,7 @@ internal sealed partial class LythonRuntime
     {
         private static object CreateRandom(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            var bound = CallBinder.BindNamedArguments(arguments, span, LythonKnownCallableSignatures.RandomClass, PythonCallableKind.Builtin);
+            var bound = CallBinder.BindNamedArguments(arguments, span, LythonKnownCallableSignatures.Random.Class, PythonCallableKind.Builtin);
             var state = new PyRandomState();
             if (bound.Length >= 1 && bound[0] is not PyNone)
             {

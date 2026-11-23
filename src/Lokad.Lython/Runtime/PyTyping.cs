@@ -169,7 +169,7 @@ internal static class PyTyping
     public static object NewType(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         context.CheckExecution(span);
-        var bound = CallBinder.BindNamedArguments(arguments, span, LythonKnownCallableSignatures.TypingNewType, PythonCallableKind.Function);
+        var bound = CallBinder.BindNamedArguments(arguments, span, LythonKnownCallableSignatures.Typing.NewType, PythonCallableKind.Function);
         if (!PyStringOps.TryAsString(bound[0], out var name))
         {
             throw new LythonRuntimeException("TypeError", "typing.NewType(name, tp) expects a string name and a base type.", span);

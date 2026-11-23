@@ -192,9 +192,9 @@ internal sealed partial class LythonRuntime
             if (encoder.Attributes is not null && encoder.Attributes.TryGetValue(name, out value!)) return true;
             value = name switch
             {
-                "encode" => BoundCallable.Create(encoder.Encode, LythonKnownCallableSignatures.JsonEncoderEncode, encoder.EncodeAsync),
-                "iterencode" => BoundCallable.Create(encoder.IterEncode, LythonKnownCallableSignatures.JsonEncoderIterencode, encoder.IterEncodeAsync),
-                "default" => BoundCallable.Create(JsonEncoderObject.Default, LythonKnownCallableSignatures.JsonEncoderDefault),
+                "encode" => BoundCallable.Create(encoder.Encode, LythonKnownCallableSignatures.Json.EncoderEncode, encoder.EncodeAsync),
+                "iterencode" => BoundCallable.Create(encoder.IterEncode, LythonKnownCallableSignatures.Json.EncoderIterencode, encoder.IterEncodeAsync),
+                "default" => BoundCallable.Create(JsonEncoderObject.Default, LythonKnownCallableSignatures.Json.EncoderDefault),
                 "item_separator" => JsonDumpOptions.Default.ItemSeparator,
                 "key_separator" => JsonDumpOptions.Default.KeySeparator,
                 _ => MissingMemberValue.Instance

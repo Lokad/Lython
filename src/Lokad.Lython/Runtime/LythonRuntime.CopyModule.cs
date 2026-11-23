@@ -18,8 +18,8 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "copy" => BuiltinCallable.Create(LythonKnownCallableSignatures.CopyCopy, ShallowCopy, ShallowCopyAsync),
-                "deepcopy" => BuiltinCallable.Create(LythonKnownCallableSignatures.CopyDeepCopy, DeepCopy, DeepCopyAsync),
+                "copy" => BuiltinCallable.Create(LythonKnownCallableSignatures.Copy.CopyCopy, ShallowCopy, ShallowCopyAsync),
+                "deepcopy" => BuiltinCallable.Create(LythonKnownCallableSignatures.Copy.DeepCopy, DeepCopy, DeepCopyAsync),
                 "replace" => CopyReplaceCallable.Instance,
                 "Error" or "error" => CopyError,
                 _ => MissingMemberValue.Instance,

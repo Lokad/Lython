@@ -31,8 +31,8 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "Workbook" => BuiltinCallable.Create(LythonKnownCallableSignatures.OpenPyxlWorkbook, Workbook),
-                "load_workbook" => BuiltinCallable.Create(LythonKnownCallableSignatures.OpenPyxlLoadWorkbook, LoadWorkbook, LoadWorkbookAsync),
+                "Workbook" => BuiltinCallable.Create(LythonKnownCallableSignatures.OpenPyxl.Workbook, Workbook),
+                "load_workbook" => BuiltinCallable.Create(LythonKnownCallableSignatures.OpenPyxl.LoadWorkbook, LoadWorkbook, LoadWorkbookAsync),
                 "__version__" => PyString.FromString("3.1.0+lython.0"),
                 "utils" => OpenPyxlUtilsModule.Instance,
                 "workbook" => OpenPyxlWorkbookModule.Instance,
@@ -220,12 +220,12 @@ internal sealed partial class LythonRuntime
         private OpenPyxlChartModule()
             : base("openpyxl.chart", new Dictionary<string, object>
             {
-                ["BarChart"] = BuiltinCallable.Create(LythonKnownCallableSignatures.OpenPyxlBarChart, (arguments, span, context) => CreateChart(OpenPyxlChartKind.BarChart, arguments, span, context)),
-                ["LineChart"] = BuiltinCallable.Create(LythonKnownCallableSignatures.OpenPyxlLineChart, (arguments, span, context) => CreateChart(OpenPyxlChartKind.LineChart, arguments, span, context)),
-                ["PieChart"] = BuiltinCallable.Create(LythonKnownCallableSignatures.OpenPyxlPieChart, (arguments, span, context) => CreateChart(OpenPyxlChartKind.PieChart, arguments, span, context)),
-                ["ScatterChart"] = BuiltinCallable.Create(LythonKnownCallableSignatures.OpenPyxlScatterChart, (arguments, span, context) => CreateChart(OpenPyxlChartKind.ScatterChart, arguments, span, context)),
-                ["Reference"] = BuiltinCallable.Create(LythonKnownCallableSignatures.OpenPyxlChartReference, CreateChartReference),
-                ["Series"] = BuiltinCallable.Create(LythonKnownCallableSignatures.OpenPyxlChartSeries, CreateChartSeries),
+                ["BarChart"] = BuiltinCallable.Create(LythonKnownCallableSignatures.OpenPyxl.BarChart, (arguments, span, context) => CreateChart(OpenPyxlChartKind.BarChart, arguments, span, context)),
+                ["LineChart"] = BuiltinCallable.Create(LythonKnownCallableSignatures.OpenPyxl.LineChart, (arguments, span, context) => CreateChart(OpenPyxlChartKind.LineChart, arguments, span, context)),
+                ["PieChart"] = BuiltinCallable.Create(LythonKnownCallableSignatures.OpenPyxl.PieChart, (arguments, span, context) => CreateChart(OpenPyxlChartKind.PieChart, arguments, span, context)),
+                ["ScatterChart"] = BuiltinCallable.Create(LythonKnownCallableSignatures.OpenPyxl.ScatterChart, (arguments, span, context) => CreateChart(OpenPyxlChartKind.ScatterChart, arguments, span, context)),
+                ["Reference"] = BuiltinCallable.Create(LythonKnownCallableSignatures.OpenPyxl.ChartReference, CreateChartReference),
+                ["Series"] = BuiltinCallable.Create(LythonKnownCallableSignatures.OpenPyxl.ChartSeries, CreateChartSeries),
             })
         {
         }
@@ -277,7 +277,7 @@ internal sealed partial class LythonRuntime
         private OpenPyxlDrawingImageModule()
             : base("openpyxl.drawing.image", new Dictionary<string, object>
             {
-                ["Image"] = BuiltinCallable.Create(LythonKnownCallableSignatures.OpenPyxlDrawingImage, CreateImage),
+                ["Image"] = BuiltinCallable.Create(LythonKnownCallableSignatures.OpenPyxl.DrawingImage, CreateImage),
             })
         {
         }

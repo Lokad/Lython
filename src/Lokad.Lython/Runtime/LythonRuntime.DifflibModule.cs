@@ -32,18 +32,18 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "IS_LINE_JUNK" => BuiltinCallable.Create(LythonKnownCallableSignatures.DifflibIsLineJunk, IsLineJunk),
-                "IS_CHARACTER_JUNK" => BuiltinCallable.Create(LythonKnownCallableSignatures.DifflibIsCharacterJunk, IsCharacterJunk),
-                "unified_diff" => BuiltinCallable.CreateWithPresence(LythonKnownCallableSignatures.DifflibUnifiedDiff, UnifiedDiff, static (args, span, context) => new(UnifiedDiff(args, span, context))),
-                "context_diff" => BuiltinCallable.CreateWithPresence(LythonKnownCallableSignatures.DifflibContextDiff, ContextDiff, static (args, span, context) => new(ContextDiff(args, span, context))),
-                "ndiff" => BuiltinCallable.Create(LythonKnownCallableSignatures.DifflibNdiff, Ndiff),
-                "restore" => BuiltinCallable.Create(LythonKnownCallableSignatures.DifflibRestore, Restore),
-                "get_close_matches" => BuiltinCallable.CreateWithPresence(LythonKnownCallableSignatures.DifflibGetCloseMatches, GetCloseMatches, static (args, span, context) => new(GetCloseMatches(args, span, context))),
-                "diff_bytes" => BuiltinCallable.CreateWithPresence(LythonKnownCallableSignatures.DifflibDiffBytes, DiffBytes, static (args, span, context) => new(DiffBytes(args, span, context))),
-                "Differ" => BuiltinCallable.Create(LythonKnownCallableSignatures.DifflibDiffer, Differ),
-                "HtmlDiff" => BuiltinCallable.Create(LythonKnownCallableSignatures.DifflibHtmlDiff, HtmlDiff),
+                "IS_LINE_JUNK" => BuiltinCallable.Create(LythonKnownCallableSignatures.Difflib.IsLineJunk, IsLineJunk),
+                "IS_CHARACTER_JUNK" => BuiltinCallable.Create(LythonKnownCallableSignatures.Difflib.IsCharacterJunk, IsCharacterJunk),
+                "unified_diff" => BuiltinCallable.CreateWithPresence(LythonKnownCallableSignatures.Difflib.UnifiedDiff, UnifiedDiff, static (args, span, context) => new(UnifiedDiff(args, span, context))),
+                "context_diff" => BuiltinCallable.CreateWithPresence(LythonKnownCallableSignatures.Difflib.ContextDiff, ContextDiff, static (args, span, context) => new(ContextDiff(args, span, context))),
+                "ndiff" => BuiltinCallable.Create(LythonKnownCallableSignatures.Difflib.Ndiff, Ndiff),
+                "restore" => BuiltinCallable.Create(LythonKnownCallableSignatures.Difflib.Restore, Restore),
+                "get_close_matches" => BuiltinCallable.CreateWithPresence(LythonKnownCallableSignatures.Difflib.GetCloseMatches, GetCloseMatches, static (args, span, context) => new(GetCloseMatches(args, span, context))),
+                "diff_bytes" => BuiltinCallable.CreateWithPresence(LythonKnownCallableSignatures.Difflib.DiffBytes, DiffBytes, static (args, span, context) => new(DiffBytes(args, span, context))),
+                "Differ" => BuiltinCallable.Create(LythonKnownCallableSignatures.Difflib.Differ, Differ),
+                "HtmlDiff" => BuiltinCallable.Create(LythonKnownCallableSignatures.Difflib.HtmlDiff, HtmlDiff),
                 "Match" => _matchType,
-                "SequenceMatcher" => BuiltinCallable.CreateWithPresence(LythonKnownCallableSignatures.DifflibSequenceMatcher, SequenceMatcher, SequenceMatcherAsync),
+                "SequenceMatcher" => BuiltinCallable.CreateWithPresence(LythonKnownCallableSignatures.Difflib.SequenceMatcher, SequenceMatcher, SequenceMatcherAsync),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -470,7 +470,7 @@ internal sealed partial class LythonRuntime
         }
 
         private static BuiltinCallable DefaultCharacterJunkCallable()
-            => BuiltinCallable.Create(LythonKnownCallableSignatures.DifflibIsCharacterJunk, IsCharacterJunk);
+            => BuiltinCallable.Create(LythonKnownCallableSignatures.Difflib.IsCharacterJunk, IsCharacterJunk);
 
         internal static async ValueTask<bool> CallJunkPredicateAsync(object predicate, object argument,
             LythonSourceSpan span, ExecutionContext context, bool asynchronous)

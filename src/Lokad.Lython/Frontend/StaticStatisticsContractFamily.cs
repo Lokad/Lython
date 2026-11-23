@@ -12,7 +12,7 @@ internal static class StaticStatisticsContractFamily
         AbstractState bindings)
     {
         var emitted = false;
-        if (string.Equals(targetName, LythonKnownCallableSignatures.StatisticsFMean.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Statistics.FMean.Name, StringComparison.Ordinal))
         {
             emitted |= AnalyzeIterableArgument(arguments, 0, "data", "statistics.fmean(data, weights=None) expects iterable data.", diagnostics, bindings);
             emitted |= AnalyzeIterableOrNoneArgument(arguments, 1, "weights", "statistics.fmean(..., weights=...) expects an iterable or None.", diagnostics, bindings);
@@ -31,21 +31,21 @@ internal static class StaticStatisticsContractFamily
             return AnalyzeIterableArgument(arguments, 0, "data", $"{targetName}(data) expects an iterable.", diagnostics, bindings);
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.StatisticsHarmonicMean.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Statistics.HarmonicMean.Name, StringComparison.Ordinal))
         {
             emitted |= AnalyzeIterableArgument(arguments, 0, "data", "statistics.harmonic_mean(data, *, weights=None) expects iterable data.", diagnostics, bindings);
             emitted |= AnalyzeIterableOrNoneArgument(arguments, 1, "weights", "statistics.harmonic_mean(..., weights=...) expects an iterable or None.", diagnostics, bindings);
             return emitted;
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.StatisticsMedianGrouped.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Statistics.MedianGrouped.Name, StringComparison.Ordinal))
         {
             emitted |= AnalyzeIterableArgument(arguments, 0, "data", "statistics.median_grouped(data[, interval]) expects iterable data.", diagnostics, bindings);
             emitted |= AnalyzeRealArgument(arguments, 1, "interval", "statistics.median_grouped(..., interval=...) expects a real number.", diagnostics, bindings);
             return emitted;
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.StatisticsQuantiles.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Statistics.Quantiles.Name, StringComparison.Ordinal))
         {
             emitted |= AnalyzeIterableArgument(arguments, 0, "data", "statistics.quantiles(data, *, n=4, method='exclusive') expects iterable data.", diagnostics, bindings);
             emitted |= AnalyzeIntegerArgument(arguments, 1, "n", "statistics.quantiles(..., n=...) expects an integer.", diagnostics, bindings);
@@ -57,7 +57,7 @@ internal static class StaticStatisticsContractFamily
         {
             emitted |= AnalyzeIterableArgument(arguments, 0, "x", $"{targetName}(x, y) expects iterable inputs.", diagnostics, bindings);
             emitted |= AnalyzeIterableArgument(arguments, 1, "y", $"{targetName}(x, y) expects iterable inputs.", diagnostics, bindings);
-            if (string.Equals(targetName, LythonKnownCallableSignatures.StatisticsLinearRegression.Name, StringComparison.Ordinal))
+            if (string.Equals(targetName, LythonKnownCallableSignatures.Statistics.LinearRegression.Name, StringComparison.Ordinal))
             {
                 emitted |= AnalyzeBooleanArgument(arguments, 2, "proportional", "statistics.linear_regression(..., proportional=...) expects a bool.", diagnostics, bindings);
             }
@@ -65,7 +65,7 @@ internal static class StaticStatisticsContractFamily
             return emitted;
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.StatisticsNormalDistFromSamples.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Statistics.NormalDistFromSamples.Name, StringComparison.Ordinal))
         {
             return AnalyzeIterableArgument(arguments, 0, "data", "statistics.NormalDist.from_samples(data) expects an iterable.", diagnostics, bindings);
         }
@@ -74,25 +74,25 @@ internal static class StaticStatisticsContractFamily
     }
 
     private static bool IsSingleDataCall(string targetName)
-        => string.Equals(targetName, LythonKnownCallableSignatures.StatisticsMean.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.StatisticsGeometricMean.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.StatisticsMedian.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.StatisticsMedianLow.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.StatisticsMedianHigh.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.StatisticsMode.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.StatisticsMultiMode.Name, StringComparison.Ordinal);
+        => string.Equals(targetName, LythonKnownCallableSignatures.Statistics.Mean.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Statistics.GeometricMean.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Statistics.Median.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Statistics.MedianLow.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Statistics.MedianHigh.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Statistics.Mode.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Statistics.MultiMode.Name, StringComparison.Ordinal);
 
     private static bool IsVarianceCall(string targetName, out string centerName)
     {
-        if (string.Equals(targetName, LythonKnownCallableSignatures.StatisticsPStdev.Name, StringComparison.Ordinal) ||
-            string.Equals(targetName, LythonKnownCallableSignatures.StatisticsPVariance.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Statistics.PStdev.Name, StringComparison.Ordinal) ||
+            string.Equals(targetName, LythonKnownCallableSignatures.Statistics.PVariance.Name, StringComparison.Ordinal))
         {
             centerName = "mu";
             return true;
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.StatisticsStdev.Name, StringComparison.Ordinal) ||
-            string.Equals(targetName, LythonKnownCallableSignatures.StatisticsVariance.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Statistics.Stdev.Name, StringComparison.Ordinal) ||
+            string.Equals(targetName, LythonKnownCallableSignatures.Statistics.Variance.Name, StringComparison.Ordinal))
         {
             centerName = "xbar";
             return true;
@@ -103,7 +103,7 @@ internal static class StaticStatisticsContractFamily
     }
 
     private static bool IsPairedDataCall(string targetName)
-        => string.Equals(targetName, LythonKnownCallableSignatures.StatisticsCovariance.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.StatisticsCorrelation.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.StatisticsLinearRegression.Name, StringComparison.Ordinal);
+        => string.Equals(targetName, LythonKnownCallableSignatures.Statistics.Covariance.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Statistics.Correlation.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.Statistics.LinearRegression.Name, StringComparison.Ordinal);
 }

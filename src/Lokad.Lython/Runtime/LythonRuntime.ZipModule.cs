@@ -69,7 +69,7 @@ internal sealed partial class LythonRuntime
         private static async ValueTask<object> InvokeCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             context.CheckExecution(span);
-            var bound = CallBinder.BindNamedArgumentsWithPresence(arguments, span, LythonKnownCallableSignatures.ZipIsZipFile, PythonCallableKind.Builtin);
+            var bound = CallBinder.BindNamedArgumentsWithPresence(arguments, span, LythonKnownCallableSignatures.Zipfile.ZipIsZipFile, PythonCallableKind.Builtin);
             using var scratch = context.MemoryGovernor.ReserveTemporary(256L, span);
             var path = asynchronous ? await GetPathAsync(bound.Values[0], "zipfile.is_zipfile()", span, context, scratch).ConfigureAwait(false)
                 : GetPath(bound.Values[0], "zipfile.is_zipfile()", span, context, scratch);
@@ -161,7 +161,7 @@ internal sealed partial class LythonRuntime
         {
             context.CheckExecution(span);
             var bound = CallBinder.BindNamedArgumentsWithPresence(
-                arguments, span, LythonKnownCallableSignatures.ZipInfo, PythonCallableKind.Builtin);
+                arguments, span, LythonKnownCallableSignatures.Zipfile.ZipInfo, PythonCallableKind.Builtin);
             var filename = bound.Assigned.Length > 0 && bound.Assigned[0]
                 ? PyZipInfo.RequireZipString(bound.Values[0], "ZipInfo filename", span)
                 : PyString.FromString("NoName", context.MemoryGovernor, span);
@@ -266,7 +266,7 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<ZipOpenRequest> ParseZipFileArgumentsAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
     {
         var bound = CallBinder.BindNamedArgumentsWithPresence(
-            arguments, span, LythonKnownCallableSignatures.ZipFile, PythonCallableKind.Builtin);
+            arguments, span, LythonKnownCallableSignatures.Zipfile.ZipFile, PythonCallableKind.Builtin);
         var values = bound.Values;
         bool IsAssigned(int index) => index < bound.Assigned.Length && bound.Assigned[index];
 

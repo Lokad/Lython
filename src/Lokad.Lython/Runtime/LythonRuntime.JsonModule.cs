@@ -24,10 +24,10 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "load" => new JsonModuleCallable(LythonKnownCallableSignatures.JsonLoad, Load, LoadAsync),
-                "loads" => new JsonModuleCallable(LythonKnownCallableSignatures.JsonLoads, Loads, LoadsAsync),
-                "dump" => new JsonModuleCallable(LythonKnownCallableSignatures.JsonDump, Dump, DumpAsync),
-                "dumps" => new JsonModuleCallable(LythonKnownCallableSignatures.JsonDumps, Dumps, DumpsAsync),
+                "load" => new JsonModuleCallable(LythonKnownCallableSignatures.Json.Load, Load, LoadAsync),
+                "loads" => new JsonModuleCallable(LythonKnownCallableSignatures.Json.Loads, Loads, LoadsAsync),
+                "dump" => new JsonModuleCallable(LythonKnownCallableSignatures.Json.Dump, Dump, DumpAsync),
+                "dumps" => new JsonModuleCallable(LythonKnownCallableSignatures.Json.Dumps, Dumps, DumpsAsync),
                 "JSONDecodeError" => new ExceptionTypeValue(ModuleException("json", "JSONDecodeError")),
                 "JSONEncoder" => JsonEncoderClass.Instance,
                 "JSONDecoder" => JsonDecoderClass.Instance,
@@ -69,11 +69,11 @@ internal sealed partial class LythonRuntime
             public object InvokeBorrowed(ReadOnlySpan<CallArgumentValue> arguments, LythonSourceSpan span, ExecutionContext context)
             {
                 context.CheckExecution(span);
-                if (IsDefaultCall(arguments, LythonKnownCallableSignatures.JsonLoads))
+                if (IsDefaultCall(arguments, LythonKnownCallableSignatures.Json.Loads))
                 {
                     return Instance.LoadsDefault(arguments[0].Value, span, context, asynchronous: false).GetAwaiter().GetResult();
                 }
-                if (IsDefaultCall(arguments, LythonKnownCallableSignatures.JsonDumps))
+                if (IsDefaultCall(arguments, LythonKnownCallableSignatures.Json.Dumps))
                 {
                     return Instance.DumpsDefault(arguments[0].Value, span, context, asynchronous: false).GetAwaiter().GetResult();
                 }
@@ -87,11 +87,11 @@ internal sealed partial class LythonRuntime
             public ValueTask<object> InvokeBorrowedAsync(ReadOnlySpan<CallArgumentValue> arguments, LythonSourceSpan span, ExecutionContext context)
             {
                 context.CheckExecution(span);
-                if (IsDefaultCall(arguments, LythonKnownCallableSignatures.JsonLoads))
+                if (IsDefaultCall(arguments, LythonKnownCallableSignatures.Json.Loads))
                 {
                     return Instance.LoadsDefault(arguments[0].Value, span, context, asynchronous: true);
                 }
-                if (IsDefaultCall(arguments, LythonKnownCallableSignatures.JsonDumps))
+                if (IsDefaultCall(arguments, LythonKnownCallableSignatures.Json.Dumps))
                 {
                     return Instance.DumpsDefault(arguments[0].Value, span, context, asynchronous: true);
                 }

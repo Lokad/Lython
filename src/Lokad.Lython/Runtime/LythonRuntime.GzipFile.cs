@@ -52,7 +52,7 @@ internal sealed partial class LythonRuntime
         IPyDynamicAttributes, IPyRenderableValue
     {
         internal static readonly GzipFileClass Instance = new();
-        private GzipFileClass() : base(LythonKnownCallableSignatures.GzipFile, PythonCallableKind.Builtin) { }
+        private GzipFileClass() : base(LythonKnownCallableSignatures.Gzip.File, PythonCallableKind.Builtin) { }
         public string Name => "gzip.GzipFile";
         protected override bool PreservePresence => true;
         protected override object InvokeBound(object[] arguments, LythonSourceSpan span, ExecutionContext context)

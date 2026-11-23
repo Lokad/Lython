@@ -23,11 +23,11 @@ internal sealed partial class LythonRuntime
             value = name switch
             {
                 "import_module" => BuiltinCallable.Create(
-                    LythonKnownCallableSignatures.ImportlibImportModule,
+                    LythonKnownCallableSignatures.Importlib.ImportModule,
                     ImportModule,
                     ImportModuleAsync),
                 "invalidate_caches" => BuiltinCallable.Create(
-                    LythonKnownCallableSignatures.ImportlibInvalidateCaches,
+                    LythonKnownCallableSignatures.Importlib.InvalidateCaches,
                     InvalidateCaches),
                 "util" => ImportlibUtilModule.Instance,
                 _ => MissingMemberValue.Instance,
@@ -86,20 +86,20 @@ internal sealed partial class LythonRuntime
             value = name switch
             {
                 "find_spec" => BuiltinCallable.Create(
-                    LythonKnownCallableSignatures.ImportlibUtilFindSpec,
+                    LythonKnownCallableSignatures.Importlib.UtilFindSpec,
                     FindSpec,
                     FindSpecAsync),
                 "resolve_name" => BuiltinCallable.Create(
-                    LythonKnownCallableSignatures.ImportlibUtilResolveName,
+                    LythonKnownCallableSignatures.Importlib.UtilResolveName,
                     ResolveName),
                 "module_from_spec" => UnsupportedImportlibCallable(
-                    LythonKnownCallableSignatures.ImportlibUtilModuleFromSpec,
+                    LythonKnownCallableSignatures.Importlib.UtilModuleFromSpec,
                     "importlib.util.module_from_spec() is unsupported because Lython does not expose ambient loader execution."),
                 "spec_from_file_location" => UnsupportedImportlibCallable(
-                    LythonKnownCallableSignatures.ImportlibUtilSpecFromFileLocation,
+                    LythonKnownCallableSignatures.Importlib.UtilSpecFromFileLocation,
                     "importlib.util.spec_from_file_location() is unsupported because arbitrary file-backed module loading is outside the contained import model."),
                 "spec_from_loader" => UnsupportedImportlibCallable(
-                    LythonKnownCallableSignatures.ImportlibUtilSpecFromLoader,
+                    LythonKnownCallableSignatures.Importlib.UtilSpecFromLoader,
                     "importlib.util.spec_from_loader() is unsupported because Lython module specs are created only by contained discovery."),
                 _ => MissingMemberValue.Instance,
             };

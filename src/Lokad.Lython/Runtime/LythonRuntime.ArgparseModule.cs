@@ -54,7 +54,7 @@ internal sealed partial class LythonRuntime
             {
                 "ArgumentParser" => ParserType,
                 "Namespace" => NamespaceType,
-                "FileType" => BuiltinCallable.Create(LythonKnownCallableSignatures.ArgparseFileType, CreateFileType),
+                "FileType" => BuiltinCallable.Create(LythonKnownCallableSignatures.Argparse.FileType, CreateFileType),
                 "ArgumentError" => new ExceptionTypeValue(ModuleException("argparse", "ArgumentError")),
                 "ArgumentTypeError" => new ExceptionTypeValue(ModuleException("argparse", "ArgumentTypeError")),
                 "SUPPRESS" => ArgparseModule.Suppress,

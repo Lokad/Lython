@@ -13,7 +13,7 @@ internal sealed partial class LythonRuntime
         public string Name => "io.BytesIO";
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            var bound = CallBinder.BindNamedArguments(arguments, span, LythonKnownCallableSignatures.IoBytesIO, PythonCallableKind.Builtin);
+            var bound = CallBinder.BindNamedArguments(arguments, span, LythonKnownCallableSignatures.Io.BytesIO, PythonCallableKind.Builtin);
             var initial = bound.Length == 0 ? PyNone.Instance : bound[0];
             if (initial is not PyNone and not PyBytes)
                 throw new LythonRuntimeException("TypeError", "a bytes-like object is required", span);
