@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1427 direct suite bindings](results/2026-11-23-direct-suite-bindings/README.md)
+removes temporary binding order from module and class scopes. The
+dataclass allocates 1.41% less compiling. Quiet elapsed ranges span
+zero and the dataclass and sparse validator CPU results differ.
+
 [B1426 factory storage attribution](results/2026-11-23-function-storage-attribution/README.md)
 confirms construction and default admission on the exact B1425 pair.
 The diagnostic first-result follow-up reverses the adverse B1425
