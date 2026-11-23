@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1437 combined callable preflight](results/2026-11-23-single-owner-function-preflight/README.md)
+removes 2,048 host growth requests in each of three factory scripts.
+Eager and defaults observer CPU improve. Postponed factory warm elapsed
+rises 2.14–6.78%, and the quoted invoice also slows. The prototype stays
+private with matching local allocations and admitted peaks.
+
 [B1436 bounded cased word construction](results/2026-11-23-materialized-cased-split-bounded/README.md)
 retains the shared scan. Wide warm elapsed falls 18.68–19.64% and its
 allocation falls 5.01%. The long-input diagnostic matches the reference
