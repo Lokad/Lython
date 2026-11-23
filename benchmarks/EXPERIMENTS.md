@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1541 and B1542](results/2026-11-24-native-inline-transfer/README.md) move
+continuation preparation off completed native calls. The hot method
+shrinks. A tighter confirmation leaves short-report CPU and elapsed
+overlapping zero, and the prototype stays private.
+
 [Direct regex coordinate tuples](results/2026-11-24-regex-coordinate-tuples/README.md)
 replace nested factories and reservations. The measured span and register
 scripts allocate 12.99–27.66% less at unchanged admitted peaks.

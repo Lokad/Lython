@@ -1,0 +1,21 @@
+{
+  "reference": {
+    "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix": 12537,
+    "Lokad.Lython.Runtime.PyExecutableFunction:get_CanStartInline": 52,
+    "Lokad.Lython.Runtime.PyExecutableFunction:StartInline": 896,
+    "Lokad.Lython.Runtime.LythonRuntime+NativeExecution:RunCore": 5476,
+    "Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Call": 3043,
+    "Lokad.Lython.Runtime.LythonRuntime+NativeExecution:CallFunction": 1099,
+    "Lokad.Lython.Runtime.PyExecutableFunction:StartNativeCall": 943
+  },
+  "candidate": {
+    "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix": 12537,
+    "Lokad.Lython.Runtime.PyExecutableFunction:get_CanStartInline": 52,
+    "Lokad.Lython.Runtime.PyExecutableFunction:StartInline": 509,
+    "Lokad.Lython.Runtime.LythonRuntime+NativeExecution:RunCore": 5476,
+    "Lokad.Lython.Runtime.LythonRuntime+NativeExecution:Call": 3043,
+    "Lokad.Lython.Runtime.LythonRuntime+NativeExecution:CallFunction": 1099,
+    "Lokad.Lython.Runtime.PyExecutableFunction:PromoteInline": 431,
+    "Lokad.Lython.Runtime.PyExecutableFunction:StartNativeCall": 943
+  }
+}
