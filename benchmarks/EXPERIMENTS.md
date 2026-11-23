@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1426 factory storage attribution](results/2026-11-23-function-storage-attribution/README.md)
+confirms construction and default admission on the exact B1425 pair.
+The diagnostic first-result follow-up reverses the adverse B1425
+result. The profile identifies no isolated cause or new elapsed gate.
+
 [B1425 optional function metadata](results/2026-11-23-function-optional-attributes/README.md)
 removes two references from ordinary callables. Both factory shapes
 allocate 6.9% less. Eager warm and wrapper CPU improve, while postponed
