@@ -1,0 +1,30 @@
+{
+  "reference": {
+    "id": "diagnostic.text-summary.borrowed-cased-words.mixed-width",
+    "asynchronous": false,
+    "success": true,
+    "reason": null,
+    "peakExecutionMemoryBytes": 806570,
+    "compiledReservedBytes": 79616,
+    "sharedBudgetBaselineRestored": true,
+    "GrowthCalls": 5241,
+    "GrownBytes": 837942,
+    "ShrinkCalls": 25,
+    "ShrunkBytes": 24023,
+    "coreSha256": "1d337ddbc00cd368055a5432c6644d01cb92b894a93038735180a5748e78dd79"
+  },
+  "candidate": {
+    "id": "diagnostic.text-summary.borrowed-cased-words.mixed-width",
+    "asynchronous": false,
+    "success": true,
+    "reason": null,
+    "peakExecutionMemoryBytes": 806570,
+    "compiledReservedBytes": 79616,
+    "sharedBudgetBaselineRestored": true,
+    "GrowthCalls": 5241,
+    "GrownBytes": 837942,
+    "ShrinkCalls": 25,
+    "ShrunkBytes": 24023,
+    "coreSha256": "e5af724c530baeaa598c0d02d4f6565189132e61aa93f8b5f913cbb6c3b33531"
+  }
+}

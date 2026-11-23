@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1459 publish cased keys on a miss](results/2026-11-23-borrowed-cased-word-miss/README.md)
+removes the caller's append handoff. Short timing spans zero and
+distinct-word CPU rises. Keep the candidate private and preserve the
+unresolved short-word cost.
+
 [B1458 integrated CPython checkpoint](results/2026-11-23-integrated-text-cpython/README.md)
 places mixed-width text at 0.949–0.983× CPython and short nonlocal
 text at 1.410–1.494×. Configuration takes 0.553–0.579× for compilation

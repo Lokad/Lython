@@ -1,0 +1,46 @@
+[
+  {
+    "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+    "allocatedBytes": [
+      380472,
+      380472
+    ],
+    "peakAdmission": [
+      735891,
+      735891
+    ]
+  },
+  {
+    "case": "diagnostic.text-summary.borrowed-cased-words.mixed-width",
+    "allocatedBytes": [
+      454272,
+      454272
+    ],
+    "peakAdmission": [
+      806570,
+      806570
+    ]
+  },
+  {
+    "case": "diagnostic.text-summary.borrowed-cased-words.unique-medium",
+    "allocatedBytes": [
+      1650032,
+      1649976
+    ],
+    "peakAdmission": [
+      2105910,
+      2105910
+    ]
+  },
+  {
+    "case": "diagnostic.text-summary.materialized-ordinary-split",
+    "allocatedBytes": [
+      979384,
+      979384
+    ],
+    "peakAdmission": [
+      1967664,
+      1967664
+    ]
+  }
+]

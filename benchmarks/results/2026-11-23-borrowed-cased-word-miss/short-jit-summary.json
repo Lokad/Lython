@@ -1,0 +1,121 @@
+{
+  "windows": {
+    "reference": {
+      "TryAccumulateBorrowedWord": {
+        "stackSubtractionBytes": 200,
+        "codeBytes": 2337,
+        "callees": [
+          "int]",
+          "this]",
+          "bool]",
+          "ThrowArgumentOutOfRangeException",
+          "long]",
+          "System.String]"
+        ]
+      },
+      "FindNativeTextIndex": {
+        "stackSubtractionBytes": 72,
+        "codeBytes": 1297,
+        "callees": [
+          "int]",
+          "this]",
+          "bool]",
+          "ThrowArgumentOutOfRangeException"
+        ]
+      },
+      "TryExecuteDictionaryLoop": {
+        "stackSubtractionBytes": 696,
+        "codeBytes": 8444,
+        "callees": [
+          "long]",
+          "this]",
+          "ThrowArgumentOutOfRangeException",
+          "bool]",
+          "ThrowArgumentOutOfRange_IndexMustBeLessException",
+          "this",
+          "System.String]",
+          "ThrowNegativeOrZero",
+          "Memmove",
+          "ThrowArgumentException_DestinationTooShort"
+        ]
+      }
+    },
+    "candidate": {
+      "TryAccumulateBorrowedWord": {
+        "stackSubtractionBytes": 360,
+        "codeBytes": 3828,
+        "callees": [
+          "this]",
+          "ThrowArgumentOutOfRangeException",
+          "long]",
+          "System.String]"
+        ]
+      },
+      "FindNativeTextIndex": {
+        "stackSubtractionBytes": 152,
+        "codeBytes": 2581,
+        "callees": [
+          "this]",
+          "ThrowArgumentOutOfRangeException"
+        ]
+      },
+      "TryExecuteDictionaryLoop": {
+        "stackSubtractionBytes": 888,
+        "codeBytes": 8832,
+        "callees": [
+          "this]",
+          "long]",
+          "ThrowArgumentOutOfRangeException",
+          "bool]",
+          "ThrowArgumentOutOfRange_IndexMustBeLessException",
+          "this",
+          "System.String]",
+          "ThrowNegativeOrZero",
+          "Memmove",
+          "ThrowArgumentException_DestinationTooShort"
+        ]
+      }
+    }
+  },
+  "linux": {
+    "reference": {
+      "TryAccumulateBorrowedWord": {
+        "stackSubtractionBytes": 216,
+        "codeBytes": 3598,
+        "callees": [
+          "this]",
+          "bool]",
+          "ThrowArgumentOutOfRangeException",
+          "long]",
+          "System.String]"
+        ]
+      },
+      "FindNativeTextIndex": {
+        "stackSubtractionBytes": 120,
+        "codeBytes": 2540,
+        "callees": [
+          "this]",
+          "bool]",
+          "ThrowArgumentOutOfRangeException"
+        ]
+      },
+      "TryExecuteDictionaryLoop": {
+        "stackSubtractionBytes": 792,
+        "codeBytes": 9398,
+        "callees": [
+          "this]",
+          "long]",
+          "ThrowArgumentOutOfRangeException",
+          "bool]",
+          "ThrowArgumentOutOfRange_IndexMustBeLessException",
+          "this",
+          "System.String]",
+          "ThrowNegativeOrZero",
+          "Memmove",
+          "ThrowArgumentException_DestinationTooShort"
+        ]
+      }
+    },
+    "candidate": {}
+  }
+}
