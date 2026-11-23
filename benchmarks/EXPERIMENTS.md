@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Current runtime attribution on Windows](results/2026-11-23-integrated-runtime-attribution/README.md)
+verifies four representative scripts against the retained CSV checkpoint.
+Native entry frames absorb most of the relevant samples, so these traces
+do not explain the factory gap or split control.
+
 [B1441 deferred regex coordinates in existing slots](results/2026-11-23-deferred-regex-coordinates-slots/README.md)
 keeps the ordered scan and ordinary match size. Unicode group text
 timing spans zero. ASCII, wide coordinates and the unchanged positional
