@@ -5,6 +5,44 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class NativeClosureLifetimeTests
 {
+    [Fact]
+    public async Task BinaryAssignmentPreservesClosureAliasesAcrossASuspendingOperator()
+    {
+        const string source = """
+            def calculate():
+                current = 4
+                def read(): return current
+                class Operand:
+                    def __mul__(self, scale):
+                        with open('/body') as stream:
+                            stream.read()
+                        print(read())
+                        return 2**70
+                def write(value):
+                    nonlocal current
+                    current = value * 3 + 11
+                    return current
+                first = write(Operand())
+                return first is read(), first, write(7), read()
+            return calculate()
+            """;
+        var budget = new LythonMemoryBudget(512 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        var baseline = budget.ReservedBytes;
+        var host = new DelayedLythonHost();
+        host.SeedFile("/body", "ready");
+        using (var result = await script.RunAsync(host))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("4\n", result.StandardOutput);
+            Assert.Equal(new object?[] { true, (BigInteger.One << 70) + 11, new BigInteger(32), new BigInteger(32) },
+                Assert.IsAssignableFrom<IEnumerable<object?>>(result.ReturnValue));
+        }
+        Assert.Equal(1, host.ClosedFileCount);
+        Assert.True(host.CompletedAsynchronously > 0);
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
