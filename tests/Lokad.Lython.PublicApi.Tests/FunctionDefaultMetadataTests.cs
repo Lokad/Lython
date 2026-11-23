@@ -47,6 +47,52 @@ public sealed class FunctionDefaultMetadataTests
         Assert.Equal(baseline, budget.ReservedBytes);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ComputedDefinitionReadsEagerAnnotationsAfterDefaultsAndKeepsTheirIdentity(bool asynchronous)
+    {
+        const string source = """
+            Tag = int
+            def bind(weight):
+                def define(seed):
+                    def value(record: Tag, /, base=seed * 3, *, scale=weight):
+                        return base
+                    return value
+                return define
+            class Operand:
+                def __mul__(self, factor):
+                    globals()['Tag'] = tuple
+                    return 19
+
+            factory = bind(2)
+            first = factory(7)
+            globals()['Tag'] = str
+            second = factory(8)
+            print(first.__annotations__['record'] is int, second.__annotations__['record'] is str)
+            dynamic = factory(Operand())
+            print(dynamic.__annotations__['record'] is tuple, dynamic.__defaults__)
+            del globals()['Tag']
+            try:
+                factory(9)
+            except NameError:
+                print('missing annotation')
+            globals()['Tag'] = float
+            print(factory(10).__annotations__['record'] is float, first.__defaults__)
+            """;
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        var host = new MockLythonHost();
+        using (var result = asynchronous ? await script.RunAsync(host) : script.Run(host))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("True True\nTrue (19,)\nmissing annotation\nTrue (21,)\n", result.StandardOutput);
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
     public static TheoryData<string, string> Programs => new()
     {
         { "def add(a=1,*,b=2): return a+b\nprint(add(),add(3,b=4),add(b=8))\nadd.__defaults__=(10,)\nadd.__kwdefaults__={'b':20}\nprint(add(),add(b=5))", "3 7 9\n30 15\n" },
