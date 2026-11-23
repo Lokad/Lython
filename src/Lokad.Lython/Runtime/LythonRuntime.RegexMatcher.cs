@@ -284,7 +284,7 @@ internal sealed partial class LythonRuntime
                     items[i] = captures[i] is { } capture
                         ? ReadSubjectRange(range, capture.StartByte, capture.EndByte, context, span) : PyString.Empty;
                 }
-                var tuple = PyTuple.FromAdmittedStringArray(items, governor, span);
+                var tuple = PyTuple.FromAdmittedOwnedArray(items, governor, span, bytes);
                 governor.Commit(bytes);
                 return tuple;
             }

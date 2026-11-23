@@ -154,7 +154,18 @@ internal sealed partial class LythonRuntime
         }
 
         private static object BoundsTuple(RegexGroupBounds bounds, ExecutionContext context, LythonSourceSpan span)
-            => CreateTuple(2, i => i == 0 ? bounds.Start : bounds.End, context, span);
+        {
+            var governor = context.MemoryGovernor;
+            governor.Reserve(RegexBoundsStorageBytes, span);
+            try
+            {
+                context.CheckExecution(span);
+                var pair = CreateAdmittedRegexBounds(bounds.Start, bounds.End, governor, span);
+                governor.Commit(RegexBoundsStorageBytes);
+                return pair;
+            }
+            catch { governor.ReleaseReserved(RegexBoundsStorageBytes); throw; }
+        }
 
         internal static object GetSubscript(ReMatchObject match, object key, LythonSourceSpan span, ExecutionContext? context)
             => GetSubscriptCoreAsync(match, key, span, context, false).GetAwaiter().GetResult();

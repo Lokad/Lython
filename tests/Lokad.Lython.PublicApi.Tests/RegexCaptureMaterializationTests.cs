@@ -223,8 +223,61 @@ public sealed class RegexCaptureMaterializationTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RegisterProjectionRefusalUnwindsAndRetainedRegistersStayFunded(bool asynchronous)
+    {
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var provider = new CompetingProvider(budget);
+        using var script = new LythonEngine(provider).Compile("""
+            import re
+            m = re.search(pattern, text)
+            try:
+                registers = m.regs
+            except MemoryError:
+                print('must not run')
+                return None
+            assert m.regs is registers
+            return registers
+            """, budget);
+        Assert.True(script.IsValid);
+        var baseline = budget.ReservedBytes;
+        var options = new LythonRunOptions
+        {
+            Globals = new Dictionary<string, object?>
+            {
+                ["pattern"] = string.Concat(Enumerable.Repeat("(é)", 64)) + "(z)?",
+                ["text"] = new string('é', 64),
+            },
+        };
+        var host = new MockLythonHost();
+        provider.Compete = true;
+        using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
+        {
+            Assert.True(provider.SubjectClosed);
+            Assert.False(result.Success);
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+            Assert.Equal(4, result.Failure?.Span?.Line);
+            Assert.Empty(result.StandardOutput);
+        }
+        Assert.Equal(baseline + provider.HeldBytes, budget.ReservedBytes);
+        provider.Dispose();
+        Assert.Equal(baseline, budget.ReservedBytes);
+        using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            var registers = Assert.IsAssignableFrom<IReadOnlyList<object?>>(result.ReturnValue);
+            Assert.Equal(66, registers.Count);
+            Assert.Equal(new object[] { System.Numerics.BigInteger.MinusOne, System.Numerics.BigInteger.MinusOne },
+                Assert.IsAssignableFrom<IReadOnlyList<object?>>(registers[^1]));
+            Assert.True(budget.ReservedBytes > baseline);
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
     // Model another host user claiming the same allowance after native matching
-    // has closed. Match metadata fits; the compiled subject's group copy does not.
+    // has closed. Match metadata fits and larger projections can be refused.
     private sealed class CompetingProvider(LythonMemoryBudget budget) : ILythonRegexProvider, IDisposable
     {
         private ILythonMemoryReservation? _held;

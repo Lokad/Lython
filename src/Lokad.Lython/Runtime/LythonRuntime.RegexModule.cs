@@ -8,6 +8,13 @@ internal sealed partial class LythonRuntime
 {
     internal readonly record struct ReCaptureRange(int StartByte, int EndByte, int Start, int End);
 
+    private static readonly long RegexBoundsStorageBytes =
+        PyTuple.EstimateApproximateBytes(2) + 2 * RuntimeMemoryEstimates.ScalarStorageBytes;
+
+    private static PyTuple CreateAdmittedRegexBounds(BigInteger start, BigInteger end,
+        MemoryGovernor governor, LythonSourceSpan span)
+        => PyTuple.FromAdmittedOwnedArray([start, end], governor, span, RegexBoundsStorageBytes);
+
     private static PyString MaterializeRegexRange(PyString subject, int start, int end, MemoryGovernor governor,
         ExecutionContext? context, LythonSourceSpan? span)
     {
@@ -46,14 +53,27 @@ internal sealed partial class LythonRuntime
         {
             context.CheckExecution(span);
             if (_registers is { } cached) return cached;
-            var projection = CreateTuple(Captures.Length, i =>
+            var governor = context.MemoryGovernor;
+            var outerBytes = PyTuple.EstimateApproximateBytes(Captures.Length);
+            var bytes = checked(outerBytes + RegexBoundsStorageBytes * Captures.Length);
+            governor.Reserve(bytes, span);
+            try
             {
-                var capture = Captures[i];
-                return CreateTuple(2, j => new BigInteger(j == 0 ? capture.Start : capture.End), context, span);
-            }, context, span);
-            // The immutable tuple and its contents stay funded by execution.
-            // Publish it only after every coordinate has been materialized.
-            return _registers ??= projection;
+                context.CheckExecution(span);
+                var pairs = new object[Captures.Length];
+                for (var i = 0; i < pairs.Length; i++)
+                {
+                    if (i != 0 && (i & 1023) == 0) context.CheckExecution(span);
+                    var capture = Captures[i];
+                    pairs[i] = CreateAdmittedRegexBounds(capture.Start, capture.End, governor, span);
+                }
+                // All pairs are private until the cache has complete funding.
+                var projection = PyTuple.FromAdmittedOwnedArray(pairs, governor, span, outerBytes);
+                context.CheckExecution(span);
+                governor.Commit(bytes);
+                return _registers ??= projection;
+            }
+            catch { governor.ReleaseReserved(bytes); throw; }
         }
 
         internal ReadOnlySpan<byte> GroupBytes(int index)
