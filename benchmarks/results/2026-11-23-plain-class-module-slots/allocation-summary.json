@@ -1,0 +1,79 @@
+[
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "allocatedBytes": [
+      3938470,
+      3281558
+    ],
+    "peakAdmission": [
+      9432874,
+      9433482
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.helper-accumulation",
+    "allocatedBytes": [
+      3280802,
+      3281110
+    ],
+    "peakAdmission": [
+      9433061,
+      9433061
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.large",
+    "allocatedBytes": [
+      3278678,
+      3279182
+    ],
+    "peakAdmission": [
+      9432613,
+      9432613
+    ]
+  },
+  {
+    "case": "scripts.csv-meter-report.explicit-float.observe-tuple",
+    "allocatedBytes": [
+      1220896,
+      1221456
+    ],
+    "peakAdmission": [
+      5172193,
+      5172193
+    ]
+  },
+  {
+    "case": "scripts.csv-meter-report.explicit-float",
+    "allocatedBytes": [
+      1220736,
+      1220680
+    ],
+    "peakAdmission": [
+      5171785,
+      5171785
+    ]
+  },
+  {
+    "case": "scripts.ordinary-fully-supplied-helper.local-function",
+    "allocatedBytes": [
+      11648,
+      11648
+    ],
+    "peakAdmission": [
+      1343,
+      1343
+    ]
+  },
+  {
+    "case": "scripts.config-manifest.small",
+    "allocatedBytes": [
+      98816,
+      98816
+    ],
+    "peakAdmission": [
+      56623,
+      56623
+    ]
+  }
+]
