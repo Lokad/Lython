@@ -101,6 +101,14 @@ internal sealed partial class LythonRuntime
                         Publish(instruction, RuntimeValue(Code.Constants[instruction.ConstantIndex]));
                         break;
                     case ExecutableOpCode.LoadLocal:
+                        if (instruction.IntegerUpdateCallIndex != int.MaxValue &&
+                            instruction.IntegerUpdateCallIndex + 2 < Code.NativePrefixEnd &&
+                            _scope.State.CurrentRecursionDepth < NativeCallDepth &&
+                            TryEvaluateIntegerCallUpdate(Code, Values, ref Index, LiveExtent, _scope, out var updated))
+                        {
+                            Publish(Code.Instructions[Index], updated);
+                            break;
+                        }
                         Publish(instruction, Read(instruction.LocalSlot, 0));
                         break;
                     case ExecutableOpCode.CheckLocal:

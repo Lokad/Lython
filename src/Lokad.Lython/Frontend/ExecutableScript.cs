@@ -190,6 +190,9 @@ internal readonly record struct ExecutableInstruction
         => new(ExecutableOpCode.LoadLocal, Span, _primaryOperand, resultSlot: index);
     internal ExecutableInstruction AsCheckLocal()
         => new(ExecutableOpCode.CheckLocal, Span, _primaryOperand);
+    internal int IntegerUpdateCallIndex => _secondaryOperand;
+    internal ExecutableInstruction WithIntegerUpdateCall(int callIndex)
+        => new(OpCode, Span, _primaryOperand, callIndex, _inputStart, _resultSlot, _liveExtent);
     // StoreLocal has only one input, leaving its second operand field free.
     internal bool StoresCapturedLocal => _secondaryOperand != int.MaxValue;
     internal ExecutableInstruction WithCapturedLocalStore()
@@ -575,7 +578,7 @@ internal sealed partial class ExecutableCodeObject
         PatternStorageStart = checked(FirstTemporarySlot + Math.Max(4, OperandCapacity));
         ValueStorageCapacity = checked(PatternStorageStart + PatternStorageCount);
         LastOwnedTemporarySlot = operandLayout.LastOwnedTemporarySlot;
-        Instructions = ExecutableStackLayout.Linearize(blocks, operandLayout, cancellationToken, out _operandReadSpans);
+        Instructions = ExecutableStackLayout.Linearize(this, blocks, operandLayout, cancellationToken, out _operandReadSpans);
         var positions = operandLayout.Blocks;
         EntryIndex = positions[entryBlockIndex].Offset;
         // Original block widths preserve inner-first unwinding, including

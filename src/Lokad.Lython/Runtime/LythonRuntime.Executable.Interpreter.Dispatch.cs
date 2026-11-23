@@ -34,6 +34,15 @@ internal sealed partial class LythonRuntime
                         case ExecutableOpCode.Complete:
                             return InstructionPause.Boundary;
                         case ExecutableOpCode.LoadLocal:
+                            if (instruction.IntegerUpdateCallIndex != int.MaxValue && invocation is not null &&
+                                !invocation.MirrorLocalStores && invocation.GlobalNamespace is null &&
+                                !execution.Stack.HasPendingDisposals &&
+                                TryEvaluateIntegerCallUpdate(execution.Code, execution.Stack.Values,
+                                    ref execution.InstructionIndex, execution.Stack.LiveExtent, scope, out var updated))
+                            {
+                                PublishInstructionResult(ref execution, invocation, instructions[execution.InstructionIndex], updated);
+                                break;
+                            }
                             PublishInstructionResult(ref execution, invocation, instruction,
                                 LoadLocal(execution.Code, execution.Locals, instruction.LocalSlot, instruction.Span, scope));
                             break;

@@ -91,7 +91,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
             => block.Count == 1 && block[0].OpCode == ExecutableOpCode.Jump ? block[0].TargetIndex : -1;
     }
 
-    internal static ExecutableInstruction[] Linearize(IReadOnlyList<List<ExecutableInstruction>> blocks,
+    internal static ExecutableInstruction[] Linearize(ExecutableCodeObject code, IReadOnlyList<List<ExecutableInstruction>> blocks,
         ExecutableStackLayout layout, CancellationToken token, out ExecutableOperandSpan[] readSpans)
     {
         var positions = layout.Blocks;
@@ -141,6 +141,8 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
                     ExecutableOpCode.MatchCase => instruction.WithFailureIndex(ResolvedOffset(instruction.FailureIndex)),
                     _ => instruction
                 };
+                if (instruction.OpCode == ExecutableOpCode.Call && !code.RequiresLocalVariableMirroring)
+                    PrepareIntegerCallUpdate(code, instructions, source, position.Offset, j, token);
             }
             // Stored blocks never fell through. Preserve implicit completion
             // distinctly from a guest top-level return (not legal in imports).
@@ -170,6 +172,51 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
         static bool Completes(List<ExecutableInstruction> block) => block.Count == 0 ||
             block[^1].OpCode is not (ExecutableOpCode.Jump or ExecutableOpCode.AbruptJump or
                 ExecutableOpCode.EndFinally or ExecutableOpCode.Return or ExecutableOpCode.ReturnNone or ExecutableOpCode.ReraiseException);
+    }
+
+    private static void PrepareIntegerCallUpdate(ExecutableCodeObject code, ExecutableInstruction[] tape,
+        List<ExecutableInstruction> block, int offset, int index, CancellationToken token)
+    {
+        var call = block[index];
+        if (index < 3 || index + 2 >= block.Count || call.HasResultConsumer || call.ValueInputCount != 0 ||
+            code.CallSites[call.CallSiteIndex] is not { HasReceiver: false, IsPositionalOnly: true, ArgumentCount: > 0 }
+                site || site.UnpackedReturnCount != 0)
+            return;
+        var update = block[index + 1];
+        var store = block[index + 2];
+        if (update.OpCode != ExecutableOpCode.Augmented || !update.HasResultConsumer ||
+            update.AugmentedOperator != AugmentedAssignmentOperatorSyntax.Add ||
+            update.SecondInput != call.ResultSlot || update.InputStart != call.ResultSlot - 1 ||
+            update.ResultSlot != update.InputStart ||
+            store.OpCode != ExecutableOpCode.StoreLocal || store.StoresCapturedLocal ||
+            store.InputStart != update.ResultSlot || store.LiveExtent != update.ResultSlot)
+            return;
+
+        // This block has no entry between the early reads and their consumer.
+        // Reuse the ordinary dead argument window. Every provisional value is
+        // an exact integer, so declining the segment cannot leave a loan.
+        var argumentStart = call.InputStart + site.ArgumentOffset;
+        var limit = argumentStart + site.ArgumentCount;
+        var first = index - 1;
+        for (; first >= 2; first--)
+        {
+            PythonTokenization.CheckCancellation(token, index - first);
+            var argument = block[first];
+            if (argument.ResultSlot < argumentStart) break;
+            if (argument.ResultSlot >= limit || argument.LiveExtent > limit || argument.HasResultConsumer ||
+                argument.OpCode is not (ExecutableOpCode.LoadLocal or ExecutableOpCode.LoadConst or ExecutableOpCode.Binary))
+                return;
+            if (argument.OpCode == ExecutableOpCode.Binary &&
+                (argument.InputStart < 0 && ~argument.InputStart >= code.Constants.Length ||
+                 argument.SecondInput < 0 && ~argument.SecondInput >= code.Constants.Length))
+                return;
+        }
+        if (first < 1 || block[first].OpCode is not (ExecutableOpCode.LoadLocal or ExecutableOpCode.LoadGlobal) ||
+            block[first].ResultSlot != call.InputStart || block[first].LiveExtent != argumentStart ||
+            block[first - 1] is not { OpCode: ExecutableOpCode.LoadLocal, HasResultConsumer: false } load ||
+            load.ResultSlot != update.InputStart || load.LiveExtent != call.InputStart || load.LocalSlot != store.LocalSlot)
+            return;
+        tape[offset + first - 1] = load.WithIntegerUpdateCall(offset + index);
     }
 
     internal static ExecutableStackLayout Prepare(ExecutableCodeObject code, IReadOnlyList<List<ExecutableInstruction>> blocks,

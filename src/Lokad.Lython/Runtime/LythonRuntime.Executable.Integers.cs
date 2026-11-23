@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Lokad.Lython.Frontend;
 
 namespace Lokad.Lython.Runtime;
@@ -55,6 +56,75 @@ internal sealed partial class LythonRuntime
             !TryMachineBinary(AugmentedBinaryOperator(update.AugmentedOperator), left, right, out var integer)) return false;
         result.SetInteger(integer);
         return true;
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static bool TryEvaluateIntegerCallUpdate(ExecutableCodeObject code, Span<ExecutableSlot> values,
+        ref int index, int liveExtent, ExecutionContext scope, out ExecutableSlot result)
+    {
+        result = default;
+        ref readonly var load = ref code.Instructions[index];
+        if (liveExtent != load.ResultSlot || !values[load.LocalSlot].TryGetInteger(out var previous)) return false;
+
+        var current = index + 1;
+        var callIndex = load.IntegerUpdateCallIndex;
+        ref readonly var target = ref code.Instructions[current];
+        object? callable;
+        scope.CheckExecution(target.Span);
+        if (target.OpCode == ExecutableOpCode.LoadLocal) callable = values[target.LocalSlot].Reference;
+        else if (!TryResolveExecutableGlobal(code, target.NameIndex, scope, out callable)) return false;
+        var call = code.CallSites[code.Instructions[callIndex].CallSiteIndex];
+        if (callable is not PyExecutableFunction { CodeObject.HasDirectIntegerReturn: true } function ||
+            !function.TrySelectNativeCall(call, null, out var complete) || !complete) return false;
+
+        var start = target.LiveExtent;
+        var arguments = values.Slice(start, call.ArgumentCount);
+        try
+        {
+            for (current++; current < callIndex; current++)
+            {
+                ref readonly var argument = ref code.Instructions[current];
+                scope.CheckExecution(argument.Span);
+                long value;
+                if (argument.OpCode == ExecutableOpCode.Binary)
+                {
+                    if (!TryReadMachineOperand(code, values, argument.InputStart, scope, out var left) ||
+                        !TryReadMachineOperand(code, values, argument.SecondInput, scope, out var right) ||
+                        !TryMachineBinary(argument.BinaryOperator, left, right, out value)) return false;
+                }
+                else
+                {
+                    var source = argument.OpCode == ExecutableOpCode.LoadLocal ? argument.LocalSlot : ~argument.ConstantIndex;
+                    if (!TryReadMachineOperand(code, values, source, scope, out value)) return false;
+                }
+                values[argument.ResultSlot].SetInteger(value);
+            }
+
+            // Nothing in the arguments or the selected body can publish
+            // their identity or mutate the early source slots. If an exact
+            // operation declines, the ordinary tape still has those values.
+            scope.CheckExecution(code.Instructions[callIndex].Span);
+            scope.EnterInterpreterFrame(call.CallSpan);
+            ExecutableSlot returned;
+            try
+            {
+                if (!function.TryStartSuppliedIntegerReturn(arguments, null, call.CallSpan, out returned)) return false;
+            }
+            finally { scope.LeaveInterpreterFrame(); }
+            current++;
+            scope.CheckExecution(code.Instructions[current].Span);
+            if (!returned.TryGetInteger(out var adjustment) ||
+                !TryMachineBinary(BinaryOperatorSyntax.Add, previous, adjustment, out var updated)) return false;
+            index = current;
+            result.SetInteger(updated);
+            return true;
+        }
+        catch
+        {
+            index = current;
+            throw;
+        }
+        finally { arguments.Clear(); }
     }
 
     internal ref partial struct NativeExecution

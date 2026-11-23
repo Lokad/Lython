@@ -114,6 +114,62 @@ public sealed class SharedIntegerChainTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task SuppliedIntegerArgumentsKeepEarlyIdentitiesWhenAnOperationCanObserveThem(bool asynchronous)
+    {
+        const string source = """
+            def exact(first, second, third):
+                return (first + second) * third
+            def local(exact, total, item, divisor):
+                total += exact(item, item % 7, item // divisor + 1)
+                return total
+            total = 4000
+            item = 1234
+            total += exact(item, item % 7, item % 11 + 1)
+            print(total, local(exact, 4000, 1234, 500))
+            print(local(exact, 9223372036854775807, 1234, 500))
+            try:
+                local(exact, 4000, 1234, 0)
+            except ZeroDivisionError:
+                print('zero')
+            def observed(first, second, third):
+                print(first is item, second, third)
+                return 0
+            exact = observed
+            total += exact(item, item % 7, item % 11 + 1)
+            class Observer:
+                def __mod__(self, other):
+                    global total
+                    with open('/observed.txt') as f:
+                        print(f.read(), other)
+                    total = 91
+                    return 7
+            def finish(first, second, third):
+                return first + second + third
+            source = Observer()
+            total += finish(item, source % 7, item % 11 + 1)
+            print(total)
+            """;
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
+        var baseline = budget.ReservedBytes;
+        var delayed = new DelayedLythonHost();
+        var sync = new MockLythonHost();
+        delayed.SeedFile("/observed.txt", "once");
+        sync.SeedFile("/observed.txt", "once");
+        using (var result = asynchronous ? await script.RunAsync(delayed) : script.Run(sync))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("7708 7708\n9223372036854779515\nzero\nTrue 2 3\nonce 7\n8952\n", result.StandardOutput);
+        }
+        Assert.Equal(1, asynchronous ? delayed.ClosedFileCount : sync.ClosedFileCount);
+        if (asynchronous) Assert.True(delayed.CompletedAsynchronously > 0);
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task PendingNumericProtocolIsNotReplayedAndKeepsOwnersUntilCleanup(bool cancel)
     {
         const string source = """
