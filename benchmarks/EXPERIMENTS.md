@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1472 preflight defaults and their callable together](results/2026-11-23-prepaid-definition-defaults/README.md)
+removes 2,048 positive allowances per factory run at equal peaks and
+allocation. Postponed time to result rises 3.63–7.04% and observer CPU
+rises 2.11–3.39%. The eager and unchanged helper controls are unstable.
+Keep the source private and preserve the earlier-admission tradeoff.
+
 [B1470 forward a terminal private assignment](results/2026-11-23-terminal-private-results/README.md)
 removes one store per factory helper. Eager warm elapsed falls 1.99–5.85%.
 Postponed time to result rises 1.68–3.15% with higher CPU and stable
