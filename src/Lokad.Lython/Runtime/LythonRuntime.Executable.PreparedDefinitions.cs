@@ -126,52 +126,44 @@ internal sealed partial class LythonRuntime
             TryMachineBinary(binary.BinaryOperator, left, right, out value);
     }
 
-    [System.Runtime.CompilerServices.InlineArray(2)]
-    private struct ClosedDefaultSlots { private ExecutableSlot _first; }
-
     internal static PyFunctionBase CreateClosedComputedDefinition(ExecutableCreateFunction definition,
         ExecutableCodeObject factory, ExecutionContext scope, long positional, object keyword)
     {
         var instructions = factory.Instructions;
-        ClosedDefaultSlots backing = default;
-        Span<ExecutableSlot> defaults = backing;
-        StartExecutableDefaults(definition.ParameterLayout, defaults, false, scope, instructions[0].Span);
+        var defaults = AllocateExecutableDefaults(definition.ParameterLayout, false, scope, instructions[0].Span);
         try
         {
             // Admission and all original execution checks retain their order.
             // The probed exact integer arithmetic and immutable binding read
             // have no guest effects before this funded construction.
             scope.CheckExecution(instructions[1].Span);
-            ExecutableSlot scalar = default;
-            scalar.SetInteger(positional);
-            StoreDefaultResult(ref defaults[0], instructions[2], scalar, scope.State);
+            defaults.Positional!.SetPrivateDefault(0, ExecutableSlot.FromInteger(positional), scope.State, instructions[2].Span);
             scope.CheckExecution(instructions[3].Span);
-            StoreDefaultResult(ref defaults[1], instructions[4], ExecutableSlot.FromObject(keyword), scope.State);
+            scope.CheckExecution(instructions[4].Span);
+            defaults = defaults with { Keywords = RuntimeValue(keyword) };
             var span = instructions[5].Span;
             scope.CheckExecution(span);
-            if (definition.EagerAnnotationReads is { } reads)
-                return CreateClosedEagerDefinition(definition, factory, reads, scope, span, defaults);
-            return CreateLexicalFunctionValue(definition.ParameterLayout, definition.CodeObject, default,
-                false, scope, span, defaults, definition.PostponedAnnotations);
+            var result = definition.EagerAnnotationReads is { } reads
+                ? CreateClosedEagerDefinition(definition, factory, reads, scope, span, defaults)
+                : CreateFunctionValue(definition.ParameterLayout, definition.CodeObject, GetGlobalContext(scope),
+                    default, defaults, false, scope, span, postponedAnnotations: definition.PostponedAnnotations);
+            defaults = default;
+            return result;
         }
-        finally
-        {
-            defaults[1].RetireTemporary(scope.MemoryGovernor);
-            defaults[0].RetireTemporary(scope.MemoryGovernor);
-        }
+        finally { defaults.RefundUnpublished(scope.MemoryGovernor); }
     }
 
     // Keep the eager-only annotation owner out of the default producer's frame.
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     private static PyFunctionBase CreateClosedEagerDefinition(ExecutableCreateFunction definition,
         ExecutableCodeObject factory, ExecutableInstruction[] reads, ExecutionContext scope, LythonSourceSpan span,
-        Span<ExecutableSlot> defaults)
+        FunctionDefaults defaults)
     {
         var prepared = ReadEagerFunctionAnnotations(reads, factory, definition.CodeObject, scope, span);
         try
         {
-            var function = CreateLexicalFunctionValue(definition.ParameterLayout, definition.CodeObject, default,
-                false, scope, span, defaults, definition.PostponedAnnotations, prepared);
+            var function = CreateFunctionValue(definition.ParameterLayout, definition.CodeObject, GetGlobalContext(scope),
+                default, defaults, false, scope, span, postponedAnnotations: definition.PostponedAnnotations, preparedAnnotations: prepared);
             prepared = default;
             return function;
         }

@@ -25,10 +25,20 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    // Admit both final containers before the first expression. Only after
-    // allocation succeeds do the existing work slots take responsibility.
     private static void StartExecutableDefaults(FunctionParameterLayout layout, Span<ExecutableSlot> operands,
         bool keywordsOnly, ExecutionContext context, LythonSourceSpan span)
+    {
+        var defaults = AllocateExecutableDefaults(layout, keywordsOnly, context, span);
+        if (defaults.Positional is { } positional) operands[0] = ExecutableSlot.OwnPrivateDefault(positional);
+        if (defaults.Keywords is { } keyword)
+            operands[^1] = defaults.InlineKeyword
+                ? ExecutableSlot.OwnPrivateKeywordDefault(keyword) : ExecutableSlot.OwnPrivateDefault(keyword);
+    }
+
+    // Both executable paths admit their final containers before the first
+    // default expression. Only interpreted definitions need operand owners.
+    private static FunctionDefaults AllocateExecutableDefaults(FunctionParameterLayout layout, bool keywordsOnly,
+        ExecutionContext context, LythonSourceSpan span)
     {
         var positionalCount = keywordsOnly ? 0 : layout.PositionalDefaultCount;
         var keys = layout.HasKeywordDefaults ? layout.PreparedKeywordDefaultKeys.RequireNotNull() : null;
@@ -41,14 +51,12 @@ internal sealed partial class LythonRuntime
         try
         {
             context.CheckExecution(span);
-            var positional = positionalCount == 0 ? default : ExecutableSlot.OwnPrivateDefault(
-                PyTuple.CreateAdmittedDefaultStorage(positionalCount, governor, span, positionalBytes));
-            var keyword = keys is null ? default : keys.Count == 1
-                ? ExecutableSlot.OwnPrivateKeywordDefault(PyNone.Instance)
-                : ExecutableSlot.OwnPrivateDefault(new object?[keywordCapacity]);
+            var positional = positionalCount == 0 ? null :
+                PyTuple.CreateAdmittedDefaultStorage(positionalCount, governor, span, positionalBytes);
+            var inlineKeyword = keys?.Count == 1;
+            object? keyword = keys is null ? null : inlineKeyword ? PyNone.Instance : new object?[keywordCapacity];
             governor.Commit(bytes);
-            if (positionalCount != 0) operands[0] = positional;
-            if (keys is not null) operands[^1] = keyword;
+            return new(positional, keyword, inlineKeyword);
         }
         catch { governor.ReleaseReserved(bytes); throw; }
     }
