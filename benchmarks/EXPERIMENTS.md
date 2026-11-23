@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1495 retain deferred numerical ranges through line advance](results/2026-11-23-csv-deferred-number/README.md)
+improves explicit-float warm elapsed 1.13–2.59% and typed ASCII time to
+result 0.31–2.98%, with supporting CPU. Unicode remains slower, ASCII
+warm spans zero and the short control varies. Keep the variant private.
+
 [B1494 find the physical CSV line during field scanning](results/2026-11-23-csv-combined-scan/README.md)
 reduces typed ASCII warm elapsed 3.61–4.18%. Unicode warm and ASCII
 first-use take longer, with supporting CPU. Keep the prototype private

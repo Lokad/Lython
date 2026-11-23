@@ -1,0 +1,86 @@
+[
+  {
+    "role": "reference",
+    "methods": [
+      {
+        "method": "TryConsumeBufferedCsvLine",
+        "tier": "Tier0",
+        "stack": 144,
+        "bytes": 323
+      },
+      {
+        "method": "TryDescribeLiteralRecord",
+        "tier": "Instrumented Tier0",
+        "stack": 384,
+        "bytes": 1548
+      },
+      {
+        "method": "TryConsumeBufferedCsvLine",
+        "tier": "Instrumented Tier0",
+        "stack": 144,
+        "bytes": 383
+      },
+      {
+        "method": "TryDescribeLiteralRecord",
+        "tier": "Instrumented Tier0",
+        "stack": 384,
+        "bytes": 1548
+      },
+      {
+        "method": "TryConsumeBufferedCsvLine",
+        "tier": "Tier1",
+        "stack": 408,
+        "bytes": 4530
+      },
+      {
+        "method": "TryDescribeLiteralRecord",
+        "tier": "Tier1",
+        "stack": 232,
+        "bytes": 3010
+      }
+    ],
+    "coreSHA256": "f2397ca89b1805b026f1ef1b21f4f1bf2d6d8c2ed330e33f2193eaf675148fb7"
+  },
+  {
+    "role": "candidate",
+    "methods": [
+      {
+        "method": "TryConsumeBufferedCsvLine",
+        "tier": "Tier0",
+        "stack": 320,
+        "bytes": 764
+      },
+      {
+        "method": "TryDescribeLiteralRecord",
+        "tier": "Instrumented Tier0",
+        "stack": 336,
+        "bytes": 1684
+      },
+      {
+        "method": "TryConsumeBufferedCsvLine",
+        "tier": "Instrumented Tier0",
+        "stack": 320,
+        "bytes": 916
+      },
+      {
+        "method": "TryDescribeLiteralRecord",
+        "tier": "Instrumented Tier0",
+        "stack": 336,
+        "bytes": 1684
+      },
+      {
+        "method": "TryConsumeBufferedCsvLine",
+        "tier": "Tier1",
+        "stack": 424,
+        "bytes": 4304
+      },
+      {
+        "method": "TryDescribeLiteralRecord",
+        "tier": "Tier1",
+        "stack": 200,
+        "bytes": 2515
+      }
+    ],
+    "coreSHA256": "3761f7abb0eee94f5b0ccfda7cc1dd8c10c6189c45ad557e34bc318315df0a0f"
+  }
+]
