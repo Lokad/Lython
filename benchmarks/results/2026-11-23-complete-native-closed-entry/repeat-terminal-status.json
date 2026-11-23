@@ -1,0 +1,16 @@
+{
+  "live": false,
+  "service": "MainPID=0\nResult=success\nExecMainStatus=0\nActiveState=inactive\n",
+  "exitCode": "0",
+  "receipt": {
+    "complete": true,
+    "warmJobs": 3,
+    "allWorkersJoined": true,
+    "guestFixturesRemoved": true,
+    "quietBeforeAndAfter": true,
+    "archivedAndVerifiedUnderLease": true,
+    "archiveSHA256": "4b9cbac116573b52c43d323ccd99f4c8c698b2d4df80ea3c1ae8fa06cd9bd7ab"
+  },
+  "fixtures": false,
+  "journal": "Nov 23 16:37:39 lython-bench systemd[1]: Started lython-b1508-complete-native-closed-control-20261123.service - /bin/sh /home/lokad/lython-bench-checks/complete-native-closed-control-b1508-20261123/run.sh.\nNov 23 16:37:39 lython-bench sudo[192913]:    lokad : PWD=/home/lokad/lython-bench-checks/complete-native-closed-control-b1508-20261123 ; USER=root ; COMMAND=/usr/bin/mount -t tmpfs -o size=32m,mode=0700,uid=lokad,gid=lokad lython-b1507-fixtures /home/lokad/lython-bench-checks/complete-native-closed-control-b1508-20261123/guest-fixtures\nNov 23 16:37:39 lython-bench sudo[192913]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)\nNov 23 16:37:39 lython-bench sudo[192913]: pam_unix(sudo:session): session closed for user root\nNov 23 16:37:42 lython-bench sh[192915]: Initial machine gate passed; a campaign still needs every sampling gate.\nNov 23 16:38:29 lython-bench sh[192912]: warm calls.positional.wide-native-buffer complete\nNov 23 16:39:15 lython-bench sh[192912]: warm scripts.csv-invoice.method-policy.quoted-control complete\nNov 23 16:40:01 lython-bench sh[192912]: compile-run scripts.annotated-rule-closures.nested-factories complete\nNov 23 16:40:05 lython-bench sh[193103]: Initial machine gate passed; a campaign still needs every sampling gate.\nNov 23 16:40:05 lython-bench sudo[193114]:    lokad : PWD=/home/lokad/lython-bench-checks/complete-native-closed-control-b1508-20261123 ; USER=root ; COMMAND=/usr/bin/umount /home/lokad/lython-bench-checks/complete-native-closed-control-b1508-20261123/guest-fixtures\nNov 23 16:40:05 lython-bench sudo[193114]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)\nNov 23 16:40:05 lython-bench sudo[193114]: pam_unix(sudo:session): session closed for user root\nNov 23 16:40:05 lython-bench systemd[1]: lython-b1508-complete-native-closed-control-20261123.service: Deactivated successfully.\nNov 23 16:40:05 lython-bench systemd[1]: lython-b1508-complete-native-closed-control-20261123.service: Consumed 2min 29.049s CPU time.\n"
+}
