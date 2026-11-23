@@ -26,11 +26,14 @@ Windows .NET 11 and Ubuntu .NET 10 each pass 234 public and 461 white-box
 focused Release checks. The four goldens match CPython. Local allocations
 are flat within 120 bytes per execution and admitted peaks match.
 The combined runtime revision passes 391 focused public checks on each
-platform, including the new regex projection unwind cases.
+platform, including the new regex projection unwind cases. Delivery
+`36dd7063d` passes both Release targets, installed consumers and original
+stress on Windows and Ubuntu. [Delivery CI](https://github.com/Lokad/Lython/actions/runs/45282679598).
 
 The quiet Azure F4as_v7 ran Ubuntu 24.04.4 and .NET 11 RC3 on November
-23, 2026 UTC. Each worker warms twelve seconds and contributes seven
-rotated batches. Warm includes mediated RAM-backed I/O, verification
+23, 2026 UTC. The archived collector uses an eight-second warmup threshold
+per worker, although its metadata records twelve. Each worker contributes
+seven rotated batches. Warm includes mediated RAM-backed I/O, verification
 and prior-result disposal. Wider CPU includes request overhead.
 All 112 timed batches, both quiet gates and joined cleanup verify.
 The first staging attempt stopped before

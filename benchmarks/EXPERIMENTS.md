@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1543](results/2026-11-24-current-csv-cpython/README.md) refreshes the two
+CSV meters against stock CPython at the retained text delivery. Local
+allocation weights identify tuple backing, typed numeric boxes and key
+or field publication as sites to inspect.
+
 [B1541 and B1542](results/2026-11-24-native-inline-transfer/README.md) move
 continuation preparation off completed native calls. The hot method
 shrinks. A tighter confirmation leaves short-report CPU and elapsed
