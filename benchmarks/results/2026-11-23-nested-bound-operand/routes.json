@@ -1,0 +1,776 @@
+{
+  "reference": {
+    "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+    "rows": [
+      {
+        "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+        "asynchronous": false,
+        "routes": {
+          "DirectReturns": 2048,
+          "CopiedCalls": 4096,
+          "ArgumentSlotsCopied": 4096,
+          "BoundCalls": 0,
+          "CompletedPrefixes": 4096,
+          "TransferredPrefixes": 0,
+          "RentedContinuations": 0,
+          "ContinuationSlotsCopied": 0,
+          "TransferredFailures": 0
+        },
+        "peakExecutionMemoryBytes": 2968481,
+        "allowanceReturned": true
+      },
+      {
+        "id": "scripts.annotated-rule-closures.nested-factories.postponed.async",
+        "asynchronous": true,
+        "routes": {
+          "DirectReturns": 2048,
+          "CopiedCalls": 4096,
+          "ArgumentSlotsCopied": 4096,
+          "BoundCalls": 0,
+          "CompletedPrefixes": 4096,
+          "TransferredPrefixes": 0,
+          "RentedContinuations": 0,
+          "ContinuationSlotsCopied": 0,
+          "TransferredFailures": 0
+        },
+        "peakExecutionMemoryBytes": 2968481,
+        "allowanceReturned": true
+      },
+      {
+        "id": "scripts.annotated-rule-closures.nested-factories",
+        "asynchronous": false,
+        "routes": {
+          "DirectReturns": 2048,
+          "CopiedCalls": 4096,
+          "ArgumentSlotsCopied": 4096,
+          "BoundCalls": 0,
+          "CompletedPrefixes": 4096,
+          "TransferredPrefixes": 0,
+          "RentedContinuations": 0,
+          "ContinuationSlotsCopied": 0,
+          "TransferredFailures": 0
+        },
+        "peakExecutionMemoryBytes": 2968425,
+        "allowanceReturned": true
+      },
+      {
+        "id": "scripts.annotated-rule-closures.nested-factories.async",
+        "asynchronous": true,
+        "routes": {
+          "DirectReturns": 2048,
+          "CopiedCalls": 4096,
+          "ArgumentSlotsCopied": 4096,
+          "BoundCalls": 0,
+          "CompletedPrefixes": 4096,
+          "TransferredPrefixes": 0,
+          "RentedContinuations": 0,
+          "ContinuationSlotsCopied": 0,
+          "TransferredFailures": 0
+        },
+        "peakExecutionMemoryBytes": 2968425,
+        "allowanceReturned": true
+      },
+      {
+        "id": "scripts.factory-observed-defaults",
+        "asynchronous": false,
+        "routes": {
+          "DirectReturns": 0,
+          "CopiedCalls": 4096,
+          "ArgumentSlotsCopied": 4096,
+          "BoundCalls": 2048,
+          "CompletedPrefixes": 6144,
+          "TransferredPrefixes": 0,
+          "RentedContinuations": 0,
+          "ContinuationSlotsCopied": 0,
+          "TransferredFailures": 0
+        },
+        "peakExecutionMemoryBytes": 2968817,
+        "allowanceReturned": true
+      },
+      {
+        "id": "scripts.factory-observed-defaults.async",
+        "asynchronous": true,
+        "routes": {
+          "DirectReturns": 0,
+          "CopiedCalls": 4096,
+          "ArgumentSlotsCopied": 4096,
+          "BoundCalls": 2048,
+          "CompletedPrefixes": 6144,
+          "TransferredPrefixes": 0,
+          "RentedContinuations": 0,
+          "ContinuationSlotsCopied": 0,
+          "TransferredFailures": 0
+        },
+        "peakExecutionMemoryBytes": 2968817,
+        "allowanceReturned": true
+      },
+      {
+        "id": "scripts.ordinary-fully-supplied-helper",
+        "asynchronous": false,
+        "routes": {
+          "DirectReturns": 2048,
+          "CopiedCalls": 0,
+          "ArgumentSlotsCopied": 0,
+          "BoundCalls": 0,
+          "CompletedPrefixes": 0,
+          "TransferredPrefixes": 0,
+          "RentedContinuations": 0,
+          "ContinuationSlotsCopied": 0,
+          "TransferredFailures": 0
+        },
+        "peakExecutionMemoryBytes": 1255,
+        "allowanceReturned": true
+      },
+      {
+        "id": "scripts.ordinary-fully-supplied-helper.async",
+        "asynchronous": true,
+        "routes": {
+          "DirectReturns": 2048,
+          "CopiedCalls": 0,
+          "ArgumentSlotsCopied": 0,
+          "BoundCalls": 0,
+          "CompletedPrefixes": 0,
+          "TransferredPrefixes": 0,
+          "RentedContinuations": 0,
+          "ContinuationSlotsCopied": 0,
+          "TransferredFailures": 0
+        },
+        "peakExecutionMemoryBytes": 1255,
+        "allowanceReturned": true
+      },
+      {
+        "id": "scripts.csv-invoice.method-policy.quoted-control",
+        "asynchronous": false,
+        "routes": {
+          "DirectReturns": 0,
+          "CopiedCalls": 12288,
+          "ArgumentSlotsCopied": 28672,
+          "BoundCalls": 0,
+          "CompletedPrefixes": 12288,
+          "TransferredPrefixes": 0,
+          "RentedContinuations": 0,
+          "ContinuationSlotsCopied": 0,
+          "TransferredFailures": 0
+        },
+        "peakExecutionMemoryBytes": 9432874,
+        "allowanceReturned": true
+      },
+      {
+        "id": "scripts.csv-invoice.method-policy.quoted-control.async",
+        "asynchronous": true,
+        "routes": {
+          "DirectReturns": 0,
+          "CopiedCalls": 12288,
+          "ArgumentSlotsCopied": 28672,
+          "BoundCalls": 0,
+          "CompletedPrefixes": 12288,
+          "TransferredPrefixes": 0,
+          "RentedContinuations": 0,
+          "ContinuationSlotsCopied": 0,
+          "TransferredFailures": 0
+        },
+        "peakExecutionMemoryBytes": 9432874,
+        "allowanceReturned": true
+      },
+      {
+        "id": "calls.positional.large",
+        "asynchronous": false,
+        "routes": {
+          "DirectReturns": 16384,
+          "CopiedCalls": 0,
+          "ArgumentSlotsCopied": 0,
+          "BoundCalls": 0,
+          "CompletedPrefixes": 0,
+          "TransferredPrefixes": 0,
+          "RentedContinuations": 0,
+          "ContinuationSlotsCopied": 0,
+          "TransferredFailures": 0
+        },
+        "peakExecutionMemoryBytes": 1284,
+        "allowanceReturned": true
+      },
+      {
+        "id": "calls.positional.large.async",
+        "asynchronous": true,
+        "routes": {
+          "DirectReturns": 16384,
+          "CopiedCalls": 0,
+          "ArgumentSlotsCopied": 0,
+          "BoundCalls": 0,
+          "CompletedPrefixes": 0,
+          "TransferredPrefixes": 0,
+          "RentedContinuations": 0,
+          "ContinuationSlotsCopied": 0,
+          "TransferredFailures": 0
+        },
+        "peakExecutionMemoryBytes": 1284,
+        "allowanceReturned": true
+      },
+      {
+        "id": "diagnostic.text-summary.materialized-ordinary-split",
+        "asynchronous": false,
+        "routes": {
+          "DirectReturns": 0,
+          "CopiedCalls": 3072,
+          "ArgumentSlotsCopied": 3072,
+          "BoundCalls": 0,
+          "CompletedPrefixes": 3072,
+          "TransferredPrefixes": 0,
+          "RentedContinuations": 0,
+          "ContinuationSlotsCopied": 0,
+          "TransferredFailures": 0
+        },
+        "peakExecutionMemoryBytes": 1967664,
+        "allowanceReturned": true
+      },
+      {
+        "id": "diagnostic.text-summary.materialized-ordinary-split.async",
+        "asynchronous": true,
+        "routes": {
+          "DirectReturns": 0,
+          "CopiedCalls": 3072,
+          "ArgumentSlotsCopied": 3072,
+          "BoundCalls": 0,
+          "CompletedPrefixes": 3072,
+          "TransferredPrefixes": 0,
+          "RentedContinuations": 0,
+          "ContinuationSlotsCopied": 0,
+          "TransferredFailures": 0
+        },
+        "peakExecutionMemoryBytes": 1967664,
+        "allowanceReturned": true
+      }
+    ],
+    "boundary": "Portable route evidence only from separately instrumented core. No timing."
+  },
+  "candidate": {
+    "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+    "rows": [
+      {
+        "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+        "asynchronous": false,
+        "routes": {
+          "DirectReturns": 2048,
+          "CopiedCalls": 4096,
+          "ArgumentSlotsCopied": 4096,
+          "BoundCalls": 0,
+          "CompletedPrefixes": 4096,
+          "TransferredPrefixes": 0,
+          "RentedContinuations": 0,
+          "ContinuationSlotsCopied": 0,
+          "TransferredFailures": 0,
+          "NestedBoundDirectReturns": 0
+        },
+        "peakExecutionMemoryBytes": 2968481,
+        "allowanceReturned": true
+      },
+      {
+        "id": "scripts.annotated-rule-closures.nested-factories.postponed.async",
+        "asynchronous": true,
+        "routes": {
+          "DirectReturns": 2048,
+          "CopiedCalls": 4096,
+          "ArgumentSlotsCopied": 4096,
+          "BoundCalls": 0,
+          "CompletedPrefixes": 4096,
+          "TransferredPrefixes": 0,
+          "RentedContinuations": 0,
+          "ContinuationSlotsCopied": 0,
+          "TransferredFailures": 0,
+          "NestedBoundDirectReturns": 0
+        },
+        "peakExecutionMemoryBytes": 2968481,
+        "allowanceReturned": true
+      },
+      {
+        "id": "scripts.annotated-rule-closures.nested-factories",
+        "asynchronous": false,
+        "routes": {
+          "DirectReturns": 2048,
+          "CopiedCalls": 4096,
+          "ArgumentSlotsCopied": 4096,
+          "BoundCalls": 0,
+          "CompletedPrefixes": 4096,
+          "TransferredPrefixes": 0,
+          "RentedContinuations": 0,
+          "ContinuationSlotsCopied": 0,
+          "TransferredFailures": 0,
+          "NestedBoundDirectReturns": 0
+        },
+        "peakExecutionMemoryBytes": 2968425,
+        "allowanceReturned": true
+      },
+      {
+        "id": "scripts.annotated-rule-closures.nested-factories.async",
+        "asynchronous": true,
+        "routes": {
+          "DirectReturns": 2048,
+          "CopiedCalls": 4096,
+          "ArgumentSlotsCopied": 4096,
+          "BoundCalls": 0,
+          "CompletedPrefixes": 4096,
+          "TransferredPrefixes": 0,
+          "RentedContinuations": 0,
+          "ContinuationSlotsCopied": 0,
+          "TransferredFailures": 0,
+          "NestedBoundDirectReturns": 0
+        },
+        "peakExecutionMemoryBytes": 2968425,
+        "allowanceReturned": true
+      },
+      {
+        "id": "scripts.factory-observed-defaults",
+        "asynchronous": false,
+        "routes": {
+          "DirectReturns": 0,
+          "CopiedCalls": 4096,
+          "ArgumentSlotsCopied": 4096,
+          "BoundCalls": 2048,
+          "CompletedPrefixes": 6144,
+          "TransferredPrefixes": 0,
+          "RentedContinuations": 0,
+          "ContinuationSlotsCopied": 0,
+          "TransferredFailures": 0,
+          "NestedBoundDirectReturns": 0
+        },
+        "peakExecutionMemoryBytes": 2968817,
+        "allowanceReturned": true
+      },
+      {
+        "id": "scripts.factory-observed-defaults.async",
+        "asynchronous": true,
+        "routes": {
+          "DirectReturns": 0,
+          "CopiedCalls": 4096,
+          "ArgumentSlotsCopied": 4096,
+          "BoundCalls": 2048,
+          "CompletedPrefixes": 6144,
+          "TransferredPrefixes": 0,
+          "RentedContinuations": 0,
+          "ContinuationSlotsCopied": 0,
+          "TransferredFailures": 0,
+          "NestedBoundDirectReturns": 0
+        },
+        "peakExecutionMemoryBytes": 2968817,
+        "allowanceReturned": true
+      },
+      {
+        "id": "scripts.ordinary-fully-supplied-helper",
+        "asynchronous": false,
+        "routes": {
+          "DirectReturns": 2048,
+          "CopiedCalls": 0,
+          "ArgumentSlotsCopied": 0,
+          "BoundCalls": 0,
+          "CompletedPrefixes": 0,
+          "TransferredPrefixes": 0,
+          "RentedContinuations": 0,
+          "ContinuationSlotsCopied": 0,
+          "TransferredFailures": 0,
+          "NestedBoundDirectReturns": 0
+        },
+        "peakExecutionMemoryBytes": 1255,
+        "allowanceReturned": true
+      },
+      {
+        "id": "scripts.ordinary-fully-supplied-helper.async",
+        "asynchronous": true,
+        "routes": {
+          "DirectReturns": 2048,
+          "CopiedCalls": 0,
+          "ArgumentSlotsCopied": 0,
+          "BoundCalls": 0,
+          "CompletedPrefixes": 0,
+          "TransferredPrefixes": 0,
+          "RentedContinuations": 0,
+          "ContinuationSlotsCopied": 0,
+          "TransferredFailures": 0,
+          "NestedBoundDirectReturns": 0
+        },
+        "peakExecutionMemoryBytes": 1255,
+        "allowanceReturned": true
+      },
+      {
+        "id": "scripts.csv-invoice.method-policy.quoted-control",
+        "asynchronous": false,
+        "routes": {
+          "DirectReturns": 0,
+          "CopiedCalls": 4096,
+          "ArgumentSlotsCopied": 4096,
+          "BoundCalls": 0,
+          "CompletedPrefixes": 4096,
+          "TransferredPrefixes": 0,
+          "RentedContinuations": 0,
+          "ContinuationSlotsCopied": 0,
+          "TransferredFailures": 0,
+          "NestedBoundDirectReturns": 8192
+        },
+        "peakExecutionMemoryBytes": 9432874,
+        "allowanceReturned": true
+      },
+      {
+        "id": "scripts.csv-invoice.method-policy.quoted-control.async",
+        "asynchronous": true,
+        "routes": {
+          "DirectReturns": 0,
+          "CopiedCalls": 4096,
+          "ArgumentSlotsCopied": 4096,
+          "BoundCalls": 0,
+          "CompletedPrefixes": 4096,
+          "TransferredPrefixes": 0,
+          "RentedContinuations": 0,
+          "ContinuationSlotsCopied": 0,
+          "TransferredFailures": 0,
+          "NestedBoundDirectReturns": 8192
+        },
+        "peakExecutionMemoryBytes": 9432874,
+        "allowanceReturned": true
+      },
+      {
+        "id": "calls.positional.large",
+        "asynchronous": false,
+        "routes": {
+          "DirectReturns": 16384,
+          "CopiedCalls": 0,
+          "ArgumentSlotsCopied": 0,
+          "BoundCalls": 0,
+          "CompletedPrefixes": 0,
+          "TransferredPrefixes": 0,
+          "RentedContinuations": 0,
+          "ContinuationSlotsCopied": 0,
+          "TransferredFailures": 0,
+          "NestedBoundDirectReturns": 0
+        },
+        "peakExecutionMemoryBytes": 1284,
+        "allowanceReturned": true
+      },
+      {
+        "id": "calls.positional.large.async",
+        "asynchronous": true,
+        "routes": {
+          "DirectReturns": 16384,
+          "CopiedCalls": 0,
+          "ArgumentSlotsCopied": 0,
+          "BoundCalls": 0,
+          "CompletedPrefixes": 0,
+          "TransferredPrefixes": 0,
+          "RentedContinuations": 0,
+          "ContinuationSlotsCopied": 0,
+          "TransferredFailures": 0,
+          "NestedBoundDirectReturns": 0
+        },
+        "peakExecutionMemoryBytes": 1284,
+        "allowanceReturned": true
+      },
+      {
+        "id": "diagnostic.text-summary.materialized-ordinary-split",
+        "asynchronous": false,
+        "routes": {
+          "DirectReturns": 0,
+          "CopiedCalls": 3072,
+          "ArgumentSlotsCopied": 3072,
+          "BoundCalls": 0,
+          "CompletedPrefixes": 3072,
+          "TransferredPrefixes": 0,
+          "RentedContinuations": 0,
+          "ContinuationSlotsCopied": 0,
+          "TransferredFailures": 0,
+          "NestedBoundDirectReturns": 0
+        },
+        "peakExecutionMemoryBytes": 1967664,
+        "allowanceReturned": true
+      },
+      {
+        "id": "diagnostic.text-summary.materialized-ordinary-split.async",
+        "asynchronous": true,
+        "routes": {
+          "DirectReturns": 0,
+          "CopiedCalls": 3072,
+          "ArgumentSlotsCopied": 3072,
+          "BoundCalls": 0,
+          "CompletedPrefixes": 3072,
+          "TransferredPrefixes": 0,
+          "RentedContinuations": 0,
+          "ContinuationSlotsCopied": 0,
+          "TransferredFailures": 0,
+          "NestedBoundDirectReturns": 0
+        },
+        "peakExecutionMemoryBytes": 1967664,
+        "allowanceReturned": true
+      }
+    ],
+    "boundary": "Portable route evidence only from separately instrumented core. No timing."
+  },
+  "inputFit": {
+    "assembly": "Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null",
+    "rows": [
+      {
+        "id": "scripts.annotated-rule-closures.nested-factories.postponed",
+        "asynchronous": false,
+        "routes": {
+          "FramedCopied": 4096,
+          "FramedFit": 0,
+          "FramedFitWithCleanupProof": 0,
+          "FramedOldEligibility": 0,
+          "NestedCopied": 0,
+          "NestedFitAt16": 0,
+          "NestedFitCurrent": 0,
+          "NestedFitAt16WithoutUnpack": 0,
+          "NestedFitAt16WithoutOwners": 0,
+          "NestedFitAt16WithAllProofs": 0,
+          "NestedBoundInteger": 0
+        },
+        "peakExecutionMemoryBytes": 2968481,
+        "allowanceReturned": true
+      },
+      {
+        "id": "scripts.annotated-rule-closures.nested-factories.postponed.async",
+        "asynchronous": true,
+        "routes": {
+          "FramedCopied": 4096,
+          "FramedFit": 0,
+          "FramedFitWithCleanupProof": 0,
+          "FramedOldEligibility": 0,
+          "NestedCopied": 0,
+          "NestedFitAt16": 0,
+          "NestedFitCurrent": 0,
+          "NestedFitAt16WithoutUnpack": 0,
+          "NestedFitAt16WithoutOwners": 0,
+          "NestedFitAt16WithAllProofs": 0,
+          "NestedBoundInteger": 0
+        },
+        "peakExecutionMemoryBytes": 2968481,
+        "allowanceReturned": true
+      },
+      {
+        "id": "scripts.annotated-rule-closures.nested-factories",
+        "asynchronous": false,
+        "routes": {
+          "FramedCopied": 4096,
+          "FramedFit": 0,
+          "FramedFitWithCleanupProof": 0,
+          "FramedOldEligibility": 0,
+          "NestedCopied": 0,
+          "NestedFitAt16": 0,
+          "NestedFitCurrent": 0,
+          "NestedFitAt16WithoutUnpack": 0,
+          "NestedFitAt16WithoutOwners": 0,
+          "NestedFitAt16WithAllProofs": 0,
+          "NestedBoundInteger": 0
+        },
+        "peakExecutionMemoryBytes": 2968425,
+        "allowanceReturned": true
+      },
+      {
+        "id": "scripts.annotated-rule-closures.nested-factories.async",
+        "asynchronous": true,
+        "routes": {
+          "FramedCopied": 4096,
+          "FramedFit": 0,
+          "FramedFitWithCleanupProof": 0,
+          "FramedOldEligibility": 0,
+          "NestedCopied": 0,
+          "NestedFitAt16": 0,
+          "NestedFitCurrent": 0,
+          "NestedFitAt16WithoutUnpack": 0,
+          "NestedFitAt16WithoutOwners": 0,
+          "NestedFitAt16WithAllProofs": 0,
+          "NestedBoundInteger": 0
+        },
+        "peakExecutionMemoryBytes": 2968425,
+        "allowanceReturned": true
+      },
+      {
+        "id": "scripts.factory-observed-defaults",
+        "asynchronous": false,
+        "routes": {
+          "FramedCopied": 4096,
+          "FramedFit": 0,
+          "FramedFitWithCleanupProof": 0,
+          "FramedOldEligibility": 0,
+          "NestedCopied": 0,
+          "NestedFitAt16": 0,
+          "NestedFitCurrent": 0,
+          "NestedFitAt16WithoutUnpack": 0,
+          "NestedFitAt16WithoutOwners": 0,
+          "NestedFitAt16WithAllProofs": 0,
+          "NestedBoundInteger": 0
+        },
+        "peakExecutionMemoryBytes": 2968817,
+        "allowanceReturned": true
+      },
+      {
+        "id": "scripts.factory-observed-defaults.async",
+        "asynchronous": true,
+        "routes": {
+          "FramedCopied": 4096,
+          "FramedFit": 0,
+          "FramedFitWithCleanupProof": 0,
+          "FramedOldEligibility": 0,
+          "NestedCopied": 0,
+          "NestedFitAt16": 0,
+          "NestedFitCurrent": 0,
+          "NestedFitAt16WithoutUnpack": 0,
+          "NestedFitAt16WithoutOwners": 0,
+          "NestedFitAt16WithAllProofs": 0,
+          "NestedBoundInteger": 0
+        },
+        "peakExecutionMemoryBytes": 2968817,
+        "allowanceReturned": true
+      },
+      {
+        "id": "scripts.ordinary-fully-supplied-helper",
+        "asynchronous": false,
+        "routes": {
+          "FramedCopied": 0,
+          "FramedFit": 0,
+          "FramedFitWithCleanupProof": 0,
+          "FramedOldEligibility": 0,
+          "NestedCopied": 0,
+          "NestedFitAt16": 0,
+          "NestedFitCurrent": 0,
+          "NestedFitAt16WithoutUnpack": 0,
+          "NestedFitAt16WithoutOwners": 0,
+          "NestedFitAt16WithAllProofs": 0,
+          "NestedBoundInteger": 0
+        },
+        "peakExecutionMemoryBytes": 1255,
+        "allowanceReturned": true
+      },
+      {
+        "id": "scripts.ordinary-fully-supplied-helper.async",
+        "asynchronous": true,
+        "routes": {
+          "FramedCopied": 0,
+          "FramedFit": 0,
+          "FramedFitWithCleanupProof": 0,
+          "FramedOldEligibility": 0,
+          "NestedCopied": 0,
+          "NestedFitAt16": 0,
+          "NestedFitCurrent": 0,
+          "NestedFitAt16WithoutUnpack": 0,
+          "NestedFitAt16WithoutOwners": 0,
+          "NestedFitAt16WithAllProofs": 0,
+          "NestedBoundInteger": 0
+        },
+        "peakExecutionMemoryBytes": 1255,
+        "allowanceReturned": true
+      },
+      {
+        "id": "scripts.csv-invoice.method-policy.quoted-control",
+        "asynchronous": false,
+        "routes": {
+          "FramedCopied": 4096,
+          "FramedFit": 0,
+          "FramedFitWithCleanupProof": 0,
+          "FramedOldEligibility": 0,
+          "NestedCopied": 8192,
+          "NestedFitAt16": 8192,
+          "NestedFitCurrent": 0,
+          "NestedFitAt16WithoutUnpack": 8192,
+          "NestedFitAt16WithoutOwners": 8192,
+          "NestedFitAt16WithAllProofs": 8192,
+          "NestedBoundInteger": 8192
+        },
+        "peakExecutionMemoryBytes": 9432874,
+        "allowanceReturned": true
+      },
+      {
+        "id": "scripts.csv-invoice.method-policy.quoted-control.async",
+        "asynchronous": true,
+        "routes": {
+          "FramedCopied": 4096,
+          "FramedFit": 0,
+          "FramedFitWithCleanupProof": 0,
+          "FramedOldEligibility": 0,
+          "NestedCopied": 8192,
+          "NestedFitAt16": 8192,
+          "NestedFitCurrent": 0,
+          "NestedFitAt16WithoutUnpack": 8192,
+          "NestedFitAt16WithoutOwners": 8192,
+          "NestedFitAt16WithAllProofs": 8192,
+          "NestedBoundInteger": 8192
+        },
+        "peakExecutionMemoryBytes": 9432874,
+        "allowanceReturned": true
+      },
+      {
+        "id": "calls.positional.large",
+        "asynchronous": false,
+        "routes": {
+          "FramedCopied": 0,
+          "FramedFit": 0,
+          "FramedFitWithCleanupProof": 0,
+          "FramedOldEligibility": 0,
+          "NestedCopied": 0,
+          "NestedFitAt16": 0,
+          "NestedFitCurrent": 0,
+          "NestedFitAt16WithoutUnpack": 0,
+          "NestedFitAt16WithoutOwners": 0,
+          "NestedFitAt16WithAllProofs": 0,
+          "NestedBoundInteger": 0
+        },
+        "peakExecutionMemoryBytes": 1284,
+        "allowanceReturned": true
+      },
+      {
+        "id": "calls.positional.large.async",
+        "asynchronous": true,
+        "routes": {
+          "FramedCopied": 0,
+          "FramedFit": 0,
+          "FramedFitWithCleanupProof": 0,
+          "FramedOldEligibility": 0,
+          "NestedCopied": 0,
+          "NestedFitAt16": 0,
+          "NestedFitCurrent": 0,
+          "NestedFitAt16WithoutUnpack": 0,
+          "NestedFitAt16WithoutOwners": 0,
+          "NestedFitAt16WithAllProofs": 0,
+          "NestedBoundInteger": 0
+        },
+        "peakExecutionMemoryBytes": 1284,
+        "allowanceReturned": true
+      },
+      {
+        "id": "diagnostic.text-summary.materialized-ordinary-split",
+        "asynchronous": false,
+        "routes": {
+          "FramedCopied": 3072,
+          "FramedFit": 3072,
+          "FramedFitWithCleanupProof": 3072,
+          "FramedOldEligibility": 3072,
+          "NestedCopied": 0,
+          "NestedFitAt16": 0,
+          "NestedFitCurrent": 0,
+          "NestedFitAt16WithoutUnpack": 0,
+          "NestedFitAt16WithoutOwners": 0,
+          "NestedFitAt16WithAllProofs": 0,
+          "NestedBoundInteger": 0
+        },
+        "peakExecutionMemoryBytes": 1967664,
+        "allowanceReturned": true
+      },
+      {
+        "id": "diagnostic.text-summary.materialized-ordinary-split.async",
+        "asynchronous": true,
+        "routes": {
+          "FramedCopied": 3072,
+          "FramedFit": 3072,
+          "FramedFitWithCleanupProof": 3072,
+          "FramedOldEligibility": 3072,
+          "NestedCopied": 0,
+          "NestedFitAt16": 0,
+          "NestedFitCurrent": 0,
+          "NestedFitAt16WithoutUnpack": 0,
+          "NestedFitAt16WithoutOwners": 0,
+          "NestedFitAt16WithAllProofs": 0,
+          "NestedBoundInteger": 0
+        },
+        "peakExecutionMemoryBytes": 1967664,
+        "allowanceReturned": true
+      }
+    ],
+    "boundary": "Portable route evidence only from separately instrumented core. No timing."
+  }
+}

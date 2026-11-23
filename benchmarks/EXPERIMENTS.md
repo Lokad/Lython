@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1439 nested bound arithmetic](results/2026-11-23-nested-bound-operand/README.md)
+removes 8,192 native prefixes in the quoted invoice. Warm elapsed falls
+2.12–4.61% and time to result falls 3.22–7.20%. The ordinary split control
+takes 0.14–2.56% longer. Both positional control ranges span zero.
+
 [B1438 integrated CPython checkpoint](results/2026-11-23-integrated-cpython-checkpoint/README.md)
 measures the retained core on the six B1429 scripts and adds a
 materialized wide Unicode report. The wide report takes 0.748–0.752×
