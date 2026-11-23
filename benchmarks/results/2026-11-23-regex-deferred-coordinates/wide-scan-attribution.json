@@ -1,0 +1,11 @@
+{
+  "case": "diagnostic.regex-wide-registers",
+  "subjectBytes": 20800,
+  "groups": 80,
+  "repetitions": 32,
+  "existingBytesPerMatch": 20540,
+  "prototypeRegsBytesPerMatch": 436540,
+  "prototypeExtraSpanLookupsBytesPerMatch": 20020,
+  "existingBytesPerInvocation": 657280,
+  "prototypeBytesPerInvocation": 14609920
+}

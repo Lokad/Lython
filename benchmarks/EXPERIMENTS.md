@@ -6,6 +6,15 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1440 literal CSV records from immutable input](results/2026-11-23-borrowed-csv-record/README.md)
+removes a complete record copy. Borrowed typed reports take 7.00–9.98%
+less warm elapsed. The native ASCII control takes 0.96–2.44% longer.
+
+[Deferred regex capture coordinates](results/2026-11-23-regex-deferred-coordinates/README.md)
+compares compact byte captures with a single on-demand offset sweep.
+The former revisits wide Unicode subjects, and the latter raises
+allocation on byte-only reports. Both variants remain private.
+
 [B1439 nested bound arithmetic](results/2026-11-23-nested-bound-operand/README.md)
 removes 8,192 native prefixes in the quoted invoice. Warm elapsed falls
 2.12–4.61% and time to result falls 3.22–7.20%. The ordinary split control
