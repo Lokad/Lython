@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1464 retained CSV CPU attribution](results/2026-11-23-retained-csv-profile/README.md)
+finds numeric parsing in 85 of 984 resolved runtime stacks for the typed
+meter, mostly in .NET UTF-8 parsing. The invoice instead shows function
+entry and dictionary row handling. The exact images and raw profiles
+identify a shared short-decimal conversion candidate.
+
 [B1463 retain an unchanging capture value](results/2026-11-23-direct-owned-capture/README.md)
 removes the separate cell from both factories. They allocate about 13%
 less, and postponed time to result falls 2.03–7.55% with lower process
