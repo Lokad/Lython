@@ -1,0 +1,90 @@
+[
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+    "allocatedBytes": [
+      882136,
+      882136
+    ],
+    "peakAdmission": [
+      2968481,
+      2968481
+    ]
+  },
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories",
+    "allocatedBytes": [
+      882032,
+      882032
+    ],
+    "peakAdmission": [
+      2968425,
+      2968425
+    ]
+  },
+  {
+    "case": "scripts.dataclass-inherited-configuration.generated",
+    "allocatedBytes": [
+      408720,
+      408720
+    ],
+    "peakAdmission": [
+      285027,
+      285027
+    ]
+  },
+  {
+    "case": "scripts.config-generated-guards.medium.bad-0.sparse-lexical",
+    "allocatedBytes": [
+      68224,
+      68224
+    ],
+    "peakAdmission": [
+      92830,
+      92830
+    ]
+  },
+  {
+    "case": "compiler.generated-read-only-branches",
+    "allocatedBytes": [
+      17568,
+      17568
+    ],
+    "peakAdmission": [
+      10427,
+      10427
+    ]
+  },
+  {
+    "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+    "allocatedBytes": [
+      380478,
+      380472
+    ],
+    "peakAdmission": [
+      735891,
+      735891
+    ]
+  },
+  {
+    "case": "scripts.config-edit.small",
+    "allocatedBytes": [
+      34888,
+      34888
+    ],
+    "peakAdmission": [
+      15184,
+      15184
+    ]
+  },
+  {
+    "case": "diagnostic.dead-heavy-validator",
+    "allocatedBytes": [
+      19784,
+      19784
+    ],
+    "peakAdmission": [
+      13628,
+      13628
+    ]
+  }
+]

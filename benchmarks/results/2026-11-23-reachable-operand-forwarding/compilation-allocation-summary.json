@@ -1,0 +1,138 @@
+[
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+    "roles": {
+      "reference": {
+        "compiledAllocated": 62176.0,
+        "admitted": [
+          78718
+        ]
+      },
+      "candidate": {
+        "compiledAllocated": 60928.0,
+        "admitted": [
+          78718
+        ]
+      }
+    }
+  },
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories",
+    "roles": {
+      "reference": {
+        "compiledAllocated": 58184.0,
+        "admitted": [
+          74810
+        ]
+      },
+      "candidate": {
+        "compiledAllocated": 56936.0,
+        "admitted": [
+          74810
+        ]
+      }
+    }
+  },
+  {
+    "case": "scripts.dataclass-inherited-configuration.generated",
+    "roles": {
+      "reference": {
+        "compiledAllocated": 503088.0,
+        "admitted": [
+          414656
+        ]
+      },
+      "candidate": {
+        "compiledAllocated": 487176.0,
+        "admitted": [
+          414656
+        ]
+      }
+    }
+  },
+  {
+    "case": "scripts.config-generated-guards.medium.bad-0.sparse-lexical",
+    "roles": {
+      "reference": {
+        "compiledAllocated": 2171680.0,
+        "admitted": [
+          2294048
+        ]
+      },
+      "candidate": {
+        "compiledAllocated": 2170744.0,
+        "admitted": [
+          2294048
+        ]
+      }
+    }
+  },
+  {
+    "case": "compiler.generated-read-only-branches",
+    "roles": {
+      "reference": {
+        "compiledAllocated": 1095744.0,
+        "admitted": [
+          1102112
+        ]
+      },
+      "candidate": {
+        "compiledAllocated": 1095120.0,
+        "admitted": [
+          1102112
+        ]
+      }
+    }
+  },
+  {
+    "case": "diagnostic.text-summary.nonlocal-computed-width.large",
+    "roles": {
+      "reference": {
+        "compiledAllocated": 81200.0,
+        "admitted": [
+          92129
+        ]
+      },
+      "candidate": {
+        "compiledAllocated": 80264.0,
+        "admitted": [
+          92129
+        ]
+      }
+    }
+  },
+  {
+    "case": "scripts.config-edit.small",
+    "roles": {
+      "reference": {
+        "compiledAllocated": 44976.0,
+        "admitted": [
+          67040
+        ]
+      },
+      "candidate": {
+        "compiledAllocated": 44664.0,
+        "admitted": [
+          67040
+        ]
+      }
+    }
+  },
+  {
+    "case": "diagnostic.dead-heavy-validator",
+    "roles": {
+      "reference": {
+        "compiledAllocated": 839160.0,
+        "admitted": [
+          1054592
+        ]
+      },
+      "candidate": {
+        "compiledAllocated": 838536.0,
+        "admitted": [
+          1054592
+        ]
+      }
+    }
+  }
+]

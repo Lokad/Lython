@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1462 forward operands only in reachable blocks](results/2026-11-23-reachable-operand-forwarding/README.md)
+retains the removal of the all-block forwarding sweep and separate span
+projection. Dead-heavy compilation uses 0.73–5.24% less process CPU.
+Sparse compile to result takes 0.61–1.45% longer. All 149 inspected
+executable code objects agree.
+
 [B1461 carry prepared function layouts](results/2026-11-23-binding-layout-transport/README.md)
 keeps the factory allocation reduction and removes the virtual layout
 lookups. Postponed compile-to-result elapsed still rises 4.43–8.46%,
