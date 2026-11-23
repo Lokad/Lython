@@ -1,0 +1,254 @@
+{
+  "qualification": "diagnostic",
+  "engineOrder": "Lython first in each original smoke case, case order rotated",
+  "actualOrder": [
+    [
+      [
+        "control.empty.control",
+        "Lython"
+      ],
+      [
+        "control.empty.control",
+        "CPython"
+      ],
+      [
+        "control.tiny.control",
+        "Lython"
+      ],
+      [
+        "control.tiny.control",
+        "CPython"
+      ],
+      [
+        "scripts.config-edit.small",
+        "Lython"
+      ],
+      [
+        "scripts.config-edit.small",
+        "CPython"
+      ]
+    ],
+    [
+      [
+        "control.tiny.control",
+        "Lython"
+      ],
+      [
+        "control.tiny.control",
+        "CPython"
+      ],
+      [
+        "scripts.config-edit.small",
+        "Lython"
+      ],
+      [
+        "scripts.config-edit.small",
+        "CPython"
+      ],
+      [
+        "control.empty.control",
+        "Lython"
+      ],
+      [
+        "control.empty.control",
+        "CPython"
+      ]
+    ],
+    [
+      [
+        "scripts.config-edit.small",
+        "Lython"
+      ],
+      [
+        "scripts.config-edit.small",
+        "CPython"
+      ],
+      [
+        "control.empty.control",
+        "Lython"
+      ],
+      [
+        "control.empty.control",
+        "CPython"
+      ],
+      [
+        "control.tiny.control",
+        "Lython"
+      ],
+      [
+        "control.tiny.control",
+        "CPython"
+      ]
+    ],
+    [
+      [
+        "control.empty.control",
+        "Lython"
+      ],
+      [
+        "control.empty.control",
+        "CPython"
+      ],
+      [
+        "control.tiny.control",
+        "Lython"
+      ],
+      [
+        "control.tiny.control",
+        "CPython"
+      ],
+      [
+        "scripts.config-edit.small",
+        "Lython"
+      ],
+      [
+        "scripts.config-edit.small",
+        "CPython"
+      ]
+    ],
+    [
+      [
+        "control.tiny.control",
+        "Lython"
+      ],
+      [
+        "control.tiny.control",
+        "CPython"
+      ],
+      [
+        "scripts.config-edit.small",
+        "Lython"
+      ],
+      [
+        "scripts.config-edit.small",
+        "CPython"
+      ],
+      [
+        "control.empty.control",
+        "Lython"
+      ],
+      [
+        "control.empty.control",
+        "CPython"
+      ]
+    ],
+    [
+      [
+        "scripts.config-edit.small",
+        "Lython"
+      ],
+      [
+        "scripts.config-edit.small",
+        "CPython"
+      ],
+      [
+        "control.empty.control",
+        "Lython"
+      ],
+      [
+        "control.empty.control",
+        "CPython"
+      ],
+      [
+        "control.tiny.control",
+        "Lython"
+      ],
+      [
+        "control.tiny.control",
+        "CPython"
+      ]
+    ],
+    [
+      [
+        "control.empty.control",
+        "Lython"
+      ],
+      [
+        "control.empty.control",
+        "CPython"
+      ],
+      [
+        "control.tiny.control",
+        "Lython"
+      ],
+      [
+        "control.tiny.control",
+        "CPython"
+      ],
+      [
+        "scripts.config-edit.small",
+        "Lython"
+      ],
+      [
+        "scripts.config-edit.small",
+        "CPython"
+      ]
+    ]
+  ],
+  "observations": 42,
+  "rows": {
+    "control.empty.control": {
+      "lythonMs": 122.119366,
+      "cpythonMs": 29.613707,
+      "ratio": 4.123744656486268,
+      "lythonRangeMs": [
+        120.288341,
+        123.628655
+      ],
+      "cpythonRangeMs": [
+        29.549429,
+        30.240192
+      ],
+      "lythonIqrMs": [
+        121.327269,
+        123.35294400000001
+      ],
+      "cpythonIqrMs": [
+        29.586925,
+        29.812016
+      ]
+    },
+    "control.tiny.control": {
+      "lythonMs": 150.71119,
+      "cpythonMs": 29.943413,
+      "ratio": 5.033200123179011,
+      "lythonRangeMs": [
+        148.924049,
+        156.088789
+      ],
+      "cpythonRangeMs": [
+        29.851236,
+        31.8038
+      ],
+      "lythonIqrMs": [
+        149.52662550000002,
+        154.84791
+      ],
+      "cpythonIqrMs": [
+        29.937209,
+        30.1158445
+      ]
+    },
+    "scripts.config-edit.small": {
+      "lythonMs": 277.990087,
+      "cpythonMs": 32.240162,
+      "ratio": 8.62247798258582,
+      "lythonRangeMs": [
+        275.973591,
+        287.00589
+      ],
+      "cpythonRangeMs": [
+        31.910944,
+        32.60871
+      ],
+      "lythonIqrMs": [
+        277.3264845,
+        279.1391415
+      ],
+      "cpythonIqrMs": [
+        32.1222185,
+        32.362666000000004
+      ]
+    }
+  }
+}

@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1451 retained CSV and text runtime against CPython](results/2026-11-23-runtime-cpython-checkpoint/README.md)
+measures five warm scripts and three compilation or first-result lanes.
+Postponed factory time to result is 1.793–1.814× CPython. The native
+ASCII meter runs in 1.147–1.181× warm and expanded JSON in 0.820–0.849×.
+The nonlocal text report's Lython worker spread falls to 2.87%.
+
 [B1450 compact native call stack](results/2026-11-23-compact-native-call-stack/README.md)
 removes workspace from the direct entry. Direct and factory timing
 span zero. Wide calls take 2.66–5.20% longer and ordinary split takes
