@@ -95,11 +95,8 @@ internal sealed class PyExecutableFunction : PyFunctionBase
             return;
         }
 
-        if (receiver is null && CodeObject.HasDirectIntegerReturn &&
-            (completePositional
-                ? arguments.Length == CodeObject.FirstTemporarySlot &&
-                    TryStartDirectIntegerReturn(new LythonRuntime.SlotIntegerOperands(arguments), span, out result)
-                : TryStartPreparedIntegerReturn(call, arguments, context, span, out result)))
+        if (!completePositional && receiver is null && CodeObject.HasDirectIntegerReturn &&
+            TryStartPreparedIntegerReturn(call, arguments, context, span, out result))
         {
             unpacked = false;
             frame = null;
@@ -180,12 +177,15 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         return TryStartDirectIntegerReturn(new LythonRuntime.DefaultIntegerOperands(arguments, this), span, out result);
     }
 
-    internal bool TryStartBoundIntegerReturn(ReadOnlySpan<LythonRuntime.ExecutableSlot> arguments,
-        object receiver, LythonSourceSpan span, out LythonRuntime.ExecutableSlot result)
+    internal bool TryStartSuppliedIntegerReturn(ReadOnlySpan<LythonRuntime.ExecutableSlot> arguments,
+        object? receiver, LythonSourceSpan span, out LythonRuntime.ExecutableSlot result)
     {
         result = default;
-        return CodeObject.HasDirectIntegerReturn && arguments.Length + 1 == CodeObject.FirstTemporarySlot &&
-            TryStartDirectIntegerReturn(new LythonRuntime.BoundIntegerOperands(receiver, arguments), span, out result);
+        if (!CodeObject.HasDirectIntegerReturn ||
+            arguments.Length + (receiver is null ? 0 : 1) != CodeObject.FirstTemporarySlot) return false;
+        return receiver is null
+            ? TryStartDirectIntegerReturn(new LythonRuntime.SlotIntegerOperands(arguments), span, out result)
+            : TryStartDirectIntegerReturn(new LythonRuntime.BoundIntegerOperands(receiver, arguments), span, out result);
     }
 
     private bool TryStartDirectIntegerReturn<T>(T operands, LythonSourceSpan span, out LythonRuntime.ExecutableSlot result)

@@ -39,6 +39,14 @@ internal sealed partial class LythonRuntime
                     callEntered = true;
                     scope.CheckExecution(call.CallSpan);
                     var arguments = execution.Stack.Slice(start + call.ArgumentOffset, call.ArgumentCount).Span;
+                    if (completePositional &&
+                        function.TryStartSuppliedIntegerReturn(arguments, functionReceiver, call.CallSpan, out var scalar))
+                    {
+                        scope.LeaveInterpreterFrame();
+                        callEntered = false;
+                        PublishInstructionResult(ref execution, invocation, execution.Code.Instructions[execution.InstructionIndex], scalar);
+                        return true;
+                    }
                     var unpackedReturn = PrepareUnpackedCallReturn(ref execution, call, start, out var originalExtent);
                     function.StartNativeCall(call, arguments, functionReceiver, scope, call.CallSpan,
                         CallResultConsumedByIteration(in execution, call), completePositional, unpackedReturn,

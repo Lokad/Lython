@@ -505,9 +505,9 @@ internal sealed partial class LythonRuntime
             {
                 var arguments = Values.Slice(start + call.ArgumentOffset, call.ArgumentCount);
                 // The receiver and arguments are already evaluated. A closed
-                // return can read them without constructing callee slots.
-                if (receiver is not null && completePositional && call.UnpackedReturnCount == 0 &&
-                    function.TryStartBoundIntegerReturn(arguments, receiver, call.CallSpan, out result)) return true;
+                // scalar return needs neither callee slots nor an unpack window.
+                if (completePositional &&
+                    function.TryStartSuppliedIntegerReturn(arguments, receiver, call.CallSpan, out result)) return true;
                 var consumedByIteration = call.ConsumedByIteration || _consumedByIteration && call.ReturnedDirectly;
                 ExecutionContext? child;
                 if (call.UnpackedReturnCount != 0 && Code.LastOwnedTemporarySlot < start)

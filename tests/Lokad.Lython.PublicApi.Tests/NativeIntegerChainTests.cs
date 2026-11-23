@@ -4,6 +4,24 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class NativeIntegerChainTests
 {
+    private const string SuppliedScalarUnpack = """
+        def scalar(a,b):
+            return a+b
+        def nested(a,b):
+            left,right=scalar(a,b)
+            return left,right
+        class Measure:
+            def add(self,a,b):
+                return a+b
+        measured=Measure().add
+        print(measured(40,2), scalar(9223372036854775807,1))
+        for call in (scalar,nested,measured):
+            try:
+                left,right=call(40,2)
+            except TypeError:
+                print("cannot unpack")
+        """;
+
     public static TheoryData<string, string> Programs => new()
     {
         { "def f(a,b,c): return (a*b+5)//c\nfor a in [-9,-1,0,1,9]:\n for b in [-7,7]:\n  for c in [-3,3]:\n   assert f(a,b,c)==(a*b+5)//c\nprint('ok')", "ok\n" },
@@ -12,6 +30,7 @@ public sealed class NativeIntegerChainTests
         { "def f(a,b):\n if False: missing=1\n return (a//b)+missing\ntry:\n f(2,0)\nexcept ZeroDivisionError:\n print('zero first')\ntry:\n f(2,1)\nexcept UnboundLocalError:\n print('local later')", "zero first\nlocal later\n" },
         { "def f(a,b):\n result=(a*b)+1\n alias=result\n return result is alias,result\nprint(f(50000,50000))", "(True, 2500000001)\n" },
         { "class Value:\n def __mul__(self,other):\n  print('multiply')\n  return 11\ndef f(a,b): return (a*b)+7\nprint(f(Value(),3))", "multiply\n18\n" },
+        { SuppliedScalarUnpack, "42 9223372036854775808\ncannot unpack\ncannot unpack\ncannot unpack\n" },
     };
 
     [Theory]
