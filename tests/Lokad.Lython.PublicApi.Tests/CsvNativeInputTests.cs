@@ -97,6 +97,42 @@ public sealed class CsvNativeInputTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task ReboundFloatCanObserveOriginalFieldsAcrossFailedConversion(bool asynchronous)
+    {
+        await AssertFile(asynchronous, "SITE,1.0,bad,2.0,alpha\nSITE,3.0,4.0,5.0,beta\n", """
+            import csv
+            original_float = float
+            observed = []
+            def convert(value):
+                observed.append(value)
+                current = globals()
+                print(value is current['kwh'] or value is current['peak'] or value is current['price'])
+                return original_float(value)
+            float = convert
+            with open('/input.csv', encoding='utf-8', newline='') as source:
+                for site, kwh, peak, price, note in csv.reader(source):
+                    try:
+                        kwh, peak, price = float(kwh), float(peak), float(price)
+                    except ValueError:
+                        print(kwh is observed[0], peak is observed[1], price, note)
+                    else:
+                        print(kwh, peak, price, note)
+            print(observed)
+            """, """
+            True
+            True
+            True True 2.0 alpha
+            True
+            True
+            True
+            3.0 4.0 5.0 beta
+            ['1.0', 'bad', '3.0', '4.0', '5.0']
+            """.ReplaceLineEndings("\n") + "\n");
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task RetainedNativeRowsSurviveQuotesAndChangesInWidth(bool asynchronous)
     {
         await AssertFile(asynchronous,
