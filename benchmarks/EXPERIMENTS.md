@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1512 CPU attribution on the retained call checkpoint](results/2026-11-23-retained-call-attribution/README.md)
+finds caller arithmetic and instruction dispatch prominent in the supplied
+helper. Short first use and quoted invoices spread work across text or I/O,
+lookup, publication and execution. The original short warmup and the
+corrected capture are archived. Samples establish where to inspect the tape.
+
 [B1511 reuse delimiter masks across CSV fields](results/2026-11-23-csv-batched-markers/README.md)
 increases typed ASCII warm elapsed and CPU. Unicode worker spread leaves
 its effect uncertain. The complete-script results keep the prototype
