@@ -5,7 +5,7 @@
 | Native typed ASCII CSV meter | 4,096 records / 139,299 B | 2.626–2.645 ms | 2.484–2.539 ms | 1.034–1.065× | Earlier diagnostic. [B1518]. |
 | CSV meter with explicit `float()` | 4,096 records / 139,299 B | 3.387–3.589 ms | 2.975–3.034 ms | 1.117–1.206× | Diagnostic. Lython worker spread 5.95%. [B1521]. |
 | Short Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 1.3254–1.3718 ms | 0.9503–0.9552 ms | 1.388–1.444× | Earlier diagnostic. [B1499]. |
-| Quote-heavy CSV policy invoice | 4,096 records / 174,147 B | 7.020–7.047 ms | 6.325–6.489 ms | 1.082–1.114× | Diagnostic. [B1516]. |
+| Quote-heavy CSV policy invoice | 4,096 records / 174,147 B | 6.567–6.628 ms | 6.582–6.623 ms | 0.991–1.007× | Diagnostic. Spans parity. [B1534]. |
 | Eager nested factories | 2,048 iterations | 0.6624–0.6812 ms | 0.5759–0.5804 ms | 1.141–1.183× | Diagnostic. [B1530]. |
 | Postponed nested factories | 2,048 iterations | 0.5701–0.6160 ms | 0.5444–0.5463 ms | 1.044–1.131× | Uncertain magnitude. Lython worker spread 8.04%. [B1530]. |
 | Fully supplied arithmetic helper, module scope | 2,048 calls | 0.1892–0.1900 ms | 0.2077–0.2119 ms | 0.893–0.915× | Diagnostic. [B1525]. |
@@ -19,10 +19,10 @@ two workers per engine. The November 23, 2026 UTC explicit CSV checkpoint
 measures `65d4207fb`. The typed ASCII meter measures `fb3894153`.
 The supplied helper measures `faf86299e` at module scope and `be20f34fc`
 inside a function. Factories measure `b04e371c0`, and the invoice measures
-`09fc2c0a5`. The warm short word report measures `9e0cf58f8`, the
+`0112138c1`. The warm short word report measures `9e0cf58f8`, the
 mixed-width report measures `2b501135a`, and the JSON export measures
 `7bc247f1a`. The matched Lython comparisons below attribute changes to
-specific source pairs. [B1530] · [B1525] · [B1527] · [B1521] · [B1518] · [B1516] · [B1499] · [B1491] · [B1458].
+specific source pairs. [B1534] · [B1530] · [B1525] · [B1527] · [B1521] · [B1518] · [B1499] · [B1491] · [B1458].
 
 The quiet comparison machine is an Azure F4as_v7 running Ubuntu 24.04.4
 with .NET 11 RC3. The external baseline is stock CPython 3.13.16. Warm
@@ -38,6 +38,8 @@ measurements cover the wider request.
 
 | Workload | Phase | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| Quote-heavy CSV policy invoice, 1,293 B | Compilation only | 0.05936–0.06033 ms | 0.09800–0.09855 ms | 0.602–0.616× | Diagnostic. [B1534]. |
+| Quote-heavy CSV policy invoice | Compile-to-result | 6.539–6.644 ms | 6.799–6.825 ms | 0.958–0.977× | Diagnostic. [B1534]. |
 | Configuration edit, 181 B | Compilation only | 0.01898–0.01912 ms | 0.03401–0.03426 ms | 0.554–0.562× | Diagnostic. [B1491]. |
 | Short nonlocal word report, 615 B | Compilation only | 0.02873–0.02881 ms | 0.05609–0.05640 ms | 0.509–0.514× | Diagnostic. [B1499]. |
 | Short nonlocal word report | Compile-to-result | 1.4231–1.5208 ms | 1.0858–1.0972 ms | 1.297–1.401× | Uncertain magnitude. Lython worker spread 6.87%. [B1510]. |
@@ -100,6 +102,7 @@ Lython inside an already-running application. [B1451].
 
 | Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| Quote-heavy CSV policy invoice | 4,096 records / 174,147 B | 7.020–7.047 ms | 6.325–6.489 ms | 1.082–1.114× | Earlier diagnostic at `09fc2c0a5`. [B1516]. |
 | Quote-heavy CSV policy invoice | 4,096 records / 174,147 B | 6.897–6.951 ms | 6.313–6.330 ms | 1.090–1.101× | Diagnostic. [B1483]. |
 | Postponed nested factories | 2,048 inputs / 4,096 definitions | 0.9783–0.9953 ms | 0.5353–0.5515 ms | 1.774–1.859× | Historical diagnostic. [B1451]. |
 | Wide Unicode word report with a materialized split | 195,585 B | 0.9942–0.9975 ms | 1.310–1.328 ms | 0.749–0.761× | Historical diagnostic. [B1443]. |
@@ -252,6 +255,7 @@ Reproduce the comparisons with the [benchmark tools](../benchmarks/README.md).
 [B1491]: ../benchmarks/results/2026-11-23-forwarded-global-cpython/README.md
 [B1499]: ../benchmarks/results/2026-11-23-closure-cpython/README.md
 [B1503]: ../benchmarks/results/2026-11-23-computed-factory-cpython/README.md
+[B1534]: ../benchmarks/results/2026-11-23-owned-class-cpython/README.md
 [B1530]: ../benchmarks/results/2026-11-23-closed-factory-cpython/README.md
 [B1527]: ../benchmarks/results/2026-11-23-supplied-lexical-call-cpython/README.md
 [B1525]: ../benchmarks/results/2026-11-23-supplied-operand-window-cpython/README.md
