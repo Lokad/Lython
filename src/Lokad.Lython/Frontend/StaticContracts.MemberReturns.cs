@@ -2,7 +2,7 @@ namespace Lokad.Lython.Frontend;
 
 internal static partial class StaticContracts
 {
-    private static readonly (string MemberName, StaticReturnShape ReturnShape)[] StringMemberReturnShapes =
+    private static (string MemberName, StaticReturnShape ReturnShape)[] GetStringMemberReturnShapes() =>
     [
         ("lower", StaticReturnShape.String),
         ("capitalize", StaticReturnShape.String),
@@ -49,9 +49,10 @@ internal static partial class StaticContracts
         ("encode", StaticReturnShape.Bytes),
     ];
 
-    private static readonly StaticMemberReturnContract[] MemberReturnContracts = CreateMemberReturnContracts();
-    private static readonly IReadOnlyDictionary<StaticMemberContractKey, StaticMemberReturnContract> MemberReturnContractsByMember =
-        MemberReturnContracts.ToDictionary(static contract => new StaticMemberContractKey(contract.ReceiverKind, contract.MemberName));
+    private static class MemberReturnCatalog
+    {
+        internal static readonly Dictionary<StaticMemberContractKey, StaticReturnShape> ByMember = CreateMemberReturnShapes();
+    }
 
     public static bool TryGetMemberReturn(AbstractValue receiver, string memberName, LythonSourceSpan span,
         StaticAnalysisContext? context, out AbstractValue value)
@@ -67,33 +68,25 @@ internal static partial class StaticContracts
     }
 
     internal static bool TryGetMemberReturnShape(AbstractValueKind receiverKind, string memberName, out StaticReturnShape shape)
+        => MemberReturnCatalog.ByMember.TryGetValue(new(receiverKind, memberName), out shape);
+
+    private static Dictionary<StaticMemberContractKey, StaticReturnShape> CreateMemberReturnShapes()
     {
-        if (MemberReturnContractsByMember.TryGetValue(new(receiverKind, memberName), out var contract))
+        var core = CreateCoreMemberReturnContracts();
+        var extended = CreateExtendedMemberReturnContracts();
+        var strings = GetStringMemberReturnShapes();
+        var shapes = new Dictionary<StaticMemberContractKey, StaticReturnShape>(core.Length + extended.Length + strings.Length * 2);
+
+        foreach (var contract in core)
+            shapes.Add(new(contract.ReceiverKind, contract.MemberName), contract.ReturnShape);
+        foreach (var (memberName, shape) in strings)
         {
-            shape = contract.ReturnShape;
-            return true;
+            shapes.Add(new(AbstractValueKind.String, memberName), shape);
+            shapes.Add(new(AbstractValueKind.StringType, memberName), shape);
         }
-        shape = default;
-        return false;
+        foreach (var contract in extended)
+            shapes.Add(new(contract.ReceiverKind, contract.MemberName), contract.ReturnShape);
+
+        return shapes;
     }
-
-    private static StaticMemberReturnContract[] CreateMemberReturnContracts()
-    {
-        var contracts = new List<StaticMemberReturnContract>(
-            CoreMemberReturnContractCatalog.Contracts.Length +
-            ExtendedMemberReturnContractCatalog.Contracts.Length +
-            (StringMemberReturnShapes.Length * 2));
-        contracts.AddRange(CoreMemberReturnContractCatalog.Contracts);
-
-        foreach (var (memberName, returnShape) in StringMemberReturnShapes)
-        {
-            contracts.Add(new StaticMemberReturnContract(AbstractValueKind.String, memberName, returnShape));
-            contracts.Add(new StaticMemberReturnContract(AbstractValueKind.StringType, memberName, returnShape));
-        }
-
-        contracts.AddRange(ExtendedMemberReturnContractCatalog.Contracts);
-
-        return contracts.ToArray();
-    }
-
 }

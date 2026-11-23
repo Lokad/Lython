@@ -65,6 +65,7 @@ internal enum AbstractValueKind
     SubprocessCompletedProcess,
     SubprocessPopen,
     DataclassField,
+    // The callable catalog routes these workbook kinds as one contiguous range.
     OpenPyxlWorkbook,
     OpenPyxlWorksheet,
     OpenPyxlCell,

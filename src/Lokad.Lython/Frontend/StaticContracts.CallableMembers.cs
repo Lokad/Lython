@@ -4,34 +4,54 @@ namespace Lokad.Lython.Frontend;
 
 internal static partial class StaticContracts
 {
-    private static readonly StaticCallableContract[] CallableContracts = CreateCallableContracts();
-    private static readonly IReadOnlyDictionary<StaticMemberContractKey, StaticCallableContract> CallableContractsByMember =
-        CallableContracts.ToDictionary(static contract => new StaticMemberContractKey(contract.ReceiverKind, contract.MemberName));
+    private static class CallableMemberCatalog
+    {
+        internal static readonly Dictionary<StaticMemberContractKey, StaticCallableContract> ByMember = CreateCallableMemberIndex();
+    }
+
+    private static class WorkbookCallableMemberCatalog
+    {
+        internal static readonly Dictionary<StaticMemberContractKey, StaticCallableContract> ByMember =
+            CreateOpenPyxlCallableContracts().ToDictionary(static contract => new StaticMemberContractKey(contract.ReceiverKind, contract.MemberName));
+    }
 
     public static bool TryGetCallableContract(AbstractValue receiver, string memberName, out StaticCallableContract contract)
-        => CallableContractsByMember.TryGetValue(new StaticMemberContractKey(
-            receiver.Kind == AbstractValueKind.DecimalTuple ? AbstractValueKind.Tuple : receiver.Kind, memberName), out contract);
+    {
+        var kind = receiver.Kind == AbstractValueKind.DecimalTuple ? AbstractValueKind.Tuple : receiver.Kind;
+        // The OpenPyxl kinds form one contiguous family in AbstractValueKind.
+        var catalog = kind is >= AbstractValueKind.OpenPyxlWorkbook and <= AbstractValueKind.OpenPyxlMergedCellSet
+            ? WorkbookCallableMemberCatalog.ByMember
+            : CallableMemberCatalog.ByMember;
+        return catalog.TryGetValue(new(kind, memberName), out contract);
+    }
 
     public static bool IsMutatingMember(AbstractValue receiver, string memberName)
         => TryGetCallableContract(receiver, memberName, out var contract) &&
            contract.Mutation == StaticMutationKind.MutatesReceiver;
 
-    private static StaticCallableContract[] CreateCallableContracts()
+    private static Dictionary<StaticMemberContractKey, StaticCallableContract> CreateCallableMemberIndex()
     {
-        var contracts = new List<StaticCallableContract>(
-            CoreCallableContractCatalog.Contracts.Length +
-            DataCallableContractCatalog.Contracts.Length +
-            LibraryCallableContractCatalog.Contracts.Length +
-            OpenPyxlCallableContractCatalog.Contracts.Length);
-        contracts.AddRange(CoreCallableContractCatalog.Contracts);
-        contracts.AddRange(DataCallableContractCatalog.Contracts);
-        contracts.AddRange(LibraryCallableContractCatalog.Contracts);
-        contracts.AddRange(OpenPyxlCallableContractCatalog.Contracts);
-        AddStringCallableContracts(contracts);
-        AddListCallableContracts(contracts);
+        var core = CreateCoreCallableContracts();
+        var data = CreateDataCallableContracts();
+        var library = CreateLibraryCallableContracts();
+        var stringsAndLists = new List<StaticCallableContract>();
+        AddStringCallableContracts(stringsAndLists);
+        AddListCallableContracts(stringsAndLists);
 
+        var contracts = new Dictionary<StaticMemberContractKey, StaticCallableContract>(
+            core.Length + data.Length + library.Length + stringsAndLists.Count);
+        AddContracts(core);
+        AddContracts(data);
+        AddContracts(library);
+        foreach (var member in stringsAndLists)
+            contracts.Add(new(member.ReceiverKind, member.MemberName), member);
+        return contracts;
 
-        return contracts.ToArray();
+        void AddContracts(ReadOnlySpan<StaticCallableContract> members)
+        {
+            foreach (var member in members)
+                contracts.Add(new(member.ReceiverKind, member.MemberName), member);
+        }
 
         static void AddStringCallableContracts(List<StaticCallableContract> contracts)
         {

@@ -3,9 +3,10 @@ using Lokad.Lython.Runtime;
 
 namespace Lokad.Lython.Frontend;
 
-internal static partial class StaticContracts
+// Keep module metadata independent of method and return-type contracts.
+internal static class StaticModuleCatalog
 {
-    private static readonly Dictionary<string, BuiltinModuleSurface> ModuleSurfaces = new(StringComparer.Ordinal)
+    internal static readonly Dictionary<string, BuiltinModuleSurface> Surfaces = new(StringComparer.Ordinal)
     {
         ["__future__"] = Members("annotations"),
         ["builtins"] = new BuiltinModuleSurface(ExecutionState.BuiltinNames.Concat(["__debug__", "__name__", "False", "None", "True"])),
@@ -479,7 +480,7 @@ internal static partial class StaticContracts
         ["zipfile"] = Members("BadZipFile", "BadZipfile", "LargeZipFile", "error", "ZIP_STORED", "ZIP_DEFLATED", "ZIP_BZIP2", "ZIP_LZMA", "is_zipfile", "ZipInfo", "ZipFile"),
     };
 
-    private static readonly FrozenDictionary<ModuleMemberName, string> ModuleMemberModules =
+    internal static readonly FrozenDictionary<ModuleMemberName, string> Submodules =
         new Dictionary<ModuleMemberName, string>
         {
             [new("os", "path")] = "os.path",
@@ -505,7 +506,7 @@ internal static partial class StaticContracts
             [new("openpyxl.drawing", "image")] = "openpyxl.drawing.image",
         }.ToFrozenDictionary();
 
-    private static readonly FrozenDictionary<ModuleMemberName, string> ModuleMemberCallableAliases =
+    internal static readonly FrozenDictionary<ModuleMemberName, string> CallableAliases =
         new Dictionary<ModuleMemberName, string>
         {
             [new("openpyxl.workbook", "Workbook")] = "openpyxl.Workbook",
@@ -533,60 +534,55 @@ internal static partial class StaticContracts
             [new("openpyxl.worksheet.datavalidation", "DataValidation")] = "openpyxl.worksheet.datavalidation.DataValidation",
         }.ToFrozenDictionary();
 
-    private static readonly string[] KnownBuiltinModuleNames = [.. LythonRuntime.GetKnownBuiltinModuleNames()];
+    internal static readonly IReadOnlyList<string> Names = Surfaces.Keys.Order(StringComparer.Ordinal).ToArray();
 
-    static StaticContracts()
+    private static BuiltinModuleSurface Members(params string[] names)
+        => new(names);
+
+    internal sealed class BuiltinModuleSurface
     {
-        var declaredSurfaces = new HashSet<string>(ModuleSurfaces.Keys, StringComparer.Ordinal);
-        if (!declaredSurfaces.SetEquals(KnownBuiltinModuleNames))
+        private readonly FrozenSet<string> _memberLookup;
+
+        public BuiltinModuleSurface(IEnumerable<string> members)
         {
-            var missingSurfaces = KnownBuiltinModuleNames.Where(name => !declaredSurfaces.Contains(name));
-            var missingRuntimeModules = declaredSurfaces.Where(name => !KnownBuiltinModuleNames.Contains(name, StringComparer.Ordinal));
-            throw new InvalidOperationException(
-                $"Builtin module catalog mismatch. Missing surfaces: {string.Join(", ", missingSurfaces)}. " +
-                $"Missing runtime registrations: {string.Join(", ", missingRuntimeModules)}.");
+            _memberLookup = members.ToFrozenSet(StringComparer.Ordinal);
+            MemberNames = _memberLookup.Order(StringComparer.Ordinal).ToArray();
+            ExportedMemberNames = MemberNames
+                .Where(static name => !name.StartsWith("_", StringComparison.Ordinal))
+                .ToArray();
         }
 
-        foreach (var (member, targetModuleName) in ModuleMemberModules)
-        {
-            if (!IsKnownBuiltinModuleMember(member.ModuleName, member.MemberName) ||
-                !IsKnownBuiltinModule(targetModuleName))
-            {
-                throw new InvalidOperationException(
-                    $"Invalid builtin submodule mapping '{member.ModuleName}.{member.MemberName}' -> '{targetModuleName}'.");
-            }
-        }
+        public IReadOnlyList<string> MemberNames { get; }
 
-        foreach (var (member, targetName) in ModuleMemberCallableAliases)
-        {
-            if (!IsKnownBuiltinModuleMember(member.ModuleName, member.MemberName) ||
-                !TryGetKnownCallContract(targetName, out _))
-            {
-                throw new InvalidOperationException(
-                    $"Invalid builtin callable alias '{member.ModuleName}.{member.MemberName}' -> '{targetName}'.");
-            }
-        }
+        public IReadOnlyList<string> ExportedMemberNames { get; }
+
+        public bool Contains(string memberName) => _memberLookup.Contains(memberName);
     }
 
+    internal readonly record struct ModuleMemberName(string ModuleName, string MemberName);
+}
+
+internal static partial class StaticContracts
+{
     public static bool IsKnownBuiltinModule(string moduleName)
-        => ModuleSurfaces.ContainsKey(moduleName);
+        => StaticModuleCatalog.Surfaces.ContainsKey(moduleName);
 
     public static bool IsKnownBuiltinModuleMember(string moduleName, string memberName)
-        => ModuleSurfaces.TryGetValue(moduleName, out var surface) &&
+        => StaticModuleCatalog.Surfaces.TryGetValue(moduleName, out var surface) &&
             (memberName is "__dict__" or "__name__" or "__spec__" or "__loader__" or "__package__" ||
-             memberName == "__path__" && KnownBuiltinModuleNames.Any(name => name.StartsWith(moduleName + ".", StringComparison.Ordinal)) ||
+             memberName == "__path__" && StaticModuleCatalog.Names.Any(name => name.StartsWith(moduleName + ".", StringComparison.Ordinal)) ||
              surface.Contains(memberName));
 
     public static IReadOnlyList<string> GetKnownBuiltinModuleNames()
-        => KnownBuiltinModuleNames;
+        => StaticModuleCatalog.Names;
 
     public static IReadOnlyList<string> GetModuleMemberNames(string moduleName)
-        => ModuleSurfaces.TryGetValue(moduleName, out var surface)
+        => StaticModuleCatalog.Surfaces.TryGetValue(moduleName, out var surface)
             ? surface.MemberNames
             : [];
 
     public static IReadOnlyList<string> GetModuleExportedMemberNames(string moduleName)
-        => ModuleSurfaces.TryGetValue(moduleName, out var surface)
+        => StaticModuleCatalog.Surfaces.TryGetValue(moduleName, out var surface)
             ? surface.ExportedMemberNames
             : [];
 
@@ -598,14 +594,14 @@ internal static partial class StaticContracts
             return false;
         }
 
-        var member = new ModuleMemberName(moduleName, memberName);
-        if (ModuleMemberModules.TryGetValue(member, out var targetModuleName))
+        var member = new StaticModuleCatalog.ModuleMemberName(moduleName, memberName);
+        if (StaticModuleCatalog.Submodules.TryGetValue(member, out var targetModuleName))
         {
             value = AbstractValue.Module(targetModuleName, span);
             return true;
         }
 
-        var targetName = ModuleMemberCallableAliases.GetValueOrDefault(member) ?? $"{moduleName}.{memberName}";
+        var targetName = StaticModuleCatalog.CallableAliases.GetValueOrDefault(member) ?? $"{moduleName}.{memberName}";
         if (TryGetKnownCallContract(targetName, out _))
         {
             value = AbstractValue.KnownCallable(targetName, span);
@@ -698,30 +694,4 @@ internal static partial class StaticContracts
 
         return value.Kind != default;
     }
-
-    private static BuiltinModuleSurface Members(params string[] names)
-        => new(names);
-
-
-    private sealed class BuiltinModuleSurface
-    {
-        private readonly FrozenSet<string> _memberLookup;
-
-        public BuiltinModuleSurface(IEnumerable<string> members)
-        {
-            _memberLookup = members.ToFrozenSet(StringComparer.Ordinal);
-            MemberNames = _memberLookup.Order(StringComparer.Ordinal).ToArray();
-            ExportedMemberNames = MemberNames
-                .Where(static name => !name.StartsWith("_", StringComparison.Ordinal))
-                .ToArray();
-        }
-
-        public IReadOnlyList<string> MemberNames { get; }
-
-        public IReadOnlyList<string> ExportedMemberNames { get; }
-
-        public bool Contains(string memberName) => _memberLookup.Contains(memberName);
-    }
-
-    private readonly record struct ModuleMemberName(string ModuleName, string MemberName);
 }

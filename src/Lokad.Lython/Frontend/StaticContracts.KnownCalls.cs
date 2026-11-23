@@ -4,7 +4,7 @@ namespace Lokad.Lython.Frontend;
 
 internal static partial class StaticContracts
 {
-    private static readonly StaticKnownCallContract[] KnownCallContracts =
+    private static StaticKnownCallContract[] CreateKnownCallContracts() =>
     [
         new(LythonKnownCallableSignatures.SysExit, "LA3151", "sys.exit([code]) expects zero or one argument.", StaticReturnShape.None),
         new(LythonKnownCallableSignatures.SysGetDefaultEncoding, "LA3151", "sys.getdefaultencoding() expects no arguments.", StaticReturnShape.String),
@@ -496,11 +496,14 @@ internal static partial class StaticContracts
         new(LythonKnownCallableSignatures.ItertoolsTee, "LA3151", "itertools.tee(iterable[, n]) expects one or two arguments."),
         new(LythonKnownCallableSignatures.ItertoolsBatched, "LA3151", "itertools.batched(iterable, n, *, strict=False) expects supported arguments."),
     ];
-    private static readonly IReadOnlyDictionary<string, StaticKnownCallContract> KnownCallContractsByName =
-        KnownCallContracts.ToDictionary(static contract => contract.TargetName, StringComparer.Ordinal);
+    private static class KnownCallCatalog
+    {
+        internal static readonly Dictionary<string, StaticKnownCallContract> ByName =
+            CreateKnownCallContracts().ToDictionary(static contract => contract.TargetName, StringComparer.Ordinal);
+    }
 
     public static bool TryGetKnownCallContract(string targetName, out StaticKnownCallContract contract)
-        => KnownCallContractsByName.TryGetValue(targetName, out contract);
+        => KnownCallCatalog.ByName.TryGetValue(targetName, out contract);
 
     public static bool TryGetKnownCallReturn(string targetName, LythonSourceSpan span, out AbstractValue value)
     {

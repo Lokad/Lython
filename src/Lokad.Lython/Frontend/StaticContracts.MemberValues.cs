@@ -4,7 +4,7 @@ namespace Lokad.Lython.Frontend;
 
 internal static partial class StaticContracts
 {
-    private static readonly StaticMemberValueContract[] MemberValueContracts =
+    private static StaticMemberValueContract[] CreateMemberValueContracts() =>
     [
         new(AbstractValueKind.Path, "name", StaticReturnShape.String),
         new(AbstractValueKind.Path, "suffix", StaticReturnShape.String),
@@ -329,8 +329,11 @@ internal static partial class StaticContracts
         new(AbstractValueKind.OpenPyxlRowDimension, "hidden", StaticReturnShape.Boolean),
         new(AbstractValueKind.OpenPyxlMergedCellSet, "ranges", StaticReturnShape.ListOfString),
     ];
-    private static readonly IReadOnlyDictionary<StaticMemberContractKey, StaticMemberValueContract> MemberValueContractsByMember =
-        MemberValueContracts.ToDictionary(static contract => new StaticMemberContractKey(contract.ReceiverKind, contract.MemberName));
+    private static class MemberValueCatalog
+    {
+        internal static readonly Dictionary<StaticMemberContractKey, StaticMemberValueContract> ByMember =
+            CreateMemberValueContracts().ToDictionary(static contract => new StaticMemberContractKey(contract.ReceiverKind, contract.MemberName));
+    }
 
     public static bool TryGetMemberValue(AbstractValue receiver, string memberName, LythonSourceSpan span, out AbstractValue value)
     {
@@ -348,7 +351,7 @@ internal static partial class StaticContracts
             return true;
         }
 
-        if (MemberValueContractsByMember.TryGetValue(
+        if (MemberValueCatalog.ByMember.TryGetValue(
             new StaticMemberContractKey(receiver.Kind, memberName),
             out var contract))
         {

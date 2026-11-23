@@ -4,10 +4,8 @@ namespace Lokad.Lython.Frontend;
 
 internal static partial class StaticContracts
 {
-    private static class LibraryCallableContractCatalog
-    {
-        public static readonly StaticCallableContract[] Contracts =
-        [
+    private static StaticCallableContract[] CreateLibraryCallableContracts() =>
+    [
         new(AbstractValueKind.DateTimeTimedelta, "total_seconds", 0, 0, "LA3162", "timedelta.total_seconds() expects no arguments."),
         new(AbstractValueKind.DateTimeDate, "weekday", 0, 0, "LA3162", "date.weekday() expects no arguments."),
         new(AbstractValueKind.DateTimeDate, "isoweekday", 0, 0, "LA3162", "date.isoweekday() expects no arguments."),
@@ -103,6 +101,5 @@ internal static partial class StaticContracts
         new(AbstractValueKind.SubprocessPopen, "send_signal", 1, 1, "LA3160", "Popen.send_signal(signal) expects one argument.", parameterNames: ["signal"]),
         new(AbstractValueKind.SubprocessPopen, "terminate", 0, 0, "LA3160", "Popen.terminate() expects no arguments."),
         new(AbstractValueKind.SubprocessPopen, "kill", 0, 0, "LA3160", "Popen.kill() expects no arguments."),
-        ];
-    }
+    ];
 }

@@ -2,10 +2,8 @@ namespace Lokad.Lython.Frontend;
 
 internal static partial class StaticContracts
 {
-    private static class CoreMemberReturnContractCatalog
-    {
-        public static readonly StaticMemberReturnContract[] Contracts =
-        [
+    private static StaticMemberReturnContract[] CreateCoreMemberReturnContracts() =>
+    [
         new(AbstractValueKind.Path, "__fspath__", StaticReturnShape.String),
         new(AbstractValueKind.Path, "read_text", StaticReturnShape.String),
         new(AbstractValueKind.Path, "as_posix", StaticReturnShape.String),
@@ -306,6 +304,5 @@ internal static partial class StaticContracts
         new(AbstractValueKind.Random, "paretovariate", StaticReturnShape.Float),
         new(AbstractValueKind.Random, "vonmisesvariate", StaticReturnShape.Float),
         new(AbstractValueKind.Random, "weibullvariate", StaticReturnShape.Float),
-        ];
-    }
+    ];
 }

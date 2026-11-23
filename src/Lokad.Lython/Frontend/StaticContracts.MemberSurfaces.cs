@@ -1,8 +1,8 @@
 namespace Lokad.Lython.Frontend;
 
-internal static partial class StaticContracts
+internal static class StaticLibraryMemberSurfaces
 {
-    private static readonly HashSet<string> RegexPatternMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> RegexPatternMembers = new(StringComparer.Ordinal)
     {
         "pattern",
         "flags",
@@ -18,7 +18,7 @@ internal static partial class StaticContracts
         "split",
     };
 
-    private static readonly HashSet<string> RegexMatchMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> RegexMatchMembers = new(StringComparer.Ordinal)
     {
         "__module__",
         "re",
@@ -38,7 +38,7 @@ internal static partial class StaticContracts
         "span",
     };
 
-    private static readonly HashSet<string> ArgparseParserMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> ArgparseParserMembers = new(StringComparer.Ordinal)
     {
         "add_argument",
         "add_mutually_exclusive_group",
@@ -55,23 +55,23 @@ internal static partial class StaticContracts
         "add_subparsers",
     };
 
-    private static readonly HashSet<string> ArgparseGroupMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> ArgparseGroupMembers = new(StringComparer.Ordinal)
     {
         "add_argument",
     };
 
-    private static readonly HashSet<string> BytesIOMembers = new(StringComparer.Ordinal) { "read", "read1", "readline", "readlines", "write", "writelines", "seek", "tell", "truncate", "getvalue", "close", "flush", "readable", "writable", "seekable", "__iter__", "__next__", "__enter__", "__exit__", "closed" };
+    internal static readonly HashSet<string> BytesIOMembers = new(StringComparer.Ordinal) { "read", "read1", "readline", "readlines", "write", "writelines", "seek", "tell", "truncate", "getvalue", "close", "flush", "readable", "writable", "seekable", "__iter__", "__next__", "__enter__", "__exit__", "closed" };
 
-    private static readonly HashSet<string> StringIOMembers = new(StringComparer.Ordinal) { "read", "readline", "readlines", "write", "writelines", "seek", "tell", "truncate", "getvalue", "close", "flush", "readable", "writable", "seekable", "__iter__", "__next__", "__enter__", "__exit__", "closed", "newlines", "encoding", "errors", "line_buffering" };
+    internal static readonly HashSet<string> StringIOMembers = new(StringComparer.Ordinal) { "read", "readline", "readlines", "write", "writelines", "seek", "tell", "truncate", "getvalue", "close", "flush", "readable", "writable", "seekable", "__iter__", "__next__", "__enter__", "__exit__", "closed", "newlines", "encoding", "errors", "line_buffering" };
 
-    private static readonly HashSet<string> CsvReaderMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> CsvReaderMembers = new(StringComparer.Ordinal)
     {
         "line_num",
         "__iter__",
         "__next__",
     };
 
-    private static readonly HashSet<string> CsvDictReaderMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> CsvDictReaderMembers = new(StringComparer.Ordinal)
     {
         "fieldnames", "restkey", "restval", "reader",
         "line_num",
@@ -79,14 +79,14 @@ internal static partial class StaticContracts
         "__next__",
     };
 
-    private static readonly HashSet<string> CsvWriterMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> CsvWriterMembers = new(StringComparer.Ordinal)
     {
         "writerow",
         "writerows",
         "getvalue",
     };
 
-    private static readonly HashSet<string> CsvDictWriterMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> CsvDictWriterMembers = new(StringComparer.Ordinal)
     {
         "fieldnames", "restval", "extrasaction", "writer",
         "writeheader",
@@ -94,20 +94,20 @@ internal static partial class StaticContracts
         "writerows",
     };
 
-    private static readonly HashSet<string> DifflibDifferMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> DifflibDifferMembers = new(StringComparer.Ordinal)
     {
         "linejunk",
         "charjunk",
         "compare",
     };
 
-    private static readonly HashSet<string> DifflibHtmlDiffMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> DifflibHtmlDiffMembers = new(StringComparer.Ordinal)
     {
         "make_table",
         "make_file",
     };
 
-    private static readonly HashSet<string> DifflibSequenceMatcherMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> DifflibSequenceMatcherMembers = new(StringComparer.Ordinal)
     {
         "a",
         "b",
@@ -126,7 +126,7 @@ internal static partial class StaticContracts
         "real_quick_ratio",
     };
 
-    private static readonly HashSet<string> PkgutilModuleInfoMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> PkgutilModuleInfoMembers = new(StringComparer.Ordinal)
     {
         "module_finder",
         "name",
@@ -143,7 +143,7 @@ internal static partial class StaticContracts
         "index",
     };
 
-    private static readonly HashSet<string> PkgutilLoaderMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> PkgutilLoaderMembers = new(StringComparer.Ordinal)
     {
         "name",
         "fullname",
@@ -152,7 +152,7 @@ internal static partial class StaticContracts
         "get_source",
     };
 
-    private static readonly HashSet<string> CompletedProcessMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> CompletedProcessMembers = new(StringComparer.Ordinal)
     {
         "args",
         "returncode",
@@ -161,7 +161,7 @@ internal static partial class StaticContracts
         "check_returncode",
     };
 
-    private static readonly HashSet<string> DataclassFieldMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> DataclassFieldMembers = new(StringComparer.Ordinal)
     {
         "name",
         "type",
@@ -174,8 +174,11 @@ internal static partial class StaticContracts
         "metadata",
         "kw_only",
     };
+}
 
-    private static readonly HashSet<string> OpenPyxlWorkbookMembers = new(StringComparer.Ordinal)
+internal static class StaticWorkbookMemberSurfaces
+{
+    internal static readonly HashSet<string> OpenPyxlWorkbookMembers = new(StringComparer.Ordinal)
     {
         "active",
         "worksheets",
@@ -203,7 +206,7 @@ internal static partial class StaticContracts
         "close",
     };
 
-    private static readonly HashSet<string> OpenPyxlWorksheetMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> OpenPyxlWorksheetMembers = new(StringComparer.Ordinal)
     {
         "title",
         "min_row",
@@ -255,7 +258,7 @@ internal static partial class StaticContracts
         "merged_cell_ranges",
     };
 
-    private static readonly HashSet<string> OpenPyxlCellMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> OpenPyxlCellMembers = new(StringComparer.Ordinal)
     {
         "value",
         "row",
@@ -281,7 +284,7 @@ internal static partial class StaticContracts
         "offset",
     };
 
-    private static readonly HashSet<string> OpenPyxlHyperlinkMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> OpenPyxlHyperlinkMembers = new(StringComparer.Ordinal)
     {
         "ref",
         "target",
@@ -290,7 +293,7 @@ internal static partial class StaticContracts
         "display",
     };
 
-    private static readonly HashSet<string> OpenPyxlCommentMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> OpenPyxlCommentMembers = new(StringComparer.Ordinal)
     {
         "text",
         "author",
@@ -298,7 +301,7 @@ internal static partial class StaticContracts
         "height",
     };
 
-    private static readonly HashSet<string> OpenPyxlFontMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> OpenPyxlFontMembers = new(StringComparer.Ordinal)
     {
         "name",
         "sz",
@@ -314,7 +317,7 @@ internal static partial class StaticContracts
         "i",
     };
 
-    private static readonly HashSet<string> OpenPyxlPatternFillMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> OpenPyxlPatternFillMembers = new(StringComparer.Ordinal)
     {
         "fill_type",
         "start_color",
@@ -324,7 +327,7 @@ internal static partial class StaticContracts
         "patternType",
     };
 
-    private static readonly HashSet<string> OpenPyxlBorderMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> OpenPyxlBorderMembers = new(StringComparer.Ordinal)
     {
         "left",
         "right",
@@ -332,14 +335,14 @@ internal static partial class StaticContracts
         "bottom",
     };
 
-    private static readonly HashSet<string> OpenPyxlSideMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> OpenPyxlSideMembers = new(StringComparer.Ordinal)
     {
         "style",
         "color",
         "border_style",
     };
 
-    private static readonly HashSet<string> OpenPyxlAlignmentMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> OpenPyxlAlignmentMembers = new(StringComparer.Ordinal)
     {
         "horizontal",
         "vertical",
@@ -351,13 +354,13 @@ internal static partial class StaticContracts
         "shrinkToFit",
     };
 
-    private static readonly HashSet<string> OpenPyxlProtectionMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> OpenPyxlProtectionMembers = new(StringComparer.Ordinal)
     {
         "locked",
         "hidden",
     };
 
-    private static readonly HashSet<string> OpenPyxlNamedStyleMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> OpenPyxlNamedStyleMembers = new(StringComparer.Ordinal)
     {
         "name",
         "number_format",
@@ -368,7 +371,7 @@ internal static partial class StaticContracts
         "protection",
     };
 
-    private static readonly HashSet<string> OpenPyxlColorMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> OpenPyxlColorMembers = new(StringComparer.Ordinal)
     {
         "type",
         "rgb",
@@ -380,7 +383,7 @@ internal static partial class StaticContracts
         "value",
     };
 
-    private static readonly HashSet<string> OpenPyxlTableMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> OpenPyxlTableMembers = new(StringComparer.Ordinal)
     {
         "displayName",
         "name",
@@ -388,7 +391,7 @@ internal static partial class StaticContracts
         "tableStyleInfo",
     };
 
-    private static readonly HashSet<string> OpenPyxlTableStyleInfoMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> OpenPyxlTableStyleInfoMembers = new(StringComparer.Ordinal)
     {
         "name",
         "showFirstColumn",
@@ -397,7 +400,7 @@ internal static partial class StaticContracts
         "showColumnStripes",
     };
 
-    private static readonly HashSet<string> OpenPyxlDataValidationMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> OpenPyxlDataValidationMembers = new(StringComparer.Ordinal)
     {
         "type",
         "formula1",
@@ -416,7 +419,7 @@ internal static partial class StaticContracts
         "add",
     };
 
-    private static readonly HashSet<string> OpenPyxlConditionalFormattingRuleMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> OpenPyxlConditionalFormattingRuleMembers = new(StringComparer.Ordinal)
     {
         "type",
         "operator",
@@ -424,12 +427,12 @@ internal static partial class StaticContracts
         "formula",
     };
 
-    private static readonly HashSet<string> OpenPyxlAutoFilterMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> OpenPyxlAutoFilterMembers = new(StringComparer.Ordinal)
     {
         "ref",
     };
 
-    private static readonly HashSet<string> OpenPyxlSheetProtectionMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> OpenPyxlSheetProtectionMembers = new(StringComparer.Ordinal)
     {
         "sheet",
         "objects",
@@ -443,7 +446,7 @@ internal static partial class StaticContracts
         "disable",
     };
 
-    private static readonly HashSet<string> OpenPyxlWorkbookProtectionMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> OpenPyxlWorkbookProtectionMembers = new(StringComparer.Ordinal)
     {
         "lockStructure",
         "lockWindows",
@@ -464,7 +467,7 @@ internal static partial class StaticContracts
         "set_revisions_password",
     };
 
-    private static readonly HashSet<string> OpenPyxlDrawingMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> OpenPyxlDrawingMembers = new(StringComparer.Ordinal)
     {
         "path",
         "_path",
@@ -476,7 +479,7 @@ internal static partial class StaticContracts
         "_images",
     };
 
-    private static readonly HashSet<string> OpenPyxlChartMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> OpenPyxlChartMembers = new(StringComparer.Ordinal)
     {
         "type",
         "path",
@@ -498,7 +501,7 @@ internal static partial class StaticContracts
         "append",
     };
 
-    private static readonly HashSet<string> OpenPyxlImageMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> OpenPyxlImageMembers = new(StringComparer.Ordinal)
     {
         "path",
         "_path",
@@ -512,7 +515,7 @@ internal static partial class StaticContracts
         "height",
     };
 
-    private static readonly HashSet<string> OpenPyxlSheetViewMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> OpenPyxlSheetViewMembers = new(StringComparer.Ordinal)
     {
         "showGridLines",
         "show_gridlines",
@@ -521,14 +524,14 @@ internal static partial class StaticContracts
         "selection",
     };
 
-    private static readonly HashSet<string> OpenPyxlSelectionMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> OpenPyxlSelectionMembers = new(StringComparer.Ordinal)
     {
         "activeCell",
         "sqref",
         "pane",
     };
 
-    private static readonly HashSet<string> OpenPyxlPageMarginsMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> OpenPyxlPageMarginsMembers = new(StringComparer.Ordinal)
     {
         "left",
         "right",
@@ -538,7 +541,7 @@ internal static partial class StaticContracts
         "footer",
     };
 
-    private static readonly HashSet<string> OpenPyxlPageSetupMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> OpenPyxlPageSetupMembers = new(StringComparer.Ordinal)
     {
         "orientation",
         "paperSize",
@@ -550,28 +553,28 @@ internal static partial class StaticContracts
         "scale",
     };
 
-    private static readonly HashSet<string> OpenPyxlTableCollectionMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> OpenPyxlTableCollectionMembers = new(StringComparer.Ordinal)
     {
         "keys",
         "values",
         "items",
     };
 
-    private static readonly HashSet<string> OpenPyxlDataValidationListMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> OpenPyxlDataValidationListMembers = new(StringComparer.Ordinal)
     {
         "dataValidation",
         "count",
         "append",
     };
 
-    private static readonly HashSet<string> OpenPyxlConditionalFormattingCollectionMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> OpenPyxlConditionalFormattingCollectionMembers = new(StringComparer.Ordinal)
     {
         "ranges",
         "items",
         "add",
     };
 
-    private static readonly HashSet<string> OpenPyxlColumnDimensionMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> OpenPyxlColumnDimensionMembers = new(StringComparer.Ordinal)
     {
         "index",
         "width",
@@ -579,7 +582,7 @@ internal static partial class StaticContracts
         "style",
     };
 
-    private static readonly HashSet<string> OpenPyxlRowDimensionMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> OpenPyxlRowDimensionMembers = new(StringComparer.Ordinal)
     {
         "index",
         "height",
@@ -587,9 +590,8 @@ internal static partial class StaticContracts
         "style",
     };
 
-    private static readonly HashSet<string> OpenPyxlMergedCellSetMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> OpenPyxlMergedCellSetMembers = new(StringComparer.Ordinal)
     {
         "ranges",
     };
-
 }

@@ -4,10 +4,8 @@ namespace Lokad.Lython.Frontend;
 
 internal static partial class StaticContracts
 {
-    private static class OpenPyxlCallableContractCatalog
-    {
-        public static readonly StaticCallableContract[] Contracts =
-        [
+    private static StaticCallableContract[] CreateOpenPyxlCallableContracts() =>
+    [
         new(AbstractValueKind.OpenPyxlWorkbook, "add_named_style", 1, 1, "LA3161", "Workbook.add_named_style(style) expects one argument.", StaticMutationKind.MutatesReceiver, ["style"]),
         new(AbstractValueKind.OpenPyxlWorkbook, "create_sheet", 0, 2, "LA3161", "Workbook.create_sheet([title][, index]) expects zero to two arguments.", StaticMutationKind.MutatesReceiver, ["title", "index"]),
         new(AbstractValueKind.OpenPyxlWorkbook, "remove", 1, 1, "LA3161", "Workbook.remove(worksheet) expects one worksheet argument.", StaticMutationKind.MutatesReceiver, ["worksheet"]),
@@ -50,6 +48,5 @@ internal static partial class StaticContracts
         new(AbstractValueKind.OpenPyxlSheetProtection, "disable", 0, 0, "LA3161", "SheetProtection.disable() expects no arguments.", StaticMutationKind.MutatesReceiver),
         new(AbstractValueKind.OpenPyxlWorkbookProtection, "set_workbook_password", 1, 2, "LA3161", "WorkbookProtection.set_workbook_password(value[, already_hashed]) expects one or two arguments.", StaticMutationKind.MutatesReceiver, ["value", "already_hashed"]),
         new(AbstractValueKind.OpenPyxlWorkbookProtection, "set_revisions_password", 1, 2, "LA3161", "WorkbookProtection.set_revisions_password(value[, already_hashed]) expects one or two arguments.", StaticMutationKind.MutatesReceiver, ["value", "already_hashed"]),
-        ];
-    }
+    ];
 }

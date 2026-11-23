@@ -25,6 +25,23 @@ public sealed class ModuleContractParityTests
     }
 
     [Fact]
+    public void ModuleCatalogAgreesWithRuntimeRegistrationsAndKnownContracts()
+    {
+        Assert.Equal(LythonRuntime.GetKnownBuiltinModuleNames(), StaticContracts.GetKnownBuiltinModuleNames());
+        foreach (var (member, target) in StaticModuleCatalog.Submodules)
+        {
+            Assert.True(StaticContracts.IsKnownBuiltinModuleMember(member.ModuleName, member.MemberName), member.ToString());
+            Assert.True(StaticContracts.IsKnownBuiltinModule(target), target);
+        }
+
+        foreach (var (member, target) in StaticModuleCatalog.CallableAliases)
+        {
+            Assert.True(StaticContracts.IsKnownBuiltinModuleMember(member.ModuleName, member.MemberName), member.ToString());
+            Assert.True(StaticContracts.TryGetKnownCallContract(target, out _), target);
+        }
+    }
+
+    [Fact]
     public void StaticBuiltinModuleSurfaceIsResolvableAtRuntime()
     {
         var host = new MockLythonHost();

@@ -1,8 +1,12 @@
+using static Lokad.Lython.Frontend.StaticCoreMemberSurfaces;
+using static Lokad.Lython.Frontend.StaticLibraryMemberSurfaces;
+using static Lokad.Lython.Frontend.StaticWorkbookMemberSurfaces;
+
 namespace Lokad.Lython.Frontend;
 
-internal static partial class StaticContracts
+internal static class StaticCoreMemberSurfaces
 {
-    private static readonly HashSet<string> NoneMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> NoneMembers = new(StringComparer.Ordinal)
     {
         "__eq__",
         "__ne__",
@@ -14,7 +18,7 @@ internal static partial class StaticContracts
         "__hash__",
     };
 
-    private static readonly HashSet<string> StringMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> StringMembers = new(StringComparer.Ordinal)
     {
         "encode",
         "replace",
@@ -79,7 +83,7 @@ internal static partial class StaticContracts
         "__hash__",
     };
 
-    private static readonly HashSet<string> BytesMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> BytesMembers = new(StringComparer.Ordinal)
     {
         "capitalize",
         "center",
@@ -139,7 +143,7 @@ internal static partial class StaticContracts
         "__hash__",
     };
 
-    private static readonly HashSet<string> PathMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> PathMembers = new(StringComparer.Ordinal)
     {
         "__module__",
         "name",
@@ -196,7 +200,7 @@ internal static partial class StaticContracts
         "group",
     };
 
-    private static readonly HashSet<string> TextFileHandleMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> TextFileHandleMembers = new(StringComparer.Ordinal)
     {
         "closed",
         "name",
@@ -221,7 +225,7 @@ internal static partial class StaticContracts
         "flush",
     };
 
-    private static readonly HashSet<string> TupleMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> TupleMembers = new(StringComparer.Ordinal)
     {
         "index",
         "count",
@@ -241,7 +245,7 @@ internal static partial class StaticContracts
         "__hash__",
     };
 
-    private static readonly HashSet<string> FloatMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> FloatMembers = new(StringComparer.Ordinal)
     {
         "as_integer_ratio",
         "conjugate",
@@ -266,7 +270,7 @@ internal static partial class StaticContracts
         "__round__",
     };
 
-    private static readonly HashSet<string> IntMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> IntMembers = new(StringComparer.Ordinal)
     {
         "as_integer_ratio",
         "bit_count",
@@ -296,7 +300,7 @@ internal static partial class StaticContracts
         "__index__",
     };
 
-    private static readonly HashSet<string> ListMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> ListMembers = new(StringComparer.Ordinal)
     {
         "append",
         "extend",
@@ -328,7 +332,7 @@ internal static partial class StaticContracts
         "__reversed__",
     };
 
-    private static readonly HashSet<string> DictMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> DictMembers = new(StringComparer.Ordinal)
     {
         "get",
         "keys",
@@ -360,7 +364,7 @@ internal static partial class StaticContracts
         "__reversed__",
     };
 
-    private static readonly HashSet<string> SetMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> SetMembers = new(StringComparer.Ordinal)
     {
         "add",
         "clear",
@@ -403,7 +407,7 @@ internal static partial class StaticContracts
         "__hash__",
     };
 
-    private static readonly HashSet<string> PopenMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> PopenMembers = new(StringComparer.Ordinal)
     {
         "args",
         "stdin",
@@ -422,7 +426,7 @@ internal static partial class StaticContracts
         "pid",
     };
 
-    private static readonly HashSet<string> CollectionsDefaultDictMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> CollectionsDefaultDictMembers = new(StringComparer.Ordinal)
     {
         "__module__",
         "default_factory",
@@ -455,7 +459,7 @@ internal static partial class StaticContracts
         "__reversed__",
     };
 
-    private static readonly HashSet<string> CollectionsCounterMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> CollectionsCounterMembers = new(StringComparer.Ordinal)
     {
         "__module__",
         "get",
@@ -492,7 +496,7 @@ internal static partial class StaticContracts
         "__reversed__",
     };
 
-    private static readonly HashSet<string> CollectionsDequeMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> CollectionsDequeMembers = new(StringComparer.Ordinal)
     {
         "__module__",
         "maxlen",
@@ -523,7 +527,7 @@ internal static partial class StaticContracts
         "__reversed__",
     };
 
-    private static readonly HashSet<string> CollectionsChainMapMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> CollectionsChainMapMembers = new(StringComparer.Ordinal)
     {
         "__module__",
         "maps",
@@ -544,7 +548,7 @@ internal static partial class StaticContracts
         "__hash__",
     };
 
-    private static readonly HashSet<string> DecimalMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> DecimalMembers = new(StringComparer.Ordinal)
     {
         "__module__",
         "quantize",
@@ -604,7 +608,7 @@ internal static partial class StaticContracts
         "__round__",
     };
 
-    private static readonly HashSet<string> DecimalContextMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> DecimalContextMembers = new(StringComparer.Ordinal)
     {
         "prec",
         "rounding",
@@ -620,14 +624,14 @@ internal static partial class StaticContracts
         "create_decimal_from_float",
     };
 
-    private static readonly HashSet<string> DecimalTupleMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> DecimalTupleMembers = new(StringComparer.Ordinal)
     {
         "sign",
         "digits",
         "exponent",
     };
 
-    private static readonly HashSet<string> DateTimeTimedeltaMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> DateTimeTimedeltaMembers = new(StringComparer.Ordinal)
     {
         "days",
         "seconds",
@@ -635,7 +639,7 @@ internal static partial class StaticContracts
         "total_seconds",
     };
 
-    private static readonly HashSet<string> DateTimeDateMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> DateTimeDateMembers = new(StringComparer.Ordinal)
     {
         "year",
         "month",
@@ -652,7 +656,7 @@ internal static partial class StaticContracts
         "replace",
     };
 
-    private static readonly HashSet<string> DateTimeTimeMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> DateTimeTimeMembers = new(StringComparer.Ordinal)
     {
         "hour",
         "minute",
@@ -669,7 +673,7 @@ internal static partial class StaticContracts
         "replace",
     };
 
-    private static readonly HashSet<string> DateTimeDateTimeMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> DateTimeDateTimeMembers = new(StringComparer.Ordinal)
     {
         "year",
         "month",
@@ -701,14 +705,14 @@ internal static partial class StaticContracts
         "replace",
     };
 
-    private static readonly HashSet<string> DateTimeTimezoneMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> DateTimeTimezoneMembers = new(StringComparer.Ordinal)
     {
         "utcoffset",
         "tzname",
         "dst",
     };
 
-    private static readonly HashSet<string> StatisticsNormalDistMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> StatisticsNormalDistMembers = new(StringComparer.Ordinal)
     {
         "__module__",
         "mean",
@@ -725,7 +729,7 @@ internal static partial class StaticContracts
         "samples",
     };
 
-    private static readonly HashSet<string> RandomMembers = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> RandomMembers = new(StringComparer.Ordinal)
     {
         "__module__",
         "seed",
@@ -752,7 +756,10 @@ internal static partial class StaticContracts
         "vonmisesvariate",
         "weibullvariate",
     };
+}
 
+internal static partial class StaticContracts
+{
     public static bool IsKnownMissingMember(AbstractValue value, string memberName)
     {
         // Every object reports its class like CPython, so __class__ is never

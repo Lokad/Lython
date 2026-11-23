@@ -2,10 +2,8 @@ namespace Lokad.Lython.Frontend;
 
 internal static partial class StaticContracts
 {
-    private static class ExtendedMemberReturnContractCatalog
-    {
-        public static readonly StaticMemberReturnContract[] Contracts =
-        [
+    private static StaticMemberReturnContract[] CreateExtendedMemberReturnContracts() =>
+    [
         new(AbstractValueKind.List, "append", StaticReturnShape.None),
         new(AbstractValueKind.List, "extend", StaticReturnShape.None),
         new(AbstractValueKind.List, "index", StaticReturnShape.Integer),
@@ -216,6 +214,5 @@ internal static partial class StaticContracts
         new(AbstractValueKind.OpenPyxlSheetProtection, "disable", StaticReturnShape.None),
         new(AbstractValueKind.OpenPyxlWorkbookProtection, "set_workbook_password", StaticReturnShape.None),
         new(AbstractValueKind.OpenPyxlWorkbookProtection, "set_revisions_password", StaticReturnShape.None),
-        ];
-    }
+    ];
 }

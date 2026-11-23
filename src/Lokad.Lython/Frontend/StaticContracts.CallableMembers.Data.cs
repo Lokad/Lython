@@ -4,10 +4,8 @@ namespace Lokad.Lython.Frontend;
 
 internal static partial class StaticContracts
 {
-    private static class DataCallableContractCatalog
-    {
-        public static readonly StaticCallableContract[] Contracts =
-        [
+    private static StaticCallableContract[] CreateDataCallableContracts() =>
+    [
         new(AbstractValueKind.BytesIO, "read", 0, 1, "LA3158", "BytesIO.read() expects 0 to 1 positional arguments."),
         new(AbstractValueKind.BytesIO, "read1", 0, 1, "LA3158", "BytesIO.read1() expects 0 to 1 positional arguments."),
         new(AbstractValueKind.BytesIO, "readline", 0, 1, "LA3158", "BytesIO.readline() expects 0 to 1 positional arguments."),
@@ -367,6 +365,5 @@ internal static partial class StaticContracts
         new(AbstractValueKind.DecimalContext, "clear_flags", 0, 0, "LA3156", "Context.clear_flags() expects no arguments.", StaticMutationKind.MutatesReceiver),
         new(AbstractValueKind.DecimalContext, "create_decimal", 1, 1, "LA3156", "Context.create_decimal(value) expects one argument.", parameterNames: ["value"]),
         new(AbstractValueKind.DecimalContext, "create_decimal_from_float", 1, 1, "LA3156", "Context.create_decimal_from_float(f) expects one argument.", parameterNames: ["f"]),
-        ];
-    }
+    ];
 }
