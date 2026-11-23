@@ -6,22 +6,50 @@ internal sealed partial class ExecutableCodeObject
 {
     private ExecutableCreateFunction? PrepareDirectDefinitionReturn()
     {
+        var createIndex = Instructions.Length - 2;
         if (!UsesOnlyLexicalSlots || EntryIndex != 0 || ExceptionRegions.Count != 0 ||
-            Instructions.Length != 2 || Instructions[0].OpCode != ExecutableOpCode.ApplyOperation ||
-            Instructions[1].OpCode != ExecutableOpCode.Return || Instructions[1].InputStart != Instructions[0].ResultSlot ||
-            Constants[Instructions[0].ConstantIndex] is not ExecutableCreateFunction
+            createIndex is not (0 or 5) || Instructions[createIndex].OpCode != ExecutableOpCode.ApplyOperation ||
+            Instructions[^1].OpCode != ExecutableOpCode.Return || Instructions[^1].InputStart != Instructions[createIndex].ResultSlot ||
+            Constants[Instructions[createIndex].ConstantIndex] is not ExecutableCreateFunction
             {
-                InputCount: 0, IsGenerator: false, DeferredAnnotations.Length: 0,
-                TypeParameters: null, EagerAnnotationReads: null, PostponedAnnotations: null,
+                DecoratorCount: 0, IsGenerator: false, DeferredAnnotations.Length: 0,
+                TypeParameters: null, EagerAnnotationReads: null, DirectKeywordDefault: false,
             } definition) return null;
+
+        var body = definition.CodeObject;
+        if (!body.UsesOnlyLexicalSlots || body.ScopeFacts.RequiresClassCell) return null;
+        if (createIndex != 0)
+            return HasClosedDefinitionDefaults(definition) ? definition : null;
 
         // The declaration captures the factory's only bound argument by value.
         // Its code still owns live function metadata and allocates a fresh callable.
-        var body = definition.CodeObject;
         var capture = body.CaptureSources;
-        return body.UsesOnlyLexicalSlots && !body.ScopeFacts.RequiresClassCell &&
+        return definition is { InputCount: 0, PostponedAnnotations: null } &&
             capture is { CanCaptureByValue: true, Slots: [0] } &&
             ReferenceEquals(capture.ParentLocalSlots, LocalNameToSlot) ? definition : null;
+    }
+
+    private bool HasClosedDefinitionDefaults(ExecutableCreateFunction definition)
+    {
+        if (definition.InputCount != 2 || definition.CodeObject.ClosureNames.Count != 0 ||
+            definition.ParameterLayout is not { PositionalDefaultCount: 1, Defaults.Length: 2 } ||
+            ClosureNames.Count != 1) return false;
+
+        // The two producers write the ordinary final default objects. Keep
+        // their layout and original spans on the existing executable tape.
+        return Instructions is
+        [
+            { OpCode: ExecutableOpCode.StartFunctionDefaults, StartsKeywordDefaultsOnly: false } start,
+            { OpCode: ExecutableOpCode.Binary, InputStart: 0, SecondInput: < 0, HasResultConsumer: true } binary,
+            { OpCode: ExecutableOpCode.StoreFunctionDefault, DefaultValueIndex: 0 } positional,
+            { OpCode: ExecutableOpCode.LoadClosure, ClosureSlot: 0, HasResultConsumer: true } load,
+            { OpCode: ExecutableOpCode.StoreFunctionDefault, DefaultValueIndex: 0 } keyword,
+            var create, _,
+        ] && ReferenceEquals(Constants[start.ConstantIndex], definition.ParameterLayout) &&
+            (uint)~binary.SecondInput < (uint)Constants.Length && Constants[~binary.SecondInput] is BigInteger &&
+            start.ResultSlot == create.InputStart && positional.InputStart == start.ResultSlot &&
+            keyword.InputStart == start.ResultSlot + 1 && binary.ResultSlot == positional.ResultSlot &&
+            load.ResultSlot == keyword.ResultSlot;
     }
 
     private bool HasClosedIntegerReturn(CancellationToken cancellationToken)

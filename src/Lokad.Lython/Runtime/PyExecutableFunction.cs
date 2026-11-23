@@ -87,9 +87,9 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         out LythonRuntime.ExecutableSlot result, out LythonRuntime.ExecutionContext? frame)
     {
         if (receiver is null && completePositional && arguments.Length == 1 &&
-            CodeObject.DirectDefinitionReturn is { } definition && !Closure.IsTypeParameterScope)
+            CodeObject.DirectDefinitionReturn is { } definition && !Closure.IsTypeParameterScope &&
+            TryReturnDefinition(definition, arguments[0], span, out result))
         {
-            result = LythonRuntime.ExecutableSlot.FromObject(ReturnDefinition(definition, arguments[0], span));
             unpacked = false;
             frame = null;
             return;
@@ -127,19 +127,27 @@ internal sealed class PyExecutableFunction : PyFunctionBase
             out unpacked, out result, out frame, out _);
     }
 
-    private PyFunctionBase ReturnDefinition(ExecutableCreateFunction definition,
-        LythonRuntime.ExecutableSlot argument, LythonSourceSpan span)
+    private bool TryReturnDefinition(ExecutableCreateFunction definition,
+        LythonRuntime.ExecutableSlot argument, LythonSourceSpan span, out LythonRuntime.ExecutableSlot result)
     {
+        result = default;
+        object? keyword = null;
+        long positional = 0;
+        if (definition.InputCount != 0 &&
+            ((keyword = _closureCells.FixedValue) is null ||
+             !LythonRuntime.TryReadClosedDefinitionDefault(CodeObject, argument, out positional))) return false;
         try
         {
             Closure.EnterFunctionCall(span);
             var previous = Closure.State.CurrentException;
             try
             {
-                var result = LythonRuntime.CreateClosedFunctionDefinition(definition, Closure, argument,
-                    CodeObject.Instructions[0].Span);
-                Closure.CheckExecution(CodeObject.Instructions[1].Span);
-                return result;
+                var function = keyword is null
+                    ? LythonRuntime.CreateClosedFunctionDefinition(definition, Closure, argument, CodeObject.Instructions[0].Span)
+                    : LythonRuntime.CreateClosedComputedDefinition(definition, CodeObject, Closure, positional, keyword);
+                Closure.CheckExecution(CodeObject.Instructions[^1].Span);
+                result = LythonRuntime.ExecutableSlot.FromObject(function);
+                return true;
             }
             catch (LythonRuntimeException error)
             {

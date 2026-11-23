@@ -137,6 +137,8 @@ internal sealed partial class LythonRuntime
             value = null;
             return false;
         }
+
+        internal object? FixedValue => _storage is ExecutableCell or ExecutableCell[] ? null : _storage;
     }
 
     // Mutable execution data is distinct from the lexical context's identity.

@@ -68,8 +68,11 @@ internal sealed partial class LythonRuntime
 
     private static void StoreDefaultResult(Span<ExecutableSlot> slots,
         in ExecutableInstruction consumer, ExecutableSlot value, ExecutionState state)
+        => StoreDefaultResult(ref slots[consumer.InputStart], consumer, value, state);
+
+    private static void StoreDefaultResult(ref ExecutableSlot destination,
+        in ExecutableInstruction consumer, ExecutableSlot value, ExecutionState state)
     {
-        ref var destination = ref slots[consumer.InputStart];
         if (destination.HasPrivateKeywordDefault)
         {
             state.CheckExecution(consumer.Span);

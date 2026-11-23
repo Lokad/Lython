@@ -117,6 +117,48 @@ internal sealed partial class LythonRuntime
             default, default, false, scope, span, uncapturedLocal: new Span<ExecutableSlot>(ref argument));
     }
 
+    internal static bool TryReadClosedDefinitionDefault(ExecutableCodeObject factory, ExecutableSlot argument, out long value)
+    {
+        ref readonly var binary = ref factory.Instructions[1];
+        value = default;
+        return argument.TryGetInteger(out var left) &&
+            TryMachineInteger(factory.Constants[~binary.SecondInput], out var right) &&
+            TryMachineBinary(binary.BinaryOperator, left, right, out value);
+    }
+
+    [System.Runtime.CompilerServices.InlineArray(2)]
+    private struct ClosedDefaultSlots { private ExecutableSlot _first; }
+
+    internal static PyFunctionBase CreateClosedComputedDefinition(ExecutableCreateFunction definition,
+        ExecutableCodeObject factory, ExecutionContext scope, long positional, object keyword)
+    {
+        var instructions = factory.Instructions;
+        ClosedDefaultSlots backing = default;
+        Span<ExecutableSlot> defaults = backing;
+        StartExecutableDefaults(definition.ParameterLayout, defaults, false, scope, instructions[0].Span);
+        try
+        {
+            // Admission and all original execution checks retain their order.
+            // The probed exact integer arithmetic and immutable binding read
+            // have no guest effects before this funded construction.
+            scope.CheckExecution(instructions[1].Span);
+            ExecutableSlot scalar = default;
+            scalar.SetInteger(positional);
+            StoreDefaultResult(ref defaults[0], instructions[2], scalar, scope.State);
+            scope.CheckExecution(instructions[3].Span);
+            StoreDefaultResult(ref defaults[1], instructions[4], ExecutableSlot.FromObject(keyword), scope.State);
+            var span = instructions[5].Span;
+            scope.CheckExecution(span);
+            return CreateLexicalFunctionValue(definition.ParameterLayout, definition.CodeObject, default,
+                false, scope, span, defaults, definition.PostponedAnnotations);
+        }
+        finally
+        {
+            defaults[1].RetireTemporary(scope.MemoryGovernor);
+            defaults[0].RetireTemporary(scope.MemoryGovernor);
+        }
+    }
+
     private static bool CanDefineLexically(ExecutableCodeObject code)
         => code.UsesOnlyLexicalSlots && !code.ScopeFacts.RequiresClassCell;
 
