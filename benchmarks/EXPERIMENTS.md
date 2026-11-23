@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1446 inline CSV field descriptors](results/2026-11-23-csv-inline-descriptors/README.md)
+keeps the existing parser. Borrowed ASCII takes 5.44–18.30% longer and
+its candidate workers have 11.49% spread. Native ASCII spans zero.
+Unicode and quoted invoices are slightly faster. Allocation is flat.
+
 [B1445 module workspace loans](results/2026-11-23-module-native-workspace/README.md)
 reaches 4,096 factory activations through evaluated positional operands.
 Warm factory results span zero. Postponed time to result favors the
