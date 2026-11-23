@@ -89,9 +89,7 @@ internal sealed partial class LythonRuntime
                 long value;
                 if (argument.OpCode == ExecutableOpCode.Binary)
                 {
-                    if (!TryReadMachineOperand(code, values, argument.InputStart, scope, out var left) ||
-                        !TryReadMachineOperand(code, values, argument.SecondInput, scope, out var right) ||
-                        !TryMachineBinary(argument.BinaryOperator, left, right, out value)) return false;
+                    if (!TryEvaluatePreparedBinary(code, values, argument, scope, out value)) return false;
                 }
                 else
                 {
@@ -129,6 +127,53 @@ internal sealed partial class LythonRuntime
             throw;
         }
         finally { arguments.Clear(); }
+    }
+
+    private static bool TryEvaluatePreparedBinary(ExecutableCodeObject code, ReadOnlySpan<ExecutableSlot> values,
+        in ExecutableInstruction instruction, ExecutionContext scope, out long value)
+    {
+        value = 0;
+        return TryReadMachineOperand(code, values, instruction.InputStart, scope, out var left) &&
+            TryReadMachineOperand(code, values, instruction.SecondInput, scope, out var right) &&
+            TryMachineBinary(instruction.BinaryOperator, left, right, out value);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static bool TryPrepareIntegerTuple(ExecutableCodeObject code, Span<ExecutableSlot> values,
+        int index, int liveExtent, int unpackCount, ExecutionContext scope, out int tupleIndex)
+    {
+        tupleIndex = code.Instructions[index].IntegerTupleIndex;
+        ref readonly var tuple = ref code.Instructions[tupleIndex];
+        if (unpackCount != tuple.ItemCount || liveExtent != tuple.InputStart) return false;
+
+        var items = values.Slice(liveExtent, unpackCount);
+        var completed = false;
+        try
+        {
+            for (var i = 0; i < items.Length; i++)
+            {
+                ref readonly var producer = ref code.Instructions[index + i];
+                scope.CheckExecution(producer.Span);
+                if (producer.OpCode == ExecutableOpCode.Binary)
+                {
+                    if (!TryEvaluatePreparedBinary(code, values, producer, scope, out var result)) return false;
+                    items[i].SetInteger(result);
+                }
+                else
+                {
+                    var local = values[producer.LocalSlot];
+                    if (!local.TryGetInteger(out _)) return false;
+                    // Preserve an already published identity or an existing
+                    // tuple borrow. A fresh local has one returned position.
+                    items[i] = local;
+                }
+            }
+            return completed = true;
+        }
+        finally
+        {
+            if (!completed) items.Clear();
+        }
     }
 
     internal ref partial struct NativeExecution

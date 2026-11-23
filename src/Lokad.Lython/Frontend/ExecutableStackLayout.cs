@@ -1,4 +1,5 @@
 using System.Numerics;
+using Lokad.Lython.Runtime;
 
 namespace Lokad.Lython.Frontend;
 
@@ -92,7 +93,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
     }
 
     internal static ExecutableInstruction[] Linearize(ExecutableCodeObject code, IReadOnlyList<List<ExecutableInstruction>> blocks,
-        ExecutableStackLayout layout, CancellationToken token, out ExecutableOperandSpan[] readSpans)
+        ExecutableStackLayout layout, bool hasNoExceptionRegions, CancellationToken token, out ExecutableOperandSpan[] readSpans)
     {
         var positions = layout.Blocks;
         var reads = layout.OperandReads;
@@ -143,6 +144,10 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
                 };
                 if (instruction.OpCode == ExecutableOpCode.Call && !code.RequiresLocalVariableMirroring)
                     PrepareIntegerCallUpdate(code, instructions, source, position.Offset, j, token);
+                if (instruction.OpCode == ExecutableOpCode.MakeTuple && hasNoExceptionRegions &&
+                    code.UsesOnlyLexicalSlots && !code.RequiresLocalVariableMirroring &&
+                    code.ValueStorageCapacity <= LythonRuntime.NativeValueCapacity)
+                    PrepareIntegerTupleReturn(code, instructions, source, position.Offset, j);
             }
             // Stored blocks never fell through. Preserve implicit completion
             // distinctly from a guest top-level return (not legal in imports).
@@ -172,6 +177,38 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
         static bool Completes(List<ExecutableInstruction> block) => block.Count == 0 ||
             block[^1].OpCode is not (ExecutableOpCode.Jump or ExecutableOpCode.AbruptJump or
                 ExecutableOpCode.EndFinally or ExecutableOpCode.Return or ExecutableOpCode.ReturnNone or ExecutableOpCode.ReraiseException);
+    }
+
+    private static void PrepareIntegerTupleReturn(ExecutableCodeObject code, ExecutableInstruction[] tape,
+        List<ExecutableInstruction> block, int offset, int index)
+    {
+        var tuple = block[index];
+        var first = index - tuple.ItemCount;
+        if (tuple.ItemCount < 2 || tuple.HasResultConsumer || first < 0 ||
+            index + 1 != block.Count - 1 || block[index + 1].OpCode != ExecutableOpCode.Return ||
+            block[index + 1].InputStart != tuple.ResultSlot ||
+            block[first].OpCode != ExecutableOpCode.LoadLocal) return;
+
+        // Each operation fills one final element. A direct local read appears
+        // at most once, so a fresh value has only one surviving identity.
+        uint locals = 0;
+        for (var i = first; i < index; i++)
+        {
+            var producer = block[i];
+            if (producer.HasResultConsumer || producer.ResultSlot != tuple.InputStart + i - first ||
+                producer.LiveExtent != producer.ResultSlot + 1) return;
+            if (producer.OpCode == ExecutableOpCode.LoadLocal)
+            {
+                var bit = 1u << producer.LocalSlot;
+                if ((locals & bit) != 0 || code.CapturedLocalSlots.Contains(producer.LocalSlot)) return;
+                locals |= bit;
+            }
+            else if (producer.OpCode != ExecutableOpCode.Binary ||
+                !IsPrivateInput(producer.InputStart) || !IsPrivateInput(producer.SecondInput)) return;
+        }
+        tape[offset + first] = block[first].WithIntegerTupleReturn(offset + index);
+
+        bool IsPrivateInput(int source) => source >= 0 ? source < code.FirstTemporarySlot : ~source < code.Constants.Length;
     }
 
     private static void PrepareIntegerCallUpdate(ExecutableCodeObject code, ExecutableInstruction[] tape,

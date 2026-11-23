@@ -42,9 +42,11 @@ public sealed class NativeTupleReturnTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void AdmissionFailureOrCancellationLeavesCallerStorageUntouched(bool cancel)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public void AdmissionFailureOrCancellationLeavesCallerStorageUntouched(bool cancel, bool integers)
     {
         var budget = new LythonMemoryBudget(1024 * 1024);
         using (var owner = budget.CreateScope())
@@ -55,9 +57,9 @@ public sealed class NativeTupleReturnTests
                 new() { MemoryBudget = gate, CancellationToken = cancellation.Token });
             try
             {
-                var function = Define(context);
-                var left = PyString.FromString("left");
-                var right = PyString.FromString("right");
+                var function = Define(context, integers);
+                object left = integers ? new System.Numerics.BigInteger(1200) : PyString.FromString("left");
+                object right = integers ? new System.Numerics.BigInteger(1400) : PyString.FromString("right");
                 var call = Assert.Single(Compile("a,b=pair(left,right)").CallSites);
                 var first = new object();
                 var second = new object();
@@ -82,9 +84,12 @@ public sealed class NativeTupleReturnTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
-    private static PyExecutableFunction Define(LythonRuntime.ExecutionContext context)
+    private static PyExecutableFunction Define(LythonRuntime.ExecutionContext context, bool integers = false)
     {
-        LythonRuntime.ExecuteExecutableCodeObject(Compile("def pair(left,right): return left,right"), context);
+        var source = integers
+            ? "def pair(left, right):\n    first = left + 1\n    second = right + 1\n    return first, second"
+            : "def pair(left,right): return left,right";
+        LythonRuntime.ExecuteExecutableCodeObject(Compile(source), context);
         return Assert.IsType<PyExecutableFunction>(context.Variables["pair"]);
     }
 

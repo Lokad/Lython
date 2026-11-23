@@ -4,6 +4,52 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class NativeReturnFunctionTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FixedReturnKeepsIntegerAliasesAndResumesArithmeticOnce(bool asynchronous)
+    {
+        const string source = """
+            def line(left, right):
+                return left, right, left + right
+            def repeated(number):
+                value = number + 111
+                return value, value
+            class Right:
+                def __radd__(self, left):
+                    with open('/effect') as source:
+                        print(source.read())
+                    return left
+            shared = int('1200')
+            first, second, total = line(shared, shared)
+            print(first is second, second is shared, total)
+            saved = line(shared, 301)
+            print(saved[0] is shared, saved[2])
+            first, second = repeated(301)
+            print(first is second, first)
+            first, _, last = line(shared, Right())
+            print(first is last, last is shared)
+            first, second, total = line(9223372036854775807, 1)
+            print(total)
+            """;
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        var delayed = new DelayedLythonHost();
+        var sync = new MockLythonHost();
+        delayed.SeedFile("/effect", "once");
+        sync.SeedFile("/effect", "once");
+        using (var result = asynchronous ? await script.RunAsync(delayed) : script.Run(sync))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("True True 2400\nTrue 1501\nTrue 412\nonce\nTrue True\n9223372036854775808\n", result.StandardOutput);
+        }
+        Assert.Equal(1, asynchronous ? delayed.ClosedFileCount : sync.ClosedFileCount);
+        if (asynchronous) Assert.True(delayed.CompletedAsynchronously > 0);
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
     // Goldens independently captured with isolated CPython 3.13.
     public static TheoryData<string, string, string> Cases => new()
     {

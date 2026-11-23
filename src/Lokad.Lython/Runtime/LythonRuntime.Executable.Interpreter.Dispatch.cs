@@ -45,6 +45,16 @@ internal sealed partial class LythonRuntime
                             }
                             if (instruction.IntegerUpdateChecksLocal) goto case ExecutableOpCode.CheckLocal;
                             goto case ExecutableOpCode.LoadLocal;
+                        case ExecutableOpCode.IntegerTupleReturn:
+                            if (!unpackedReturn.IsEmpty && execution.Stack.CanRetireWithoutCleanup(execution.Stack.LiveExtent) &&
+                                TryPrepareIntegerTuple(execution.Code, execution.Stack.Values, execution.InstructionIndex,
+                                execution.Stack.LiveExtent, unpackedReturn.Length, scope, out var tupleIndex))
+                            {
+                                execution.Stack.RestoreNativeExtent(execution.Stack.LiveExtent + unpackedReturn.Length);
+                                execution.InstructionIndex = tupleIndex;
+                                continue;
+                            }
+                            goto case ExecutableOpCode.LoadLocal;
                         case ExecutableOpCode.LoadLocal:
                             PublishInstructionResult(ref execution, invocation, instruction,
                                 LoadLocal(execution.Code, execution.Locals, instruction.LocalSlot, instruction.Span, scope));

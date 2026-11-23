@@ -83,6 +83,7 @@ internal enum ExecutableOpCode
     CheckLocal,
     ReverseAssignmentValues,
     IntegerCallUpdate,
+    IntegerTupleReturn,
 }
 
 internal enum ExecutableUnaryOperator
@@ -183,7 +184,7 @@ internal readonly record struct ExecutableInstruction
     internal int DefaultStorageDepth => _primaryOperand;
     internal int DefaultValueIndex => _secondaryOperand;
     public int LocalSlot => OpCode is ExecutableOpCode.LoadLocal or ExecutableOpCode.StoreLocal or ExecutableOpCode.CheckLocal
-            or ExecutableOpCode.IntegerCallUpdate
+            or ExecutableOpCode.IntegerCallUpdate or ExecutableOpCode.IntegerTupleReturn
             ? _primaryOperand : throw InvalidOperand(nameof(LocalSlot));
     // Before layout assigns a result slot, a LoadLocal can name its
     // same-block consumer in that field. No hint survives in the final tape.
@@ -196,6 +197,9 @@ internal readonly record struct ExecutableInstruction
     internal bool IntegerUpdateChecksLocal => LiveExtent == ResultSlot;
     internal ExecutableInstruction WithIntegerUpdateCall(int callIndex)
         => new(ExecutableOpCode.IntegerCallUpdate, Span, _primaryOperand, callIndex, _inputStart, _resultSlot, _liveExtent);
+    internal int IntegerTupleIndex => _secondaryOperand;
+    internal ExecutableInstruction WithIntegerTupleReturn(int tupleIndex)
+        => new(ExecutableOpCode.IntegerTupleReturn, Span, _primaryOperand, tupleIndex, _inputStart, _resultSlot, _liveExtent);
     // StoreLocal has only one input, leaving its second operand field free.
     internal bool StoresCapturedLocal => _secondaryOperand != int.MaxValue;
     internal ExecutableInstruction WithCapturedLocalStore()
@@ -583,7 +587,8 @@ internal sealed partial class ExecutableCodeObject
         PatternStorageStart = checked(FirstTemporarySlot + Math.Max(4, OperandCapacity));
         ValueStorageCapacity = checked(PatternStorageStart + PatternStorageCount);
         LastOwnedTemporarySlot = operandLayout.LastOwnedTemporarySlot;
-        Instructions = ExecutableStackLayout.Linearize(this, blocks, operandLayout, cancellationToken, out _operandReadSpans);
+        Instructions = ExecutableStackLayout.Linearize(this, blocks, operandLayout, regionsByEntry.Length == 0,
+            cancellationToken, out _operandReadSpans);
         var positions = operandLayout.Blocks;
         EntryIndex = positions[entryBlockIndex].Offset;
         // Original block widths preserve inner-first unwinding, including
