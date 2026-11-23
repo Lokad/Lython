@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1535](results/2026-11-23-short-text-boundaries/cpu.md) isolates a
+short-report source boundary. The nonlocal update move overlaps zero.
+Omitting the per-line helper on the same runtime cuts roughly a
+quarter of the complete script's CPU.
+[B1536](results/2026-11-23-module-failure-bindings/README.md) preserves
+the live module for lazy diagnostics. Quoted invoice and configuration
+elapsed overlap zero, while the short report takes longer.
+
 [B1532 plain class namespace prototype](results/2026-11-23-plain-class-module-slots/README.md)
 finds a whole-invoice elapsed and allocation gain. It also exposes the
 live namespace requirement of reusable execution contexts. The measured
