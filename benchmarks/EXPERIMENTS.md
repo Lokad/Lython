@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1516 CPython checkpoint after direct default ownership transfer](results/2026-11-23-closed-defaults-cpython/README.md)
+measures postponed factories at 1.217–1.261× through first use and
+0.532–0.537× for compilation alone. Fully supplied arithmetic remains
+1.547–1.580× warm. The per-source comparison remains separate.
+
 [B1515 carry admitted defaults directly into closed definitions](results/2026-11-23-direct-closed-defaults/README.md)
 removes temporary default operands. Postponed factory first use improves
 in both comparisons with supporting CPU. The quote-heavy control changes
