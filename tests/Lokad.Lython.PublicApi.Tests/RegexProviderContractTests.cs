@@ -1137,25 +1137,79 @@ public sealed class RegexProviderContractTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task ImportedFrontendAndRuntimeKeepTheEngineProvider(bool asynchronous)
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task ImportedFrontendAndRuntimeShareAProgramUntilRunCleanup(bool failedImport, bool asynchronous)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
         using var provider = new CooperatingProvider();
         var host = new MockLythonHost();
-        host.SeedFile("/helper.py", "import re\ndef value():\n return re.search('x','X',re.I).group()");
-        using (var script = new LythonEngine(provider).Compile("import helper\nreturn helper.value()", budget))
-        using (var result = asynchronous ? await script.RunAsync(host, ImportOptions()) : script.Run(host, ImportOptions()))
+        var helper = "import re,sys\ndef value(text):\n return re.search('x',text,re.I).group()\n";
+        if (failedImport) helper += "sys.modules['saved_value'] = value\nraise ValueError('failed import')\n";
+        host.SeedFile("/helper.py", helper);
+        var entry = "import re,sys\n" + (failedImport
+            ? "try:\n import helper\nexcept ValueError:\n value = sys.modules['saved_value']\n"
+            : "from helper import value\n");
+        using var script = new LythonEngine(provider).Compile(entry + "first=value('X')\nre.purge()\nreturn [first,value('x')]", budget);
+        var baseline = budget.ReservedBytes;
+        for (var run = 1; run <= 2; run++)
+        {
+            using var cancellation = new CancellationTokenSource();
+            provider.ExpectedToken = cancellation.Token;
+            var options = new LythonRunOptions
+            {
+                AllowedLocalModules = new HashSet<string> { "helper" },
+                CancellationToken = cancellation.Token,
+            };
+            using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal(new object?[] { "X", "x" }, Assert.IsAssignableFrom<IEnumerable<object?>>(result.ReturnValue));
+                Assert.Equal(run, provider.Compilations);
+                Assert.Equal(run, provider.ClosedPatterns);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RejectedLocalAnalysisClosesItsProgramBeforeGuestContinues(bool asynchronous)
+    {
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var provider = new CooperatingProvider();
+        provider.OnCompile = (pattern, _) =>
+        {
+            if (pattern.Span.SequenceEqual("second"u8)) Assert.Equal(1, provider.ClosedPatterns);
+        };
+        var host = new MockLythonHost();
+        host.SeedFile("/helper.py", "import re\np=re.compile('x')\nm=p.search('x')\nm.group(3)");
+        using var script = new LythonEngine(provider).Compile("""
+            import re
+            try:
+                import helper
+            except SyntaxError:
+                return re.compile(pattern).pattern
+            """, budget);
+        var options = new LythonRunOptions
+        {
+            AllowedLocalModules = new HashSet<string> { "helper" },
+            Globals = new Dictionary<string, object?> { ["pattern"] = "second" },
+        };
+        using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
         {
             Assert.True(result.Success, result.Failure?.Message);
-            Assert.Equal("X", result.ReturnValue);
-            Assert.True(budget.ReservedBytes > 0);
+            Assert.Equal("second", result.ReturnValue);
+            Assert.Equal(2, provider.Compilations);
+            Assert.Equal(2, provider.ClosedPatterns);
         }
-        Assert.True(provider.Compilations > 0);
-        Assert.Equal(provider.Compilations, provider.ClosedPatterns);
+        script.Dispose();
         Assert.Equal(0, budget.ReservedBytes);
-        static LythonRunOptions ImportOptions() => new() { AllowedLocalModules = new HashSet<string> { "helper" } };
     }
 
     [Theory]

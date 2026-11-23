@@ -366,7 +366,8 @@ internal sealed partial class LythonRuntime
 
             var provider = context.State.RegexProvider
                 ?? throw RuntimeErrors.Capability("Python regex functionality requires a host-supplied Lython regex provider.", span);
-            var artifact = context.State.RegexPrograms?.Find(pattern, options, token, span);
+            var artifact = context.State.RegexPrograms?.Find(pattern, options, token, span) ??
+                GetGlobalContext(context).ImportedRegexPrograms?.Find(pattern, options, token, span);
             var compiled = artifact?.Program ?? ProviderCall((provider, pattern, options, context, token),
                 static state => state.provider.Compile(state.pattern.Utf8Bytes, state.options,
                     state.context.MemoryGovernor.Budget, state.token), context.MemoryGovernor, token, span, pattern);
@@ -388,7 +389,7 @@ internal sealed partial class LythonRuntime
                 if (!ReferenceEquals(canonical, result)) return canonical;
                 published = true;
                 storage.Commit(wrapperBytes);
-                if (artifact is null) context.State.TrackRegexPattern(compiled);
+                if (artifact is null) context.State.TrackRegexProgramOwner(compiled);
                 return result;
             }
             finally

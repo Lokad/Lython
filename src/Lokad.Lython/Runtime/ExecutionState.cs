@@ -262,17 +262,17 @@ internal sealed partial class ExecutionState
     // Active provider resources only: no guest-reference inventory or tracing.
     private LythonRuntime.PyRegexFindIterator? _regexIterators;
 
-    // Owned provider handles only. Wrapper admission covers this list's capacity
-    // and growth overlap; no guest-reference traversal or identity table.
-    private List<ILythonRegexPattern>? _regexPatterns;
+    // Runtime handles and prepared local-import programs borrow this run.
+    // Wrapper and import storage admission cover this list's capacity and overlap.
+    private List<IDisposable>? _regexProgramOwners;
 
-    internal void TrackRegexPattern(ILythonRegexPattern pattern) => (_regexPatterns ??= new()).Add(pattern);
+    internal void TrackRegexProgramOwner(IDisposable owner) => (_regexProgramOwners ??= new()).Add(owner);
 
     private void CloseRegexPatterns()
     {
-        if (_regexPatterns is not { } patterns) return;
-        foreach (var pattern in patterns) pattern.Dispose();
-        _regexPatterns = null;
+        if (_regexProgramOwners is not { } owners) return;
+        foreach (var owner in owners) owner.Dispose();
+        _regexProgramOwners = null;
     }
 
     // Buffered Popen completions keep raw pipeline data funded until every

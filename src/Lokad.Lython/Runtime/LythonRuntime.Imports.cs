@@ -493,16 +493,33 @@ internal sealed partial class LythonRuntime
     }
 
     private static PreparedImportedModule PrepareImportedModule(
+        string moduleName, string path, bool isPackage, string source, ExecutionContext context, LythonSourceSpan span)
+    {
+        var programs = context.State.RegexProvider is null ? null : new CompiledRegexPrograms(context.MemoryGovernor);
+        try
+        {
+            var prepared = PrepareImportedModule(moduleName, path, isPackage, source, context, span, programs);
+            // A registered module may publish aliases before its body fails.
+            // Its prepared programs must stay funded through run cleanup.
+            if (programs is { HasPrograms: true }) programs = null;
+            return prepared;
+        }
+        finally { programs?.Dispose(); }
+    }
+
+    private static PreparedImportedModule PrepareImportedModule(
         string moduleName,
         string path,
         bool isPackage,
         string source,
         ExecutionContext context,
-        LythonSourceSpan span)
+        LythonSourceSpan span,
+        CompiledRegexPrograms? programs)
     {
         var estimate = RuntimeMemoryEstimates.EstimateCompilationBytes(source.Length);
         using var code = context.MemoryGovernor.ReserveTemporary(estimate, span);
-        var frontend = LythonFrontend.Compile(source, context.MemoryGovernor, context.State.RegexProvider, context.State.CancellationToken);
+        var frontend = LythonFrontend.Compile(source, context.MemoryGovernor, context.State.RegexProvider,
+            context.State.CancellationToken, programs);
         if (frontend.Script is null || frontend.Diagnostics.Count != 0)
         {
             var diagnostic = frontend.Diagnostics.FirstOrDefault();
@@ -536,7 +553,15 @@ internal sealed partial class LythonRuntime
         }
         var key = PyString.FromString(moduleName, context.MemoryGovernor, span);
         spec.TrySetMember("_initializing", true);
-        try { context.State.ImportedModules.SetItem(key, loaded); }
+        try
+        {
+            context.State.ImportedModules.SetItem(key, loaded);
+            if (programs is { HasPrograms: true })
+            {
+                context.State.TrackRegexProgramOwner(programs);
+                moduleContext.ImportedRegexPrograms = programs;
+            }
+        }
         catch
         {
             spec.TrySetMember("_initializing", false);

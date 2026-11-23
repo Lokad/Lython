@@ -18,6 +18,8 @@ internal sealed partial class LythonRuntime
 
         internal PyDict? GlobalNamespace;
         internal GlobalNamespaceStorage? GlobalNamespaceBacking;
+        // Only populated on roots of local modules with prepared patterns.
+        internal CompiledRegexPrograms? ImportedRegexPrograms;
 
         public ExecutionContext(ILythonHost host, LythonRunOptions? options, ILythonRegexProvider? regexProvider = null,
             CompiledRegexPrograms? regexPrograms = null)
