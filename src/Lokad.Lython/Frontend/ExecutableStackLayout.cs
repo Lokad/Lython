@@ -181,6 +181,8 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
         var positions = CreatePositions(blocks.Count, regions, token);
         var constants = code.Constants;
         var firstTemporarySlot = code.FirstTemporarySlot;
+        var canForwardReturn = code.IsFunctionScope && code.UsesOnlyLexicalSlots &&
+            !code.RequiresLocalVariableMirroring && regions.Length == 0;
         List<OperandRead> reads = [];
         Queue<int>? pending = null;
         var maximum = initialDepth;
@@ -208,7 +210,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
             // Forwarding removes only reads that feed an operand. It leaves
             // jump-only blocks and the already resolved successors intact.
             positions[blockIndex].Offset = reads.Count;
-            ForwardBlock(code, blockIndex, instructions, calls, reads, token);
+            ForwardBlock(code, blockIndex, instructions, calls, reads, canForwardReturn, token);
             for (var instructionIndex = 0; instructionIndex < instructions.Count; instructionIndex++)
             {
                 PythonTokenization.CheckCancellation(token, instructionIndex);
@@ -326,7 +328,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
     // Checked locals keep their original spans in cold metadata; neither branch
     // initialization facts nor their invalidation inventories are needed.
     private static void ForwardBlock(ExecutableCodeObject code, int block, List<ExecutableInstruction> instructions,
-        ExecutableCallSite[] calls, List<OperandRead> reads, CancellationToken token)
+        ExecutableCallSite[] calls, List<OperandRead> reads, bool canForwardReturn, CancellationToken token)
     {
         var kept = 0;
         for (var index = 0; index < instructions.Count; index++)
@@ -337,9 +339,21 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
             // remove or rewrite the instructions supplying operands.
             if (instruction.OpCode is ExecutableOpCode.Call or ExecutableOpCode.LoadCallMember)
                 code.PrepareCallSite(instructions, index, instruction, calls);
-            if (instruction.OpCode == ExecutableOpCode.StoreLocal && code.CapturedLocalSlots.Count != 0 &&
-                code.CapturedLocalSlots.Contains(instruction.LocalSlot))
-                instruction = instruction.WithCapturedLocalStore();
+            if (instruction.OpCode == ExecutableOpCode.StoreLocal)
+            {
+                var captured = code.CapturedLocalSlots.Count != 0 && code.CapturedLocalSlots.Contains(instruction.LocalSlot);
+                if (captured) instruction = instruction.WithCapturedLocalStore();
+                else if (canForwardReturn && index == instructions.Count - 3 &&
+                    instructions[index + 1].OpCode == ExecutableOpCode.LoadLocal &&
+                    instruction.LocalSlot == instructions[index + 1].LocalSlot &&
+                    instructions[index + 2].OpCode == ExecutableOpCode.Return)
+                {
+                    // This private assignment has no user after the read.
+                    // The existing return consumes the evaluated operand.
+                    index++;
+                    continue;
+                }
+            }
             if (instruction.OpCode == ExecutableOpCode.LoadLocal && instruction.CheckedLocalConsumer >= 0 &&
                 code.UsesOnlyLexicalSlots && !code.CapturedLocalSlots.Contains(instruction.LocalSlot) &&
                 CanReuseCheckedLocal(instructions, index, instruction.CheckedLocalConsumer, instruction.LocalSlot, token))

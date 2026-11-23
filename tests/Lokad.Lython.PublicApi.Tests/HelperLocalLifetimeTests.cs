@@ -61,6 +61,30 @@ public sealed class HelperLocalLifetimeTests
             assert type(result) is tuple and result[0]() is result[1]
             print('ok')
             """];
+        yield return ["""
+            def private_factory(value):
+                def child(arg=value): return arg
+                return child
+            def recursive_factory(value):
+                def child(depth=1):
+                    if depth: return child(depth - 1)
+                    return value
+                return child
+            def protected_factory(value, observed):
+                try:
+                    def child(arg=value): return arg
+                    return child
+                finally:
+                    observed.append(locals()['child'])
+            value = []
+            private = private_factory(value)
+            recursive = recursive_factory(value)
+            observed = []
+            protected = protected_factory(value, observed)
+            assert private() is value and recursive() is value
+            assert protected() is value and observed[0] is protected
+            print('ok')
+            """];
     }
 
     [Theory]
@@ -101,7 +125,8 @@ public sealed class HelperLocalLifetimeTests
                 def child():
                     nonlocal count
                     count += 1
-                    return source[7]
+                    selected = source[7]
+                    return selected
                 return child(), lambda: count
             value, read = factory(Source())
             print(value, read())
