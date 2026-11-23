@@ -31,7 +31,7 @@ public sealed class LambdaExecutableTests
         context._execution = new() { Code = outer, Locals = stack.Values, Stack = stack };
         context.EnterExecutableSlots();
         var capture = typeof(LythonRuntime).GetMethod("CaptureExecutableClosures", BindingFlags.Static | BindingFlags.NonPublic)!
-            .CreateDelegate<Func<ExecutableCodeObject, Context, LythonSourceSpan, IReadOnlyList<LythonRuntime.ExecutableCell>>>();
+            .CreateDelegate<Func<ExecutableCodeObject, Context, LythonSourceSpan, LythonRuntime.ExecutableCaptures>>();
         var baseline = governor.CurrentAccountedBytes;
         var span = syntax.Statements[0].Span;
         try
@@ -55,8 +55,8 @@ public sealed class LambdaExecutableTests
             else
             {
                 var captured = capture(lambda, context, span);
-                Assert.Same(first, captured[lambda.ClosureNameToSlot["left"]]);
-                Assert.Same(second, captured[lambda.ClosureNameToSlot["right"]]);
+                Assert.Same(first, captured.GetCell(lambda.ClosureNameToSlot["left"]));
+                Assert.Same(second, captured.GetCell(lambda.ClosureNameToSlot["right"]));
                 var arrayBytes = governor.CurrentAccountedBytes - baseline;
                 Assert.InRange(arrayBytes, 1, LythonRuntime.ExecutableCell.StorageBytes - 1);
                 context._execution.Stack.ReleaseStorage();

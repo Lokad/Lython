@@ -240,7 +240,7 @@ public sealed class BoundBoxCleanupTests
             definition.ParameterLayout,
             definition.CodeObject,
             closure,
-            [],
+            default,
             default);
         var box = fun.BindCallOperands([Slot.FromObject(1), Slot.FromObject(2)], Span, closure, receiver: null, callSite: null);
         LythonRuntime.ReturnBoundArguments(box);

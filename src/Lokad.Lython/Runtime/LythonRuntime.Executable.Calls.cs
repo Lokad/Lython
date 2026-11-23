@@ -271,7 +271,7 @@ internal sealed partial class LythonRuntime
                     frame = function.EnterInvocationFrame(bound, span);
                     functionEntered = true;
                     InitializeExecutableFrame(function.CodeObject, frame, bound,
-                        function.ClosureCells, lookupOwner: function, returnConsumedByIteration: consumedByIteration);
+                        function.Captures, lookupOwner: function, returnConsumedByIteration: consumedByIteration);
                 }
                 frame.EnterExecutableSlots();
                 // Only a real child establishes a suspended caller. No reverse
@@ -408,7 +408,7 @@ internal sealed partial class LythonRuntime
             ExecutionContext? frame = null;
             try
             {
-                work = CreateExecutableWorkState(function.CodeObject, scope, bound, function.ClosureCells,
+                work = CreateExecutableWorkState(function.CodeObject, scope, bound, function.Captures,
                     lookupOwner: function, returnConsumedByIteration: consumedByIteration, borrowedInvocation: true);
                 var pause = ExecuteInstructionPrefix(ref work, scope, null, false, out _, out _, out var nextCall, destination);
                 unpacked = pause == InstructionPause.UnpackedReturn;

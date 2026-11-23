@@ -151,7 +151,7 @@ internal sealed partial class LythonRuntime
                     if (invocation is null)
                     {
                         if (NeedsDefinitionContext(function, scope) || !CanDefineWithoutInvocation(function.CodeObject,
-                                execution.Code, execution.ClosureCells, scope, span, out var captures)) return false;
+                                execution.Code, execution.Captures, scope, span, out var captures)) return false;
                         CreateBorrowedExecutableFunction(ref execution, scope, function, instruction, captures);
                     }
                     else pending = CreateExecutableFunction(ref execution, invocation, function, instruction, asynchronous);
@@ -161,7 +161,7 @@ internal sealed partial class LythonRuntime
                         var binding = lambda.Binding;
                         int[]? lambdaCaptures = null;
                         if (invocation is null && (binding.NamespaceClosure || !CanDefineWithoutInvocation(
-                            lambda.CodeObject, execution.Code, execution.ClosureCells, scope, span, out lambdaCaptures)))
+                            lambda.CodeObject, execution.Code, execution.Captures, scope, span, out lambdaCaptures)))
                             return false;
                         var first = instruction.InputStart;
                         PyFunctionBase function;

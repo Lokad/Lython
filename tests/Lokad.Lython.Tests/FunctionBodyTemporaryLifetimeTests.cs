@@ -22,7 +22,7 @@ public sealed class FunctionBodyTemporaryLifetimeTests
         root.Variables["produce"] = new Produce(tape);
         root.Variables["pause"] = new Pause(tape);
         var executable = ExecutableScript.Compile(frontend.Script.RequireNotNull()).EntryPoint;
-        await LythonRuntime.ExecuteExecutableCodeObjectAsync(executable, root, default, null);
+        await LythonRuntime.ExecuteExecutableCodeObjectAsync(executable, root, default, default);
         var receiver = Assert.IsType<PyInstance>(root.Variables["runner"]);
         Assert.True(receiver.Type.TryGetOwnMember("run", out var value));
         var method = Assert.IsType<PyBoundMethod>(Assert.IsAssignableFrom<PyFunctionBase>(value).Bind(receiver));

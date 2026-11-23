@@ -26,7 +26,7 @@ public sealed class ManagedStackGuardTests
         var projected = new PyList([true]);
         var definition = ClassMethodCompiler.Compile("def value():return 1");
         var function = new PyExecutableFunction(definition.ParameterLayout,
-            definition.CodeObject, context, [],
+            definition.CodeObject, context, default,
             default);
         Action enter = entry switch
         {

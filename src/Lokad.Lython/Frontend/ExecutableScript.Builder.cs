@@ -229,7 +229,7 @@ internal sealed partial class ExecutableScript
                 AddInstruction(finalBlock, ExecutableInstruction.ReturnNone(EmptySpan));
             }
 
-            var (capturedLocalSlots, containsCallable, needsMirroring, completeChildren) = PrepareDeclarations();
+            var (capturedLocalSlots, containsCallable, needsMirroring, completeChildren, forwardsCaptures) = PrepareDeclarations();
             // Annotation values can retain functions or deferred generators after
             // module slots leave. Keep their existing global namespace lifetime
             // conservatively; scalar-only declarations need no such mirror.
@@ -273,18 +273,20 @@ internal sealed partial class ExecutableScript
                 docstring: docstring,
                 cancellationToken: _compilation.CancellationToken)
             {
-                QualifiedName = qualifiedName
+                QualifiedName = qualifiedName,
+                ForwardsCaptures = forwardsCaptures
             };
             _moduleCode?.Add(code);
             _compilation.ReturnBuffers(_buffers);
             return code;
         }
 
-        private (int[] CapturedLocals, bool ContainsCallable, bool NeedsMirroring, bool CompleteChildren) PrepareDeclarations()
+        private (int[] CapturedLocals, bool ContainsCallable, bool NeedsMirroring, bool CompleteChildren, bool ForwardsCaptures) PrepareDeclarations()
         {
             var containsCallable = false;
             var needsMirroring = false;
             var completeChildren = true;
+            var forwardsCaptures = false;
             HashSet<int>? captured = null;
             var firstLambda = _buffers.Constants.Count;
             var firstGenerator = _buffers.Constants.Count;
@@ -325,7 +327,7 @@ internal sealed partial class ExecutableScript
 
             var slots = captured?.ToArray() ?? [];
             if (slots.Length > 1) Array.Sort(slots);
-            return (slots, containsCallable, needsMirroring, completeChildren);
+            return (slots, containsCallable, needsMirroring, completeChildren, forwardsCaptures);
 
             void PrepareChild(ExecutableCodeObject child)
             {
@@ -344,14 +346,25 @@ internal sealed partial class ExecutableScript
                     if ((i & 255) == 0) PythonTokenization.CheckCancellation(_compilation.CancellationToken, sourceStart);
                     var name = names[i];
                     if (_localIndexes.TryGetValue(name, out var slot)) (captured ??= []).Add(slot);
-                    else if (!_closureIndexes.ContainsKey(name))
+                    else
                     {
-                        if (HasEnclosingBinding(name)) InternClosure(name);
-                        else resolved = false;
+                        forwardsCaptures = true;
+                        if (!_closureIndexes.ContainsKey(name))
+                        {
+                            if (HasEnclosingBinding(name)) InternClosure(name);
+                            else resolved = false;
+                        }
                     }
                 }
                 if (resolved && child.CaptureSources is null && _moduleCode is not null)
-                    child.PrepareCaptureSources(_localIndexes, _closureIndexes, _compilation.Governor, _compilation.CancellationToken);
+                {
+                    // A value capture must originate in this frame and never
+                    // be forwarded from the child to another binding owner.
+                    var byValue = names.Count == 1 && !child.ForwardsCaptures &&
+                        _localIndexes.ContainsKey(names[0]) && IsUnchangingParameter(names[0]);
+                    child.PrepareCaptureSources(_localIndexes, _closureIndexes, byValue,
+                        _compilation.Governor, _compilation.CancellationToken);
+                }
             }
         }
 

@@ -495,7 +495,7 @@ internal sealed partial class LythonRuntime
         return function;
     }
 
-    private static ExecutionContext SelectDefinitionClosure(ExecutableCodeObject code, ExecutionContext defining, IReadOnlyList<ExecutableCell> cells)
+    private static ExecutionContext SelectDefinitionClosure(ExecutableCodeObject code, ExecutionContext defining, ExecutableCaptures cells)
     {
         var closure = defining.FunctionClosureContext;
         if (!code.UsesOnlyLexicalSlots || closure.ParentContext is null || !ReferenceEquals(closure, defining) ||
@@ -503,7 +503,7 @@ internal sealed partial class LythonRuntime
             return closure;
 
         for (var i = 0; i < cells.Count; i++)
-            if (cells[i].HasNamespaceOwner) return closure;
+            if (cells.GetCell(i)?.HasNamespaceOwner == true) return closure;
         return GetGlobalContext(closure);
     }
 
@@ -540,7 +540,7 @@ internal sealed partial class LythonRuntime
 
             var classContext = ExecutionContext.CreateClassBody(typeScope.Closure, definition.Syntax);
             ExecutionState.EnsureInterpreterStack(span);
-            InitializeExecutableFrame(definition.Body, classContext, default, null);
+            InitializeExecutableFrame(definition.Body, classContext, default, default);
             var returned = asynchronous ? await ExecuteInitializedFrameAsync(classContext).ConfigureAwait(false)
                 : ExecuteInitializedFrame(classContext);
             if (returned is not null) throw new InvalidOperationException("A class suite returned a value.");

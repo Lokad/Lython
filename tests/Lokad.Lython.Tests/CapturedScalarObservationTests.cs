@@ -47,9 +47,9 @@ public sealed class CapturedScalarObservationTests
                 Assert.Equal(new BigInteger(2), values[0]);
                 Assert.Equal(new BigInteger(4), values[1]);
                 Assert.Equal(BigInteger.One, observer.OldValue);
-                var current = Assert.Single(observer.Function!.ClosureCells).Value;
+                var current = Assert.IsType<LythonRuntime.ExecutableCell>(observer.Function!.Captures.GetCell(0)).Value;
                 Assert.Equal(new BigInteger(2), current);
-                Assert.Same(current, Assert.Single(observer.Function.ClosureCells).Value);
+                Assert.Same(current, Assert.IsType<LythonRuntime.ExecutableCell>(observer.Function.Captures.GetCell(0)).Value);
                 Assert.NotSame(observer.OldValue, current);
                 Assert.Equal(0, context.State.CurrentInterpreterDepth);
                 Assert.Equal(0, context.State.CurrentRecursionDepth);
@@ -68,7 +68,7 @@ public sealed class CapturedScalarObservationTests
         {
             var function = Assert.IsType<PyExecutableFunction>(Assert.Single(arguments).Value);
             Function = function;
-            var cell = Assert.Single(function.ClosureCells);
+            var cell = Assert.IsType<LythonRuntime.ExecutableCell>(function.Captures.GetCell(0));
             hook.AfterGrowth = _ =>
             {
                 if (cell.Value is not BigInteger count || count != BigInteger.One) return;

@@ -24,7 +24,7 @@ public sealed class NativeFunctionRefundTests
             var definition = ClassMethodCompiler.Compile("def f(value,unused): return value.lower()");
             var code = definition.CodeObject;
             Assert.True(code.CanRunNativeInstructions);
-            var function = new PyExecutableFunction(definition.ParameterLayout, code, context, [],
+            var function = new PyExecutableFunction(definition.ParameterLayout, code, context, default,
                 default);
             var retained = PyString.FromString(new string('A', 4096), governor, span);
             var bound = function.BindCallOperands([Slot.FromObject(retained), Slot.FromObject(PyNone.Instance)], span, context, receiver: null, callSite: null);

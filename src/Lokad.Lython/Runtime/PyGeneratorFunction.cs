@@ -4,12 +4,12 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed class PyGeneratorFunction : PyFunctionBase
 {
-    private readonly IReadOnlyList<LythonRuntime.ExecutableCell>? _closureCells;
+    private readonly LythonRuntime.ExecutableCaptures _closureCells;
 
     public PyGeneratorFunction(FunctionParameterLayout parameterLayout,
         ExecutableCodeObject code, LythonRuntime.ExecutionContext closure,
         FunctionDefaults defaults,
-        IReadOnlyList<LythonRuntime.ExecutableCell>? closureCells = null)
+        LythonRuntime.ExecutableCaptures closureCells = default)
         : base(code, parameterLayout, closure, defaults)
     {
         _closureCells = closureCells;

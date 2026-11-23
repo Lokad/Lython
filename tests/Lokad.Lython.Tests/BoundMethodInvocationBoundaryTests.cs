@@ -150,6 +150,6 @@ public sealed class BoundMethodInvocationBoundaryTests
         var code = binding.CodeObject.RequireNotNull();
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options,regexProvider:Utf8RegexProvider.Instance);
         var closure = LythonRuntime.ExecutionContext.CreateModule(context, "/callee.py", "callee");
-        return (new PyExecutableFunction(binding.ParameterLayout, code, closure, [], default), context, code);
+        return (new PyExecutableFunction(binding.ParameterLayout, code, closure, default, default), context, code);
     }
 }

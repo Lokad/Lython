@@ -503,7 +503,7 @@ internal sealed record ExecutableMatchCaseBinding(
 
 // A nonnegative index names a local cell. A complemented index names an
 // incoming cell in the defining code's capture array.
-internal sealed record ExecutableCaptureSources(IReadOnlyDictionary<string, int> ParentLocalSlots, int[] Slots);
+internal sealed record ExecutableCaptureSources(IReadOnlyDictionary<string, int> ParentLocalSlots, int[] Slots, bool CanCaptureByValue);
 
 internal sealed partial class ExecutableCodeObject
 {
@@ -624,6 +624,7 @@ internal sealed partial class ExecutableCodeObject
     internal ExecutableCodeObject? GlobalModule { get; private set; }
     internal int[] ModuleGlobalSlots { get; private set; } = [];
     internal ExecutableCaptureSources? CaptureSources { get; private set; }
+    internal bool ForwardsCaptures { get; init; }
 
     internal void PrepareModuleGlobals(ExecutableCodeObject module, CancellationToken cancellationToken)
     {
@@ -638,7 +639,7 @@ internal sealed partial class ExecutableCodeObject
     }
 
     internal void PrepareCaptureSources(IReadOnlyDictionary<string, int> parentLocals,
-        IReadOnlyDictionary<string, int> parentClosures, MemoryGovernor? governor, CancellationToken cancellationToken)
+        IReadOnlyDictionary<string, int> parentClosures, bool canCaptureByValue, MemoryGovernor? governor, CancellationToken cancellationToken)
     {
         var span = Instructions[EntryIndex].Span;
         var bytes = checked(64L + sizeof(int) * (long)ClosureNames.Count);
@@ -652,7 +653,7 @@ internal sealed partial class ExecutableCodeObject
             slots[i] = parentLocals.TryGetValue(name, out var local) ? local : ~parentClosures[name];
         }
         // The builder's local-slot map also belongs to the final parent code.
-        var sources = new ExecutableCaptureSources(parentLocals, slots);
+        var sources = new ExecutableCaptureSources(parentLocals, slots, canCaptureByValue);
         storage?.Commit(bytes);
         CaptureSources = sources;
     }

@@ -11,9 +11,7 @@ internal sealed partial class LythonRuntime
     // Null is internal unbound storage; every guest None is PyNone.
     // Cleared workspaces need no separate sentinel initialization.
 
-    // A single-capture function can use the cell itself as its capture list.
-    // The list has a fixed position even as the shared binding changes.
-    internal sealed class ExecutableCell : IReadOnlyList<ExecutableCell>
+    internal sealed class ExecutableCell
     {
         // Cell metadata and one observed current scalar. Older aliases retain
         // their existing container/execution funding; updates refund nothing.
@@ -93,14 +91,52 @@ internal sealed partial class LythonRuntime
         // Once retained, the execution owner keeps the cell across frame cleanup.
         internal bool RetentionCharged;
 
-        int IReadOnlyCollection<ExecutableCell>.Count => 1;
-        ExecutableCell IReadOnlyList<ExecutableCell>.this[int index]
-            => index == 0 ? this : throw new IndexOutOfRangeException();
-        IEnumerator<ExecutableCell> IEnumerable<ExecutableCell>.GetEnumerator()
+    }
+
+    // One word shared by executable calls and suspended frames. A fixed
+    // parameter carries its retained value; mutable bindings share cells.
+    internal readonly struct ExecutableCaptures
+    {
+        private readonly object? _storage;
+
+        private ExecutableCaptures(object storage) => _storage = storage;
+
+        internal static ExecutableCaptures FromCell(ExecutableCell cell) => new(cell);
+        internal static ExecutableCaptures FromCells(ExecutableCell[] cells) => new(cells);
+        internal static ExecutableCaptures FromValue(object value) => new(value);
+
+        internal bool IsEmpty => _storage is null;
+
+        internal int Count => _storage switch
         {
-            yield return this;
+            null => 0,
+            ExecutableCell[] cells => cells.Length,
+            _ => 1
+        };
+
+        internal ExecutableCell? GetCell(int index) => _storage switch
+        {
+            ExecutableCell cell when index == 0 => cell,
+            ExecutableCell[] cells when (uint)index < (uint)cells.Length => cells[index],
+            _ => null
+        };
+
+        internal bool TryRead(int index, out object? value)
+        {
+            if (_storage is ExecutableCell[] cells)
+            {
+                if ((uint)index >= (uint)cells.Length) { value = null; return false; }
+                value = cells[index].Value;
+                return true;
+            }
+            if (index == 0 && _storage is not null)
+            {
+                value = _storage is ExecutableCell cell ? cell.Value : _storage;
+                return true;
+            }
+            value = null;
+            return false;
         }
-        IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable<ExecutableCell>)this).GetEnumerator();
     }
 
     // Mutable execution data is distinct from the lexical context's identity.
@@ -110,7 +146,7 @@ internal sealed partial class LythonRuntime
         internal ExecutableCodeObject Code;
         // Retain the binding loan's return handle after operand storage retires.
         internal ExecutableSlot[] Locals;
-        internal IReadOnlyList<ExecutableCell>? ClosureCells;
+        internal ExecutableCaptures Captures;
         internal ExecutableValueStorage Stack;
         internal int InstructionIndex;
         // Only the incoming ordinary call owns this intent; generators, public
@@ -123,7 +159,7 @@ internal sealed partial class LythonRuntime
         {
             Code = null!;
             Locals = [];
-            ClosureCells = null;
+            Captures = default;
             Stack = default;
             InstructionIndex = 0;
             ReturnValue = default;
@@ -138,7 +174,7 @@ internal sealed partial class LythonRuntime
         {
             _execution.Code = null!;
             _execution.Locals = [];
-            _execution.ClosureCells = null;
+            _execution.Captures = default;
         }
 
         public bool RequiresLocalVariableMirroring => _execution.Code.RequiresLocalVariableMirroring;
@@ -171,10 +207,9 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            if (_execution.ClosureCells is not null && _execution.Code.ClosureNameToSlot.TryGetValue(name, out var closureSlot))
+            if (!_execution.Captures.IsEmpty && _execution.Code.ClosureNameToSlot.TryGetValue(name, out var closureSlot))
             {
-                var closure = _execution.ClosureCells[closureSlot].Value;
-                if (closure is not null)
+                if (_execution.Captures.TryRead(closureSlot, out var closure) && closure is not null)
                 {
                     value = closure;
                     return true;
@@ -206,11 +241,9 @@ internal sealed partial class LythonRuntime
             foreach (var name in _execution.Code.LocalNames)
                 if (!name.StartsWith('<') && TryReadExecutableLocal(name, out var value))
                     yield return new(name, value);
-            if (_execution.ClosureCells is null) yield break;
             for (var i = 0; i < _execution.Code.ClosureNames.Count; i++)
             {
-                var value = _execution.ClosureCells[i].Value;
-                if (value is not null)
+                if (_execution.Captures.TryRead(i, out var value) && value is not null)
                     yield return new(_execution.Code.ClosureNames[i], value);
             }
         }
@@ -226,10 +259,10 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            if (_execution.ClosureCells is not null && _execution.Code.ClosureNameToSlot.TryGetValue(name, out var closureSlot))
+            if (!_execution.Captures.IsEmpty && _execution.Code.ClosureNameToSlot.TryGetValue(name, out var closureSlot))
             {
-                cell = _execution.ClosureCells[closureSlot];
-                return true;
+                cell = _execution.Captures.GetCell(closureSlot);
+                return cell is not null;
             }
 
             cell = null;
@@ -238,7 +271,7 @@ internal sealed partial class LythonRuntime
 
         public bool TryGetClosureCell(int slot, [MaybeNullWhen(false)] out ExecutableCell cell)
         {
-            cell = ReadCapturedCell(_execution.ClosureCells, slot);
+            cell = _execution.Captures.GetCell(slot);
             return cell is not null;
         }
 
@@ -251,9 +284,10 @@ internal sealed partial class LythonRuntime
                 return true;
             }
 
-            if (_execution.ClosureCells is not null && _execution.Code.ClosureNameToSlot.TryGetValue(name, out var closureSlot))
+            if (!_execution.Captures.IsEmpty && _execution.Code.ClosureNameToSlot.TryGetValue(name, out var closureSlot) &&
+                _execution.Captures.GetCell(closureSlot) is { } cell)
             {
-                _execution.ClosureCells[closureSlot].Value = value;
+                cell.Value = value;
                 return true;
             }
 
@@ -270,9 +304,9 @@ internal sealed partial class LythonRuntime
                 return removed;
             }
 
-            if (_execution.ClosureCells is not null && _execution.Code.ClosureNameToSlot.TryGetValue(name, out var closureSlot))
+            if (!_execution.Captures.IsEmpty && _execution.Code.ClosureNameToSlot.TryGetValue(name, out var closureSlot) &&
+                _execution.Captures.GetCell(closureSlot) is { } cell)
             {
-                var cell = _execution.ClosureCells[closureSlot];
                 var removed = cell.Value is not null;
                 cell.Value = null;
                 return removed;
@@ -600,7 +634,7 @@ internal sealed partial class LythonRuntime
         // Module top-level keeps the historical contract: an explicit frame
         // return surfaces once as a signal for Run to project (sync function
         // bodies consume the value directly instead).
-        if (ExecuteExecutableCodeObject(codeObject, context, default, null) is { } returnValue)
+        if (ExecuteExecutableCodeObject(codeObject, context, default, default) is { } returnValue)
         {
             throw new ReturnSignal(returnValue);
         }
@@ -613,7 +647,7 @@ internal sealed partial class LythonRuntime
         ExecutableCodeObject codeObject,
         ExecutionContext context,
         BoundFunctionArguments boundArguments,
-        IReadOnlyList<ExecutableCell>? closureCells,
+        ExecutableCaptures? closureCells,
         LythonSourceSpan? entrySpan = null,
         PyExecutableFunction? lookupOwner = null)
     {
@@ -626,7 +660,7 @@ internal sealed partial class LythonRuntime
         else ExecutionState.EnsureInterpreterStack(entrySpan);
         try
         {
-            InitializeExecutableFrame(codeObject, context, boundArguments, closureCells, lookupOwner);
+            InitializeExecutableFrame(codeObject, context, boundArguments, closureCells ?? default, lookupOwner);
             return ExecuteInitializedFrame(context);
         }
         finally
@@ -636,13 +670,13 @@ internal sealed partial class LythonRuntime
     }
 
     internal static ValueTask<object?> ExecuteExecutableCodeObjectAsync(ExecutableCodeObject codeObject, ExecutionContext context)
-        => ExecuteExecutableCodeObjectAsync(codeObject, context, default, null);
+        => ExecuteExecutableCodeObjectAsync(codeObject, context, default, default);
 
     internal static async ValueTask<object?> ExecuteExecutableCodeObjectAsync(
         ExecutableCodeObject codeObject,
         ExecutionContext context,
         BoundFunctionArguments boundArguments,
-        IReadOnlyList<ExecutableCell>? closureCells,
+        ExecutableCaptures closureCells,
         LythonSourceSpan? entrySpan = null,
         PyExecutableFunction? lookupOwner = null)
     {
@@ -687,7 +721,7 @@ internal sealed partial class LythonRuntime
         ExecutableCodeObject codeObject,
         ExecutionContext context,
         BoundFunctionArguments boundArguments,
-        IReadOnlyList<ExecutableCell>? closureCells,
+        ExecutableCaptures closureCells,
         PyExecutableFunction? lookupOwner = null,
         bool returnConsumedByIteration = false, bool continuingNative = false)
     {
@@ -700,7 +734,7 @@ internal sealed partial class LythonRuntime
         ExecutableCodeObject codeObject,
         ExecutionContext context,
         BoundFunctionArguments boundArguments,
-        IReadOnlyList<ExecutableCell>? closureCells,
+        ExecutableCaptures closureCells,
         PyExecutableFunction? lookupOwner = null,
         bool returnConsumedByIteration = false,
         bool borrowedInvocation = false, bool continuingNative = false)
@@ -743,7 +777,7 @@ internal sealed partial class LythonRuntime
             {
                 Code = codeObject,
                 Locals = locals,
-                ClosureCells = closureCells,
+                Captures = closureCells,
                 Stack = stack,
                 ReturnConsumedByIteration = returnConsumedByIteration,
                 InstructionIndex = codeObject.EntryIndex

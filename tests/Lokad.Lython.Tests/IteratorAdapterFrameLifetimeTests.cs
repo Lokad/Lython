@@ -48,7 +48,7 @@ public sealed class IteratorAdapterFrameLifetimeTests
         var code=ExecutableScript.Compile(LythonFrontend.Compile(source).Script!).EntryPoint;
         var context=new Context(new MockLythonHost(),new LythonRunOptions{MemoryBudget=owner});
         context.Variables["capture"]=capture;
-        return (asynchronous?await LythonRuntime.ExecuteExecutableCodeObjectAsync(code,context,default,null)
+        return (asynchronous?await LythonRuntime.ExecuteExecutableCodeObjectAsync(code,context,default,default)
             :LythonRuntime.ExecuteExecutableCodeObject(code,context,default,null))!;
     }
 

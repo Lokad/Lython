@@ -83,8 +83,8 @@ public sealed class ComprehensionLambdaExecutableTests
         var padding = deny ? cap - before : 0;
         if (deny) { governor.Reserve(padding, null); governor.Commit(padding); }
         var capture = typeof(LythonRuntime).GetMethod("CaptureExecutableClosures", BindingFlags.Static | BindingFlags.NonPublic)!
-            .CreateDelegate<Func<ExecutableCodeObject, LythonRuntime.ExecutionContext, LythonSourceSpan, IReadOnlyList<LythonRuntime.ExecutableCell>>>();
-        IReadOnlyList<LythonRuntime.ExecutableCell>? captured = null;
+            .CreateDelegate<Func<ExecutableCodeObject, LythonRuntime.ExecutionContext, LythonSourceSpan, LythonRuntime.ExecutableCaptures>>();
+        LythonRuntime.ExecutableCaptures captured = default;
         long charged = 0;
         try
         {
@@ -102,8 +102,8 @@ public sealed class ComprehensionLambdaExecutableTests
             else
             {
                 captured = capture(lambda, context, syntax.Statements[0].Span);
-                Assert.Same(parentCell, captured[lambda.ClosureNameToSlot["offset"]]);
-                Assert.Same(held, captured[lambda.ClosureNameToSlot["value"]].Value);
+                Assert.Same(parentCell, captured.GetCell(lambda.ClosureNameToSlot["offset"]));
+                Assert.Same(held, captured.GetCell(lambda.ClosureNameToSlot["value"])!.Value);
                 Assert.True(parentCell.RetentionCharged);
                 Assert.True(scope.Bindings.MirrorLocalStores);
                 Assert.False(context.MirrorLocalStores);
@@ -124,7 +124,7 @@ public sealed class ComprehensionLambdaExecutableTests
         Assert.Null(context.CurrentExecutableFrame);
         if (!deny)
         {
-            Assert.Equal(new BigInteger(2), captured![lambda.ClosureNameToSlot["value"]].Value);
+            Assert.Equal(new BigInteger(2), captured.GetCell(lambda.ClosureNameToSlot["value"])!.Value);
             Assert.Equal(charged, governor.CurrentAccountedBytes);
         }
     }

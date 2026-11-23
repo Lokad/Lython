@@ -18,7 +18,7 @@ internal sealed partial class LythonRuntime
         private readonly PyExecutableFunction _function = function;
         internal readonly ExecutableCodeObject Code = function.CodeObject;
         internal readonly Span<ExecutableSlot> Values = values;
-        private readonly IReadOnlyList<ExecutableCell> _cells = function.ClosureCells;
+        private readonly ExecutableCaptures _cells = function.Captures;
         private readonly ExecutionContext _scope = function.DefinitionContext;
         private readonly bool _consumedByIteration = consumedByIteration;
         private readonly int _unpackedReturnCount = unpackedReturnCount;
@@ -113,11 +113,11 @@ internal sealed partial class LythonRuntime
                     case ExecutableOpCode.LoadClosure:
                         if (TryExecuteClosureArithmetic(Code, _cells, Index, LiveExtent, _scope))
                         { Index += 2; break; }
-                        if (ReadCapturedCell(_cells, instruction.ClosureSlot)?.Value is not { } captured) return false;
+                        if (!_cells.TryRead(instruction.ClosureSlot, out var captured) || captured is null) return false;
                         Publish(instruction, captured);
                         break;
                     case ExecutableOpCode.StoreClosure:
-                        if (ReadCapturedCell(_cells, instruction.ClosureSlot) is not { CanStoreDirectly: true } writeCell) return false;
+                        if (_cells.GetCell(instruction.ClosureSlot) is not { CanStoreDirectly: true } writeCell) return false;
                         var stored = ReadSlotForTransfer(instruction.InputStart);
                         Values[instruction.InputStart] = default;
                         Trim(instruction.LiveExtent);
@@ -677,7 +677,7 @@ internal sealed partial class LythonRuntime
         LythonRuntimeException? failure)
     {
         var frame = function.EnterInvocationFrame(bound, span, enterFunctionCall: false);
-        InitializeExecutableFrame(function.CodeObject, frame, bound, function.ClosureCells,
+        InitializeExecutableFrame(function.CodeObject, frame, bound, function.Captures,
             lookupOwner: function, returnConsumedByIteration: consumedByIteration, continuingNative: true);
         frame.RestoreNativePosition(index, liveExtent, failure);
         return frame;

@@ -40,19 +40,11 @@ internal sealed partial class LythonRuntime
             : RuntimeErrors.NameNotDefined(codeObject.LocalNames[slot], span);
     }
 
-    // Executable captures carry either the singleton cell itself or the
-    // owned array. Both interpreters read that storage directly.
-    private static ExecutableCell? ReadCapturedCell(IReadOnlyList<ExecutableCell>? cells, int slot)
-    {
-        if (cells is ExecutableCell singleton) return slot == 0 ? singleton : null;
-        return cells is ExecutableCell[] array && (uint)slot < (uint)array.Length ? array[slot] : null;
-    }
-
     private static bool TryLoadClosure(in ExecutableWorkState execution, ExecutionContext? context,
         int slot, LythonSourceSpan span, out object value)
     {
         var codeObject = execution.Code;
-        if (ReadCapturedCell(execution.ClosureCells, slot) is not { } cell)
+        if (!execution.Captures.TryRead(slot, out var captured))
         {
             // Missing-cell/nonlocal resolution needs the actual invocation's
             // lexical scope. Present cells belong to the work, not its frame.
@@ -69,7 +61,6 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.FreeVariableNotAssociated(codeObject.ClosureNames[slot], span);
         }
 
-        var captured = cell.Value;
         if (captured is null)
         {
             throw RuntimeErrors.FreeVariableNotAssociated(codeObject.ClosureNames[slot], span);
@@ -111,7 +102,7 @@ internal sealed partial class LythonRuntime
         in ExecutableInstruction instruction)
     {
         var slot = instruction.ClosureSlot;
-        if (ReadCapturedCell(execution.ClosureCells, slot) is { CanStoreDirectly: true } cell)
+        if (execution.Captures.GetCell(slot) is { CanStoreDirectly: true } cell)
         {
             var value = execution.Stack.TakeSlotValue(instruction.InputStart, instruction.LiveExtent);
             cell.StoreSlot(value);
@@ -377,14 +368,14 @@ internal sealed partial class LythonRuntime
             _ => throw new InvalidOperationException($"Executable call site contains unsupported argument kind {spec.Kind}.")
         };
 
-    private static IReadOnlyList<ExecutableCell> CaptureExecutableClosures(
+    private static ExecutableCaptures CaptureExecutableClosures(
         ExecutableCodeObject codeObject,
         ExecutionContext context,
         LythonSourceSpan span)
     {
         if (codeObject.ClosureNames.Count == 0)
         {
-            return [];
+            return default;
         }
 
         var frame = context.CurrentExecutableFrame;
@@ -396,30 +387,30 @@ internal sealed partial class LythonRuntime
 
     // The prepared slot map can read either an owning frame or a borrowed
     // factory's work. Only name/namespace resolution needs the actual frame.
-    private static IReadOnlyList<ExecutableCell> CaptureExecutableCells(ExecutableCodeObject codeObject,
+    private static ExecutableCaptures CaptureExecutableCells(ExecutableCodeObject codeObject,
         ExecutionContext context, LythonSourceSpan span, ref ExecutableWorkState parent, int[]? slots,
         ExecutionContext? frame = null)
     {
-        var cells = CaptureExecutableCells(codeObject, context, span, parent.Locals, parent.ClosureCells,
+        var cells = CaptureExecutableCells(codeObject, context, span, parent.Locals, parent.Captures,
             slots, out var transferred, frame);
         if (transferred != 0) parent.Stack.TransferCapturedCellCharges(transferred);
         return cells;
     }
 
-    private static IReadOnlyList<ExecutableCell> CaptureExecutableCells(ExecutableCodeObject codeObject,
+    private static ExecutableCaptures CaptureExecutableCells(ExecutableCodeObject codeObject,
         ExecutionContext context, LythonSourceSpan span, Span<ExecutableSlot> parentLocals,
-        IReadOnlyList<ExecutableCell>? parentCells, int[]? slots, out int transferred,
+        ExecutableCaptures parentCells, int[]? slots, out int transferred,
         ExecutionContext? frame = null, bool inline = false)
     {
         transferred = 0;
         var names = codeObject.ClosureNames;
-        if (names.Count == 0) return [];
+        if (names.Count == 0) return default;
         ExecutableCell Resolve(int index, Span<ExecutableSlot> locals)
         {
             if (slots is not null)
             {
                 var slot = slots[index];
-                if (slot < 0) return parentCells![~slot];
+                if (slot < 0) return parentCells.GetCell(~slot).RequireNotNull();
                 if (!inline) return (ExecutableCell)locals[slot].Reference!;
                 return locals[slot].Reference as ExecutableCell ?? new ExecutableCell(locals[slot]);
             }
@@ -469,7 +460,7 @@ internal sealed partial class LythonRuntime
             {
                 var cell = Capture(0, parentLocals);
                 Publish(0, cell, parentLocals, ref transferred);
-                return cell;
+                return ExecutableCaptures.FromCell(cell);
             }
 
             var cells = new ExecutableCell[names.Count];
@@ -482,7 +473,7 @@ internal sealed partial class LythonRuntime
             // cells observe later loop stores through the existing owner.
             for (var i = 0; i < cells.Length; i++)
                 Publish(i, cells[i], parentLocals, ref transferred);
-            return cells;
+            return ExecutableCaptures.FromCells(cells);
         }
         catch
         {

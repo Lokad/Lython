@@ -3,7 +3,7 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed class PyExecutableFunction : PyFunctionBase
 {
-    private readonly IReadOnlyList<LythonRuntime.ExecutableCell> _closureCells;
+    private readonly LythonRuntime.ExecutableCaptures _closureCells;
     private LythonRuntime.ExecutableLookupCache[]? _lookupCaches;
 
     // Facts belong to this execution-owned definition, not each invocation.
@@ -29,7 +29,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         FunctionParameterLayout parameterLayout,
         ExecutableCodeObject codeObject,
         LythonRuntime.ExecutionContext closure,
-        IReadOnlyList<LythonRuntime.ExecutableCell> closureCells,
+        LythonRuntime.ExecutableCaptures closureCells,
         FunctionDefaults defaults)
         : base(codeObject, parameterLayout, closure, defaults)
     {
@@ -41,7 +41,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
     // separate cells; mirrored namespaces and exposed locals copy values,
     // never this array.
 
-    internal IReadOnlyList<LythonRuntime.ExecutableCell> ClosureCells => _closureCells;
+    internal LythonRuntime.ExecutableCaptures Captures => _closureCells;
     internal LythonRuntime.ExecutionContext DefinitionContext => Closure;
 
     // Standalone local cells belong to the work. Scope-sensitive operations

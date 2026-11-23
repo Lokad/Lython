@@ -48,7 +48,7 @@ internal sealed partial class LythonRuntime
                 Span<ExecutableSlot> uncapturedLocal = default;
                 if (eagerReads is null && captures is [>= 0] && Values[captures[0]].Reference is not ExecutableCell)
                     uncapturedLocal = Values.Slice(captures[0], 1);
-                IReadOnlyList<ExecutableCell> cells = captures is null || !uncapturedLocal.IsEmpty ? [] :
+                ExecutableCaptures cells = captures is null || !uncapturedLocal.IsEmpty ? default :
                     CaptureExecutableCells(code, _scope, instruction.Span, Values, _cells, captures, out _, inline: true);
                 var function = CreateLexicalFunctionValue(layout, code, cells, generator, _scope, instruction.Span,
                     Values.Slice(first, inputCount), postponedAnnotations, preparedAnnotations, directKeywordDefault, uncapturedLocal);

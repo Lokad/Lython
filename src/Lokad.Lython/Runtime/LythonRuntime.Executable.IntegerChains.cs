@@ -53,13 +53,13 @@ internal sealed partial class LythonRuntime
                 : TryReadMachineOperand(code, _supplied, slot, scope, out value);
     }
 
-    private static bool TryExecuteClosureArithmetic(ExecutableCodeObject code, IReadOnlyList<ExecutableCell>? cells,
+    private static bool TryExecuteClosureArithmetic(ExecutableCodeObject code, ExecutableCaptures cells,
         int index, int liveExtent, ExecutionContext context)
     {
         ref readonly var load = ref code.Instructions[index];
         // A clean statement extent has no input retirement or pending user.
         if (!load.HasClosureArithmetic || liveExtent != load.ResultSlot
-            || ReadCapturedCell(cells, load.ClosureSlot) is not { } cell) return false;
+            || cells.GetCell(load.ClosureSlot) is not { } cell) return false;
         ref readonly var arithmetic = ref code.Instructions[index + 1];
         return cell.TryApplyIntegerArithmetic(AugmentedBinaryOperator(arithmetic.AugmentedOperator),
             (long)(BigInteger)code.Constants[load.ClosureArithmeticConstant]!, context,

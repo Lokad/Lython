@@ -49,7 +49,7 @@ internal sealed partial class LythonRuntime
     }
 
     private static PyFunctionBase CreateFunctionValue(FunctionParameterLayout layout, ExecutableCodeObject code,
-        ExecutionContext closure, IReadOnlyList<ExecutableCell> cells, FunctionDefaults defaults,
+        ExecutionContext closure, ExecutableCaptures cells, FunctionDefaults defaults,
         bool generator, ExecutionContext context, LythonSourceSpan span,
         ReadOnlySpan<ExecutableSlot> annotations = default, PyString[]? postponedAnnotations = null,
         PreparedFunctionAnnotations preparedAnnotations = default, bool directKeywordDefault = false,
@@ -66,10 +66,11 @@ internal sealed partial class LythonRuntime
             System.Diagnostics.Debug.Assert(defaults.InlineKeyword && preparedAnnotations.Values is null);
             bytes = checked(bytes + PyDict.RecordKeys.SinglePreparedValueBytes);
         }
+        var captureByValue = !uncapturedLocal.IsEmpty && code.CaptureSources is { CanCaptureByValue: true };
         if (!uncapturedLocal.IsEmpty)
         {
-            System.Diagnostics.Debug.Assert(uncapturedLocal.Length == 1 && cells.Count == 0 && preparedAnnotations.Values is null);
-            bytes = checked(bytes + ExecutableCell.StorageBytes);
+            System.Diagnostics.Debug.Assert(uncapturedLocal.Length == 1 && cells.IsEmpty && preparedAnnotations.Values is null);
+            bytes = checked(bytes + (captureByValue ? RuntimeMemoryEstimates.ScalarStorageBytes : ExecutableCell.StorageBytes));
         }
         var governor = context.MemoryGovernor;
         if (preparedAnnotations.Values is null) governor.Reserve(bytes, span);
@@ -79,8 +80,13 @@ internal sealed partial class LythonRuntime
             // Inline execution owns this unexposed slot. Both objects stay
             // private until their combined reservation is committed.
             ExecutableCell? cell = null;
-            if (!uncapturedLocal.IsEmpty)
-                cells = cell = new ExecutableCell(uncapturedLocal[0]);
+            if (captureByValue)
+                cells = ExecutableCaptures.FromValue(uncapturedLocal[0].Object.RequireNotNull());
+            else if (!uncapturedLocal.IsEmpty)
+            {
+                cell = new ExecutableCell(uncapturedLocal[0]);
+                cells = ExecutableCaptures.FromCell(cell);
+            }
             PyFunctionBase function = generator
                 ? new PyGeneratorFunction(layout, code, closure, defaults, cells)
                 : new PyExecutableFunction(layout, code, closure, cells, defaults);
@@ -113,7 +119,7 @@ internal sealed partial class LythonRuntime
     // Inline and array-backed lexical calls have the same owner and operand
     // order. Only the caller retires the storage the operands came from.
     private static PyFunctionBase CreateLexicalFunctionValue(FunctionParameterLayout layout, ExecutableCodeObject code,
-        IReadOnlyList<ExecutableCell> cells, bool generator, ExecutionContext scope, LythonSourceSpan span,
+        ExecutableCaptures cells, bool generator, ExecutionContext scope, LythonSourceSpan span,
         Span<ExecutableSlot> operands, PyString[]? postponedAnnotations = null,
         PreparedFunctionAnnotations preparedAnnotations = default, bool directKeywordDefault = false,
         Span<ExecutableSlot> uncapturedLocal = default)
@@ -128,7 +134,7 @@ internal sealed partial class LythonRuntime
     }
 
     private static bool CanDefineWithoutInvocation(ExecutableCodeObject code, ExecutableCodeObject parentCode,
-        IReadOnlyList<ExecutableCell>? parentCells, ExecutionContext scope, LythonSourceSpan span, out int[]? slots)
+        ExecutableCaptures parentCells, ExecutionContext scope, LythonSourceSpan span, out int[]? slots)
     {
         slots = null;
         return CanDefineLexically(code) && (code.ClosureNames.Count == 0 ||
@@ -136,7 +142,7 @@ internal sealed partial class LythonRuntime
     }
 
     private static bool TryGetStandaloneCaptures(ExecutableCodeObject code, ExecutableCodeObject parentCode,
-        IReadOnlyList<ExecutableCell>? parentCells, ExecutionContext scope, LythonSourceSpan span, out int[]? slots)
+        ExecutableCaptures parentCells, ExecutionContext scope, LythonSourceSpan span, out int[]? slots)
     {
         slots = null;
         if (code.CaptureSources is not { } sources ||
@@ -148,7 +154,7 @@ internal sealed partial class LythonRuntime
         {
             if ((i & 255) == 0) scope.CheckExecution(span);
             var slot = sources.Slots[i];
-            if (slot < 0 && ReadCapturedCell(parentCells, ~slot) is not { HasNamespaceOwner: false })
+            if (slot < 0 && parentCells.GetCell(~slot) is not { HasNamespaceOwner: false })
                 return false;
         }
         slots = sources.Slots;

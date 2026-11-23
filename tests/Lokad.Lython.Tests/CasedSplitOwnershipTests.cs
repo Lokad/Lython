@@ -211,7 +211,7 @@ public sealed class CasedSplitOwnershipTests
             var span = new LythonSourceSpan(0, 1, 1, 1);
             var definition = ClassMethodCompiler.Compile("def words(value):return value.lower().split()");
             var code = definition.CodeObject;
-            var function = new PyExecutableFunction(definition.ParameterLayout, code, context, [],
+            var function = new PyExecutableFunction(definition.ParameterLayout, code, context, default,
                 default);
             var input = PyString.FromString("A ß C D E F G H I J K", context.MemoryGovernor, span);
             using var cursor = PyStringOps.PrepareCasedWhitespaceIteration(input, true, context, span);

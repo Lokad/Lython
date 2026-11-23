@@ -55,7 +55,7 @@ internal sealed partial class LythonRuntime
             LythonRuntimeException? failure = null;
             try
             {
-                returned = ExecuteExecutableCodeObject(prepared.Code, prepared.Context, default, null);
+                returned = ExecuteExecutableCodeObject(prepared.Code, prepared.Context, default, default);
             }
             catch (LythonRuntimeException ex)
             {

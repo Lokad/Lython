@@ -84,14 +84,14 @@ public sealed class NativeClosureSequenceTests
             {
                 var function = Assert.IsType<PyExecutableFunction>(LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null));
                 Assert.True(function.CodeObject.CanRunNativeInstructions);
-                Assert.Single(function.ClosureCells);
+                Assert.IsType<LythonRuntime.ExecutableCell>(function.Captures.GetCell(0));
                 var span = new LythonSourceSpan(0, 1, 1, 1);
                 var failure = Assert.Throws<LythonRuntimeException>(() => function.Invoke([], span, context));
                 Assert.Equal("TypeError", failure.ExceptionType);
-                Assert.Equal(BigInteger.Zero, function.ClosureCells[0].Value);
+                Assert.Equal(BigInteger.Zero, function.Captures.GetCell(0)!.Value);
                 var retained = PyString.FromString("kept", context.MemoryGovernor, span);
                 Assert.Same(retained, function.Invoke([CallArgumentValue.Positional(retained)], span, context));
-                Assert.Equal(BigInteger.One, function.ClosureCells[0].Value);
+                Assert.Equal(BigInteger.One, function.Captures.GetCell(0)!.Value);
                 Assert.Equal("kept", retained.AsString());
                 Assert.Equal(0, context.State.CurrentInterpreterDepth);
                 Assert.Equal(0, context.State.CurrentRecursionDepth);
@@ -143,7 +143,7 @@ public sealed class NativeClosureSequenceTests
                 Assert.True(armed.Refused);
                 Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
                 Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
-                Assert.Equal(new BigInteger(1), Assert.Single(armed.Function!.ClosureCells).Value);
+                Assert.Equal(new BigInteger(1), Assert.IsType<LythonRuntime.ExecutableCell>(armed.Function!.Captures.GetCell(0)).Value);
                 var splitSpan = Assert.Single(armed.Function.CodeObject.CallSites.Select(site => site.SplitPrefix)
                     .OfType<ExecutableCasedSplit>().Select(site => site.SplitCallSpan).Distinct());
                 Assert.Same(splitSpan, failure.Span);
@@ -205,7 +205,7 @@ public sealed class NativeClosureSequenceTests
                 Assert.True(arm.Refused);
                 Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
                 Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
-                Assert.Equal(BigInteger.One, Assert.Single(arm.Function!.ClosureCells).Value);
+                Assert.Equal(BigInteger.One, Assert.IsType<LythonRuntime.ExecutableCell>(arm.Function!.Captures.GetCell(0)).Value);
                 Assert.Equal(1, callback.Calls);
                 Assert.Equal(new string('A', 4096), payload.AsString());
                 Assert.Null(context.CurrentExecutableFrame);
@@ -243,7 +243,7 @@ public sealed class NativeClosureSequenceTests
                 // request, independently of that internal setup sequence.
                 if (callback.Calls == 0) return false;
                 Assert.Equal(1, callback.Calls);
-                if (Assert.Single(Function.ClosureCells).Value is not BigInteger count || count == BigInteger.Zero) return false;
+                if (Assert.IsType<LythonRuntime.ExecutableCell>(Function.Captures.GetCell(0)).Value is not BigInteger count || count == BigInteger.Zero) return false;
                 Assert.Equal(BigInteger.One, count);
                 return Refused = true;
             };
@@ -262,7 +262,7 @@ public sealed class NativeClosureSequenceTests
             {
                 // Rebind during output construction, after the cell effect. No
                 // particular allocation size, ordinal or checkpoint is required.
-                if (Assert.Single(function.ClosureCells).Value is not BigInteger count || count != BigInteger.One) return;
+                if (Assert.IsType<LythonRuntime.ExecutableCell>(function.Captures.GetCell(0)).Value is not BigInteger count || count != BigInteger.One) return;
                 hook.AfterGrowth = null;
                 Assert.True(caller.TryStoreLocalOrClosure("suffix", replacement));
                 Rebound = true;
@@ -283,7 +283,7 @@ public sealed class NativeClosureSequenceTests
             {
                 // The native counter store precedes output admission, including
                 // when the latter refuses. No rebinding or body replay is allowed.
-                Assert.Equal(new BigInteger(1), Assert.Single(Function.ClosureCells).Value);
+                Assert.Equal(new BigInteger(1), Assert.IsType<LythonRuntime.ExecutableCell>(Function.Captures.GetCell(0)).Value);
                 Refused = true;
                 return true;
             };
