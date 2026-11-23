@@ -263,7 +263,7 @@ internal sealed partial class PyDict
             context.CheckExecution(span);
             if ((uint)position < (uint)Count && EqualNativeText((PyString)_keys[position].Key!, bytes, context, span))
                 return (PyString)_keys[position].Key!;
-            var index = FindNativeTextIndex(_keys, Count, bytes, context, span);
+            var index = FindNativeTextIndex(_keys, Count, bytes, context, span, out _);
             return index < 0 ? null : (PyString)_keys[index].Key!;
         }
     }

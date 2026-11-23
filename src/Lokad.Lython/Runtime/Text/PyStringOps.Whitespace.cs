@@ -176,6 +176,10 @@ internal static partial class PyStringOps
 
     internal sealed class CasedWhitespaceIteration : ExecutableTemporaryValue
     {
+        // Publication may finish during unwind. Limit the uninterrupted copy
+        // to one chunk and use the cancellation-aware copy for wider words.
+        private const int MaximumDeferredWordBytes = 4096;
+
         private readonly MemoryGovernor _owner;
         private byte[] _encoded = [];
         internal int EncodedCapacity => _encoded.Length;
@@ -279,7 +283,7 @@ internal static partial class PyStringOps
             word = null;
             if (_position == _length) return false;
             var range = ReadEncodedWord(_encoded, ref _position);
-            if (range.Capacity <= PyString.InlineUtf8Capacity)
+            if (range.Capacity <= MaximumDeferredWordBytes)
                 bytes = _encoded.AsSpan(range.Start, range.Capacity);
             else
                 word = Materialize(range);

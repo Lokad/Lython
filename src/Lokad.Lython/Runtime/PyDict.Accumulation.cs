@@ -18,23 +18,35 @@ internal sealed partial class PyDict
         return TryAccumulateAt(index, key, hash, fallback, increment);
     }
 
-    internal bool CanAccumulateInlineWords(LythonRuntime.ExecutionContext context)
+    internal bool CanAccumulateBorrowedWords(LythonRuntime.ExecutionContext context)
         => _nativeItems is not null && _nativeValues is not null && _recordKeys is null
             && !HasProtocolKeys && ReferenceEquals(_memoryGovernor, context.MemoryGovernor);
 
     // The private word segment validates storage once. Until it exits, its
     // prepaid cursor and exact native updates cannot admit or invoke Python.
-    internal bool TryAccumulateInlineWord(ReadOnlySpan<byte> bytes, object fallback, BigInteger increment,
-        LythonRuntime.ExecutionContext context, LythonSourceSpan querySpan)
+    internal bool TryAccumulateBorrowedWord(ReadOnlySpan<byte> bytes, object fallback, BigInteger increment,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan querySpan, out uint? appendHash)
     {
         context.CheckExecution(querySpan);
-        var index = FindNativeTextIndex(_nativeItems!, _nativeCount, bytes, context, querySpan);
-        // New keys need their real word identity. Resume the original body
-        // after publishing that binding, before any insertion/growth admission.
-        if (index < 0) return false;
-        ref var entry = ref _nativeItems![index];
+        var items = _nativeItems!;
+        var index = FindNativeTextIndex(items, _nativeCount, bytes, context, querySpan, out var hash);
+        appendHash = null;
+        if (index < 0)
+        {
+            // Wider words used to arrive materialized. Keep their existing
+            // native append route when this hashed lookup proves absence and
+            // the dictionary already owns the slot.
+            if (bytes.Length > PyString.InlineUtf8Capacity && _nativeCount < items.Length) appendHash = hash;
+            return false;
+        }
+        ref var entry = ref items[index];
         return TryAccumulateAt(index, (PyString)entry.Key!, entry.Hash, fallback, increment);
     }
+
+    // The private cursor has materialized the prepaid key since the lookup.
+    // Neither step can invoke a callback or change dictionary capacity.
+    internal bool TryAppendBorrowedWord(PyString key, uint hash, object fallback, BigInteger increment)
+        => TryAccumulateAt(-1, key, hash, fallback, increment);
 
     private bool TryAccumulateAt(int index, PyString key, uint hash, object fallback, BigInteger increment)
     {

@@ -197,10 +197,11 @@ internal sealed partial class PyDict
     // Canonical UTF-8 keys share this probe with immutable record layouts.
     // It runs no Python hash/equality protocol and creates no key or cache.
     private static int FindNativeTextIndex(NativeKey[] items, int count, ReadOnlySpan<byte> bytes,
-        LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span, out uint hash)
     {
         if (count <= 4 && bytes.Length <= PyString.InlineUtf8Capacity)
         {
+            hash = 0;
             // The callers check execution at entry. A tiny dense prefix needs
             // at most four bounded byte comparisons and no query hash.
             for (var index = 0; index < count; index++)
@@ -208,8 +209,8 @@ internal sealed partial class PyDict
                     return index;
             return -1;
         }
+        hash = MixNativeHash(PyValueComparer.NormalizeHash(PyString.HashUtf8(bytes, context, span)));
         if (count == 0) return -1;
-        var hash = MixNativeHash(PyValueComparer.NormalizeHash(PyString.HashUtf8(bytes, context, span)));
         for (var index = items[NativeBucket(hash, items.Length)].Bucket - 1;
             index >= 0; index = items[index].Next - 1)
         {

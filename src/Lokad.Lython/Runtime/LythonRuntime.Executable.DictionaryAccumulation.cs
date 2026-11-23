@@ -36,7 +36,7 @@ internal sealed partial class LythonRuntime
             var increment = (BigInteger)execution.Code.Constants[~add.SecondInput]!;
 
             if (execution.Locals[store.SecondInput].Object is not PyDict dictionary ||
-                !dictionary.CanAccumulateInlineWords(scope)) return false;
+                !dictionary.CanAccumulateBorrowedWords(scope)) return false;
             var totalIndex = callIndex + 3;
             ref readonly var total = ref execution.Code.Instructions[totalIndex];
             var hasTotal = total.OpCode == ExecutableOpCode.Augmented;
@@ -69,9 +69,19 @@ internal sealed partial class LythonRuntime
                     }
                     else execution.InstructionIndex = callIndex;
 
-                    var updated = word is null
-                        ? dictionary.TryAccumulateInlineWord(bytes, fallback, increment, scope, call.CallSpan)
-                        : dictionary.TryAccumulateWithoutAdmission(word, fallback, increment, scope, call.CallSpan);
+                    bool updated;
+                    if (word is null)
+                    {
+                        updated = dictionary.TryAccumulateBorrowedWord(bytes, fallback, increment, scope, call.CallSpan,
+                            out var appendHash);
+                        if (appendHash is uint hash)
+                        {
+                            scope.CheckExecution(call.CallSpan);
+                            pendingWord = cursor.Materialize(bytes);
+                            updated = dictionary.TryAppendBorrowedWord(pendingWord, hash, fallback, increment);
+                        }
+                    }
+                    else updated = dictionary.TryAccumulateWithoutAdmission(word, fallback, increment, scope, call.CallSpan);
                     if (!updated)
                     {
                         // The ordinary body resumes with the Python word
