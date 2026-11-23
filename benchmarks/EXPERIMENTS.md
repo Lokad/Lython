@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1504–B1505 return supplied scalars before native setup](results/2026-11-23-supplied-scalar-return/README.md)
+removes the general activation and optional unpack destination for exact
+integer returns. The module and function helpers improve with supporting CPU.
+The repeat leaves the postponed magnitude uncertain and finds 0.98–1.77%
+higher quoted-invoice elapsed with mixed CPU. Retain the shared entry.
+
 [B1503 CPython checkpoint after the computed factories](results/2026-11-23-computed-factory-cpython/README.md)
 measures a stable 1.601–1.612× supplied-call gap. The eager and postponed
 factory gaps persist through first use. The postponed warm magnitude is

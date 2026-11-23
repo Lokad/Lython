@@ -1,0 +1,8 @@
+{
+  "reference": [
+    "Lokad.Lython.Runtime.PyExecutableFunction:StartNativeCall"
+  ],
+  "candidate": [
+    "Lokad.Lython.Runtime.PyExecutableFunction:TryStartSuppliedIntegerReturn"
+  ]
+}

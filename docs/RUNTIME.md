@@ -390,6 +390,10 @@ compiled key layouts stay funded with the code. Decorators can expose a
 definition, so its finished defaults transfer before the first decorator call.
 Binding uses the live tuple and holds selected values through keyword lookup
 and suspension.
+An eligible call with all positional arguments supplied can evaluate an
+exact integer return from the caller's slots before preparing a callee
+activation or tuple-unpack destination. The same function-call and stack
+admission apply. Wide arithmetic and protocols use the ordinary activation.
 An eligible lexical factory can return a definition directly when checked
 integer arithmetic and a read-only capture supply its defaults. It uses the
 same admitted default containers and definition constructor. Prepared eager
