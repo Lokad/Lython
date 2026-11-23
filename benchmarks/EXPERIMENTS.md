@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1540](results/2026-11-23-current-short-text-cpu/README.md) profiles the
+current short report and its inline control. Native entry, operand
+movement and dispatch are prominent on the representative script.
+Inclusive entry samples include useful work inside the helper.
+
 [B1538](results/2026-11-23-marked-cased-split/README.md) takes the
 exact-string split branch off the ordinary member handler. It retains
 the existing dynamic path and confirms lower elapsed and CPU on both
