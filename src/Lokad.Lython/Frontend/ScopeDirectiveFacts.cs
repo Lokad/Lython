@@ -48,7 +48,21 @@ internal static class ScopeDirectiveFactsCollector
 
     internal static ScopeDirectiveFacts ForSuite(IReadOnlyList<StatementSyntax> body,
         Func<StatementSyntax, bool>? scheduleLexicalWork = null, CancellationToken cancellationToken = default)
-        => CollectFunctionBindings([], body, scheduleLexicalWork, cancellationToken);
+    {
+        // Module and class suites have dynamic namespaces. Their executable
+        // slots follow actual emission, so only membership survives this walk.
+        var localNames = new HashSet<string>(StringComparer.Ordinal);
+        var globalNames = new HashSet<string>(StringComparer.Ordinal);
+        var nonlocalNames = new HashSet<string>(StringComparer.Ordinal);
+        var containsAnnotations = CollectScopeBindings(body, localNames, globalNames, nonlocalNames,
+            scheduleLexicalWork, cancellationToken);
+        localNames.ExceptWith(globalNames);
+        localNames.ExceptWith(nonlocalNames);
+        return new ScopeDirectiveFacts(globalNames, nonlocalNames, localNames, [])
+        {
+            ContainsVariableAnnotations = containsAnnotations
+        };
+    }
 
     private static ScopeDirectiveFacts CollectFunctionBindings(IEnumerable<string> parameterNames,
         IReadOnlyList<StatementSyntax> body, Func<StatementSyntax, bool>? scheduleLexicalWork,
