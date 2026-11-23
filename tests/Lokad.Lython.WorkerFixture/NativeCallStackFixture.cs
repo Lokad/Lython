@@ -8,7 +8,6 @@ internal static class NativeCallStackFixture
 {
     internal static async Task<int> RunAsync(string scenario, string libraryHash)
     {
-        if (Environment.ProcessorCount != 1) throw new InvalidOperationException("The fixture needs one execution worker for its prefix-release barrier.");
         const string source = """
             import time
             time.sleep(1)
@@ -31,13 +30,20 @@ internal static class NativeCallStackFixture
         if (!script.IsValid) throw new InvalidOperationException("Continuation fixture did not compile.");
         var timing = new HeldTiming();
         var host = new MockLythonHost(); host.SetTiming(timing);
+        var prefixExited = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        // The startup worker restores its ambient context after the whole await
+        // chain registers. Observe that exit before releasing the host delay.
+        var prefixContext = new AsyncLocal<bool>(change =>
+        {
+            if (change.ThreadContextChanged && change.PreviousValue && !change.CurrentValue
+                && timing.PrefixThread == Environment.CurrentManagedThreadId)
+                prefixExited.TrySetResult();
+        });
+        prefixContext.Value = true;
         var pending = script.RunAsync(host, new LythonRunOptions { MaxRecursionDepth = 1024 });
-        await timing.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        prefixContext.Value = false;
+        await prefixExited.Task.WaitAsync(TimeSpan.FromSeconds(5));
         if (pending.IsCompleted) throw new InvalidOperationException("Expected pending host work.");
-        // A completed second command on the single worker proves that the first
-        // prefix returned and registered its whole await chain. No timer race.
-        using (var barrier = new LythonEngine().Run("return 1", new MockLythonHost()))
-            if (!barrier.Success) throw new InvalidOperationException("Prefix-release barrier failed.");
         var continuation = new Thread(timing.Release, 256 * 1024);
         continuation.Start();
         if (!continuation.Join(TimeSpan.FromSeconds(5))) throw new TimeoutException("Owned continuation did not join.");
@@ -53,6 +59,7 @@ internal static class NativeCallStackFixture
                 error = result.Failure?.ExceptionType,
                 message = result.Failure?.Message,
                 completedAsynchronously = timing.CompletedAsynchronously,
+                prefixThread = timing.PrefixThread,
                 continuationThread = timing.ResumeThread,
                 ownedThread = continuation.ManagedThreadId,
                 libraryHash,
@@ -66,8 +73,8 @@ internal static class NativeCallStackFixture
 
     private sealed class HeldTiming : ILythonTiming
     {
-        internal readonly TaskCompletionSource Entered = new(TaskCreationOptions.RunContinuationsAsynchronously);
         private readonly TaskCompletionSource _release = new();
+        internal int PrefixThread;
         internal int ResumeThread;
         internal int CompletedAsynchronously;
         public long MonotonicNanoseconds { get { ResumeThread = Environment.CurrentManagedThreadId; return 0; } }
@@ -78,7 +85,7 @@ internal static class NativeCallStackFixture
         }
         public ValueTask DelayAsync(TimeSpan duration, CancellationToken cancellationToken)
         {
-            Entered.SetResult();
+            PrefixThread = Environment.CurrentManagedThreadId;
             // Return the actual held operation. An extra async wrapper can make
             // the CLR queue a continuation before it reaches the small stack.
             return new(_release.Task);
