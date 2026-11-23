@@ -1,0 +1,15 @@
+{
+  "referenceInstructions": 122,
+  "candidateInstructions": 116,
+  "callIndices": [
+    33,
+    34,
+    35
+  ],
+  "unchangedControlCodeCount": {
+    "scripts.csv-meter-report.typed-ascii": 1,
+    "scripts.csv-meter-report.typed-unicode": 1,
+    "scripts.csv-invoice.method-policy.quoted-control": 4,
+    "diagnostic.text-summary.nonlocal-computed-width.large": 3
+  }
+}

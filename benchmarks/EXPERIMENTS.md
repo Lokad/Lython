@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1520 keep unobserved short CSV strings in operand slots](results/2026-11-23-short-csv-utf8-slots/README.md)
+removes 37.9% of local allocation in the explicit-float report. The
+retained shape takes 4.43–6.22% less warm elapsed and 6.14–8.31% less
+time to result. The original shape slows the word report. The final text
+control improves and typed Unicode still has a possible modest CPU cost.
+
 [B1519 retained CSV allocation attribution](results/2026-11-23-retained-meter-allocation/README.md)
 resolves 58.51% of explicit-float allocation tick weight to strings made
 while unpacking CSV records. Retained totals tuples still box some values.

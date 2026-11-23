@@ -1,0 +1,10 @@
+{
+  "reference": {
+    "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref,byref,System.Span`1[Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot]):int (FullOpts)": 12698,
+    "Lokad.Lython.Runtime.LythonRuntime+NativeExecution:RunCore(byref):bool:this (FullOpts)": 5074
+  },
+  "candidate": {
+    "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref,byref,System.Span`1[Lokad.Lython.Runtime.LythonRuntime+ExecutableSlot]):int (FullOpts)": 12688,
+    "Lokad.Lython.Runtime.LythonRuntime+NativeExecution:RunCore(byref):bool:this (FullOpts)": 5074
+  }
+}
