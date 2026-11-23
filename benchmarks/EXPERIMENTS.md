@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1463 retain an unchanging capture value](results/2026-11-23-direct-owned-capture/README.md)
+removes the separate cell from both factories. They allocate about 13%
+less, and postponed time to result falls 2.03–7.55% with lower process
+CPU. Eager warm and the fully supplied helper take longer. Preserve the
+earlier boxing tradeoff and the inconclusive nonlocal text control.
+
 [B1462 forward operands only in reachable blocks](results/2026-11-23-reachable-operand-forwarding/README.md)
 retains the removal of the all-block forwarding sweep and separate span
 projection. Dead-heavy compilation uses 0.73–5.24% less process CPU.
