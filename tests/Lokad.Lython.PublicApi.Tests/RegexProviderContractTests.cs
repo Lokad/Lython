@@ -854,6 +854,7 @@ public sealed class RegexProviderContractTests
     }
 
     [Theory]
+    [InlineData("re.findall(pattern, text)", false)]
     [InlineData("re.split(pattern, text)", true)]
     [InlineData("re.sub(pattern, 'new', text)", false)]
     [InlineData("list(re.finditer(pattern, text))", false)]
@@ -1789,6 +1790,7 @@ public sealed class RegexProviderContractTests
             : ILythonRegexSubject
         {
             private bool _disposed;
+            internal int ActiveCursors;
             public bool TryMatch(LythonRegexMatchMode mode, Span<LythonRegexCapture?> captures, out int? lastIndex,
                 CancellationToken token)
             {
@@ -1819,6 +1821,7 @@ public sealed class RegexProviderContractTests
                 provider.Work("find", token);
                 if (provider.MissingHandleStage == "find") return null!;
                 var cursor = new Cursor(provider, this);
+                ActiveCursors++;
                 if (provider.CancelOnReturnStage == "find") provider.CancelOnReturn?.Cancel();
                 return cursor;
             }
@@ -1826,7 +1829,12 @@ public sealed class RegexProviderContractTests
             {
                 if (_disposed) return;
                 _disposed = true;
-                try { provider.Cleanup(owner); }
+                var activeCursors = ActiveCursors;
+                try
+                {
+                    provider.Cleanup(owner);
+                    Assert.Equal(0, activeCursors);
+                }
                 finally { pattern.ActiveSubjects--; }
             }
         }
@@ -1834,6 +1842,7 @@ public sealed class RegexProviderContractTests
         private sealed class Cursor(CooperatingProvider provider, Subject subject) : ILythonRegexCursor
         {
             private bool _done;
+            private bool _disposed;
             private int _next;
             public bool TryNext(Span<LythonRegexCapture?> captures, out int? lastIndex, CancellationToken token)
             {
@@ -1848,7 +1857,13 @@ public sealed class RegexProviderContractTests
                 _done = true;
                 return subject.TryMatch(LythonRegexMatchMode.Search, captures, out lastIndex, token);
             }
-            public void Dispose() { provider.CursorDisposed = true; }
+            public void Dispose()
+            {
+                if (_disposed) return;
+                _disposed = true;
+                subject.ActiveCursors--;
+                provider.CursorDisposed = true;
+            }
         }
 
         public void Dispose() { _cached?.Owner.Dispose(); ReleaseCleanup.Set(); ReleaseCleanup.Dispose(); _work.Dispose(); }

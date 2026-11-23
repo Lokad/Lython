@@ -12,8 +12,7 @@ internal sealed partial class LythonRuntime
         private readonly RegexSubjectRange _range;
         private readonly ExecutionContext _context;
         private readonly LythonSourceSpan _span;
-        private RegexMatcher.PreparedSubject? _subject;
-        private ILythonRegexCursor? _cursor;
+        private RegexMatcher.PreparedCursor? _cursor;
         private bool _finished;
         internal PyRegexFindIterator? NextResource;
 
@@ -36,14 +35,13 @@ internal sealed partial class LythonRuntime
             if (_finished || !_range.IsValid) return PyIterationResult.End;
             try
             {
-                if (_subject is null)
+                if (_cursor is null)
                 {
-                    _subject = RegexMatcher.Prepare(_pattern, _range, _context, _span);
-                    _cursor = _subject.Find();
+                    _cursor = RegexMatcher.OpenCursor(_pattern, _range, _context, _span);
                     _context.State.TrackRegexIterator(this);
                 }
-                if (!_subject.Next(_cursor!, _range)) { Dispose(); return PyIterationResult.End; }
-                return PyIterationResult.Yield(RegexMatcher.CreateMatchObject(_pattern, _range, _subject, _context, _span));
+                if (!_cursor.Next(_range)) { Dispose(); return PyIterationResult.End; }
+                return PyIterationResult.Yield(RegexMatcher.CreateMatchObject(_pattern, _range, _cursor, _context, _span));
             }
             catch { Dispose(); throw; }
         }
@@ -54,9 +52,7 @@ internal sealed partial class LythonRuntime
             _finished = true;
             _context.State.UntrackRegexIterator(this);
             var cursor = _cursor; _cursor = null;
-            var subject = _subject; _subject = null;
-            try { cursor?.Dispose(); }
-            finally { subject?.Dispose(); }
+            cursor?.Dispose();
         }
 
         public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<callable_iterator object>");

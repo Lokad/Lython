@@ -11,26 +11,20 @@ internal sealed partial class LythonRuntime
     private static class RegexMatcher
     {
         private const int DirectCoordinateSortCount = 64;
-        internal static PreparedSubject Prepare(RePatternObject pattern, RegexSubjectRange range,
+        internal static PreparedCursor OpenCursor(RePatternObject pattern, RegexSubjectRange range,
             ExecutionContext context, LythonSourceSpan span)
-        {
-            var window = Window(range, context, span);
-            return Prepare(pattern, range, window, context, span);
-        }
+            => new(pattern, range, Window(range, context, span), context, span);
 
-        private static PreparedSubject Prepare(RePatternObject pattern, RegexSubjectRange range,
-            LythonRegexWindow window, ExecutionContext context, LythonSourceSpan span)
-            => new(pattern, range, window, context, span);
-
-        // One admitted capture buffer belongs to the prepared operation, never
-        // to a cached pattern or a retained Python match. Native users close first.
-        internal sealed class PreparedSubject : IDisposable
+        // The cursor, subject borrow and capture buffer have one lifetime.
+        // Retained Python matches own their projected captures.
+        internal sealed class PreparedCursor : IDisposable
         {
             private readonly RePatternObject _pattern;
             private readonly ExecutionContext _context;
             private readonly LythonSourceSpan _span;
             private readonly MemoryGovernor.TemporaryMemoryReservation _storage;
             private ILythonRegexSubject? _subject;
+            private ILythonRegexCursor? _cursor;
             private long[]? _coordinates;
             private Comparison<long>? _coordinateComparison;
             private readonly LythonRegexWindow _window;
@@ -38,36 +32,36 @@ internal sealed partial class LythonRuntime
             internal readonly LythonRegexCapture?[] Captures;
             internal int? LastIndex;
 
-            internal PreparedSubject(RePatternObject pattern, RegexSubjectRange range, LythonRegexWindow window,
+            internal PreparedCursor(RePatternObject pattern, RegexSubjectRange range, LythonRegexWindow window,
                 ExecutionContext context, LythonSourceSpan span)
             {
                 _pattern = pattern; _context = context; _span = span;
                 _window = window;
                 _position = new(window.StartByte, window.Pos);
-                _storage = context.MemoryGovernor.ReserveTemporary(checked(128L + 16L * pattern.CaptureSlotCount), span);
+                _storage = context.MemoryGovernor.ReserveTemporary(checked(136L + 16L * pattern.CaptureSlotCount), span);
                 try
                 {
                     context.CheckExecution(span);
                     Captures = new LythonRegexCapture?[pattern.CaptureSlotCount];
-                    _subject = OpenSubject(pattern, range, window, context, span);
+                    var subject = OpenSubject(pattern, range, window, context, span);
+                    try
+                    {
+                        var token = context.State.CancellationToken;
+                        _cursor = RegexCompiler.ProviderCall((Subject: subject, Token: token),
+                            static state => state.Subject.Find(state.Token), context.MemoryGovernor, token, span, pattern.Pattern);
+                    }
+                    catch { subject.Dispose(); throw; }
+                    _subject = subject;
                 }
                 catch { _storage.Dispose(); throw; }
             }
 
-            internal ILythonRegexCursor Find()
+            internal bool Next(RegexSubjectRange range)
             {
-                ObjectDisposedException.ThrowIf(_subject is null, this);
-                var token = _context.State.CancellationToken;
-                return RegexCompiler.ProviderCall((Subject: _subject, Token: token),
-                    static state => state.Subject.Find(state.Token), _context.MemoryGovernor, token, _span, _pattern.Pattern);
-            }
-
-            internal bool Next(ILythonRegexCursor cursor, RegexSubjectRange range)
-            {
-                // Each prepared subject has one cursor. Capture zero still holds the
-                // last successful pull and is null before the first pull.
+                ObjectDisposedException.ThrowIf(_cursor is null, this);
+                // Capture zero holds the last successful pull and starts null.
                 var previous = Captures[0];
-                if (!RegexCompiler.TryNext(cursor, Captures, out LastIndex, _context.MemoryGovernor,
+                if (!RegexCompiler.TryNext(_cursor, Captures, out LastIndex, _context.MemoryGovernor,
                     _context.State.CancellationToken, _span, _pattern.Pattern)) return false;
 
                 ValidateMatch(range, _window, LythonRegexMatchMode.Search, Captures, LastIndex, _context, _span);
@@ -101,13 +95,18 @@ internal sealed partial class LythonRuntime
 
             public void Dispose()
             {
+                var cursor = _cursor; _cursor = null;
                 var subject = _subject; _subject = null;
-                try { subject?.Dispose(); }
+                try { cursor?.Dispose(); }
                 finally
                 {
-                    _coordinates = null;
-                    _coordinateComparison = null;
-                    _storage.Dispose();
+                    try { subject?.Dispose(); }
+                    finally
+                    {
+                        _coordinates = null;
+                        _coordinateComparison = null;
+                        _storage.Dispose();
+                    }
                 }
             }
         }
@@ -248,11 +247,9 @@ internal sealed partial class LythonRuntime
         {
             var result = new PyList([], context.MemoryGovernor, span);
             if (!range.IsValid) return result;
-            using var subject = Prepare(pattern, range, context, span);
-            using var cursor = subject.Find();
-            while (subject.Next(cursor, range))
+            using var match = OpenCursor(pattern, range, context, span);
+            while (match.Next(range))
             {
-                var match = subject;
                 context.CheckExecution(span);
                 if (pattern.CaptureSlotCount <= 2)
                 {
@@ -269,12 +266,12 @@ internal sealed partial class LythonRuntime
         }
 
         internal static ReMatchObject CreateMatchObject(RePatternObject pattern, RegexSubjectRange range,
-            PreparedSubject match, ExecutionContext context, LythonSourceSpan span)
+            PreparedCursor match, ExecutionContext context, LythonSourceSpan span)
             => CreateMatchObject(pattern, range, match.Captures, match.LastIndex, context, span, default, match);
 
         private static ReMatchObject CreateMatchObject(RePatternObject pattern, RegexSubjectRange range,
             ReadOnlySpan<LythonRegexCapture?> slots, int? lastIndex, ExecutionContext context, LythonSourceSpan span,
-            LythonRegexWindow window, PreparedSubject? match = null)
+            LythonRegexWindow window, PreparedCursor? match = null)
         {
             context.CheckExecution(span);
             var bytes = checked(128L + 32L * slots.Length);
@@ -335,13 +332,10 @@ internal sealed partial class LythonRuntime
             var lastByte = window.StartByte;
             if (maxSplit >= 0)
             {
-                using var subject = Prepare(pattern, range, window, context, span);
-                using var cursor = subject.Find();
+                using var match = new PreparedCursor(pattern, range, window, context, span);
                 var splits = 0;
-                while ((maxSplit == 0 || splits < maxSplit) &&
-                    subject.Next(cursor, range))
+                while ((maxSplit == 0 || splits < maxSplit) && match.Next(range))
                 {
-                    var match = subject;
                     context.CheckExecution(span);
                     var whole = match.Captures[0]!.Value;
                     result.Add(ReadSubjectRange(range, lastByte, whole.StartByte, context, span));
@@ -385,8 +379,7 @@ internal sealed partial class LythonRuntime
                 return mode == RegexSubstitutionMode.TextAndCount
                     ? new PyTuple([range.Original, BigInteger.Zero], context.MemoryGovernor, span) : range.Original;
             var window = Window(range, context, span);
-            using var subject = Prepare(pattern, range, window, context, span);
-            using var cursor = subject.Find();
+            using var match = new PreparedCursor(pattern, range, window, context, span);
             var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
             PyString? soleReplacement = null;
             var lastByte = 0;
@@ -394,10 +387,8 @@ internal sealed partial class LythonRuntime
             PyString result;
             try
             {
-                while ((count == 0 || replaced < count) &&
-                    subject.Next(cursor, range))
+                while ((count == 0 || replaced < count) && match.Next(range))
                 {
-                    var match = subject;
                     context.CheckExecution(span);
                     var projected = isTemplate ? null : CreateMatchObject(pattern, range, match, context, span);
                     var whole = match.Captures[0]!.Value;
