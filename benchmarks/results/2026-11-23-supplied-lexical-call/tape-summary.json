@@ -1,0 +1,35 @@
+{
+  "reference": "0016e5020cc5248926f4c8e5dec20acd1616ae55e151529d826666be3e8a9c84",
+  "candidate": "0802efcdeea7c91eb3f425d665d30c595a031e03abd09b7e295d9bd0629a482a",
+  "inspectedBodies": 13,
+  "onlyInstructionChanges": [
+    {
+      "case": "scripts.ordinary-fully-supplied-helper",
+      "scope": "<module>",
+      "index": 10,
+      "opcode": "LoadLocal",
+      "changes": {
+        "<OpCode>k__BackingField": [
+          2,
+          74
+        ]
+      }
+    },
+    {
+      "case": "scripts.ordinary-fully-supplied-helper.local-function",
+      "scope": "report",
+      "index": 8,
+      "opcode": "CheckLocal",
+      "changes": {
+        "_secondaryOperand": [
+          2147483647,
+          14
+        ],
+        "<OpCode>k__BackingField": [
+          72,
+          74
+        ]
+      }
+    }
+  ]
+}

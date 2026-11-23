@@ -1,0 +1,14 @@
+{
+  "cancellation-and-cleanup": [
+    [
+      "compute",
+      18
+    ]
+  ],
+  "observing-fallback-and-suspension": [
+    [
+      "local",
+      0
+    ]
+  ]
+}
