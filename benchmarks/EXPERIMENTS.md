@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1433 body-owned signatures](results/2026-11-23-body-owned-signatures/README.md)
+removes signature references from each callable and definition descriptor.
+Factories allocate 3.72% less. The defaults observer is 3.01–4.42% faster,
+and postponed time to result is 1.66–6.38% slower. The first source pair
+stays private while native selection and binding reuse one layout read.
+
 [B1432 unboxed singleton positional default](results/2026-11-23-unboxed-singleton-default/README.md)
 defers the funded tuple without earlier boxing. The refined factories
 allocate 13.00% less. The defaults observer allocates 1.34% more and
