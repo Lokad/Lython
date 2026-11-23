@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1500 return a definition with its prepared computed defaults](results/2026-11-23-direct-computed-definition/README.md)
+avoids the native activation on two factory scripts. Postponed warm
+elapsed improves 20.98–24.50%, with supporting CPU. Eager CPU and quoted
+elapsed are adverse. The source change is retained.
+
 [B1499 CPython checkpoint after direct closure assignment](results/2026-11-23-closure-cpython/README.md)
 puts the short report at 1.388–1.444× CPython warm and 0.509–0.514× for
 compilation. Its time to result has 10.87% Lython worker spread. The

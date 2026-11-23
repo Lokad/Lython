@@ -1,0 +1,28 @@
+[
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+    "function": "compile_rule",
+    "opcodes": {
+      "StartFunctionDefaults": 1,
+      "Binary": 1,
+      "StoreFunctionDefault": 2,
+      "LoadClosure": 1,
+      "ApplyOperation": 1,
+      "Return": 1
+    },
+    "workspace": 6
+  },
+  {
+    "case": "scripts.factory-observed-defaults",
+    "function": "compile_rule",
+    "opcodes": {
+      "StartFunctionDefaults": 1,
+      "Binary": 1,
+      "StoreFunctionDefault": 2,
+      "LoadClosure": 1,
+      "ApplyOperation": 1,
+      "Return": 1
+    },
+    "workspace": 6
+  }
+]
