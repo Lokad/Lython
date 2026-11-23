@@ -133,7 +133,7 @@ internal static partial class PyStringOps
 
     // Only compiler-private immediate iteration may consume this representation.
     // Admit every eventual word before the first loop effect, just as eager split
-    // does. The execution owner retains unused capacity until its normal cleanup.
+    // does. Unused capacity can fund the next loan of the same scratch cursor.
     internal static CasedWhitespaceIteration PrepareCasedWhitespaceIteration(PyString value, bool upper,
         LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
@@ -153,18 +153,10 @@ internal static partial class PyStringOps
             while (TryEncodeCasedWord(source, ref state, encoded, ref used, context, span, out var length))
                 outputBytes = checked(outputBytes + PyString.EstimateApproximateBytes(length));
 
-            // Prepay every eventual immutable word before any loop effect.
-            context.MemoryGovernor.Reserve(outputBytes, span);
-            try
-            {
-                context.CheckExecution(span);
-                var result = prepared;
-                result.Initialize(context, span, used);
-                context.MemoryGovernor.Commit(outputBytes);
-                prepared = null;
-                return result;
-            }
-            catch { context.MemoryGovernor.ReleaseReserved(outputBytes); throw; }
+            prepared.Initialize(context, span, used, outputBytes);
+            var result = prepared;
+            prepared = null;
+            return result;
         }
         finally
         {
@@ -192,16 +184,19 @@ internal static partial class PyStringOps
         private int _length;
         private int _position;
         private bool _loaned = true;
+        private long _unpublishedWordBytes;
 
         internal const long HeaderBytes = 128;
-        internal long StorageBytes => HeaderBytes + EncodedStorageBytes(EncodedCapacity);
+        internal long StorageBytes => checked(HeaderBytes + EncodedStorageBytes(EncodedCapacity) + _unpublishedWordBytes);
 
         internal CasedWhitespaceIteration(MemoryGovernor owner) => _owner = owner;
 
         internal void ReleaseStorage()
         {
-            try { ReleaseEncoded(); }
-            finally { _owner.Release(HeaderBytes); }
+            var bytes = StorageBytes;
+            _encoded = [];
+            _unpublishedWordBytes = 0;
+            _owner.Release(bytes);
         }
 
         private static long EncodedStorageBytes(int capacity) => capacity == 0 ? 0 : 32L + capacity;
@@ -244,12 +239,24 @@ internal static partial class PyStringOps
             return true;
         }
 
-        internal void Initialize(LythonRuntime.ExecutionContext context, LythonSourceSpan span, int length)
+        internal void Initialize(LythonRuntime.ExecutionContext context, LythonSourceSpan span, int length,
+            long wordBytes)
         {
-            _context = context;
-            _span = span;
-            _length = length;
-            _position = 0;
+            // Reserve the entire batch before its first loop effect. Earlier
+            // loans can reuse storage only if no word received its ownership.
+            var growth = Math.Max(0, wordBytes - _unpublishedWordBytes);
+            _owner.Reserve(growth, span);
+            try
+            {
+                context.CheckExecution(span);
+                _owner.Commit(growth);
+                _unpublishedWordBytes += growth;
+                _context = context;
+                _span = span;
+                _length = length;
+                _position = 0;
+            }
+            catch { _owner.ReleaseReserved(growth); throw; }
         }
 
         internal PyIterationResult MoveNext()
@@ -259,7 +266,7 @@ internal static partial class PyStringOps
             // publication retains the ordinary binding/next-opcode check.
             if (_position == _length) return PyIterationResult.End;
             var range = ReadEncodedWord(_encoded, ref _position);
-            return PyIterationResult.Yield(CreateSplitFragment(_encoded.AsSpan(), range, null, _owner, _span, _context));
+            return PyIterationResult.Yield(Materialize(range));
         }
 
         internal MemoryGovernor MemoryGovernor => _owner;
@@ -275,17 +282,35 @@ internal static partial class PyStringOps
             if (range.Capacity <= PyString.InlineUtf8Capacity)
                 bytes = _encoded.AsSpan(range.Start, range.Capacity);
             else
-                word = CreateSplitFragment(_encoded.AsSpan(), range, null, _owner, _span, _context);
+                word = Materialize(range);
             return true;
+        }
+
+        private PyString Materialize((int Start, int End, int Capacity) range)
+        {
+            var charge = WordCharge(range.Capacity);
+            var result = CreateSplitFragment(_encoded.AsSpan(), range, null, _owner, _span, _context);
+            _unpublishedWordBytes -= charge;
+            return result;
+        }
+
+        private long WordCharge(int length)
+        {
+            var charge = PyString.EstimateApproximateBytes(length);
+            if (charge > _unpublishedWordBytes)
+                throw new InvalidOperationException("Cased word was materialized without prepaid storage.");
+            return charge;
         }
 
         // The eager preflight already funds this value. Unwind must be able
         // to restore the last binding without replacing the pending failure.
         internal PyString Materialize(ReadOnlySpan<byte> bytes)
         {
+            var charge = WordCharge(bytes.Length);
             var value = PyString.CreateReservedUtf8(bytes.Length, _owner);
             bytes.CopyTo(value.UnpublishedUtf8);
             value.CompleteUnpublishedUtf8(bytes.Length);
+            _unpublishedWordBytes -= charge;
             return value;
         }
 

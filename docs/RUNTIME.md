@@ -934,11 +934,12 @@ bytes in one reusable buffer. Iteration copies the bytes of each materialized
 word without repeating casing. Scratch capacity is four times the input UTF-8
 length for lowercasing or six times for uppercasing, plus four bytes for nonempty
 input. Metadata, replacement overlap and every eventual word are admitted before
-loop effects. Wider scratch can reject
-a tighter allowance earlier. Active and idle cached capacity stay funded; eviction
-or execution cleanup returns allowance after actual users finish. Early exits and
-cancellation use operand-stack cleanup, publishing completed bindings before any
-refund can reenter the host. Escaped words survive scratch reuse independently.
+loop effects. Materialized words transfer their charge to the execution owner.
+The same cursor can reuse admission for words it never constructs. Wider scratch
+can reject a tighter allowance earlier. Active and idle cached capacity stay
+funded until eviction or execution cleanup after actual users finish. Early
+exits and cancellation publish completed bindings before scratch refund can
+reenter the host. Escaped words survive scratch reuse independently.
 
 Private dictionary entries can retain exact counting results as managed integers
 without boxing each update. A Python value read materializes and caches an ordinary

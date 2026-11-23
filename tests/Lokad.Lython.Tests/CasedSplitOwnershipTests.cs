@@ -38,6 +38,47 @@ public sealed class CasedSplitOwnershipTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
+    [Fact]
+    public void AnUnpublishedWordBatchFundsLaterLoansWhileAnEscapedWordStaysCharged()
+    {
+        var budget = new LythonMemoryBudget(64 * 1024);
+        using (var owner = budget.CreateScope())
+        {
+            var hook = new AdmissionHookMemoryBudget(owner);
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = hook });
+            var span = new LythonSourceSpan(0, 1, 1, 1);
+            var input = PyString.FromString("FIRST SECOND THIRD");
+            PyString retained;
+            using (var cursor = PyStringOps.PrepareCasedWhitespaceIteration(input, false, context, span))
+            {
+                Assert.True(cursor.TryReadWord(out var bytes, out var word));
+                Assert.Null(word);
+                retained = cursor.Materialize(bytes);
+            }
+            // A new batch replenishes the escaped word's allowance once.
+            using (PyStringOps.PrepareCasedWhitespaceIteration(input, false, context, span)) { }
+            var allowance = budget.ReservedBytes;
+            hook.RefuseGrowth = _ => throw new InvalidOperationException("Previously funded batch requested more storage.");
+            for (var iteration = 0; iteration < 4; iteration++)
+            {
+                using var cursor = PyStringOps.PrepareCasedWhitespaceIteration(input, false, context, span);
+                var count = 0;
+                while (cursor.TryReadWord(out var bytes, out var word))
+                {
+                    Assert.False(bytes.IsEmpty);
+                    Assert.Null(word);
+                    count++;
+                }
+                Assert.Equal(3, count);
+                Assert.Equal(allowance, budget.ReservedBytes);
+            }
+            context.State.CloseResources();
+            Assert.Equal(retained.CommittedOwnedBytes, budget.ReservedBytes);
+            Assert.Equal("first", retained.AsString());
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Theory]
     [InlineData(false), InlineData(true)]
     public void WordAdvancementUsesPrepaidStorage(bool upper)
