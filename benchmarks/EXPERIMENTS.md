@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Current frontend initialization profile](results/2026-11-23-current-frontend-init-profile/README.md)
+attributes 11.5–14.0 ms of inclusive configuration stack intervals to
+known-call initialization after B1452. Typed CSV intervals vary more.
+These development traces select the next source experiment.
+
 [B1452 independent frontend catalogs](results/2026-11-23-frontend-contract-sections/README.md)
 retains on-demand metadata initialization and removes aggregate backing
 and the production cross-check. Fresh configuration, CSV and XML medians

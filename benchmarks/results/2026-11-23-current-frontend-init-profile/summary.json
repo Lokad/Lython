@@ -1,0 +1,192 @@
+{
+  "candidate": "c6d2f2b3de5c7c5ad7a3c97bb9501403f60d0a8f",
+  "observations": [
+    {
+      "case": "control.empty.control",
+      "repeat": 0,
+      "workerPhaseSnapshot": {
+        "fixture": 0.289,
+        "compile": 28.873,
+        "reset": 0.0,
+        "execute": 38.994,
+        "check": 0.984,
+        "encode": 60.767,
+        "cleanup": 0.079,
+        "manifest": 14.234,
+        "once": 293.919
+      },
+      "inclusiveStackMilliseconds": {
+        "parser": 4.00629991455078,
+        "frontend": 19.997700028800963,
+        "abstract": 3.959800028800956,
+        "emission": 19.59200007648468,
+        "createSignatures": 4.009900051879882
+      },
+      "traceSHA256": "e845655eab8bce8311d6af15596ff9e5831547ebf0b1b00f144909b9dcba0e42"
+    },
+    {
+      "case": "scripts.config-edit.small",
+      "repeat": 0,
+      "workerPhaseSnapshot": {
+        "fixture": 1.244,
+        "compile": 134.144,
+        "reset": 3.538,
+        "execute": 104.256,
+        "check": 3.291,
+        "encode": 37.013,
+        "cleanup": 0.092,
+        "manifest": 24.345,
+        "once": 287.003
+      },
+      "inclusiveStackMilliseconds": {
+        "frontend": 107.69470045967103,
+        "parser": 18.02950033416748,
+        "abstract": 70.64080045394898,
+        "moduleCatalog": 8.017800156974786,
+        "knownCallCatalog": 14.000999995422362,
+        "signatureInitialization": 1.9883999824523926,
+        "createSignatures": 1.9883999824523926,
+        "callableMemberCatalog": 12.162599786376973,
+        "emission": 28.874000140380844
+      },
+      "traceSHA256": "5ee78ceafe5ecbb1e301c4877184337fe9b2123ada87ac0452d9d75bddf12cb0"
+    },
+    {
+      "case": "scripts.config-edit.small",
+      "repeat": 1,
+      "workerPhaseSnapshot": {
+        "fixture": 1.244,
+        "compile": 134.144,
+        "reset": 3.538,
+        "execute": 104.256,
+        "check": 3.291,
+        "encode": 37.013,
+        "cleanup": 0.092,
+        "manifest": 24.345,
+        "once": 287.003
+      },
+      "inclusiveStackMilliseconds": {
+        "parser": 21.53160178661347,
+        "frontend": 107.7770020751953,
+        "abstract": 68.20330334205627,
+        "moduleCatalog": 8.974600129318247,
+        "knownCallCatalog": 11.506200790405288,
+        "signatureInitialization": 1.994499986839287,
+        "createSignatures": 1.994499986839287,
+        "callableMemberCatalog": 11.000700456237809,
+        "emission": 23.52469808959961
+      },
+      "traceSHA256": "9c4d4dece68ec1fdf8234fb0a6aa9d0b5eaf7aaaeab3487cf218b65617252f43"
+    },
+    {
+      "case": "scripts.config-edit.small",
+      "repeat": 2,
+      "workerPhaseSnapshot": {
+        "fixture": 1.244,
+        "compile": 134.144,
+        "reset": 3.538,
+        "execute": 104.256,
+        "check": 3.291,
+        "encode": 37.013,
+        "cleanup": 0.092,
+        "manifest": 24.345,
+        "once": 287.003
+      },
+      "inclusiveStackMilliseconds": {
+        "parser": 22.13860084495545,
+        "frontend": 109.76270294189453,
+        "abstract": 72.00880007648466,
+        "moduleCatalog": 5.994100099563596,
+        "knownCallCatalog": 13.48570004844666,
+        "signatureInitialization": 2.010999917984009,
+        "createSignatures": 3.991199951744079,
+        "callableMemberCatalog": 10.496299743652344,
+        "emission": 26.145197167968746
+      },
+      "traceSHA256": "00a9b2bd15f5f2376c5a5d527d9483cd7e4fdc0888bac8a735e2e5bff5fb9cc7"
+    },
+    {
+      "case": "scripts.csv-meter-report.typed-ascii",
+      "repeat": 0,
+      "workerPhaseSnapshot": {
+        "fixture": 2.347,
+        "compile": 139.051,
+        "reset": 3.818,
+        "execute": 123.064,
+        "check": 1.324,
+        "encode": 29.943,
+        "cleanup": 0.076,
+        "manifest": 21.199,
+        "once": 302.445
+      },
+      "inclusiveStackMilliseconds": {
+        "parser": 32.643400944519044,
+        "frontend": 174.2064008394241,
+        "abstract": 113.88530084686278,
+        "moduleCatalog": 8.788200378417969,
+        "knownCallCatalog": 26.800900143432614,
+        "signatureInitialization": 10.037500205993666,
+        "createSignatures": 10.037500205993666,
+        "callableMemberCatalog": 13.542499852371208,
+        "emission": 41.075800981140105
+      },
+      "traceSHA256": "0a97d5a8d00345b7805277730e946ba520a14a9796cf533abde3648090af1790"
+    },
+    {
+      "case": "scripts.csv-meter-report.typed-ascii",
+      "repeat": 1,
+      "workerPhaseSnapshot": {
+        "fixture": 2.347,
+        "compile": 139.051,
+        "reset": 3.818,
+        "execute": 123.064,
+        "check": 1.324,
+        "encode": 29.943,
+        "cleanup": 0.076,
+        "manifest": 21.199,
+        "once": 302.445
+      },
+      "inclusiveStackMilliseconds": {
+        "frontend": 132.16301034317016,
+        "parser": 25.56560047607421,
+        "abstract": 83.36441040039062,
+        "moduleCatalog": 7.246500015258789,
+        "knownCallCatalog": 14.514100036621102,
+        "signatureInitialization": 3.4990999046325726,
+        "createSignatures": 3.4990999046325726,
+        "callableMemberCatalog": 11.02979998168945,
+        "emission": 41.732300921630866
+      },
+      "traceSHA256": "94f757a597ae105ee60a0c61a211ce6839b725acb60633e22fcf5a90df691ae3"
+    },
+    {
+      "case": "scripts.csv-meter-report.typed-ascii",
+      "repeat": 2,
+      "workerPhaseSnapshot": {
+        "fixture": 2.347,
+        "compile": 139.051,
+        "reset": 3.818,
+        "execute": 123.064,
+        "check": 1.324,
+        "encode": 29.943,
+        "cleanup": 0.076,
+        "manifest": 21.199,
+        "once": 302.445
+      },
+      "inclusiveStackMilliseconds": {
+        "parser": 30.458800486755365,
+        "frontend": 162.3228047973633,
+        "abstract": 102.89440155029297,
+        "moduleCatalog": 13.045900206756585,
+        "knownCallCatalog": 19.08520125274657,
+        "signatureInitialization": 7.551600032043467,
+        "createSignatures": 7.551600032043467,
+        "callableMemberCatalog": 11.997499470901488,
+        "emission": 49.15469567260743
+      },
+      "traceSHA256": "5da9ba43e5e22d417c7118d17a160e3a9810cac4c6b5ccbb4902b9408f44a829"
+    }
+  ],
+  "coreSHA256": "f03440c2b6897c2fe6128345493a7aed263ea9e492c3b3cea774baa67fe80681",
+  "workerSHA256": "234ec1e6dfd236c52d837974060860042b0ccabbbff843b7bf35d5d4a5559dfd"
+}
