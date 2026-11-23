@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1509 guard the shared closed return with compiler facts](results/2026-11-23-guarded-native-closed-entry/README.md)
+keeps the omitted-default and eager first-use gains. The wide helper
+skips the check, with unsettled timing, and the quoted invoice uses
+2.38–3.57% more CPU. Keep the variant private.
+
 [Native exception-boundary audit](results/2026-11-23-native-exception-boundary-audit/README.md)
 confirms quadratic scanning for constructed protected updates, with at most
 four possible region visits per script in the existing corpus. Keep the

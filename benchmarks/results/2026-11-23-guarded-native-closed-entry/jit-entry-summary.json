@@ -1,0 +1,37 @@
+[
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories",
+    "methods": {
+      "reference": [
+        "Lokad.Lython.Runtime.PyExecutableFunction:StartNativeCall",
+        "Lokad.Lython.Runtime.PyExecutableFunction:TryReturnDefinition"
+      ],
+      "candidate": [
+        "Lokad.Lython.Runtime.PyExecutableFunction:TryCompleteNativeReturn",
+        "Lokad.Lython.Runtime.PyExecutableFunction:TryReturnDefinition"
+      ]
+    }
+  },
+  {
+    "case": "scripts.ordinary-helper-with-omitted-default",
+    "methods": {
+      "reference": [
+        "Lokad.Lython.Runtime.PyExecutableFunction:StartNativeCall"
+      ],
+      "candidate": [
+        "Lokad.Lython.Runtime.PyExecutableFunction:TryCompleteNativeReturn"
+      ]
+    }
+  },
+  {
+    "case": "calls.positional.wide-native-buffer",
+    "methods": {
+      "reference": [
+        "Lokad.Lython.Runtime.PyExecutableFunction:StartNativeCall"
+      ],
+      "candidate": [
+        "Lokad.Lython.Runtime.PyExecutableFunction:StartNativeCall"
+      ]
+    }
+  }
+]
