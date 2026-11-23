@@ -93,6 +93,59 @@ public sealed class FunctionDefaultMetadataTests
         Assert.Equal(baseline, budget.ReservedBytes);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FailedComputedDefinitionsReleaseTheirDefaultsBeforeTheNextDefinition(bool asynchronous)
+    {
+        const string source = """
+            Tag = int
+            def bind(weight):
+                def define(seed):
+                    def value(record: Tag, /, base=seed * 3, *, scale=weight) -> Tag:
+                        return base
+                    return value
+                return define
+
+            shared = []
+            factory = bind(shared)
+            keeper = factory(7)
+            del globals()['Tag']
+            failures = 0
+            for seed in range(attempts):
+                try:
+                    factory(seed)
+                except NameError:
+                    failures += 1
+            globals()['Tag'] = int
+            latest = factory(9)
+            assert failures == attempts
+            print(keeper(1), latest(1), keeper.__kwdefaults__['scale'] is shared)
+            """;
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        Assert.Equal(await Run(1), await Run(64));
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+
+        async Task<long> Run(int attempts)
+        {
+            var host = new MockLythonHost();
+            var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["attempts"] = attempts } };
+            long peak;
+            using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal("21 27 True\n", result.StandardOutput);
+                peak = result.PeakExecutionMemoryBytes;
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+            return peak;
+        }
+    }
+
     public static TheoryData<string, string> Programs => new()
     {
         { "def add(a=1,*,b=2): return a+b\nprint(add(),add(3,b=4),add(b=8))\nadd.__defaults__=(10,)\nadd.__kwdefaults__={'b':20}\nprint(add(),add(b=5))", "3 7 9\n30 15\n" },
