@@ -537,6 +537,65 @@ public sealed class RegexProviderContractTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task FindAllCaptureProjectionClosesProviderWorkOnRefusalAndCancellation(bool asynchronous)
+    {
+        var budget = new AdmissionGateBudget();
+        using var provider = new CooperatingProvider { CaptureSlots = 3 };
+        var match = new CooperatingProvider.FixtureMatch([new(0, 4), new(0, 4), null], 1);
+        using var script = new LythonEngine(provider).Compile("""
+            import re
+            found = re.findall(pattern, text)
+            print(found)
+            """, budget);
+        Assert.True(script.IsValid);
+        var baseline = budget.Root.ReservedBytes;
+        var globals = new Dictionary<string, object?> { ["pattern"] = "(.)(z)?", ["text"] = "😀x" };
+        foreach (var cancel in new[] { false, true })
+        {
+            using var cancellation = new CancellationTokenSource();
+            var matches = 0;
+            provider.CursorDisposed = false;
+            provider.CleanupFinished = false;
+            provider.MatchFactory = (_, _) =>
+            {
+                matches++;
+                // The next growth is Lython's projection of the already
+                // returned capture ranges, while the provider cursor is live.
+                if (cancel) budget.OnNextResizeGrowth = cancellation.Cancel;
+                else budget.Gate(0);
+                return match;
+            };
+            var options = new LythonRunOptions { Globals = globals, CancellationToken = cancellation.Token };
+            using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options)
+                : script.Run(new MockLythonHost(), options))
+            {
+                Assert.False(result.Success);
+                Assert.Equal(cancel ? LythonFailureReason.Cancelled : LythonFailureReason.SharedMemoryAllowance,
+                    result.FailureAttribution?.Reason);
+                Assert.Empty(result.StandardOutput);
+                Assert.Null(result.ReturnValue);
+            }
+            Assert.Equal(1, matches);
+            Assert.True(provider.CursorDisposed && provider.CleanupFinished);
+            Assert.Equal(provider.Compilations, provider.ClosedPatterns);
+            Assert.Equal(baseline, budget.Root.ReservedBytes);
+            budget.Gate(1024 * 1024);
+        }
+
+        provider.MatchFactory = (_, _) => match;
+        var recoveryOptions = new LythonRunOptions { Globals = globals };
+        using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), recoveryOptions)
+            : script.Run(new MockLythonHost(), recoveryOptions))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("[('😀', '')]\n", result.StandardOutput);
+        }
+        Assert.Equal(baseline, budget.Root.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task NativeGroupNamesSurviveBorrowedMetadataDisposalAndUsePythonOrder(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
