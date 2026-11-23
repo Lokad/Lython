@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1502 isolate eager annotation admission and cleanup](results/2026-11-23-eager-isolated-definition/README.md)
+retains the direct eager return with 16.96–19.97% lower warm elapsed and
+supporting CPU. The postponed slowdown from B1501 does not recur. Elapsed
+for observed defaults, fully supplied calls and quoted invoices spans zero.
+
 [B1501 share eager annotation admission with the direct factory](results/2026-11-23-eager-computed-definition/README.md)
 improves eager warm elapsed 17.78–21.67% but slows postponed warm
 4.31–10.40%, with supporting CPU. Keep the variant private. The shared

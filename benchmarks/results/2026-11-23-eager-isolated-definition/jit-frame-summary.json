@@ -1,0 +1,17 @@
+[
+  {
+    "candidate": "B1500",
+    "stackSubtraction": 240,
+    "emittedBytes": 887
+  },
+  {
+    "candidate": "B1501",
+    "stackSubtraction": 280,
+    "emittedBytes": 1066
+  },
+  {
+    "candidate": "B1502",
+    "stackSubtraction": 248,
+    "emittedBytes": 938
+  }
+]

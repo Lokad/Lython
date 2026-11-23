@@ -392,8 +392,10 @@ Binding uses the live tuple and holds selected values through keyword lookup
 and suspension.
 An eligible lexical factory can return a definition directly when checked
 integer arithmetic and a read-only capture supply its defaults. It uses the
-same admitted default containers and definition constructor. General arithmetic
-and eager annotation reads use the ordinary executable activation.
+same admitted default containers and definition constructor. Prepared eager
+annotations read their live bindings after defaults and use the same admitted
+annotation storage as general definitions. General arithmetic and annotation
+expressions use the ordinary executable activation.
 Compiled names and docstrings stay with the code object. A function admits
 storage on the first standard attribute write that needs it and reuses it
 for later writes. Resetting `__doc__` or `__module__` to `None` needs no
