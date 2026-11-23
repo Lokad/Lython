@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1514 project regex captures through an owned rune index](results/2026-11-23-indexed-regex-projection/README.md)
+removes indexed coordinate scratch. A quiet confirmation after the initial
+gate failure finds 2.67–4.78% higher elapsed for indexed cursor captures
+and 8.28–10.15% for wide registers, with higher CPU. The projection stays
+private and the capture regression stays in the public suite.
+
 [B1513 publish adjacent integer arguments within one dispatch](results/2026-11-23-adjacent-integer-results/README.md)
 skips the intended dispatch, but supplied-helper warm elapsed rises
 0.74–4.16% with mixed CPU. First use is inconclusive and the quote-heavy
