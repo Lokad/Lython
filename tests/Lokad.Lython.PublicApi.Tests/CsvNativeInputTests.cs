@@ -100,7 +100,7 @@ public sealed class CsvNativeInputTests
     public async Task RetainedNativeRowsSurviveQuotesAndChangesInWidth(bool asynchronous)
     {
         await AssertFile(asynchronous,
-            "first,a\nprefix-é,\"two\npieces\",z\none,two,three,four,five,six\nbare\"quote,,last\n,\"quoted,comma\",tail,\n\nfinal,", """
+            "first,a\nprefix-é,\"two\npieces\",z\none,two,three,four,five,six\na,\"b,c\",d,e,f,g\r\nbare\"quote,,last\n,\"quoted,comma\",tail,\n\nfinal,", """
             import csv
             with open('/input.csv', newline='') as source:
                 reader = csv.reader(source)
@@ -114,10 +114,11 @@ public sealed class CsvNativeInputTests
             ['first', 'a'] 1
             ['prefix-é', 'two\npieces', 'z'] 3
             ['one', 'two', 'three', 'four', 'five', 'six'] 4
-            ['bare"quote', '', 'last'] 5
-            ['', 'quoted,comma', 'tail', ''] 6
-            [] 7
-            ['final', ''] 8
+            ['a', 'b,c', 'd', 'e', 'f', 'g'] 5
+            ['bare"quote', '', 'last'] 6
+            ['', 'quoted,comma', 'tail', ''] 7
+            [] 8
+            ['final', ''] 9
             ['prefix-é', 'two\npieces', 'z']
             """.ReplaceLineEndings("\n") + "\n");
     }
