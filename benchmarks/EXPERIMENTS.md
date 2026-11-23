@@ -8,8 +8,9 @@ original conditions retained. Current comparisons belong in
 
 [B1496 reuse imported regex programs](results/2026-11-23-imported-regex-programs/README.md)
 removes a second provider compilation for analyzed literal rules used
-at runtime. The imported-rule script allocates about 43% less at the same
-admitted peak. The local text control varies, so timings remain diagnostic.
+at runtime. The imported-rule script allocates about 43% less. Its reported
+execution peak matches and the shared allowance peaks 11,264 B higher.
+The local text control varies, so timings remain diagnostic.
 
 [B1495 retain deferred numerical ranges through line advance](results/2026-11-23-csv-deferred-number/README.md)
 improves explicit-float warm elapsed 1.13–2.59% and typed ASCII time to

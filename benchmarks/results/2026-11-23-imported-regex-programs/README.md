@@ -32,9 +32,11 @@ the independent process medians.
 | Imported text control | Warm | −28.84 to +5.26% | −33.33 to +20.00% | +784 B |
 
 Keep the source change for the eliminated duplicate compilation. The
-affected script allocates roughly 43% less with the same admitted peak.
+affected script allocates roughly 43% less. Lython reports the same
+442,521 B execution peak. The full borrowed allowance peaks 11,264 B
+higher, from 1,631,650 to 1,642,914 B, while retaining imported programs.
 Control allocation rises 784 B, consistent with one extra reference in
-each execution context. Control admission matches. The warm regex worker
+each execution context. Both control peaks match. The warm regex worker
 spread and moving text control leave elapsed and CPU magnitudes uncertain.
 All 8,064 timed invocations match the CPython goldens and refund to baseline.
 
