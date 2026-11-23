@@ -2595,6 +2595,9 @@ Prepared subjects provide match/search/fullmatch and finditer progression.
 Lython owns captured splitting, template/callable substitution, expansion and
 public scalar offsets;
 providers expose no replacement or split dialect.
+Replacement group references scan bounded UTF-8 chunks and check
+cancellation between chunks and escaped characters. A quoted closing
+delimiter stays part of the group name.
 
 The per-execution 512-entry pattern cache compares immutable UTF-8 content and
 complete compilation options, including the separate parsing-time verbose bit.
