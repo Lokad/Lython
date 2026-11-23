@@ -1,0 +1,76 @@
+{
+  "reference": [
+    {
+      "name": "TrySelectNativeCall",
+      "codeBytes": 290,
+      "stackSubtraction": 32,
+      "namedLayoutCalls": 0,
+      "indirectCalls": 0
+    },
+    {
+      "name": "StartNativeCall",
+      "codeBytes": 926,
+      "stackSubtraction": 504,
+      "namedLayoutCalls": 0,
+      "indirectCalls": 0
+    },
+    {
+      "name": "TryReadPreparedDefaultInteger",
+      "codeBytes": 330,
+      "stackSubtraction": 48,
+      "namedLayoutCalls": 0,
+      "indirectCalls": 0
+    },
+    {
+      "name": "CreateFunctionValue",
+      "codeBytes": 1218,
+      "stackSubtraction": 184,
+      "namedLayoutCalls": 0,
+      "indirectCalls": 0
+    },
+    {
+      "name": "HasPreparedOmittedArguments",
+      "codeBytes": 200,
+      "stackSubtraction": 40,
+      "namedLayoutCalls": 0,
+      "indirectCalls": 0
+    }
+  ],
+  "candidate": [
+    {
+      "name": "TrySelectNativeCall",
+      "codeBytes": 300,
+      "stackSubtraction": 32,
+      "namedLayoutCalls": 0,
+      "indirectCalls": 0
+    },
+    {
+      "name": "StartNativeCall",
+      "codeBytes": 936,
+      "stackSubtraction": 504,
+      "namedLayoutCalls": 0,
+      "indirectCalls": 0
+    },
+    {
+      "name": "CreateFunctionValue",
+      "codeBytes": 1185,
+      "stackSubtraction": 168,
+      "namedLayoutCalls": 0,
+      "indirectCalls": 0
+    },
+    {
+      "name": "TryReadPreparedDefaultInteger",
+      "codeBytes": 408,
+      "stackSubtraction": 56,
+      "namedLayoutCalls": 1,
+      "indirectCalls": 1
+    },
+    {
+      "name": "HasPreparedOmittedArguments",
+      "codeBytes": 246,
+      "stackSubtraction": 40,
+      "namedLayoutCalls": 1,
+      "indirectCalls": 1
+    }
+  ]
+}

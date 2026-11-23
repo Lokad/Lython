@@ -1,0 +1,79 @@
+[
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+    "allocatedBytes": [
+      882136,
+      849360
+    ],
+    "peakAdmission": [
+      2968481,
+      2968481
+    ]
+  },
+  {
+    "case": "calls.positional.wide-native-buffer",
+    "allocatedBytes": [
+      405000,
+      404992
+    ],
+    "peakAdmission": [
+      1115720,
+      1115720
+    ]
+  },
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories",
+    "allocatedBytes": [
+      882032,
+      849256
+    ],
+    "peakAdmission": [
+      2968425,
+      2968425
+    ]
+  },
+  {
+    "case": "scripts.factory-observed-defaults",
+    "allocatedBytes": [
+      1226352,
+      1193576
+    ],
+    "peakAdmission": [
+      2968817,
+      2968817
+    ]
+  },
+  {
+    "case": "scripts.ordinary-fully-supplied-helper",
+    "allocatedBytes": [
+      142656,
+      142528
+    ],
+    "peakAdmission": [
+      1255,
+      1255
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "allocatedBytes": [
+      4069406,
+      4069390
+    ],
+    "peakAdmission": [
+      9432874,
+      9432874
+    ]
+  },
+  {
+    "case": "diagnostic.text-summary.materialized-ordinary-split",
+    "allocatedBytes": [
+      979264,
+      979248
+    ],
+    "peakAdmission": [
+      1967664,
+      1967664
+    ]
+  }
+]

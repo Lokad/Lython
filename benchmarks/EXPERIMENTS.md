@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1460 canonical executable parameter layouts](results/2026-11-23-canonical-function-metadata/README.md)
+removes a duplicate reference from every callable and saves 32,776
+allocated bytes on both factories. Eager warm CPU and postponed
+time to result are adverse. The omitted-argument layout lookup is
+the next refinement target.
+
 [B1459 publish cased keys on a miss](results/2026-11-23-borrowed-cased-word-miss/README.md)
 removes the caller's append handoff. Short timing spans zero and
 distinct-word CPU rises. Keep the candidate private and preserve the
