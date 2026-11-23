@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1456 borrowed cased dictionary words](results/2026-11-23-borrowed-cased-words/README.md)
+reduces managed allocation by 40–46% and elapsed by 5–14% on the
+repeated-word reports. The distinct-word control takes 10–13% longer.
+This source stays private while the miss path is refined.
+
 [B1455 direct native integer entry](results/2026-11-23-direct-native-return-entry/README.md)
 skips workspace preparation and improves the positional loop and
 quoted invoice. Eager factories and the supplied helper use more CPU.
