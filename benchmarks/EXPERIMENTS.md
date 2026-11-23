@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1436 bounded cased word construction](results/2026-11-23-materialized-cased-split-bounded/README.md)
+retains the shared scan. Wide warm elapsed falls 18.68–19.64% and its
+allocation falls 5.01%. The long-input diagnostic matches the reference
+admitted peak. The ordinary split control takes 1.83–7.36% longer.
+
 [B1435 materialized cased words](results/2026-11-23-materialized-cased-split/README.md)
 shares the casing and word-boundary scan. Wide warm elapsed falls about 20%
 and the pooled trial allocates 4.98% less on that report. Peak admission
