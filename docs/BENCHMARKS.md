@@ -32,6 +32,8 @@ measurements cover the wider request.
 | Configuration edit, 181 B | Compilation only | 0.01896–0.01904 ms | 0.03400–0.03406 ms | 0.557–0.560× | Diagnostic. [B1478]. |
 | Configuration edit, 181 B | Compile-to-result | 0.1070–0.1073 ms | 0.1232–0.1246 ms | 0.859–0.871× | Diagnostic. [B1478]. |
 | Postponed nested factories | Compile-to-result | 1.0503–1.0599 ms | 0.6084–0.6115 ms | 1.718–1.742× | Diagnostic. [B1478]. |
+| Postponed nested factories | Compilation only | 0.02116–0.02135 ms | 0.03961–0.03962 ms | 0.534–0.539× | Diagnostic. [B1480]. |
+| Postponed nested factories | Compile-to-result | 0.9671–0.9773 ms | 0.5819–0.5866 ms | 1.649–1.680× | Diagnostic repeat on the same source. [B1480]. |
 | Postponed nested factories | Compile-to-result | 0.987–1.127 ms | 0.6063–0.6190 ms | 1.594–1.859× | Historical, uncertain magnitude. Lython worker spread 14.23%. [B1458]. |
 | Generated validator with read-only branches | Compilation only | 0.4757–0.4924 ms | 0.9257–0.9317 ms | 0.511–0.532× | Historical diagnostic. [B1451]. |
 | Sparse generated validator | Compile-to-result | 1.535–1.565 ms | 1.9741–1.9742 ms | 0.777–0.793× | Historical diagnostic. [B1451]. |
@@ -107,6 +109,7 @@ change. The checkpoint includes the arithmetic and allocation controls.
 
 | Checkpoint | Lython source | Date |
 | --- | --- | --- |
+| [B1480] | `a94f78fc7` | 2026-11-23 UTC |
 | [B1478] | `a94f78fc7` | 2026-11-23 UTC |
 | [B1467] | `d969c134f` | 2026-11-23 UTC |
 | [B1458] | `7bc247f1a` | 2026-11-23 UTC |
@@ -198,6 +201,7 @@ Review individual designs and adverse observations in
 the [experiment index](../benchmarks/EXPERIMENTS.md).
 Reproduce the comparisons with the [benchmark tools](../benchmarks/README.md).
 
+[B1480]: ../benchmarks/results/2026-11-23-factory-phase-cpython/README.md
 [B1478]: ../benchmarks/results/2026-11-23-tuple-admission-cpython/README.md
 [B1467]: ../benchmarks/results/2026-11-23-numeric-capture-cpython/README.md
 [B1458]: ../benchmarks/results/2026-11-23-integrated-text-cpython/README.md

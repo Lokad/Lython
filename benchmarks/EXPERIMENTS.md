@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1480 separate factory compilation and execution](results/2026-11-23-factory-phase-cpython/README.md)
+finds 21 µs compilation and 980–990 µs warm execution on the B1478
+source. The runtime takes 1.731–1.811× CPython warm elapsed. The
+factory compile-to-result magnitude varies across both quiet runs.
+All 140 batches verify.
+
 [B1479 complete buffered CSV rows directly](results/2026-11-23-buffered-csv-read-completion/README.md)
 bypasses the refill state machine on complete rows. Allocations and admitted
 peaks match. Warm explicit CSV takes 2.35–5.27% longer with supporting CPU
