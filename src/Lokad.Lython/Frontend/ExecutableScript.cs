@@ -84,6 +84,7 @@ internal enum ExecutableOpCode
     ReverseAssignmentValues,
     IntegerCallUpdate,
     IntegerTupleReturn,
+    LoadCasedSplit,
 }
 
 internal enum ExecutableUnaryOperator
@@ -143,7 +144,7 @@ internal readonly record struct ExecutableInstruction
         ExecutableOpCode.Call when _secondaryOperand != int.MaxValue => 2,
         ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast => 3,
         ExecutableOpCode.Unary or ExecutableOpCode.StoreLocal or ExecutableOpCode.Return or
-            ExecutableOpCode.LoadMember or ExecutableOpCode.LoadCallMember or
+            ExecutableOpCode.LoadMember or ExecutableOpCode.LoadCallMember or ExecutableOpCode.LoadCasedSplit or
             ExecutableOpCode.GetIter or ExecutableOpCode.JumpIfFalse => 1,
         _ => 0,
     };
@@ -212,13 +213,13 @@ internal readonly record struct ExecutableInstruction
     internal ExecutableInstruction WithClosureArithmetic(int constantIndex)
         => new(OpCode, Span, _primaryOperand, constantIndex, _inputStart, _resultSlot, _liveExtent);
     public int NameIndex => OpCode is ExecutableOpCode.LoadGlobal or ExecutableOpCode.LoadName
-        or ExecutableOpCode.LoadMember or ExecutableOpCode.LoadCallMember
+        or ExecutableOpCode.LoadMember or ExecutableOpCode.LoadCallMember or ExecutableOpCode.LoadCasedSplit
         or ExecutableOpCode.StoreGlobal or ExecutableOpCode.StoreName or ExecutableOpCode.BindException
         or ExecutableOpCode.StoreMember or ExecutableOpCode.StoreMemberLast
         or ExecutableOpCode.DeleteName or ExecutableOpCode.DeleteMember
         ? _primaryOperand : throw InvalidOperand(nameof(NameIndex));
     public int LookupCacheIndex => OpCode == ExecutableOpCode.Subscript ? _primaryOperand
-        : OpCode is ExecutableOpCode.LoadMember or ExecutableOpCode.LoadCallMember or ExecutableOpCode.MakeDict
+        : OpCode is ExecutableOpCode.LoadMember or ExecutableOpCode.LoadCallMember or ExecutableOpCode.LoadCasedSplit or ExecutableOpCode.MakeDict
             ? _secondaryOperand : throw InvalidOperand(nameof(LookupCacheIndex));
     public bool DiscardIterator => OpCode == ExecutableOpCode.AbruptJump
         ? _secondaryOperand != 0 : throw InvalidOperand("ItemCount");
@@ -337,6 +338,9 @@ internal readonly record struct ExecutableInstruction
 
     public static ExecutableInstruction LoadCallMember(int nameIndex, int cacheIndex, LythonSourceSpan span)
         => new(ExecutableOpCode.LoadCallMember, span, nameIndex, cacheIndex);
+
+    internal ExecutableInstruction AsCasedSplit()
+        => new(ExecutableOpCode.LoadCasedSplit, Span, _primaryOperand, _secondaryOperand);
 
     public static ExecutableInstruction PreloadImplicitSuperArguments(LythonSourceSpan span)
         => new(ExecutableOpCode.PreloadImplicitSuperArguments, span);

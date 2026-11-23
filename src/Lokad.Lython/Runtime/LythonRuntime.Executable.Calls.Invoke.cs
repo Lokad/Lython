@@ -88,8 +88,6 @@ internal sealed partial class LythonRuntime
 
             if (call.HasReceiver && call.IsPositionalOnly)
             {
-                if (call.ArgumentCount == 0 && call.SplitPrefix is ExecutableCasedSplit cased
-                    && TryExecuteCasedSplit(ref execution, invocation ?? scope, invocation, cased, start, target)) return true;
                 if (target is not ReceiverMethod method) return false;
                 try
                 {

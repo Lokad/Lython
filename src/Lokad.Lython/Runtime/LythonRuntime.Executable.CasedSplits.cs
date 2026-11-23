@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Text;
 
@@ -5,17 +6,25 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private static object ExecuteCasedSplit(ExecutableCasedSplit recipe, PyString receiver, ExecutionContext context,
-        bool consumedByIteration = false)
+    private static object ExecuteCasedSplit(ExecutableCodeObject code, int index, PyString receiver,
+        ExecutionContext context, bool returnConsumedByIteration)
     {
-        context.CheckExecution(recipe.CasingMemberSpan);
-        context.CheckExecution(recipe.CasingCallSpan);
-        context.CheckExecution(recipe.SplitMemberSpan);
-        context.CheckExecution(recipe.SplitCallSpan);
-        return consumedByIteration
-            ? PyStringOps.PrepareCasedWhitespaceIteration(receiver, recipe.Upper, context, recipe.SplitCallSpan)
-            : PyStringOps.SplitCasedWhitespace(receiver, recipe.Upper,
-                context.MemoryGovernor, recipe.SplitCallSpan, context);
+        var recipe = (ExecutableCasedSplit)code.CallSites[code.Instructions[index + 1].CallSiteIndex].SplitPrefix!;
+        var resultCall = code.CallSites[code.Instructions[index + 3].CallSiteIndex];
+        context.EnterInterpreterFrame(recipe.CasingCallSpan);
+        try
+        {
+            context.CheckExecution(recipe.CasingMemberSpan);
+            context.CheckExecution(recipe.CasingCallSpan);
+            context.CheckExecution(recipe.SplitMemberSpan);
+            context.CheckExecution(recipe.SplitCallSpan);
+            return resultCall.ConsumedByIteration || returnConsumedByIteration && resultCall.ReturnedDirectly
+                ? PyStringOps.PrepareCasedWhitespaceIteration(receiver, recipe.Upper, context, recipe.SplitCallSpan)
+                : PyStringOps.SplitCasedWhitespace(receiver, recipe.Upper,
+                    context.MemoryGovernor, recipe.SplitCallSpan, context);
+        }
+        catch (Exception error) when (TryTranslateCallableException(error, recipe.SplitCallSpan, out var translated)) { throw translated; }
+        finally { context.LeaveInterpreterFrame(); }
     }
 
     private static bool TryReadAsciiTrim(ExecutableCallSite call, object target, ReadOnlySpan<ExecutableSlot> values,
@@ -48,31 +57,25 @@ internal sealed partial class LythonRuntime
 
     internal sealed partial class ExecutionContext
     {
-        private static bool TryExecuteCasedSplit(ref ExecutableWorkState execution, ExecutionContext context,
-            ExecutionContext? invocation, ExecutableCasedSplit recipe, int start, object target)
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static bool TryExecuteCasedSplitMember(ref ExecutableWorkState execution, ExecutionContext scope,
+            ExecutionContext? invocation, in ExecutableInstruction instruction)
         {
-            if (!ReferenceEquals(target, recipe.CasingMethod)
-                || execution.Stack[start] is not PyString receiver) return false;
-            // Only the fused result inherits the split call's consumer. If the
-            // exact native chain is declined, lower() has its own ordinary use
-            // as the receiver of the following member access.
-            var resultCall = execution.Code.CallSites[
-                execution.Code.Instructions[execution.InstructionIndex + 2].CallSiteIndex];
+            // The fallback can reread the original operand. This guard neither
+            // invokes a method nor changes the receiver's slot.
+            if (ReadOperand(ref execution, instruction.InputStart, scope, 0) is not PyString receiver) return false;
             // The immediate chain stays within this basic block. Original
             // operand layout gives both calls the same result position; publish
             // through the final call, including its local-store continuation.
             try
             {
-                object result;
-                context.EnterInterpreterFrame(recipe.CasingCallSpan);
-                try { result = ExecuteCasedSplit(recipe, receiver, context, CallResultConsumedByIteration(in execution, resultCall)); }
-                catch (Exception error) when (TryTranslateCallableException(error, recipe.SplitCallSpan, out var translated)) { throw translated; }
-                finally { context.LeaveInterpreterFrame(); }
-                execution.InstructionIndex += 2;
+                var result = ExecuteCasedSplit(execution.Code, execution.InstructionIndex, receiver, invocation ?? scope,
+                    execution.ReturnConsumedByIteration);
+                execution.InstructionIndex += 3;
                 PublishInstructionResult(ref execution, invocation, execution.Code.Instructions[execution.InstructionIndex], result);
                 return true;
             }
-            catch { execution.Stack.RetireTo(start); throw; }
+            catch { execution.Stack.RetireTo(instruction.ResultSlot); throw; }
         }
 
         private static bool TryExecuteTrimmedSplit(ref ExecutableWorkState execution, ExecutionContext scope,

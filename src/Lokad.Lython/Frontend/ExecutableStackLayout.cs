@@ -426,7 +426,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
             // Site facts use original adjacency, before forwarding can
             // remove or rewrite the instructions supplying operands.
             if (instruction.OpCode is ExecutableOpCode.Call or ExecutableOpCode.LoadCallMember)
-                code.PrepareCallSite(instructions, index, instruction, calls);
+                instruction = code.PrepareCallSite(instructions, index, instruction, calls);
             if (instruction.OpCode == ExecutableOpCode.Call && kept >= 2 &&
                 !code.RequiresLocalVariableMirroring &&
                 calls[instruction.CallSiteIndex] is { HasReceiver: false, IsPositionalOnly: true, ArgumentCount: 1 } &&
@@ -557,7 +557,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
             ExecutableOpCode.StoreLocal or ExecutableOpCode.StoreClosure or ExecutableOpCode.StoreGlobal or
                 ExecutableOpCode.StoreName or ExecutableOpCode.PopTop or ExecutableOpCode.JumpIfFalse or
                 ExecutableOpCode.MatchCase or ExecutableOpCode.Return or ExecutableOpCode.ExitContextManager => (1, 0),
-            ExecutableOpCode.Dup or ExecutableOpCode.LoadCallMember => (1, 2),
+            ExecutableOpCode.Dup or ExecutableOpCode.LoadCallMember or ExecutableOpCode.LoadCasedSplit => (1, 2),
             ExecutableOpCode.LoadMember or ExecutableOpCode.GetIter or
                 ExecutableOpCode.ResolveContextManager or ExecutableOpCode.EnterContextManager or
                 ExecutableOpCode.Unary or ExecutableOpCode.MatchException or

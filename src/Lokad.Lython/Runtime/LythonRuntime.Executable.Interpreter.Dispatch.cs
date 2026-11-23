@@ -197,7 +197,11 @@ internal sealed partial class LythonRuntime
                                 _ = ConsumeOperation(ref pending);
                             }
                             break;
-                        case ExecutableOpCode.LoadMember or ExecutableOpCode.LoadCallMember:
+                        case ExecutableOpCode.LoadCasedSplit:
+                            if (TryExecuteCasedSplitMember(ref execution, scope, invocation, instruction)) break;
+                            goto case ExecutableOpCode.LoadCallMember;
+                        case ExecutableOpCode.LoadMember:
+                        case ExecutableOpCode.LoadCallMember:
                             if (TryLoadDirectCallReceiver(ref execution, scope, invocation, instruction)) break;
                             if (invocation is null) return InstructionPause.ContextRequired;
                             if (!asynchronous) ExecuteSynchronousMemberLoad(ref execution, scope, invocation, instruction);

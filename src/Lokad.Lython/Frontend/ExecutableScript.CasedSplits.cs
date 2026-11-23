@@ -8,7 +8,7 @@ namespace Lokad.Lython.Frontend;
 internal abstract record ExecutableSplitPrefix;
 
 internal sealed record ExecutableCasedSplit(
-    LythonRuntime.ReceiverMethod CasingMethod, bool Upper,
+    bool Upper,
     LythonSourceSpan CasingMemberSpan, LythonSourceSpan CasingCallSpan,
     LythonSourceSpan SplitMemberSpan, LythonSourceSpan SplitCallSpan) : ExecutableSplitPrefix;
 
@@ -17,10 +17,10 @@ internal sealed record ExecutableTrimmedSplit(
 
 internal sealed partial class ExecutableCodeObject
 {
-    internal void PrepareCallSite(List<ExecutableInstruction> instructions, int index,
-        in ExecutableInstruction instruction, ExecutableCallSite[] sites)
+    internal ExecutableInstruction PrepareCallSite(List<ExecutableInstruction> instructions, int index,
+        ExecutableInstruction instruction, ExecutableCallSite[] sites)
     {
-        if (index + 1 >= instructions.Count) return;
+        if (index + 1 >= instructions.Count) return instruction;
         var next = instructions[index + 1];
         if (instruction.OpCode == ExecutableOpCode.Call)
         {
@@ -39,36 +39,36 @@ internal sealed partial class ExecutableCodeObject
                     sites[site] = call with { UnpackedReturnCount = next.UnpackLayout.TargetCount };
                     break;
             }
-            return;
+            return instruction;
         }
 
         var name = Names[instruction.NameIndex];
         if (name is "lower" or "upper" && index + 3 < instructions.Count
-            && next.OpCode == ExecutableOpCode.Call && instructions[index + 3].OpCode == ExecutableOpCode.Call)
-            PrepareCasedSplit(instructions, index + 1, name, sites);
-        else if (name == "rstrip" && index + 5 < instructions.Count && instructions[index + 2].OpCode == ExecutableOpCode.Call
+            && next.OpCode == ExecutableOpCode.Call && instructions[index + 3].OpCode == ExecutableOpCode.Call
+            && PrepareCasedSplit(instructions, index + 1, name == "upper", sites))
+            return instruction.AsCasedSplit();
+        if (name == "rstrip" && index + 5 < instructions.Count && instructions[index + 2].OpCode == ExecutableOpCode.Call
             && instructions[index + 4].OpCode == ExecutableOpCode.LoadConst
             && instructions[index + 5].OpCode == ExecutableOpCode.Call)
             PrepareTrimmedSplit(instructions, index + 2, sites);
+        return instruction;
     }
 
-    private void PrepareCasedSplit(List<ExecutableInstruction> instructions,
-        int producer, string name, ExecutableCallSite[] sites)
+    private bool PrepareCasedSplit(List<ExecutableInstruction> instructions,
+        int producer, bool upper, ExecutableCallSite[] sites)
     {
         var consumer = producer + 2;
-        if (instructions[consumer - 1].OpCode != ExecutableOpCode.LoadCallMember) return;
+        if (instructions[consumer - 1].OpCode != ExecutableOpCode.LoadCallMember) return false;
         var firstIndex = instructions[producer].CallSiteIndex;
         var lastIndex = instructions[consumer].CallSiteIndex;
         var first = sites[firstIndex];
         var last = sites[lastIndex];
         if (!first.HasReceiver || !last.HasReceiver || first.ArgumentCount != 0 || last.ArgumentCount != 0
             || !first.IsPositionalOnly || !last.IsPositionalOnly
-            || Names[instructions[consumer - 1].NameIndex] is not ("split" or "rsplit")) return;
-        var recipe = last.SplitPrefix as ExecutableCasedSplit ?? new ExecutableCasedSplit(LythonRuntime.StringMembers.GetMethod(name)!,
-            name == "upper", instructions[producer - 1].Span, first.CallSpan,
-            instructions[consumer - 1].Span, last.CallSpan);
-        sites[lastIndex] = last with { SplitPrefix = recipe };
-        sites[firstIndex] = first with { SplitPrefix = recipe };
+            || Names[instructions[consumer - 1].NameIndex] is not ("split" or "rsplit")) return false;
+        sites[firstIndex] = first with { SplitPrefix = new ExecutableCasedSplit(upper,
+            instructions[producer - 1].Span, first.CallSpan, instructions[consumer - 1].Span, last.CallSpan) };
+        return true;
     }
 
     private void PrepareTrimmedSplit(List<ExecutableInstruction> instructions,

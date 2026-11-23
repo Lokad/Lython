@@ -145,6 +145,9 @@ internal sealed partial class LythonRuntime
                     case ExecutableOpCode.StoreLocal:
                         StoreLocal(instruction);
                         break;
+                    case ExecutableOpCode.LoadCasedSplit:
+                        if (TryExecuteCasedSplitMember(instruction)) break;
+                        goto case ExecutableOpCode.LoadCallMember;
                     case ExecutableOpCode.LoadCallMember:
                     {
                         var receiver = Read(instruction.InputStart, 0);
@@ -412,6 +415,16 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+        private bool TryExecuteCasedSplitMember(in ExecutableInstruction instruction)
+        {
+            if (Read(instruction.InputStart, 0) is not PyString text) return false;
+            var split = ExecuteCasedSplit(Code, Index, text, _scope, _consumedByIteration);
+            Index += 3;
+            Publish(Code.Instructions[Index], ExecutableSlot.FromObject(split));
+            return true;
+        }
+
         private bool Call(in ExecutableInstruction instruction)
         {
             var call = Code.CallSites[instruction.CallSiteIndex];
@@ -467,19 +480,6 @@ internal sealed partial class LythonRuntime
                 else if (call.HasReceiver && target is ReceiverMethod method)
                 {
                     var receiver = Values[start].Object!;
-                    if (call.ArgumentCount == 0 && receiver is PyString text
-                        && call.SplitPrefix is ExecutableCasedSplit recipe && ReferenceEquals(target, recipe.CasingMethod))
-                    {
-                        var final = Code.Instructions[Index + 2];
-                        var consumer = Code.CallSites[final.CallSiteIndex];
-                        _scope.EnterInterpreterFrame(recipe.CasingCallSpan);
-                        try { result.Object = ExecuteCasedSplit(recipe, text, _scope,
-                            consumer.ConsumedByIteration || _consumedByIteration && consumer.ReturnedDirectly); }
-                        finally { _scope.LeaveInterpreterFrame(); }
-                        Index += 2;
-                        Publish(final, result);
-                        return true;
-                    }
                     if (call.SplitPrefix is ExecutableTrimmedSplit trimmed &&
                         Code.Instructions[Index + 3].InputStart == start &&
                         TryReadAsciiTrim(call, target, Values, start, out var input, out var trim))

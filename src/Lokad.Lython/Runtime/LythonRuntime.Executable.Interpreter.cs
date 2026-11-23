@@ -16,7 +16,7 @@ internal sealed partial class LythonRuntime
         private static bool TryLoadDirectCallReceiver(ref ExecutableWorkState execution, ExecutionContext scope,
             ExecutionContext? invocation, in ExecutableInstruction instruction)
         {
-            if (instruction.OpCode != ExecutableOpCode.LoadCallMember) return false;
+            if (instruction.OpCode == ExecutableOpCode.LoadMember) return false;
             var name = execution.Code.Names[instruction.NameIndex];
             var receiver = ReadOperand(ref execution, instruction.InputStart, scope, 0);
             if (invocation is not null && receiver is PyInstance instance &&
@@ -391,7 +391,7 @@ internal sealed partial class LythonRuntime
 
         private void PublishMemberCache(ExecutableInstruction instruction, object target, object value)
         {
-            if (CanCacheRuntimeMemberValue(target, value, instruction.OpCode == ExecutableOpCode.LoadCallMember))
+            if (CanCacheRuntimeMemberValue(target, value, instruction.OpCode != ExecutableOpCode.LoadMember))
                 _execution.Stack.GetLookupCaches(_execution.Code.LookupCacheCount, instruction.Span)[instruction.LookupCacheIndex]
                     = new(target, value);
             else _execution.Stack.ClearLookupCache(instruction.LookupCacheIndex);
@@ -409,7 +409,7 @@ internal sealed partial class LythonRuntime
                     throw PyMemberAccess.CreateMissingMemberError(target, memberName, instruction.Span, invocation);
                 invocation.PublishMemberCache(instruction, target, memberValue);
             }
-            if (instruction.OpCode == ExecutableOpCode.LoadCallMember)
+            if (instruction.OpCode != ExecutableOpCode.LoadMember)
             {
                 execution.Stack[instruction.ResultSlot] = PyNone.Instance;
                 execution.Stack.PublishValue(instruction.ResultSlot + 1, instruction.LiveExtent, memberValue);
