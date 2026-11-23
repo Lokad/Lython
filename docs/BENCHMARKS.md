@@ -2,18 +2,18 @@
 
 | Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| Native typed ASCII CSV meter | 4,096 records / 139,299 B | 2.719–2.735 ms | 2.506–2.543 ms | 1.069–1.091× | Diagnostic. [B1467]. |
-| CSV meter with explicit `float()` | 4,096 records / 139,299 B | 3.876–3.891 ms | 2.855–2.863 ms | 1.354–1.363× | Diagnostic. [B1467]. |
-| Short Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 1.372–1.434 ms | 0.9695–0.9708 ms | 1.414–1.480× | Diagnostic. Lython worker spread 4.53%. [B1467]. |
-| Quote-heavy CSV policy invoice | 4,096 records / 174,147 B | 6.884–6.963 ms | 6.315–6.332 ms | 1.087–1.103× | Diagnostic. [B1467]. |
+| Native typed ASCII CSV meter | 4,096 records / 139,299 B | 2.686–2.701 ms | 2.508–2.521 ms | 1.065–1.077× | Diagnostic. [B1478]. |
+| CSV meter with explicit `float()` | 4,096 records / 139,299 B | 3.809–3.895 ms | 2.814–2.870 ms | 1.327–1.384× | Diagnostic. [B1478]. |
+| Short Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 1.3716–1.4158 ms | 0.9429–0.9572 ms | 1.433–1.502× | Diagnostic. Lython worker spread 3.23%. [B1478]. |
+| Quote-heavy CSV policy invoice | 4,096 records / 174,147 B | 7.253–7.335 ms | 6.507–6.521 ms | 1.112–1.127× | Diagnostic. [B1478]. |
 | Mixed-width word histogram | 3,072 lines / 107,520 B | 1.610–1.656 ms | 1.686–1.696 ms | 0.949–0.983× | Historical diagnostic. [B1458]. |
 | JSON Lines export with expanded options | 3,072 records / 189,441 B | 5.355–5.366 ms | 6.508–6.509 ms | 0.823–0.825× | Historical diagnostic. [B1458]. |
 
 Ratios divide Lython elapsed time by CPython elapsed time. Above 1× means
 Lython takes longer. Ranges span the four pairings of process medians from
 two workers per engine. The latest November 23, 2026 UTC checkpoint measures
-`d969c134f`. The mixed-width and JSON rows measure `7bc247f1a`. The short
-nonlocal report's range overlaps the earlier checkpoint. [B1467] · [B1458].
+`a94f78fc7`. The mixed-width and JSON rows measure `7bc247f1a`. The short
+nonlocal report remains about 1.43–1.50× CPython. [B1478] · [B1458].
 
 The quiet comparison machine is an Azure F4as_v7 running Ubuntu 24.04.4
 with .NET 11 RC3. The external baseline is stock CPython 3.13.16. Warm
@@ -29,9 +29,9 @@ measurements cover the wider request.
 
 | Workload | Phase | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| Configuration edit, 181 B | Compilation only | 0.01907–0.01917 ms | 0.03404–0.03428 ms | 0.556–0.563× | Diagnostic. [B1467]. |
-| Configuration edit, 181 B | Compile-to-result | 0.1068–0.1075 ms | 0.1255–0.1257 ms | 0.850–0.857× | Diagnostic. [B1467]. |
-| Postponed nested factories | Compile-to-result | 0.9618–0.9923 ms | 0.5842–0.5857 ms | 1.642–1.698× | Diagnostic. Lython worker spread 3.17%. [B1467]. |
+| Configuration edit, 181 B | Compilation only | 0.01896–0.01904 ms | 0.03400–0.03406 ms | 0.557–0.560× | Diagnostic. [B1478]. |
+| Configuration edit, 181 B | Compile-to-result | 0.1070–0.1073 ms | 0.1232–0.1246 ms | 0.859–0.871× | Diagnostic. [B1478]. |
+| Postponed nested factories | Compile-to-result | 1.0503–1.0599 ms | 0.6084–0.6115 ms | 1.718–1.742× | Diagnostic. [B1478]. |
 | Postponed nested factories | Compile-to-result | 0.987–1.127 ms | 0.6063–0.6190 ms | 1.594–1.859× | Historical, uncertain magnitude. Lython worker spread 14.23%. [B1458]. |
 | Generated validator with read-only branches | Compilation only | 0.4757–0.4924 ms | 0.9257–0.9317 ms | 0.511–0.532× | Historical diagnostic. [B1451]. |
 | Sparse generated validator | Compile-to-result | 1.535–1.565 ms | 1.9741–1.9742 ms | 0.777–0.793× | Historical diagnostic. [B1451]. |
@@ -107,6 +107,7 @@ change. The checkpoint includes the arithmetic and allocation controls.
 
 | Checkpoint | Lython source | Date |
 | --- | --- | --- |
+| [B1478] | `a94f78fc7` | 2026-11-23 UTC |
 | [B1467] | `d969c134f` | 2026-11-23 UTC |
 | [B1458] | `7bc247f1a` | 2026-11-23 UTC |
 | [B1451] | `dfabddb88` | 2026-11-23 UTC |
@@ -197,6 +198,7 @@ Review individual designs and adverse observations in
 the [experiment index](../benchmarks/EXPERIMENTS.md).
 Reproduce the comparisons with the [benchmark tools](../benchmarks/README.md).
 
+[B1478]: ../benchmarks/results/2026-11-23-tuple-admission-cpython/README.md
 [B1467]: ../benchmarks/results/2026-11-23-numeric-capture-cpython/README.md
 [B1458]: ../benchmarks/results/2026-11-23-integrated-text-cpython/README.md
 [B1451]: ../benchmarks/results/2026-11-23-runtime-cpython-checkpoint/README.md

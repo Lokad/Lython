@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1478 CPython checkpoint after fixed tuple admission](results/2026-11-23-tuple-admission-cpython/README.md)
+measures seven lanes on the integrated source. The short nonlocal report
+takes 1.433–1.502× CPython warm time. Postponed factories take 1.718–1.742×
+CPython compile-to-result time. The quiet gates pass and all 196 batches
+verify. The isolated tuple admission time remains uncertain.
+
 [B1477 use one fixed reservation for final executable tuples](results/2026-11-23-fixed-tuple-admission/README.md)
 removes the temporary reservation object. The retained meters allocate
 8.16% and 9.31% less at equal admitted peaks. CSV elapsed ranges cross
