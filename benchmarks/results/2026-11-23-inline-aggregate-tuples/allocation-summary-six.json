@@ -1,0 +1,57 @@
+[
+  {
+    "case": "scripts.csv-meter-report.typed-ascii",
+    "allocatedBytes": [
+      1606456,
+      1442760
+    ],
+    "peakAdmission": [
+      3552905,
+      3552905
+    ]
+  },
+  {
+    "case": "scripts.csv-meter-report.explicit-float",
+    "allocatedBytes": [
+      2818998,
+      2688070
+    ],
+    "peakAdmission": [
+      6285897,
+      6285897
+    ]
+  },
+  {
+    "case": "scripts.csv-meter-report.explicit-float.observe-tuple",
+    "allocatedBytes": [
+      2819158,
+      2884750
+    ],
+    "peakAdmission": [
+      6286305,
+      6286305
+    ]
+  },
+  {
+    "case": "scripts.config-manifest.small",
+    "allocatedBytes": [
+      99712,
+      99712
+    ],
+    "peakAdmission": [
+      56623,
+      56623
+    ]
+  },
+  {
+    "case": "scripts.factory-observed-defaults",
+    "allocatedBytes": [
+      1111664,
+      1111664
+    ],
+    "peakAdmission": [
+      2903281,
+      2903281
+    ]
+  }
+]

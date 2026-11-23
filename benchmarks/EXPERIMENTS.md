@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1475 inline small float tuples](results/2026-11-23-inline-aggregate-tuples/README.md)
+removes the element array. Typed and explicit CSV allocate 10.19% and
+4.64% less at equal admitted peaks. Both take more warm CPU, and the
+alias observer allocates and takes longer. Keep this layout private.
+The direct-admission refinement has separate local allocation evidence.
+
 [B1474 resolve live module reads through the global path](results/2026-11-23-root-module-lookup/README.md)
 removes the general namespace walk from proven root reads. Explicit
 CSV takes 1.33–3.01% less warm elapsed and short nonlocal text takes
