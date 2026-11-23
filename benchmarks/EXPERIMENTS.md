@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1493 dispatch already-forwarded operands separately](results/2026-11-23-forwarded-global-opcode/README.md)
+removes the eligibility check from ordinary call entry. The quoted
+control's CPU spans zero and the short report takes 3.65–5.44% more
+warm elapsed with slower CPU. The opcode variant stays private.
+
 [B1492 share forwarded-call reads and staging](results/2026-11-23-forwarded-global-shared/README.md)
 leaves quoted control debt unresolved. Mixed-width and short timings
 span zero with moving candidate workers. Keep the variant private.

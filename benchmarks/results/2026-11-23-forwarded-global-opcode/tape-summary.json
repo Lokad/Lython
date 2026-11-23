@@ -1,0 +1,22 @@
+[
+  {
+    "id": "diagnostic.text-summary.nonlocal-computed-width.large",
+    "forwarded": 3
+  },
+  {
+    "id": "diagnostic.text-summary.borrowed-cased-words.mixed-width",
+    "forwarded": 3
+  },
+  {
+    "id": "diagnostic.text-summary.rebound-length.large",
+    "forwarded": 4
+  },
+  {
+    "id": "scripts.ordinary-fully-supplied-helper",
+    "forwarded": 0
+  },
+  {
+    "id": "scripts.csv-invoice.method-policy.quoted-control",
+    "forwarded": 0
+  }
+]
