@@ -42,7 +42,8 @@ change. These external ratios do not attribute individual changes.
 Nine local cases match independent CPython goldens on the frozen
 image. All ten quiet lanes and 280 timed batches verify. Workers join
 and the archive verifies under the lease after guest fixture cleanup.
-The integrated Windows and Ubuntu gate is tracked separately.
+The integrated gate passed both Release targets, original-scale stress
+and installed-package consumers on Windows and Ubuntu.
 
 [Source and images](source.json) · [Timing and CPU](summary.json) ·
 [Raw observations](observations.tgz) · [Procedures](procedures.tar.xz) ·

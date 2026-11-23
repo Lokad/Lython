@@ -45,6 +45,9 @@ probe and SDK path were supplied. The corrected run passed and both
 logs are preserved. All eight CPython goldens, 224 quiet timed batches
 and both machine gates verified. Owners returned their allowances, all
 workers joined, guest fixtures were removed and the archive verified.
+The integrated gate passes both Release targets, original-scale
+stress and installed-package consumers on Windows and Ubuntu.
+[CI](https://github.com/Lokad/Lython/actions/runs/45111635398).
 
 [Source and image hashes](source.json) · [Timings](summary.json) ·
 [Binding copy counts](binding-copy-counts.json) ·
