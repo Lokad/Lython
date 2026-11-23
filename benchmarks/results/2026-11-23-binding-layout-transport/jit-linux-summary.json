@@ -1,0 +1,66 @@
+{
+  "reference": [
+    {
+      "name": "TrySelectNativeCall",
+      "stackSubtraction": 0,
+      "codeBytes": 289,
+      "getterCalls": 0
+    },
+    {
+      "name": "StartNativeCall",
+      "stackSubtraction": 440,
+      "codeBytes": 1067,
+      "getterCalls": 0
+    },
+    {
+      "name": "TryReadPreparedDefaultInteger",
+      "stackSubtraction": 24,
+      "codeBytes": 343,
+      "getterCalls": 0
+    },
+    {
+      "name": "CreateFunctionValue",
+      "stackSubtraction": 152,
+      "codeBytes": 1373,
+      "getterCalls": 0
+    },
+    {
+      "name": "HasPreparedOmittedArguments",
+      "stackSubtraction": 0,
+      "codeBytes": 214,
+      "getterCalls": 0
+    }
+  ],
+  "candidate": [
+    {
+      "name": "TrySelectNativeCall",
+      "stackSubtraction": 0,
+      "codeBytes": 294,
+      "getterCalls": 0
+    },
+    {
+      "name": "StartNativeCall",
+      "stackSubtraction": 456,
+      "codeBytes": 1093,
+      "getterCalls": 0
+    },
+    {
+      "name": "TryReadPreparedDefaultInteger",
+      "stackSubtraction": 0,
+      "codeBytes": 733,
+      "getterCalls": 0
+    },
+    {
+      "name": "CreateFunctionValue",
+      "stackSubtraction": 152,
+      "codeBytes": 1189,
+      "getterCalls": 0
+    },
+    {
+      "name": "HasPreparedOmittedArguments",
+      "stackSubtraction": 0,
+      "codeBytes": 211,
+      "getterCalls": 0
+    }
+  ]
+}

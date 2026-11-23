@@ -1,0 +1,1048 @@
+[
+  {
+    "workload": "scripts.annotated-rule-closures.nested-factories.postponed",
+    "traceSHA256": "d7138b10cd817248116baacf363df946f8be35f2e39b09286e9e9414a3469d08",
+    "verifiedBatches": 146,
+    "allocation": {
+      "Boundary": "One local warmed complete-worker EventPipe GC allocation sample. Tick weight is approximate attribution to the sampled type, not exact allocated bytes, object counts or removable CPU. Includes reset, I/O, validation and protocol.",
+      "Samples": 36370,
+      "TotalSampleWeight": 3876665064,
+      "Rows": [
+        {
+          "Type": "Lokad.Lython.Runtime.PyExecutableFunction",
+          "Samples": 17480,
+          "SampleWeightBytes": 1863152896,
+          "SampleWeightPercent": 48.06071366086941
+        },
+        {
+          "Type": "System.Numerics.BigInteger",
+          "Samples": 8027,
+          "SampleWeightBytes": 855639520,
+          "SampleWeightPercent": 22.071535865859367
+        },
+        {
+          "Type": "SingletonDefault",
+          "Samples": 5493,
+          "SampleWeightBytes": 585507144,
+          "SampleWeightPercent": 15.103371953311466
+        },
+        {
+          "Type": "ExecutableCell",
+          "Samples": 4762,
+          "SampleWeightBytes": 507563664,
+          "SampleWeightPercent": 13.092791242488417
+        },
+        {
+          "Type": "Entry[System.String,System.Object][]",
+          "Samples": 161,
+          "SampleWeightBytes": 17159592,
+          "SampleWeightPercent": 0.44263798178877184
+        },
+        {
+          "Type": "ExceptionTypeValue",
+          "Samples": 75,
+          "SampleWeightBytes": 7995000,
+          "SampleWeightPercent": 0.20623396316189982
+        },
+        {
+          "Type": "BuiltinCallable",
+          "Samples": 58,
+          "SampleWeightBytes": 6183680,
+          "SampleWeightPercent": 0.1595102981019358
+        },
+        {
+          "Type": "Lokad.Lython.Runtime.Text.GovernedByteBuilder",
+          "Samples": 37,
+          "SampleWeightBytes": 3941048,
+          "SampleWeightPercent": 0.10166078149484414
+        },
+        {
+          "Type": "ExecutionContext",
+          "Samples": 29,
+          "SampleWeightBytes": 3088592,
+          "SampleWeightPercent": 0.07967136569732813
+        },
+        {
+          "Type": "Lokad.Lython.Runtime.ExecutionState",
+          "Samples": 28,
+          "SampleWeightBytes": 2986224,
+          "SampleWeightPercent": 0.07703074551709582
+        },
+        {
+          "Type": "System.Byte[]",
+          "Samples": 28,
+          "SampleWeightBytes": 2984800,
+          "SampleWeightPercent": 0.07699401291377593
+        },
+        {
+          "Type": "Scope",
+          "Samples": 27,
+          "SampleWeightBytes": 2877080,
+          "SampleWeightPercent": 0.07421533592668401
+        },
+        {
+          "Type": "System.Int32[]",
+          "Samples": 18,
+          "SampleWeightBytes": 1918800,
+          "SampleWeightPercent": 0.04949615115885596
+        },
+        {
+          "Type": "Lokad.Lython.Runtime.HostTextOutputHandle",
+          "Samples": 17,
+          "SampleWeightBytes": 1812200,
+          "SampleWeightPercent": 0.04674636498336396
+        },
+        {
+          "Type": "CapturedOutputDestination",
+          "Samples": 14,
+          "SampleWeightBytes": 1492400,
+          "SampleWeightPercent": 0.038497006456887965
+        },
+        {
+          "Type": "Lokad.Lython.Runtime.Text.PyString",
+          "Samples": 14,
+          "SampleWeightBytes": 1486560,
+          "SampleWeightPercent": 0.038346361510688404
+        },
+        {
+          "Type": "System.Collections.Generic.HashSet`1[System.Object]",
+          "Samples": 8,
+          "SampleWeightBytes": 852800,
+          "SampleWeightPercent": 0.02199828940393598
+        },
+        {
+          "Type": "StrCallable",
+          "Samples": 7,
+          "SampleWeightBytes": 746200,
+          "SampleWeightPercent": 0.019248503228443983
+        },
+        {
+          "Type": "Entry[System.Object,System.Runtime.CompilerServices.StrongBox`1[System.Int64]][]",
+          "Samples": 6,
+          "SampleWeightBytes": 639600,
+          "SampleWeightPercent": 0.016498717052951986
+        },
+        {
+          "Type": "System.Threading.Tasks.Task",
+          "Samples": 6,
+          "SampleWeightBytes": 639600,
+          "SampleWeightPercent": 0.016498717052951986
+        },
+        {
+          "Type": "System.Object[]",
+          "Samples": 5,
+          "SampleWeightBytes": 533000,
+          "SampleWeightPercent": 0.013748930877459988
+        },
+        {
+          "Type": "Lokad.Lython.Runtime.PyList",
+          "Samples": 5,
+          "SampleWeightBytes": 533000,
+          "SampleWeightPercent": 0.013748930877459988
+        },
+        {
+          "Type": "ExecutableSlot[]",
+          "Samples": 5,
+          "SampleWeightBytes": 533000,
+          "SampleWeightPercent": 0.013748930877459988
+        },
+        {
+          "Type": "System.String",
+          "Samples": 4,
+          "SampleWeightBytes": 428056,
+          "SampleWeightPercent": 0.011041861830547867
+        },
+        {
+          "Type": "<>c__DisplayClass6_0",
+          "Samples": 4,
+          "SampleWeightBytes": 426400,
+          "SampleWeightPercent": 0.01099914470196799
+        },
+        {
+          "Type": "ReadWriteTask",
+          "Samples": 4,
+          "SampleWeightBytes": 426400,
+          "SampleWeightPercent": 0.01099914470196799
+        },
+        {
+          "Type": "Lokad.Lython.Runtime.PyBuiltinRuntimeType",
+          "Samples": 3,
+          "SampleWeightBytes": 319800,
+          "SampleWeightPercent": 0.008249358526475993
+        },
+        {
+          "Type": "Lokad.Lython.Runtime.PyRange",
+          "Samples": 3,
+          "SampleWeightBytes": 319800,
+          "SampleWeightPercent": 0.008249358526475993
+        },
+        {
+          "Type": "Lokad.Lython.Runtime.MemoryGovernor",
+          "Samples": 3,
+          "SampleWeightBytes": 319800,
+          "SampleWeightPercent": 0.008249358526475993
+        },
+        {
+          "Type": "ZipCallable",
+          "Samples": 3,
+          "SampleWeightBytes": 319800,
+          "SampleWeightPercent": 0.008249358526475993
+        },
+        {
+          "Type": "SucceededState",
+          "Samples": 3,
+          "SampleWeightBytes": 319800,
+          "SampleWeightPercent": 0.008249358526475993
+        },
+        {
+          "Type": "System.Runtime.CompilerServices.ConditionalWeakTable`2[System.Object,System.Runtime.CompilerServices.StrongBox`1[System.Int64]]",
+          "Samples": 2,
+          "SampleWeightBytes": 214208,
+          "SampleWeightPercent": 0.00552557408142392
+        },
+        {
+          "Type": "System.Collections.Generic.Dictionary`2[System.String,System.Object]",
+          "Samples": 2,
+          "SampleWeightBytes": 213200,
+          "SampleWeightPercent": 0.005499572350983995
+        },
+        {
+          "Type": "<NativeKeys>d__169",
+          "Samples": 2,
+          "SampleWeightBytes": 213200,
+          "SampleWeightPercent": 0.005499572350983995
+        },
+        {
+          "Type": "System.Collections.Generic.List`1[Lokad.Lython.Runtime.IExecutionFile]",
+          "Samples": 2,
+          "SampleWeightBytes": 213200,
+          "SampleWeightPercent": 0.005499572350983995
+        },
+        {
+          "Type": "Entry[System.Object][]",
+          "Samples": 2,
+          "SampleWeightBytes": 213200,
+          "SampleWeightPercent": 0.005499572350983995
+        },
+        {
+          "Type": "Lokad.Lython.Runtime.PyDict",
+          "Samples": 2,
+          "SampleWeightBytes": 213200,
+          "SampleWeightPercent": 0.005499572350983995
+        },
+        {
+          "Type": "Lokad.Lython.LythonExecutionResult",
+          "Samples": 2,
+          "SampleWeightBytes": 213200,
+          "SampleWeightPercent": 0.005499572350983995
+        },
+        {
+          "Type": "Lokad.Lython.Runtime.HostTextInputHandle",
+          "Samples": 2,
+          "SampleWeightBytes": 213200,
+          "SampleWeightPercent": 0.005499572350983995
+        },
+        {
+          "Type": "System.String[]",
+          "Samples": 2,
+          "SampleWeightBytes": 213200,
+          "SampleWeightPercent": 0.005499572350983995
+        },
+        {
+          "Type": "Lokad.Lython.Runtime.CallArgumentValue[]",
+          "Samples": 1,
+          "SampleWeightBytes": 106600,
+          "SampleWeightPercent": 0.0027497861754919974
+        },
+        {
+          "Type": "System.Object",
+          "Samples": 1,
+          "SampleWeightBytes": 106600,
+          "SampleWeightPercent": 0.0027497861754919974
+        },
+        {
+          "Type": "Lokad.Lython.Runtime.LythonRuntime",
+          "Samples": 1,
+          "SampleWeightBytes": 106600,
+          "SampleWeightPercent": 0.0027497861754919974
+        },
+        {
+          "Type": "Lokad.Lython.Runtime.PyRandomState",
+          "Samples": 1,
+          "SampleWeightBytes": 106600,
+          "SampleWeightPercent": 0.0027497861754919974
+        },
+        {
+          "Type": "<>c__DisplayClass750_0",
+          "Samples": 1,
+          "SampleWeightBytes": 106600,
+          "SampleWeightPercent": 0.0027497861754919974
+        },
+        {
+          "Type": "Cursor",
+          "Samples": 1,
+          "SampleWeightBytes": 106600,
+          "SampleWeightPercent": 0.0027497861754919974
+        },
+        {
+          "Type": "TemporaryMemoryReservation",
+          "Samples": 1,
+          "SampleWeightBytes": 106600,
+          "SampleWeightPercent": 0.0027497861754919974
+        },
+        {
+          "Type": "System.Func`1[Lokad.Lython.LythonExecutionResult]",
+          "Samples": 1,
+          "SampleWeightBytes": 106600,
+          "SampleWeightPercent": 0.0027497861754919974
+        },
+        {
+          "Type": "SynchronousWorkItem",
+          "Samples": 1,
+          "SampleWeightBytes": 106600,
+          "SampleWeightPercent": 0.0027497861754919974
+        },
+        {
+          "Type": "<>c__DisplayClass48_0",
+          "Samples": 1,
+          "SampleWeightBytes": 106600,
+          "SampleWeightPercent": 0.0027497861754919974
+        },
+        {
+          "Type": "<EnumerateKeys>d__40",
+          "Samples": 1,
+          "SampleWeightBytes": 106600,
+          "SampleWeightPercent": 0.0027497861754919974
+        },
+        {
+          "Type": "Enumerator",
+          "Samples": 1,
+          "SampleWeightBytes": 106600,
+          "SampleWeightPercent": 0.0027497861754919974
+        },
+        {
+          "Type": "Reservation",
+          "Samples": 1,
+          "SampleWeightBytes": 106600,
+          "SampleWeightPercent": 0.0027497861754919974
+        },
+        {
+          "Type": "Lokad.Lython.Runtime.ProjectionBudget",
+          "Samples": 1,
+          "SampleWeightBytes": 106600,
+          "SampleWeightPercent": 0.0027497861754919974
+        },
+        {
+          "Type": "System.Func`2[System.String,Lokad.Lython.Runtime.Text.PyString]",
+          "Samples": 1,
+          "SampleWeightBytes": 106600,
+          "SampleWeightPercent": 0.0027497861754919974
+        }
+      ]
+    },
+    "admission": [
+      {
+        "peak": 2968481,
+        "growths": 6169,
+        "requests": [
+          {
+            "Key": "256 MemoryGovernor.Reserve > LythonRuntime.CreateFunctionValue > NativeExecution.ApplyDefinition > NativeExecution.RunCore > NativeExecution.Run > PyExecutableFunction.StartInline",
+            "Value": 2048
+          },
+          {
+            "Key": "520 MemoryGovernor.Reserve > LythonRuntime.StartExecutableDefaults > NativeExecution.RunCore > NativeExecution.Run > PyExecutableFunction.StartInline > PyExecutableFunction.StartNativeCall",
+            "Value": 2048
+          },
+          {
+            "Key": "672 MemoryGovernor.Reserve > LythonRuntime.CreateFunctionValue > NativeExecution.ApplyDefinition > NativeExecution.RunCore > NativeExecution.Run > PyExecutableFunction.StartInline",
+            "Value": 2048
+          },
+          {
+            "Key": "8 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > PyRendering.AppendQuotedString > PyRendering.AppendStringLiteral > PyRendering.RenderStringLiteral > PyRendering.ToReprPyStringCore",
+            "Value": 4
+          },
+          {
+            "Key": "128 MemoryGovernor.Reserve > PyString.FromTransferredUtf8 > GovernedByteBuilder.ToPyStringAndRelease > PyRendering.RenderStringLiteral > PyRendering.ToReprPyStringCore > PyRendering.RenderReprItems",
+            "Value": 4
+          },
+          {
+            "Key": "272 MemoryGovernor.Reserve > ExecutableValueStorage..ctor > LythonRuntime.CreateExecutableWorkState > LythonRuntime.InitializeExecutableFrame > LythonRuntime.ExecuteExecutableCodeObject > LythonRuntime.ExecuteExecutableCodeObject",
+            "Value": 1
+          },
+          {
+            "Key": "160 MemoryGovernor.Reserve > LythonRuntime.CreateFunctionValue > ExecutionContext.CreateExecutableFunction > ExecutionContext.TryExecutePreparedOperation > ExecutionContext.ExecuteInstructionPrefix > ExecutionContext.ExecuteUntilCall",
+            "Value": 1
+          },
+          {
+            "Key": "736 MemoryGovernor.Reserve > LythonRuntime.ChargeClosureRetention > LythonRuntime.CreateFunctionValue > ExecutionContext.CreateExecutableFunction > ExecutionContext.TryExecutePreparedOperation > ExecutionContext.ExecuteInstructionPrefix",
+            "Value": 1
+          },
+          {
+            "Key": "64 MemoryGovernor.Reserve > LythonRuntime.Range > LythonRuntime.Range > DelegateBoundArgumentsCallable.InvokeBound > BoundArgumentsCallable.InvokeBorrowed > LythonRuntime.InvokeBorrowedCallableTarget",
+            "Value": 1
+          },
+          {
+            "Key": "32 MemoryGovernor.Reserve > LythonRuntime.ChargeClosureRetention > LythonRuntime.CreateFunctionValue > NativeExecution.ApplyDefinition > NativeExecution.RunCore > NativeExecution.Run",
+            "Value": 1
+          },
+          {
+            "Key": "64 MemoryGovernor.Reserve > TemporaryMemoryReservation.Grow > TemporaryMemoryReservation..ctor > MemoryGovernor.ReserveTemporary > PyList..ctor > LythonRuntime.List",
+            "Value": 1
+          },
+          {
+            "Key": "704 MemoryGovernor.Reserve > TemporaryMemoryReservation.Grow > TemporaryMemoryReservation..ctor > MemoryGovernor.ReserveTemporary > PyList.EnsureCapacity > PyList.Add",
+            "Value": 1
+          },
+          {
+            "Key": "135 MemoryGovernor.Reserve > PyString.CopyFromUtf8 > PyRendering.RenderInteger > PyRendering.ToInterpolatedPyString > LythonRuntime.ToInterpolatedPyString > PrintCallable.Invoke",
+            "Value": 1
+          },
+          {
+            "Key": "8 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.Append > GovernedByteBuilder.Append > HostTextOutputHandle.Write > PrintCallable.AppendOutput",
+            "Value": 1
+          },
+          {
+            "Key": "8 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.AppendString > PyRendering.RenderReprItems > PyRendering.RenderReprSequence > PyRendering.ToReprPyStringCore",
+            "Value": 1
+          },
+          {
+            "Key": "16 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.AppendAscii > PyRendering.RenderReprItems > PyRendering.RenderReprSequence > PyRendering.ToReprPyStringCore",
+            "Value": 1
+          },
+          {
+            "Key": "32 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.Append > GovernedByteBuilder.Append > PyRendering.RenderReprItems > PyRendering.RenderReprSequence",
+            "Value": 1
+          },
+          {
+            "Key": "64 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.Append > GovernedByteBuilder.Append > PyRendering.RenderReprItems > PyRendering.RenderReprSequence",
+            "Value": 1
+          },
+          {
+            "Key": "128 MemoryGovernor.Reserve > PyString.FromTransferredUtf8 > GovernedByteBuilder.ToPyStringAndRelease > PyRendering.RenderReprItems > PyRendering.RenderReprSequence > PyRendering.ToReprPyStringCore",
+            "Value": 1
+          },
+          {
+            "Key": "46 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.Append > GovernedByteBuilder.Append > HostTextOutputHandle.Write > PrintCallable.AppendOutput",
+            "Value": 1
+          },
+          {
+            "Key": "92 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.Append > GovernedByteBuilder.Append > HostTextOutputHandle.Write > PrintCallable.AppendOutput",
+            "Value": 1
+          },
+          {
+            "Key": "126 ProjectionBudget.Reserve > LythonRuntime.CaptureStandardOutput > LythonRuntime.CreateSuccessfulResult > <>c__DisplayClass750_0.<Run>b__0 > SynchronousWorkItem.Run > <>c.<Execute>b__6_0",
+            "Value": 1
+          }
+        ]
+      },
+      {
+        "peak": 2968481,
+        "growths": 6169,
+        "requests": [
+          {
+            "Key": "256 MemoryGovernor.Reserve > LythonRuntime.CreateFunctionValue > NativeExecution.ApplyDefinition > NativeExecution.RunCore > NativeExecution.Run > PyExecutableFunction.StartInline",
+            "Value": 2048
+          },
+          {
+            "Key": "520 MemoryGovernor.Reserve > LythonRuntime.StartExecutableDefaults > NativeExecution.RunCore > NativeExecution.Run > PyExecutableFunction.StartInline > PyExecutableFunction.StartNativeCall",
+            "Value": 2048
+          },
+          {
+            "Key": "672 MemoryGovernor.Reserve > LythonRuntime.CreateFunctionValue > NativeExecution.ApplyDefinition > NativeExecution.RunCore > NativeExecution.Run > PyExecutableFunction.StartInline",
+            "Value": 2048
+          },
+          {
+            "Key": "8 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > PyRendering.AppendQuotedString > PyRendering.AppendStringLiteral > PyRendering.RenderStringLiteral > PyRendering.ToReprPyStringCore",
+            "Value": 4
+          },
+          {
+            "Key": "128 MemoryGovernor.Reserve > PyString.FromTransferredUtf8 > GovernedByteBuilder.ToPyStringAndRelease > PyRendering.RenderStringLiteral > PyRendering.ToReprPyStringCore > PyRendering.RenderReprItems",
+            "Value": 4
+          },
+          {
+            "Key": "272 MemoryGovernor.Reserve > ExecutableValueStorage..ctor > LythonRuntime.CreateExecutableWorkState > LythonRuntime.InitializeExecutableFrame > LythonRuntime.ExecuteExecutableCodeObject > LythonRuntime.ExecuteExecutableCodeObject",
+            "Value": 1
+          },
+          {
+            "Key": "160 MemoryGovernor.Reserve > LythonRuntime.CreateFunctionValue > ExecutionContext.CreateExecutableFunction > ExecutionContext.TryExecutePreparedOperation > ExecutionContext.ExecuteInstructionPrefix > ExecutionContext.ExecuteUntilCall",
+            "Value": 1
+          },
+          {
+            "Key": "736 MemoryGovernor.Reserve > LythonRuntime.ChargeClosureRetention > LythonRuntime.CreateFunctionValue > ExecutionContext.CreateExecutableFunction > ExecutionContext.TryExecutePreparedOperation > ExecutionContext.ExecuteInstructionPrefix",
+            "Value": 1
+          },
+          {
+            "Key": "64 MemoryGovernor.Reserve > LythonRuntime.Range > LythonRuntime.Range > DelegateBoundArgumentsCallable.InvokeBound > BoundArgumentsCallable.InvokeBorrowed > LythonRuntime.InvokeBorrowedCallableTarget",
+            "Value": 1
+          },
+          {
+            "Key": "32 MemoryGovernor.Reserve > LythonRuntime.ChargeClosureRetention > LythonRuntime.CreateFunctionValue > NativeExecution.ApplyDefinition > NativeExecution.RunCore > NativeExecution.Run",
+            "Value": 1
+          },
+          {
+            "Key": "64 MemoryGovernor.Reserve > TemporaryMemoryReservation.Grow > TemporaryMemoryReservation..ctor > MemoryGovernor.ReserveTemporary > PyList..ctor > LythonRuntime.List",
+            "Value": 1
+          },
+          {
+            "Key": "704 MemoryGovernor.Reserve > TemporaryMemoryReservation.Grow > TemporaryMemoryReservation..ctor > MemoryGovernor.ReserveTemporary > PyList.EnsureCapacity > PyList.Add",
+            "Value": 1
+          },
+          {
+            "Key": "135 MemoryGovernor.Reserve > PyString.CopyFromUtf8 > PyRendering.RenderInteger > PyRendering.ToInterpolatedPyString > LythonRuntime.ToInterpolatedPyString > PrintCallable.Invoke",
+            "Value": 1
+          },
+          {
+            "Key": "8 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.Append > GovernedByteBuilder.Append > HostTextOutputHandle.Write > PrintCallable.AppendOutput",
+            "Value": 1
+          },
+          {
+            "Key": "8 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.AppendString > PyRendering.RenderReprItems > PyRendering.RenderReprSequence > PyRendering.ToReprPyStringCore",
+            "Value": 1
+          },
+          {
+            "Key": "16 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.AppendAscii > PyRendering.RenderReprItems > PyRendering.RenderReprSequence > PyRendering.ToReprPyStringCore",
+            "Value": 1
+          },
+          {
+            "Key": "32 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.Append > GovernedByteBuilder.Append > PyRendering.RenderReprItems > PyRendering.RenderReprSequence",
+            "Value": 1
+          },
+          {
+            "Key": "64 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.Append > GovernedByteBuilder.Append > PyRendering.RenderReprItems > PyRendering.RenderReprSequence",
+            "Value": 1
+          },
+          {
+            "Key": "128 MemoryGovernor.Reserve > PyString.FromTransferredUtf8 > GovernedByteBuilder.ToPyStringAndRelease > PyRendering.RenderReprItems > PyRendering.RenderReprSequence > PyRendering.ToReprPyStringCore",
+            "Value": 1
+          },
+          {
+            "Key": "46 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.Append > GovernedByteBuilder.Append > HostTextOutputHandle.Write > PrintCallable.AppendOutput",
+            "Value": 1
+          },
+          {
+            "Key": "92 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.Append > GovernedByteBuilder.Append > HostTextOutputHandle.Write > PrintCallable.AppendOutput",
+            "Value": 1
+          },
+          {
+            "Key": "126 ProjectionBudget.Reserve > LythonRuntime.CaptureStandardOutput > LythonRuntime.CreateSuccessfulResult > <>c__DisplayClass750_0.<Run>b__0 > SynchronousWorkItem.Run > <>c.<Execute>b__6_0",
+            "Value": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "workload": "scripts.annotated-rule-closures.nested-factories",
+    "traceSHA256": "fb89b8bb66ef6f700123bc61302d500d26af9de598cdf7b28198e382e80ec5a5",
+    "verifiedBatches": 140,
+    "allocation": {
+      "Boundary": "One local warmed complete-worker EventPipe GC allocation sample. Tick weight is approximate attribution to the sampled type, not exact allocated bytes, object counts or removable CPU. Includes reset, I/O, validation and protocol.",
+      "Samples": 35705,
+      "TotalSampleWeight": 3807554600,
+      "Rows": [
+        {
+          "Type": "Lokad.Lython.Runtime.PyExecutableFunction",
+          "Samples": 17250,
+          "SampleWeightBytes": 1839591168,
+          "SampleWeightPercent": 48.31424263751858
+        },
+        {
+          "Type": "System.Numerics.BigInteger",
+          "Samples": 7891,
+          "SampleWeightBytes": 841427472,
+          "SampleWeightPercent": 22.098894445269412
+        },
+        {
+          "Type": "SingletonDefault",
+          "Samples": 5334,
+          "SampleWeightBytes": 568823624,
+          "SampleWeightPercent": 14.939342537596177
+        },
+        {
+          "Type": "ExecutableCell",
+          "Samples": 4633,
+          "SampleWeightBytes": 494049568,
+          "SampleWeightPercent": 12.975508427377509
+        },
+        {
+          "Type": "Entry[System.String,System.Object][]",
+          "Samples": 136,
+          "SampleWeightBytes": 14497600,
+          "SampleWeightPercent": 0.38075882089780144
+        },
+        {
+          "Type": "ExceptionTypeValue",
+          "Samples": 125,
+          "SampleWeightBytes": 13325000,
+          "SampleWeightPercent": 0.3499621515604793
+        },
+        {
+          "Type": "Scope",
+          "Samples": 38,
+          "SampleWeightBytes": 4053944,
+          "SampleWeightPercent": 0.1064710667576507
+        },
+        {
+          "Type": "System.Int32[]",
+          "Samples": 35,
+          "SampleWeightBytes": 3734352,
+          "SampleWeightPercent": 0.09807743794402843
+        },
+        {
+          "Type": "BuiltinCallable",
+          "Samples": 33,
+          "SampleWeightBytes": 3521120,
+          "SampleWeightPercent": 0.0924772030846255
+        },
+        {
+          "Type": "ExecutableSlot[]",
+          "Samples": 24,
+          "SampleWeightBytes": 2558400,
+          "SampleWeightPercent": 0.06719273309961202
+        },
+        {
+          "Type": "Lokad.Lython.Runtime.Text.GovernedByteBuilder",
+          "Samples": 21,
+          "SampleWeightBytes": 2241808,
+          "SampleWeightPercent": 0.05887789501429605
+        },
+        {
+          "Type": "Lokad.Lython.Runtime.PyList",
+          "Samples": 18,
+          "SampleWeightBytes": 1918800,
+          "SampleWeightPercent": 0.05039454982470901
+        },
+        {
+          "Type": "System.Byte[]",
+          "Samples": 18,
+          "SampleWeightBytes": 1918800,
+          "SampleWeightPercent": 0.05039454982470901
+        },
+        {
+          "Type": "System.Object[]",
+          "Samples": 14,
+          "SampleWeightBytes": 1492400,
+          "SampleWeightPercent": 0.039195760974773675
+        },
+        {
+          "Type": "System.Threading.Tasks.Task",
+          "Samples": 11,
+          "SampleWeightBytes": 1172600,
+          "SampleWeightPercent": 0.030796669337322176
+        },
+        {
+          "Type": "System.Collections.Generic.Dictionary`2[System.String,System.Object]",
+          "Samples": 9,
+          "SampleWeightBytes": 959400,
+          "SampleWeightPercent": 0.025197274912354507
+        },
+        {
+          "Type": "Entry[System.Object,System.Runtime.CompilerServices.StrongBox`1[System.Int64]][]",
+          "Samples": 7,
+          "SampleWeightBytes": 752496,
+          "SampleWeightPercent": 0.01976323596252566
+        },
+        {
+          "Type": "<>c__DisplayClass6_0",
+          "Samples": 7,
+          "SampleWeightBytes": 746200,
+          "SampleWeightPercent": 0.019597880487386837
+        },
+        {
+          "Type": "Reservation",
+          "Samples": 7,
+          "SampleWeightBytes": 746200,
+          "SampleWeightPercent": 0.019597880487386837
+        },
+        {
+          "Type": "ExecutionContext",
+          "Samples": 6,
+          "SampleWeightBytes": 642848,
+          "SampleWeightPercent": 0.016883487370082623
+        },
+        {
+          "Type": "Lokad.Lython.Runtime.PyRange",
+          "Samples": 6,
+          "SampleWeightBytes": 639600,
+          "SampleWeightPercent": 0.016798183274903004
+        },
+        {
+          "Type": "Lokad.Lython.Runtime.PyDict",
+          "Samples": 6,
+          "SampleWeightBytes": 639600,
+          "SampleWeightPercent": 0.016798183274903004
+        },
+        {
+          "Type": "Lokad.Lython.Runtime.Text.PyString",
+          "Samples": 6,
+          "SampleWeightBytes": 639600,
+          "SampleWeightPercent": 0.016798183274903004
+        },
+        {
+          "Type": "System.Collections.Generic.HashSet`1[System.Object]",
+          "Samples": 5,
+          "SampleWeightBytes": 533000,
+          "SampleWeightPercent": 0.01399848606241917
+        },
+        {
+          "Type": "<EnumerateKeys>d__40",
+          "Samples": 5,
+          "SampleWeightBytes": 533000,
+          "SampleWeightPercent": 0.01399848606241917
+        },
+        {
+          "Type": "Lokad.Lython.Runtime.HostTextOutputHandle",
+          "Samples": 4,
+          "SampleWeightBytes": 426400,
+          "SampleWeightPercent": 0.011198788849935337
+        },
+        {
+          "Type": "<NativeKeys>d__169",
+          "Samples": 4,
+          "SampleWeightBytes": 426400,
+          "SampleWeightPercent": 0.011198788849935337
+        },
+        {
+          "Type": "System.Func`2[System.String,Lokad.Lython.Runtime.Text.PyString]",
+          "Samples": 4,
+          "SampleWeightBytes": 426400,
+          "SampleWeightPercent": 0.011198788849935337
+        },
+        {
+          "Type": "TemporaryMemoryReservation",
+          "Samples": 4,
+          "SampleWeightBytes": 426400,
+          "SampleWeightPercent": 0.011198788849935337
+        },
+        {
+          "Type": "Enumerator",
+          "Samples": 4,
+          "SampleWeightBytes": 426400,
+          "SampleWeightPercent": 0.011198788849935337
+        },
+        {
+          "Type": "<>c__DisplayClass48_0",
+          "Samples": 3,
+          "SampleWeightBytes": 319800,
+          "SampleWeightPercent": 0.008399091637451502
+        },
+        {
+          "Type": "System.Collections.Generic.List`1[Lokad.Lython.Runtime.IExecutionFile]",
+          "Samples": 3,
+          "SampleWeightBytes": 319800,
+          "SampleWeightPercent": 0.008399091637451502
+        },
+        {
+          "Type": "Lokad.Lython.Runtime.MemoryGovernor",
+          "Samples": 3,
+          "SampleWeightBytes": 319800,
+          "SampleWeightPercent": 0.008399091637451502
+        },
+        {
+          "Type": "Cursor",
+          "Samples": 3,
+          "SampleWeightBytes": 319800,
+          "SampleWeightPercent": 0.008399091637451502
+        },
+        {
+          "Type": "ReadWriteTask",
+          "Samples": 3,
+          "SampleWeightBytes": 319800,
+          "SampleWeightPercent": 0.008399091637451502
+        },
+        {
+          "Type": "Lokad.Lython.Runtime.ExecutionState",
+          "Samples": 3,
+          "SampleWeightBytes": 319800,
+          "SampleWeightPercent": 0.008399091637451502
+        },
+        {
+          "Type": "Entry[System.Object][]",
+          "Samples": 3,
+          "SampleWeightBytes": 319800,
+          "SampleWeightPercent": 0.008399091637451502
+        },
+        {
+          "Type": "System.String",
+          "Samples": 3,
+          "SampleWeightBytes": 319800,
+          "SampleWeightPercent": 0.008399091637451502
+        },
+        {
+          "Type": "<GetEnumerator>d__64",
+          "Samples": 2,
+          "SampleWeightBytes": 213200,
+          "SampleWeightPercent": 0.005599394424967668
+        },
+        {
+          "Type": "Lokad.Lython.Runtime.PyRandomState",
+          "Samples": 2,
+          "SampleWeightBytes": 213200,
+          "SampleWeightPercent": 0.005599394424967668
+        },
+        {
+          "Type": "Lokad.Lython.Runtime.HostTextInputHandle",
+          "Samples": 1,
+          "SampleWeightBytes": 106600,
+          "SampleWeightPercent": 0.002799697212483834
+        },
+        {
+          "Type": "Lokad.Lython.Runtime.CallArgumentValue[]",
+          "Samples": 1,
+          "SampleWeightBytes": 106600,
+          "SampleWeightPercent": 0.002799697212483834
+        },
+        {
+          "Type": "Lokad.Lython.Runtime.ProjectionBudget",
+          "Samples": 1,
+          "SampleWeightBytes": 106600,
+          "SampleWeightPercent": 0.002799697212483834
+        },
+        {
+          "Type": "System.Func`1[Lokad.Lython.LythonExecutionResult]",
+          "Samples": 1,
+          "SampleWeightBytes": 106600,
+          "SampleWeightPercent": 0.002799697212483834
+        },
+        {
+          "Type": "CapturedOutputDestination",
+          "Samples": 1,
+          "SampleWeightBytes": 106600,
+          "SampleWeightPercent": 0.002799697212483834
+        },
+        {
+          "Type": "AsyncStateMachineBox`1[System.Threading.Tasks.VoidTaskResult,Lokad.Lython.Benchmarks.Comparison.ComparisonProtocol+<WriteAsync>d__8]",
+          "Samples": 1,
+          "SampleWeightBytes": 106600,
+          "SampleWeightPercent": 0.002799697212483834
+        },
+        {
+          "Type": "Lokad.Lython.LythonExecutionResult",
+          "Samples": 1,
+          "SampleWeightBytes": 106600,
+          "SampleWeightPercent": 0.002799697212483834
+        },
+        {
+          "Type": "System.Threading.Lock",
+          "Samples": 1,
+          "SampleWeightBytes": 106600,
+          "SampleWeightPercent": 0.002799697212483834
+        },
+        {
+          "Type": "System.Collections.Generic.Dictionary`2[System.String,System.String]",
+          "Samples": 1,
+          "SampleWeightBytes": 106600,
+          "SampleWeightPercent": 0.002799697212483834
+        },
+        {
+          "Type": "Lokad.Lython.LythonRunOptions",
+          "Samples": 1,
+          "SampleWeightBytes": 106600,
+          "SampleWeightPercent": 0.002799697212483834
+        },
+        {
+          "Type": "Lokad.Lython.Runtime.StructuralGuardState",
+          "Samples": 1,
+          "SampleWeightBytes": 106600,
+          "SampleWeightPercent": 0.002799697212483834
+        },
+        {
+          "Type": "System.Collections.Generic.LinkedListNode`1[Lokad.Lython.Runtime.ExecutionThreads+Worker]",
+          "Samples": 1,
+          "SampleWeightBytes": 106600,
+          "SampleWeightPercent": 0.002799697212483834
+        }
+      ]
+    },
+    "admission": [
+      {
+        "peak": 2968425,
+        "growths": 6169,
+        "requests": [
+          {
+            "Key": "256 MemoryGovernor.Reserve > LythonRuntime.CreateFunctionValue > NativeExecution.ApplyDefinition > NativeExecution.RunCore > NativeExecution.Run > PyExecutableFunction.StartInline",
+            "Value": 2048
+          },
+          {
+            "Key": "520 MemoryGovernor.Reserve > LythonRuntime.StartExecutableDefaults > NativeExecution.RunCore > NativeExecution.Run > PyExecutableFunction.StartInline > PyExecutableFunction.StartNativeCall",
+            "Value": 2048
+          },
+          {
+            "Key": "672 MemoryGovernor.Reserve > LythonRuntime.ReadEagerFunctionAnnotations > NativeExecution.ApplyDefinition > NativeExecution.RunCore > NativeExecution.Run > PyExecutableFunction.StartInline",
+            "Value": 2048
+          },
+          {
+            "Key": "8 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > PyRendering.AppendQuotedString > PyRendering.AppendStringLiteral > PyRendering.RenderStringLiteral > PyRendering.ToReprPyStringCore",
+            "Value": 4
+          },
+          {
+            "Key": "128 MemoryGovernor.Reserve > PyString.FromTransferredUtf8 > GovernedByteBuilder.ToPyStringAndRelease > PyRendering.RenderStringLiteral > PyRendering.ToReprPyStringCore > PyRendering.RenderReprItems",
+            "Value": 4
+          },
+          {
+            "Key": "248 MemoryGovernor.Reserve > ExecutableValueStorage..ctor > LythonRuntime.CreateExecutableWorkState > LythonRuntime.InitializeExecutableFrame > LythonRuntime.ExecuteExecutableCodeObject > LythonRuntime.ExecuteExecutableCodeObject",
+            "Value": 1
+          },
+          {
+            "Key": "160 MemoryGovernor.Reserve > LythonRuntime.CreateFunctionValue > ExecutionContext.CreateExecutableFunction > ExecutionContext.TryExecutePreparedOperation > ExecutionContext.ExecuteInstructionPrefix > ExecutionContext.ExecuteUntilCall",
+            "Value": 1
+          },
+          {
+            "Key": "704 MemoryGovernor.Reserve > LythonRuntime.ChargeClosureRetention > LythonRuntime.CreateFunctionValue > ExecutionContext.CreateExecutableFunction > ExecutionContext.TryExecutePreparedOperation > ExecutionContext.ExecuteInstructionPrefix",
+            "Value": 1
+          },
+          {
+            "Key": "64 MemoryGovernor.Reserve > LythonRuntime.Range > LythonRuntime.Range > DelegateBoundArgumentsCallable.InvokeBound > BoundArgumentsCallable.InvokeBorrowed > LythonRuntime.InvokeBorrowedCallableTarget",
+            "Value": 1
+          },
+          {
+            "Key": "32 MemoryGovernor.Reserve > LythonRuntime.ChargeClosureRetention > LythonRuntime.CreateFunctionValue > NativeExecution.ApplyDefinition > NativeExecution.RunCore > NativeExecution.Run",
+            "Value": 1
+          },
+          {
+            "Key": "64 MemoryGovernor.Reserve > TemporaryMemoryReservation.Grow > TemporaryMemoryReservation..ctor > MemoryGovernor.ReserveTemporary > PyList..ctor > LythonRuntime.List",
+            "Value": 1
+          },
+          {
+            "Key": "704 MemoryGovernor.Reserve > TemporaryMemoryReservation.Grow > TemporaryMemoryReservation..ctor > MemoryGovernor.ReserveTemporary > PyList.EnsureCapacity > PyList.Add",
+            "Value": 1
+          },
+          {
+            "Key": "135 MemoryGovernor.Reserve > PyString.CopyFromUtf8 > PyRendering.RenderInteger > PyRendering.ToInterpolatedPyString > LythonRuntime.ToInterpolatedPyString > PrintCallable.Invoke",
+            "Value": 1
+          },
+          {
+            "Key": "8 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.EnsureAdditionalCapacity > GovernedByteBuilder.Append > GovernedByteBuilder.Append > HostTextOutputHandle.Write",
+            "Value": 1
+          },
+          {
+            "Key": "8 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.EnsureAdditionalCapacity > GovernedByteBuilder.AppendString > PyRendering.RenderReprItems > PyRendering.RenderReprSequence",
+            "Value": 1
+          },
+          {
+            "Key": "16 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.EnsureAdditionalCapacity > GovernedByteBuilder.AppendAscii > PyRendering.RenderReprItems > PyRendering.RenderReprSequence",
+            "Value": 1
+          },
+          {
+            "Key": "32 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.EnsureAdditionalCapacity > GovernedByteBuilder.Append > GovernedByteBuilder.Append > PyRendering.RenderReprItems",
+            "Value": 1
+          },
+          {
+            "Key": "64 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.EnsureAdditionalCapacity > GovernedByteBuilder.Append > GovernedByteBuilder.Append > PyRendering.RenderReprItems",
+            "Value": 1
+          },
+          {
+            "Key": "128 MemoryGovernor.Reserve > PyString.FromTransferredUtf8 > GovernedByteBuilder.ToPyStringAndRelease > PyRendering.RenderReprItems > PyRendering.RenderReprSequence > PyRendering.ToReprPyStringCore",
+            "Value": 1
+          },
+          {
+            "Key": "46 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.EnsureAdditionalCapacity > GovernedByteBuilder.Append > GovernedByteBuilder.Append > HostTextOutputHandle.Write",
+            "Value": 1
+          },
+          {
+            "Key": "92 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.EnsureAdditionalCapacity > GovernedByteBuilder.Append > GovernedByteBuilder.Append > HostTextOutputHandle.Write",
+            "Value": 1
+          },
+          {
+            "Key": "126 ProjectionBudget.Reserve > LythonRuntime.CaptureStandardOutput > LythonRuntime.CreateSuccessfulResult > <>c__DisplayClass750_0.<Run>b__0 > SynchronousWorkItem.Run > <>c.<Execute>b__6_0",
+            "Value": 1
+          }
+        ]
+      },
+      {
+        "peak": 2968425,
+        "growths": 6169,
+        "requests": [
+          {
+            "Key": "256 MemoryGovernor.Reserve > LythonRuntime.CreateFunctionValue > NativeExecution.ApplyDefinition > NativeExecution.RunCore > NativeExecution.Run > PyExecutableFunction.StartInline",
+            "Value": 2048
+          },
+          {
+            "Key": "520 MemoryGovernor.Reserve > LythonRuntime.StartExecutableDefaults > NativeExecution.RunCore > NativeExecution.Run > PyExecutableFunction.StartInline > PyExecutableFunction.StartNativeCall",
+            "Value": 2048
+          },
+          {
+            "Key": "672 MemoryGovernor.Reserve > LythonRuntime.ReadEagerFunctionAnnotations > NativeExecution.ApplyDefinition > NativeExecution.RunCore > NativeExecution.Run > PyExecutableFunction.StartInline",
+            "Value": 2048
+          },
+          {
+            "Key": "8 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > PyRendering.AppendQuotedString > PyRendering.AppendStringLiteral > PyRendering.RenderStringLiteral > PyRendering.ToReprPyStringCore",
+            "Value": 4
+          },
+          {
+            "Key": "128 MemoryGovernor.Reserve > PyString.FromTransferredUtf8 > GovernedByteBuilder.ToPyStringAndRelease > PyRendering.RenderStringLiteral > PyRendering.ToReprPyStringCore > PyRendering.RenderReprItems",
+            "Value": 4
+          },
+          {
+            "Key": "248 MemoryGovernor.Reserve > ExecutableValueStorage..ctor > LythonRuntime.CreateExecutableWorkState > LythonRuntime.InitializeExecutableFrame > LythonRuntime.ExecuteExecutableCodeObject > LythonRuntime.ExecuteExecutableCodeObject",
+            "Value": 1
+          },
+          {
+            "Key": "160 MemoryGovernor.Reserve > LythonRuntime.CreateFunctionValue > ExecutionContext.CreateExecutableFunction > ExecutionContext.TryExecutePreparedOperation > ExecutionContext.ExecuteInstructionPrefix > ExecutionContext.ExecuteUntilCall",
+            "Value": 1
+          },
+          {
+            "Key": "704 MemoryGovernor.Reserve > LythonRuntime.ChargeClosureRetention > LythonRuntime.CreateFunctionValue > ExecutionContext.CreateExecutableFunction > ExecutionContext.TryExecutePreparedOperation > ExecutionContext.ExecuteInstructionPrefix",
+            "Value": 1
+          },
+          {
+            "Key": "64 MemoryGovernor.Reserve > LythonRuntime.Range > LythonRuntime.Range > DelegateBoundArgumentsCallable.InvokeBound > BoundArgumentsCallable.InvokeBorrowed > LythonRuntime.InvokeBorrowedCallableTarget",
+            "Value": 1
+          },
+          {
+            "Key": "32 MemoryGovernor.Reserve > LythonRuntime.ChargeClosureRetention > LythonRuntime.CreateFunctionValue > NativeExecution.ApplyDefinition > NativeExecution.RunCore > NativeExecution.Run",
+            "Value": 1
+          },
+          {
+            "Key": "64 MemoryGovernor.Reserve > TemporaryMemoryReservation.Grow > TemporaryMemoryReservation..ctor > MemoryGovernor.ReserveTemporary > PyList..ctor > LythonRuntime.List",
+            "Value": 1
+          },
+          {
+            "Key": "704 MemoryGovernor.Reserve > TemporaryMemoryReservation.Grow > TemporaryMemoryReservation..ctor > MemoryGovernor.ReserveTemporary > PyList.EnsureCapacity > PyList.Add",
+            "Value": 1
+          },
+          {
+            "Key": "135 MemoryGovernor.Reserve > PyString.CopyFromUtf8 > PyRendering.RenderInteger > PyRendering.ToInterpolatedPyString > LythonRuntime.ToInterpolatedPyString > PrintCallable.Invoke",
+            "Value": 1
+          },
+          {
+            "Key": "8 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.EnsureAdditionalCapacity > GovernedByteBuilder.Append > GovernedByteBuilder.Append > HostTextOutputHandle.Write",
+            "Value": 1
+          },
+          {
+            "Key": "8 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.EnsureAdditionalCapacity > GovernedByteBuilder.AppendString > PyRendering.RenderReprItems > PyRendering.RenderReprSequence",
+            "Value": 1
+          },
+          {
+            "Key": "16 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.EnsureAdditionalCapacity > GovernedByteBuilder.AppendAscii > PyRendering.RenderReprItems > PyRendering.RenderReprSequence",
+            "Value": 1
+          },
+          {
+            "Key": "32 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.EnsureAdditionalCapacity > GovernedByteBuilder.Append > GovernedByteBuilder.Append > PyRendering.RenderReprItems",
+            "Value": 1
+          },
+          {
+            "Key": "64 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.EnsureAdditionalCapacity > GovernedByteBuilder.Append > GovernedByteBuilder.Append > PyRendering.RenderReprItems",
+            "Value": 1
+          },
+          {
+            "Key": "128 MemoryGovernor.Reserve > PyString.FromTransferredUtf8 > GovernedByteBuilder.ToPyStringAndRelease > PyRendering.RenderReprItems > PyRendering.RenderReprSequence > PyRendering.ToReprPyStringCore",
+            "Value": 1
+          },
+          {
+            "Key": "46 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.EnsureAdditionalCapacity > GovernedByteBuilder.Append > GovernedByteBuilder.Append > HostTextOutputHandle.Write",
+            "Value": 1
+          },
+          {
+            "Key": "92 MemoryGovernor.Reserve > GovernedByteBuilder.Grow > GovernedByteBuilder.EnsureAdditionalCapacity > GovernedByteBuilder.Append > GovernedByteBuilder.Append > HostTextOutputHandle.Write",
+            "Value": 1
+          },
+          {
+            "Key": "126 ProjectionBudget.Reserve > LythonRuntime.CaptureStandardOutput > LythonRuntime.CreateSuccessfulResult > <>c__DisplayClass750_0.<Run>b__0 > SynchronousWorkItem.Run > <>c.<Execute>b__6_0",
+            "Value": 1
+          }
+        ]
+      }
+    ]
+  }
+]

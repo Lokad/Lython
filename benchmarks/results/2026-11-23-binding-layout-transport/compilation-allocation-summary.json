@@ -1,0 +1,104 @@
+[
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+    "roles": {
+      "reference": {
+        "compiledAllocated": 62176.0,
+        "admitted": [
+          78718
+        ]
+      },
+      "candidate": {
+        "compiledAllocated": 62152.0,
+        "admitted": [
+          78718
+        ]
+      }
+    }
+  },
+  {
+    "case": "calls.positional.wide-native-buffer",
+    "roles": {
+      "reference": {
+        "compiledAllocated": 48032.0,
+        "admitted": [
+          53792
+        ]
+      },
+      "candidate": {
+        "compiledAllocated": 48024.0,
+        "admitted": [
+          53792
+        ]
+      }
+    }
+  },
+  {
+    "case": "scripts.annotated-rule-closures.nested-factories",
+    "roles": {
+      "reference": {
+        "compiledAllocated": 58184.0,
+        "admitted": [
+          74810
+        ]
+      },
+      "candidate": {
+        "compiledAllocated": 58160.0,
+        "admitted": [
+          74810
+        ]
+      }
+    }
+  },
+  {
+    "case": "scripts.factory-observed-defaults",
+    "roles": {
+      "reference": {
+        "compiledAllocated": 71936.0,
+        "admitted": [
+          85630
+        ]
+      },
+      "candidate": {
+        "compiledAllocated": 71912.0,
+        "admitted": [
+          85630
+        ]
+      }
+    }
+  },
+  {
+    "case": "scripts.ordinary-fully-supplied-helper",
+    "roles": {
+      "reference": {
+        "compiledAllocated": 31744.0,
+        "admitted": [
+          49856
+        ]
+      },
+      "candidate": {
+        "compiledAllocated": 31736.0,
+        "admitted": [
+          49856
+        ]
+      }
+    }
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "roles": {
+      "reference": {
+        "compiledAllocated": 135360.0,
+        "admitted": [
+          157222
+        ]
+      },
+      "candidate": {
+        "compiledAllocated": 135344.0,
+        "admitted": [
+          157222
+        ]
+      }
+    }
+  }
+]

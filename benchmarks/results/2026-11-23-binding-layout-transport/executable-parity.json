@@ -1,0 +1,10 @@
+{
+  "scripts": 6,
+  "identicalCodeObjects": 20,
+  "coreHashes": {
+    "reference": "1d337ddbc00cd368055a5432c6644d01cb92b894a93038735180a5748e78dd79",
+    "reference-control": "1d337ddbc00cd368055a5432c6644d01cb92b894a93038735180a5748e78dd79",
+    "candidate": "3730fe8ad76852d9c4057b041ed5f36a0e9dbc014b5c247ffa9a2412545eeca8",
+    "candidate-control": "3730fe8ad76852d9c4057b041ed5f36a0e9dbc014b5c247ffa9a2412545eeca8"
+  }
+}

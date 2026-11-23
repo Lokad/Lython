@@ -6,11 +6,21 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1461 carry prepared function layouts](results/2026-11-23-binding-layout-transport/README.md)
+keeps the factory allocation reduction and removes the virtual layout
+lookups. Postponed compile-to-result elapsed still rises 4.43–8.46%,
+so the refinement stays private.
+
 [B1460 canonical executable parameter layouts](results/2026-11-23-canonical-function-metadata/README.md)
 removes a duplicate reference from every callable and saves 32,776
 allocated bytes on both factories. Eager warm CPU and postponed
 time to result are adverse. The omitted-argument layout lookup is
 the next refinement target.
+
+[Retained factory allocation](results/2026-11-23-retained-factory-allocation/README.md)
+attributes about 48% of allocation sample weight to executable function
+objects. The separate allowance probe counts three main construction
+requests per input for the outer callable, defaults and inner callable.
 
 [B1459 publish cased keys on a miss](results/2026-11-23-borrowed-cased-word-miss/README.md)
 removes the caller's append handoff. Short timing spans zero and
