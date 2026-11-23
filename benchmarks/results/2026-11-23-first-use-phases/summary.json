@@ -1,0 +1,160 @@
+{
+  "owner": "dfabddb88f6a381beaeab663e78200ed14b2dc17",
+  "startup": {
+    "control.empty.control": {
+      "original": {
+        "parentMs": 155.9803,
+        "phases": {}
+      },
+      "timed": {
+        "parentMs": 151.3784,
+        "phases": {
+          "fixture": 0.148,
+          "compile": 25.75,
+          "reset": 0.0,
+          "execute": 27.446,
+          "check": 0.226,
+          "encode": 34.27,
+          "cleanup": 0.076,
+          "manifest": 6.12,
+          "once": 97.873
+        }
+      }
+    },
+    "control.tiny.control": {
+      "original": {
+        "parentMs": 541.9253,
+        "phases": {}
+      },
+      "timed": {
+        "parentMs": 190.1107,
+        "phases": {
+          "fixture": 0.16,
+          "compile": 51.943,
+          "reset": 0.0,
+          "execute": 33.095,
+          "check": 0.212,
+          "encode": 28.189,
+          "cleanup": 0.087,
+          "manifest": 6.314,
+          "once": 116.662
+        }
+      }
+    },
+    "scripts.config-edit.small": {
+      "original": {
+        "parentMs": 710.0278,
+        "phases": {}
+      },
+      "timed": {
+        "parentMs": 780.8548,
+        "phases": {
+          "fixture": 1.001,
+          "compile": 143.47,
+          "reset": 1.578,
+          "execute": 77.383,
+          "check": 1.305,
+          "encode": 27.9,
+          "cleanup": 0.076,
+          "manifest": 14.083,
+          "once": 256.46
+        }
+      }
+    }
+  },
+  "trace": {
+    "compilerInclusiveMs": {
+      "Parser.Parse": 22.318199843788143,
+      "LythonEngine.CompileCore": 147.46330070495605,
+      "LythonFrontend.Compile": 122.06530007019042,
+      "PythonTokenization.Read": 5.36130003471375,
+      "SyntaxValidityDiagnostics.Analyze": 5.999300003051758,
+      "LexicalScopePreparation.Prepare": 3.877399846649169,
+      "StaticAbstractInterpreter.Analyze": 83.85770008239746,
+      "ExecutableScript.Compile": 25.398000634765623
+    },
+    "abstractInterpreterLeafMs": [
+      [
+        "UNMANAGED_CODE_TIME",
+        67.91659852581024
+      ],
+      [
+        "CPU_TIME",
+        15.941099786758429
+      ],
+      [
+        "System.Private.CoreLib.il!System.Runtime.CompilerServices.InitHelpers.CallClassConstructor",
+        6.742477012267045e-07
+      ],
+      [
+        "Lokad.Lython!Lokad.Lython.Frontend.StaticContracts.CreateCallableContracts",
+        3.065109268618471e-07
+      ],
+      [
+        "Lokad.Lython!Lokad.Lython.Frontend.StaticContracts..cctor",
+        1.4591219610338158e-07
+      ],
+      [
+        "System.Linq.il!System.Linq.Enumerable.ToDictionary",
+        1.1920928955078125e-07
+      ],
+      [
+        "Lokad.Lython!Lokad.Lython.Frontend.StaticContractEngine.AnalyzeKnownCallArgumentTypes",
+        1.1920928955078125e-07
+      ],
+      [
+        "Lokad.Lython!Lokad.Lython.Frontend.StaticAbstractInterpreter.AnalyzeStatement",
+        7.286072900569707e-08
+      ],
+      [
+        "Lokad.Lython!Lokad.Lython.Frontend.StaticAbstractInterpreter.AnalyzeCall",
+        7.05719003235572e-08
+      ],
+      [
+        "Lokad.Lython!Lokad.Lython.Frontend.StaticAbstractInterpreter.AnalyzeExpression",
+        6.408691888282192e-08
+      ],
+      [
+        "Lokad.Lython!Lokad.Lython.Frontend.StaticAbstractInterpreter.AnalyzeStatements",
+        6.217956638465694e-08
+      ],
+      [
+        "Lokad.Lython!Lokad.Lython.Runtime.LythonRuntime.GetKnownBuiltinModuleNames",
+        5.2833541985819465e-08
+      ],
+      [
+        "Lokad.Lython!Lokad.Lython.Runtime.LythonRuntime..cctor",
+        4.920960350318637e-08
+      ],
+      [
+        "System.Collections.Immutable.il!System.Collections.Frozen.FrozenDictionary.ToFrozenDictionary",
+        3.2997121479638736e-08
+      ],
+      [
+        "Lokad.Lython!Lokad.Lython.Frontend.StaticAbstractInterpreter.Analyze",
+        0.0
+      ],
+      [
+        "Lokad.Lython!Lokad.Lython.Frontend.StaticBindingEngine.UpdateBindings",
+        0.0
+      ],
+      [
+        "Lokad.Lython!Lokad.Lython.Frontend.StaticContracts.IsKnownBuiltinModule",
+        0.0
+      ],
+      [
+        "System.Private.CoreLib.il!System.Runtime.CompilerServices.StaticsHelpers.GetGCStaticBaseSlow",
+        0.0
+      ],
+      [
+        "System.Private.CoreLib.il!System.Runtime.CompilerServices.InitHelpers.InitClassSlow",
+        0.0
+      ],
+      [
+        "Lokad.Lython!Lokad.Lython.Runtime.LythonKnownCallableSignatures..cctor",
+        0.0
+      ]
+    ]
+  },
+  "traceSHA256": "3301c2907486a710ddcf170045b83318062d1d2dc208227dc7f137ce01271136"
+}
