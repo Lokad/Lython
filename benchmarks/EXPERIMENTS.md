@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1454 module-owned known-call analysis](results/2026-11-23-dispatch-known-call-semantics/README.md)
+retains the module catalogs and removes the unrelated semantic-family
+scan. The first compile allocates 35.60–40.51% less across the file
+scripts. Warm configuration and typed CSV compile CPU fall, XML first
+use improves, and the unchanged JSON execution control spans zero.
+
 [B1453 module-owned known-call contracts](results/2026-11-23-module-known-calls/README.md)
 removes the global lookup and signature initializers. Cold allocation
 falls 22–25% on configuration, CSV and XML. Fresh CSV improves and
