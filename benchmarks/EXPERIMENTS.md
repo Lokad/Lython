@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1453 module-owned known-call contracts](results/2026-11-23-module-known-calls/README.md)
+removes the global lookup and signature initializers. Cold allocation
+falls 22–25% on configuration, CSV and XML. Fresh CSV improves and
+warm validator CPU rises. The source remains private for a follow-up
+that removes the unrelated semantic-family checks.
+
 [Current frontend initialization profile](results/2026-11-23-current-frontend-init-profile/README.md)
 attributes 11.5–14.0 ms of inclusive configuration stack intervals to
 known-call initialization after B1452. Typed CSV intervals vary more.
