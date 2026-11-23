@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1503 CPython checkpoint after the computed factories](results/2026-11-23-computed-factory-cpython/README.md)
+measures a stable 1.601–1.612× supplied-call gap. The eager and postponed
+factory gaps persist through first use. The postponed warm magnitude is
+uncertain at 11.05% Lython worker spread.
+
 [B1502 isolate eager annotation admission and cleanup](results/2026-11-23-eager-isolated-definition/README.md)
 retains the direct eager return with 16.96–19.97% lower warm elapsed and
 supporting CPU. The postponed slowdown from B1501 does not recur. Elapsed
