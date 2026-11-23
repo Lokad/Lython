@@ -12,6 +12,29 @@ public sealed class SharedIntegerChainTests
         { "events=[]\ndef values(a,b):\n    try:\n        for n in [1,2,3]:\n            value=(a*b+5000)//10000+n\n            reply=yield value\n            if reply is not None: a=reply\n    finally: events.append('finished')\ng=values(12345,6789)\nprint(next(g),g.send(30000))\ntry: g.throw(ValueError('stop'))\nexcept ValueError: print(events)\n", "8382 20369\n['finished']\n" },
         { "def outer(a,b):\n    result=0\n    def read(): return result\n    for n in [1,2]:\n        result=(a*b+5000)//10000+n\n        assert read()==result\n    return read\nread=outer(12345,6789)\nprint(read(),read())\n", "8383 8383\n" },
         { "def value(a,b):\n    if False: missing=1\n    try: return (a//b)+missing\n    finally: print('finally')\nfor divisor in [0,1]:\n    try: value(2,divisor)\n    except ZeroDivisionError: print('zero first')\n    except UnboundLocalError: print('local later')\nclass Value:\n    def __mul__(self,other):\n        print('multiply',other)\n        return 11\ndef calculate(a,b):\n    for n in [1]: return a*b+7\nprint(calculate(Value(),3))\n", "finally\nzero first\nfinally\nlocal later\nmultiply 3\n18\n" },
+        {
+            """
+            def report(first, second):
+                print(first, second)
+            class Divisible:
+                def __floordiv__(self, divisor):
+                    print('protocol', divisor)
+                    return 41
+            def calculate(left, right, divisor):
+                try:
+                    report(left % 11, right // divisor + 1)
+                finally:
+                    print('closed')
+            calculate(17, 21, 4)
+            calculate(17, -9223372036854775808, -1)
+            try:
+                calculate(17, 21, 0)
+            except ZeroDivisionError:
+                print('zero')
+            calculate(17, Divisible(), 2)
+            """,
+            "6 6\nclosed\n6 9223372036854775809\nclosed\nclosed\nzero\nprotocol 2\n6 42\nclosed\n"
+        },
     };
 
     [Theory]
