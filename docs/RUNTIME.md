@@ -512,6 +512,10 @@ Completed tuple values copy directly from managed spans into their final backing
 with capacity and scalar headroom admitted together. Inputs stay funded until the
 copy succeeds; owned arrays and suspending materializers retain their distinct
 ownership transfers. Long estimates and copies observe cooperative cancellation.
+A matching fixed unpack can receive a short terminal sequence of exact integers
+before private locals are boxed. Already published aliases keep their identity,
+and repeated or captured locals use ordinary reads. Admission and callee cleanup
+finish before the caller's targets receive the values.
 Formatted construction, literal appends, conversions and fields use ordinary
 instructions and shared operand cleanup. Native fields, including evaluated dynamic
 specifiers, need no lexical context solely for formatting. Actual protocol values

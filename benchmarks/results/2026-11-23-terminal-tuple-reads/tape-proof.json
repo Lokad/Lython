@@ -1,0 +1,48 @@
+[
+  {
+    "workload": "scripts.csv-invoice.method-policy.quoted-control",
+    "moduleMirrored": true,
+    "terminalHelperOpcodes": {
+      "LoadGlobal": 4,
+      "Subscript": 4,
+      "Call": 6,
+      "StoreLocal": 6,
+      "LoadCallMember": 2,
+      "Binary": 3,
+      "LoadLocal": 4,
+      "IntegerTupleReturn": 1,
+      "MakeTuple": 1,
+      "Return": 1
+    }
+  },
+  {
+    "workload": "scripts.csv-invoice.helper-accumulation",
+    "moduleMirrored": false,
+    "terminalHelperOpcodes": {
+      "LoadGlobal": 6,
+      "Subscript": 4,
+      "Call": 6,
+      "StoreLocal": 6,
+      "Binary": 3,
+      "LoadLocal": 4,
+      "IntegerTupleReturn": 1,
+      "MakeTuple": 1,
+      "Return": 1
+    }
+  },
+  {
+    "workload": "scripts.csv-invoice.large",
+    "moduleMirrored": false,
+    "terminalHelperOpcodes": {
+      "LoadGlobal": 6,
+      "Subscript": 4,
+      "Call": 6,
+      "StoreLocal": 6,
+      "Binary": 3,
+      "LoadLocal": 4,
+      "IntegerTupleReturn": 1,
+      "MakeTuple": 1,
+      "Return": 1
+    }
+  }
+]
