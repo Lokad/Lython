@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1448 borrowed native CSV windows](results/2026-11-23-borrowed-native-csv-window/README.md)
+retains the measured borrow with over 99.6% less native-meter staging.
+Native ASCII uses 2.08–7.55% less CPU. Unicode crosses zero and the
+quoted invoice and borrowed-input CPU show adverse results.
+
 [Native CSV line inventory](results/2026-11-23-native-csv-line-copies/README.md)
 counts decoded payload copies and parser handoffs. Both typed meters
 complete 4,096 literal rows with zero grammar handoffs. The quote-heavy
