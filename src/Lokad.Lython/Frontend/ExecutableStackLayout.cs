@@ -409,6 +409,8 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
                 (((instruction.OpCode is ExecutableOpCode.StoreLocal or ExecutableOpCode.StoreFunctionDefault) &&
                     first == int.MaxValue
                     && CanForwardResult(instructions[kept - 1], code.Constants))
+                || (instruction.OpCode == ExecutableOpCode.StoreClosure && first == int.MaxValue
+                    && instructions[kept - 1].OpCode == ExecutableOpCode.Binary)
                 || (instruction.OpCode == ExecutableOpCode.PopTop
                     && instructions[kept - 1].OpCode == ExecutableOpCode.Call)))
                 instructions[kept - 1] = instructions[kept - 1].WithResultConsumer();

@@ -625,6 +625,15 @@ internal sealed partial class LythonRuntime
             }
             else if (consumer.OpCode == ExecutableOpCode.StoreFunctionDefault)
                 StoreDefaultResult(Values, consumer, value, _scope.State);
+            else if (consumer.OpCode == ExecutableOpCode.StoreClosure)
+            {
+                if (_cells.GetCell(consumer.ClosureSlot) is not { CanStoreDirectly: true } cell)
+                {
+                    Put(instruction.ResultSlot, instruction.LiveExtent, value);
+                    return;
+                }
+                cell.StoreSlot(value);
+            }
             else if (consumer.OpCode != ExecutableOpCode.PopTop)
                 throw new InvalidOperationException("Invalid prepared result consumer.");
             else if (value.IsUnassigned) _ = value.Object.RequireNotNull();

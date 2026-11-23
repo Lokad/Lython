@@ -47,6 +47,16 @@ internal sealed partial class LythonRuntime
                 StoreLocalValue(execution.Code, execution.Locals, invocation, consumer.LocalSlot, value, consumer.Span);
             else if (consumer.OpCode == ExecutableOpCode.StoreFunctionDefault)
                 StoreDefaultResult(execution.Stack.Values, consumer, value, execution.Stack.State);
+            else if (consumer.OpCode == ExecutableOpCode.StoreClosure)
+            {
+                if (execution.Captures.GetCell(consumer.ClosureSlot) is not { CanStoreDirectly: true } cell)
+                {
+                    // Keep the computed value for the normal namespace-aware store.
+                    execution.Stack.PublishSlot(instruction.ResultSlot, instruction.LiveExtent, value);
+                    return;
+                }
+                cell.StoreSlot(value);
+            }
             else if (consumer.OpCode != ExecutableOpCode.PopTop)
                 throw new InvalidOperationException("Invalid prepared result consumer.");
             // Discarded calls cannot return private iteration loans. No
