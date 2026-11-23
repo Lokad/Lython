@@ -2,8 +2,8 @@
 
 | Workload / warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| Native typed ASCII CSV meter | 4,096 records / 139,299 B | 2.626–2.645 ms | 2.484–2.539 ms | 1.034–1.065× | Diagnostic. [B1518]. |
-| CSV meter with explicit `float()` | 4,096 records / 139,299 B | 3.520–3.703 ms | 2.946–2.972 ms | 1.184–1.257× | Diagnostic. Lython worker spread 5.21%. [B1518]. |
+| Native typed ASCII CSV meter | 4,096 records / 139,299 B | 2.626–2.645 ms | 2.484–2.539 ms | 1.034–1.065× | Earlier diagnostic. [B1518]. |
+| CSV meter with explicit `float()` | 4,096 records / 139,299 B | 3.387–3.589 ms | 2.975–3.034 ms | 1.117–1.206× | Diagnostic. Lython worker spread 5.95%. [B1521]. |
 | Short Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 1.3254–1.3718 ms | 0.9503–0.9552 ms | 1.388–1.444× | Earlier diagnostic. [B1499]. |
 | Quote-heavy CSV policy invoice | 4,096 records / 174,147 B | 7.020–7.047 ms | 6.325–6.489 ms | 1.082–1.114× | Diagnostic. [B1516]. |
 | Eager nested factories | 2,048 iterations | 0.7449–0.7532 ms | 0.5693–0.5890 ms | 1.265–1.323× | Diagnostic. [B1516]. |
@@ -14,12 +14,13 @@
 
 Ratios divide Lython elapsed time by CPython elapsed time. Above 1× means
 Lython takes longer. Ranges span the four pairings of process medians from
-two workers per engine. The November 23, 2026 UTC CSV meter checkpoint
-measures `fb3894153`. The same day's invoice and call checkpoint measures
+two workers per engine. The November 23, 2026 UTC explicit CSV checkpoint
+measures `65d4207fb`. The typed ASCII meter measures `fb3894153`.
+The same day's invoice and call checkpoint measures
 `09fc2c0a5`. The warm short word report measures `9e0cf58f8`, the
 mixed-width report measures `2b501135a`, and the JSON export measures
 `7bc247f1a`. The matched Lython comparisons below attribute changes to
-specific source pairs. [B1518] · [B1516] · [B1499] · [B1491] · [B1458].
+specific source pairs. [B1521] · [B1518] · [B1516] · [B1499] · [B1491] · [B1458].
 
 The quiet comparison machine is an Azure F4as_v7 running Ubuntu 24.04.4
 with .NET 11 RC3. The external baseline is stock CPython 3.13.16. Warm
@@ -54,8 +55,8 @@ measurements cover the wider request.
 | Generated validator with read-only branches | Compile-to-result | 0.5013–0.5076 ms | 0.9446–0.9524 ms | 0.526–0.537× | Historical diagnostic. [B1443]. |
 | Sparse generated validator | Compilation only | 1.459–1.462 ms | 1.814–1.817 ms | 0.803–0.806× | Historical diagnostic. [B1438]. |
 | Configuration edit | Compile-to-result | 0.1077–0.1090 ms | 0.1236–0.1253 ms | 0.859–0.882× | Historical diagnostic. [B1438]. |
-| CSV meter with explicit `float()` | Compilation only | 0.04422–0.04533 ms | 0.07102–0.07147 ms | 0.619–0.638× | Diagnostic. [B1518]. |
-| CSV meter with explicit `float()` | Compile-to-result | 3.71991–3.73078 ms | 3.18543–3.18743 ms | 1.167–1.171× | Diagnostic. [B1518]. |
+| CSV meter with explicit `float()` | Compilation only | 0.04479–0.04501 ms | 0.07204–0.07207 ms | 0.621–0.625× | Diagnostic. [B1521]. |
+| CSV meter with explicit `float()` | Compile-to-result | 3.40395–3.42891 ms | 3.14679–3.20315 ms | 1.063–1.090× | Diagnostic. [B1521]. |
 | Typed ASCII CSV meter report | Compilation only | 0.04166–0.04177 ms | 0.06754–0.06762 ms | 0.616–0.618× | Diagnostic. [B1336]. |
 | Typed ASCII CSV meter report | Compile-to-result | 3.102–3.286 ms | 2.655–2.677 ms | 1.159–1.237× | Diagnostic. Lython worker spread 5.93%. [B1351]. |
 | Typed Unicode CSV meter report | Compilation only | 0.04218–0.04232 ms | 0.06772–0.06784 ms | 0.622–0.625× | Diagnostic. Lython worker spread 0.34%. [B1388]. |
@@ -124,6 +125,7 @@ change. The checkpoint includes the arithmetic and allocation controls.
 
 | Checkpoint | Lython source | Date |
 | --- | --- | --- |
+| [B1521] | `65d4207fb` | 2026-11-23 UTC |
 | [B1518] | `fb3894153` | 2026-11-23 UTC |
 | [B1516] | `09fc2c0a5` | 2026-11-23 UTC |
 | [B1510] | `b7fdb4fec` | 2026-11-23 UTC |
@@ -237,6 +239,7 @@ Reproduce the comparisons with the [benchmark tools](../benchmarks/README.md).
 [B1491]: ../benchmarks/results/2026-11-23-forwarded-global-cpython/README.md
 [B1499]: ../benchmarks/results/2026-11-23-closure-cpython/README.md
 [B1503]: ../benchmarks/results/2026-11-23-computed-factory-cpython/README.md
+[B1521]: ../benchmarks/results/2026-11-23-short-csv-utf8-cpython/README.md
 [B1518]: ../benchmarks/results/2026-11-23-parallel-assignment-cpython/README.md
 [B1516]: ../benchmarks/results/2026-11-23-closed-defaults-cpython/README.md
 [B1510]: ../benchmarks/results/2026-11-23-retained-call-cpython/README.md

@@ -6,6 +6,10 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1521 explicit-float CSV against CPython](results/2026-11-23-short-csv-utf8-cpython/README.md)
+puts the retained script at 1.117–1.206× warm, 1.063–1.090× from
+compilation through result, and 0.621–0.625× compiling alone.
+
 [B1520 keep unobserved short CSV strings in operand slots](results/2026-11-23-short-csv-utf8-slots/README.md)
 removes 37.9% of local allocation in the explicit-float report. The
 retained shape takes 4.43–6.22% less warm elapsed and 6.14–8.31% less
