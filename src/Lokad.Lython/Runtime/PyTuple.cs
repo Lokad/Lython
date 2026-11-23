@@ -320,6 +320,11 @@ internal class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyValue, IP
         return tuple;
     }
 
+    // Captures are already funded strings. The caller owns this reserved
+    // backing and completes its reservation when the tuple is constructed.
+    internal static PyTuple FromAdmittedStringArray(PyString[] items, MemoryGovernor governor, LythonSourceSpan span)
+        => new(items, governor, span, EstimateApproximateBytes(items.Length));
+
     internal static long EstimateStorageBytes(ReadOnlySpan<object> items,
         LythonRuntime.ExecutionContext? context = null, LythonSourceSpan? span = null)
     {

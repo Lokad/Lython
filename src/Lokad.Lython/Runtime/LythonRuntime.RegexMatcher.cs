@@ -263,12 +263,32 @@ internal sealed partial class LythonRuntime
                     result.Add(match.Captures[slot] is { } capture
                         ? ReadSubjectRange(range, capture.StartByte, capture.EndByte, context, span) : PyString.Empty);
                 }
-                else result.Add(CreateTuple(pattern.CaptureSlotCount - 1,
-                    i => match.Captures[i + 1] is { } capture
-                        ? ReadSubjectRange(range, capture.StartByte, capture.EndByte, context, span) : PyString.Empty,
-                    context, span));
+                else result.Add(CopyFindAllGroups(range, match.Captures.AsSpan(1), context, span));
             }
             return result;
+        }
+
+        private static PyTuple CopyFindAllGroups(RegexSubjectRange range, ReadOnlySpan<LythonRegexCapture?> captures,
+            ExecutionContext context, LythonSourceSpan span)
+        {
+            var governor = context.MemoryGovernor;
+            var bytes = PyTuple.EstimateApproximateBytes(captures.Length);
+            governor.Reserve(bytes, span);
+            try
+            {
+                context.CheckExecution(span);
+                var items = new PyString[captures.Length];
+                for (var i = 0; i < items.Length; i++)
+                {
+                    if (i != 0 && (i & 1023) == 0) context.CheckExecution(span);
+                    items[i] = captures[i] is { } capture
+                        ? ReadSubjectRange(range, capture.StartByte, capture.EndByte, context, span) : PyString.Empty;
+                }
+                var tuple = PyTuple.FromAdmittedStringArray(items, governor, span);
+                governor.Commit(bytes);
+                return tuple;
+            }
+            catch { governor.ReleaseReserved(bytes); throw; }
         }
 
         internal static ReMatchObject CreateMatchObject(RePatternObject pattern, RegexSubjectRange range,
