@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1511 reuse delimiter masks across CSV fields](results/2026-11-23-csv-batched-markers/README.md)
+increases typed ASCII warm elapsed and CPU. Unicode worker spread leaves
+its effect uncertain. The complete-script results keep the prototype
+private with equal admitted peaks and flat allocation.
+
 [B1510 retained call checkpoint against CPython](results/2026-11-23-retained-call-cpython/README.md)
 puts fully supplied arithmetic at 1.516–1.555× CPython warm and
 1.447–1.528× through first use. Eager first-use and short-text magnitudes
