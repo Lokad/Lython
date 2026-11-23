@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Current native call inventory](results/2026-11-23-native-transition-inventory/README.md)
+counts 12,288 completed native prefixes on the invoice and 4,096 in
+each ordinary factory. Neither host entry point transfers a native
+prefix on the seven observed scripts. Both fully supplied controls
+already use direct integer returns.
+
 [B1437 combined callable preflight](results/2026-11-23-single-owner-function-preflight/README.md)
 removes 2,048 host growth requests in each of three factory scripts.
 Eager and defaults observer CPU improve. Postponed factory warm elapsed
