@@ -1,0 +1,400 @@
+{
+  "complete": true,
+  "elapsedSeconds": 330.12637766217813,
+  "quietBeforeAndAfter": true,
+  "allUsersJoinedAndFixturesRemoved": true,
+  "staging": {
+    "retiredOnly": [
+      {
+        "paths": [
+          "function-storage-attribution-b1426-20261123/confirmation/job-0/maps/candidate-perf.map.gz"
+        ],
+        "bytes": 104843,
+        "sha256": "8a4162bd97906aac6760ba5ff4ed52b1f23de30033ea630585fdfe37a6685647",
+        "links": 1,
+        "archives": {}
+      },
+      {
+        "paths": [
+          "function-storage-attribution-b1426-20261123/confirmation/job-0/maps/reference-perf.map.gz"
+        ],
+        "bytes": 106134,
+        "sha256": "817469fc768658f81d332044c99597d5d4fb10918b831ff052f7821a4ca56179",
+        "links": 1,
+        "archives": {}
+      },
+      {
+        "paths": [
+          "function-storage-attribution-b1426-20261123/confirmation/job-0/profile-candidate/all-thread-stacks.txt.gz"
+        ],
+        "bytes": 30744,
+        "sha256": "f04f3fb76a088d31deaf1ec84fd49b7bbcd374dcd6e42b8e8ce1142398ab0e2f",
+        "links": 1,
+        "archives": {}
+      },
+      {
+        "paths": [
+          "function-storage-attribution-b1426-20261123/confirmation/job-0/profile-candidate/perf.data"
+        ],
+        "bytes": 291352,
+        "sha256": "c41735344f0ba0416b14ebab2270edaebc00aa9afb176ac28cc3c02f65f7f0d7",
+        "links": 1,
+        "archives": {}
+      },
+      {
+        "paths": [
+          "function-storage-attribution-b1426-20261123/confirmation/job-0/profile-reference/all-thread-stacks.txt.gz"
+        ],
+        "bytes": 31085,
+        "sha256": "6f26e584a76a18b2d2de2b6dd4bd1fab84748da33141c85c35387786d5df95cb",
+        "links": 1,
+        "archives": {}
+      },
+      {
+        "paths": [
+          "function-storage-attribution-b1426-20261123/confirmation/job-0/profile-reference/perf.data"
+        ],
+        "bytes": 294160,
+        "sha256": "a9426139e0a6c9330249d071a448b185d67fdbccc7eb60eb5c95616a468c01de",
+        "links": 1,
+        "archives": {}
+      },
+      {
+        "paths": [
+          "function-storage-attribution-b1426-20261123/confirmation/job-1/maps/candidate-perf.map.gz"
+        ],
+        "bytes": 156584,
+        "sha256": "4f7d330fe2cf9dc6e887d75f7b1925c106a964341de035d630d1c1beaa5027f4",
+        "links": 1,
+        "archives": {}
+      },
+      {
+        "paths": [
+          "function-storage-attribution-b1426-20261123/confirmation/job-1/maps/reference-perf.map.gz"
+        ],
+        "bytes": 155994,
+        "sha256": "71abe3e85257bab045c40543f1fc8f19ec97b7a843e6e91c8fdb98168c948640",
+        "links": 1,
+        "archives": {}
+      },
+      {
+        "paths": [
+          "function-storage-attribution-b1426-20261123/confirmation/job-1/profile-candidate/all-thread-stacks.txt.gz"
+        ],
+        "bytes": 36474,
+        "sha256": "e3966b02d5a8c36e416888e69944b7e51858a7f89783f90c939f15f553a803a4",
+        "links": 1,
+        "archives": {}
+      },
+      {
+        "paths": [
+          "function-storage-attribution-b1426-20261123/confirmation/job-1/profile-candidate/perf.data"
+        ],
+        "bytes": 299816,
+        "sha256": "a9c8ed587c9a5566bb72636f10141b1224138ee3b95e4672e379831843f39f25",
+        "links": 1,
+        "archives": {}
+      },
+      {
+        "paths": [
+          "function-storage-attribution-b1426-20261123/confirmation/job-1/profile-reference/all-thread-stacks.txt.gz"
+        ],
+        "bytes": 37849,
+        "sha256": "069806cbc745a14a94e9a0dad57eb96037c31aeac290ed46c5790bd590dafcff",
+        "links": 1,
+        "archives": {}
+      },
+      {
+        "paths": [
+          "function-storage-attribution-b1426-20261123/confirmation/job-1/profile-reference/perf.data"
+        ],
+        "bytes": 300476,
+        "sha256": "bb9a75b6a2393bc3278e9eae57cab30ba3a7c23684150aacf5ceef590fd018ed",
+        "links": 1,
+        "archives": {}
+      },
+      {
+        "paths": [
+          "function-storage-attribution-b1426-20261123/confirmation/job-2/maps/candidate-perf.map.gz"
+        ],
+        "bytes": 100922,
+        "sha256": "5b80a5f2d2f22097845abe4b9842923350c8f5312158d4fb382d85ae88b03b5e",
+        "links": 1,
+        "archives": {}
+      },
+      {
+        "paths": [
+          "function-storage-attribution-b1426-20261123/confirmation/job-2/maps/reference-perf.map.gz"
+        ],
+        "bytes": 99328,
+        "sha256": "62ef75c92bfc13cfb674ed6e18284f72f231d8cfc4de4c0b4e24c5c3d6f6976d",
+        "links": 1,
+        "archives": {}
+      },
+      {
+        "paths": [
+          "function-storage-attribution-b1426-20261123/confirmation/job-2/profile-candidate/all-thread-stacks.txt.gz"
+        ],
+        "bytes": 30716,
+        "sha256": "a2ee6897cab2837d312378f0d25a905ce4797f5414f67baf6439df2e141cf5fd",
+        "links": 1,
+        "archives": {}
+      },
+      {
+        "paths": [
+          "function-storage-attribution-b1426-20261123/confirmation/job-2/profile-candidate/perf.data"
+        ],
+        "bytes": 296268,
+        "sha256": "e2db42cd0bc094a3b57baad5a504bd5f8811b2d8b852553dab5c1b3cba410c4d",
+        "links": 1,
+        "archives": {}
+      },
+      {
+        "paths": [
+          "function-storage-attribution-b1426-20261123/confirmation/job-2/profile-reference/all-thread-stacks.txt.gz"
+        ],
+        "bytes": 32417,
+        "sha256": "1c097cc57988cc297110c013fbbd4f7e81b5d9c39f1da88b6a1f4c56cc9d8b93",
+        "links": 1,
+        "archives": {}
+      },
+      {
+        "paths": [
+          "function-storage-attribution-b1426-20261123/confirmation/job-2/profile-reference/perf.data"
+        ],
+        "bytes": 295884,
+        "sha256": "7447ec59c4cffc4c90336acc4b97af1448f433caff44adfced3e3397961c4a2b",
+        "links": 1,
+        "archives": {}
+      }
+    ],
+    "alreadyAbsent": [],
+    "freshIdleLease": true,
+    "allHashesPathsOwnershipLinksAndAliasesVerified": true,
+    "canonicalArchiveAndCurrentImagesPreserved": true,
+    "freeBeforeBytes": 181927936,
+    "freeAfterBytes": 178638848
+  },
+  "rows": [
+    {
+      "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 1.0347035347003155,
+        "candidate-control": 0.9431461695652174,
+        "reference": 1.0507838042071198,
+        "candidate": 0.9508656253687315
+      },
+      "cpuMilliseconds": {
+        "reference-control": 1.0410094637223977,
+        "candidate-control": 0.9420289855072463,
+        "reference": 1.051779935275081,
+        "candidate": 0.9587020648967551
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 1.0899979806617892,
+        "candidate-control": 0.5894776876893965,
+        "reference": 0.4277243245287735,
+        "candidate": 0.8469041407253936
+      },
+      "elapsedChangePercent": [
+        -10.243556687012468,
+        -9.508918812636502,
+        -8.848656843683845,
+        -8.102602003371551
+      ],
+      "cpuChangePercent": [
+        -10.43478260869566,
+        -9.508124725516055,
+        -8.849557522123897,
+        -7.906498614463231
+      ],
+      "referenceSpreadPercent": 1.5540943823548092,
+      "candidateSpreadPercent": 0.8184792614990721
+    },
+    {
+      "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "lane": "compile-run",
+      "elapsedMilliseconds": {
+        "candidate": 1.0172121003134795,
+        "reference": 1.0554058045602606,
+        "candidate-control": 0.9986250874233129,
+        "reference-control": 1.0598090716612378
+      },
+      "cpuMilliseconds": {
+        "candidate": 1.0188087774294672,
+        "reference": 1.0586319218241043,
+        "candidate-control": 0.9969325153374234,
+        "reference-control": 1.0749185667752443
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.4414601640614161,
+        "reference": 0.6725044168601093,
+        "candidate-control": 0.3581500169872259,
+        "reference-control": 4.599887445155794
+      },
+      "elapsedChangePercent": [
+        -5.77311384417759,
+        -5.379989089656901,
+        -4.01930616436299,
+        -3.618864334623839
+      ],
+      "cpuChangePercent": [
+        -7.255065997397281,
+        -5.828220858895694,
+        -5.2199107058041205,
+        -3.7617554858934144
+      ],
+      "referenceSpreadPercent": 0.41721080952477063,
+      "candidateSpreadPercent": 1.8612603592931487
+    },
+    {
+      "case": "scripts.annotated-rule-closures.nested-factories",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 1.1062007694915255,
+        "candidate-control": 1.0397910845295057,
+        "reference": 1.0992199380234506,
+        "candidate": 1.0919324131534571
+      },
+      "cpuMilliseconds": {
+        "reference-control": 1.11864406779661,
+        "candidate-control": 1.036682615629984,
+        "reference": 1.1055276381909547,
+        "candidate": 1.0961214165261384
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.3177502700363417,
+        "candidate-control": 0.7310399934497896,
+        "reference": 0.7018584641101889,
+        "candidate": 0.5450008850052392
+      },
+      "elapsedChangePercent": [
+        -6.003402528145541,
+        -5.4064570190389905,
+        -1.2898523244227134,
+        -0.6629724059679543
+      ],
+      "cpuChangePercent": [
+        -7.32685708762264,
+        -6.2273452225605315,
+        -2.013388522663384,
+        -0.8508355051356609
+      ],
+      "referenceSpreadPercent": 0.6350714016912118,
+      "candidateSpreadPercent": 5.0145966242386875
+    },
+    {
+      "case": "scripts.factory-observed-defaults",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 1.7231019226666666,
+        "reference": 1.6550162487309648,
+        "candidate-control": 1.7190973554376658,
+        "reference-control": 1.6380448746867167
+      },
+      "cpuMilliseconds": {
+        "candidate": 1.7066666666666666,
+        "reference": 1.649746192893401,
+        "candidate-control": 1.750663129973475,
+        "reference-control": 1.6541353383458648
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.48851186471350316,
+        "reference": 0.4946092957984277,
+        "candidate-control": 0.8739043504854023,
+        "reference-control": 0.560002223446567
+      },
+      "elapsedChangePercent": [
+        3.8719321792663575,
+        4.113897612057205,
+        4.948123339200383,
+        5.192595715438952
+      ],
+      "cpuChangePercent": [
+        3.175757575757565,
+        3.4502564102564026,
+        5.835543766578244,
+        6.117118955315259
+      ],
+      "referenceSpreadPercent": 1.03607503716856,
+      "candidateSpreadPercent": 0.23294592457687724
+    },
+    {
+      "case": "scripts.ordinary-fully-supplied-helper",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "reference-control": 0.31093780649785,
+        "candidate-control": 0.31125251366906476,
+        "reference": 0.3105335043021032,
+        "candidate": 0.32580556615077383
+      },
+      "cpuMilliseconds": {
+        "reference-control": 0.31055900621118016,
+        "candidate-control": 0.30695443645083936,
+        "reference": 0.3107074569789675,
+        "candidate": 0.32451323015476785
+      },
+      "elapsedIQRPercent": {
+        "reference-control": 0.36434713081327186,
+        "candidate-control": 0.3544791997527089,
+        "reference": 0.22177146866675526,
+        "candidate": 0.5043199892249405
+      },
+      "elapsedChangePercent": [
+        0.10121225680446155,
+        0.2315400293367631,
+        4.781586330842846,
+        4.918007763121479
+      ],
+      "cpuChangePercent": [
+        -1.2078952222837058,
+        -1.160671462829732,
+        4.443334997503734,
+        4.49326010983524
+      ],
+      "referenceSpreadPercent": 0.13019599822423622,
+      "candidateSpreadPercent": 4.6756417515016135
+    },
+    {
+      "case": "scripts.csv-invoice.method-policy.quoted-control",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 7.129894177777778,
+        "reference": 7.413711477272727,
+        "candidate-control": 7.082249032967033,
+        "reference-control": 7.252320806818182
+      },
+      "cpuMilliseconds": {
+        "candidate": 7.222222222222222,
+        "reference": 7.613636363636364,
+        "candidate-control": 7.252747252747253,
+        "reference-control": 7.386363636363636
+      },
+      "elapsedIQRPercent": {
+        "candidate": 0.6421969242379756,
+        "reference": 0.5049337253036066,
+        "candidate-control": 0.5473541432394909,
+        "reference-control": 0.3198650057210383
+      },
+      "elapsedChangePercent": [
+        -4.470938008874725,
+        -3.828275491499933,
+        -2.3450668879851366,
+        -1.6881027784279246
+      ],
+      "cpuChangePercent": [
+        -5.140961857379778,
+        -4.740036083319676,
+        -2.2222222222222143,
+        -1.8089602704987273
+      ],
+      "referenceSpreadPercent": 2.2253658484442163,
+      "candidateSpreadPercent": 0.6727403200446957
+    }
+  ],
+  "retentionDecisionPending": false,
+  "CPythonRefreshed": false,
+  "outcome": "Initial design removes native argument staging and improves both factory workloads. Refine the rejected observer path and preserve the measured fully supplied control debt.",
+  "timedBatches": 168
+}

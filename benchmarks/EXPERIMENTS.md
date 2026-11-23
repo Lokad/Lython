@@ -6,6 +6,16 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1430 direct prepared integer operands](results/2026-11-23-direct-bound-integer/README.md)
+removes native argument staging from closed returns. Postponed factory
+warm elapsed falls 8.10–10.24%. The defaults observer takes 3.87–5.19%
+longer. A refinement separates both entry shapes.
+
+[Frontend expression binding variants](results/2026-11-23-syntax-binding-presence/README.md)
+compare collecting validated names with retaining a presence bit.
+The bit skips only two scans across seven representative scripts.
+Both candidates remain private.
+
 [B1429 retained source against CPython](results/2026-11-23-retained-cpython-checkpoint/README.md)
 refreshes the six scripts from B1419. Factories reach their result
 in 1.786–1.808× CPython's time. Warm factory workers diverge 18.08%.
