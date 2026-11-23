@@ -32,6 +32,8 @@
   captured locals and free variables.
 - Forward a private lexical assignment directly to its immediate return.
 - Resolve root-module reads through the live global and builtin path.
+- Construct executable tuples under one fixed reservation through
+  publication or rollback.
 - Convert complete short ASCII decimal tokens directly from UTF-8 when
   parsing floats. Keep Python normalization, exact errors and cancellation.
 

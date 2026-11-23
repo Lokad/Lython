@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1477 use one fixed reservation for final executable tuples](results/2026-11-23-fixed-tuple-admission/README.md)
+removes the temporary reservation object. The retained meters allocate
+8.16% and 9.31% less at equal admitted peaks. CSV elapsed ranges cross
+zero and the defaults observer takes 0.44–1.55% longer. Carry the
+controls forward.
+
 [B1475 inline small float tuples](results/2026-11-23-inline-aggregate-tuples/README.md)
 removes the element array. Typed and explicit CSV allocate 10.19% and
 4.64% less at equal admitted peaks. Both take more warm CPU, and the
