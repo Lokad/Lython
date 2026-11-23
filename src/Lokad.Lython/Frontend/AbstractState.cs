@@ -70,6 +70,8 @@ internal sealed class AbstractState
     private Dictionary<string, AbstractSequenceLengthBounds> _sequenceLengths;
     private Dictionary<string, AbstractValue> _values;
     private bool _containerFactsInvalidated;
+    private bool _valuesShared;
+    private bool _sequenceLengthsShared;
 
     internal StaticAnalysisContext? AnalysisContext { get; }
 
@@ -94,18 +96,16 @@ internal sealed class AbstractState
 
     public bool TryGet(string name, out AbstractValue value) => _values.TryGetValue(name, out value);
 
-    public IReadOnlyCollection<string> Names => _values.Keys;
-
     public void Set(string name, AbstractValue value)
     {
-        _values[name] = value;
+        WritableValues()[name] = value;
         if (AbstractValue.TryGetExactSequenceLength(value, AnalysisContext, out var length))
         {
-            _sequenceLengths[name] = AbstractSequenceLengthBounds.Exact(length);
+            WritableSequenceLengths()[name] = AbstractSequenceLengthBounds.Exact(length);
         }
         else
         {
-            _sequenceLengths.Remove(name);
+            RemoveSequenceLength(name);
         }
 
         InvalidateCachedFacts();
@@ -116,13 +116,13 @@ internal sealed class AbstractState
 
     public void SetSequenceLength(string name, AbstractSequenceLengthBounds bounds)
     {
-        _sequenceLengths[name] = bounds;
+        WritableSequenceLengths()[name] = bounds;
         InvalidateCachedFacts();
     }
 
     public void Remove(string name)
     {
-        if (_values.Remove(name) | _sequenceLengths.Remove(name))
+        if (RemoveValue(name) | RemoveSequenceLength(name))
         {
             InvalidateCachedFacts();
         }
@@ -151,8 +151,8 @@ internal sealed class AbstractState
                 if (dictionaries && (value.Facts & AbstractValueFacts.Dictionary) != 0)
                 {
                     // Remove preserves active dictionary enumerators on .NET 10/11.
-                    _values.Remove(name);
-                    _sequenceLengths.Remove(name);
+                    WritableValues().Remove(name);
+                    RemoveSequenceLength(name);
                     changed = true;
                     continue;
                 }
@@ -165,7 +165,7 @@ internal sealed class AbstractState
                     (rewrites ??= []).Add((name, widened));
                 }
                 if (value.Kind is AbstractValueKind.List or AbstractValueKind.ListType or AbstractValueKind.CollectionsDeque)
-                    changed |= _sequenceLengths.Remove(name);
+                    changed |= RemoveSequenceLength(name);
             }
 
             // Apply actual value replacements after enumeration.
@@ -174,7 +174,7 @@ internal sealed class AbstractState
                 foreach (var (name, value) in rewrites)
                 {
                     AnalysisContext?.CheckExecution();
-                    _values[name] = value;
+                    WritableValues()[name] = value;
                     changed = true;
                 }
             }
@@ -267,9 +267,45 @@ internal sealed class AbstractState
 
     // Each clone records new invalidation requests independently. Deferred
     // bodies do not publish them; evaluated branches join them below.
-    public AbstractState Clone() => new(
-        new Dictionary<string, AbstractValue>(_values, StringComparer.Ordinal),
-        new Dictionary<string, AbstractSequenceLengthBounds>(_sequenceLengths, StringComparer.Ordinal), AnalysisContext);
+    public AbstractState Clone()
+    {
+        _valuesShared = _sequenceLengthsShared = true;
+        return new(_values, _sequenceLengths, AnalysisContext)
+        {
+            _valuesShared = true,
+            _sequenceLengthsShared = true,
+        };
+    }
+
+    // Each fact map detaches on its first change. A branch can refine lengths
+    // without copying name values, and vice versa. Resolution caches stay local.
+    private Dictionary<string, AbstractValue> WritableValues()
+    {
+        if (_valuesShared)
+        {
+            AnalysisContext?.CheckExecution();
+            _values = new(_values, StringComparer.Ordinal);
+            _valuesShared = false;
+        }
+        return _values;
+    }
+
+    private Dictionary<string, AbstractSequenceLengthBounds> WritableSequenceLengths()
+    {
+        if (_sequenceLengthsShared)
+        {
+            AnalysisContext?.CheckExecution();
+            _sequenceLengths = new(_sequenceLengths, StringComparer.Ordinal);
+            _sequenceLengthsShared = false;
+        }
+        return _sequenceLengths;
+    }
+
+    private bool RemoveValue(string name)
+        => (!_valuesShared || _values.ContainsKey(name)) && WritableValues().Remove(name);
+
+    private bool RemoveSequenceLength(string name)
+        => (!_sequenceLengthsShared || _sequenceLengths.ContainsKey(name)) && WritableSequenceLengths().Remove(name);
 
     // The caller relinquishes this branch. Exchange maps so the two states
     // retain independent mutable bindings.
@@ -281,6 +317,8 @@ internal sealed class AbstractState
 
         (_values, branch._values) = (branch._values, _values);
         (_sequenceLengths, branch._sequenceLengths) = (branch._sequenceLengths, _sequenceLengths);
+        (_valuesShared, branch._valuesShared) = (branch._valuesShared, _valuesShared);
+        (_sequenceLengthsShared, branch._sequenceLengthsShared) = (branch._sequenceLengthsShared, _sequenceLengthsShared);
         InvalidateCachedFacts();
         branch.InvalidateCachedFacts();
     }
@@ -296,7 +334,7 @@ internal sealed class AbstractState
         {
             if (_values.TryGetValue(name, out var leftValue))
             {
-                _values[name] = AbstractValue.Join(leftValue, rightValue, leftValue.Span, AnalysisContext);
+                WritableValues()[name] = AbstractValue.Join(leftValue, rightValue, leftValue.Span, AnalysisContext);
                 kept++;
             }
         }
@@ -306,16 +344,17 @@ internal sealed class AbstractState
             foreach (var name in _values.Keys)
             {
                 AnalysisContext?.CheckExecution();
-                if (!right._values.ContainsKey(name)) _values.Remove(name);
+                if (!right._values.ContainsKey(name)) WritableValues().Remove(name);
             }
         }
 
+        if (ReferenceEquals(_sequenceLengths, right._sequenceLengths)) return;
         kept = 0;
         foreach (var (name, rightBounds) in right._sequenceLengths)
         {
             if (_sequenceLengths.TryGetValue(name, out var leftBounds))
             {
-                _sequenceLengths[name] = AbstractSequenceLengthBounds.Union(leftBounds, rightBounds);
+                WritableSequenceLengths()[name] = AbstractSequenceLengthBounds.Union(leftBounds, rightBounds);
                 kept++;
             }
         }
@@ -324,7 +363,7 @@ internal sealed class AbstractState
             foreach (var name in _sequenceLengths.Keys)
             {
                 AnalysisContext?.CheckExecution();
-                if (!right._sequenceLengths.ContainsKey(name)) _sequenceLengths.Remove(name);
+                if (!right._sequenceLengths.ContainsKey(name)) WritableSequenceLengths().Remove(name);
             }
         }
     }

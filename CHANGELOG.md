@@ -2,6 +2,8 @@
 
 ## 0.11.0 - Unreleased
 
+- Share the compiler's binding and sequence-length maps across
+  branches until their facts change.
 - Build complete literal CSV records directly from immutable input strings.
   Materialize independent row storage and retain the admitted parser buffer
   for transformed and continued records.
