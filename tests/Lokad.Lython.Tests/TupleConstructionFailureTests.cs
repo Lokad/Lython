@@ -8,9 +8,11 @@ namespace Lokad.Lython.Tests;
 public sealed class TupleConstructionFailureTests
 {
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void IntegerTupleAdmissionFailurePreservesOtherFunding(bool cancelled)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public void NumericTupleAdmissionFailurePreservesOtherFunding(bool cancelled, bool floating)
     {
         var budget = new LythonMemoryBudget(1024 * 1024);
         using (var owner = budget.CreateScope())
@@ -24,8 +26,18 @@ public sealed class TupleConstructionFailureTests
                 using var other = context.MemoryGovernor.ReserveTemporary(17, null);
                 var baseline = budget.ReservedBytes;
                 var committed = context.MemoryGovernor.CurrentCommittedBytes;
-                var first = default(LythonRuntime.ExecutableSlot); first.SetInteger(10001);
-                var second = default(LythonRuntime.ExecutableSlot); second.SetInteger(10002);
+                var first = default(LythonRuntime.ExecutableSlot);
+                var second = default(LythonRuntime.ExecutableSlot);
+                if (floating)
+                {
+                    first.SetDouble(10001.5);
+                    second.SetDouble(10002.5);
+                }
+                else
+                {
+                    first.SetInteger(10001);
+                    second.SetInteger(10002);
+                }
                 if (cancelled) gate.AfterGrowth = _ => cancellation.Cancel();
                 else gate.RefuseGrowth = _ => true;
                 var error = Assert.Throws<LythonRuntimeException>(() =>

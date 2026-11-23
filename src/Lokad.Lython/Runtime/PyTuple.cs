@@ -89,34 +89,40 @@ internal class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyValue, IP
             ? checked(64L + (24L + RuntimeMemoryEstimates.ScalarStorageBytes) * values.Length)
             : EstimateObjectSlotStorage(values, context, span);
         var governor = context.MemoryGovernor;
-        using var owned = governor.ReserveTemporary(bytes, span);
-        context.CheckExecution(span);
-        Array items;
-        if (integers)
+        // The tuple has one fixed reservation and remains private until
+        // its storage is complete. Only this construction can refund it.
+        governor.Reserve(bytes, span);
+        try
         {
-            var slots = new LythonRuntime.ExecutableSlot[values.Length];
-            for (var offset = 0; offset < values.Length;)
+            context.CheckExecution(span);
+            Array items;
+            if (integers)
             {
-                context.CheckExecution(span);
-                var count = Math.Min(1024, values.Length - offset);
-                values.Slice(offset, count).CopyTo(slots.AsSpan(offset));
-                offset += count;
+                var slots = new LythonRuntime.ExecutableSlot[values.Length];
+                for (var offset = 0; offset < values.Length;)
+                {
+                    context.CheckExecution(span);
+                    var count = Math.Min(1024, values.Length - offset);
+                    values.Slice(offset, count).CopyTo(slots.AsSpan(offset));
+                    offset += count;
+                }
+                items = slots;
             }
-            items = slots;
-        }
-        else
-        {
-            var objects = new object[values.Length];
-            for (var i = 0; i < objects.Length; i++)
+            else
             {
-                if ((i & 1023) == 0) context.CheckExecution(span);
-                objects[i] = values[i].Object.RequireNotNull();
+                var objects = new object[values.Length];
+                for (var i = 0; i < objects.Length; i++)
+                {
+                    if ((i & 1023) == 0) context.CheckExecution(span);
+                    objects[i] = values[i].Object.RequireNotNull();
+                }
+                items = objects;
             }
-            items = objects;
+            var tuple = new PyTuple(items, governor, span, bytes);
+            governor.Commit(bytes);
+            return tuple;
         }
-        var tuple = new PyTuple(items, governor, span, bytes);
-        owned.Commit(bytes);
-        return tuple;
+        catch { governor.ReleaseReserved(bytes); throw; }
     }
 
     // Definition defaults are written once into their final storage. Admit
