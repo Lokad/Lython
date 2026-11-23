@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1491 CPython checkpoint after forwarding call operands](results/2026-11-23-forwarded-global-cpython/README.md)
+puts short nonlocal text at 1.421–1.452× CPython warm, with overlapping
+CPython elapsed from B1483. The same report takes 1.245–1.311× time to
+result. The quote-heavy invoice reaches 1.075–1.100×. All 168 batches verify.
+
 [B1490 confirm the forwarded-call controls](results/2026-11-23-forwarded-global-confirmation/README.md)
 finds a 0.50–1.27% quoted-invoice elapsed cost with supporting CPU.
 The short text gain recurs with wide reference spread. Mixed-width
