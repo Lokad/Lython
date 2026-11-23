@@ -307,7 +307,28 @@ internal sealed partial class LythonRuntime
                             break;
                         case ExecutableOpCode.Call:
                             var call = execution.Code.CallSites[instruction.CallSiteIndex];
-                            var callStart = instruction.InputStart;
+                            var callStart = instruction.ResultSlot;
+                            if (instruction.InputStart < 0 && execution.Stack.LiveExtent == callStart)
+                            {
+                                var callee = ReadOperand(ref execution, instruction.InputStart, scope, 0);
+                                var argument = ReadOperand(ref execution, instruction.SecondInput, scope, 1);
+                                if (callee is BuiltinCallable builtin &&
+                                    TryInvokeUnaryBuiltin(builtin, argument, call.CallSpan, scope,
+                                        allowProtocol: invocation is not null, out var value))
+                                {
+                                    if (value.Reference is LythonRuntimeException error)
+                                    {
+                                        returnedFailure = error;
+                                        goto RouteReturnedFailure;
+                                    }
+                                    PublishInstructionResult(ref execution, invocation, instruction, value);
+                                    break;
+                                }
+                                // A promoted frame resumes this same call with the
+                                // evaluated pair. It never repeats its name reads.
+                                execution.Stack.PublishValue(callStart, callStart + 1, callee);
+                                execution.Stack.PublishValue(callStart + 1, callStart + 2, argument);
+                            }
                             var target = execution.Stack[callStart + call.TargetOffset];
                             if (TryExecuteNativeCall(ref execution, scope, invocation, call, callStart, target, out var continuation))
                             {

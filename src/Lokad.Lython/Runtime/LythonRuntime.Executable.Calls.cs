@@ -324,7 +324,7 @@ internal sealed partial class LythonRuntime
                 if (child is not null)
                 {
                     ref readonly var call = ref work.Code.Instructions[work.InstructionIndex];
-                    frame.AdoptPreparedChild(child, work.Code.CallSites[call.CallSiteIndex], call.InputStart,
+                    frame.AdoptPreparedChild(child, work.Code.CallSites[call.CallSiteIndex], call.ResultSlot,
                         child._boundStorageOwner!);
                 }
 

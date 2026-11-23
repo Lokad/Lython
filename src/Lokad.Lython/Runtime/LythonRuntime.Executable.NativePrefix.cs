@@ -393,7 +393,26 @@ internal sealed partial class LythonRuntime
         private bool Call(in ExecutableInstruction instruction)
         {
             var call = Code.CallSites[instruction.CallSiteIndex];
-            var start = instruction.InputStart;
+            var start = instruction.ResultSlot;
+            if (instruction.InputStart < 0)
+            {
+                var callee = Read(instruction.InputStart, 0);
+                var argument = Read(instruction.SecondInput, 1);
+                if (callee is BuiltinCallable builtin &&
+                    TryInvokeUnaryBuiltin(builtin, argument, call.CallSpan, _scope, allowProtocol: false, out var value))
+                {
+                    if (value.Reference is LythonRuntimeException failure)
+                    {
+                        if (Code.ExceptionRegions.Count == 0) throw failure;
+                        Failure = failure;
+                        return false;
+                    }
+                    Publish(instruction, value);
+                    return true;
+                }
+                Put(start, start + 1, callee);
+                Put(start + 1, start + 2, argument);
+            }
             var target = Values[start + call.TargetOffset].Object.RequireNotNull();
             var result = default(ExecutableSlot);
             try
@@ -642,7 +661,7 @@ internal sealed partial class LythonRuntime
             if (_preparedChild is { } child)
             {
                 var call = Code.CallSites[Code.Instructions[Index].CallSiteIndex];
-                frame.AdoptPreparedChild(child, call, Code.Instructions[Index].InputStart, _preparedChildOwner!);
+                frame.AdoptPreparedChild(child, call, Code.Instructions[Index].ResultSlot, _preparedChildOwner!);
                 _preparedChild = null;
                 _preparedChildOwner = null;
             }

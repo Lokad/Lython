@@ -137,6 +137,7 @@ internal readonly record struct ExecutableInstruction
     internal int ValueInputCount => OpCode switch
     {
         ExecutableOpCode.Binary or ExecutableOpCode.Augmented or ExecutableOpCode.Subscript or ExecutableOpCode.CompareJumpIfFalse => 2,
+        ExecutableOpCode.Call when _secondaryOperand != int.MaxValue => 2,
         ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast => 3,
         ExecutableOpCode.Unary or ExecutableOpCode.StoreLocal or ExecutableOpCode.Return or
             ExecutableOpCode.LoadMember or ExecutableOpCode.LoadCallMember or
@@ -389,6 +390,11 @@ internal readonly record struct ExecutableInstruction
 
     public static ExecutableInstruction Call(int callSiteIndex, LythonSourceSpan span)
         => new(ExecutableOpCode.Call, span, callSiteIndex);
+
+    // Single-positional calls can use the common two-operand encoding. The
+    // result position also identifies the existing contiguous fallback input.
+    internal ExecutableInstruction WithForwardedCallOperands()
+        => new(OpCode, Span, _primaryOperand, 0);
 
     public static ExecutableInstruction Subscript(LythonSourceSpan span, int cacheIndex = -1)
         => new(ExecutableOpCode.Subscript, span, cacheIndex);

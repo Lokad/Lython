@@ -222,6 +222,8 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
                 // its two protocol arguments above the ordinary subscript inputs.
                 if (instruction.OpCode == ExecutableOpCode.Subscript)
                     maximum = Math.Max(maximum, checked(depth - pop + 4));
+                else if (instruction.OpCode == ExecutableOpCode.Call && instruction.InputStart < 0)
+                    maximum = Math.Max(maximum, checked(depth + 2));
                 var resultSlot = depth - pop;
                 var inputStart = depth - minimum;
                 depth = checked(resultSlot + push);
@@ -339,6 +341,13 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
             // remove or rewrite the instructions supplying operands.
             if (instruction.OpCode is ExecutableOpCode.Call or ExecutableOpCode.LoadCallMember)
                 code.PrepareCallSite(instructions, index, instruction, calls);
+            if (instruction.OpCode == ExecutableOpCode.Call && kept >= 2 &&
+                code.IsFunctionScope && !code.RequiresLocalVariableMirroring &&
+                calls[instruction.CallSiteIndex] is { HasReceiver: false, IsPositionalOnly: true, ArgumentCount: 1 } &&
+                instructions[kept - 2].OpCode == ExecutableOpCode.LoadGlobal &&
+                instructions[kept - 1] is { OpCode: ExecutableOpCode.LoadLocal } argument &&
+                !code.CapturedLocalSlots.Contains(argument.LocalSlot))
+                instruction = instruction.WithForwardedCallOperands();
             if (instruction.OpCode == ExecutableOpCode.StoreLocal)
             {
                 var captured = code.CapturedLocalSlots.Count != 0 && code.CapturedLocalSlots.Contains(instruction.LocalSlot);

@@ -79,9 +79,16 @@ internal sealed partial class LythonRuntime
         if (call.ArgumentCount != 1 || target is not BuiltinCallable builtin) return false;
 
         var value = values[start + call.ArgumentOffset].Object;
+        return TryInvokeUnaryBuiltin(builtin, value, call.CallSpan, scope, allowProtocol, out result);
+    }
+
+    private static bool TryInvokeUnaryBuiltin(BuiltinCallable builtin, object? value,
+        LythonSourceSpan span, ExecutionContext scope, bool allowProtocol, out ExecutableSlot result)
+    {
+        result = default;
         var operation = SelectNativeUnaryOperation(builtin, value, allowProtocol);
         if (operation is null) return false;
-        result = InvokeSingleInput(value!, operation, call.CallSpan, scope);
+        result = InvokeSingleInput(value!, operation, span, scope);
         return true;
     }
 
