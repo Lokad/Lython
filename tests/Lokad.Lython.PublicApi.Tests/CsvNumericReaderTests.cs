@@ -6,6 +6,16 @@ public sealed class CsvNumericReaderTests
 {
     public static TheoryData<string, string, string> Programs => new()
     {
+        { "short decimal rounding and signed zero", """
+            import csv
+            import struct
+            text = '+.5,-0.,0.1,1.23456789012345,9007199254740992,9007199254740993,0.0000000000000001'
+            builtin = [struct.pack('>d', float(value)).hex() for value in text.split(',')]
+            row = next(csv.reader([text], quoting=csv.QUOTE_NONNUMERIC))
+            parsed = [struct.pack('>d', value).hex() for value in row]
+            print(*builtin)
+            print(*parsed)
+            """, "3fe0000000000000 8000000000000000 3fb999999999999a 3ff3c0ca428c59dd 4340000000000000 4340000000000000 3c9cd2b297d889bc\n3fe0000000000000 8000000000000000 3fb999999999999a 3ff3c0ca428c59dd 4340000000000000 4340000000000000 3c9cd2b297d889bc\n" },
         { "mixed", "import csv\nprint(list(csv.reader(['1,\"2\",,3'],quoting=csv.QUOTE_NONNUMERIC)))", "[[1.0, '2', '', 3.0]]\n" },
         { "escaped", "import csv\nprint(list(csv.reader([r'\\3,4'],quoting=csv.QUOTE_NONNUMERIC,escapechar='\\\\')))", "[[3.0, 4.0]]\n" },
         { "unicode", "import csv\nprint(list(csv.reader(['٣_٤.٥,𝟙.𝟚,-٠'],quoting=csv.QUOTE_NONNUMERIC)))", "[[34.5, 1.2, -0.0]]\n" },

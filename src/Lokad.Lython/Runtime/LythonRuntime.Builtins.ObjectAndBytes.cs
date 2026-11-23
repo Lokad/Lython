@@ -79,6 +79,12 @@ internal sealed partial class LythonRuntime
         PyBytes? byteSource = null)
     {
         context.CheckExecution(span);
+        if (TryParseShortDecimalFloat(source, out var exact))
+        {
+            context.CheckExecution(span);
+            return exact;
+        }
+
         var unicode = byteSource is null;
         var input = TrimNumericWhitespace(source, unicode, context, span);
         if (input.Length is > 0 and <= 4096)
@@ -102,6 +108,48 @@ internal sealed partial class LythonRuntime
             : TryParseWideFloat(input, unicode, context, span, out number);
         context.CheckExecution(span);
         return valid ? number : throw TextConversionError(source, "could not convert string to float: ", context, span, byteSource);
+    }
+
+    private static bool TryParseShortDecimalFloat(ReadOnlySpan<byte> input, out double result)
+    {
+        result = default;
+        if (input.IsEmpty) return false;
+
+        var negative = input[0] == (byte)'-';
+        var start = input[0] is (byte)'+' or (byte)'-' ? 1 : 0;
+        var length = input.Length - start;
+        // At most 17 bytes after the sign, so the integer accumulation
+        // cannot overflow. Exponents and extended syntax use the full parser.
+        if (length is < 1 or > 17) return false;
+
+        ulong significand = 0;
+        var point = -1;
+        for (var i = start; i < input.Length; i++)
+        {
+            var digit = (uint)(input[i] - (byte)'0');
+            if (digit <= 9) significand = significand * 10 + digit;
+            else if (input[i] == (byte)'.' && point < 0) point = i;
+            else return false;
+        }
+
+        if ((length == 1 && point >= 0) || significand > 1UL << 53) return false;
+        var fractionDigits = point < 0 ? 0 : input.Length - point - 1;
+        result = ConvertExactDecimalToDouble(significand, fractionDigits, negative);
+        return true;
+    }
+
+    private static ReadOnlySpan<double> ExactDecimalDivisors =>
+    [
+        1e0, 1e1, 1e2, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9, 1e10, 1e11,
+        1e12, 1e13, 1e14, 1e15, 1e16, 1e17, 1e18,
+    ];
+
+    // Both operands are exactly representable. One division rounds the
+    // decimal quotient to binary64. Apply the sign last to keep negative zero.
+    private static double ConvertExactDecimalToDouble(ulong significand, int fractionDigits, bool negative)
+    {
+        var number = (double)significand / ExactDecimalDivisors[fractionDigits];
+        return negative ? -number : number;
     }
 
     private static bool TryParseWideFloat(ReadOnlySpan<byte> input, bool unicode, ExecutionContext context,

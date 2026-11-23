@@ -537,12 +537,6 @@ internal sealed partial class LythonRuntime
 
         // Default conversion of a validated native NUMBER_RE token. Hook
         // dispatch lives at the scalar boundary; this path cannot suspend.
-        private static ReadOnlySpan<double> ExactDecimalDivisors =>
-        [
-            1e0, 1e1, 1e2, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9, 1e10, 1e11,
-            1e12, 1e13, 1e14, 1e15, 1e16, 1e17, 1e18,
-        ];
-
         private static object ConvertJsonNumber(ReadOnlySpan<byte> raw, ulong significand, int fractionDigits,
             ExecutionContext context, LythonSourceSpan span)
         {
@@ -564,14 +558,9 @@ internal sealed partial class LythonRuntime
             }
 
             // Up to 19 digits including the integer part leaves at most 18
-            // fractional digits. Binary64 represents the divisor and integers
-            // through 2^53 exactly. A single division rounds the exact decimal
-            // quotient, and applying the sign preserves negative zero.
+            // fractional digits, within the exact divisor table.
             if (fractionDigits > 0 && unsignedLength <= 20 && significand <= 1UL << 53)
-            {
-                var number = (double)significand / ExactDecimalDivisors[fractionDigits];
-                return negative ? -number : number;
-            }
+                return ConvertExactDecimalToDouble(significand, fractionDigits, negative);
 
             // The prefix lexer has validated the complete native token. A
             // partial parse is an invariant defect, never a parser fallback.
