@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1546](results/2026-11-24-isolated-local-transfer/README.md) moves the
+private assignment transfer outside hot dispatch. The explicit meter
+improves again and both unchanged controls take more elapsed and CPU.
+The prototype stays private.
+
 [B1545](results/2026-11-24-parallel-local-transfer/README.md) removes the
 parallel operand reversal and stores as well. The explicit CSV report
 saves 2.42–4.50% elapsed with lower CPU. The unchanged short text control

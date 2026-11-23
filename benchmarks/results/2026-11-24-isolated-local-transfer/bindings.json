@@ -1,0 +1,18 @@
+{
+  "scripts.csv-meter-report.explicit-float": [
+    {
+      "scope": "<module>",
+      "start": 7,
+      "name": "site"
+    }
+  ],
+  "scripts.csv-meter-report.typed-unicode": [
+    {
+      "scope": "<module>",
+      "start": 7,
+      "name": "site"
+    }
+  ],
+  "scripts.csv-invoice.method-policy.quoted-control": [],
+  "diagnostic.text-summary.nonlocal-computed-width.large": []
+}

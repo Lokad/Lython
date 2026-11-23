@@ -1,0 +1,12 @@
+{
+  "scripts.csv-meter-report.explicit-float": [
+    {
+      "scope": "<module>",
+      "start": 8,
+      "count": 3
+    }
+  ],
+  "scripts.csv-meter-report.typed-unicode": [],
+  "scripts.csv-invoice.method-policy.quoted-control": [],
+  "diagnostic.text-summary.nonlocal-computed-width.large": []
+}

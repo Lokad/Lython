@@ -21,7 +21,9 @@ consistent adverse elapsed and CPU. Keep this version private. A local
 JIT diagnostic with tiering disabled finds 254 more bytes in the
 ordinary dispatch method and 133 more in the native loop. That identifies
 a footprint to change independently. It leaves the cause of the measured
-control regression unresolved.
+control regression unresolved. B1546 tests that footprint change and
+keeps the revised source private after two adverse controls.
+[B1546](../2026-11-24-isolated-local-transfer/README.md).
 
 Compared with `3e5826f7d` on the quiet Azure F4as_v7 with Ubuntu 24.04.4
 and .NET 11 RC3 on November 23, 2026 UTC. Each of two independent processes
