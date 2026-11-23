@@ -1,0 +1,7 @@
+{
+  "referenceBigIntegerWeight": 91.85683349802774,
+  "diagnosticBigIntegerWeight": 91.67218233696208,
+  "referenceSamples": 20164,
+  "diagnosticSamples": 14192,
+  "resolvedPublication": "PublishInteger from ReadLocalValue / LoadLocal"
+}

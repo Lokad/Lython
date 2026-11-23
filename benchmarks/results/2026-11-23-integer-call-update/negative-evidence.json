@@ -1,0 +1,7 @@
+{
+  "expected": 8421311,
+  "negative": 8423359,
+  "affectedInvocations": 2048,
+  "expectedHash": "69cd97de4a879bb6753b6213c29ecb42a88a592bfa0c98138692f4f53f087f44",
+  "negativeHash": "062c7fc938c51eedd2574b0ade2309f5c9a2ff1479a11010bb906c1ad7e1b4c4"
+}

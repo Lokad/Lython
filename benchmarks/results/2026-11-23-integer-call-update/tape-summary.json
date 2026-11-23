@@ -1,0 +1,47 @@
+{
+  "suppliedCallSite": [
+    {
+      "_inputStart": 5,
+      "_liveExtent": 6,
+      "_primaryOperand": 1,
+      "_resultSlot": 5,
+      "_secondaryOperand": 2147483647,
+      "<OpCode>k__BackingField": 42,
+      "<Span>k__BackingField": {
+        "Start": 122,
+        "Length": 42,
+        "Line": 6,
+        "Column": 14
+      }
+    },
+    {
+      "_inputStart": 4,
+      "_liveExtent": -6,
+      "_primaryOperand": 0,
+      "_resultSlot": 4,
+      "_secondaryOperand": 5,
+      "<OpCode>k__BackingField": 47,
+      "<Span>k__BackingField": {
+        "Start": 113,
+        "Length": 51,
+        "Line": 6,
+        "Column": 5
+      }
+    },
+    {
+      "_inputStart": 4,
+      "_liveExtent": 4,
+      "_primaryOperand": 1,
+      "_resultSlot": 4,
+      "_secondaryOperand": 2147483647,
+      "<OpCode>k__BackingField": 25,
+      "<Span>k__BackingField": {
+        "Start": 113,
+        "Length": 51,
+        "Line": 6,
+        "Column": 5
+      }
+    }
+  ],
+  "sameBodies": 10
+}

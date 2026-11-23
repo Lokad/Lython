@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1522 feed completed integer call results directly to an adjacent update](results/2026-11-23-integer-call-update/README.md)
+removes intermediate result publication. The supplied script takes
+3.07–3.42% less warm elapsed and 2.68–3.09% less from compilation to
+result with supporting CPU. Allocation stays flat. Separate allocation
+profiles attribute the supplied report's boxes to ordinary local reads.
+
 [B1521 explicit-float CSV against CPython](results/2026-11-23-short-csv-utf8-cpython/README.md)
 puts the retained script at 1.117–1.206× warm, 1.063–1.090× from
 compilation through result, and 0.621–0.625× compiling alone.
