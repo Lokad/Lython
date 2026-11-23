@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1450 compact native call stack](results/2026-11-23-compact-native-call-stack/README.md)
+removes workspace from the direct entry. Direct and factory timing
+span zero. Wide calls take 2.66–5.20% longer and ordinary split takes
+5.08–5.14% longer. The source remains private.
+
 [B1449 reusable private word admission](results/2026-11-23-reusable-private-word-admission/README.md)
 retains lower admitted peaks and allows the nonlocal report to complete
 under a 1,000,000-byte shared allowance. Nonlocal CPU rises 0.92–2.91%.

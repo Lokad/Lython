@@ -1,0 +1,120 @@
+[
+  {
+    "platform": "Windows",
+    "role": "reference",
+    "coreSHA256": "ff6eea2190ed6396bdb3ce175bbc9d5bd5e1bcec9b563f1a72084f80037f4324",
+    "traceSHA256": "eb1d8f4a41ead2dae59e5cff5ba148ade7b369988bcbe2e65f297060e5765276",
+    "methods": [
+      {
+        "method": "StartNativeCall",
+        "stackSubtraction": 504,
+        "savedRegisters": 8,
+        "codeBytes": 926,
+        "initializesByteVectors": 9,
+        "callsStackWidths": []
+      }
+    ]
+  },
+  {
+    "platform": "Windows",
+    "role": "candidate",
+    "coreSHA256": "a0ccdbe2d050f8ff47e9a3177854c2a5265e048ec1aae4dff43354df4a4da241",
+    "traceSHA256": "58b3599125652b30624ab19709f9af4ba1f8996007f8dc6fca5fb32a8d8ad3ad",
+    "methods": [
+      {
+        "method": "StartNativeCall",
+        "stackSubtraction": 168,
+        "savedRegisters": 8,
+        "codeBytes": 552,
+        "initializesByteVectors": 0,
+        "callsStackWidths": [
+          "StartCompactNativeCall",
+          "StartWideNativeCall"
+        ]
+      },
+      {
+        "method": "StartCompactNativeCall",
+        "stackSubtraction": 320,
+        "savedRegisters": 5,
+        "codeBytes": 572,
+        "initializesByteVectors": 1,
+        "callsStackWidths": []
+      },
+      {
+        "method": "StartNativeCallWithStorage",
+        "stackSubtraction": 184,
+        "savedRegisters": 8,
+        "codeBytes": 504,
+        "initializesByteVectors": 1,
+        "callsStackWidths": []
+      },
+      {
+        "method": "StartWideNativeCall",
+        "stackSubtraction": 448,
+        "savedRegisters": 5,
+        "codeBytes": 564,
+        "initializesByteVectors": 1,
+        "callsStackWidths": []
+      }
+    ]
+  },
+  {
+    "platform": "Ubuntu WSL",
+    "role": "reference",
+    "coreSHA256": "ff6eea2190ed6396bdb3ce175bbc9d5bd5e1bcec9b563f1a72084f80037f4324",
+    "traceSHA256": "a99145f279f0c89114e1cbe65ef1fd9ffeb0d2a7ea3017f7252b4a1eaca19873",
+    "methods": [
+      {
+        "method": "StartNativeCall",
+        "stackSubtraction": 440,
+        "savedRegisters": 6,
+        "codeBytes": 1067,
+        "initializesByteVectors": 9,
+        "callsStackWidths": []
+      }
+    ]
+  },
+  {
+    "platform": "Ubuntu WSL",
+    "role": "candidate",
+    "coreSHA256": "a0ccdbe2d050f8ff47e9a3177854c2a5265e048ec1aae4dff43354df4a4da241",
+    "traceSHA256": "52e23e635b04e16badfd64247b543d50e58f8a46d843f78f8729702c31ed4037",
+    "methods": [
+      {
+        "method": "StartNativeCall",
+        "stackSubtraction": 104,
+        "savedRegisters": 6,
+        "codeBytes": 640,
+        "initializesByteVectors": 0,
+        "callsStackWidths": [
+          "StartCompactNativeCall",
+          "StartWideNativeCall"
+        ]
+      },
+      {
+        "method": "StartCompactNativeCall",
+        "stackSubtraction": 256,
+        "savedRegisters": 5,
+        "codeBytes": 528,
+        "initializesByteVectors": 1,
+        "callsStackWidths": []
+      },
+      {
+        "method": "StartNativeCallWithStorage",
+        "stackSubtraction": 136,
+        "savedRegisters": 6,
+        "codeBytes": 483,
+        "initializesByteVectors": 1,
+        "callsStackWidths": []
+      },
+      {
+        "method": "StartWideNativeCall",
+        "stackSubtraction": 384,
+        "savedRegisters": 5,
+        "codeBytes": 530,
+        "initializesByteVectors": 1,
+        "callsStackWidths": []
+      }
+    ]
+  }
+]

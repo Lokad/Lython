@@ -1,0 +1,1734 @@
+{
+  "coreSHA256": "ca3072a2478a98eed9a4d3c82cd8fa5d96028268aef64abd56259a724c124778",
+  "purpose": "Known compiler metadata only, not guest heap traversal or CPU attribution",
+  "rows": [
+    {
+      "id": "native-call-continuation",
+      "codes": [
+        {
+          "name": "\u003Cmodule\u003E",
+          "mirrors": false,
+          "native": false,
+          "nativeEnd": 48,
+          "instructions": 48,
+          "capacity": 11,
+          "locals": [
+            "time",
+            "direct",
+            "first",
+            "second",
+            "wide",
+            "failures",
+            "call"
+          ],
+          "captured": [],
+          "closures": [],
+          "opcodeCounts": {
+            "Import": 1,
+            "LoadCallMember": 2,
+            "LoadConst": 3,
+            "Call": 4,
+            "PopTop": 3,
+            "ApplyOperation": 4,
+            "StoreName": 4,
+            "StoreLocal": 3,
+            "LoadLocal": 5,
+            "MakeTuple": 1,
+            "GetIter": 1,
+            "Jump": 6,
+            "ForNext": 1,
+            "Binary": 1,
+            "Return": 1,
+            "CompareJumpIfFalse": 1,
+            "LoadName": 1,
+            "MatchException": 1,
+            "JumpIfFalse": 1,
+            "Augmented": 1,
+            "ClearException": 1,
+            "ReraiseException": 1,
+            "FailAssertion": 1
+          },
+          "calls": [
+            {
+              "first": 7,
+              "count": 1,
+              "offset": 2,
+              "deadTailCapacity": 1,
+              "span": "LythonSourceSpan { Start = 12, Length = 13, Line = 2, Column = 1 }"
+            },
+            {
+              "first": 7,
+              "count": 0,
+              "offset": 2,
+              "deadTailCapacity": 2,
+              "span": "LythonSourceSpan { Start = 26, Length = 19, Line = 3, Column = 1 }"
+            },
+            {
+              "first": 8,
+              "count": 1,
+              "offset": 1,
+              "deadTailCapacity": 1,
+              "span": "LythonSourceSpan { Start = 313, Length = 11, Line = 15, Column = 9 }"
+            },
+            {
+              "first": 8,
+              "count": 1,
+              "offset": 1,
+              "deadTailCapacity": 1,
+              "span": "LythonSourceSpan { Start = 372, Length = 9, Line = 17, Column = 12 }"
+            }
+          ],
+          "entry": 0,
+          "regions": [
+            {
+              "ProtectedStartIndex": 28,
+              "ProtectedEndIndex": 32,
+              "ExceptIndex": 38,
+              "FinallyIndex": null,
+              "SuiteStartIndex": 38,
+              "SuiteEndIndex": 45,
+              "CleanupId": null,
+              "StackDepth": 8
+            }
+          ],
+          "operandReads": [
+            {
+              "Key": 4,
+              "Span": {
+                "Start": 12,
+                "Length": 4,
+                "Line": 2,
+                "Column": 1
+              }
+            },
+            {
+              "Key": 20,
+              "Span": {
+                "Start": 26,
+                "Length": 4,
+                "Line": 3,
+                "Column": 1
+              }
+            },
+            {
+              "Key": 104,
+              "Span": {
+                "Start": 392,
+                "Length": 8,
+                "Line": 18,
+                "Column": 8
+              }
+            },
+            {
+              "Key": 164,
+              "Span": {
+                "Start": 349,
+                "Length": 11,
+                "Line": 16,
+                "Column": 25
+              }
+            }
+          ],
+          "tape": [
+            {
+              "_inputStart": 7,
+              "_liveExtent": 7,
+              "_primaryOperand": 0,
+              "_resultSlot": 7,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 0,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 0,
+                "Length": 11,
+                "Line": 1,
+                "Column": 1
+              }
+            },
+            {
+              "_inputStart": 0,
+              "_liveExtent": 9,
+              "_primaryOperand": 0,
+              "_resultSlot": 7,
+              "_secondaryOperand": 0,
+              "\u003COpCode\u003Ek__BackingField": 23,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 12,
+                "Length": 10,
+                "Line": 2,
+                "Column": 1
+              }
+            },
+            {
+              "_inputStart": 9,
+              "_liveExtent": 10,
+              "_primaryOperand": 0,
+              "_resultSlot": 9,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 1,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 23,
+                "Length": 1,
+                "Line": 2,
+                "Column": 12
+              }
+            },
+            {
+              "_inputStart": 7,
+              "_liveExtent": -9,
+              "_primaryOperand": 0,
+              "_resultSlot": 7,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 42,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 12,
+                "Length": 13,
+                "Line": 2,
+                "Column": 1
+              }
+            },
+            {
+              "_inputStart": 7,
+              "_liveExtent": 7,
+              "_primaryOperand": 0,
+              "_resultSlot": 7,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 30,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 12,
+                "Length": 13,
+                "Line": 2,
+                "Column": 1
+              }
+            },
+            {
+              "_inputStart": 0,
+              "_liveExtent": 9,
+              "_primaryOperand": 1,
+              "_resultSlot": 7,
+              "_secondaryOperand": 1,
+              "\u003COpCode\u003Ek__BackingField": 23,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 26,
+                "Length": 17,
+                "Line": 3,
+                "Column": 1
+              }
+            },
+            {
+              "_inputStart": 7,
+              "_liveExtent": -9,
+              "_primaryOperand": 1,
+              "_resultSlot": 7,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 42,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 26,
+                "Length": 19,
+                "Line": 3,
+                "Column": 1
+              }
+            },
+            {
+              "_inputStart": 7,
+              "_liveExtent": 7,
+              "_primaryOperand": 0,
+              "_resultSlot": 7,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 30,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 26,
+                "Length": 19,
+                "Line": 3,
+                "Column": 1
+              }
+            },
+            {
+              "_inputStart": 7,
+              "_liveExtent": 8,
+              "_primaryOperand": 1,
+              "_resultSlot": 7,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 6,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 46,
+                "Length": 52,
+                "Line": 4,
+                "Column": 1
+              }
+            },
+            {
+              "_inputStart": 7,
+              "_liveExtent": 7,
+              "_primaryOperand": 2,
+              "_resultSlot": 7,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 28,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 46,
+                "Length": 52,
+                "Line": 4,
+                "Column": 1
+              }
+            },
+            {
+              "_inputStart": 7,
+              "_liveExtent": 8,
+              "_primaryOperand": 2,
+              "_resultSlot": 7,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 6,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 99,
+                "Length": 51,
+                "Line": 6,
+                "Column": 1
+              }
+            },
+            {
+              "_inputStart": 7,
+              "_liveExtent": 7,
+              "_primaryOperand": 3,
+              "_resultSlot": 7,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 28,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 99,
+                "Length": 51,
+                "Line": 6,
+                "Column": 1
+              }
+            },
+            {
+              "_inputStart": 7,
+              "_liveExtent": 8,
+              "_primaryOperand": 3,
+              "_resultSlot": 7,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 6,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 151,
+                "Length": 34,
+                "Line": 8,
+                "Column": 1
+              }
+            },
+            {
+              "_inputStart": 7,
+              "_liveExtent": 7,
+              "_primaryOperand": 4,
+              "_resultSlot": 7,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 28,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 151,
+                "Length": 34,
+                "Line": 8,
+                "Column": 1
+              }
+            },
+            {
+              "_inputStart": 7,
+              "_liveExtent": 8,
+              "_primaryOperand": 4,
+              "_resultSlot": 7,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 6,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 186,
+                "Length": 74,
+                "Line": 10,
+                "Column": 1
+              }
+            },
+            {
+              "_inputStart": 7,
+              "_liveExtent": 7,
+              "_primaryOperand": 5,
+              "_resultSlot": 7,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 28,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 186,
+                "Length": 74,
+                "Line": 10,
+                "Column": 1
+              }
+            },
+            {
+              "_inputStart": -6,
+              "_liveExtent": 7,
+              "_primaryOperand": 5,
+              "_resultSlot": 7,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 25,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 261,
+                "Length": 10,
+                "Line": 13,
+                "Column": 1
+              }
+            },
+            {
+              "_inputStart": 7,
+              "_liveExtent": 8,
+              "_primaryOperand": 1,
+              "_resultSlot": 7,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 2,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 285,
+                "Length": 6,
+                "Line": 14,
+                "Column": 14
+              }
+            },
+            {
+              "_inputStart": 8,
+              "_liveExtent": 9,
+              "_primaryOperand": 2,
+              "_resultSlot": 8,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 2,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 292,
+                "Length": 5,
+                "Line": 14,
+                "Column": 21
+              }
+            },
+            {
+              "_inputStart": 9,
+              "_liveExtent": 10,
+              "_primaryOperand": 4,
+              "_resultSlot": 9,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 2,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 298,
+                "Length": 4,
+                "Line": 14,
+                "Column": 27
+              }
+            },
+            {
+              "_inputStart": 7,
+              "_liveExtent": 8,
+              "_primaryOperand": 3,
+              "_resultSlot": 7,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 32,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 284,
+                "Length": 19,
+                "Line": 14,
+                "Column": 13
+              }
+            },
+            {
+              "_inputStart": 7,
+              "_liveExtent": 8,
+              "_primaryOperand": 0,
+              "_resultSlot": 7,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 40,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 284,
+                "Length": 19,
+                "Line": 14,
+                "Column": 13
+              }
+            },
+            {
+              "_inputStart": 8,
+              "_liveExtent": 8,
+              "_primaryOperand": 23,
+              "_resultSlot": 8,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 49,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 272,
+                "Length": 112,
+                "Line": 14,
+                "Column": 1
+              }
+            },
+            {
+              "_inputStart": 7,
+              "_liveExtent": -10,
+              "_primaryOperand": 26,
+              "_resultSlot": 8,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 41,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 284,
+                "Length": 19,
+                "Line": 14,
+                "Column": 13
+              }
+            },
+            {
+              "_inputStart": 8,
+              "_liveExtent": 8,
+              "_primaryOperand": 6,
+              "_resultSlot": 8,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 25,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 272,
+                "Length": 112,
+                "Line": 14,
+                "Column": 1
+              }
+            },
+            {
+              "_inputStart": 8,
+              "_liveExtent": 8,
+              "_primaryOperand": 28,
+              "_resultSlot": 8,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 49,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 309,
+                "Length": 51,
+                "Line": 15,
+                "Column": 5
+              }
+            },
+            {
+              "_inputStart": 5,
+              "_liveExtent": 8,
+              "_primaryOperand": 15,
+              "_resultSlot": 7,
+              "_secondaryOperand": -10,
+              "\u003COpCode\u003Ek__BackingField": 46,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 392,
+                "Length": 11,
+                "Line": 18,
+                "Column": 8
+              }
+            },
+            {
+              "_inputStart": 7,
+              "_liveExtent": 7,
+              "_primaryOperand": 0,
+              "_resultSlot": 7,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 57,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 385,
+                "Length": 18,
+                "Line": 18,
+                "Column": 1
+              }
+            },
+            {
+              "_inputStart": 8,
+              "_liveExtent": 9,
+              "_primaryOperand": 6,
+              "_resultSlot": 8,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 2,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 313,
+                "Length": 4,
+                "Line": 15,
+                "Column": 9
+              }
+            },
+            {
+              "_inputStart": 9,
+              "_liveExtent": 10,
+              "_primaryOperand": 6,
+              "_resultSlot": 9,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 1,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 318,
+                "Length": 5,
+                "Line": 15,
+                "Column": 14
+              }
+            },
+            {
+              "_inputStart": 8,
+              "_liveExtent": -10,
+              "_primaryOperand": 2,
+              "_resultSlot": 8,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 42,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 313,
+                "Length": 11,
+                "Line": 15,
+                "Column": 9
+              }
+            },
+            {
+              "_inputStart": 8,
+              "_liveExtent": 8,
+              "_primaryOperand": 0,
+              "_resultSlot": 8,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 30,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 313,
+                "Length": 11,
+                "Line": 15,
+                "Column": 9
+              }
+            },
+            {
+              "_inputStart": 8,
+              "_liveExtent": 8,
+              "_primaryOperand": 33,
+              "_resultSlot": 8,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 49,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 309,
+                "Length": 51,
+                "Line": 15,
+                "Column": 5
+              }
+            },
+            {
+              "_inputStart": 8,
+              "_liveExtent": 9,
+              "_primaryOperand": 6,
+              "_resultSlot": 8,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 2,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 372,
+                "Length": 4,
+                "Line": 17,
+                "Column": 12
+              }
+            },
+            {
+              "_inputStart": 9,
+              "_liveExtent": 10,
+              "_primaryOperand": 7,
+              "_resultSlot": 9,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 1,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 377,
+                "Length": 3,
+                "Line": 17,
+                "Column": 17
+              }
+            },
+            {
+              "_inputStart": 8,
+              "_liveExtent": 9,
+              "_primaryOperand": 3,
+              "_resultSlot": 8,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 42,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 372,
+                "Length": 9,
+                "Line": 17,
+                "Column": 12
+              }
+            },
+            {
+              "_inputStart": 8,
+              "_liveExtent": 8,
+              "_primaryOperand": 46,
+              "_resultSlot": 15,
+              "_secondaryOperand": -9,
+              "\u003COpCode\u003Ek__BackingField": 51,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 372,
+                "Length": 12,
+                "Line": 17,
+                "Column": 12
+              }
+            },
+            {
+              "_inputStart": 8,
+              "_liveExtent": 8,
+              "_primaryOperand": 23,
+              "_resultSlot": 8,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 49,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 365,
+                "Length": 19,
+                "Line": 17,
+                "Column": 5
+              }
+            },
+            {
+              "_inputStart": 8,
+              "_liveExtent": 9,
+              "_primaryOperand": 6,
+              "_resultSlot": 8,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 5,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 336,
+                "Length": 12,
+                "Line": 16,
+                "Column": 12
+              }
+            },
+            {
+              "_inputStart": 8,
+              "_liveExtent": 9,
+              "_primaryOperand": 0,
+              "_resultSlot": 8,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 52,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 336,
+                "Length": 12,
+                "Line": 16,
+                "Column": 12
+              }
+            },
+            {
+              "_inputStart": 8,
+              "_liveExtent": 8,
+              "_primaryOperand": 45,
+              "_resultSlot": 8,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 50,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 336,
+                "Length": 12,
+                "Line": 16,
+                "Column": 12
+              }
+            },
+            {
+              "_inputStart": 5,
+              "_liveExtent": -10,
+              "_primaryOperand": 0,
+              "_resultSlot": 8,
+              "_secondaryOperand": -1,
+              "\u003COpCode\u003Ek__BackingField": 47,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 349,
+                "Length": 11,
+                "Line": 16,
+                "Column": 25
+              }
+            },
+            {
+              "_inputStart": 8,
+              "_liveExtent": 8,
+              "_primaryOperand": 5,
+              "_resultSlot": 8,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 25,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 349,
+                "Length": 11,
+                "Line": 16,
+                "Column": 25
+              }
+            },
+            {
+              "_inputStart": 8,
+              "_liveExtent": 8,
+              "_primaryOperand": -1,
+              "_resultSlot": 8,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 55,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 329,
+                "Length": 31,
+                "Line": 16,
+                "Column": 5
+              }
+            },
+            {
+              "_inputStart": 8,
+              "_liveExtent": 8,
+              "_primaryOperand": 33,
+              "_resultSlot": 8,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 49,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 309,
+                "Length": 51,
+                "Line": 15,
+                "Column": 5
+              }
+            },
+            {
+              "_inputStart": 8,
+              "_liveExtent": 8,
+              "_primaryOperand": 0,
+              "_resultSlot": 8,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 54,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 309,
+                "Length": 51,
+                "Line": 15,
+                "Column": 5
+              }
+            },
+            {
+              "_inputStart": 8,
+              "_liveExtent": 8,
+              "_primaryOperand": 0,
+              "_resultSlot": 8,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 16,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 365,
+                "Length": 19,
+                "Line": 17,
+                "Column": 5
+              }
+            },
+            {
+              "_inputStart": 2147483647,
+              "_liveExtent": 0,
+              "_primaryOperand": 23,
+              "_resultSlot": -1,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 49,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 365,
+                "Length": 19,
+                "Line": 17,
+                "Column": 5
+              }
+            }
+          ]
+        },
+        {
+          "name": "direct",
+          "mirrors": false,
+          "native": true,
+          "nativeEnd": 9,
+          "instructions": 9,
+          "capacity": 5,
+          "locals": [
+            "n"
+          ],
+          "captured": [],
+          "closures": [],
+          "opcodeCounts": {
+            "CompareJumpIfFalse": 1,
+            "Jump": 3,
+            "LoadConst": 1,
+            "LoadGlobal": 1,
+            "Binary": 1,
+            "Call": 1,
+            "Return": 1
+          },
+          "calls": [
+            {
+              "first": 1,
+              "count": 1,
+              "offset": 1,
+              "deadTailCapacity": 2,
+              "span": "LythonSourceSpan { Start = 87, Length = 11, Line = 5, Column = 27 }"
+            }
+          ],
+          "entry": 0,
+          "regions": [],
+          "operandReads": [
+            {
+              "Key": 0,
+              "Span": {
+                "Start": 77,
+                "Length": 1,
+                "Line": 5,
+                "Column": 17
+              }
+            },
+            {
+              "Key": 20,
+              "Span": {
+                "Start": 94,
+                "Length": 1,
+                "Line": 5,
+                "Column": 34
+              }
+            }
+          ],
+          "tape": [
+            {
+              "_inputStart": 0,
+              "_liveExtent": 1,
+              "_primaryOperand": 4,
+              "_resultSlot": 18,
+              "_secondaryOperand": -1,
+              "\u003COpCode\u003Ek__BackingField": 51,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 77,
+                "Length": 4,
+                "Line": 5,
+                "Column": 17
+              }
+            },
+            {
+              "_inputStart": 1,
+              "_liveExtent": 1,
+              "_primaryOperand": 2,
+              "_resultSlot": 1,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 49,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 72,
+                "Length": 26,
+                "Line": 5,
+                "Column": 12
+              }
+            },
+            {
+              "_inputStart": 1,
+              "_liveExtent": 2,
+              "_primaryOperand": 1,
+              "_resultSlot": 1,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 1,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 72,
+                "Length": 1,
+                "Line": 5,
+                "Column": 12
+              }
+            },
+            {
+              "_inputStart": 2,
+              "_liveExtent": 2,
+              "_primaryOperand": 8,
+              "_resultSlot": 2,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 49,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 72,
+                "Length": 1,
+                "Line": 5,
+                "Column": 12
+              }
+            },
+            {
+              "_inputStart": 1,
+              "_liveExtent": 2,
+              "_primaryOperand": 0,
+              "_resultSlot": 1,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 4,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 87,
+                "Length": 6,
+                "Line": 5,
+                "Column": 27
+              }
+            },
+            {
+              "_inputStart": 0,
+              "_liveExtent": 3,
+              "_primaryOperand": 3,
+              "_resultSlot": 2,
+              "_secondaryOperand": -3,
+              "\u003COpCode\u003Ek__BackingField": 46,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 94,
+                "Length": 3,
+                "Line": 5,
+                "Column": 34
+              }
+            },
+            {
+              "_inputStart": 1,
+              "_liveExtent": 2,
+              "_primaryOperand": 0,
+              "_resultSlot": 1,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 42,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 87,
+                "Length": 11,
+                "Line": 5,
+                "Column": 27
+              }
+            },
+            {
+              "_inputStart": 2,
+              "_liveExtent": 2,
+              "_primaryOperand": 8,
+              "_resultSlot": 2,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 49,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 87,
+                "Length": 11,
+                "Line": 5,
+                "Column": 27
+              }
+            },
+            {
+              "_inputStart": 1,
+              "_liveExtent": 1,
+              "_primaryOperand": 0,
+              "_resultSlot": 1,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 57,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 65,
+                "Length": 33,
+                "Line": 5,
+                "Column": 5
+              }
+            }
+          ]
+        },
+        {
+          "name": "first",
+          "mirrors": false,
+          "native": true,
+          "nativeEnd": 9,
+          "instructions": 9,
+          "capacity": 5,
+          "locals": [
+            "n"
+          ],
+          "captured": [],
+          "closures": [],
+          "opcodeCounts": {
+            "CompareJumpIfFalse": 1,
+            "Jump": 3,
+            "LoadConst": 1,
+            "LoadGlobal": 1,
+            "Binary": 1,
+            "Call": 1,
+            "Return": 1
+          },
+          "calls": [
+            {
+              "first": 1,
+              "count": 1,
+              "offset": 1,
+              "deadTailCapacity": 2,
+              "span": "LythonSourceSpan { Start = 139, Length = 11, Line = 7, Column = 27 }"
+            }
+          ],
+          "entry": 0,
+          "regions": [],
+          "operandReads": [
+            {
+              "Key": 0,
+              "Span": {
+                "Start": 129,
+                "Length": 1,
+                "Line": 7,
+                "Column": 17
+              }
+            },
+            {
+              "Key": 20,
+              "Span": {
+                "Start": 146,
+                "Length": 1,
+                "Line": 7,
+                "Column": 34
+              }
+            }
+          ],
+          "tape": [
+            {
+              "_inputStart": 0,
+              "_liveExtent": 1,
+              "_primaryOperand": 4,
+              "_resultSlot": 18,
+              "_secondaryOperand": -1,
+              "\u003COpCode\u003Ek__BackingField": 51,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 129,
+                "Length": 4,
+                "Line": 7,
+                "Column": 17
+              }
+            },
+            {
+              "_inputStart": 1,
+              "_liveExtent": 1,
+              "_primaryOperand": 2,
+              "_resultSlot": 1,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 49,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 124,
+                "Length": 26,
+                "Line": 7,
+                "Column": 12
+              }
+            },
+            {
+              "_inputStart": 1,
+              "_liveExtent": 2,
+              "_primaryOperand": 1,
+              "_resultSlot": 1,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 1,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 124,
+                "Length": 1,
+                "Line": 7,
+                "Column": 12
+              }
+            },
+            {
+              "_inputStart": 2,
+              "_liveExtent": 2,
+              "_primaryOperand": 8,
+              "_resultSlot": 2,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 49,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 124,
+                "Length": 1,
+                "Line": 7,
+                "Column": 12
+              }
+            },
+            {
+              "_inputStart": 1,
+              "_liveExtent": 2,
+              "_primaryOperand": 0,
+              "_resultSlot": 1,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 4,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 139,
+                "Length": 6,
+                "Line": 7,
+                "Column": 27
+              }
+            },
+            {
+              "_inputStart": 0,
+              "_liveExtent": 3,
+              "_primaryOperand": 3,
+              "_resultSlot": 2,
+              "_secondaryOperand": -3,
+              "\u003COpCode\u003Ek__BackingField": 46,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 146,
+                "Length": 3,
+                "Line": 7,
+                "Column": 34
+              }
+            },
+            {
+              "_inputStart": 1,
+              "_liveExtent": 2,
+              "_primaryOperand": 0,
+              "_resultSlot": 1,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 42,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 139,
+                "Length": 11,
+                "Line": 7,
+                "Column": 27
+              }
+            },
+            {
+              "_inputStart": 2,
+              "_liveExtent": 2,
+              "_primaryOperand": 8,
+              "_resultSlot": 2,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 49,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 139,
+                "Length": 11,
+                "Line": 7,
+                "Column": 27
+              }
+            },
+            {
+              "_inputStart": 1,
+              "_liveExtent": 1,
+              "_primaryOperand": 0,
+              "_resultSlot": 1,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 57,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 117,
+                "Length": 33,
+                "Line": 7,
+                "Column": 5
+              }
+            }
+          ]
+        },
+        {
+          "name": "second",
+          "mirrors": false,
+          "native": true,
+          "nativeEnd": 4,
+          "instructions": 4,
+          "capacity": 5,
+          "locals": [
+            "n"
+          ],
+          "captured": [],
+          "closures": [],
+          "opcodeCounts": {
+            "LoadGlobal": 1,
+            "LoadLocal": 1,
+            "Call": 1,
+            "Return": 1
+          },
+          "calls": [
+            {
+              "first": 1,
+              "count": 1,
+              "offset": 1,
+              "deadTailCapacity": 2,
+              "span": "LythonSourceSpan { Start = 177, Length = 8, Line = 9, Column = 12 }"
+            }
+          ],
+          "entry": 0,
+          "regions": [],
+          "operandReads": [],
+          "tape": [
+            {
+              "_inputStart": 1,
+              "_liveExtent": 2,
+              "_primaryOperand": 0,
+              "_resultSlot": 1,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 4,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 177,
+                "Length": 5,
+                "Line": 9,
+                "Column": 12
+              }
+            },
+            {
+              "_inputStart": 2,
+              "_liveExtent": 3,
+              "_primaryOperand": 0,
+              "_resultSlot": 2,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 2,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 183,
+                "Length": 1,
+                "Line": 9,
+                "Column": 18
+              }
+            },
+            {
+              "_inputStart": 1,
+              "_liveExtent": 2,
+              "_primaryOperand": 0,
+              "_resultSlot": 1,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 42,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 177,
+                "Length": 8,
+                "Line": 9,
+                "Column": 12
+              }
+            },
+            {
+              "_inputStart": 1,
+              "_liveExtent": 1,
+              "_primaryOperand": 0,
+              "_resultSlot": 1,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 57,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 170,
+                "Length": 15,
+                "Line": 9,
+                "Column": 5
+              }
+            }
+          ]
+        },
+        {
+          "name": "wide",
+          "mirrors": false,
+          "native": true,
+          "nativeEnd": 29,
+          "instructions": 29,
+          "capacity": 15,
+          "locals": [
+            "n",
+            "a",
+            "b",
+            "c",
+            "d",
+            "e",
+            "f",
+            "g",
+            "h",
+            "i",
+            "j"
+          ],
+          "captured": [],
+          "closures": [],
+          "opcodeCounts": {
+            "LoadConst": 2,
+            "Dup": 9,
+            "StoreLocal": 10,
+            "CompareJumpIfFalse": 1,
+            "Jump": 3,
+            "LoadGlobal": 1,
+            "Binary": 1,
+            "Call": 1,
+            "Return": 1
+          },
+          "calls": [
+            {
+              "first": 11,
+              "count": 1,
+              "offset": 1,
+              "deadTailCapacity": 2,
+              "span": "LythonSourceSpan { Start = 251, Length = 9, Line = 12, Column = 27 }"
+            }
+          ],
+          "entry": 0,
+          "regions": [],
+          "operandReads": [
+            {
+              "Key": 80,
+              "Span": {
+                "Start": 241,
+                "Length": 1,
+                "Line": 12,
+                "Column": 17
+              }
+            },
+            {
+              "Key": 100,
+              "Span": {
+                "Start": 256,
+                "Length": 1,
+                "Line": 12,
+                "Column": 32
+              }
+            }
+          ],
+          "tape": [
+            {
+              "_inputStart": 11,
+              "_liveExtent": 12,
+              "_primaryOperand": 0,
+              "_resultSlot": 11,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 1,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 223,
+                "Length": 1,
+                "Line": 11,
+                "Column": 25
+              }
+            },
+            {
+              "_inputStart": 11,
+              "_liveExtent": 13,
+              "_primaryOperand": 0,
+              "_resultSlot": 11,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 29,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 203,
+                "Length": 21,
+                "Line": 11,
+                "Column": 5
+              }
+            },
+            {
+              "_inputStart": 12,
+              "_liveExtent": 12,
+              "_primaryOperand": 1,
+              "_resultSlot": 12,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 25,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 203,
+                "Length": 21,
+                "Line": 11,
+                "Column": 5
+              }
+            },
+            {
+              "_inputStart": 11,
+              "_liveExtent": 13,
+              "_primaryOperand": 0,
+              "_resultSlot": 11,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 29,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 203,
+                "Length": 21,
+                "Line": 11,
+                "Column": 5
+              }
+            },
+            {
+              "_inputStart": 12,
+              "_liveExtent": 12,
+              "_primaryOperand": 2,
+              "_resultSlot": 12,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 25,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 203,
+                "Length": 21,
+                "Line": 11,
+                "Column": 5
+              }
+            },
+            {
+              "_inputStart": 11,
+              "_liveExtent": 13,
+              "_primaryOperand": 0,
+              "_resultSlot": 11,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 29,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 203,
+                "Length": 21,
+                "Line": 11,
+                "Column": 5
+              }
+            },
+            {
+              "_inputStart": 12,
+              "_liveExtent": 12,
+              "_primaryOperand": 3,
+              "_resultSlot": 12,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 25,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 203,
+                "Length": 21,
+                "Line": 11,
+                "Column": 5
+              }
+            },
+            {
+              "_inputStart": 11,
+              "_liveExtent": 13,
+              "_primaryOperand": 0,
+              "_resultSlot": 11,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 29,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 203,
+                "Length": 21,
+                "Line": 11,
+                "Column": 5
+              }
+            },
+            {
+              "_inputStart": 12,
+              "_liveExtent": 12,
+              "_primaryOperand": 4,
+              "_resultSlot": 12,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 25,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 203,
+                "Length": 21,
+                "Line": 11,
+                "Column": 5
+              }
+            },
+            {
+              "_inputStart": 11,
+              "_liveExtent": 13,
+              "_primaryOperand": 0,
+              "_resultSlot": 11,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 29,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 203,
+                "Length": 21,
+                "Line": 11,
+                "Column": 5
+              }
+            },
+            {
+              "_inputStart": 12,
+              "_liveExtent": 12,
+              "_primaryOperand": 5,
+              "_resultSlot": 12,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 25,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 203,
+                "Length": 21,
+                "Line": 11,
+                "Column": 5
+              }
+            },
+            {
+              "_inputStart": 11,
+              "_liveExtent": 13,
+              "_primaryOperand": 0,
+              "_resultSlot": 11,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 29,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 203,
+                "Length": 21,
+                "Line": 11,
+                "Column": 5
+              }
+            },
+            {
+              "_inputStart": 12,
+              "_liveExtent": 12,
+              "_primaryOperand": 6,
+              "_resultSlot": 12,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 25,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 203,
+                "Length": 21,
+                "Line": 11,
+                "Column": 5
+              }
+            },
+            {
+              "_inputStart": 11,
+              "_liveExtent": 13,
+              "_primaryOperand": 0,
+              "_resultSlot": 11,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 29,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 203,
+                "Length": 21,
+                "Line": 11,
+                "Column": 5
+              }
+            },
+            {
+              "_inputStart": 12,
+              "_liveExtent": 12,
+              "_primaryOperand": 7,
+              "_resultSlot": 12,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 25,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 203,
+                "Length": 21,
+                "Line": 11,
+                "Column": 5
+              }
+            },
+            {
+              "_inputStart": 11,
+              "_liveExtent": 13,
+              "_primaryOperand": 0,
+              "_resultSlot": 11,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 29,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 203,
+                "Length": 21,
+                "Line": 11,
+                "Column": 5
+              }
+            },
+            {
+              "_inputStart": 12,
+              "_liveExtent": 12,
+              "_primaryOperand": 8,
+              "_resultSlot": 12,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 25,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 203,
+                "Length": 21,
+                "Line": 11,
+                "Column": 5
+              }
+            },
+            {
+              "_inputStart": 11,
+              "_liveExtent": 13,
+              "_primaryOperand": 0,
+              "_resultSlot": 11,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 29,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 203,
+                "Length": 21,
+                "Line": 11,
+                "Column": 5
+              }
+            },
+            {
+              "_inputStart": 12,
+              "_liveExtent": 12,
+              "_primaryOperand": 9,
+              "_resultSlot": 12,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 25,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 203,
+                "Length": 21,
+                "Line": 11,
+                "Column": 5
+              }
+            },
+            {
+              "_inputStart": 11,
+              "_liveExtent": 11,
+              "_primaryOperand": 10,
+              "_resultSlot": 11,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 25,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 203,
+                "Length": 21,
+                "Line": 11,
+                "Column": 5
+              }
+            },
+            {
+              "_inputStart": 0,
+              "_liveExtent": 11,
+              "_primaryOperand": 24,
+              "_resultSlot": 18,
+              "_secondaryOperand": -1,
+              "\u003COpCode\u003Ek__BackingField": 51,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 241,
+                "Length": 4,
+                "Line": 12,
+                "Column": 17
+              }
+            },
+            {
+              "_inputStart": 11,
+              "_liveExtent": 11,
+              "_primaryOperand": 22,
+              "_resultSlot": 11,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 49,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 236,
+                "Length": 24,
+                "Line": 12,
+                "Column": 12
+              }
+            },
+            {
+              "_inputStart": 11,
+              "_liveExtent": 12,
+              "_primaryOperand": 1,
+              "_resultSlot": 11,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 1,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 236,
+                "Length": 1,
+                "Line": 12,
+                "Column": 12
+              }
+            },
+            {
+              "_inputStart": 12,
+              "_liveExtent": 12,
+              "_primaryOperand": 28,
+              "_resultSlot": 12,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 49,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 236,
+                "Length": 1,
+                "Line": 12,
+                "Column": 12
+              }
+            },
+            {
+              "_inputStart": 11,
+              "_liveExtent": 12,
+              "_primaryOperand": 0,
+              "_resultSlot": 11,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 4,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 251,
+                "Length": 4,
+                "Line": 12,
+                "Column": 27
+              }
+            },
+            {
+              "_inputStart": 0,
+              "_liveExtent": 13,
+              "_primaryOperand": 3,
+              "_resultSlot": 12,
+              "_secondaryOperand": -3,
+              "\u003COpCode\u003Ek__BackingField": 46,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 256,
+                "Length": 3,
+                "Line": 12,
+                "Column": 32
+              }
+            },
+            {
+              "_inputStart": 11,
+              "_liveExtent": 12,
+              "_primaryOperand": 0,
+              "_resultSlot": 11,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 42,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 251,
+                "Length": 9,
+                "Line": 12,
+                "Column": 27
+              }
+            },
+            {
+              "_inputStart": 12,
+              "_liveExtent": 12,
+              "_primaryOperand": 28,
+              "_resultSlot": 12,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 49,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 251,
+                "Length": 9,
+                "Line": 12,
+                "Column": 27
+              }
+            },
+            {
+              "_inputStart": 11,
+              "_liveExtent": 11,
+              "_primaryOperand": 0,
+              "_resultSlot": 11,
+              "_secondaryOperand": 2147483647,
+              "\u003COpCode\u003Ek__BackingField": 57,
+              "\u003CSpan\u003Ek__BackingField": {
+                "Start": 229,
+                "Length": 31,
+                "Line": 12,
+                "Column": 5
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
