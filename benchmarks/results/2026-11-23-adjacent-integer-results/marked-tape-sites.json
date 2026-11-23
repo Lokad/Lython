@@ -1,0 +1,28 @@
+{
+  "reference": {
+    "scripts.ordinary-fully-supplied-helper": {},
+    "scripts.csv-invoice.method-policy.quoted-control": {},
+    "diagnostic.text-summary.nonlocal-computed-width.large": {},
+    "scripts.csv-meter-report.explicit-float": {},
+    "protected-regression": {}
+  },
+  "candidate": {
+    "scripts.ordinary-fully-supplied-helper": {
+      "<module>": [
+        13
+      ]
+    },
+    "scripts.csv-invoice.method-policy.quoted-control": {
+      "price_line": [
+        17
+      ]
+    },
+    "diagnostic.text-summary.nonlocal-computed-width.large": {},
+    "scripts.csv-meter-report.explicit-float": {},
+    "protected-regression": {
+      "calculate": [
+        2
+      ]
+    }
+  }
+}

@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1513 publish adjacent integer arguments within one dispatch](results/2026-11-23-adjacent-integer-results/README.md)
+skips the intended dispatch, but supplied-helper warm elapsed rises
+0.74–4.16% with mixed CPU. First use is inconclusive and the quote-heavy
+invoice takes less warm time. The architecture stays private.
+
 [B1512 CPU attribution on the retained call checkpoint](results/2026-11-23-retained-call-attribution/README.md)
 finds caller arithmetic and instruction dispatch prominent in the supplied
 helper. Short first use and quoted invoices spread work across text or I/O,
