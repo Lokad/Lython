@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1429 retained source against CPython](results/2026-11-23-retained-cpython-checkpoint/README.md)
+refreshes the six scripts from B1419. Factories reach their result
+in 1.786–1.808× CPython's time. Warm factory workers diverge 18.08%.
+The nonlocal report takes 1.468–1.501× CPython warm.
+
 [B1428 singleton positional default](results/2026-11-23-singleton-positional-default/README.md)
 removes eager tuple allocation. Factories allocate 7.43% less and
 the defaults observer allocates 5.34% more. Factory elapsed spans
