@@ -6,6 +6,10 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Direct regex coordinate tuples](results/2026-11-24-regex-coordinate-tuples/README.md)
+replace nested factories and reservations. The measured span and register
+scripts allocate 12.99–27.66% less at unchanged admitted peaks.
+
 [B1540](results/2026-11-23-current-short-text-cpu/README.md) profiles the
 current short report and its inline control. Native entry, operand
 movement and dispatch are prominent on the representative script.

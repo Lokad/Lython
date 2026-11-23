@@ -1,0 +1,57 @@
+[
+  {
+    "case": "scripts.regex-unicode-groups",
+    "allocatedBytes": [
+      3264584,
+      3264584
+    ],
+    "peakAdmission": [
+      2089013,
+      2089013
+    ]
+  },
+  {
+    "case": "scripts.regex-unicode-spans",
+    "allocatedBytes": [
+      3215528,
+      2797736
+    ],
+    "peakAdmission": [
+      1463821,
+      1463821
+    ]
+  },
+  {
+    "case": "scripts.regex-unicode-whole-offsets",
+    "allocatedBytes": [
+      3117588,
+      2699376
+    ],
+    "peakAdmission": [
+      1463709,
+      1463709
+    ]
+  },
+  {
+    "case": "scripts.regex-ascii-groups",
+    "allocatedBytes": [
+      2955768,
+      2955768
+    ],
+    "peakAdmission": [
+      2075093,
+      2075093
+    ]
+  },
+  {
+    "case": "scripts.regex-unicode-wide-registers",
+    "allocatedBytes": [
+      2446656,
+      1769792
+    ],
+    "peakAdmission": [
+      1366529,
+      1366529
+    ]
+  }
+]
