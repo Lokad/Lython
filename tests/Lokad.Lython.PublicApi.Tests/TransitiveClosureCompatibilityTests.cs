@@ -35,6 +35,34 @@ public sealed class TransitiveClosureCompatibilityTests
     }
 
     [Fact]
+    public async Task LocalsSnapshotOrdersOrdinaryLocalsThenCellsThenFreeNames()
+    {
+        using var script = new LythonEngine().Compile("""
+            def outer(parameter):
+                zebra = 1
+                alpha = 2
+                def middle():
+                    def first(): return zebra
+                    def second(): return alpha
+                    print(tuple(locals()), first(), second(), parameter)
+                plain = 3
+                print(tuple(locals()))
+                middle()
+            outer(7)
+            """);
+        Assert.True(script.IsValid);
+        const string expected = "('parameter', 'middle', 'plain', 'alpha', 'zebra')\n" +
+                                "('first', 'second', 'alpha', 'parameter', 'zebra') 1 2 7\n";
+        using var sync = script.Run(new MockLythonHost());
+        using var asyncResult = await script.RunAsync(new MockLythonHost());
+        foreach (var result in new[] { sync, asyncResult })
+        {
+            Assert.True(result.Success, Describe(result));
+            Assert.Equal(expected, result.StandardOutput);
+        }
+    }
+
+    [Fact]
     public async Task TransitiveDefCaptureSurvivesReturnedScopes()
     {
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""

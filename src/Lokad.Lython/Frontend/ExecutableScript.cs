@@ -625,6 +625,8 @@ internal sealed partial class ExecutableCodeObject
     internal int[] ModuleGlobalSlots { get; private set; } = [];
     internal ExecutableCaptureSources? CaptureSources { get; private set; }
     internal bool ForwardsCaptures { get; init; }
+    internal int FirstSnapshotCell { get; init; }
+    internal int[]? SnapshotTailOrder { get; init; }
 
     internal void PrepareModuleGlobals(ExecutableCodeObject module, CancellationToken cancellationToken)
     {

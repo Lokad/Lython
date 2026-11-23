@@ -238,13 +238,37 @@ internal sealed partial class LythonRuntime
         // it must not copy closure snapshots into a live parent lookup chain.
         public IEnumerable<KeyValuePair<string, object>> EnumerateVisibleLocals()
         {
-            foreach (var name in _execution.Code.LocalNames)
-                if (!name.StartsWith('<') && TryReadExecutableLocal(name, out var value))
-                    yield return new(name, value);
-            for (var i = 0; i < _execution.Code.ClosureNames.Count; i++)
+            var code = _execution.Code;
+            var cells = code.CapturedLocalSlots;
+            var nextCell = code.FirstSnapshotCell;
+            for (var slot = 0; slot < code.LocalNames.Count; slot++)
             {
-                if (_execution.Captures.TryRead(i, out var value) && value is not null)
-                    yield return new(_execution.Code.ClosureNames[i], value);
+                if (nextCell < cells.Count && cells[nextCell] == slot)
+                {
+                    nextCell++;
+                    continue;
+                }
+                var name = code.LocalNames[slot];
+                if (!name.StartsWith('<') && ReadLocalValue(_execution.Locals, slot) is { } value)
+                    yield return new(name, value);
+            }
+
+            var tail = code.SnapshotTailOrder;
+            var count = tail?.Length ?? code.ClosureNames.Count;
+            for (var index = 0; index < count; index++)
+            {
+                var slot = tail?[index] ?? ~index;
+                if (slot < 0)
+                {
+                    if (_execution.Captures.TryRead(~slot, out var value) && value is not null)
+                        yield return new(code.ClosureNames[~slot], value);
+                }
+                else
+                {
+                    var name = code.LocalNames[slot];
+                    if (!name.StartsWith('<') && ReadLocalValue(_execution.Locals, slot) is { } value)
+                        yield return new(name, value);
+                }
             }
         }
 

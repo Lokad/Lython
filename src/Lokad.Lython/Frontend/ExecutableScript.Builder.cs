@@ -230,6 +230,7 @@ internal sealed partial class ExecutableScript
             }
 
             var (capturedLocalSlots, containsCallable, needsMirroring, completeChildren, forwardsCaptures) = PrepareDeclarations();
+            var (firstSnapshotCell, snapshotTail) = PrepareSnapshotOrder(capturedLocalSlots);
             // Annotation values can retain functions or deferred generators after
             // module slots leave. Keep their existing global namespace lifetime
             // conservatively; scalar-only declarations need no such mirror.
@@ -274,7 +275,9 @@ internal sealed partial class ExecutableScript
                 cancellationToken: _compilation.CancellationToken)
             {
                 QualifiedName = qualifiedName,
-                ForwardsCaptures = forwardsCaptures
+                ForwardsCaptures = forwardsCaptures,
+                FirstSnapshotCell = firstSnapshotCell,
+                SnapshotTailOrder = snapshotTail
             };
             _moduleCode?.Add(code);
             _compilation.ReturnBuffers(_buffers);
@@ -288,8 +291,6 @@ internal sealed partial class ExecutableScript
             var completeChildren = true;
             var forwardsCaptures = false;
             HashSet<int>? captured = null;
-            var firstLambda = _buffers.Constants.Count;
-            var firstGenerator = _buffers.Constants.Count;
             for (var index = 0; index < _buffers.Constants.Count; index++)
             {
                 if ((index & 1023) == 0) PythonTokenization.CheckCancellation(_compilation.CancellationToken, 0);
@@ -301,28 +302,14 @@ internal sealed partial class ExecutableScript
                     case ExecutableCreateClass or ExecutableBindTypeAlias:
                         needsMirroring = true;
                         break;
-                    case ExecutableCreateLambda:
-                        firstLambda = Math.Min(firstLambda, index);
+                    case ExecutableCreateLambda lambda:
+                        PrepareChild(lambda.CodeObject);
                         break;
-                    case ExecutableCreateGeneratorExpression:
-                        firstGenerator = Math.Min(firstGenerator, index);
+                    case ExecutableCreateGeneratorExpression generator:
+                        completeChildren = false;
+                        PrepareChild(generator.CodeObject);
                         break;
                 }
-            }
-
-            // Forwarded cells contribute to locals() snapshots. Preserve the
-            // declaration order of named functions, lambdas and generators.
-            for (var index = firstLambda; index < _buffers.Constants.Count; index++)
-            {
-                if ((index & 1023) == 0) PythonTokenization.CheckCancellation(_compilation.CancellationToken, 0);
-                if (_buffers.Constants[index] is ExecutableCreateLambda lambda) PrepareChild(lambda.CodeObject);
-            }
-            for (var index = firstGenerator; index < _buffers.Constants.Count; index++)
-            {
-                if ((index & 1023) == 0) PythonTokenization.CheckCancellation(_compilation.CancellationToken, 0);
-                if (_buffers.Constants[index] is not ExecutableCreateGeneratorExpression generator) continue;
-                completeChildren = false;
-                PrepareChild(generator.CodeObject);
             }
 
             var slots = captured?.ToArray() ?? [];
@@ -366,6 +353,65 @@ internal sealed partial class ExecutableScript
                         _compilation.Governor, _compilation.CancellationToken);
                 }
             }
+        }
+
+        private (int FirstCell, int[]? Tail) PrepareSnapshotOrder(int[] captured)
+        {
+            var free = _buffers.Closures;
+            if (captured.Length == 0 && free.Count < 2) return (0, null);
+
+            var parameters = _parameterLayout?.ParameterCount ?? 0;
+            var firstCell = Array.BinarySearch(captured, parameters);
+            if (firstCell < 0) firstCell = ~firstCell;
+            var cells = captured.Length - firstCell;
+            var token = _compilation.CancellationToken;
+
+            if (cells == 0)
+            {
+                var index = 1;
+                for (; index < free.Count; index++)
+                {
+                    PythonTokenization.CheckCancellation(token, index);
+                    if (string.CompareOrdinal(free[index - 1], free[index]) > 0) break;
+                }
+                if (index >= free.Count) return (firstCell, null);
+            }
+            return (firstCell, CreateSnapshotTail(captured.AsSpan(firstCell)));
+        }
+
+        private int[] CreateSnapshotTail(ReadOnlySpan<int> cells)
+        {
+            // Physical bindings keep their operand indices. The snapshot tail
+            // contains nonparameter cells followed by free variables in name
+            // order. Negative entries address the existing free-variable table.
+            var free = _buffers.Closures;
+            var token = _compilation.CancellationToken;
+            var count = checked(cells.Length + free.Count);
+            var bytes = checked(32L + 4L * count);
+            using var storage = _compilation.Governor?.ReserveTemporary(bytes + 256L, EmptySpan);
+            PythonTokenization.CheckCancellation(token, 0);
+            var order = new int[count];
+            cells.CopyTo(order);
+            for (var index = 0; index < free.Count; index++)
+            {
+                PythonTokenization.CheckCancellation(token, index);
+                order[cells.Length + index] = ~index;
+            }
+            var comparisons = 0;
+            Comparison<int> compare = CompareSlots;
+            if (cells.Length > 1) ExecutionSort.Sort(order.AsSpan(0, cells.Length), compare);
+            if (free.Count > 1) ExecutionSort.Sort(order.AsSpan(cells.Length), compare);
+            PythonTokenization.CheckCancellation(token, 0);
+            storage?.Commit(bytes);
+            return order;
+
+            int CompareSlots(int left, int right)
+            {
+                if ((comparisons++ & 63) == 0) PythonTokenization.CheckCancellation(token, 0);
+                return string.CompareOrdinal(Name(left), Name(right));
+            }
+
+            string Name(int slot) => slot < 0 ? free[~slot] : _buffers.Locals[slot];
         }
 
     }
