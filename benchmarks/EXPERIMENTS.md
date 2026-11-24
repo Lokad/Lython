@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1573](results/2026-11-24-dictionary-loop-entry/README.md) tests earlier
+counting-loop exit on the combined scalar-return base. Both short-text
+controls move enough to leave the effect unresolved. Mixed-width CPU
+rises, so the patch stays private.
+
 [B1572](results/2026-11-24-closed-scalar-branches/README.md) retains
 captured and conditional scalar returns together. Captured and defaulted
 rules avoid thousands of activations and improve warm and first-use
