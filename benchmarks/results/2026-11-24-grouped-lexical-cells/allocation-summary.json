@@ -1,0 +1,46 @@
+[
+  {
+    "case": "scripts.captured-rule-closures",
+    "allocatedBytes": [
+      1491608,
+      1344168
+    ],
+    "peakAdmission": [
+      2147679,
+      2164063
+    ]
+  },
+  {
+    "case": "scripts.rule-default-closures",
+    "allocatedBytes": [
+      978264,
+      1011048
+    ],
+    "peakAdmission": [
+      2917727,
+      2917727
+    ]
+  },
+  {
+    "case": "scripts.annotated-rule-closures",
+    "allocatedBytes": [
+      488840,
+      505240
+    ],
+    "peakAdmission": [
+      2444081,
+      2444081
+    ]
+  },
+  {
+    "case": "scripts.csv-invoice.method-policy.quoted-control",
+    "allocatedBytes": [
+      3281502,
+      3281590
+    ],
+    "peakAdmission": [
+      9433482,
+      9433482
+    ]
+  }
+]

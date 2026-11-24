@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1562](results/2026-11-24-grouped-lexical-cells/README.md) groups
+contiguous native lexical captures. Captured rules allocate 9.88% less
+and run 6.59–10.03% slower. The prototype widens unaffected function
+objects and also slows the quoted-invoice control. It stays private.
+
 [B1561](results/2026-11-24-rule-closures-cpython/README.md) refreshes
 three generated rule scripts against CPython. Captured rules take
 2.214–2.318× warm, 2.218–2.295× through result and 0.565–0.566×
