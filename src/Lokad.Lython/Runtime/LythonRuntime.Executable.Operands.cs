@@ -10,14 +10,16 @@ internal sealed partial class LythonRuntime
         if (source < 0)
         {
             var immediate = ~source;
-            if (immediate < code.Constants.Length) return RuntimeValue(code.Constants[immediate]);
-            var capture = immediate - code.CaptureOperandBase;
-            if (capture >= 0)
+            var name = immediate - code.Constants.Length;
+            if (name < 0) return RuntimeValue(code.Constants[immediate]);
+            if (name >= code.Names.Length)
+            {
+                var capture = name - code.Names.Length;
                 return captures.TryRead(capture, out var captured) && captured is not null
                     ? captured : throw RuntimeErrors.FreeVariableNotAssociated(code.ClosureNames[capture], code.OperandReadSpan(index, input));
-            var name = code.Names[immediate - code.Constants.Length];
-            return TryResolveExecutableGlobal(code, immediate - code.Constants.Length, scope, out var global)
-                ? global : throw RuntimeErrors.NameNotDefined(name, code.OperandReadSpan(index, input));
+            }
+            return TryResolveExecutableGlobal(code, name, scope, out var global)
+                ? global : throw RuntimeErrors.NameNotDefined(code.Names[name], code.OperandReadSpan(index, input));
         }
         var value = values[source].Object;
         if (source < code.FirstTemporarySlot)
@@ -33,12 +35,12 @@ internal sealed partial class LythonRuntime
     {
         if (source >= 0) return values[source].TryGetInteger(out value);
         var index = ~source;
-        if (index < code.Constants.Length) return TryMachineInteger(code.Constants[index], out value);
-        var capture = index - code.CaptureOperandBase;
-        if (capture >= 0) return captures.TryReadInteger(capture, out value);
+        var name = index - code.Constants.Length;
+        if (name < 0) return TryMachineInteger(code.Constants[index], out value);
+        if (name >= code.Names.Length) return captures.TryReadInteger(name - code.Names.Length, out value);
         // Missing-name diagnostics belong to the ordered ordinary reads. This
         // probe never raises a later operand's failure ahead of an earlier one.
-        TryResolveExecutableGlobal(code, index - code.Constants.Length, scope, out var item);
+        TryResolveExecutableGlobal(code, name, scope, out var item);
         return TryMachineInteger(item, out value);
     }
 
@@ -47,14 +49,11 @@ internal sealed partial class LythonRuntime
     {
         if (source >= 0) return values[source].TryGetDouble(out value);
         var index = ~source;
+        var name = index - code.Constants.Length;
         object? item;
-        if (index < code.Constants.Length) item = code.Constants[index];
-        else
-        {
-            var capture = index - code.CaptureOperandBase;
-            if (capture >= 0) captures.TryRead(capture, out item);
-            else TryResolveExecutableGlobal(code, index - code.Constants.Length, scope, out item);
-        }
+        if (name < 0) item = code.Constants[index];
+        else if (name >= code.Names.Length) captures.TryRead(name - code.Names.Length, out item);
+        else TryResolveExecutableGlobal(code, name, scope, out item);
         if (item is double floating)
         { value = floating; return true; }
         value = 0;

@@ -1,6 +1,7 @@
 using Lokad.Lython.Frontend;
 using System.Collections;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using Lokad.Lython.Runtime.Text;
 using System.Text.RegularExpressions;
 
@@ -144,6 +145,9 @@ internal sealed partial class LythonRuntime
             return false;
         }
 
+        // Keep the capture representation out of the inline arithmetic operand
+        // readers. Locals and constants need neither a cell nor a carrier test.
+        [MethodImpl(MethodImplOptions.NoInlining)]
         internal bool TryReadInteger(int index, out long value)
         {
             if (GetCell(index) is { } cell) return cell.TryReadInteger(out value);
