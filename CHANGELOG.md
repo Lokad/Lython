@@ -2,6 +2,8 @@
 
 ## 0.11.0 - Unreleased
 
+- Accept signed 64-bit replacement and split counts in module and compiled
+  regex calls, including values returned by guest index methods.
 - Return two fresh lexical callables from eligible closed factories without
   constructing a callee workspace. Preserve ordered defaults and admission.
 - Refund frontend regex storage when a constant pattern is rejected. A

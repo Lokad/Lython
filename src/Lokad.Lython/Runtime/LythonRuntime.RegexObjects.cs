@@ -383,15 +383,14 @@ internal sealed partial class LythonRuntime
             }
 
             var counted = substitution || operation == PatternOperation.Split;
-            var countName = substitution ? "count" : "maxsplit";
             var count = counted ? arguments.Optional(subjectIndex + 1) : null;
             var positionIndex = subjectIndex + (counted ? 2 : 1);
             var pos = arguments.Optional(positionIndex);
             var end = arguments.Optional(positionIndex + 1);
             if (asynchronous && (count is PyInstance || pos is PyInstance || end is PyInstance))
-                return ExecuteWithIndexProtocols(pattern, text, replacement, count, pos, end, countName, name, operation, context, span);
+                return ExecuteWithIndexProtocols(pattern, text, replacement, count, pos, end, operation, context, span);
 
-            var limit = count is null ? 0 : RegexCompiler.ParseExplicitInt(count, countName, name, span, context);
+            var limit = count is null ? 0 : RegexCompiler.ParseIndex(count, span, context);
             var start = pos is null ? 0 : RegexCompiler.ParsePosition(pos, span, context);
             var stop = end is null ? int.MaxValue : RegexCompiler.ParsePosition(end, span, context);
             return ExecutePrepared(pattern, text, replacement, limit, start, stop, operation, context, span, asynchronous);
@@ -400,18 +399,18 @@ internal sealed partial class LythonRuntime
         // Only actual guest coercion needs an asynchronous continuation. The
         // already evaluated subject and optional arguments survive the callback.
         private static async ValueTask<object> ExecuteWithIndexProtocols(RePatternObject pattern, PyString text, object? replacement,
-            object? count, object? pos, object? end, string countName, string name, PatternOperation operation,
+            object? count, object? pos, object? end, PatternOperation operation,
             ExecutionContext context, LythonSourceSpan span)
         {
             var limit = count is null ? 0
-                : await RegexCompiler.ParseExplicitIntAsync(count, countName, name, span, context).ConfigureAwait(false);
+                : await RegexCompiler.ParseIndexAsync(count, span, context).ConfigureAwait(false);
             var start = pos is null ? 0 : await RegexCompiler.ParsePositionAsync(pos, span, context).ConfigureAwait(false);
             var stop = end is null ? int.MaxValue : await RegexCompiler.ParsePositionAsync(end, span, context).ConfigureAwait(false);
             return await ExecutePrepared(pattern, text, replacement, limit, start, stop, operation, context, span, true).ConfigureAwait(false);
         }
 
         private static ValueTask<object> ExecutePrepared(RePatternObject pattern, PyString text, object? replacement,
-            int count, int pos, int end, PatternOperation operation, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
+            long count, int pos, int end, PatternOperation operation, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
         {
             var range = RegexCompiler.CreateSubjectRange(text, pos, end, span, context);
             switch (operation)

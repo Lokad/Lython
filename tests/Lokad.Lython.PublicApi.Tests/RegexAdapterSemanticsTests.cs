@@ -160,10 +160,12 @@ public sealed class RegexAdapterSemanticsTests
     [Theory]
     [InlineData("re.compile('é').search('aéz',Index('pos')).group()", "pos\né")]
     [InlineData("re.compile(',').split('a,b,c',Index('maxsplit'))", "maxsplit\n['a', 'b,c']")]
+    [InlineData("re.compile(',').split('a,b,c',Index('maxsplit', 1 << 40))", "maxsplit\n['a', 'b', 'c']")]
     [InlineData("re.compile(',').sub('/', 'a,b,c',Index('count'),pos=Index('pos'),endpos=Index('endpos',4))", "count\npos\nendpos\na/b,c")]
     [InlineData("re.search('é','aéz',pos=Index('pos')).group()", "pos\né")]
     [InlineData("re.split(',','a,b,c',Index('maxsplit'))", "maxsplit\n['a', 'b,c']")]
     [InlineData("re.sub(',','/','a,b,c',Index('count'))", "count\na/b,c")]
+    [InlineData("re.subn(',','/','a,b,c',count=Index('count', 1 << 40))", "count\n('a/b/c', 2)")]
     public async Task RegexBoundsAwaitGuestIndexIo(string expression, string expected)
     {
         using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile($"""
@@ -189,6 +191,42 @@ public sealed class RegexAdapterSemanticsTests
             Assert.True(result.Success, result.Failure?.Message);
             Assert.Equal($"entry\n{expected}\n", result.StandardOutput);
             Assert.True(host.CompletedAsynchronously > 0);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Fact]
+    public async Task SplitAndSubstitutionAcceptSigned64BitCounts()
+    {
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using (var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
+            import re
+            p = re.compile('a')
+            for limit in (9223372036854775807, -9223372036854775808, 1 << 63):
+                for apply in (lambda: re.sub('a', 'b', 'aaa', count=limit),
+                              lambda: p.subn('b', 'aaa', limit),
+                              lambda: re.split('a', 'aba', maxsplit=limit),
+                              lambda: p.split('aba', limit)):
+                    try:
+                        print(apply())
+                    except OverflowError as error:
+                        print(error)
+            """, budget))
+        {
+            Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
+            var baseline = budget.ReservedBytes;
+            foreach (var asynchronous in new[] { false, true })
+            {
+                using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
+                {
+                    Assert.True(result.Success, result.Failure?.Message);
+                    Assert.Equal("bbb\n('bbb', 3)\n['', 'b', '']\n['', 'b', '']\n" +
+                        "aaa\n('aaa', 0)\n['aba']\n['aba']\n" +
+                        string.Concat(Enumerable.Repeat("Python int too large to convert to C ssize_t\n", 4)),
+                        result.StandardOutput);
+                }
+                Assert.Equal(baseline, budget.ReservedBytes);
+            }
         }
         Assert.Equal(0, budget.ReservedBytes);
     }

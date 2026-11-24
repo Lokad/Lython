@@ -425,10 +425,10 @@ re.sub("a", "x", "alpha", count="1")
     [InlineData(
         """
 import re
-re.split("a", "alpha", maxsplit=2147483648)
+re.split("a", "alpha", maxsplit=1 << 63)
 """,
-        "ValueError",
-        "maxsplit is out of range")]
+        "OverflowError",
+        "Python int too large to convert to C ssize_t")]
     public void ModuleRegexFunctions_ValidateCountAndMaxsplitContracts(string source, string exceptionType, string messageFragment)
     {
         var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());

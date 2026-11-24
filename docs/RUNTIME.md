@@ -2539,7 +2539,10 @@ explicit `None`, including when a later parameter such as `endpos` is supplied
 by name.
 During `RunAsync`, module and compiled-pattern bounds and counts
 can call guest `__index__` methods that await host I/O. Coercion
-completes before the provider opens the subject.
+completes before the provider opens the subject. Substitution counts and
+split limits accept signed 64-bit values. Zero is unlimited and negative
+values perform no replacements or splits. Unrepresentable indexes raise
+`OverflowError`. Output storage is admitted as it grows.
 Module regex calls distinguish omitted flags from an explicit `None`.
 Text patterns raise `TypeError` for `flags=None`, and compiled patterns
 accept it as a false flag value. Guest flag operators and the truth

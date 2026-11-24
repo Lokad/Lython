@@ -348,7 +348,7 @@ internal sealed partial class LythonRuntime
                 return left.CompareTo(right);
             };
 
-        internal static PyList Split(RePatternObject pattern, RegexSubjectRange range, int maxSplit,
+        internal static PyList Split(RePatternObject pattern, RegexSubjectRange range, long maxSplit,
             LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecution(span);
@@ -359,7 +359,7 @@ internal sealed partial class LythonRuntime
             if (maxSplit >= 0)
             {
                 using var match = new PreparedCursor(pattern, range, window, context, span);
-                var splits = 0;
+                long splits = 0;
                 while ((maxSplit == 0 || splits < maxSplit) && match.Next(range))
                 {
                     context.CheckExecution(span);
@@ -381,15 +381,15 @@ internal sealed partial class LythonRuntime
         }
 
         internal static object ExecuteSubstitute(RePatternObject pattern, object replacement, RegexSubjectRange range,
-            int count, LythonSourceSpan span, ExecutionContext context, RegexSubstitutionMode mode)
+            long count, LythonSourceSpan span, ExecutionContext context, RegexSubstitutionMode mode)
             => SubstituteCoreAsync(pattern, replacement, range, count, span, context, mode, false).GetAwaiter().GetResult();
 
         internal static ValueTask<object> ExecuteSubstituteAsync(RePatternObject pattern, object replacement, RegexSubjectRange range,
-            int count, LythonSourceSpan span, ExecutionContext context, RegexSubstitutionMode mode)
+            long count, LythonSourceSpan span, ExecutionContext context, RegexSubstitutionMode mode)
             => SubstituteCoreAsync(pattern, replacement, range, count, span, context, mode, true);
 
         private static async ValueTask<object> SubstituteCoreAsync(RePatternObject pattern, object replacement, RegexSubjectRange range,
-            int count, LythonSourceSpan span, ExecutionContext context, RegexSubstitutionMode mode, bool asynchronous)
+            long count, LythonSourceSpan span, ExecutionContext context, RegexSubstitutionMode mode, bool asynchronous)
         {
             context.CheckExecution(span);
             if (!range.IsValid)
