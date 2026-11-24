@@ -1,0 +1,46 @@
+[
+  {
+    "case": "scripts.regex-repeat-expansion.short-name",
+    "allocatedBytes": [
+      401632,
+      344288
+    ],
+    "peakAdmission": [
+      143629,
+      143545
+    ]
+  },
+  {
+    "case": "scripts.regex-repeat-expansion.long-name",
+    "allocatedBytes": [
+      967432,
+      344840
+    ],
+    "peakAdmission": [
+      146209,
+      144061
+    ]
+  },
+  {
+    "case": "scripts.regex-repeat-expansion.numeric",
+    "allocatedBytes": [
+      344288,
+      344288
+    ],
+    "peakAdmission": [
+      143545,
+      143545
+    ]
+  },
+  {
+    "case": "scripts.regex-repeat-expansion.literal",
+    "allocatedBytes": [
+      106720,
+      106720
+    ],
+    "peakAdmission": [
+      139253,
+      139253
+    ]
+  }
+]

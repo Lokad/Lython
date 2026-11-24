@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Borrowed regex names](results/2026-11-24-borrowed-regex-names/README.md)
+remove temporary Python strings and name reservations from successful
+replacement lookups. Short and long Unicode expansion diagnostics
+allocate 14.28% and 64.36% less, with flat numeric and literal controls.
+
 [B1546](results/2026-11-24-isolated-local-transfer/README.md) moves the
 private assignment transfer outside hot dispatch. The explicit meter
 improves again and both unchanged controls take more elapsed and CPU.
