@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1589](results/2026-11-24-captured-local-reads/README.md) removes three
+captured-local loads from the factory. Captured-rule timing is inconclusive,
+the unchanged-tape text control slows, and the annotated control also moves.
+Keep the shared scalar-reader change private.
+
 [B1588](results/2026-11-24-eager-json-owner/README.md) shares one builder
 owner from eager JSON traversal through publication. Expanded and default
 options improve on elapsed and CPU. The escape-heavy script and noisy
