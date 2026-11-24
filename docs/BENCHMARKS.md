@@ -6,17 +6,19 @@
 | CSV meter with explicit `float()` | 4,096 records / 139,299 B | 2.876–2.896 ms | 2.920–2.924 ms | 0.984–0.992× | Diagnostic. [B1568]. |
 | Short Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 1.2813–1.3160 ms | 0.9457–0.9592 ms | 1.336–1.392× | Diagnostic. [B1587]. |
 | Quote-heavy CSV policy invoice | 4,096 records / 174,147 B | 6.2153–6.3328 ms | 6.2519–6.3261 ms | 0.982–1.013× | Diagnostic. Spans parity. [B1587]. |
-| Generated rules with captured locals | 2,048 rule groups | 1.5526–1.5733 ms | 0.7736–0.7761 ms | 2.001–2.034× | Diagnostic. [B1587]. |
-| Generated rules with defaults | 2,048 rule groups | 1.3776–1.4193 ms | 0.6798–0.6963 ms | 1.978–2.088× | Diagnostic. [B1587]. |
+| Eager annotated rules | 2,048 rule groups | 0.43634–0.47390 ms | 0.41110–0.41435 ms | 1.053–1.153× | Diagnostic. Worker spread up to 8.61%. [B1593]. |
+| Postponed nested annotated rules | 2,048 rule groups | 0.59811–0.61674 ms | 0.53988–0.54404 ms | 1.099–1.142× | Diagnostic. [B1593]. |
+| Generated rules with captured locals | 2,048 rule groups | 1.55133–1.60904 ms | 0.76751–0.77539 ms | 2.001–2.096× | Diagnostic. [B1593]. |
+| Generated rules with defaults | 2,048 rule groups | 1.39021–1.39747 ms | 0.68374–0.69142 ms | 2.011–2.044× | Diagnostic. [B1593]. |
 | JSON Lines export with expanded options | 3,072 records / 189,441 B | 5.1299–5.2194 ms | 6.5146–6.7011 ms | 0.766–0.801× | Diagnostic. [B1587]. |
 
 Ratios divide Lython elapsed time by CPython elapsed time. Above 1× means
 Lython takes longer. Ranges span the four pairings of process medians from
-two workers per engine. The rules, short report, invoice and JSON export
-use frozen `ccdf43a59`, with runtime source matching `2cf721f73`. The
-two CSV meters use frozen `95aa40601`, with runtime and tests matching
-`8aef89b09`. Both collections ran on November 24, 2026 UTC.
-[B1587] · [B1568].
+two workers per engine. The rule workloads use frozen `4eb8c9559`,
+with runtime and tests matching `5313f9e71`. The short report, invoice
+and JSON export use `ccdf43a59`, with runtime source matching `2cf721f73`.
+The two CSV meters use `95aa40601`, matching `8aef89b09`. These
+collections ran on November 24, 2026 UTC. [B1593] · [B1587] · [B1568].
 
 The quiet comparison machine is an Azure F4as_v7 running Ubuntu 24.04.4
 with .NET 11 RC3. The external baseline is stock CPython 3.13.16. Warm
@@ -35,6 +37,10 @@ measurements cover the wider request.
 | Typed Unicode CSV meter | Compile-to-result | 3.151–3.295 ms | 3.480–3.556 ms | 0.886–0.947× | Diagnostic. [B1568]. |
 | Short Unicode word-count report with a nonlocal helper | Compile-to-result | 1.2728–1.4254 ms | 1.0919–1.0922 ms | 1.165–1.305× | Diagnostic. Worker spread up to 11.99%. [B1587]. |
 | Short Unicode word-count report with a nonlocal helper, 615 B | Compilation only | 0.02878–0.02890 ms | 0.05530–0.05561 ms | 0.518–0.523× | Diagnostic. [B1587]. |
+| Eager annotated rules, 319 B | Compilation only | 0.01642–0.01643 ms | 0.03059–0.03088 ms | 0.532–0.537× | Diagnostic. [B1593]. |
+| Eager annotated rules | Compile-to-result | 0.46870–0.47116 ms | 0.43951–0.44135 ms | 1.062–1.072× | Diagnostic. [B1593]. |
+| Postponed nested annotated rules, 465 B | Compilation only | 0.02137–0.02188 ms | 0.03949–0.03962 ms | 0.539–0.554× | Diagnostic. [B1593]. |
+| Postponed nested annotated rules | Compile-to-result | 0.60983–0.63550 ms | 0.57547–0.58786 ms | 1.037–1.104× | Diagnostic. [B1593]. |
 | Generated rules with defaults, 427 B | Compilation only | 0.02369–0.02369 ms | 0.04133–0.04169 ms | 0.568–0.573× | Diagnostic. [B1587]. |
 | Generated rules with defaults | Compile-to-result | 1.4187–1.4535 ms | 0.7339–0.7353 ms | 1.929–1.980× | Diagnostic. [B1587]. |
 | Quote-heavy CSV policy invoice, 1,293 B | Compilation only | 0.05936–0.06033 ms | 0.09800–0.09855 ms | 0.602–0.616× | Diagnostic. [B1534]. |
@@ -94,3 +100,4 @@ document reproduction.
 [B1534]: ../benchmarks/results/2026-11-23-owned-class-cpython/README.md
 [B1451]: ../benchmarks/results/2026-11-23-runtime-cpython-checkpoint/README.md
 [B1587]: ../benchmarks/results/2026-11-24-shared-traversal-cpython/README.md
+[B1593]: ../benchmarks/results/2026-11-24-annotated-factories-cpython/README.md

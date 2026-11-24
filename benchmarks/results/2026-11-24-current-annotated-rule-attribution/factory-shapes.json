@@ -1,0 +1,313 @@
+{
+  "inspectorImage": {
+    "Inspect.deps.json": "2d4667c19cc8c902aaec0f8f7ee91d1cf12cbad6b6e7bffe82d306ae68c743c4",
+    "Inspect.dll": "300444b73f51f07cbf8543fe00e2ac53cb8e73dbe57ef7a5ba67ddb09881796a",
+    "Inspect.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0",
+    "Lokad.Lython.dll": "0350e3d800b7f0159a728f796882196ffbb7a2a34cacc2652e19218d7af2038f"
+  },
+  "rows": [
+    {
+      "case": "scripts.annotated-rule-closures",
+      "bodies": [
+        {
+          "name": "compile_rule",
+          "capacity": 6,
+          "native": true,
+          "closures": [],
+          "captured": [],
+          "locals": [
+            "seed",
+            "evaluate"
+          ],
+          "regions": [],
+          "opcodes": [
+            "StartFunctionDefaults",
+            "Binary",
+            "StoreFunctionDefault",
+            "Binary",
+            "Binary",
+            "StoreFunctionDefault",
+            "ApplyOperation",
+            "Return"
+          ]
+        },
+        {
+          "name": "evaluate",
+          "capacity": 7,
+          "native": true,
+          "closures": [],
+          "captured": [],
+          "locals": [
+            "record",
+            "base",
+            "weight"
+          ],
+          "regions": [],
+          "opcodes": [
+            "Binary",
+            "Binary",
+            "Return"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "bodies": [
+        {
+          "name": "for_policy",
+          "capacity": 6,
+          "native": true,
+          "closures": [],
+          "captured": [
+            0
+          ],
+          "locals": [
+            "multiplier",
+            "compile_rule"
+          ],
+          "regions": [],
+          "opcodes": [
+            "ApplyOperation",
+            "Return"
+          ]
+        },
+        {
+          "name": "compile_rule",
+          "capacity": 6,
+          "native": true,
+          "closures": [
+            "multiplier"
+          ],
+          "captured": [],
+          "locals": [
+            "seed",
+            "evaluate"
+          ],
+          "regions": [],
+          "opcodes": [
+            "StartFunctionDefaults",
+            "Binary",
+            "StoreFunctionDefault",
+            "LoadClosure",
+            "StoreFunctionDefault",
+            "ApplyOperation",
+            "Return"
+          ]
+        },
+        {
+          "name": "evaluate",
+          "capacity": 7,
+          "native": true,
+          "closures": [],
+          "captured": [],
+          "locals": [
+            "record",
+            "base",
+            "weight"
+          ],
+          "regions": [],
+          "opcodes": [
+            "Binary",
+            "Binary",
+            "Return"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "scripts.captured-rule-closures",
+      "bodies": [
+        {
+          "name": "make_rules",
+          "capacity": 10,
+          "native": true,
+          "closures": [],
+          "captured": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "locals": [
+            "index",
+            "offset",
+            "weight",
+            "enabled",
+            "apply",
+            "alternate"
+          ],
+          "regions": [],
+          "opcodes": [
+            "LoadLocal",
+            "Binary",
+            "StoreLocal",
+            "LoadLocal",
+            "Binary",
+            "Binary",
+            "StoreLocal",
+            "LoadLocal",
+            "Binary",
+            "Binary",
+            "StoreLocal",
+            "ApplyOperation",
+            "StoreLocal",
+            "ApplyOperation",
+            "StoreLocal",
+            "LoadLocal",
+            "LoadLocal",
+            "Call",
+            "MakeTuple",
+            "Return"
+          ]
+        },
+        {
+          "name": "apply",
+          "capacity": 5,
+          "native": true,
+          "closures": [
+            "enabled",
+            "offset",
+            "weight"
+          ],
+          "captured": [],
+          "locals": [
+            "base"
+          ],
+          "regions": [],
+          "opcodes": [
+            "JumpIfFalse",
+            "Jump",
+            "Binary",
+            "Binary",
+            "Return",
+            "Return"
+          ]
+        },
+        {
+          "name": "alternate",
+          "capacity": 5,
+          "native": true,
+          "closures": [
+            "index"
+          ],
+          "captured": [
+            0
+          ],
+          "locals": [
+            "step"
+          ],
+          "regions": [],
+          "opcodes": [
+            "Binary",
+            "Binary",
+            "StoreLocal",
+            "ApplyOperation",
+            "Return"
+          ]
+        },
+        {
+          "name": "<lambda>",
+          "capacity": 5,
+          "native": true,
+          "closures": [
+            "step"
+          ],
+          "captured": [],
+          "locals": [
+            "base"
+          ],
+          "regions": [],
+          "opcodes": [
+            "Binary",
+            "Binary",
+            "Return"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "scripts.rule-default-closures",
+      "bodies": [
+        {
+          "name": "make_rules",
+          "capacity": 7,
+          "native": true,
+          "closures": [],
+          "captured": [],
+          "locals": [
+            "index",
+            "apply",
+            "fallback"
+          ],
+          "regions": [],
+          "opcodes": [
+            "StartFunctionDefaults",
+            "Binary",
+            "StoreFunctionDefault",
+            "Binary",
+            "Binary",
+            "StoreFunctionDefault",
+            "Binary",
+            "Binary",
+            "StoreFunctionDefault",
+            "ApplyOperation",
+            "StoreLocal",
+            "StartFunctionDefaults",
+            "Binary",
+            "Binary",
+            "StoreFunctionDefault",
+            "LoadConst",
+            "StoreFunctionDefault",
+            "ApplyOperation",
+            "StoreLocal",
+            "PreparedTupleReturn",
+            "LoadLocal",
+            "MakeTuple",
+            "Return"
+          ]
+        },
+        {
+          "name": "apply",
+          "capacity": 8,
+          "native": true,
+          "closures": [],
+          "captured": [],
+          "locals": [
+            "base",
+            "offset",
+            "weight",
+            "enabled"
+          ],
+          "regions": [],
+          "opcodes": [
+            "JumpIfFalse",
+            "Jump",
+            "Binary",
+            "Binary",
+            "Return",
+            "Return"
+          ]
+        },
+        {
+          "name": "<lambda>",
+          "capacity": 7,
+          "native": true,
+          "closures": [],
+          "captured": [],
+          "locals": [
+            "base",
+            "offset",
+            "scale"
+          ],
+          "regions": [],
+          "opcodes": [
+            "Binary",
+            "Binary",
+            "Return"
+          ]
+        }
+      ]
+    }
+  ]
+}

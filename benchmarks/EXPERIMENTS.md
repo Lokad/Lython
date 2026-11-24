@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1593](results/2026-11-24-annotated-factories-cpython/README.md) compares
+four factory workloads with stock CPython. Annotated warm elapsed is
+1.053–1.153× for eager and 1.099–1.142× for postponed. Captured and
+defaulted rules remain around 2×. The local trace distinguishes resolved
+annotated work from truncated captured and defaulted native call stacks.
+[Attribution](results/2026-11-24-current-annotated-rule-attribution/README.md).
+
 [B1592](results/2026-11-24-paged-compiler-storage/README.md) shares a paged
 instruction space during emission. It saves about 10% CLR allocation on
 both validators. Sparse validation takes 4.06–5.05% longer to compile and
