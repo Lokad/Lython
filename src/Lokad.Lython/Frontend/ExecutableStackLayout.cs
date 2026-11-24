@@ -489,7 +489,8 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, ExecutableStackLa
                     (code.IsFunctionScope || code.Names[target.NameIndex] == "float") ||
                  instructions[kept - 2] is { OpCode: ExecutableOpCode.LoadLocal } localTarget &&
                     !code.CapturedLocalSlots.Contains(localTarget.LocalSlot) &&
-                    index + 1 < instructions.Count && instructions[index + 1].OpCode == ExecutableOpCode.StoreLocal))
+                    // The following augmented integer update has its own proof over the input loads.
+                    (index + 1 == instructions.Count || instructions[index + 1].OpCode != ExecutableOpCode.Augmented)))
                 instruction = instruction.WithForwardedCallOperands();
             if (instruction.OpCode == ExecutableOpCode.StoreLocal)
             {

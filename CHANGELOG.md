@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Forward evaluated local positional operands to native calls before staging
+  them in the caller's stack. Ordinary dispatch and suspended children retain
+  their own inputs.
 - Publish the JSON item prefix before invoking an incremental encoder's default
   callback or reporting an unsupported value.
 - Release the exact builtin `json.dump` traversal when its writer finishes.

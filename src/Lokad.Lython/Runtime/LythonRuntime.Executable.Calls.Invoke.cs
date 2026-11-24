@@ -15,7 +15,8 @@ internal sealed partial class LythonRuntime
         // A completed call publishes directly. A child frame or a returned
         // Python failure goes back to the dispatcher's existing continuation.
         private static bool TryExecuteNativeCall(ref ExecutableWorkState execution, ExecutionContext scope,
-            ExecutionContext? invocation, ExecutableCallSite call, int start, object target, out object? continuation)
+            ExecutionContext? invocation, ExecutableCallSite call, int start, object target, object? forwardedArgument,
+            out object? continuation)
         {
             continuation = null;
             // Closed helpers complete here just like native builtins. Borrow the
@@ -38,7 +39,11 @@ internal sealed partial class LythonRuntime
                     scope.EnterInterpreterFrame(call.CallSpan);
                     callEntered = true;
                     scope.CheckExecution(call.CallSpan);
-                    var arguments = execution.Stack.Slice(start + call.ArgumentOffset, call.ArgumentCount).Span;
+                    // Keep a forwarded value private until native work takes it.
+                    // A continuing child copies the input into its funded slots.
+                    var argument = ExecutableSlot.FromObject(forwardedArgument);
+                    var arguments = forwardedArgument is not null ? new ReadOnlySpan<ExecutableSlot>(in argument)
+                        : execution.Stack.Values.AsSpan(start + call.ArgumentOffset, call.ArgumentCount);
                     if (function.TryCompleteNativeCall(call, arguments, functionReceiver, scope, completePositional,
                         out var value, out var suppliedInteger))
                     {
@@ -121,8 +126,14 @@ internal sealed partial class LythonRuntime
 
             try
             {
-                if (!TryInvokeBuiltinFromSlots(call, target, execution.Stack.Values, start, scope,
-                    allowProtocol: invocation is not null, out var result)) return false;
+                ExecutableSlot result;
+                if (forwardedArgument is not null)
+                {
+                    if (target is not BuiltinCallable builtin || !TryInvokeUnaryBuiltin(builtin, forwardedArgument,
+                        call.CallSpan, scope, allowProtocol: invocation is not null, out result)) return false;
+                }
+                else if (!TryInvokeBuiltinFromSlots(call, target, execution.Stack.Values, start, scope,
+                    allowProtocol: invocation is not null, out result)) return false;
                 if (result.Reference is LythonRuntimeException failure)
                 {
                     execution.Stack.RetireTo(start);

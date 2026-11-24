@@ -774,6 +774,13 @@ receiver declarations; dynamic protocols stop before their operation and transfe
 the current PC and live values into the existing frame runner. They may then
 genuinely suspend. Defaults, bindings and earlier work are never replayed.
 
+When a positional call reads an adjacent local target and argument, the
+executable instruction can carry those reads into the call. An eligible native
+callee takes the evaluated argument directly, including when its result feeds
+an unpack or another expression. Ordinary dispatch records both evaluated
+values before continuing. A child that suspends keeps its inputs in its own
+admitted storage, with the original alias identity and source spans.
+
 A closed machine-integer return can read supplied operands and prepared
 omitted defaults directly after validating arity, bypassing binder workspace.
 An eligible nested bound method reads the already evaluated receiver and

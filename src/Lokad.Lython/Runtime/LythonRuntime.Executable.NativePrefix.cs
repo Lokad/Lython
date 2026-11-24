@@ -430,52 +430,42 @@ internal sealed partial class LythonRuntime
         {
             var call = Code.CallSites[instruction.CallSiteIndex];
             var start = instruction.ResultSlot;
+            object target;
+            object? forwardedArgument = null;
             if (instruction.HasForwardedCallOperands && LiveExtent == start)
             {
-                var callee = Read(instruction.InputStart, 0);
+                target = Read(instruction.InputStart, 0);
                 var source = instruction.SecondInput;
                 if (instruction.InputStart >= 0 && _scope.State.CurrentRecursionDepth < NativeCallDepth &&
-                    callee is PyExecutableFunction function &&
+                    target is PyExecutableFunction function &&
                     function.TryStartForwardedComputedDefinition(call, Values[source], _scope, out var defined))
                 {
                     Publish(instruction, defined);
                     return true;
                 }
                 if (source >= 0 && Values[source].TryGetShortUtf8(out var packed)
-                    && TryInvokeShortUtf8Float(packed, callee, call.CallSpan, _scope, out var converted))
+                    && TryInvokeShortUtf8Float(packed, target, call.CallSpan, _scope, out var converted))
                 {
                     Publish(instruction, converted);
                     return true;
                 }
-                var argument = Read(source, 1);
-                if (callee is BuiltinCallable builtin &&
-                    TryInvokeUnaryBuiltin(builtin, argument, call.CallSpan, _scope, allowProtocol: false, out var value))
-                {
-                    if (value.Reference is LythonRuntimeException failure)
-                    {
-                        if (Code.ExceptionRegions.Count == 0) throw failure;
-                        Failure = failure;
-                        return false;
-                    }
-                    Publish(instruction, value);
-                    return true;
-                }
-                Put(start, start + 1, callee);
-                Put(start + 1, start + 2, argument);
+                forwardedArgument = Read(source, 1);
             }
-            var target = Values[start + call.TargetOffset].Object.RequireNotNull();
+            else target = Values[start + call.TargetOffset].Object.RequireNotNull();
+            var argument = ExecutableSlot.FromObject(forwardedArgument);
+            var arguments = forwardedArgument is not null ? new Span<ExecutableSlot>(ref argument)
+                : Values.Slice(start + call.ArgumentOffset, call.ArgumentCount);
             var result = default(ExecutableSlot);
             var directInteger = false;
             try
             {
                 if (!call.IsPositionalOnly)
                 {
-                    if (!CallFunction(call, start, target, out result, out directInteger)) return false;
+                    if (!CallFunction(call, start, target, arguments, out result, out directInteger)) goto Declined;
                 }
                 else if (!call.HasReceiver && ExecutionContext.IsRangeBuiltin(target))
                 {
-                    if (!TryInvokeNativeRange(Values.Slice(start + call.ArgumentOffset, call.ArgumentCount),
-                        call.CallSpan, _scope, out var rangeResult)) return false;
+                    if (!TryInvokeNativeRange(arguments, call.CallSpan, _scope, out var rangeResult)) goto Declined;
                     result.Object = rangeResult;
                 }
                 else if (call.HasReceiver && target is ReceiverMethod method)
@@ -491,15 +481,17 @@ internal sealed partial class LythonRuntime
                     }
                     else if (!TryConsumePrivateStringResult(method, Code, Values, ref Index, call, start, _scope, out result))
                     {
-                        if (!TryInvokeClosedReceiver(method, receiver,
-                            Values.Slice(start + call.ArgumentOffset, call.ArgumentCount), call.CallSpan, _scope,
-                            out var called)) return false;
+                        if (!TryInvokeClosedReceiver(method, receiver, arguments, call.CallSpan, _scope, out var called)) return false;
                         result.Object = called;
                     }
                 }
                 else
                 {
-                    if (TryInvokeBuiltinFromSlots(call, target, Values, start, _scope, allowProtocol: false, out result))
+                    var invoked = forwardedArgument is null
+                        ? TryInvokeBuiltinFromSlots(call, target, Values, start, _scope, allowProtocol: false, out result)
+                        : target is BuiltinCallable builtin && TryInvokeUnaryBuiltin(builtin, forwardedArgument,
+                            call.CallSpan, _scope, allowProtocol: false, out result);
+                    if (invoked)
                     {
                         if (result.Reference is LythonRuntimeException failure)
                         {
@@ -508,7 +500,7 @@ internal sealed partial class LythonRuntime
                             return false;
                         }
                     }
-                    else if (!CallFunction(call, start, target, out result, out directInteger)) return false;
+                    else if (!CallFunction(call, start, target, arguments, out result, out directInteger)) goto Declined;
                 }
             }
             catch (Exception error) when (TryTranslateCallableException(error, call.CallSpan, out var translated))
@@ -540,9 +532,20 @@ internal sealed partial class LythonRuntime
                 Publish(producer, result);
             }
             return true;
+
+        Declined:
+            // A prepared child already owns the evaluated argument. Other
+            // continuations resume from ordinary operands at this same call.
+            if (forwardedArgument is not null && _preparedChild is null)
+            {
+                Put(start, start + 1, target);
+                Put(start + 1, start + 2, forwardedArgument);
+            }
+            return false;
         }
 
-        private bool CallFunction(ExecutableCallSite call, int start, object target, out ExecutableSlot result, out bool directInteger)
+        private bool CallFunction(ExecutableCallSite call, int start, object target,
+            scoped ReadOnlySpan<ExecutableSlot> arguments, out ExecutableSlot result, out bool directInteger)
         {
             result = ExecutableSlot.FromObject(PyNone.Instance);
             directInteger = false;
@@ -559,7 +562,6 @@ internal sealed partial class LythonRuntime
             var entered = true;
             try
             {
-                var arguments = Values.Slice(start + call.ArgumentOffset, call.ArgumentCount);
                 if (function.TryCompleteNativeCall(call, arguments, receiver, _scope, completePositional,
                     out result, out directInteger))
                     return true;

@@ -1,0 +1,143 @@
+{
+  "loops": 2048,
+  "removedLocalLoadsPerGroup": 6,
+  "roles": {
+    "reference": {
+      "calls": [
+        {
+          "index": 12,
+          "span": {
+            "Start": 352,
+            "Length": 17,
+            "Line": 9,
+            "Column": 23
+          },
+          "forwarded": false,
+          "priorOpcodes": [
+            2,
+            2
+          ],
+          "nextOpcode": 15
+        },
+        {
+          "index": 19,
+          "span": {
+            "Start": 383,
+            "Length": 12,
+            "Line": 10,
+            "Column": 14
+          },
+          "forwarded": false,
+          "priorOpcodes": [
+            2,
+            2
+          ],
+          "nextOpcode": 2
+        },
+        {
+          "index": 22,
+          "span": {
+            "Start": 398,
+            "Length": 15,
+            "Line": 10,
+            "Column": 29
+          },
+          "forwarded": false,
+          "priorOpcodes": [
+            2,
+            2
+          ],
+          "nextOpcode": 46
+        }
+      ],
+      "totalModuleInstructions": 32,
+      "codeSHA": "0871a57a26c443835d1a28326ad6bd939053d306a0eb6614fb9abcf38d28f1d3",
+      "nativeTargets": {
+        "make_rules": [
+          true,
+          "Defaults",
+          false
+        ],
+        "apply": [
+          true,
+          "None",
+          true
+        ],
+        "<lambda>": [
+          true,
+          "None",
+          true
+        ]
+      }
+    },
+    "candidate": {
+      "calls": [
+        {
+          "index": 10,
+          "span": {
+            "Start": 352,
+            "Length": 17,
+            "Line": 9,
+            "Column": 23
+          },
+          "forwarded": true,
+          "priorOpcodes": [
+            41,
+            25
+          ],
+          "nextOpcode": 15
+        },
+        {
+          "index": 15,
+          "span": {
+            "Start": 383,
+            "Length": 12,
+            "Line": 10,
+            "Column": 14
+          },
+          "forwarded": true,
+          "priorOpcodes": [
+            25,
+            2
+          ],
+          "nextOpcode": 42
+        },
+        {
+          "index": 16,
+          "span": {
+            "Start": 398,
+            "Length": 15,
+            "Line": 10,
+            "Column": 29
+          },
+          "forwarded": true,
+          "priorOpcodes": [
+            2,
+            42
+          ],
+          "nextOpcode": 46
+        }
+      ],
+      "totalModuleInstructions": 26,
+      "codeSHA": "6680fd69b459c06cb8192f6901f28543f9212e4014e5e3c248fa82539dc12ac4",
+      "nativeTargets": {
+        "make_rules": [
+          true,
+          "Defaults",
+          false
+        ],
+        "apply": [
+          true,
+          "None",
+          true
+        ],
+        "<lambda>": [
+          true,
+          "None",
+          true
+        ]
+      }
+    }
+  },
+  "eagerTapeAndMetadataMatch": true
+}

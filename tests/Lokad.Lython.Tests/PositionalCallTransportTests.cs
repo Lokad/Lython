@@ -73,12 +73,23 @@ public sealed class PositionalCallTransportTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task BorrowedLocalsRemainOwnedUntilSuspendedInvocationFinishes(bool cancel)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task BorrowedLocalsRemainOwnedUntilSuspendedInvocationFinishes(bool cancel, bool forwarded)
     {
-        var frontend = LythonFrontend.Compile("def f(value):\n    tap()\n    return value\nreturn f(value)\n",regexProvider:Utf8RegexProvider.Instance);
+        var source = "def f(value):\n    tap()\n    return value\n" + (forwarded
+            ? "def caller(target, argument):\n    return target(argument)\nreturn caller(f, value)\n"
+            : "return f(value)\n");
+        var frontend = LythonFrontend.Compile(source, regexProvider: Utf8RegexProvider.Instance);
         var script = ExecutableScript.Compile(frontend.Script.RequireNotNull());
+        if (forwarded)
+        {
+            var caller = script.EntryPoint.FunctionBindings().Single(binding => binding.CodeObject?.Name == "caller").CodeObject!;
+            Assert.True(caller.CanRunNativeInstructions);
+            Assert.Contains(caller.Instructions, instruction => instruction.OpCode == ExecutableOpCode.Call && instruction.HasForwardedCallOperands);
+        }
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var marker = new object();
         var tap = new SuspendedStorageTap(marker);

@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1623](results/2026-11-24-forwarded-positional/README.md) removes
+repeated call operand staging and improves captured rules and the
+Unicode report. Eager-rule CPU rises with an identical tape.
+[B1624](results/2026-11-24-forwarded-positional/framed-entry/README.md)
+keeps the established framed call entry and is retained. Defaulted
+rules improve through result in this block. The eager CPU cost persists,
+and one quoted-invoice worker moves. Both conditions stay on the plan.
+
 [B1622](results/2026-11-24-closed-definition-construction/README.md) shares
 closed pair and single computed definition construction. It keeps the
 two admission stages in order. Allocation and admitted peaks match.
