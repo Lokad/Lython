@@ -312,36 +312,59 @@ internal sealed partial class LythonRuntime
             if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
         }
 
-        internal static RePatternObject CreatePattern(object[] arguments, string signature, LythonSourceSpan span, ExecutionContext context)
+        internal static ValueTask<RePatternObject> CreatePattern(object[] arguments, string signature,
+            LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
+            context.CheckExecution(span);
             if (arguments.Length is < 1 or > 2)
-            {
-                throw new LythonRuntimeException("TypeError", $"{signature} expects a string pattern and optional flags.", span);
-            }
+                throw RuntimeErrors.Type($"{signature} expects a string pattern and optional flags.", span);
 
             var flags = arguments.Length == 2 ? arguments[1] : null;
             CheckFlagsHashable(flags, span);
-            return ResolvePattern(arguments[0], flags, span, context);
+            return asynchronous ? ResolvePatternAsync(arguments[0], flags, span, context)
+                : new(ResolvePattern(arguments[0], flags, span, context));
         }
+
+        private static ValueTask<RePatternObject> ResolvePatternAsync(object value, object? requestedFlags,
+            LythonSourceSpan span, ExecutionContext context)
+            => requestedFlags is PyInstance instance
+                ? ResolveProtocolPatternAsync(value, instance, span, context)
+                : new(ResolvePattern(value, requestedFlags, span, context));
+
+        private static async ValueTask<RePatternObject> ResolveProtocolPatternAsync(object value, PyInstance flags,
+            LythonSourceSpan span, ExecutionContext context)
+        {
+            if (value is RePatternObject existing)
+            {
+                RequireFalsyCompiledFlags(await IsTruthyAsync(flags, context, span).ConfigureAwait(false), span);
+                return existing;
+            }
+
+            var pattern = RequireStringPattern(value, span);
+            var options = await ParseFlags(flags, span, context, asynchronous: true).ConfigureAwait(false);
+            return CompilePattern(pattern, options, null, span, context);
+        }
+
+        private static void RequireFalsyCompiledFlags(bool supplied, LythonSourceSpan span)
+        {
+            if (supplied)
+                throw RuntimeErrors.Value("cannot process flags argument with a compiled pattern", span);
+        }
+
+        private static PyString RequireStringPattern(object value, LythonSourceSpan span)
+            => PyStringOps.TryAsString(value, out var pattern) ? pattern
+                : throw RuntimeErrors.Type("first argument must be string or compiled pattern", span);
 
         private static RePatternObject ResolvePattern(object value, object? requestedFlags, LythonSourceSpan span,
             ExecutionContext context)
         {
             if (value is RePatternObject existing)
             {
-                if (requestedFlags is not null && IsTruthy(requestedFlags, context, span))
-                {
-                    throw new LythonRuntimeException("ValueError", "cannot process flags argument with a compiled pattern", span);
-                }
-
+                RequireFalsyCompiledFlags(requestedFlags is not null && IsTruthy(requestedFlags, context, span), span);
                 return existing;
             }
 
-            if (!PyStringOps.TryAsString(value, out var pattern))
-            {
-                throw new LythonRuntimeException("TypeError", "first argument must be string or compiled pattern", span);
-            }
-
+            var pattern = RequireStringPattern(value, span);
             // Python's wrapper cache distinguishes implicit Unicode from an
             // explicit flag even when both compile to the same program.
             int? requestedBits = requestedFlags switch
@@ -353,7 +376,13 @@ internal sealed partial class LythonRuntime
                 _ => null,
             };
             var options = requestedBits is { } bits && TryNormalizeExactFlags(bits, out var exact)
-                ? exact : ParseFlags(requestedFlags.RequireNotNull(), span, context);
+                ? exact : ParseFlags(requestedFlags.RequireNotNull(), span, context, asynchronous: false).GetAwaiter().GetResult();
+            return CompilePattern(pattern, options, requestedBits, span, context);
+        }
+
+        private static RePatternObject CompilePattern(PyString pattern, LythonRegexOptions options, int? requestedBits,
+            LythonSourceSpan span, ExecutionContext context)
+        {
             var key = new RegexPatternKey(pattern, options, requestedBits);
             context.CheckExecution(span);
             var token = context.State.CancellationToken;
@@ -435,19 +464,20 @@ internal sealed partial class LythonRuntime
             CheckFlagsHashable(flags, span);
             var pos = arguments[3];
             var endPos = arguments[4];
-            if (asynchronous && (pos is PyInstance || endPos is PyInstance))
-                return AwaitPatternBounds(arguments[0], text, flags, pos, endPos, span, context);
+            if (asynchronous && (pos is PyInstance || endPos is PyInstance || flags is PyInstance))
+                return AwaitPatternArguments(arguments[0], text, flags, pos, endPos, span, context);
 
             return new(FinishPatternRange(arguments[0], text, flags, ParseOptionalPosition(pos, 0, span, context),
                 ParseOptionalPosition(endPos, int.MaxValue, span, context), span, context));
         }
 
-        private static async ValueTask<RegexPatternRange> AwaitPatternBounds(object pattern, PyString text, object? flags,
+        private static async ValueTask<RegexPatternRange> AwaitPatternArguments(object pattern, PyString text, object? flags,
             object pos, object end, LythonSourceSpan span, ExecutionContext context)
         {
             var start = await ParseOptionalPositionAsync(pos, 0, span, context).ConfigureAwait(false);
             var stop = await ParseOptionalPositionAsync(end, int.MaxValue, span, context).ConfigureAwait(false);
-            return FinishPatternRange(pattern, text, flags, start, stop, span, context);
+            var range = CreateSubjectRange(text, start, stop, span, context);
+            return new(await ResolvePatternAsync(pattern, flags, span, context).ConfigureAwait(false), range);
         }
 
         private static RegexPatternRange FinishPatternRange(object pattern, PyString text, object? flags, int pos, int end,
@@ -472,8 +502,8 @@ internal sealed partial class LythonRuntime
             var flags = bound.Assigned[4] ? arguments[4] : null;
             var pos = arguments[5];
             var endPos = arguments[6];
-            if (asynchronous && (count is PyInstance || pos is PyInstance || endPos is PyInstance))
-                return AwaitSubstituteBounds(arguments[0], text, replacement, flags, count, pos, endPos, signature, span, context);
+            if (asynchronous && (count is PyInstance || pos is PyInstance || endPos is PyInstance || flags is PyInstance))
+                return AwaitSubstituteArguments(arguments[0], text, replacement, flags, count, pos, endPos, signature, span, context);
 
             return new(FinishSubstituteInputs(arguments[0], text, replacement, flags,
                 ParseOptionalIntOrDefault(count, 0, "count", signature, span, context),
@@ -481,13 +511,15 @@ internal sealed partial class LythonRuntime
                 ParseOptionalPosition(endPos, int.MaxValue, span, context), span, context));
         }
 
-        private static async ValueTask<RegexSubstituteInputs> AwaitSubstituteBounds(object pattern, PyString text, object replacement,
+        private static async ValueTask<RegexSubstituteInputs> AwaitSubstituteArguments(object pattern, PyString text, object replacement,
             object? flags, object count, object pos, object end, string signature, LythonSourceSpan span, ExecutionContext context)
         {
             var limit = await ParseOptionalIntAsync(count, "count", signature, span, context).ConfigureAwait(false);
             var start = await ParseOptionalPositionAsync(pos, 0, span, context).ConfigureAwait(false);
             var stop = await ParseOptionalPositionAsync(end, int.MaxValue, span, context).ConfigureAwait(false);
-            return FinishSubstituteInputs(pattern, text, replacement, flags, limit, start, stop, span, context);
+            CheckFlagsHashable(flags, span);
+            var compiled = await ResolvePatternAsync(pattern, flags, span, context).ConfigureAwait(false);
+            return new(compiled, replacement, CreateSubjectRange(text, start, stop, span, context), limit);
         }
 
         private static RegexSubstituteInputs FinishSubstituteInputs(object sourcePattern, PyString text, object replacement,
@@ -509,30 +541,26 @@ internal sealed partial class LythonRuntime
             var flags = bound.Assigned[3] ? arguments[3] : null;
             var pos = arguments[4];
             var endPos = arguments[5];
-            if (asynchronous && (count is PyInstance || pos is PyInstance || endPos is PyInstance))
-                return AwaitSplitBounds(arguments[0], text, flags, count, pos, endPos, signature, span, context);
+            if (asynchronous && (count is PyInstance || pos is PyInstance || endPos is PyInstance || flags is PyInstance))
+                return AwaitSplitArguments(arguments[0], text, flags, count, pos, endPos, signature, span, context);
 
             var start = ParseOptionalPosition(pos, 0, span, context);
             var stop = ParseOptionalPosition(endPos, int.MaxValue, span, context);
-            var pattern = ResolveSplitPattern(arguments[0], flags, span, context);
+            CheckFlagsHashable(flags, span);
+            var pattern = ResolvePattern(arguments[0], flags, span, context);
             var limit = ParseOptionalIntOrDefault(count, 0, "maxsplit", signature, span, context);
             return new(new RegexSplitInputs(pattern, CreateSubjectRange(text, start, stop, span, context), limit));
         }
 
-        private static async ValueTask<RegexSplitInputs> AwaitSplitBounds(object sourcePattern, PyString text, object? flags,
+        private static async ValueTask<RegexSplitInputs> AwaitSplitArguments(object sourcePattern, PyString text, object? flags,
             object count, object pos, object end, string signature, LythonSourceSpan span, ExecutionContext context)
         {
             var start = await ParseOptionalPositionAsync(pos, 0, span, context).ConfigureAwait(false);
             var stop = await ParseOptionalPositionAsync(end, int.MaxValue, span, context).ConfigureAwait(false);
-            var pattern = ResolveSplitPattern(sourcePattern, flags, span, context);
+            CheckFlagsHashable(flags, span);
+            var pattern = await ResolvePatternAsync(sourcePattern, flags, span, context).ConfigureAwait(false);
             var limit = await ParseOptionalIntAsync(count, "maxsplit", signature, span, context).ConfigureAwait(false);
             return new(pattern, CreateSubjectRange(text, start, stop, span, context), limit);
-        }
-
-        private static RePatternObject ResolveSplitPattern(object pattern, object? flags, LythonSourceSpan span, ExecutionContext context)
-        {
-            CheckFlagsHashable(flags, span);
-            return ResolvePattern(pattern, flags, span, context);
         }
 
         // Regex bounds coerce through __index__ like CPython. Module-level
@@ -647,86 +675,53 @@ internal sealed partial class LythonRuntime
         // the _code/_sre combines): verbose/locale/ascii checks, the unicode
         // combine, debug checks, then the state combines; the converted C int
         // carries unknown bits through to the echo.
-        private static LythonRegexOptions ParseFlags(object value, LythonSourceSpan span, ExecutionContext context)
+        private static async ValueTask<LythonRegexOptions> ParseFlags(object value, LythonSourceSpan span,
+            ExecutionContext context, bool asynchronous)
         {
-            // Verbose parsing follows the dispatched bit like CPython.
-            var verbose = IsTruthy(EvaluateBinaryOperator(BinaryOperatorSyntax.BitwiseAnd, value, new BigInteger(PythonVerboseFlag), context, span), context, span);
-            if (IsTruthy(EvaluateBinaryOperator(BinaryOperatorSyntax.BitwiseAnd, value, new BigInteger(PythonLocaleFlag), context, span), context, span))
-            {
-                throw new LythonRuntimeException("ValueError", "cannot use LOCALE flag with a str pattern", span);
-            }
+            var verbose = await TestFlag(PythonVerboseFlag).ConfigureAwait(false);
+            if (await TestFlag(PythonLocaleFlag).ConfigureAwait(false))
+                throw RuntimeErrors.Value("cannot use LOCALE flag with a str pattern", span);
 
-            object stateFlags;
-            if (!IsTruthy(EvaluateBinaryOperator(BinaryOperatorSyntax.BitwiseAnd, value, new BigInteger(PythonAsciiFlag), context, span), context, span))
+            var stateFlags = value;
+            if (!await TestFlag(PythonAsciiFlag).ConfigureAwait(false))
             {
-                stateFlags = OrAssignFlags(value, span, context);
-            }
-            else
-            {
-                if (IsTruthy(EvaluateBinaryOperator(BinaryOperatorSyntax.BitwiseAnd, value, new BigInteger(PythonUnicodeFlag), context, span), context, span))
+                var unicode = new BigInteger(PythonUnicodeFlag);
+                if (value is PyInstance)
                 {
-                    throw new LythonRuntimeException("ValueError", "ASCII and UNICODE flags are incompatible", span);
+                    stateFlags = asynchronous
+                        ? await EvaluateAugmentedAssignmentAsync(value, unicode, AugmentedAssignmentOperatorSyntax.BitwiseOr, context, span).ConfigureAwait(false)
+                        : EvaluateAugmentedAssignment(value, unicode, AugmentedAssignmentOperatorSyntax.BitwiseOr, context, span);
                 }
-
-                stateFlags = value;
+                else stateFlags = await EvaluateFlagOperation(BinaryOperatorSyntax.BitwiseOr, value, unicode).ConfigureAwait(false);
             }
+            else if (await TestFlag(PythonUnicodeFlag).ConfigureAwait(false))
+                throw RuntimeErrors.Value("ASCII and UNICODE flags are incompatible", span);
 
-            // Debug checks run through dispatch like CPython; Lython cannot print,
-            // so a set DEBUG bit stays NotImplementedError on the converted value.
-            _ = EvaluateBinaryOperator(BinaryOperatorSyntax.BitwiseAnd, value, new BigInteger(RegexDebugFlag), context, span);
-            var combined = EvaluateBinaryOperator(BinaryOperatorSyntax.BitwiseOr, stateFlags, value, context, span);
-            _ = EvaluateBinaryOperator(BinaryOperatorSyntax.BitwiseAnd, value, new BigInteger(RegexDebugFlag), context, span);
-            var flagBits = ToRegexCInt(EvaluateBinaryOperator(BinaryOperatorSyntax.BitwiseOr, value, combined, context, span), span, context);
-            _ = EvaluateBinaryOperator(BinaryOperatorSyntax.BitwiseAnd, value, new BigInteger(RegexDebugFlag), context, span);
+            // The DEBUG probes are observable guest operations even when the
+            // converted flag bits leave debugging disabled.
+            var debug = new BigInteger(RegexDebugFlag);
+            _ = await EvaluateFlagOperation(BinaryOperatorSyntax.BitwiseAnd, value, debug).ConfigureAwait(false);
+            var combined = await EvaluateFlagOperation(BinaryOperatorSyntax.BitwiseOr, stateFlags, value).ConfigureAwait(false);
+            _ = await EvaluateFlagOperation(BinaryOperatorSyntax.BitwiseAnd, value, debug).ConfigureAwait(false);
+            var converted = await EvaluateFlagOperation(BinaryOperatorSyntax.BitwiseOr, value, combined).ConfigureAwait(false);
+            var flagBits = ToRegexCInt(converted, span, context);
+            _ = await EvaluateFlagOperation(BinaryOperatorSyntax.BitwiseAnd, value, debug).ConfigureAwait(false);
 
             if ((flagBits & RegexDebugFlag) != 0)
-            {
                 throw new LythonRuntimeException("NotImplementedError", "re.DEBUG is not supported by Lython's regex runtime.", span);
-            }
 
             return new(flagBits, verbose);
-        }
 
-        // `flags |= UNICODE` like CPython. Only instances carry hooks, so only
-        // they need the manual __ior__/__or__/__ror__ chain with `|=` text;
-        // int-like values ride the shared binary shape, which cannot fail them.
-        private static object OrAssignFlags(object flags, LythonSourceSpan span, ExecutionContext context)
-        {
-            var uni = new BigInteger(PythonUnicodeFlag);
-            if (flags is PyInstance)
+            ValueTask<object> EvaluateFlagOperation(BinaryOperatorSyntax operation, object left, object right)
+                => asynchronous ? EvaluateBinaryOperatorAsync(operation, left, right, context, span)
+                    : new(EvaluateBinaryOperator(operation, left, right, context, span));
+
+            async ValueTask<bool> TestFlag(int flag)
             {
-                object? assigned;
-                if (TryHookOrAssign(flags, "__ior__", uni, context, span, out assigned))
-                {
-                    return assigned.RequireNotNull();
-                }
-
-                if (TryHookOrAssign(flags, "__or__", uni, context, span, out assigned))
-                {
-                    return assigned.RequireNotNull();
-                }
-
-                if (TryHookOrAssign(uni, "__ror__", flags, context, span, out assigned))
-                {
-                    return assigned.RequireNotNull();
-                }
-
-                throw RuntimeErrors.UnsupportedOperands("|=", flags, uni, span);
+                var result = await EvaluateFlagOperation(BinaryOperatorSyntax.BitwiseAnd, value, new BigInteger(flag)).ConfigureAwait(false);
+                return asynchronous ? await IsTruthyAsync(result, context, span).ConfigureAwait(false)
+                    : IsTruthy(result, context, span);
             }
-
-            return EvaluateBinaryOperator(BinaryOperatorSyntax.BitwiseOr, flags, uni, context, span);
-        }
-
-        private static bool TryHookOrAssign(object target, string method, object argument, ExecutionContext context, LythonSourceSpan span, out object? result)
-        {
-            if (TryInvokeBinarySpecialMethod(target, method, argument, context, span, out var value) && value is not PyNotImplemented)
-            {
-                result = value;
-                return true;
-            }
-
-            result = null;
-            return false;
         }
 
         // The converted C int carries unknown bits through; out-of-range

@@ -11,7 +11,8 @@ namespace Lokad.Lython.Tests;
 public sealed class RegexCompilationAccountingTests
 {
     private static object CreatePattern(object pattern, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
-        => LythonRuntime.RegexCompiler.CreatePattern([pattern], "re.compile(pattern[, flags])", span, context);
+        => LythonRuntime.RegexCompiler.CreatePattern([pattern], "re.compile(pattern[, flags])", span, context,
+            asynchronous: false).GetAwaiter().GetResult();
 
     [Theory]
     [InlineData("a(b|c)*d")]

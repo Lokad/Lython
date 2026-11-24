@@ -211,6 +211,11 @@ internal sealed partial class LythonRuntime
         internal static readonly ExceptionTypeValue PatternErrorType = new(ModuleException("re", "PatternError"));
 
         // These callables only bind arguments. Provider state remains per run.
+        private static readonly BuiltinCallable CompileMethod = BuiltinCallable.Create(LythonKnownCallableSignatures.Regex.Compile,
+            static (arguments, span, context) => RegexCompiler.CreatePattern(arguments,
+                "re.compile(pattern[, flags])", span, context, false).GetAwaiter().GetResult(),
+            static async (arguments, span, context) => await RegexCompiler.CreatePattern(arguments,
+                "re.compile(pattern[, flags])", span, context, true).ConfigureAwait(false));
         private static readonly BuiltinCallable SearchMethod = CreateMatchBuiltin(LythonKnownCallableSignatures.Regex.Search, ModuleMatchOperation.Search);
         private static readonly BuiltinCallable MatchMethod = CreateMatchBuiltin(LythonKnownCallableSignatures.Regex.Match, ModuleMatchOperation.Match);
         private static readonly BuiltinCallable FullMatchMethod = CreateMatchBuiltin(LythonKnownCallableSignatures.Regex.FullMatch, ModuleMatchOperation.FullMatch);
@@ -230,7 +235,7 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "compile" => BuiltinCallable.Create(LythonKnownCallableSignatures.Regex.Compile, Compile),
+                "compile" => CompileMethod,
                 "search" => SearchMethod,
                 "match" => MatchMethod,
                 "fullmatch" => FullMatchMethod,
@@ -258,12 +263,6 @@ internal sealed partial class LythonRuntime
             };
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
-        }
-
-        private object Compile(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-        {
-            context.CheckExecution(span);
-            return RegexCompiler.CreatePattern(arguments, "re.compile(pattern[, flags])", span, context);
         }
 
         private enum ModuleMatchOperation { Search, Match, FullMatch, FindAll, FindIter }

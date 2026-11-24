@@ -196,7 +196,9 @@ public sealed class RegexAdapterSemanticsTests
     [Theory]
     [InlineData("re.compile('é').search('aéz', Index())")]
     [InlineData("re.search('é', 'aéz', pos=Index())")]
-    public async Task CancellingARegexBoundAwaitsFileCleanupAndRefunds(string expression)
+    [InlineData("re.compile('é', Flag())")]
+    [InlineData("re.compile(re.compile('é'), Flag())")]
+    public async Task CancellingARegexArgumentAwaitsFileCleanupAndRefunds(string expression)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
         using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile($"""
@@ -205,7 +207,12 @@ public sealed class RegexAdapterSemanticsTests
                 def __index__(self):
                     with open('index.txt') as source:
                         return int(source.read())
-            print({expression}.group())
+            class Flag:
+                def __bool__(self):
+                    return bool(Index().__index__())
+                def __and__(self, other):
+                    return Index().__index__() & other
+            print({expression})
             """, budget);
         Assert.True(script.IsValid, string.Join("\n", script.Diagnostics));
         var baseline = budget.ReservedBytes;

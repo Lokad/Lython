@@ -169,7 +169,7 @@ public sealed class RegexExpansionOwnershipTests
         // Use the real regex boundary and funded native captures; call expansion
         // directly so a VM checkpoint cannot hide missing native cancellation.
         var pattern = LythonRuntime.RegexCompiler.CreatePattern([PyString.FromString(patternText)], "re.compile", Span,
-            context);
+            context, asynchronous: false).GetAwaiter().GetResult();
         Assert.True(pattern.TryGetMember("match", context, Span, out var callable));
         text ??= new string('x', 4096);
         var subject = commandOwnedSubject ? PyString.FromString(text, context.MemoryGovernor, Span) : PyString.FromString(text);
