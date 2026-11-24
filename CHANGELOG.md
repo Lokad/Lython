@@ -2,6 +2,8 @@
 
 ## 0.11.0 - Unreleased
 
+- Add an optional staged regex provider contract so parser-dependent guest
+  flag operations can run at the corresponding parsing or compilation phase.
 - Pass integer matching flags from guest flag operators independently of
   the bits reported by `Pattern.flags`.
 - Key regex wrappers by the originally requested Python flags. Await guest

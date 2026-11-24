@@ -2544,10 +2544,17 @@ operand in opposite orders. `LythonRegexOptions.ProgramFlags` carries distinct
 integer matching flags, while `Flags` carries the bits for reported metadata
 and `Verbose` supplies the parsing-time setting. Known program equality
 includes the separate matching flags.
-The current adapter still combines pattern parsing and compilation in one
-operation. Grammar-dependent guest callbacks have limited parity, including
-leading inline modes, alternation and failure ordering.
-Flag handling completes before provider compilation or subject work.
+Hosts with a staged parser can implement `ILythonRegexStagedProvider`.
+They receive the original UTF-8 and request guest flag operations at actual
+parser decision points. A borrowed verbose operand can run a truth operation
+each time the parser uses it. The parsed handle owns its temporary storage
+through matching-flag resolution and program construction. Lython closes it
+before computing the reported flag value. The unpublished program stays
+funded through reporting and closes on any failure. Staged compilation
+currently accepts integer matching flags.
+Exact flag requests in the frontend, imports and runtime use `Compile`.
+The pinned adapter uses that single operation for guest flag objects too,
+with limited parity for grammar-dependent callback ordering.
 The per-execution cache preserves requested integer flag identity.
 Omitted flags and explicit `re.UNICODE` give distinct cached pattern
 objects when both compile. The provider receives the same flag inputs
