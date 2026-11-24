@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1588](results/2026-11-24-eager-json-owner/README.md) shares one builder
+owner from eager JSON traversal through publication. Expanded and default
+options improve on elapsed and CPU. The escape-heavy script and noisy
+text control span zero. Retain the simplification with matched admission.
+
 [B1587](results/2026-11-24-shared-traversal-cpython/README.md) refreshes the
 CPython baseline after the shared eager traversal. Generated rules remain
 about 2× warm, quoted invoice spans parity and expanded JSON Lines runs at

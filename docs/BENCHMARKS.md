@@ -70,6 +70,7 @@ Lython inside an already-running application. [B1451].
 
 | Change | Measured effect | Limits |
 | --- | --- | --- |
+| Use one eager JSON builder owner | Expanded and default options take 0.65–2.75% less warm elapsed and 0.63–3.09% less wider CPU. | Peak admission matches. Escape-heavy timing is inconclusive, the unchanged CSV control improves slightly and the text control is noisy. [B1588](../benchmarks/results/2026-11-24-eager-json-owner/README.md). |
 | Drain eager JSON inside the shared traversal | Three JSON Lines variants take 0.50–4.71% less warm elapsed. Default options use 0.68–6.03% less wider process CPU. | Allocation and admitted peaks are effectively flat. Both unchanged controls span zero. [B1586](../benchmarks/results/2026-11-24-json-traversal/README.md). |
 | Cache regex wrappers before flag normalization | The module log scan takes 2.00–2.54% less warm elapsed and uses 0.71–3.71% less wider process CPU. | Admitted peaks match. Saved-bound and quoted-invoice elapsed span zero. [B1581](../benchmarks/results/2026-11-24-regex-wrapper-cache/README.md). |
 | Reuse immutable ASCII results in decoded text reads | The short report and mixed-width histogram allocate 57,344 fewer CLR bytes per run, down 15.07% and 12.62%. Admitted peaks fall by 129 KiB each. | All warm elapsed ranges span zero. The nonblank and distinct-word controls retain the same allocation and admission. [B1580](../benchmarks/results/2026-11-24-decoded-ascii-file-values/README.md). |
