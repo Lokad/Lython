@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1602](results/2026-11-24-closed-capture-pair/README.md)
+completes all captured factory pairs before the outer activation.
+Captured rules take 24.01–27.29% less warm elapsed with lower CPU and
+matching admission. Eager rules improve and other controls span zero.
+Confirm the shared evaluator with a smaller seeded binding path.
+
 [B1601](results/2026-11-24-private-call-source-cpu/README.md)
 locates 512 of 1,191 resolved captured-rule samples in the outer
 factory outside the private inner call. The closed integer consumers
