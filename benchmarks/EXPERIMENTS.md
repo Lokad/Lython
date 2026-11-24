@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1591](results/2026-11-24-decoded-closed-defaults/README.md) reuses the
+integer already decoded by the closed-definition guard. Eager annotated
+rules use 2.88–4.48% less elapsed and 3.01–4.66% less process CPU at matched
+allocation and admission. A simultaneous prior-image comparison leaves
+postponed rules inconclusive. Untargeted rule and text controls move.
+
 [B1590](results/2026-11-24-closed-default-evaluation/README.md) replaces
 the fixed default factory match. Eager annotated rules avoid the native
 workspace and improve 36.64–43.34% elapsed. Postponed annotated elapsed
