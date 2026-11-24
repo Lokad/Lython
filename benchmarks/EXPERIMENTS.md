@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1577](results/2026-11-24-retained-rule-factory-cpu/README.md) profiles
+captured and defaulted rules after scalar activation removal.
+Dispatch remains prominent. Definition construction and entry
+provide the next joint source-level design gate.
+
 [B1576](results/2026-11-24-regex-flag-continuations/README.md) fixes
 suspending flag and truth callbacks before provider work. Module
 log-scan elapsed decreases. Direct compiled and saved-method elapsed
