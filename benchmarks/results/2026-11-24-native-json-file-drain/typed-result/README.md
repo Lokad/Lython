@@ -1,6 +1,7 @@
 # Discard native JSON file write results before boxing (B1619)
 
-The frozen pair uses the original traversal and counted text writer.
+The frozen pair compares `d7dd3d4bd` with the source delivered in
+`e353ba446`. It uses the original traversal and counted text writer.
 For exact file output, `json.dump` awaits the writer's typed result
 and discards it directly. The writer still validates, stages and
 publishes the same bytes under the same ownership. CSV and ordinary

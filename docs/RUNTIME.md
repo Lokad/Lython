@@ -2034,6 +2034,10 @@ Public/custom chunks remain independent values. One codec/newline/BOM algorithm
 serves both routes; an encoding error owns its input, and ordinary writes preserve
 the original string identity. A native consumer error leaves an escaped encoder
 resumable. Output remains staged and funded through existing flush/close cleanup.
+The exact builtin `dump` owns its private traversal for the duration of the
+call, including a suspended write. Custom encoders can retain iterator aliases.
+If a default callback raises during list encoding, CPython may leave a trailing
+separator that Lython still holds in its pending chunk.
 
 Any refused admission fails the command, including cache admission. Guest code
 cannot catch, suppress or return over it. There is no retry, waiting, algorithm

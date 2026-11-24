@@ -5,6 +5,35 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class JsonEncoderIterationLifetimeTests
 {
     [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task RepeatedExactBuiltinDumpsReleasePrivateTraversal(bool asynchronous, bool chooseOptions)
+    {
+        var budget = new LythonMemoryBudget(96 * 1024);
+        using (var script = new LythonEngine().Compile($$"""
+            import json
+            with open('/output', 'w') as target:
+                for i in range(1024):
+                    json.dump(0, target{{(chooseOptions ? ", sort_keys=True" : "")}})
+            with open('/output', encoding='utf-8') as source:
+                return source.read()
+            """, budget))
+        {
+            Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
+            var baseline = budget.ReservedBytes;
+            using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal(new string('0', 1024), result.ReturnValue);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task NativeFileStagesCompletedChunksBeforeTheNextDefaultCallback(bool asynchronous)

@@ -423,6 +423,12 @@ internal sealed partial class LythonRuntime
             _context.MemoryGovernor.Release(bytes);
         }
 
+        internal void FinishPrivate()
+        {
+            try { Finish(); }
+            finally { _context.MemoryGovernor.Release(StorageBytes); }
+        }
+
         // Produce the next public chunk or drain the same traversal into the
         // eager builder. Frame pushes and completed tokens stay in this loop.
         private async ValueTask<bool> EmitAsync(bool asynchronous, bool stopAtChunk)

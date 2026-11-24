@@ -285,13 +285,14 @@ internal sealed partial class LythonRuntime
         {
             context.CheckExecution(span);
             object chunks;
+            JsonEncodeIterator? privateChunks = null;
             if (await CanUseDefaultEncoderAsync(bound, extras, 1, span, context, asynchronous).ConfigureAwait(false))
-                chunks = JsonEncodeIterator.Create(bound.Values[0], JsonDumpOptions.Default, context, span);
+                chunks = privateChunks = JsonEncodeIterator.Create(bound.Values[0], JsonDumpOptions.Default, context, span);
             else
             {
                 var cls = ResolveEncoderClass(GetOptional(bound.Values, 6), span);
                 if (cls is JsonEncoderClass && extras.Count == 0)
-                    chunks = await InvokeBoundEncoderAsync(bound, 1, span, context, asynchronous).ConfigureAwait(false);
+                    chunks = privateChunks = (JsonEncodeIterator)await InvokeBoundEncoderAsync(bound, 1, span, context, asynchronous).ConfigureAwait(false);
                 else
                 {
                     var instance = await ConstructEncoderClassAsync(cls, bound, extras, JsonDumpCallForm.Dump, span, context, asynchronous).ConfigureAwait(false);
@@ -304,24 +305,30 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            if (chunks is JsonEncodeIterator native && bound.Values[1] is ExecutionContext.TextFileHandle textFile)
+            try
             {
-                await native.WriteToAsync(textFile, span, asynchronous).ConfigureAwait(false);
+                if (chunks is JsonEncodeIterator native && bound.Values[1] is ExecutionContext.TextFileHandle textFile)
+                {
+                    await native.WriteToAsync(textFile, span, asynchronous).ConfigureAwait(false);
+                    return PyNone.Instance;
+                }
+                if (asynchronous)
+                    await foreach (var chunk in PyIteration.Cursor.ForAsyncEnumeration(chunks, span, context).ConfigureAwait(false))
+                    {
+                        context.CheckExecution(span);
+                        await PyTextStream.WriteAsync(bound.Values[1], chunk, span, context).ConfigureAwait(false);
+                    }
+                else
+                    foreach (var chunk in PyIteration.Cursor.Create(chunks, span, context))
+                    {
+                        context.CheckExecution(span);
+                        PyTextStream.Write(bound.Values[1], chunk, span, context);
+                    }
                 return PyNone.Instance;
             }
-            if (asynchronous)
-                await foreach (var chunk in PyIteration.Cursor.ForAsyncEnumeration(chunks, span, context).ConfigureAwait(false))
-                {
-                    context.CheckExecution(span);
-                    await PyTextStream.WriteAsync(bound.Values[1], chunk, span, context).ConfigureAwait(false);
-                }
-            else
-                foreach (var chunk in PyIteration.Cursor.Create(chunks, span, context))
-                {
-                    context.CheckExecution(span);
-                    PyTextStream.Write(bound.Values[1], chunk, span, context);
-                }
-            return PyNone.Instance;
+            // The exact builtin iterator was never given to guest code. Custom
+            // encoder results can have retained aliases and keep their owner.
+            finally { privateChunks?.FinishPrivate(); }
         }
 
         private object Dumps(

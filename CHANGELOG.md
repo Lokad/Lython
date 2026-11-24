@@ -2,6 +2,7 @@
 
 ## 0.11.0 - Unreleased
 
+- Release the exact builtin `json.dump` traversal when its writer finishes.
 - Discard the native file write count from `json.dump` before boxing it.
 - Resolve shadowed builtin names through their actual bindings during static
   call analysis. Infer a singleton unpacking target from the unpacked element.
