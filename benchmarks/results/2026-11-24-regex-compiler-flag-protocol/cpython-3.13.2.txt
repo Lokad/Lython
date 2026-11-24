@@ -1,0 +1,14 @@
+'x' 'X' 32 True
+[('requested-and', 64), ('requested-and', 4), ('requested-and', 256), ('parser-ior', 32), ('requested-and', 128), ('program', 32), ('compiler-and', 2), ('compiler-and', 4), ('compiler-and', 2), ('compiler-and', 32), ('compiler-and', 2), ('compiler-and', 32), ('compiler-and', 2), ('compiler-and', 4), ('compiler-and', 32), ('compiler-and', 2), ('compiler-and', 4), ('requested-and', 128), ('reported', 32), ('requested-and', re.DEBUG)]
+'.' '\n' 32 True
+[('requested-and', 64), ('requested-and', 4), ('requested-and', 256), ('parser-ior', 32), ('requested-and', 128), ('program', 32), ('compiler-and', 2), ('compiler-and', 2), ('compiler-and', 2), ('compiler-and', 2), ('compiler-and', 16), ('requested-and', 128), ('reported', 32), ('requested-and', re.DEBUG)]
+'\\w\\s' 'é ' 32 True
+[('requested-and', 64), ('requested-and', 4), ('requested-and', 256), ('parser-ior', 32), ('requested-and', 128), ('program', 32), ('compiler-and', 2), ('compiler-and', 2), ('compiler-and', 2), ('compiler-and', 4), ('compiler-and', 32), ('compiler-and', 2), ('compiler-and', 2), ('compiler-and', 4), ('compiler-and', 32), ('compiler-and', 2), ('compiler-and', 4), ('compiler-and', 32), ('requested-and', 128), ('reported', 32), ('requested-and', re.DEBUG)]
+'\\w\\s' 'é ' 32 False
+[('requested-and', 64), ('requested-and', 4), ('requested-and', 256), ('parser-ior', 32), ('requested-and', 128), ('program', 32), ('compiler-and', 2), ('compiler-and', 2), ('compiler-and', 2), ('compiler-and', 4), ('compiler-and', 32), ('compiler-and', 2), ('compiler-and', 2), ('compiler-and', 4), ('compiler-and', 32), ('compiler-and', 2), ('compiler-and', 4), ('compiler-and', 32), ('requested-and', 128), ('reported', 32), ('requested-and', re.DEBUG)]
+'(?i:x).' 'X\n' 32 True
+[('requested-and', 64), ('requested-and', 4), ('requested-and', 256), ('parser-ior', 32), ('requested-and', 128), ('program', 32), ('compiler-and', 2), ('compiler-and', 2), ('compiler-or', 2), ('compiler-or', 2), ('compiler-and', 2), ('compiler-or', 2), ('compiler-and', 16), ('requested-and', 128), ('reported', 32), ('requested-and', re.DEBUG)]
+'(?<=a+)x' PatternError look-behind requires fixed-width pattern
+[('requested-and', 64), ('requested-and', 4), ('requested-and', 256), ('parser-ior', 32), ('requested-and', 128), ('program', 32), ('compiler-and', 2), ('compiler-and', 2), ('compiler-and', 2), ('compiler-and', 2)]
+'x' LookupError compiler operation
+[('requested-and', 64), ('requested-and', 4), ('requested-and', 256), ('parser-ior', 32), ('requested-and', 128), ('program', 32), ('compiler-and', 2)]

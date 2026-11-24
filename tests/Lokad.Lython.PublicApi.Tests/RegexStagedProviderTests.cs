@@ -54,6 +54,7 @@ public sealed class RegexStagedProviderTests
             Z
             Q
             """;
+        var expectedOutput = expected.ReplaceLineEndings("\n") + "\n";
         var budget = new LythonMemoryBudget(1024 * 1024);
         var provider = new ScriptedProvider();
         using var script = new LythonEngine(provider).Compile(source, budget);
@@ -67,13 +68,13 @@ public sealed class RegexStagedProviderTests
         using (var result = script.Run(host, options))
         {
             Assert.True(result.Success, result.Failure?.Message);
-            Assert.Equal(expected + "\n", result.StandardOutput);
+            Assert.Equal(expectedOutput, result.StandardOutput);
         }
         Assert.Equal(baseline, budget.ReservedBytes);
         using (var result = await script.RunAsync(host, options))
         {
             Assert.True(result.Success, result.Failure?.Message);
-            Assert.Equal(expected + "\n", result.StandardOutput);
+            Assert.Equal(expectedOutput, result.StandardOutput);
         }
         Assert.Equal(10, provider.ParseCalls);
         Assert.Equal(6, provider.ProgramCalls);
@@ -122,6 +123,50 @@ public sealed class RegexStagedProviderTests
         Assert.True(host.CompletedAsynchronously > 0);
         Assert.Equal(0, provider.LiveParses);
         Assert.Equal(0, provider.LivePrograms);
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task NonintegerCompilerOperandFailsBeforeProgramConstruction(bool staged)
+    {
+        const string source = """
+            import re
+            class Program:
+                def __and__(self, bit): return 34 & bit
+            class Flags:
+                def __and__(self, bit): return 0
+                def __ior__(self, bit): return bit
+                def __ror__(self, state):
+                    with open('/flag.txt') as stream:
+                        stream.read()
+                    return Program()
+                def __or__(self, state):
+                    print('reported')
+                    return 32
+            print(re.compile('x', Flags()).fullmatch('X') is not None)
+            """;
+        var provider = new ScriptedProvider();
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var script = new LythonEngine(staged ? provider : new SingleStepProvider(provider)).Compile(source, budget);
+        Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        var exactCalls = provider.ExactCalls;
+        var host = new DelayedLythonHost();
+        host.SeedFile("/flag.txt", "flags");
+        using (var result = await script.RunAsync(host))
+        {
+            Assert.False(result.Success);
+            Assert.Equal(LythonFailureReason.HostCapabilityUnavailable, result.FailureAttribution?.Reason);
+            Assert.Empty(result.StandardOutput);
+        }
+        Assert.Equal(1, host.ClosedFileCount);
+        Assert.True(host.CompletedAsynchronously > 0);
+        Assert.Equal(staged ? 1 : 0, provider.ParseCalls);
+        Assert.Equal(0, provider.LiveParses);
+        Assert.Equal(0, provider.ProgramCalls);
+        Assert.Equal(exactCalls, provider.ExactCalls);
         Assert.Equal(baseline, budget.ReservedBytes);
     }
 
@@ -234,6 +279,13 @@ public sealed class RegexStagedProviderTests
         Assert.Equal(0, provider.LiveParses);
         Assert.Equal(0, provider.ProgramCalls);
         Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
+    private sealed class SingleStepProvider(ILythonRegexProvider provider) : ILythonRegexProvider
+    {
+        public ILythonRegexPattern Compile(ReadOnlyMemory<byte> pattern, LythonRegexOptions options,
+            ILythonMemoryBudget memoryOwner, CancellationToken cancellationToken)
+            => provider.Compile(pattern, options, memoryOwner, cancellationToken);
     }
 
     // Supplies the known events for the oracle's syntax without implementing a

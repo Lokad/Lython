@@ -2550,8 +2550,9 @@ parser decision points. A borrowed verbose operand can run a truth operation
 each time the parser uses it. The parsed handle owns its temporary storage
 through matching-flag resolution and program construction. Lython closes it
 before computing the reported flag value. The unpublished program stays
-funded through reporting and closes on any failure. Staged compilation
-currently accepts integer matching flags.
+funded through reporting and closes on any failure. Both provider paths
+require the matching-flag union to return an integer. A noninteger result
+reports a capability error before program construction and flag reporting.
 Exact flag requests in the frontend, imports and runtime use `Compile`.
 The pinned adapter uses that single operation for guest flag objects too,
 with limited parity for grammar-dependent callback ordering.

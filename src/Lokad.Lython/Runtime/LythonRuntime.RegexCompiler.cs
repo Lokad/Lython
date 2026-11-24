@@ -432,10 +432,11 @@ internal sealed partial class LythonRuntime
             var programFlags = await state.ReadProgramFlagsAsync().ConfigureAwait(false);
             var reportedFlags = await state.ReadReportedFlagsAsync().ConfigureAwait(false);
             // Identical explicit modes use the same request as exact flags.
-            if (programFlags == (reportedFlags & GuestRegexFlags.ProgramMask)
-                && (reportedFlags & (PythonUnicodeFlag | PythonAsciiFlag)) != 0)
-                programFlags = null;
-            var options = new LythonRegexOptions(reportedFlags, verbose) { ProgramFlags = programFlags };
+            var options = new LythonRegexOptions(reportedFlags, verbose)
+            {
+                ProgramFlags = programFlags == (reportedFlags & GuestRegexFlags.ProgramMask)
+                    && (reportedFlags & (PythonUnicodeFlag | PythonAsciiFlag)) != 0 ? null : programFlags,
+            };
             return await CompilePattern(cache, key, options, span, context, asynchronous).ConfigureAwait(false);
         }
 
@@ -451,8 +452,7 @@ internal sealed partial class LythonRuntime
             {
                 using (var parsed = await ParseStagedPattern(provider, flags, pattern, context, span, token).ConfigureAwait(false))
                 {
-                    var programFlags = await flags.ReadProgramFlagsAsync().ConfigureAwait(false)
-                        ?? throw RuntimeErrors.Capability("Staged regex compilation requires integer matching flags.", span);
+                    var programFlags = await flags.ReadProgramFlagsAsync().ConfigureAwait(false);
                     unpublished = ProviderCall((parsed, programFlags, governor, token),
                         static state => state.parsed.Compile(state.programFlags, state.governor.Budget, state.token),
                         governor, token, span, pattern);
@@ -848,7 +848,7 @@ internal sealed partial class LythonRuntime
                 ParsingComplete = true;
             }
 
-            internal async ValueTask<int?> ReadProgramFlagsAsync()
+            internal async ValueTask<int> ReadProgramFlagsAsync()
             {
                 context.CheckExecution(span);
                 await ProbeDebugAsync().ConfigureAwait(false);
@@ -862,7 +862,7 @@ internal sealed partial class LythonRuntime
                     BigInteger bits when bits >= int.MinValue && bits <= int.MaxValue => (int)bits & ProgramMask,
                     BigInteger => ToRegexCInt(await Evaluate(BinaryOperatorSyntax.BitwiseAnd,
                         program, new BigInteger(ProgramMask)).ConfigureAwait(false), span, context),
-                    _ => null,
+                    _ => throw RuntimeErrors.Capability("Regex compilation requires integer matching flags.", span),
                 };
             }
 
