@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1549](results/2026-11-24-combined-csv-cpython/README.md) refreshes three
+CSV workloads on the combined delivery. The explicit meter is within
+5.1% warm and spans parity through result. The same delivery's allocation
+traces isolate tuple construction, numeric CSV publication and JSON
+builder or option work.
+
 [B1547–B1548](results/2026-11-24-short-dictionary-keys/README.md) borrow
 deferred short CSV keys at existing dictionary access sites. The repeat
 confirms lower elapsed and CPU on the explicit meter. The first run's
