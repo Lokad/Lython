@@ -1,0 +1,100 @@
+{
+  "images": {
+    "reference": {
+      "Inspect.deps.json": "2d4667c19cc8c902aaec0f8f7ee91d1cf12cbad6b6e7bffe82d306ae68c743c4",
+      "Inspect.dll": "cc6d3c2ba2eb564ac954e734a33fa0fdd802819744adaae4513d35e3c770f7aa",
+      "Inspect.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0",
+      "Lokad.Lython.dll": "0350e3d800b7f0159a728f796882196ffbb7a2a34cacc2652e19218d7af2038f"
+    },
+    "diagnostic": {
+      "Inspect.deps.json": "2d4667c19cc8c902aaec0f8f7ee91d1cf12cbad6b6e7bffe82d306ae68c743c4",
+      "Inspect.dll": "cc6d3c2ba2eb564ac954e734a33fa0fdd802819744adaae4513d35e3c770f7aa",
+      "Inspect.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0",
+      "Lokad.Lython.dll": "3613fed80d2c9de4259df4f66ba811670f56dcaaab255608e963510712a5e9d3"
+    }
+  },
+  "rows": [
+    {
+      "case": "scripts.config-manifest.small",
+      "codeObjects": 7,
+      "blockSizes": {
+        "1": 3,
+        "2": 3,
+        "3": 4,
+        "4": 1,
+        "5": 3,
+        "6": 1,
+        "7": 2,
+        "10": 1,
+        "12": 2,
+        "13": 1,
+        "15": 1,
+        "16": 1,
+        "17": 1,
+        "18": 1,
+        "22": 1,
+        "32": 1,
+        "67": 1
+      },
+      "growthByOldCapacity": {
+        "0": 23,
+        "4": 12,
+        "8": 7,
+        "16": 4,
+        "32": 1,
+        "64": 1
+      },
+      "reopensByPriorLength": {},
+      "slotsCopied": 264,
+      "emittedSlots": 294
+    },
+    {
+      "case": "scripts.config-generated-guards.medium.bad-0.sparse-lexical",
+      "codeObjects": 3,
+      "blockSizes": {
+        "1": 98,
+        "3": 1,
+        "5": 96,
+        "8": 2,
+        "9": 96,
+        "11": 96,
+        "12": 2,
+        "14": 96,
+        "15": 1
+      },
+      "growthByOldCapacity": {
+        "0": 487,
+        "4": 389,
+        "8": 291
+      },
+      "reopensByPriorLength": {
+        "4": 96,
+        "8": 96
+      },
+      "slotsCopied": 3884,
+      "emittedSlots": 3900
+    },
+    {
+      "case": "scripts.annotated-rule-closures.nested-factories.postponed",
+      "codeObjects": 4,
+      "blockSizes": {
+        "4": 1,
+        "6": 1,
+        "8": 1,
+        "10": 1,
+        "11": 1,
+        "21": 1
+      },
+      "growthByOldCapacity": {
+        "0": 6,
+        "4": 5,
+        "8": 3,
+        "16": 1
+      },
+      "reopensByPriorLength": {},
+      "slotsCopied": 60,
+      "emittedSlots": 60
+    }
+  ],
+  "matchedInstructions": true
+}

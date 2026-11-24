@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Current compiler storage attribution](results/2026-11-24-current-compiler-block-growth/README.md)
+confirms instruction-list growth in three complete sources. The sparse
+validator recycles 3,884 slots through replacement copies and reopens
+192 blocks. Its matched instruction tape establishes the current cost
+before a storage redesign.
+
 [B1591](results/2026-11-24-decoded-closed-defaults/README.md) reuses the
 integer already decoded by the closed-definition guard. Eager annotated
 rules use 2.88–4.48% less elapsed and 3.01–4.66% less process CPU at matched
