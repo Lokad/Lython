@@ -105,4 +105,55 @@ public sealed class RegexFlagProtocolTests
         Assert.Equal(1, nextHost.ClosedFileCount);
         Assert.Equal(baseline, allowance.ReservedBytes);
     }
+
+    [Theory]
+    [InlineData("32", "32 x\nindex\n")]
+    [InlineData("text", "TypeError\nindex\n")]
+    [InlineData("1180591620717411303424", "OverflowError\nindex\n")]
+    public async Task FlagsConvertedByPythonIndexCanSuspend(string input, string expected)
+    {
+        const string source = """
+            import re
+            operations = []
+            class FlagBits:
+                def __index__(self):
+                    operations.append('index')
+                    with open('/flags.txt') as stream:
+                        value = stream.read()
+                    return value if value == 'text' else int(value)
+            class Flags:
+                def __and__(self, other): return 0
+                def __or__(self, other): return FlagBits()
+                def __ior__(self, other): return other
+                def __ror__(self, other): return other
+            try:
+                pattern = re.compile('x', Flags())
+                print(pattern.flags, pattern.fullmatch('x').group())
+            except (TypeError, OverflowError) as error:
+                print(type(error).__name__)
+            print(' '.join(operations))
+            """;
+        var allowance = new LythonMemoryBudget(1024 * 1024);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, allowance);
+        Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Message)));
+        var baseline = allowance.ReservedBytes;
+        var syncHost = new MockLythonHost();
+        syncHost.SeedFile("/flags.txt", input);
+        using (var result = script.Run(syncHost))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(expected, result.StandardOutput);
+        }
+        Assert.Equal(baseline, allowance.ReservedBytes);
+        var asyncHost = new DelayedLythonHost();
+        asyncHost.SeedFile("/flags.txt", input);
+        using (var result = await script.RunAsync(asyncHost))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(expected, result.StandardOutput);
+        }
+        Assert.Equal(1, asyncHost.ClosedFileCount);
+        Assert.True(asyncHost.CompletedAsynchronously > 0);
+        Assert.Equal(baseline, allowance.ReservedBytes);
+    }
 }

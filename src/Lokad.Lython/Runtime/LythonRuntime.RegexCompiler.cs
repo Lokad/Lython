@@ -704,6 +704,8 @@ internal sealed partial class LythonRuntime
             var combined = await EvaluateFlagOperation(BinaryOperatorSyntax.BitwiseOr, stateFlags, value).ConfigureAwait(false);
             _ = await EvaluateFlagOperation(BinaryOperatorSyntax.BitwiseAnd, value, debug).ConfigureAwait(false);
             var converted = await EvaluateFlagOperation(BinaryOperatorSyntax.BitwiseOr, value, combined).ConfigureAwait(false);
+            if (converted is PyInstance)
+                converted = (await CoerceTypeIndexAsync(converted, context, span, asynchronous).ConfigureAwait(false))!;
             var flagBits = ToRegexCInt(converted, span, context);
             _ = await EvaluateFlagOperation(BinaryOperatorSyntax.BitwiseAnd, value, debug).ConfigureAwait(false);
 
