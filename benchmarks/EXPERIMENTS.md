@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1585](results/2026-11-24-json-ascii-runs/README.md) compares bounded run
+searches in the JSON string emitter. The expanded-options script is slightly
+slower, default-options elapsed spans zero and the unchanged CSV control
+moves favorably. CLR allocation and admission are effectively flat. Keep
+the candidate private.
+
 [B1584](results/2026-11-24-prepared-tuple-exit/refinement/README.md)
 keeps prepared tuple admission in the preparation helper. The shared
 frame loop returns to its former size. Defaulted rules improve on both
