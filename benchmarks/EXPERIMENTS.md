@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1634](results/2026-11-24-forwarded-rule-cpu/README.md) places
+45–46% of resolved defaulted-rule runtime ancestry and 42% of eager
+through-result ancestry under definition construction. Compiler work
+and entry remain visible. The profile guides the next construction
+design and supplies source attribution.
+
 [B1633](results/2026-11-24-forwarded-integers-cpython/README.md) refreshes
 three rule scripts against CPython 3.13.16. Defaulted rules take
 1.305–1.333× warm and 1.257–1.278× through result. Captured rules take
