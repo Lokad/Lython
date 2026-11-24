@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1627](results/2026-11-24-current-rule-attribution/README.md) places
+562 of 1,196 defaulted-rule runtime samples under definition construction.
+The eager comparison fails to isolate the previously measured CPU cost.
+Its initial warmup shortfall and the corrected three-profile run are
+archived together.
+
 [B1626](results/2026-11-24-regex-operation-dispatch/README.md) shares
 regex module and compiled-method dispatch. Both execution modes match
 all 21 CPython argument-order probes. The pinned adapter's compiled

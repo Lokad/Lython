@@ -1,0 +1,23 @@
+{
+  "coreSHA256": {
+    "reference": "0871a57a26c443835d1a28326ad6bd939053d306a0eb6614fb9abcf38d28f1d3",
+    "candidate": "d1440aad206919af2f57ec99b3f41cf4f0e42105ee06e133acf39a54959836cb"
+  },
+  "candidateSource": "6466fbb522529d953ec874dafc18bd0b63d3f69d",
+  "identicalMetadata": true,
+  "sites": [
+    {
+      "index": 10,
+      "existingOperation": "Call",
+      "target": "compile_rule",
+      "potentialDirectRoute": "TryStartForwardedComputedDefinition"
+    },
+    {
+      "index": 12,
+      "existingOperation": "IntegerCallUpdate",
+      "target": "latest",
+      "potentialDirectRoute": "TryEvaluateIntegerCallUpdate"
+    }
+  ],
+  "sourceFactsOnly": true
+}
