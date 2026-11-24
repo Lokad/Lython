@@ -6,6 +6,97 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
+    [System.Runtime.CompilerServices.InlineArray(ExecutableCodeObject.ClosedCaptureCapacity)]
+    private struct ClosedCaptureBindings { private ExecutableSlot _first; }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    internal static void CompleteClosedCapturedPair(ExecutableCodeObject factory, ExecutionContext scope,
+        long argument, Span<ExecutableSlot> destination)
+    {
+        ClosedCaptureBindings buffer = default;
+        Span<ExecutableSlot> bindings = buffer;
+        var code = factory.Instructions;
+        var index = 0;
+        while (code[index].OpCode == ExecutableOpCode.LoadLocal)
+        {
+            scope.CheckExecution(code[index++].Span);
+            var value = EvaluateClosedIntegerSequence<FactoryBindingIntegerSource>(factory, argument, scope, ref index);
+            ref readonly var store = ref code[index++];
+            scope.CheckExecution(store.Span);
+            bindings[store.LocalSlot] = value;
+        }
+
+        ref readonly var create = ref code[index++];
+        scope.CheckExecution(create.Span);
+        var left = (ExecutableCreateFunction)factory.Constants[create.ConstantIndex]!;
+        var slots = left.CodeObject.CaptureSources!.Slots;
+        var single = slots is [var local] ? bindings.Slice(local, 1) : default;
+        var cells = single.IsEmpty
+            ? CaptureExecutableCells(left.CodeObject, scope, create.Span, bindings, default, slots, out _, inline: true)
+            : default;
+        var first = CreateFunctionValue(left.ParameterLayout, left.CodeObject, GetGlobalContext(scope),
+            cells, default, false, scope, create.Span, uncapturedLocal: single);
+        scope.CheckExecution(code[index++].Span); // Store the left binding.
+
+        ref readonly var nested = ref code[index++];
+        var right = (ExecutableCreateFunction)factory.Constants[nested.ConstantIndex]!;
+        scope.CheckExecution(nested.Span);
+        scope.CheckExecution(code[index++].Span); // Private store.
+        scope.CheckExecution(code[index++].Span); // Read the left binding.
+        scope.CheckExecution(code[index++].Span); // Read the private callable.
+        ref readonly var invoke = ref code[index++];
+        scope.CheckExecution(invoke.Span);
+        var second = CreateImmediatelyCalledLambda(right.CodeObject, argument, scope, factory.CallSites[invoke.CallSiteIndex].CallSpan);
+        for (; index < code.Length; index++) scope.CheckExecution(code[index].Span);
+
+        destination[1].Object = first;
+        destination[0].Object = second;
+    }
+
+    private static PyFunctionBase CreateImmediatelyCalledLambda(ExecutableCodeObject body, long argument,
+        ExecutionContext scope, LythonSourceSpan callSpan)
+    {
+        scope.EnterInterpreterFrame(callSpan);
+        try
+        {
+            var previous = scope.State.CurrentException;
+            try
+            {
+                scope.EnterFunctionCall(callSpan);
+                try
+                {
+                    var inner = 0;
+                    var value = EvaluateClosedIntegerSequence<CaptureIntegerSource>(body, argument, scope, ref inner);
+                    scope.CheckExecution(body.Instructions[inner++].Span); // The lambda's private capture.
+                    ref readonly var create = ref body.Instructions[inner];
+                    var lambda = ((ExecutableCreateLambda)body.Constants[create.ConstantIndex]!).Binding;
+                    scope.CheckExecution(create.Span);
+                    var function = CreateFunctionValue(lambda.Layout, lambda.CodeObject, GetGlobalContext(scope), default,
+                        default, false, scope, create.Span, uncapturedLocal: new Span<ExecutableSlot>(ref value));
+                    scope.CheckExecution(body.Instructions[^1].Span);
+                    return function;
+                }
+                catch (LythonRuntimeException error)
+                {
+                    if (previous is not null && !ReferenceEquals(error.OriginalPythonException, previous))
+                        error.PythonContext ??= previous;
+                    throw;
+                }
+                finally
+                {
+                    scope.State.SetCurrentException(previous);
+                    scope.LeaveFunctionCall();
+                }
+            }
+            catch (LythonRuntimeException error)
+            {
+                PyFunctionBinding.AnnotateException(error, scope, body.Name, callSpan);
+                throw;
+            }
+        }
+        finally { scope.LeaveInterpreterFrame(); }
+    }
+
     internal ref partial struct NativeExecution
     {
         private bool ApplyDefinition(in ExecutableInstruction instruction)
@@ -54,49 +145,10 @@ internal sealed partial class LythonRuntime
             _scope.CheckExecution(instructions[Index + 3].Span);
             Index += 4;
             ref readonly var invoke = ref instructions[Index];
-            var call = Code.CallSites[invoke.CallSiteIndex];
             _scope.CheckExecution(invoke.Span);
-            _scope.EnterInterpreterFrame(call.CallSpan);
-            try
-            {
-                var previous = _scope.State.CurrentException;
-                PyFunctionBase function;
-                try
-                {
-                    _scope.EnterFunctionCall(call.CallSpan);
-                    try
-                    {
-                        var inner = 0;
-                        var value = EvaluateClosedIntegerSequence<CaptureIntegerSource>(body, integer, _scope, ref inner);
-                        _scope.CheckExecution(body.Instructions[inner++].Span); // The lambda's private capture.
-                        ref readonly var create = ref body.Instructions[inner];
-                        var lambda = ((ExecutableCreateLambda)body.Constants[create.ConstantIndex]!).Binding;
-                        _scope.CheckExecution(create.Span);
-                        function = CreateFunctionValue(lambda.Layout, lambda.CodeObject, GetGlobalContext(_scope), default,
-                            default, false, _scope, create.Span, uncapturedLocal: new Span<ExecutableSlot>(ref value));
-                        _scope.CheckExecution(body.Instructions[^1].Span);
-                    }
-                    catch (LythonRuntimeException error)
-                    {
-                        if (previous is not null && !ReferenceEquals(error.OriginalPythonException, previous))
-                            error.PythonContext ??= previous;
-                        throw;
-                    }
-                    finally
-                    {
-                        _scope.State.SetCurrentException(previous);
-                        _scope.LeaveFunctionCall();
-                    }
-                }
-                catch (LythonRuntimeException error)
-                {
-                    PyFunctionBinding.AnnotateException(error, _scope, body.Name, call.CallSpan);
-                    throw;
-                }
-                Publish(invoke, function);
-                return true;
-            }
-            finally { _scope.LeaveInterpreterFrame(); }
+            var result = CreateImmediatelyCalledLambda(body, integer, _scope, Code.CallSites[invoke.CallSiteIndex].CallSpan);
+            Publish(invoke, result);
+            return true;
         }
 
         private PyFunctionBase CreateInlineDefinition(in ExecutableInstruction instruction,

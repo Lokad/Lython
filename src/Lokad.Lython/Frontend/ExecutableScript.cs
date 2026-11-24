@@ -544,8 +544,11 @@ internal sealed record ExecutableMatchCaseBinding(
 // incoming cell in the defining code's capture array.
 internal sealed record ExecutableCaptureSources(IReadOnlyDictionary<string, int> ParentLocalSlots, int[] Slots, bool CanCaptureByValue);
 
+internal enum DirectDefinitionPair : byte { None, Defaults, Captures }
+
 internal sealed partial class ExecutableCodeObject
 {
+    internal const int ClosedCaptureCapacity = 4;
     internal PyDict.RecordKeys? DefinitionAnnotationKeys { get; set; }
 
     public ExecutableCodeObject(
@@ -647,7 +650,7 @@ internal sealed partial class ExecutableCodeObject
         {
             PrepareImmediatelyCalledDefinition(cancellationToken);
             DirectDefinitionReturn = PrepareDirectDefinitionReturn(cancellationToken, out var definitionPair);
-            HasDirectDefinitionPair = definitionPair;
+            DefinitionPair = definitionPair;
         }
 
         int ResolvedOffset(int block) => positions[ExecutableStackLayout.ResolveTarget(blocks, positions, block, cancellationToken)].Offset;
@@ -672,7 +675,8 @@ internal sealed partial class ExecutableCodeObject
     internal int[] ModuleGlobalSlots { get; private set; } = [];
     internal ExecutableCaptureSources? CaptureSources { get; private set; }
     internal ExecutableCreateFunction? DirectDefinitionReturn { get; }
-    internal bool HasDirectDefinitionPair { get; }
+    internal DirectDefinitionPair DefinitionPair { get; }
+    internal bool HasDirectDefinitionPair => DefinitionPair != DirectDefinitionPair.None;
     internal bool ForwardsCaptures { get; init; }
     internal int FirstSnapshotCell { get; init; }
     internal int[]? SnapshotTailOrder { get; init; }

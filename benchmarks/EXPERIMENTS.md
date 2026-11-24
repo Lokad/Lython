@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1603](results/2026-11-24-closed-capture-pair/seeded/README.md)
+ships the captured pair after restoring the shared operand evaluator.
+Captured elapsed falls 19.60–29.07% warm and 27.18–31.68% through result
+at matched admission. Postponed warm costs 2.58–7.56% more. Other
+controls cross zero. B1602 preserves the initial source and controls.
+
 [B1602](results/2026-11-24-closed-capture-pair/README.md)
 completes all captured factory pairs before the outer activation.
 Captured rules take 24.01–27.29% less warm elapsed with lower CPU and

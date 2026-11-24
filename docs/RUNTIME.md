@@ -404,6 +404,10 @@ can run its closed arithmetic at the definition boundary. The nested call
 keeps managed stack admission and cancellation. The returned lambda and
 its capture retain funded storage. Observable bindings and dynamic inputs
 use their ordinary instructions and suspension path.
+An eligible terminal pair can also compute the exact outer bindings
+in four local slots. The caller receives both fresh callables
+through its existing result slots. Their cells retain their ordinary
+ownership and support later nonlocal mutation.
 An adjacent addition to a private local can carry early reads through an
 exact call. The existing operand window holds only provisional integers until
 the selected helper and its arguments are known to finish without callbacks.

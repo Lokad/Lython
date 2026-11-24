@@ -1,0 +1,88 @@
+{
+  "reference": {
+    "core": "461a5e10a0c6511745176d63687927a0ca10dbeddb918299313958d67f14dbc5",
+    "methods": {
+      "Lokad.Lython.Runtime.PyExecutableFunction:StartNativeCall": {
+        "bytes": 302,
+        "frameBytes": 152
+      },
+      "Lokad.Lython.Runtime.PyExecutableFunction:StartNativeWorkspace": {
+        "bytes": 549,
+        "frameBytes": 440
+      },
+      "Lokad.Lython.Runtime.PyExecutableFunction:StartInline": {
+        "bytes": 896,
+        "frameBytes": 216
+      },
+      "Lokad.Lython.Runtime.LythonRuntime+NativeExecution:RunCore": {
+        "bytes": 5642,
+        "frameBytes": 224
+      },
+      "Lokad.Lython.Runtime.LythonRuntime+NativeExecution:ApplyDefinition": {
+        "bytes": 700,
+        "frameBytes": 136
+      },
+      "Lokad.Lython.Runtime.LythonRuntime+NativeExecution:CreateInlineDefinition": {
+        "bytes": 975,
+        "frameBytes": 280
+      },
+      "Lokad.Lython.Runtime.LythonRuntime+NativeExecution:TryCompleteImmediatelyCalledDefinition": {
+        "bytes": 1713,
+        "frameBytes": 240
+      },
+      "Lokad.Lython.Runtime.LythonRuntime:EvaluateClosedIntegerSequence[Lokad.Lython.Runtime.LythonRuntime+CaptureIntegerSource]": {
+        "bytes": 1151,
+        "frameBytes": 168
+      },
+      "Lokad.Lython.Runtime.PyExecutableFunction:TryReturnDefinition": {
+        "bytes": 833,
+        "frameBytes": 80
+      },
+      "Lokad.Lython.Runtime.LythonRuntime:EvaluateClosedIntegerSequence[Lokad.Lython.Runtime.LythonRuntime+ParameterIntegerSource]": {
+        "bytes": 1111,
+        "frameBytes": 168
+      }
+    }
+  },
+  "candidate": {
+    "core": "9b6e4ecfc4e98200ec22944e81cad2c838f039b097bc7e37183f4fe50f8ee2f5",
+    "methods": {
+      "Lokad.Lython.Runtime.PyExecutableFunction:StartNativeCall": {
+        "bytes": 310,
+        "frameBytes": 152
+      },
+      "Lokad.Lython.Runtime.PyExecutableFunction:TryReturnDefinition": {
+        "bytes": 879,
+        "frameBytes": 72
+      },
+      "Lokad.Lython.Runtime.LythonRuntime:CompleteClosedCapturedPair": {
+        "bytes": 2020,
+        "frameBytes": 568
+      },
+      "Lokad.Lython.Runtime.LythonRuntime:EvaluateClosedIntegerSequence[Lokad.Lython.Runtime.LythonRuntime+FactoryBindingIntegerSource]": {
+        "bytes": 842,
+        "frameBytes": 128
+      },
+      "Lokad.Lython.Runtime.LythonRuntime:EvaluateClosedIntegerSequence[Lokad.Lython.Runtime.LythonRuntime+CaptureIntegerSource]": {
+        "bytes": 1151,
+        "frameBytes": 168
+      },
+      "Lokad.Lython.Runtime.LythonRuntime:EvaluateClosedIntegerSequence[Lokad.Lython.Runtime.LythonRuntime+ParameterIntegerSource]": {
+        "bytes": 1111,
+        "frameBytes": 168
+      },
+      "Lokad.Lython.Runtime.PyExecutableFunction:StartNativeWorkspace": {
+        "bytes": 549,
+        "frameBytes": 440
+      },
+      "Lokad.Lython.Runtime.PyExecutableFunction:StartInline": {
+        "bytes": 896,
+        "frameBytes": 216
+      },
+      "Lokad.Lython.Runtime.LythonRuntime+NativeExecution:RunCore": {
+        "bytes": 5642,
+        "frameBytes": 224
+      }
+    }
+  }
+}

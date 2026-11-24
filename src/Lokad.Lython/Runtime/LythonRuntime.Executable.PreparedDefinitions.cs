@@ -223,10 +223,18 @@ internal sealed partial class LythonRuntime
         public static bool IsArgument(ExecutableCodeObject code, int slot) => slot == ~code.CaptureOperandBase;
     }
 
+    private readonly struct FactoryBindingIntegerSource : IClosedIntegerSource
+    {
+        public static bool IsArgument(ExecutableCodeObject code, int slot) => false;
+    }
+
     private static ExecutableSlot EvaluateClosedIntegerSequence<TSource>(ExecutableCodeObject factory, long argument,
         ExecutionContext scope, ref int index) where TSource : struct, IClosedIntegerSource
     {
         var result = default(ExecutableSlot);
+        // The closed outer binding already proved its one local load. Its
+        // first input is the same carried value as every later local input.
+        if (typeof(TSource) == typeof(FactoryBindingIntegerSource)) result.SetInteger(argument);
         while (factory.Instructions[index].OpCode == ExecutableOpCode.Binary)
         {
             ref readonly var instruction = ref factory.Instructions[index++];

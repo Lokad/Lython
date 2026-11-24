@@ -6,9 +6,9 @@ namespace Lokad.Lython.Frontend;
 internal sealed partial class ExecutableCodeObject
 {
     private ExecutableCreateFunction? PrepareDirectDefinitionReturn(CancellationToken cancellationToken,
-        out bool definitionPair)
+        out DirectDefinitionPair definitionPair)
     {
-        definitionPair = false;
+        definitionPair = DirectDefinitionPair.None;
         var createIndex = Instructions.Length - 2;
         if (!UsesOnlyLexicalSlots || EntryIndex != 0 || ExceptionRegions.Count != 0 ||
             createIndex < 0 || Instructions[^1].OpCode != ExecutableOpCode.Return ||
@@ -16,7 +16,8 @@ internal sealed partial class ExecutableCodeObject
 
         if (Instructions[createIndex].OpCode == ExecutableOpCode.MakeTuple)
         {
-            definitionPair = HasClosedDefinitionPair(createIndex, cancellationToken);
+            if (HasClosedDefinitionPair(createIndex, cancellationToken)) definitionPair = DirectDefinitionPair.Defaults;
+            else if (HasClosedCapturedDefinitionPair(cancellationToken)) definitionPair = DirectDefinitionPair.Captures;
             return null;
         }
 
@@ -71,6 +72,67 @@ internal sealed partial class ExecutableCodeObject
             return false;
         local = store.LocalSlot;
         return true;
+    }
+
+    private bool HasClosedCapturedDefinitionPair(CancellationToken token)
+    {
+        // The prepared suffix supplies the ordered pair, with a private
+        // right-hand invocation borrowing the unchanged outer argument.
+        var nested = Instructions.Length - 7;
+        var creation = nested - 2;
+        if (creation < 3 || ClosureNames.Count != 0 ||
+            Instructions[nested] is not { OpCode: ExecutableOpCode.ApplyOperation, ImmediatelyCalledDefinitionCapture: 0 } ||
+            Constants[Instructions[creation].ConstantIndex] is not ExecutableCreateFunction
+            {
+                InputCount: 0, IsGenerator: false, DeferredAnnotations.Length: 0, TypeParameters: null,
+                EagerAnnotationReads: null, PostponedAnnotations: null,
+            } left ||
+            left.CodeObject is not { UsesOnlyLexicalSlots: true, ScopeFacts.RequiresClassCell: false,
+                CaptureSources: { Slots.Length: > 0 } capture } ||
+            !ReferenceEquals(capture.ParentLocalSlots, LocalNameToSlot)) return false;
+
+        // Use the existing cell constructor with only the slots actually
+        // captured by the result. No mutable guest binding can be forwarded.
+        var needed = 0;
+        foreach (var slot in capture.Slots)
+        {
+            if (slot <= 0 || slot >= ClosedCaptureCapacity || (needed & (1 << slot)) != 0) return false;
+            needed |= 1 << slot;
+        }
+        var assigned = 0;
+        var index = 0;
+        while (index < creation)
+        {
+            PythonTokenization.CheckCancellation(token, index);
+            if (Instructions[index++] is not { OpCode: ExecutableOpCode.LoadLocal, LocalSlot: 0, HasResultConsumer: false } load ||
+                load.ResultSlot != FirstTemporarySlot) return false;
+
+            var prior = load.ResultSlot;
+            var computed = false;
+            while (index + 1 < creation && Instructions[index].OpCode == ExecutableOpCode.Binary)
+            {
+                PythonTokenization.CheckCancellation(token, index);
+                ref readonly var binary = ref Instructions[index++];
+                var stored = Instructions[index].OpCode == ExecutableOpCode.StoreLocal;
+                if (binary.BinaryOperator is not (BinaryOperatorSyntax.Add or BinaryOperatorSyntax.Subtract or
+                    BinaryOperatorSyntax.Multiply or BinaryOperatorSyntax.FloorDivide or BinaryOperatorSyntax.Modulo) &&
+                    !(stored && LythonRuntime.IsScalarComparison(binary.BinaryOperator)) ||
+                    !ReadsClosedValue(binary.InputStart, prior) || !ReadsClosedValue(binary.SecondInput, prior) ||
+                    binary.ResultSlot < FirstTemporarySlot || binary.HasResultConsumer != stored) return false;
+                prior = binary.ResultSlot;
+                computed = true;
+            }
+            if (!computed || index >= creation ||
+                Instructions[index++] is not { OpCode: ExecutableOpCode.StoreLocal, StoresCapturedLocal: true } store ||
+                store.InputStart != prior || store.LocalSlot <= 0 || store.LocalSlot >= ClosedCaptureCapacity) return false;
+            var bit = 1 << store.LocalSlot;
+            if ((assigned & bit) != 0) return false;
+            assigned |= bit;
+        }
+        return assigned == needed;
+
+        bool ReadsClosedValue(int source, int prior) => source >= 0 ? source == prior :
+            (uint)~source < (uint)Constants.Length && Constants[~source] is BigInteger;
     }
 
     // The zero-argument definition is private to a terminal pair. The native

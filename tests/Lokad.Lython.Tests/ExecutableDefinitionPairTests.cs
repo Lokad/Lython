@@ -23,16 +23,33 @@ public sealed class ExecutableDefinitionPairTests
         var factory = Assert.Single(module.FunctionBindings()).CodeObject!;
         Assert.Equal(prepared, factory.Instructions.Any(instruction =>
             instruction.OpCode == ExecutableOpCode.ApplyOperation && instruction.ImmediatelyCalledDefinitionCapture != int.MaxValue));
+        Assert.Equal(prepared ? DirectDefinitionPair.Captures : DirectDefinitionPair.None, factory.DefinitionPair);
     }
 
     [Theory]
-    [InlineData(false, false)]
-    [InlineData(true, false)]
-    [InlineData(false, true)]
-    [InlineData(true, true)]
-    public async Task PrivateCallStopsDuringItsRetainedLambdaAdmission(bool asynchronous, bool cancelDuringAdmission)
+    [InlineData(false, false, false)]
+    [InlineData(true, false, false)]
+    [InlineData(false, true, false)]
+    [InlineData(true, true, false)]
+    [InlineData(false, false, true)]
+    [InlineData(true, false, true)]
+    [InlineData(false, true, true)]
+    [InlineData(true, true, true)]
+    public async Task PrivateCallStopsDuringItsRetainedLambdaAdmission(bool asynchronous, bool cancelDuringAdmission, bool capturedPair)
     {
-        var source = """
+        var source = (capturedPair ? """
+            def make(seed):
+                offset = seed % 7
+                weight = seed % 5 + 1
+                enabled = seed % 3 != 0
+                def first():
+                    return offset * weight if enabled else 0
+                def alternate():
+                    step = seed + 1
+                    return lambda: step
+                return first, alternate()
+            first, second = make(5)
+            """ : """
             def make(seed):
                 def first():
                     return 17
@@ -41,10 +58,12 @@ public sealed class ExecutableDefinitionPairTests
                     return lambda: step
                 return first, alternate()
             first, second = make(5)
-            """.ReplaceLineEndings("\n");
+            """).ReplaceLineEndings("\n");
         var syntax = LythonFrontend.Compile(source).Script!;
         var module = ExecutableScript.Compile(syntax).EntryPoint;
-        Assert.Contains(Assert.Single(module.FunctionBindings()).CodeObject!.Instructions,
+        var factory = Assert.Single(module.FunctionBindings()).CodeObject!;
+        Assert.Equal(capturedPair ? DirectDefinitionPair.Captures : DirectDefinitionPair.None, factory.DefinitionPair);
+        Assert.Contains(factory.Instructions,
             instruction => instruction.OpCode == ExecutableOpCode.ApplyOperation &&
                 instruction.ImmediatelyCalledDefinitionCapture != int.MaxValue);
 

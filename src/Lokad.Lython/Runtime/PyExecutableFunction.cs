@@ -182,7 +182,11 @@ internal sealed class PyExecutableFunction : PyFunctionBase
             try
             {
                 if (definition is null)
-                    LythonRuntime.CompleteClosedDefinitionPair(CodeObject, Closure, integerArgument, destination);
+                {
+                    if (CodeObject.DefinitionPair == DirectDefinitionPair.Captures)
+                        LythonRuntime.CompleteClosedCapturedPair(CodeObject, Closure, integerArgument, destination);
+                    else LythonRuntime.CompleteClosedDefinitionPair(CodeObject, Closure, integerArgument, destination);
+                }
                 else
                 {
                     var function = capturesArgument
