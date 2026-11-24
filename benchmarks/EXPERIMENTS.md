@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1547–B1548](results/2026-11-24-short-dictionary-keys/README.md) borrow
+deferred short CSV keys at existing dictionary access sites. The repeat
+confirms lower elapsed and CPU on the explicit meter. The first run's
+final quiet failure and the repeat's smaller quoted-invoice elapsed
+penalty stay in the record.
+
 [Borrowed regex names](results/2026-11-24-borrowed-regex-names/README.md)
 remove temporary Python strings and name reservations from successful
 replacement lookups. Short and long Unicode expansion diagnostics

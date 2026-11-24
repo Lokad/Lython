@@ -1,0 +1,49 @@
+{
+  "reference": {
+    "scripts.csv-meter-report.explicit-float": [],
+    "scripts.csv-meter-report.typed-unicode": [],
+    "scripts.csv-invoice.method-policy.quoted-control": [],
+    "diagnostic.text-summary.nonlocal-computed-width.large": [],
+    "scripts.csv-meter-report.distinct-keys": []
+  },
+  "candidate": {
+    "scripts.csv-meter-report.explicit-float": [
+      [
+        "<module>",
+        41,
+        "LoadDictionaryGetKey"
+      ],
+      [
+        "<module>",
+        55,
+        "StoreSubscript"
+      ]
+    ],
+    "scripts.csv-meter-report.typed-unicode": [
+      [
+        "<module>",
+        35,
+        "LoadDictionaryGetKey"
+      ],
+      [
+        "<module>",
+        49,
+        "StoreSubscript"
+      ]
+    ],
+    "scripts.csv-invoice.method-policy.quoted-control": [],
+    "diagnostic.text-summary.nonlocal-computed-width.large": [],
+    "scripts.csv-meter-report.distinct-keys": [
+      [
+        "<module>",
+        41,
+        "LoadDictionaryGetKey"
+      ],
+      [
+        "<module>",
+        55,
+        "StoreSubscript"
+      ]
+    ]
+  }
+}
