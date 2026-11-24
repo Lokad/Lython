@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1637](results/2026-11-24-current-record-text-cpu/README.md) profiles
+the current CSV meters and short Unicode report. Executable dispatch
+and literal CSV parsing account for more nearest samples than final
+record construction. The report still spends time in dictionary
+updates, cased helper returns and word preparation. The bounded source
+review leaves the existing record and word ownership designs in place.
+
 [B1635–B1636](results/2026-11-24-shared-prepared-definitions/README.md)
 share the prepared `def` and `lambda` operation, removing a duplicate
 stack and runtime path. Execution allocation and admission match.
