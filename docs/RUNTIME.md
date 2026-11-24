@@ -2536,6 +2536,7 @@ Module regex calls distinguish omitted flags from an explicit `None`.
 Text patterns raise `TypeError` for `flags=None`, and compiled patterns
 accept it as a false flag value. Guest flag operators and the truth
 check for a compiled pattern can await host I/O during `RunAsync`.
+The final flag value uses Python's `__index__` protocol when necessary.
 Flag handling completes before provider compilation or subject work.
 The per-execution cache preserves requested integer flag identity.
 Omitted flags and explicit `re.UNICODE` give distinct cached pattern

@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1578](results/2026-11-24-native-callable-definition/README.md) shares
+compiled definition preparation across native and borrowed `def` and
+lambda. Captured rules improve, defaulted rules slow, and unstable
+workers leave the defaulted first-use magnitude and annotated control
+open. The prototype stays private through a bounded confirmation.
+
 [B1577](results/2026-11-24-retained-rule-factory-cpu/README.md) profiles
 captured and defaulted rules after scalar activation removal.
 Dispatch remains prominent. Definition construction and entry

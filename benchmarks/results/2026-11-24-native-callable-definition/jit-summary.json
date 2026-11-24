@@ -1,0 +1,25 @@
+{
+  "machine": "Windows x64 / .NET 11 RC3, tiering disabled FullOpts; exact isolated images",
+  "diagnostic": "Example generated-code footprint; frequency and elapsed unmeasured.",
+  "observations": {
+    "reference": {
+      "file": "reference.asm",
+      "sha256": "9fedb0a4aae12aa8101dfb1da16cdeef9341cb0b4ea4fb4d9e19dc2cbdc4aca4",
+      "methodBytes": {
+        "TryExecutePreparedOperation": 5475,
+        "ApplyDefinition": 666,
+        "CreateInlineDefinition": 975
+      }
+    },
+    "candidate": {
+      "file": "candidate.asm",
+      "sha256": "d49524cb5e7685d9560f4c7af4f175a1ddadcf70cc39a3afac4e60b1b7d99b8c",
+      "methodBytes": {
+        "TryExecutePreparedOperation": 4540,
+        "ApplyDefinition": 254,
+        "CanDefineWithoutInvocation": 340,
+        "CreateInlineDefinition": 1068
+      }
+    }
+  }
+}
