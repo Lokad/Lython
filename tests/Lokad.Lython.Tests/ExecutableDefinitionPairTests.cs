@@ -219,4 +219,39 @@ public sealed class ExecutableDefinitionPairTests
         }
         Assert.Equal(0, budget.ReservedBytes);
     }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ArithmeticFailureRefundsUnpublishedPairWhileItsScopeIsAlive(bool failFirst)
+    {
+        var firstDefault = failFirst ? "10 // seed" : "seed % 7";
+        var module = ExecutableScript.Compile(LythonFrontend.Compile($$"""
+            def make(seed):
+                def first(value={{firstDefault}}):
+                    return value
+                other = lambda left=10 // seed, right=seed + 1: left + right
+                return first, other
+            first, other = make(0)
+            """).Script!).EntryPoint;
+        var factory = Assert.Single(module.FunctionBindings()).CodeObject!;
+        Assert.True(factory.HasDirectDefinitionPair);
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var owner = budget.CreateScope();
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
+            new LythonRunOptions { MemoryBudget = owner });
+        // The published factory already owns its module namespace in a normal call.
+        LythonRuntime.ChargeClosureRetention(context, context.MemoryGovernor, null);
+        var before = budget.ReservedBytes;
+        var results = new LythonRuntime.ExecutableSlot[2];
+        try
+        {
+            var error = Assert.Throws<LythonRuntimeException>(() =>
+                LythonRuntime.CompleteClosedDefinitionPair(factory, context, 0, results));
+            Assert.Equal("ZeroDivisionError", error.ExceptionType);
+            Assert.All(results, result => Assert.True(result.IsUnassigned));
+            Assert.Equal(before, budget.ReservedBytes);
+        }
+        finally { context.State.CloseResources(); }
+    }
 }

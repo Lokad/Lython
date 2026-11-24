@@ -6,6 +6,17 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1657](results/2026-11-24-current-default-call-cpu/README.md) locates defaulted
+rule costs on the CPython comparison image. Construction remains in 544 of
+1,192 warm and 567 of 1,171 through-result runtime stacks. Explicit
+reservations account for 161 and 169 nearest resolved frames within that work.
+
+[B1658](results/2026-11-24-pair-owned-defaults/README.md) gives private defaults
+one rollback owner across the pair. Managed allocation and admission match
+on the defaulted workload. Longer batches leave the original generated
+and postponed CPU increases unresolved and show 0.70–2.31% higher CPU
+through result on defaulted rules.
+
 [B1656](results/2026-11-24-inline-defaults-cpython/README.md) refreshes the
 representative CPython comparison on the committed B1655 image. Defaulted
 rules still have the largest measured warm gap. The report and quote-heavy

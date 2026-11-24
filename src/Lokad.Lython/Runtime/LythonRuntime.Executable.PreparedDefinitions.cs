@@ -151,25 +151,23 @@ internal sealed partial class LythonRuntime
     {
         var instructions = factory.Instructions;
         var firstCreation = factory.FirstPairedDefaultCreationIndex;
-        var first = CreateClosedPairMember(factory, 0, firstCreation, scope, argument, out var firstDefaults);
-        PyFunctionBase? second = null;
+        PyFunctionBase? first = null, second = null;
+        FunctionDefaults firstDefaults = default;
         FunctionDefaults secondDefaults = default;
         try
         {
+            first = CreateClosedPairMember(factory, 0, firstCreation, scope, argument, ref firstDefaults);
             scope.CheckExecution(instructions[firstCreation + 1].Span); // First private store.
             // The compiler proved the store and pair return after this creation.
             var secondCreation = instructions.Length - 6;
-            second = CreateClosedPairMember(factory, firstCreation + 2, secondCreation, scope, argument, out secondDefaults);
+            second = CreateClosedPairMember(factory, firstCreation + 2, secondCreation, scope, argument, ref secondDefaults);
             for (var index = secondCreation + 1; index < instructions.Length; index++)
                 scope.CheckExecution(instructions[index].Span);
         }
         catch
         {
             var governor = scope.MemoryGovernor;
-            try
-            {
-                if (second is not null) RefundUnpublishedPairMember(second, secondDefaults, governor);
-            }
+            try { RefundUnpublishedPairMember(second, secondDefaults, governor); }
             finally { RefundUnpublishedPairMember(first, firstDefaults, governor); }
             throw;
         }
@@ -178,55 +176,53 @@ internal sealed partial class LythonRuntime
         destination[0].Object = second;
     }
 
-    private static void RefundUnpublishedPairMember(PyFunctionBase member, FunctionDefaults defaults, MemoryGovernor governor)
+    private static void RefundUnpublishedPairMember(PyFunctionBase? member, FunctionDefaults defaults, MemoryGovernor governor)
     {
         // The closed pair proof excludes decorators, captured locals and
         // deferred annotations. Any annotation keys describe the admitted
         // record. The shared module namespace keeps its separate charge.
-        var bytes = member.CodeObject.DefinitionAnnotationKeys is { } keys
-            ? FunctionAndAnnotationBytes(keys.PreparedValueCapacity) : FunctionValueBytes;
         try { defaults.RefundUnpublished(governor); }
-        finally { governor.Release(bytes); }
+        finally
+        {
+            if (member is not null)
+                governor.Release(member.CodeObject.DefinitionAnnotationKeys is { } keys
+                    ? FunctionAndAnnotationBytes(keys.PreparedValueCapacity) : FunctionValueBytes);
+        }
     }
 
     private static PyFunctionBase CreateClosedPairMember(ExecutableCodeObject factory, int start, int creation,
-        ExecutionContext scope, long argument, out FunctionDefaults privateDefaults)
+        ExecutionContext scope, long argument, ref FunctionDefaults defaults)
     {
         var instructions = factory.Instructions;
         ref readonly var create = ref instructions[creation];
         var definition = (ExecutableCreateFunction)factory.Constants[create.ConstantIndex]!;
         var layout = definition.ParameterLayout;
-        var defaults = AllocateFunctionDefaults(layout, false, scope, instructions[start].Span);
-        try
+        // The pair owns these defaults immediately, including when further
+        // evaluation or callable construction fails before returning a member.
+        defaults = AllocateFunctionDefaults(layout, false, scope, instructions[start].Span);
+        var index = start + 1;
+        for (var i = 0; i < layout.Defaults.Length; i++)
         {
-            var index = start + 1;
-            for (var i = 0; i < layout.Defaults.Length; i++)
+            ExecutableSlot value;
+            ref readonly var first = ref instructions[index];
+            if (first.OpCode == ExecutableOpCode.LoadConst)
             {
-                ExecutableSlot value;
-                ref readonly var first = ref instructions[index];
-                if (first.OpCode == ExecutableOpCode.LoadConst)
-                {
-                    index++;
-                    scope.CheckExecution(first.Span);
-                    value = ExecutableSlot.FromObject(factory.Constants[first.ConstantIndex]);
-                }
-                else value = EvaluateClosedIntegerSequence<ParameterIntegerSource>(factory, argument, scope, ref index);
-                ref readonly var store = ref instructions[index++];
-                StoreFunctionDefault(ref defaults, store.DefaultValueIndex, i < layout.PositionalDefaultCount,
-                    value, scope.State, store.Span);
+                index++;
+                scope.CheckExecution(first.Span);
+                value = ExecutableSlot.FromObject(factory.Constants[first.ConstantIndex]);
             }
-
-            System.Diagnostics.Debug.Assert(index == creation);
-            scope.CheckExecution(create.Span);
-            var result = definition.EagerAnnotationReads is { } reads
-                ? CreateClosedEagerDefinition(definition, factory, reads, scope, create.Span, defaults)
-                : CreateFunctionValue(layout, definition.CodeObject, GetGlobalContext(scope),
-                    default, defaults, false, scope, create.Span, postponedAnnotations: definition.PostponedAnnotations);
-            privateDefaults = defaults;
-            defaults = default;
-            return result;
+            else value = EvaluateClosedIntegerSequence<ParameterIntegerSource>(factory, argument, scope, ref index);
+            ref readonly var store = ref instructions[index++];
+            StoreFunctionDefault(ref defaults, store.DefaultValueIndex, i < layout.PositionalDefaultCount,
+                value, scope.State, store.Span);
         }
-        finally { defaults.RefundUnpublished(scope.MemoryGovernor); }
+
+        System.Diagnostics.Debug.Assert(index == creation);
+        scope.CheckExecution(create.Span);
+        return definition.EagerAnnotationReads is { } reads
+            ? CreateClosedEagerDefinition(definition, factory, reads, scope, create.Span, defaults)
+            : CreateFunctionValue(layout, definition.CodeObject, GetGlobalContext(scope),
+                default, defaults, false, scope, create.Span, postponedAnnotations: definition.PostponedAnnotations);
     }
 
     private interface IClosedIntegerSource
