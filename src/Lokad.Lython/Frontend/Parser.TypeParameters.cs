@@ -15,7 +15,7 @@ internal sealed partial class Parser
             var kind = TryRead(Token.StarStar, out _) ? TypeParameterKind.ParamSpec
                 : TryRead(Token.Star, out _) ? TypeParameterKind.TypeVarTuple : TypeParameterKind.TypeVar;
             if (!TryReadNameToken(out var nameToken)) return Fail("Expected type parameter name.", opening);
-            var name = IdentifierText(nameToken);
+            var name = IdentifierText(nameToken, out var originalName);
             if (!names.Add(name)) return Fail("Duplicate type parameter name.", nameToken);
             ExpressionSyntax? bound = null, defaultValue = null;
             if (TryRead(Token.Colon, out _))
@@ -35,7 +35,7 @@ internal sealed partial class Parser
             else if (hasDefault) return Fail("Non-default type parameter follows default type parameter.", nameToken);
             result.Add(new TypeParameterSyntax(name, kind, bound, defaultValue, unpackDefault, SpanOf(nameToken))
             {
-                OriginalName = name == RawIdentifierText(nameToken) ? null : RawIdentifierText(nameToken)
+                OriginalName = originalName
             });
             SkipGroupedExpressionTrivia();
             if (!TryRead(Token.Comma, out _)) break;
@@ -63,9 +63,11 @@ internal sealed partial class Parser
             return null;
         }
         var value = ParseExpression();
-        return value is null ? null : new TypeAliasStatementSyntax(IdentifierText(nameToken), parameters, value, Merge(typeToken, value.Span))
+        if (value is null) return null;
+        var name = IdentifierText(nameToken, out var originalName);
+        return new TypeAliasStatementSyntax(name, parameters, value, Merge(typeToken, value.Span))
         {
-            OriginalName = IdentifierText(nameToken) == RawIdentifierText(nameToken) ? null : RawIdentifierText(nameToken)
+            OriginalName = originalName
         };
     }
 }

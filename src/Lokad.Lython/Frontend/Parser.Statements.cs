@@ -160,15 +160,16 @@ internal sealed partial class Parser
             return null;
         }
 
+        var name = IdentifierText(nameToken, out var originalName);
         return new FunctionDefinitionStatementSyntax(
-            IdentifierText(nameToken),
+            name,
             decorators,
             parameters,
             returnAnnotation,
             body,
             Merge(defToken, body[^1].Span), typeParameters)
         {
-            OriginalName = IdentifierText(nameToken) == RawIdentifierText(nameToken) ? null : RawIdentifierText(nameToken)
+            OriginalName = originalName
         };
     }
 
@@ -349,8 +350,8 @@ internal sealed partial class Parser
             return null;
         }
 
-        var bindingName = IdentifierText(nameToken);
         var declaredName = RawIdentifierText(nameToken);
+        var bindingName = MangleIdentifier(declaredName);
         var enclosingPrivateNames = _privateNames;
         try
         {

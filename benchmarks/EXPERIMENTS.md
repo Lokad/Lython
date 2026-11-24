@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1654](results/2026-11-24-shared-binding-spelling/README.md) removes duplicate
+name materialization and temporary pattern syntax. Classifier compilation
+allocation falls 6.93%. The sparse validator and manifest each shift by less
+than 0.3%. Tape and retained admission match.
+
 [B1653](results/2026-11-24-terminal-backed-operand-layout/README.md) combines
 forwarding and final slot assignment after removing dead block suffixes.
 Compilation and time-to-result elapsed fall in three workloads with identical

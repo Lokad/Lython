@@ -229,6 +229,14 @@ internal sealed partial class Parser
     private string IdentifierText(int tokenIndex)
         => MangleIdentifier(RawIdentifierText(tokenIndex));
 
+    private string IdentifierText(int tokenIndex, out string? originalName)
+    {
+        var declared = RawIdentifierText(tokenIndex);
+        var binding = MangleIdentifier(declared);
+        originalName = binding == declared ? null : declared;
+        return binding;
+    }
+
     private string RawIdentifierText(int tokenIndex)
         => _tokens.GetString(tokenIndex).Normalize(NormalizationForm.FormKC);
 

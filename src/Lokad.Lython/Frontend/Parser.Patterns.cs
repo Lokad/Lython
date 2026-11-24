@@ -191,7 +191,7 @@ internal sealed partial class Parser
                 return null;
             }
 
-            var name = IdentifierText(nameToken);
+            var name = IdentifierText(nameToken, out var originalName);
             if (name == "_")
             {
                 AddDiagnostic("LA1092", "Wildcard '_' cannot be used as an 'as' capture target.", nameToken);
@@ -200,7 +200,7 @@ internal sealed partial class Parser
 
             pattern = new MatchAsPatternSyntax(pattern, name, Merge(pattern.Span, nameToken))
             {
-                OriginalBindingName = name == RawIdentifierText(nameToken) ? null : RawIdentifierText(nameToken)
+                OriginalBindingName = originalName
             };
         }
 
@@ -209,15 +209,11 @@ internal sealed partial class Parser
 
     private PatternSyntax? ParseOrPattern()
     {
-        var patterns = new List<PatternSyntax>();
         var first = ParseClosedPattern();
-        if (first is null)
-        {
-            return null;
-        }
+        if (first is null || CurrentToken != Token.Pipe) return first;
 
-        patterns.Add(first);
-        while (CurrentToken == Token.Pipe)
+        var patterns = new List<PatternSyntax> { first };
+        do
         {
             ReadToken();
             var next = ParseClosedPattern();
@@ -228,11 +224,9 @@ internal sealed partial class Parser
             }
 
             patterns.Add(next);
-        }
+        } while (CurrentToken == Token.Pipe);
 
-        return patterns.Count == 1
-            ? patterns[0]
-            : new MatchOrPatternSyntax(patterns, Merge(patterns[0].Span, patterns[^1].Span));
+        return new MatchOrPatternSyntax(patterns, Merge(first.Span, patterns[^1].Span));
     }
 
     private PatternSyntax? ParseClosedPattern()
@@ -282,29 +276,18 @@ internal sealed partial class Parser
                 return null;
             }
 
-            var name = IdentifierText(nameToken);
-            var expression = ParseNameOrAttributeExpressionFromName(nameToken, name);
-            if (expression is IdentifierExpressionSyntax identifier)
+            var name = IdentifierText(nameToken, out var originalName);
+            if (CurrentToken is Token.Dot or Token.OpenParen)
             {
-                if (CurrentToken == Token.OpenParen)
-                {
-                    return ParseClassPattern(expression);
-                }
-
-                return name == "_"
-                    ? new MatchWildcardPatternSyntax(identifier.Span)
-                    : new MatchCapturePatternSyntax(name, identifier.Span)
-                    {
-                        OriginalBindingName = name == RawIdentifierText(nameToken) ? null : RawIdentifierText(nameToken)
-                    };
+                var expression = ParseNameOrAttributeExpressionFromName(nameToken, name);
+                if (CurrentToken == Token.OpenParen) return ParseClassPattern(expression);
+                if (expression is not IdentifierExpressionSyntax)
+                    return new MatchValuePatternSyntax(expression, expression.Span);
             }
 
-            if (CurrentToken == Token.OpenParen)
-            {
-                return ParseClassPattern(expression);
-            }
-
-            return new MatchValuePatternSyntax(expression, expression.Span);
+            var span = SpanOf(nameToken);
+            return name == "_" ? new MatchWildcardPatternSyntax(span)
+                : new MatchCapturePatternSyntax(name, span) { OriginalBindingName = originalName };
         }
 
         AddDiagnostic("LA1094", "Expected pattern.", _position);
@@ -428,12 +411,12 @@ internal sealed partial class Parser
             return null;
         }
 
-        var name = IdentifierText(targetToken);
+        var name = IdentifierText(targetToken, out var originalName);
         return name == "_"
             ? new MatchStarPatternSyntax(null, Merge(starToken, targetToken))
             : new MatchStarPatternSyntax(name, Merge(starToken, targetToken))
             {
-                OriginalBindingName = name == RawIdentifierText(targetToken) ? null : RawIdentifierText(targetToken)
+                OriginalBindingName = originalName
             };
     }
 
@@ -479,8 +462,7 @@ internal sealed partial class Parser
                         return null;
                     }
 
-                    restName = IdentifierText(restToken);
-                    originalRestName = restName == RawIdentifierText(restToken) ? null : RawIdentifierText(restToken);
+                    restName = IdentifierText(restToken, out originalRestName);
                     if (restName == "_")
                     {
                         AddDiagnostic("LA1100", "Wildcard '_' cannot be used as a mapping rest capture.", restToken);
