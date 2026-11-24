@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1587](results/2026-11-24-shared-traversal-cpython/README.md) refreshes the
+CPython baseline after the shared eager traversal. Generated rules remain
+about 2× warm, quoted invoice spans parity and expanded JSON Lines runs at
+0.766–0.801×. Short-report compile-to-result has wider Lython worker spread.
+
 [B1586](results/2026-11-24-json-traversal/README.md) drains eager JSON within
 the shared traversal. All three JSON Lines elapsed ranges fall. Default
 options also use less process CPU across worker pairings. Text and CSV
