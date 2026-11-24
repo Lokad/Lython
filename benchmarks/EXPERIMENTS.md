@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1598](results/2026-11-24-private-definition-call/README.md)
+removes the captured factory's intermediate callable and activation.
+Captured rules use 14.79–17.76% less warm elapsed, 15.91% less CLR
+allocation and 448 KiB less peak admission. Both annotated controls
+slow down. Keep the prototype private while isolating the shared
+arithmetic selector.
+
 [B1597](results/2026-11-24-closed-pairs-cpython/README.md)
 compares the delivered factory-pair source with stock CPython. Defaulted
 rules are 1.410–1.434× warm and 1.328–1.346× through result. Captured rules
