@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1560](results/2026-11-24-exact-unicode-float/README.md) avoids
+normalization and general decimal parsing for eligible short Unicode
+tokens. Both typed meter variants take 12–17% less warm time. The
+explicit control takes 0.43–1.78% longer with mixed CPU.
+
 [B1559](results/2026-11-24-meter-tuple-cpu/README.md) attributes
 20–30 nearest runtime samples to tuple construction and 235 to float
 parsing and Unicode digit lookup in the typed meter. The profile

@@ -2,6 +2,8 @@
 
 ## 0.11.0 - Unreleased
 
+- Parse short Unicode decimal strings directly into binary64 in `float()`
+  and typed CSV. Preserve Python's underscore rules and signed zero.
 - Size `match.expand()` from its validated UTF-8 ranges and write into one
   admitted string. Eliminate output growth and its replacement overlap.
 - Reuse the admitted capacity of unmaterialized words across private

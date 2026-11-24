@@ -19,6 +19,22 @@ public sealed class CsvNumericReaderTests
         { "mixed", "import csv\nprint(list(csv.reader(['1,\"2\",,3'],quoting=csv.QUOTE_NONNUMERIC)))", "[[1.0, '2', '', 3.0]]\n" },
         { "escaped", "import csv\nprint(list(csv.reader([r'\\3,4'],quoting=csv.QUOTE_NONNUMERIC,escapechar='\\\\')))", "[[3.0, 4.0]]\n" },
         { "unicode", "import csv\nprint(list(csv.reader(['٣_٤.٥,𝟙.𝟚,-٠'],quoting=csv.QUOTE_NONNUMERIC)))", "[[34.5, 1.2, -0.0]]\n" },
+        { "unicode decimal rounding and grammar", """
+            import csv
+            import struct
+            text = '\u00a0-٠_𝟘.\u2003,+.١_𝟚,９００７１９９２５４７４０９９２,９００７１９９２５４７４０９９３,٠.٠٠٠٠٠٠٠٠٠٠٠٠٠٠٠١,١.٢٥e-٢,٤٩.٥'
+            def bits(values):
+                return ' '.join(struct.pack('>d', value).hex() for value in values)
+            print(bits([float(value) for value in text.split(',')]))
+            print(bits(next(csv.reader([text], quoting=csv.QUOTE_NONNUMERIC))))
+            for token in ('._١','١_.٢','١._٢','١__٢','١_','١\x00','١.٢.٣','١_²','١.٢'.encode()):
+                try:
+                    float(token)
+                except ValueError:
+                    continue
+                raise AssertionError(token)
+            """, "8000000000000000 3fbeb851eb851eb8 4340000000000000 4340000000000000 3c9cd2b297d889bc 3f8999999999999a 4048c00000000000\n" +
+                 "8000000000000000 3fbeb851eb851eb8 4340000000000000 4340000000000000 3c9cd2b297d889bc 3f8999999999999a 4048c00000000000\n" },
         { "long borrowed numeric field", """
             import csv
             row = '٠' * 2050 + '2_5.0,"25.0",-1e-999\n'

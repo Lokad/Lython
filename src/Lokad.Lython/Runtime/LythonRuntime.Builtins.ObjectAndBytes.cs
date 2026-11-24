@@ -100,6 +100,11 @@ internal sealed partial class LythonRuntime
                 context.CheckExecution(span);
                 return direct;
             }
+            if (unicode && TryParseShortDecimalFloat(input, out direct, allowUnicodeDigits: true))
+            {
+                context.CheckExecution(span);
+                return direct;
+            }
         }
         // Short tokens can validate and normalize together in existing stack
         // scratch. Wide ASCII tokens still avoid admitting a temporary buffer.
@@ -110,7 +115,7 @@ internal sealed partial class LythonRuntime
         return valid ? number : throw TextConversionError(source, "could not convert string to float: ", context, span, byteSource);
     }
 
-    private static bool TryParseShortDecimalFloat(ReadOnlySpan<byte> input, out double result)
+    private static bool TryParseShortDecimalFloat(ReadOnlySpan<byte> input, out double result, bool allowUnicodeDigits = false)
     {
         result = default;
         if (input.IsEmpty) return false;
@@ -118,22 +123,47 @@ internal sealed partial class LythonRuntime
         var negative = input[0] == (byte)'-';
         var start = input[0] is (byte)'+' or (byte)'-' ? 1 : 0;
         var length = input.Length - start;
-        // At most 17 bytes after the sign, so the integer accumulation
-        // cannot overflow. Exponents and extended syntax use the full parser.
-        if (length is < 1 or > 17) return false;
+        const int maximumDigits = 17;
+        // The Unicode spelling can contain four bytes per digit and one
+        // separator per digit. Larger inputs use the existing full parser.
+        if (length < 1 || length > (allowUnicodeDigits ? 5 * maximumDigits : maximumDigits)) return false;
 
         ulong significand = 0;
+        var digits = 0;
         var point = -1;
-        for (var i = start; i < input.Length; i++)
+        for (var offset = start; offset < input.Length;)
         {
-            var digit = (uint)(input[i] - (byte)'0');
-            if (digit <= 9) significand = significand * 10 + digit;
-            else if (input[i] == (byte)'.' && point < 0) point = i;
-            else return false;
+            var character = input[offset++];
+            var digit = (uint)(character - (byte)'0');
+            if (digit > 9)
+            {
+                if (character == (byte)'.' && point < 0)
+                {
+                    point = digits;
+                    continue;
+                }
+                if (!allowUnicodeDigits) return false;
+                if (character == (byte)'_')
+                {
+                    if (digits == 0 || point == digits || offset == input.Length) return false;
+                    character = input[offset++];
+                    digit = (uint)(character - (byte)'0');
+                }
+                if (digit > 9)
+                {
+                    if (character < 128 || Rune.DecodeFromUtf8(input[(offset - 1)..], out var rune, out var width)
+                        != OperationStatus.Done) return false;
+                    digit = (uint)PyStringOps.GetDecimalDigitValue(rune);
+                    if (digit > 9) return false;
+                    offset += width - 1;
+                }
+            }
+            if (++digits > maximumDigits) return false;
+            significand = significand * 10 + digit;
         }
 
-        if ((length == 1 && point >= 0) || significand > 1UL << 53) return false;
-        var fractionDigits = point < 0 ? 0 : input.Length - point - 1;
+        if (digits == 0 || significand > 1UL << 53) return false;
+        var fractionDigits = point < 0 ? 0 : digits - point;
         result = ConvertExactDecimalToDouble(significand, fractionDigits, negative);
         return true;
     }
