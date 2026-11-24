@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[B1625](results/2026-11-24-forwarded-positional-cpython/README.md)
+refreshes five scripts against stock CPython on `6466fbb52`. Defaulted
+rules take 1.379–1.394× warm and 1.284–1.309× through result. The
+short Unicode report reaches its result in 0.849–0.905×. The quoted
+invoice stays close to parity. The earlier startup figures remain
+separate from the 15 measured lanes.
+
 [B1623](results/2026-11-24-forwarded-positional/README.md) removes
 repeated call operand staging and improves captured rules and the
 Unicode report. Eager-rule CPU rises with an identical tape.

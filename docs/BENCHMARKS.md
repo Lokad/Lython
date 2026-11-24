@@ -5,26 +5,24 @@
 | Configuration manifest | Two input files / 833 B | 0.19838–0.20052 ms | 0.16458–0.16692 ms | 1.188–1.218× | Diagnostic. [B1614]. |
 | Typed Unicode CSV meter | 4,096 records / 223,267 B | 2.789–2.855 ms | 3.139–3.173 ms | 0.879–0.910× | Diagnostic. [B1568]. |
 | CSV meter with explicit `float()` | 4,096 records / 139,299 B | 2.876–2.896 ms | 2.920–2.924 ms | 0.984–0.992× | Diagnostic. [B1568]. |
-| Short Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 0.89693–0.97136 ms | 0.93726–0.94026 ms | 0.954–1.036× | Diagnostic. Near parity with 8.30% Lython worker spread. [B1609]. |
-| Quote-heavy CSV policy invoice | 4,096 records / 174,147 B | 6.21401–6.25986 ms | 6.32403–6.34140 ms | 0.980–0.990× | Diagnostic. Near parity. [B1600]. |
-| Eager annotated rules | 2,048 rule groups | 0.43634–0.47390 ms | 0.41110–0.41435 ms | 1.053–1.153× | Diagnostic. Worker spread up to 8.61%. [B1593]. |
+| Short Unicode word-count report with a nonlocal helper | 3,072 lines / 35,840 B | 0.86462–0.94592 ms | 0.94452–0.94618 ms | 0.914–1.001× | Inconclusive against parity. Lython worker spread 9.40%. [B1625]. |
+| Quote-heavy CSV policy invoice | 4,096 records / 174,147 B | 6.22001–6.28147 ms | 6.25953–6.38260 ms | 0.975–1.004× | Diagnostic. Near parity. [B1625]. |
+| Eager annotated rules | 2,048 rule groups | 0.45038–0.46467 ms | 0.40554–0.42793 ms | 1.052–1.146× | Diagnostic. CPython worker spread 5.52%. [B1625]. |
 | Postponed nested annotated rules | 2,048 rule groups | 0.60049–0.60089 ms | 0.53475–0.55209 ms | 1.088–1.124× | Diagnostic. [B1604]. |
-| Generated rules with captured locals | 2,048 rule groups | 0.93583–0.98667 ms | 0.76178–0.77355 ms | 1.210–1.295× | Diagnostic. Lython worker spread 5.43%. [B1604]. |
-| Generated rules with defaults | 2,048 rule groups | 0.96412–0.96583 ms | 0.68102–0.70088 ms | 1.376–1.418× | Diagnostic. [B1609]. |
+| Generated rules with captured locals | 2,048 rule groups | 0.90121–0.94731 ms | 0.76582–0.77056 ms | 1.170–1.237× | Diagnostic. Lython worker spread 5.11%. [B1625]. |
+| Generated rules with defaults | 2,048 rule groups | 0.94370–0.94559 ms | 0.67822–0.68434 ms | 1.379–1.394× | Diagnostic. [B1625]. |
 | JSON Lines export with expanded options | 3,072 records / 189,441 B | 5.1299–5.2194 ms | 6.5146–6.7011 ms | 0.766–0.801× | Diagnostic. [B1587]. |
 
 Ratios divide Lython elapsed time by CPython elapsed time. Above 1× means
 Lython takes longer. Ranges span the four pairings of process medians from
-two workers per engine. The manifest and sparse validator use
-`0bf516c79`. The short report and warm defaulted rules use
-frozen `46c967257`, matching `675900142`. Captured rules and warm
-postponed rules use `d6437c26f`, matching `0400f185c`. Warm quoted
-invoice uses `642c8f957`, matching `c40540135`. The defaulted compilation
-lanes use `67be15bd0`, matching `70b04c0af`.
-Eager annotated rules and the postponed compilation lanes use `4eb8c9559`,
-matching `5313f9e71`. JSON export uses `ccdf43a59`, matching `2cf721f73`.
-The two CSV meters use `95aa40601`, matching `8aef89b09`. These
-collections ran on November 24, 2026 UTC. [B1614] · [B1609] · [B1604] · [B1600] · [B1597] · [B1593] · [B1587] · [B1568].
+two workers per engine. Defaulted, captured and eager annotated rules,
+the short report and the quoted invoice use `6466fbb52`.
+The manifest and sparse validator use `0bf516c79`. Postponed rules use
+frozen `d6437c26f`, matching `0400f185c`, for warm execution and `4eb8c9559`,
+matching `5313f9e71`, for compilation and time to result. JSON export
+uses `ccdf43a59`, matching `2cf721f73`. The two CSV meters use `95aa40601`,
+matching `8aef89b09`. These collections ran on November 24, 2026 UTC.
+[B1625] · [B1614] · [B1604] · [B1593] · [B1587] · [B1568].
 
 The quiet comparison machine is an Azure F4as_v7 running Ubuntu 24.04.4
 with .NET 11 RC3. The external baseline is stock CPython 3.13.16. Warm
@@ -45,27 +43,26 @@ measurements cover the wider request.
 | Sparse generated validator, 23,555 B of source | Compilation only | 1.27724–1.28559 ms | 1.81308–1.82159 ms | 0.701–0.709× | Diagnostic compiler workload. [B1614]. |
 | Sparse generated validator, 96 guards / 1,714 B input | Compile-to-result | 1.50615–1.52170 ms | 1.99316–2.00943 ms | 0.750–0.763× | Diagnostic compiler workload. [B1614]. |
 | Typed Unicode CSV meter | Compile-to-result | 3.151–3.295 ms | 3.480–3.556 ms | 0.886–0.947× | Diagnostic. [B1568]. |
-| Short Unicode word-count report with a nonlocal helper | Compile-to-result | 0.98993–0.99296 ms | 1.07912–1.08041 ms | 0.916–0.920× | Diagnostic. [B1609]. |
-| Short Unicode word-count report with a nonlocal helper, 615 B | Compilation only | 0.02881–0.02892 ms | 0.05577–0.05597 ms | 0.515–0.518× | Diagnostic. [B1609]. |
-| Eager annotated rules, 319 B | Compilation only | 0.01642–0.01643 ms | 0.03059–0.03088 ms | 0.532–0.537× | Diagnostic. [B1593]. |
-| Eager annotated rules | Compile-to-result | 0.46870–0.47116 ms | 0.43951–0.44135 ms | 1.062–1.072× | Diagnostic. [B1593]. |
+| Short Unicode word-count report with a nonlocal helper | Compile-to-result | 0.93428–0.98361 ms | 1.08737–1.10104 ms | 0.849–0.905× | Diagnostic. [B1625]. |
+| Short Unicode word-count report with a nonlocal helper, 615 B | Compilation only | 0.02850–0.02854 ms | 0.05601–0.05602 ms | 0.509–0.510× | Diagnostic. [B1625]. |
+| Eager annotated rules, 319 B | Compilation only | 0.01623–0.01650 ms | 0.03068–0.03090 ms | 0.525–0.538× | Diagnostic. [B1625]. |
+| Eager annotated rules | Compile-to-result | 0.45635–0.47615 ms | 0.43789–0.47307 ms | 0.965–1.087× | Inconclusive. Worker spread up to 8.03%. [B1625]. |
 | Postponed nested annotated rules, 465 B | Compilation only | 0.02137–0.02188 ms | 0.03949–0.03962 ms | 0.539–0.554× | Diagnostic. [B1593]. |
 | Postponed nested annotated rules | Compile-to-result | 0.60983–0.63550 ms | 0.57547–0.58786 ms | 1.037–1.104× | Diagnostic. [B1593]. |
-| Generated rules with defaults, 427 B | Compilation only | 0.02384–0.02414 ms | 0.04129–0.04160 ms | 0.573–0.585× | Diagnostic. [B1597]. |
-| Generated rules with defaults | Compile-to-result | 0.97730–0.97877 ms | 0.72738–0.73606 ms | 1.328–1.346× | Diagnostic. [B1597]. |
-| Generated rules with captured locals, 446 B | Compilation only | 0.02672–0.02691 ms | 0.04689–0.04742 ms | 0.563–0.574× | Diagnostic. [B1604]. |
-| Generated rules with captured locals | Compile-to-result | 0.95557–0.96751 ms | 0.82570–0.82767 ms | 1.155–1.172× | Diagnostic. [B1604]. |
-| Quote-heavy CSV policy invoice, 1,293 B | Compilation only | 0.05936–0.06033 ms | 0.09800–0.09855 ms | 0.602–0.616× | Diagnostic. [B1534]. |
-| Quote-heavy CSV policy invoice | Compile-to-result | 6.539–6.644 ms | 6.799–6.825 ms | 0.958–0.977× | Diagnostic. [B1534]. |
+| Generated rules with defaults, 427 B | Compilation only | 0.02456–0.02493 ms | 0.04367–0.04376 ms | 0.561–0.571× | Diagnostic. [B1625]. |
+| Generated rules with defaults | Compile-to-result | 0.94355–0.95683 ms | 0.73084–0.73476 ms | 1.284–1.309× | Diagnostic. [B1625]. |
+| Generated rules with captured locals, 446 B | Compilation only | 0.02637–0.02653 ms | 0.04681–0.04700 ms | 0.561–0.567× | Diagnostic. [B1625]. |
+| Generated rules with captured locals | Compile-to-result | 0.90904–0.91645 ms | 0.82989–0.83015 ms | 1.095–1.104× | Diagnostic. [B1625]. |
+| Quote-heavy CSV policy invoice, 1,293 B | Compilation only | 0.06070–0.06112 ms | 0.10070–0.10165 ms | 0.597–0.607× | Diagnostic. [B1625]. |
+| Quote-heavy CSV policy invoice | Compile-to-result | 6.44385–6.48525 ms | 6.51016–6.53856 ms | 0.986–0.996× | Diagnostic. [B1625]. |
 | Configuration edit, 181 B | Compilation only | 0.01898–0.01912 ms | 0.03401–0.03426 ms | 0.554–0.562× | Diagnostic. [B1491]. |
 | JSON Lines export with expanded options | Compile-to-result | 5.2734–5.3220 ms | 6.6247–6.7093 ms | 0.786–0.803× | Diagnostic. [B1587]. |
 
 Compilation includes disposal of compiled code owners. Time to result
 combines compilation, one execution and cleanup in an already-running
 host. Workers measure the phases independently. These clocks end before
-final process teardown. The older invoice and configuration rows use
-`0112138c1` and `2b501135a`, respectively, from November 23, 2026 UTC.
-[B1534] · [B1491].
+final process teardown. The small configuration edit uses `2b501135a` from
+November 23, 2026 UTC. [B1491].
 
 ## Fresh process
 
@@ -117,12 +114,9 @@ document reproduction.
 
 [B1491]: ../benchmarks/results/2026-11-23-forwarded-global-cpython/README.md
 [B1568]: ../benchmarks/results/2026-11-24-runtime-checkpoint-cpython/README.md
-[B1534]: ../benchmarks/results/2026-11-23-owned-class-cpython/README.md
 [B1451]: ../benchmarks/results/2026-11-23-runtime-cpython-checkpoint/README.md
 [B1587]: ../benchmarks/results/2026-11-24-shared-traversal-cpython/README.md
 [B1593]: ../benchmarks/results/2026-11-24-annotated-factories-cpython/README.md
-[B1597]: ../benchmarks/results/2026-11-24-closed-pairs-cpython/README.md
-[B1609]: ../benchmarks/results/2026-11-24-closed-line-helper-cpython/README.md
 [B1604]: ../benchmarks/results/2026-11-24-closed-capture-cpython/README.md
-[B1600]: ../benchmarks/results/2026-11-24-private-calls-cpython/README.md
 [B1614]: ../benchmarks/results/2026-11-24-abstract-compiler-cpython/README.md
+[B1625]: ../benchmarks/results/2026-11-24-forwarded-positional-cpython/README.md
